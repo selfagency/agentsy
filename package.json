@@ -40,6 +40,11 @@
       "import": "./dist/structured/index.js",
       "require": "./dist/structured/index.cjs"
     },
+    "./formatting": {
+      "types": "./dist/formatting/index.d.ts",
+      "import": "./dist/formatting/index.js",
+      "require": "./dist/formatting/index.cjs"
+    },
     "./processor": {
       "types": "./dist/processor/index.d.ts",
       "import": "./dist/processor/index.js",

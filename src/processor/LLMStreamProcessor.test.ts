@@ -148,4 +148,16 @@ describe('LLMStreamProcessor', () => {
       expect.objectContaining({ toolName: 'bigint_tool' }),
     );
   });
+
+  it('uses modelId with thinkingTagMap to parse custom thinking tags', () => {
+    const processor = new LLMStreamProcessor({
+      modelId: 'my-custom-model-v1',
+      thinkingTagMap: new Map([['my-custom-model', ['<x>', '</x>']]]),
+    });
+
+    const out = processor.process({ content: '<x>reason</x>ok' });
+    const flushed = processor.flush();
+    expect(out.thinking).toBe('reason');
+    expect(out.content + flushed.content).toBe('ok');
+  });
 });

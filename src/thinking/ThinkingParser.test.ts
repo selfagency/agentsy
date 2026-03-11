@@ -67,6 +67,20 @@ describe('ThinkingParser', () => {
     expect(content).toBe('ok');
   });
 
+  it('selects built-in tags for known models via forModel', () => {
+    const parser = ThinkingParser.forModel('granite-3.2');
+    const [thinking, content] = parser.addContent('<|thinking|>reason</|thinking|>ok');
+    expect(thinking).toBe('reason');
+    expect(content).toBe('ok');
+  });
+
+  it('supports custom model thinking tag map via forModel', () => {
+    const parser = ThinkingParser.forModel('custom-model', new Map([['custom', ['<x>', '</x>']]]));
+    const [thinking, content] = parser.addContent('<x>reason</x>ok');
+    expect(thinking).toBe('reason');
+    expect(content).toBe('ok');
+  });
+
   it('reset clears parser state', () => {
     const parser = new ThinkingParser();
     parser.addContent('<think>abc');
