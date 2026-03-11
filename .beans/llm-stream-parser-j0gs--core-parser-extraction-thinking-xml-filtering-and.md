@@ -5,8 +5,9 @@ status: in-progress
 type: epic
 priority: high
 branch: feat/j0gs-core-parser-extraction
+pr: 3
 created_at: 2026-03-11T17:08:25Z
-updated_at: 2026-03-11T17:28:06Z
+updated_at: 2026-03-11T17:38:48Z
 parent: llm-stream-parser-q8qn
 ---
 
