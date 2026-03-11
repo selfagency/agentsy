@@ -6,7 +6,7 @@ type: task
 priority: high
 branch: feat/h4s1-parser-primitives-parity
 created_at: 2026-03-11T17:09:45Z
-updated_at: 2026-03-11T17:30:06Z
+updated_at: 2026-03-11T17:31:15Z
 parent: llm-stream-parser-zkyu
 blocked_by:
     - llm-stream-parser-af18
@@ -16,7 +16,7 @@ Port thinking/context/tool-call parser primitives from Opilot and verify parity 
 
 ## Todo
 
-- [ ] Unblock dependency by validating `llm-stream-parser-af18` completion status and updating linkage if needed.
+- [x] Unblock dependency by validating `llm-stream-parser-af18` completion status and updating linkage if needed.
 - [ ] Port `ThinkingParser` behavior from Opilot and add focused parity tests.
 - [ ] Port context/XML helpers (`splitLeadingXmlContextBlocks`, `dedupeXmlContextBlocksByTag`, `stripXmlContextTags`) and add parity tests.
 - [ ] Port XML tool-call extraction parity behavior and add tests for known-tools filtering and malformed/whitespace variants.
