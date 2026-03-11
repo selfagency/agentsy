@@ -241,3 +241,4 @@ $RECYCLE.BIN/
 
 .mcpregistry_*
 package-lock.json
+.gh-pages

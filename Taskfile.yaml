@@ -49,6 +49,12 @@ tasks:
       - ./node_modules/.bin/oxfmt . --write
     silent: false
 
+  formatting:
+    desc: Format code (alias)
+    cmds:
+      - task: format
+    silent: false
+
   unit-tests:
     desc: Run unit tests
     cmds:
@@ -93,4 +99,22 @@ tasks:
     desc: Watch for changes and recompile
     cmds:
       - ./node_modules/.bin/tsup --watch
+    silent: false
+
+  docs:dev:
+    desc: Start documentation dev server
+    cmds:
+      - ./node_modules/.bin/vitepress dev docs
+    silent: false
+
+  docs:build:
+    desc: Build documentation
+    cmds:
+      - ./node_modules/.bin/vitepress build docs
+    silent: false
+
+  docs:preview:
+    desc: Preview built documentation
+    cmds:
+      - ./node_modules/.bin/vitepress preview docs
     silent: false
