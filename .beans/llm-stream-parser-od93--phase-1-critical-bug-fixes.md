@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-od93
 title: 'Phase 1: Critical Bug Fixes'
-status: in-progress
+status: completed
 type: epic
 priority: critical
 created_at: 2026-03-11T22:43:56Z
-updated_at: 2026-03-11T22:48:40Z
+updated_at: 2026-03-11T22:56:00Z
 parent: llm-stream-parser-1ly3
 ---
 
