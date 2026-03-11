@@ -9,6 +9,7 @@ export default defineConfig({
     'src/context/index.ts',
     'src/processor/index.ts',
     'src/markdown/index.ts',
+    'src/adapters/index.ts',
     'src/adapters/generic.ts',
     'src/adapters/vscode.ts',
   ],

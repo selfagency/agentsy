@@ -38,6 +38,26 @@ export class ThinkingParser {
     return [thinkingOut, contentOut];
   }
 
+  public flush(): [thinkingContent: string, regularContent: string] {
+    const acc = this._acc;
+    this._acc = '';
+
+    switch (this._state) {
+      case 'lookingForOpening':
+        // Held as a potential partial opening tag – treat as regular content.
+        return ['', acc];
+      case 'thinkingStartedEatingWhitespace':
+      case 'thinkingDoneEatingWhitespace':
+        // Only buffered whitespace; nothing meaningful to emit.
+        return ['', ''];
+      case 'thinking':
+        // Stream ended without a closing tag – emit accumulated text as thinking.
+        return [acc, ''];
+      case 'thinkingDone':
+        return ['', acc];
+    }
+  }
+
   public reset(): void {
     this._state = 'lookingForOpening';
     this._acc = '';

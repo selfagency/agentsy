@@ -45,6 +45,11 @@
       "import": "./dist/markdown/index.js",
       "require": "./dist/markdown/index.cjs"
     },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js",
+      "require": "./dist/adapters/index.cjs"
+    },
     "./adapters/generic": {
       "types": "./dist/adapters/generic.d.ts",
       "import": "./dist/adapters/generic.js",

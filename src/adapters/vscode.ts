@@ -31,8 +31,12 @@ export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions)
       }
 
       const formatted = appendToBlockquote(output.thinking, thinkingLineStart);
-      thinkingLineStart = false;
       await options.stream.markdown(formatted);
+      if (formatted.length > 0) {
+        const lastChar = formatted.charAt(formatted.length - 1);
+        thinkingLineStart = lastChar === '\n' || lastChar === '\r';
+      }
+      // If nothing was emitted, preserve the previous line-start state.
     }
 
     if (output.content) {

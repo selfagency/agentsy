@@ -67,9 +67,9 @@ export class LLMStreamProcessor {
 
   public constructor(options: ProcessorOptions = {}) {
     this.options = {
+      ...options,
       parseThinkTags: options.parseThinkTags ?? true,
       scrubContextTags: options.scrubContextTags ?? true,
-      ...options,
     };
 
     this.thinkingParser = this.createThinkingParser();
@@ -120,9 +120,25 @@ export class LLMStreamProcessor {
   }
 
   public flush(): ProcessedOutput {
-    const content = this.xmlFilter ? this.xmlFilter.end() : '';
+    let thinking = '';
+    let content = '';
+
+    if (this.thinkingParser) {
+      const [thinkingDelta, contentDelta] = this.thinkingParser.flush();
+      thinking = thinkingDelta;
+      if (this.xmlFilter && contentDelta) {
+        content = this.xmlFilter.write(contentDelta);
+      } else {
+        content = contentDelta;
+      }
+    }
+
+    if (this.xmlFilter) {
+      content += this.xmlFilter.end();
+    }
+
     const output = this.buildOutput({
-      thinking: '',
+      thinking,
       content,
       toolCalls: [],
       done: true,
