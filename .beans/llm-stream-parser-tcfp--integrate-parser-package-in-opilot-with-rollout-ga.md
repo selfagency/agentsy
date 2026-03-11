@@ -6,6 +6,8 @@ type: task
 priority: high
 created_at: 2026-03-11T17:09:45Z
 updated_at: 2026-03-11T21:27:40Z
+branch: feat/tcfp-integrate-parser-package-rollout-main
+pr: 21
 parent: llm-stream-parser-n4wg
 blocked_by:
     - llm-stream-parser-hb9y
