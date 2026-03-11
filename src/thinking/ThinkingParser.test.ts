@@ -89,4 +89,86 @@ describe('ThinkingParser', () => {
     expect(thinking).toBe('');
     expect(content).toBe('plain');
   });
+
+  // --- Multiple thinking blocks ---
+
+  it('handles multiple thinking blocks in a single chunk', () => {
+    const parser = new ThinkingParser();
+    const [thinking, content] = parser.addContent(
+      '<think>first thought</think>middle<think>second thought</think>final',
+    );
+    expect(thinking).toBe('first thoughtsecond thought');
+    expect(content).toBe('middlefinal');
+  });
+
+  it('handles multiple thinking blocks across chunks', () => {
+    const parser = new ThinkingParser();
+    let allThinking = '';
+    let allContent = '';
+
+    let [t, c] = parser.addContent('<think>thought1</think>');
+    allThinking += t;
+    allContent += c;
+
+    [t, c] = parser.addContent('between');
+    allThinking += t;
+    allContent += c;
+
+    [t, c] = parser.addContent('<think>thought2</think>after');
+    allThinking += t;
+    allContent += c;
+
+    expect(allThinking).toBe('thought1thought2');
+    expect(allContent).toBe('betweenafter');
+  });
+
+  it('handles three consecutive thinking blocks', () => {
+    const parser = new ThinkingParser();
+    const [thinking, content] = parser.addContent(
+      '<think>a</think>x<think>b</think>y<think>c</think>z',
+    );
+    expect(thinking).toBe('abc');
+    expect(content).toBe('xyz');
+  });
+
+  // --- Nested thinking tags ---
+
+  it('handles nested thinking tags by tracking depth', () => {
+    const parser = new ThinkingParser();
+    const [thinking, content] = parser.addContent(
+      '<think>outer<think>inner</think>more</think>after',
+    );
+    expect(thinking).toBe('outer<think>inner</think>more');
+    expect(content).toBe('after');
+  });
+
+  it('handles deeply nested thinking tags', () => {
+    const parser = new ThinkingParser();
+    const [thinking, content] = parser.addContent(
+      '<think>a<think>b<think>c</think>d</think>e</think>f',
+    );
+    expect(thinking).toBe('a<think>b<think>c</think>d</think>e');
+    expect(content).toBe('f');
+  });
+
+  it('handles nested tags across chunks', () => {
+    const parser = new ThinkingParser();
+    let allThinking = '';
+    let allContent = '';
+
+    let [t, c] = parser.addContent('<think>outer<think>');
+    allThinking += t;
+    allContent += c;
+
+    [t, c] = parser.addContent('inner</think>');
+    allThinking += t;
+    allContent += c;
+
+    [t, c] = parser.addContent('more</think>after');
+    allThinking += t;
+    allContent += c;
+
+    expect(allThinking).toBe('outer<think>inner</think>more');
+    expect(allContent).toBe('after');
+  });
 });

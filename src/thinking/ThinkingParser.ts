@@ -133,20 +133,54 @@ export class ThinkingParser {
       }
 
       case 'thinking': {
-        const idx = this._acc.indexOf(this.closingTag);
-        if (idx !== -1) {
-          const thinking = this._acc.slice(0, idx);
-          const afterRaw = this._acc.slice(idx + this.closingTag.length);
-          const after = afterRaw.trimStart();
-          this._acc = '';
+        // Use a local depth counter to handle nested tags correctly across chunks.
+        // Re-scanning from 0 each time avoids stale depth state between addContent calls.
+        let depth = 0;
+        let searchFrom = 0;
+        while (searchFrom < this._acc.length) {
+          const closeIdx = this._acc.indexOf(this.closingTag, searchFrom);
+          const openIdx = this._acc.indexOf(this.openingTag, searchFrom);
 
-          if (afterRaw === '') {
-            this._state = 'thinkingDone';
-          } else {
-            this._state = after === '' ? 'thinkingDoneEatingWhitespace' : 'thinkingDone';
+          // No more tags found
+          if (closeIdx === -1 && openIdx === -1) {
+            return ['', '', false];
           }
 
-          return [thinking, after, false];
+          // Nested opening tag found before closing tag
+          if (openIdx !== -1 && (closeIdx === -1 || openIdx < closeIdx)) {
+            depth++;
+            searchFrom = openIdx + this.openingTag.length;
+            continue;
+          }
+
+          // Closing tag found
+          if (closeIdx !== -1) {
+            if (depth > 0) {
+              depth--;
+              searchFrom = closeIdx + this.closingTag.length;
+              continue;
+            }
+
+            // Top-level closing tag — emit thinking content
+            const thinking = this._acc.slice(0, closeIdx);
+            const afterRaw = this._acc.slice(closeIdx + this.closingTag.length);
+
+            // Store remaining content in _acc for next state to process
+            this._acc = afterRaw;
+
+            if (afterRaw === '') {
+              this._state = 'thinkingDone';
+              return [thinking, '', false];
+            }
+
+            const afterTrimmed = afterRaw.trimStart();
+            if (afterTrimmed === '') {
+              this._state = 'thinkingDoneEatingWhitespace';
+            } else {
+              this._state = 'thinkingDone';
+            }
+            return [thinking, '', true];
+          }
         }
 
         return ['', '', false];
@@ -162,6 +196,15 @@ export class ThinkingParser {
       }
 
       case 'thinkingDone': {
+        // Check if the remaining content starts with another opening tag
+        const openIdx = this._acc.indexOf(this.openingTag);
+        if (openIdx !== -1) {
+          const contentBefore = this._acc.slice(0, openIdx);
+          this._acc = this._acc.slice(openIdx);
+          this._state = 'lookingForOpening';
+          return ['', contentBefore, true];
+        }
+
         const out = this._acc;
         this._acc = '';
         return ['', out, false];
