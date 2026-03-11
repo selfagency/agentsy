@@ -1,6 +1,6 @@
 ---
 # llm-stream-parser-j0gs
-title: core parser extraction thinking xml filtering and
+title: core parser extraction, thinking xml filtering, and tool-call extraction
 status: in-progress
 type: epic
 priority: high
