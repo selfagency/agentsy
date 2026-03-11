@@ -15,11 +15,14 @@ export interface ProcessorOptions {
   scrubContextTags?: boolean;
   extraScrubTags?: Set<string>;
   overrideScrubTags?: Set<string>;
+  enforcePrivacyTags?: boolean;
   knownTools?: Set<string>;
   thinkingOpenTag?: string;
   thinkingCloseTag?: string;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
   maxInputLength?: number;
+  maxToolCallsPerMessage?: number;
+  maxToolArgumentBytes?: number;
 }
 
 export type OutputPart =
@@ -44,6 +47,8 @@ export type StreamEventMap = {
 };
 
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
+const DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE = 64;
+const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
 
 export class LLMStreamProcessor {
   private readonly options: Required<Pick<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags'>> & ProcessorOptions;
@@ -94,7 +99,7 @@ export class LLMStreamProcessor {
         ? extractXmlToolCalls(rawContent, this.options.knownTools)
         : [];
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
-    const toolCalls = [...extractedXmlToolCalls, ...nativeToolCalls];
+    const toolCalls = this.enforceToolCallLimits([...extractedXmlToolCalls, ...nativeToolCalls]);
 
     if (this.xmlFilter && content) {
       content = this.xmlFilter.write(content);
@@ -191,7 +196,18 @@ export class LLMStreamProcessor {
       return null;
     }
 
-    const filterOptions: { extraScrubTags?: Set<string>; overrideScrubTags?: Set<string> } = {};
+    const filterOptions: {
+      extraScrubTags?: Set<string>;
+      overrideScrubTags?: Set<string>;
+      enforcePrivacyTags?: boolean;
+      onWarning?: (message: string, context?: Record<string, unknown>) => void;
+    } = {};
+    if (this.options.enforcePrivacyTags !== undefined) {
+      filterOptions.enforcePrivacyTags = this.options.enforcePrivacyTags;
+    }
+    if (this.options.onWarning !== undefined) {
+      filterOptions.onWarning = this.options.onWarning;
+    }
     if (this.options.extraScrubTags !== undefined) {
       filterOptions.extraScrubTags = this.options.extraScrubTags;
     }
@@ -305,6 +321,37 @@ export class LLMStreamProcessor {
     }
 
     return mapped;
+  }
+
+  private enforceToolCallLimits(toolCalls: XmlToolCall[]): XmlToolCall[] {
+    const maxToolCalls = this.options.maxToolCallsPerMessage ?? DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE;
+    const maxToolArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
+
+    let limitedCalls = toolCalls;
+    if (maxToolCalls > 0 && toolCalls.length > maxToolCalls) {
+      this.warn('Tool call count exceeded maxToolCallsPerMessage; truncating tool call list.', {
+        maxToolCallsPerMessage: maxToolCalls,
+        originalCount: toolCalls.length,
+      });
+      limitedCalls = toolCalls.slice(0, maxToolCalls);
+    }
+
+    const keptCalls: XmlToolCall[] = [];
+    for (const call of limitedCalls) {
+      const argsBytes = Buffer.byteLength(JSON.stringify(call.parameters), 'utf8');
+      if (maxToolArgumentBytes > 0 && argsBytes > maxToolArgumentBytes) {
+        this.warn('Tool call arguments exceeded maxToolArgumentBytes; dropping tool call.', {
+          toolName: call.name,
+          maxToolArgumentBytes,
+          actualBytes: argsBytes,
+        });
+        continue;
+      }
+
+      keptCalls.push(call);
+    }
+
+    return keptCalls;
   }
 
   private normalizeToolArguments(value: unknown): Record<string, unknown> {

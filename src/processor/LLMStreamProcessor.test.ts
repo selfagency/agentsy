@@ -74,4 +74,45 @@ describe('LLMStreamProcessor', () => {
       },
     ]);
   });
+
+  it('truncates tool calls when maxToolCallsPerMessage is exceeded', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
+
+    const out = processor.process({
+      tool_calls: [
+        { function: { name: 'a', arguments: {} } },
+        { function: { name: 'b', arguments: {} } },
+      ],
+    });
+
+    expect(out.toolCalls).toHaveLength(1);
+    expect(out.toolCalls[0]?.name).toBe('a');
+    expect(onWarning).toHaveBeenCalledWith(
+      expect.stringContaining('maxToolCallsPerMessage'),
+      expect.objectContaining({ originalCount: 2, maxToolCallsPerMessage: 1 }),
+    );
+  });
+
+  it('drops tool calls whose argument payload exceeds maxToolArgumentBytes', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({ maxToolArgumentBytes: 8, onWarning });
+
+    const out = processor.process({
+      tool_calls: [
+        {
+          function: {
+            name: 'read_file',
+            arguments: { path: '/a/very/long/path.ts' },
+          },
+        },
+      ],
+    });
+
+    expect(out.toolCalls).toEqual([]);
+    expect(onWarning).toHaveBeenCalledWith(
+      expect.stringContaining('maxToolArgumentBytes'),
+      expect.objectContaining({ toolName: 'read_file', maxToolArgumentBytes: 8 }),
+    );
+  });
 });

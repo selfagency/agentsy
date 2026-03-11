@@ -29,6 +29,35 @@ describe('createXmlStreamFilter', () => {
     expect(second).toContain('second');
     expect(end).toBe('');
   });
+
+  it('enforces privacy tags when overrideScrubTags omits them', () => {
+    const warnings: Array<{ message: string; context?: Record<string, unknown> }> = [];
+    const filter = createXmlStreamFilter({
+      overrideScrubTags: new Set(['environment_info']),
+      onWarning: (message, context) => {
+        if (context === undefined) {
+          warnings.push({ message });
+          return;
+        }
+        warnings.push({ message, context });
+      },
+    });
+
+    const out = filter.write('<user_info>secret</user_info><code>safe</code>') + filter.end();
+    expect(out).toBe('<code>safe</code>');
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]?.message).toContain('Privacy-sensitive tags omitted');
+  });
+
+  it('allows unsafe override when enforcePrivacyTags is false', () => {
+    const filter = createXmlStreamFilter({
+      overrideScrubTags: new Set(['environment_info']),
+      enforcePrivacyTags: false,
+    });
+
+    const out = filter.write('<user_info>secret</user_info><code>safe</code>') + filter.end();
+    expect(out).toBe('<user_info>secret</user_info><code>safe</code>');
+  });
 });
 
 describe('stripXmlContextTags', () => {

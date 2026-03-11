@@ -35,4 +35,17 @@ export const SYSTEM_WRAPPER_TAG_NAMES = new Set([
   'repository_memories',
 ]);
 
-export const DEFAULT_SCRUB_TAG_NAMES = new Set([...ELEVATED_CONTEXT_TAG_NAMES, ...SYSTEM_WRAPPER_TAG_NAMES]);
+export const PRIVACY_TAG_NAMES = new Set([
+  'user_info',
+  'userPreferences',
+  'userData',
+  'userMemory',
+  'sessionMemory',
+  'repository_memories',
+]);
+
+export const DEFAULT_SCRUB_TAG_NAMES = new Set([
+  ...ELEVATED_CONTEXT_TAG_NAMES,
+  ...SYSTEM_WRAPPER_TAG_NAMES,
+  ...PRIVACY_TAG_NAMES,
+]);
