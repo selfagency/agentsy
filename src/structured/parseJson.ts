@@ -22,7 +22,7 @@ function extractJsonCandidates(text: string): string[] {
       continue;
     }
 
-    if (char === '\\') {
+    if (inString && char === '\\') {
       escaped = true;
       continue;
     }
@@ -75,6 +75,7 @@ function tryRepairCandidate(text: string): string | null {
     const char = trimmed[i];
 
     if (escaped) {
+      repaired += char;
       escaped = false;
       continue;
     }

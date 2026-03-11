@@ -33,9 +33,13 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
 
   if (typeof value === 'string') {
     if (typeof schema.pattern === 'string') {
-      const regex = new RegExp(schema.pattern);
-      if (!regex.test(value)) {
-        errors.push(`${path}: string does not match pattern ${schema.pattern}`);
+      try {
+        const regex = new RegExp(schema.pattern);
+        if (!regex.test(value)) {
+          errors.push(`${path}: string does not match pattern ${schema.pattern}`);
+        }
+      } catch {
+        errors.push(`${path}: schema pattern is not a valid regular expression: ${schema.pattern}`);
       }
     }
   }
