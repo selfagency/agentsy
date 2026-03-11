@@ -5,7 +5,8 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-03-11T22:45:07Z
-updated_at: 2026-03-11T22:45:07Z
+updated_at: 2026-03-11T22:49:03Z
+parent: llm-stream-parser-bika
 ---
 
 Verify every function/type in docs/api.md matches actual exports from src/index.ts and subpath exports in package.json. Correct any discrepancies.
