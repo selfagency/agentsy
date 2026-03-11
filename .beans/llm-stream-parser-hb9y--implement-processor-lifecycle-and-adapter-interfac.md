@@ -5,8 +5,9 @@ status: completed
 type: task
 priority: high
 branch: feat/hb9y-processor-lifecycle-adapters
+pr: 6
 created_at: 2026-03-11T17:09:45Z
-updated_at: 2026-03-11T18:25:00Z
+updated_at: 2026-03-11T14:28:00Z
 parent: llm-stream-parser-p8ep
 ---
 
