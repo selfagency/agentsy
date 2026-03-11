@@ -115,4 +115,37 @@ describe('LLMStreamProcessor', () => {
       expect.objectContaining({ toolName: 'read_file', maxToolArgumentBytes: 8 }),
     );
   });
+
+  it('drops tool calls whose arguments contain a circular reference', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({ onWarning });
+
+    const circular: Record<string, unknown> = {};
+    circular['self'] = circular;
+
+    const out = processor.process({
+      tool_calls: [{ function: { name: 'circular_tool', arguments: circular } }],
+    });
+
+    expect(out.toolCalls).toEqual([]);
+    expect(onWarning).toHaveBeenCalledWith(
+      expect.stringContaining('could not be serialized'),
+      expect.objectContaining({ toolName: 'circular_tool' }),
+    );
+  });
+
+  it('drops tool calls whose arguments contain a BigInt value', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({ onWarning });
+
+    const out = processor.process({
+      tool_calls: [{ function: { name: 'bigint_tool', arguments: { value: BigInt(42) } } }],
+    });
+
+    expect(out.toolCalls).toEqual([]);
+    expect(onWarning).toHaveBeenCalledWith(
+      expect.stringContaining('could not be serialized'),
+      expect.objectContaining({ toolName: 'bigint_tool' }),
+    );
+  });
 });
