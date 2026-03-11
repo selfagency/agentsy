@@ -4,6 +4,7 @@ title: LLM Stream Parser extraction and Opilot rollout
 status: in-progress
 type: milestone
 priority: high
+branch: feat/q8qn-parser-extraction-hierarchy
 created_at: 2026-03-11T17:08:11Z
 updated_at: 2026-03-11T17:09:59Z
 ---
