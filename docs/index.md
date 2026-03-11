@@ -29,10 +29,10 @@ yarn add llm-stream-parser
 import { parseJson, extractXmlToolCalls } from 'llm-stream-parser';
 
 // Parse JSON from streaming LLM output
-const result = await parseJson(streamData);
+const result = parseJson(streamData);
 
 // Extract tool calls from XML format
-const toolCalls = extractXmlToolCalls(response, ['send_message', 'search']);
+const toolCalls = extractXmlToolCalls(response, new Set(['send_message', 'search']));
 ```
 
 ## Features

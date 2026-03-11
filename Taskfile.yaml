@@ -116,5 +116,5 @@ tasks:
   docs:preview:
     desc: Preview built documentation
     cmds:
-      - ./node_modules/.bin/vitepress preview docs
+      - ./node_modules/.bin/vitepress preview .gh-pages
     silent: false

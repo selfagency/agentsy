@@ -234,10 +234,10 @@ const processor = useLLMStreamParser
 // Run both paths in tests for parity verification
 if (process.env.VERIFY_PARITY) {
   const legacyResult = legacyParsingPath(response);
-  const newResult = processor.finalize();
+  const newResult = processor.flush();
 
   if (JSON.stringify(legacyResult) !== JSON.stringify(newResult)) {
-    logParity Mismatch('streams_not_equal', { legacyResult, newResult });
+    logParityMismatch('streams_not_equal', { legacyResult, newResult });
   }
 }
 ```
@@ -251,13 +251,12 @@ if (process.env.VERIFY_PARITY) {
 
 ## Debugging
 
-Enable diagnostics for stream processing:
+Enable diagnostics for stream processing using the `onWarning` hook:
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  enableDiagnostics: true,
-  diagnosticCallback: (event) => {
-    console.log(`[llm-stream-parser] ${event.type}: ${event.message}`);
+  onWarning: (message, context) => {
+    console.log(`[llm-stream-parser] ${message}`, context);
   },
   ...config,
 });
