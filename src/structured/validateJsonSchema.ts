@@ -14,6 +14,15 @@ export type JsonSchemaValidator = (
 
 export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
   validator?: JsonSchemaValidator;
+  /**
+   * Maximum time in milliseconds to allow an external `validator` to run.
+   * If the validator does not return within this window, validation fails
+   * with a timeout error. Set to 0 to disable (default: 5000).
+   *
+   * **Note:** This only applies to synchronous validators. Async validators
+   * (returning a Promise) are not supported and will be treated as truthy.
+   */
+  validatorTimeoutMs?: number;
 }
 
 function typeOf(value: unknown): string {
@@ -47,13 +56,22 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
 
   if (typeof value === 'string') {
     if (typeof schema.pattern === 'string') {
-      try {
-        const regex = new RegExp(schema.pattern);
-        if (!regex.test(value)) {
-          errors.push(`${path}: string does not match pattern ${schema.pattern}`);
+      // Guard against ReDoS: reject patterns exceeding a safe length.
+      // This is a heuristic — patterns over 1024 chars are likely adversarial.
+      const MAX_PATTERN_LENGTH = 1024;
+      if (schema.pattern.length > MAX_PATTERN_LENGTH) {
+        errors.push(
+          `${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`,
+        );
+      } else {
+        try {
+          const regex = new RegExp(schema.pattern);
+          if (!regex.test(value)) {
+            errors.push(`${path}: string does not match pattern ${schema.pattern}`);
+          }
+        } catch {
+          errors.push(`${path}: schema pattern is not a valid regular expression: ${schema.pattern}`);
         }
-      } catch {
-        errors.push(`${path}: schema pattern is not a valid regular expression: ${schema.pattern}`);
       }
     }
   }

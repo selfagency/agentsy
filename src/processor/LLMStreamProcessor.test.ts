@@ -160,4 +160,52 @@ describe('LLMStreamProcessor', () => {
     expect(out.thinking).toBe('reason');
     expect(out.content + flushed.content).toBe('ok');
   });
+
+  it('rate limits warning emissions with maxWarnings', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({
+      onWarning,
+      maxWarnings: 3,
+      maxInputLength: 10,
+    });
+
+    // Trigger 5 warnings by sending oversized content
+    for (let i = 0; i < 5; i++) {
+      processor.process({ content: 'x'.repeat(20) });
+    }
+
+    expect(onWarning).toHaveBeenCalledTimes(3);
+  });
+
+  it('resets warning count on reset()', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({
+      onWarning,
+      maxWarnings: 2,
+      maxInputLength: 10,
+    });
+
+    processor.process({ content: 'x'.repeat(20) });
+    processor.process({ content: 'x'.repeat(20) });
+    processor.process({ content: 'x'.repeat(20) }); // should be suppressed
+    expect(onWarning).toHaveBeenCalledTimes(2);
+
+    processor.reset();
+    processor.process({ content: 'x'.repeat(20) });
+    expect(onWarning).toHaveBeenCalledTimes(3); // warning count was reset
+  });
+
+  it('can be reused after flush() + reset() cycle', () => {
+    const processor = new LLMStreamProcessor();
+
+    processor.process({ content: '<think>thought1</think>content1' });
+    processor.flush();
+
+    processor.reset();
+
+    const out = processor.process({ content: '<think>thought2</think>content2' });
+    const flushed = processor.flush();
+    expect(out.thinking).toBe('thought2');
+    expect(out.content + flushed.content).toBe('content2');
+  });
 });

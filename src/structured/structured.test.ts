@@ -94,6 +94,32 @@ describe('validateJsonSchema', () => {
       expect(result.errors).toEqual(['$: adapter rejected payload']);
     }
   });
+
+  it('rejects regex patterns exceeding maximum length', () => {
+    const longPattern = 'a'.repeat(1025);
+    const result = validateJsonSchema('{"name":"Ada"}', {
+      type: 'object',
+      properties: {
+        name: { type: 'string', pattern: longPattern },
+      },
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors[0]).toContain('exceeds maximum length');
+    }
+  });
+
+  it('accepts regex patterns within length limit', () => {
+    const result = validateJsonSchema('{"name":"Ada"}', {
+      type: 'object',
+      properties: {
+        name: { type: 'string', pattern: '^[A-Za-z]+$' },
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
 });
 
 describe('prompt helpers', () => {

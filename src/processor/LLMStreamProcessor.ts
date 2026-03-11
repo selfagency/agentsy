@@ -26,6 +26,8 @@ export interface ProcessorOptions {
   maxToolCallsPerMessage?: number;
   maxToolArgumentBytes?: number;
   maxXmlNestingDepth?: number;
+  /** Maximum number of warnings emitted per processor lifetime. Default: 100. Set to 0 to disable. */
+  maxWarnings?: number;
 }
 
 export type OutputPart =
@@ -52,6 +54,7 @@ export type StreamEventMap = {
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
 const DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE = 64;
 const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
+const DEFAULT_MAX_WARNINGS = 100;
 
 export class LLMStreamProcessor {
   private readonly options: Required<Pick<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags'>> & ProcessorOptions;
@@ -62,6 +65,7 @@ export class LLMStreamProcessor {
   private _accumulatedContent = '';
   private _accumulatedToolCalls: XmlToolCall[] = [];
   private doneEmitted = false;
+  private _warningCount = 0;
 
   private listeners: {
     [K in keyof StreamEventMap]: Set<StreamEventMap[K]>;
@@ -176,6 +180,7 @@ export class LLMStreamProcessor {
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
     this.doneEmitted = false;
+    this._warningCount = 0;
   }
 
   private createThinkingParser(): ThinkingParser | null {
@@ -417,6 +422,11 @@ export class LLMStreamProcessor {
   }
 
   private warn(message: string, context?: Record<string, unknown>): void {
+    const max = this.options.maxWarnings ?? DEFAULT_MAX_WARNINGS;
+    if (max > 0 && this._warningCount >= max) {
+      return;
+    }
+    this._warningCount++;
     this.options.onWarning?.(message, context);
     for (const listener of this.listeners.warning) {
       listener(message, context);
