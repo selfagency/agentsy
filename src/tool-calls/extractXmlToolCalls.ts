@@ -5,5 +5,7 @@ export interface XmlToolCall {
 }
 
 export function extractXmlToolCalls(_text: string, _knownTools: Set<string>): XmlToolCall[] {
-  return [];
+  throw new Error(
+    'extractXmlToolCalls is not implemented yet: XML/JSON tool call parsing has not been ported.',
+  );
 }
