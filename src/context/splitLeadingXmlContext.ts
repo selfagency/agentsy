@@ -1,3 +1,3 @@
-export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string } {
-  return { contextBlocks: [], remaining: input };
+export function splitLeadingXmlContextBlocks(_input: string): { contextBlocks: string[]; remaining: string } {
+  throw new Error('splitLeadingXmlContextBlocks is not implemented yet.');
 }
