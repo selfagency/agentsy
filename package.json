@@ -1,14 +1,51 @@
 {
   "name": "llm-stream-parser",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "Composable parsers and stream processing utilities for LLM responses",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./thinking": {
+      "types": "./dist/thinking/index.d.ts",
+      "import": "./dist/thinking/index.js",
+      "require": "./dist/thinking/index.cjs"
+    },
+    "./xml-filter": {
+      "types": "./dist/xml-filter/index.d.ts",
+      "import": "./dist/xml-filter/index.js",
+      "require": "./dist/xml-filter/index.cjs"
+    },
+    "./tool-calls": {
+      "types": "./dist/tool-calls/index.d.ts",
+      "import": "./dist/tool-calls/index.js",
+      "require": "./dist/tool-calls/index.cjs"
+    },
+    "./context": {
+      "types": "./dist/context/index.d.ts",
+      "import": "./dist/context/index.js",
+      "require": "./dist/context/index.cjs"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt . --write",
+    "test": "vitest run src"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "packageManager": "pnpm@10.31.0",
   "devDependencies": {
     "@types/node": "^25.4.0",
@@ -18,6 +55,7 @@
     "oxfmt": "^0.38.0",
     "oxlint": "^1.53.0",
     "oxlint-tsgolint": "^0.16.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
