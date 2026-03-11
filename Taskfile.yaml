@@ -35,10 +35,24 @@ tasks:
       - task: check-formatting
     silent: false
 
+  compile:
+    desc: Compile the package
+    env:
+      NODE_ENV: production
+    cmds:
+      - ./node_modules/.bin/tsup
+    silent: false
+
   format:
     desc: Format code
     cmds:
       - ./node_modules/.bin/oxfmt . --write
+    silent: false
+
+  formatting:
+    desc: Format code (alias)
+    cmds:
+      - task: format
     silent: false
 
   unit-tests:
@@ -67,14 +81,40 @@ tasks:
       - task: unit-tests
     silent: false
 
-  build:
-    desc: Build the project
+  release:
+    desc: Release the package
+    deps: [compile]
     cmds:
-      - ./node_modules/.bin/vite build
+      - ./node_modules/.bin/zx ./scripts/release.js {{.CLI_ARGS}}
     silent: false
 
-  dev:
+  test-build-release:
+    desc: Test, Build & Release
+    deps: [check-all, test-all]
+    cmds:
+      - task: release
+    silent: false
+
+  watch:
     desc: Watch for changes and recompile
     cmds:
-      - ./node_modules/.bin/vite --watch
+      - ./node_modules/.bin/tsup --watch
+    silent: false
+
+  docs:dev:
+    desc: Start documentation dev server
+    cmds:
+      - ./node_modules/.bin/vitepress dev docs
+    silent: false
+
+  docs:build:
+    desc: Build documentation
+    cmds:
+      - ./node_modules/.bin/vitepress build docs
+    silent: false
+
+  docs:preview:
+    desc: Preview built documentation
+    cmds:
+      - ./node_modules/.bin/vitepress preview .gh-pages
     silent: false
