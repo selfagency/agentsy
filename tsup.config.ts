@@ -8,6 +8,7 @@ export default defineConfig({
     'src/tool-calls/index.ts',
     'src/context/index.ts',
     'src/processor/index.ts',
+    'src/adapters/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,
