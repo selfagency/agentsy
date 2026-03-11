@@ -1,9 +1,6 @@
-import { parseJson, type ParseJsonOptions } from './parseJson.js';
+import { parseJson, DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, type ParseJsonOptions } from './parseJson.js';
 
 type JsonSchema = Record<string, unknown>;
-
-const DEFAULT_MAX_JSON_DEPTH = 64;
-const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function typeOf(value: unknown): string {
   if (Array.isArray(value)) return 'array';
@@ -110,17 +107,31 @@ export function validateJsonSchema<T = unknown>(
   schema: Record<string, unknown>,
   options: ParseJsonOptions = {},
 ): { success: true; data: T } | { success: false; errors: string[] } {
-  const parsed = parseJson(text, {
+  const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
+  const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
+
+  // First, attempt to parse with the effective limits so candidate selection respects them.
+  const parsedWithLimits = parseJson(text, {
     ...options,
-    maxJsonDepth: 0,
-    maxJsonKeys: 0,
+    maxJsonDepth,
+    maxJsonKeys,
   });
+
+  // If no JSON is found under those limits, fall back to an unlimited parse
+  // to surface deterministic limit errors on the "best" candidate, if any.
+  const parsed =
+    parsedWithLimits !== null
+      ? parsedWithLimits
+      : parseJson(text, {
+          ...options,
+          maxJsonDepth: 0,
+          maxJsonKeys: 0,
+        });
+
   if (parsed === null) {
     return { success: false, errors: ['$: no valid JSON found in input'] };
   }
 
-  const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
-  const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
   const limitErrors: string[] = [];
 
   let keyCount = 0;
