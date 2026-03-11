@@ -7,6 +7,7 @@ export default defineConfig({
     'src/xml-filter/index.ts',
     'src/tool-calls/index.ts',
     'src/context/index.ts',
+    'src/processor/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,
