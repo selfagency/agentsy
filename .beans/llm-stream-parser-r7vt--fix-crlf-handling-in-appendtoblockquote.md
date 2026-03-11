@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-r7vt
 title: Fix CRLF handling in appendToBlockquote
-status: todo
+status: completed
 type: bug
 priority: high
 created_at: 2026-03-11T22:44:27Z
-updated_at: 2026-03-11T22:48:46Z
+updated_at: 2026-03-11T22:55:47Z
 parent: llm-stream-parser-od93
 ---
 

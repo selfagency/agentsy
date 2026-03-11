@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-lmld
 title: Fix ThinkingParser nested thinking tags
-status: todo
+status: completed
 type: bug
 priority: critical
 created_at: 2026-03-11T22:44:23Z
-updated_at: 2026-03-11T22:48:46Z
+updated_at: 2026-03-11T22:54:19Z
 parent: llm-stream-parser-od93
 ---
 
