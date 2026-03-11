@@ -34,6 +34,31 @@
       "types": "./dist/context/index.d.ts",
       "import": "./dist/context/index.js",
       "require": "./dist/context/index.cjs"
+    },
+    "./processor": {
+      "types": "./dist/processor/index.d.ts",
+      "import": "./dist/processor/index.js",
+      "require": "./dist/processor/index.cjs"
+    },
+    "./markdown": {
+      "types": "./dist/markdown/index.d.ts",
+      "import": "./dist/markdown/index.js",
+      "require": "./dist/markdown/index.cjs"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js",
+      "require": "./dist/adapters/index.cjs"
+    },
+    "./adapters/generic": {
+      "types": "./dist/adapters/generic.d.ts",
+      "import": "./dist/adapters/generic.js",
+      "require": "./dist/adapters/generic.cjs"
+    },
+    "./adapters/vscode": {
+      "types": "./dist/adapters/vscode.d.ts",
+      "import": "./dist/adapters/vscode.js",
+      "require": "./dist/adapters/vscode.cjs"
     }
   },
   "scripts": {
