@@ -7,7 +7,7 @@ Complete API documentation for `llm-stream-parser`. All exports are available fr
 ### Root export
 
 ```typescript
-import * from 'llm-stream-parser';
+import * as llmStreamParser from 'llm-stream-parser';
 ```
 
 ### Subpath exports
@@ -108,17 +108,12 @@ export interface XmlStreamFilterOptions {
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
 }
 
-export class XmlStreamFilter {
-  constructor(options?: XmlStreamFilterOptions);
-
+export interface XmlStreamFilter {
   // Write a chunk and get scrubbed output
   write(chunk: string): string;
 
   // Finalize and flush any buffered content
   end(): string;
-
-  // Reset to initial state
-  reset(): void;
 }
 
 export function createXmlStreamFilter(options?: XmlStreamFilterOptions): XmlStreamFilter;
@@ -146,14 +141,12 @@ output.write(final);
 ```typescript
 // Split leading context blocks from content
 function splitLeadingXmlContextBlocks(input: string): {
-  leading: Array<{ tag: string; content: string }>;
+  contextBlocks: string[];
   remaining: string;
 };
 
-// Deduplicate context blocks by tag
-function dedupeXmlContextBlocksByTag(
-  blocks: Array<{ tag: string; content: string }>
-): Array<{ tag: string; content: string }>;
+// Deduplicate context blocks by tag (accepts array of XML block strings)
+function dedupeXmlContextBlocksByTag(blocks: string[]): string[];
 
 // Remove all XML context tags
 function stripXmlContextTags(input: string): string;
@@ -162,8 +155,8 @@ function stripXmlContextTags(input: string): string;
 **Example:**
 
 ```typescript
-const { leading, remaining } = splitLeadingXmlContextBlocks(response);
-const deduplicated = dedupeXmlContextBlocksByTag(leading);
+const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(response);
+const deduplicated = dedupeXmlContextBlocksByTag(contextBlocks);
 const stripped = stripXmlContextTags(remaining);
 ```
 
@@ -186,6 +179,15 @@ export interface XmlToolCall {
 ### Functions
 
 ```typescript
+export interface XmlToolInfo {
+  name: string;
+  description?: string;
+  inputSchema?: {
+    properties?: Record<string, { description?: string; type?: string }>;
+    required?: string[];
+  };
+}
+
 // Extract tool calls from response text
 function extractXmlToolCalls(
   input: string,
@@ -193,7 +195,7 @@ function extractXmlToolCalls(
 ): XmlToolCall[];
 
 // Build system prompt for tool use
-function buildXmlToolSystemPrompt(knownTools: Set<string>): string;
+function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string;
 ```
 
 **Example:**
@@ -207,7 +209,12 @@ for (const call of toolCalls) {
 }
 
 // Generate system prompt for models
-const systemPrompt = buildXmlToolSystemPrompt(new Set(['search', 'edit_file', 'run_tests']));
+const tools: XmlToolInfo[] = [
+  { name: 'search', description: 'Search the web', inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] } },
+  { name: 'edit_file', description: 'Edit a file' },
+  { name: 'run_tests', description: 'Run tests' },
+];
+const systemPrompt = buildXmlToolSystemPrompt(tools);
 ```
 
 ## Structured Output Parsing
@@ -500,16 +507,20 @@ console.log(formatted);
 Utilities for working with markdown content.
 
 ```typescript
-// Append content to markdown blockquote
-function appendToBlockquote(text: string, append: string): string;
+// Prefix text with blockquote marker, conditionally at line start
+function appendToBlockquote(text: string, atLineStart: boolean): string;
 ```
 
 **Example:**
 
 ```typescript
-const md = '> existing quote';
-const updated = appendToBlockquote(md, 'new line');
-// Result: '> existing quote\n> new line'
+// At line start: prefixes the text and each newline with '> '
+const quoted = appendToBlockquote('Hello\nworld', true);
+// Result: '> Hello\n> world'
+
+// Not at line start: just prefixes each newline continuation with '> '
+const continued = appendToBlockquote('Hello\nworld', false);
+// Result: 'Hello\n> world'
 ```
 
 ## Adapters
@@ -571,7 +582,7 @@ All parsers enforce configurable limits to prevent DoS:
 - `maxJsonDepth`: Maximum nesting depth (default: 64)
 - `maxJsonKeys`: Maximum object keys (default: 10,000)
 - `maxInputLength`: Maximum input size (default: 256 KB)
-- `maxXmlNestingDepth`: Maximum XML nesting (default: unlimited)
+- `maxXmlNestingDepth`: Maximum XML nesting (default: 64)
 - `maxToolCallsPerMessage`: Maximum tool calls (default: 64)
 - `maxToolArgumentBytes`: Maximum tool argument size (default: 128 KB)
 

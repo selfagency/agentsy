@@ -111,7 +111,6 @@ for (const call of toolCalls) {
 import { createXmlStreamFilter } from 'llm-stream-parser';
 
 const filter = createXmlStreamFilter({
-  scrubContextTags: true,
   enforcePrivacyTags: true,
 });
 
