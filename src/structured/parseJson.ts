@@ -1,7 +1,12 @@
 export interface ParseJsonOptions {
   selectMostComprehensive?: boolean;
   repairIncomplete?: boolean;
+  maxJsonDepth?: number;
+  maxJsonKeys?: number;
 }
+
+const DEFAULT_MAX_JSON_DEPTH = 64;
+const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function stripCodeFences(text: string): string {
   return text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
@@ -157,14 +162,62 @@ function measureComprehensiveness(value: unknown): number {
   return keyCount * 100 + depth;
 }
 
+function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): boolean {
+  if (maxDepth <= 0 || maxKeys <= 0) {
+    return false;
+  }
+
+  let keyCount = 0;
+  let exceeded = false;
+
+  function walk(node: unknown, depth: number): void {
+    if (exceeded) {
+      return;
+    }
+
+    if (depth > maxDepth) {
+      exceeded = true;
+      return;
+    }
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        walk(item, depth + 1);
+      }
+      return;
+    }
+
+    if (node && typeof node === 'object') {
+      const entries = Object.entries(node as Record<string, unknown>);
+      keyCount += entries.length;
+      if (keyCount > maxKeys) {
+        exceeded = true;
+        return;
+      }
+
+      for (const [, child] of entries) {
+        walk(child, depth + 1);
+      }
+    }
+  }
+
+  walk(value, 1);
+  return exceeded;
+}
+
 export function parseJson(text: string, options: ParseJsonOptions = {}): unknown | null {
   const normalized = stripCodeFences(text);
   const selectMostComprehensive = options.selectMostComprehensive ?? true;
+  const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
+  const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
 
   const parsedValues: unknown[] = [];
   for (const candidate of extractJsonCandidates(normalized)) {
     try {
-      parsedValues.push(JSON.parse(candidate));
+      const parsed = JSON.parse(candidate);
+      if (!exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys)) {
+        parsedValues.push(parsed);
+      }
     } catch {
       // Ignore malformed candidates and continue scanning.
     }
@@ -184,7 +237,8 @@ export function parseJson(text: string, options: ParseJsonOptions = {}): unknown
     const repaired = tryRepairCandidate(normalized);
     if (repaired) {
       try {
-        return JSON.parse(repaired);
+        const parsed = JSON.parse(repaired);
+        return exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys) ? null : parsed;
       } catch {
         return null;
       }

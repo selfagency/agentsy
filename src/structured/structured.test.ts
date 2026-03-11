@@ -21,6 +21,14 @@ describe('parseJson', () => {
     const input = 'prefix {"a":[1,2,3}';
     expect(parseJson(input, { repairIncomplete: true })).toEqual({ a: [1, 2, 3] });
   });
+
+  it('returns null when parsed JSON exceeds maxJsonDepth', () => {
+    expect(parseJson('{"a":{"b":{"c":1}}}', { maxJsonDepth: 3 })).toBeNull();
+  });
+
+  it('returns null when parsed JSON exceeds maxJsonKeys', () => {
+    expect(parseJson('{"a":1,"b":2,"c":3}', { maxJsonKeys: 2 })).toBeNull();
+  });
 });
 
 describe('validateJsonSchema', () => {
@@ -54,6 +62,21 @@ describe('validateJsonSchema', () => {
     if (!result.success) {
       expect(result.errors).toContain('$.count: expected integer, got string');
       expect(result.errors).toContain('$.extra: additional property is not allowed');
+    }
+  });
+
+  it('returns deterministic errors when JSON limits are exceeded', () => {
+    const depthExceeded = validateJsonSchema('{"a":{"b":{"c":1}}}', { type: 'object' }, { maxJsonDepth: 3 });
+    const keysExceeded = validateJsonSchema('{"a":1,"b":2,"c":3}', { type: 'object' }, { maxJsonKeys: 2 });
+
+    expect(depthExceeded.success).toBe(false);
+    if (!depthExceeded.success) {
+      expect(depthExceeded.errors).toEqual(['$: JSON depth exceeds maxJsonDepth (3)']);
+    }
+
+    expect(keysExceeded.success).toBe(false);
+    if (!keysExceeded.success) {
+      expect(keysExceeded.errors).toEqual(['$: JSON key count exceeds maxJsonKeys (2)']);
     }
   });
 });

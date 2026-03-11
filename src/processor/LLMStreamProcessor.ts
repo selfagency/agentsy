@@ -23,6 +23,7 @@ export interface ProcessorOptions {
   maxInputLength?: number;
   maxToolCallsPerMessage?: number;
   maxToolArgumentBytes?: number;
+  maxXmlNestingDepth?: number;
 }
 
 export type OutputPart =
@@ -200,6 +201,7 @@ export class LLMStreamProcessor {
       extraScrubTags?: Set<string>;
       overrideScrubTags?: Set<string>;
       enforcePrivacyTags?: boolean;
+      maxXmlNestingDepth?: number;
       onWarning?: (message: string, context?: Record<string, unknown>) => void;
     } = {};
     if (this.options.enforcePrivacyTags !== undefined) {
@@ -207,6 +209,9 @@ export class LLMStreamProcessor {
     }
     if (this.options.onWarning !== undefined) {
       filterOptions.onWarning = this.options.onWarning;
+    }
+    if (this.options.maxXmlNestingDepth !== undefined) {
+      filterOptions.maxXmlNestingDepth = this.options.maxXmlNestingDepth;
     }
     if (this.options.extraScrubTags !== undefined) {
       filterOptions.extraScrubTags = this.options.extraScrubTags;

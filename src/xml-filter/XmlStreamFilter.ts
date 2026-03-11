@@ -16,8 +16,11 @@ export interface CreateXmlStreamFilterOptions {
   extraScrubTags?: Set<string>;
   overrideScrubTags?: Set<string>;
   enforcePrivacyTags?: boolean;
+  maxXmlNestingDepth?: number;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
 }
+
+const DEFAULT_MAX_XML_NESTING_DEPTH = 64;
 
 function resolveScrubTagSet(options: CreateXmlStreamFilterOptions): Set<string> {
   if (options.overrideScrubTags) {
@@ -47,11 +50,29 @@ function resolveScrubTagSet(options: CreateXmlStreamFilterOptions): Set<string> 
 export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}): XmlStreamFilter {
   const scrubTagNames = resolveScrubTagSet(options);
   const parser = new Saxophone();
+  const maxXmlNestingDepth = options.maxXmlNestingDepth ?? DEFAULT_MAX_XML_NESTING_DEPTH;
 
   let skipDepth = 0;
+  let parseDepth = 0;
+  let overflowStartDepth: number | null = null;
   let buffer = '';
 
   parser.on('tagopen', (tag: SaxophoneTag) => {
+    if (!tag.isSelfClosing) {
+      parseDepth++;
+      if (maxXmlNestingDepth > 0 && overflowStartDepth === null && parseDepth > maxXmlNestingDepth) {
+        overflowStartDepth = parseDepth;
+        options.onWarning?.('XML nesting depth exceeded maxXmlNestingDepth; suppressing nested segment.', {
+          maxXmlNestingDepth,
+          depth: parseDepth,
+        });
+      }
+    }
+
+    if (overflowStartDepth !== null) {
+      return;
+    }
+
     if (scrubTagNames.has(tag.name)) {
       if (!tag.isSelfClosing) {
         skipDepth++;
@@ -62,6 +83,17 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
   });
 
   parser.on('tagclose', (tag: SaxophoneTag) => {
+    if (overflowStartDepth !== null) {
+      if (parseDepth > 0) {
+        parseDepth--;
+      }
+
+      if (parseDepth < overflowStartDepth) {
+        overflowStartDepth = null;
+      }
+      return;
+    }
+
     if (scrubTagNames.has(tag.name)) {
       if (skipDepth > 0) {
         skipDepth--;
@@ -69,22 +101,26 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
     } else if (skipDepth === 0) {
       buffer += `</${tag.name}>`;
     }
+
+    if (parseDepth > 0) {
+      parseDepth--;
+    }
   });
 
   parser.on('text', (text: SaxophoneText) => {
-    if (skipDepth === 0) {
+    if (overflowStartDepth === null && skipDepth === 0) {
       buffer += text.contents;
     }
   });
 
   parser.on('cdata', (cdata: SaxophoneCData) => {
-    if (skipDepth === 0) {
+    if (overflowStartDepth === null && skipDepth === 0) {
       buffer += `<![CDATA[${cdata.contents}]]>`;
     }
   });
 
   parser.on('comment', (comment: SaxophoneComment) => {
-    if (skipDepth === 0) {
+    if (overflowStartDepth === null && skipDepth === 0) {
       buffer += `<!--${comment.contents}-->`;
     }
   });

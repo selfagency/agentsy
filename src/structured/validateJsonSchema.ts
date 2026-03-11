@@ -2,6 +2,9 @@ import { parseJson, type ParseJsonOptions } from './parseJson.js';
 
 type JsonSchema = Record<string, unknown>;
 
+const DEFAULT_MAX_JSON_DEPTH = 64;
+const DEFAULT_MAX_JSON_KEYS = 10_000;
+
 function typeOf(value: unknown): string {
   if (Array.isArray(value)) return 'array';
   if (value === null) return 'null';
@@ -107,9 +110,54 @@ export function validateJsonSchema<T = unknown>(
   schema: Record<string, unknown>,
   options: ParseJsonOptions = {},
 ): { success: true; data: T } | { success: false; errors: string[] } {
-  const parsed = parseJson(text, options);
+  const parsed = parseJson(text, {
+    ...options,
+    maxJsonDepth: 0,
+    maxJsonKeys: 0,
+  });
   if (parsed === null) {
     return { success: false, errors: ['$: no valid JSON found in input'] };
+  }
+
+  const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
+  const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
+  const limitErrors: string[] = [];
+
+  let keyCount = 0;
+  function walkForLimits(node: unknown, depth: number): void {
+    if (limitErrors.length > 0) {
+      return;
+    }
+
+    if (maxJsonDepth > 0 && depth > maxJsonDepth) {
+      limitErrors.push(`$: JSON depth exceeds maxJsonDepth (${maxJsonDepth})`);
+      return;
+    }
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        walkForLimits(item, depth + 1);
+      }
+      return;
+    }
+
+    if (node && typeof node === 'object') {
+      const entries = Object.entries(node as Record<string, unknown>);
+      keyCount += entries.length;
+      if (maxJsonKeys > 0 && keyCount > maxJsonKeys) {
+        limitErrors.push(`$: JSON key count exceeds maxJsonKeys (${maxJsonKeys})`);
+        return;
+      }
+
+      for (const [, child] of entries) {
+        walkForLimits(child, depth + 1);
+      }
+    }
+  }
+
+  walkForLimits(parsed, 1);
+  if (limitErrors.length > 0) {
+    return { success: false, errors: limitErrors };
   }
 
   const errors: string[] = [];
