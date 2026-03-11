@@ -15,6 +15,7 @@ export interface XmlStreamFilter {
 export interface CreateXmlStreamFilterOptions {
   extraScrubTags?: Set<string>;
   overrideScrubTags?: Set<string>;
+  onError?: (message: string) => void;
 }
 
 function resolveScrubTagSet(options: CreateXmlStreamFilterOptions): Set<string> {
@@ -70,8 +71,10 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
     }
   });
 
-  parser.on('error', () => {
-    // Partial XML and malformed streaming fragments are expected.
+  parser.on('error', (err: Error) => {
+    if (options.onError) {
+      options.onError(err.message ?? 'Unknown XML parse error');
+    }
   });
 
   return {
@@ -83,7 +86,9 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
     },
     end(): string {
       parser.end();
-      return buffer;
+      const delta = buffer;
+      buffer = '';
+      return delta;
     },
   };
 }

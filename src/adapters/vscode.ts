@@ -61,19 +61,19 @@ export function createVSCodeCopilotAdapter(options: {
 }
 
 function appendToBlockquote(text: string, atLineStart: boolean): string {
-  let out = '';
+  const parts: string[] = [];
   let isLineStart = atLineStart;
 
   for (const char of text) {
     if (isLineStart) {
-      out += '> ';
+      parts.push('> ');
       isLineStart = false;
     }
-    out += char;
+    parts.push(char);
     if (char === '\n') {
       isLineStart = true;
     }
   }
 
-  return out;
+  return parts.join('');
 }
