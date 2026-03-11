@@ -4,10 +4,13 @@ import {
   LLMStreamProcessor,
   ThinkingParser,
   appendToBlockquote,
+  buildXmlToolSystemPrompt,
   createVSCodeCopilotAdapter,
   createXmlStreamFilter,
   extractXmlToolCalls,
+  formatXmlLikeResponseForDisplay,
   processStream,
+  sanitizeNonStreamingModelOutput,
 } from './index.js';
 
 describe('scaffold exports', () => {
@@ -31,6 +34,9 @@ describe('scaffold exports', () => {
     expect(appendToBlockquote('hello', true)).toBe('> hello');
 
     expect(typeof processStream).toBe('function');
+    expect(typeof buildXmlToolSystemPrompt).toBe('function');
+    expect(typeof sanitizeNonStreamingModelOutput).toBe('function');
+    expect(typeof formatXmlLikeResponseForDisplay).toBe('function');
 
     const mockStream = { markdown: (_text: string) => {} };
     const mockOnToolCall = () => {};

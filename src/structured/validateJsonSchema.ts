@@ -2,6 +2,20 @@ import { parseJson, DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, type ParseJso
 
 type JsonSchema = Record<string, unknown>;
 
+export type JsonSchemaValidator = (
+  data: unknown,
+  schema: Record<string, unknown>,
+) =>
+  | boolean
+  | {
+      valid: boolean;
+      errors?: string[];
+    };
+
+export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
+  validator?: JsonSchemaValidator;
+}
+
 function typeOf(value: unknown): string {
   if (Array.isArray(value)) return 'array';
   if (value === null) return 'null';
@@ -105,7 +119,7 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
 export function validateJsonSchema<T = unknown>(
   text: string,
   schema: Record<string, unknown>,
-  options: ParseJsonOptions = {},
+  options: ValidateJsonSchemaOptions = {},
 ): { success: true; data: T } | { success: false; errors: string[] } {
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
   const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
@@ -173,6 +187,25 @@ export function validateJsonSchema<T = unknown>(
 
   const errors: string[] = [];
   validateNode(parsed, schema, '$', errors);
+
+  if (options.validator) {
+    try {
+      const validated = options.validator(parsed, schema);
+      if (typeof validated === 'boolean') {
+        if (!validated) {
+          return { success: false, errors: ['$: external validator failed'] };
+        }
+      } else if (!validated.valid) {
+        return {
+          success: false,
+          errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
+        };
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { success: false, errors: [`$: external validator threw: ${message}`] };
+    }
+  }
 
   if (errors.length > 0) {
     return { success: false, errors };

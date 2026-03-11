@@ -3,6 +3,16 @@ export interface ThinkingParserOptions {
   closingTag?: string;
 }
 
+export type ThinkingTagPair = readonly [openingTag: string, closingTag: string];
+
+const BUILTIN_THINKING_TAG_MAP = new Map<string, ThinkingTagPair>([
+  ['deepseek', ['<think>', '</think>']],
+  ['qwen', ['<think>', '</think>']],
+  ['llama', ['<think>', '</think>']],
+  ['mistral', ['<think>', '</think>']],
+  ['granite', ['<|thinking|>', '</|thinking|>']],
+]);
+
 type ThinkingState =
   | 'lookingForOpening'
   | 'thinkingStartedEatingWhitespace'
@@ -20,6 +30,29 @@ export class ThinkingParser {
   public constructor(options: ThinkingParserOptions = {}) {
     this.openingTag = options.openingTag ?? '<think>';
     this.closingTag = options.closingTag ?? '</think>';
+  }
+
+  public static forModel(modelId: string, thinkingTagMap?: Map<string, ThinkingTagPair>): ThinkingParser {
+    const combinedMap = new Map<string, ThinkingTagPair>(BUILTIN_THINKING_TAG_MAP);
+    if (thinkingTagMap) {
+      for (const [key, pair] of thinkingTagMap.entries()) {
+        combinedMap.set(key, pair);
+      }
+    }
+
+    const normalizedModelId = modelId.toLowerCase();
+    const exact = combinedMap.get(normalizedModelId);
+    if (exact) {
+      return new ThinkingParser({ openingTag: exact[0], closingTag: exact[1] });
+    }
+
+    for (const [key, pair] of combinedMap.entries()) {
+      if (normalizedModelId.includes(key.toLowerCase())) {
+        return new ThinkingParser({ openingTag: pair[0], closingTag: pair[1] });
+      }
+    }
+
+    return new ThinkingParser();
   }
 
   public addContent(chunk: string): [thinkingContent: string, regularContent: string] {

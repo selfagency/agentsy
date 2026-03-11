@@ -65,6 +65,7 @@ describe('validateJsonSchema', () => {
     }
   });
 
+<<<<<<< feat/tqpf-harden-privacy-defaults-limit-enforcement
   it('returns deterministic errors when JSON limits are exceeded', () => {
     const depthExceeded = validateJsonSchema('{"a":{"b":{"c":1}}}', { type: 'object' }, { maxJsonDepth: 3 });
     const keysExceeded = validateJsonSchema('{"a":1,"b":2,"c":3}', { type: 'object' }, { maxJsonKeys: 2 });
@@ -77,6 +78,20 @@ describe('validateJsonSchema', () => {
     expect(keysExceeded.success).toBe(false);
     if (!keysExceeded.success) {
       expect(keysExceeded.errors).toEqual(['$: JSON key count exceeds maxJsonKeys (2)']);
+=======
+  it('uses external validator adapter when provided', () => {
+    const result = validateJsonSchema(
+      '{"name":"Ada"}',
+      { type: 'object' },
+      {
+        validator: () => ({ valid: false, errors: ['$: adapter rejected payload'] }),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors).toEqual(['$: adapter rejected payload']);
+>>>>>>> main
     }
   });
 });

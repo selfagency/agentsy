@@ -8,6 +8,7 @@ export default defineConfig({
     'src/tool-calls/index.ts',
     'src/context/index.ts',
     'src/structured/index.ts',
+    'src/formatting/index.ts',
     'src/processor/index.ts',
     'src/markdown/index.ts',
     'src/adapters/index.ts',
