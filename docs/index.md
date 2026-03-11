@@ -55,7 +55,7 @@ const toolCalls = extractXmlToolCalls(response, new Set(['send_message', 'search
 - [Getting Started](/getting-started) - Setup and basic examples
 - [API Reference](/api) - Complete API documentation
 - [Developer Guide](/developers/) - Local development and contribution guide
-- [Integration Examples](/developers/integration-opilot) - Integration patterns
+- [Integration Examples](/developers/integration-copilot) - Integration patterns
 
 ## License
 

@@ -314,4 +314,4 @@ task compile
 
 - [API Reference](/api) - Complete API documentation
 - [Getting Started](/getting-started) - Usage examples
-- [Integration Guide](/developers/integration-opilot) - Integration patterns
+- [Integration Guide](/developers/integration-copilot) - Integration patterns

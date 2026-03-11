@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-ihth
 title: Audit docs/api.md vs actual exports
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-11T22:45:07Z
-updated_at: 2026-03-11T22:49:03Z
+updated_at: 2026-03-11T23:09:40Z
 parent: llm-stream-parser-bika
 ---
 

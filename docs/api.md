@@ -17,7 +17,7 @@ import { ThinkingParser } from 'llm-stream-parser/thinking';
 import { createXmlStreamFilter, XmlStreamFilter } from 'llm-stream-parser/xml-filter';
 import { extractXmlToolCalls, buildXmlToolSystemPrompt } from 'llm-stream-parser/tool-calls';
 import { splitLeadingXmlContextBlocks, dedupeXmlContextBlocksByTag, stripXmlContextTags } from 'llm-stream-parser/context';
-import { parseJson, validateJsonSchema, buildFormatInstructions, buildRepairPrompt, pipe } from 'llm-stream-parser/structured';
+import { parseJson, validateJsonSchema, buildFormatInstructions, buildRepairPrompt, pipe, streamJson, zodToJsonSchema, validateWithZod, repairWithLLM } from 'llm-stream-parser/structured';
 import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from 'llm-stream-parser/formatting';
 import { LLMStreamProcessor } from 'llm-stream-parser/processor';
 import { appendToBlockquote } from 'llm-stream-parser/markdown';
@@ -259,6 +259,7 @@ const limitedData = parseJson(text, {
 ```typescript
 export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
   validator?: JsonSchemaValidator;
+  validatorTimeoutMs?: number;  // Default: 5000
 }
 
 function validateJsonSchema<T = unknown>(
@@ -301,8 +302,8 @@ Generate instructions for models to format output according to schema.
 ```typescript
 function buildRepairPrompt(options: {
   failedOutput: string;
-  error: string | Error;
-  schema: Record<string, unknown>;
+  error: string;
+  schema?: Record<string, unknown>;
   originalPrompt?: string;
 }): string;
 ```
@@ -346,6 +347,102 @@ if (!result.success) throw new Error('Validation failed');
 const data = result.data;
 ```
 
+### streamJson
+
+```typescript
+export interface StreamJsonOptions extends ParseJsonOptions {
+  emitPartials?: boolean;  // Default: true
+}
+
+export interface StreamJsonResult<T = unknown> {
+  value: T;
+  isPartial: boolean;
+}
+
+async function* streamJson<T = unknown>(
+  source: AsyncIterable<string>,
+  options?: StreamJsonOptions,
+): AsyncGenerator<StreamJsonResult<T>>;
+```
+
+Incrementally parse JSON from a text stream, yielding partial and complete objects as chunks arrive. Only emits when the parsed value changes.
+
+**Example:**
+
+```typescript
+import { streamJson } from 'llm-stream-parser/structured';
+
+for await (const result of streamJson<{ name: string }>(textStream)) {
+  console.log(result.isPartial ? '(partial)' : '(complete)', result.value);
+}
+```
+
+### repairWithLLM
+
+```typescript
+export interface AutoRepairOptions extends ValidateJsonSchemaOptions {
+  maxAttempts?: number;      // Default: 3
+  originalPrompt?: string;
+}
+
+export interface AutoRepairResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  errors?: string[];
+  attempts: number;
+}
+
+async function repairWithLLM<T = unknown>(
+  initialOutput: string,
+  schema: Record<string, unknown>,
+  callLLM: (repairPrompt: string) => Promise<string>,
+  options?: AutoRepairOptions,
+): Promise<AutoRepairResult<T>>;
+```
+
+Automatically retries parsing and validation by sending repair prompts to the LLM. Follows the LangChain `OutputFixingParser` / `RetryParser` pattern.
+
+**Example:**
+
+```typescript
+import { repairWithLLM } from 'llm-stream-parser/structured';
+
+const result = await repairWithLLM(
+  llmOutput,
+  schema,
+  async (prompt) => await callModel(prompt),
+  { maxAttempts: 3, originalPrompt: 'Return a person object' },
+);
+
+if (result.success) {
+  console.log('Parsed:', result.data);
+}
+```
+
+### Zod Integration
+
+Optional Zod schema support. Requires `zod` and `zod-to-json-schema` as peer dependencies.
+
+```typescript
+export async function zodToJsonSchema(zodSchema: ZodLike): Promise<Record<string, unknown>>;
+
+export async function validateWithZod<T = unknown>(
+  text: string,
+  zodSchema: ZodLike,
+  options?: ValidateJsonSchemaOptions,
+): Promise<{ success: true; data: T } | { success: false; errors: string[] }>;
+```
+
+**Example:**
+
+```typescript
+import { z } from 'zod';
+import { validateWithZod } from 'llm-stream-parser/structured';
+
+const PersonSchema = z.object({ name: z.string(), age: z.number() });
+const result = await validateWithZod(response, PersonSchema);
+```
+
 ## Stream Processing
 
 > **Subpath**: `llm-stream-parser/processor`
@@ -377,7 +474,8 @@ export interface ProcessorOptions {
   maxInputLength?: number;               // Default: 256 KB
   maxToolCallsPerMessage?: number;       // Default: 64
   maxToolArgumentBytes?: number;         // Default: 128 KB
-  maxXmlNestingDepth?: number;
+  maxWarnings?: number;                  // Default: 100
+  maxXmlNestingDepth?: number;           // Default: 64
 }
 
 export interface ProcessedOutput {
@@ -507,20 +605,16 @@ console.log(formatted);
 Utilities for working with markdown content.
 
 ```typescript
-// Prefix text with blockquote marker, conditionally at line start
+// Format text as a markdown blockquote, prefixing lines with '> '
 function appendToBlockquote(text: string, atLineStart: boolean): string;
 ```
 
 **Example:**
 
 ```typescript
-// At line start: prefixes the text and each newline with '> '
-const quoted = appendToBlockquote('Hello\nworld', true);
-// Result: '> Hello\n> world'
-
-// Not at line start: just prefixes each newline continuation with '> '
-const continued = appendToBlockquote('Hello\nworld', false);
-// Result: 'Hello\n> world'
+// atLineStart=true adds '> ' prefix at the beginning
+const quoted = appendToBlockquote('some text\nmore text', true);
+// Result: '> some text\n> more text'
 ```
 
 ## Adapters
@@ -548,6 +642,45 @@ for await (const output of processStream(apiStream, options)) {
   console.log('Content:', output.content);
   console.log('Tool calls:', output.toolCalls);
 }
+```
+
+### Callback-Based Adapter
+
+```typescript
+export interface GenericAdapterCallbacks {
+  onThinking?: (text: string) => void | Promise<void>;
+  onContent?: (text: string) => void | Promise<void>;
+  onToolCall?: (call: XmlToolCall) => void | Promise<void>;
+  onDone?: () => void | Promise<void>;
+}
+
+export interface GenericAdapterOptions extends ProcessorOptions {
+  showThinking?: boolean;  // Default: true
+}
+
+function createGenericAdapter(
+  callbacks: GenericAdapterCallbacks,
+  options?: GenericAdapterOptions,
+): { write(chunk: StreamChunk): Promise<void>; end(): Promise<void> };
+```
+
+Environment-agnostic callback adapter. Use for HTTP SSE, WebSocket, CLI, or any non-VS Code environment.
+
+**Example:**
+
+```typescript
+import { createGenericAdapter } from 'llm-stream-parser/adapters';
+
+const adapter = createGenericAdapter({
+  onContent: (text) => process.stdout.write(text),
+  onToolCall: (call) => handleTool(call),
+  onDone: () => console.log('\n[Done]'),
+});
+
+for await (const chunk of apiStream) {
+  await adapter.write(chunk);
+}
+await adapter.end();
 ```
 
 ## Error Handling
@@ -583,12 +716,17 @@ All parsers enforce configurable limits to prevent DoS:
 - `maxJsonKeys`: Maximum object keys (default: 10,000)
 - `maxInputLength`: Maximum input size (default: 256 KB)
 - `maxXmlNestingDepth`: Maximum XML nesting (default: 64)
+- `maxWarnings`: Maximum warnings emitted per processor lifetime (default: 100)
 - `maxToolCallsPerMessage`: Maximum tool calls (default: 64)
 - `maxToolArgumentBytes`: Maximum tool argument size (default: 128 KB)
 
+### ReDoS Protection
+
+Schema regex patterns longer than 1024 characters are rejected during validation to prevent Regular Expression Denial of Service attacks. This applies to `pattern` properties in JSON Schema validated via `validateJsonSchema`.
+
 ### Privacy
 
-Context scrubbing is enabled by default:
+Context scrubbing is enabled by default. Privacy-sensitive tags are always enforced even when `overrideScrubTags` is provided (unless `enforcePrivacyTags` is set to `false`). A warning is emitted when an unsafe override is corrected.
 
 ```typescript
 const processor = new LLMStreamProcessor({

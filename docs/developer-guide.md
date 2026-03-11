@@ -57,6 +57,34 @@ Primary tasks:
   - JSON depth/key limits
 - Add targeted unit tests beside source modules in `src/**`.
 
+## Known Edge Cases & Limitations
+
+### ThinkingParser
+
+- **Multiple thinking blocks**: Supported. When a model emits `<think>A</think>text<think>B</think>`, both blocks are extracted. Content between blocks passes through as regular content.
+- **Nested thinking tags**: Supported via depth tracking. `<think>outer<think>inner</think></think>` correctly tracks nesting depth and waits for the outermost closing tag.
+- **Tag names are configurable**: Use `ThinkingParser.forModel(modelId)` for automatic detection, or pass custom `openingTag`/`closingTag`.
+
+### appendToBlockquote
+
+- **CRLF handling**: Works correctly with both LF and CRLF line endings. The carriage return in CRLF is preserved; only the newline character is used as the split point for inserting `>` prefixes.
+
+### LLMStreamProcessor
+
+- **Lifecycle**: Call `reset()` between conversations when reusing a processor. After `flush()`, the processor's `doneEmitted` flag prevents further emissions until `reset()` is called.
+- **Warning rate limiting**: After `maxWarnings` (default: 100) warnings are emitted, subsequent warnings are silently dropped. Call `reset()` to clear the counter.
+
+### validateJsonSchema
+
+- **Regex patterns**: Patterns longer than 1024 characters are rejected to prevent ReDoS. This is a security measure, not a schema limitation.
+- **External validators**: The `validatorTimeoutMs` option (default: 5000ms) only applies to synchronous validators. Async validators returning Promises are not supported and will be treated as truthy.
+- **Built-in validation**: The built-in validator covers `type`, `enum`, `required`, `properties`, `additionalProperties`, `items`, `minItems`, `maxItems`, `minimum`, `maximum`, and `pattern`. Complex schemas (e.g., `oneOf`, `allOf`, `$ref`) require an external validator adapter.
+
+### XmlStreamFilter
+
+- **Privacy tags are always enforced** by default, even when `overrideScrubTags` is provided. Set `enforcePrivacyTags: false` to override (not recommended).
+- **Max nesting depth**: Defaults to 64. Deeply nested XML beyond this limit is treated as plain text.
+
 ## Release flow
 
 The package uses scripted release automation:

@@ -16,7 +16,7 @@ export default {
       '/developers/': [
         { text: 'Developer Guide', link: '/developers/' },
         { text: 'Contributing', link: '/developers/contributing' },
-        { text: 'Integration Guide', link: '/developers/integration-opilot' }
+        { text: 'Integration Guide', link: '/developers/integration-copilot' }
       ]
     },
     socialLinks: [{ icon: 'github', link: 'https://github.com/selfagency/llm-stream-parser' }]
