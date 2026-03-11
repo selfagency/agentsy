@@ -5,8 +5,9 @@ status: in-progress
 type: feature
 priority: high
 branch: feat/zkyu-extract-core-parser-primitives
+pr: 2
 created_at: 2026-03-11T17:09:32Z
-updated_at: 2026-03-11T17:26:22Z
+updated_at: 2026-03-11T17:38:48Z
 parent: llm-stream-parser-j0gs
 ---
 
