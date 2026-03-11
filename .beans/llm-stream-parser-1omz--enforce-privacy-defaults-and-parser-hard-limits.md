@@ -5,6 +5,7 @@ status: completed
 type: task
 priority: high
 branch: feat/1omz-enforce-privacy-defaults
+pr: 13
 created_at: 2026-03-11T17:09:45Z
 updated_at: 2026-03-11T17:09:53Z
 parent: llm-stream-parser-tqpf
