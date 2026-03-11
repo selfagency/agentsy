@@ -7,6 +7,8 @@ priority: high
 created_at: 2026-03-11T17:09:32Z
 updated_at: 2026-03-11T20:51:52Z
 parent: llm-stream-parser-kfsw
+branch: feat/tqpf-harden-privacy-defaults-limit-enforcement
+pr: 18
 ---
 
 Enforce default privacy scrub tags, override safeguards, hard limits, and warning telemetry for adversarial or oversized outputs.
