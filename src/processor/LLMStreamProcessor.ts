@@ -1,4 +1,4 @@
-import { ThinkingParser } from '../thinking/ThinkingParser.js';
+import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
@@ -17,8 +17,10 @@ export interface ProcessorOptions {
   overrideScrubTags?: Set<string>;
   enforcePrivacyTags?: boolean;
   knownTools?: Set<string>;
+  modelId?: string;
   thinkingOpenTag?: string;
   thinkingCloseTag?: string;
+  thinkingTagMap?: Map<string, ThinkingTagPair>;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
   maxInputLength?: number;
   maxToolCallsPerMessage?: number;
@@ -188,7 +190,15 @@ export class LLMStreamProcessor {
       parserOptions.closingTag = this.options.thinkingCloseTag;
     }
 
-    return new ThinkingParser(parserOptions);
+    if (parserOptions.openingTag !== undefined || parserOptions.closingTag !== undefined) {
+      return new ThinkingParser(parserOptions);
+    }
+
+    if (this.options.modelId !== undefined) {
+      return ThinkingParser.forModel(this.options.modelId, this.options.thinkingTagMap);
+    }
+
+    return new ThinkingParser();
   }
 
   private createXmlFilter(): XmlStreamFilter | null {
