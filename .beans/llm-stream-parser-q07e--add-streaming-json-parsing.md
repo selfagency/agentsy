@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-q07e
 title: Add streaming JSON parsing
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-03-11T22:44:50Z
-updated_at: 2026-03-11T22:48:57Z
+updated_at: 2026-03-11T23:00:33Z
 parent: llm-stream-parser-kuah
 ---
 
