@@ -1,13 +1,12 @@
 ---
 # llm-stream-parser-tcfp
 title: Integrate parser package in Opilot with rollout gates
-status: in-progress
+status: todo
 type: task
 priority: high
 created_at: 2026-03-11T17:09:45Z
-updated_at: 2026-03-11T21:25:44Z
+updated_at: 2026-03-11T21:27:40Z
 parent: llm-stream-parser-n4wg
-branch: feat/tcfp-integrate-parser-package-rollout-main
 blocked_by:
     - llm-stream-parser-hb9y
     - llm-stream-parser-wh4j
