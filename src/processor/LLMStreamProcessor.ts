@@ -1,6 +1,6 @@
 import { ThinkingParser } from '../thinking/ThinkingParser.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
-import { createXmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
+import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 
 import type { AccumulatedMessage, ProcessedOutput, ProcessorOptions, StreamChunk, StreamEventMap } from './types.js';
 
@@ -11,7 +11,7 @@ export class LLMStreamProcessor {
     Omit<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags' | 'onWarning'>;
 
   private readonly _thinkingParser: ThinkingParser;
-  private readonly _xmlFilter = createXmlStreamFilter();
+  private _xmlFilter: XmlStreamFilter;
   private readonly _listeners: { [K in keyof StreamEventMap]: Set<StreamEventMap[K]> } = {
     text: new Set(),
     thinking: new Set(),
@@ -41,6 +41,7 @@ export class LLMStreamProcessor {
     }
 
     this._thinkingParser = new ThinkingParser(thinkingOptions);
+    this._xmlFilter = this._createXmlFilter();
   }
 
   public on<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this {
@@ -140,6 +141,7 @@ export class LLMStreamProcessor {
 
   public flush(): ProcessedOutput {
     const contentDelta = this._options.scrubContextTags ? this._xmlFilter.end() : '';
+    this._xmlFilter = this._createXmlFilter();
 
     if (contentDelta) {
       this._accumulatedContent += contentDelta;
@@ -157,6 +159,7 @@ export class LLMStreamProcessor {
 
   public reset(): void {
     this._thinkingParser.reset();
+    this._xmlFilter = this._createXmlFilter();
     this._accumulatedThinking = '';
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
@@ -172,6 +175,21 @@ export class LLMStreamProcessor {
       content: this._accumulatedContent,
       toolCalls: [...this._accumulatedToolCalls],
     };
+  }
+
+  private _createXmlFilter(): XmlStreamFilter {
+    return createXmlStreamFilter({
+      ...(this._options.extraScrubTags !== undefined && { extraScrubTags: this._options.extraScrubTags }),
+      ...(this._options.overrideScrubTags !== undefined && { overrideScrubTags: this._options.overrideScrubTags }),
+      onError: (message) => {
+        this._emitWarning(message);
+      },
+    });
+  }
+
+  private _emitWarning(message: string, context?: Record<string, unknown>): void {
+    this._options.onWarning(message, context);
+    this._emit('warning', message, context);
   }
 
   private _emit<K extends keyof StreamEventMap>(event: K, ...args: unknown[]): void {
