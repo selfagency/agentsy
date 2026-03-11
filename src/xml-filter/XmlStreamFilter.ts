@@ -5,7 +5,7 @@ import Saxophone, {
   type SaxophoneText,
 } from 'saxophone';
 
-import { DEFAULT_SCRUB_TAG_NAMES } from './tagLists.js';
+import { DEFAULT_SCRUB_TAG_NAMES, PRIVACY_TAG_NAMES } from './tagLists.js';
 
 export interface XmlStreamFilter {
   write(chunk: string): string;
@@ -15,11 +15,26 @@ export interface XmlStreamFilter {
 export interface CreateXmlStreamFilterOptions {
   extraScrubTags?: Set<string>;
   overrideScrubTags?: Set<string>;
+  enforcePrivacyTags?: boolean;
+  onWarning?: (message: string, context?: Record<string, unknown>) => void;
 }
 
 function resolveScrubTagSet(options: CreateXmlStreamFilterOptions): Set<string> {
   if (options.overrideScrubTags) {
-    return new Set(options.overrideScrubTags);
+    const override = new Set(options.overrideScrubTags);
+    const enforcePrivacyTags = options.enforcePrivacyTags ?? true;
+
+    const missingPrivacyTags = [...PRIVACY_TAG_NAMES].filter(tag => !override.has(tag));
+    if (missingPrivacyTags.length > 0 && enforcePrivacyTags) {
+      for (const tag of missingPrivacyTags) {
+        override.add(tag);
+      }
+      options.onWarning?.('Privacy-sensitive tags omitted from scrub override; enforcing defaults.', {
+        missingPrivacyTags,
+      });
+    }
+
+    return override;
   }
 
   if (options.extraScrubTags) {
