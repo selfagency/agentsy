@@ -7,9 +7,19 @@ export interface XmlToolInfo {
   };
 }
 
+const VALID_TOOL_NAME = /^[A-Za-z_][A-Za-z0-9_:-]*$/;
+
 export function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string {
   if (!tools.length) {
     return '';
+  }
+
+  for (const tool of tools) {
+    if (!VALID_TOOL_NAME.test(tool.name)) {
+      throw new Error(
+        `Invalid tool name "${tool.name}": tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`,
+      );
+    }
   }
 
   const toolDescriptions = tools.map(tool => {
