@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-p7jr
 title: Enhance generic adapter pattern
-status: todo
+status: completed
 type: feature
 priority: low
 created_at: 2026-03-11T22:45:02Z
-updated_at: 2026-03-11T22:48:57Z
+updated_at: 2026-03-11T23:09:18Z
 parent: llm-stream-parser-kuah
 ---
 
