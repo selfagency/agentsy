@@ -6,12 +6,17 @@ const REGEX_CACHE_MAX = 256;
 const regexCache = new Map<string, RegExp>();
 
 function getCachedRegex(pattern: string): RegExp {
-  let regex = regexCache.get(pattern);
-  if (regex) return regex;
+  const existing = regexCache.get(pattern);
+  if (existing !== undefined) {
+    // Refresh insertion order for true LRU behavior
+    regexCache.delete(pattern);
+    regexCache.set(pattern, existing);
+    return existing;
+  }
 
-  regex = new RegExp(pattern);
+  const regex = new RegExp(pattern);
   if (regexCache.size >= REGEX_CACHE_MAX) {
-    // Evict oldest entry (first inserted)
+    // Evict least-recently-used entry (first in Map = oldest access)
     const firstKey = regexCache.keys().next().value;
     if (firstKey !== undefined) regexCache.delete(firstKey);
   }
