@@ -48,6 +48,28 @@ describe('LLMStreamProcessor', () => {
     });
   });
 
+  it('maps native tool_calls into output toolCalls', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: false, scrubContextTags: false });
+    const out = processor.process({
+      tool_calls: [
+        {
+          function: {
+            name: 'read_file',
+            arguments: { path: 'a.ts' },
+          },
+        },
+      ],
+    });
+
+    expect(out.toolCalls).toEqual([
+      {
+        name: 'read_file',
+        parameters: { path: 'a.ts' },
+        format: 'json-wrapped',
+      },
+    ]);
+  });
+
   it('emits events for text/thinking/tool_call/done', () => {
     const processor = new LLMStreamProcessor({ knownTools: new Set(['search_files']) });
     const onText = vi.fn();
@@ -71,5 +93,43 @@ describe('LLMStreamProcessor', () => {
 
     expect(out.done).toBe(true);
     expect(out.content).toBe('abc');
+  });
+
+  it('off() unsubscribes listeners', () => {
+    const processor = new LLMStreamProcessor();
+    const onText = vi.fn();
+    processor.on('text', onText);
+    processor.off('text', onText);
+
+    processor.process({ content: 'hello' });
+    processor.flush();
+
+    expect(onText).not.toHaveBeenCalled();
+  });
+
+  it('reset() clears accumulated state and think parser state', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
+
+    processor.process({ content: '<think>reason</think>answer' });
+    expect(processor.accumulatedThinking).toBe('reason');
+    expect(processor.accumulatedMessage.content).toBe('answer');
+
+    processor.reset();
+    expect(processor.accumulatedThinking).toBe('');
+    expect(processor.accumulatedMessage).toEqual({ thinking: '', content: '', toolCalls: [] });
+
+    const out = processor.process({ content: 'plain' });
+    expect(out.thinking).toBe('');
+    expect(out.content).toBe('plain');
+  });
+
+  it('processComplete emits done event even without done flag in input chunk', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: false, scrubContextTags: false });
+    const onDone = vi.fn();
+    processor.on('done', onDone);
+
+    const out = processor.processComplete({ content: 'abc' });
+    expect(out.done).toBe(true);
+    expect(onDone).toHaveBeenCalledTimes(1);
   });
 });

@@ -81,6 +81,19 @@ describe('extractXmlToolCalls', () => {
     ]);
   });
 
+  it('uses parameters object fallback for JSON-wrapped calls', () => {
+    const text = '<toolCall>{"name":"search_files","parameters":{"query":"abc"}}</toolCall>';
+    const result = extractXmlToolCalls(text, new Set(['search_files']));
+
+    expect(result).toEqual([
+      {
+        name: 'search_files',
+        parameters: { query: 'abc' },
+        format: 'json-wrapped',
+      },
+    ]);
+  });
+
   it('returns empty array for malformed wrapped JSON', () => {
     const text = '<toolCall>{"name":</toolCall>';
     const result = extractXmlToolCalls(text, new Set(['semantic_search']));

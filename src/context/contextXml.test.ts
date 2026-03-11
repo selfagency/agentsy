@@ -29,6 +29,18 @@ describe('createXmlStreamFilter', () => {
     expect(second).toContain('second');
     expect(end).toBe('');
   });
+
+  it('supports extraScrubTags option', () => {
+    const filter = createXmlStreamFilter({ extraScrubTags: new Set(['custom_secret']) });
+    const out = filter.write('<custom_secret>hide</custom_secret>visible') + filter.end();
+    expect(out).toBe('visible');
+  });
+
+  it('supports overrideScrubTags option', () => {
+    const filter = createXmlStreamFilter({ overrideScrubTags: new Set(['only_this']) });
+    const out = filter.write('<only_this>hide</only_this><user_info>keep</user_info>') + filter.end();
+    expect(out).toBe('<user_info>keep</user_info>');
+  });
 });
 
 describe('stripXmlContextTags', () => {
@@ -58,6 +70,12 @@ describe('splitLeadingXmlContextBlocks', () => {
     const result = splitLeadingXmlContextBlocks(input);
     expect(result.contextBlocks).toEqual([]);
     expect(result.remaining).toBe('hello <user_info>not-context</user_info>');
+  });
+
+  it('trims non-context-only input to match helper contract', () => {
+    const result = splitLeadingXmlContextBlocks('   hello   ');
+    expect(result.contextBlocks).toEqual([]);
+    expect(result.remaining).toBe('hello');
   });
 });
 

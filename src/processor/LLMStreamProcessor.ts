@@ -125,6 +125,10 @@ export class LLMStreamProcessor {
     const first = this.process(response);
     const flushed = this.flush();
 
+    if (!first.done) {
+      this._emit('done');
+    }
+
     return {
       thinking: first.thinking + flushed.thinking,
       content: first.content + flushed.content,
