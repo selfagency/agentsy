@@ -5,8 +5,9 @@ status: in-progress
 type: task
 priority: high
 branch: feat/h4s1-parser-primitives-parity
+pr: 4
 created_at: 2026-03-11T17:09:45Z
-updated_at: 2026-03-11T17:31:15Z
+updated_at: 2026-03-11T17:38:48Z
 parent: llm-stream-parser-zkyu
 blocked_by:
     - llm-stream-parser-af18
