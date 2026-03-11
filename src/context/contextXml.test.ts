@@ -58,6 +58,21 @@ describe('createXmlStreamFilter', () => {
     const out = filter.write('<user_info>secret</user_info><code>safe</code>') + filter.end();
     expect(out).toBe('<user_info>secret</user_info><code>safe</code>');
   });
+
+  it('suppresses overly deep XML segments and emits warning', () => {
+    const warnings: string[] = [];
+    const filter = createXmlStreamFilter({
+      maxXmlNestingDepth: 2,
+      onWarning: message => {
+        warnings.push(message);
+      },
+    });
+
+    const out = filter.write('<a><b><c>deep</c></b><d>ok</d></a>') + filter.end();
+    expect(out).toBe('<a><b></b><d>ok</d></a>');
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('maxXmlNestingDepth');
+  });
 });
 
 describe('stripXmlContextTags', () => {
