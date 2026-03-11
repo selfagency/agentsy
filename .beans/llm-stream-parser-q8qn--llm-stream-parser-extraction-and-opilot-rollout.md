@@ -23,4 +23,4 @@ Implement the parser extraction plan in `docs/plans/parser-extraction.plan.md` b
 
 - [x] Create and link all epics, features, and tasks from the plan.
 - [x] Prioritize and sequence execution order.
-- [ ] Start first implementation item.
+- [x] Start first implementation item.

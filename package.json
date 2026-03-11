@@ -34,6 +34,16 @@
       "types": "./dist/context/index.d.ts",
       "import": "./dist/context/index.js",
       "require": "./dist/context/index.cjs"
+    },
+    "./processor": {
+      "types": "./dist/processor/index.d.ts",
+      "import": "./dist/processor/index.js",
+      "require": "./dist/processor/index.cjs"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js",
+      "require": "./dist/adapters/index.cjs"
     }
   },
   "scripts": {

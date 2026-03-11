@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ThinkingParser, createXmlStreamFilter, extractXmlToolCalls } from './index.js';
+import { ThinkingParser, createVSCodeCopilotAdapter, createXmlStreamFilter, extractXmlToolCalls, processStream } from './index.js';
 
 describe('scaffold exports', () => {
   it('provides core scaffolding exports', () => {
@@ -12,5 +12,13 @@ describe('scaffold exports', () => {
     expect(filter.write('abc')).toBe('');
     expect(filter.end()).toBe('abc');
     expect(calls).toEqual([]);
+  });
+
+  it('exports the generic stream adapter', () => {
+    expect(typeof processStream).toBe('function');
+  });
+
+  it('exports the VS Code adapter constructor', () => {
+    expect(typeof createVSCodeCopilotAdapter).toBe('function');
   });
 });
