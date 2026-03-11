@@ -38,7 +38,9 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
 
   parser.on('tagopen', (tag: SaxophoneTag) => {
     if (scrubTagNames.has(tag.name)) {
-      skipDepth++;
+      if (!tag.isSelfClosing) {
+        skipDepth++;
+      }
     } else if (skipDepth === 0) {
       buffer += `<${tag.name}${tag.attrs ? ` ${tag.attrs}` : ''}${tag.isSelfClosing ? ' /' : ''}>`;
     }
@@ -46,7 +48,9 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
 
   parser.on('tagclose', (tag: SaxophoneTag) => {
     if (scrubTagNames.has(tag.name)) {
-      skipDepth--;
+      if (skipDepth > 0) {
+        skipDepth--;
+      }
     } else if (skipDepth === 0) {
       buffer += `</${tag.name}>`;
     }

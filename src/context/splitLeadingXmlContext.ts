@@ -33,6 +33,6 @@ export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: st
 
   return {
     contextBlocks,
-    remaining: hadLeadingContext ? remainingText : input.trim(),
+    remaining: hadLeadingContext ? remainingText : input,
   };
 }
