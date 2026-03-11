@@ -56,21 +56,21 @@ describe('validateJsonSchema', () => {
       expect(result.errors).toContain('$.extra: additional property is not allowed');
     }
   });
-  
-    it('uses external validator adapter when provided', () => {
-      const result = validateJsonSchema(
-        '{"name":"Ada"}',
-        { type: 'object' },
-        {
-          validator: () => ({ valid: false, errors: ['$: adapter rejected payload'] }),
-        },
-      );
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.errors).toEqual(['$: adapter rejected payload']);
-      }
-    });
+  it('uses external validator adapter when provided', () => {
+    const result = validateJsonSchema(
+      '{"name":"Ada"}',
+      { type: 'object' },
+      {
+        validator: () => ({ valid: false, errors: ['$: adapter rejected payload'] }),
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors).toEqual(['$: adapter rejected payload']);
+    }
+  });
 });
 
 describe('prompt helpers', () => {

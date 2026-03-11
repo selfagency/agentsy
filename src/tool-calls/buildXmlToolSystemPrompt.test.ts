@@ -26,4 +26,18 @@ describe('buildXmlToolSystemPrompt', () => {
     expect(prompt).toContain('<query>search term</query>');
     expect(prompt).toContain('no markdown fences');
   });
+
+  it('throws for tool names that start with a digit', () => {
+    expect(() => buildXmlToolSystemPrompt([{ name: '1tool' }])).toThrow(/Invalid tool name/);
+  });
+
+  it('throws for tool names containing dots', () => {
+    expect(() => buildXmlToolSystemPrompt([{ name: 'foo.bar' }])).toThrow(/Invalid tool name/);
+  });
+
+  it('accepts tool names with letters, digits, underscores, colons, and hyphens', () => {
+    expect(() =>
+      buildXmlToolSystemPrompt([{ name: 'my_tool-v2:sub' }]),
+    ).not.toThrow();
+  });
 });
