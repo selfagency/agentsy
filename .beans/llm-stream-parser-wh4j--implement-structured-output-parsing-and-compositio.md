@@ -5,6 +5,7 @@ status: completed
 type: task
 priority: high
 branch: feat/wh4j-structured-output-helpers
+pr: 14
 created_at: 2026-03-11T17:09:45Z
 updated_at: 2026-03-11T17:09:53Z
 parent: llm-stream-parser-7hpp
