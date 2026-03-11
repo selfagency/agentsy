@@ -7,6 +7,7 @@ export default defineConfig({
     'src/xml-filter/index.ts',
     'src/tool-calls/index.ts',
     'src/context/index.ts',
+    'src/structured/index.ts',
     'src/processor/index.ts',
     'src/markdown/index.ts',
     'src/adapters/index.ts',
