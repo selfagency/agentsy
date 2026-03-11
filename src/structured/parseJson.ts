@@ -5,8 +5,8 @@ export interface ParseJsonOptions {
   maxJsonKeys?: number;
 }
 
-const DEFAULT_MAX_JSON_DEPTH = 64;
-const DEFAULT_MAX_JSON_KEYS = 10_000;
+export const DEFAULT_MAX_JSON_DEPTH = 64;
+export const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function stripCodeFences(text: string): string {
   return text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
@@ -163,7 +163,7 @@ function measureComprehensiveness(value: unknown): number {
 }
 
 function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): boolean {
-  if (maxDepth <= 0 || maxKeys <= 0) {
+  if (maxDepth <= 0 && maxKeys <= 0) {
     return false;
   }
 
@@ -175,7 +175,7 @@ function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): b
       return;
     }
 
-    if (depth > maxDepth) {
+    if (maxDepth > 0 && depth > maxDepth) {
       exceeded = true;
       return;
     }
@@ -190,7 +190,7 @@ function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): b
     if (node && typeof node === 'object') {
       const entries = Object.entries(node as Record<string, unknown>);
       keyCount += entries.length;
-      if (keyCount > maxKeys) {
+      if (maxKeys > 0 && keyCount > maxKeys) {
         exceeded = true;
         return;
       }
