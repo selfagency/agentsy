@@ -1,7 +1,15 @@
 ---
 # llm-stream-parser-j0gs
+<<<<<<< HEAD
 title: core parser extraction, thinking xml filtering, and tool-call extraction
+status: in-progress
+||||||| parent of f7560a3 (chore(beans): complete zkyu and j0gs after parser parity delivery)
+title: core parser extraction thinking xml filtering and
+status: in-progress
+=======
+title: core parser extraction thinking xml filtering and
 status: completed
+>>>>>>> f7560a3 (chore(beans): complete zkyu and j0gs after parser parity delivery)
 type: epic
 priority: high
 branch: feat/j0gs-core-parser-extraction

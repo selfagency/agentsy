@@ -47,7 +47,11 @@
   "author": "",
   "license": "MIT",
   "packageManager": "pnpm@10.31.0",
+  "dependencies": {
+    "saxophone": "^0.8.0"
+  },
   "devDependencies": {
+    "@go-task/cli": "^3.49.1",
     "@types/node": "^25.4.0",
     "@vitest/coverage-v8": "^4.0.18",
     "husky": "^9.1.7",
