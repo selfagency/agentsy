@@ -9,7 +9,8 @@ describe('scaffold exports', () => {
     const calls = extractXmlToolCalls('', new Set<string>());
 
     expect(parser).toBeDefined();
-    expect(filter.write('abc')).toBe('abc');
+    expect(filter.write('abc')).toBe('');
+    expect(filter.end()).toBe('abc');
     expect(calls).toEqual([]);
   });
 });
