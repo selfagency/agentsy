@@ -171,4 +171,27 @@ describe('ThinkingParser', () => {
     expect(allThinking).toBe('outer<think>inner</think>more');
     expect(allContent).toBe('after');
   });
+
+  it('handles unclosed think tag at end of stream via flush', () => {
+    const parser = new ThinkingParser();
+    parser.addContent('<think>incomplete reasoning');
+    const [thinking, content] = parser.flush();
+    // Unclosed tags: flush returns buffered thinking content
+    expect(thinking).toBe('incomplete reasoning');
+    expect(content).toBe('');
+  });
+
+  it('handles empty think blocks', () => {
+    const parser = new ThinkingParser();
+    const [thinking, content] = parser.addContent('<think></think>visible');
+    expect(thinking).toBe('');
+    expect(content).toBe('visible');
+  });
+
+  it('handles think blocks with only whitespace', () => {
+    const parser = new ThinkingParser();
+    const [thinking, content] = parser.addContent('<think>   \n   </think>visible');
+    // Whitespace is eaten by thinkingStartedEatingWhitespace and thinkingDoneEatingWhitespace states
+    expect(content).toBe('visible');
+  });
 });

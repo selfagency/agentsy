@@ -2,6 +2,23 @@ import { parseJson, DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, type ParseJso
 
 type JsonSchema = Record<string, unknown>;
 
+const REGEX_CACHE_MAX = 256;
+const regexCache = new Map<string, RegExp>();
+
+function getCachedRegex(pattern: string): RegExp {
+  let regex = regexCache.get(pattern);
+  if (regex) return regex;
+
+  regex = new RegExp(pattern);
+  if (regexCache.size >= REGEX_CACHE_MAX) {
+    // Evict oldest entry (first inserted)
+    const firstKey = regexCache.keys().next().value;
+    if (firstKey !== undefined) regexCache.delete(firstKey);
+  }
+  regexCache.set(pattern, regex);
+  return regex;
+}
+
 export type JsonSchemaValidator = (
   data: unknown,
   schema: Record<string, unknown>,
@@ -15,12 +32,12 @@ export type JsonSchemaValidator = (
 export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
   validator?: JsonSchemaValidator;
   /**
-   * Maximum time in milliseconds to allow an external `validator` to run.
-   * If the validator does not return within this window, validation fails
-   * with a timeout error. Set to 0 to disable (default: 5000).
+   * Reserved for future use. Intended to limit how long an external
+   * `validator` may run before validation is aborted.
    *
-   * **Note:** This only applies to synchronous validators. Async validators
-   * (returning a Promise) are not supported and will be treated as truthy.
+   * **Not currently enforced** — synchronous validators cannot be timed out
+   * in single-threaded JavaScript without Worker threads. Callers should
+   * ensure their validator function completes promptly.
    */
   validatorTimeoutMs?: number;
 }
@@ -65,7 +82,7 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
         );
       } else {
         try {
-          const regex = new RegExp(schema.pattern);
+          const regex = getCachedRegex(schema.pattern);
           if (!regex.test(value)) {
             errors.push(`${path}: string does not match pattern ${schema.pattern}`);
           }
@@ -134,6 +151,13 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
   }
 }
 
+/**
+ * Parses JSON from text and validates it against a JSON Schema.
+ *
+ * @returns A discriminated union: `{ success: true; data: T }` on success,
+ *          or `{ success: false; errors: string[] }` on failure.
+ *          Never throws — all error conditions are captured in the `errors` array.
+ */
 export function validateJsonSchema<T = unknown>(
   text: string,
   schema: Record<string, unknown>,

@@ -208,4 +208,33 @@ describe('LLMStreamProcessor', () => {
     expect(out.thinking).toBe('thought2');
     expect(out.content + flushed.content).toBe('content2');
   });
+
+  it('returns done on second flush() without process()', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: '<think>t</think>content' });
+    const first = processor.flush();
+    const second = processor.flush();
+
+    expect(first.done).toBe(true);
+    expect(second.done).toBe(true);
+    expect(second.thinking).toBe('');
+    expect(second.toolCalls).toEqual([]);
+  });
+
+  it('emits events in correct order across process+flush', () => {
+    const events: string[] = [];
+    const processor = new LLMStreamProcessor({
+      parseThinkTags: true,
+      scrubContextTags: false,
+    });
+
+    processor.on('thinking', () => events.push('thinking'));
+    processor.on('text', () => events.push('text'));
+    processor.on('done', () => events.push('done'));
+
+    processor.process({ content: '<think>plan</think>output' });
+    processor.flush();
+
+    expect(events).toEqual(['thinking', 'text', 'done']);
+  });
 });

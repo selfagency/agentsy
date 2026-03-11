@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-yjqg
 title: Fix misspelled integration-opilot.md filename
-status: todo
+status: completed
 type: bug
 priority: low
 created_at: 2026-03-11T22:45:20Z
-updated_at: 2026-03-11T22:49:03Z
+updated_at: 2026-03-11T23:14:31Z
 parent: llm-stream-parser-bika
 ---
 

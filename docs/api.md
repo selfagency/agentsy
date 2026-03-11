@@ -259,7 +259,7 @@ const limitedData = parseJson(text, {
 ```typescript
 export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
   validator?: JsonSchemaValidator;
-  validatorTimeoutMs?: number;  // Default: 5000
+  validatorTimeoutMs?: number;  // Reserved — not currently enforced
 }
 
 function validateJsonSchema<T = unknown>(

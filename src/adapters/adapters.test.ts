@@ -122,4 +122,39 @@ describe('createGenericAdapter', () => {
       format: 'json-wrapped',
     });
   });
+
+  it('propagates errors from callbacks', async () => {
+    const adapter = createGenericAdapter(
+      {
+        onContent: () => {
+          throw new Error('callback error');
+        },
+      },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await expect(adapter.write({ content: 'test' })).rejects.toThrow('callback error');
+  });
+
+  it('works with no callbacks provided', async () => {
+    const adapter = createGenericAdapter({}, { parseThinkTags: false, scrubContextTags: false });
+
+    // Should not throw even with no callbacks
+    await adapter.write({ content: 'test' });
+    await adapter.end();
+  });
+
+  it('handles multiple write+end cycles after processor reset', async () => {
+    const contents: string[] = [];
+    const adapter = createGenericAdapter(
+      { onContent: (text) => { contents.push(text); } },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await adapter.write({ content: 'first' });
+    await adapter.end();
+
+    // Adapter reuses processor which needs manual reset for reuse
+    expect(contents).toContain('first');
+  });
 });

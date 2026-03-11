@@ -9,6 +9,13 @@ export interface XmlToolInfo {
 
 const VALID_TOOL_NAME = /^[A-Za-z_][A-Za-z0-9_:-]*$/;
 
+/**
+ * Builds a system prompt instructing the LLM how to call tools via XML.
+ *
+ * @throws {Error} If any tool name contains invalid characters. Tool names must
+ *         start with a letter or underscore and contain only `[A-Za-z0-9_:-]`.
+ * @returns The formatted system prompt string, or `''` if `tools` is empty.
+ */
 export function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string {
   if (!tools.length) {
     return '';

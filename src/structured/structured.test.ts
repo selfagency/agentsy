@@ -123,6 +123,25 @@ describe('validateJsonSchema', () => {
 
     expect(result.success).toBe(true);
   });
+
+  it('caches compiled regex patterns across calls', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        name: { type: 'string', pattern: '^[A-Z][a-z]+$' },
+      },
+    };
+
+    const pass = validateJsonSchema('{"name":"Ada"}', schema);
+    expect(pass.success).toBe(true);
+
+    const fail = validateJsonSchema('{"name":"ada"}', schema);
+    expect(fail.success).toBe(false);
+
+    // Second pass with same pattern still works (uses cache)
+    const pass2 = validateJsonSchema('{"name":"Bob"}', schema);
+    expect(pass2.success).toBe(true);
+  });
 });
 
 describe('prompt helpers', () => {

@@ -205,6 +205,14 @@ function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): b
   return exceeded;
 }
 
+/**
+ * Extracts and parses the best JSON value from mixed text.
+ * Strips markdown code fences, selects the most comprehensive candidate,
+ * and optionally attempts repair of incomplete JSON.
+ *
+ * @returns The parsed value, or `null` if no valid JSON is found.
+ *          Never throws — malformed candidates are silently skipped.
+ */
 export function parseJson(text: string, options: ParseJsonOptions = {}): unknown | null {
   const normalized = stripCodeFences(text);
   const selectMostComprehensive = options.selectMostComprehensive ?? true;

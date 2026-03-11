@@ -57,6 +57,27 @@ Primary tasks:
   - JSON depth/key limits
 - Add targeted unit tests beside source modules in `src/**`.
 
+## Error Handling Patterns
+
+Public functions follow one of three error handling strategies, chosen by function category:
+
+### Streaming / parsing functions — graceful degradation
+
+Functions that process LLM output (`parseJson`, `extractXmlToolCalls`, `ThinkingParser`, `LLMStreamProcessor`, `XmlStreamFilter`) never throw. They return best-effort results and silently skip malformed input:
+
+- `parseJson` returns `null` when no valid JSON is found.
+- `extractXmlToolCalls` returns only successfully parsed tool calls; malformed entries are silently dropped.
+- `ThinkingParser.addContent` treats unrecognised input as regular content.
+- `LLMStreamProcessor` and `XmlStreamFilter` may emit warnings via `onWarning` callback for overflow conditions (depth exceeded, warning rate limit), but never throw.
+
+### Configuration / setup functions — throw on invalid input
+
+Functions called at setup time (`buildXmlToolSystemPrompt`) throw `Error` when given invalid arguments. These errors can be caught during application initialisation.
+
+### Validation functions — discriminated union results
+
+`validateJsonSchema` returns `{ success: true; data: T } | { success: false; errors: string[] }`. All error conditions are captured in the `errors` array — the function never throws.
+
 ## Known Edge Cases & Limitations
 
 ### ThinkingParser
@@ -77,7 +98,7 @@ Primary tasks:
 ### validateJsonSchema
 
 - **Regex patterns**: Patterns longer than 1024 characters are rejected to prevent ReDoS. This is a security measure, not a schema limitation.
-- **External validators**: The `validatorTimeoutMs` option (default: 5000ms) only applies to synchronous validators. Async validators returning Promises are not supported and will be treated as truthy.
+- **External validators**: The `validatorTimeoutMs` option is reserved for future use and **not currently enforced**. Callers should ensure their validator function completes promptly. Async validators returning Promises are not supported and will be treated as truthy.
 - **Built-in validation**: The built-in validator covers `type`, `enum`, `required`, `properties`, `additionalProperties`, `items`, `minItems`, `maxItems`, `minimum`, `maximum`, and `pattern`. Complex schemas (e.g., `oneOf`, `allOf`, `$ref`) require an external validator adapter.
 
 ### XmlStreamFilter

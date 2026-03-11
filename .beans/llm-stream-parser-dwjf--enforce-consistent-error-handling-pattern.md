@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-dwjf
 title: Enforce consistent error handling pattern
-status: todo
+status: done
 type: task
 priority: normal
 created_at: 2026-03-11T22:45:31Z
-updated_at: 2026-03-11T22:49:08Z
+updated_at: 2026-03-11T23:23:26Z
 parent: llm-stream-parser-2h10
 ---
 
