@@ -338,7 +338,15 @@ export class LLMStreamProcessor {
 
     const keptCalls: XmlToolCall[] = [];
     for (const call of limitedCalls) {
-      const argsBytes = Buffer.byteLength(JSON.stringify(call.parameters), 'utf8');
+      let argsBytes: number;
+      try {
+        argsBytes = Buffer.byteLength(JSON.stringify(call.parameters), 'utf8');
+      } catch {
+        this.warn('Tool call arguments could not be serialized; dropping tool call.', {
+          toolName: call.name,
+        });
+        continue;
+      }
       if (maxToolArgumentBytes > 0 && argsBytes > maxToolArgumentBytes) {
         this.warn('Tool call arguments exceeded maxToolArgumentBytes; dropping tool call.', {
           toolName: call.name,
