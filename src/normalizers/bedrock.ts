@@ -45,12 +45,12 @@ const BEDROCK_EVENT_KEYS = new Set([
   'contentBlockStop',
   'messageStart',
   'messageStop',
-  'metadata'
+  'metadata',
 ]);
 
 function isBedrockConverseEvent(value: unknown): value is BedrockConverseEvent {
   if (!value || typeof value !== 'object') return false;
-  return Object.keys(value as object).some((k) => BEDROCK_EVENT_KEYS.has(k));
+  return Object.keys(value as object).some(k => BEDROCK_EVENT_KEYS.has(k));
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ export function normalizeBedrockConverseEvent(raw: unknown): NormalizerResult | 
       if (delta?.toolUse && typeof delta.toolUse.input === 'string') {
         const tc: NativeToolCallDelta = {
           index: contentBlockIndex,
-          argumentsDelta: delta.toolUse.input
+          argumentsDelta: delta.toolUse.input,
         };
         return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
       }

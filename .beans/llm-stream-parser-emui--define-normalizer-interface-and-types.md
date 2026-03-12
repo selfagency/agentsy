@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/types.ts` with:
+
 - `NormalizerResult` type: `{ chunk: StreamChunk; usage?: UsageInfo; rawEvent?: unknown }`
 - `UsageInfo` type: `{ inputTokens?: number; outputTokens?: number; totalTokens?: number }`
 - `NativeToolCallDelta` type: `{ index: number; id?: string; name?: string; argumentsDelta?: string }`

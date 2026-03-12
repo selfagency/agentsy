@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/gemini.ts`
+
 - Function: `normalizeGeminiChunk(chunk: unknown): NormalizerResult`
 - Map `candidates[0].content.parts[0].text` → `content`
 - Map `candidates[0].content.parts` with `functionCall` type → `tool_calls`

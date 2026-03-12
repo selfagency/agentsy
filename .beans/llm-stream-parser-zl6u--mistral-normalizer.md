@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/mistral.ts`
+
 - Function: `normalizeMistralChunk(chunk: unknown): NormalizerResult`
 - Map `choices[0].delta.content` → `content` (OpenAI-compatible format)
 - Map `choices[0].delta.tool_calls` → `tool_calls`

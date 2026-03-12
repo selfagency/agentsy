@@ -7,7 +7,7 @@ priority: high
 created_at: 2026-03-12T00:14:27Z
 updated_at: 2026-03-12T00:17:11Z
 blocked_by:
-    - llm-stream-parser-emui
+  - llm-stream-parser-emui
 ---
 
 Support native JSON tool calls from OpenAI/Claude that arrive as incremental argument deltas, complementing the existing XML-based extraction.

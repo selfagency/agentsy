@@ -39,7 +39,9 @@ export function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string 
       return `  <${name}>${hint}${optionalNote}</${name}>`;
     });
 
-    return [`// ${tool.name}: ${tool.description ?? ''}`, `<${tool.name}>`, ...paramLines, `</${tool.name}>`].join('\n');
+    return [`// ${tool.name}: ${tool.description ?? ''}`, `<${tool.name}>`, ...paramLines, `</${tool.name}>`].join(
+      '\n',
+    );
   });
 
   const exampleTool = tools[0];

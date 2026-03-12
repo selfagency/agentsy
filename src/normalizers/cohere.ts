@@ -105,7 +105,7 @@ export function normalizeCohereEvent(raw: unknown): NormalizerResult | null {
         return {
           chunk: { ...(done !== undefined && { done }) },
           ...(usage !== undefined && { usage }),
-          rawEvent: raw
+          rawEvent: raw,
         };
       }
 

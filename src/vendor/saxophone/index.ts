@@ -48,12 +48,7 @@ export interface SaxophoneProcessingInstruction {
  * Find the first index matching `predicate` while outside `delim`-quoted spans.
  * Returns -1 if not found.
  */
-function findIndexOutside(
-  haystack: string,
-  predicate: (ch: string) => boolean,
-  delim = '',
-  fromIndex = 0,
-): number {
+function findIndexOutside(haystack: string, predicate: (ch: string) => boolean, delim = '', fromIndex = 0): number {
   const length = haystack.length;
   let index = fromIndex;
   let inDelim = false;
@@ -316,7 +311,6 @@ export class Saxophone extends EventEmitter {
   parse(input: string): this {
     return this.end(input);
   }
-
 }
 
 // ---------------------------------------------------------------------------

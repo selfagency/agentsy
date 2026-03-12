@@ -106,9 +106,7 @@ export function normalizeAnthropicEvent(raw: unknown): NormalizerResult | null {
     if (type === 'message_delta') {
       const deltaObj = raw['delta'];
       const stopReason =
-        isObject(deltaObj) && typeof deltaObj['stop_reason'] === 'string'
-          ? deltaObj['stop_reason']
-          : null;
+        isObject(deltaObj) && typeof deltaObj['stop_reason'] === 'string' ? deltaObj['stop_reason'] : null;
 
       const done = stopReason === 'end_turn' || stopReason === 'tool_use' ? true : undefined;
 

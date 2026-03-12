@@ -72,8 +72,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
     const delta = choice?.delta;
 
     const content = typeof delta?.content === 'string' ? delta.content : undefined;
-    const thinking =
-      typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
+    const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
 
     const finishReason = choice?.finish_reason;
     const done = finishReason === 'stop' || finishReason === 'tool_calls' ? true : undefined;
@@ -99,8 +98,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
     if (raw.usage) {
       usage = {};
       if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
-      if (typeof raw.usage.completion_tokens === 'number')
-        usage.outputTokens = raw.usage.completion_tokens;
+      if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
       if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
     }
 

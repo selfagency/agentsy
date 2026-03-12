@@ -2,13 +2,16 @@
   "name": "llm-stream-parser",
   "version": "0.1.0",
   "description": "Composable parsers and stream processing utilities for LLM responses",
+  "keywords": [],
+  "license": "MIT",
+  "author": "Daniel Sieradski <daniel@self.agency>",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -86,10 +89,6 @@
     "docs:build": "vitepress build docs --outDir .gh-pages",
     "docs:preview": "vitepress preview .gh-pages"
   },
-  "keywords": [],
-  "author": "Daniel Sieradski <daniel@self.agency>",
-  "license": "MIT",
-  "packageManager": "pnpm@10.31.0",
   "dependencies": {},
   "devDependencies": {
     "@go-task/cli": "^3.49.1",
@@ -105,5 +104,6 @@
     "vite": "^7.3.1",
     "vitepress": "^1.6.4",
     "vitest": "^4.0.18"
-  }
+  },
+  "packageManager": "pnpm@10.31.0"
 }

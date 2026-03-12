@@ -65,7 +65,7 @@ function extractJsonCandidates(text: string): string[] {
 }
 
 function tryRepairCandidate(text: string): string | null {
-  const start = text.search(/[\[{]/);
+  const start = text.search(/[[{]/);
   if (start === -1) {
     return null;
   }
@@ -236,9 +236,7 @@ export function parseJson(text: string, options: ParseJsonOptions = {}): unknown
       return parsedValues[0] ?? null;
     }
 
-    return parsedValues
-      .slice()
-      .sort((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
+    return parsedValues.slice().sort((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
   }
 
   if (options.repairIncomplete) {

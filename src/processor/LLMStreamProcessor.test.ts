@@ -9,8 +9,7 @@ describe('LLMStreamProcessor', () => {
     });
 
     const out = processor.process({
-      content:
-        '<think>reasoning</think>Hello <toolCall>{"name":"search_files","arguments":{"query":"abc"}}</toolCall>',
+      content: '<think>reasoning</think>Hello <toolCall>{"name":"search_files","arguments":{"query":"abc"}}</toolCall>',
       done: false,
     });
 
@@ -80,10 +79,7 @@ describe('LLMStreamProcessor', () => {
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
 
     const out = processor.process({
-      tool_calls: [
-        { function: { name: 'a', arguments: {} } },
-        { function: { name: 'b', arguments: {} } },
-      ],
+      tool_calls: [{ function: { name: 'a', arguments: {} } }, { function: { name: 'b', arguments: {} } }],
     });
 
     expect(out.toolCalls).toHaveLength(1);

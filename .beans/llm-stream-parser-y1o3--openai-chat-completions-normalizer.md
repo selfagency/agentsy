@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/openai.ts`
+
 - Function: `normalizeOpenAIChatChunk(chunk: unknown): NormalizerResult`
 - Map `choices[0].delta.content` → `content`
 - Map `choices[0].delta.tool_calls` → `nativeToolCallDeltas`

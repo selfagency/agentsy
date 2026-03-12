@@ -9,7 +9,9 @@ updated_at: 2026-03-12T00:16:10Z
 parent: llm-stream-parser-fnjl
 id: llm-stream-parser-t82p
 ---
+
 Create `src/tool-calls/ToolCallAccumulator.ts`
+
 - Class: `ToolCallAccumulator`
   - `addDelta(delta: NativeToolCallDelta): void` — accumulate partial JSON arguments by index
   - `getCompletedCalls(): NativeToolCall[]` — return tool calls whose arguments form valid JSON

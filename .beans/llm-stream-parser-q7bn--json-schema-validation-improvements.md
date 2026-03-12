@@ -9,7 +9,9 @@ updated_at: 2026-03-12T00:17:03Z
 parent: llm-stream-parser-ayp9
 id: llm-stream-parser-q7bn
 ---
+
 Enhance `src/structured/validateJsonSchema.ts`:
+
 - Add `oneOf` support: exactly one sub-schema must match
 - Add `anyOf` support: at least one sub-schema must match
 - Add `allOf` support: all sub-schemas must match

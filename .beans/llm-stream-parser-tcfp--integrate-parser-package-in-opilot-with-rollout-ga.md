@@ -10,14 +10,15 @@ branch: feat/tcfp-integrate-parser-package-rollout-main
 pr: 21
 parent: llm-stream-parser-n4wg
 blocked_by:
-    - llm-stream-parser-hb9y
-    - llm-stream-parser-wh4j
-    - llm-stream-parser-1omz
+  - llm-stream-parser-hb9y
+  - llm-stream-parser-wh4j
+  - llm-stream-parser-1omz
 ---
 
 Wire feature-flagged integration in Opilot, run dual-path parity checks, and validate staged rollout/rollback criteria.
 
 ## Todo
+
 - [ ] Add `llm-stream-parser` dependency and feature flag wiring in Opilot.
 - [ ] Integrate parser package in streaming and non-streaming output paths.
 - [ ] Add dual-path parity checks/tests and rollout guardrails.

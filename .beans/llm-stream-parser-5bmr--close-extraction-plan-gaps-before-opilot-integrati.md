@@ -12,6 +12,7 @@ pr: 17
 ---
 
 Implement remaining plan gaps in llm-stream-parser before final Opilot rollout task:
+
 - Add ThinkingParser.forModel() convenience factory.
 - Add processor thinkingTagMap support for model-specific tag pairs.
 - Add buildXmlToolSystemPrompt utility export.
@@ -20,6 +21,7 @@ Implement remaining plan gaps in llm-stream-parser before final Opilot rollout t
 - Add tests and update exports.
 
 ## Todo
+
 - [x] Add thinking tag map + `ThinkingParser.forModel()`.
 - [x] Add prompt/formatting utility modules and exports.
 - [x] Add validation adapter support to `validateJsonSchema`.
@@ -27,6 +29,7 @@ Implement remaining plan gaps in llm-stream-parser before final Opilot rollout t
 - [x] Run `pnpm run check-types` and `pnpm run test`.
 
 ## Summary of Changes
+
 - Added `ThinkingParser.forModel()` with built-in and caller-extended model→tag selection.
 - Added `modelId` + `thinkingTagMap` support in `LLMStreamProcessor`.
 - Added `buildXmlToolSystemPrompt` to `tool-calls` exports with dedicated tests.

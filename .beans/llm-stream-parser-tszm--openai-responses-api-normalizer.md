@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/openaiResponses.ts`
+
 - Function: `normalizeOpenAIResponseEvent(event: unknown): NormalizerResult`
 - Map `response.output_text.delta` → `content`
 - Map `response.function_call_arguments.delta` → `nativeToolCallDeltas`

@@ -10,11 +10,7 @@ function cleanXml(text: string): string {
   return cleaned;
 }
 
-function extractJsonWrappedToolCall(
-  rawTag: string,
-  inner: string,
-  knownTools: Set<string>,
-): XmlToolCall | null {
+function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: Set<string>): XmlToolCall | null {
   const wrapperName = rawTag.toLowerCase();
   if (wrapperName !== 'toolcall' && wrapperName !== 'tool_call') {
     return null;

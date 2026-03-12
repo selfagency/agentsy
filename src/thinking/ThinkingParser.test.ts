@@ -124,9 +124,7 @@ describe('ThinkingParser', () => {
 
   it('handles three consecutive thinking blocks', () => {
     const parser = new ThinkingParser();
-    const [thinking, content] = parser.addContent(
-      '<think>a</think>x<think>b</think>y<think>c</think>z',
-    );
+    const [thinking, content] = parser.addContent('<think>a</think>x<think>b</think>y<think>c</think>z');
     expect(thinking).toBe('abc');
     expect(content).toBe('xyz');
   });
@@ -135,18 +133,14 @@ describe('ThinkingParser', () => {
 
   it('handles nested thinking tags by tracking depth', () => {
     const parser = new ThinkingParser();
-    const [thinking, content] = parser.addContent(
-      '<think>outer<think>inner</think>more</think>after',
-    );
+    const [thinking, content] = parser.addContent('<think>outer<think>inner</think>more</think>after');
     expect(thinking).toBe('outer<think>inner</think>more');
     expect(content).toBe('after');
   });
 
   it('handles deeply nested thinking tags', () => {
     const parser = new ThinkingParser();
-    const [thinking, content] = parser.addContent(
-      '<think>a<think>b<think>c</think>d</think>e</think>f',
-    );
+    const [thinking, content] = parser.addContent('<think>a<think>b<think>c</think>d</think>e</think>f');
     expect(thinking).toBe('a<think>b<think>c</think>d</think>e');
     expect(content).toBe('f');
   });

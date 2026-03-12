@@ -20,7 +20,7 @@ describe('normalizeOpenAIChatChunk', () => {
       object: 'chat.completion.chunk',
       created: 1700000000,
       model: 'gpt-4o',
-      choices: [{ index: 0, delta: { role: 'assistant', content: 'Hello' }, finish_reason: null }]
+      choices: [{ index: 0, delta: { role: 'assistant', content: 'Hello' }, finish_reason: null }],
     });
     expect(result?.chunk.content).toBe('Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -32,7 +32,7 @@ describe('normalizeOpenAIChatChunk', () => {
       object: 'chat.completion.chunk',
       created: 1700000000,
       model: 'gpt-4o',
-      choices: [{ index: 0, delta: { role: 'assistant', reasoning_content: 'Thinking...' }, finish_reason: null }]
+      choices: [{ index: 0, delta: { role: 'assistant', reasoning_content: 'Thinking...' }, finish_reason: null }],
     });
     expect(result?.chunk.thinking).toBe('Thinking...');
   });
@@ -43,7 +43,7 @@ describe('normalizeOpenAIChatChunk', () => {
       object: 'chat.completion.chunk',
       created: 1700000000,
       model: 'gpt-4o',
-      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }]
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
     });
     expect(result?.chunk.done).toBe(true);
   });
@@ -54,7 +54,7 @@ describe('normalizeOpenAIChatChunk', () => {
       object: 'chat.completion.chunk',
       created: 1700000000,
       model: 'gpt-4o',
-      choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }]
+      choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }],
     });
     expect(result?.chunk.done).toBe(true);
   });
@@ -74,13 +74,13 @@ describe('normalizeOpenAIChatChunk', () => {
                 index: 0,
                 id: 'call_xyz',
                 type: 'function',
-                function: { name: 'get_weather', arguments: '' }
-              }
-            ]
+                function: { name: 'get_weather', arguments: '' },
+              },
+            ],
           },
-          finish_reason: null
-        }
-      ]
+          finish_reason: null,
+        },
+      ],
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -98,11 +98,11 @@ describe('normalizeOpenAIChatChunk', () => {
         {
           index: 0,
           delta: {
-            tool_calls: [{ index: 0, function: { name: null, arguments: '{"city"' } }]
+            tool_calls: [{ index: 0, function: { name: null, arguments: '{"city"' } }],
           },
-          finish_reason: null
-        }
-      ]
+          finish_reason: null,
+        },
+      ],
     });
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe('{"city"');
   });
@@ -114,7 +114,7 @@ describe('normalizeOpenAIChatChunk', () => {
       created: 1700000000,
       model: 'gpt-4o',
       choices: [],
-      usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 }
+      usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
     });
     expect(result?.usage?.inputTokens).toBe(10);
     expect(result?.usage?.outputTokens).toBe(20);
@@ -146,7 +146,7 @@ describe('normalizeOpenAIResponseEvent', () => {
       item_id: 'item_001',
       output_index: 0,
       content_index: 0,
-      delta: 'Hello '
+      delta: 'Hello ',
     });
     expect(result?.chunk.content).toBe('Hello ');
     expect(result?.chunk.done).toBeFalsy();
@@ -155,7 +155,7 @@ describe('normalizeOpenAIResponseEvent', () => {
   it('maps response.output_text.delta with empty delta to empty content', () => {
     const result = normalizeOpenAIResponseEvent({
       type: 'response.output_text.delta',
-      delta: ''
+      delta: '',
     });
     expect(result?.chunk.content).toBe('');
   });
@@ -167,7 +167,7 @@ describe('normalizeOpenAIResponseEvent', () => {
       item_id: 'item_001',
       output_index: 0,
       content_index: 0,
-      delta: 'I cannot help with that.'
+      delta: 'I cannot help with that.',
     });
     expect(result?.chunk.content).toBe('I cannot help with that.');
   });
@@ -182,8 +182,8 @@ describe('normalizeOpenAIResponseEvent', () => {
         id: 'item_001',
         call_id: 'call_abc',
         name: 'get_weather',
-        status: 'in_progress'
-      }
+        status: 'in_progress',
+      },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -199,7 +199,7 @@ describe('normalizeOpenAIResponseEvent', () => {
       item_id: 'item_001',
       output_index: 0,
       call_id: 'call_abc',
-      delta: '{"city"'
+      delta: '{"city"',
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -215,8 +215,8 @@ describe('normalizeOpenAIResponseEvent', () => {
       response: {
         id: 'resp_001',
         status: 'completed',
-        usage: { input_tokens: 15, output_tokens: 25, total_tokens: 40 }
-      }
+        usage: { input_tokens: 15, output_tokens: 25, total_tokens: 40 },
+      },
     });
     expect(result?.chunk.done).toBe(true);
     expect(result?.usage?.inputTokens).toBe(15);
@@ -259,8 +259,8 @@ describe('normalizeAnthropicEvent', () => {
         content: [],
         model: 'claude-opus-4-6',
         stop_reason: null,
-        usage: { input_tokens: 25, output_tokens: 1 }
-      }
+        usage: { input_tokens: 25, output_tokens: 1 },
+      },
     });
     expect(result?.usage?.inputTokens).toBe(25);
   });
@@ -269,7 +269,7 @@ describe('normalizeAnthropicEvent', () => {
     const result = normalizeAnthropicEvent({
       type: 'content_block_delta',
       index: 0,
-      delta: { type: 'text_delta', text: 'Hello!' }
+      delta: { type: 'text_delta', text: 'Hello!' },
     });
     expect(result?.chunk.content).toBe('Hello!');
   });
@@ -278,7 +278,7 @@ describe('normalizeAnthropicEvent', () => {
     const result = normalizeAnthropicEvent({
       type: 'content_block_delta',
       index: 0,
-      delta: { type: 'thinking_delta', thinking: 'Let me reason...' }
+      delta: { type: 'thinking_delta', thinking: 'Let me reason...' },
     });
     expect(result?.chunk.thinking).toBe('Let me reason...');
   });
@@ -287,7 +287,7 @@ describe('normalizeAnthropicEvent', () => {
     const result = normalizeAnthropicEvent({
       type: 'content_block_delta',
       index: 1,
-      delta: { type: 'input_json_delta', partial_json: '{"location":"' }
+      delta: { type: 'input_json_delta', partial_json: '{"location":"' },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
@@ -302,8 +302,8 @@ describe('normalizeAnthropicEvent', () => {
         type: 'tool_use',
         id: 'toolu_01A09',
         name: 'get_weather',
-        input: {}
-      }
+        input: {},
+      },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
@@ -316,7 +316,7 @@ describe('normalizeAnthropicEvent', () => {
     const result = normalizeAnthropicEvent({
       type: 'content_block_start',
       index: 0,
-      content_block: { type: 'text', text: '' }
+      content_block: { type: 'text', text: '' },
     });
     expect(result).toBeNull();
   });
@@ -325,7 +325,7 @@ describe('normalizeAnthropicEvent', () => {
     const result = normalizeAnthropicEvent({
       type: 'message_delta',
       delta: { stop_reason: 'end_turn', stop_sequence: null },
-      usage: { output_tokens: 42 }
+      usage: { output_tokens: 42 },
     });
     expect(result?.chunk.done).toBe(true);
     expect(result?.usage?.outputTokens).toBe(42);
@@ -335,7 +335,7 @@ describe('normalizeAnthropicEvent', () => {
     const result = normalizeAnthropicEvent({
       type: 'message_delta',
       delta: { stop_reason: 'tool_use' },
-      usage: { output_tokens: 10 }
+      usage: { output_tokens: 10 },
     });
     expect(result?.chunk.done).toBe(true);
   });
@@ -373,7 +373,7 @@ describe('normalizeOllamaChatChunk', () => {
       model: 'llama3.2',
       created_at: '2024-01-01T00:00:00Z',
       message: { role: 'assistant', content: 'Hello ' },
-      done: false
+      done: false,
     });
     expect(result?.chunk.content).toBe('Hello ');
     expect(result?.chunk.done).toBeFalsy();
@@ -386,7 +386,7 @@ describe('normalizeOllamaChatChunk', () => {
       message: { role: 'assistant', content: '' },
       done: true,
       prompt_eval_count: 26,
-      eval_count: 150
+      eval_count: 150,
     });
     expect(result?.chunk.done).toBe(true);
     expect(result?.usage?.inputTokens).toBe(26);
@@ -400,9 +400,9 @@ describe('normalizeOllamaChatChunk', () => {
       message: {
         role: 'assistant',
         content: '',
-        tool_calls: [{ function: { name: 'get_weather', arguments: { location: 'Boston' } } }]
+        tool_calls: [{ function: { name: 'get_weather', arguments: { location: 'Boston' } } }],
       },
-      done: false
+      done: false,
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -428,7 +428,7 @@ describe('normalizeOllamaGenerateChunk', () => {
       model: 'llama3.2',
       created_at: '2024-01-01T00:00:00Z',
       response: 'The capital',
-      done: false
+      done: false,
     });
     expect(result?.chunk.content).toBe('The capital');
   });
@@ -440,7 +440,7 @@ describe('normalizeOllamaGenerateChunk', () => {
       response: '',
       done: true,
       prompt_eval_count: 10,
-      eval_count: 80
+      eval_count: 80,
     });
     expect(result?.chunk.done).toBe(true);
     expect(result?.usage?.inputTokens).toBe(10);
@@ -469,9 +469,9 @@ describe('normalizeGeminiChunk', () => {
         {
           content: { parts: [{ text: 'Hello ' }], role: 'model' },
           finishReason: 'FINISH_REASON_UNSPECIFIED',
-          index: 0
-        }
-      ]
+          index: 0,
+        },
+      ],
     });
     expect(result?.chunk.content).toBe('Hello ');
     expect(result?.chunk.done).toBeFalsy();
@@ -482,9 +482,9 @@ describe('normalizeGeminiChunk', () => {
       candidates: [
         {
           content: { parts: [{ text: 'Hello' }, { text: ' world' }], role: 'model' },
-          finishReason: 'FINISH_REASON_UNSPECIFIED'
-        }
-      ]
+          finishReason: 'FINISH_REASON_UNSPECIFIED',
+        },
+      ],
     });
     expect(result?.chunk.content).toBe('Hello world');
   });
@@ -495,11 +495,11 @@ describe('normalizeGeminiChunk', () => {
         {
           content: {
             parts: [{ thought: true, text: 'Let me reason...' }, { text: 'The answer is 42.' }],
-            role: 'model'
+            role: 'model',
           },
-          finishReason: 'FINISH_REASON_UNSPECIFIED'
-        }
-      ]
+          finishReason: 'FINISH_REASON_UNSPECIFIED',
+        },
+      ],
     });
     expect(result?.chunk.thinking).toBe('Let me reason...');
     expect(result?.chunk.content).toBe('The answer is 42.');
@@ -512,14 +512,14 @@ describe('normalizeGeminiChunk', () => {
           content: {
             parts: [
               {
-                functionCall: { name: 'get_weather', args: { location: 'Boston' } }
-              }
+                functionCall: { name: 'get_weather', args: { location: 'Boston' } },
+              },
             ],
-            role: 'model'
+            role: 'model',
           },
-          finishReason: 'STOP'
-        }
-      ]
+          finishReason: 'STOP',
+        },
+      ],
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -529,14 +529,14 @@ describe('normalizeGeminiChunk', () => {
 
   it('sets done=true on finishReason STOP', () => {
     const result = normalizeGeminiChunk({
-      candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'STOP' }]
+      candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'STOP' }],
     });
     expect(result?.chunk.done).toBe(true);
   });
 
   it('sets done=true on finishReason MAX_TOKENS', () => {
     const result = normalizeGeminiChunk({
-      candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'MAX_TOKENS' }]
+      candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'MAX_TOKENS' }],
     });
     expect(result?.chunk.done).toBe(true);
   });
@@ -547,8 +547,8 @@ describe('normalizeGeminiChunk', () => {
       usageMetadata: {
         promptTokenCount: 10,
         candidatesTokenCount: 30,
-        totalTokenCount: 40
-      }
+        totalTokenCount: 40,
+      },
     });
     expect(result?.usage?.inputTokens).toBe(10);
     expect(result?.usage?.outputTokens).toBe(30);
@@ -579,7 +579,7 @@ describe('normalizeMistralChunk', () => {
       id: 'cmpl-abc',
       object: 'chat.completion.chunk',
       model: 'mistral-large',
-      choices: [{ index: 0, delta: { content: 'Bonjour' }, finish_reason: null }]
+      choices: [{ index: 0, delta: { content: 'Bonjour' }, finish_reason: null }],
     });
     expect(result?.chunk.content).toBe('Bonjour');
   });
@@ -589,7 +589,7 @@ describe('normalizeMistralChunk', () => {
       id: 'cmpl-abc',
       object: 'chat.completion.chunk',
       model: 'mistral-large',
-      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }]
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
     });
     expect(result?.chunk.done).toBe(true);
   });
@@ -603,11 +603,11 @@ describe('normalizeMistralChunk', () => {
         {
           index: 0,
           delta: {
-            tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'search', arguments: '' } }]
+            tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'search', arguments: '' } }],
           },
-          finish_reason: null
-        }
-      ]
+          finish_reason: null,
+        },
+      ],
     });
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('search');
   });
@@ -632,7 +632,7 @@ describe('normalizeCohereEvent', () => {
     const result = normalizeCohereEvent({
       type: 'content-delta',
       index: 0,
-      delta: { message: { content: { text: 'Hello' } } }
+      delta: { message: { content: { text: 'Hello' } } },
     });
     expect(result?.chunk.content).toBe('Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -641,7 +641,7 @@ describe('normalizeCohereEvent', () => {
   it('maps tool-plan-delta to chunk.thinking', () => {
     const result = normalizeCohereEvent({
       type: 'tool-plan-delta',
-      delta: { message: { tool_plan: 'I will check the weather.' } }
+      delta: { message: { tool_plan: 'I will check the weather.' } },
     });
     expect(result?.chunk.thinking).toBe('I will check the weather.');
   });
@@ -655,10 +655,10 @@ describe('normalizeCohereEvent', () => {
           tool_calls: {
             id: 'get_weather_abc123',
             type: 'function',
-            function: { name: 'get_weather', arguments: '' }
-          }
-        }
-      }
+            function: { name: 'get_weather', arguments: '' },
+          },
+        },
+      },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -670,7 +670,7 @@ describe('normalizeCohereEvent', () => {
     const result = normalizeCohereEvent({
       type: 'tool-call-delta',
       index: 0,
-      delta: { message: { tool_calls: { function: { arguments: '{"location":' } } } }
+      delta: { message: { tool_calls: { function: { arguments: '{"location":' } } } },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -680,7 +680,7 @@ describe('normalizeCohereEvent', () => {
   it('sets done=true on message-end', () => {
     const result = normalizeCohereEvent({
       type: 'message-end',
-      delta: { finish_reason: 'COMPLETE' }
+      delta: { finish_reason: 'COMPLETE' },
     });
     expect(result?.chunk.done).toBe(true);
   });
@@ -690,8 +690,8 @@ describe('normalizeCohereEvent', () => {
       type: 'message-end',
       delta: {
         finish_reason: 'COMPLETE',
-        usage: { tokens: { input_tokens: 71, output_tokens: 418 } }
-      }
+        usage: { tokens: { input_tokens: 71, output_tokens: 418 } },
+      },
     });
     expect(result?.usage?.inputTokens).toBe(71);
     expect(result?.usage?.outputTokens).toBe(418);
@@ -725,7 +725,7 @@ describe('normalizeCohereEvent', () => {
 describe('normalizeBedrockConverseEvent', () => {
   it('maps contentBlockDelta.delta.text to chunk.content', () => {
     const result = normalizeBedrockConverseEvent({
-      contentBlockDelta: { contentBlockIndex: 0, delta: { text: 'Hello' } }
+      contentBlockDelta: { contentBlockIndex: 0, delta: { text: 'Hello' } },
     });
     expect(result?.chunk.content).toBe('Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -735,8 +735,8 @@ describe('normalizeBedrockConverseEvent', () => {
     const result = normalizeBedrockConverseEvent({
       contentBlockDelta: {
         contentBlockIndex: 0,
-        delta: { reasoningContent: { text: 'Let me think...' } }
-      }
+        delta: { reasoningContent: { text: 'Let me think...' } },
+      },
     });
     expect(result?.chunk.thinking).toBe('Let me think...');
   });
@@ -745,8 +745,8 @@ describe('normalizeBedrockConverseEvent', () => {
     const result = normalizeBedrockConverseEvent({
       contentBlockDelta: {
         contentBlockIndex: 1,
-        delta: { toolUse: { input: '{"location":' } }
-      }
+        delta: { toolUse: { input: '{"location":' } },
+      },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
@@ -757,8 +757,8 @@ describe('normalizeBedrockConverseEvent', () => {
     const result = normalizeBedrockConverseEvent({
       contentBlockStart: {
         contentBlockIndex: 1,
-        start: { toolUse: { toolUseId: 'tooluse_abc', name: 'get_weather' } }
-      }
+        start: { toolUse: { toolUseId: 'tooluse_abc', name: 'get_weather' } },
+      },
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
@@ -778,7 +778,7 @@ describe('normalizeBedrockConverseEvent', () => {
 
   it('extracts usage from metadata event', () => {
     const result = normalizeBedrockConverseEvent({
-      metadata: { usage: { inputTokens: 15, outputTokens: 42, totalTokens: 57 } }
+      metadata: { usage: { inputTokens: 15, outputTokens: 42, totalTokens: 57 } },
     });
     expect(result?.usage?.inputTokens).toBe(15);
     expect(result?.usage?.outputTokens).toBe(42);
@@ -813,7 +813,7 @@ describe('normalizeHuggingFaceTGIChunk', () => {
       index: 0,
       token: { id: 15496, text: ' Hello', logprob: -0.5, special: false },
       generated_text: null,
-      details: null
+      details: null,
     });
     expect(result?.chunk.content).toBe(' Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -824,7 +824,7 @@ describe('normalizeHuggingFaceTGIChunk', () => {
       index: 5,
       token: { id: 2, text: '</s>', logprob: 0, special: true },
       generated_text: 'Hello world',
-      details: { finish_reason: 'eos_token', generated_tokens: 5, input_length: 10 }
+      details: { finish_reason: 'eos_token', generated_tokens: 5, input_length: 10 },
     });
     expect(result?.chunk.content).toBeUndefined();
     expect(result?.chunk.done).toBe(true);
@@ -835,7 +835,7 @@ describe('normalizeHuggingFaceTGIChunk', () => {
       index: 4,
       token: { id: 13, text: '.', logprob: -0.1, special: false },
       generated_text: 'Hello world.',
-      details: { finish_reason: 'eos_token', generated_tokens: 5, input_length: 10 }
+      details: { finish_reason: 'eos_token', generated_tokens: 5, input_length: 10 },
     });
     expect(result?.chunk.content).toBe('.');
     expect(result?.chunk.done).toBe(true);
@@ -848,7 +848,7 @@ describe('normalizeHuggingFaceTGIChunk', () => {
       normalizeHuggingFaceTGIChunk({
         index: 1,
         token: { id: 1, text: 'x', special: false },
-        details: { finish_reason, generated_tokens: 1, input_length: 5 }
+        details: { finish_reason, generated_tokens: 1, input_length: 5 },
       });
     expect(make('stop_sequence')?.chunk.done).toBe(true);
     expect(make('length')?.chunk.done).toBe(true);

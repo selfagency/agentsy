@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/anthropic.ts`
+
 - Function: `normalizeAnthropicEvent(event: unknown): NormalizerResult`
 - Map `content_block_delta` with `text_delta` → `content`
 - Map `content_block_delta` with `thinking_delta` → `thinking`

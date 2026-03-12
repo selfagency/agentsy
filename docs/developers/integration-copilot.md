@@ -20,17 +20,17 @@ const processor = new LLMStreamProcessor({
   knownTools: new Set(['search', 'edit_file']),
 });
 
-processor.on('thinking', (delta) => {
+processor.on('thinking', delta => {
   // Stream thinking to UI in real-time
   updateThinkingPanel(delta);
 });
 
-processor.on('text', (delta) => {
+processor.on('text', delta => {
   // Stream content to UI
   updateContentPanel(delta);
 });
 
-processor.on('tool_call', (call) => {
+processor.on('tool_call', call => {
   // Execute tool calls
   executeToolInCopilot(call.name, call.parameters);
 });
@@ -90,12 +90,10 @@ import { extractXmlToolCalls } from 'llm-stream-parser';
 
 const response = await chatCompletion(messages);
 
-const toolCalls = extractXmlToolCalls(response, new Set([
-  'search_codebase',
-  'edit_file',
-  'run_tests',
-  'execute_command',
-]));
+const toolCalls = extractXmlToolCalls(
+  response,
+  new Set(['search_codebase', 'edit_file', 'run_tests', 'execute_command']),
+);
 
 for (const call of toolCalls) {
   const result = await executeToolInHost(call.name, call.parameters);
@@ -169,7 +167,7 @@ if (validation.success) {
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'claude-opus',  // Auto-detects thinking tags
+  modelId: 'claude-opus', // Auto-detects thinking tags
   parseThinkTags: true,
   knownTools: new Set(toolNames),
 });
@@ -198,7 +196,7 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'deepseek',  // Auto-detects for known models
+  modelId: 'deepseek', // Auto-detects for known models
   parseThinkTags: true,
   knownTools: new Set(toolNames),
 });
@@ -227,9 +225,7 @@ For safe integration into existing Copilot Chat hosts:
 // Feature flag for gradual rollout
 const useLLMStreamParser = features.isEnabled('llm-stream-parser');
 
-const processor = useLLMStreamParser
-  ? new LLMStreamProcessor(config)
-  : legacyParsingPath(config);
+const processor = useLLMStreamParser ? new LLMStreamProcessor(config) : legacyParsingPath(config);
 
 // Run both paths in tests for parity verification
 if (process.env.VERIFY_PARITY) {

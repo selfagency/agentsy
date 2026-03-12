@@ -10,6 +10,7 @@ parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/ollama.ts`
+
 - Function: `normalizeOllamaChatChunk(chunk: unknown): NormalizerResult`
   - Map `message.content` → `content`, `message.tool_calls` → `tool_calls`
   - Handle inline `<think>` tags, `done: true`, duration/eval metrics

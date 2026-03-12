@@ -82,9 +82,7 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
       // This is a heuristic — patterns over 1024 chars are likely adversarial.
       const MAX_PATTERN_LENGTH = 1024;
       if (schema.pattern.length > MAX_PATTERN_LENGTH) {
-        errors.push(
-          `${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`,
-        );
+        errors.push(`${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`);
       } else {
         try {
           const regex = getCachedRegex(schema.pattern);
@@ -125,9 +123,7 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
 
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const objectValue = value as Record<string, unknown>;
-    const required = Array.isArray(schema.required)
-      ? schema.required.filter(item => typeof item === 'string')
-      : [];
+    const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
 
     for (const key of required) {
       if (!(key in objectValue)) {

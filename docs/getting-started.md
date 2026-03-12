@@ -89,14 +89,9 @@ if (result.success) {
 ```typescript
 import { extractXmlToolCalls } from 'llm-stream-parser';
 
-const response = await llm.complete(
-  'Use tools to search the codebase'
-);
+const response = await llm.complete('Use tools to search the codebase');
 
-const toolCalls = extractXmlToolCalls(
-  response,
-  new Set(['search_codebase', 'edit_file'])
-);
+const toolCalls = extractXmlToolCalls(response, new Set(['search_codebase', 'edit_file']));
 
 for (const call of toolCalls) {
   console.log(`Executing: ${call.name}`);
@@ -134,9 +129,9 @@ const processor = new LLMStreamProcessor({
 });
 
 // Subscribe to events
-processor.on('thinking', (delta) => displayThinking(delta));
-processor.on('text', (delta) => displayText(delta));
-processor.on('tool_call', (call) => executeToolCall(call));
+processor.on('thinking', delta => displayThinking(delta));
+processor.on('text', delta => displayText(delta));
+processor.on('tool_call', call => executeToolCall(call));
 
 // Process streaming response
 for await (const chunk of apiStream) {
@@ -176,7 +171,7 @@ for await (const output of processStream(apiStream, {
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'claude-opus',  // Auto-detects thinking tags
+  modelId: 'claude-opus', // Auto-detects thinking tags
   parseThinkTags: true,
 });
 ```
@@ -185,7 +180,7 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'deepseek',  // Uses <think></think>
+  modelId: 'deepseek', // Uses <think></think>
   parseThinkTags: true,
 });
 ```
@@ -194,7 +189,7 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'granite',  // Uses <|thinking|></|thinking|>
+  modelId: 'granite', // Uses <|thinking|></|thinking|>
   parseThinkTags: true,
 });
 ```
@@ -315,7 +310,7 @@ const processor = new LLMStreamProcessor({
 - Verify tag names match the model output:
 
   ```typescript
-  parser = ThinkingParser.forModel('deepseek');  // Auto-detect
+  parser = ThinkingParser.forModel('deepseek'); // Auto-detect
   ```
 
 **Q: JSON parsing returns null**

@@ -80,10 +80,10 @@ export function normalizeHuggingFaceTGIChunk(raw: unknown): NormalizerResult | n
     return {
       chunk: {
         ...(content !== undefined && { content }),
-        ...(done !== undefined && { done })
+        ...(done !== undefined && { done }),
       },
       ...(usage !== undefined && { usage }),
-      rawEvent: raw
+      rawEvent: raw,
     };
   } catch {
     return null;

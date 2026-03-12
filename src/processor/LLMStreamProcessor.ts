@@ -107,9 +107,7 @@ export class LLMStreamProcessor {
     }
 
     const extractedXmlToolCalls =
-      this.options.knownTools && rawContent
-        ? extractXmlToolCalls(rawContent, this.options.knownTools)
-        : [];
+      this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const toolCalls = this.enforceToolCallLimits([...extractedXmlToolCalls, ...nativeToolCalls]);
 
@@ -323,9 +321,7 @@ export class LLMStreamProcessor {
     }
   }
 
-  private mapNativeToolCalls(
-    calls: StreamChunk['tool_calls'],
-  ): XmlToolCall[] {
+  private mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {
     if (!Array.isArray(calls) || calls.length === 0) {
       return [];
     }
@@ -418,10 +414,11 @@ export class LLMStreamProcessor {
       return value;
     }
 
-    this.warn(
-      `Chunk ${field} exceeded maxInputLength and was truncated`,
-      { field, maxInputLength: max, originalLength: value.length },
-    );
+    this.warn(`Chunk ${field} exceeded maxInputLength and was truncated`, {
+      field,
+      maxInputLength: max,
+      originalLength: value.length,
+    });
 
     return value.slice(0, max);
   }

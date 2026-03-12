@@ -33,9 +33,7 @@ export async function zodToJsonSchema(zodSchema: ZodLike): Promise<Record<string
     const mod = await import('zod-to-json-schema');
     zodToJsonSchemaFn = (mod.default ?? mod) as typeof zodToJsonSchemaFn;
   } catch {
-    throw new Error(
-      'zod-to-json-schema is required for Zod integration. Install it: pnpm add zod-to-json-schema',
-    );
+    throw new Error('zod-to-json-schema is required for Zod integration. Install it: pnpm add zod-to-json-schema');
   }
 
   return zodToJsonSchemaFn(zodSchema);

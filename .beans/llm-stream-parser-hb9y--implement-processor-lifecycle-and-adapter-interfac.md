@@ -10,7 +10,7 @@ created_at: 2026-03-11T17:09:45Z
 updated_at: 2026-03-11T19:56:35Z
 parent: llm-stream-parser-p8ep
 blocked_by:
-    - llm-stream-parser-h4s1
+  - llm-stream-parser-h4s1
 ---
 
 Implement processor chunk/complete/flush/reset flow, output parts, accumulation, events, and generic/VS Code adapter interfaces.

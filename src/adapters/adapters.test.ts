@@ -51,10 +51,7 @@ describe('createVSCodeCopilotAdapter', () => {
 describe('createGenericAdapter', () => {
   it('routes content to onContent callback', async () => {
     const onContent = vi.fn();
-    const adapter = createGenericAdapter(
-      { onContent },
-      { parseThinkTags: false, scrubContextTags: false },
-    );
+    const adapter = createGenericAdapter({ onContent }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({ content: 'Hello world' });
     await adapter.end();
@@ -65,10 +62,7 @@ describe('createGenericAdapter', () => {
   it('routes thinking text to onThinking callback', async () => {
     const onThinking = vi.fn();
     const onContent = vi.fn();
-    const adapter = createGenericAdapter(
-      { onThinking, onContent },
-      { parseThinkTags: true, scrubContextTags: false },
-    );
+    const adapter = createGenericAdapter({ onThinking, onContent }, { parseThinkTags: true, scrubContextTags: false });
 
     await adapter.write({ content: '<think>reasoning</think>Answer' });
     await adapter.end();
@@ -92,10 +86,7 @@ describe('createGenericAdapter', () => {
 
   it('calls onDone when stream ends', async () => {
     const onDone = vi.fn();
-    const adapter = createGenericAdapter(
-      { onDone },
-      { parseThinkTags: false, scrubContextTags: false },
-    );
+    const adapter = createGenericAdapter({ onDone }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({ content: 'data' });
     await adapter.end();
@@ -105,10 +96,7 @@ describe('createGenericAdapter', () => {
 
   it('routes tool calls to onToolCall callback', async () => {
     const onToolCall = vi.fn();
-    const adapter = createGenericAdapter(
-      { onToolCall },
-      { parseThinkTags: false, scrubContextTags: false },
-    );
+    const adapter = createGenericAdapter({ onToolCall }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({
       content: 'text',
@@ -147,7 +135,11 @@ describe('createGenericAdapter', () => {
   it('handles multiple write+end cycles after processor reset', async () => {
     const contents: string[] = [];
     const adapter = createGenericAdapter(
-      { onContent: (text) => { contents.push(text); } },
+      {
+        onContent: text => {
+          contents.push(text);
+        },
+      },
       { parseThinkTags: false, scrubContextTags: false },
     );
 
