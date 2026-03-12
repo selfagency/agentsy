@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeOpenAIChatChunk } from './openai.js';
+import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
 
 // ---------------------------------------------------------------------------
 // OpenAI Chat Completions streaming chunk normalizer
@@ -123,5 +124,115 @@ describe('normalizeOpenAIChatChunk', () => {
     expect(() => normalizeOpenAIChatChunk({ choices: 'not-an-array' })).not.toThrow();
     expect(() => normalizeOpenAIChatChunk({ choices: [null] })).not.toThrow();
     expect(() => normalizeOpenAIChatChunk(undefined)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// OpenAI Responses API streaming event normalizer
+// ---------------------------------------------------------------------------
+
+describe('normalizeOpenAIResponseEvent', () => {
+  it('maps response.output_text.delta to chunk.content', () => {
+    const result = normalizeOpenAIResponseEvent({
+      type: 'response.output_text.delta',
+      event_id: 'ev_001',
+      item_id: 'item_001',
+      output_index: 0,
+      content_index: 0,
+      delta: 'Hello ',
+    });
+    expect(result?.chunk.content).toBe('Hello ');
+    expect(result?.chunk.done).toBeFalsy();
+  });
+
+  it('maps response.output_text.delta with empty delta to empty content', () => {
+    const result = normalizeOpenAIResponseEvent({
+      type: 'response.output_text.delta',
+      delta: '',
+    });
+    expect(result?.chunk.content).toBe('');
+  });
+
+  it('maps response.refusal.delta to chunk.content (refusal text)', () => {
+    const result = normalizeOpenAIResponseEvent({
+      type: 'response.refusal.delta',
+      event_id: 'ev_002',
+      item_id: 'item_001',
+      output_index: 0,
+      content_index: 0,
+      delta: 'I cannot help with that.',
+    });
+    expect(result?.chunk.content).toBe('I cannot help with that.');
+  });
+
+  it('maps response.output_item.added for function_call to nativeToolCallDeltas', () => {
+    const result = normalizeOpenAIResponseEvent({
+      type: 'response.output_item.added',
+      event_id: 'ev_003',
+      output_index: 0,
+      item: {
+        type: 'function_call',
+        id: 'item_001',
+        call_id: 'call_abc',
+        name: 'get_weather',
+        status: 'in_progress',
+      },
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.id).toBe('call_abc');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('get_weather');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBeUndefined();
+  });
+
+  it('maps response.function_call_arguments.delta to nativeToolCallDeltas', () => {
+    const result = normalizeOpenAIResponseEvent({
+      type: 'response.function_call_arguments.delta',
+      event_id: 'ev_004',
+      item_id: 'item_001',
+      output_index: 0,
+      call_id: 'call_abc',
+      delta: '{"city"',
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.id).toBe('call_abc');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe('{"city"');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBeUndefined();
+  });
+
+  it('maps response.completed to done=true with usage', () => {
+    const result = normalizeOpenAIResponseEvent({
+      type: 'response.completed',
+      event_id: 'ev_005',
+      response: {
+        id: 'resp_001',
+        status: 'completed',
+        usage: { input_tokens: 15, output_tokens: 25, total_tokens: 40 },
+      },
+    });
+    expect(result?.chunk.done).toBe(true);
+    expect(result?.usage?.inputTokens).toBe(15);
+    expect(result?.usage?.outputTokens).toBe(25);
+    expect(result?.usage?.totalTokens).toBe(40);
+  });
+
+  it('returns null for unknown event types', () => {
+    expect(normalizeOpenAIResponseEvent({ type: 'response.created' })).toBeNull();
+    expect(normalizeOpenAIResponseEvent({ type: 'response.in_progress' })).toBeNull();
+    expect(normalizeOpenAIResponseEvent({ type: 'response.output_item.done' })).toBeNull();
+    expect(normalizeOpenAIResponseEvent({ type: 'something.unknown' })).toBeNull();
+  });
+
+  it('returns null for non-object or missing type', () => {
+    expect(normalizeOpenAIResponseEvent(null)).toBeNull();
+    expect(normalizeOpenAIResponseEvent('raw string')).toBeNull();
+    expect(normalizeOpenAIResponseEvent({})).toBeNull();
+  });
+
+  it('never throws on adversarial input', () => {
+    expect(() => normalizeOpenAIResponseEvent({ type: 'response.output_text.delta', delta: null })).not.toThrow();
+    expect(() => normalizeOpenAIResponseEvent({ type: 'response.completed', response: null })).not.toThrow();
+    expect(() => normalizeOpenAIResponseEvent(undefined)).not.toThrow();
   });
 });
