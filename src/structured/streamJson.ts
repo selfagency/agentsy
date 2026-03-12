@@ -63,13 +63,22 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
   }
 
   if (Array.isArray(value)) {
+    if (value.length === 0) {
+      out.set(prefix, value);
+      return;
+    }
     for (let i = 0; i < value.length; i++) {
       collectPaths(value[i], prefix === '' ? `[${i}]` : `${prefix}[${i}]`, out);
     }
     return;
   }
 
-  for (const key of Object.keys(value as Record<string, unknown>)) {
+  const keys = Object.keys(value as Record<string, unknown>);
+  if (keys.length === 0) {
+    out.set(prefix, value);
+    return;
+  }
+  for (const key of keys) {
     const child = (value as Record<string, unknown>)[key];
     collectPaths(child, prefix === '' ? key : `${prefix}.${key}`, out);
   }
