@@ -59,6 +59,19 @@ describe('normalizeOpenAIChatChunk', () => {
     expect(result?.chunk.done).toBe(true);
   });
 
+  it('sets done=true on other terminal finish reasons (length, content_filter)', () => {
+    for (const finish_reason of ['length', 'content_filter']) {
+      const result = normalizeOpenAIChatChunk({
+        id: 'chatcmpl-abc',
+        object: 'chat.completion.chunk',
+        created: 1700000000,
+        model: 'gpt-4o',
+        choices: [{ index: 0, delta: {}, finish_reason }],
+      });
+      expect(result?.chunk.done).toBe(true);
+    }
+  });
+
   it('maps tool_call delta to nativeToolCallDeltas', () => {
     const result = normalizeOpenAIChatChunk({
       id: 'chatcmpl-abc',
@@ -116,9 +129,9 @@ describe('normalizeOpenAIChatChunk', () => {
       choices: [],
       usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
     });
-    expect(result?.usage?.inputTokens).toBe(10);
-    expect(result?.usage?.outputTokens).toBe(20);
-    expect(result?.usage?.totalTokens).toBe(30);
+    expect(result?.chunk.usage?.inputTokens).toBe(10);
+    expect(result?.chunk.usage?.outputTokens).toBe(20);
+    expect(result?.chunk.usage?.totalTokens).toBe(30);
   });
 
   it('returns null for unrecognizable input', () => {
@@ -219,9 +232,9 @@ describe('normalizeOpenAIResponseEvent', () => {
       },
     });
     expect(result?.chunk.done).toBe(true);
-    expect(result?.usage?.inputTokens).toBe(15);
-    expect(result?.usage?.outputTokens).toBe(25);
-    expect(result?.usage?.totalTokens).toBe(40);
+    expect(result?.chunk.usage?.inputTokens).toBe(15);
+    expect(result?.chunk.usage?.outputTokens).toBe(25);
+    expect(result?.chunk.usage?.totalTokens).toBe(40);
   });
 
   it('returns null for unknown event types', () => {
@@ -262,7 +275,7 @@ describe('normalizeAnthropicEvent', () => {
         usage: { input_tokens: 25, output_tokens: 1 },
       },
     });
-    expect(result?.usage?.inputTokens).toBe(25);
+    expect(result?.chunk.usage?.inputTokens).toBe(25);
   });
 
   it('maps content_block_delta text_delta to chunk.content', () => {
@@ -328,7 +341,7 @@ describe('normalizeAnthropicEvent', () => {
       usage: { output_tokens: 42 },
     });
     expect(result?.chunk.done).toBe(true);
-    expect(result?.usage?.outputTokens).toBe(42);
+    expect(result?.chunk.usage?.outputTokens).toBe(42);
   });
 
   it('maps message_delta stop_reason tool_use to done=true', () => {
@@ -389,8 +402,8 @@ describe('normalizeOllamaChatChunk', () => {
       eval_count: 150,
     });
     expect(result?.chunk.done).toBe(true);
-    expect(result?.usage?.inputTokens).toBe(26);
-    expect(result?.usage?.outputTokens).toBe(150);
+    expect(result?.chunk.usage?.inputTokens).toBe(26);
+    expect(result?.chunk.usage?.outputTokens).toBe(150);
   });
 
   it('maps message.tool_calls to nativeToolCallDeltas', () => {
@@ -443,8 +456,8 @@ describe('normalizeOllamaGenerateChunk', () => {
       eval_count: 80,
     });
     expect(result?.chunk.done).toBe(true);
-    expect(result?.usage?.inputTokens).toBe(10);
-    expect(result?.usage?.outputTokens).toBe(80);
+    expect(result?.chunk.usage?.inputTokens).toBe(10);
+    expect(result?.chunk.usage?.outputTokens).toBe(80);
   });
 
   it('returns null when response field is absent', () => {
@@ -550,9 +563,9 @@ describe('normalizeGeminiChunk', () => {
         totalTokenCount: 40,
       },
     });
-    expect(result?.usage?.inputTokens).toBe(10);
-    expect(result?.usage?.outputTokens).toBe(30);
-    expect(result?.usage?.totalTokens).toBe(40);
+    expect(result?.chunk.usage?.inputTokens).toBe(10);
+    expect(result?.chunk.usage?.outputTokens).toBe(30);
+    expect(result?.chunk.usage?.totalTokens).toBe(40);
   });
 
   it('returns null for non-object or missing candidates', () => {
@@ -693,8 +706,8 @@ describe('normalizeCohereEvent', () => {
         usage: { tokens: { input_tokens: 71, output_tokens: 418 } },
       },
     });
-    expect(result?.usage?.inputTokens).toBe(71);
-    expect(result?.usage?.outputTokens).toBe(418);
+    expect(result?.chunk.usage?.inputTokens).toBe(71);
+    expect(result?.chunk.usage?.outputTokens).toBe(418);
   });
 
   it('returns null for informational event types', () => {
@@ -780,9 +793,9 @@ describe('normalizeBedrockConverseEvent', () => {
     const result = normalizeBedrockConverseEvent({
       metadata: { usage: { inputTokens: 15, outputTokens: 42, totalTokens: 57 } },
     });
-    expect(result?.usage?.inputTokens).toBe(15);
-    expect(result?.usage?.outputTokens).toBe(42);
-    expect(result?.usage?.totalTokens).toBe(57);
+    expect(result?.chunk.usage?.inputTokens).toBe(15);
+    expect(result?.chunk.usage?.outputTokens).toBe(42);
+    expect(result?.chunk.usage?.totalTokens).toBe(57);
   });
 
   it('returns null for contentBlockStop and messageStart', () => {
@@ -839,8 +852,8 @@ describe('normalizeHuggingFaceTGIChunk', () => {
     });
     expect(result?.chunk.content).toBe('.');
     expect(result?.chunk.done).toBe(true);
-    expect(result?.usage?.inputTokens).toBe(10);
-    expect(result?.usage?.outputTokens).toBe(5);
+    expect(result?.chunk.usage?.inputTokens).toBe(10);
+    expect(result?.chunk.usage?.outputTokens).toBe(5);
   });
 
   it('sets done=true for stop_sequence and length finish reasons', () => {

@@ -18,6 +18,5 @@ export interface NativeToolCallDelta {
 /** The result of normalizing a provider-specific streaming chunk into a canonical StreamChunk. */
 export interface NormalizerResult {
   chunk: StreamChunk;
-  usage?: UsageInfo;
   rawEvent?: unknown;
 }

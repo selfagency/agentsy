@@ -73,9 +73,10 @@ export function normalizeOllamaChatChunk(raw: unknown): NormalizerResult | null 
       ...(content !== undefined && { content }),
       ...(done !== undefined && { done }),
       ...(nativeToolCallDeltas !== undefined && { nativeToolCallDeltas }),
+      ...(usage !== undefined && { usage }),
     };
 
-    return { chunk, ...(usage !== undefined && { usage }), rawEvent: raw };
+    return { chunk, rawEvent: raw };
   } catch {
     return null;
   }
@@ -100,9 +101,10 @@ export function normalizeOllamaGenerateChunk(raw: unknown): NormalizerResult | n
     const chunk = {
       content,
       ...(done !== undefined && { done }),
+      ...(usage !== undefined && { usage }),
     };
 
-    return { chunk, ...(usage !== undefined && { usage }), rawEvent: raw };
+    return { chunk, rawEvent: raw };
   } catch {
     return null;
   }
