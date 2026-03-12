@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-po5q
 title: stream error recovery utilities
-status: todo
+status: done
 type: task
 priority: medium
 created_at: 2026-03-12T00:16:33Z
-updated_at: 2026-03-12T00:16:38Z
+updated_at: 2026-03-12T22:51:50Z
 parent: llm-stream-parser-rfc0
 ---
 
