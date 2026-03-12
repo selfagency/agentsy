@@ -423,7 +423,7 @@ export class LLMStreamProcessor {
 
   private warn(message: string, context?: Record<string, unknown>): void {
     const max = this.options.maxWarnings ?? DEFAULT_MAX_WARNINGS;
-    if (max > 0 && this._warningCount >= max) {
+    if (max === 0 || this._warningCount >= max) {
       return;
     }
     this._warningCount++;
