@@ -25,7 +25,8 @@ export interface ProcessorOptions {
   knownTools?: Set<string>;
   /**
    * When `true` (the default), `nativeToolCallDeltas` from each `StreamChunk` are accumulated
-   * into complete tool calls via `ToolCallAccumulator` and emitted as `tool_call` events on flush.
+   * into complete tool calls via `ToolCallAccumulator` and emitted as `tool_call` events either
+   * when processing a chunk with `done: true` or on an explicit `flush()` call.
    * Set to `false` to disable this behaviour and handle native deltas yourself.
    */
   accumulateNativeToolCalls?: boolean;
@@ -122,8 +123,20 @@ export class LLMStreamProcessor {
 
     // Feed any streaming native tool call deltas into the accumulator.
     if (this.nativeAccumulator && Array.isArray(chunk.nativeToolCallDeltas)) {
+      const maxArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
       for (const delta of chunk.nativeToolCallDeltas) {
-        this.nativeAccumulator.addDelta(delta);
+        if (
+          maxArgumentBytes > 0 &&
+          typeof delta.argumentsDelta === 'string' &&
+          delta.argumentsDelta.length > maxArgumentBytes
+        ) {
+          this.warn('Native tool call argumentsDelta exceeded maxToolArgumentBytes; truncating before accumulation.', {
+            maxToolArgumentBytes: maxArgumentBytes,
+          });
+          this.nativeAccumulator.addDelta({ ...delta, argumentsDelta: delta.argumentsDelta.slice(0, maxArgumentBytes) });
+        } else {
+          this.nativeAccumulator.addDelta(delta);
+        }
       }
     }
 
