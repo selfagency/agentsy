@@ -5,7 +5,7 @@ status: in-progress
 type: milestone
 priority: normal
 created_at: 2026-03-12T12:27:55Z
-updated_at: 2026-03-12T22:51:56Z
+updated_at: 2026-03-12T22:52:39Z
 ---
 
 Enhanced partial JSON field-by-field streaming, stream error recovery utilities, and usage/token tracking.
