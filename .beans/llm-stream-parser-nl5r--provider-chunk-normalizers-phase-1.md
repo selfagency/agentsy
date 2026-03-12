@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-nl5r
 title: Provider Chunk Normalizers (Phase 1)
-status: in-progress
+status: done
 type: milestone
 priority: high
 created_at: 2026-03-12T00:14:19Z
-updated_at: 2026-03-12T00:34:56Z
+updated_at: 2026-03-12T01:45:41Z
 ---
 
 Transform-only normalizers that convert raw provider-specific JSON objects to the library's `StreamChunk` type. No HTTP client — users bring their own transport.

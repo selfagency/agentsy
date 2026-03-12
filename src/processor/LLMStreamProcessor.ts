@@ -1,8 +1,8 @@
+import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
-import type { UsageInfo, NativeToolCallDelta } from '../normalizers/types.js';
 
 export interface StreamChunk {
   content?: string;
