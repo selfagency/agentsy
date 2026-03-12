@@ -17,6 +17,7 @@ git checkout -b feat/your-feature-name
 ```
 
 Branch naming conventions:
+
 - `feat/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation
@@ -43,6 +44,7 @@ task precommit
 ```
 
 Tools used:
+
 - **Linting**: oxlint (and oxlint-tsgolint for TypeScript)
 - **Formatting**: oxfmt
 - **Type checking**: TypeScript
@@ -60,6 +62,7 @@ task unit-test-coverage
 ```
 
 Test structure:
+
 - Colocate tests with source files (`.test.ts`)
 - Test streaming behavior with partial chunks
 - Verify safety rails (limits, scrubbing)
@@ -70,6 +73,7 @@ Test structure:
 ### Pull Request Process
 
 1. **Before opening**: Ensure local checks pass
+
    ```bash
    task check-all
    task unit-tests
@@ -99,6 +103,7 @@ Follow conventional commits:
 ### Bug Reports
 
 File issues with:
+
 - Clear description of the bug
 - Steps to reproduce
 - Expected vs actual behavior
@@ -108,6 +113,7 @@ File issues with:
 ### Feature Requests
 
 Describe:
+
 - Use case and motivation
 - Expected behavior
 - Potential implementation approach
@@ -116,6 +122,7 @@ Describe:
 ### Documentation
 
 Improvements to:
+
 - README.md
 - docs/ guides
 - API reference
@@ -170,7 +177,7 @@ describe('parseJson', () => {
 
 Write clear, descriptive commits:
 
-```
+```text
 Short summary (50 chars max)
 
 Longer explanation of the change if needed.

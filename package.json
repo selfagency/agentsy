@@ -69,6 +69,11 @@
       "types": "./dist/adapters/vscode.d.ts",
       "import": "./dist/adapters/vscode.js",
       "require": "./dist/adapters/vscode.cjs"
+    },
+    "./normalizers": {
+      "types": "./dist/normalizers/index.d.ts",
+      "import": "./dist/normalizers/index.js",
+      "require": "./dist/normalizers/index.cjs"
     }
   },
   "scripts": {

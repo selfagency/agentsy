@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-gg8x
 title: Normalizers export, index, and tests
-status: todo
+status: in-progress
 type: task
 priority: medium
 created_at: 2026-03-12T00:14:58Z
-updated_at: 2026-03-12T00:15:21Z
+updated_at: 2026-03-12T01:24:41Z
 parent: llm-stream-parser-nl5r
 ---
 

@@ -52,18 +52,18 @@ task --list
 
 ### Common tasks
 
-| Task | Purpose |
-|------|---------|
-| `check-types` | Run TypeScript type checker |
-| `lint` | Run linter (oxlint) |
-| `lint-fix` | Auto-fix linting issues |
-| `check-formatting` | Check code formatting |
-| `formatting` | Auto-format code |
-| `compile` | Build distribution (tsup) |
-| `unit-tests` | Run all tests |
-| `unit-test-coverage` | Run tests with coverage report |
-| `precommit` | Run pre-commit checks (lint-fix + format) |
-| `watch` | Watch for changes and recompile |
+| Task                 | Purpose                                   |
+| -------------------- | ----------------------------------------- |
+| `check-types`        | Run TypeScript type checker               |
+| `lint`               | Run linter (oxlint)                       |
+| `lint-fix`           | Auto-fix linting issues                   |
+| `check-formatting`   | Check code formatting                     |
+| `formatting`         | Auto-format code                          |
+| `compile`            | Build distribution (tsup)                 |
+| `unit-tests`         | Run all tests                             |
+| `unit-test-coverage` | Run tests with coverage report            |
+| `precommit`          | Run pre-commit checks (lint-fix + format) |
+| `watch`              | Watch for changes and recompile           |
 
 ### Development mode
 
@@ -81,7 +81,7 @@ This runs tsup in watch mode.
 
 Tests are colocated with source modules in `src/**/*.test.ts`:
 
-```
+```text
 src/
 ├── thinking/
 │   ├── index.ts
@@ -129,6 +129,7 @@ task compile
 ```
 
 This generates:
+
 - `dist/` - Compiled JavaScript and TypeScript declarations
 - `dist/package.json` - Package metadata (auto-generated)
 
@@ -139,6 +140,7 @@ This generates:
 - `dist/index.d.ts` - TypeScript declarations
 
 Each subpath export also gets compiled:
+
 - `dist/thinking/index.js`, `.cjs`, `.d.ts`
 - `dist/structured/index.js`, `.cjs`, `.d.ts`
 - etc.
@@ -151,11 +153,13 @@ The package uses scripted release automation:
 2. Commit and push changes
 3. Create pull request on GitHub
 4. After merge to main:
+
    ```bash
    task release -- <version>
    ```
 
 The release script:
+
 - Builds with `pnpm run build`
 - Publishes `./dist` to npm registry
 - Tags commit on GitHub
@@ -166,6 +170,7 @@ The release script:
 - Prerelease versions → published to `next` tag
 
 Example:
+
 ```bash
 task release -- 0.2.0        # Stable release
 task release -- 0.2.0-alpha.1 # Prerelease
@@ -174,6 +179,7 @@ task release -- 0.2.0-alpha.1 # Prerelease
 ## CI/CD
 
 See `.github/workflows/`:
+
 - **Test & Build** - Runs tests and builds on all branches
 - **Release** - Publishes to npm after merge to main
 
@@ -186,6 +192,7 @@ task check-all
 ```
 
 This runs:
+
 1. Type checking (TypeScript)
 2. Linting (oxlint)
 3. Formatting checks (oxfmt)
@@ -197,6 +204,7 @@ task precommit
 ```
 
 This runs:
+
 1. Lint with auto-fix
 2. Format code
 
@@ -233,6 +241,7 @@ pnpm vitest src <path-to-test>
 ```
 
 Debug specific tests:
+
 ```bash
 node --inspect-brk ./node_modules/vitest/vitest.mjs run src/path/to/test.ts
 ```
@@ -248,12 +257,13 @@ pnpm docs:preview # Preview built site
 ```
 
 Documentation sources:
+
 - `docs/` - Markdown documentation
 - `.vitepress/config.ts` - VitePress configuration
 
 ## Project Structure
 
-```
+```text
 llm-stream-parser/
 ├── src/
 │   ├── thinking/         # Thinking tag extraction
@@ -289,21 +299,25 @@ llm-stream-parser/
 ## Troubleshooting
 
 ### pnpm install fails
+
 - Clear pnpm cache: `pnpm store prune`
 - Delete pnpm-lock.yaml and reinstall
 - Ensure Node.js version matches
 
 ### Type errors after changes
+
 ```bash
 task check-types --force
 ```
 
 ### Tests pass locally but fail in CI
+
 - Check Node.js version in CI matches local
 - Check environment variables
 - Run `task check-all` locally
 
 ### Build artifacts missing
+
 ```bash
 rm -rf dist pnpm-lock.yaml
 pnpm install

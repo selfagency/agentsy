@@ -265,12 +265,14 @@ const processor = new LLMStreamProcessor({
 ## Performance Tips
 
 - **Use subpath imports** to reduce bundle size:
+
   ```typescript
   import { ThinkingParser } from 'llm-stream-parser/thinking';
   import { parseJson } from 'llm-stream-parser/structured';
   ```
 
 - **Stream processing** instead of buffering:
+
   ```typescript
   // Good - process chunks as they arrive
   for await (const chunk of stream) {
@@ -283,6 +285,7 @@ const processor = new LLMStreamProcessor({
   ```
 
 - **Set appropriate limits** to prevent DoS:
+
   ```typescript
   parseJson(response, {
     maxJsonDepth: 10,
@@ -291,6 +294,7 @@ const processor = new LLMStreamProcessor({
   ```
 
 - **Enable privacy scrubbing** by default:
+
   ```typescript
   const processor = new LLMStreamProcessor({
     scrubContextTags: true,
@@ -307,25 +311,33 @@ const processor = new LLMStreamProcessor({
 ## Troubleshooting
 
 **Q: ThinkingParser not extracting thinking sections**
+
 - Verify tag names match the model output:
+
   ```typescript
   parser = ThinkingParser.forModel('deepseek');  // Auto-detect
   ```
 
 **Q: JSON parsing returns null**
+
 - Check for code fences and formatting:
+
   ```typescript
   const data = parseJson(response, { selectMostComprehensive: true });
   ```
 
 **Q: Tool calls not extracting**
+
 - Ensure tool names are in the known tools set:
+
   ```typescript
   extractXmlToolCalls(response, new Set(['search', 'edit_file']));
   ```
 
 **Q: Performance issues with large responses**
+
 - Use streaming chunking instead of buffering:
+
   ```typescript
   for await (const chunk of stream) {
     processor.process(chunk);

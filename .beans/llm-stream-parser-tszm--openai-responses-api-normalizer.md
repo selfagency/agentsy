@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-tszm
 title: OpenAI Responses API normalizer
-status: todo
+status: done
 type: feature
 priority: high
 created_at: 2026-03-12T00:14:58Z
-updated_at: 2026-03-12T00:15:21Z
+updated_at: 2026-03-12T01:18:29Z
 parent: llm-stream-parser-nl5r
 ---
 

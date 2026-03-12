@@ -1,11 +1,11 @@
 ---
 # llm-stream-parser-emui
 title: Define normalizer interface and types
-status: in-progress
+status: done
 type: feature
 priority: high
 created_at: 2026-03-12T00:14:58Z
-updated_at: 2026-03-12T00:37:19Z
+updated_at: 2026-03-12T01:13:39Z
 parent: llm-stream-parser-nl5r
 ---
 
