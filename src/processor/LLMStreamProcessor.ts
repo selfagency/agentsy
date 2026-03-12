@@ -2,12 +2,17 @@ import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
+import type { UsageInfo, NativeToolCallDelta } from '../normalizers/types.js';
 
 export interface StreamChunk {
   content?: string;
   thinking?: string;
   tool_calls?: Array<{ function?: { name?: string; arguments?: unknown } }>;
   done?: boolean;
+  /** Token usage information, populated on the final chunk from the normalizer layer. */
+  usage?: UsageInfo;
+  /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
+  nativeToolCallDeltas?: NativeToolCallDelta[];
 }
 
 export interface ProcessorOptions {
