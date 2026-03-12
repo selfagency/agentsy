@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { normalizeAnthropicEvent } from './anthropic.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
 import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
 
@@ -234,5 +235,124 @@ describe('normalizeOpenAIResponseEvent', () => {
     expect(() => normalizeOpenAIResponseEvent({ type: 'response.output_text.delta', delta: null })).not.toThrow();
     expect(() => normalizeOpenAIResponseEvent({ type: 'response.completed', response: null })).not.toThrow();
     expect(() => normalizeOpenAIResponseEvent(undefined)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Anthropic Claude SSE streaming event normalizer
+// ---------------------------------------------------------------------------
+
+describe('normalizeAnthropicEvent', () => {
+  it('extracts input token usage from message_start', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'message_start',
+      message: {
+        id: 'msg_01',
+        type: 'message',
+        role: 'assistant',
+        content: [],
+        model: 'claude-opus-4-6',
+        stop_reason: null,
+        usage: { input_tokens: 25, output_tokens: 1 },
+      },
+    });
+    expect(result?.usage?.inputTokens).toBe(25);
+  });
+
+  it('maps content_block_delta text_delta to chunk.content', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'content_block_delta',
+      index: 0,
+      delta: { type: 'text_delta', text: 'Hello!' },
+    });
+    expect(result?.chunk.content).toBe('Hello!');
+  });
+
+  it('maps content_block_delta thinking_delta to chunk.thinking', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'content_block_delta',
+      index: 0,
+      delta: { type: 'thinking_delta', thinking: 'Let me reason...' },
+    });
+    expect(result?.chunk.thinking).toBe('Let me reason...');
+  });
+
+  it('maps content_block_delta input_json_delta to nativeToolCallDeltas', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'content_block_delta',
+      index: 1,
+      delta: { type: 'input_json_delta', partial_json: '{"location":"' },
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe('{"location":"');
+  });
+
+  it('maps content_block_start tool_use to nativeToolCallDeltas with name+id', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'content_block_start',
+      index: 1,
+      content_block: {
+        type: 'tool_use',
+        id: 'toolu_01A09',
+        name: 'get_weather',
+        input: {},
+      },
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.id).toBe('toolu_01A09');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('get_weather');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBeUndefined();
+  });
+
+  it('returns null for content_block_start with text type', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'content_block_start',
+      index: 0,
+      content_block: { type: 'text', text: '' },
+    });
+    expect(result).toBeNull();
+  });
+
+  it('maps message_delta stop_reason end_turn to done=true with output tokens', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'message_delta',
+      delta: { stop_reason: 'end_turn', stop_sequence: null },
+      usage: { output_tokens: 42 },
+    });
+    expect(result?.chunk.done).toBe(true);
+    expect(result?.usage?.outputTokens).toBe(42);
+  });
+
+  it('maps message_delta stop_reason tool_use to done=true', () => {
+    const result = normalizeAnthropicEvent({
+      type: 'message_delta',
+      delta: { stop_reason: 'tool_use' },
+      usage: { output_tokens: 10 },
+    });
+    expect(result?.chunk.done).toBe(true);
+  });
+
+  it('maps message_stop to done=true', () => {
+    const result = normalizeAnthropicEvent({ type: 'message_stop' });
+    expect(result?.chunk.done).toBe(true);
+  });
+
+  it('returns null for unknown/informational event types', () => {
+    expect(normalizeAnthropicEvent({ type: 'content_block_stop', index: 0 })).toBeNull();
+    expect(normalizeAnthropicEvent({ type: 'ping' })).toBeNull();
+  });
+
+  it('returns null for non-object or missing type', () => {
+    expect(normalizeAnthropicEvent(null)).toBeNull();
+    expect(normalizeAnthropicEvent('text')).toBeNull();
+    expect(normalizeAnthropicEvent({})).toBeNull();
+  });
+
+  it('never throws on adversarial input', () => {
+    expect(() => normalizeAnthropicEvent({ type: 'content_block_delta', delta: null })).not.toThrow();
+    expect(() => normalizeAnthropicEvent({ type: 'message_start', message: null })).not.toThrow();
+    expect(() => normalizeAnthropicEvent(undefined)).not.toThrow();
   });
 });
