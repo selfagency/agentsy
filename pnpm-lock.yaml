@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      saxophone:
-        specifier: ^0.8.0
-        version: 0.8.0
     devDependencies:
       '@go-task/cli':
         specifier: ^3.49.1

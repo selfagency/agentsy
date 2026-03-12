@@ -85,9 +85,7 @@
   "author": "Daniel Sieradski <daniel@self.agency>",
   "license": "MIT",
   "packageManager": "pnpm@10.31.0",
-  "dependencies": {
-    "saxophone": "^0.8.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@go-task/cli": "^3.49.1",
     "@types/node": "^25.4.0",
