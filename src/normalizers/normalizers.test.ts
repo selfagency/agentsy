@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeAnthropicEvent } from './anthropic.js';
+import { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
 import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
 
@@ -354,5 +355,104 @@ describe('normalizeAnthropicEvent', () => {
     expect(() => normalizeAnthropicEvent({ type: 'content_block_delta', delta: null })).not.toThrow();
     expect(() => normalizeAnthropicEvent({ type: 'message_start', message: null })).not.toThrow();
     expect(() => normalizeAnthropicEvent(undefined)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ollama NDJSON normalizer
+// ---------------------------------------------------------------------------
+
+describe('normalizeOllamaChatChunk', () => {
+  it('maps message.content to chunk.content', () => {
+    const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
+      created_at: '2024-01-01T00:00:00Z',
+      message: { role: 'assistant', content: 'Hello ' },
+      done: false,
+    });
+    expect(result?.chunk.content).toBe('Hello ');
+    expect(result?.chunk.done).toBeFalsy();
+  });
+
+  it('sets done=true on done:true chunk and extracts usage', () => {
+    const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
+      created_at: '2024-01-01T00:00:00Z',
+      message: { role: 'assistant', content: '' },
+      done: true,
+      prompt_eval_count: 26,
+      eval_count: 150,
+    });
+    expect(result?.chunk.done).toBe(true);
+    expect(result?.usage?.inputTokens).toBe(26);
+    expect(result?.usage?.outputTokens).toBe(150);
+  });
+
+  it('maps message.tool_calls to nativeToolCallDeltas', () => {
+    const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
+      created_at: '2024-01-01T00:00:00Z',
+      message: {
+        role: 'assistant',
+        content: '',
+        tool_calls: [
+          { function: { name: 'get_weather', arguments: { location: 'Boston' } } },
+        ],
+      },
+      done: false,
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('get_weather');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe(
+      JSON.stringify({ location: 'Boston' }),
+    );
+  });
+
+  it('returns null when message field is absent', () => {
+    expect(normalizeOllamaChatChunk({ model: 'llama3.2', response: 'hello', done: false })).toBeNull();
+    expect(normalizeOllamaChatChunk(null)).toBeNull();
+  });
+
+  it('never throws on adversarial input', () => {
+    expect(() => normalizeOllamaChatChunk({ message: null })).not.toThrow();
+    expect(() => normalizeOllamaChatChunk({ message: { tool_calls: 'bad' } })).not.toThrow();
+    expect(() => normalizeOllamaChatChunk(undefined)).not.toThrow();
+  });
+});
+
+describe('normalizeOllamaGenerateChunk', () => {
+  it('maps response field to chunk.content', () => {
+    const result = normalizeOllamaGenerateChunk({
+      model: 'llama3.2',
+      created_at: '2024-01-01T00:00:00Z',
+      response: 'The capital',
+      done: false,
+    });
+    expect(result?.chunk.content).toBe('The capital');
+  });
+
+  it('sets done=true on done:true and extracts usage', () => {
+    const result = normalizeOllamaGenerateChunk({
+      model: 'llama3.2',
+      created_at: '2024-01-01T00:00:00Z',
+      response: '',
+      done: true,
+      prompt_eval_count: 10,
+      eval_count: 80,
+    });
+    expect(result?.chunk.done).toBe(true);
+    expect(result?.usage?.inputTokens).toBe(10);
+    expect(result?.usage?.outputTokens).toBe(80);
+  });
+
+  it('returns null when response field is absent', () => {
+    expect(normalizeOllamaGenerateChunk({ model: 'llama3.2', message: {}, done: false })).toBeNull();
+    expect(normalizeOllamaGenerateChunk(null)).toBeNull();
+  });
+
+  it('never throws on adversarial input', () => {
+    expect(() => normalizeOllamaGenerateChunk({ response: 42 })).not.toThrow();
+    expect(() => normalizeOllamaGenerateChunk(undefined)).not.toThrow();
   });
 });
