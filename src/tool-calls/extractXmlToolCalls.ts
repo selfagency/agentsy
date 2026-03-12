@@ -1,7 +1,8 @@
 export interface XmlToolCall {
   name: string;
   parameters: Record<string, unknown>;
-  format: 'bare-xml' | 'json-wrapped';
+  /** How this tool call was encoded in the stream. */
+  format: 'bare-xml' | 'json-wrapped' | 'native-json';
 }
 
 function cleanXml(text: string): string {

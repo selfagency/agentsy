@@ -1,13 +1,12 @@
 ---
 # llm-stream-parser-t82p
 title: Create ToolCallAccumulator
-status: todo
+status: done
 type: feature
 priority: high
 created_at: 2026-03-12T00:16:06Z
-updated_at: 2026-03-12T00:16:10Z
+updated_at: 2026-03-12T12:39:31Z
 parent: llm-stream-parser-fnjl
-id: llm-stream-parser-t82p
 ---
 
 Create `src/tool-calls/ToolCallAccumulator.ts`
