@@ -81,8 +81,8 @@ export function normalizeHuggingFaceTGIChunk(raw: unknown): NormalizerResult | n
       chunk: {
         ...(content !== undefined && { content }),
         ...(done !== undefined && { done }),
+        ...(usage !== undefined && { usage }),
       },
-      ...(usage !== undefined && { usage }),
       rawEvent: raw,
     };
   } catch {

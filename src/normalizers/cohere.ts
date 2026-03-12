@@ -103,8 +103,7 @@ export function normalizeCohereEvent(raw: unknown): NormalizerResult | null {
           if (typeof tokens.output_tokens === 'number') usage.outputTokens = tokens.output_tokens;
         }
         return {
-          chunk: { ...(done !== undefined && { done }) },
-          ...(usage !== undefined && { usage }),
+          chunk: { ...(done !== undefined && { done }), ...(usage !== undefined && { usage }) },
           rawEvent: raw,
         };
       }

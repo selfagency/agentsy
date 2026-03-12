@@ -96,7 +96,7 @@ export function normalizeOpenAIResponseEvent(raw: unknown): NormalizerResult | n
         if (total !== undefined) usage.totalTokens = total;
       }
 
-      return { chunk: { done: true }, ...(usage !== undefined && { usage }), rawEvent: raw };
+      return { chunk: { done: true, ...(usage !== undefined && { usage }) }, rawEvent: raw };
     }
 
     // All other events (response.created, response.in_progress, etc.)

@@ -47,7 +47,7 @@ export function normalizeAnthropicEvent(raw: unknown): NormalizerResult | null {
       const inputTokens = toNumber(msgUsage['input_tokens']);
       if (inputTokens === undefined) return null;
       const usage: UsageInfo = { inputTokens };
-      return { chunk: {}, usage, rawEvent: raw };
+      return { chunk: { usage }, rawEvent: raw };
     }
 
     // -----------------------------------------------------------------------
@@ -120,8 +120,7 @@ export function normalizeAnthropicEvent(raw: unknown): NormalizerResult | null {
       if (done === undefined && usage === undefined) return null;
 
       return {
-        chunk: { ...(done !== undefined && { done }) },
-        ...(usage !== undefined && { usage }),
+        chunk: { ...(done !== undefined && { done }), ...(usage !== undefined && { usage }) },
         rawEvent: raw,
       };
     }

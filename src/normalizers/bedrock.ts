@@ -124,7 +124,7 @@ export function normalizeBedrockConverseEvent(raw: unknown): NormalizerResult | 
       if (typeof usage.inputTokens === 'number') usageInfo.inputTokens = usage.inputTokens;
       if (typeof usage.outputTokens === 'number') usageInfo.outputTokens = usage.outputTokens;
       if (typeof usage.totalTokens === 'number') usageInfo.totalTokens = usage.totalTokens;
-      return { chunk: {}, usage: usageInfo, rawEvent: raw };
+      return { chunk: { usage: usageInfo }, rawEvent: raw };
     }
 
     // messageStart, contentBlockStop → no actionable content

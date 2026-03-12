@@ -75,7 +75,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
     const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
 
     const finishReason = choice?.finish_reason;
-    const done = finishReason === 'stop' || finishReason === 'tool_calls' ? true : undefined;
+    const done = finishReason !== null && finishReason !== undefined ? true : undefined;
 
     // Native tool call deltas
     let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
@@ -107,9 +107,10 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
       ...(thinking !== undefined && { thinking }),
       ...(done !== undefined && { done }),
       ...(nativeToolCallDeltas !== undefined && { nativeToolCallDeltas }),
+      ...(usage !== undefined && { usage }),
     };
 
-    return { chunk, ...(usage !== undefined && { usage }), rawEvent: raw };
+    return { chunk, rawEvent: raw };
   } catch {
     return null;
   }

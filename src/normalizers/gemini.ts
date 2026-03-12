@@ -97,9 +97,10 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
       ...(thinking !== undefined && { thinking }),
       ...(done !== undefined && { done }),
       ...(nativeToolCallList.length > 0 && { nativeToolCallDeltas: nativeToolCallList }),
+      ...(usage !== undefined && { usage }),
     };
 
-    return { chunk, ...(usage !== undefined && { usage }), rawEvent: raw };
+    return { chunk, rawEvent: raw };
   } catch {
     return null;
   }
