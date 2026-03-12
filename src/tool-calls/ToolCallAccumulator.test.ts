@@ -119,6 +119,19 @@ describe('ToolCallAccumulator', () => {
       expect(acc.flush()).toHaveLength(0);
     });
   });
+
+  describe('flush drains state', () => {
+    it('returns empty on a second flush() call without new deltas', () => {
+      const acc = new ToolCallAccumulator();
+      acc.addDelta({ index: 0, name: 'fn', argumentsDelta: '{"a":1}' });
+
+      const first = acc.flush();
+      expect(first).toHaveLength(1);
+
+      const second = acc.flush();
+      expect(second).toHaveLength(0);
+    });
+  });
 });
 
 describe('LLMStreamProcessor — native tool call accumulation', () => {
@@ -210,4 +223,54 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
 
     expect(received).toEqual(['new_fn']);
   });
+
+  it('does not duplicate native tool calls when processComplete() is called', () => {
+    const processor = new LLMStreamProcessor();
+    const received: string[] = [];
+    processor.on('tool_call', (call) => received.push(call.name));
+
+    processor.process({
+      nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"x":1}' }],
+    });
+    processor.processComplete({ done: true });
+
+    expect(received).toHaveLength(1);
+    expect(received[0]).toBe('fn');
+  });
+
+  it('does not duplicate native tool calls when flush() is called after done chunk', () => {
+    const processor = new LLMStreamProcessor();
+    const received: string[] = [];
+    processor.on('tool_call', (call) => received.push(call.name));
+
+    processor.process({
+      nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{}' }],
+      done: true,
+    });
+    // Explicit flush after a done chunk must not re-emit the same calls.
+    processor.flush();
+
+    expect(received).toHaveLength(1);
+  });
+
+  it('truncates oversized argumentsDelta and emits a warning', () => {
+    const warnings: string[] = [];
+    const processor = new LLMStreamProcessor({
+      maxToolArgumentBytes: 10,
+      onWarning: (msg) => warnings.push(msg),
+    });
+    const received: Array<{ name: string; args: Record<string, unknown> }> = [];
+    processor.on('tool_call', (call) => received.push({ name: call.name, args: call.parameters }));
+
+    processor.process({
+      nativeToolCallDeltas: [
+        // Delta whose argumentsDelta exceeds the 10-byte limit.
+        { index: 0, name: 'big', argumentsDelta: '{"key":"value_that_is_way_too_long"}' },
+      ],
+      done: true,
+    });
+
+    expect(warnings.some((w) => w.includes('maxToolArgumentBytes'))).toBe(true);
+  });
 });
+

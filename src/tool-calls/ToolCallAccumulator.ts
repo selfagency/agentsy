@@ -83,6 +83,10 @@ export class ToolCallAccumulator {
    * buffers via `parseJson`. Returns all calls that have a name, even if their arguments
    * could not be parsed (in which case `arguments` will be `{}`).
    *
+   * Drains all accumulated state after returning — subsequent calls to `flush()` or
+   * `getCompletedCalls()` will return empty until new deltas are added. Call `reset()`
+   * if you also need to discard any state that was accumulated mid-stream.
+   *
    * Call this when the stream ends to capture any calls whose arguments never formed
    * complete JSON during streaming.
    */
@@ -118,6 +122,7 @@ export class ToolCallAccumulator {
       if (pending.id !== undefined) flushedCall.id = pending.id;
       result.push(flushedCall);
     }
+    this.calls.clear();
     return result;
   }
 
