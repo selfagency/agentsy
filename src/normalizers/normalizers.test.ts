@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeAnthropicEvent } from './anthropic.js';
 import { normalizeGeminiChunk } from './gemini.js';
+import { normalizeMistralChunk } from './mistral.js';
 import { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
 import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
@@ -575,5 +576,59 @@ describe('normalizeGeminiChunk', () => {
     expect(() => normalizeGeminiChunk({ candidates: [null] })).not.toThrow();
     expect(() => normalizeGeminiChunk({ candidates: [{ content: null }] })).not.toThrow();
     expect(() => normalizeGeminiChunk(undefined)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mistral normalizer (OpenAI-compatible format)
+// ---------------------------------------------------------------------------
+
+describe('normalizeMistralChunk', () => {
+  it('maps delta.content to chunk.content (OpenAI-compatible)', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'mistral-large',
+      choices: [{ index: 0, delta: { content: 'Bonjour' }, finish_reason: null }],
+    });
+    expect(result?.chunk.content).toBe('Bonjour');
+  });
+
+  it('sets done=true on finish_reason stop', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'mistral-large',
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
+    });
+    expect(result?.chunk.done).toBe(true);
+  });
+
+  it('maps tool_call delta to nativeToolCallDeltas', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'mistral-large',
+      choices: [
+        {
+          index: 0,
+          delta: {
+            tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'search', arguments: '' } }],
+          },
+          finish_reason: null,
+        },
+      ],
+    });
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('search');
+  });
+
+  it('returns null for unrecognizable input', () => {
+    expect(normalizeMistralChunk(null)).toBeNull();
+    expect(normalizeMistralChunk('string')).toBeNull();
+  });
+
+  it('never throws on adversarial input', () => {
+    expect(() => normalizeMistralChunk({ choices: null })).not.toThrow();
+    expect(() => normalizeMistralChunk(undefined)).not.toThrow();
   });
 });
