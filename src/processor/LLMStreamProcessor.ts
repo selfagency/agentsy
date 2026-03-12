@@ -1,5 +1,6 @@
 import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
+import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
@@ -22,6 +23,13 @@ export interface ProcessorOptions {
   overrideScrubTags?: Set<string>;
   enforcePrivacyTags?: boolean;
   knownTools?: Set<string>;
+  /**
+   * When `true` (the default), `nativeToolCallDeltas` from each `StreamChunk` are accumulated
+   * into complete tool calls via `ToolCallAccumulator` and emitted as `tool_call` events either
+   * when processing a chunk with `done: true` or on an explicit `flush()` call.
+   * Set to `false` to disable this behaviour and handle native deltas yourself.
+   */
+  accumulateNativeToolCalls?: boolean;
   modelId?: string;
   thinkingOpenTag?: string;
   thinkingCloseTag?: string;
@@ -65,6 +73,7 @@ export class LLMStreamProcessor {
   private readonly options: Required<Pick<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags'>> & ProcessorOptions;
   private thinkingParser: ThinkingParser | null;
   private xmlFilter: XmlStreamFilter | null;
+  private nativeAccumulator: ToolCallAccumulator | null;
 
   private _accumulatedThinking = '';
   private _accumulatedContent = '';
@@ -91,6 +100,7 @@ export class LLMStreamProcessor {
 
     this.thinkingParser = this.createThinkingParser();
     this.xmlFilter = this.createXmlFilter();
+    this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
   }
 
   public process(chunk: StreamChunk): ProcessedOutput {
@@ -109,13 +119,41 @@ export class LLMStreamProcessor {
     const extractedXmlToolCalls =
       this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
-    const toolCalls = this.enforceToolCallLimits([...extractedXmlToolCalls, ...nativeToolCalls]);
+    const done = chunk.done === true;
+
+    // Feed any streaming native tool call deltas into the accumulator.
+    if (this.nativeAccumulator && Array.isArray(chunk.nativeToolCallDeltas)) {
+      const maxArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
+      for (const delta of chunk.nativeToolCallDeltas) {
+        if (
+          maxArgumentBytes > 0 &&
+          typeof delta.argumentsDelta === 'string' &&
+          delta.argumentsDelta.length > maxArgumentBytes
+        ) {
+          this.warn('Native tool call argumentsDelta exceeded maxToolArgumentBytes; truncating before accumulation.', {
+            maxToolArgumentBytes: maxArgumentBytes,
+          });
+          this.nativeAccumulator.addDelta({ ...delta, argumentsDelta: delta.argumentsDelta.slice(0, maxArgumentBytes) });
+        } else {
+          this.nativeAccumulator.addDelta(delta);
+        }
+      }
+    }
+
+    // On stream end, flush the accumulator and include assembled calls.
+    const accumulatedNativeCalls: XmlToolCall[] =
+      done && this.nativeAccumulator ? this.mapAccumulatedNativeCalls(this.nativeAccumulator.flush()) : [];
+
+    const toolCalls = this.enforceToolCallLimits([
+      ...extractedXmlToolCalls,
+      ...nativeToolCalls,
+      ...accumulatedNativeCalls,
+    ]);
 
     if (this.xmlFilter && content) {
       content = this.xmlFilter.write(content);
     }
 
-    const done = chunk.done === true;
     const output = this.buildOutput({ thinking, content, toolCalls, done });
     this.recordOutput(output);
     this.emitOutput(output);
@@ -152,10 +190,17 @@ export class LLMStreamProcessor {
       content += this.xmlFilter.end();
     }
 
+    // Flush any remaining accumulated native tool calls that arrived before the done signal.
+    const accumulatedNativeCalls: XmlToolCall[] = this.nativeAccumulator
+      ? this.mapAccumulatedNativeCalls(this.nativeAccumulator.flush())
+      : [];
+
+    const toolCalls = this.enforceToolCallLimits(accumulatedNativeCalls);
+
     const output = this.buildOutput({
       thinking,
       content,
-      toolCalls: [],
+      toolCalls,
       done: true,
     });
 
@@ -179,6 +224,7 @@ export class LLMStreamProcessor {
   public reset(): void {
     this.thinkingParser = this.createThinkingParser();
     this.xmlFilter = this.createXmlFilter();
+    this.nativeAccumulator?.reset();
     this._accumulatedThinking = '';
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
@@ -319,6 +365,14 @@ export class LLMStreamProcessor {
         listener();
       }
     }
+  }
+
+  private mapAccumulatedNativeCalls(calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[]): XmlToolCall[] {
+    return calls.map((call) => ({
+      name: call.name,
+      parameters: call.arguments,
+      format: 'native-json' as const,
+    }));
   }
 
   private mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {
