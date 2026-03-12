@@ -10,6 +10,7 @@ parent: llm-stream-parser-rfc0
 ---
 
 Enhance `src/structured/streamJson.ts`:
+
 - Add `StreamJsonField` type: `{ path: string; value: unknown; isComplete: boolean }`
 - Add optional `emitFields: boolean` option to `StreamJsonOptions`
 - When enabled, diff successive partial parses to detect newly populated fields

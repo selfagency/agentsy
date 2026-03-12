@@ -16,8 +16,22 @@ import * as llmStreamParser from 'llm-stream-parser';
 import { ThinkingParser } from 'llm-stream-parser/thinking';
 import { createXmlStreamFilter, XmlStreamFilter } from 'llm-stream-parser/xml-filter';
 import { extractXmlToolCalls, buildXmlToolSystemPrompt } from 'llm-stream-parser/tool-calls';
-import { splitLeadingXmlContextBlocks, dedupeXmlContextBlocksByTag, stripXmlContextTags } from 'llm-stream-parser/context';
-import { parseJson, validateJsonSchema, buildFormatInstructions, buildRepairPrompt, pipe, streamJson, zodToJsonSchema, validateWithZod, repairWithLLM } from 'llm-stream-parser/structured';
+import {
+  splitLeadingXmlContextBlocks,
+  dedupeXmlContextBlocksByTag,
+  stripXmlContextTags,
+} from 'llm-stream-parser/context';
+import {
+  parseJson,
+  validateJsonSchema,
+  buildFormatInstructions,
+  buildRepairPrompt,
+  pipe,
+  streamJson,
+  zodToJsonSchema,
+  validateWithZod,
+  repairWithLLM,
+} from 'llm-stream-parser/structured';
 import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from 'llm-stream-parser/formatting';
 import { LLMStreamProcessor } from 'llm-stream-parser/processor';
 import { appendToBlockquote } from 'llm-stream-parser/markdown';
@@ -34,8 +48,8 @@ Streaming-first parser for extracting reasoning sections from LLM responses.
 
 ```typescript
 export interface ThinkingParserOptions {
-  openingTag?: string;  // Default: '<think>'
-  closingTag?: string;  // Default: '</think>'
+  openingTag?: string; // Default: '<think>'
+  closingTag?: string; // Default: '</think>'
 }
 
 export class ThinkingParser {
@@ -51,10 +65,7 @@ export class ThinkingParser {
   reset(): void;
 
   // Static factory for model-specific tag detection
-  static forModel(
-    modelId: string,
-    thinkingTagMap?: Map<string, [string, string]>
-  ): ThinkingParser;
+  static forModel(modelId: string, thinkingTagMap?: Map<string, [string, string]>): ThinkingParser;
 
   // Access tags
   readonly openingTag: string;
@@ -80,14 +91,12 @@ const [finalThinking, finalContent] = parser.flush();
 
 ```typescript
 // Automatically detect thinking tags for common models
-const parser = ThinkingParser.forModel('deepseek');     // <think></think>
-const parser2 = ThinkingParser.forModel('granite');     // <|thinking|></|thinking|>
-const parser3 = ThinkingParser.forModel('claude-opus');  // <think></think>
+const parser = ThinkingParser.forModel('deepseek'); // <think></think>
+const parser2 = ThinkingParser.forModel('granite'); // <|thinking|></|thinking|>
+const parser3 = ThinkingParser.forModel('claude-opus'); // <think></think>
 
 // Custom model mappings
-const customMap = new Map([
-  ['my-model', ['<reasoning>', '</reasoning>']],
-]);
+const customMap = new Map([['my-model', ['<reasoning>', '</reasoning>']]]);
 const parser4 = ThinkingParser.forModel('my-model', customMap);
 ```
 
@@ -103,7 +112,7 @@ Stream-safe XML context block filtering and deduplication.
 export interface XmlStreamFilterOptions {
   extraScrubTags?: Set<string>;
   overrideScrubTags?: Set<string>;
-  enforcePrivacyTags?: boolean;  // Default: true
+  enforcePrivacyTags?: boolean; // Default: true
   maxXmlNestingDepth?: number;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
 }
@@ -189,10 +198,7 @@ export interface XmlToolInfo {
 }
 
 // Extract tool calls from response text
-function extractXmlToolCalls(
-  input: string,
-  knownTools: Set<string>
-): XmlToolCall[];
+function extractXmlToolCalls(input: string, knownTools: Set<string>): XmlToolCall[];
 
 // Build system prompt for tool use
 function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string;
@@ -210,7 +216,11 @@ for (const call of toolCalls) {
 
 // Generate system prompt for models
 const tools: XmlToolInfo[] = [
-  { name: 'search', description: 'Search the web', inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] } },
+  {
+    name: 'search',
+    description: 'Search the web',
+    inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] },
+  },
   { name: 'edit_file', description: 'Edit a file' },
   { name: 'run_tests', description: 'Run tests' },
 ];
@@ -227,10 +237,10 @@ JSON parsing with schema validation, repair prompts, and composable pipelines.
 
 ```typescript
 export interface ParseJsonOptions {
-  selectMostComprehensive?: boolean;  // Default: true
+  selectMostComprehensive?: boolean; // Default: true
   repairIncomplete?: boolean;
-  maxJsonDepth?: number;              // Default: 64
-  maxJsonKeys?: number;               // Default: 10_000
+  maxJsonDepth?: number; // Default: 64
+  maxJsonKeys?: number; // Default: 10_000
 }
 
 function parseJson(text: string, options?: ParseJsonOptions): unknown | null;
@@ -259,13 +269,13 @@ const limitedData = parseJson(text, {
 ```typescript
 export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
   validator?: JsonSchemaValidator;
-  validatorTimeoutMs?: number;  // Reserved — not currently enforced
+  validatorTimeoutMs?: number; // Reserved — not currently enforced
 }
 
 function validateJsonSchema<T = unknown>(
   text: string,
   schema: Record<string, unknown>,
-  options?: ValidateJsonSchemaOptions
+  options?: ValidateJsonSchemaOptions,
 ): { success: true; data: T } | { success: false; errors: string[] };
 ```
 
@@ -381,7 +391,7 @@ for await (const result of streamJson<{ name: string }>(textStream)) {
 
 ```typescript
 export interface AutoRepairOptions extends ValidateJsonSchemaOptions {
-  maxAttempts?: number;      // Default: 3
+  maxAttempts?: number; // Default: 3
   originalPrompt?: string;
 }
 
@@ -407,12 +417,10 @@ Automatically retries parsing and validation by sending repair prompts to the LL
 ```typescript
 import { repairWithLLM } from 'llm-stream-parser/structured';
 
-const result = await repairWithLLM(
-  llmOutput,
-  schema,
-  async (prompt) => await callModel(prompt),
-  { maxAttempts: 3, originalPrompt: 'Return a person object' },
-);
+const result = await repairWithLLM(llmOutput, schema, async prompt => await callModel(prompt), {
+  maxAttempts: 3,
+  originalPrompt: 'Return a person object',
+});
 
 if (result.success) {
   console.log('Parsed:', result.data);
@@ -460,22 +468,22 @@ export interface StreamChunk {
 }
 
 export interface ProcessorOptions {
-  parseThinkTags?: boolean;              // Default: true
-  scrubContextTags?: boolean;            // Default: true
+  parseThinkTags?: boolean; // Default: true
+  scrubContextTags?: boolean; // Default: true
   extraScrubTags?: Set<string>;
   overrideScrubTags?: Set<string>;
-  enforcePrivacyTags?: boolean;          // Default: true
+  enforcePrivacyTags?: boolean; // Default: true
   knownTools?: Set<string>;
   modelId?: string;
   thinkingOpenTag?: string;
   thinkingCloseTag?: string;
   thinkingTagMap?: Map<string, [string, string]>;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
-  maxInputLength?: number;               // Default: 256 KB
-  maxToolCallsPerMessage?: number;       // Default: 64
-  maxToolArgumentBytes?: number;         // Default: 128 KB
-  maxWarnings?: number;                  // Default: 100
-  maxXmlNestingDepth?: number;           // Default: 64
+  maxInputLength?: number; // Default: 256 KB
+  maxToolCallsPerMessage?: number; // Default: 64
+  maxToolArgumentBytes?: number; // Default: 128 KB
+  maxWarnings?: number; // Default: 100
+  maxXmlNestingDepth?: number; // Default: 64
 }
 
 export interface ProcessedOutput {
@@ -484,9 +492,7 @@ export interface ProcessedOutput {
   toolCalls: XmlToolCall[];
   done: boolean;
   parts: Array<
-    | { type: 'text'; text: string }
-    | { type: 'thinking'; text: string }
-    | { type: 'tool_call'; call: XmlToolCall }
+    { type: 'text'; text: string } | { type: 'thinking'; text: string } | { type: 'tool_call'; call: XmlToolCall }
   >;
 }
 
@@ -528,16 +534,10 @@ export class LLMStreamProcessor {
   };
 
   // Subscribe to events
-  on<K extends keyof StreamEventMap>(
-    event: K,
-    listener: StreamEventMap[K]
-  ): this;
+  on<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this;
 
   // Unsubscribe from events
-  off<K extends keyof StreamEventMap>(
-    event: K,
-    listener: StreamEventMap[K]
-  ): this;
+  off<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this;
 }
 ```
 
@@ -551,9 +551,9 @@ const processor = new LLMStreamProcessor({
 });
 
 // Subscribe to events
-processor.on('thinking', (delta) => console.log('[thinking]', delta));
-processor.on('text', (delta) => console.log('[text]', delta));
-processor.on('tool_call', (call) => console.log('[tool]', call.name));
+processor.on('thinking', delta => console.log('[thinking]', delta));
+processor.on('text', delta => console.log('[text]', delta));
+processor.on('tool_call', call => console.log('[tool]', call.name));
 
 // Process stream
 for await (const chunk of apiStream) {
@@ -655,7 +655,7 @@ export interface GenericAdapterCallbacks {
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
-  showThinking?: boolean;  // Default: true
+  showThinking?: boolean; // Default: true
 }
 
 function createGenericAdapter(
@@ -672,8 +672,8 @@ Environment-agnostic callback adapter. Use for HTTP SSE, WebSocket, CLI, or any 
 import { createGenericAdapter } from 'llm-stream-parser/adapters';
 
 const adapter = createGenericAdapter({
-  onContent: (text) => process.stdout.write(text),
-  onToolCall: (call) => handleTool(call),
+  onContent: text => process.stdout.write(text),
+  onToolCall: call => handleTool(call),
   onDone: () => console.log('\n[Done]'),
 });
 

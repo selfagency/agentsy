@@ -2,8 +2,9 @@ import Saxophone, {
   type SaxophoneCData,
   type SaxophoneComment,
   type SaxophoneTag,
+  type SaxophoneTagClose,
   type SaxophoneText,
-} from 'saxophone';
+} from '../vendor/saxophone/index.js';
 
 import { DEFAULT_SCRUB_TAG_NAMES, PRIVACY_TAG_NAMES } from './tagLists.js';
 
@@ -82,7 +83,7 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
     }
   });
 
-  parser.on('tagclose', (tag: SaxophoneTag) => {
+  parser.on('tagclose', (tag: SaxophoneTagClose) => {
     if (overflowStartDepth !== null) {
       if (parseDepth > 0) {
         parseDepth--;

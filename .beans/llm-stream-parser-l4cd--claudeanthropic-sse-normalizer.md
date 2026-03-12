@@ -1,15 +1,16 @@
 ---
 # llm-stream-parser-l4cd
 title: Claude/Anthropic SSE normalizer
-status: todo
+status: done
 type: feature
 priority: high
 created_at: 2026-03-12T00:15:12Z
-updated_at: 2026-03-12T00:15:46Z
+updated_at: 2026-03-12T01:20:39Z
 parent: llm-stream-parser-nl5r
 ---
 
 Create `src/normalizers/anthropic.ts`
+
 - Function: `normalizeAnthropicEvent(event: unknown): NormalizerResult`
 - Map `content_block_delta` with `text_delta` → `content`
 - Map `content_block_delta` with `thinking_delta` → `thinking`

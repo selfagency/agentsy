@@ -1,3 +1,4 @@
+import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
@@ -8,6 +9,10 @@ export interface StreamChunk {
   thinking?: string;
   tool_calls?: Array<{ function?: { name?: string; arguments?: unknown } }>;
   done?: boolean;
+  /** Token usage information, populated on the final chunk from the normalizer layer. */
+  usage?: UsageInfo;
+  /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
+  nativeToolCallDeltas?: NativeToolCallDelta[];
 }
 
 export interface ProcessorOptions {
@@ -102,9 +107,7 @@ export class LLMStreamProcessor {
     }
 
     const extractedXmlToolCalls =
-      this.options.knownTools && rawContent
-        ? extractXmlToolCalls(rawContent, this.options.knownTools)
-        : [];
+      this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const toolCalls = this.enforceToolCallLimits([...extractedXmlToolCalls, ...nativeToolCalls]);
 
@@ -318,9 +321,7 @@ export class LLMStreamProcessor {
     }
   }
 
-  private mapNativeToolCalls(
-    calls: StreamChunk['tool_calls'],
-  ): XmlToolCall[] {
+  private mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {
     if (!Array.isArray(calls) || calls.length === 0) {
       return [];
     }
@@ -413,10 +414,11 @@ export class LLMStreamProcessor {
       return value;
     }
 
-    this.warn(
-      `Chunk ${field} exceeded maxInputLength and was truncated`,
-      { field, maxInputLength: max, originalLength: value.length },
-    );
+    this.warn(`Chunk ${field} exceeded maxInputLength and was truncated`, {
+      field,
+      maxInputLength: max,
+      originalLength: value.length,
+    });
 
     return value.slice(0, max);
   }

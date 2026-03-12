@@ -7,3 +7,4 @@ export * from './markdown/index.js';
 export * from './adapters/index.js';
 export * from './structured/index.js';
 export * from './formatting/index.js';
+export * from './normalizers/index.js';

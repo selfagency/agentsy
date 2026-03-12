@@ -10,6 +10,7 @@ parent: llm-stream-parser-rfc0
 ---
 
 Create `src/recovery/index.ts` with:
+
 - `captureStreamState(processor: LLMStreamProcessor): StreamSnapshot` — capture accumulated content, thinking, tool calls, and processor options for resumption
 - `buildContinuationPrompt(snapshot: StreamSnapshot, options?)` — generate provider-appropriate continuation prompt
   - Claude ≤4.5: prepend partial assistant message

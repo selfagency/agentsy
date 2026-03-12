@@ -14,6 +14,7 @@ export default defineConfig({
     'src/adapters/index.ts',
     'src/adapters/generic.ts',
     'src/adapters/vscode.ts',
+    'src/normalizers/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,

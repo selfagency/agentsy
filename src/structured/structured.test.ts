@@ -202,9 +202,7 @@ describe('streamJson', () => {
   });
 
   it('yields partial objects as JSON is streamed incrementally', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"name":', '"Ada"', ',"age":', '30', '}'])),
-    );
+    const results = await collect(streamJson(chunked(['{"name":', '"Ada"', ',"age":', '30', '}'])));
 
     // Should get at least one partial and one final complete result
     const partials = results.filter(r => r.isPartial);
@@ -217,9 +215,7 @@ describe('streamJson', () => {
 
   it('deduplicates unchanged partial results', async () => {
     // Sending same text in tiny pieces that don't change result
-    const results = await collect(
-      streamJson(chunked(['{"a"', ':', '1', '}'])),
-    );
+    const results = await collect(streamJson(chunked(['{"a"', ':', '1', '}'])));
 
     // Each emission should be unique by (value, isPartial) — partial→complete is valid
     const serialized = results.map(r => `${JSON.stringify(r.value)}:${r.isPartial}`);
@@ -228,9 +224,7 @@ describe('streamJson', () => {
   });
 
   it('does not emit partials when emitPartials is false', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"name":', '"Ada"', '}' ]), { emitPartials: false }),
-    );
+    const results = await collect(streamJson(chunked(['{"name":', '"Ada"', '}']), { emitPartials: false }));
 
     // Only complete results
     expect(results.every(r => !r.isPartial)).toBe(true);
@@ -239,9 +233,7 @@ describe('streamJson', () => {
   });
 
   it('handles JSON wrapped in markdown code fences', async () => {
-    const results = await collect(
-      streamJson(chunked(['```json\n{"ok":true}\n```'])),
-    );
+    const results = await collect(streamJson(chunked(['```json\n{"ok":true}\n```'])));
 
     expect(results).toHaveLength(1);
     expect(results[0]!.value).toEqual({ ok: true });
@@ -249,19 +241,18 @@ describe('streamJson', () => {
   });
 
   it('respects maxJsonDepth option', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"a":{"b":{"c":1}}}']), { maxJsonDepth: 3 }),
-    );
+    const results = await collect(streamJson(chunked(['{"a":{"b":{"c":1}}}']), { maxJsonDepth: 3 }));
 
     // Should not yield anything — exceeds depth
     expect(results).toHaveLength(0);
   });
 
   it('yields typed results with generic parameter', async () => {
-    interface Person { name: string; age: number }
-    const results = await collect(
-      streamJson<Person>(chunked(['{"name":"Ada","age":30}'])),
-    );
+    interface Person {
+      name: string;
+      age: number;
+    }
+    const results = await collect(streamJson<Person>(chunked(['{"name":"Ada","age":30}'])));
 
     expect(results[0]!.value.name).toBe('Ada');
     expect(results[0]!.value.age).toBe(30);
@@ -273,9 +264,7 @@ describe('streamJson', () => {
   });
 
   it('handles prose before JSON', async () => {
-    const results = await collect(
-      streamJson(chunked(['Here is the data: ', '{"result":', '42', '}'])),
-    );
+    const results = await collect(streamJson(chunked(['Here is the data: ', '{"result":', '42', '}'])));
 
     const completes = results.filter(r => !r.isPartial);
     expect(completes.length).toBeGreaterThanOrEqual(1);
@@ -291,9 +280,7 @@ describe('zodAdapter', () => {
 
   it('validateWithZod throws when zod-to-json-schema is not installed', async () => {
     const fakeSchema = { _def: {}, parse: (d: unknown) => d } as const;
-    await expect(validateWithZod('{"a":1}', fakeSchema)).rejects.toThrow(
-      'zod-to-json-schema is required',
-    );
+    await expect(validateWithZod('{"a":1}', fakeSchema)).rejects.toThrow('zod-to-json-schema is required');
   });
 });
 

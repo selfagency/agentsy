@@ -36,8 +36,6 @@ describe('buildXmlToolSystemPrompt', () => {
   });
 
   it('accepts tool names with letters, digits, underscores, colons, and hyphens', () => {
-    expect(() =>
-      buildXmlToolSystemPrompt([{ name: 'my_tool-v2:sub' }]),
-    ).not.toThrow();
+    expect(() => buildXmlToolSystemPrompt([{ name: 'my_tool-v2:sub' }])).not.toThrow();
   });
 });

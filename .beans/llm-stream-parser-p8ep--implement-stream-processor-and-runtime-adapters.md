@@ -12,11 +12,13 @@ parent: llm-stream-parser-l1oq
 Implement `LLMStreamProcessor` lifecycle plus generic async iterable and VS Code adapters with events/parts/accumulation ergonomics.
 
 ## Todo
+
 - [x] Implement processor lifecycle (`process`, `processComplete`, `flush`, `reset`).
 - [x] Add events, parts, and accumulation ergonomics.
 - [x] Add generic and VS Code adapters.
 
 ## Summary of Changes
+
 - Delivered via completed task `llm-stream-parser-hb9y`.
 - Added processor/adapters/markdown modules and export wiring.
 - Verified with passing tests and type-check.
