@@ -1,13 +1,11 @@
 ---
 # llm-stream-parser-q8qn
 title: LLM Stream Parser extraction and Opilot rollout
-status: in-progress
+status: todo
 type: milestone
 priority: high
-branch: feat/q8qn-parser-extraction-hierarchy
-pr: 1
 created_at: 2026-03-11T17:08:11Z
-updated_at: 2026-03-11T17:12:30Z
+updated_at: 2026-03-12T00:32:58Z
 ---
 
 Implement the parser extraction plan in `docs/plans/parser-extraction.plan.md` by delivering a reusable `llm-stream-parser` package, integrating it back into Opilot, and validating parity/security before default enablement.
