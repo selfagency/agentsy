@@ -101,19 +101,19 @@ tasks:
       - ./node_modules/.bin/tsup --watch
     silent: false
 
-  docs:dev:
+  docs-dev:
     desc: Start documentation dev server
     cmds:
       - ./node_modules/.bin/vitepress dev docs
     silent: false
 
-  docs:build:
+  docs-build:
     desc: Build documentation
     cmds:
       - ./node_modules/.bin/vitepress build docs
     silent: false
 
-  docs:preview:
+  docs-preview:
     desc: Preview built documentation
     cmds:
       - ./node_modules/.bin/vitepress preview .gh-pages

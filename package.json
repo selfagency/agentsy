@@ -82,7 +82,7 @@
     "docs:preview": "vitepress preview .gh-pages"
   },
   "keywords": [],
-  "author": "",
+  "author": "Daniel Sieradski <daniel@self.agency>",
   "license": "MIT",
   "packageManager": "pnpm@10.31.0",
   "dependencies": {
@@ -97,7 +97,7 @@
     "oxfmt": "^0.38.0",
     "oxlint": "^1.53.0",
     "oxlint-tsgolint": "^0.16.0",
-    "tsup": "^8.5.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vitepress": "^1.6.4",
