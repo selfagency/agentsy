@@ -49,6 +49,13 @@ function extractJsonWrappedToolCall(
   }
 }
 
+/**
+ * Extracts tool calls from XML-formatted LLM output.
+ * Supports both bare-XML (`<tool_name>`) and JSON-wrapped (`<toolcall>`) formats.
+ *
+ * @returns An array of successfully parsed tool calls. Malformed or unrecognised
+ *          tool calls are silently skipped — the function never throws.
+ */
 export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
   if (knownTools.size === 0) {
     return [];

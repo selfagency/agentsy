@@ -302,7 +302,7 @@ const processor = new LLMStreamProcessor({
 
 - [API Reference](/api) - Complete API documentation
 - [Developer Guide](/developers/) - Local development and testing
-- [Copilot Chat Integration](/developers/integration-opilot) - Integration patterns
+- [Copilot Chat Integration](/developers/integration-copilot) - Integration patterns
 
 ## Troubleshooting
 

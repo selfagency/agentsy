@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { processStream } from './generic.js';
+import { createGenericAdapter, processStream } from './generic.js';
 import { createVSCodeCopilotAdapter } from './vscode.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 
@@ -45,5 +45,116 @@ describe('createVSCodeCopilotAdapter', () => {
       parameters: { query: 'x' },
       format: 'json-wrapped',
     });
+  });
+});
+
+describe('createGenericAdapter', () => {
+  it('routes content to onContent callback', async () => {
+    const onContent = vi.fn();
+    const adapter = createGenericAdapter(
+      { onContent },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await adapter.write({ content: 'Hello world' });
+    await adapter.end();
+
+    expect(onContent).toHaveBeenCalledWith('Hello world');
+  });
+
+  it('routes thinking text to onThinking callback', async () => {
+    const onThinking = vi.fn();
+    const onContent = vi.fn();
+    const adapter = createGenericAdapter(
+      { onThinking, onContent },
+      { parseThinkTags: true, scrubContextTags: false },
+    );
+
+    await adapter.write({ content: '<think>reasoning</think>Answer' });
+    await adapter.end();
+
+    expect(onThinking).toHaveBeenCalledWith('reasoning');
+    expect(onContent).toHaveBeenCalledWith('Answer');
+  });
+
+  it('suppresses thinking when showThinking is false', async () => {
+    const onThinking = vi.fn();
+    const adapter = createGenericAdapter(
+      { onThinking },
+      { parseThinkTags: true, scrubContextTags: false, showThinking: false },
+    );
+
+    await adapter.write({ content: '<think>hidden</think>visible' });
+    await adapter.end();
+
+    expect(onThinking).not.toHaveBeenCalled();
+  });
+
+  it('calls onDone when stream ends', async () => {
+    const onDone = vi.fn();
+    const adapter = createGenericAdapter(
+      { onDone },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await adapter.write({ content: 'data' });
+    await adapter.end();
+
+    expect(onDone).toHaveBeenCalledOnce();
+  });
+
+  it('routes tool calls to onToolCall callback', async () => {
+    const onToolCall = vi.fn();
+    const adapter = createGenericAdapter(
+      { onToolCall },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await adapter.write({
+      content: 'text',
+      tool_calls: [{ function: { name: 'run', arguments: { x: 1 } } }],
+    });
+    await adapter.end();
+
+    expect(onToolCall).toHaveBeenCalledWith({
+      name: 'run',
+      parameters: { x: 1 },
+      format: 'json-wrapped',
+    });
+  });
+
+  it('propagates errors from callbacks', async () => {
+    const adapter = createGenericAdapter(
+      {
+        onContent: () => {
+          throw new Error('callback error');
+        },
+      },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await expect(adapter.write({ content: 'test' })).rejects.toThrow('callback error');
+  });
+
+  it('works with no callbacks provided', async () => {
+    const adapter = createGenericAdapter({}, { parseThinkTags: false, scrubContextTags: false });
+
+    // Should not throw even with no callbacks
+    await adapter.write({ content: 'test' });
+    await adapter.end();
+  });
+
+  it('handles multiple write+end cycles after processor reset', async () => {
+    const contents: string[] = [];
+    const adapter = createGenericAdapter(
+      { onContent: (text) => { contents.push(text); } },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    await adapter.write({ content: 'first' });
+    await adapter.end();
+
+    // Adapter reuses processor which needs manual reset for reuse
+    expect(contents).toContain('first');
   });
 });

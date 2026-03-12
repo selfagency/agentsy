@@ -3,3 +3,6 @@ export * from './validateJsonSchema.js';
 export * from './buildFormatInstructions.js';
 export * from './buildRepairPrompt.js';
 export * from './pipe.js';
+export * from './streamJson.js';
+export * from './zodAdapter.js';
+export * from './autoRepair.js';

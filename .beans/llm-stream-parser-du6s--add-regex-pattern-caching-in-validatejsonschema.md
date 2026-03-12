@@ -1,0 +1,12 @@
+---
+# llm-stream-parser-du6s
+title: Add regex pattern caching in validateJsonSchema
+status: done
+type: task
+priority: low
+created_at: 2026-03-11T22:45:35Z
+updated_at: 2026-03-11T23:24:17Z
+parent: llm-stream-parser-2h10
+---
+
+Regex patterns in validateJsonSchema are compiled on every validation call. Add a simple LRU cache or pre-compilation option for repeated validations with the same schema.

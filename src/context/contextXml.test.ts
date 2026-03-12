@@ -73,6 +73,40 @@ describe('createXmlStreamFilter', () => {
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain('maxXmlNestingDepth');
   });
+
+  it('allows nesting exactly at maxXmlNestingDepth', () => {
+    const filter = createXmlStreamFilter({ maxXmlNestingDepth: 3 });
+    // 3 levels deep = exactly at limit
+    const out = filter.write('<a><b><c>ok</c></b></a>') + filter.end();
+    expect(out).toContain('ok');
+  });
+
+  it('handles self-closing tags without incrementing depth', () => {
+    const filter = createXmlStreamFilter({ maxXmlNestingDepth: 2 });
+    const out = filter.write('<a><self-closing/><b>visible</b></a>') + filter.end();
+    expect(out).toContain('visible');
+  });
+
+  it('handles CDATA sections within content', () => {
+    const filter = createXmlStreamFilter();
+    const out = filter.write('<code><![CDATA[<script>alert("hi")</script>]]></code>') + filter.end();
+    expect(out).toContain('CDATA');
+  });
+
+  it('handles XML comments in stream', () => {
+    const filter = createXmlStreamFilter();
+    const out = filter.write('before<!-- comment -->after') + filter.end();
+    // Comments should pass through or be handled gracefully
+    expect(out).toContain('before');
+    expect(out).toContain('after');
+  });
+
+  it('handles empty self-closing scrub tags', () => {
+    const filter = createXmlStreamFilter();
+    const out = filter.write('visible<environment_info/>more') + filter.end();
+    expect(out).toContain('visible');
+    expect(out).toContain('more');
+  });
 });
 
 describe('stripXmlContextTags', () => {
