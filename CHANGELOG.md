@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-13
+
+**Full Changelog**: https://github.com/selfagency/llm-stream-parser/compare/v0.1.3...v0.1.4
+
+_Source: changes from v0.1.3 to v0.1.4._
+
+
 ## [0.1.3] - 2026-03-13
 
 **Full Changelog**: https://github.com/selfagency/llm-stream-parser/compare/v0.1.2...v0.1.3
