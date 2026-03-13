@@ -138,7 +138,7 @@ export async function* streamJson<T = unknown>(
     collectPaths(parsed, '', next);
     const changedPaths = diffPaths(prevPaths, next);
     prevPaths = next;
-    return changedPaths.map((path) => ({
+    return changedPaths.map(path => ({
       path,
       value: next.get(path),
       isComplete,

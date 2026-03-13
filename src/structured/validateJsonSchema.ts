@@ -1,4 +1,4 @@
-import { parseJson, DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, type ParseJsonOptions } from './parseJson.js';
+import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJsonOptions } from './parseJson.js';
 
 type JsonSchema = Record<string, unknown>;
 
@@ -291,7 +291,12 @@ function validateNode(
         : {};
 
     for (const [key, childSchema] of Object.entries(properties)) {
-      if (Object.hasOwn(objectValue, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
+      if (
+        Object.hasOwn(objectValue, key) &&
+        childSchema &&
+        typeof childSchema === 'object' &&
+        !Array.isArray(childSchema)
+      ) {
         validateNode(objectValue[key], childSchema as JsonSchema, `${path}.${key}`, errors, context);
       }
     }

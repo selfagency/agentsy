@@ -96,7 +96,6 @@ describe('LLMStreamProcessor', () => {
     );
   });
 
-
   it('truncates tool calls when maxToolCallsPerMessage is exceeded', () => {
     const onWarning = vi.fn();
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
@@ -329,7 +328,11 @@ describe('LLMStreamProcessor', () => {
 
   it('processComplete() output includes accumulated usage', () => {
     const processor = new LLMStreamProcessor();
-    const out = processor.processComplete({ content: 'done', done: true, usage: { inputTokens: 4, outputTokens: 8, totalTokens: 12 } });
+    const out = processor.processComplete({
+      content: 'done',
+      done: true,
+      usage: { inputTokens: 4, outputTokens: 8, totalTokens: 12 },
+    });
 
     expect(out.usage).toEqual({ inputTokens: 4, outputTokens: 8, totalTokens: 12 });
   });

@@ -184,7 +184,7 @@ describe('ThinkingParser', () => {
 
   it('handles think blocks with only whitespace', () => {
     const parser = new ThinkingParser();
-    const [thinking, content] = parser.addContent('<think>   \n   </think>visible');
+    const [_thinking, content] = parser.addContent('<think>   \n   </think>visible');
     // Whitespace is eaten by thinkingStartedEatingWhitespace and thinkingDoneEatingWhitespace states
     expect(content).toBe('visible');
   });

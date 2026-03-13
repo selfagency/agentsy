@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import { createGenericAdapter, processStream } from './generic.js';
 import { createVSCodeCopilotAdapter } from './vscode.js';
-import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 
 describe('processStream', () => {
   it('yields processed outputs and final flush output', async () => {
@@ -128,8 +128,8 @@ describe('createGenericAdapter', () => {
     const adapter = createGenericAdapter({}, { parseThinkTags: false, scrubContextTags: false });
 
     // Should not throw even with no callbacks
-    await adapter.write({ content: 'test' });
-    await adapter.end();
+    await expect(adapter.write({ content: 'test' })).resolves.toBeUndefined();
+    await expect(adapter.end()).resolves.toBeUndefined();
   });
 
   it('handles multiple write+end cycles after processor reset', async () => {
@@ -162,7 +162,7 @@ describe('createGenericAdapter', () => {
 
     const adapter = createGenericAdapter(
       {
-        onContent: async (text) => {
+        onContent: async text => {
           if (text === 'chunk1') {
             // Simulate slow async work for the first chunk
             await firstDone;
@@ -191,7 +191,11 @@ describe('createGenericAdapter', () => {
   it('rapid sequential writes all deliver content in order', async () => {
     const received: string[] = [];
     const adapter = createGenericAdapter(
-      { onContent: text => { received.push(text); } },
+      {
+        onContent: text => {
+          received.push(text);
+        },
+      },
       { parseThinkTags: false, scrubContextTags: false },
     );
 

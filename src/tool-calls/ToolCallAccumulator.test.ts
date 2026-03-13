@@ -39,8 +39,8 @@ describe('ToolCallAccumulator', () => {
       const calls = acc.flush();
       expect(calls).toHaveLength(2);
 
-      const read = calls.find((c) => c.name === 'read_file');
-      const write = calls.find((c) => c.name === 'write_file');
+      const read = calls.find(c => c.name === 'read_file');
+      const write = calls.find(c => c.name === 'write_file');
       expect(read?.arguments).toEqual({ path: 'a.ts' });
       expect(write?.arguments).toEqual({ path: 'b.ts' });
     });
@@ -138,7 +138,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('emits accumulated native tool calls on done chunk', () => {
     const processor = new LLMStreamProcessor();
     const received: Array<{ name: string; parameters: Record<string, unknown> }> = [];
-    processor.on('tool_call', (call) => received.push({ name: call.name, parameters: call.parameters }));
+    processor.on('tool_call', call => received.push({ name: call.name, parameters: call.parameters }));
 
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'get_time', id: 'c1', argumentsDelta: '{"tz":' }],
@@ -155,7 +155,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('emits accumulated calls via flush() when done flag is on flush path', () => {
     const processor = new LLMStreamProcessor();
     const received: string[] = [];
-    processor.on('tool_call', (call) => received.push(call.name));
+    processor.on('tool_call', call => received.push(call.name));
 
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'calculate', argumentsDelta: '{"x":42}' }],
@@ -169,7 +169,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('sets format to native-json on emitted calls', () => {
     const processor = new LLMStreamProcessor();
     const formats: string[] = [];
-    processor.on('tool_call', (call) => formats.push(call.format));
+    processor.on('tool_call', call => formats.push(call.format));
 
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{}' }],
@@ -182,7 +182,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('handles mixed XML and native tool calls in same stream', () => {
     const processor = new LLMStreamProcessor({ knownTools: new Set(['xml_tool']) });
     const names: string[] = [];
-    processor.on('tool_call', (call) => names.push(`${call.format}:${call.name}`));
+    processor.on('tool_call', call => names.push(`${call.format}:${call.name}`));
 
     processor.process({ content: '<xml_tool><a>1</a></xml_tool>' });
     processor.process({
@@ -197,7 +197,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('respects accumulateNativeToolCalls: false option', () => {
     const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: false });
     const received: string[] = [];
-    processor.on('tool_call', (call) => received.push(call.name));
+    processor.on('tool_call', call => received.push(call.name));
 
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"x":1}' }],
@@ -215,7 +215,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
     processor.reset();
 
     const received: string[] = [];
-    processor.on('tool_call', (call) => received.push(call.name));
+    processor.on('tool_call', call => received.push(call.name));
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'new_fn', argumentsDelta: '{"b":2}' }],
       done: true,
@@ -227,7 +227,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('does not duplicate native tool calls when processComplete() is called', () => {
     const processor = new LLMStreamProcessor();
     const received: string[] = [];
-    processor.on('tool_call', (call) => received.push(call.name));
+    processor.on('tool_call', call => received.push(call.name));
 
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"x":1}' }],
@@ -241,7 +241,7 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
   it('does not duplicate native tool calls when flush() is called after done chunk', () => {
     const processor = new LLMStreamProcessor();
     const received: string[] = [];
-    processor.on('tool_call', (call) => received.push(call.name));
+    processor.on('tool_call', call => received.push(call.name));
 
     processor.process({
       nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{}' }],
@@ -257,10 +257,10 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
     const warnings: string[] = [];
     const processor = new LLMStreamProcessor({
       maxToolArgumentBytes: 10,
-      onWarning: (msg) => warnings.push(msg),
+      onWarning: msg => warnings.push(msg),
     });
     const received: Array<{ name: string; args: Record<string, unknown> }> = [];
-    processor.on('tool_call', (call) => received.push({ name: call.name, args: call.parameters }));
+    processor.on('tool_call', call => received.push({ name: call.name, args: call.parameters }));
 
     processor.process({
       nativeToolCallDeltas: [
@@ -270,7 +270,6 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
       done: true,
     });
 
-    expect(warnings.some((w) => w.includes('maxToolArgumentBytes'))).toBe(true);
+    expect(warnings.some(w => w.includes('maxToolArgumentBytes'))).toBe(true);
   });
 });
-

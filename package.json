@@ -96,10 +96,12 @@
   },
   "devDependencies": {
     "@go-task/cli": "^3.49.1",
+    "@octokit/rest": "^22.0.1",
     "@types/node": "^25.4.0",
     "@vitest/coverage-v8": "^4.0.18",
     "husky": "^9.1.7",
     "lint-staged": "^16.3.3",
+    "ora": "^9.3.0",
     "oxfmt": "^0.38.0",
     "oxlint": "^1.53.0",
     "oxlint-tsgolint": "^0.16.0",

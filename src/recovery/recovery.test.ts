@@ -31,8 +31,7 @@ describe('captureStreamState', () => {
       knownTools: new Set(['lookup']),
     });
     processor.process({
-      content:
-        '<toolCall>{"name":"lookup","arguments":{"q":"test"}}</toolCall>',
+      content: '<toolCall>{"name":"lookup","arguments":{"q":"test"}}</toolCall>',
       done: true,
     });
 

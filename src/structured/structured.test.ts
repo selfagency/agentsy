@@ -5,11 +5,7 @@ import { buildFormatInstructions } from './buildFormatInstructions.js';
 import { buildRepairPrompt } from './buildRepairPrompt.js';
 import { parseJson } from './parseJson.js';
 import { pipe } from './pipe.js';
-import {
-  buildGeminiResponseSchema,
-  buildOllamaFormat,
-  buildOpenAIResponseFormat,
-} from './providerFormats.js';
+import { buildGeminiResponseSchema, buildOllamaFormat, buildOpenAIResponseFormat } from './providerFormats.js';
 import { streamJson } from './streamJson.js';
 import { validateJsonSchema } from './validateJsonSchema.js';
 import { validateWithZod, zodToJsonSchema } from './zodAdapter.js';
@@ -51,9 +47,7 @@ describe('validateJsonSchema', () => {
     });
 
     expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.name).toBe('Ada');
-    }
+    expect(result.success === true && result.data.name).toBe('Ada');
   });
 
   it('returns deterministic errors for invalid payloads', () => {
@@ -67,10 +61,8 @@ describe('validateJsonSchema', () => {
     });
 
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.errors).toContain('$.count: expected integer, got string');
-      expect(result.errors).toContain('$.extra: additional property is not allowed');
-    }
+    expect(result.success === false && result.errors).toContain('$.count: expected integer, got string');
+    expect(result.success === false && result.errors).toContain('$.extra: additional property is not allowed');
   });
 
   it('returns deterministic errors when JSON limits are exceeded', () => {
@@ -78,14 +70,12 @@ describe('validateJsonSchema', () => {
     const keysExceeded = validateJsonSchema('{"a":1,"b":2,"c":3}', { type: 'object' }, { maxJsonKeys: 2 });
 
     expect(depthExceeded.success).toBe(false);
-    if (!depthExceeded.success) {
-      expect(depthExceeded.errors).toEqual(['$: JSON depth exceeds maxJsonDepth (3)']);
-    }
+    expect(depthExceeded.success === false && depthExceeded.errors).toEqual(['$: JSON depth exceeds maxJsonDepth (3)']);
 
     expect(keysExceeded.success).toBe(false);
-    if (!keysExceeded.success) {
-      expect(keysExceeded.errors).toEqual(['$: JSON key count exceeds maxJsonKeys (2)']);
-    }
+    expect(keysExceeded.success === false && keysExceeded.errors).toEqual([
+      '$: JSON key count exceeds maxJsonKeys (2)',
+    ]);
   });
 
   it('uses external validator adapter when provided', () => {
@@ -98,9 +88,7 @@ describe('validateJsonSchema', () => {
     );
 
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.errors).toEqual(['$: adapter rejected payload']);
-    }
+    expect(result.success === false && result.errors).toEqual(['$: adapter rejected payload']);
   });
 
   it('rejects regex patterns exceeding maximum length', () => {
@@ -113,9 +101,7 @@ describe('validateJsonSchema', () => {
     });
 
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.errors[0]).toContain('exceeds maximum length');
-    }
+    expect(result.success === false && result.errors[0]).toContain('exceeds maximum length');
   });
 
   it('accepts regex patterns within length limit', () => {
@@ -296,18 +282,14 @@ describe('streamJson', () => {
   });
 
   it('emits newFields with emitFields: true for nested objects', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"name":"Ada","address":{"city":"Berlin"}}'])),
-    );
+    const results = await collect(streamJson(chunked(['{"name":"Ada","address":{"city":"Berlin"}}'])));
 
     // Without emitFields, newFields should be empty
     expect(results[0]!.newFields).toEqual([]);
   });
 
   it('emitFields: true emits leaf paths and values on first complete parse', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"name":"Ada","age":30}']), { emitFields: true }),
-    );
+    const results = await collect(streamJson(chunked(['{"name":"Ada","age":30}']), { emitFields: true }));
 
     const final = results[results.length - 1]!;
     expect(final.status).toBe('completed');
@@ -329,12 +311,11 @@ describe('streamJson', () => {
 
     // Partial emissions should have isComplete: false on their fields
     const partialResults = results.filter(r => r.isPartial);
-    if (partialResults.length > 0) {
-      const firstPartial = partialResults[0]!;
-      firstPartial.newFields.forEach(f => {
-        expect(f.isComplete).toBe(false);
-      });
-    }
+    expect(partialResults.length).toBeGreaterThan(0);
+    const firstPartial = partialResults[0]!;
+    firstPartial.newFields.forEach(f => {
+      expect(f.isComplete).toBe(false);
+    });
 
     // Complete result should have isComplete: true
     const finalResult = results[results.length - 1]!;
@@ -345,9 +326,7 @@ describe('streamJson', () => {
   });
 
   it('emitFields: true detects incremental field additions across successive emissions', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"a":1', ',"b":2', ',"c":3}']), { emitFields: true }),
-    );
+    const results = await collect(streamJson(chunked(['{"a":1', ',"b":2', ',"c":3}']), { emitFields: true }));
 
     // Collect all new fields across all emissions
     const allNewFieldPaths = results.flatMap(r => r.newFields.map(f => f.path));
@@ -357,9 +336,7 @@ describe('streamJson', () => {
   });
 
   it('emitFields: true handles array items, each item gets an indexed path', async () => {
-    const results = await collect(
-      streamJson(chunked(['{"items":[1,2,3]}']), { emitFields: true }),
-    );
+    const results = await collect(streamJson(chunked(['{"items":[1,2,3]}']), { emitFields: true }));
 
     const final = results[results.length - 1]!;
     const paths = final.newFields.map(f => f.path);
@@ -635,9 +612,7 @@ describe('validateJsonSchema — allOf', () => {
       required: ['score'],
     });
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.errors.length).toBeGreaterThanOrEqual(2);
-    }
+    expect(result.success === false && result.errors.length).toBeGreaterThanOrEqual(2);
   });
 
   it('combines type + required constraints via allOf', () => {

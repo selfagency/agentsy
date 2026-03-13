@@ -38,10 +38,7 @@ export interface ContinuationMessage {
  * Capture the current accumulated state of a `LLMStreamProcessor` for later
  * stream resumption or retry.
  */
-export function captureStreamState(
-  processor: LLMStreamProcessor,
-  options?: ProcessorOptions,
-): StreamSnapshot {
+export function captureStreamState(processor: LLMStreamProcessor, options?: ProcessorOptions): StreamSnapshot {
   const msg = processor.accumulatedMessage;
   return {
     content: msg.content,
@@ -76,9 +73,7 @@ export function buildContinuationPrompt(
   if (provider === 'anthropic') {
     // Anthropic supports prefilling: end the exchange with a partial assistant
     // message and the model continues from where it left off.
-    return [
-      { role: 'assistant', content: partialContent },
-    ];
+    return [{ role: 'assistant', content: partialContent }];
   }
 
   // OpenAI / Ollama: include the partial assistant turn then add a user message

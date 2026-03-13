@@ -172,7 +172,10 @@ export class LLMStreamProcessor {
           this.warn('Native tool call argumentsDelta exceeded maxToolArgumentBytes; truncating before accumulation.', {
             maxToolArgumentBytes: maxArgumentBytes,
           });
-          this.nativeAccumulator.addDelta({ ...delta, argumentsDelta: delta.argumentsDelta.slice(0, maxArgumentBytes) });
+          this.nativeAccumulator.addDelta({
+            ...delta,
+            argumentsDelta: delta.argumentsDelta.slice(0, maxArgumentBytes),
+          });
         } else {
           this.nativeAccumulator.addDelta(delta);
         }
@@ -194,7 +197,10 @@ export class LLMStreamProcessor {
     }
 
     const output = this.buildOutput({
-      thinking, content, toolCalls, done,
+      thinking,
+      content,
+      toolCalls,
+      done,
       ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
     });
     this.recordOutput(output);
@@ -421,8 +427,10 @@ export class LLMStreamProcessor {
     }
   }
 
-  private mapAccumulatedNativeCalls(calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[]): XmlToolCall[] {
-    return calls.map((call) => ({
+  private mapAccumulatedNativeCalls(
+    calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[],
+  ): XmlToolCall[] {
+    return calls.map(call => ({
       name: call.name,
       parameters: call.arguments,
       format: 'native-json' as const,
