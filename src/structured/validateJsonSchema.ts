@@ -77,7 +77,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
     const keysB = Object.keys(bObj);
     if (keysA.length !== keysB.length) return false;
     for (const k of keysA) {
-      if (!deepEqual(aObj[k], bObj[k])) return false;
+      if (!Object.hasOwn(bObj, k) || !deepEqual(aObj[k], bObj[k])) return false;
     }
     return true;
   }
@@ -126,7 +126,7 @@ function validateNode(
       errors.push(`${path}: circular $ref detected: ${ref}`);
       return;
     }
-    const defSchema = context?.defs[defName];
+    const defSchema = context !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
     if (defSchema === undefined) {
       errors.push(`${path}: $ref not found in $defs: ${ref}`);
       return;
@@ -155,7 +155,7 @@ function validateNode(
     }
   }
 
-  if (Array.isArray(schema.enum) && !schema.enum.some(item => Object.is(item, value))) {
+  if (Array.isArray(schema.enum) && !schema.enum.some(item => deepEqual(item, value))) {
     errors.push(`${path}: value is not in enum`);
   }
 
@@ -267,7 +267,7 @@ function validateNode(
     const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
 
     for (const key of required) {
-      if (!(key in objectValue)) {
+      if (!Object.hasOwn(objectValue, key)) {
         errors.push(`${path}.${key}: missing required property`);
       }
     }
@@ -278,14 +278,14 @@ function validateNode(
         : {};
 
     for (const [key, childSchema] of Object.entries(properties)) {
-      if (key in objectValue && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
+      if (Object.hasOwn(objectValue, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
         validateNode(objectValue[key], childSchema as JsonSchema, `${path}.${key}`, errors, context);
       }
     }
 
     if (schema.additionalProperties === false) {
       for (const key of Object.keys(objectValue)) {
-        if (!(key in properties)) {
+        if (!Object.hasOwn(properties, key)) {
           errors.push(`${path}.${key}: additional property is not allowed`);
         }
       }
