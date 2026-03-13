@@ -53,7 +53,90 @@ function typeOf(value: unknown): string {
   return typeof value;
 }
 
-function validateNode(value: unknown, schema: JsonSchema, path: string, errors: string[]): void {
+interface ResolveContext {
+  defs: Record<string, JsonSchema>;
+  resolving: Set<string>;
+}
+
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (a === null || b === null) return false;
+  if (typeof a !== typeof b) return false;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  if (Array.isArray(a) || Array.isArray(b)) return false;
+  if (typeof a === 'object' && typeof b === 'object') {
+    const aObj = a as Record<string, unknown>;
+    const bObj = b as Record<string, unknown>;
+    const keysA = Object.keys(aObj);
+    const keysB = Object.keys(bObj);
+    if (keysA.length !== keysB.length) return false;
+    for (const k of keysA) {
+      if (!Object.hasOwn(bObj, k) || !deepEqual(aObj[k], bObj[k])) return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+// Simple format validation patterns (pragmatic; not full RFC compliance).
+const FORMAT_PATTERNS: Record<string, string> = {
+  date: '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$',
+  'date-time':
+    '^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d+)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$',
+  email: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$',
+  uri: '^[a-zA-Z][a-zA-Z0-9+\\-.]*:',
+  uuid: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  ipv4: '^(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)(?:\\.(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)){3}$',
+  ipv6:
+    '^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,7}:$' +
+    '|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$' +
+    '|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$' +
+    '|^:(:[0-9a-fA-F]{1,4}){1,7}$' +
+    '|^::$',
+};
+
+function validateNode(
+  value: unknown,
+  schema: JsonSchema,
+  path: string,
+  errors: string[],
+  context?: ResolveContext,
+): void {
+  // $ref: resolve local #/$defs/... references only (no remote $ref — SSRF risk).
+  if (typeof schema.$ref === 'string') {
+    const ref = schema.$ref;
+    const match = /^#\/\$defs\/([^/]+)$/.exec(ref);
+    if (match === null || match[1] === undefined) {
+      errors.push(`${path}: unsupported $ref (only local #/$defs/... references are supported): ${ref}`);
+      return;
+    }
+    const defName = match[1];
+    if (context?.resolving.has(defName) === true) {
+      errors.push(`${path}: circular $ref detected: ${ref}`);
+      return;
+    }
+    const defSchema = context !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
+    if (defSchema === undefined) {
+      errors.push(`${path}: $ref not found in $defs: ${ref}`);
+      return;
+    }
+    const newResolving = new Set(context!.resolving);
+    newResolving.add(defName);
+    validateNode(value, defSchema, path, errors, { defs: context!.defs, resolving: newResolving });
+    return;
+  }
+
   const schemaType = typeof schema.type === 'string' ? schema.type : undefined;
   const valueType = typeOf(value);
 
@@ -72,8 +155,56 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
     }
   }
 
-  if (Array.isArray(schema.enum) && !schema.enum.some(item => Object.is(item, value))) {
+  if (Array.isArray(schema.enum) && !schema.enum.some(item => deepEqual(item, value))) {
     errors.push(`${path}: value is not in enum`);
+  }
+
+  // const: value must deeply equal the schema constant.
+  if ('const' in schema && !deepEqual(value, schema.const)) {
+    errors.push(`${path}: value does not match const`);
+  }
+
+  // not: sub-schema must NOT match.
+  if (schema.not && typeof schema.not === 'object' && !Array.isArray(schema.not)) {
+    const notErrors: string[] = [];
+    validateNode(value, schema.not as JsonSchema, path, notErrors, context);
+    if (notErrors.length === 0) {
+      errors.push(`${path}: value must not match the 'not' schema`);
+    }
+  }
+
+  // anyOf: at least one sub-schema must match.
+  if (Array.isArray(schema.anyOf)) {
+    const matched = schema.anyOf.some(subSchema => {
+      if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return false;
+      const subErrors: string[] = [];
+      validateNode(value, subSchema as JsonSchema, path, subErrors, context);
+      return subErrors.length === 0;
+    });
+    if (!matched) {
+      errors.push(`${path}: value does not match any of the 'anyOf' schemas`);
+    }
+  }
+
+  // oneOf: exactly one sub-schema must match.
+  if (Array.isArray(schema.oneOf)) {
+    const matchCount = schema.oneOf.reduce((count: number, subSchema) => {
+      if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return count;
+      const subErrors: string[] = [];
+      validateNode(value, subSchema as JsonSchema, path, subErrors, context);
+      return subErrors.length === 0 ? count + 1 : count;
+    }, 0);
+    if (matchCount !== 1) {
+      errors.push(`${path}: value must match exactly one of the 'oneOf' schemas (matched ${matchCount})`);
+    }
+  }
+
+  // allOf: all sub-schemas must match.
+  if (Array.isArray(schema.allOf)) {
+    for (const subSchema of schema.allOf) {
+      if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) continue;
+      validateNode(value, subSchema as JsonSchema, path, errors, context);
+    }
   }
 
   if (typeof value === 'string') {
@@ -91,6 +222,16 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
           }
         } catch {
           errors.push(`${path}: schema pattern is not a valid regular expression: ${schema.pattern}`);
+        }
+      }
+    }
+
+    if (typeof schema.format === 'string') {
+      const formatPattern = FORMAT_PATTERNS[schema.format];
+      if (formatPattern !== undefined) {
+        const regex = getCachedRegex(formatPattern);
+        if (!regex.test(value)) {
+          errors.push(`${path}: string does not match format '${schema.format}'`);
         }
       }
     }
@@ -116,7 +257,7 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
     const itemSchema = schema.items;
     if (itemSchema && typeof itemSchema === 'object' && !Array.isArray(itemSchema)) {
       for (let i = 0; i < value.length; i++) {
-        validateNode(value[i], itemSchema as JsonSchema, `${path}[${i}]`, errors);
+        validateNode(value[i], itemSchema as JsonSchema, `${path}[${i}]`, errors, context);
       }
     }
   }
@@ -126,7 +267,7 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
     const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
 
     for (const key of required) {
-      if (!(key in objectValue)) {
+      if (!Object.hasOwn(objectValue, key)) {
         errors.push(`${path}.${key}: missing required property`);
       }
     }
@@ -137,14 +278,14 @@ function validateNode(value: unknown, schema: JsonSchema, path: string, errors: 
         : {};
 
     for (const [key, childSchema] of Object.entries(properties)) {
-      if (key in objectValue && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
-        validateNode(objectValue[key], childSchema as JsonSchema, `${path}.${key}`, errors);
+      if (Object.hasOwn(objectValue, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
+        validateNode(objectValue[key], childSchema as JsonSchema, `${path}.${key}`, errors, context);
       }
     }
 
     if (schema.additionalProperties === false) {
       for (const key of Object.keys(objectValue)) {
-        if (!(key in properties)) {
+        if (!Object.hasOwn(properties, key)) {
           errors.push(`${path}.${key}: additional property is not allowed`);
         }
       }
@@ -228,8 +369,15 @@ export function validateJsonSchema<T = unknown>(
     return { success: false, errors: limitErrors };
   }
 
+  // Extract $defs for local $ref resolution.
+  const defs =
+    schema.$defs && typeof schema.$defs === 'object' && !Array.isArray(schema.$defs)
+      ? (schema.$defs as Record<string, JsonSchema>)
+      : {};
+  const context: ResolveContext = { defs, resolving: new Set<string>() };
+
   const errors: string[] = [];
-  validateNode(parsed, schema, '$', errors);
+  validateNode(parsed, schema, '$', errors, context);
 
   if (options.validator) {
     try {
