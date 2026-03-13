@@ -242,4 +242,4 @@ See [docs/developers/contributing.md](docs/developers/contributing.md) for full 
 
 ## License
 
-MIT © [Daniel Sieradski](https://self.agency)
+MIT ©2026 [The Self Agency, LLC](https://self.agency)
