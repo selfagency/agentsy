@@ -907,3 +907,86 @@ describe('buildGeminiResponseSchema', () => {
     expect(result.responseSchema).toBe(schema);
   });
 });
+
+describe('provider format builders — complex nested schemas', () => {
+  // A realistic schema with $defs, nested objects, arrays, and various types.
+  const complexSchema = {
+    $defs: {
+      Address: {
+        type: 'object',
+        required: ['street', 'city'],
+        properties: {
+          street: { type: 'string' },
+          city: { type: 'string' },
+          postalCode: { type: 'string', format: 'ipv4' }, // deliberately odd, just for nesting
+        },
+        additionalProperties: false,
+      },
+    },
+    type: 'object',
+    required: ['id', 'name', 'addresses'],
+    properties: {
+      id: { type: 'integer', minimum: 1 },
+      name: { type: 'string', minLength: 1 },
+      email: { type: 'string', format: 'email' },
+      tags: { type: 'array', items: { type: 'string' }, maxItems: 10 },
+      addresses: {
+        type: 'array',
+        items: { $ref: '#/$defs/Address' },
+        minItems: 1,
+      },
+      metadata: {
+        type: 'object',
+        additionalProperties: { type: 'string' },
+      },
+      status: { oneOf: [{ const: 'active' }, { const: 'inactive' }, { const: 'pending' }] },
+    },
+    additionalProperties: false,
+  };
+
+  it('buildOpenAIResponseFormat preserves complex schema structure exactly', () => {
+    const result = buildOpenAIResponseFormat(complexSchema, { name: 'user_profile' });
+    expect(result.type).toBe('json_schema');
+    expect(result.json_schema.name).toBe('user_profile');
+    expect(result.json_schema.schema).toBe(complexSchema);
+    // Verify nested shape is intact
+    expect((result.json_schema.schema as typeof complexSchema).$defs.Address.type).toBe('object');
+  });
+
+  it('buildOllamaFormat returns the complex schema by reference', () => {
+    const result = buildOllamaFormat(complexSchema);
+    expect(result).toBe(complexSchema);
+    expect(result.$defs).toBeDefined();
+  });
+
+  it('buildGeminiResponseSchema wraps complex schema without mutation', () => {
+    const result = buildGeminiResponseSchema(complexSchema);
+    expect(result.responseMimeType).toBe('application/json');
+    expect(result.responseSchema).toBe(complexSchema);
+    expect((result.responseSchema as typeof complexSchema).properties.status).toBeDefined();
+  });
+
+  it('validateJsonSchema validates a complex payload against the complex schema with $ref resolution', () => {
+    const payload = JSON.stringify({
+      id: 1,
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+      tags: ['engineer', 'pioneer'],
+      addresses: [{ street: '10 Downing St', city: 'London' }],
+      status: 'active',
+    });
+    const result = validateJsonSchema(payload, complexSchema);
+    expect(result.success).toBe(true);
+  });
+
+  it('validateJsonSchema rejects a complex payload that violates a nested $ref schema', () => {
+    const payload = JSON.stringify({
+      id: 1,
+      name: 'Ada',
+      addresses: [{ city: 'London' }], // missing required 'street'
+    });
+    const result = validateJsonSchema(payload, complexSchema);
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.errors.some(e => e.includes('street'))).toBe(true);
+  });
+});
