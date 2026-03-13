@@ -1,20 +1,18 @@
 ---
 # llm-stream-parser-oclv
 title: Provider format builders
-status: todo
+status: completed
 type: feature
 priority: medium
 created_at: 2026-03-12T00:16:58Z
-updated_at: 2026-03-12T00:17:03Z
+updated_at: 2026-03-13T01:28:16Z
 parent: llm-stream-parser-ayp9
-id: llm-stream-parser-oclv
 ---
 
-Create `src/structured/providerFormats.ts` with:
+Create `src/structured/providerFormats.ts` with provider-specific JSON schema format builders.
 
-- `buildOpenAIResponseFormat(schema, options?)` → `{ type: "json_schema", json_schema: { name, strict, schema } }`
-- `buildOllamaFormat(schema)` → JSON schema directly (Ollama's `format` parameter)
-- `buildGeminiResponseSchema(schema)` → `{ responseMimeType: "application/json", responseSchema: ... }`
-- Pure data transformers — no API calls
+## Todo
 
-Plan ref: Phase 4, Step 4.2
+- [x] `buildOpenAIResponseFormat(schema, options?)` — OpenAI `response_format` object
+- [x] `buildOllamaFormat(schema)` — Ollama schema (direct JSON Schema pass-through)
+- [x] `buildGeminiResponseSchema(schema)` — Gemini `responseSchema` + `responseMimeType`
