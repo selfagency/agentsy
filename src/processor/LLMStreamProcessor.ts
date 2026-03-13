@@ -54,6 +54,8 @@ export interface ProcessedOutput {
   toolCalls: XmlToolCall[];
   done: boolean;
   parts: OutputPart[];
+  /** Accumulated token usage, populated from the last chunk that carried usage data. */
+  usage?: UsageInfo;
 }
 
 export type StreamEventMap = {
@@ -62,6 +64,8 @@ export type StreamEventMap = {
   tool_call: (call: XmlToolCall) => void;
   done: () => void;
   warning: (message: string, context?: Record<string, unknown>) => void;
+  /** Emitted each time a chunk carrying `usage` data is processed. */
+  usage: (usage: UsageInfo) => void;
 };
 
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
@@ -78,6 +82,7 @@ export class LLMStreamProcessor {
   private _accumulatedThinking = '';
   private _accumulatedContent = '';
   private _accumulatedToolCalls: XmlToolCall[] = [];
+  private _accumulatedUsage: UsageInfo | undefined = undefined;
   private doneEmitted = false;
   private _warningCount = 0;
 
@@ -89,6 +94,7 @@ export class LLMStreamProcessor {
     tool_call: new Set(),
     done: new Set(),
     warning: new Set(),
+    usage: new Set(),
   };
 
   public constructor(options: ProcessorOptions = {}) {
@@ -120,6 +126,14 @@ export class LLMStreamProcessor {
       this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const done = chunk.done === true;
+
+    // Merge token usage from this chunk into accumulated usage and emit.
+    if (chunk.usage !== undefined) {
+      this._accumulatedUsage = { ...this._accumulatedUsage, ...chunk.usage };
+      for (const listener of this.listeners.usage) {
+        listener(this._accumulatedUsage);
+      }
+    }
 
     // Feed any streaming native tool call deltas into the accumulator.
     if (this.nativeAccumulator && Array.isArray(chunk.nativeToolCallDeltas)) {
@@ -154,7 +168,10 @@ export class LLMStreamProcessor {
       content = this.xmlFilter.write(content);
     }
 
-    const output = this.buildOutput({ thinking, content, toolCalls, done });
+    const output = this.buildOutput({
+      thinking, content, toolCalls, done,
+      ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
+    });
     this.recordOutput(output);
     this.emitOutput(output);
     return output;
@@ -169,6 +186,7 @@ export class LLMStreamProcessor {
       content: out.content + flushed.content,
       toolCalls: [...out.toolCalls, ...flushed.toolCalls],
       done: true,
+      ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
     });
   }
 
@@ -202,6 +220,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done: true,
+      ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
     });
 
     this.recordOutput(output);
@@ -214,11 +233,15 @@ export class LLMStreamProcessor {
   }
 
   public get accumulatedMessage(): AccumulatedMessage {
-    return {
+    const msg: AccumulatedMessage = {
       thinking: this._accumulatedThinking,
       content: this._accumulatedContent,
       toolCalls: [...this._accumulatedToolCalls],
     };
+    if (this._accumulatedUsage !== undefined) {
+      msg.usage = this._accumulatedUsage;
+    }
+    return msg;
   }
 
   public reset(): void {
@@ -228,6 +251,7 @@ export class LLMStreamProcessor {
     this._accumulatedThinking = '';
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
+    this._accumulatedUsage = undefined;
     this.doneEmitted = false;
     this._warningCount = 0;
   }
@@ -302,6 +326,7 @@ export class LLMStreamProcessor {
     content: string;
     toolCalls: XmlToolCall[];
     done: boolean;
+    usage?: UsageInfo;
   }): ProcessedOutput {
     const parts: OutputPart[] = [];
 
@@ -317,13 +342,17 @@ export class LLMStreamProcessor {
       parts.push({ type: 'tool_call', call });
     }
 
-    return {
+    const result: ProcessedOutput = {
       thinking: params.thinking,
       content: params.content,
       toolCalls: params.toolCalls,
       done: params.done,
       parts,
     };
+    if (params.usage !== undefined) {
+      result.usage = params.usage;
+    }
+    return result;
   }
 
   private recordOutput(output: ProcessedOutput): void {

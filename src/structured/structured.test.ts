@@ -270,6 +270,98 @@ describe('streamJson', () => {
     expect(completes.length).toBeGreaterThanOrEqual(1);
     expect(completes[completes.length - 1]!.value).toEqual({ result: 42 });
   });
+
+  it('includes status field: partial while streaming, completed on finish', async () => {
+    const results = await collect(streamJson(chunked(['{"name":', '"Ada"', '}'])));
+
+    const partials = results.filter(r => r.status === 'partial');
+    const completes = results.filter(r => r.status === 'completed');
+
+    expect(partials.length).toBeGreaterThanOrEqual(1);
+    expect(completes).toHaveLength(1);
+    expect(completes[0]!.isPartial).toBe(false);
+  });
+
+  it('single-chunk complete JSON has status completed from the start', async () => {
+    const results = await collect(streamJson(chunked(['{"x":1}'])));
+
+    expect(results).toHaveLength(1);
+    expect(results[0]!.status).toBe('completed');
+    expect(results[0]!.isPartial).toBe(false);
+  });
+
+  it('emits newFields with emitFields: true for nested objects', async () => {
+    const results = await collect(
+      streamJson(chunked(['{"name":"Ada","address":{"city":"Berlin"}}'])),
+    );
+
+    // Without emitFields, newFields should be empty
+    expect(results[0]!.newFields).toEqual([]);
+  });
+
+  it('emitFields: true emits leaf paths and values on first complete parse', async () => {
+    const results = await collect(
+      streamJson(chunked(['{"name":"Ada","age":30}']), { emitFields: true }),
+    );
+
+    const final = results[results.length - 1]!;
+    expect(final.status).toBe('completed');
+    expect(final.newFields.length).toBeGreaterThanOrEqual(2);
+
+    const paths = final.newFields.map(f => f.path);
+    expect(paths).toContain('name');
+    expect(paths).toContain('age');
+
+    const nameField = final.newFields.find(f => f.path === 'name');
+    expect(nameField?.value).toBe('Ada');
+    expect(nameField?.isComplete).toBe(true);
+  });
+
+  it('emitFields: true emits partial fields during streaming', async () => {
+    const results = await collect(
+      streamJson(chunked(['{"name":', '"Ada"', ',"score":', '99', '}']), { emitFields: true }),
+    );
+
+    // Partial emissions should have isComplete: false on their fields
+    const partialResults = results.filter(r => r.isPartial);
+    if (partialResults.length > 0) {
+      const firstPartial = partialResults[0]!;
+      firstPartial.newFields.forEach(f => {
+        expect(f.isComplete).toBe(false);
+      });
+    }
+
+    // Complete result should have isComplete: true
+    const finalResult = results[results.length - 1]!;
+    expect(finalResult.status).toBe('completed');
+    finalResult.newFields.forEach(f => {
+      expect(f.isComplete).toBe(true);
+    });
+  });
+
+  it('emitFields: true detects incremental field additions across successive emissions', async () => {
+    const results = await collect(
+      streamJson(chunked(['{"a":1', ',"b":2', ',"c":3}']), { emitFields: true }),
+    );
+
+    // Collect all new fields across all emissions
+    const allNewFieldPaths = results.flatMap(r => r.newFields.map(f => f.path));
+    expect(allNewFieldPaths).toContain('a');
+    expect(allNewFieldPaths).toContain('b');
+    expect(allNewFieldPaths).toContain('c');
+  });
+
+  it('emitFields: true handles array items, each item gets an indexed path', async () => {
+    const results = await collect(
+      streamJson(chunked(['{"items":[1,2,3]}']), { emitFields: true }),
+    );
+
+    const final = results[results.length - 1]!;
+    const paths = final.newFields.map(f => f.path);
+    expect(paths).toContain('items[0]');
+    expect(paths).toContain('items[1]');
+    expect(paths).toContain('items[2]');
+  });
 });
 
 describe('zodAdapter', () => {

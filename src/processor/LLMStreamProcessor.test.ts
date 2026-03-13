@@ -233,4 +233,90 @@ describe('LLMStreamProcessor', () => {
 
     expect(events).toEqual(['thinking', 'text', 'done']);
   });
+
+  // -------------------------------------------------------------------
+  // Usage / token tracking (Phase 3)
+  // -------------------------------------------------------------------
+
+  it('stores usage from a chunk carrying usage data', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'hello', usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 } });
+
+    expect(processor.accumulatedMessage.usage).toEqual({
+      inputTokens: 10,
+      outputTokens: 20,
+      totalTokens: 30,
+    });
+  });
+
+  it('includes usage in ProcessedOutput when chunk has usage', () => {
+    const processor = new LLMStreamProcessor();
+    const out = processor.process({ content: 'hi', usage: { inputTokens: 5, outputTokens: 8 } });
+
+    expect(out.usage).toEqual({ inputTokens: 5, outputTokens: 8 });
+  });
+
+  it('merges usage from multiple chunks (last-write-wins per field)', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'a', usage: { inputTokens: 10 } });
+    processor.process({ content: 'b', usage: { outputTokens: 20, totalTokens: 30 } });
+
+    expect(processor.accumulatedMessage.usage).toEqual({
+      inputTokens: 10,
+      outputTokens: 20,
+      totalTokens: 30,
+    });
+  });
+
+  it('emits usage event when chunk carries usage', () => {
+    const onUsage = vi.fn();
+    const processor = new LLMStreamProcessor();
+    processor.on('usage', onUsage);
+
+    processor.process({ content: 'x', usage: { inputTokens: 1, outputTokens: 2, totalTokens: 3 } });
+
+    expect(onUsage).toHaveBeenCalledTimes(1);
+    expect(onUsage).toHaveBeenCalledWith({ inputTokens: 1, outputTokens: 2, totalTokens: 3 });
+  });
+
+  it('does not emit usage event when chunk has no usage', () => {
+    const onUsage = vi.fn();
+    const processor = new LLMStreamProcessor();
+    processor.on('usage', onUsage);
+
+    processor.process({ content: 'no usage here' });
+
+    expect(onUsage).not.toHaveBeenCalled();
+  });
+
+  it('usage is undefined in accumulatedMessage when no chunks carried usage', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'hello' });
+
+    expect(processor.accumulatedMessage.usage).toBeUndefined();
+  });
+
+  it('flush() output includes accumulated usage', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: '<think>t</think>', usage: { inputTokens: 7 } });
+    const flushed = processor.flush();
+
+    expect(flushed.usage).toEqual({ inputTokens: 7 });
+  });
+
+  it('processComplete() output includes accumulated usage', () => {
+    const processor = new LLMStreamProcessor();
+    const out = processor.processComplete({ content: 'done', done: true, usage: { inputTokens: 4, outputTokens: 8, totalTokens: 12 } });
+
+    expect(out.usage).toEqual({ inputTokens: 4, outputTokens: 8, totalTokens: 12 });
+  });
+
+  it('reset() clears accumulated usage', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ usage: { inputTokens: 99 } });
+    expect(processor.accumulatedMessage.usage).toBeDefined();
+
+    processor.reset();
+    expect(processor.accumulatedMessage.usage).toBeUndefined();
+  });
 });
