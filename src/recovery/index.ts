@@ -1,4 +1,4 @@
-import type { LLMStreamProcessor, ProcessorOptions, ProcessedOutput } from '../processor/LLMStreamProcessor.js';
+import type { LLMStreamProcessor, ProcessorOptions } from '../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import type { UsageInfo } from '../normalizers/types.js';
 
@@ -88,5 +88,3 @@ export function buildContinuationPrompt(
     { role: 'user', content: 'Please continue from exactly where you left off.' },
   ];
 }
-
-export type { ProcessedOutput };
