@@ -1,7 +1,7 @@
 ---
 # llm-stream-parser-ayp9
 title: Schema Validation & Format Builders (Phase 4)
-status: in-progress
+status: completed
 type: milestone
 priority: normal
 created_at: 2026-03-12T00:14:42Z
@@ -14,7 +14,7 @@ See: docs/developers/gap-implementation-plan.md — Phase 4
 
 ## Todo
 
-- [ ] Step 4.1: Enhance validateJsonSchema (oneOf/anyOf/allOf/not/const/$defs/$ref/format)
-- [ ] Step 4.2: Create src/structured/providerFormats.ts (OpenAI, Ollama, Gemini builders)
-- [ ] Step 4.3: Tests for all Phase 4 features
-- [ ] Update barrel exports (src/structured/index.ts)
+- [x] Step 4.1: Enhance validateJsonSchema (oneOf/anyOf/allOf/not/const/$defs/$ref/format)
+- [x] Step 4.2: Create src/structured/providerFormats.ts (OpenAI, Ollama, Gemini builders)
+- [x] Step 4.3: Tests for all Phase 4 features
+- [x] Update barrel exports (src/structured/index.ts)
