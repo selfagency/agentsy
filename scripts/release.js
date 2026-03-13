@@ -6,7 +6,7 @@ import { homedir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
-import { $, argv, cd, sleep } from 'zx';
+import { $, argv, cd, ProcessOutput, sleep } from 'zx';
 
 $.verbose = false;
 
@@ -361,14 +361,6 @@ async function main() {
   await $`node scripts/write-dist-package.js`;
   $.verbose = false;
 
-  // Check npm login; prompt if not authenticated.
-  try {
-    await $`npm whoami --registry=${NPM_REGISTRY}`;
-  } catch {
-    console.log('🔐 Not logged in to npm. Please log in:');
-    await $`npm login --registry=${NPM_REGISTRY}`;
-  }
-
   const distTag = version.includes('-') ? 'next' : 'latest';
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   $.verbose = true;
@@ -462,7 +454,7 @@ main().catch(async err => {
   const msg = err?.message ?? String(err);
   // ProcessOutput errors from zx already printed the command output; only
   // print extra context for our own thrown errors.
-  if (!err) {
+  if (!(err instanceof ProcessOutput)) {
     console.error(`❌ ${msg}`);
   }
   await rollback();
