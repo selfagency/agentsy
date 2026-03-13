@@ -3,7 +3,7 @@
 Composable parsers and stream processing utilities for LLM responses.
 
 [![npm](https://img.shields.io/npm/v/@selfagency/llm-stream-parser)](https://www.npmjs.com/package/@selfagency/llm-stream-parser)
-[![CI](https://github.com/selfagency/@selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/@selfagency/llm-stream-parser/actions/workflows/tests.yml)
+[![CI](https://github.com/selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/selfagency/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Features
