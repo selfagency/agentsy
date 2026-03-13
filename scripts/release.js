@@ -361,6 +361,14 @@ async function main() {
   await $`node scripts/write-dist-package.js`;
   $.verbose = false;
 
+  // Check npm login; prompt if not authenticated.
+  try {
+    await $`npm whoami --registry=${NPM_REGISTRY}`;
+  } catch {
+    console.log('🔐 Not logged in to npm. Please log in:');
+    await $`npm login --registry=${NPM_REGISTRY}`;
+  }
+
   const distTag = version.includes('-') ? 'next' : 'latest';
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   $.verbose = true;

@@ -9,8 +9,20 @@ async function main() {
   const rootPkgPath = resolve(__dirname, '..', 'package.json');
   const outDir = resolve(__dirname, '..', 'dist');
   const raw = await readFile(rootPkgPath, 'utf8');
-  const { name, version, description, keywords, homepage, bugs, issues, repository, license, author, mcpName } =
-    JSON.parse(raw);
+  const { name, version, description, keywords, homepage, bugs, repository, license, author } = JSON.parse(raw);
+
+  // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
+  /** @type {Record<string, { types: string; import: string; require: string }>} */
+  const rootExports = JSON.parse(raw).exports;
+  /** @type {Record<string, { types: string; import: string; require: string }>} */
+  const distExports = {};
+  for (const [key, value] of Object.entries(rootExports)) {
+    distExports[key] = {
+      types: value.types.replace('./dist/', './'),
+      import: value.import.replace('./dist/', './'),
+      require: value.require.replace('./dist/', './'),
+    };
+  }
 
   const distPkg = {
     name,
@@ -19,24 +31,14 @@ async function main() {
     keywords,
     homepage,
     bugs,
-    issues,
     repository,
     license,
     author,
+    type: 'module',
     main: './index.cjs',
     module: './index.js',
     types: './index.d.ts',
-    files: ['./index.cjs', './index.js', './index.d.ts'],
-    bin: {
-      'beans-mcp': './beans-mcp-server.cjs',
-    },
-    exports: {
-      '.': {
-        import: './index.js',
-        require: './index.cjs',
-      },
-    },
-    mcpName,
+    exports: distExports,
   };
 
   await mkdir(outDir, { recursive: true });
