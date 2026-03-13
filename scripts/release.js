@@ -358,6 +358,7 @@ async function main() {
   console.log('📦 Building package...');
   $.verbose = true;
   await $`pnpm build`;
+  await $`node scripts/write-dist-package.js`;
   $.verbose = false;
 
   const distTag = version.includes('-') ? 'next' : 'latest';
