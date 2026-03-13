@@ -8,13 +8,13 @@ Composable parsers and stream processing utilities for LLM responses.
 
 ## Features
 
-- **Thinking extraction** — Parse and separate `<think>` reasoning sections from visible output, chunk-by-chunk
-- **XML stream filtering** — Scrub context blocks and privacy tags from streaming output
-- **Tool-call extraction** — Extract and validate structured XML tool invocations
-- **Structured output** — JSON parsing with schema validation, depth/key limits, and auto-repair
-- **Stream processor** — Event-driven orchestrator that composes all parsers in a single pipeline
-- **Normalizers** — Adapters for OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock, and HF TGI
-- **Safety by default** — Privacy tags are always scrubbed; JSON depth, key counts, and tool-call sizes are bounded
+- 🧠 **Thinking extraction** — Parse and separate `<think>` reasoning sections from visible output, chunk-by-chunk
+- 🧼 **XML stream filtering** — Scrub context blocks and privacy tags from streaming output
+- 🛠️ **Tool-call extraction** — Extract and validate structured XML tool invocations
+- 🏛️ **Structured output** — JSON parsing with schema validation, depth/key limits, and auto-repair
+- 🚰 **Stream processor** — Event-driven orchestrator that composes all parsers in a single pipeline
+- 🔌 **Normalizers** — Adapters for OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock, and HF TGI
+- 👮‍♂️ **Safety by default** — Privacy tags are always scrubbed; JSON depth, key counts, and tool-call sizes are bounded
 
 ## Installation
 
