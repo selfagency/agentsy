@@ -319,4 +319,58 @@ describe('LLMStreamProcessor', () => {
     processor.reset();
     expect(processor.accumulatedMessage.usage).toBeUndefined();
   });
+
+  // -------------------------------------------------------------------
+  // Concurrent events — content + done in a single chunk
+  // -------------------------------------------------------------------
+
+  it('processes content and done flag in the same chunk', () => {
+    const onText = vi.fn();
+    const onDone = vi.fn();
+    const processor = new LLMStreamProcessor({ scrubContextTags: false });
+
+    processor.on('text', onText).on('done', onDone);
+
+    const out = processor.process({ content: 'final text', done: true });
+
+    expect(out.content).toBe('final text');
+    expect(out.done).toBe(true);
+    expect(onText).toHaveBeenCalledWith('final text');
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it('includes thinking and signals done in the same chunk', () => {
+    const events: string[] = [];
+    // Disable context tag scrubbing so xmlFilter does not buffer 'answer' text
+    const processor = new LLMStreamProcessor({ scrubContextTags: false });
+
+    processor.on('thinking', () => events.push('thinking'));
+    processor.on('text', () => events.push('text'));
+    processor.on('done', () => events.push('done'));
+
+    const out = processor.process({ content: '<think>plan</think>answer', done: true });
+
+    expect(out.thinking).toBe('plan');
+    expect(out.content).toBe('answer');
+    expect(out.done).toBe(true);
+    expect(events).toEqual(['thinking', 'text', 'done']);
+  });
+
+  it('emits tool_call and done events when final chunk carries tool calls and done: true', () => {
+    const onToolCall = vi.fn();
+    const onDone = vi.fn();
+    const processor = new LLMStreamProcessor();
+
+    processor.on('tool_call', onToolCall).on('done', onDone);
+
+    const out = processor.process({
+      tool_calls: [{ function: { name: 'fetch', arguments: { url: 'https://example.com' } } }],
+      done: true,
+    });
+
+    expect(out.toolCalls).toHaveLength(1);
+    expect(out.done).toBe(true);
+    expect(onToolCall).toHaveBeenCalledOnce();
+    expect(onDone).toHaveBeenCalledOnce();
+  });
 });

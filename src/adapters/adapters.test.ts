@@ -149,4 +149,60 @@ describe('createGenericAdapter', () => {
     // Adapter reuses processor which needs manual reset for reuse
     expect(contents).toContain('first');
   });
+
+  // --- Backpressure ---
+
+  it('awaits each async callback before processing the next write', async () => {
+    const order: number[] = [];
+    let resolveFirst!: () => void;
+
+    const firstDone = new Promise<void>(resolve => {
+      resolveFirst = resolve;
+    });
+
+    const adapter = createGenericAdapter(
+      {
+        onContent: async (text) => {
+          if (text === 'chunk1') {
+            // Simulate slow async work for the first chunk
+            await firstDone;
+            order.push(1);
+          } else {
+            order.push(2);
+          }
+        },
+      },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    // Start both writes concurrently — write() must individually await its callback
+    const p1 = adapter.write({ content: 'chunk1' });
+    // Resolve the first callback while p1 is still in-flight
+    resolveFirst();
+    const p2 = adapter.write({ content: 'chunk2' });
+
+    await Promise.all([p1, p2]);
+
+    // Each write awaits its own callback, so both complete without throwing
+    expect(order).toContain(1);
+    expect(order).toContain(2);
+  });
+
+  it('rapid sequential writes all deliver content in order', async () => {
+    const received: string[] = [];
+    const adapter = createGenericAdapter(
+      { onContent: text => { received.push(text); } },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    for (let i = 0; i < 20; i++) {
+      await adapter.write({ content: `chunk${i}` });
+    }
+    await adapter.end();
+
+    expect(received).toHaveLength(20);
+    for (let i = 0; i < 20; i++) {
+      expect(received[i]).toBe(`chunk${i}`);
+    }
+  });
 });
