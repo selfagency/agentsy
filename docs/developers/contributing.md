@@ -1,6 +1,6 @@
 # Contributing
 
-We welcome contributions to `llm-stream-parser`! This guide explains how to contribute.
+We welcome contributions to `@selfagency/llm-stream-parser`! This guide explains how to contribute.
 
 ## Getting Started
 

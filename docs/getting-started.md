@@ -1,25 +1,25 @@
 # Getting Started
 
-Get up and running with `llm-stream-parser` in a few minutes.
+Get up and running with `@selfagency/llm-stream-parser` in a few minutes.
 
 ## Installation
 
 ### With npm
 
 ```bash
-npm install llm-stream-parser
+npm install @selfagency/llm-stream-parser
 ```
 
 ### With pnpm
 
 ```bash
-pnpm add llm-stream-parser
+pnpm add @selfagency/llm-stream-parser
 ```
 
 ### With yarn
 
 ```bash
-yarn add llm-stream-parser
+yarn add @selfagency/llm-stream-parser
 ```
 
 ## Requirements
@@ -32,7 +32,7 @@ yarn add llm-stream-parser
 ### Extract thinking from streaming response
 
 ```typescript
-import { ThinkingParser } from 'llm-stream-parser';
+import { ThinkingParser } from '@selfagency/llm-stream-parser';
 
 const parser = new ThinkingParser();
 
@@ -50,7 +50,7 @@ const [finalThinking, finalContent] = parser.flush();
 ### Parse JSON from response
 
 ```typescript
-import { parseJson } from 'llm-stream-parser';
+import { parseJson } from '@selfagency/llm-stream-parser';
 
 const response = await llm.complete('Return JSON: {key: "value"}');
 const data = parseJson(response);
@@ -65,7 +65,7 @@ if (data !== null) {
 ### Validate JSON against schema
 
 ```typescript
-import { validateJsonSchema } from 'llm-stream-parser';
+import { validateJsonSchema } from '@selfagency/llm-stream-parser';
 
 const schema = {
   type: 'object',
@@ -87,7 +87,7 @@ if (result.success) {
 ### Extract tool calls
 
 ```typescript
-import { extractXmlToolCalls } from 'llm-stream-parser';
+import { extractXmlToolCalls } from '@selfagency/llm-stream-parser';
 
 const response = await llm.complete('Use tools to search the codebase');
 
@@ -103,7 +103,7 @@ for (const call of toolCalls) {
 ### Filter context blocks
 
 ```typescript
-import { createXmlStreamFilter } from 'llm-stream-parser';
+import { createXmlStreamFilter } from '@selfagency/llm-stream-parser';
 
 const filter = createXmlStreamFilter({
   enforcePrivacyTags: true,
@@ -120,7 +120,7 @@ output.write(filter.end());
 ### Process complete stream response
 
 ```typescript
-import { LLMStreamProcessor } from 'llm-stream-parser';
+import { LLMStreamProcessor } from '@selfagency/llm-stream-parser';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
@@ -152,7 +152,7 @@ console.log('Tool calls:', message.toolCalls);
 ### Use generic adapter for simpler integration
 
 ```typescript
-import { processStream } from 'llm-stream-parser/adapters';
+import { processStream } from '@selfagency/llm-stream-parser/adapters';
 
 for await (const output of processStream(apiStream, {
   parseThinkTags: true,
@@ -262,8 +262,8 @@ const processor = new LLMStreamProcessor({
 - **Use subpath imports** to reduce bundle size:
 
   ```typescript
-  import { ThinkingParser } from 'llm-stream-parser/thinking';
-  import { parseJson } from 'llm-stream-parser/structured';
+  import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
+  import { parseJson } from '@selfagency/llm-stream-parser/structured';
   ```
 
 - **Stream processing** instead of buffering:

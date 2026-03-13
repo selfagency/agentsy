@@ -1,26 +1,26 @@
 # API Reference
 
-Complete API documentation for `llm-stream-parser`. All exports are available from the root or via subpath imports.
+Complete API documentation for `@selfagency/llm-stream-parser`. All exports are available from the root or via subpath imports.
 
 ## Module Exports
 
 ### Root export
 
 ```typescript
-import * as llmStreamParser from 'llm-stream-parser';
+import * as llmStreamParser from '@selfagency/llm-stream-parser';
 ```
 
 ### Subpath exports
 
 ```typescript
-import { ThinkingParser } from 'llm-stream-parser/thinking';
-import { createXmlStreamFilter, XmlStreamFilter } from 'llm-stream-parser/xml-filter';
-import { extractXmlToolCalls, buildXmlToolSystemPrompt } from 'llm-stream-parser/tool-calls';
+import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
+import { createXmlStreamFilter, XmlStreamFilter } from '@selfagency/llm-stream-parser/xml-filter';
+import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@selfagency/llm-stream-parser/tool-calls';
 import {
   splitLeadingXmlContextBlocks,
   dedupeXmlContextBlocksByTag,
   stripXmlContextTags,
-} from 'llm-stream-parser/context';
+} from '@selfagency/llm-stream-parser/context';
 import {
   parseJson,
   validateJsonSchema,
@@ -31,16 +31,16 @@ import {
   zodToJsonSchema,
   validateWithZod,
   repairWithLLM,
-} from 'llm-stream-parser/structured';
-import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from 'llm-stream-parser/formatting';
-import { LLMStreamProcessor } from 'llm-stream-parser/processor';
-import { appendToBlockquote } from 'llm-stream-parser/markdown';
-import { processStream } from 'llm-stream-parser/adapters';
+} from '@selfagency/llm-stream-parser/structured';
+import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from '@selfagency/llm-stream-parser/formatting';
+import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
+import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
+import { processStream } from '@selfagency/llm-stream-parser/adapters';
 ```
 
 ## Thinking Extraction
 
-> **Subpath**: `llm-stream-parser/thinking`
+> **Subpath**: `@selfagency/llm-stream-parser/thinking`
 
 Streaming-first parser for extracting reasoning sections from LLM responses.
 
@@ -102,7 +102,7 @@ const parser4 = ThinkingParser.forModel('my-model', customMap);
 
 ## XML/Context Filtering
 
-> **Subpath**: `llm-stream-parser/xml-filter` + `llm-stream-parser/context`
+> **Subpath**: `@selfagency/llm-stream-parser/xml-filter` + `@selfagency/llm-stream-parser/context`
 
 Stream-safe XML context block filtering and deduplication.
 
@@ -171,7 +171,7 @@ const stripped = stripXmlContextTags(remaining);
 
 ## Tool-Call Extraction
 
-> **Subpath**: `llm-stream-parser/tool-calls`
+> **Subpath**: `@selfagency/llm-stream-parser/tool-calls`
 
 Extract structured tool calls from XML format in responses.
 
@@ -229,7 +229,7 @@ const systemPrompt = buildXmlToolSystemPrompt(tools);
 
 ## Structured Output Parsing
 
-> **Subpath**: `llm-stream-parser/structured`
+> **Subpath**: `@selfagency/llm-stream-parser/structured`
 
 JSON parsing with schema validation, repair prompts, and composable pipelines.
 
@@ -380,7 +380,7 @@ Incrementally parse JSON from a text stream, yielding partial and complete objec
 **Example:**
 
 ```typescript
-import { streamJson } from 'llm-stream-parser/structured';
+import { streamJson } from '@selfagency/llm-stream-parser/structured';
 
 for await (const result of streamJson<{ name: string }>(textStream)) {
   console.log(result.isPartial ? '(partial)' : '(complete)', result.value);
@@ -415,7 +415,7 @@ Automatically retries parsing and validation by sending repair prompts to the LL
 **Example:**
 
 ```typescript
-import { repairWithLLM } from 'llm-stream-parser/structured';
+import { repairWithLLM } from '@selfagency/llm-stream-parser/structured';
 
 const result = await repairWithLLM(llmOutput, schema, async prompt => await callModel(prompt), {
   maxAttempts: 3,
@@ -445,7 +445,7 @@ export async function validateWithZod<T = unknown>(
 
 ```typescript
 import { z } from 'zod';
-import { validateWithZod } from 'llm-stream-parser/structured';
+import { validateWithZod } from '@selfagency/llm-stream-parser/structured';
 
 const PersonSchema = z.object({ name: z.string(), age: z.number() });
 const result = await validateWithZod(response, PersonSchema);
@@ -453,7 +453,7 @@ const result = await validateWithZod(response, PersonSchema);
 
 ## Stream Processing
 
-> **Subpath**: `llm-stream-parser/processor`
+> **Subpath**: `@selfagency/llm-stream-parser/processor`
 
 Orchestrate multiple parsers to process complete LLM stream responses.
 
@@ -578,7 +578,7 @@ const result = processor.processComplete({
 
 ## Formatting & Helpers
 
-> **Subpath**: `llm-stream-parser/formatting`
+> **Subpath**: `@selfagency/llm-stream-parser/formatting`
 
 Output normalization and display formatting.
 
@@ -600,7 +600,7 @@ console.log(formatted);
 
 ## Markdown Processing
 
-> **Subpath**: `llm-stream-parser/markdown`
+> **Subpath**: `@selfagency/llm-stream-parser/markdown`
 
 Utilities for working with markdown content.
 
@@ -619,7 +619,7 @@ const quoted = appendToBlockquote('some text\nmore text', true);
 
 ## Adapters
 
-> **Subpath**: `llm-stream-parser/adapters`
+> **Subpath**: `@selfagency/llm-stream-parser/adapters`
 
 Pre-built adapters for common streaming patterns.
 
@@ -635,7 +635,7 @@ export async function* processStream(
 **Example:**
 
 ```typescript
-import { processStream } from 'llm-stream-parser/adapters';
+import { processStream } from '@selfagency/llm-stream-parser/adapters';
 
 for await (const output of processStream(apiStream, options)) {
   console.log('Thinking:', output.thinking);
@@ -669,7 +669,7 @@ Environment-agnostic callback adapter. Use for HTTP SSE, WebSocket, CLI, or any 
 **Example:**
 
 ```typescript
-import { createGenericAdapter } from 'llm-stream-parser/adapters';
+import { createGenericAdapter } from '@selfagency/llm-stream-parser/adapters';
 
 const adapter = createGenericAdapter({
   onContent: text => process.stdout.write(text),
@@ -741,7 +741,7 @@ const processor = new LLMStreamProcessor({
 Full TypeScript support with strict types:
 
 ```typescript
-import type { XmlToolCall, ProcessedOutput, StreamChunk } from 'llm-stream-parser';
+import type { XmlToolCall, ProcessedOutput, StreamChunk } from '@selfagency/llm-stream-parser';
 
 const output: ProcessedOutput = processor.process(chunk);
 const calls: XmlToolCall[] = output.toolCalls;

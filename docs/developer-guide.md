@@ -1,6 +1,6 @@
 # Developer Guide
 
-This document covers local development, testing, and release operations for `llm-stream-parser`.
+This document covers local development, testing, and release operations for `@selfagency/llm-stream-parser`.
 
 ## Prerequisites
 

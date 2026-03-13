@@ -2,7 +2,7 @@
  * Optional adapter for converting Zod schemas to JSON Schema.
  *
  * Requires `zod` and `zod-to-json-schema` as peer dependencies.
- * These are NOT bundled with llm-stream-parser — install them separately:
+ * These are NOT bundled with @selfagency/llm-stream-parser — install them separately:
  *
  * ```bash
  * pnpm add zod zod-to-json-schema

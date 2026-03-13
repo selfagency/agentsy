@@ -1,9 +1,9 @@
-# llm-stream-parser
+# @selfagency/llm-stream-parser
 
 Composable parsers and stream processing utilities for LLM responses.
 
-[![npm](https://img.shields.io/npm/v/llm-stream-parser)](https://www.npmjs.com/package/llm-stream-parser)
-[![CI](https://github.com/selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/llm-stream-parser/actions/workflows/tests.yml)
+[![npm](https://img.shields.io/npm/v/@selfagency/llm-stream-parser)](https://www.npmjs.com/package/@selfagency/llm-stream-parser)
+[![CI](https://github.com/selfagency/@selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/@selfagency/llm-stream-parser/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Features
@@ -19,11 +19,11 @@ Composable parsers and stream processing utilities for LLM responses.
 ## Installation
 
 ```bash
-npm install llm-stream-parser
+npm install @selfagency/llm-stream-parser
 # or
-pnpm add llm-stream-parser
+pnpm add @selfagency/llm-stream-parser
 # or
-yarn add llm-stream-parser
+yarn add @selfagency/llm-stream-parser
 ```
 
 **Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)
@@ -31,7 +31,7 @@ yarn add llm-stream-parser
 ## Quick Start
 
 ```typescript
-import { LLMStreamProcessor } from 'llm-stream-parser/processor';
+import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
@@ -49,12 +49,12 @@ for await (const chunk of apiStream) {
 
 ## Modules
 
-### `llm-stream-parser/thinking` — ThinkingParser
+### `@selfagency/llm-stream-parser/thinking` — ThinkingParser
 
 Chunk-by-chunk extraction of `<think>` blocks. Returns `[thinkingContent, regularContent]` on every call.
 
 ```typescript
-import { ThinkingParser } from 'llm-stream-parser/thinking';
+import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
 
 const parser = new ThinkingParser();
 
@@ -76,12 +76,12 @@ const parser = ThinkingParser.forModel('granite');    // <|thinking|></|thinking
 
 ---
 
-### `llm-stream-parser/xml-filter` — XmlStreamFilter
+### `@selfagency/llm-stream-parser/xml-filter` — XmlStreamFilter
 
 Stream-safe scrubbing of XML context and privacy blocks.
 
 ```typescript
-import { createXmlStreamFilter } from 'llm-stream-parser/xml-filter';
+import { createXmlStreamFilter } from '@selfagency/llm-stream-parser/xml-filter';
 
 const filter = createXmlStreamFilter({ enforcePrivacyTags: true });
 
@@ -95,14 +95,14 @@ Privacy tags are enforced by default (`enforcePrivacyTags: true`). Pass `enforce
 
 ---
 
-### `llm-stream-parser/context` — Context splitting & dedup
+### `@selfagency/llm-stream-parser/context` — Context splitting & dedup
 
 ```typescript
 import {
   splitLeadingXmlContextBlocks,
   dedupeXmlContextBlocksByTag,
   stripXmlContextTags,
-} from 'llm-stream-parser/context';
+} from '@selfagency/llm-stream-parser/context';
 
 const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(response);
 const unique = dedupeXmlContextBlocksByTag(contextBlocks);
@@ -111,10 +111,10 @@ const clean = stripXmlContextTags(remaining);
 
 ---
 
-### `llm-stream-parser/tool-calls` — XML tool-call extraction
+### `@selfagency/llm-stream-parser/tool-calls` — XML tool-call extraction
 
 ```typescript
-import { extractXmlToolCalls, buildXmlToolSystemPrompt } from 'llm-stream-parser/tool-calls';
+import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@selfagency/llm-stream-parser/tool-calls';
 
 // Extract tool calls from a response
 const calls = extractXmlToolCalls(response, new Set(['search', 'edit_file']));
@@ -133,10 +133,10 @@ const systemPrompt = buildXmlToolSystemPrompt([
 
 ---
 
-### `llm-stream-parser/structured` — JSON parsing & validation
+### `@selfagency/llm-stream-parser/structured` — JSON parsing & validation
 
 ```typescript
-import { parseJson, validateJsonSchema } from 'llm-stream-parser/structured';
+import { parseJson, validateJsonSchema } from '@selfagency/llm-stream-parser/structured';
 
 // Tolerant parse — returns null on failure, never throws
 const data = parseJson(responseText, { maxJsonDepth: 10, maxJsonKeys: 100 });
@@ -159,12 +159,12 @@ Additional utilities: `buildFormatInstructions`, `buildRepairPrompt`, `streamJso
 
 ---
 
-### `llm-stream-parser/normalizers` — Provider normalizers
+### `@selfagency/llm-stream-parser/normalizers` — Provider normalizers
 
 Normalize streaming events from different providers into a common `StreamChunk` shape:
 
 ```typescript
-import { normalizeOpenAI } from 'llm-stream-parser/normalizers';
+import { normalizeOpenAI } from '@selfagency/llm-stream-parser/normalizers';
 
 for await (const event of openaiStream) {
   const { chunk } = normalizeOpenAI(event);
@@ -176,10 +176,10 @@ Supported: `openai`, `openaiResponses`, `anthropic`, `gemini`, `mistral`, `coher
 
 ---
 
-### `llm-stream-parser/adapters` — High-level adapters
+### `@selfagency/llm-stream-parser/adapters` — High-level adapters
 
 ```typescript
-import { createGenericAdapter } from 'llm-stream-parser/adapters';
+import { createGenericAdapter } from '@selfagency/llm-stream-parser/adapters';
 
 const adapter = createGenericAdapter(
   {
@@ -196,18 +196,18 @@ await adapter.end();
 
 ---
 
-### `llm-stream-parser/formatting` — Output sanitization
+### `@selfagency/llm-stream-parser/formatting` — Output sanitization
 
 ```typescript
-import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from 'llm-stream-parser/formatting';
+import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from '@selfagency/llm-stream-parser/formatting';
 ```
 
 ---
 
-### `llm-stream-parser/markdown` — Markdown utilities
+### `@selfagency/llm-stream-parser/markdown` — Markdown utilities
 
 ```typescript
-import { appendToBlockquote } from 'llm-stream-parser/markdown';
+import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
 ```
 
 ## Error Handling

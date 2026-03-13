@@ -1,10 +1,10 @@
-# Welcome to llm-stream-parser
+# Welcome to @selfagency/llm-stream-parser
 
 Composable parsers and stream processing utilities for LLM responses.
 
 ## Overview
 
-`llm-stream-parser` provides production-ready parsing utilities for handling LLM output streams with support for:
+`@selfagency/llm-stream-parser` provides production-ready parsing utilities for handling LLM output streams with support for:
 
 - **Thinking extraction** - Extract and process reasoning sections (e.g., `<think>...</think>`)
 - **XML filtering** - Context block deduplication and filtering
@@ -18,15 +18,15 @@ Composable parsers and stream processing utilities for LLM responses.
 ### Installation
 
 ```bash
-npm install llm-stream-parser
-pnpm add llm-stream-parser
-yarn add llm-stream-parser
+npm install @selfagency/llm-stream-parser
+pnpm add @selfagency/llm-stream-parser
+yarn add @selfagency/llm-stream-parser
 ```
 
 ### Basic Usage
 
 ```typescript
-import { parseJson, extractXmlToolCalls } from 'llm-stream-parser';
+import { parseJson, extractXmlToolCalls } from '@selfagency/llm-stream-parser';
 
 // Parse JSON from streaming LLM output
 const result = parseJson(streamData);
