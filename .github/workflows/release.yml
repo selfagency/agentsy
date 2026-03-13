@@ -2,11 +2,11 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (e.g. 1.2.3)"
+        description: 'Version to release (e.g. 1.2.3)'
         required: true
         type: string
 
@@ -210,17 +210,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: '22'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
-
-      - name: Write dist package.json
-        run: node scripts/write-dist-package.js
 
       - name: Pack npm tarball
         run: npm pack ./dist --pack-destination .
@@ -230,7 +227,7 @@ jobs:
         with:
           tag_name: ${{ needs.detect-tag.outputs.release_tag }}
           body_path: release-notes.md
-          files: "*.tgz"
+          files: '*.tgz'
           draft: false
           prerelease: ${{ contains(needs.detect-tag.outputs.release_tag, '-') }}
         env:

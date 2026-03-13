@@ -9,40 +9,8 @@ async function main() {
   const rootPkgPath = resolve(__dirname, '..', 'package.json');
   const outDir = resolve(__dirname, '..', 'dist');
   const raw = await readFile(rootPkgPath, 'utf8');
-  const { name, version, description, keywords, homepage, bugs, issues, repository, license, author } =
+  const { name, version, description, keywords, homepage, bugs, issues, repository, license, author, mcpName } =
     JSON.parse(raw);
-
-  const subpaths = [
-    'thinking', 'xml-filter', 'tool-calls', 'context', 'structured',
-    'formatting', 'processor', 'markdown', 'adapters', 'normalizers', 'recovery',
-  ];
-
-  /** @type {Record<string, { types: string; import: string; require: string }>} */
-  const exports = {
-    '.': {
-      types: './index.d.ts',
-      import: './index.js',
-      require: './index.cjs',
-    },
-    './adapters/generic': {
-      types: './adapters/generic.d.ts',
-      import: './adapters/generic.js',
-      require: './adapters/generic.cjs',
-    },
-    './adapters/vscode': {
-      types: './adapters/vscode.d.ts',
-      import: './adapters/vscode.js',
-      require: './adapters/vscode.cjs',
-    },
-  };
-
-  for (const sub of subpaths) {
-    exports[`./${sub}`] = {
-      types: `./${sub}/index.d.ts`,
-      import: `./${sub}/index.js`,
-      require: `./${sub}/index.cjs`,
-    };
-  }
 
   const distPkg = {
     name,
@@ -55,11 +23,20 @@ async function main() {
     repository,
     license,
     author,
-    type: 'module',
     main: './index.cjs',
     module: './index.js',
     types: './index.d.ts',
-    exports,
+    files: ['./index.cjs', './index.js', './index.d.ts'],
+    bin: {
+      'beans-mcp': './beans-mcp-server.cjs',
+    },
+    exports: {
+      '.': {
+        import: './index.js',
+        require: './index.cjs',
+      },
+    },
+    mcpName,
   };
 
   await mkdir(outDir, { recursive: true });
