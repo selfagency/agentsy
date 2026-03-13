@@ -12,7 +12,7 @@ export default defineConfig({
       { text: 'Getting started', link: '/getting-started' },
       { text: 'API Reference', link: '/api' },
       { text: 'Developers', link: '/developers/' },
-      { text: 'GitHub', link: 'https://github.com/selfagency/@selfagency/llm-stream-parser' }
+      { text: 'GitHub', link: 'https://github.com/selfagency/llm-stream-parser' }
     ],
     sidebar: {
       '/developers/': [
@@ -21,6 +21,6 @@ export default defineConfig({
         { text: 'Integration Guide', link: '/developers/integration-copilot' }
       ]
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/selfagency/@selfagency/llm-stream-parser' }]
+    socialLinks: [{ icon: 'github', link: 'https://github.com/selfagency/llm-stream-parser' }]
   }
 });
