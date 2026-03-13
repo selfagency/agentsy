@@ -840,6 +840,89 @@ describe('validateJsonSchema — string format', () => {
   });
 });
 
+describe('validateJsonSchema — string minLength / maxLength', () => {
+  it('passes when string length equals minLength', () => {
+    expect(wrap('abc', { type: 'string', minLength: 3 }).success).toBe(true);
+  });
+
+  it('passes when string length exceeds minLength', () => {
+    expect(wrap('abcd', { type: 'string', minLength: 3 }).success).toBe(true);
+  });
+
+  it('fails when string is shorter than minLength', () => {
+    const result = wrap('ab', { type: 'string', minLength: 3 });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.errors[0]).toMatch(/shorter than minLength/);
+  });
+
+  it('passes when string length equals maxLength', () => {
+    expect(wrap('abc', { type: 'string', maxLength: 3 }).success).toBe(true);
+  });
+
+  it('passes when string length is below maxLength', () => {
+    expect(wrap('ab', { type: 'string', maxLength: 3 }).success).toBe(true);
+  });
+
+  it('fails when string exceeds maxLength', () => {
+    const result = wrap('abcd', { type: 'string', maxLength: 3 });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.errors[0]).toMatch(/longer than maxLength/);
+  });
+
+  it('passes when both minLength and maxLength are satisfied', () => {
+    expect(wrap('abc', { type: 'string', minLength: 2, maxLength: 5 }).success).toBe(true);
+  });
+
+  it('fails minLength on empty string when minLength > 0', () => {
+    expect(wrap('', { type: 'string', minLength: 1 }).success).toBe(false);
+  });
+
+  it('passes maxLength: 0 only for empty string', () => {
+    expect(wrap('', { type: 'string', maxLength: 0 }).success).toBe(true);
+    expect(wrap('a', { type: 'string', maxLength: 0 }).success).toBe(false);
+  });
+});
+
+describe('validateJsonSchema — number exclusiveMinimum / exclusiveMaximum', () => {
+  it('passes when value strictly exceeds exclusiveMinimum', () => {
+    expect(wrap(1, { type: 'number', exclusiveMinimum: 0 }).success).toBe(true);
+  });
+
+  it('fails when value equals exclusiveMinimum', () => {
+    const result = wrap(0, { type: 'number', exclusiveMinimum: 0 });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.errors[0]).toMatch(/exclusiveMinimum/);
+  });
+
+  it('fails when value is below exclusiveMinimum', () => {
+    expect(wrap(-1, { type: 'number', exclusiveMinimum: 0 }).success).toBe(false);
+  });
+
+  it('passes when value strictly falls below exclusiveMaximum', () => {
+    expect(wrap(9, { type: 'number', exclusiveMaximum: 10 }).success).toBe(true);
+  });
+
+  it('fails when value equals exclusiveMaximum', () => {
+    const result = wrap(10, { type: 'number', exclusiveMaximum: 10 });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.errors[0]).toMatch(/exclusiveMaximum/);
+  });
+
+  it('fails when value exceeds exclusiveMaximum', () => {
+    expect(wrap(11, { type: 'number', exclusiveMaximum: 10 }).success).toBe(false);
+  });
+
+  it('passes when value is within exclusive bounds', () => {
+    expect(wrap(5, { type: 'number', exclusiveMinimum: 0, exclusiveMaximum: 10 }).success).toBe(true);
+  });
+
+  it('can combine inclusive minimum with exclusive maximum', () => {
+    // 0 ≤ x < 10
+    expect(wrap(0, { type: 'number', minimum: 0, exclusiveMaximum: 10 }).success).toBe(true);
+    expect(wrap(10, { type: 'number', minimum: 0, exclusiveMaximum: 10 }).success).toBe(false);
+  });
+});
+
 // ─── Phase 4: provider format builders ───────────────────────────────────────
 
 describe('buildOpenAIResponseFormat', () => {

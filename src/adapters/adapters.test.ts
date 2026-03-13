@@ -43,7 +43,7 @@ describe('createVSCodeCopilotAdapter', () => {
     expect(onToolCall).toHaveBeenCalledWith({
       name: 'search_files',
       parameters: { query: 'x' },
-      format: 'json-wrapped',
+      format: 'native-json',
     });
   });
 });
@@ -107,7 +107,7 @@ describe('createGenericAdapter', () => {
     expect(onToolCall).toHaveBeenCalledWith({
       name: 'run',
       parameters: { x: 1 },
-      format: 'json-wrapped',
+      format: 'native-json',
     });
   });
 

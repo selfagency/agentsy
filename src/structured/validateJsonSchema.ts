@@ -208,6 +208,13 @@ function validateNode(
   }
 
   if (typeof value === 'string') {
+    if (typeof schema.minLength === 'number' && value.length < schema.minLength) {
+      errors.push(`${path}: string is shorter than minLength ${schema.minLength}`);
+    }
+    if (typeof schema.maxLength === 'number' && value.length > schema.maxLength) {
+      errors.push(`${path}: string is longer than maxLength ${schema.maxLength}`);
+    }
+
     if (typeof schema.pattern === 'string') {
       // Guard against ReDoS: reject patterns exceeding a safe length.
       // This is a heuristic — patterns over 1024 chars are likely adversarial.
@@ -243,6 +250,12 @@ function validateNode(
     }
     if (typeof schema.maximum === 'number' && value > schema.maximum) {
       errors.push(`${path}: number is above maximum ${schema.maximum}`);
+    }
+    if (typeof schema.exclusiveMinimum === 'number' && value <= schema.exclusiveMinimum) {
+      errors.push(`${path}: number is not above exclusiveMinimum ${schema.exclusiveMinimum}`);
+    }
+    if (typeof schema.exclusiveMaximum === 'number' && value >= schema.exclusiveMaximum) {
+      errors.push(`${path}: number is not below exclusiveMaximum ${schema.exclusiveMaximum}`);
     }
   }
 

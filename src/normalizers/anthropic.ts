@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
 // Normalizer for Anthropic Claude Messages API streaming events (SSE)
@@ -14,14 +15,6 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 //
 //   content_block_stop, ping, and all other event types return null.
 // ---------------------------------------------------------------------------
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null;
-}
-
-function toNumber(v: unknown): number | undefined {
-  return typeof v === 'number' ? v : undefined;
-}
 
 /**
  * Normalizes a single Anthropic Claude SSE streaming event into a canonical

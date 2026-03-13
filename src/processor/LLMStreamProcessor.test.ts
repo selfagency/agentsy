@@ -69,10 +69,33 @@ describe('LLMStreamProcessor', () => {
       {
         name: 'read_file',
         parameters: { path: '/tmp/a.ts' },
-        format: 'json-wrapped',
+        format: 'native-json',
       },
     ]);
   });
+
+  it('enforces maxToolCallsPerMessage cumulatively across multiple chunks', () => {
+    const onWarning = vi.fn();
+    const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 2, onWarning });
+
+    // First chunk: 2 calls — should all pass (fills the limit)
+    const out1 = processor.process({
+      tool_calls: [{ function: { name: 'a', arguments: {} } }, { function: { name: 'b', arguments: {} } }],
+    });
+    expect(out1.toolCalls).toHaveLength(2);
+    expect(onWarning).not.toHaveBeenCalled();
+
+    // Second chunk: 1 more call — limit already reached, should be dropped
+    const out2 = processor.process({
+      tool_calls: [{ function: { name: 'c', arguments: {} } }],
+    });
+    expect(out2.toolCalls).toHaveLength(0);
+    expect(onWarning).toHaveBeenCalledWith(
+      expect.stringContaining('maxToolCallsPerMessage'),
+      expect.objectContaining({ accumulated: 2, maxToolCallsPerMessage: 2 }),
+    );
+  });
+
 
   it('truncates tool calls when maxToolCallsPerMessage is exceeded', () => {
     const onWarning = vi.fn();
