@@ -1,12 +1,41 @@
 ---
-# llm-stream-parser-ecgt
+id: llm-stream-parser-ecgt
 title: Phase 4 tests (schema validation, format builders)
+<<<<<<< Updated upstream
+status: todo
+||||||| Stash base
+status: in-progress
+=======
 status: completed
+>>>>>>> Stashed changes
 type: task
+<<<<<<< Updated upstream
+||||||| Stash base
+priority: normal
+created_at: 2026-03-12T00:17:12Z
+updated_at: 2026-03-13T01:34:46Z
+=======
 priority: normal
 created_at: 2026-03-12T00:17:12Z
 updated_at: 2026-03-13T01:36:08Z
+>>>>>>> Stashed changes
 ---
+<<<<<<< Updated upstream
+||||||| Stash base
+
+Write tests for all Phase 4 features in `src/structured/structured.test.ts`.
+
+## Todo
+
+- [ ] const validation (match, mismatch, null, array)
+- [ ] not validation (type and const variants)
+- [ ] anyOf validation (match first, match later, no match, multi-match)
+- [ ] oneOf validation (exactly one, zero, two match)
+- [ ] allOf validation (all pass, one fail, error accumulation)
+- [ ] $defs/$ref resolution (valid, not-found, remote, circular, unanchored)
+- [ ] String format: date, date-time, email, uri, uuid, ipv4, ipv6 (valid + invalid)
+- [ ] Provider format builders: buildOpenAIResponseFormat, buildOllamaFormat, buildGeminiResponseSchema
+=======
 
 Write tests for all Phase 4 features in `src/structured/structured.test.ts`.
 
@@ -25,3 +54,4 @@ Write tests for all Phase 4 features in `src/structured/structured.test.ts`.
 ## Summary
 
 87 new Phase 4 tests total; 332 passing overall. All tests colocated in `src/structured/structured.test.ts` on branch `feat/ayp9-schema-validation-format-builders` (PR #32).
+>>>>>>> Stashed changes
