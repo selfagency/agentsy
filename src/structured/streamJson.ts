@@ -43,7 +43,8 @@ export interface StreamJsonResult<T = unknown> {
   status: 'partial' | 'completed';
   /**
    * Fields that were newly added or whose value changed since the previous emission.
-   * Populated only when `emitFields: true` is set in `StreamJsonOptions`.
+   * Always present; empty when `emitFields: false` (the default) or when no fields
+   * changed since the previous emission.
    */
   newFields: StreamJsonField[];
 }

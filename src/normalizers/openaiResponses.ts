@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
 // Normalizer for OpenAI Responses API streaming events
@@ -12,14 +13,6 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 //
 // All other event types return null.
 // ---------------------------------------------------------------------------
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null;
-}
-
-function toNumber(v: unknown): number | undefined {
-  return typeof v === 'number' ? v : undefined;
-}
 
 /**
  * Normalizes a single OpenAI Responses API streaming event into a canonical

@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
 // Normalizer for Google Gemini generateContent streaming chunks
@@ -14,14 +15,6 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 // finishReason STOP / MAX_TOKENS / SAFETY / RECITATION / OTHER → done: true
 // usageMetadata → usage
 // ---------------------------------------------------------------------------
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null;
-}
-
-function toNumber(v: unknown): number | undefined {
-  return typeof v === 'number' ? v : undefined;
-}
 
 const FINISH_REASONS_DONE = new Set(['STOP', 'MAX_TOKENS', 'SAFETY', 'RECITATION', 'OTHER']);
 

@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
 // Normalizer for Ollama NDJSON streaming chunks
@@ -14,14 +15,6 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 // Usage metrics (prompt_eval_count / eval_count) are only present on the
 // final chunk (done: true).
 // ---------------------------------------------------------------------------
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null;
-}
-
-function toNumber(v: unknown): number | undefined {
-  return typeof v === 'number' ? v : undefined;
-}
 
 function extractUsage(raw: Record<string, unknown>): UsageInfo | undefined {
   const inputTokens = toNumber(raw['prompt_eval_count']);

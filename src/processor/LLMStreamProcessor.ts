@@ -35,9 +35,34 @@ export interface ProcessorOptions {
   thinkingCloseTag?: string;
   thinkingTagMap?: Map<string, ThinkingTagPair>;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
+  /**
+   * Maximum byte length of the `content` or `thinking` field in a single chunk.
+   * Chunks exceeding this limit are truncated and a warning is emitted.
+   * Applies per-chunk, not to the total accumulated message length.
+   * Default: 262,144 (256 KiB). Set to `0` to disable.
+   */
   maxInputLength?: number;
+  /**
+   * Maximum number of tool calls allowed per streamed message.
+   * The limit is enforced cumulatively across all chunks in a single stream —
+   * once the total accumulated tool call count reaches this value, further
+   * calls in subsequent chunks are dropped and a warning is emitted.
+   * Default: 64. Set to `0` to disable.
+   */
   maxToolCallsPerMessage?: number;
+  /**
+   * Maximum serialised byte size of a single tool call's arguments object.
+   * Tool calls whose JSON-serialised arguments exceed this limit are dropped
+   * and a warning is emitted.
+   * Default: 131,072 (128 KiB). Set to `0` to disable.
+   */
   maxToolArgumentBytes?: number;
+  /**
+   * Maximum XML nesting depth the XML stream filter will process.
+   * Content nested beyond this depth is silently discarded and a warning is
+   * emitted, guarding against deeply-nested or adversarial XML payloads.
+   * Default: 64. Set to `0` to disable.
+   */
   maxXmlNestingDepth?: number;
   /** Maximum number of warnings emitted per processor lifetime. Default: 100. Set to 0 to disable. */
   maxWarnings?: number;
@@ -420,7 +445,7 @@ export class LLMStreamProcessor {
       mapped.push({
         name,
         parameters: this.normalizeToolArguments(call.function?.arguments),
-        format: 'json-wrapped',
+        format: 'native-json',
       });
     }
 
@@ -431,13 +456,28 @@ export class LLMStreamProcessor {
     const maxToolCalls = this.options.maxToolCallsPerMessage ?? DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE;
     const maxToolArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
 
+    // Account for tool calls already accumulated from previous process() calls so
+    // the per-message cap is enforced across the full stream, not just per-chunk.
+    const alreadyAccumulated = this._accumulatedToolCalls.length;
+
     let limitedCalls = toolCalls;
-    if (maxToolCalls > 0 && toolCalls.length > maxToolCalls) {
-      this.warn('Tool call count exceeded maxToolCallsPerMessage; truncating tool call list.', {
-        maxToolCallsPerMessage: maxToolCalls,
-        originalCount: toolCalls.length,
-      });
-      limitedCalls = toolCalls.slice(0, maxToolCalls);
+    if (maxToolCalls > 0) {
+      const remaining = maxToolCalls - alreadyAccumulated;
+      if (remaining <= 0) {
+        if (toolCalls.length > 0) {
+          this.warn('Tool call count exceeded maxToolCallsPerMessage; dropping all new tool calls.', {
+            maxToolCallsPerMessage: maxToolCalls,
+            accumulated: alreadyAccumulated,
+          });
+        }
+        limitedCalls = [];
+      } else if (toolCalls.length > remaining) {
+        this.warn('Tool call count exceeded maxToolCallsPerMessage; truncating tool call list.', {
+          maxToolCallsPerMessage: maxToolCalls,
+          originalCount: toolCalls.length,
+        });
+        limitedCalls = toolCalls.slice(0, remaining);
+      }
     }
 
     const encoder = new TextEncoder();
