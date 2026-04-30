@@ -4,6 +4,7 @@ import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
+import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
 import { detectIncompleteness } from './incompleteness.js';
 
 /** A single chunk of output from a normalised LLM stream. */
@@ -146,6 +147,7 @@ export class LLMStreamProcessor {
   private _accumulatedUsage: UsageInfo | undefined = undefined;
   private doneEmitted = false;
   private _warningCount = 0;
+  private _stats: ProcessorStats;
   // Accumulate filtered XML fragments returned by the XmlStreamFilter so
   // that tool-call blocks spanning multiple chunks can be reconstructed and
   // extracted when they become complete.
@@ -184,6 +186,7 @@ export class LLMStreamProcessor {
     this.thinkingParser = this.createThinkingParser();
     this.xmlFilter = this.createXmlFilter();
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
+    this._stats = createEmptyStats();
   }
 
   /**
@@ -191,6 +194,20 @@ export class LLMStreamProcessor {
    * May be called any number of times before `flush()`.
    */
   public process(chunk: StreamChunk): ProcessedOutput {
+    const startTime = performance.now();
+    const chunkSize = this.estimateChunkSize(chunk);
+
+    this._stats.chunksProcessed++;
+    this._stats.bytesProcessed += chunkSize;
+    if (this._stats.firstChunkAt === undefined) {
+      this._stats.firstChunkAt = new Date();
+    }
+    this._stats.lastChunkAt = new Date();
+
+    // Track if this chunk has content or thinking input
+    const hasContentInput = typeof chunk.content === 'string' && chunk.content.length > 0;
+    const hasThinkingInput = typeof chunk.thinking === 'string' && chunk.thinking.length > 0;
+
     const rawThinking = this.enforceMaxLength(this.ensureText(chunk.thinking), 'thinking');
     const rawContent = this.enforceMaxLength(this.ensureText(chunk.content), 'content');
 
@@ -315,6 +332,23 @@ export class LLMStreamProcessor {
     });
     this.recordOutput(output);
     this.emitOutput(output);
+
+    // Update stats after recordOutput() has accumulated content
+    this._stats.parseTimeMs += performance.now() - startTime;
+    if (hasThinkingInput) this._stats.thinkingBlocksCount++;
+    this._stats.toolCallsCount += output.toolCalls.length;
+    if (hasContentInput) this._stats.contentDeltasCount++;
+
+    // Update buffer size based on accumulated content (updated by recordOutput)
+    const bufferSize = this._accumulatedContent.length + this._accumulatedThinking.length;
+    this._stats.currentBufferSize = bufferSize;
+    if (bufferSize > this._stats.peakBufferSize) {
+      this._stats.peakBufferSize = bufferSize;
+    }
+    if (this._stats.chunksProcessed > 0) {
+      this._stats.averageChunkSize = this._stats.bytesProcessed / this._stats.chunksProcessed;
+    }
+
     return output;
   }
 
@@ -407,6 +441,11 @@ export class LLMStreamProcessor {
     return msg;
   }
 
+  /** Returns current processing statistics including buffer usage and performance metrics. */
+  public getStats(): ProcessorStats {
+    return { ...this._stats };
+  }
+
   /**
    * Resets the processor to its initial state so it can be reused for a new conversation.
    * Must be called between conversations when reusing an instance.
@@ -421,6 +460,7 @@ export class LLMStreamProcessor {
     this._accumulatedUsage = undefined;
     this.doneEmitted = false;
     this._warningCount = 0;
+    this._stats = createEmptyStats();
   }
 
   private createThinkingParser(): ThinkingParser | null {
@@ -724,6 +764,31 @@ export class LLMStreamProcessor {
 
   private ensureText(value: unknown): string {
     return typeof value === 'string' ? value : '';
+  }
+
+  private estimateChunkSize(chunk: StreamChunk): number {
+    let size = 0;
+    if (typeof chunk.content === 'string') size += SHARED_TEXT_ENCODER.encode(chunk.content).length;
+    if (typeof chunk.thinking === 'string') size += SHARED_TEXT_ENCODER.encode(chunk.thinking).length;
+    if (Array.isArray(chunk.tool_calls)) {
+      for (const call of chunk.tool_calls) {
+        try {
+          size += JSON.stringify(call).length;
+        } catch {
+          // Skip serialization errors (circular refs, BigInt, etc.)
+        }
+      }
+    }
+    if (Array.isArray(chunk.nativeToolCallDeltas)) {
+      for (const delta of chunk.nativeToolCallDeltas) {
+        try {
+          size += JSON.stringify(delta).length;
+        } catch {
+          // Skip serialization errors
+        }
+      }
+    }
+    return size;
   }
 
   private enforceMaxLength(value: string, field: 'content' | 'thinking'): string {
