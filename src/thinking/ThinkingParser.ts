@@ -96,6 +96,10 @@ export class ThinkingParser {
     this._acc = '';
   }
 
+  private static _openComesFirst(openIdx: number, closeIdx: number): boolean {
+    return openIdx !== -1 && (closeIdx === -1 || openIdx < closeIdx);
+  }
+
   private _findTopLevelClose(text: string, openTag: string, closeTag: string): number {
     let depth = 0;
     let searchFrom = 0;
@@ -105,7 +109,7 @@ export class ThinkingParser {
 
       if (closeIdx === -1 && openIdx === -1) return -1;
 
-      if (openIdx !== -1 && (closeIdx === -1 || openIdx < closeIdx)) {
+      if (ThinkingParser._openComesFirst(openIdx, closeIdx)) {
         depth++;
         searchFrom = openIdx + openTag.length;
         continue;

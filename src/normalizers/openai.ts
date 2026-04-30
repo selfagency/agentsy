@@ -58,7 +58,7 @@ function isOpenAIChatChunk(value: unknown): value is OpenAIChatChunk {
 // ---------------------------------------------------------------------------
 
 function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
-  const result: NativeToolCallDelta = { index: tc.index ?? 0 };
+  const result: NativeToolCallDelta = { index: tc.index };
   if (tc.id) result.id = tc.id;
   if (tc.function?.name) result.name = tc.function.name;
   if (typeof tc.function?.arguments === 'string' && tc.function.arguments !== '') {

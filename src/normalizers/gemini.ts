@@ -97,7 +97,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
     const finishReason = typeof candidate['finishReason'] === 'string' ? candidate['finishReason'] : null;
     const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
 
-    const parts = isObject(content) && Array.isArray(content['parts']) ? (content['parts'] as unknown[]) : [];
+    const parts = isObject(content) && Array.isArray(content.parts) ? (content.parts as unknown[]) : [];
     const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
     const usage = extractGeminiUsage(raw);
 

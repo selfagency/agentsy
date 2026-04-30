@@ -58,7 +58,7 @@ function isBedrockConverseEvent(value: unknown): value is BedrockConverseEvent {
 // ---------------------------------------------------------------------------
 
 function handleBedrockContentBlockDelta(raw: BedrockConverseEvent): NormalizerResult | null {
-  const { contentBlockIndex = 0, delta } = raw.contentBlockDelta!;
+  const { contentBlockIndex = 0, delta } = raw.contentBlockDelta ?? {};
 
   if (typeof delta?.text === 'string') {
     return { chunk: { content: delta.text }, rawEvent: raw };
@@ -80,7 +80,7 @@ function handleBedrockContentBlockDelta(raw: BedrockConverseEvent): NormalizerRe
 }
 
 function handleBedrockContentBlockStart(raw: BedrockConverseEvent): NormalizerResult | null {
-  const { contentBlockIndex = 0, start } = raw.contentBlockStart!;
+  const { contentBlockIndex = 0, start } = raw.contentBlockStart ?? {};
   const toolUse = start?.toolUse;
   if (!toolUse) return null;
 
@@ -91,7 +91,7 @@ function handleBedrockContentBlockStart(raw: BedrockConverseEvent): NormalizerRe
 }
 
 function handleBedrockMetadata(raw: BedrockConverseEvent): NormalizerResult | null {
-  const { usage } = raw.metadata!;
+  const { usage } = raw.metadata ?? {};
   if (!usage) return null;
   const usageInfo: UsageInfo = {};
   if (typeof usage.inputTokens === 'number') usageInfo.inputTokens = usage.inputTokens;

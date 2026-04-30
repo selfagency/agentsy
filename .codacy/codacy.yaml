@@ -1,11 +1,11 @@
 exclude_paths:
-    - .agents
-    - .beans
-    - .codacy
-    - .coverage
-    - .gh-pages
-    - dist
-    - node_modules
+    - .agents/**
+    - .beans/**
+    - .codacy/**
+    - .coverage/**
+    - .gh-pages/**
+    - dist/**
+    - node_modules/**
 runtimes:
     - node@22.2.0
     - dart@3.7.2

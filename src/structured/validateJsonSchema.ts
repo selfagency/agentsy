@@ -90,19 +90,19 @@ const FORMAT_PATTERNS: Record<string, string> = {
   'date-time': String.raw`^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$`,
   email: String.raw`^[^\s@]+@[^\s@]+\.[^\s@]{2,}$`,
   uri: String.raw`^[a-zA-Z][a-zA-Z0-9+\-.]*:`,
-  uuid: String.raw`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`,
+  uuid: `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`,
   ipv4: String.raw`^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(?:\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$`,
   ipv6:
-    String.raw`^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$` +
-    String.raw`|^([0-9a-fA-F]{1,4}:){1,7}:$` +
-    String.raw`|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$` +
-    String.raw`|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$` +
-    String.raw`|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$` +
-    String.raw`|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$` +
-    String.raw`|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$` +
-    String.raw`|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$` +
-    String.raw`|^:(:[0-9a-fA-F]{1,4}){1,7}$` +
-    String.raw`|^::$`,
+    `^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$` +
+    `|^([0-9a-fA-F]{1,4}:){1,7}:$` +
+    `|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$` +
+    `|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$` +
+    `|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$` +
+    `|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$` +
+    `|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$` +
+    `|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$` +
+    `|^:(:[0-9a-fA-F]{1,4}){1,7}$` +
+    `|^::$`,
 };
 
 function checkRef(
@@ -348,6 +348,24 @@ interface WalkLimitsState {
   keyCount: number;
 }
 
+function walkObjectNode(
+  node: Record<string, unknown>,
+  depth: number,
+  maxDepth: number,
+  maxKeys: number,
+  state: WalkLimitsState,
+): void {
+  const entries = Object.entries(node);
+  state.keyCount += entries.length;
+  if (maxKeys > 0 && state.keyCount > maxKeys) {
+    state.errors.push(`$: JSON key count exceeds maxJsonKeys (${maxKeys})`);
+    return;
+  }
+  for (const [, child] of entries) {
+    walkForLimits(child, depth + 1, maxDepth, maxKeys, state);
+  }
+}
+
 function walkForLimits(node: unknown, depth: number, maxDepth: number, maxKeys: number, state: WalkLimitsState): void {
   if (state.errors.length > 0) return;
 
@@ -364,15 +382,7 @@ function walkForLimits(node: unknown, depth: number, maxDepth: number, maxKeys: 
   }
 
   if (node && typeof node === 'object') {
-    const entries = Object.entries(node as Record<string, unknown>);
-    state.keyCount += entries.length;
-    if (maxKeys > 0 && state.keyCount > maxKeys) {
-      state.errors.push(`$: JSON key count exceeds maxJsonKeys (${maxKeys})`);
-      return;
-    }
-    for (const [, child] of entries) {
-      walkForLimits(child, depth + 1, maxDepth, maxKeys, state);
-    }
+    walkObjectNode(node as Record<string, unknown>, depth, maxDepth, maxKeys, state);
   }
 }
 

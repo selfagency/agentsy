@@ -111,25 +111,20 @@ function buildHermesPrompt(tools: readonly XmlToolInfo[]): string {
 
     const properties: Record<string, { type?: string; description?: string; enum?: string[] }> = {};
     for (const [name, schema] of Object.entries(props)) {
-      properties[name] = {};
-      if (schema.type) properties[name]!.type = schema.type;
-      if (schema.description) properties[name]!.description = schema.description;
-      if (schema.enum && schema.enum.length > 0) properties[name]!.enum = schema.enum;
+      const prop: { type?: string; description?: string; enum?: string[] } = {};
+      if (schema.type) prop.type = schema.type;
+      if (schema.description) prop.description = schema.description;
+      if (schema.enum && schema.enum.length > 0) prop.enum = schema.enum;
+      properties[name] = prop;
     }
 
     const parameters: Record<string, unknown> = { type: 'object', properties, additionalProperties: false };
-    if (required && required.length > 0) parameters['required'] = required;
+    if (required && required.length > 0) parameters.required = required;
 
-    const schema: Record<string, unknown> = {
-      type: 'function',
-      function: {
-        name: tool.name,
-        parameters,
-      },
-    };
-    if (tool.description) (schema['function'] as Record<string, unknown>)['description'] = tool.description;
+    const fn: Record<string, unknown> = { name: tool.name, parameters };
+    if (tool.description) fn.description = tool.description;
 
-    return JSON.stringify(schema);
+    return JSON.stringify({ type: 'function', function: fn });
   });
 
   const exampleTool = tools[0];

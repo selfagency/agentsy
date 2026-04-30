@@ -46,7 +46,8 @@ function extractJsonCandidates(text: string): string[] {
   let escaped = false;
 
   for (let i = 0; i < text.length; i++) {
-    const char = text[i]!;
+    const char = text[i];
+    if (char === undefined) continue;
     if (escaped) { escaped = false; continue; }
     if (inString && char === '\\') { escaped = true; continue; }
     if (char === '"') { inString = !inString; continue; }

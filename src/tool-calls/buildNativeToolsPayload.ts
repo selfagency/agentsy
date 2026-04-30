@@ -51,6 +51,8 @@ export interface NativeTool {
  * const body = { model: 'gemma4:e4b', messages, tools };
  * ```
  */
+const SAFE_PROPERTY_NAME = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+
 export function buildNativeToolsArray(tools: readonly XmlToolInfo[]): NativeTool[] {
   return tools.map(tool => {
     const props = tool.inputSchema?.properties ?? {};
@@ -58,6 +60,7 @@ export function buildNativeToolsArray(tools: readonly XmlToolInfo[]): NativeTool
 
     const properties: Record<string, NativeToolParameter> = {};
     for (const [paramName, schema] of Object.entries(props)) {
+      if (!SAFE_PROPERTY_NAME.test(paramName)) continue;
       const param: NativeToolParameter = {};
       if (schema.type) param.type = schema.type;
       if (schema.description) param.description = schema.description;
