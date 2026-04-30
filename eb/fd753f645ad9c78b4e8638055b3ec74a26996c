@@ -1,0 +1,14 @@
+src/pipeline/createPipeline.ts
+  h_5cf1e2c1161853 97,107-117,119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ebfd753f645ad9c78b4e8638055b3ec74a26996c",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
