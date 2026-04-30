@@ -1,0 +1,16 @@
+src/pipeline/pipeline.test.ts
+  h_5cf1e2c1161853 4,11-12,17-18,24-25,33
+src/sse/sse.test.ts
+  h_5cf1e2c1161853 209-210,216-217,223-224,230-235,242,248,253,265,277,289,299
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "723a317536ee88b9b46a83b1f9369b121a1c3949",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
