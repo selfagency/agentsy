@@ -399,4 +399,18 @@ describe('LLMStreamProcessor', () => {
     expect(onToolCall).toHaveBeenCalledOnce();
     expect(onDone).toHaveBeenCalledOnce();
   });
+
+  it('handles fragmented JSON tool_call across chunks (integration)', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['do']) });
+
+    // First chunk contains start of the tool_call JSON
+    processor.process({ content: '<tool_call>{"name":"do","arguments":{"a":' });
+    // Second chunk completes the JSON and closes the tag
+    const out = processor.processComplete({ content: '"x"}}</tool_call>', done: true });
+
+    expect(out.toolCalls).toEqual([
+      { name: 'do', parameters: { a: 'x' }, format: 'json-wrapped' },
+    ]);
+  }, 5000);
 });
+

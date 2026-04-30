@@ -19,14 +19,18 @@ function cleanXml(text: string): string {
  *   [{"name": "fn_name", "arguments": {...}}]
  */
 function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
-  const trimmed = text.trim();
-  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
-    return [];
-  }
+  // Try to be permissive: models sometimes emit prose or markdown fences
+  // before the raw JSON. Strip common fences and then find the first JSON
+  // object/array opening and attempt to parse from there.
+  const normalized = text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+  const firstBracket = normalized.search(/[\{\[]/);
+  if (firstBracket === -1) return [];
+
+  const candidate = normalized.slice(firstBracket).trim();
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(trimmed);
+    parsed = JSON.parse(candidate);
   } catch {
     return [];
   }
@@ -102,7 +106,9 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
  *          tool calls are silently skipped — the function never throws.
  */
 function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<string, unknown> {
-  const params: Record<string, unknown> = {};
+  // Use a null-prototype object to avoid prototype pollution when assigning
+  // properties from untrusted XML input (e.g., <__proto__> tags).
+  const params = Object.create(null) as Record<string, unknown>;
   for (const paramMatch of inner.matchAll(paramPattern)) {
     const paramName = paramMatch[1];
     if (!paramName) continue;

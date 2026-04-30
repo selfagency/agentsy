@@ -625,6 +625,88 @@ describe('normalizeMistralChunk', () => {
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('search');
   });
 
+  it('extracts thinking from structured content array (Magistral native reasoning)', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: [
+              { type: 'thinking', thinking: [{ type: 'text', text: 'Let me reason...' }] },
+            ],
+          },
+          finish_reason: null,
+        },
+      ],
+    });
+    expect(result?.chunk.thinking).toBe('Let me reason...');
+    expect(result?.chunk.content).toBeUndefined();
+  });
+
+  it('extracts text from structured content array (Magistral native reasoning)', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: [{ type: 'text', text: 'The answer is 42.' }],
+          },
+          finish_reason: null,
+        },
+      ],
+    });
+    expect(result?.chunk.content).toBe('The answer is 42.');
+    expect(result?.chunk.thinking).toBeUndefined();
+  });
+
+  it('extracts both content and thinking when both appear in one chunk', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: [
+              { type: 'thinking', thinking: [{ type: 'text', text: 'reasoning' }] },
+              { type: 'text', text: 'answer' },
+            ],
+          },
+          finish_reason: null,
+        },
+      ],
+    });
+    expect(result?.chunk.thinking).toBe('reasoning');
+    expect(result?.chunk.content).toBe('answer');
+  });
+
+  it('preserves tool call deltas alongside structured content', () => {
+    const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: [{ type: 'text', text: 'ok' }],
+            tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'fn', arguments: '' } }],
+          },
+          finish_reason: null,
+        },
+      ],
+    });
+    expect(result?.chunk.content).toBe('ok');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('fn');
+  });
+
   it('returns null for unrecognizable input', () => {
     expect(normalizeMistralChunk(null)).toBeNull();
     expect(normalizeMistralChunk('string')).toBeNull();

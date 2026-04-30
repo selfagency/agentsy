@@ -97,6 +97,7 @@ const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
 const DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE = 64;
 const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
 const DEFAULT_MAX_WARNINGS = 100;
+const SHARED_TEXT_ENCODER = new TextEncoder();
 
 export class LLMStreamProcessor {
   private readonly options: Required<Pick<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags'>> & ProcessorOptions;
@@ -110,6 +111,14 @@ export class LLMStreamProcessor {
   private _accumulatedUsage: UsageInfo | undefined = undefined;
   private doneEmitted = false;
   private _warningCount = 0;
+  // Accumulate filtered XML fragments returned by the XmlStreamFilter so
+  // that tool-call blocks spanning multiple chunks can be reconstructed and
+  // extracted when they become complete.
+  private _filteredResidual = '';
+  // Accumulate raw (unfiltered) incoming content fragments to allow
+  // reconstruction of tool_call blocks that were split across chunks
+  // even when the xmlFilter will scrub those tags.
+  private _rawResidual = '';
 
   private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
     if (this._accumulatedUsage !== undefined) {
@@ -154,8 +163,89 @@ export class LLMStreamProcessor {
       content = contentDelta;
     }
 
-    const extractedXmlToolCalls =
-      this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
+    // First attempt extraction from the raw incoming content (captures the
+    // common case where tool call tags are fully contained in the chunk).
+    const extractedFromRaw = this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
+
+    // Also append raw content into a residual buffer and scan for completed
+    // top-level tags that may span multiple chunks. This allows extracting
+    // tool_call blocks even when they are split across chunks and when the
+    // XML stream filter would otherwise scrub them.
+    let extractedFromRawResidual: XmlToolCall[] = [];
+    if (this.options.knownTools && rawContent) {
+      this._rawResidual += rawContent;
+      const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
+      let mm: RegExpExecArray | null;
+      while ((mm = completeTagRe.exec(this._rawResidual)) !== null) {
+        const full = mm[0];
+        try {
+          // Attempt extraction from this completed segment.
+          const found = extractXmlToolCalls(full, this.options.knownTools);
+          extractedFromRawResidual = extractedFromRawResidual.concat(found);
+        } catch {
+          break;
+        }
+        // Always remove the matched segment from residual to avoid reprocessing,
+        // even if no known tools were found in it (it may not be a tool tag)
+        this._rawResidual = this._rawResidual.replace(full, '');
+        // Reset lastIndex since we've mutated the residual
+        completeTagRe.lastIndex = 0;
+      }
+    }
+
+    // Pass incoming content through the XML stream filter to reassemble any
+    // fragmented XML/JSON tool_call blocks that span chunks. Then attempt
+    // extraction again on the filtered output and merge unique results.
+    if (this.xmlFilter && content) {
+      const delta = this.xmlFilter.write(content);
+      content = delta;
+
+      // Append filtered delta to residual buffer and extract any complete
+      // top-level tags that are now complete across chunks. This lets us
+      // handle tool_call blocks that were split between writes.
+      this._filteredResidual += delta;
+      const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
+      let m: RegExpExecArray | null;
+      while ((m = completeTagRe.exec(this._filteredResidual)) !== null) {
+        const full = m[0];
+        // Attempt to extract tool calls from the completed tag and merge
+        // them into the filtered-extraction flow below by appending them
+        // to the content string that will be re-scanned.
+        try {
+          // Remove the matched segment from the residual so it's not
+          // reprocessed on subsequent chunks.
+          this._filteredResidual = this._filteredResidual.replace(full, '');
+          // Accumulate the found segment into content so it can be parsed
+          // by the existing extraction logic.
+          // Note: we intentionally do not call extractXmlToolCalls here to
+          // keep merging/uniquing logic centralized below.
+          content += full;
+          // Reset exec index since we mutated the residual
+          completeTagRe.lastIndex = 0;
+        } catch {
+          // On any error, break to avoid infinite loops
+          break;
+        }
+      }
+    }
+
+    const extractedFromFiltered =
+      this.options.knownTools && content ? extractXmlToolCalls(content, this.options.knownTools) : [];
+
+    // Merge results preserving order (raw, raw-residual, then filtered) but avoid duplicates
+    // by comparing a stable key (name + JSON-stringified parameters).
+    const seen = new Set<string>();
+    const extractedXmlToolCalls: XmlToolCall[] = [];
+    function pushUnique(call: XmlToolCall) {
+      const key = call.name + '|' + JSON.stringify(call.parameters);
+      if (!seen.has(key)) {
+        seen.add(key);
+        extractedXmlToolCalls.push(call);
+      }
+    }
+    for (const c of extractedFromRaw) pushUnique(c);
+    for (const c of extractedFromRawResidual) pushUnique(c);
+    for (const c of extractedFromFiltered) pushUnique(c);
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const done = chunk.done === true;
 
@@ -172,9 +262,8 @@ export class LLMStreamProcessor {
       ...accumulatedNativeCalls,
     ]);
 
-    if (this.xmlFilter && content) {
-      content = this.xmlFilter.write(content);
-    }
+    // Note: xmlFilter.write() was already invoked earlier to reassemble
+    // fragments before extraction.
 
     const output = this.buildOutput({
       thinking,
@@ -510,11 +599,10 @@ export class LLMStreamProcessor {
 
   private filterByArgumentSize(call: XmlToolCall, maxToolArgumentBytes: number): boolean {
     if (maxToolArgumentBytes <= 0) return true;
-    const encoder = new TextEncoder();
     let argsBytes: number;
     try {
       const argsJson = JSON.stringify(call.parameters);
-      argsBytes = encoder.encode(argsJson).byteLength;
+      argsBytes = SHARED_TEXT_ENCODER.encode(argsJson).byteLength;
     } catch {
       this.warn('Tool call arguments could not be serialized; dropping tool call.', {
         toolName: call.name,

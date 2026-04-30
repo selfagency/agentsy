@@ -1,8 +1,53 @@
+/**
+ * A JSON Schema property descriptor. Covers the subset of JSON Schema draft 7 keywords
+ * most commonly accepted by LLM tool-call APIs (OpenAI, Anthropic, DeepSeek, Llama, GLM).
+ *
+ * Extra keywords not listed here are still accepted via the index signature so that
+ * schemas obtained from MCP tools or OpenAPI specs pass through without modification.
+ */
+export interface JsonSchemaProperty {
+  type?: string | string[];
+  description?: string;
+  enum?: unknown[];
+  const?: unknown;
+  default?: unknown;
+  // String
+  format?: string;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  // Number / integer
+  minimum?: number;
+  maximum?: number;
+  exclusiveMinimum?: number | boolean;
+  exclusiveMaximum?: number | boolean;
+  multipleOf?: number;
+  // Array
+  items?: JsonSchemaProperty | JsonSchemaProperty[];
+  minItems?: number;
+  maxItems?: number;
+  // Object
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
+  additionalProperties?: boolean | JsonSchemaProperty;
+  // Schema composition
+  anyOf?: JsonSchemaProperty[];
+  oneOf?: JsonSchemaProperty[];
+  allOf?: JsonSchemaProperty[];
+  not?: JsonSchemaProperty;
+  // Schema references (JSON Schema draft 7 / DeepSeek $def variant)
+  $ref?: string;
+  $defs?: Record<string, JsonSchemaProperty>;
+  $def?: Record<string, JsonSchemaProperty>;
+  // Allow arbitrary vendor extensions
+  [key: string]: unknown;
+}
+
 export interface XmlToolInfo {
   name: string;
   description?: string;
   inputSchema?: {
-    properties?: Record<string, { description?: string; type?: string; enum?: string[] }>;
+    properties?: Record<string, JsonSchemaProperty>;
     required?: string[];
   };
 }
@@ -112,29 +157,13 @@ function buildHermesToolSchema(tool: XmlToolInfo): string {
   const props = tool.inputSchema?.properties ?? {};
   const required = tool.inputSchema?.required;
 
-  const properties = buildHermesProperties(props);
-
-  const parameters: Record<string, unknown> = { type: 'object', properties, additionalProperties: false };
+  const parameters: Record<string, unknown> = { type: 'object', properties: props, additionalProperties: false };
   if (required && required.length > 0) parameters.required = required;
 
   const fn: Record<string, unknown> = { name: tool.name, parameters };
   if (tool.description) fn.description = tool.description;
 
   return JSON.stringify({ type: 'function', function: fn });
-}
-
-function buildHermesProperties(
-  props: Record<string, { description?: string; type?: string; enum?: string[] }>,
-): Record<string, { type?: string; description?: string; enum?: string[] }> {
-  const properties: Record<string, { type?: string; description?: string; enum?: string[] }> = {};
-  for (const [name, schema] of Object.entries(props)) {
-    const prop: { type?: string; description?: string; enum?: string[] } = {};
-    if (schema.type) prop.type = schema.type;
-    if (schema.description) prop.description = schema.description;
-    if (schema.enum && schema.enum.length > 0) prop.enum = schema.enum;
-    properties[name] = prop;
-  }
-  return properties;
 }
 
 function buildHermesPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolInfo): string {

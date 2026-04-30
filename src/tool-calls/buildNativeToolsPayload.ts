@@ -1,21 +1,37 @@
-import type { XmlToolInfo } from './buildXmlToolSystemPrompt.js';
+import type { JsonSchemaProperty, XmlToolInfo } from './buildXmlToolSystemPrompt.js';
 
-/** A single parameter property in the JSON Schema `parameters` object. */
-export interface NativeToolParameter {
-  type?: string;
-  description?: string;
-  enum?: string[];
+/**
+ * @deprecated Use {@link JsonSchemaProperty} instead.
+ * Kept for source compatibility; will be removed in a future minor version.
+ */
+export type NativeToolParameter = JsonSchemaProperty;
+
+/** Options for {@link buildNativeToolsArray}. */
+export interface BuildNativeToolsOptions {
+  /**
+   * When `true`, adds `"strict": true` to each function definition and recursively
+   * sets `additionalProperties: false` on every nested object schema.
+   *
+   * Required by **DeepSeek strict mode** (beta endpoint) and **OpenAI structured outputs**.
+   * In strict mode, every property of every object must also appear in `required`; callers
+   * are responsible for ensuring their schemas satisfy this constraint.
+   *
+   * @default false
+   */
+  strict?: boolean;
 }
 
-/** OpenAI-compatible tool definition used by the Ollama `/api/chat` `tools` field. */
+/** OpenAI-compatible tool definition used by any OpenAI-compatible `/chat/completions` endpoint. */
 export interface NativeTool {
   type: 'function';
   function: {
     name: string;
     description?: string;
+    /** Set by `buildNativeToolsArray` when `options.strict` is `true`. */
+    strict?: true;
     parameters: {
       type: 'object';
-      properties: Record<string, NativeToolParameter>;
+      properties: Record<string, JsonSchemaProperty>;
       required?: string[];
       additionalProperties: false;
     };
@@ -23,16 +39,26 @@ export interface NativeTool {
 }
 
 /**
+ * Recursively ensures every nested object schema has `additionalProperties: false`,
+ * as required by DeepSeek strict mode and OpenAI structured outputs.
+ */
+function enforceStrictOnSchema(schema: JsonSchemaProperty): JsonSchemaProperty {
+  if (schema.type !== 'object' || !schema.properties) return schema;
+  const strictProperties: Record<string, JsonSchemaProperty> = {};
+  for (const [key, prop] of Object.entries(schema.properties)) {
+    strictProperties[key] = enforceStrictOnSchema(prop);
+  }
+  return { ...schema, additionalProperties: false, properties: strictProperties };
+}
+
+/**
  * Converts an array of `XmlToolInfo` descriptors into the OpenAI-compatible
- * `tools` array accepted by Ollama's `/api/chat` endpoint (and any
- * OpenAI-compatible API that supports native function calling).
+ * `tools` array accepted by any `/chat/completions` endpoint with native function
+ * calling (Ollama, OpenAI, Anthropic via OpenAI compat, DeepSeek, Llama API, GLM, etc.).
  *
- * Passing this array as the `tools` field lets Ollama inject the tool
- * declarations into the model's native chat template (e.g. Gemma4's
- * `<|tool>…<tool|>` tokens, Qwen's Hermes template) rather than relying on a
- * manually-crafted system prompt.  The model's structured `tool_calls` response
- * is then handled by `normalizeOllamaChatChunk` / `ToolCallAccumulator` in the
- * usual way.
+ * Property schemas are passed through verbatim so that callers can supply the full
+ * JSON Schema — including `format`, `pattern`, `minimum`/`maximum`, `items`,
+ * nested objects, `anyOf`, `$ref`/`$defs`, etc. — without loss of information.
  *
  * @example
  * ```ts
@@ -41,31 +67,42 @@ export interface NativeTool {
  *     name: 'get_weather',
  *     description: 'Get current weather for a city',
  *     inputSchema: {
- *       properties: { location: { type: 'string', description: 'City name' } },
+ *       properties: {
+ *         location: { type: 'string', description: 'City name' },
+ *         unit: { type: 'string', enum: ['celsius', 'fahrenheit'], default: 'celsius' },
+ *       },
  *       required: ['location'],
  *     },
  *   },
  * ]);
  *
- * // Pass directly to Ollama (or any OpenAI-compatible endpoint):
- * const body = { model: 'gemma4:e4b', messages, tools };
+ * // Pass directly to any OpenAI-compatible endpoint:
+ * const body = { model: 'your-model', messages, tools };
+ *
+ * // DeepSeek strict mode (beta endpoint):
+ * const strictTools = buildNativeToolsArray(myTools, { strict: true });
  * ```
  */
-const SAFE_PROPERTY_NAME = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+const VALID_TOOL_NAME = /^[A-Za-z_][A-Za-z0-9_:-]*$/;
 
-export function buildNativeToolsArray(tools: readonly XmlToolInfo[]): NativeTool[] {
+export function buildNativeToolsArray(
+  tools: readonly XmlToolInfo[],
+  options: BuildNativeToolsOptions = {},
+): NativeTool[] {
+  const strict = options.strict ?? false;
+
   return tools.map(tool => {
+    if (!VALID_TOOL_NAME.test(tool.name)) {
+      throw new Error(
+        `Invalid tool name "${tool.name}" for native tool payload: tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`,
+      );
+    }
     const props = tool.inputSchema?.properties ?? {};
     const required = tool.inputSchema?.required;
 
-    const properties: Record<string, NativeToolParameter> = {};
+    const properties: Record<string, JsonSchemaProperty> = {};
     for (const [paramName, schema] of Object.entries(props)) {
-      if (!SAFE_PROPERTY_NAME.test(paramName)) continue;
-      const param: NativeToolParameter = {};
-      if (schema.type) param.type = schema.type;
-      if (schema.description) param.description = schema.description;
-      if (schema.enum && schema.enum.length > 0) param.enum = schema.enum;
-      properties[paramName] = param;
+      properties[paramName] = strict ? enforceStrictOnSchema(schema) : schema;
     }
 
     const fn: NativeTool['function'] = {
@@ -74,7 +111,12 @@ export function buildNativeToolsArray(tools: readonly XmlToolInfo[]): NativeTool
     };
 
     if (tool.description) fn.description = tool.description;
-    if (required && required.length > 0) fn.parameters.required = required;
+    if (strict) fn.strict = true;
+    if (required && required.length > 0) {
+      // Ensure `required` only contains names present in the emitted `properties`.
+      const filtered = required.filter(name => Object.prototype.hasOwnProperty.call(properties, name));
+      if (filtered.length > 0) fn.parameters.required = filtered;
+    }
 
     return { type: 'function', function: fn };
   });

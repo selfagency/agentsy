@@ -17,20 +17,46 @@ function collectTagMatches(part: string): TagMatch[] {
     const tagName = m[1];
     if (!tagName) continue;
     const openEnd = OPEN_TAG_RE.lastIndex;
-    const closeTag = `</${tagName}>`;
-    const closeIdx = part.indexOf(closeTag, openEnd);
-    if (closeIdx === -1) continue;
-    results.push({ tagName, fullMatch: part.slice(m.index, closeIdx + closeTag.length) });
+
+    // Find the matching closing tag while handling nested tags of the same name.
+    const tagRegex = new RegExp(`<(/?)${tagName}\\b[^>]*>`, 'gi');
+    tagRegex.lastIndex = openEnd;
+    let depth = 1;
+    let matchEnd: number | null = null;
+    for (let mm = tagRegex.exec(part); mm !== null; mm = tagRegex.exec(part)) {
+      const isClose = mm[1] === '/';
+      if (!isClose) {
+        depth++;
+      } else {
+        depth--;
+      }
+      if (depth === 0) {
+        matchEnd = mm.index + mm[0].length;
+        break;
+      }
+    }
+    if (matchEnd === null) continue;
+    results.push({ tagName, fullMatch: part.slice(m.index, matchEnd) });
   }
   return results;
 }
 
 function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, string>): void {
-  for (let j = matches.length - 1; j >= 0; j--) {
-    const match = matches[j];
+  // For the current block, pick the longest (outermost) match for each tag
+  // and only set it if an entry for that tag hasn't already been recorded
+  // by a later block (we iterate blocks from last to first elsewhere).
+  const longestByTag = new Map<string, string>();
+  for (const match of matches) {
     if (!match) continue;
-    if (!latestByTag.has(match.tagName)) {
-      latestByTag.set(match.tagName, match.fullMatch.trim());
+    const existing = longestByTag.get(match.tagName);
+    if (!existing || match.fullMatch.length > existing.length) {
+      longestByTag.set(match.tagName, match.fullMatch.trim());
+    }
+  }
+
+  for (const [tagName, fullMatch] of longestByTag) {
+    if (!latestByTag.has(tagName)) {
+      latestByTag.set(tagName, fullMatch);
     }
   }
 }
