@@ -1,0 +1,59 @@
+src/tool-calls/extractXmlToolCalls.ts
+  h_5cf1e2c1161853 83,86
+src/context/dedupeXmlContext.ts
+  h_5cf1e2c1161853 4-7
+src/adapters/adapters.test.ts
+  h_5cf1e2c1161853 114-115,121,126-127,129-146
+  0b3f0c91f96d8d35 128
+src/structured/validateJsonSchema.ts
+  h_5cf1e2c1161853 6,11-12,16-18,20-30
+src/adapters/generic.ts
+  h_5cf1e2c1161853 9-19,77,79,81-84,88,90-93,98,100,110,115,117-120
+  0b3f0c91f96d8d35 41-42,101-103
+src/normalizers/normalizers.test.ts
+  0b3f0c91f96d8d35 637
+src/normalizers/mistral.ts
+  0b3f0c91f96d8d35 38
+.oxlintrc.json
+  0b3f0c91f96d8d35 3,25-26
+src/processor/incompleteness.ts
+  0b3f0c91f96d8d35 25
+  h_5cf1e2c1161853 1-24,26-45
+docs/developer-guide.md
+  0b3f0c91f96d8d35 107-111
+  h_5cf1e2c1161853 98-106,112-136
+.oxfmtrc.json
+  0b3f0c91f96d8d35 3,11
+src/processor/LLMStreamProcessor.ts
+  h_5cf1e2c1161853 7,9,21,74,80,83,89,120-136,176,189-192,321-323,338-350,353,410-412,537-538,744-754
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 99-134
+src/thinking/ThinkingParser.ts
+  h_5cf1e2c1161853 1,24-30,43-46,70-73,90-93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "34e072ff0cc1c3b6ff6c169037479be7c9fff41c",
+  "prompts": {
+    "0b3f0c91f96d8d35": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cc2a8541-4699-4f4f-a0c4-825a3ceba32c",
+        "model": "copilot/claude-haiku-4.5"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 2479,
+      "total_deletions": 174,
+      "accepted_lines": 2365,
+      "overriden_lines": 1,
+      "messages_url": "https://usegitai.com/cas/e0258bedfd370afd2feb5820314f98ba7aaff91b874e3cd452487058bed7ebe9"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
