@@ -2,22 +2,47 @@ export interface XmlToolInfo {
   name: string;
   description?: string;
   inputSchema?: {
-    properties?: Record<string, { description?: string; type?: string }>;
+    properties?: Record<string, { description?: string; type?: string; enum?: string[] }>;
     required?: string[];
   };
+}
+
+export interface BuildXmlToolSystemPromptOptions {
+  /**
+   * Controls the tool-calling instruction style injected into the system prompt.
+   *
+   * - `'xml'` *(default)* — Custom XML format: `<tool_name><param>value</param></tool_name>`.
+   *   Works with most models but requires the model to follow novel formatting instructions.
+   * - `'hermes'` — NousResearch Hermes 2 Pro format: `<tool_call>{"name":"…","arguments":{…}}</tool_call>`.
+   *   Use for **Qwen** models (Qwen2.5, Qwen3, etc.) which are trained on this template.
+   *   Responses are extracted by the existing `extractXmlToolCalls` JSON-wrapped path.
+   * - `'none'` — Returns an empty string. Use when tools are passed via the provider's
+   *   native API parameter (e.g. Ollama's `tools` field with `buildNativeToolsArray`) so
+   *   the model's own chat template handles formatting — correct for **Gemma4** and other
+   *   models with built-in tool-call tokens.
+   */
+  format?: 'xml' | 'hermes' | 'none';
 }
 
 const VALID_TOOL_NAME = /^[A-Za-z_][A-Za-z0-9_:-]*$/;
 
 /**
- * Builds a system prompt instructing the LLM how to call tools via XML.
+ * Builds a system prompt instructing the LLM how to call tools.
  *
- * @throws {Error} If any tool name contains invalid characters. Tool names must
- *         start with a letter or underscore and contain only `[A-Za-z0-9_:-]`.
- * @returns The formatted system prompt string, or `''` if `tools` is empty.
+ * @param tools - Tool descriptors to expose to the model.
+ * @param options - Optional configuration (see {@link BuildXmlToolSystemPromptOptions}).
+ *
+ * @throws {Error} If any tool name contains invalid characters (unless `format` is `'none'`).
+ *         Tool names must start with a letter or underscore and contain only `[A-Za-z0-9_:-]`.
+ * @returns The formatted system prompt string, or `''` if `tools` is empty or `format` is `'none'`.
  */
-export function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string {
-  if (!tools.length) {
+export function buildXmlToolSystemPrompt(
+  tools: readonly XmlToolInfo[],
+  options: BuildXmlToolSystemPromptOptions = {},
+): string {
+  const format = options.format ?? 'xml';
+
+  if (format === 'none' || !tools.length) {
     return '';
   }
 
@@ -29,6 +54,14 @@ export function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string 
     }
   }
 
+  if (format === 'hermes') {
+    return buildHermesPrompt(tools);
+  }
+
+  return buildXmlPrompt(tools);
+}
+
+function buildXmlPrompt(tools: readonly XmlToolInfo[]): string {
   const toolDescriptions = tools.map(tool => {
     const schema = tool.inputSchema;
     const props = schema?.properties ?? {};
@@ -68,5 +101,60 @@ export function buildXmlToolSystemPrompt(tools: readonly XmlToolInfo[]): string 
     exampleCall,
     '',
     `// After you receive [Tool result: ${exampleTool?.name}], answer in plain text.`,
+  ].join('\n');
+}
+
+function buildHermesPrompt(tools: readonly XmlToolInfo[]): string {
+  const toolSchemas = tools.map(tool => {
+    const props = tool.inputSchema?.properties ?? {};
+    const required = tool.inputSchema?.required;
+
+    const properties: Record<string, { type?: string; description?: string; enum?: string[] }> = {};
+    for (const [name, schema] of Object.entries(props)) {
+      properties[name] = {};
+      if (schema.type) properties[name]!.type = schema.type;
+      if (schema.description) properties[name]!.description = schema.description;
+      if (schema.enum && schema.enum.length > 0) properties[name]!.enum = schema.enum;
+    }
+
+    const parameters: Record<string, unknown> = { type: 'object', properties, additionalProperties: false };
+    if (required && required.length > 0) parameters['required'] = required;
+
+    const schema: Record<string, unknown> = {
+      type: 'function',
+      function: {
+        name: tool.name,
+        parameters,
+      },
+    };
+    if (tool.description) (schema['function'] as Record<string, unknown>)['description'] = tool.description;
+
+    return JSON.stringify(schema);
+  });
+
+  const exampleTool = tools[0];
+  const exampleArg = Object.keys(exampleTool?.inputSchema?.properties ?? {})[0];
+  const exampleArgStr = exampleArg ? `"${exampleArg}": "value"` : '';
+  const exampleCall =
+    `<tool_call>\n{"name": "${exampleTool?.name}", "arguments": {${exampleArgStr}}}\n</tool_call>`.trim();
+
+  return [
+    'You are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags.',
+    'You may call one or more functions to assist with the user query.',
+    "Don't make assumptions about what values to plug into functions.",
+    'Here are the available tools:',
+    '',
+    '<tools>',
+    toolSchemas.join('\n'),
+    '</tools>',
+    '',
+    'For each function call, return a JSON object with the function name and arguments within <tool_call></tool_call> XML tags:',
+    '<tool_call>',
+    '{"name": <function-name>, "arguments": <args-dict>}',
+    '</tool_call>',
+    '',
+    `Example:\n${exampleCall}`,
+    '',
+    'After you receive a tool result, continue reasoning and respond to the user in plain text.',
   ].join('\n');
 }

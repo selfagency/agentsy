@@ -92,4 +92,84 @@ describe('extractXmlToolCalls', () => {
     const result = extractXmlToolCalls(text, new Set());
     expect(result).toEqual([]);
   });
+
+  // ── Qwen / Hermes-style ──────────────────────────────────────────────────
+
+  it('extracts Hermes-style tool_call with reasoning preamble (Qwen3)', () => {
+    const text =
+      '<think>\nI need to search for the file.\n</think>\n<tool_call>\n{"name":"search_files","arguments":{"query":"hello","path":"/src"}}\n</tool_call>';
+    const result = extractXmlToolCalls(text, new Set(['search_files']));
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      name: 'search_files',
+      parameters: { query: 'hello', path: '/src' },
+      format: 'json-wrapped',
+    });
+  });
+
+  it('skips think block and still finds bare-xml tool call (Qwen3 mixed output)', () => {
+    const text = '<think>reasoning text</think>\n<read_file><path>a.ts</path></read_file>';
+    const result = extractXmlToolCalls(text, new Set(['read_file']));
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({ name: 'read_file', parameters: { path: 'a.ts' }, format: 'bare-xml' });
+  });
+
+  it('extracts multiple Hermes tool_call blocks in sequence (Qwen3)', () => {
+    const text =
+      '<tool_call>{"name":"read_file","arguments":{"path":"a.ts"}}</tool_call>\n' +
+      '<tool_call>{"name":"read_file","arguments":{"path":"b.ts"}}</tool_call>';
+    const result = extractXmlToolCalls(text, new Set(['read_file']));
+
+    expect(result).toHaveLength(2);
+    expect(result[0]?.parameters.path).toBe('a.ts');
+    expect(result[1]?.parameters.path).toBe('b.ts');
+  });
+
+  // ── Bare JSON fallback (Qwen2.5Coder) ────────────────────────────────────
+
+  it('falls back to bare JSON object when model ignores XML prompt (Qwen2.5Coder)', () => {
+    const text = '{"name":"search_files","arguments":{"query":"hello world"}}';
+    const result = extractXmlToolCalls(text, new Set(['search_files']));
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      name: 'search_files',
+      parameters: { query: 'hello world' },
+      format: 'json-wrapped',
+    });
+  });
+
+  it('falls back to bare JSON array of tool calls', () => {
+    const text =
+      '[{"name":"read_file","arguments":{"path":"a.ts"}},{"name":"read_file","arguments":{"path":"b.ts"}}]';
+    const result = extractXmlToolCalls(text, new Set(['read_file']));
+
+    expect(result).toHaveLength(2);
+    expect(result[0]?.parameters.path).toBe('a.ts');
+    expect(result[1]?.parameters.path).toBe('b.ts');
+  });
+
+  it('bare JSON fallback accepts "parameters" key as alias for "arguments"', () => {
+    const text = '{"name":"search_files","parameters":{"query":"test"}}';
+    const result = extractXmlToolCalls(text, new Set(['search_files']));
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.parameters).toEqual({ query: 'test' });
+  });
+
+  it('bare JSON fallback silently ignores unknown tool names', () => {
+    const text = '{"name":"unknown_tool","arguments":{"x":"y"}}';
+    const result = extractXmlToolCalls(text, new Set(['known_tool']));
+    expect(result).toEqual([]);
+  });
+
+  it('bare JSON fallback returns empty array for malformed JSON', () => {
+    const text = '{"name":';
+    const result = extractXmlToolCalls(text, new Set(['search_files']));
+    expect(result).toEqual([]);
+  });
 });
+
+

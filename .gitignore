@@ -242,3 +242,6 @@ $RECYCLE.BIN/
 .mcpregistry_*
 package-lock.json
 .gh-pages
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
