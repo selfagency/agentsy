@@ -16,7 +16,7 @@ function getCachedRegex(pattern: string): RegExp {
   let regex: RegExp;
   try {
     regex = new RegExp(pattern);
-  } catch (error) {
+  } catch (_error) {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
     regex = /(?!)/; // Negative lookahead that never matches
   }

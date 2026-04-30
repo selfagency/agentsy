@@ -42,7 +42,7 @@ export async function* parseSSEStream(
           try {
             const { done, value } = await reader.read();
             return { done, value: value ?? '' };
-          } catch (error) {
+          } catch (_error) {
             return { done: true, value: undefined };
           }
         },
@@ -70,7 +70,7 @@ export async function* parseSSEStream(
     while (eventQueue.length > 0) {
       yield eventQueue.shift()!;
     }
-  } catch (error) {
+  } catch (_error) {
     // Stream error; stop gracefully.
   }
 }
