@@ -1,0 +1,47 @@
+src/context/dedupeXmlContext.ts
+  h_5cf1e2c1161853 20-39,45-49,51-59
+src/tool-calls/extractXmlToolCalls.ts
+  h_5cf1e2c1161853 22-27,29,33,109-111
+src/tool-calls/buildNativeToolsPayload.test.ts
+  h_5cf1e2c1161853 1-97
+src/normalizers/normalizers.test.ts
+  h_5cf1e2c1161853 628-709
+src/processor/LLMStreamProcessor.ts
+  h_5cf1e2c1161853 100,114-121,166-248,265-266,605
+src/normalizers/mistral.ts
+  h_5cf1e2c1161853 7-8,10-20,25-75
+src/tool-calls/buildNativeToolsPayload.ts
+  h_5cf1e2c1161853 1,4-5,7-21,24,30-31,34,41-51,56-57,59-61,71-73,79-80,82-83,89-90,92,103,105,114
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 402-414,416
+src/context/dedupeXmlContext.test.ts
+  h_5cf1e2c1161853 1-76
+src/tool-calls/buildXmlToolSystemPrompt.ts
+  h_5cf1e2c1161853 1-45,50,160
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "8a0004007689ea89bc7789285610a27e92593c55",
+  "prompts": {
+    "e7cf7a9ef1b47771": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "12152d92-0349-44b7-8ff5-515bcc38f1aa",
+        "model": "copilot/claude-haiku-4.5"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 415,
+      "total_deletions": 0,
+      "accepted_lines": 415,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/e3f03083896a25a28279639d7265756022b08a4fc2531591af1dbc300d0fdf42"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
