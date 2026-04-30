@@ -10,7 +10,9 @@ import type { IncompletenessDetail } from './LLMStreamProcessor.js';
 export function hasUnclosedXmlTags(content: string): boolean {
   if (!content.includes('<')) return false;
   let depth = 0;
-  const tagRe = /<(\/?)[A-Za-z][A-Za-z0-9_.-]*(?:\s[^>]*)?\s*(\/?)>/g;
+  // Security: Limit tag name length to 50 chars and attribute length to 100
+  // to prevent ReDoS attacks. Limited quantifier scope avoids backtracking.
+  const tagRe = /<(\/?)[A-Za-z][A-Za-z0-9_.\-]{0,50}(?:\s[^>]{0,100})?\s*(\/?)>/g;
   for (const m of content.matchAll(tagRe)) {
     if (m[1] === '/') depth--;
     else if (m[3] !== '/') depth++;

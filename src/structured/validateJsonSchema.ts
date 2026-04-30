@@ -15,8 +15,10 @@ function getCachedRegex(pattern: string): RegExp {
 
   let regex: RegExp;
   try {
+    // Security: pattern is from trusted JSON Schema definition, not user input.
+    // JSON Schema itself should be validated at application level before reaching here.
     regex = new RegExp(pattern);
-  } catch {
+  } catch (_error) {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
     regex = /(?!)/; // Negative lookahead that never matches
   }

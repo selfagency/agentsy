@@ -31,6 +31,10 @@ function collectTagMatches(part: string): TagMatch[] {
     // Find the matching closing tag while handling nested tags of the same name.
     // Escape tagName to prevent ReDoS attacks from crafted XML input.
     const escapedTagName = escapeRegexChars(tagName);
+    // Security: Dynamic RegExp construction is intentional here. The tagName is
+    // validated by escapeRegexChars() which escapes all regex metacharacters,
+    // preventing ReDoS attacks. This pattern is necessary for matching
+    // arbitrary XML tag names from schema definitions.
     const tagRegex = new RegExp(`<(/?)${escapedTagName}\\b[^>]*>`, 'gi');
     tagRegex.lastIndex = openEnd;
     let depth = 1;

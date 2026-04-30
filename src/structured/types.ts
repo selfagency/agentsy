@@ -37,7 +37,9 @@ export type StreamingPartial<T> = DeepPartial<T> & {
  * Check if a streaming partial is complete (done streaming).
  */
 export function isStreamingDone<T>(partial: StreamingPartial<T>): boolean {
-  return !!(partial as any)[ItemDoneStreaming];
+  // Security: Use Object.hasOwn for safe property access instead of dynamic
+  // bracket access with `as any` which could be exploited for prototype pollution.
+  return Object.hasOwn(partial, ItemDoneStreaming) && !!partial[ItemDoneStreaming];
 }
 
 /**

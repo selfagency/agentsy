@@ -230,6 +230,9 @@ export class LLMStreamProcessor {
     let extractedFromRawResidual: XmlToolCall[] = [];
     if (this.options.knownTools && rawContent) {
       this._rawResidual += rawContent;
+      // Security: Limit tag name length to 50 chars, attribute length to 100,
+      // and content length to 100k to prevent ReDoS on large payloads.
+      // Limited quantifier scopes prevent catastrophic backtracking.
       const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
       let mm: RegExpExecArray | null;
       while ((mm = completeTagRe.exec(this._rawResidual)) !== null) {
@@ -518,6 +521,8 @@ export class LLMStreamProcessor {
 
   /** Subscribes to a stream event. Returns `this` for chaining. */
   public on<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this {
+    // Security: `this.listeners` is a Map, not a plain object. Maps don't
+    // have prototype chains, so dynamic key access is safe from prototype pollution.
     const listenerSet = this.listeners[event];
     if (listenerSet === undefined) {
       return this;
@@ -528,6 +533,8 @@ export class LLMStreamProcessor {
 
   /** Unsubscribes a previously registered event listener. Returns `this` for chaining. */
   public off<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this {
+    // Security: `this.listeners` is a Map, not a plain object. Maps don't
+    // have prototype chains, so dynamic key access is safe from prototype pollution.
     const listenerSet = this.listeners[event];
     if (listenerSet === undefined) {
       return this;

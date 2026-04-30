@@ -44,11 +44,13 @@ export interface NativeTool {
  */
 function enforceStrictOnSchema(schema: JsonSchemaProperty): JsonSchemaProperty {
   if (schema.type !== 'object' || !schema.properties) return schema;
-  const strictProperties: Record<string, JsonSchemaProperty> = {};
+  // Security: Use Map instead of dynamic object construction to prevent
+  // prototype pollution attacks from malicious schema definitions.
+  const strictProperties = new Map<string, JsonSchemaProperty>();
   for (const [key, prop] of Object.entries(schema.properties)) {
-    strictProperties[key] = enforceStrictOnSchema(prop);
+    strictProperties.set(key, enforceStrictOnSchema(prop));
   }
-  return { ...schema, additionalProperties: false, properties: strictProperties };
+  return { ...schema, additionalProperties: false, properties: Object.fromEntries(strictProperties.entries()) };
 }
 
 /**
@@ -100,21 +102,27 @@ export function buildNativeToolsArray(
     const props = tool.inputSchema?.properties ?? {};
     const required = tool.inputSchema?.required;
 
-    const properties: Record<string, JsonSchemaProperty> = {};
+    // Security: Use Map instead of dynamic object construction to prevent
+    // prototype pollution attacks from malicious schema definitions.
+    const properties = new Map<string, JsonSchemaProperty>();
     for (const [paramName, schema] of Object.entries(props)) {
-      properties[paramName] = strict ? enforceStrictOnSchema(schema) : schema;
+      properties.set(paramName, strict ? enforceStrictOnSchema(schema) : schema);
     }
 
     const fn: NativeTool['function'] = {
       name: tool.name,
-      parameters: { type: 'object', properties, additionalProperties: false },
+      parameters: {
+        type: 'object',
+        properties: Object.fromEntries(properties.entries()),
+        additionalProperties: false,
+      },
     };
 
     if (tool.description) fn.description = tool.description;
     if (strict) fn.strict = true;
     if (required && required.length > 0) {
-      // Ensure `required` only contains names present in the emitted `properties`.
-      const filtered = required.filter(name => Object.hasOwn(properties, name));
+      // Ensure `required` only contains names present in the `properties` Map.
+      const filtered = required.filter(name => properties.has(name));
       if (filtered.length > 0) fn.parameters.required = filtered;
     }
 
