@@ -89,10 +89,12 @@ export class SSEParser {
 
     // Keep the last part in the buffer (incomplete event).
     for (let i = 0; i < parts.length - 1; i++) {
-      const eventText = parts[i];      // eventText is from array access, but array may contain empty strings.
+      const eventText = parts[i];
+      // eventText is from array access, but array may contain empty strings.
       // Optional chain prevents crash on empty strings, but semgrep flags it
       // as unnecessary since arrays return undefined (not null). However,
-      // we keep it for empty string handling safety.      if (eventText?.trim()) {
+      // we keep it for empty string handling safety.
+      if (eventText?.trim()) {
         const fields = eventText.split('\n');
         const event = this.fieldsToEvent(fields);
         if (event && this.isValidEvent(event)) {
