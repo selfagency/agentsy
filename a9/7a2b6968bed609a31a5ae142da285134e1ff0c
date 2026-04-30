@@ -1,0 +1,43 @@
+src/structured/validateJsonSchema.ts
+  h_5cf1e2c1161853 139-145,153,356-362,366-370,386
+.codacy/codacy.yaml
+  1005397bc3715d96 2-8,10-14,16-22
+README.md
+  1005397bc3715d96 73-74,127-131,206-209
+.agents/skills/beans-vscode/SKILL.md
+  1005397bc3715d96 4,283-358,364-378,453-459,470-474,515-516,549-550,559-563,572-577,638
+src/context/dedupeXmlContext.ts
+  h_5cf1e2c1161853 16
+src/tool-calls/buildXmlToolSystemPrompt.test.ts
+  h_5cf1e2c1161853 4,104,141,147,179,185
+src/tool-calls/buildXmlToolSystemPrompt.ts
+  h_5cf1e2c1161853 80,83,98,103,107-110,120-121,123-124,126-128,130,132,136
+src/structured/parseJson.ts
+  h_5cf1e2c1161853 47,49,51-52,56-57,61-62,65-68,227-228,233,239-248,263,266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "a97a2b6968bed609a31a5ae142da285134e1ff0c",
+  "prompts": {
+    "1005397bc3715d96": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "92858fab-38a0-4cdc-b3be-eeb3cf32caba",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 150,
+      "total_deletions": 147,
+      "accepted_lines": 150,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/0c2007198ae4515915b832c8e4da4b1b80ef80ddd993bc3fdf5a85b6083913fa"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
