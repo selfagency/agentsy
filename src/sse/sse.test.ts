@@ -206,18 +206,51 @@ describe('SSEParser', () => {
   });
 });
 
+// Async generator fixtures for parseSSEStream tests
+async function* basicChunks() {
+  yield 'data: hello\n';
+  yield '\n';
+  yield 'data: world\n';
+  yield '\n';
+}
+
+async function* basicAsyncChunks() {
+  yield 'data: chunk1\n';
+  yield '\n';
+  yield 'data: chunk2\n';
+  yield '\n';
+}
+
+async function* crossChunkSplitChunks() {
+  yield 'data: hel';
+  yield 'lo\n\n';
+  yield 'data: worl';
+  yield 'd\n\n';
+}
+
+async function* emptyChunks() {
+  // yield nothing
+}
+
+async function* complexFieldsChunks() {
+  yield 'event: progress\n';
+  yield 'id: msg1\n';
+  yield 'data: {"step":1}\n';
+  yield 'retry: 5000\n';
+  yield '\n';
+}
+
+async function* openaiChunks() {
+  yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"Hello"}}]}\n\n';
+  yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":" world"}}]}\n\n';
+  yield 'data: [DONE]\n\n';
+}
+
 describe('parseSSEStream', () => {
   it('parses events from an async iterable', async () => {
-    async function* chunks() {
-      yield 'data: hello\n';
-      yield '\n';
-      yield 'data: world\n';
-      yield '\n';
-    }
-
     const events = [];
 
-    for await (const event of parseSSEStream(chunks())) {
+    for await (const event of parseSSEStream(basicChunks())) {
       events.push(event);
     }
 
@@ -227,16 +260,9 @@ describe('parseSSEStream', () => {
   });
 
   it('parses events from an async iterable (async)', async () => {
-    async function* asyncChunks() {
-      yield 'data: chunk1\n';
-      yield '\n';
-      yield 'data: chunk2\n';
-      yield '\n';
-    }
-
     const events = [];
 
-    for await (const event of parseSSEStream(asyncChunks())) {
+    for await (const event of parseSSEStream(basicAsyncChunks())) {
       events.push(event);
     }
 
@@ -246,16 +272,9 @@ describe('parseSSEStream', () => {
   });
 
   it('handles cross-chunk splits in async iterable', async () => {
-    async function* asyncChunks() {
-      yield 'data: hel';
-      yield 'lo\n\n';
-      yield 'data: worl';
-      yield 'd\n\n';
-    }
-
     const events = [];
 
-    for await (const event of parseSSEStream(asyncChunks())) {
+    for await (const event of parseSSEStream(crossChunkSplitChunks())) {
       events.push(event);
     }
 
@@ -265,13 +284,9 @@ describe('parseSSEStream', () => {
   });
 
   it('handles empty stream', async () => {
-    async function* asyncChunks() {
-      // yield nothing
-    }
-
     const events = [];
 
-    for await (const event of parseSSEStream(asyncChunks())) {
+    for await (const event of parseSSEStream(emptyChunks())) {
       events.push(event);
     }
 
@@ -279,17 +294,9 @@ describe('parseSSEStream', () => {
   });
 
   it('parses complex events with all fields', async () => {
-    async function* asyncChunks() {
-      yield 'event: progress\n';
-      yield 'id: msg1\n';
-      yield 'data: {"step":1}\n';
-      yield 'retry: 5000\n';
-      yield '\n';
-    }
-
     const events = [];
 
-    for await (const event of parseSSEStream(asyncChunks())) {
+    for await (const event of parseSSEStream(complexFieldsChunks())) {
       events.push(event);
     }
 
@@ -303,12 +310,6 @@ describe('parseSSEStream', () => {
   });
 
   it('handles OpenAI-style streaming', async () => {
-    async function* openaiChunks() {
-      yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"Hello"}}]}\n\n';
-      yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":" world"}}]}\n\n';
-      yield 'data: [DONE]\n\n';
-    }
-
     const events = [];
 
     for await (const event of parseSSEStream(openaiChunks())) {
