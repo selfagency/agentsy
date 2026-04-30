@@ -1,0 +1,35 @@
+src/structured/validateJsonSchema.ts
+  h_5cf1e2c1161853 19
+src/structured/streamJson.ts
+  h_5cf1e2c1161853 2
+src/sse/parseSSEStream.ts
+  h_5cf1e2c1161853 45,73
+src/sse/sse.test.ts
+  h_5cf1e2c1161853 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "0db412ce363e8c71ac6c9556747d32f2fdaf5109",
+  "prompts": {
+    "24df943a18a51d50": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "3d342edd-04e2-4b9f-8b17-3746a949c880",
+        "model": "z/glm-4.7"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 3,
+      "accepted_lines": 873,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/c9c0981370fd15531b3bdea6fb375f8bf556ed12328375a7d9649f3cbc6ead1c"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
