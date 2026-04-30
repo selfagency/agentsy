@@ -91,8 +91,7 @@ export function normalizeOpenAIResponseEvent(raw: unknown): NormalizerResult | n
     if (type === 'response.output_text.delta' || type === 'response.refusal.delta')
       return handleResponsesTextDelta(raw);
     if (type === 'response.output_item.added') return handleResponsesOutputItemAdded(raw);
-    if (type === 'response.function_call_arguments.delta')
-      return handleResponsesFunctionCallArgumentsDelta(raw);
+    if (type === 'response.function_call_arguments.delta') return handleResponsesFunctionCallArgumentsDelta(raw);
     if (type === 'response.completed') return handleResponsesCompleted(raw);
 
     return null;

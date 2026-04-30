@@ -44,23 +44,42 @@ function extractJsonCandidates(text: string): string[] {
   let start = -1;
   let inString = false;
   let escaped = false;
+  let i = 0;
 
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (char === undefined) continue;
-    if (escaped) { escaped = false; continue; }
-    if (inString && char === '\\') { escaped = true; continue; }
-    if (char === '"') { inString = !inString; continue; }
-    if (inString) continue;
-    start = processBracketChar(char, stack, start, i, text, candidates);
+  for (const char of text) {
+    if (escaped) {
+      escaped = false;
+      i++;
+      continue;
+    }
+    if (inString && char === '\\') {
+      escaped = true;
+      i++;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      i++;
+      continue;
+    }
+    if (!inString) {
+      start = processBracketChar(char, stack, start, i, text, candidates);
+    }
+    i++;
   }
 
   return candidates;
 }
 
 function processRepairBracket(char: string, stack: string[]): string | null {
-  if (char === '{') { stack.push('}'); return char; }
-  if (char === '[') { stack.push(']'); return char; }
+  if (char === '{') {
+    stack.push('}');
+    return char;
+  }
+  if (char === '[') {
+    stack.push(']');
+    return char;
+  }
   if (stack.length === 0) return null;
 
   let result = '';
@@ -87,10 +106,25 @@ function tryRepairCandidate(text: string): string | null {
   let escaped = false;
 
   for (const char of trimmed) {
-    if (escaped) { repaired += char; escaped = false; continue; }
-    if (char === '\\') { repaired += char; escaped = true; continue; }
-    if (char === '"') { repaired += char; inString = !inString; continue; }
-    if (inString) { repaired += char; continue; }
+    if (escaped) {
+      repaired += char;
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      repaired += char;
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      repaired += char;
+      inString = !inString;
+      continue;
+    }
+    if (inString) {
+      repaired += char;
+      continue;
+    }
 
     if (char === '{' || char === '[' || char === '}' || char === ']') {
       const addition = processRepairBracket(char, stack);
@@ -190,6 +224,28 @@ function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): b
   return exceeded;
 }
 
+function collectParsedCandidates(normalized: string, maxJsonDepth: number, maxJsonKeys: number): unknown[] {
+  const parsedValues: unknown[] = [];
+  for (const candidate of extractJsonCandidates(normalized)) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (!exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys)) {
+        parsedValues.push(parsed);
+      }
+    } catch {
+      // Ignore malformed candidates and continue scanning.
+    }
+  }
+  return parsedValues;
+}
+
+function selectBestCandidate(parsedValues: unknown[], selectMostComprehensive: boolean): unknown {
+  if (!selectMostComprehensive || parsedValues.length === 1) {
+    return parsedValues[0] ?? null;
+  }
+  return parsedValues.slice().sort((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
+}
+
 /**
  * Extracts and parses the best JSON value from mixed text.
  * Strips markdown code fences, selects the most comprehensive candidate,
@@ -204,24 +260,10 @@ export function parseJson(text: string, options: ParseJsonOptions = {}): unknown
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
   const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
 
-  const parsedValues: unknown[] = [];
-  for (const candidate of extractJsonCandidates(normalized)) {
-    try {
-      const parsed = JSON.parse(candidate);
-      if (!exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys)) {
-        parsedValues.push(parsed);
-      }
-    } catch {
-      // Ignore malformed candidates and continue scanning.
-    }
-  }
+  const parsedValues = collectParsedCandidates(normalized, maxJsonDepth, maxJsonKeys);
 
   if (parsedValues.length > 0) {
-    if (!selectMostComprehensive || parsedValues.length === 1) {
-      return parsedValues[0] ?? null;
-    }
-
-    return parsedValues.slice().sort((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
+    return selectBestCandidate(parsedValues, selectMostComprehensive);
   }
 
   if (options.repairIncomplete) {

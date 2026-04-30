@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildXmlToolSystemPrompt } from './buildXmlToolSystemPrompt.js';
 import { buildNativeToolsArray } from './buildNativeToolsPayload.js';
+import { buildXmlToolSystemPrompt } from './buildXmlToolSystemPrompt.js';
 
 const SEARCH_TOOL = {
   name: 'search_files',
@@ -101,7 +101,7 @@ describe('buildXmlToolSystemPrompt', () => {
     expect(() => buildXmlToolSystemPrompt([{ name: 'bad.name' }], { format: 'hermes' })).toThrow(/Invalid tool name/);
   });
 
-  it("Hermes prompt returns empty string for empty tools array", () => {
+  it('Hermes prompt returns empty string for empty tools array', () => {
     expect(buildXmlToolSystemPrompt([], { format: 'hermes' })).toBe('');
   });
 });
@@ -138,17 +138,13 @@ describe('buildNativeToolsArray', () => {
   });
 
   it('omits required field when inputSchema has no required array', () => {
-    const result = buildNativeToolsArray([
-      { name: 'ping', inputSchema: { properties: { x: { type: 'string' } } } },
-    ]);
+    const result = buildNativeToolsArray([{ name: 'ping', inputSchema: { properties: { x: { type: 'string' } } } }]);
 
     expect(result[0]?.function.parameters.required).toBeUndefined();
   });
 
   it('omits required field for an empty required array', () => {
-    const result = buildNativeToolsArray([
-      { name: 'ping', inputSchema: { properties: {}, required: [] } },
-    ]);
+    const result = buildNativeToolsArray([{ name: 'ping', inputSchema: { properties: {}, required: [] } }]);
 
     expect(result[0]?.function.parameters.required).toBeUndefined();
   });
@@ -180,13 +176,13 @@ describe('buildNativeToolsArray', () => {
       },
     ]);
 
-    expect(result[0]?.function.parameters.properties['color']?.enum).toEqual(['red', 'green', 'blue']);
+    expect(result[0]?.function.parameters.properties.color?.enum).toEqual(['red', 'green', 'blue']);
   });
 
   it('omits enum field when property has no enum', () => {
     const result = buildNativeToolsArray([SEARCH_TOOL]);
 
-    expect(result[0]?.function.parameters.properties['query']?.enum).toBeUndefined();
+    expect(result[0]?.function.parameters.properties.query?.enum).toBeUndefined();
   });
 
   it('converts multiple tools', () => {
@@ -200,4 +196,3 @@ describe('buildNativeToolsArray', () => {
     expect(result[1]?.function.name).toBe('tool_b');
   });
 });
-

@@ -44,8 +44,7 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
       continue;
     }
     const args = obj.arguments ?? obj.parameters ?? {};
-    const parameters =
-      typeof args === 'object' && !Array.isArray(args) ? (args as Record<string, unknown>) : {};
+    const parameters = typeof args === 'object' && !Array.isArray(args) ? (args as Record<string, unknown>) : {};
 
     results.push({ name, parameters, format: 'json-wrapped' });
   }

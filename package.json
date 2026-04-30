@@ -3,28 +3,28 @@
   "version": "0.1.5",
   "description": "Composable parsers and stream processing utilities for LLM responses",
   "keywords": [
-    "llm",
-    "streaming",
-    "parser",
-    "xml",
-    "json",
     "ai",
-    "tools",
-    "openai",
     "anthropic",
     "gemini",
-    "mistral"
+    "json",
+    "llm",
+    "mistral",
+    "openai",
+    "parser",
+    "streaming",
+    "tools",
+    "xml"
   ],
   "homepage": "https://llmstreamparser.self.agency",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/selfagency/llm-stream-parser.git"
-  },
   "bugs": {
     "url": "https://github.com/selfagency/llm-stream-parser/issues"
   },
   "license": "MIT",
   "author": "Daniel Sieradski <daniel@self.agency>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/llm-stream-parser.git"
+  },
   "files": [
     "dist"
   ],

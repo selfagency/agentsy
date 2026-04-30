@@ -70,8 +70,8 @@ const [finalThinking, finalContent] = parser.flush();
 Automatic tag detection for common models:
 
 ```typescript
-const parser = ThinkingParser.forModel('deepseek');   // <think></think>
-const parser = ThinkingParser.forModel('granite');    // <|thinking|></|thinking|>
+const parser = ThinkingParser.forModel('deepseek'); // <think></think>
+const parser = ThinkingParser.forModel('granite'); // <|thinking|></|thinking|>
 ```
 
 ---
@@ -124,7 +124,11 @@ for (const call of calls) {
 
 // Build the system prompt that teaches the model to emit tool calls
 const systemPrompt = buildXmlToolSystemPrompt([
-  { name: 'search', description: 'Search the web', inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] } },
+  {
+    name: 'search',
+    description: 'Search the web',
+    inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] },
+  },
   { name: 'edit_file', description: 'Edit a file' },
 ]);
 ```
@@ -199,7 +203,10 @@ await adapter.end();
 ### `@selfagency/llm-stream-parser/formatting` — Output sanitization
 
 ```typescript
-import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from '@selfagency/llm-stream-parser/formatting';
+import {
+  sanitizeNonStreamingModelOutput,
+  formatXmlLikeResponseForDisplay,
+} from '@selfagency/llm-stream-parser/formatting';
 ```
 
 ---

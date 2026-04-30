@@ -136,6 +136,13 @@ function checkRef(
   return true;
 }
 
+function isValueTypeMatch(value: unknown, schemaType: string): boolean {
+  if (schemaType === 'object') return value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (schemaType === 'array') return Array.isArray(value);
+  if (schemaType === 'integer') return typeof value === 'number' && Number.isInteger(value);
+  return typeof value === schemaType;
+}
+
 function checkTypeConstraint(
   value: unknown,
   schemaType: string,
@@ -143,15 +150,7 @@ function checkTypeConstraint(
   path: string,
   errors: string[],
 ): boolean {
-  const isTypeMatch =
-    (schemaType === 'object' && valueType === 'object' && value !== null && !Array.isArray(value)) ||
-    (schemaType === 'array' && Array.isArray(value)) ||
-    (schemaType === 'string' && typeof value === 'string') ||
-    (schemaType === 'number' && typeof value === 'number') ||
-    (schemaType === 'integer' && typeof value === 'number' && Number.isInteger(value)) ||
-    (schemaType === 'boolean' && typeof value === 'boolean');
-
-  if (!isTypeMatch) {
+  if (!isValueTypeMatch(value, schemaType)) {
     errors.push(`${path}: expected ${schemaType}, got ${valueType}`);
     return true;
   }
@@ -354,6 +353,21 @@ function checkObjectConstraints(
   checkAdditionalProperties(value, properties, schema.additionalProperties, path, errors);
 }
 
+function checkValueTypeConstraints(
+  value: unknown,
+  schema: JsonSchema,
+  path: string,
+  errors: string[],
+  context?: ResolveContext,
+): void {
+  if (typeof value === 'string') checkStringConstraints(value, schema, path, errors);
+  if (typeof value === 'number') checkNumberConstraints(value, schema, path, errors);
+  if (Array.isArray(value)) checkArrayConstraints(value, schema, path, errors, context);
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    checkObjectConstraints(value as Record<string, unknown>, schema, path, errors, context);
+  }
+}
+
 function validateNode(
   value: unknown,
   schema: JsonSchema,
@@ -369,13 +383,7 @@ function validateNode(
   if (schemaType && checkTypeConstraint(value, schemaType, valueType, path, errors)) return;
 
   checkCompositeKeywords(value, schema, path, errors, context);
-
-  if (typeof value === 'string') checkStringConstraints(value, schema, path, errors);
-  if (typeof value === 'number') checkNumberConstraints(value, schema, path, errors);
-  if (Array.isArray(value)) checkArrayConstraints(value, schema, path, errors, context);
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    checkObjectConstraints(value as Record<string, unknown>, schema, path, errors, context);
-  }
+  checkValueTypeConstraints(value, schema, path, errors, context);
 }
 
 interface WalkLimitsState {

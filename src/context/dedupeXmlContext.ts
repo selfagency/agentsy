@@ -13,8 +13,7 @@ function collectTagMatches(part: string): TagMatch[] {
   if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
   OPEN_TAG_RE.lastIndex = 0;
   const results: TagMatch[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = OPEN_TAG_RE.exec(part)) !== null) {
+  for (let m = OPEN_TAG_RE.exec(part); m !== null; m = OPEN_TAG_RE.exec(part)) {
     const tagName = m[1];
     if (!tagName) continue;
     const openEnd = OPEN_TAG_RE.lastIndex;

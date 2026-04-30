@@ -11,18 +11,18 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Getting started', link: '/getting-started' },
       { text: 'API Reference', link: '/api' },
-      { text: 'Developers', link: '/developers/' }
+      { text: 'Developers', link: '/developers/' },
     ],
     sidebar: {
       '/developers/': [
         { text: 'Developer Guide', link: '/developers/' },
         { text: 'Contributing', link: '/developers/contributing' },
-        { text: 'Integration Guide', link: '/developers/integration-copilot' }
-      ]
+        { text: 'Integration Guide', link: '/developers/integration-copilot' },
+      ],
     },
     socialLinks: [{ icon: 'github', link: 'https://github.com/selfagency/llm-stream-parser' }],
     search: {
-      provider: 'local'
-    }
-  }
+      provider: 'local',
+    },
+  },
 });
