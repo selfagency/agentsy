@@ -8,3 +8,4 @@ export * from './streamJson.js';
 export * from './zodAdapter.js';
 export * from './autoRepair.js';
 export * from './providerFormats.js';
+export * from './repairStateMachine.js';
