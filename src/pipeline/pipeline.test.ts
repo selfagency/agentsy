@@ -11,7 +11,7 @@ describe('createPipeline', () => {
       yield 'data: [DONE]\n\n';
     }
 
-    const events: any[] = [];
+    const events: unknown[] = [];
     for await (const event of createPipeline(mockOpenAIStream(), {
       provider: 'openai',
       scrubContextTags: false,
@@ -20,9 +20,9 @@ describe('createPipeline', () => {
     }
 
     // Should have text delta events
-    const textEvents = events.filter(e => e.type === 'delta');
+    const textEvents = events.filter((e: any) => e.type === 'delta');
     expect(textEvents.length).toBeGreaterThan(0);
-    expect(textEvents.map(e => e.content).join('')).toContain('Hello');
+    expect(textEvents.map((e: any) => e.content).join('')).toContain('Hello');
   });
 
   it('emits error events instead of throwing on invalid source', async () => {
@@ -32,12 +32,12 @@ describe('createPipeline', () => {
       yield 'data: [DONE]\n\n';
     }
 
-    const events: any[] = [];
+    const events: unknown[] = [];
     for await (const event of createPipeline(mockStreamWithBadJson(), { provider: 'openai' })) {
       events.push(event);
     }
 
-    const errorEvent = events.find(e => e.type === 'error');
+    const errorEvent = events.find((e: any) => e.type === 'error');
     expect(errorEvent).toBeDefined();
   });
 

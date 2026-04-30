@@ -88,7 +88,7 @@ export class SSEParser {
     // Keep the last part in the buffer (incomplete event).
     for (let i = 0; i < parts.length - 1; i++) {
       const eventText = parts[i];
-      if (eventText !== undefined && eventText.trim()) {
+      if (eventText?.trim()) {
         const fields = eventText.split('\n');
         const event = this.fieldsToEvent(fields);
         if (event && this.isValidEvent(event)) {
@@ -163,6 +163,6 @@ export class SSEParser {
   }
 
   private isValidEvent(event: SSEEvent): boolean {
-    return !!(event.data !== undefined || event.event || event.id || event.retry !== undefined);
+    return !!(event.data !== undefined || (event.event ?? event.id) || event.retry !== undefined);
   }
 }
