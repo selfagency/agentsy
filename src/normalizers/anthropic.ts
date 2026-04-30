@@ -73,7 +73,7 @@ function handleContentBlockDelta(raw: Record<string, unknown>): NormalizerResult
 
 function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | null {
   const deltaObj = raw['delta'];
-  const stopReason = isObject(deltaObj) && typeof deltaObj['stop_reason'] === 'string' ? deltaObj['stop_reason'] : null;
+  const stopReason = isObject(deltaObj) && typeof deltaObj.stop_reason === 'string' ? deltaObj.stop_reason : null;
 
   const done = stopReason === 'end_turn' || stopReason === 'tool_use' ? true : undefined;
 
