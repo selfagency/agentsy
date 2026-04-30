@@ -1,0 +1,62 @@
+.oxlintrc.json
+  f86c5c4e3bec2d50 33-41
+src/normalizers/anthropic.ts
+  h_5cf1e2c1161853 76
+.codacy/codacy.yaml
+  1005397bc3715d96 2-8,10-14,16-22
+.oxfmtrc.json
+  h_5cf1e2c1161853 7-10
+  cbc0b54bc5176bc3 3-6,11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "7753cb94cb71c938abb10e07e0f487fcf9f7a8ce",
+  "prompts": {
+    "1005397bc3715d96": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "92858fab-38a0-4cdc-b3be-eeb3cf32caba",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 19,
+      "total_deletions": 19,
+      "accepted_lines": 19,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/e2c085ca89b15e83345f97e62cc30cee0f69551b3f23ff5f45b967071d992706"
+    },
+    "cbc0b54bc5176bc3": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1777563375943",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 5,
+      "overriden_lines": 1
+    },
+    "f86c5c4e3bec2d50": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1777563407798",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
