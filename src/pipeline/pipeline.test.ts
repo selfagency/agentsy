@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createPipeline } from './createPipeline.js';
 
 // Simulate an async iterable of text chunks from OpenAI
@@ -42,9 +42,9 @@ describe('createPipeline', () => {
     }
 
     // Should have text delta events
-    const textEvents = events.filter((e: any) => e.type === 'delta');
+    const textEvents = events.filter((e: unknown) => e.type === 'delta');
     expect(textEvents.length).toBeGreaterThan(0);
-    expect(textEvents.map((e: any) => e.content).join('')).toContain('Hello');
+    expect(textEvents.map((e: unknown) => e.content).join('')).toContain('Hello');
   });
 
   it('emits error events instead of throwing on invalid source', async () => {
@@ -54,12 +54,12 @@ describe('createPipeline', () => {
       events.push(event);
     }
 
-    const errorEvent = events.find((e: any) => e.type === 'error');
+    const errorEvent = events.find((e: unknown) => e.type === 'error');
     expect(errorEvent).toBeDefined();
   });
 
   it('respects structured content parsing', async () => {
-    const events: any[] = [];
+    const events: unknown[] = [];
     for await (const event of createPipeline(mockStreamWithJson(), {
       provider: 'openai',
       scrubContextTags: false,
@@ -76,7 +76,7 @@ describe('createPipeline', () => {
   });
 
   it('emits thinking blocks separately', async () => {
-    const events: any[] = [];
+    const events: unknown[] = [];
     for await (const event of createPipeline(mockClaudeWithThinking(), { provider: 'anthropic' })) {
       events.push(event);
     }

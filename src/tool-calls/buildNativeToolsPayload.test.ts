@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildNativeToolsArray } from './buildNativeToolsPayload.js';
 
 const SEARCH_TOOL = {
@@ -40,10 +40,10 @@ describe('buildNativeToolsArray', () => {
     const tools = buildNativeToolsArray([SEARCH_TOOL]);
     expect(tools).toHaveLength(1);
     const fn = tools[0]?.function;
-    expect(fn?.parameters.properties['content-type']).toBeDefined();
-    expect(fn?.parameters.properties.path).toBeDefined();
-    expect(fn?.parameters.required).toContain('content-type');
-    expect(fn?.parameters.required).toContain('path');
+    expect(fn.parameters.properties['content-type']).toBeDefined();
+    expect(fn.parameters.properties.path).toBeDefined();
+    expect(fn.parameters.required).toContain('content-type');
+    expect(fn.parameters.required).toContain('path');
   });
 
   it('passes through rich JSON Schema keywords without stripping them', () => {

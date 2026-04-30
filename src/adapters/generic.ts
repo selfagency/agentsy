@@ -95,8 +95,8 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onThinking?.(output.thinking) ?? Promise.resolve(),
         undefined,
-        (error) => {
-          callbacks.onError?.(error, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
+        error => {
+          void callbacks.onError?.(error, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
         },
       );
     }
@@ -105,8 +105,8 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onContent?.(output.content) ?? Promise.resolve(),
         undefined,
-        (error) => {
-          callbacks.onError?.(error, { type: 'content', ...(chunk !== undefined && { chunk }) });
+        error => {
+          void callbacks.onError?.(error, { type: 'content', ...(chunk !== undefined && { chunk }) });
         },
       );
     }
@@ -115,8 +115,8 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onToolCall?.(toolCall) ?? Promise.resolve(),
         undefined,
-        (error) => {
-          callbacks.onError?.(error, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
+        error => {
+          void callbacks.onError?.(error, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
         },
       );
     }
@@ -131,8 +131,8 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onDone?.() ?? Promise.resolve(),
         undefined,
-        (error) => {
-          callbacks.onError?.(error, { type: 'done' });
+        error => {
+          void callbacks.onError?.(error, { type: 'done' });
         },
       );
     },
