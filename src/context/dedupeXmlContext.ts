@@ -16,7 +16,7 @@ interface TagMatch {
  * Prevents ReDoS by ensuring the string is treated literally, not as a pattern.
  */
 function escapeRegexChars(str: string): string {
-  return str.replace(/[.*+?^${}()|[\\\]]/g, '\\$&');
+  return str.replaceAll(/[.*+?^${}()|[\\\]]/g, '\\$&');
 }
 
 function collectTagMatches(part: string): TagMatch[] {

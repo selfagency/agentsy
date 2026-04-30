@@ -32,7 +32,7 @@ describe('repairStateMachine', () => {
 
     it('handles escape sequences in strings', () => {
       const state = createRepairState();
-      const input = '{"key":"val\\"ue"}';
+      const input = String.raw`{"key":"val\"ue"}`;
       for (const char of input) {
         feedCharToStateMachine(char, state);
       }
@@ -143,7 +143,7 @@ describe('repairStateMachine', () => {
     });
 
     it('handles strings with escaped quotes', () => {
-      const input = '{"key":"value\\"with\\"quotes';
+      const input = String.raw`{"key":"value\"with\"quotes`;
       const result = repairJsonWithStateMachine(input);
       expect(() => JSON.parse(result)).not.toThrow();
       const parsed = JSON.parse(result);
@@ -151,7 +151,7 @@ describe('repairStateMachine', () => {
     });
 
     it('handles strings with escape sequences', () => {
-      const input = '{"key":"line1\\nline2';
+      const input = String.raw`{"key":"line1\nline2`;
       const result = repairJsonWithStateMachine(input);
       expect(() => JSON.parse(result)).not.toThrow();
       const parsed = JSON.parse(result);

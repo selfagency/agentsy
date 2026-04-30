@@ -114,7 +114,7 @@ export function buildNativeToolsArray(
     if (strict) fn.strict = true;
     if (required && required.length > 0) {
       // Ensure `required` only contains names present in the emitted `properties`.
-      const filtered = required.filter(name => Object.prototype.hasOwnProperty.call(properties, name));
+      const filtered = required.filter(name => Object.hasOwn(properties, name));
       if (filtered.length > 0) fn.parameters.required = filtered;
     }
 

@@ -40,8 +40,8 @@ export interface SSEParserOptions {
  */
 export class SSEParser {
   private buffer = '';
-  private onEventCallback: ((event: SSEEvent) => void) | undefined;
-  private onErrorCallback: ((error: Error) => void) | undefined;
+  private readonly onEventCallback: ((event: SSEEvent) => void) | undefined;
+  private readonly onErrorCallback: ((error: Error) => void) | undefined;
 
   constructor(options?: SSEParserOptions) {
     this.onEventCallback = options?.onEvent;
@@ -98,7 +98,7 @@ export class SSEParser {
     }
 
     // Keep incomplete part in buffer.
-    this.buffer = parts[parts.length - 1] ?? '';
+    this.buffer = parts.at(-1) ?? '';
   }
 
   private fieldsToEvent(fields: string[]): SSEEvent | null {
@@ -145,7 +145,7 @@ export class SSEParser {
           break;
         case 'retry':
           {
-            const retryNum = parseInt(value, 10);
+            const retryNum = Number.parseInt(value, 10);
             if (!Number.isNaN(retryNum) && retryNum > 0) {
               event.retry = retryNum;
             }

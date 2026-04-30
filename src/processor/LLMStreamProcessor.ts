@@ -199,9 +199,7 @@ export class LLMStreamProcessor {
 
     this._stats.chunksProcessed++;
     this._stats.bytesProcessed += chunkSize;
-    if (this._stats.firstChunkAt === undefined) {
-      this._stats.firstChunkAt = new Date();
-    }
+    this._stats.firstChunkAt ??= new Date();
     this._stats.lastChunkAt = new Date();
 
     // Track if this chunk has content or thinking input
