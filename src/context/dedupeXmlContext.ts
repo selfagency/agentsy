@@ -1,25 +1,37 @@
 // Max input length guarded to prevent ReDoS on adversarial inputs.
 const XML_CONTEXT_MAX_PART_LENGTH = 1_000_000;
-const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]*)[^>]*>[\s\S]*?<\/\1>/gi;
 
-function collectTagMatches(part: string): RegExpExecArray[] {
-  if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
-  XML_CONTEXT_TAG_RE.lastIndex = 0;
-  const matches: RegExpExecArray[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = XML_CONTEXT_TAG_RE.exec(part)) !== null) {
-    matches.push(m);
-  }
-  return matches;
+// Matches only opening tags — no backreference, no super-linear backtracking.
+const OPEN_TAG_RE = /<([a-z_][a-z0-9_.-]*)[^>]*>/gi;
+
+interface TagMatch {
+  tagName: string;
+  fullMatch: string;
 }
 
-function dedupeMatchesIntoMap(matches: RegExpExecArray[], latestByTag: Map<string, string>): void {
-  for (let j = matches.length - 1; j >= 0; j--) {
-    const currentMatch = matches[j];
-    const tagName = currentMatch?.[1];
+function collectTagMatches(part: string): TagMatch[] {
+  if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
+  OPEN_TAG_RE.lastIndex = 0;
+  const results: TagMatch[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = OPEN_TAG_RE.exec(part)) !== null) {
+    const tagName = m[1];
     if (!tagName) continue;
-    if (!latestByTag.has(tagName)) {
-      latestByTag.set(tagName, currentMatch[0].trim());
+    const openEnd = OPEN_TAG_RE.lastIndex;
+    const closeTag = `</${tagName}>`;
+    const closeIdx = part.indexOf(closeTag, openEnd);
+    if (closeIdx === -1) continue;
+    results.push({ tagName, fullMatch: part.slice(m.index, closeIdx + closeTag.length) });
+  }
+  return results;
+}
+
+function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, string>): void {
+  for (let j = matches.length - 1; j >= 0; j--) {
+    const match = matches[j];
+    if (!match) continue;
+    if (!latestByTag.has(match.tagName)) {
+      latestByTag.set(match.tagName, match.fullMatch.trim());
     }
   }
 }

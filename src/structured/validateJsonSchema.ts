@@ -158,6 +158,55 @@ function checkTypeConstraint(
   return false;
 }
 
+function checkAnyOf(
+  value: unknown,
+  subSchemas: unknown[],
+  path: string,
+  errors: string[],
+  context?: ResolveContext,
+): void {
+  const matched = subSchemas.some(subSchema => {
+    if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return false;
+    const subErrors: string[] = [];
+    validateNode(value, subSchema as JsonSchema, path, subErrors, context);
+    return subErrors.length === 0;
+  });
+  if (!matched) {
+    errors.push(`${path}: value does not match any of the 'anyOf' schemas`);
+  }
+}
+
+function checkOneOf(
+  value: unknown,
+  subSchemas: unknown[],
+  path: string,
+  errors: string[],
+  context?: ResolveContext,
+): void {
+  const matchCount = subSchemas.reduce((count: number, subSchema) => {
+    if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return count;
+    const subErrors: string[] = [];
+    validateNode(value, subSchema as JsonSchema, path, subErrors, context);
+    return subErrors.length === 0 ? count + 1 : count;
+  }, 0);
+  if (matchCount !== 1) {
+    errors.push(`${path}: value must match exactly one of the 'oneOf' schemas (matched ${matchCount})`);
+  }
+}
+
+function checkAllOf(
+  value: unknown,
+  subSchemas: unknown[],
+  path: string,
+  errors: string[],
+  context?: ResolveContext,
+): void {
+  for (const subSchema of subSchemas) {
+    if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) continue;
+    validateNode(value, subSchema as JsonSchema, path, errors, context);
+  }
+}
+
 function checkCompositeKeywords(
   value: unknown,
   schema: JsonSchema,
@@ -181,35 +230,24 @@ function checkCompositeKeywords(
     }
   }
 
-  if (Array.isArray(schema.anyOf)) {
-    const matched = schema.anyOf.some(subSchema => {
-      if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return false;
-      const subErrors: string[] = [];
-      validateNode(value, subSchema as JsonSchema, path, subErrors, context);
-      return subErrors.length === 0;
-    });
-    if (!matched) {
-      errors.push(`${path}: value does not match any of the 'anyOf' schemas`);
-    }
-  }
+  if (Array.isArray(schema.anyOf)) checkAnyOf(value, schema.anyOf, path, errors, context);
+  if (Array.isArray(schema.oneOf)) checkOneOf(value, schema.oneOf, path, errors, context);
+  if (Array.isArray(schema.allOf)) checkAllOf(value, schema.allOf, path, errors, context);
+}
 
-  if (Array.isArray(schema.oneOf)) {
-    const matchCount = schema.oneOf.reduce((count: number, subSchema) => {
-      if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return count;
-      const subErrors: string[] = [];
-      validateNode(value, subSchema as JsonSchema, path, subErrors, context);
-      return subErrors.length === 0 ? count + 1 : count;
-    }, 0);
-    if (matchCount !== 1) {
-      errors.push(`${path}: value must match exactly one of the 'oneOf' schemas (matched ${matchCount})`);
-    }
+function checkPatternConstraint(value: string, pattern: string, path: string, errors: string[]): void {
+  const MAX_PATTERN_LENGTH = 1024;
+  if (pattern.length > MAX_PATTERN_LENGTH) {
+    errors.push(`${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`);
+    return;
   }
-
-  if (Array.isArray(schema.allOf)) {
-    for (const subSchema of schema.allOf) {
-      if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) continue;
-      validateNode(value, subSchema as JsonSchema, path, errors, context);
+  try {
+    const regex = getCachedRegex(pattern);
+    if (!regex.test(value)) {
+      errors.push(`${path}: string does not match pattern ${pattern}`);
     }
+  } catch {
+    errors.push(`${path}: schema pattern is not a valid regular expression: ${pattern}`);
   }
 }
 
@@ -222,19 +260,7 @@ function checkStringConstraints(value: string, schema: JsonSchema, path: string,
   }
 
   if (typeof schema.pattern === 'string') {
-    const MAX_PATTERN_LENGTH = 1024;
-    if (schema.pattern.length > MAX_PATTERN_LENGTH) {
-      errors.push(`${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`);
-    } else {
-      try {
-        const regex = getCachedRegex(schema.pattern);
-        if (!regex.test(value)) {
-          errors.push(`${path}: string does not match pattern ${schema.pattern}`);
-        }
-      } catch {
-        errors.push(`${path}: schema pattern is not a valid regular expression: ${schema.pattern}`);
-      }
-    }
+    checkPatternConstraint(value, schema.pattern, path, errors);
   }
 
   if (typeof schema.format === 'string') {
@@ -285,6 +311,21 @@ function checkArrayConstraints(
   }
 }
 
+function checkAdditionalProperties(
+  value: Record<string, unknown>,
+  properties: Record<string, unknown>,
+  additionalProperties: unknown,
+  path: string,
+  errors: string[],
+): void {
+  if (additionalProperties !== false) return;
+  for (const key of Object.keys(value)) {
+    if (!Object.hasOwn(properties, key)) {
+      errors.push(`${path}.${key}: additional property is not allowed`);
+    }
+  }
+}
+
 function checkObjectConstraints(
   value: Record<string, unknown>,
   schema: JsonSchema,
@@ -310,13 +351,7 @@ function checkObjectConstraints(
     }
   }
 
-  if (schema.additionalProperties === false) {
-    for (const key of Object.keys(value)) {
-      if (!Object.hasOwn(properties, key)) {
-        errors.push(`${path}.${key}: additional property is not allowed`);
-      }
-    }
-  }
+  checkAdditionalProperties(value, properties, schema.additionalProperties, path, errors);
 }
 
 function validateNode(

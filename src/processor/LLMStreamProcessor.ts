@@ -111,6 +111,13 @@ export class LLMStreamProcessor {
   private doneEmitted = false;
   private _warningCount = 0;
 
+  private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
+    if (this._accumulatedUsage !== undefined) {
+      return { usage: this._accumulatedUsage };
+    }
+    return {};
+  }
+
   private readonly listeners: {
     [K in keyof StreamEventMap]: Set<StreamEventMap[K]>;
   } = {
@@ -174,7 +181,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done,
-      ...(this._accumulatedUsage != null ? { usage: this._accumulatedUsage } : {}),
+      ...this.usagePayload,
     });
     this.recordOutput(output);
     this.emitOutput(output);
@@ -190,7 +197,7 @@ export class LLMStreamProcessor {
       content: out.content + flushed.content,
       toolCalls: [...out.toolCalls, ...flushed.toolCalls],
       done: true,
-      ...(this._accumulatedUsage != null ? { usage: this._accumulatedUsage } : {}),
+      ...this.usagePayload,
     });
   }
 
@@ -224,7 +231,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done: true,
-      ...(this._accumulatedUsage != null ? { usage: this._accumulatedUsage } : {}),
+      ...this.usagePayload,
     });
 
     this.recordOutput(output);

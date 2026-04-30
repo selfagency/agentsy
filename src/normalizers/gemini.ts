@@ -28,6 +28,15 @@ interface GeminiPartsResult {
   nativeToolCallList: NativeToolCallDelta[];
 }
 
+function buildFunctionCallDelta(fc: Record<string, unknown>, index: number): NativeToolCallDelta {
+  const delta: NativeToolCallDelta = { index };
+  const name = typeof fc['name'] === 'string' ? fc['name'] : undefined;
+  const args = fc['args'];
+  if (name !== undefined) delta.name = name;
+  if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
+  return delta;
+}
+
 function processGeminiParts(parts: unknown[]): GeminiPartsResult {
   let textContent: string | undefined;
   let thinking: string | undefined;
@@ -49,12 +58,7 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
 
     const fc = part['functionCall'];
     if (isObject(fc)) {
-      const name = typeof fc['name'] === 'string' ? fc['name'] : undefined;
-      const args = fc['args'];
-      const delta: NativeToolCallDelta = { index: toolCallIndex++ };
-      if (name !== undefined) delta.name = name;
-      if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
-      nativeToolCallList.push(delta);
+      nativeToolCallList.push(buildFunctionCallDelta(fc, toolCallIndex++));
     }
   }
 

@@ -102,6 +102,16 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
  * @returns An array of successfully parsed tool calls. Malformed or unrecognised
  *          tool calls are silently skipped — the function never throws.
  */
+function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<string, unknown> {
+  const params: Record<string, unknown> = {};
+  for (const paramMatch of inner.matchAll(paramPattern)) {
+    const paramName = paramMatch[1];
+    if (!paramName) continue;
+    params[paramName] = (paramMatch[2] ?? '').trim();
+  }
+  return params;
+}
+
 export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
   if (knownTools.size === 0) {
     return [];
@@ -136,15 +146,7 @@ export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlT
       continue;
     }
 
-    const params: Record<string, unknown> = {};
-    for (const paramMatch of inner.matchAll(paramPattern)) {
-      const paramName = paramMatch[1];
-      const paramValue = paramMatch[2];
-      if (!paramName) {
-        continue;
-      }
-      params[paramName] = (paramValue ?? '').trim();
-    }
+    const params = extractBareXmlParams(inner, paramPattern);
 
     results.push({
       name: toolName,
