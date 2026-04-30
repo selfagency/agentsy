@@ -1,0 +1,35 @@
+src/processor/ProcessorStats.test.ts
+  h_5cf1e2c1161853 1-135
+src/processor/index.ts
+  h_5cf1e2c1161853 3
+src/processor/LLMStreamProcessor.ts
+  h_5cf1e2c1161853 7,150,189,197-210,335-351,444-448,463,769-793
+src/processor/ProcessorStats.ts
+  h_5cf1e2c1161853 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "581bf96a391c65c93fb3bb81563572112bfd7cea",
+  "prompts": {
+    "24df943a18a51d50": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "3d342edd-04e2-4b9f-8b17-3746a949c880",
+        "model": "z/glm-4.7"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 65,
+      "total_deletions": 0,
+      "accepted_lines": 197,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/1ce5b7f41458f8de21165d99c47073633f1c7bfc0735c01c08d2ef67fe90271e"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
