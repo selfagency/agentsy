@@ -64,6 +64,22 @@ export interface GenericAdapterOptions extends ProcessorOptions {
  * await adapter.end();
  * ```
  */
+
+async function safeCall<T>(
+  callback: (() => Promise<T>) | undefined,
+  fallback: T,
+  onError?: (error: Error) => void,
+): Promise<T> {
+  if (!callback) return fallback;
+  try {
+    return await callback();
+  } catch (error) {
+    const err = error as Error;
+    onError?.(err);
+    return fallback;
+  }
+}
+
 export function createGenericAdapter(
   callbacks: GenericAdapterCallbacks,
   options: GenericAdapterOptions = {},
@@ -75,33 +91,34 @@ export function createGenericAdapter(
   const showThinking = options.showThinking ?? true;
 
   async function emit(output: ProcessedOutput, chunk?: StreamChunk): Promise<void> {
-    if (output.thinking && showThinking && callbacks.onThinking) {
-      try {
-        await callbacks.onThinking(output.thinking);
-      } catch (error) {
-        const err = error as Error;
-        void callbacks.onError?.(err, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
-      }
+    if (output.thinking && showThinking) {
+      await safeCall(
+        () => callbacks.onThinking?.(output.thinking) ?? Promise.resolve(),
+        undefined,
+        (error) => {
+          callbacks.onError?.(error, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
+        },
+      );
     }
 
-    if (output.content && callbacks.onContent) {
-      try {
-        await callbacks.onContent(output.content);
-      } catch (error) {
-        const err = error as Error;
-        callbacks.onError?.(err, { type: 'content', ...(chunk !== undefined && { chunk }) });
-      }
+    if (output.content) {
+      await safeCall(
+        () => callbacks.onContent?.(output.content) ?? Promise.resolve(),
+        undefined,
+        (error) => {
+          callbacks.onError?.(error, { type: 'content', ...(chunk !== undefined && { chunk }) });
+        },
+      );
     }
 
-    if (callbacks.onToolCall) {
-      for (const toolCall of output.toolCalls) {
-        try {
-          await callbacks.onToolCall(toolCall);
-        } catch (error) {
-          const err = error as Error;
-          callbacks.onError?.(err, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
-        }
-      }
+    for (const toolCall of output.toolCalls) {
+      await safeCall(
+        () => callbacks.onToolCall?.(toolCall) ?? Promise.resolve(),
+        undefined,
+        (error) => {
+          callbacks.onError?.(error, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
+        },
+      );
     }
   }
 
@@ -111,14 +128,13 @@ export function createGenericAdapter(
     },
     async end(): Promise<void> {
       await emit(processor.flush());
-      if (callbacks.onDone) {
-        try {
-          await callbacks.onDone();
-        } catch (error) {
-          const err = error as Error;
-          callbacks.onError?.(err, { type: 'done' });
-        }
-      }
+      await safeCall(
+        () => callbacks.onDone?.() ?? Promise.resolve(),
+        undefined,
+        (error) => {
+          callbacks.onError?.(error, { type: 'done' });
+        },
+      );
     },
   };
 }

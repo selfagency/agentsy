@@ -47,6 +47,53 @@ const NORMALIZERS: Record<NormalizerProvider, (data: unknown) => { chunk: Stream
   'hugging-face': normalizeHuggingFaceTGIChunk,
 };
 
+/**
+ * Processes an SSE event and yields pipeline events.
+ */
+async function* processSSEEvent(
+  sseEvent: { data: string },
+  normalizer: (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null,
+  processor: LLMStreamProcessor,
+  provider: NormalizerProvider,
+): AsyncGenerator<PipelineEvent> {
+  if (!sseEvent.data || sseEvent.data === '[DONE]') {
+    return;
+  }
+
+  const parsed = JSON.parse(sseEvent.data);
+  const normalized = normalizer(parsed);
+
+  if (!normalized || typeof normalized !== 'object' || !('chunk' in normalized)) {
+    return;
+  }
+
+  const chunk = (normalized as any).chunk as StreamChunk;
+  const output = processor.process(chunk);
+
+  if (output.thinking) {
+    yield { type: 'thinking', thinking: output.thinking, provider };
+  }
+
+  if (output.content) {
+    yield { type: 'delta', content: output.content, provider };
+  }
+
+  for (const toolCall of output.toolCalls) {
+    yield {
+      type: 'tool_call',
+      tool_call: {
+        name: toolCall.name,
+        parameters: toolCall.parameters,
+      },
+      provider,
+    };
+  }
+
+  if (output.done) {
+    yield { type: 'message_done', provider };
+  }
+}
+
 export async function* createPipeline(
   source: AsyncIterable<string> | ReadableStream<string>,
   options: PipelineOptions,
@@ -70,41 +117,8 @@ export async function* createPipeline(
   try {
     for await (const sseEvent of parseSSEStream(source)) {
       try {
-        if (!sseEvent.data || sseEvent.data === '[DONE]') {
-          continue;
-        }
-
-        const parsed = JSON.parse(sseEvent.data);
-        const normalized = normalizer(parsed);
-
-        if (!normalized || typeof normalized !== 'object' || !('chunk' in normalized)) {
-          continue;
-        }
-
-        const chunk = (normalized as any).chunk as StreamChunk;
-        const output = processor.process(chunk);
-
-        if (output.thinking) {
-          yield { type: 'thinking', thinking: output.thinking, provider: options.provider };
-        }
-
-        if (output.content) {
-          yield { type: 'delta', content: output.content, provider: options.provider };
-        }
-
-        for (const toolCall of output.toolCalls) {
-          yield {
-            type: 'tool_call',
-            tool_call: {
-              name: toolCall.name,
-              parameters: toolCall.parameters,
-            },
-            provider: options.provider,
-          };
-        }
-
-        if (output.done) {
-          yield { type: 'message_done', provider: options.provider };
+        for await (const event of processSSEEvent(sseEvent, normalizer, processor, options.provider)) {
+          yield event;
         }
       } catch (_error) {
         yield {

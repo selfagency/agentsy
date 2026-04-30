@@ -107,18 +107,10 @@ export class SSEParser {
 
     for (const rawLine of fields) {
       const line = rawLine.trim();
-      if (!line) continue;
-
-      // Skip comments.
-      if (line.startsWith(':')) {
-        continue;
-      }
+      if (!line || line.startsWith(':')) continue;
 
       const colonIdx = line.indexOf(':');
-      if (colonIdx === -1) {
-        // Line with no colon; treat as field name with empty value.
-        continue;
-      }
+      if (colonIdx === -1) continue;
 
       const field = line.substring(0, colonIdx);
       let value = line.substring(colonIdx + 1);
@@ -128,30 +120,7 @@ export class SSEParser {
         value = value.substring(1);
       }
 
-      switch (field) {
-        case 'event':
-          event.event = value;
-          break;
-        case 'data':
-          if (hasDataField) {
-            event.data += '\n' + value;
-          } else {
-            event.data = value;
-            hasDataField = true;
-          }
-          break;
-        case 'id':
-          event.id = value;
-          break;
-        case 'retry':
-          {
-            const retryNum = Number.parseInt(value, 10);
-            if (!Number.isNaN(retryNum) && retryNum > 0) {
-              event.retry = retryNum;
-            }
-          }
-          break;
-      }
+      hasDataField = this.parseField(field, value, event) || hasDataField;
     }
 
     // Only include data if it was explicitly provided.
@@ -160,6 +129,36 @@ export class SSEParser {
     }
 
     return event;
+  }
+
+  private parseField(field: string, value: string, event: SSEEvent): boolean {
+    let hasDataField = false;
+
+    switch (field) {
+      case 'event':
+        event.event = value;
+        break;
+      case 'data':
+        if (event.data) {
+          event.data += '\n' + value;
+        } else {
+          event.data = value;
+          hasDataField = true;
+        }
+        break;
+      case 'id':
+        event.id = value;
+        break;
+      case 'retry': {
+        const retryNum = Number.parseInt(value, 10);
+        if (!Number.isNaN(retryNum) && retryNum > 0) {
+          event.retry = retryNum;
+        }
+        break;
+      }
+    }
+
+    return hasDataField;
   }
 
   private isValidEvent(event: SSEEvent): boolean {

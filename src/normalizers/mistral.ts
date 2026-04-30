@@ -2,6 +2,45 @@ import type { NormalizerResult } from './types.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
 
 /**
+ * Extracts text and thinking content from a Mistral structured content block.
+ * @returns [text, thinking] tuple
+ */
+function extractContentFromBlock(block: unknown): [string, string] {
+  let text = '';
+  let thinking = '';
+
+  if (!block || typeof block !== 'object') return [text, thinking];
+
+  const b = block as Record<string, unknown>;
+
+  if (b.type === 'text' && typeof b.text === 'string') {
+    text = b.text;
+  } else if (b.type === 'thinking' && Array.isArray(b.thinking)) {
+    thinking = extractThinkingContent(b.thinking);
+  }
+
+  return [text, thinking];
+}
+
+/**
+ * Extracts thinking content from a nested thinking array.
+ */
+function extractThinkingContent(thinkingArray: unknown[]): string {
+  let result = '';
+
+  for (const t of thinkingArray) {
+    if (t && typeof t === 'object') {
+      const inner = t as Record<string, unknown>;
+      if (typeof inner.text === 'string') {
+        result += inner.text;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Normalizes a Mistral AI streaming chunk into a canonical `NormalizerResult`.
  *
  * Most Mistral models use an OpenAI Chat Completions-compatible format and are
@@ -42,19 +81,9 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
     let thinking = '';
 
     for (const block of delta.content as unknown[]) {
-      if (!block || typeof block !== 'object') continue;
-      const b = block as Record<string, unknown>;
-
-      if (b.type === 'text' && typeof b.text === 'string') {
-        text += b.text;
-      } else if (b.type === 'thinking' && Array.isArray(b.thinking)) {
-        for (const t of b.thinking as unknown[]) {
-          if (t && typeof t === 'object') {
-            const inner = t as Record<string, unknown>;
-            if (typeof inner.text === 'string') thinking += inner.text;
-          }
-        }
-      }
+      const [blockText, blockThinking] = extractContentFromBlock(block);
+      text += blockText;
+      thinking += blockThinking;
     }
 
     if (!text && !thinking) return standard;
