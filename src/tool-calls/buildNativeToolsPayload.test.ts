@@ -40,6 +40,7 @@ describe('buildNativeToolsArray', () => {
     const tools = buildNativeToolsArray([SEARCH_TOOL]);
     expect(tools).toHaveLength(1);
     const fn = tools[0]?.function;
+    if (!fn) throw new Error('Expected tool function to be defined');
     expect(fn.parameters.properties['content-type']).toBeDefined();
     expect(fn.parameters.properties.path).toBeDefined();
     expect(fn.parameters.required).toContain('content-type');

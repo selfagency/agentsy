@@ -234,8 +234,8 @@ export class LLMStreamProcessor {
       // and content length to 100k to prevent ReDoS on large payloads.
       // Limited quantifier scopes prevent catastrophic backtracking.
       const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
-      let mm: RegExpExecArray | null;
-      while ((mm = completeTagRe.exec(this._rawResidual)) !== null) {
+      let mm = completeTagRe.exec(this._rawResidual);
+      while (mm !== null) {
         const full = mm[0];
         try {
           // Attempt extraction from this completed segment.
@@ -249,6 +249,8 @@ export class LLMStreamProcessor {
         this._rawResidual = this._rawResidual.replace(full, '');
         // Reset lastIndex since we've mutated the residual
         completeTagRe.lastIndex = 0;
+        mm = completeTagRe.exec(this._rawResidual);
+        mm = completeTagRe.exec(this._rawResidual);
       }
     }
 
@@ -264,8 +266,8 @@ export class LLMStreamProcessor {
       // handle tool_call blocks that were split between writes.
       this._filteredResidual += delta;
       const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
-      let m: RegExpExecArray | null;
-      while ((m = completeTagRe.exec(this._filteredResidual)) !== null) {
+      let m = completeTagRe.exec(this._filteredResidual);
+      while (m !== null) {
         const full = m[0];
         // Attempt to extract tool calls from the completed tag and merge
         // them into the filtered-extraction flow below by appending them
@@ -280,8 +282,7 @@ export class LLMStreamProcessor {
           // keep merging/uniquing logic centralized below.
           content += full;
           // Reset exec index since we mutated the residual
-          completeTagRe.lastIndex = 0;
-        } catch {
+          completeTagRe.lastIndex = 0;          m = completeTagRe.exec(this._filteredResidual);        } catch {
           // On any error, break to avoid infinite loops
           break;
         }

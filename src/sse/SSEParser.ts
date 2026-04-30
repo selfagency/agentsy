@@ -3,8 +3,6 @@
  * Handles cross-chunk frame splitting, BOM, multi-line data fields, and retry directives.
  */
 
-import { SSEEvent } from "./index.js";
-
 export interface SSEEvent {
   event?: string;
   data: string;

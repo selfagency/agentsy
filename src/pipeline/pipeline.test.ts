@@ -42,9 +42,11 @@ describe('createPipeline', () => {
     }
 
     // Should have text delta events
-    const textEvents = events.filter((e: unknown) => e.type === 'delta');
+    const textEvents = events.filter((e: unknown): e is { type: string; content: string } => 
+      typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'delta'
+    );
     expect(textEvents.length).toBeGreaterThan(0);
-    expect(textEvents.map((e: unknown) => e.content).join('')).toContain('Hello');
+    expect(textEvents.map((e) => e.content).join('')).toContain('Hello');
   });
 
   it('emits error events instead of throwing on invalid source', async () => {
@@ -54,7 +56,9 @@ describe('createPipeline', () => {
       events.push(event);
     }
 
-    const errorEvent = events.find((e: unknown) => e.type === 'error');
+    const errorEvent = events.find((e: unknown): e is { type: string } => 
+      typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'error'
+    );
     expect(errorEvent).toBeDefined();
   });
 
@@ -69,7 +73,9 @@ describe('createPipeline', () => {
 
     // Should have emitted deltas
     const deltaContent = events
-      .filter(e => e.type === 'delta')
+      .filter((e: unknown): e is { type: string; content: string } => 
+        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'delta'
+      )
       .map(e => e.content)
       .join('');
     expect(deltaContent).toBe('helloworld');
@@ -82,7 +88,9 @@ describe('createPipeline', () => {
     }
 
     // Should have thinking and text events
-    const hasThinking = events.some(e => e.type === 'thinking');
+    const hasThinking = events.some((e: unknown): e is { type: string } => 
+      typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'thinking'
+    );
     expect(hasThinking).toBe(true);
   });
 });

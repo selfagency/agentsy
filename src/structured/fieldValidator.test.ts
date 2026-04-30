@@ -155,7 +155,7 @@ describe('fieldValidator', () => {
     });
 
     it('emits validation events', () => {
-      const onFieldValidation = vi.fn();
+      const onFieldValidation = vi.fn<(event: FieldValidationEvent) => void>();
       const validator = createFieldValidator({
         schema: {
           email: validators.email,
@@ -165,11 +165,11 @@ describe('fieldValidator', () => {
 
       validator.validateField('email', 'user@example.com');
       expect(onFieldValidation).toHaveBeenCalled();
-      const call = onFieldValidation.mock.calls[0];
-      if (call?.[0]) {
-        const event = call[0] as FieldValidationEvent;
-        expect(event.valid).toBe(true);
-      }
+      const calls = onFieldValidation.mock.calls;
+      expect(calls).toHaveLength(1);
+      const call = calls[0]!;
+      const event = call[0] as FieldValidationEvent;
+      expect(event.valid).toBe(true);
     });
 
     it('skips fields not in schema', () => {

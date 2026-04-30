@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import type { UsageInfo } from '../normalizers/types.js';
+import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 
 describe('LLMStreamProcessor', () => {
@@ -30,10 +32,10 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits events and warning callbacks', () => {
-    const onWarning = vi.fn();
-    const onText = vi.fn();
-    const onThinking = vi.fn();
-    const onDone = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
+    const onText = vi.fn<(delta: string) => void>();
+    const onThinking = vi.fn<(delta: string) => void>();
+    const onDone = vi.fn<() => void>();
 
     const processor = new LLMStreamProcessor({
       maxInputLength: 20,
@@ -75,7 +77,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('enforces maxToolCallsPerMessage cumulatively across multiple chunks', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 2, onWarning });
 
     // First chunk: 2 calls — should all pass (fills the limit)
@@ -133,7 +135,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('truncates tool calls when maxToolCallsPerMessage is exceeded', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
 
     const out = processor.process({
@@ -149,7 +151,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('drops tool calls whose argument payload exceeds maxToolArgumentBytes', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ maxToolArgumentBytes: 8, onWarning });
 
     const out = processor.process({
@@ -171,7 +173,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('drops tool calls whose arguments contain a circular reference', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ onWarning });
 
     const circular: Record<string, unknown> = {};
@@ -189,7 +191,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('drops tool calls whose arguments contain a BigInt value', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ onWarning });
 
     const out = processor.process({
@@ -216,7 +218,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('rate limits warning emissions with maxWarnings', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({
       onWarning,
       maxWarnings: 3,
@@ -232,7 +234,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('resets warning count on reset()', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({
       onWarning,
       maxWarnings: 2,
@@ -327,7 +329,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits usage event when chunk carries usage', () => {
-    const onUsage = vi.fn();
+    const onUsage = vi.fn<(usage: UsageInfo) => void>();
     const processor = new LLMStreamProcessor();
     processor.on('usage', onUsage);
 
@@ -338,7 +340,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('does not emit usage event when chunk has no usage', () => {
-    const onUsage = vi.fn();
+    const onUsage = vi.fn<(usage: UsageInfo) => void>();
     const processor = new LLMStreamProcessor();
     processor.on('usage', onUsage);
 
@@ -387,8 +389,8 @@ describe('LLMStreamProcessor', () => {
   // -------------------------------------------------------------------
 
   it('processes content and done flag in the same chunk', () => {
-    const onText = vi.fn();
-    const onDone = vi.fn();
+    const onText = vi.fn<(delta: string) => void>();
+    const onDone = vi.fn<() => void>();
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
 
     processor.on('text', onText).on('done', onDone);
@@ -419,8 +421,8 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits tool_call and done events when final chunk carries tool calls and done: true', () => {
-    const onToolCall = vi.fn();
-    const onDone = vi.fn();
+    const onToolCall = vi.fn<(call: XmlToolCall) => void>();
+    const onDone = vi.fn<() => void>();
     const processor = new LLMStreamProcessor();
 
     processor.on('tool_call', onToolCall).on('done', onDone);
