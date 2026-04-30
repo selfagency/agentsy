@@ -1,4 +1,5 @@
 import { parseJson, type ParseJsonOptions } from './parseJson.js';
+import { ItemDoneStreaming, type StreamingPartial } from './types.js';
 
 export interface StreamJsonOptions extends ParseJsonOptions {
   /**
@@ -11,6 +12,12 @@ export interface StreamJsonOptions extends ParseJsonOptions {
    * includes them in `newFields`. Defaults to false.
    */
   emitFields?: boolean;
+  /**
+   * When true, stops emitting after the root JSON object/array closes,
+   * ignoring any trailing LLM prose. Defaults to false.
+   * Inspired by llm-json-stream-typescript "yap filter".
+   */
+  stopAfterRoot?: boolean;
 }
 
 /**
@@ -109,9 +116,10 @@ function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): stri
 export async function* streamJson<T = unknown>(
   source: AsyncIterable<string>,
   options: StreamJsonOptions = {},
-): AsyncGenerator<StreamJsonResult<T>> {
+): AsyncGenerator<StreamJsonResult<StreamingPartial<T>>> {
   const emitPartials = options.emitPartials ?? true;
   const trackFields = options.emitFields === true;
+  const stopAfterRoot = options.stopAfterRoot ?? false;
   const parseOpts: ParseJsonOptions = {};
   if (options.selectMostComprehensive !== undefined) {
     parseOpts.selectMostComprehensive = options.selectMostComprehensive;
@@ -127,6 +135,7 @@ export async function* streamJson<T = unknown>(
   let lastSerialized: string | undefined;
   let lastWasPartial = false;
   let prevPaths: Map<string, unknown> = new Map();
+  let rootComplete = false;
 
   function tryParse(text: string, repair: boolean): unknown {
     return parseJson(text, repair ? { ...parseOpts, repairIncomplete: true } : parseOpts);
@@ -146,6 +155,11 @@ export async function* streamJson<T = unknown>(
   }
 
   for await (const chunk of source) {
+    // If yap filter is enabled and we've already completed, stop
+    if (stopAfterRoot && rootComplete) {
+      break;
+    }
+
     accumulated += chunk;
 
     // Try complete parse first
@@ -157,7 +171,11 @@ export async function* streamJson<T = unknown>(
         const newFields = computeNewFields(complete, true);
         lastSerialized = serialized;
         lastWasPartial = false;
-        yield { value: complete as T, isPartial: false, status: 'completed', newFields };
+        rootComplete = true;
+        yield { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields };
+      }
+      if (stopAfterRoot) {
+        break;
       }
       continue;
     }
@@ -173,6 +191,6 @@ export async function* streamJson<T = unknown>(
     const newFields = computeNewFields(partial, false);
     lastSerialized = serialized;
     lastWasPartial = true;
-    yield { value: partial as T, isPartial: true, status: 'partial', newFields };
+    yield { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields };
   }
 }

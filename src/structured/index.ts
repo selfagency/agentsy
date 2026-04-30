@@ -1,3 +1,4 @@
+export * from './types.js';
 export * from './parseJson.js';
 export * from './validateJsonSchema.js';
 export * from './buildFormatInstructions.js';

@@ -16,6 +16,8 @@ export default defineConfig({
     'src/adapters/vscode.ts',
     'src/normalizers/index.ts',
     'src/recovery/index.ts',
+    'src/sse/index.ts',
+    'src/pipeline/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,

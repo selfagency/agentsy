@@ -23,7 +23,7 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
   // before the raw JSON. Strip common fences and then find the first JSON
   // object/array opening and attempt to parse from there.
   const normalized = text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
-  const firstBracket = normalized.search(/[\{\[]/);
+  const firstBracket = normalized.search(/[{[]/);
   if (firstBracket === -1) return [];
 
   const candidate = normalized.slice(firstBracket).trim();
