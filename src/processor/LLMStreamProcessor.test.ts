@@ -96,6 +96,42 @@ describe('LLMStreamProcessor', () => {
     );
   });
 
+  it('detects incomplete thinking tags on flush', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: true });
+
+    processor.process({ content: '<think>' });
+    processor.process({ content: 'reasoning but no close' });
+
+    const out = processor.flush();
+
+    expect(out.incomplete).toBe(true);
+    expect(out.incompleteness).toEqual([{ type: 'thinking', reason: 'Unclosed thinking tag' }]);
+  });
+
+  it('detects unclosed XML tags in residuals', () => {
+    const processor = new LLMStreamProcessor({ scrubContextTags: false });
+
+    processor.process({ content: '<test>' });
+    processor.process({ content: 'content' });
+
+    const out = processor.flush();
+
+    expect(out.incomplete).toBe(true);
+    expect(out.incompleteness).toEqual([{ type: 'xml', reason: 'Unmatched XML tags in residual buffer' }]);
+  });
+
+  it('returns no incompleteness for complete streams', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: true });
+
+    processor.process({ content: '</think>ok' });
+    processor.process({ content: 'regular content' });
+
+    const out = processor.flush();
+
+    expect(out.incomplete).toBe(false);
+    expect(out.incompleteness).toEqual([]);
+  });
+
   it('truncates tool calls when maxToolCallsPerMessage is exceeded', () => {
     const onWarning = vi.fn();
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
@@ -408,9 +444,6 @@ describe('LLMStreamProcessor', () => {
     // Second chunk completes the JSON and closes the tag
     const out = processor.processComplete({ content: '"x"}}</tool_call>', done: true });
 
-    expect(out.toolCalls).toEqual([
-      { name: 'do', parameters: { a: 'x' }, format: 'json-wrapped' },
-    ]);
+    expect(out.toolCalls).toEqual([{ name: 'do', parameters: { a: 'x' }, format: 'json-wrapped' }]);
   }, 5000);
 });
-

@@ -3,22 +3,31 @@ import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJso
 type JsonSchema = Record<string, unknown>;
 
 const REGEX_CACHE_MAX = 256;
-const regexCache = new Map<string, RegExp>();
+const regexCache = new Map<string, RegExp & { _accessTimestamp: number }>();
 
 function getCachedRegex(pattern: string): RegExp {
   const existing = regexCache.get(pattern);
   if (existing !== undefined) {
-    // Refresh insertion order for true LRU behavior
-    regexCache.delete(pattern);
-    regexCache.set(pattern, existing);
+    // Update access timestamp without delete/re-insert to avoid disrupting LRU tracking
+    existing._accessTimestamp = Date.now();
     return existing;
   }
 
-  const regex = new RegExp(pattern);
+  const regex = new RegExp(pattern) as RegExp & { _accessTimestamp: number };
+  regex._accessTimestamp = Date.now();
+
   if (regexCache.size >= REGEX_CACHE_MAX) {
-    // Evict least-recently-used entry (first in Map = oldest access)
-    const firstKey = regexCache.keys().next().value;
-    if (firstKey !== undefined) regexCache.delete(firstKey);
+    // Evict least-recently-used entry by scanning access timestamps
+    let lruKey: string | undefined;
+    let lruTime = Infinity;
+    for (const [key, value] of regexCache.entries()) {
+      const accessTime = value._accessTimestamp;
+      if (accessTime < lruTime) {
+        lruTime = accessTime;
+        lruKey = key;
+      }
+    }
+    if (lruKey !== undefined) regexCache.delete(lruKey);
   }
   regexCache.set(pattern, regex);
   return regex;
@@ -189,7 +198,7 @@ function checkOneOf(
     return subErrors.length === 0 ? count + 1 : count;
   }, 0);
   if (matchCount !== 1) {
-    errors.push(path + ": value must match exactly one of the 'oneOf' schemas (matched " + String(matchCount) + ")");
+    errors.push(path + ": value must match exactly one of the 'oneOf' schemas (matched " + String(matchCount) + ')');
   }
 }
 

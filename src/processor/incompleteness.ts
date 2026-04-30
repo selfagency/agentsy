@@ -1,0 +1,45 @@
+import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { IncompletenessDetail } from './LLMStreamProcessor.js';
+
+/**
+ * Returns true if `content` contains XML open tags that have no matching close tags.
+ * Uses a net-depth counter: each `<tag>` increments, each `</tag>` decrements.
+ * Self-closing tags (`<tag/>`) are ignored. A positive depth at the end means
+ * at least one tag was never closed.
+ */
+export function hasUnclosedXmlTags(content: string): boolean {
+  if (!content.includes('<')) return false;
+  let depth = 0;
+  const tagRe = /<(\/?)[A-Za-z][A-Za-z0-9_.-]*(?:\s[^>]*)?\s*(\/?)>/g;
+  for (const m of content.matchAll(tagRe)) {
+    if (m[1] === '/') depth--;
+    else if (m[3] !== '/') depth++;
+  }
+  return depth > 0;
+}
+
+/**
+ * Inspects accumulated content and the tool call list for signs of an
+ * incomplete stream (unclosed tags, tool calls with no parameters).
+ */
+export function detectIncompleteness(accumulatedContent: string, toolCalls: XmlToolCall[]): IncompletenessDetail[] {
+  const incompleteness: IncompletenessDetail[] = [];
+
+  if (hasUnclosedXmlTags(accumulatedContent)) {
+    incompleteness.push({
+      type: 'xml',
+      reason: 'Unmatched XML tags in residual buffer',
+    });
+  }
+
+  for (const call of toolCalls) {
+    if (Object.keys(call.parameters).length === 0 && call.format === 'bare-xml') {
+      incompleteness.push({
+        type: 'tool_calls',
+        reason: `Tool call "${call.name}" has no parsed parameters`,
+      });
+    }
+  }
+
+  return incompleteness;
+}

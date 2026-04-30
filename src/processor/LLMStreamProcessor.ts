@@ -4,7 +4,9 @@ import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
+import { detectIncompleteness } from './incompleteness.js';
 
+/** A single chunk of output from a normalised LLM stream. */
 export interface StreamChunk {
   content?: string;
   thinking?: string;
@@ -16,6 +18,7 @@ export interface StreamChunk {
   nativeToolCallDeltas?: NativeToolCallDelta[];
 }
 
+/** Configuration options for `LLMStreamProcessor`. */
 export interface ProcessorOptions {
   parseThinkTags?: boolean;
   scrubContextTags?: boolean;
@@ -68,11 +71,22 @@ export interface ProcessorOptions {
   maxWarnings?: number;
 }
 
+/** A discriminated-union part of a `ProcessedOutput`, enabling structured iteration over output. */
 export type OutputPart =
   | { type: 'text'; text: string }
   | { type: 'thinking'; text: string }
   | { type: 'tool_call'; call: XmlToolCall };
 
+/** Category of an incompleteness condition detected at stream end. */
+export type IncompletenessType = 'thinking' | 'xml' | 'tool_calls';
+
+/** Describes a single incompleteness condition found after stream flush. */
+export interface IncompletenessDetail {
+  type: IncompletenessType;
+  reason: string;
+}
+
+/** The fully-processed result of one stream chunk or a final flush. */
 export interface ProcessedOutput {
   thinking: string;
   content: string;
@@ -81,6 +95,10 @@ export interface ProcessedOutput {
   parts: OutputPart[];
   /** Accumulated token usage, populated from the last chunk that carried usage data. */
   usage?: UsageInfo;
+  /** Whether any incomplete content was detected at flush time. */
+  incomplete: boolean;
+  /** Details of incomplete sections, if any. */
+  incompleteness: IncompletenessDetail[];
 }
 
 export type StreamEventMap = {
@@ -99,6 +117,23 @@ const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
 const DEFAULT_MAX_WARNINGS = 100;
 const SHARED_TEXT_ENCODER = new TextEncoder();
 
+/**
+ * Processes a normalised LLM stream chunk-by-chunk, extracting thinking blocks,
+ * filtering XML tags, accumulating tool calls, and emitting typed events.
+ *
+ * @example
+ * ```ts
+ * const processor = new LLMStreamProcessor({ parseThinkTags: true });
+ *
+ * for await (const chunk of normalizedStream) {
+ *   const output = processor.process(chunk);
+ *   if (output.content) process.stdout.write(output.content);
+ * }
+ *
+ * const final = processor.flush();
+ * if (final.incomplete) console.warn('Stream cut short', final.incompleteness);
+ * ```
+ */
 export class LLMStreamProcessor {
   private readonly options: Required<Pick<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags'>> & ProcessorOptions;
   private thinkingParser: ThinkingParser | null;
@@ -138,6 +173,7 @@ export class LLMStreamProcessor {
     usage: new Set(),
   };
 
+  /** Creates a new processor instance. Reuse across a single conversation; call `reset()` between conversations. */
   public constructor(options: ProcessorOptions = {}) {
     this.options = {
       ...options,
@@ -150,6 +186,10 @@ export class LLMStreamProcessor {
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
   }
 
+  /**
+   * Processes a single stream chunk and returns the processed output delta.
+   * May be called any number of times before `flush()`.
+   */
   public process(chunk: StreamChunk): ProcessedOutput {
     const rawThinking = this.enforceMaxLength(this.ensureText(chunk.thinking), 'thinking');
     const rawContent = this.enforceMaxLength(this.ensureText(chunk.content), 'content');
@@ -165,7 +205,8 @@ export class LLMStreamProcessor {
 
     // First attempt extraction from the raw incoming content (captures the
     // common case where tool call tags are fully contained in the chunk).
-    const extractedFromRaw = this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
+    const extractedFromRaw =
+      this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
 
     // Also append raw content into a residual buffer and scan for completed
     // top-level tags that may span multiple chunks. This allows extracting
@@ -277,6 +318,10 @@ export class LLMStreamProcessor {
     return output;
   }
 
+  /**
+   * Convenience method for non-streaming responses. Processes the response as a
+   * complete chunk and immediately flushes, combining both outputs into one.
+   */
   public processComplete(response: StreamChunk): ProcessedOutput {
     const out = this.process({ ...response, done: true });
     const flushed = this.flush();
@@ -290,19 +335,23 @@ export class LLMStreamProcessor {
     });
   }
 
-  public flush(): ProcessedOutput {
-    let thinking = '';
-    let content = '';
+  private _flushThinkingContent(): { thinking: string; content: string; incomplete: boolean } {
+    const incomplete = this.thinkingParser?.isIncomplete() ?? false;
+    if (!this.thinkingParser) return { thinking: '', content: '', incomplete };
+    const [thinkingDelta, contentDelta] = this.thinkingParser.flush();
+    const content = this.xmlFilter && contentDelta ? this.xmlFilter.write(contentDelta) : contentDelta;
+    return { thinking: thinkingDelta, content, incomplete };
+  }
 
-    if (this.thinkingParser) {
-      const [thinkingDelta, contentDelta] = this.thinkingParser.flush();
-      thinking = thinkingDelta;
-      if (this.xmlFilter && contentDelta) {
-        content = this.xmlFilter.write(contentDelta);
-      } else {
-        content = contentDelta;
-      }
-    }
+  /**
+   * Flushes any buffered state (thinking parser, XML filter, native tool call
+   * accumulator) and returns a final `ProcessedOutput` with `done: true`.
+   * Always call `flush()` after the last chunk to ensure partial buffers are drained.
+   * Returns `incomplete: true` if the stream appeared to end prematurely.
+   */
+  public flush(): ProcessedOutput {
+    const { thinking, content: thinkingContent, incomplete: thinkingParserIncomplete } = this._flushThinkingContent();
+    let content = thinkingContent;
 
     if (this.xmlFilter) {
       content += this.xmlFilter.end();
@@ -315,6 +364,8 @@ export class LLMStreamProcessor {
 
     const toolCalls = this.enforceToolCallLimits(accumulatedNativeCalls);
 
+    const incompleteness = this.detectIncompleteness(thinking, content, toolCalls);
+
     const output = this.buildOutput({
       thinking,
       content,
@@ -323,15 +374,27 @@ export class LLMStreamProcessor {
       ...this.usagePayload,
     });
 
+    // Add incompleteness for thinking tags if detected before flush
+    if (thinkingParserIncomplete) {
+      incompleteness.push({
+        type: 'thinking',
+        reason: 'Unclosed thinking tag',
+      });
+    }
+    output.incomplete = incompleteness.length > 0;
+    output.incompleteness = incompleteness;
+
     this.recordOutput(output);
     this.emitOutput(output);
     return output;
   }
 
+  /** Returns all thinking text accumulated so far across every processed chunk. */
   public get accumulatedThinking(): string {
     return this._accumulatedThinking;
   }
 
+  /** Returns the complete accumulated message (thinking, content, tool calls, usage) as a snapshot. */
   public get accumulatedMessage(): AccumulatedMessage {
     const msg: AccumulatedMessage = {
       thinking: this._accumulatedThinking,
@@ -344,6 +407,10 @@ export class LLMStreamProcessor {
     return msg;
   }
 
+  /**
+   * Resets the processor to its initial state so it can be reused for a new conversation.
+   * Must be called between conversations when reusing an instance.
+   */
   public reset(): void {
     this.thinkingParser = this.createThinkingParser();
     this.xmlFilter = this.createXmlFilter();
@@ -411,13 +478,23 @@ export class LLMStreamProcessor {
     return createXmlStreamFilter(filterOptions);
   }
 
+  /** Subscribes to a stream event. Returns `this` for chaining. */
   public on<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this {
-    this.listeners[event].add(listener);
+    const listenerSet = this.listeners[event];
+    if (listenerSet === undefined) {
+      return this;
+    }
+    listenerSet.add(listener);
     return this;
   }
 
+  /** Unsubscribes a previously registered event listener. Returns `this` for chaining. */
   public off<K extends keyof StreamEventMap>(event: K, listener: StreamEventMap[K]): this {
-    this.listeners[event].delete(listener);
+    const listenerSet = this.listeners[event];
+    if (listenerSet === undefined) {
+      return this;
+    }
+    listenerSet.delete(listener);
     return this;
   }
 
@@ -448,11 +525,17 @@ export class LLMStreamProcessor {
       toolCalls: params.toolCalls,
       done: params.done,
       parts,
+      incomplete: false,
+      incompleteness: [],
     };
     if (params.usage !== undefined) {
       result.usage = params.usage;
     }
     return result;
+  }
+
+  private detectIncompleteness(_thinking: string, _content: string, toolCalls: XmlToolCall[]): IncompletenessDetail[] {
+    return detectIncompleteness(this._accumulatedContent, toolCalls);
   }
 
   private recordOutput(output: ProcessedOutput): void {
@@ -655,7 +738,20 @@ export class LLMStreamProcessor {
       originalLength: value.length,
     });
 
-    return value.slice(0, max);
+    // Truncate at a tag boundary so we don't hand a partial `<tag...` fragment
+    // to the XML parser. Walk back from the cut point to the last `<` that has
+    // no matching `>` after it within the kept region.
+    let cut = max;
+    const openIdx = value.lastIndexOf('<', max - 1);
+    if (openIdx !== -1) {
+      const closeIdx = value.indexOf('>', openIdx);
+      // If the closing `>` is beyond the cut (or absent), the tag is partial.
+      if (closeIdx === -1 || closeIdx >= max) {
+        cut = openIdx;
+      }
+    }
+
+    return value.slice(0, cut);
   }
 
   private warn(message: string, context?: Record<string, unknown>): void {

@@ -171,7 +171,8 @@ function buildHermesPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolIn
 
   const exampleArg = Object.keys(exampleTool.inputSchema?.properties ?? {})[0];
   const exampleArgStr = exampleArg ? `"${exampleArg}": "value"` : '';
-  const exampleCall = `<tool_call>\n{"name": "${exampleTool.name}", "arguments": {${exampleArgStr}}}\n</tool_call>`.trim();
+  const exampleCall =
+    `<tool_call>\n{"name": "${exampleTool.name}", "arguments": {${exampleArgStr}}}\n</tool_call>`.trim();
 
   return [
     'You are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags.',

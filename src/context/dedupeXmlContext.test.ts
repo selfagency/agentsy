@@ -3,11 +3,7 @@ import { dedupeXmlContextBlocksByTag } from './dedupeXmlContext.js';
 
 describe('dedupeXmlContextBlocksByTag', () => {
   it('handles nested tags of the same name and returns the outermost block', () => {
-    const blocks = [
-      '<a><a>inner</a>outer</a>',
-      '<b>other</b>',
-      '<a>latest</a>',
-    ];
+    const blocks = ['<a><a>inner</a>outer</a>', '<b>other</b>', '<a>latest</a>'];
 
     const out = dedupeXmlContextBlocksByTag(blocks);
     // Expect the earliest-occurring latest-by-tag ordering preserved: b then a
@@ -62,15 +58,9 @@ describe('dedupeXmlContextBlocksByTag', () => {
   });
 
   it('processes blocks in reverse order, keeping latest occurrences', () => {
-    const blocks = [
-      '<old>first</old>',
-      '<new>second</new>',
-      '<old>updated</old>',
-    ];
+    const blocks = ['<old>first</old>', '<new>second</new>', '<old>updated</old>'];
     const out = dedupeXmlContextBlocksByTag(blocks);
     // Should keep the latest (from the end): old=updated, new=second
     expect(out).toEqual(['<new>second</new>', '<old>updated</old>']);
   });
 });
-
-

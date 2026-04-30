@@ -634,9 +634,7 @@ describe('normalizeMistralChunk', () => {
         {
           index: 0,
           delta: {
-            content: [
-              { type: 'thinking', thinking: [{ type: 'text', text: 'Let me reason...' }] },
-            ],
+            content: [{ type: 'thinking', thinking: [{ type: 'text', text: 'Let me reason...' }] }],
           },
           finish_reason: null,
         },

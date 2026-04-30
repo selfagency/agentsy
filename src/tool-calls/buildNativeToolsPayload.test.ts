@@ -94,4 +94,3 @@ describe('buildNativeToolsArray', () => {
     expect(() => buildNativeToolsArray([{ name: 'has space' }])).toThrow('Invalid tool name');
   });
 });
-

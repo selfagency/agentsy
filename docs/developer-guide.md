@@ -95,6 +95,45 @@ Functions called at setup time (`buildXmlToolSystemPrompt`) throw `Error` when g
 - **Lifecycle**: Call `reset()` between conversations when reusing a processor. After `flush()`, the processor's `doneEmitted` flag prevents further emissions until `reset()` is called.
 - **Warning rate limiting**: After `maxWarnings` (default: 100) warnings are emitted, subsequent warnings are silently dropped. Call `reset()` to clear the counter.
 
+### Incomplete stream detection
+
+`flush()` and `processComplete()` return a `ProcessedOutput` that includes two fields for detecting prematurely-terminated streams:
+
+- `incomplete: boolean` — `true` if any incompleteness was detected.
+- `incompleteness: IncompletenessDetail[]` — array of `{ type, reason }` objects describing each issue.
+
+Possible `type` values:
+
+| Type           | Meaning                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `"thinking"`   | An opening thinking tag was seen but no matching closing tag arrived before the stream ended. |
+| `"xml"`        | The accumulated content contains XML open tags with no matching close tags.                   |
+| `"tool_calls"` | A bare-XML tool call was extracted with no parsed parameters (likely truncated).              |
+
+**Example — detecting incomplete streams:**
+
+```ts
+const processor = new LLMStreamProcessor({ parseThinkTags: true });
+
+for await (const chunk of llmStream) {
+  processor.process(chunk);
+}
+
+const result = processor.flush();
+
+if (result.incomplete) {
+  console.warn('Stream ended prematurely:', result.incompleteness);
+  // result.incompleteness might be:
+  // [{ type: 'thinking', reason: 'Unclosed thinking tag' }]
+}
+```
+
+**When to expect incompleteness:**
+
+- Token limit reached mid-response (LLM cut off inside a `<think>` block).
+- Network error terminating the stream before all XML tags were closed.
+- Tool call XML split at a chunk boundary, with the closing tag never delivered.
+
 ### validateJsonSchema
 
 - **Regex patterns**: Patterns longer than 1024 characters are rejected to prevent ReDoS. This is a security measure, not a schema limitation.

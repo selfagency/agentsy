@@ -35,9 +35,7 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
     const choices = (raw as Record<string, unknown>)['choices'];
     if (!Array.isArray(choices) || choices.length === 0) return standard;
 
-    const delta = ((choices[0] as Record<string, unknown>)['delta']) as
-      | Record<string, unknown>
-      | undefined;
+    const delta = (choices[0] as Record<string, unknown>)['delta'] as Record<string, unknown> | undefined;
     if (!Array.isArray(delta?.['content'])) return standard;
 
     let text = '';

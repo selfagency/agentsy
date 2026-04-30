@@ -111,17 +111,39 @@ describe('createGenericAdapter', () => {
     });
   });
 
-  it('propagates errors from callbacks', async () => {
+  it('propagates errors from callbacks via onError', async () => {
+    const onError = vi.fn();
     const adapter = createGenericAdapter(
       {
         onContent: () => {
           throw new Error('callback error');
         },
+        onError,
       },
       { parseThinkTags: false, scrubContextTags: false },
     );
 
-    await expect(adapter.write({ content: 'test' })).rejects.toThrow('callback error');
+    // Should not throw; error should be handled via onError callback
+    await expect(adapter.write({ content: 'test' })).resolves.toBeUndefined();
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), { type: 'content', chunk: { content: 'test' } });
+  });
+
+  it('handles errors when onError callback throws', async () => {
+    const onError = vi.fn(() => {
+      throw new Error('onError failed');
+    });
+    const adapter = createGenericAdapter(
+      {
+        onContent: () => {
+          throw new Error('callback error');
+        },
+        onError,
+      },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    // Error from onError should propagate (unhandled)
+    await expect(adapter.write({ content: 'test' })).rejects.toThrow('onError failed');
   });
 
   it('works with no callbacks provided', async () => {

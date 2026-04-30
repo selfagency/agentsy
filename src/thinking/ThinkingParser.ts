@@ -1,3 +1,4 @@
+/** Options for customising the thinking tag pair recognised by `ThinkingParser`. */
 export interface ThinkingParserOptions {
   openingTag?: string;
   closingTag?: string;
@@ -20,6 +21,13 @@ type ThinkingState =
   | 'thinkingDoneEatingWhitespace'
   | 'thinkingDone';
 
+/**
+ * Streaming parser that extracts `<think>…</think>` blocks (or a custom tag pair)
+ * from LLM output as it arrives chunk-by-chunk.
+ *
+ * Call `addContent(chunk)` for each incoming chunk and `flush()` at stream end
+ * to drain any partially-accumulated state.
+ */
 export class ThinkingParser {
   private _state: ThinkingState = 'lookingForOpening';
   private _acc = '';
@@ -32,6 +40,10 @@ export class ThinkingParser {
     this.closingTag = options.closingTag ?? '</think>';
   }
 
+  /**
+   * Returns a `ThinkingParser` pre-configured for a known model ID.
+   * Falls back to the default `<think>` / `</think>` tags for unrecognised models.
+   */
   public static forModel(modelId: string, thinkingTagMap?: Map<string, ThinkingTagPair>): ThinkingParser {
     const combinedMap = new Map<string, ThinkingTagPair>(BUILTIN_THINKING_TAG_MAP);
     if (thinkingTagMap) {
@@ -55,6 +67,10 @@ export class ThinkingParser {
     return new ThinkingParser();
   }
 
+  /**
+   * Processes a streaming text chunk, splitting it into thinking and regular content.
+   * @returns `[thinkingContent, regularContent]` deltas for this chunk.
+   */
   public addContent(chunk: string): [thinkingContent: string, regularContent: string] {
     this._acc += chunk;
     let thinkingOut = '';
@@ -71,6 +87,10 @@ export class ThinkingParser {
     return [thinkingOut, contentOut];
   }
 
+  /**
+   * Flushes any partially-buffered content and returns the final `[thinking, content]` delta.
+   * Call once after the last `addContent()` call.
+   */
   public flush(): [thinkingContent: string, regularContent: string] {
     const acc = this._acc;
     this._acc = '';
@@ -89,6 +109,11 @@ export class ThinkingParser {
       case 'thinkingDone':
         return ['', acc];
     }
+  }
+
+  /** Check if the parser is in an incomplete state without flushing */
+  public isIncomplete(): boolean {
+    return this._state === 'thinking';
   }
 
   public reset(): void {
