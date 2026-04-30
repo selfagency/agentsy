@@ -77,7 +77,7 @@ function buildXmlPrompt(tools: readonly XmlToolInfo[]): string {
     );
   });
 
-  const exampleTool = tools[0]!;
+  const exampleTool = tools[0];
   const exampleProps = Object.entries(exampleTool.inputSchema?.properties ?? {}).slice(0, 2);
   const exampleParamLines = exampleProps.map(([name]) => `  <${name}>example value</${name}>`);
   const exampleCall = [`<${exampleTool.name}>`, ...exampleParamLines, `</${exampleTool.name}>`].join('\n');
