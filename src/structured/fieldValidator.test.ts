@@ -166,7 +166,7 @@ describe('fieldValidator', () => {
       validator.validateField('email', 'user@example.com');
       expect(onFieldValidation).toHaveBeenCalled();
       const call = onFieldValidation.mock.calls[0];
-      if (call && call[0]) {
+      if (call?.[0]) {
         const event = call[0] as FieldValidationEvent;
         expect(event.valid).toBe(true);
       }

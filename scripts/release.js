@@ -183,28 +183,8 @@ async function resolveGithubToken() {
 }
 
 function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {
-  // Only allow changelog updates within the repository root to avoid
-  // accidental/attacker-controlled file writes. This is a defensive guard to
-  // satisfy static analysis rules that flag non-literal filesystem access.
-  function isPathInsideRoot(p) {
-    try {
-      const resolved = resolve(p);
-      const rel = relative(ROOT, resolved);
-      return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
-    } catch {
-      return false;
-    }
-  }
-
-  function safeRead(p, enc = 'utf8') {
-    if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
-    return readFileSync(resolve(p), enc);
-  }
-
-  function safeWrite(p, data) {
-    if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
-    return writeFileSync(resolve(p), data);
-  }
+  // Use outer scope isPathInsideRoot, safeRead, safeWrite functions for defensive
+  // filesystem access that satisfies static analysis rules.
 
   let original;
   try {

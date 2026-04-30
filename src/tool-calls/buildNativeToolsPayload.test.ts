@@ -42,7 +42,7 @@ describe('buildNativeToolsArray', () => {
     const fn = tools[0]?.function;
     expect(fn?.parameters.properties['content-type']).toBeDefined();
     expect(fn?.parameters.properties.path).toBeDefined();
-    expect(fn.parameters.required).toContain('content-type');
+    expect(fn?.parameters.required).toContain('content-type');
     expect(fn?.parameters.required).toContain('path');
   });
 

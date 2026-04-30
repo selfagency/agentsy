@@ -189,7 +189,7 @@ describe('repairStateMachine', () => {
     });
 
     it('handles unicode escape sequences', () => {
-      const input = '{"unicode":"\\u0048ello';
+      const input = String.raw`{"unicode":"\u0048ello`;
       const result = repairJsonWithStateMachine(input);
       expect(() => JSON.parse(result)).not.toThrow();
     });

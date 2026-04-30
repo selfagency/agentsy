@@ -37,11 +37,7 @@ function collectTagMatches(part: string): TagMatch[] {
     let matchEnd: number | null = null;
     for (let mm = tagRegex.exec(part); mm !== null; mm = tagRegex.exec(part)) {
       const isClose = mm[1] === '/';
-      if (!isClose) {
-        depth++;
-      } else {
-        depth--;
-      }
+      depth += isClose ? -1 : 1;
       if (depth === 0) {
         matchEnd = mm.index + mm[0].length;
         break;
