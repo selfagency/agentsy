@@ -94,15 +94,7 @@ async function* processSSEEvent(
   }
 }
 
-export async function* createPipeline(
-  source: AsyncIterable<string> | ReadableStream<string>,
-  options: PipelineOptions,
-): AsyncGenerator<PipelineEvent> {
-  const normalizer = NORMALIZERS[options.provider];
-  if (!normalizer) {
-    throw new Error(`Unknown provider: ${options.provider}`);
-  }
-
+function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
   const processorOpts: ProcessorOptions = {
     scrubContextTags: options.scrubContextTags ?? false,
   };
@@ -112,7 +104,19 @@ export async function* createPipeline(
   if (options.knownTools !== undefined) processorOpts.knownTools = options.knownTools;
   if (options.modelId !== undefined) processorOpts.modelId = options.modelId;
 
-  const processor = new LLMStreamProcessor(processorOpts);
+  return processorOpts;
+}
+
+export async function* createPipeline(
+  source: AsyncIterable<string> | ReadableStream<string>,
+  options: PipelineOptions,
+): AsyncGenerator<PipelineEvent> {
+  const normalizer = NORMALIZERS[options.provider];
+  if (!normalizer) {
+    throw new Error(`Unknown provider: ${options.provider}`);
+  }
+
+  const processor = new LLMStreamProcessor(buildProcessorOptions(options));
 
   try {
     for await (const sseEvent of parseSSEStream(source)) {
