@@ -32,26 +32,26 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
   // Slow path: check for Mistral's structured content array (2509/2507 format).
   try {
     if (!raw || typeof raw !== 'object') return standard;
-    const choices = (raw as Record<string, unknown>)['choices'];
+    const choices = (raw as Record<string, unknown>).choices;
     if (!Array.isArray(choices) || choices.length === 0) return standard;
 
-    const delta = (choices[0] as Record<string, unknown>)['delta'] as Record<string, unknown> | undefined;
-    if (!Array.isArray(delta?.['content'])) return standard;
+    const delta = (choices[0] as Record<string, unknown>).delta as Record<string, unknown> | undefined;
+    if (!Array.isArray(delta?.content)) return standard;
 
     let text = '';
     let thinking = '';
 
-    for (const block of delta['content'] as unknown[]) {
+    for (const block of delta.content as unknown[]) {
       if (!block || typeof block !== 'object') continue;
       const b = block as Record<string, unknown>;
 
-      if (b['type'] === 'text' && typeof b['text'] === 'string') {
-        text += b['text'];
-      } else if (b['type'] === 'thinking' && Array.isArray(b['thinking'])) {
-        for (const t of b['thinking'] as unknown[]) {
+      if (b.type === 'text' && typeof b.text === 'string') {
+        text += b.text;
+      } else if (b.type === 'thinking' && Array.isArray(b.thinking)) {
+        for (const t of b.thinking as unknown[]) {
           if (t && typeof t === 'object') {
             const inner = t as Record<string, unknown>;
-            if (typeof inner['text'] === 'string') thinking += inner['text'];
+            if (typeof inner.text === 'string') thinking += inner.text;
           }
         }
       }

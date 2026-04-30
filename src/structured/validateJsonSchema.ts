@@ -13,8 +13,15 @@ function getCachedRegex(pattern: string): RegExp {
     return existing;
   }
 
-  const regex = new RegExp(pattern) as RegExp & { _accessTimestamp: number };
-  regex._accessTimestamp = Date.now();
+  let regex: RegExp;
+  try {
+    regex = new RegExp(pattern);
+  } catch (error) {
+    // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
+    regex = /(?!)/; // Negative lookahead that never matches
+  }
+  const taggedRegex = regex as RegExp & { _accessTimestamp: number };
+  taggedRegex._accessTimestamp = Date.now();
 
   if (regexCache.size >= REGEX_CACHE_MAX) {
     // Evict least-recently-used entry by scanning access timestamps
@@ -29,8 +36,8 @@ function getCachedRegex(pattern: string): RegExp {
     }
     if (lruKey !== undefined) regexCache.delete(lruKey);
   }
-  regexCache.set(pattern, regex);
-  return regex;
+  regexCache.set(pattern, taggedRegex);
+  return taggedRegex;
 }
 
 export type JsonSchemaValidator = (

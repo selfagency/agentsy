@@ -39,7 +39,7 @@ describe('buildNativeToolsArray', () => {
   it('preserves property names with hyphens and retains required entries', () => {
     const tools = buildNativeToolsArray([SEARCH_TOOL]);
     expect(tools).toHaveLength(1);
-    const fn = tools[0]!.function;
+    const fn = tools[0]?.function;
     expect(fn.parameters.properties['content-type']).toBeDefined();
     expect(fn.parameters.properties.path).toBeDefined();
     expect(fn.parameters.required).toContain('content-type');
@@ -86,7 +86,7 @@ describe('buildNativeToolsArray', () => {
 
   it('without strict option, strict flag is absent', () => {
     const tools = buildNativeToolsArray([SEARCH_TOOL]);
-    expect(tools[0]!.function.strict).toBeUndefined();
+    expect(tools[0]?.function.strict).toBeUndefined();
   });
 
   it('throws on invalid tool names', () => {

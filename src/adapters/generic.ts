@@ -80,7 +80,7 @@ export function createGenericAdapter(
         await callbacks.onThinking(output.thinking);
       } catch (error) {
         const err = error as Error;
-        callbacks.onError?.(err, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
+        void callbacks.onError?.(err, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
       }
     }
 

@@ -11,6 +11,14 @@ interface TagMatch {
   fullMatch: string;
 }
 
+/**
+ * Escape regex special characters in a string for safe use in dynamic RegExp.
+ * Prevents ReDoS by ensuring the string is treated literally, not as a pattern.
+ */
+function escapeRegexChars(str: string): string {
+  return str.replace(/[.*+?^${}()|[\\\]]/g, '\\$&');
+}
+
 function collectTagMatches(part: string): TagMatch[] {
   if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
   OPEN_TAG_RE.lastIndex = 0;
@@ -21,7 +29,9 @@ function collectTagMatches(part: string): TagMatch[] {
     const openEnd = OPEN_TAG_RE.lastIndex;
 
     // Find the matching closing tag while handling nested tags of the same name.
-    const tagRegex = new RegExp(`<(/?)${tagName}\\b[^>]*>`, 'gi');
+    // Escape tagName to prevent ReDoS attacks from crafted XML input.
+    const escapedTagName = escapeRegexChars(tagName);
+    const tagRegex = new RegExp(`<(/?)${escapedTagName}\\b[^>]*>`, 'gi');
     tagRegex.lastIndex = openEnd;
     let depth = 1;
     let matchEnd: number | null = null;
