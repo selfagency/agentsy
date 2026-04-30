@@ -54,14 +54,19 @@ export function buildXmlToolSystemPrompt(
     }
   }
 
+  // We know `tools` is non-empty here because of the guard above. Use a
+  // type assertion at this call-site to avoid `!` occurrences inside helpers
+  // while keeping callers downstream simple and free of indexing.
+  const exampleTool = tools[0] as XmlToolInfo;
+
   if (format === 'hermes') {
-    return buildHermesPrompt(tools);
+    return buildHermesPrompt(tools, exampleTool);
   }
 
-  return buildXmlPrompt(tools);
+  return buildXmlPrompt(tools, exampleTool);
 }
 
-function buildXmlPrompt(tools: readonly XmlToolInfo[]): string {
+function buildXmlPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolInfo): string {
   const toolDescriptions = tools.map(tool => {
     const schema = tool.inputSchema;
     const props = schema?.properties ?? {};
@@ -77,7 +82,6 @@ function buildXmlPrompt(tools: readonly XmlToolInfo[]): string {
     );
   });
 
-  const exampleTool = tools[0];
   const exampleProps = Object.entries(exampleTool.inputSchema?.properties ?? {}).slice(0, 2);
   const exampleParamLines = exampleProps.map(([name]) => `  <${name}>example value</${name}>`);
   const exampleCall = [`<${exampleTool.name}>`, ...exampleParamLines, `</${exampleTool.name}>`].join('\n');
@@ -108,14 +112,7 @@ function buildHermesToolSchema(tool: XmlToolInfo): string {
   const props = tool.inputSchema?.properties ?? {};
   const required = tool.inputSchema?.required;
 
-  const properties: Record<string, { type?: string; description?: string; enum?: string[] }> = {};
-  for (const [name, schema] of Object.entries(props)) {
-    const prop: { type?: string; description?: string; enum?: string[] } = {};
-    if (schema.type) prop.type = schema.type;
-    if (schema.description) prop.description = schema.description;
-    if (schema.enum && schema.enum.length > 0) prop.enum = schema.enum;
-    properties[name] = prop;
-  }
+  const properties = buildHermesProperties(props);
 
   const parameters: Record<string, unknown> = { type: 'object', properties, additionalProperties: false };
   if (required && required.length > 0) parameters.required = required;
@@ -126,14 +123,26 @@ function buildHermesToolSchema(tool: XmlToolInfo): string {
   return JSON.stringify({ type: 'function', function: fn });
 }
 
-function buildHermesPrompt(tools: readonly XmlToolInfo[]): string {
+function buildHermesProperties(
+  props: Record<string, { description?: string; type?: string; enum?: string[] }>,
+): Record<string, { type?: string; description?: string; enum?: string[] }> {
+  const properties: Record<string, { type?: string; description?: string; enum?: string[] }> = {};
+  for (const [name, schema] of Object.entries(props)) {
+    const prop: { type?: string; description?: string; enum?: string[] } = {};
+    if (schema.type) prop.type = schema.type;
+    if (schema.description) prop.description = schema.description;
+    if (schema.enum && schema.enum.length > 0) prop.enum = schema.enum;
+    properties[name] = prop;
+  }
+  return properties;
+}
+
+function buildHermesPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolInfo): string {
   const toolSchemas = tools.map(buildHermesToolSchema);
 
-  const exampleTool = tools[0]!;
   const exampleArg = Object.keys(exampleTool.inputSchema?.properties ?? {})[0];
   const exampleArgStr = exampleArg ? `"${exampleArg}": "value"` : '';
-  const exampleCall =
-    `<tool_call>\n{"name": "${exampleTool.name}", "arguments": {${exampleArgStr}}}\n</tool_call>`.trim();
+  const exampleCall = `<tool_call>\n{"name": "${exampleTool.name}", "arguments": {${exampleArgStr}}}\n</tool_call>`.trim();
 
   return [
     'You are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags.',

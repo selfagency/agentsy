@@ -3,7 +3,7 @@ import { Octokit } from '@octokit/rest';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, ProcessOutput, sleep } from 'zx';
@@ -12,6 +12,29 @@ $.verbose = false;
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 cd(ROOT);
+
+// Defensive filesystem helpers — ensure we only read/write files inside the
+// repository root. This mitigates accidental or attacker-controlled file
+// accesses flagged by static analysis tools.
+function isPathInsideRoot(p) {
+  try {
+    const resolved = resolve(p);
+    const rel = relative(ROOT, resolved);
+    return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
+  } catch {
+    return false;
+  }
+}
+
+function safeRead(p, enc = 'utf8') {
+  if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
+  return readFileSync(resolve(p), enc);
+}
+
+function safeWrite(p, data) {
+  if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
+  return writeFileSync(resolve(p), data);
+}
 
 // ---------------------------------------------------------------------------
 // Argument validation
@@ -160,9 +183,32 @@ async function resolveGithubToken() {
 }
 
 function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {
+  // Only allow changelog updates within the repository root to avoid
+  // accidental/attacker-controlled file writes. This is a defensive guard to
+  // satisfy static analysis rules that flag non-literal filesystem access.
+  function isPathInsideRoot(p) {
+    try {
+      const resolved = resolve(p);
+      const rel = relative(ROOT, resolved);
+      return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
+    } catch {
+      return false;
+    }
+  }
+
+  function safeRead(p, enc = 'utf8') {
+    if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
+    return readFileSync(resolve(p), enc);
+  }
+
+  function safeWrite(p, data) {
+    if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
+    return writeFileSync(resolve(p), data);
+  }
+
   let original;
   try {
-    original = readFileSync(changelogPath, 'utf8');
+    original = safeRead(changelogPath, 'utf8');
   } catch {
     original = '# Change Log\n\n## [Unreleased]\n';
   }
@@ -180,7 +226,7 @@ function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, 
     idx >= 0
       ? `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`
       : `${original}\n${section}`;
-  writeFileSync(changelogPath, updated);
+  safeWrite(changelogPath, updated);
 }
 
 // ---------------------------------------------------------------------------
@@ -289,9 +335,9 @@ async function main() {
   // --- Update package.json --------------------------------------------------
   console.log(`🧩 Updating package.json to ${version}...`);
   const pkgPath = resolve(ROOT, 'package.json');
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+  const pkg = JSON.parse(safeRead(pkgPath, 'utf8'));
   pkg.version = version;
-  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  safeWrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
   // --- Update CHANGELOG.md --------------------------------------------------
 
@@ -377,7 +423,7 @@ async function main() {
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   $.verbose = true;
   // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
-  const accessFlag = (JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
+  const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
     ? ['--access', 'public']
     : [];
   await $`npm publish ./dist --tag ${distTag} --registry=${NPM_REGISTRY} ${accessFlag}`;

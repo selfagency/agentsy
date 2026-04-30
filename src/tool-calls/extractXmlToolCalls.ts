@@ -106,7 +106,8 @@ function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<strin
   for (const paramMatch of inner.matchAll(paramPattern)) {
     const paramName = paramMatch[1];
     if (!paramName) continue;
-    params[paramName] = (paramMatch[2] ?? '').trim();
+    const raw = paramMatch[2];
+    params[paramName] = (typeof raw === 'string' ? raw : '').trim();
   }
   return params;
 }
