@@ -4,12 +4,12 @@ import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import { createGenericAdapter, processStream } from './generic.js';
 import { createVSCodeCopilotAdapter } from './vscode.js';
 
+async function* source() {
+  yield { content: 'hello' };
+}
+
 describe('processStream', () => {
   it('yields processed outputs and final flush output', async () => {
-    async function* source() {
-      yield { content: 'hello' };
-    }
-
     const outputs = [];
     for await (const out of processStream(source(), { parseThinkTags: false, scrubContextTags: false })) {
       outputs.push(out);

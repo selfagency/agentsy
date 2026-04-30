@@ -162,18 +162,17 @@ export async function* streamJson<T = unknown>(
       continue;
     }
 
-    // Try partial parse with repair if enabled
-    if (emitPartials) {
-      const partial = tryParse(accumulated, true);
-      if (partial !== null) {
-        const serialized = JSON.stringify(partial);
-        if (serialized !== lastSerialized) {
-          const newFields = computeNewFields(partial, false);
-          lastSerialized = serialized;
-          lastWasPartial = true;
-          yield { value: partial as T, isPartial: true, status: 'partial', newFields };
-        }
-      }
-    }
+    if (!emitPartials) continue;
+
+    const partial = tryParse(accumulated, true);
+    if (partial === null) continue;
+
+    const serialized = JSON.stringify(partial);
+    if (serialized === lastSerialized) continue;
+
+    const newFields = computeNewFields(partial, false);
+    lastSerialized = serialized;
+    lastWasPartial = true;
+    yield { value: partial as T, isPartial: true, status: 'partial', newFields };
   }
 }

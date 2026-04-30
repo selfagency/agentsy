@@ -54,6 +54,20 @@ function isOpenAIChatChunk(value: unknown): value is OpenAIChatChunk {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
+  const result: NativeToolCallDelta = { index: tc.index ?? 0 };
+  if (tc.id) result.id = tc.id;
+  if (tc.function?.name) result.name = tc.function.name;
+  if (typeof tc.function?.arguments === 'string' && tc.function.arguments !== '') {
+    result.argumentsDelta = tc.function.arguments;
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Normalizer
 // ---------------------------------------------------------------------------
 
@@ -82,15 +96,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
     if (Array.isArray(delta?.tool_calls) && delta.tool_calls.length > 0) {
       nativeToolCallDeltas = delta.tool_calls
         .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
-        .map(tc => {
-          const delta: NativeToolCallDelta = { index: tc.index ?? 0 };
-          if (tc.id) delta.id = tc.id;
-          if (tc.function?.name) delta.name = tc.function.name;
-          if (typeof tc.function?.arguments === 'string' && tc.function.arguments !== '') {
-            delta.argumentsDelta = tc.function.arguments;
-          }
-          return delta;
-        });
+        .map(mapOpenAIToolCallDelta);
     }
 
     // Usage — only present on the final chunk when stream_options.include_usage=true

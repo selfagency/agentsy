@@ -18,6 +18,66 @@ import { isObject, toNumber } from './utils.js';
 
 const FINISH_REASONS_DONE = new Set(['STOP', 'MAX_TOKENS', 'SAFETY', 'RECITATION', 'OTHER']);
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+interface GeminiPartsResult {
+  textContent: string | undefined;
+  thinking: string | undefined;
+  nativeToolCallList: NativeToolCallDelta[];
+}
+
+function processGeminiParts(parts: unknown[]): GeminiPartsResult {
+  let textContent: string | undefined;
+  let thinking: string | undefined;
+  const nativeToolCallList: NativeToolCallDelta[] = [];
+  let toolCallIndex = 0;
+
+  for (const part of parts) {
+    if (!isObject(part)) continue;
+
+    if (part['thought'] === true && typeof part['text'] === 'string') {
+      thinking = (thinking ?? '') + part['text'];
+      continue;
+    }
+
+    if (typeof part['text'] === 'string') {
+      textContent = (textContent ?? '') + part['text'];
+      continue;
+    }
+
+    const fc = part['functionCall'];
+    if (isObject(fc)) {
+      const name = typeof fc['name'] === 'string' ? fc['name'] : undefined;
+      const args = fc['args'];
+      const delta: NativeToolCallDelta = { index: toolCallIndex++ };
+      if (name !== undefined) delta.name = name;
+      if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
+      nativeToolCallList.push(delta);
+    }
+  }
+
+  return { textContent, thinking, nativeToolCallList };
+}
+
+function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined {
+  const usageMetadata = raw['usageMetadata'];
+  if (!isObject(usageMetadata)) return undefined;
+  const usage: UsageInfo = {};
+  const input = toNumber(usageMetadata['promptTokenCount']);
+  const output = toNumber(usageMetadata['candidatesTokenCount']);
+  const total = toNumber(usageMetadata['totalTokenCount']);
+  if (input !== undefined) usage.inputTokens = input;
+  if (output !== undefined) usage.outputTokens = output;
+  if (total !== undefined) usage.totalTokens = total;
+  return usage;
+}
+
+// ---------------------------------------------------------------------------
+// Normalizer
+// ---------------------------------------------------------------------------
+
 /**
  * Normalizes a Google Gemini `generateContent` streaming chunk into a
  * canonical `NormalizerResult`.  Returns `null` if the chunk has no
@@ -37,53 +97,9 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
     const finishReason = typeof candidate['finishReason'] === 'string' ? candidate['finishReason'] : null;
     const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
 
-    // Extract text and thinking from parts
-    let textContent: string | undefined;
-    let thinking: string | undefined;
-    const nativeToolCallList: NativeToolCallDelta[] = [];
-    let toolCallIndex = 0;
-
-    if (isObject(content) && Array.isArray(content['parts'])) {
-      for (const part of content['parts'] as unknown[]) {
-        if (!isObject(part)) continue;
-
-        // Thinking part (Gemini 2.0+ extended thinking)
-        if (part['thought'] === true && typeof part['text'] === 'string') {
-          thinking = (thinking ?? '') + part['text'];
-          continue;
-        }
-
-        // Text part
-        if (typeof part['text'] === 'string') {
-          textContent = (textContent ?? '') + part['text'];
-          continue;
-        }
-
-        // Function call part
-        const fc = part['functionCall'];
-        if (isObject(fc)) {
-          const name = typeof fc['name'] === 'string' ? fc['name'] : undefined;
-          const args = fc['args'];
-          const delta: NativeToolCallDelta = { index: toolCallIndex++ };
-          if (name !== undefined) delta.name = name;
-          if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
-          nativeToolCallList.push(delta);
-        }
-      }
-    }
-
-    // Usage metadata
-    let usage: UsageInfo | undefined;
-    const usageMetadata = raw['usageMetadata'];
-    if (isObject(usageMetadata)) {
-      usage = {};
-      const input = toNumber(usageMetadata['promptTokenCount']);
-      const output = toNumber(usageMetadata['candidatesTokenCount']);
-      const total = toNumber(usageMetadata['totalTokenCount']);
-      if (input !== undefined) usage.inputTokens = input;
-      if (output !== undefined) usage.outputTokens = output;
-      if (total !== undefined) usage.totalTokens = total;
-    }
+    const parts = isObject(content) && Array.isArray(content['parts']) ? (content['parts'] as unknown[]) : [];
+    const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
+    const usage = extractGeminiUsage(raw);
 
     const chunk = {
       ...(textContent !== undefined && { content: textContent }),

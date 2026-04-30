@@ -39,6 +39,13 @@ function isHFTGIStreamResponse(value: unknown): value is HFTGIStreamResponse {
 // Normalizer
 // ---------------------------------------------------------------------------
 
+function buildHFUsage(details: HFDetails): UsageInfo | undefined {
+  const u: UsageInfo = {};
+  if (typeof details.input_length === 'number') u.inputTokens = details.input_length;
+  if (typeof details.generated_tokens === 'number') u.outputTokens = details.generated_tokens;
+  return u.inputTokens !== undefined || u.outputTokens !== undefined ? u : undefined;
+}
+
 /**
  * Normalizes a HuggingFace Text Generation Inference (TGI) streaming chunk
  * (from the `/generate_stream` SSE endpoint) into a canonical
@@ -57,22 +64,16 @@ export function normalizeHuggingFaceTGIChunk(raw: unknown): NormalizerResult | n
     if (!isHFTGIStreamResponse(raw)) return null;
 
     const token = raw.token;
-    const details = raw.details != null ? raw.details : undefined;
+    const details = raw.details ?? undefined;
 
     // Only emit text for non-special tokens
-    const content = token?.special !== true && typeof token?.text === 'string' ? token.text : undefined;
+    const content = token?.special === true || typeof token?.text !== 'string' ? undefined : token.text;
 
     // Done when the final event arrives with details
     const done = typeof details?.finish_reason === 'string' ? true : undefined;
 
     // Usage only present in the final event
-    let usage: UsageInfo | undefined;
-    if (details) {
-      const u: UsageInfo = {};
-      if (typeof details.input_length === 'number') u.inputTokens = details.input_length;
-      if (typeof details.generated_tokens === 'number') u.outputTokens = details.generated_tokens;
-      if (u.inputTokens !== undefined || u.outputTokens !== undefined) usage = u;
-    }
+    const usage = details ? buildHFUsage(details) : undefined;
 
     // Nothing actionable — e.g. a special token mid-stream with no details
     if (content === undefined && done === undefined && usage === undefined) return null;

@@ -3,5 +3,5 @@ export function appendToBlockquote(text: string, atLineStart: boolean): string {
     return '';
   }
 
-  return `${atLineStart ? '> ' : ''}${text.replace(/\n/g, '\n> ')}`;
+  return `${atLineStart ? '> ' : ''}${text.replaceAll('\n', '\n> ')}`;
 }

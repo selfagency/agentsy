@@ -79,7 +79,9 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
         skipDepth++;
       }
     } else if (skipDepth === 0) {
-      buffer += `<${tag.name}${tag.attrs ? ` ${tag.attrs}` : ''}${tag.isSelfClosing ? ' /' : ''}>`;
+      const attrs = tag.attrs ? ` ${tag.attrs}` : '';
+      const selfClose = tag.isSelfClosing ? ' /' : '';
+      buffer += `<${tag.name}${attrs}${selfClose}>`;
     }
   });
 

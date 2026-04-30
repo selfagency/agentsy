@@ -78,6 +78,32 @@ export class ToolCallAccumulator {
     return result;
   }
 
+  private _flushPendingCall(pending: PendingCall): NativeToolCall | null {
+    if (!pending.name) return null;
+
+    try {
+      const parsed = JSON.parse(pending.argumentsBuffer);
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        const call: NativeToolCall = { name: pending.name, arguments: parsed as Record<string, unknown> };
+        if (pending.id !== undefined) call.id = pending.id;
+        return call;
+      }
+    } catch {
+      // Fall through to repair.
+    }
+
+    const repaired = parseJson(pending.argumentsBuffer, { repairIncomplete: true });
+    const flushedCall: NativeToolCall = {
+      name: pending.name,
+      arguments:
+        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired)
+          ? (repaired as Record<string, unknown>)
+          : {},
+    };
+    if (pending.id !== undefined) flushedCall.id = pending.id;
+    return flushedCall;
+  }
+
   /**
    * Force-completes all pending calls, attempting JSON repair on any incomplete argument
    * buffers via `parseJson`. Returns all calls that have a name, even if their arguments
@@ -93,34 +119,8 @@ export class ToolCallAccumulator {
   public flush(): NativeToolCall[] {
     const result: NativeToolCall[] = [];
     for (const pending of this.calls.values()) {
-      if (!pending.name) {
-        continue;
-      }
-
-      // Try direct JSON.parse first (fast path for complete buffers).
-      try {
-        const parsed = JSON.parse(pending.argumentsBuffer);
-        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          const call: NativeToolCall = { name: pending.name, arguments: parsed as Record<string, unknown> };
-          if (pending.id !== undefined) call.id = pending.id;
-          result.push(call);
-          continue;
-        }
-      } catch {
-        // Fall through to repair.
-      }
-
-      // Attempt repair via parseJson for truncated/incomplete argument JSON.
-      const repaired = parseJson(pending.argumentsBuffer, { repairIncomplete: true });
-      const flushedCall: NativeToolCall = {
-        name: pending.name,
-        arguments:
-          repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired)
-            ? (repaired as Record<string, unknown>)
-            : {},
-      };
-      if (pending.id !== undefined) flushedCall.id = pending.id;
-      result.push(flushedCall);
+      const call = this._flushPendingCall(pending);
+      if (call !== null) result.push(call);
     }
     this.calls.clear();
     return result;

@@ -6,7 +6,7 @@ export interface XmlToolCall {
 }
 
 function cleanXml(text: string): string {
-  let cleaned = text.replace(/```xml\s*/gi, '').replace(/```\s*/g, '');
+  let cleaned = text.replaceAll(/```xml\s*/gi, '').replaceAll(/```\s*/g, '');
   cleaned = cleaned.replace(/^[^<]*/, '').replace(/[^>]*$/, '');
   return cleaned;
 }
@@ -71,12 +71,14 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
       return null;
     }
 
-    const argumentsValue =
-      parsed.arguments && typeof parsed.arguments === 'object' && !Array.isArray(parsed.arguments)
-        ? (parsed.arguments as Record<string, unknown>)
-        : parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)
-          ? (parsed.parameters as Record<string, unknown>)
-          : {};
+    let argumentsValue: Record<string, unknown>;
+    if (parsed.arguments && typeof parsed.arguments === 'object' && !Array.isArray(parsed.arguments)) {
+      argumentsValue = parsed.arguments as Record<string, unknown>;
+    } else if (parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)) {
+      argumentsValue = parsed.parameters as Record<string, unknown>;
+    } else {
+      argumentsValue = {};
+    }
 
     return {
       name,

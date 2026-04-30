@@ -129,6 +129,61 @@ process.on('SIGTERM', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// Prerequisite helpers
+// ---------------------------------------------------------------------------
+
+async function checkNpmCredentials(npmRegistry) {
+  try {
+    await $`npm whoami --registry=${npmRegistry}`;
+  } catch {
+    console.error(`❌ Not logged in to npm (registry: ${npmRegistry}).`);
+    console.error('   Tips:');
+    console.error(`   - Ensure your token is in ${process.env.NPM_CONFIG_USERCONFIG}`);
+    console.error('   - File should contain a line like: //registry.npmjs.org/:_authToken=<YOUR_TOKEN>');
+    console.error('   - Or export NPM_TOKEN in your environment before running the release script');
+    console.error('   - To log in interactively: npm login --registry=https://registry.npmjs.org/');
+    process.exit(1);
+  }
+}
+
+async function resolveGithubToken() {
+  let token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
+  if (!token) {
+    try {
+      token = (await $`gh auth token`).stdout.trim();
+    } catch {
+      console.error('❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login');
+      process.exit(1);
+    }
+  }
+  return token;
+}
+
+function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {
+  let original;
+  try {
+    original = readFileSync(changelogPath, 'utf8');
+  } catch {
+    original = '# Change Log\n\n## [Unreleased]\n';
+  }
+
+  if (original.includes(heading)) {
+    console.log('ℹ️  CHANGELOG already contains this release heading; skipping.');
+    return;
+  }
+
+  const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
+  const section = `\n${heading}\n\n${releaseNotes}${sourceLine}\n`;
+  const marker = '## [Unreleased]';
+  const idx = original.indexOf(marker);
+  const updated =
+    idx >= 0
+      ? `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`
+      : `${original}\n${section}`;
+  writeFileSync(changelogPath, updated);
+}
+
+// ---------------------------------------------------------------------------
 // Main — wrapped so any unhandled error triggers rollback
 // ---------------------------------------------------------------------------
 
@@ -143,35 +198,12 @@ async function main() {
   gitCmd = resolvedGit;
 
   // Ensure npm uses the user's ~/.npmrc (tokens) and the public npm registry.
-  // Some CI shells or tool integrations start without HOME/USERCONFIG, which causes
-  // `npm whoami` to prompt for interactive login even when a token exists.
   process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
   const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
 
-  // Check npm credentials against the intended registry (non-interactive).
-  try {
-    await $`npm whoami --registry=${NPM_REGISTRY}`;
-  } catch {
-    console.error(`❌ Not logged in to npm (registry: ${NPM_REGISTRY}).`);
-    console.error('   Tips:');
-    console.error(`   - Ensure your token is in ${process.env.NPM_CONFIG_USERCONFIG}`);
-    console.error('   - File should contain a line like: //registry.npmjs.org/:_authToken=<YOUR_TOKEN>');
-    console.error('   - Or export NPM_TOKEN in your environment before running the release script');
-    console.error('   - To log in interactively: npm login --registry=https://registry.npmjs.org/');
-    process.exit(1);
-  }
+  await checkNpmCredentials(NPM_REGISTRY);
 
-  // Resolve GitHub auth token: prefer env vars, then ask the gh CLI.
-  let githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
-  if (!githubToken) {
-    try {
-      githubToken = (await $`gh auth token`).stdout.trim();
-    } catch {
-      console.error('❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login');
-      process.exit(1);
-    }
-  }
-
+  const githubToken = await resolveGithubToken();
   const octokit = new Octokit({ auth: githubToken });
 
   // --- Precondition checks --------------------------------------------------
@@ -267,27 +299,7 @@ async function main() {
   const changelogPath = resolve(ROOT, 'CHANGELOG.md');
   const date = new Date().toISOString().slice(0, 10);
   const heading = `## [${version}] - ${date}`;
-  const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
-  const section = `\n${heading}\n\n${releaseNotes}${sourceLine}\n`;
-
-  let original;
-  try {
-    original = readFileSync(changelogPath, 'utf8');
-  } catch {
-    original = '# Change Log\n\n## [Unreleased]\n';
-  }
-
-  if (!original.includes(heading)) {
-    const marker = '## [Unreleased]';
-    const idx = original.indexOf(marker);
-    const updated =
-      idx >= 0
-        ? `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`
-        : `${original}\n${section}`;
-    writeFileSync(changelogPath, updated);
-  } else {
-    console.log('ℹ️  CHANGELOG already contains this release heading; skipping.');
-  }
+  updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag);
 
   // --- Commit + push --------------------------------------------------------
 
@@ -450,7 +462,9 @@ async function waitForWorkflow(
 // Entry point
 // ---------------------------------------------------------------------------
 
-main().catch(async err => {
+try {
+  await main();
+} catch (err) {
   const msg = err?.message ?? String(err);
   // ProcessOutput errors from zx already printed the command output; only
   // print extra context for our own thrown errors.
@@ -459,4 +473,4 @@ main().catch(async err => {
   }
   await rollback();
   process.exit(err?.exitCode ?? 1);
-});
+}

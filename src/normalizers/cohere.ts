@@ -40,6 +40,19 @@ function isCohereEvent(value: unknown): value is CohereEvent {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function buildCohereUsage(delta: CohereDelta | undefined): UsageInfo | undefined {
+  const tokens = delta?.usage?.tokens;
+  if (!tokens) return undefined;
+  const usage: UsageInfo = {};
+  if (typeof tokens.input_tokens === 'number') usage.inputTokens = tokens.input_tokens;
+  if (typeof tokens.output_tokens === 'number') usage.outputTokens = tokens.output_tokens;
+  return usage;
+}
+
+// ---------------------------------------------------------------------------
 // Normalizer
 // ---------------------------------------------------------------------------
 
@@ -95,13 +108,7 @@ export function normalizeCohereEvent(raw: unknown): NormalizerResult | null {
 
       case 'message-end': {
         const done = typeof delta?.finish_reason === 'string' ? true : undefined;
-        const tokens = delta?.usage?.tokens;
-        let usage: UsageInfo | undefined;
-        if (tokens) {
-          usage = {};
-          if (typeof tokens.input_tokens === 'number') usage.inputTokens = tokens.input_tokens;
-          if (typeof tokens.output_tokens === 'number') usage.outputTokens = tokens.output_tokens;
-        }
+        const usage = buildCohereUsage(delta);
         return {
           chunk: { ...(done !== undefined && { done }), ...(usage !== undefined && { usage }) },
           rawEvent: raw,

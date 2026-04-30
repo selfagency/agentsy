@@ -102,7 +102,7 @@ export class LLMStreamProcessor {
   private readonly options: Required<Pick<ProcessorOptions, 'parseThinkTags' | 'scrubContextTags'>> & ProcessorOptions;
   private thinkingParser: ThinkingParser | null;
   private xmlFilter: XmlStreamFilter | null;
-  private nativeAccumulator: ToolCallAccumulator | null;
+  private readonly nativeAccumulator: ToolCallAccumulator | null;
 
   private _accumulatedThinking = '';
   private _accumulatedContent = '';
@@ -111,7 +111,7 @@ export class LLMStreamProcessor {
   private doneEmitted = false;
   private _warningCount = 0;
 
-  private listeners: {
+  private readonly listeners: {
     [K in keyof StreamEventMap]: Set<StreamEventMap[K]>;
   } = {
     text: new Set(),
@@ -152,35 +152,8 @@ export class LLMStreamProcessor {
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const done = chunk.done === true;
 
-    // Merge token usage from this chunk into accumulated usage and emit.
-    if (chunk.usage !== undefined) {
-      this._accumulatedUsage = { ...this._accumulatedUsage, ...chunk.usage };
-      for (const listener of this.listeners.usage) {
-        listener(this._accumulatedUsage);
-      }
-    }
-
-    // Feed any streaming native tool call deltas into the accumulator.
-    if (this.nativeAccumulator && Array.isArray(chunk.nativeToolCallDeltas)) {
-      const maxArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
-      for (const delta of chunk.nativeToolCallDeltas) {
-        if (
-          maxArgumentBytes > 0 &&
-          typeof delta.argumentsDelta === 'string' &&
-          delta.argumentsDelta.length > maxArgumentBytes
-        ) {
-          this.warn('Native tool call argumentsDelta exceeded maxToolArgumentBytes; truncating before accumulation.', {
-            maxToolArgumentBytes: maxArgumentBytes,
-          });
-          this.nativeAccumulator.addDelta({
-            ...delta,
-            argumentsDelta: delta.argumentsDelta.slice(0, maxArgumentBytes),
-          });
-        } else {
-          this.nativeAccumulator.addDelta(delta);
-        }
-      }
-    }
+    this.accumulateUsage(chunk);
+    this.accumulateNativeDeltas(chunk);
 
     // On stream end, flush the accumulator and include assembled calls.
     const accumulatedNativeCalls: XmlToolCall[] =
@@ -201,7 +174,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done,
-      ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
+      ...(this._accumulatedUsage != null ? { usage: this._accumulatedUsage } : {}),
     });
     this.recordOutput(output);
     this.emitOutput(output);
@@ -217,7 +190,7 @@ export class LLMStreamProcessor {
       content: out.content + flushed.content,
       toolCalls: [...out.toolCalls, ...flushed.toolCalls],
       done: true,
-      ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
+      ...(this._accumulatedUsage != null ? { usage: this._accumulatedUsage } : {}),
     });
   }
 
@@ -251,7 +224,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done: true,
-      ...(this._accumulatedUsage !== undefined ? { usage: this._accumulatedUsage } : {}),
+      ...(this._accumulatedUsage != null ? { usage: this._accumulatedUsage } : {}),
     });
 
     this.recordOutput(output);
@@ -269,7 +242,7 @@ export class LLMStreamProcessor {
       content: this._accumulatedContent,
       toolCalls: [...this._accumulatedToolCalls],
     };
-    if (this._accumulatedUsage !== undefined) {
+    if (this._accumulatedUsage != null) {
       msg.usage = this._accumulatedUsage;
     }
     return msg;
@@ -427,6 +400,36 @@ export class LLMStreamProcessor {
     }
   }
 
+  private accumulateUsage(chunk: StreamChunk): void {
+    if (chunk.usage === undefined) return;
+    this._accumulatedUsage = { ...this._accumulatedUsage, ...chunk.usage };
+    for (const listener of this.listeners.usage) {
+      listener(this._accumulatedUsage);
+    }
+  }
+
+  private accumulateNativeDeltas(chunk: StreamChunk): void {
+    if (!this.nativeAccumulator || !Array.isArray(chunk.nativeToolCallDeltas)) return;
+    const maxArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
+    for (const delta of chunk.nativeToolCallDeltas) {
+      if (
+        maxArgumentBytes > 0 &&
+        typeof delta.argumentsDelta === 'string' &&
+        delta.argumentsDelta.length > maxArgumentBytes
+      ) {
+        this.warn('Native tool call argumentsDelta exceeded maxToolArgumentBytes; truncating before accumulation.', {
+          maxToolArgumentBytes: maxArgumentBytes,
+        });
+        this.nativeAccumulator.addDelta({
+          ...delta,
+          argumentsDelta: delta.argumentsDelta.slice(0, maxArgumentBytes),
+        });
+      } else {
+        this.nativeAccumulator.addDelta(delta);
+      }
+    }
+  }
+
   private mapAccumulatedNativeCalls(
     calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[],
   ): XmlToolCall[] {
@@ -488,32 +491,38 @@ export class LLMStreamProcessor {
       }
     }
 
-    const encoder = new TextEncoder();
     const keptCalls: XmlToolCall[] = [];
     for (const call of limitedCalls) {
-      let argsBytes: number;
-      try {
-        const argsJson = JSON.stringify(call.parameters);
-        argsBytes = encoder.encode(argsJson).byteLength;
-      } catch {
-        this.warn('Tool call arguments could not be serialized; dropping tool call.', {
-          toolName: call.name,
-        });
-        continue;
+      if (this.filterByArgumentSize(call, maxToolArgumentBytes)) {
+        keptCalls.push(call);
       }
-      if (maxToolArgumentBytes > 0 && argsBytes > maxToolArgumentBytes) {
-        this.warn('Tool call arguments exceeded maxToolArgumentBytes; dropping tool call.', {
-          toolName: call.name,
-          maxToolArgumentBytes,
-          actualBytes: argsBytes,
-        });
-        continue;
-      }
-
-      keptCalls.push(call);
     }
 
     return keptCalls;
+  }
+
+  private filterByArgumentSize(call: XmlToolCall, maxToolArgumentBytes: number): boolean {
+    if (maxToolArgumentBytes <= 0) return true;
+    const encoder = new TextEncoder();
+    let argsBytes: number;
+    try {
+      const argsJson = JSON.stringify(call.parameters);
+      argsBytes = encoder.encode(argsJson).byteLength;
+    } catch {
+      this.warn('Tool call arguments could not be serialized; dropping tool call.', {
+        toolName: call.name,
+      });
+      return false;
+    }
+    if (argsBytes > maxToolArgumentBytes) {
+      this.warn('Tool call arguments exceeded maxToolArgumentBytes; dropping tool call.', {
+        toolName: call.name,
+        maxToolArgumentBytes,
+        actualBytes: argsBytes,
+      });
+      return false;
+    }
+    return true;
   }
 
   private normalizeToolArguments(value: unknown): Record<string, unknown> {
