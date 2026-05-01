@@ -1,5 +1,5 @@
 import type { UsageInfo } from '../normalizers/types.js';
-import type { FinishReason } from '../tool-calls/types.js';
+import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
 
 /**
  * Represents a single UI message in a conversation.
@@ -31,7 +31,7 @@ export interface UIMessage {
 /**
  * Union type for all possible message parts.
  */
-export type UIMessagePart = UITextPart | UIThinkingPart | UIToolCallPart;
+export type UIMessagePart = UITextPart | UIThinkingPart | UIToolCallPart | UIStepPart | UIErrorPart;
 
 /**
  * Message part types without createdAt (for event handlers that auto-add timestamps).
@@ -40,7 +40,9 @@ export type UIMessagePart = UITextPart | UIThinkingPart | UIToolCallPart;
 export type UIMessagePartWithoutCreatedAt =
   | Omit<UITextPart, 'createdAt'>
   | Omit<UIThinkingPart, 'createdAt'>
-  | Omit<UIToolCallPart, 'createdAt'>;
+  | Omit<UIToolCallPart, 'createdAt'>
+  | Omit<UIStepPart, 'createdAt'>
+  | Omit<UIErrorPart, 'createdAt'>;
 
 /**
  * Text content part.
@@ -68,6 +70,31 @@ export interface UIToolCallPart {
   id: string;
   name: string;
   parameters: Record<string, unknown>;
+  state: ToolCallState;
+  argumentsText?: string;
+  result?: unknown;
+  error?: string;
+  createdAt: Date;
+}
+
+/**
+ * Step lifecycle marker for agent-loop aware UIs.
+ */
+export interface UIStepPart {
+  type: 'step';
+  stepIndex: number;
+  status: 'started' | 'finished';
+  usage?: UsageInfo;
+  createdAt: Date;
+}
+
+/**
+ * Error part associated with a message.
+ */
+export interface UIErrorPart {
+  type: 'error';
+  message: string;
+  code?: string;
   createdAt: Date;
 }
 
@@ -84,11 +111,17 @@ export interface UIConversation {
   /** Current step index in agent loop. */
   stepIndex: number;
 
+  /** Current streaming status for the conversation. */
+  status: 'idle' | 'streaming' | 'error';
+
   /** Last applied event timestamp. */
   lastEventAt: Date;
 
   /** Total token count across all messages. */
   totalTokens: number;
+
+  /** Aggregated usage across all messages. */
+  totalUsage: UsageInfo;
 
   /** Metadata: custom key-value pairs. */
   metadata: Record<string, unknown> | undefined;
@@ -104,8 +137,26 @@ export type ConversationEvent =
   | {
       type: 'tool_call_part_added';
       messageId: string;
-      toolCall: { id: string; name: string; parameters: Record<string, unknown> };
+      toolCall: {
+        id: string;
+        name: string;
+        parameters: Record<string, unknown>;
+        state?: ToolCallState;
+        argumentsText?: string;
+      };
     }
+  | {
+      type: 'tool_call_updated';
+      messageId: string;
+      toolCallId: string;
+      state?: ToolCallState;
+      argumentsTextDelta?: string;
+      parameters?: Record<string, unknown>;
+    }
+  | { type: 'tool_call_result_added'; messageId: string; toolCallId: string; result: unknown; isError?: boolean }
   | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }
+  | { type: 'step_started'; stepIndex: number; messageId?: string; usage?: UsageInfo }
+  | { type: 'step_finished'; stepIndex: number; messageId?: string; usage?: UsageInfo }
   | { type: 'step_updated'; stepIndex: number }
+  | { type: 'error_part_added'; messageId: string; message: string; code?: string }
   | { type: 'conversation_reset' };

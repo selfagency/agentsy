@@ -29,12 +29,19 @@
  */
 
 export { applyConversationEvent } from './eventSourcing.js';
+export {
+  bindProcessorToConversationStore,
+  createConversationStoreFromProcessor,
+  type ConversationStoreBridge,
+} from './processorBridge.js';
 export { createConversationStore, type ConversationStore, type StoreListener } from './store.js';
 export type {
   ConversationEvent,
   UIConversation,
+  UIErrorPart,
   UIMessage,
   UIMessagePart,
+  UIStepPart,
   UITextPart,
   UIThinkingPart,
   UIToolCallPart,

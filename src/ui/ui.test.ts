@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { applyConversationEvent } from './eventSourcing.js';
+import { createConversationStoreFromProcessor } from './processorBridge.js';
 import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 import type { FinishReason } from '../tool-calls/types.js';
+import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 
 // Helper functions for ConversationStore tests
 function startMessage(
@@ -50,8 +52,10 @@ describe('UI Event Sourcing', () => {
       id: 'conv-1',
       messages: [],
       stepIndex: 0,
+      status: 'idle',
       lastEventAt: new Date('2025-01-01'),
       totalTokens: 0,
+      totalUsage: {},
       metadata: undefined,
     };
 
@@ -137,6 +141,75 @@ describe('UI Event Sourcing', () => {
 
       expect(part.name).toBe('search');
       expect(part.parameters).toEqual({ query: 'TypeScript best practices' });
+      expect(part.state).toBe('input-complete');
+    });
+
+    it('should update tool call state and argument text incrementally', () => {
+      let state = applyConversationEvent(initialState, {
+        type: 'message_started',
+        role: 'assistant',
+        messageId: 'msg-1',
+      });
+
+      state = applyConversationEvent(state, {
+        type: 'tool_call_part_added',
+        messageId: 'msg-1',
+        toolCall: {
+          id: 'call-1',
+          name: 'search',
+          parameters: {},
+          state: 'awaiting-input',
+        },
+      });
+
+      state = applyConversationEvent(state, {
+        type: 'tool_call_updated',
+        messageId: 'msg-1',
+        toolCallId: 'call-1',
+        state: 'input-streaming',
+        argumentsTextDelta: '{"q":',
+      });
+
+      const part = state.messages[0]?.parts?.[0];
+      if (!part || part.type !== 'tool_call') {
+        throw new Error('Expected tool_call part');
+      }
+
+      expect(part.state).toBe('input-streaming');
+      expect(part.argumentsText).toBe('{"q":');
+    });
+
+    it('should store tool call results and move state to output-available', () => {
+      let state = applyConversationEvent(initialState, {
+        type: 'message_started',
+        role: 'assistant',
+        messageId: 'msg-1',
+      });
+
+      state = applyConversationEvent(state, {
+        type: 'tool_call_part_added',
+        messageId: 'msg-1',
+        toolCall: {
+          id: 'call-1',
+          name: 'search',
+          parameters: { q: 'ts' },
+        },
+      });
+
+      state = applyConversationEvent(state, {
+        type: 'tool_call_result_added',
+        messageId: 'msg-1',
+        toolCallId: 'call-1',
+        result: { ok: true },
+      });
+
+      const part = state.messages[0]?.parts?.[0];
+      if (!part || part.type !== 'tool_call') {
+        throw new Error('Expected tool_call part');
+      }
+
+      expect(part.state).toBe('output-available');
+      expect(part.result).toEqual({ ok: true });
     });
 
     it('should set finishReason and usage on message_finished event', () => {
@@ -195,6 +268,31 @@ describe('UI Event Sourcing', () => {
       const newState = applyConversationEvent(initialState, event);
 
       expect(newState.stepIndex).toBe(3);
+    });
+
+    it('should track status and total usage across step and message lifecycle', () => {
+      let state = applyConversationEvent(initialState, {
+        type: 'message_started',
+        role: 'assistant',
+        messageId: 'msg-1',
+      });
+
+      state = applyConversationEvent(state, {
+        type: 'step_started',
+        messageId: 'msg-1',
+        stepIndex: 1,
+        usage: { inputTokens: 3 },
+      });
+
+      state = applyConversationEvent(state, {
+        type: 'message_finished',
+        messageId: 'msg-1',
+        usage: { inputTokens: 3, outputTokens: 7, totalTokens: 10 },
+      });
+
+      expect(state.status).toBe('idle');
+      expect(state.totalUsage).toEqual({ inputTokens: 3, outputTokens: 7, totalTokens: 10 });
+      expect(state.totalTokens).toBe(10);
     });
 
     it('should reset conversation on conversation_reset event', () => {
@@ -427,6 +525,27 @@ describe('UI Event Sourcing', () => {
       expect(state.messages[1]?.parts).toHaveLength(3); // thinking, text, tool_call
       expect(state.totalTokens).toBe(70);
       expect(state.messages[1]?.finishReason).toBe('tool-calls');
+    });
+
+    it('should bridge processor conversation events into the store automatically', () => {
+      const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true, scrubContextTags: false });
+      const bridge = createConversationStoreFromProcessor(processor, { conversationId: 'conv-processor' });
+
+      processor.process({ stepIndex: 0, thinking: 'plan' });
+      processor.process({ content: 'hello' });
+      processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_1', name: 'lookup' }] });
+      processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"q":"ts"}' }] });
+      processor.process({ done: true, finishReason: 'tool-calls', usage: { totalTokens: 12 } });
+
+      const state = bridge.store.getState();
+      expect(state.messages).toHaveLength(1);
+      expect(state.messages[0]?.parts.some(part => part.type === 'thinking')).toBe(true);
+      expect(state.messages[0]?.parts.some(part => part.type === 'text')).toBe(true);
+      expect(state.messages[0]?.parts.some(part => part.type === 'tool_call')).toBe(true);
+      expect(state.messages[0]?.finishReason).toBe('tool-calls');
+      expect(state.totalTokens).toBe(12);
+
+      bridge.dispose();
     });
   });
 });
