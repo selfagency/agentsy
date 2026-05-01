@@ -183,7 +183,7 @@
     "zx": "^8.8.5"
   },
   "peerDependencies": {
-    "@ag-ui/core": "^1.0.0"
+    "@ag-ui/core": "^0.0.53"
   },
   "peerDependenciesMeta": {},
   "packageManager": "pnpm@10.31.0"
