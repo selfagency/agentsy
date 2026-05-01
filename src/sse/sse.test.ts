@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { SSEParser, parseSSEStream } from './index.js';
 
+// Helper to create SSEParser with event collection
+function createParser(onError?: (error: Error) => void) {
+  const events: unknown[] = [];
+  const parser = new SSEParser({
+    onEvent: event => events.push(event),
+    ...(onError && { onError }),
+  });
+  return { parser, events };
+}
+
 describe('SSEParser', () => {
   it('parses a simple single-line event', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: hello\n\n');
     parser.end();
@@ -16,10 +23,7 @@ describe('SSEParser', () => {
   });
 
   it('parses multi-line data (multiple data: fields)', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: line1\n');
     parser.write('data: line2\n\n');
@@ -30,10 +34,7 @@ describe('SSEParser', () => {
   });
 
   it('handles cross-chunk event splits', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: hel');
     parser.write('lo\n\n');
@@ -44,10 +45,7 @@ describe('SSEParser', () => {
   });
 
   it('handles cross-chunk field delimiter splits', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('dat');
     parser.write('a: value\n\n');
@@ -58,10 +56,7 @@ describe('SSEParser', () => {
   });
 
   it('parses event name, id, and retry fields', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('event: custom\n');
     parser.write('data: content\n');
@@ -79,10 +74,7 @@ describe('SSEParser', () => {
   });
 
   it('skips comment lines (starting with :)', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write(': this is a comment\n');
     parser.write('data: hello\n\n');
@@ -93,10 +85,7 @@ describe('SSEParser', () => {
   });
 
   it('strips leading space after colon', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: value\n\n');
     parser.end();
@@ -106,10 +95,7 @@ describe('SSEParser', () => {
   });
 
   it('handles empty data field', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data:\n\n');
     parser.end();
@@ -119,10 +105,7 @@ describe('SSEParser', () => {
   });
 
   it('parses multiple events in one write', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: event1\n\ndata: event2\n\n');
     parser.end();
@@ -133,10 +116,7 @@ describe('SSEParser', () => {
   });
 
   it('handles retry field parsing', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('retry: 10000\n\n');
     parser.end();
@@ -146,12 +126,7 @@ describe('SSEParser', () => {
   });
 
   it('ignores invalid retry values', () => {
-    const errors: unknown[] = [];
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-      onError: error => errors.push(error),
-    });
+    const { parser, events } = createParser();
 
     parser.write('retry: not-a-number\n\n');
     parser.end();
@@ -161,10 +136,7 @@ describe('SSEParser', () => {
   });
 
   it('handles JSON data', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: {"type":"message","content":"hello"}\n\n');
     parser.end();
@@ -176,10 +148,7 @@ describe('SSEParser', () => {
   });
 
   it('resets state on reset()', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('data: incomplete');
     parser.reset();
@@ -191,10 +160,7 @@ describe('SSEParser', () => {
   });
 
   it('handles empty writes', () => {
-    const events: unknown[] = [];
-    const parser = new SSEParser({
-      onEvent: event => events.push(event),
-    });
+    const { parser, events } = createParser();
 
     parser.write('');
     parser.write('data: hello\n\n');
