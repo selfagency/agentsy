@@ -1,4 +1,5 @@
 import type { UIConversation, UIMessage, ConversationEvent } from './types.js';
+import { addPartToMessage, finishMessage } from './eventHelpers.js';
 
 /**
  * Pure function: Apply a single event to conversation state, returning new state.
@@ -29,114 +30,30 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
     }
 
     case 'text_part_added': {
-      // Find message and append text part
-      const messages = state.messages.map(msg => {
-        if (msg.id === event.messageId) {
-          return {
-            ...msg,
-            parts: [
-              ...msg.parts,
-              {
-                type: 'text',
-                text: event.text,
-                createdAt: now,
-              } as const,
-            ],
-          };
-        }
-        return msg;
-      });
-
-      return {
-        ...state,
-        messages,
-        lastEventAt: now,
-      };
+      return addPartToMessage(state, event.messageId, {
+        type: 'text',
+        text: event.text,
+      } as const);
     }
 
     case 'thinking_part_added': {
-      // Find message and append thinking part
-      const messages = state.messages.map(msg => {
-        if (msg.id === event.messageId) {
-          return {
-            ...msg,
-            parts: [
-              ...msg.parts,
-              {
-                type: 'thinking',
-                text: event.text,
-                createdAt: now,
-              } as const,
-            ],
-          };
-        }
-        return msg;
-      });
-
-      return {
-        ...state,
-        messages,
-        lastEventAt: now,
-      };
+      return addPartToMessage(state, event.messageId, {
+        type: 'thinking',
+        text: event.text,
+      } as const);
     }
 
     case 'tool_call_part_added': {
-      // Find message and append tool call part
-      const messages = state.messages.map(msg => {
-        if (msg.id === event.messageId) {
-          return {
-            ...msg,
-            parts: [
-              ...msg.parts,
-              {
-                type: 'tool_call',
-                id: event.toolCall.id,
-                name: event.toolCall.name,
-                parameters: event.toolCall.parameters,
-                createdAt: now,
-              } as const,
-            ],
-          };
-        }
-        return msg;
-      });
-
-      return {
-        ...state,
-        messages,
-        lastEventAt: now,
-      };
+      return addPartToMessage(state, event.messageId, {
+        type: 'tool_call',
+        id: event.toolCall.id,
+        name: event.toolCall.name,
+        parameters: event.toolCall.parameters,
+      } as const);
     }
 
     case 'message_finished': {
-      // Find message and set finishReason, usage, calculate tokens
-      let totalTokens = state.totalTokens;
-
-      const messages = state.messages.map(msg => {
-        if (msg.id === event.messageId) {
-          const finishReason = event.finishReason;
-          const usage = event.usage;
-
-          // Add usage tokens to total
-          if (usage?.totalTokens !== undefined) {
-            totalTokens += usage.totalTokens;
-          }
-
-          return {
-            ...msg,
-            finishReason,
-            usage,
-          };
-        }
-        return msg;
-      });
-
-      return {
-        ...state,
-        messages: messages as UIMessage[],
-        totalTokens,
-        lastEventAt: now,
-      };
+      return finishMessage(state, event.messageId, event.finishReason, event.usage);
     }
 
     case 'step_updated': {

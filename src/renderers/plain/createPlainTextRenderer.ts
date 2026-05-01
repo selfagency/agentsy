@@ -1,6 +1,5 @@
 import type { BaseRendererOptions, TextOutput, RendererHandle } from '../types.js';
-import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
-import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import { createSharedRendererHandle, createOutputWriter } from '../shared.js';
 
 /**
  * Options for the plain text renderer.
@@ -39,137 +38,28 @@ export interface PlainTextRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createPlainTextRenderer(options: PlainTextRendererOptions = {}): RendererHandle {
-  const {
-    output = process.stdout,
-    showThinking = false,
-    thinkingPrefix = '[Thinking] ',
-    processor,
-    onError,
-    onFinish,
-  } = options;
+  const { output = process.stdout, showThinking = false, thinkingPrefix = '[Thinking] ' } = options;
 
-  // Create processor if not provided (owns it internally)
-  const llmProcessor = processor || new LLMStreamProcessor();
+  const writeOutput = createOutputWriter(output);
 
-  // Helper to write to output
-  const writeOutput = (text: string): void => {
-    if (typeof output === 'function') {
-      output(text);
-    } else if ('write' in output && typeof output.write === 'function') {
-      output.write(text);
-    }
-  };
-
-  return {
-    async write(chunk: string): Promise<void> {
-      try {
-        // Process expects a StreamChunk, but we're receiving raw text.
-        // For the plain text renderer, we treat the entire input as content.
-        const result = llmProcessor.process({ content: chunk });
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              writeOutput(part.text);
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                writeOutput(thinkingPrefix + part.text + '\n');
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in plain text
-              break;
-            }
-          }
+  return createSharedRendererHandle(
+    options,
+    {
+      onText: async (text: string) => {
+        writeOutput(text);
+      },
+      onThinking: async (text: string) => {
+        if (showThinking) {
+          writeOutput(thinkingPrefix + text + '\n');
         }
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
-    async writeChunk(chunk: StreamChunk): Promise<void> {
-      try {
-        const result = llmProcessor.process(chunk);
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              writeOutput(part.text);
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                writeOutput(thinkingPrefix + part.text + '\n');
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in plain text
-              break;
-            }
-          }
-        }
-
-        // Fire onFinish callback if stream is done
-        if (chunk.done === true && onFinish) {
-          await onFinish(chunk.finishReason, chunk.usage);
-        }
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
-    async end(): Promise<void> {
-      let result: ReturnType<typeof llmProcessor.flush> | undefined;
-      try {
-        result = llmProcessor.flush();
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              writeOutput(part.text);
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                writeOutput(thinkingPrefix + part.text + '\n');
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in plain text
-              break;
-            }
-          }
-        }
-
-        // Ensure output is flushed if it has an `end()` method
+      },
+      onEnd: async () => {
+        // Call end() on stream if it has one
         if (typeof output === 'object' && 'end' in output && typeof output.end === 'function') {
           output.end();
         }
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-
-      // Fire onFinish callback to signal stream completion
-      if (result?.done && onFinish) {
-        onFinish(result.finishReason, result.usage);
-      }
+      },
     },
-  };
+    options.onError,
+  );
 }
