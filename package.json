@@ -147,6 +147,11 @@
       "types": "./dist/ui/index.d.ts",
       "import": "./dist/ui/index.js",
       "require": "./dist/ui/index.cjs"
+    },
+    "./ag-ui": {
+      "types": "./dist/ag-ui/index.d.ts",
+      "import": "./dist/ag-ui/index.js",
+      "require": "./dist/ag-ui/index.cjs"
     }
   },
   "scripts": {
@@ -177,7 +182,9 @@
     "vitest": "^4.1.5",
     "zx": "^8.8.5"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "@ag-ui/core": "^0.0.53"
+  },
   "peerDependenciesMeta": {},
   "packageManager": "pnpm@10.31.0"
 }

@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@ag-ui/core':
+        specifier: ^0.0.53
+        version: 0.0.53
     devDependencies:
       '@go-task/cli':
         specifier: ^3.50.0
@@ -57,7 +61,12 @@ importers:
         specifier: ^8.8.5
         version: 8.8.5
 
+  dist: {}
+
 packages:
+
+  '@ag-ui/core@0.0.53':
+    resolution: {integrity: sha512-11UocR7fFdMWw503bWCX2IOK15vbWfxT11Mn9xOiPBVO/UVcn57ywGrlLL4UaBlPgmUTvuzr2yYR2ElSqiN2wQ==}
 
   '@algolia/abtesting@1.15.2':
     resolution: {integrity: sha512-rF7vRVE61E0QORw8e2NNdnttcl3jmFMWS9B4hhdga12COe+lMa26bQLfcBn/Nbp9/AF/8gXdaRCPsVns3CnjsA==}
@@ -2554,6 +2563,9 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
@@ -2563,6 +2575,10 @@ packages:
     hasBin: true
 
 snapshots:
+
+  '@ag-ui/core@0.0.53':
+    dependencies:
+      zod: 3.25.76
 
   '@algolia/abtesting@1.15.2':
     dependencies:
@@ -4795,6 +4811,8 @@ snapshots:
   yaml@2.8.2: {}
 
   yoctocolors@2.1.2: {}
+
+  zod@3.25.76: {}
 
   zwitch@2.0.4: {}
 
