@@ -50,7 +50,54 @@ const BEDROCK_EVENT_KEYS = new Set([
 
 function isBedrockConverseEvent(value: unknown): value is BedrockConverseEvent {
   if (!value || typeof value !== 'object') return false;
-  return Object.keys(value as object).some(k => BEDROCK_EVENT_KEYS.has(k));
+  return Object.keys(value).some(k => BEDROCK_EVENT_KEYS.has(k));
+}
+
+// ---------------------------------------------------------------------------
+// Helper handlers
+// ---------------------------------------------------------------------------
+
+function handleBedrockContentBlockDelta(raw: BedrockConverseEvent): NormalizerResult | null {
+  const { contentBlockIndex = 0, delta } = raw.contentBlockDelta ?? {};
+
+  if (typeof delta?.text === 'string') {
+    return { chunk: { content: delta.text }, rawEvent: raw };
+  }
+
+  if (delta?.toolUse && typeof delta.toolUse.input === 'string') {
+    const tc: NativeToolCallDelta = {
+      index: contentBlockIndex,
+      argumentsDelta: delta.toolUse.input,
+    };
+    return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
+  }
+
+  if (delta?.reasoningContent && typeof delta.reasoningContent.text === 'string') {
+    return { chunk: { thinking: delta.reasoningContent.text }, rawEvent: raw };
+  }
+
+  return null;
+}
+
+function handleBedrockContentBlockStart(raw: BedrockConverseEvent): NormalizerResult | null {
+  const { contentBlockIndex = 0, start } = raw.contentBlockStart ?? {};
+  const toolUse = start?.toolUse;
+  if (!toolUse) return null;
+
+  const tc: NativeToolCallDelta = { index: contentBlockIndex };
+  if (typeof toolUse.toolUseId === 'string' && toolUse.toolUseId) tc.id = toolUse.toolUseId;
+  if (typeof toolUse.name === 'string' && toolUse.name) tc.name = toolUse.name;
+  return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
+}
+
+function handleBedrockMetadata(raw: BedrockConverseEvent): NormalizerResult | null {
+  const { usage } = raw.metadata ?? {};
+  if (!usage) return null;
+  const usageInfo: UsageInfo = {};
+  if (typeof usage.inputTokens === 'number') usageInfo.inputTokens = usage.inputTokens;
+  if (typeof usage.outputTokens === 'number') usageInfo.outputTokens = usage.outputTokens;
+  if (typeof usage.totalTokens === 'number') usageInfo.totalTokens = usage.totalTokens;
+  return { chunk: { usage: usageInfo }, rawEvent: raw };
 }
 
 // ---------------------------------------------------------------------------
@@ -80,52 +127,10 @@ export function normalizeBedrockConverseEvent(raw: unknown): NormalizerResult | 
   try {
     if (!isBedrockConverseEvent(raw)) return null;
 
-    if (raw.contentBlockDelta) {
-      const { contentBlockIndex = 0, delta } = raw.contentBlockDelta;
-
-      if (typeof delta?.text === 'string') {
-        return { chunk: { content: delta.text }, rawEvent: raw };
-      }
-
-      if (delta?.toolUse && typeof delta.toolUse.input === 'string') {
-        const tc: NativeToolCallDelta = {
-          index: contentBlockIndex,
-          argumentsDelta: delta.toolUse.input,
-        };
-        return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
-      }
-
-      if (delta?.reasoningContent && typeof delta.reasoningContent.text === 'string') {
-        return { chunk: { thinking: delta.reasoningContent.text }, rawEvent: raw };
-      }
-
-      return null;
-    }
-
-    if (raw.contentBlockStart) {
-      const { contentBlockIndex = 0, start } = raw.contentBlockStart;
-      const toolUse = start?.toolUse;
-      if (!toolUse) return null;
-
-      const tc: NativeToolCallDelta = { index: contentBlockIndex };
-      if (typeof toolUse.toolUseId === 'string' && toolUse.toolUseId) tc.id = toolUse.toolUseId;
-      if (typeof toolUse.name === 'string' && toolUse.name) tc.name = toolUse.name;
-      return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
-    }
-
-    if (raw.messageStop) {
-      return { chunk: { done: true }, rawEvent: raw };
-    }
-
-    if (raw.metadata) {
-      const { usage } = raw.metadata;
-      if (!usage) return null;
-      const usageInfo: UsageInfo = {};
-      if (typeof usage.inputTokens === 'number') usageInfo.inputTokens = usage.inputTokens;
-      if (typeof usage.outputTokens === 'number') usageInfo.outputTokens = usage.outputTokens;
-      if (typeof usage.totalTokens === 'number') usageInfo.totalTokens = usage.totalTokens;
-      return { chunk: { usage: usageInfo }, rawEvent: raw };
-    }
+    if (raw.contentBlockDelta) return handleBedrockContentBlockDelta(raw);
+    if (raw.contentBlockStart) return handleBedrockContentBlockStart(raw);
+    if (raw.messageStop) return { chunk: { done: true }, rawEvent: raw };
+    if (raw.metadata) return handleBedrockMetadata(raw);
 
     // messageStart, contentBlockStop → no actionable content
     return null;

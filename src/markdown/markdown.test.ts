@@ -27,7 +27,7 @@ describe('appendToBlockquote', () => {
     expect(appendToBlockquote('a\r\nb\nc', true)).toBe('> a\r\n> b\n> c');
   });
 
-  it('handles CRLF without orphaned \\r', () => {
+  it('handles CRLF without orphaned carriage return', () => {
     const result = appendToBlockquote('line1\r\nline2', false);
     // \r stays paired with \n — result is \r\n> which is correct CRLF + blockquote prefix
     expect(result).toBe('line1\r\n> line2');

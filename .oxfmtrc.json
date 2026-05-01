@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["node_modules", "dist"],
+  "ignorePatterns": ["node_modules", "dist", "gh-pages", "coverage", ".codacy", ".agents", ".beans"],
   "arrowParens": "avoid",
   "bracketSpacing": true,
   "printWidth": 120,

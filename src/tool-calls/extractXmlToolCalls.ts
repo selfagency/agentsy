@@ -6,9 +6,55 @@ export interface XmlToolCall {
 }
 
 function cleanXml(text: string): string {
-  let cleaned = text.replace(/```xml\s*/gi, '').replace(/```\s*/g, '');
+  let cleaned = text.replaceAll(/```xml\s*/gi, '').replaceAll(/```\s*/g, '');
   cleaned = cleaned.replace(/^[^<]*/, '').replace(/[^>]*$/, '');
   return cleaned;
+}
+
+/**
+ * Attempts to parse bare Hermes-style JSON tool call output produced by models
+ * like Qwen2.5Coder that ignore the XML system prompt and output raw JSON:
+ *   {"name": "fn_name", "arguments": {...}}
+ * or the OpenAI-style array variant:
+ *   [{"name": "fn_name", "arguments": {...}}]
+ */
+function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
+  // Try to be permissive: models sometimes emit prose or markdown fences
+  // before the raw JSON. Strip common fences and then find the first JSON
+  // object/array opening and attempt to parse from there.
+  const normalized = text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+  const firstBracket = normalized.search(/[{[]/);
+  if (firstBracket === -1) return [];
+
+  const jsonSlice = normalized.slice(firstBracket).trim();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonSlice);
+  } catch {
+    return [];
+  }
+
+  const candidates: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
+  const results: XmlToolCall[] = [];
+
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      continue;
+    }
+    const obj = candidate as Record<string, unknown>;
+    const name = typeof obj.name === 'string' ? obj.name : null;
+    if (!name || !knownTools.has(name)) {
+      continue;
+    }
+    const args = obj.arguments ?? obj.parameters ?? {};
+    const parameters =
+      typeof args === 'object' && !Array.isArray(args) ? Object.assign(Object.create(null), args) : Object.create(null);
+
+    results.push({ name, parameters, format: 'json-wrapped' });
+  }
+
+  return results;
 }
 
 function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: Set<string>): XmlToolCall | null {
@@ -29,12 +75,16 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
       return null;
     }
 
-    const argumentsValue =
-      parsed.arguments && typeof parsed.arguments === 'object' && !Array.isArray(parsed.arguments)
-        ? (parsed.arguments as Record<string, unknown>)
-        : parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)
-          ? (parsed.parameters as Record<string, unknown>)
-          : {};
+    let argumentsValue: Record<string, unknown>;
+    if (parsed.arguments && typeof parsed.arguments === 'object' && !Array.isArray(parsed.arguments)) {
+      argumentsValue = Object.create(null);
+      Object.assign(argumentsValue, parsed.arguments);
+    } else if (parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)) {
+      argumentsValue = Object.create(null);
+      Object.assign(argumentsValue, parsed.parameters);
+    } else {
+      argumentsValue = Object.create(null);
+    }
 
     return {
       name,
@@ -47,12 +97,32 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
 }
 
 /**
- * Extracts tool calls from XML-formatted LLM output.
- * Supports both bare-XML (`<tool_name>`) and JSON-wrapped (`<toolcall>`) formats.
+ * Extracts tool calls from LLM output. Supports three formats:
+ * - Bare XML: `<tool_name><param>value</param></tool_name>`
+ * - JSON-wrapped: `<tool_call>{"name":"fn","arguments":{…}}</tool_call>` (Hermes / Qwen3)
+ * - Bare JSON fallback: `{"name":"fn","arguments":{…}}` (Qwen2.5Coder when XML prompt is ignored)
+ *
+ * `<think>…</think>` reasoning blocks emitted by Qwen/DeepSeek before tool calls
+ * are silently skipped.
  *
  * @returns An array of successfully parsed tool calls. Malformed or unrecognised
  *          tool calls are silently skipped — the function never throws.
  */
+function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<string, unknown> {
+  // Use a null-prototype object to avoid prototype pollution when assigning
+  // properties from untrusted XML input (e.g., <__proto__> tags).
+  // Validate paramName to prevent injection attacks.
+  const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
+  const params = Object.create(null) as Record<string, unknown>;
+  for (const paramMatch of inner.matchAll(paramPattern)) {
+    const paramName = paramMatch[1];
+    if (!paramName || !VALID_PARAM_NAME.test(paramName)) continue;
+    const raw = paramMatch[2];
+    params[paramName] = (typeof raw === 'string' ? raw : '').trim();
+  }
+  return params;
+}
+
 export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
   if (knownTools.size === 0) {
     return [];
@@ -72,6 +142,11 @@ export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlT
       continue;
     }
 
+    // Skip <think> reasoning blocks emitted by Qwen3 / DeepSeek-R1 models.
+    if (toolName.toLowerCase() === 'think') {
+      continue;
+    }
+
     const jsonWrapped = extractJsonWrappedToolCall(toolName, inner, knownTools);
     if (jsonWrapped) {
       results.push(jsonWrapped);
@@ -82,21 +157,19 @@ export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlT
       continue;
     }
 
-    const params: Record<string, unknown> = {};
-    for (const paramMatch of inner.matchAll(paramPattern)) {
-      const paramName = paramMatch[1];
-      const paramValue = paramMatch[2];
-      if (!paramName) {
-        continue;
-      }
-      params[paramName] = (paramValue ?? '').trim();
-    }
+    const params = extractBareXmlParams(inner, paramPattern);
 
     results.push({
       name: toolName,
       parameters: params,
       format: 'bare-xml',
     });
+  }
+
+  // Fallback: models like Qwen2.5Coder that ignore the XML system prompt and
+  // emit a raw Hermes-style JSON object or array instead of XML.
+  if (results.length === 0) {
+    return extractBareJsonToolCalls(text, knownTools);
   }
 
   return results;

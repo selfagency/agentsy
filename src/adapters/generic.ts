@@ -6,6 +6,17 @@ import {
 } from '../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 
+/**
+ * Async generator that processes every chunk from a normalised LLM stream
+ * and yields a `ProcessedOutput` for each chunk, finishing with a final flush output.
+ *
+ * @example
+ * ```ts
+ * for await (const output of processStream(normalizedStream)) {
+ *   if (output.content) process.stdout.write(output.content);
+ * }
+ * ```
+ */
 export async function* processStream(
   source: AsyncIterable<StreamChunk>,
   options: ProcessorOptions = {},
@@ -21,13 +32,15 @@ export async function* processStream(
 
 export interface GenericAdapterCallbacks {
   /** Called with thinking/reasoning text (if enabled). */
-  onThinking?: (text: string) => void | Promise<void>;
+  onThinking?: (_text: string) => void | Promise<void>;
   /** Called with content text. */
-  onContent?: (text: string) => void | Promise<void>;
+  onContent?: (_text: string) => void | Promise<void>;
   /** Called for each extracted tool call. */
-  onToolCall?: (call: XmlToolCall) => void | Promise<void>;
+  onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
   /** Called when the stream is complete. */
   onDone?: () => void | Promise<void>;
+  /** Called when any callback throws an error. */
+  onError?: (_error: Error, _context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
@@ -52,6 +65,22 @@ export interface GenericAdapterOptions extends ProcessorOptions {
  * await adapter.end();
  * ```
  */
+
+async function safeCall<T>(
+  callback: (() => Promise<T>) | undefined,
+  fallback: T,
+  onError?: (_error: Error) => void,
+): Promise<T> {
+  if (!callback) return fallback;
+  try {
+    return await callback();
+  } catch (error) {
+    const err = error as Error;
+    onError?.(err);
+    return fallback;
+  }
+}
+
 export function createGenericAdapter(
   callbacks: GenericAdapterCallbacks,
   options: GenericAdapterOptions = {},
@@ -62,31 +91,51 @@ export function createGenericAdapter(
   const processor = new LLMStreamProcessor(options);
   const showThinking = options.showThinking ?? true;
 
-  async function emit(output: ProcessedOutput): Promise<void> {
-    if (output.thinking && showThinking && callbacks.onThinking) {
-      await callbacks.onThinking(output.thinking);
+  async function emit(output: ProcessedOutput, chunk?: StreamChunk): Promise<void> {
+    if (output.thinking && showThinking) {
+      await safeCall(
+        () => callbacks.onThinking?.(output.thinking) ?? Promise.resolve(),
+        undefined,
+        error => {
+          void callbacks.onError?.(error, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
+        },
+      );
     }
 
-    if (output.content && callbacks.onContent) {
-      await callbacks.onContent(output.content);
+    if (output.content) {
+      await safeCall(
+        () => callbacks.onContent?.(output.content) ?? Promise.resolve(),
+        undefined,
+        error => {
+          void callbacks.onError?.(error, { type: 'content', ...(chunk !== undefined && { chunk }) });
+        },
+      );
     }
 
-    if (callbacks.onToolCall) {
-      for (const toolCall of output.toolCalls) {
-        await callbacks.onToolCall(toolCall);
-      }
+    for (const toolCall of output.toolCalls) {
+      await safeCall(
+        () => callbacks.onToolCall?.(toolCall) ?? Promise.resolve(),
+        undefined,
+        error => {
+          void callbacks.onError?.(error, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
+        },
+      );
     }
   }
 
   return {
     async write(chunk: StreamChunk): Promise<void> {
-      await emit(processor.process(chunk));
+      await emit(processor.process(chunk), chunk);
     },
     async end(): Promise<void> {
       await emit(processor.flush());
-      if (callbacks.onDone) {
-        await callbacks.onDone();
-      }
+      await safeCall(
+        () => callbacks.onDone?.() ?? Promise.resolve(),
+        undefined,
+        error => {
+          void callbacks.onError?.(error, { type: 'done' });
+        },
+      );
     },
   };
 }

@@ -4,6 +4,8 @@ Composable parsers and stream processing utilities for LLM responses.
 
 [![npm](https://img.shields.io/npm/v/@selfagency/llm-stream-parser)](https://www.npmjs.com/package/@selfagency/llm-stream-parser)
 [![CI](https://github.com/selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/selfagency/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/selfagency/llm-stream-parser/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/llm-stream-parser)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/be00077d20c54f9097c7f38bf575603f)](https://app.codacy.com/gh/selfagency/llm-stream-parser/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Features
@@ -70,8 +72,8 @@ const [finalThinking, finalContent] = parser.flush();
 Automatic tag detection for common models:
 
 ```typescript
-const parser = ThinkingParser.forModel('deepseek');   // <think></think>
-const parser = ThinkingParser.forModel('granite');    // <|thinking|></|thinking|>
+const parser = ThinkingParser.forModel('deepseek'); // <think></think>
+const parser = ThinkingParser.forModel('granite'); // <|thinking|></|thinking|>
 ```
 
 ---
@@ -124,7 +126,11 @@ for (const call of calls) {
 
 // Build the system prompt that teaches the model to emit tool calls
 const systemPrompt = buildXmlToolSystemPrompt([
-  { name: 'search', description: 'Search the web', inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] } },
+  {
+    name: 'search',
+    description: 'Search the web',
+    inputSchema: { properties: { query: { type: 'string' } }, required: ['query'] },
+  },
   { name: 'edit_file', description: 'Edit a file' },
 ]);
 ```
@@ -199,7 +205,10 @@ await adapter.end();
 ### `@selfagency/llm-stream-parser/formatting` — Output sanitization
 
 ```typescript
-import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from '@selfagency/llm-stream-parser/formatting';
+import {
+  sanitizeNonStreamingModelOutput,
+  formatXmlLikeResponseForDisplay,
+} from '@selfagency/llm-stream-parser/formatting';
 ```
 
 ---

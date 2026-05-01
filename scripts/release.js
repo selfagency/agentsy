@@ -3,7 +3,7 @@ import { Octokit } from '@octokit/rest';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, ProcessOutput, sleep } from 'zx';
@@ -12,6 +12,29 @@ $.verbose = false;
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 cd(ROOT);
+
+// Defensive filesystem helpers — ensure we only read/write files inside the
+// repository root. This mitigates accidental or attacker-controlled file
+// accesses flagged by static analysis tools.
+function isPathInsideRoot(p) {
+  try {
+    const resolved = resolve(p);
+    const rel = relative(ROOT, resolved);
+    return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
+  } catch {
+    return false;
+  }
+}
+
+function safeRead(p, enc = 'utf8') {
+  if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
+  return readFileSync(resolve(p), enc);
+}
+
+function safeWrite(p, data) {
+  if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
+  return writeFileSync(resolve(p), data);
+}
 
 // ---------------------------------------------------------------------------
 // Argument validation
@@ -129,6 +152,64 @@ process.on('SIGTERM', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// Prerequisite helpers
+// ---------------------------------------------------------------------------
+
+async function checkNpmCredentials(npmRegistry) {
+  try {
+    await $`npm whoami --registry=${npmRegistry}`;
+  } catch {
+    console.error(`❌ Not logged in to npm (registry: ${npmRegistry}).`);
+    console.error('   Tips:');
+    console.error(`   - Ensure your token is in ${process.env.NPM_CONFIG_USERCONFIG}`);
+    console.error('   - File should contain a line like: //registry.npmjs.org/:_authToken=<YOUR_TOKEN>');
+    console.error('   - Or export NPM_TOKEN in your environment before running the release script');
+    console.error('   - To log in interactively: npm login --registry=https://registry.npmjs.org/');
+    process.exit(1);
+  }
+}
+
+async function resolveGithubToken() {
+  let token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
+  if (!token) {
+    try {
+      token = (await $`gh auth token`).stdout.trim();
+    } catch {
+      console.error('❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login');
+      process.exit(1);
+    }
+  }
+  return token;
+}
+
+function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {
+  // Use outer scope isPathInsideRoot, safeRead, safeWrite functions for defensive
+  // filesystem access that satisfies static analysis rules.
+
+  let original;
+  try {
+    original = safeRead(changelogPath, 'utf8');
+  } catch {
+    original = '# Change Log\n\n## [Unreleased]\n';
+  }
+
+  if (original.includes(heading)) {
+    console.log('ℹ️  CHANGELOG already contains this release heading; skipping.');
+    return;
+  }
+
+  const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
+  const section = `\n${heading}\n\n${releaseNotes}${sourceLine}\n`;
+  const marker = '## [Unreleased]';
+  const idx = original.indexOf(marker);
+  const updated =
+    idx >= 0
+      ? `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`
+      : `${original}\n${section}`;
+  safeWrite(changelogPath, updated);
+}
+
+// ---------------------------------------------------------------------------
 // Main — wrapped so any unhandled error triggers rollback
 // ---------------------------------------------------------------------------
 
@@ -143,35 +224,12 @@ async function main() {
   gitCmd = resolvedGit;
 
   // Ensure npm uses the user's ~/.npmrc (tokens) and the public npm registry.
-  // Some CI shells or tool integrations start without HOME/USERCONFIG, which causes
-  // `npm whoami` to prompt for interactive login even when a token exists.
   process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
   const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
 
-  // Check npm credentials against the intended registry (non-interactive).
-  try {
-    await $`npm whoami --registry=${NPM_REGISTRY}`;
-  } catch {
-    console.error(`❌ Not logged in to npm (registry: ${NPM_REGISTRY}).`);
-    console.error('   Tips:');
-    console.error(`   - Ensure your token is in ${process.env.NPM_CONFIG_USERCONFIG}`);
-    console.error('   - File should contain a line like: //registry.npmjs.org/:_authToken=<YOUR_TOKEN>');
-    console.error('   - Or export NPM_TOKEN in your environment before running the release script');
-    console.error('   - To log in interactively: npm login --registry=https://registry.npmjs.org/');
-    process.exit(1);
-  }
+  await checkNpmCredentials(NPM_REGISTRY);
 
-  // Resolve GitHub auth token: prefer env vars, then ask the gh CLI.
-  let githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
-  if (!githubToken) {
-    try {
-      githubToken = (await $`gh auth token`).stdout.trim();
-    } catch {
-      console.error('❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login');
-      process.exit(1);
-    }
-  }
-
+  const githubToken = await resolveGithubToken();
   const octokit = new Octokit({ auth: githubToken });
 
   // --- Precondition checks --------------------------------------------------
@@ -257,9 +315,9 @@ async function main() {
   // --- Update package.json --------------------------------------------------
   console.log(`🧩 Updating package.json to ${version}...`);
   const pkgPath = resolve(ROOT, 'package.json');
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+  const pkg = JSON.parse(safeRead(pkgPath, 'utf8'));
   pkg.version = version;
-  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  safeWrite(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
 
   // --- Update CHANGELOG.md --------------------------------------------------
 
@@ -267,27 +325,7 @@ async function main() {
   const changelogPath = resolve(ROOT, 'CHANGELOG.md');
   const date = new Date().toISOString().slice(0, 10);
   const heading = `## [${version}] - ${date}`;
-  const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
-  const section = `\n${heading}\n\n${releaseNotes}${sourceLine}\n`;
-
-  let original;
-  try {
-    original = readFileSync(changelogPath, 'utf8');
-  } catch {
-    original = '# Change Log\n\n## [Unreleased]\n';
-  }
-
-  if (!original.includes(heading)) {
-    const marker = '## [Unreleased]';
-    const idx = original.indexOf(marker);
-    const updated =
-      idx >= 0
-        ? `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`
-        : `${original}\n${section}`;
-    writeFileSync(changelogPath, updated);
-  } else {
-    console.log('ℹ️  CHANGELOG already contains this release heading; skipping.');
-  }
+  updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag);
 
   // --- Commit + push --------------------------------------------------------
 
@@ -365,7 +403,7 @@ async function main() {
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   $.verbose = true;
   // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
-  const accessFlag = (JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
+  const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
     ? ['--access', 'public']
     : [];
   await $`npm publish ./dist --tag ${distTag} --registry=${NPM_REGISTRY} ${accessFlag}`;
@@ -450,7 +488,9 @@ async function waitForWorkflow(
 // Entry point
 // ---------------------------------------------------------------------------
 
-main().catch(async err => {
+try {
+  await main();
+} catch (err) {
   const msg = err?.message ?? String(err);
   // ProcessOutput errors from zx already printed the command output; only
   // print extra context for our own thrown errors.
@@ -459,4 +499,4 @@ main().catch(async err => {
   }
   await rollback();
   process.exit(err?.exitCode ?? 1);
-});
+}

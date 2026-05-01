@@ -1,4 +1,5 @@
 import { parseJson, type ParseJsonOptions } from './parseJson.js';
+import type { StreamingPartial } from './types.js';
 
 export interface StreamJsonOptions extends ParseJsonOptions {
   /**
@@ -11,6 +12,12 @@ export interface StreamJsonOptions extends ParseJsonOptions {
    * includes them in `newFields`. Defaults to false.
    */
   emitFields?: boolean;
+  /**
+   * When true, stops emitting after the root JSON object/array closes,
+   * ignoring any trailing LLM prose. Defaults to false.
+   * Inspired by llm-json-stream-typescript "yap filter".
+   */
+  stopAfterRoot?: boolean;
 }
 
 /**
@@ -54,6 +61,54 @@ export interface StreamJsonResult<T = unknown> {
 // ---------------------------------------------------------------------------
 
 /**
+ * Check if two arrays are deeply equal.
+ */
+// #lizard forgives
+function deepEqualArrays(a: readonly unknown[], b: readonly unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!deepEqual(a[i], b[i])) return false;
+  }
+  return true;
+}
+
+/**
+ * Check if two objects are deeply equal.
+ */
+function deepEqualObjects(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keysA = Object.keys(a).sort((x, y) => x.localeCompare(y));
+  const keysB = Object.keys(b).sort((x, y) => x.localeCompare(y));
+  if (keysA.length !== keysB.length) return false;
+  if (!deepEqualArrays(keysA, keysB)) return false;
+  for (const key of keysA) {
+    if (!deepEqual(a[key], b[key])) return false;
+  }
+  return true;
+}
+
+/**
+ * Check deep equality between two values without serialization overhead.
+ * More performant than JSON.stringify comparison for deep equality checks.
+ */
+function deepEqual(a: unknown, b: unknown): boolean {
+  // Fast path: same reference or both primitives
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+
+  // Compare arrays
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return deepEqualArrays(a, b);
+  }
+
+  // Compare objects
+  if (!Array.isArray(a) && !Array.isArray(b)) {
+    return deepEqualObjects(a as Record<string, unknown>, b as Record<string, unknown>);
+  }
+
+  return false;
+}
+
+/**
  * Collect all leaf (and array-item) paths from a value and return them as
  * `{ path, value }` pairs suitable for diffing across successive parses.
  */
@@ -87,12 +142,13 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
 
 /**
  * Diff two snapshots represented as path→value maps and return the set of
- * paths that are new or have a changed serialised value.
+ * paths that are new or have a changed value (using deep equality).
+ * More efficient than serialization-based comparison.
  */
 function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): string[] {
   const changed: string[] = [];
   for (const [path, val] of next) {
-    if (!prev.has(path) || JSON.stringify(prev.get(path)) !== JSON.stringify(val)) {
+    if (!prev.has(path) || !deepEqual(prev.get(path), val)) {
       changed.push(path);
     }
   }
@@ -109,9 +165,10 @@ function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): stri
 export async function* streamJson<T = unknown>(
   source: AsyncIterable<string>,
   options: StreamJsonOptions = {},
-): AsyncGenerator<StreamJsonResult<T>> {
+): AsyncGenerator<StreamJsonResult<StreamingPartial<T>>> {
   const emitPartials = options.emitPartials ?? true;
   const trackFields = options.emitFields === true;
+  const stopAfterRoot = options.stopAfterRoot ?? false;
   const parseOpts: ParseJsonOptions = {};
   if (options.selectMostComprehensive !== undefined) {
     parseOpts.selectMostComprehensive = options.selectMostComprehensive;
@@ -124,9 +181,10 @@ export async function* streamJson<T = unknown>(
   }
 
   let accumulated = '';
-  let lastSerialized: string | undefined;
+  let lastParsed: unknown;
   let lastWasPartial = false;
   let prevPaths: Map<string, unknown> = new Map();
+  let rootComplete = false;
 
   function tryParse(text: string, repair: boolean): unknown {
     return parseJson(text, repair ? { ...parseOpts, repairIncomplete: true } : parseOpts);
@@ -146,34 +204,40 @@ export async function* streamJson<T = unknown>(
   }
 
   for await (const chunk of source) {
+    // If yap filter is enabled and we've already completed, stop
+    if (stopAfterRoot && rootComplete) {
+      break;
+    }
+
     accumulated += chunk;
 
     // Try complete parse first
     const complete = tryParse(accumulated, false);
     if (complete !== null) {
-      const serialized = JSON.stringify(complete);
       // Always emit when transitioning partial→complete, even if value is same
-      if (serialized !== lastSerialized || lastWasPartial) {
+      if (!deepEqual(complete, lastParsed) || lastWasPartial) {
         const newFields = computeNewFields(complete, true);
-        lastSerialized = serialized;
+        lastParsed = complete;
         lastWasPartial = false;
-        yield { value: complete as T, isPartial: false, status: 'completed', newFields };
+        rootComplete = true;
+        yield { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields };
+      }
+      if (stopAfterRoot) {
+        break;
       }
       continue;
     }
 
-    // Try partial parse with repair if enabled
-    if (emitPartials) {
-      const partial = tryParse(accumulated, true);
-      if (partial !== null) {
-        const serialized = JSON.stringify(partial);
-        if (serialized !== lastSerialized) {
-          const newFields = computeNewFields(partial, false);
-          lastSerialized = serialized;
-          lastWasPartial = true;
-          yield { value: partial as T, isPartial: true, status: 'partial', newFields };
-        }
-      }
-    }
+    if (!emitPartials) continue;
+
+    const partial = tryParse(accumulated, true);
+    if (partial === null) continue;
+
+    if (deepEqual(partial, lastParsed)) continue;
+
+    const newFields = computeNewFields(partial, false);
+    lastParsed = partial;
+    lastWasPartial = true;
+    yield { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields };
   }
 }

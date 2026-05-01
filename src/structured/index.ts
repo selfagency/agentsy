@@ -1,3 +1,4 @@
+export * from './types.js';
 export * from './parseJson.js';
 export * from './validateJsonSchema.js';
 export * from './buildFormatInstructions.js';
@@ -7,3 +8,5 @@ export * from './streamJson.js';
 export * from './zodAdapter.js';
 export * from './autoRepair.js';
 export * from './providerFormats.js';
+export * from './repairStateMachine.js';
+export * from './fieldValidator.js';

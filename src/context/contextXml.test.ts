@@ -141,14 +141,14 @@ describe('splitLeadingXmlContextBlocks', () => {
 
 describe('dedupeXmlContextBlocksByTag', () => {
   it('keeps latest occurrence per tag and preserves output order', () => {
-    const blocks = [
+    const xmlBlocks = [
       '<environment_info>old-env</environment_info>',
       '<workspace_info>w1</workspace_info>',
       '<environment_info>new-env</environment_info>',
       '<user_info>u1</user_info>',
     ];
 
-    const deduped = dedupeXmlContextBlocksByTag(blocks);
+    const deduped = dedupeXmlContextBlocksByTag(xmlBlocks);
     expect(deduped).toEqual([
       '<workspace_info>w1</workspace_info>',
       '<environment_info>new-env</environment_info>',

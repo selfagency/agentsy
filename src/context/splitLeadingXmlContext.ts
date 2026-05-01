@@ -1,6 +1,6 @@
 import { ELEVATED_CONTEXT_TAG_NAMES } from '../xml-filter/tagLists.js';
 
-const XML_CONTEXT_TAG_RE = /<([a-zA-Z_][a-zA-Z0-9_.-]*)[^>]*>[\s\S]*?<\/\1>/gi;
+const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]*)[^>]*>[\s\S]*?<\/\1>/gi;
 
 export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string } {
   let remainingText = input;
@@ -12,7 +12,7 @@ export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: st
     while (true) {
       XML_CONTEXT_TAG_RE.lastIndex = 0;
       const match = XML_CONTEXT_TAG_RE.exec(remainingText);
-      if (!match || match.index !== 0) {
+      if (match?.index !== 0) {
         break;
       }
 

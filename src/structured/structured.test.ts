@@ -169,21 +169,21 @@ describe('pipe', () => {
   });
 });
 
+async function* chunked(chunks: string[]): AsyncGenerator<string> {
+  for (const chunk of chunks) {
+    yield chunk;
+  }
+}
+
+async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
+  const results: T[] = [];
+  for await (const item of gen) {
+    results.push(item);
+  }
+  return results;
+}
+
 describe('streamJson', () => {
-  async function* chunked(chunks: string[]): AsyncGenerator<string> {
-    for (const chunk of chunks) {
-      yield chunk;
-    }
-  }
-
-  async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
-    const results: T[] = [];
-    for await (const item of gen) {
-      results.push(item);
-    }
-    return results;
-  }
-
   it('yields complete object when JSON arrives in one chunk', async () => {
     const results = await collect(streamJson(chunked(['{"name":"Ada","age":30}'])));
 
@@ -259,7 +259,7 @@ describe('streamJson', () => {
 
     const completes = results.filter(r => !r.isPartial);
     expect(completes.length).toBeGreaterThanOrEqual(1);
-    expect(completes[completes.length - 1]!.value).toEqual({ result: 42 });
+    expect(completes.at(-1)!.value).toEqual({ result: 42 });
   });
 
   it('includes status field: partial while streaming, completed on finish', async () => {
@@ -291,7 +291,7 @@ describe('streamJson', () => {
   it('emitFields: true emits leaf paths and values on first complete parse', async () => {
     const results = await collect(streamJson(chunked(['{"name":"Ada","age":30}']), { emitFields: true }));
 
-    const final = results[results.length - 1]!;
+    const final = results.at(-1)!;
     expect(final.status).toBe('completed');
     expect(final.newFields.length).toBeGreaterThanOrEqual(2);
 
@@ -318,7 +318,7 @@ describe('streamJson', () => {
     });
 
     // Complete result should have isComplete: true
-    const finalResult = results[results.length - 1]!;
+    const finalResult = results.at(-1)!;
     expect(finalResult.status).toBe('completed');
     finalResult.newFields.forEach(f => {
       expect(f.isComplete).toBe(true);
@@ -338,7 +338,7 @@ describe('streamJson', () => {
   it('emitFields: true handles array items, each item gets an indexed path', async () => {
     const results = await collect(streamJson(chunked(['{"items":[1,2,3]}']), { emitFields: true }));
 
-    const final = results[results.length - 1]!;
+    const final = results.at(-1)!;
     const paths = final.newFields.map(f => f.path);
     expect(paths).toContain('items[0]');
     expect(paths).toContain('items[1]');

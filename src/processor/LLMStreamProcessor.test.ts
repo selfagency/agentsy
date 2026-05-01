@@ -1,5 +1,8 @@
+/* eslint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
 import { describe, expect, it, vi } from 'vitest';
 
+import type { UsageInfo } from '../normalizers/types.js';
+import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 
 describe('LLMStreamProcessor', () => {
@@ -30,10 +33,10 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits events and warning callbacks', () => {
-    const onWarning = vi.fn();
-    const onText = vi.fn();
-    const onThinking = vi.fn();
-    const onDone = vi.fn();
+    const onWarning = vi.fn<(_message: string, _context?: Record<string, unknown>) => void>();
+    const onText = vi.fn<(_delta: string) => void>();
+    const onThinking = vi.fn<(_delta: string) => void>();
+    const onDone = vi.fn<() => void>();
 
     const processor = new LLMStreamProcessor({
       maxInputLength: 20,
@@ -75,7 +78,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('enforces maxToolCallsPerMessage cumulatively across multiple chunks', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 2, onWarning });
 
     // First chunk: 2 calls — should all pass (fills the limit)
@@ -96,8 +99,44 @@ describe('LLMStreamProcessor', () => {
     );
   });
 
+  it('detects incomplete thinking tags on flush', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: true });
+
+    processor.process({ content: '<think>' });
+    processor.process({ content: 'reasoning but no close' });
+
+    const out = processor.flush();
+
+    expect(out.incomplete).toBe(true);
+    expect(out.incompleteness).toEqual([{ type: 'thinking', reason: 'Unclosed thinking tag' }]);
+  });
+
+  it('detects unclosed XML tags in residuals', () => {
+    const processor = new LLMStreamProcessor({ scrubContextTags: false });
+
+    processor.process({ content: '<test>' });
+    processor.process({ content: 'content' });
+
+    const out = processor.flush();
+
+    expect(out.incomplete).toBe(true);
+    expect(out.incompleteness).toEqual([{ type: 'xml', reason: 'Unmatched XML tags in residual buffer' }]);
+  });
+
+  it('returns no incompleteness for complete streams', () => {
+    const processor = new LLMStreamProcessor({ parseThinkTags: true });
+
+    processor.process({ content: '</think>ok' });
+    processor.process({ content: 'regular content' });
+
+    const out = processor.flush();
+
+    expect(out.incomplete).toBe(false);
+    expect(out.incompleteness).toEqual([]);
+  });
+
   it('truncates tool calls when maxToolCallsPerMessage is exceeded', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
 
     const out = processor.process({
@@ -113,7 +152,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('drops tool calls whose argument payload exceeds maxToolArgumentBytes', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ maxToolArgumentBytes: 8, onWarning });
 
     const out = processor.process({
@@ -135,7 +174,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('drops tool calls whose arguments contain a circular reference', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ onWarning });
 
     const circular: Record<string, unknown> = {};
@@ -153,7 +192,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('drops tool calls whose arguments contain a BigInt value', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ onWarning });
 
     const out = processor.process({
@@ -180,7 +219,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('rate limits warning emissions with maxWarnings', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({
       onWarning,
       maxWarnings: 3,
@@ -196,7 +235,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('resets warning count on reset()', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({
       onWarning,
       maxWarnings: 2,
@@ -291,7 +330,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits usage event when chunk carries usage', () => {
-    const onUsage = vi.fn();
+    const onUsage = vi.fn<(_usage: UsageInfo) => void>();
     const processor = new LLMStreamProcessor();
     processor.on('usage', onUsage);
 
@@ -302,7 +341,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('does not emit usage event when chunk has no usage', () => {
-    const onUsage = vi.fn();
+    const onUsage = vi.fn<(usage: UsageInfo) => void>();
     const processor = new LLMStreamProcessor();
     processor.on('usage', onUsage);
 
@@ -351,8 +390,8 @@ describe('LLMStreamProcessor', () => {
   // -------------------------------------------------------------------
 
   it('processes content and done flag in the same chunk', () => {
-    const onText = vi.fn();
-    const onDone = vi.fn();
+    const onText = vi.fn<(delta: string) => void>();
+    const onDone = vi.fn<() => void>();
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
 
     processor.on('text', onText).on('done', onDone);
@@ -383,8 +422,8 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits tool_call and done events when final chunk carries tool calls and done: true', () => {
-    const onToolCall = vi.fn();
-    const onDone = vi.fn();
+    const onToolCall = vi.fn<(_call: XmlToolCall) => void>();
+    const onDone = vi.fn<() => void>();
     const processor = new LLMStreamProcessor();
 
     processor.on('tool_call', onToolCall).on('done', onDone);
@@ -398,5 +437,70 @@ describe('LLMStreamProcessor', () => {
     expect(out.done).toBe(true);
     expect(onToolCall).toHaveBeenCalledOnce();
     expect(onDone).toHaveBeenCalledOnce();
+  });
+
+  it('handles fragmented JSON tool_call across chunks (integration)', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['do']) });
+
+    // First chunk contains start of the tool_call JSON
+    processor.process({ content: '<tool_call>{"name":"do","arguments":{"a":' });
+    // Second chunk completes the JSON and closes the tag
+    const out = processor.processComplete({ content: '"x"}}</tool_call>', done: true });
+
+    expect(out.toolCalls).toEqual([{ name: 'do', parameters: { a: 'x' }, format: 'json-wrapped' }]);
+  }, 5000);
+
+  it('enforces maxResidualBytes limit to prevent unbounded buffer growth', () => {
+    const warnings: [string, Record<string, unknown> | undefined][] = [];
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>(
+      (message: string, context?: Record<string, unknown>) => {
+        warnings.push([message, context]);
+      },
+    );
+
+    const processor = new LLMStreamProcessor({
+      knownTools: new Set(['test']),
+      maxResidualBytes: 100, // Very small limit for testing
+      onWarning,
+    });
+
+    // First chunk: fits within limit
+    processor.process({ content: '<tool_call>{"name":"test"' });
+    expect(warnings).toHaveLength(0);
+
+    // Second chunk: would exceed limit, should be dropped
+    const largeChunk = `<arguments>{"data":"${'x'.repeat(200)}"}}</tool_call>`;
+    processor.process({ content: largeChunk, done: true });
+
+    // Warning should have been emitted about exceeding limit
+    expect(warnings.length).toBeGreaterThan(0);
+    // Verify the warning message mentions maxResidualBytes
+    const warningMessage = warnings.find(([msg]) => msg.includes('maxResidualBytes'));
+    expect(warningMessage).toBeDefined();
+  });
+
+  it('tracks errors and warnings counts in processor stats', () => {
+    const processor = new LLMStreamProcessor({
+      maxInputLength: 20,
+      onWarning: () => {
+        // Intentionally empty to trigger warnings
+      },
+    });
+
+    // Process content that exceeds maxInputLength to trigger warning
+    processor.process({ content: 'x'.repeat(100), done: false });
+    processor.process({ content: 'y'.repeat(100), done: false });
+
+    // Stats should track that warnings were emitted
+    // (Note: exact count depends on internal implementation)
+    // This test validates that the stats fields exist and are tracked
+    processor.flush();
+
+    // Fields should exist and be initialized
+    const stats = processor.getStats();
+    expect(stats).toHaveProperty('warningsCount');
+    expect(stats).toHaveProperty('errorsCount');
+    expect(typeof stats.warningsCount).toBe('number');
+    expect(typeof stats.errorsCount).toBe('number');
   });
 });

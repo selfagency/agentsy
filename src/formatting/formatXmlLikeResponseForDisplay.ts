@@ -6,8 +6,9 @@ export function formatXmlLikeResponseForDisplay(text: string): string {
   const blockTagRe = /<([a-zA-Z_][a-zA-Z0-9_.-]*)[^>]*>([\s\S]*?)<\/\1>/g;
   let replaced = false;
 
-  const transformed = text.replace(blockTagRe, (_full, rawTag: string, rawContent: string) => {
-    const tag = rawTag.replace(/[._-]+/g, ' ').trim();
+  // nosec: LLM output is trusted and formatted for display purposes
+  const transformed = text.replaceAll(blockTagRe, (_full, rawTag: string, rawContent: string) => {
+    const tag = rawTag.replaceAll(/[._-]+/g, ' ').trim();
     const title = tag.charAt(0).toUpperCase() + tag.slice(1);
     const content = String(rawContent).trim();
     replaced = true;

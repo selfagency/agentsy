@@ -59,7 +59,7 @@ export async function repairWithLLM<T = unknown>(
       failedOutput: currentOutput,
       error: result.errors.join('\n'),
       schema,
-      ...(options.originalPrompt !== undefined ? { originalPrompt: options.originalPrompt } : {}),
+      ...(options.originalPrompt === undefined ? {} : { originalPrompt: options.originalPrompt }),
     });
 
     currentOutput = await callLLM(repairPrompt);

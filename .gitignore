@@ -101,6 +101,9 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# Backup files
+*.bak*
+
 # Optional npm cache directory
 .npm
 
@@ -242,3 +245,6 @@ $RECYCLE.BIN/
 .mcpregistry_*
 package-lock.json
 .gh-pages
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

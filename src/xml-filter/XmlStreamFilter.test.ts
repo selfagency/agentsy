@@ -143,12 +143,11 @@ describe('createXmlStreamFilter', () => {
   // --- Pathological nesting depth ---
 
   it('emits onWarning when nesting depth exceeds maxXmlNestingDepth', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string) => void>();
     const filter = createXmlStreamFilter({ maxXmlNestingDepth: 2, onWarning });
 
     // depth 1: <a>, depth 2: <b>, depth 3: <c> — exceeds limit of 2
-    filter.write('<a><b><c>too deep</c></b></a>');
-    filter.end();
+    run(filter, '<a><b><c>too deep</c></b></a>');
 
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('maxXmlNestingDepth'),
@@ -167,7 +166,7 @@ describe('createXmlStreamFilter', () => {
   });
 
   it('respects maxXmlNestingDepth of 0 (unlimited — no warning ever)', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string) => void>();
     const filter = createXmlStreamFilter({ maxXmlNestingDepth: 0, onWarning });
 
     // Even very deep nesting should not trigger a warning
@@ -256,7 +255,7 @@ describe('createXmlStreamFilter', () => {
   // --- Privacy tag enforcement ---
 
   it('warns and enforces privacy tags when overrideScrubTags omits them', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['custom']),
       enforcePrivacyTags: true,
@@ -274,7 +273,7 @@ describe('createXmlStreamFilter', () => {
   });
 
   it('allows disabling privacy tag enforcement via enforcePrivacyTags: false', () => {
-    const onWarning = vi.fn();
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['custom']),
       enforcePrivacyTags: false,

@@ -9,7 +9,33 @@ export const DEFAULT_MAX_JSON_DEPTH = 64;
 export const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function stripCodeFences(text: string): string {
-  return text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+  return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+}
+
+function processBracketChar(
+  char: string,
+  stack: string[],
+  start: number,
+  i: number,
+  text: string,
+  candidates: string[],
+): number {
+  if (char === '{' || char === '[') {
+    const newStart = stack.length === 0 ? i : start;
+    stack.push(char === '{' ? '}' : ']');
+    return newStart;
+  }
+
+  if ((char === '}' || char === ']') && stack.length > 0) {
+    if (stack.at(-1) === char) {
+      stack.pop();
+      if (stack.length === 0 && start >= 0) {
+        candidates.push(text.slice(start, i + 1));
+        return -1;
+      }
+    }
+  }
+  return start;
 }
 
 function extractJsonCandidates(text: string): string[] {
@@ -18,50 +44,53 @@ function extractJsonCandidates(text: string): string[] {
   let start = -1;
   let inString = false;
   let escaped = false;
+  let i = 0;
 
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-
+  for (const char of text) {
     if (escaped) {
       escaped = false;
+      i++;
       continue;
     }
-
     if (inString && char === '\\') {
       escaped = true;
+      i++;
       continue;
     }
-
     if (char === '"') {
       inString = !inString;
+      i++;
       continue;
     }
-
-    if (inString) {
-      continue;
+    if (!inString) {
+      start = processBracketChar(char, stack, start, i, text, candidates);
     }
-
-    if (char === '{' || char === '[') {
-      if (stack.length === 0) {
-        start = i;
-      }
-      stack.push(char === '{' ? '}' : ']');
-      continue;
-    }
-
-    if ((char === '}' || char === ']') && stack.length > 0) {
-      const expected = stack[stack.length - 1];
-      if (expected === char) {
-        stack.pop();
-        if (stack.length === 0 && start >= 0) {
-          candidates.push(text.slice(start, i + 1));
-          start = -1;
-        }
-      }
-    }
+    i++;
   }
 
   return candidates;
+}
+
+function processRepairBracket(char: string, stack: string[]): string | null {
+  if (char === '{') {
+    stack.push('}');
+    return char;
+  }
+  if (char === '[') {
+    stack.push(']');
+    return char;
+  }
+  if (stack.length === 0) return null;
+
+  let result = '';
+  while (stack.length > 0 && stack.at(-1) !== char) {
+    result += stack.pop();
+  }
+  if (stack.at(-1) === char) {
+    result += char;
+    stack.pop();
+  }
+  return result;
 }
 
 function tryRepairCandidate(text: string): string | null {
@@ -76,51 +105,30 @@ function tryRepairCandidate(text: string): string | null {
   let inString = false;
   let escaped = false;
 
-  for (let i = 0; i < trimmed.length; i++) {
-    const char = trimmed[i];
-
+  for (const char of trimmed) {
     if (escaped) {
       repaired += char;
       escaped = false;
       continue;
     }
-
     if (char === '\\') {
       repaired += char;
       escaped = true;
       continue;
     }
-
     if (char === '"') {
       repaired += char;
       inString = !inString;
       continue;
     }
-
     if (inString) {
       repaired += char;
       continue;
     }
 
-    if (char === '{') {
-      stack.push('}');
-      repaired += char;
-    } else if (char === '[') {
-      stack.push(']');
-      repaired += char;
-    } else if (char === '}' || char === ']') {
-      if (stack.length === 0) {
-        continue;
-      }
-
-      while (stack.length > 0 && stack[stack.length - 1] !== char) {
-        repaired += stack.pop();
-      }
-
-      if (stack.length > 0 && stack[stack.length - 1] === char) {
-        repaired += char;
-        stack.pop();
-      }
+    if (char === '{' || char === '[' || char === '}' || char === ']') {
+      const addition = processRepairBracket(char, stack);
+      if (addition !== null) repaired += addition;
     } else {
       repaired += char;
     }
@@ -135,6 +143,18 @@ function tryRepairCandidate(text: string): string | null {
   }
 
   return repaired;
+}
+
+// #lizard forgives
+function tryParseRepaired(normalized: string, maxJsonDepth: number, maxJsonKeys: number): unknown {
+  const repaired = tryRepairCandidate(normalized);
+  if (!repaired) return null;
+  try {
+    const parsed = JSON.parse(repaired);
+    return exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys) ? null : parsed;
+  } catch {
+    return null;
+  }
 }
 
 function measureComprehensiveness(value: unknown): number {
@@ -205,20 +225,7 @@ function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): b
   return exceeded;
 }
 
-/**
- * Extracts and parses the best JSON value from mixed text.
- * Strips markdown code fences, selects the most comprehensive candidate,
- * and optionally attempts repair of incomplete JSON.
- *
- * @returns The parsed value, or `null` if no valid JSON is found.
- *          Never throws — malformed candidates are silently skipped.
- */
-export function parseJson(text: string, options: ParseJsonOptions = {}): unknown | null {
-  const normalized = stripCodeFences(text);
-  const selectMostComprehensive = options.selectMostComprehensive ?? true;
-  const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
-  const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
-
+function collectParsedCandidates(normalized: string, maxJsonDepth: number, maxJsonKeys: number): unknown[] {
   const parsedValues: unknown[] = [];
   for (const candidate of extractJsonCandidates(normalized)) {
     try {
@@ -230,25 +237,38 @@ export function parseJson(text: string, options: ParseJsonOptions = {}): unknown
       // Ignore malformed candidates and continue scanning.
     }
   }
+  return parsedValues;
+}
+
+function selectBestCandidate(parsedValues: unknown[], selectMostComprehensive: boolean): unknown {
+  if (!selectMostComprehensive || parsedValues.length === 1) {
+    return parsedValues[0] ?? null;
+  }
+  return parsedValues.slice().sort((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
+}
+
+/**
+ * Extracts and parses the best JSON value from mixed text.
+ * Strips markdown code fences, selects the most comprehensive candidate,
+ * and optionally attempts repair of incomplete JSON.
+ *
+ * @returns The parsed value, or `null` if no valid JSON is found.
+ *          Never throws — malformed candidates are silently skipped.
+ */
+export function parseJson(text: string, options: ParseJsonOptions = {}): unknown {
+  const normalized = stripCodeFences(text);
+  const selectMostComprehensive = options.selectMostComprehensive ?? true;
+  const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
+  const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
+
+  const parsedValues = collectParsedCandidates(normalized, maxJsonDepth, maxJsonKeys);
 
   if (parsedValues.length > 0) {
-    if (!selectMostComprehensive || parsedValues.length === 1) {
-      return parsedValues[0] ?? null;
-    }
-
-    return parsedValues.slice().sort((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
+    return selectBestCandidate(parsedValues, selectMostComprehensive);
   }
 
   if (options.repairIncomplete) {
-    const repaired = tryRepairCandidate(normalized);
-    if (repaired) {
-      try {
-        const parsed = JSON.parse(repaired);
-        return exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys) ? null : parsed;
-      } catch {
-        return null;
-      }
-    }
+    return tryParseRepaired(normalized, maxJsonDepth, maxJsonKeys);
   }
 
   return null;

@@ -9,3 +9,5 @@ export * from './structured/index.js';
 export * from './formatting/index.js';
 export * from './normalizers/index.js';
 export * from './recovery/index.js';
+export * from './sse/index.js';
+export * from './pipeline/index.js';

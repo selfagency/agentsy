@@ -44,7 +44,7 @@ export function captureStreamState(processor: LLMStreamProcessor, options?: Proc
     content: msg.content,
     thinking: msg.thinking,
     toolCalls: msg.toolCalls,
-    ...(msg.usage !== undefined ? { usage: msg.usage } : {}),
+    ...(msg.usage != null ? { usage: msg.usage } : {}),
     options: options ?? {},
     timestamp: Date.now(),
   };

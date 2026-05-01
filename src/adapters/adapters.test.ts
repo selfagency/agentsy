@@ -4,12 +4,12 @@ import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import { createGenericAdapter, processStream } from './generic.js';
 import { createVSCodeCopilotAdapter } from './vscode.js';
 
+async function* source() {
+  yield { content: 'hello' };
+}
+
 describe('processStream', () => {
   it('yields processed outputs and final flush output', async () => {
-    async function* source() {
-      yield { content: 'hello' };
-    }
-
     const outputs = [];
     for await (const out of processStream(source(), { parseThinkTags: false, scrubContextTags: false })) {
       outputs.push(out);
@@ -23,8 +23,8 @@ describe('processStream', () => {
 
 describe('createVSCodeCopilotAdapter', () => {
   it('routes thinking/content to markdown and tool calls to callback', async () => {
-    const markdown = vi.fn();
-    const onToolCall = vi.fn();
+    const markdown = vi.fn<(_text: string) => void>(); // Setup; not used in this test branch
+    const onToolCall = vi.fn<(call: unknown) => void>();
     const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
     const adapter = createVSCodeCopilotAdapter({
       processor,
@@ -50,7 +50,7 @@ describe('createVSCodeCopilotAdapter', () => {
 
 describe('createGenericAdapter', () => {
   it('routes content to onContent callback', async () => {
-    const onContent = vi.fn();
+    const onContent = vi.fn<(_text: string) => void>();
     const adapter = createGenericAdapter({ onContent }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({ content: 'Hello world' });
@@ -60,8 +60,8 @@ describe('createGenericAdapter', () => {
   });
 
   it('routes thinking text to onThinking callback', async () => {
-    const onThinking = vi.fn();
-    const onContent = vi.fn();
+    const onThinking = vi.fn<(_text: string) => void>();
+    const onContent = vi.fn<(_text: string) => void>();
     const adapter = createGenericAdapter({ onThinking, onContent }, { parseThinkTags: true, scrubContextTags: false });
 
     await adapter.write({ content: '<think>reasoning</think>Answer' });
@@ -72,7 +72,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('suppresses thinking when showThinking is false', async () => {
-    const onThinking = vi.fn();
+    const onThinking = vi.fn<(_text: string) => void>();
     const adapter = createGenericAdapter(
       { onThinking },
       { parseThinkTags: true, scrubContextTags: false, showThinking: false },
@@ -85,7 +85,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('calls onDone when stream ends', async () => {
-    const onDone = vi.fn();
+    const onDone = vi.fn<() => void>();
     const adapter = createGenericAdapter({ onDone }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({ content: 'data' });
@@ -95,7 +95,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('routes tool calls to onToolCall callback', async () => {
-    const onToolCall = vi.fn();
+    const onToolCall = vi.fn<(call: unknown) => void>();
     const adapter = createGenericAdapter({ onToolCall }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({
@@ -111,17 +111,39 @@ describe('createGenericAdapter', () => {
     });
   });
 
-  it('propagates errors from callbacks', async () => {
+  it('propagates errors from callbacks via onError', async () => {
+    const onError = vi.fn<(_error: Error, context: unknown) => void>(); // Called in test expectation
     const adapter = createGenericAdapter(
       {
         onContent: () => {
           throw new Error('callback error');
         },
+        onError,
       },
       { parseThinkTags: false, scrubContextTags: false },
     );
 
-    await expect(adapter.write({ content: 'test' })).rejects.toThrow('callback error');
+    // Should not throw; error should be handled via onError callback
+    await expect(adapter.write({ content: 'test' })).resolves.toBeUndefined();
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), { type: 'content', chunk: { content: 'test' } });
+  });
+
+  it('handles errors when onError callback throws', async () => {
+    const onError = vi.fn<(_error: Error, context: unknown) => void>(() => {
+      throw new Error('onError failed');
+    }); // Called in test expectation
+    const adapter = createGenericAdapter(
+      {
+        onContent: () => {
+          throw new Error('callback error');
+        },
+        onError,
+      },
+      { parseThinkTags: false, scrubContextTags: false },
+    );
+
+    // Error from onError should propagate (unhandled)
+    await expect(adapter.write({ content: 'test' })).rejects.toThrow('onError failed');
   });
 
   it('works with no callbacks provided', async () => {

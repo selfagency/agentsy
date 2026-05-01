@@ -1,3 +1,4 @@
+/** Options for customising the thinking tag pair recognised by `ThinkingParser`. */
 export interface ThinkingParserOptions {
   openingTag?: string;
   closingTag?: string;
@@ -20,6 +21,13 @@ type ThinkingState =
   | 'thinkingDoneEatingWhitespace'
   | 'thinkingDone';
 
+/**
+ * Streaming parser that extracts `<think>…</think>` blocks (or a custom tag pair)
+ * from LLM output as it arrives chunk-by-chunk.
+ *
+ * Call `addContent(chunk)` for each incoming chunk and `flush()` at stream end
+ * to drain any partially-accumulated state.
+ */
 export class ThinkingParser {
   private _state: ThinkingState = 'lookingForOpening';
   private _acc = '';
@@ -32,6 +40,10 @@ export class ThinkingParser {
     this.closingTag = options.closingTag ?? '</think>';
   }
 
+  /**
+   * Returns a `ThinkingParser` pre-configured for a known model ID.
+   * Falls back to the default `<think>` / `</think>` tags for unrecognised models.
+   */
   public static forModel(modelId: string, thinkingTagMap?: Map<string, ThinkingTagPair>): ThinkingParser {
     const combinedMap = new Map<string, ThinkingTagPair>(BUILTIN_THINKING_TAG_MAP);
     if (thinkingTagMap) {
@@ -55,6 +67,10 @@ export class ThinkingParser {
     return new ThinkingParser();
   }
 
+  /**
+   * Processes a streaming text chunk, splitting it into thinking and regular content.
+   * @returns `[thinkingContent, regularContent]` deltas for this chunk.
+   */
   public addContent(chunk: string): [thinkingContent: string, regularContent: string] {
     this._acc += chunk;
     let thinkingOut = '';
@@ -71,6 +87,10 @@ export class ThinkingParser {
     return [thinkingOut, contentOut];
   }
 
+  /**
+   * Flushes any partially-buffered content and returns the final `[thinking, content]` delta.
+   * Call once after the last `addContent()` call.
+   */
   public flush(): [thinkingContent: string, regularContent: string] {
     const acc = this._acc;
     this._acc = '';
@@ -91,35 +111,88 @@ export class ThinkingParser {
     }
   }
 
+  /** Check if the parser is in an incomplete state without flushing */
+  public isIncomplete(): boolean {
+    return this._state === 'thinking';
+  }
+
   public reset(): void {
     this._state = 'lookingForOpening';
     this._acc = '';
   }
 
+  private static _openComesFirst(openIdx: number, closeIdx: number): boolean {
+    return openIdx !== -1 && (closeIdx === -1 || openIdx < closeIdx);
+  }
+
+  private _findTopLevelClose(text: string, openTag: string, closeTag: string): number {
+    let depth = 0;
+    let searchFrom = 0;
+    while (searchFrom < text.length) {
+      const closeIdx = text.indexOf(closeTag, searchFrom);
+      const openIdx = text.indexOf(openTag, searchFrom);
+
+      if (closeIdx === -1 && openIdx === -1) return -1;
+
+      if (ThinkingParser._openComesFirst(openIdx, closeIdx)) {
+        depth++;
+        searchFrom = openIdx + openTag.length;
+        continue;
+      }
+
+      if (closeIdx !== -1) {
+        if (depth > 0) {
+          depth--;
+          searchFrom = closeIdx + closeTag.length;
+          continue;
+        }
+        return closeIdx;
+      }
+    }
+    return -1;
+  }
+
+  private _eatLookingForOpening(): [string, string, boolean] {
+    const trimmed = this._acc.trimStart();
+    if (trimmed.startsWith(this.openingTag)) {
+      const after = trimmed.slice(this.openingTag.length).trimStart();
+      this._acc = after;
+      this._state = after === '' ? 'thinkingStartedEatingWhitespace' : 'thinking';
+      return ['', '', true];
+    }
+
+    if (this.openingTag.startsWith(trimmed) && trimmed !== '') {
+      return ['', '', false];
+    }
+
+    if (trimmed === '') {
+      return ['', '', false];
+    }
+
+    this._state = 'thinkingDone';
+    const out = this._acc;
+    this._acc = '';
+    return ['', out, false];
+  }
+
+  private _eatThinkingDone(): [string, string, boolean] {
+    const openIdx = this._acc.indexOf(this.openingTag);
+    if (openIdx !== -1) {
+      const contentBefore = this._acc.slice(0, openIdx);
+      this._acc = this._acc.slice(openIdx);
+      this._state = 'lookingForOpening';
+      return ['', contentBefore, true];
+    }
+
+    const out = this._acc;
+    this._acc = '';
+    return ['', out, false];
+  }
+
   private _eat(): [thinkingContent: string, regularContent: string, shouldContinue: boolean] {
     switch (this._state) {
-      case 'lookingForOpening': {
-        const trimmed = this._acc.trimStart();
-        if (trimmed.startsWith(this.openingTag)) {
-          const after = trimmed.slice(this.openingTag.length).trimStart();
-          this._acc = after;
-          this._state = after === '' ? 'thinkingStartedEatingWhitespace' : 'thinking';
-          return ['', '', true];
-        }
-
-        if (this.openingTag.startsWith(trimmed) && trimmed !== '') {
-          return ['', '', false];
-        }
-
-        if (trimmed === '') {
-          return ['', '', false];
-        }
-
-        this._state = 'thinkingDone';
-        const out = this._acc;
-        this._acc = '';
-        return ['', out, false];
-      }
+      case 'lookingForOpening':
+        return this._eatLookingForOpening();
 
       case 'thinkingStartedEatingWhitespace': {
         const trimmed = this._acc.trimStart();
@@ -133,57 +206,21 @@ export class ThinkingParser {
       }
 
       case 'thinking': {
-        // Use a local depth counter to handle nested tags correctly across chunks.
-        // Re-scanning from 0 each time avoids stale depth state between addContent calls.
-        let depth = 0;
-        let searchFrom = 0;
-        while (searchFrom < this._acc.length) {
-          const closeIdx = this._acc.indexOf(this.closingTag, searchFrom);
-          const openIdx = this._acc.indexOf(this.openingTag, searchFrom);
+        const closeIdx = this._findTopLevelClose(this._acc, this.openingTag, this.closingTag);
+        if (closeIdx === -1) return ['', '', false];
 
-          // No more tags found
-          if (closeIdx === -1 && openIdx === -1) {
-            return ['', '', false];
-          }
+        const thinking = this._acc.slice(0, closeIdx);
+        const afterRaw = this._acc.slice(closeIdx + this.closingTag.length);
+        this._acc = afterRaw;
 
-          // Nested opening tag found before closing tag
-          if (openIdx !== -1 && (closeIdx === -1 || openIdx < closeIdx)) {
-            depth++;
-            searchFrom = openIdx + this.openingTag.length;
-            continue;
-          }
-
-          // Closing tag found
-          if (closeIdx !== -1) {
-            if (depth > 0) {
-              depth--;
-              searchFrom = closeIdx + this.closingTag.length;
-              continue;
-            }
-
-            // Top-level closing tag — emit thinking content
-            const thinking = this._acc.slice(0, closeIdx);
-            const afterRaw = this._acc.slice(closeIdx + this.closingTag.length);
-
-            // Store remaining content in _acc for next state to process
-            this._acc = afterRaw;
-
-            if (afterRaw === '') {
-              this._state = 'thinkingDone';
-              return [thinking, '', false];
-            }
-
-            const afterTrimmed = afterRaw.trimStart();
-            if (afterTrimmed === '') {
-              this._state = 'thinkingDoneEatingWhitespace';
-            } else {
-              this._state = 'thinkingDone';
-            }
-            return [thinking, '', true];
-          }
+        if (afterRaw === '') {
+          this._state = 'thinkingDone';
+          return [thinking, '', false];
         }
 
-        return ['', '', false];
+        const afterTrimmed = afterRaw.trimStart();
+        this._state = afterTrimmed === '' ? 'thinkingDoneEatingWhitespace' : 'thinkingDone';
+        return [thinking, '', true];
       }
 
       case 'thinkingDoneEatingWhitespace': {
@@ -195,20 +232,8 @@ export class ThinkingParser {
         return ['', trimmed, false];
       }
 
-      case 'thinkingDone': {
-        // Check if the remaining content starts with another opening tag
-        const openIdx = this._acc.indexOf(this.openingTag);
-        if (openIdx !== -1) {
-          const contentBefore = this._acc.slice(0, openIdx);
-          this._acc = this._acc.slice(openIdx);
-          this._state = 'lookingForOpening';
-          return ['', contentBefore, true];
-        }
-
-        const out = this._acc;
-        this._acc = '';
-        return ['', out, false];
-      }
+      case 'thinkingDone':
+        return this._eatThinkingDone();
     }
   }
 }

@@ -29,6 +29,7 @@ export const SYSTEM_WRAPPER_TAG_NAMES = new Set([
   'todoList',
   'toolCall',
   'tool_call',
+  'task_complete',
   'reminderInstructions',
   'userMemory',
   'sessionMemory',

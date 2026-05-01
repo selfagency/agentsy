@@ -1,6 +1,6 @@
-import { copyFile, mkdir, readFile, writeFile } from 'fs/promises';
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,7 +51,9 @@ async function main() {
   console.log('Copied', readmeSrc, 'to', readmeDest);
 }
 
-main().catch(err => {
+try {
+  await main();
+} catch (err) {
   console.error(err);
   process.exitCode = 1;
-});
+}
