@@ -167,6 +167,11 @@ export class SSEParser {
   }
 
   private isValidEvent(event: SSEEvent): boolean {
-    return !!(event.data !== undefined || event.event !== undefined || event.id !== undefined || event.retry !== undefined);
+    return !!(
+      event.data !== undefined ||
+      event.event !== undefined ||
+      event.id !== undefined ||
+      event.retry !== undefined
+    );
   }
 }

@@ -15,11 +15,7 @@ interface TagMatch {
 // Whitelist approach prevents ReDoS by restricting to safe characters only.
 const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
-function findMatchingCloseTag(
-  part: string,
-  tagName: string,
-  searchStart: number
-): number | null {
+function findMatchingCloseTag(part: string, tagName: string, searchStart: number): number | null {
   // Security: tagName already validated by collectTagMatches before calling here.
   const tagRegex = new RegExp(String.raw`<(/?)(${tagName})\b[^>]*>`, 'gi');
   tagRegex.lastIndex = searchStart;

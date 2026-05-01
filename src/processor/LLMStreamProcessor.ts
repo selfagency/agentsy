@@ -281,7 +281,9 @@ export class LLMStreamProcessor {
           // keep merging/uniquing logic centralized below.
           content += full;
           // Reset exec index since we mutated the residual
-          completeTagRe.lastIndex = 0;          m = completeTagRe.exec(this._filteredResidual);        } catch {
+          completeTagRe.lastIndex = 0;
+          m = completeTagRe.exec(this._filteredResidual);
+        } catch {
           // On any error, break to avoid infinite loops
           break;
         }

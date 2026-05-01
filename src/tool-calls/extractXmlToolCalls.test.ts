@@ -146,7 +146,8 @@ describe('extractXmlToolCalls', () => {
   });
 
   it('falls back to bare JSON array of tool calls', () => {
-    const xmlText = '[{"name":"read_file","arguments":{"path":"a.ts"}},{"name":"read_file","arguments":{"path":"b.ts"}}]';
+    const xmlText =
+      '[{"name":"read_file","arguments":{"path":"a.ts"}},{"name":"read_file","arguments":{"path":"b.ts"}}]';
     const result = extract(xmlText, ['read_file']);
 
     expect(result).toHaveLength(2);
