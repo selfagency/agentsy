@@ -1,0 +1,28 @@
+src/ui/eventSourcing.ts
+  h_5cf1e2c1161853 1-168
+src/ui/index.ts
+  h_5cf1e2c1161853 1-41
+src/ui/ui.test.ts
+  h_5cf1e2c1161853 1-422
+src/ui/types.ts
+  h_5cf1e2c1161853 1-99
+src/index.ts
+  h_5cf1e2c1161853 14-16
+src/ui/store.ts
+  h_5cf1e2c1161853 1-112
+tsup.config.ts
+  h_5cf1e2c1161853 27
+package.json
+  h_5cf1e2c1161853 145-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ae8b99db2483459585215e5c111e0b5213594c77",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
