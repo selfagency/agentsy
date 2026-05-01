@@ -53,6 +53,24 @@ function validatePathParts(parts: string[]): void {
 }
 
 /**
+ * Escapes a path segment for RFC 6901 JSON Pointer encoding.
+ * Converts ~ to ~0 and / to ~1.
+ * @internal
+ */
+function escapePathSegment(segment: string): string {
+  return segment.replace(/~/g, '~0').replace(/\//g, '~1');
+}
+
+/**
+ * Unescapes an RFC 6901 JSON Pointer segment.
+ * Converts ~1 to / and ~0 to ~.
+ * @internal
+ */
+function unescapePathSegment(segment: string): string {
+  return segment.replace(/~1/g, '/').replace(/~0/g, '~');
+}
+
+/**
  * Creates a state snapshot event.
  *
  * @param state - Application state object
@@ -107,7 +125,8 @@ function computeStateDeltaForRemovedAndModified(
       continue;
     }
 
-    const path = basePathPrefix ? `${basePathPrefix}/${key}` : `/${key}`;
+    const escapedKey = escapePathSegment(key);
+    const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
 
     if (!(key in to)) {
       patches.push({ op: 'remove', path });
@@ -165,7 +184,8 @@ export function computeStateDelta(
   const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
     if (!(key in from) && !dangerousKeys.has(key)) {
-      const path = basePathPrefix ? `${basePathPrefix}/${key}` : `/${key}`;
+      const escapedKey = escapePathSegment(key);
+      const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
       patches.push({ op: 'add', path, value: to[key] });
     }
   }
@@ -253,7 +273,7 @@ function applyReplacePatch(state: Record<string, any>, parts: string[], patch: J
  */
 export function applyJsonPatches(state: Record<string, any>, patches: JsonPatchOp[]): void {
   for (const patch of patches) {
-    const parts = patch.path.split('/').filter(Boolean);
+    const parts = patch.path.split('/').filter(Boolean).map(unescapePathSegment);
 
     // Validate path to prevent prototype pollution
     validatePathParts(parts);
@@ -322,7 +342,8 @@ export class StateManager {
     if (patches.length === 0) {
       return undefined; // No changes
     }
-    this.currentState = newState;
+    // Deep-clone to prevent external mutations
+    this.currentState = structuredClone(newState);
     this.snapshotCounter++;
     return createStateDeltaEvent(patches, runId, threadId);
   }

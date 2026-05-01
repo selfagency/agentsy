@@ -301,4 +301,37 @@ describe('toAgUiStream', () => {
       expect(event.threadId).toBe(threadId);
     });
   });
+
+  it('should handle consecutive tool calls with same ID', async () => {
+    const pipeline = createMockPipeline([
+      {
+        type: 'tool_call',
+        toolCallId: 'call_1',
+        toolName: 'tool_a',
+        toolArgs: { key: 'value1' },
+      },
+      {
+        type: 'tool_call',
+        toolCallId: 'call_1',
+        toolName: 'tool_a',
+        toolArgs: { key: 'value2' },
+      },
+      { type: 'message_done' },
+    ]);
+
+    const events = await collectEvents(toAgUiStream(pipeline, { runId, threadId }));
+
+    // Filter tool call events
+    const toolCallEvents = events.filter(
+      e => e.type === EventType.TOOL_CALL_START || e.type === EventType.TOOL_CALL_END,
+    );
+
+    // Should have tool call events
+    expect(toolCallEvents.length).toBeGreaterThan(0);
+
+    // All should reference the same tool call ID
+    toolCallEvents.forEach(event => {
+      expect((event as any).toolCallId).toBe('call_1');
+    });
+  });
 });

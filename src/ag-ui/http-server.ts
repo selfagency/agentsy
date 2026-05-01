@@ -144,6 +144,17 @@ function defaultFormatEvent(event: AgUiEvent): string {
  */
 export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
   return async (req: any, res: any): Promise<void> => {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      });
+      res.end();
+      return;
+    }
+
     if (req.method !== 'POST' && req.method !== 'GET') {
       res.writeHead(405, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Method not allowed' }));

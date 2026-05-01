@@ -348,4 +348,48 @@ describe('StateManager', () => {
       JSON.stringify(circular);
     }).toThrow('circular');
   });
+
+  it('should handle paths with tilde character (RFC 6901 escaping)', () => {
+    const manager = new StateManager({});
+
+    manager.updateState({ 'key~with~tilde': 'value' }, 'run_123');
+
+    expect(manager.getCurrentState()).toEqual({ 'key~with~tilde': 'value' });
+  });
+
+  it('should handle paths with forward slash character (RFC 6901 escaping)', () => {
+    const manager = new StateManager({});
+
+    manager.updateState({ 'path/with/slash': 'value' }, 'run_123');
+
+    expect(manager.getCurrentState()).toEqual({ 'path/with/slash': 'value' });
+  });
+
+  it('should handle nested paths with special characters', () => {
+    const manager = new StateManager({ data: {} });
+
+    manager.updateState({ data: { 'sub~key/path': 'value' } }, 'run_123');
+
+    expect((manager.getCurrentState().data as any)['sub~key/path']).toBe('value');
+  });
+
+  it('should handle complex state updates with multiple properties', () => {
+    const manager = new StateManager({ a: 1, b: { c: 2 } });
+
+    const deltaEvent = manager.updateState({ a: 10, b: { c: 20, d: 30 } }, 'run_123');
+
+    expect(deltaEvent).toBeDefined();
+    expect(manager.getCurrentState()).toEqual({ a: 10, b: { c: 20, d: 30 } });
+  });
+
+  it('should prevent external state mutation via reference', () => {
+    const initialState = { nested: { value: 1 } };
+    const manager = new StateManager(initialState);
+
+    // Try to mutate through the initial reference
+    initialState.nested.value = 999;
+
+    // Manager's state should not be affected
+    expect(manager.getCurrentState().nested.value).toBe(1);
+  });
 });

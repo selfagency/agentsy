@@ -87,6 +87,9 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
           if (!isCancelled) {
             observer.error?.(err);
           }
+        } finally {
+          // Clean up generator resources on completion or cancellation
+          await generator.return?.(undefined);
         }
       })();
 
@@ -94,6 +97,8 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
       return {
         unsubscribe() {
           isCancelled = true;
+          // Also clean up generator on early unsubscribe
+          void generator.return?.(undefined);
         },
       };
     },

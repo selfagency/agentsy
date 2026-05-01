@@ -493,4 +493,46 @@ describe('createAgentLoop', () => {
     // Since we're using isStepCount(1), we only get one execution
     expect(messagesInSecondCall?.length).toBe(5);
   });
+
+  it('should produce output parts during execution', async () => {
+    const outputParts: OutputPart[] = [];
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: 'chunk1', done: false };
+        yield { content: 'chunk2', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      buildToolResultMessages: async () => [],
+    });
+
+    for await (const part of loop.run([])) {
+      outputParts.push(part);
+    }
+
+    // Should have accumulated output parts
+    expect(outputParts.length).toBeGreaterThan(0);
+  });
+
+  it('should handle state updates from multiple steps', async () => {
+    let stepCount = 0;
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: `step ${stepCount++}`, done: false };
+        yield { content: `step ${stepCount++}`, done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(2),
+      maxSteps: 5,
+      buildToolResultMessages: async () => [],
+    });
+
+    let partCount = 0;
+    for await (const _part of loop.run([])) {
+      partCount++;
+    }
+
+    // Should have processed multiple parts
+    expect(partCount).toBeGreaterThan(0);
+  });
 });
