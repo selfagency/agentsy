@@ -142,6 +142,11 @@
       "types": "./dist/renderers/vscode/index.d.ts",
       "import": "./dist/renderers/vscode/index.js",
       "require": "./dist/renderers/vscode/index.cjs"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js",
+      "require": "./dist/ui/index.cjs"
     }
   },
   "scripts": {

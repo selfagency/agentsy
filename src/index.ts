@@ -11,3 +11,6 @@ export * from './normalizers/index.js';
 export * from './recovery/index.js';
 export * from './sse/index.js';
 export * from './pipeline/index.js';
+export * from './agent/index.js';
+export * from './renderers/index.js';
+export * from './ui/index.js';

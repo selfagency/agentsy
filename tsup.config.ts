@@ -24,6 +24,7 @@ export default defineConfig({
     'src/renderers/cli/index.ts',
     'src/renderers/streaming-md/index.ts',
     'src/renderers/vscode/index.ts',
+    'src/ui/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,
