@@ -182,6 +182,12 @@ async function resolveGithubToken() {
   return token;
 }
 
+function wrapBareUrls(text) {
+  // Wrap bare URLs in angle brackets for Markdown compliance.
+  // Matches URLs not already wrapped in < >.
+  return text.replace(/(?<!<)(https?:\/\/[^\s<>]+)(?!>)/g, '<$1>');
+}
+
 function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {
   // Use outer scope isPathInsideRoot, safeRead, safeWrite functions for defensive
   // filesystem access that satisfies static analysis rules.
@@ -199,7 +205,8 @@ function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, 
   }
 
   const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
-  const section = `\n${heading}\n\n${releaseNotes}${sourceLine}\n`;
+  const wrappedReleaseNotes = wrapBareUrls(releaseNotes);
+  const section = `\n${heading}\n\n${wrappedReleaseNotes}${sourceLine}\n`;
   const marker = '## [Unreleased]';
   const idx = original.indexOf(marker);
   const updated =
