@@ -18,6 +18,7 @@ export default defineConfig({
     'src/recovery/index.ts',
     'src/sse/index.ts',
     'src/pipeline/index.ts',
+    'src/agent/index.ts',
     'src/renderers/index.ts',
     'src/renderers/plain/index.ts',
     'src/renderers/cli/index.ts',

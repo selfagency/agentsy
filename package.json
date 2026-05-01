@@ -113,6 +113,11 @@
       "import": "./dist/pipeline/index.js",
       "require": "./dist/pipeline/index.cjs"
     },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js",
+      "require": "./dist/agent/index.cjs"
+    },
     "./renderers": {
       "types": "./dist/renderers/index.d.ts",
       "import": "./dist/renderers/index.js",
