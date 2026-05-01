@@ -36,7 +36,7 @@ describe('repairStateMachine', () => {
       for (const char of input) {
         feedCharToStateMachine(char, state);
       }
-      expect(state.buffer).toContain('\\"');
+      expect(state.buffer).toContain(String.raw`\"`);
       expect(state.bracketStack).toEqual([]);
     });
 
