@@ -50,7 +50,7 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
       },
       onThinking: async (text: string) => {
         if (showThinking) {
-          writeOutput(thinkingPrefix + text + '\n');
+          writeOutput(`${thinkingPrefix}${text}\n`);
         }
       },
       onEnd: async () => {

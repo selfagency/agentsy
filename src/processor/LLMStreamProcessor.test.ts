@@ -572,9 +572,13 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     });
     const toolCallPart = result.parts.find(p => p.type === 'tool_call');
     expect(toolCallPart).toBeDefined();
-    expect(toolCallPart?.type).toBe('tool_call');
-    expect((toolCallPart as any).state).toBe('input-complete');
-    expect((toolCallPart as any).call.id).toBe('call_abc');
+    expect(toolCallPart).toBeDefined();
+    if (toolCallPart?.type === 'tool_call') {
+      expect(toolCallPart.state).toBe('input-complete');
+      expect(toolCallPart.call.id).toBe('call_abc');
+    } else {
+      throw new Error('Expected tool_call part');
+    }
   });
 });
 

@@ -1,16 +1,17 @@
 import { expect } from 'vitest';
+import type { NormalizerResult } from './types.js';
 
 /**
  * Test helper for normalizer finish reason mappings.
  * @internal
  */
 export function createFinishReasonTest(
-  normalizer: (input: any) => any,
-  createInput: (finishReason: string | null) => any,
+  normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
+  createInput: (finishReason: string | null) => Record<string, unknown>,
   testCases: Array<{ input: string | null; expectedFinishReason: string | undefined; expectedDone: boolean }>,
 ): void {
   for (const { input, expectedFinishReason, expectedDone } of testCases) {
-    const result = normalizer(createInput(input as any));
+    const result = normalizer(createInput(input));
     expect(result?.chunk.finishReason).toBe(expectedFinishReason);
     expect(result?.chunk.done).toBe(expectedDone);
   }
@@ -21,13 +22,13 @@ export function createFinishReasonTest(
  * @internal
  */
 export function testContentMapping(
-  normalizer: (input: any) => any,
-  setupInput: (content: string) => any,
+  normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
+  setupInput: (content: string) => Record<string, unknown>,
   expectedField: 'content' | 'thinking',
   expectedValue: string,
 ): void {
   const result = normalizer(setupInput(expectedValue));
-  expect(result?.chunk[expectedField]).toBe(expectedValue);
+  expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(expectedValue);
   expect(result?.chunk.done).toBeFalsy();
 }
 
@@ -35,7 +36,7 @@ export function testContentMapping(
  * Test helper for asserting non-terminal chunks don't set finishReason.
  * @internal
  */
-export function testMidStreamNoFinishReason(normalizer: (input: any) => any, setupInput: () => any): void {
+export function testMidStreamNoFinishReason(normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined, setupInput: () => Record<string, unknown>): void {
   const result = normalizer(setupInput());
   expect(result?.chunk.finishReason).toBeUndefined();
   expect(result?.chunk.done).not.toBe(true);

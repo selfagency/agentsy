@@ -97,9 +97,9 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
       // Update doom-loop counter using deep equality instead of JSON.stringify
       if (state.steps.length >= 2 && stepResult.toolCalls.length > 0) {
-        const prevStep = state.steps[state.steps.length - 2];
-        if (prevStep && prevStep.toolCalls.length > 0) {
-          const prev = prevStep.toolCalls[0];
+        const prevStep = state.steps.at(-2);
+        if ((prevStep?.toolCalls.length ?? 0) > 0) {
+          const prev = prevStep?.toolCalls[0];
           const curr = stepResult.toolCalls[0];
           if (prev && curr && prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
             state.consecutiveIdenticalCalls += 1;

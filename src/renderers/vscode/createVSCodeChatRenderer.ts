@@ -123,9 +123,8 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
 
-  // Accumulator for markdown content
+  // Accumulators for parts - useful for debugging and future features
   let accumulatedMarkdown = '';
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let accumulatedThinking = '';
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
 

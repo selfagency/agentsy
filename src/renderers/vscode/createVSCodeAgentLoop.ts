@@ -68,7 +68,7 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   // Default showThinking to true for agent loops (agent thinking is valuable context)
   const mergedOptions = {
     ...options,
-    showThinking: options.showThinking !== false ? true : false,
+    showThinking: options.showThinking !== false,
   };
 
   // Create the base renderer

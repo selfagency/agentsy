@@ -85,11 +85,14 @@ describe('UI Event Sourcing', () => {
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
-      expect(state.messages[0]?.parts[0]?.type).toBe('tool_call');
-      const part = state.messages[0]?.parts[0];
+      const part = state.messages[0]?.parts?.[0];
       expect(part?.type).toBe('tool_call');
-      expect((part as any).name).toBe('search');
-      expect((part as any).parameters).toEqual({ query: 'TypeScript best practices' });
+      if (part?.type === 'tool_call') {
+        expect(part.name).toBe('search');
+        expect(part.parameters).toEqual({ query: 'TypeScript best practices' });
+      } else {
+        throw new Error('Expected tool_call part');
+      }
     });
 
     it('should set finishReason and usage on message_finished event', () => {

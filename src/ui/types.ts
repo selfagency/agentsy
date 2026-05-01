@@ -34,6 +34,15 @@ export interface UIMessage {
 export type UIMessagePart = UITextPart | UIThinkingPart | UIToolCallPart;
 
 /**
+ * Message part types without createdAt (for event handlers that auto-add timestamps).
+ * @internal
+ */
+export type UIMessagePartWithoutCreatedAt = 
+  | Omit<UITextPart, 'createdAt'>
+  | Omit<UIThinkingPart, 'createdAt'>
+  | Omit<UIToolCallPart, 'createdAt'>;
+
+/**
  * Text content part.
  */
 export interface UITextPart {

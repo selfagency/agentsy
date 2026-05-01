@@ -154,7 +154,9 @@ describe('LLMStreamProcessor.partsStream', () => {
     expect(textParts.length).toBeGreaterThan(1);
     for (const p of textParts) {
       expect(p.type).toBe('text');
-      expect((p as any).text.length).toBeLessThanOrEqual(3);
+      if (p.type === 'text') {
+        expect(p.text.length).toBeLessThanOrEqual(3);
+      }
     }
   });
 });

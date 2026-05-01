@@ -1,4 +1,4 @@
-import type { UIConversation, UIMessage, UIMessagePart } from './types.js';
+import type { UIConversation, UIMessage, UIMessagePart, UIMessagePartWithoutCreatedAt } from './types.js';
 
 /**
  * Helper to reduce duplication in event handlers that add parts to messages.
@@ -6,7 +6,7 @@ import type { UIConversation, UIMessage, UIMessagePart } from './types.js';
  *
  * @internal
  */
-export function addPartToMessage(state: UIConversation, messageId: string, part: any): UIConversation {
+export function addPartToMessage(state: UIConversation, messageId: string, part: UIMessagePartWithoutCreatedAt): UIConversation {
   const now = new Date();
 
   const messages = state.messages.map(msg => {

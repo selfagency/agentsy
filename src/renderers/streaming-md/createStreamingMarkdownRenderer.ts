@@ -79,14 +79,12 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
-  let parser: any = null;
+  let parser: string | null = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
   const getStreamingMarkdownDeps = async () => {
     try {
-      // @ts-expect-error streaming-markdown is a peer dependency
       const smd = await import('streaming-markdown');
-      // @ts-expect-error dompurify is a peer dependency
       const DOMPurify = await import('dompurify');
 
       return { smd, DOMPurify };
@@ -137,7 +135,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
             ? DOMPurify.default.sanitize(accumulatedMarkdown)
             : DOMPurify.sanitize(accumulatedMarkdown));
 
-          if (DOMPurify.default && DOMPurify.default.removed && DOMPurify.default.removed.length > 0) {
+          if (DOMPurify.default?.removed?.length ?? 0 > 0) {
             // Security violation detected
             if (parser && smd.default.parser_end) {
               smd.default.parser_end(parser);
@@ -159,7 +157,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
           // Append new content to DOM
           try {
-            if (smd.default && smd.default.parser_write) {
+            if (smd.default?.parser_write) {
               smd.default.parser_write(parser, chunk);
             }
           } catch {
@@ -255,7 +253,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         // End the parser (creates final DOM output)
         if (parser) {
           const { smd } = await getStreamingMarkdownDeps();
-          if (smd.default && smd.default.parser_end) {
+          if (smd.default?.parser_end) {
             smd.default.parser_end(parser);
           }
         }

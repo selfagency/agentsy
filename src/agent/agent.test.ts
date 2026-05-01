@@ -452,10 +452,8 @@ describe('createAgentLoop', () => {
   });
 
   it('should abort the loop', async () => {
-    let executeCount = 0;
     const loop = createAgentLoop({
       execute: async function* () {
-        executeCount += 1;
         yield { content: 'chunk', done: false };
         yield { done: true, finishReason: 'stop' as const };
       },
