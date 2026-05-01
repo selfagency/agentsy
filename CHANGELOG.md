@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-01
+
+## What's Changed
+* chore(deps): bump picomatch from 2.3.1 to 2.3.2 in the npm_and_yarn group across 1 directory by @dependabot[bot] in <https://github>.com/selfagency/llm-stream-parser/pull/35
+* chore(deps-dev): bump vite from 7.3.1 to 7.3.2 in the npm_and_yarn group across 1 directory by @dependabot[bot] in <https://github>.com/selfagency/llm-stream-parser/pull/36
+* chore(deps): bump basic-ftp from 5.2.0 to 5.2.1 in the npm_and_yarn group across 1 directory by @dependabot[bot] in <https://github>.com/selfagency/llm-stream-parser/pull/37
+* chore(deps): bump basic-ftp from 5.2.1 to 5.2.2 in the npm_and_yarn group across 1 directory by @dependabot[bot] in <https://github>.com/selfagency/llm-stream-parser/pull/38
+* chore(deps): bump the npm_and_yarn group across 1 directory with 2 updates by @dependabot[bot] in <https://github>.com/selfagency/llm-stream-parser/pull/39
+* feat(tool-calls): improve JSON Schema quality for native tool calling by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/40
+* chore(deps): bump postcss from 8.5.9 to 8.5.13 in the npm_and_yarn group across 1 directory by @dependabot[bot] in <https://github>.com/selfagency/llm-stream-parser/pull/41
+* fix: resolve SonarQube code quality issues and Qwik false positives by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/42
+
+## New Contributors
+* @dependabot[bot] made their first contribution in <https://github>.com/selfagency/llm-stream-parser/pull/35
+
+**Full Changelog**: <https://github>.com/selfagency/llm-stream-parser/compare/v0.1.5...v0.2.0
+
+_Source: changes from v0.1.5 to v0.2.0._
+
+
 ### BREAKING CHANGES
 
 - **`buildXmlToolSystemPrompt()` signature change**: The function now accepts an optional second parameter `options: BuildXmlToolSystemPromptOptions`. While backwards compatible (the parameter is optional and defaults to `{ format: 'xml' }`), this is a minor signature change. Callers using TypeScript with strict settings may need to update type signatures.
