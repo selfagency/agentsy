@@ -1,6 +1,8 @@
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
 import type { OutputPart, StreamChunk } from '../../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
+import type { ToolCallState } from '../../tool-calls/types.js';
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 
 /**
@@ -186,38 +188,77 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   }
 
   /**
+   * Handle text part rendering.
+   * @internal
+   */
+  function handleTextPartRendering(part: { type: 'text'; text: string }): void {
+    if (typeof part.text === 'string') {
+      stream.markdown(part.text);
+    }
+  }
+
+  /**
+   * Handle thinking part rendering.
+   * @internal
+   */
+  function handleThinkingPartRendering(part: { type: 'thinking'; text: string }): void {
+    if (typeof part.text === 'string') {
+      handleThinkingPart(part.text);
+    }
+  }
+
+  /**
+   * Handle tool call part rendering and callbacks.
+   * @internal
+   */
+  function handleToolCallPartRendering(part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }): void {
+    if (onToolCall) {
+      onToolCall({ type: 'tool_call', call: part.call });
+    }
+    if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
+      stream.beginToolInvocation(part.call.id, part.call.name);
+    }
+  }
+
+  /**
+   * Handle tool call delta part rendering and updates.
+   * @internal
+   */
+  function handleToolCallDeltaPartRendering(part: {
+    type: 'tool_call_delta';
+    id?: string;
+    name: string;
+    argumentsDelta: string;
+    index: number;
+  }): void {
+    if (onToolCallDelta) {
+      onToolCallDelta(part);
+    }
+    if (stream.updateToolInvocation && typeof part.id === 'string') {
+      stream.updateToolInvocation(part.id, part as OutputPart);
+    }
+  }
+
+  /**
    * Process all parts from output, dispatching to appropriate handlers.
-   * Simplified to reduce cyclomatic complexity.
    * @internal
    */
   function processParts(parts: OutputPart[]): void {
     for (const part of parts) {
       switch (part.type) {
         case 'text':
-          if ('text' in part && typeof part.text === 'string') {
-            stream.markdown(part.text);
-          }
+          handleTextPartRendering(part as { type: 'text'; text: string });
           break;
         case 'thinking':
-          if ('text' in part && typeof part.text === 'string') {
-            handleThinkingPart(part.text);
-          }
+          handleThinkingPartRendering(part as { type: 'thinking'; text: string });
           break;
         case 'tool_call':
-          if (onToolCall) {
-            onToolCall(part);
-          }
-          if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
-            stream.beginToolInvocation(part.call.id, part.call.name);
-          }
+          handleToolCallPartRendering(part as { type: 'tool_call'; call: XmlToolCall; state: ToolCallState });
           break;
         case 'tool_call_delta':
-          if (onToolCallDelta) {
-            onToolCallDelta(part);
-          }
-          if (stream.updateToolInvocation && typeof part.id === 'string') {
-            stream.updateToolInvocation(part.id, part);
-          }
+          handleToolCallDeltaPartRendering(
+            part as { type: 'tool_call_delta'; id?: string; name: string; argumentsDelta: string; index: number },
+          );
           break;
         default:
           break;
