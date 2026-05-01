@@ -49,7 +49,7 @@ describe('createStateSnapshotEvent', () => {
   });
 
   it('should not include threadId when undefined', () => {
-    const event = createStateSnapshotEvent({}, 'run_123', undefined);
+    const event = createStateSnapshotEvent({}, 'run_123');
     expect('threadId' in event).toBe(false);
   });
 });

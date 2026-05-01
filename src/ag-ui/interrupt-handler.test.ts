@@ -120,7 +120,7 @@ describe('createInterruptEvent', () => {
   });
 
   it('should not include message if undefined', () => {
-    const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT, undefined);
+    const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT);
 
     expect(event.interrupts.length).toBeGreaterThan(0);
     expect('options' in event.interrupts[0]!).toBe(false);
@@ -133,7 +133,7 @@ describe('createInterruptEvent', () => {
   });
 
   it('should not include threadId if undefined', () => {
-    const event = createInterruptEvent('run_123', undefined, undefined, undefined);
+    const event = createInterruptEvent('run_123');
 
     expect('threadId' in event).toBe(false);
   });

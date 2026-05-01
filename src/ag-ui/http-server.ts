@@ -87,8 +87,7 @@ export function createSSEStream(
         yield encoder.encode(formatEvent(event));
       }
     } finally {
-      // Cleanup on stream end
-      void undefined;
+      // Cleanup on stream end (no action needed currently)
     }
   };
 
