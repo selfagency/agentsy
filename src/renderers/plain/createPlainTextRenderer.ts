@@ -39,7 +39,14 @@ export interface PlainTextRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createPlainTextRenderer(options: PlainTextRendererOptions = {}): RendererHandle {
-  const { output = process.stdout, showThinking = false, thinkingPrefix = '[Thinking] ', processor, onError, onFinish } = options;
+  const {
+    output = process.stdout,
+    showThinking = false,
+    thinkingPrefix = '[Thinking] ',
+    processor,
+    onError,
+    onFinish,
+  } = options;
 
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
@@ -124,8 +131,9 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
     },
 
     async end(): Promise<void> {
+      let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
-        const result = llmProcessor.flush();
+        result = llmProcessor.flush();
 
         for (const part of result.parts) {
           switch (part.type) {
@@ -156,6 +164,11 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
         } else {
           throw error;
         }
+      }
+
+      // Fire onFinish callback to signal stream completion
+      if (result?.done && onFinish) {
+        onFinish(result.finishReason, result.usage);
       }
     },
   };

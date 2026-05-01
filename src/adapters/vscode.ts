@@ -4,10 +4,32 @@ import type { LLMStreamProcessor, StreamChunk } from '../processor/LLMStreamProc
 import type { FinishReason } from '../tool-calls/types.js';
 import type { UsageInfo } from '../normalizers/types.js';
 
+/**
+ * @deprecated Use `createVSCodeChatRenderer` from `@selfagency/llm-stream-parser/renderers/vscode` instead.
+ * This legacy adapter is limited to markdown output and does not support the full VS Code Chat API.
+ * The new renderer provides:
+ * - Full ChatResponseStream API (anchor, reference, button, filetree, etc.)
+ * - Proposed API support (thinking progress, tool invocation, usage reporting)
+ * - Capability detection for graceful fallback on older VS Code versions
+ * - Better agent loop integration via `createVSCodeAgentLoop`
+ *
+ * @example
+ * ```typescript
+ * // OLD (deprecated):
+ * const adapter = createVSCodeCopilotAdapter({ stream, processor, ... });
+ *
+ * // NEW (recommended):
+ * import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+ * const renderer = createVSCodeChatRenderer({ stream, processor, ... });
+ * ```
+ */
 export interface VSCodeChatStream {
   markdown(text: string): void | Promise<void>;
 }
 
+/**
+ * @deprecated Use `VSCodeChatRendererOptions` from `createVSCodeChatRenderer` instead.
+ */
 export interface VSCodeCopilotAdapterOptions {
   processor: LLMStreamProcessor;
   stream: VSCodeChatStream;
@@ -16,6 +38,10 @@ export interface VSCodeCopilotAdapterOptions {
   showThinking?: boolean;
 }
 
+/**
+ * @deprecated Use `createVSCodeChatRenderer` from `@selfagency/llm-stream-parser/renderers/vscode` instead.
+ * This adapter is maintained for backward compatibility only and will be removed in a future major version.
+ */
 export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions): {
   write(chunk: StreamChunk): Promise<void>;
   end(): Promise<void>;

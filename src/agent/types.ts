@@ -33,6 +33,8 @@ export interface AgentLoopOptions {
   onStep?: (result: StepResult) => void | Promise<void>;
   /** Hard cap on loop iterations. Defaults to 20. */
   maxSteps?: number;
+  /** Maximum conversation messages to retain. Older messages are trimmed. Defaults to unlimited. */
+  maxConversationMessages?: number;
   /** Caller-supplied function that transforms completed tool calls into messages to append. */
   buildToolResultMessages: (toolCalls: XmlToolCall[]) => Promise<unknown[]>;
 }

@@ -49,28 +49,22 @@ describe('createSmoothStream', () => {
   });
 
   it('splits large text delta into chunkSize sub-chunks', async () => {
-    const parts = await writeAndCollect(createSmoothStream({ chunkSize: 3 }), [
-      { type: 'text', text: 'abcdef' },
-    ]);
+    const parts = await writeAndCollect(createSmoothStream({ chunkSize: 3 }), [{ type: 'text', text: 'abcdef' }]);
     expect(parts).toHaveLength(2);
     expect(parts[0]).toEqual({ type: 'text', text: 'abc' });
     expect(parts[1]).toEqual({ type: 'text', text: 'def' });
   });
 
   it('emits single chunk for text shorter than chunkSize', async () => {
-    const parts = await writeAndCollect(createSmoothStream({ chunkSize: 10 }), [
-      { type: 'text', text: 'hi' },
-    ]);
+    const parts = await writeAndCollect(createSmoothStream({ chunkSize: 10 }), [{ type: 'text', text: 'hi' }]);
     expect(parts).toHaveLength(1);
     expect(parts[0]).toEqual({ type: 'text', text: 'hi' });
   });
 
   it('defaults to chunkSize 8', async () => {
-    const parts = await writeAndCollect(createSmoothStream(), [
-      { type: 'text', text: 'x'.repeat(16) },
-    ]);
+    const parts = await writeAndCollect(createSmoothStream(), [{ type: 'text', text: 'x'.repeat(16) }]);
     expect(parts).toHaveLength(2);
-    expect(parts.every((p) => p.type === 'text' && p.text.length === 8)).toBe(true);
+    expect(parts.every(p => p.type === 'text' && p.text.length === 8)).toBe(true);
   });
 });
 
@@ -131,9 +125,9 @@ describe('LLMStreamProcessor.partsStream', () => {
     processor.process({ content: ' world', done: false });
     processor.flush();
     const parts = await streamPromise;
-    const textParts = parts.filter((p) => p.type === 'text');
+    const textParts = parts.filter(p => p.type === 'text');
     expect(textParts.length).toBeGreaterThan(0);
-    const combined = textParts.map((p) => (p.type === 'text' ? p.text : '')).join('');
+    const combined = textParts.map(p => (p.type === 'text' ? p.text : '')).join('');
     expect(combined).toBe('hello world');
   });
 
@@ -143,8 +137,8 @@ describe('LLMStreamProcessor.partsStream', () => {
     // processComplete calls process() + flush() internally, ensuring the stream is closed.
     processor.processComplete({ thinking: 'internal', content: 'visible' });
     const parts = await streamPromise;
-    expect(parts.every((p) => p.type !== 'thinking')).toBe(true);
-    const textParts = parts.filter((p) => p.type === 'text');
+    expect(parts.every(p => p.type !== 'thinking')).toBe(true);
+    const textParts = parts.filter(p => p.type === 'text');
     expect(textParts.length).toBeGreaterThan(0);
   });
 
@@ -156,10 +150,11 @@ describe('LLMStreamProcessor.partsStream', () => {
     // processComplete calls process() + flush() internally, ensuring the stream is closed.
     processor.processComplete({ thinking: 'skip', content: 'abcdef' });
     const parts = await streamPromise;
-    const textParts = parts.filter((p) => p.type === 'text');
+    const textParts = parts.filter(p => p.type === 'text');
     expect(textParts.length).toBeGreaterThan(1);
     for (const p of textParts) {
-      if (p.type === 'text') expect(p.text.length).toBeLessThanOrEqual(3);
+      expect(p.type).toBe('text');
+      expect((p as any).text.length).toBeLessThanOrEqual(3);
     }
   });
 });

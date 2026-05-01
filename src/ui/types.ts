@@ -1,4 +1,3 @@
-import type { OutputPart } from '../processor/LLMStreamProcessor.js';
 import type { FinishReason } from '../tool-calls/types.js';
 import type { UsageInfo } from '../normalizers/types.js';
 
@@ -93,7 +92,11 @@ export type ConversationEvent =
   | { type: 'message_started'; role: 'user' | 'assistant'; messageId: string }
   | { type: 'text_part_added'; messageId: string; text: string }
   | { type: 'thinking_part_added'; messageId: string; text: string }
-  | { type: 'tool_call_part_added'; messageId: string; toolCall: { id: string; name: string; parameters: Record<string, unknown> } }
+  | {
+      type: 'tool_call_part_added';
+      messageId: string;
+      toolCall: { id: string; name: string; parameters: Record<string, unknown> };
+    }
   | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }
   | { type: 'step_updated'; stepIndex: number }
   | { type: 'conversation_reset' };

@@ -1,12 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import {
-  createAgentLoop,
-  detectDoomLoop,
-  finishReasonIs,
-  hasNoToolCalls,
-  isStepCount,
-} from './index.js';
-import type { AgentLoopState, StreamChunk } from './types.js';
+import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';
+import type { AgentLoopState } from './types.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 
 describe('Stop Conditions', () => {
@@ -476,5 +470,69 @@ describe('createAgentLoop', () => {
 
     const result = await gen.next();
     expect(result.done).toBe(true);
+  });
+
+  it('should detect identical tool calls despite parameter key order variations', async () => {
+    const condition = detectDoomLoop(1);
+    // Create two identical tool calls with parameters in different order
+    const call1: XmlToolCall = {
+      name: 'search',
+      parameters: { query: 'test', limit: 10 },
+      format: 'bare-xml',
+      id: '1',
+    };
+    const call2: XmlToolCall = {
+      name: 'search',
+      parameters: { limit: 10, query: 'test' }, // Same params, different order
+      format: 'bare-xml',
+      id: '2',
+    };
+    const state: AgentLoopState = {
+      steps: [
+        {
+          output: {
+            thinking: '',
+            content: '',
+            toolCalls: [call1],
+            done: false,
+            parts: [],
+            incomplete: false,
+            incompleteness: [],
+          },
+          toolCalls: [call1],
+          finishReason: undefined,
+          usage: undefined,
+        },
+        {
+          output: {
+            thinking: '',
+            content: '',
+            toolCalls: [call2],
+            done: false,
+            parts: [],
+            incomplete: false,
+            incompleteness: [],
+          },
+          toolCalls: [call2],
+          finishReason: undefined,
+          usage: undefined,
+        },
+      ],
+      stepIndex: 1,
+      lastOutput: {
+        thinking: '',
+        content: '',
+        toolCalls: [call2],
+        done: false,
+        parts: [],
+        incomplete: false,
+        incompleteness: [],
+      },
+      toolCallCount: 2,
+      consecutiveIdenticalCalls: 1,
+    };
+
+    // Should detect as identical despite key order difference
+    expect(condition(state)).toBe(true);
   });
 });

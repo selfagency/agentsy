@@ -62,7 +62,9 @@ describe('UI Event Sourcing', () => {
 
       expect(state.messages[0]?.parts).toHaveLength(1);
       expect(state.messages[0]?.parts[0]?.type).toBe('thinking');
-      expect(state.messages[0]?.parts[0]?.type === 'thinking' && state.messages[0]?.parts[0].text).toBe('Let me think about this...');
+      expect(state.messages[0]?.parts[0]?.type === 'thinking' && state.messages[0]?.parts[0].text).toBe(
+        'Let me think about this...',
+      );
     });
 
     it('should add tool call part to message on tool_call_part_added event', () => {
@@ -85,10 +87,9 @@ describe('UI Event Sourcing', () => {
       expect(state.messages[0]?.parts).toHaveLength(1);
       expect(state.messages[0]?.parts[0]?.type).toBe('tool_call');
       const part = state.messages[0]?.parts[0];
-      if (part?.type === 'tool_call') {
-        expect(part.name).toBe('search');
-        expect(part.parameters).toEqual({ query: 'TypeScript best practices' });
-      }
+      expect(part?.type).toBe('tool_call');
+      expect((part as any).name).toBe('search');
+      expect((part as any).parameters).toEqual({ query: 'TypeScript best practices' });
     });
 
     it('should set finishReason and usage on message_finished event', () => {

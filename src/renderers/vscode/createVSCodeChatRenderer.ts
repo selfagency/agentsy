@@ -1,19 +1,67 @@
-import type { BaseRendererOptions, RendererHandle } from '../types.js';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
 
 /**
- * Duck-typed interface matching VS Code's ChatResponseStream.
- * Allows renderer to work with actual VS Code ChatResponseStream without hard dependency.
+ * Structural interface matching VS Code's ChatResponseStream.
+ * Stable API methods are required; proposed API methods are optional (capability detection).
+ * Allows renderer to work with actual VS Code ChatResponseStream without hard dependency on vscode module.
  */
 export interface ChatResponseStream {
-  text(content: string): void;
-  progress(content: string): void;
+  /** Emit markdown content to the chat response. */
   markdown(content: string): void;
-  anchor(element: any, title?: string): void;
-  reference(element: any, iconPath?: any, title?: string): void;
-  button(options: any): void;
-  filetree(roots: any[], options?: any): void;
+
+  /** Emit a progress indicator (e.g., for thinking blocks). */
+  progress(content: string): void;
+
+  /** Anchor to a file or symbol. */
+  anchor(
+    value:
+      | { scheme: string; path: string }
+      | {
+          uri: { scheme: string; path: string };
+          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+        },
+    title?: string,
+  ): void;
+
+  /** Reference a file, location, or variable. */
+  reference(
+    value:
+      | { scheme: string; path: string }
+      | {
+          uri: { scheme: string; path: string };
+          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+        }
+      | { variableName: string; value?: { scheme: string; path: string } },
+    iconPath?:
+      | { scheme: string; path: string }
+      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } },
+  ): void;
+
+  /** Emit a button that runs a command. */
+  button(command: { command: string; title: string; arguments?: unknown[] }): void;
+
+  /** Emit a file tree. */
+  filetree(value: Array<{ name: string; children?: unknown[] }>, baseUri: { scheme: string; path: string }): void;
+
+  /** Push a response part (stable or proposed). */
+  push?(part: unknown): void;
+
+  // Proposed API methods (optional, capability-detection pattern)
+
+  /** Emit thinking progress (proposed API). */
+  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
+
+  /** Begin a tool invocation (proposed API). */
+  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
+
+  /** Update a tool invocation (proposed API). */
+  updateToolInvocation?(toolCallId: string, streamData: unknown): void;
+
+  /** Report token usage (proposed API). */
+  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
 }
 
 /**
@@ -23,8 +71,8 @@ export interface VSCodeChatRendererOptions extends BaseRendererOptions {
   /** VS Code ChatResponseStream instance. Required. */
   stream: ChatResponseStream;
 
-  /** How to render thinking blocks: 'blockquote' or 'progress'. Default: 'blockquote'. */
-  thinkingStyle?: 'blockquote' | 'progress';
+  /** How to render thinking blocks. Default: 'blockquote'. */
+  thinkingStyle?: ThinkingStyle;
 }
 
 /**
@@ -54,7 +102,16 @@ export interface VSCodeChatRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererHandle {
-  const { stream, showThinking = false, thinkingStyle = 'blockquote', processor, onError, onToolCall, onFinish } = options;
+  const {
+    stream,
+    showThinking = false,
+    thinkingStyle = 'blockquote',
+    processor,
+    onError,
+    onToolCall,
+    onToolCallDelta,
+    onFinish,
+  } = options;
 
   if (!stream) {
     throw new Error('ChatResponseStream is required for VS Code chat renderer');
@@ -66,6 +123,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
   let accumulatedThinking = '';
+  let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
 
   return {
     async write(chunk: string): Promise<void> {
@@ -82,16 +140,25 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
               break;
             }
             case 'thinking': {
-              if (showThinking) {
+              if (showThinking && thinkingStyle !== 'suppress') {
                 accumulatedThinking += part.text;
 
-                if (thinkingStyle === 'progress') {
-                  // Show thinking as a progress indicator
+                // Capability detection: prefer proposed thinkingProgress over fallback methods
+                if (stream.thinkingProgress) {
+                  stream.thinkingProgress({ text: part.text, id: 'thinking' });
+                } else if (thinkingStyle === 'progress') {
+                  // Fallback: show thinking as a progress indicator
                   stream.progress(part.text);
                 } else {
-                  // Show thinking as blockquote (blockquote style)
-                  const blockquoteThinking = `> **💭 Thinking:** ${part.text}`;
-                  stream.markdown(blockquoteThinking);
+                  // Fallback: show thinking as blockquote with proper multi-line support
+                  if (!blockquoteThinkingStarted) {
+                    // Emit blockquote header on first chunk
+                    stream.markdown('\n\n> 💭 **Thinking**\n>\n');
+                    blockquoteThinkingStarted = true;
+                  }
+                  // Append content to blockquote (proper multi-line handling)
+                  const blockquoteContent = appendToBlockquote(part.text, true);
+                  stream.markdown(blockquoteContent);
                 }
               }
               break;
@@ -100,6 +167,25 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
               // Emit tool call callback but don't render
               if (onToolCall) {
                 onToolCall(part);
+              }
+              // Capability detection: call tool invocation method if available
+              if (
+                stream.beginToolInvocation &&
+                typeof part.call?.id === 'string' &&
+                typeof part.call?.name === 'string'
+              ) {
+                stream.beginToolInvocation(part.call.id, part.call.name);
+              }
+              break;
+            }
+            case 'tool_call_delta': {
+              // Fire onToolCallDelta callback
+              if (onToolCallDelta) {
+                onToolCallDelta(part);
+              }
+              // Capability detection: update tool invocation if available
+              if (stream.updateToolInvocation && typeof part.id === 'string') {
+                stream.updateToolInvocation(part.id, part);
               }
               break;
             }
@@ -126,14 +212,24 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
               break;
             }
             case 'thinking': {
-              if (showThinking) {
+              if (showThinking && thinkingStyle !== 'suppress') {
                 accumulatedThinking += part.text;
 
-                if (thinkingStyle === 'progress') {
+                // Capability detection: prefer proposed thinkingProgress over fallback methods
+                if (stream.thinkingProgress) {
+                  stream.thinkingProgress({ text: part.text, id: 'thinking' });
+                } else if (thinkingStyle === 'progress') {
                   stream.progress(part.text);
                 } else {
-                  const blockquoteThinking = `> **💭 Thinking:** ${part.text}`;
-                  stream.markdown(blockquoteThinking);
+                  // Blockquote style with proper multi-line support
+                  if (!blockquoteThinkingStarted) {
+                    // Emit blockquote header on first chunk
+                    stream.markdown('\n\n> 💭 **Thinking**\n>\n');
+                    blockquoteThinkingStarted = true;
+                  }
+                  // Append content to blockquote (proper multi-line handling)
+                  const blockquoteContent = appendToBlockquote(part.text, true);
+                  stream.markdown(blockquoteContent);
                 }
               }
               break;
@@ -141,6 +237,25 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
             case 'tool_call': {
               if (onToolCall) {
                 onToolCall(part);
+              }
+              // Capability detection: call tool invocation method if available
+              if (
+                stream.beginToolInvocation &&
+                typeof part.call?.id === 'string' &&
+                typeof part.call?.name === 'string'
+              ) {
+                stream.beginToolInvocation(part.call.id, part.call.name);
+              }
+              break;
+            }
+            case 'tool_call_delta': {
+              // Fire onToolCallDelta callback
+              if (onToolCallDelta) {
+                onToolCallDelta(part);
+              }
+              // Capability detection: update tool invocation if available
+              if (stream.updateToolInvocation && typeof part.id === 'string') {
+                stream.updateToolInvocation(part.id, part);
               }
               break;
             }
@@ -150,6 +265,15 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         // Fire onFinish callback if stream is done
         if (chunk.done === true && onFinish) {
           await onFinish(chunk.finishReason, chunk.usage);
+        }
+        // Capability detection: report usage if available
+        if (chunk.done === true && chunk.usage && stream.usage) {
+          stream.usage({ promptTokens: chunk.usage.inputTokens ?? 0, completionTokens: chunk.usage.outputTokens ?? 0 });
+        }
+        // Close blockquote if stream ended and we were in blockquote thinking mode
+        if (chunk.done === true && blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
+          stream.markdown('\n\n');
+          blockquoteThinkingStarted = false;
         }
       } catch (error) {
         if (onError && error instanceof Error) {
@@ -161,8 +285,9 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     },
 
     async end(): Promise<void> {
+      let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
-        const result = llmProcessor.flush();
+        result = llmProcessor.flush();
 
         // Process any final parts
         for (const part of result.parts) {
@@ -173,14 +298,24 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
               break;
             }
             case 'thinking': {
-              if (showThinking) {
+              if (showThinking && thinkingStyle !== 'suppress') {
                 accumulatedThinking += part.text;
 
-                if (thinkingStyle === 'progress') {
+                // Capability detection: prefer proposed thinkingProgress over fallback methods
+                if (stream.thinkingProgress) {
+                  stream.thinkingProgress({ text: part.text, id: 'thinking' });
+                } else if (thinkingStyle === 'progress') {
                   stream.progress(part.text);
                 } else {
-                  const blockquoteThinking = `> **💭 Thinking:** ${part.text}`;
-                  stream.markdown(blockquoteThinking);
+                  // Blockquote style with proper multi-line support
+                  if (!blockquoteThinkingStarted) {
+                    // Emit blockquote header on first chunk
+                    stream.markdown('\n\n> 💭 **Thinking**\n>\n');
+                    blockquoteThinkingStarted = true;
+                  }
+                  // Append content to blockquote (proper multi-line handling)
+                  const blockquoteContent = appendToBlockquote(part.text, true);
+                  stream.markdown(blockquoteContent);
                 }
               }
               break;
@@ -188,6 +323,25 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
             case 'tool_call': {
               if (onToolCall) {
                 onToolCall(part);
+              }
+              // Capability detection: call tool invocation method if available
+              if (
+                stream.beginToolInvocation &&
+                typeof part.call?.id === 'string' &&
+                typeof part.call?.name === 'string'
+              ) {
+                stream.beginToolInvocation(part.call.id, part.call.name);
+              }
+              break;
+            }
+            case 'tool_call_delta': {
+              // Fire onToolCallDelta callback
+              if (onToolCallDelta) {
+                onToolCallDelta(part);
+              }
+              // Capability detection: update tool invocation if available
+              if (stream.updateToolInvocation && typeof part.id === 'string') {
+                stream.updateToolInvocation(part.id, part);
               }
               break;
             }
@@ -199,6 +353,20 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         } else {
           throw error;
         }
+      }
+
+      // Fire onFinish callback to signal stream completion
+      if (result?.done && onFinish) {
+        await onFinish(result.finishReason, result.usage);
+      }
+      // Capability detection: report usage if available
+      if (result?.done && result.usage && stream.usage) {
+        stream.usage({ promptTokens: result.usage.inputTokens ?? 0, completionTokens: result.usage.outputTokens ?? 0 });
+      }
+      // Close blockquote if stream ended and we were in blockquote thinking mode
+      if (result?.done && blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
+        stream.markdown('\n\n');
+        blockquoteThinkingStarted = false;
       }
     },
   };

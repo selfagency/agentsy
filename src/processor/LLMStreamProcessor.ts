@@ -219,7 +219,7 @@ export class LLMStreamProcessor {
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
     this._stats = createEmptyStats();
     this._partsSource = new ReadableStream<OutputPart>({
-      start: (controller) => {
+      start: controller => {
         this._partsController = controller;
       },
     });
@@ -581,7 +581,7 @@ export class LLMStreamProcessor {
     this._partsController?.close();
     this._partsController = null;
     this._partsSource = new ReadableStream<OutputPart>({
-      start: (controller) => {
+      start: controller => {
         this._partsController = controller;
       },
     });

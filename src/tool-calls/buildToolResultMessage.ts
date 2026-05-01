@@ -6,6 +6,7 @@ export interface ToolResultMessage {
   tool_call_id: string;
   name: string;
   content: string;
+  is_error?: boolean;
 }
 
 /** Anthropic-format tool result message (wrapped in a user turn). */
@@ -52,7 +53,7 @@ function normalizeContent(result: string | object): string {
  * @param toolCall - The tool call to respond to (must have an `id`).
  * @param result - The result content as a string or serialisable object.
  * @param options.isError - If `true`, signals that the result is an error payload.
- * @returns A `ToolResultMessage` with `role: "tool"`.
+ * @returns A `ToolResultMessage` with `role: "tool"` and optional error flag.
  */
 export function buildToolResultMessage(
   toolCall: XmlToolCall,
@@ -60,12 +61,16 @@ export function buildToolResultMessage(
   options?: { isError?: boolean },
 ): ToolResultMessage {
   const id = toolCall.id ?? toolCall.name;
-  return {
+  const message: ToolResultMessage = {
     role: 'tool',
     tool_call_id: id,
     name: toolCall.name,
     content: normalizeContent(result),
   };
+  if (options?.isError) {
+    message.is_error = true;
+  }
+  return message;
 }
 
 /**

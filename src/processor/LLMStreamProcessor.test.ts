@@ -572,10 +572,9 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     });
     const toolCallPart = result.parts.find(p => p.type === 'tool_call');
     expect(toolCallPart).toBeDefined();
-    if (toolCallPart?.type === 'tool_call') {
-      expect(toolCallPart.state).toBe('input-complete');
-      expect(toolCallPart.call.id).toBe('call_abc');
-    }
+    expect(toolCallPart?.type).toBe('tool_call');
+    expect((toolCallPart as any).state).toBe('input-complete');
+    expect((toolCallPart as any).call.id).toBe('call_abc');
   });
 });
 
@@ -611,7 +610,9 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 
   it('tool_call_delta part includes id from header delta', () => {
     const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
-    const output = processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }] });
+    const output = processor.process({
+      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }],
+    });
 
     const deltaPart = output.parts.find(p => p.type === 'tool_call_delta');
     expect(deltaPart).toBeDefined();

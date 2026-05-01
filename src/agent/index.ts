@@ -9,9 +9,4 @@ export type {
   StreamChunk,
 } from './types.js';
 export { createAgentLoop } from './createAgentLoop.js';
-export {
-  detectDoomLoop,
-  finishReasonIs,
-  hasNoToolCalls,
-  isStepCount,
-} from './stopConditions.js';
+export { detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './stopConditions.js';

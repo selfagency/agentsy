@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
+import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
+import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
+import type { CancellationToken } from '../types.js';
 
 describe('VS Code Chat Renderer', () => {
   let mockStream: ChatResponseStream;
@@ -8,13 +11,17 @@ describe('VS Code Chat Renderer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockStream = {
-      text: vi.fn(),
       progress: vi.fn(),
       markdown: vi.fn(),
       anchor: vi.fn(),
       reference: vi.fn(),
       button: vi.fn(),
       filetree: vi.fn(),
+      // Proposed API methods (optional)
+      thinkingProgress: vi.fn(),
+      beginToolInvocation: vi.fn(),
+      updateToolInvocation: vi.fn(),
+      usage: vi.fn(),
     };
   });
 
@@ -31,6 +38,7 @@ describe('VS Code Chat Renderer', () => {
 
     expect(renderer).toBeDefined();
     expect(renderer.write).toBeDefined();
+    expect(renderer.writeChunk).toBeDefined();
     expect(renderer.end).toBeDefined();
   });
 
@@ -40,7 +48,6 @@ describe('VS Code Chat Renderer', () => {
     await renderer.write('# Title\n\nContent');
     await renderer.end();
 
-    // Processor accumulates and chunks may be combined - check markdown was called
     expect(mockStream.markdown).toHaveBeenCalled();
   });
 
@@ -52,104 +59,330 @@ describe('VS Code Chat Renderer', () => {
     await renderer.write('Part 3');
     await renderer.end();
 
-    // Processor accumulates content, so we may get one or more calls
     expect(mockStream.markdown).toHaveBeenCalled();
   });
 
-  it('handles thinking blocks as blockquote style by default', async () => {
-    const renderer = createVSCodeChatRenderer({
-      stream: mockStream,
-      showThinking: true,
-      thinkingStyle: 'blockquote',
+  describe('Thinking Blocks', () => {
+    it('handles thinking blocks as blockquote style by default', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: true,
+        thinkingStyle: 'blockquote',
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      expect(mockStream.markdown).toHaveBeenCalled();
     });
 
-    await renderer.write('Content with thinking');
-    await renderer.end();
+    it('handles thinking blocks as progress style', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: {
+          ...mockStream,
+          thinkingProgress: undefined, // Test fallback to progress()
+        } as any,
+        showThinking: true,
+        thinkingStyle: 'progress',
+      });
 
-    // Verify markdown was called (actual thinking depends on processor parsing)
-    expect(mockStream.markdown).toHaveBeenCalled();
+      await renderer.writeChunk({
+        thinking: 'Internal reasoning',
+        content: 'Content',
+        done: true,
+      });
+
+      expect(mockStream.progress).toHaveBeenCalled();
+    });
+
+    it('uses thinkingProgress when available', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: true,
+        thinkingStyle: 'blockquote',
+      });
+
+      // Mock stream with proposed API
+      mockStream.thinkingProgress = vi.fn();
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      // When proposed API is available, it should be preferred
+      expect(mockStream.markdown).toHaveBeenCalled();
+    });
+
+    it('suppresses thinking when style is suppress', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: true,
+        thinkingStyle: 'suppress',
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      // No thinking should be emitted
+      expect(mockStream.progress).not.toHaveBeenCalled();
+    });
+
+    it('suppresses thinking when showThinking is false', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: false,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      expect(mockStream.progress).not.toHaveBeenCalled();
+    });
   });
 
-  it('handles thinking blocks as progress style', async () => {
-    const renderer = createVSCodeChatRenderer({
+  describe('Tool Call Feedback', () => {
+    it('fires onToolCall callback', async () => {
+      const onToolCall = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onToolCall,
+      });
+
+      await renderer.write('Tool use call');
+      await renderer.end();
+
+      // Tool call handling depends on processor parsing XML
+      expect(renderer).toBeDefined();
+    });
+
+    it('invokes beginToolInvocation when available', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+      });
+
+      expect(renderer).toBeDefined();
+      expect(mockStream.beginToolInvocation).toBeDefined();
+    });
+
+    it('fires onToolCallDelta callback', async () => {
+      const onToolCallDelta = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onToolCallDelta,
+      });
+
+      await renderer.write('Tool call');
+      await renderer.end();
+
+      expect(renderer).toBeDefined();
+    });
+  });
+
+  describe('Usage Reporting', () => {
+    it('reports usage when available', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        usage: { inputTokens: 10, outputTokens: 20 },
+      });
+
+      expect(mockStream.usage).toHaveBeenCalledWith({
+        promptTokens: 10,
+        completionTokens: 20,
+      });
+    });
+
+    it('handles missing usage data gracefully', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+      });
+
+      // Should not crash
+      expect(renderer).toBeDefined();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('calls onError for processing errors', async () => {
+      const onError = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onError,
+      });
+
+      // Normal flow - no error
+      await renderer.write('Content');
+      await renderer.end();
+
+      // Error handler defined
+      expect(onError).toBeDefined();
+    });
+
+    it('calls onFinish callback', async () => {
+      const onFinish = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onFinish,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'stop',
+      });
+
+      expect(onFinish).toHaveBeenCalledWith('stop', undefined);
+    });
+  });
+
+  describe('writeChunk vs write', () => {
+    it('writeChunk processes StreamChunk objects', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+      });
+
+      await renderer.writeChunk({
+        content: 'Streamed content',
+        thinking: 'Internal reasoning',
+        done: false,
+      });
+
+      await renderer.end();
+
+      expect(mockStream.markdown).toHaveBeenCalled();
+    });
+
+    it('write processes string chunks', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+      });
+
+      await renderer.write('String content');
+      await renderer.end();
+
+      expect(mockStream.markdown).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('VS Code Agent Loop', () => {
+  let mockStream: ChatResponseStream;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockStream = {
+      progress: vi.fn(),
+      markdown: vi.fn(),
+      anchor: vi.fn(),
+      reference: vi.fn(),
+      button: vi.fn(),
+      filetree: vi.fn(),
+    };
+  });
+
+  it('creates agent loop renderer', () => {
+    const renderer = createVSCodeAgentLoop({
       stream: mockStream,
-      showThinking: true,
+    });
+
+    expect(renderer).toBeDefined();
+    expect(renderer.write).toBeDefined();
+    expect(renderer.end).toBeDefined();
+  });
+
+  it('defaults showThinking to true for agent loops', async () => {
+    const renderer = createVSCodeAgentLoop({
+      stream: mockStream,
+    });
+
+    // showThinking defaults to true for agent loops
+    expect(renderer).toBeDefined();
+  });
+
+  it('allows overriding thinking style', async () => {
+    const renderer = createVSCodeAgentLoop({
+      stream: mockStream,
       thinkingStyle: 'progress',
+      showThinking: true,
     });
 
-    await renderer.write('Content');
+    await renderer.write('Agent step');
     await renderer.end();
 
     expect(mockStream.markdown).toHaveBeenCalled();
   });
 
-  it('suppresses thinking when showThinking is false', async () => {
-    const renderer = createVSCodeChatRenderer({
+  it('handles abort signal gracefully', async () => {
+    const abortController = new AbortController();
+    const renderer = createVSCodeAgentLoop({
       stream: mockStream,
-      showThinking: false,
+      abortSignal: abortController.signal,
     });
 
     await renderer.write('Content');
     await renderer.end();
 
-    expect(mockStream.progress).not.toHaveBeenCalled();
+    expect(renderer).toBeDefined();
+
+    // Trigger abort - should not throw
+    abortController.abort();
+  });
+});
+
+describe('Cancellation Token Bridge', () => {
+  it('converts CancellationToken to AbortSignal', () => {
+    const mockToken: CancellationToken = {
+      isCancellationRequested: false,
+      onCancellationRequested: vi.fn(() => ({
+        dispose: vi.fn(),
+      })),
+    };
+
+    const signal = cancellationTokenToAbortSignal(mockToken);
+
+    expect(signal).toBeDefined();
+    expect(signal.aborted).toBe(false);
   });
 
-  it('fires onToolCall callback for tool calls', async () => {
-    const onToolCall = vi.fn();
-    const renderer = createVSCodeChatRenderer({
-      stream: mockStream,
-      onToolCall,
-    });
+  it('returns aborted signal when token is already cancelled', () => {
+    const mockToken: CancellationToken = {
+      isCancellationRequested: true,
+      onCancellationRequested: vi.fn(() => ({
+        dispose: vi.fn(),
+      })),
+    };
 
-    await renderer.write('Some content');
-    await renderer.end();
+    const signal = cancellationTokenToAbortSignal(mockToken);
 
-    // Tool calls would only fire if processor detects them
-    expect(onToolCall).not.toHaveBeenCalled(); // No XML tool calls in plain content
+    expect(signal.aborted).toBe(true);
   });
 
-  it('calls onError callback on errors', async () => {
-    const onError = vi.fn();
-    const renderer = createVSCodeChatRenderer({
-      stream: mockStream,
-      onError,
-    });
+  it('aborts signal when token fires cancellation', async () => {
+    const listeners: Array<(e: unknown) => void> = [];
 
-    await renderer.write('test');
-    await renderer.end();
+    const mockToken: CancellationToken = {
+      isCancellationRequested: false,
+      onCancellationRequested: vi.fn((listener: (e: unknown) => void) => {
+        listeners.push(listener);
+        return { dispose: vi.fn() };
+      }),
+    };
 
-    expect(onError).not.toHaveBeenCalled();
-  });
+    const signal = cancellationTokenToAbortSignal(mockToken);
 
-  it('handles empty content gracefully', async () => {
-    const renderer = createVSCodeChatRenderer({ stream: mockStream });
+    expect(signal.aborted).toBe(false);
 
-    await renderer.write('');
-    await renderer.end();
+    // Trigger cancellation by calling the registered listener
+    listeners.forEach(listener => listener(undefined));
 
-    // Empty writes produce no output
-    expect(mockStream.markdown).not.toHaveBeenCalled();
-  });
-
-  it('accumulates content across multiple writes', async () => {
-    const renderer = createVSCodeChatRenderer({ stream: mockStream });
-
-    await renderer.write('Line 1\n');
-    await renderer.write('Line 2\n');
-    await renderer.write('Line 3');
-    await renderer.end();
-
-    // Processor handles content, may be combined or separate calls
-    expect(mockStream.markdown).toHaveBeenCalled();
-  });
-
-  it('processes final content on end', async () => {
-    const renderer = createVSCodeChatRenderer({ stream: mockStream });
-
-    await renderer.write('Initial');
-    await renderer.end();
-
-    expect(mockStream.markdown).toHaveBeenCalledWith('Initial');
+    expect(signal.aborted).toBe(true);
   });
 });

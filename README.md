@@ -12,10 +12,12 @@ Composable parsers and stream processing utilities for LLM responses.
 
 - 🧠 **Thinking extraction** — Parse and separate `<think>` reasoning sections from visible output, chunk-by-chunk
 - 🧼 **XML stream filtering** — Scrub context blocks and privacy tags from streaming output
-- 🛠️ **Tool-call extraction** — Extract and validate structured XML tool invocations
+- 🛠️ **Tool-call extraction** — Extract and validate structured XML and native tool invocations
 - 🏛️ **Structured output** — JSON parsing with schema validation, depth/key limits, and auto-repair
+- 🤖 **Agent loops** — Multi-step LLM execution with configurable stop conditions and tool handling
 - 🚰 **Stream processor** — Event-driven orchestrator that composes all parsers in a single pipeline
 - 🔌 **Normalizers** — Adapters for OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock, and HF TGI
+- 💻 **VS Code integration** — ChatResponseStream renderers with thinking progress, tool feedback, and cancellation support
 - 👮‍♂️ **Safety by default** — Privacy tags are always scrubbed; JSON depth, key counts, and tool-call sizes are bounded
 
 ## Installation
@@ -161,7 +163,56 @@ if (result.success) {
 }
 ```
 
-Additional utilities: `buildFormatInstructions`, `buildRepairPrompt`, `streamJson`, `zodToJsonSchema`, `validateWithZod`, `repairWithLLM`, `pipe`.
+Additional utilities: `buildFormatInstructions`, `buildRepairPrompt`, `streamJson`, `zodToJsonSchema`, `validateWithZod`, `repairWithLLM`, `pipe`, `buildNativeToolsArray`.
+
+---
+
+### `@selfagency/llm-stream-parser/agent` — Multi-step agent loops
+
+Execute multi-step reasoning loops with automatic tool handling and configurable stopping conditions.
+
+```typescript
+import { createAgentLoop } from '@selfagency/llm-stream-parser/agent';
+
+const agent = createAgentLoop({
+  // Call your LLM with current message history
+  execute: async function* (messages) {
+    const response = await fetch('https://api.example.com/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    });
+
+    for await (const chunk of response.body) {
+      yield { content: chunk.toString(), done: false };
+    }
+  },
+
+  // Stop when thinking is detected (or return false to continue)
+  stopWhen: state => state.lastOutput.thinking.length > 0,
+
+  // Build tool results to append to conversation
+  buildToolResultMessages: async toolCalls => {
+    const results = await Promise.all(
+      toolCalls.map(async call => ({
+        role: 'user',
+        content: `Tool "${call.name}" executed with result: ${JSON.stringify(result)}`,
+      })),
+    );
+    return results;
+  },
+
+  // Optional: Called after each step
+  onStep: async result => {
+    console.log(`Step ${result.output.done ? 'done' : 'in progress'}`);
+  },
+});
+
+// Run the loop
+for await (const part of agent.run([{ role: 'user', content: 'Solve this...' }])) {
+  if (part.type === 'text') console.log(part.text);
+  if (part.type === 'tool_call') await executeTool(part.call);
+}
+```
 
 ---
 
@@ -198,6 +249,47 @@ const adapter = createGenericAdapter(
 
 await adapter.write(chunk);
 await adapter.end();
+```
+
+---
+
+### `@selfagency/llm-stream-parser/renderers/vscode` — VS Code Chat integration
+
+Stream LLM responses directly to VS Code's Chat interface with built-in support for thinking blocks, tool invocations, and token usage.
+
+```typescript
+import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+const renderer = createVSCodeChatRenderer({
+  stream, // VS Code ChatResponseStream
+  showThinking: true,
+  thinkingStyle: 'blockquote', // 'blockquote' | 'progress' | 'suppress'
+});
+
+// Stream chunks from your LLM
+for await (const chunk of llmStream) {
+  await renderer.writeChunk(chunk);
+}
+
+await renderer.end();
+```
+
+**Features:**
+
+- Automatic thinking block rendering (blockquote or progress indicator)
+- Tool invocation callbacks for real-time feedback
+- Token usage reporting
+- CancellationToken support via `cancellationTokenToAbortSignal()`
+
+**For agent loops:**
+
+```typescript
+import { createVSCodeAgentLoop } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+const renderer = createVSCodeAgentLoop({
+  stream,
+  thinkingStyle: 'blockquote', // Thinking enabled by default for agent reasoning
+});
 ```
 
 ---

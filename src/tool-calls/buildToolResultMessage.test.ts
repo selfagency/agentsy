@@ -46,6 +46,18 @@ describe('buildToolResultMessage', () => {
     expect(msg.content).toBe('Tool failed');
     expect(msg.role).toBe('tool');
   });
+
+  it('sets is_error flag when isError: true', () => {
+    const msg = buildToolResultMessage(baseCall, 'Tool failed', { isError: true });
+    expect(msg.is_error).toBe(true);
+  });
+
+  it('does not set is_error flag when isError: false or omitted', () => {
+    const msg1 = buildToolResultMessage(baseCall, 'Success', { isError: false });
+    expect(msg1.is_error).toBeUndefined();
+    const msg2 = buildToolResultMessage(baseCall, 'Success');
+    expect(msg2.is_error).toBeUndefined();
+  });
 });
 
 describe('buildAnthropicToolResult', () => {

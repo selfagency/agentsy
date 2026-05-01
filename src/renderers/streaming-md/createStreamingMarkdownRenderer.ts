@@ -44,7 +44,15 @@ export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createStreamingMarkdownRenderer(options: StreamingMarkdownRendererOptions): RendererHandle {
-  const { target, showThinking = false, thinkingContainer = null, onSecurityViolation, processor, onError, onFinish } = options;
+  const {
+    target,
+    showThinking = false,
+    thinkingContainer = null,
+    onSecurityViolation,
+    processor,
+    onError,
+    onFinish,
+  } = options;
 
   if (!target) {
     throw new Error('Target element is required for streaming markdown renderer');
@@ -109,9 +117,9 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
           const { smd, DOMPurify } = await getStreamingMarkdownDeps();
 
           // Security check: sanitize accumulated markdown
-          const sanitized = DOMPurify.default
+          void (DOMPurify.default
             ? DOMPurify.default.sanitize(accumulatedMarkdown)
-            : DOMPurify.sanitize(accumulatedMarkdown);
+            : DOMPurify.sanitize(accumulatedMarkdown));
 
           if (DOMPurify.default && DOMPurify.default.removed && DOMPurify.default.removed.length > 0) {
             // Security violation detected
@@ -138,7 +146,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
             if (smd.default && smd.default.parser_write) {
               smd.default.parser_write(parser, chunk);
             }
-          } catch (e) {
+          } catch {
             // Continue even if streaming fails
           }
         }
@@ -194,8 +202,9 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
     },
 
     async end(): Promise<void> {
+      let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
-        const result = llmProcessor.flush();
+        result = llmProcessor.flush();
 
         // Process any final parts
         for (const part of result.parts) {
@@ -219,7 +228,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
         // Finalize streaming: render any remaining markdown
         if (accumulatedMarkdown) {
-          const { smd, DOMPurify } = await getStreamingMarkdownDeps();
+          const { smd } = await getStreamingMarkdownDeps();
 
           // Create parser if not already created
           if (!parser && smd.default && smd.default.parser_create) {
@@ -236,6 +245,11 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         } else {
           throw error;
         }
+      }
+
+      // Fire onFinish callback to signal stream completion
+      if (result?.done && onFinish) {
+        onFinish(result.finishReason, result.usage);
       }
     },
   };

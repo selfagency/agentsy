@@ -30,7 +30,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
     case 'text_part_added': {
       // Find message and append text part
-      const messages = state.messages.map((msg) => {
+      const messages = state.messages.map(msg => {
         if (msg.id === event.messageId) {
           return {
             ...msg,
@@ -56,7 +56,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
     case 'thinking_part_added': {
       // Find message and append thinking part
-      const messages = state.messages.map((msg) => {
+      const messages = state.messages.map(msg => {
         if (msg.id === event.messageId) {
           return {
             ...msg,
@@ -82,7 +82,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
     case 'tool_call_part_added': {
       // Find message and append tool call part
-      const messages = state.messages.map((msg) => {
+      const messages = state.messages.map(msg => {
         if (msg.id === event.messageId) {
           return {
             ...msg,
@@ -112,7 +112,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
       // Find message and set finishReason, usage, calculate tokens
       let totalTokens = state.totalTokens;
 
-      const messages = state.messages.map((msg) => {
+      const messages = state.messages.map(msg => {
         if (msg.id === event.messageId) {
           const finishReason = event.finishReason;
           const usage = event.usage;

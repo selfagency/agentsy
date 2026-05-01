@@ -39,7 +39,14 @@ export interface CliRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createCliRenderer(options: CliRendererOptions = {}): RendererHandle {
-  const { output = process.stdout, showThinking = false, thinkingStyle = 'blockquote', processor, onError, onFinish } = options;
+  const {
+    output = process.stdout,
+    showThinking = false,
+    thinkingStyle = 'blockquote',
+    processor,
+    onError,
+    onFinish,
+  } = options;
 
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
@@ -151,8 +158,9 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     },
 
     async end(): Promise<void> {
+      let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
-        const result = llmProcessor.flush();
+        result = llmProcessor.flush();
 
         // Process any final parts
         for (const part of result.parts) {
@@ -195,6 +203,11 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
         } else {
           throw error;
         }
+      }
+
+      // Fire onFinish callback to signal stream completion
+      if (result?.done && onFinish) {
+        onFinish(result.finishReason, result.usage);
       }
     },
   };

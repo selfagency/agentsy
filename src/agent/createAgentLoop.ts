@@ -5,9 +5,25 @@ import type {
   AgentLoopState,
   OutputPart,
   StepResult,
-  StopCondition,
   StreamChunk,
 } from './types.js';
+
+/**
+ * Deep equality comparison for tool parameters.
+ * Compares objects structurally rather than by reference.
+ * @internal
+ */
+function parametersEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+    return false;
+  }
+  const aKeys = Object.keys(a).sort();
+  const bKeys = Object.keys(b).sort();
+  if (aKeys.length !== bKeys.length) return false;
+  if (!aKeys.every((k, i) => k === bKeys[i])) return false;
+  return aKeys.every(k => parametersEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}
 
 /**
  * Creates an agent loop handle for multi-step LLM execution with configurable stop conditions.
@@ -35,9 +51,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     };
 
     const maxSteps = options.maxSteps ?? 20;
-    const stopConditions = Array.isArray(options.stopWhen)
-      ? options.stopWhen
-      : [options.stopWhen];
+    const stopConditions = Array.isArray(options.stopWhen) ? options.stopWhen : [options.stopWhen];
 
     let currentMessages = initialMessages;
 
@@ -94,21 +108,13 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       state.steps.push(stepResult);
       state.stepIndex = state.steps.length - 1;
 
-      // Update doom-loop counter
-      if (
-        state.steps.length >= 2 &&
-        stepResult.toolCalls.length > 0
-      ) {
+      // Update doom-loop counter using deep equality instead of JSON.stringify
+      if (state.steps.length >= 2 && stepResult.toolCalls.length > 0) {
         const prevStep = state.steps[state.steps.length - 2];
         if (prevStep && prevStep.toolCalls.length > 0) {
           const prev = prevStep.toolCalls[0];
           const curr = stepResult.toolCalls[0];
-          if (
-            prev &&
-            curr &&
-            prev.name === curr.name &&
-            JSON.stringify(prev.parameters) === JSON.stringify(curr.parameters)
-          ) {
+          if (prev && curr && prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
             state.consecutiveIdenticalCalls += 1;
           } else {
             state.consecutiveIdenticalCalls = 0;
@@ -124,7 +130,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       }
 
       // Check stop conditions
-      const shouldStop = stopConditions.every((condition) => condition(state));
+      const shouldStop = stopConditions.every(condition => condition(state));
       if (shouldStop) {
         break;
       }
@@ -135,14 +141,20 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       }
 
       // Build tool result messages and append to conversation
-      const toolResultMessages = await options.buildToolResultMessages(
-        stepResult.toolCalls,
-      );
-      currentMessages = [
+      const toolResultMessages = await options.buildToolResultMessages(stepResult.toolCalls);
+      const newMessages = [
         ...currentMessages,
         { role: 'assistant', content: finalOutput.content },
         ...toolResultMessages,
       ];
+
+      // Trim conversation history if it exceeds maxConversationMessages
+      if (options.maxConversationMessages && newMessages.length > options.maxConversationMessages) {
+        const trimmedCount = newMessages.length - options.maxConversationMessages;
+        currentMessages = newMessages.slice(trimmedCount);
+      } else {
+        currentMessages = newMessages;
+      }
     }
   }
 
@@ -154,3 +166,5 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     },
   };
 }
+
+export type AgentLoop = ReturnType<typeof createAgentLoop>;

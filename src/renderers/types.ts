@@ -44,8 +44,20 @@ export interface BaseRendererOptions {
 
 /**
  * Thinking block rendering style options.
+ * - 'blockquote': render thinking as a markdown blockquote
+ * - 'progress': render thinking as a progress indicator
+ * - 'suppress': do not render thinking even if showThinking is true
  */
 export type ThinkingStyle = 'blockquote' | 'progress' | 'suppress';
+
+/**
+ * Structural interface matching VS Code's CancellationToken.
+ * Allows renderers to support cancellation without hard dependency on vscode module.
+ */
+export interface CancellationToken {
+  readonly isCancellationRequested: boolean;
+  readonly onCancellationRequested: (listener: (e: unknown) => void) => { dispose(): void };
+}
 
 /**
  * Generic renderer handle: write-stream-like interface for composable pipelines.
