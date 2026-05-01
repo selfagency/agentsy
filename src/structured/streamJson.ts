@@ -61,6 +61,31 @@ export interface StreamJsonResult<T = unknown> {
 // ---------------------------------------------------------------------------
 
 /**
+ * Check if two arrays are deeply equal.
+ */
+function deepEqualArrays(a: readonly unknown[], b: readonly unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!deepEqual(a[i], b[i])) return false;
+  }
+  return true;
+}
+
+/**
+ * Check if two objects are deeply equal.
+ */
+function deepEqualObjects(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keysA = Object.keys(a).sort((x, y) => x.localeCompare(y));
+  const keysB = Object.keys(b).sort((x, y) => x.localeCompare(y));
+  if (keysA.length !== keysB.length) return false;
+  if (!deepEqualArrays(keysA, keysB)) return false;
+  for (const key of keysA) {
+    if (!deepEqual(a[key], b[key])) return false;
+  }
+  return true;
+}
+
+/**
  * Check deep equality between two values without serialization overhead.
  * More performant than JSON.stringify comparison for deep equality checks.
  */
@@ -71,25 +96,12 @@ function deepEqual(a: unknown, b: unknown): boolean {
 
   // Compare arrays
   if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
-    }
-    return true;
+    return deepEqualArrays(a, b);
   }
 
   // Compare objects
   if (!Array.isArray(a) && !Array.isArray(b)) {
-    const keysA = Object.keys(a as Record<string, unknown>).sort();
-    const keysB = Object.keys(b as Record<string, unknown>).sort();
-    if (keysA.length !== keysB.length) return false;
-    if (!deepEqual(keysA, keysB)) return false;
-    for (const key of keysA) {
-      if (!deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
-        return false;
-      }
-    }
-    return true;
+    return deepEqualObjects(a as Record<string, unknown>, b as Record<string, unknown>);
   }
 
   return false;
@@ -168,7 +180,7 @@ export async function* streamJson<T = unknown>(
   }
 
   let accumulated = '';
-  let lastParsed: unknown | undefined;
+  let lastParsed: unknown;
   let lastWasPartial = false;
   let prevPaths: Map<string, unknown> = new Map();
   let rootComplete = false;
