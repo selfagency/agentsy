@@ -1,0 +1,36 @@
+src/ag-ui/index.ts
+  h_5cf1e2c1161853 9-10,12,14-16,18-19,22,24-25
+src/ag-ui/state-manager.ts
+  h_5cf1e2c1161853 8
+src/ag-ui/state-manager.test.ts
+  h_5cf1e2c1161853 7,9,12
+src/ag-ui/adapter.test.ts
+  h_5cf1e2c1161853 8
+src/ag-ui/reasoning-mapper.test.ts
+  h_5cf1e2c1161853 7
+src/ag-ui/observable.test.ts
+  h_5cf1e2c1161853 7
+src/ag-ui/reasoning-mapper.ts
+  h_5cf1e2c1161853 9,12-13
+src/ag-ui/adapter.ts
+  h_5cf1e2c1161853 10-11,14-15,17,19-22
+src/agent/types.ts
+  h_5cf1e2c1161853 1-2,4,8
+src/ag-ui/interrupt-handler.test.ts
+  h_5cf1e2c1161853 7,10-12
+src/agent/createAgentLoop.ts
+  h_5cf1e2c1161853 2-3
+src/ag-ui/event-converters.test.ts
+  h_5cf1e2c1161853 7,9-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "870521e60345ad5bed62ba2a7d5f11d04ac3c994",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
