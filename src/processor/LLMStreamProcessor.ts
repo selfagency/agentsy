@@ -122,6 +122,7 @@ export type StreamEventMap = {
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
 const DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE = 64;
 const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
+// biome-ignore lint/complexity/noUnusedVariables: Reserved for future XML nesting depth limits
 const _DEFAULT_MAX_XML_NESTING_DEPTH = 64; // Reserved for future XML nesting depth limits
 const DEFAULT_MAX_RESIDUAL_BYTES = 1024 * 1024; // 1 MiB
 const DEFAULT_MAX_WARNINGS = 100;

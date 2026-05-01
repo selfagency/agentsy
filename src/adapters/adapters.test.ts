@@ -23,7 +23,7 @@ describe('processStream', () => {
 
 describe('createVSCodeCopilotAdapter', () => {
   it('routes thinking/content to markdown and tool calls to callback', async () => {
-    const markdown = vi.fn<(_text: string) => void>();
+    const markdown = vi.fn<(_text: string) => void>(); // Setup; not used in this test branch
     const onToolCall = vi.fn<(call: unknown) => void>();
     const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
     const adapter = createVSCodeCopilotAdapter({
@@ -112,7 +112,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('propagates errors from callbacks via onError', async () => {
-    const onError = vi.fn<(_error: Error, context: unknown) => void>();
+    const onError = vi.fn<(_error: Error, context: unknown) => void>(); // Called in test expectation
     const adapter = createGenericAdapter(
       {
         onContent: () => {
@@ -131,7 +131,7 @@ describe('createGenericAdapter', () => {
   it('handles errors when onError callback throws', async () => {
     const onError = vi.fn<(_error: Error, context: unknown) => void>(() => {
       throw new Error('onError failed');
-    });
+    }); // Called in test expectation
     const adapter = createGenericAdapter(
       {
         onContent: () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SSEParser, parseSSEStream } from './index.js';
 
 // Helper to create SSEParser with event collection
-function createParser(onError?: (error: Error) => void) {
+function createParser(onError?: (_error: Error) => void) {
   const events: unknown[] = [];
   const parser = new SSEParser({
     onEvent: event => events.push(event),
@@ -173,6 +173,7 @@ describe('SSEParser', () => {
 });
 
 // Async generator fixtures for parseSSEStream tests
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by SSE parser
 async function* basicChunks() {
   yield 'data: hello\n';
   yield '\n';
@@ -187,6 +188,7 @@ async function* basicAsyncChunks() {
   yield '\n';
 }
 
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by SSE parser
 async function* crossChunkSplitChunks() {
   yield 'data: hel';
   yield 'lo\n\n';

@@ -57,6 +57,7 @@ const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
 /**
  * Processes an SSE event and yields pipeline events.
  */
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by createPipeline
 async function* processSSEEvent(
   sseEvent: { data?: string },
   normalizer: Normalizer,
