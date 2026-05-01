@@ -4,6 +4,46 @@ import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 import type { FinishReason } from '../tool-calls/types.js';
 
+// Helper functions for ConversationStore tests
+function startMessage(
+  store: ReturnType<typeof createConversationStore>,
+  role: 'user' | 'assistant',
+  messageId: string,
+): void {
+  store.dispatch({ type: 'message_started', role, messageId });
+}
+
+function addTextPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
+  store.dispatch({ type: 'text_part_added', messageId, text });
+}
+
+function addThinkingPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
+  store.dispatch({ type: 'thinking_part_added', messageId, text });
+}
+
+function addToolCallPart(
+  store: ReturnType<typeof createConversationStore>,
+  messageId: string,
+  toolCall: { id: string; name: string; parameters: Record<string, unknown> },
+): void {
+  store.dispatch({ type: 'tool_call_part_added', messageId, toolCall });
+}
+
+function finishMessage(
+  store: ReturnType<typeof createConversationStore>,
+  messageId: string,
+  finishReason?: FinishReason,
+  usage?: { inputTokens: number; outputTokens: number; totalTokens: number },
+): void {
+  if (finishReason && usage) {
+    store.dispatch({ type: 'message_finished', messageId, finishReason, usage });
+  } else if (finishReason) {
+    store.dispatch({ type: 'message_finished', messageId, finishReason });
+  } else {
+    store.dispatch({ type: 'message_finished', messageId });
+  }
+}
+
 describe('UI Event Sourcing', () => {
   describe('applyConversationEvent', () => {
     const initialState: UIConversation = {
@@ -234,44 +274,6 @@ describe('UI Event Sourcing', () => {
   });
 
   describe('ConversationStore', () => {
-    function startMessage(
-      store: ReturnType<typeof createConversationStore>,
-      role: 'user' | 'assistant',
-      messageId: string,
-    ): void {
-      store.dispatch({ type: 'message_started', role, messageId });
-    }
-
-    function addTextPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
-      store.dispatch({ type: 'text_part_added', messageId, text });
-    }
-
-    function addThinkingPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
-      store.dispatch({ type: 'thinking_part_added', messageId, text });
-    }
-
-    function addToolCallPart(
-      store: ReturnType<typeof createConversationStore>,
-      messageId: string,
-      toolCall: { id: string; name: string; parameters: Record<string, unknown> },
-    ): void {
-      store.dispatch({ type: 'tool_call_part_added', messageId, toolCall });
-    }
-
-    function finishMessage(
-      store: ReturnType<typeof createConversationStore>,
-      messageId: string,
-      finishReason?: FinishReason,
-      usage?: { inputTokens: number; outputTokens: number; totalTokens: number },
-    ): void {
-      if (finishReason && usage) {
-        store.dispatch({ type: 'message_finished', messageId, finishReason, usage });
-      } else if (finishReason) {
-        store.dispatch({ type: 'message_finished', messageId, finishReason });
-      } else {
-        store.dispatch({ type: 'message_finished', messageId });
-      }
-    }
     it('should initialize with empty state', () => {
       const store = createConversationStore('conv-1');
       const state = store.getState();

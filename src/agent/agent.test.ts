@@ -4,6 +4,38 @@ import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStep
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';
 import type { ProcessedOutput } from '../processor/LLMStreamProcessor.js';
 
+// Helper functions for doom loop tests
+function createMockOutput(toolCalls: XmlToolCall[]): ProcessedOutput {
+  return {
+    thinking: '',
+    content: '',
+    toolCalls,
+    done: false,
+    parts: [],
+    incomplete: false,
+    incompleteness: [],
+  };
+}
+
+function createMockStep(toolCall: XmlToolCall): StepResult {
+  return {
+    output: createMockOutput([toolCall]),
+    toolCalls: [toolCall],
+    finishReason: undefined,
+    usage: undefined,
+  };
+}
+
+function createMockState(steps: StepResult[], lastToolCalls: XmlToolCall[], consecutiveCount: number): AgentLoopState {
+  return {
+    steps,
+    stepIndex: steps.length - 1,
+    lastOutput: createMockOutput(lastToolCalls),
+    toolCallCount: steps.length,
+    consecutiveIdenticalCalls: consecutiveCount,
+  };
+}
+
 describe('Stop Conditions', () => {
   describe('isStepCount', () => {
     it('should stop after reaching max steps', () => {
@@ -252,41 +284,6 @@ describe('Stop Conditions', () => {
   });
 
   describe('detectDoomLoop', () => {
-    function createMockOutput(toolCalls: XmlToolCall[]): ProcessedOutput {
-      return {
-        thinking: '',
-        content: '',
-        toolCalls,
-        done: false,
-        parts: [],
-        incomplete: false,
-        incompleteness: [],
-      };
-    }
-
-    function createMockStep(toolCall: XmlToolCall): StepResult {
-      return {
-        output: createMockOutput([toolCall]),
-        toolCalls: [toolCall],
-        finishReason: undefined,
-        usage: undefined,
-      };
-    }
-
-    function createMockState(
-      steps: StepResult[],
-      lastToolCalls: XmlToolCall[],
-      consecutiveCount: number,
-    ): AgentLoopState {
-      return {
-        steps,
-        stepIndex: steps.length - 1,
-        lastOutput: createMockOutput(lastToolCalls),
-        toolCallCount: steps.length,
-        consecutiveIdenticalCalls: consecutiveCount,
-      };
-    }
-
     it('should detect identical tool calls repeated n times', () => {
       const condition = detectDoomLoop(2);
       const toolCall: XmlToolCall = {

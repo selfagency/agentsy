@@ -45,11 +45,12 @@ export interface GeminiToolResult {
 function normalizeContent(result: string | object): string {
   if (typeof result === 'string') return result;
   try {
-    const serialized = JSON.stringify(result);
-    return serialized ?? String(result);
+    return JSON.stringify(result);
   } catch {
     // Handle circular references, BigInt, or other non-serializable values
-    return String(result);
+    return typeof result === 'object'
+      ? `[object ${(result?.constructor as { name?: string })?.name ?? 'Object'}]`
+      : String(result);
   }
 }
 

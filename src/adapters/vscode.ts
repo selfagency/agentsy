@@ -23,6 +23,7 @@ import type { FinishReason } from '../tool-calls/types.js';
  * const renderer = createVSCodeChatRenderer({ stream, processor, ... });
  * ```
  */
+// oxlint-disable-next-line no-deprecated
 export interface VSCodeChatStream {
   markdown(text: string): void | Promise<void>;
 }

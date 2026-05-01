@@ -16,17 +16,12 @@ interface DOMElement {
 }
 
 /**
- * Type for streaming-markdown parser instance.
- */
-type StreamingMarkdownParser = unknown;
-
-/**
  * Interface for streaming-markdown module.
  */
 interface StreamingMarkdownModule {
-  parser_create: (options: { target: DOMElement }) => StreamingMarkdownParser;
-  parser_write?: (parser: StreamingMarkdownParser, chunk: string) => void;
-  parser_end?: (parser: StreamingMarkdownParser) => void;
+  parser_create: (options: { target: DOMElement }) => unknown;
+  parser_write?: (parser: unknown, chunk: string) => void;
+  parser_end?: (parser: unknown) => void;
 }
 
 /**
@@ -93,7 +88,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
-  let parser: StreamingMarkdownParser | null = null;
+  let parser: unknown | null = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
   async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> {
