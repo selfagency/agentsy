@@ -593,6 +593,28 @@ describe('Phase 1 — type exports', () => {
     const values: FinishReason[] = ['stop', 'length', 'tool-calls', 'content-filter', 'other', 'error'];
     expect(values).toHaveLength(6);
   });
+
+  it('propagates stepIndex and stepUsage from the input chunk', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({
+      content: 'step output',
+      stepIndex: 2,
+      stepUsage: { inputTokens: 11, outputTokens: 7 },
+    });
+
+    expect(result.stepIndex).toBe(2);
+    expect(result.stepUsage).toEqual({ inputTokens: 11, outputTokens: 7 });
+  });
+
+  it('does not invent step metadata during flush()', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'plain output' });
+
+    const result = processor.flush();
+
+    expect(result.stepIndex).toBeUndefined();
+    expect(result.stepUsage).toBeUndefined();
+  });
 });
 
 describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {

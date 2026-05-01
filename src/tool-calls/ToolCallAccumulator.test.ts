@@ -109,6 +109,19 @@ describe('ToolCallAccumulator', () => {
       const flushed = acc.flush();
       expect(flushed).toHaveLength(1);
     });
+
+    it('reports awaiting-input, input-streaming, and input-complete states for pending calls', () => {
+      const acc = new ToolCallAccumulator();
+
+      acc.addDelta({ index: 0, name: 'fn' });
+      expect(acc.getPendingToolCallState(0)).toBe('awaiting-input');
+
+      acc.addDelta({ index: 0, argumentsDelta: '{"a":' });
+      expect(acc.getPendingToolCallState(0)).toBe('input-streaming');
+
+      acc.addDelta({ index: 0, argumentsDelta: '1}' });
+      expect(acc.getPendingToolCallState(0)).toBe('input-complete');
+    });
   });
 
   describe('reset', () => {
@@ -222,6 +235,45 @@ describe('LLMStreamProcessor — native tool call accumulation', () => {
     });
 
     expect(received).toEqual(['new_fn']);
+  });
+
+  it('emits lifecycle-aware tool_call parts for awaiting-input and input-streaming states', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const parts: Array<{ name: string; state: string }> = [];
+
+    processor.on('tool_call_part', part => {
+      parts.push({ name: part.call.name, state: part.state });
+    });
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_1', name: 'lookup' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"q":' }] });
+
+    expect(parts).toContainEqual({ name: 'lookup', state: 'awaiting-input' });
+    expect(parts).toContainEqual({ name: 'lookup', state: 'input-streaming' });
+  });
+
+  it('emits reducer-friendly conversation events while processing a stream', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true, scrubContextTags: false });
+    const events: string[] = [];
+
+    processor.on('conversation_event', event => {
+      events.push(event.type);
+    });
+
+    processor.process({ stepIndex: 0, thinking: 'plan' });
+    processor.process({ content: 'hello' });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_1', name: 'lookup' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"q":' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '"ts"}' }] });
+    processor.process({ done: true, finishReason: 'tool-calls' });
+
+    expect(events).toContain('step_started');
+    expect(events).toContain('thinking_part_added');
+    expect(events).toContain('text_part_added');
+    expect(events).toContain('tool_call_part_added');
+    expect(events).toContain('tool_call_updated');
+    expect(events).toContain('message_finished');
+    expect(events).toContain('step_finished');
   });
 
   it('does not duplicate native tool calls when processComplete() is called', () => {
