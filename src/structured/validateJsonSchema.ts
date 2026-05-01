@@ -144,8 +144,11 @@ function checkRef(
     errors.push(`${path}: $ref not found in $defs: ${ref}`);
     return true;
   }
+  // Context must be defined at this point since defSchema was found in context.defs.
+  // biome-ignore lint/suspicious/noNonNullAssertion: safe due to control flow
   const newResolving = new Set(context!.resolving);
   newResolving.add(defName);
+  // biome-ignore lint/suspicious/noNonNullAssertion: safe due to control flow
   validateNode(value, defSchema, path, errors, { defs: context!.defs, resolving: newResolving });
   return true;
 }

@@ -937,6 +937,7 @@ describe('normalizeHuggingFaceTGIChunk', () => {
   });
 
   it('sets done=true for stop_sequence and length finish reasons', () => {
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const make = (finish_reason: string) =>
       normalizeHuggingFaceTGIChunk({
         index: 1,

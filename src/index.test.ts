@@ -39,6 +39,7 @@ describe('scaffold exports', () => {
     expect(typeof formatXmlLikeResponseForDisplay).toBe('function');
 
     const mockStream = { markdown: (_text: string) => {} };
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const mockOnToolCall = () => {};
     const adapter = createVSCodeCopilotAdapter({
       processor,

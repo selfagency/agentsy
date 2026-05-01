@@ -38,7 +38,9 @@ describe('captureStreamState', () => {
     const snap = captureStreamState(processor);
 
     expect(snap.toolCalls).toHaveLength(1);
-    expect(snap.toolCalls[0]!.name).toBe('lookup');
+    const toolCall = snap.toolCalls[0];
+    expect(toolCall).toBeDefined();
+    expect(toolCall?.name).toBe('lookup');
   });
 
   it('captures usage when present', () => {
@@ -75,8 +77,10 @@ describe('buildContinuationPrompt', () => {
     const messages = buildContinuationPrompt(snap);
 
     expect(messages).toHaveLength(1);
-    expect(messages[0]!.role).toBe('user');
-    expect(messages[0]!.content).toBeTruthy();
+    const msg = messages[0];
+    expect(msg).toBeDefined();
+    expect(msg?.role).toBe('user');
+    expect(msg?.content).toBeTruthy();
   });
 
   it('openai provider returns [assistant partial, user continue] pair', () => {
@@ -87,9 +91,13 @@ describe('buildContinuationPrompt', () => {
     const messages = buildContinuationPrompt(snap, { provider: 'openai' });
 
     expect(messages).toHaveLength(2);
-    expect(messages[0]!.role).toBe('assistant');
-    expect(messages[0]!.content).toBe('Once upon a time,');
-    expect(messages[1]!.role).toBe('user');
+    const msg0 = messages[0];
+    const msg1 = messages[1];
+    expect(msg0).toBeDefined();
+    expect(msg1).toBeDefined();
+    expect(msg0?.role).toBe('assistant');
+    expect(msg0?.content).toBe('Once upon a time,');
+    expect(msg1?.role).toBe('user');
   });
 
   it('anthropic provider returns [assistant partial] only (prefill)', () => {
@@ -100,8 +108,10 @@ describe('buildContinuationPrompt', () => {
     const messages = buildContinuationPrompt(snap, { provider: 'anthropic' });
 
     expect(messages).toHaveLength(1);
-    expect(messages[0]!.role).toBe('assistant');
-    expect(messages[0]!.content).toBe('The answer is');
+    const msg = messages[0];
+    expect(msg).toBeDefined();
+    expect(msg?.role).toBe('assistant');
+    expect(msg?.content).toBe('The answer is');
   });
 
   it('ollama provider behaves the same as openai', () => {
@@ -133,6 +143,6 @@ describe('buildContinuationPrompt', () => {
     const snap = captureStreamState(processor);
     const messages = buildContinuationPrompt(snap, { provider: 'anthropic' });
 
-    expect(messages[0]!.content).toBe('lots of whitespace');
+    expect(messages[0]?.content).toBe('lots of whitespace');
   });
 });
