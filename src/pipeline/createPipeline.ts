@@ -1,17 +1,17 @@
 import type { ReadableStream } from 'node:stream/web';
 
-import { parseSSEStream } from '../sse/index.js';
-import { normalizeOpenAIChatChunk } from '../normalizers/openai.js';
 import { normalizeAnthropicEvent } from '../normalizers/anthropic.js';
-import { normalizeGeminiChunk } from '../normalizers/gemini.js';
 import { normalizeBedrockConverseEvent } from '../normalizers/bedrock.js';
+import { normalizeCohereEvent } from '../normalizers/cohere.js';
+import { normalizeGeminiChunk } from '../normalizers/gemini.js';
+import { normalizeHuggingFaceTGIChunk } from '../normalizers/hfTgi.js';
 import { normalizeMistralChunk } from '../normalizers/mistral.js';
 import { normalizeOllamaChatChunk } from '../normalizers/ollama.js';
-import { normalizeCohereEvent } from '../normalizers/cohere.js';
-import { normalizeHuggingFaceTGIChunk } from '../normalizers/hfTgi.js';
+import { normalizeOpenAIChatChunk } from '../normalizers/openai.js';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
+import { parseSSEStream } from '../sse/index.js';
 
 export type NormalizerProvider =
   | 'openai'

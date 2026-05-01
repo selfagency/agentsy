@@ -12,8 +12,8 @@ exclude_paths:
   - .gh-pages/**
   - dist/**
   - node_modules/**
-  - '**/*.test.ts'  # Exclude tests from complexity analysis
-  - '**/*.spec.ts'  # Exclude specs from complexity analysis
+  - '**/*.test.ts' # Exclude tests from complexity analysis
+  - '**/*.spec.ts' # Exclude specs from complexity analysis
 
 # Runtimes needed for analysis (Node.js only for this TypeScript project)
 runtimes:
@@ -35,7 +35,7 @@ engines:
       languages:
         - typescript
         - javascript
-  
+
   # ESLint: Already using Biome in the project for linting,
   # but Codacy can also run ESLint for additional checks
   eslint-8:
