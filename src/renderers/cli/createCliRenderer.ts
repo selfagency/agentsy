@@ -51,6 +51,9 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
 
+  // Guard flag to prevent double onFinish callback invocation
+  let finished = false;
+
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
 
@@ -144,8 +147,9 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
           }
         }
 
-        // Fire onFinish callback if stream is done
-        if (chunk.done === true && onFinish) {
+        // Fire onFinish callback if stream is done (guard against double invocation)
+        if (chunk.done === true && !finished && onFinish) {
+          finished = true;
           await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {
@@ -185,7 +189,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
           }
         }
 
-        // Render accumulated markdown via cli-markdown
+        // Render accumulated markdown via cli-markdown (safe: only call on actual output streams)
         if (accumulatedMarkdown) {
           const md = await getCliMarkdown();
           // cli-markdown returns ANSI-formatted string
@@ -193,8 +197,13 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
           writeOutput(formatted);
         }
 
-        // Ensure output is flushed if it has an `end()` method
-        if (typeof output === 'object' && 'end' in output && typeof output.end === 'function') {
+        // Only call end() on actual streams, not on process.stdout
+        if (
+          typeof output === 'object' &&
+          output !== process.stdout &&
+          'end' in output &&
+          typeof output.end === 'function'
+        ) {
           output.end();
         }
       } catch (error) {
@@ -205,9 +214,10 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
         }
       }
 
-      // Fire onFinish callback to signal stream completion
-      if (result?.done && onFinish) {
-        onFinish(result.finishReason, result.usage);
+      // Fire onFinish callback to signal stream completion (if not already fired in writeChunk)
+      if (!finished && result?.done && onFinish) {
+        finished = true;
+        await onFinish(result.finishReason, result.usage);
       }
     },
   };

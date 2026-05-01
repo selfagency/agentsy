@@ -24,6 +24,9 @@ export function createSharedRendererHandle(
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
 
+  // Guard flag to prevent double onFinish callback invocation
+  let finished = false;
+
   /**
    * Process output parts through registered handlers.
    */
@@ -73,8 +76,9 @@ export function createSharedRendererHandle(
         const result = llmProcessor.process(chunk);
         await processParts(result.parts);
 
-        // Fire onFinish callback if stream is done
-        if (chunk.done === true && onFinish) {
+        // Fire onFinish callback if stream is done (guard against double invocation)
+        if (chunk.done === true && !finished && onFinish) {
+          finished = true;
           await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {
@@ -91,7 +95,9 @@ export function createSharedRendererHandle(
         const result = llmProcessor.flush();
         await processParts(result.parts);
 
-        if (onFinish) {
+        // Fire onFinish if not already fired in writeChunk
+        if (!finished && onFinish) {
+          finished = true;
           await onFinish(result.finishReason, result.usage);
         }
 

@@ -1,12 +1,5 @@
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
-import type {
-  AgentLoopHandle,
-  AgentLoopOptions,
-  AgentLoopState,
-  OutputPart,
-  StepResult,
-  StreamChunk,
-} from './types.js';
+import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
 
 /**
  * Deep equality comparison for tool parameters.
@@ -58,15 +51,9 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     while (!aborted && state.steps.length < maxSteps) {
       // Execute the step
       const processor = new LLMStreamProcessor();
-      const chunks: StreamChunk[] = [];
 
       try {
         for await (const chunk of options.execute(currentMessages)) {
-          if (aborted || abortController.signal.aborted) {
-            processor.flush();
-            break;
-          }
-          chunks.push(chunk);
           const output = processor.process(chunk);
 
           // Emit all parts from this step
@@ -129,8 +116,8 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         await options.onStep(stepResult);
       }
 
-      // Check stop conditions
-      const shouldStop = stopConditions.every(condition => condition(state));
+      // Check stop conditions - stop if ANY condition is true
+      const shouldStop = stopConditions.some(condition => condition(state));
       if (shouldStop) {
         break;
       }

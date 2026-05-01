@@ -177,21 +177,7 @@
     "vitest": "^4.1.5",
     "zx": "^8.8.5"
   },
-  "peerDependencies": {
-    "cli-markdown": "^1.2.0",
-    "dompurify": "^3.0.0",
-    "streaming-markdown": "^0.3.0"
-  },
-  "peerDependenciesMeta": {
-    "cli-markdown": {
-      "optional": true
-    },
-    "dompurify": {
-      "optional": true
-    },
-    "streaming-markdown": {
-      "optional": true
-    }
-  },
+  "peerDependencies": {},
+  "peerDependenciesMeta": {},
   "packageManager": "pnpm@10.31.0"
 }

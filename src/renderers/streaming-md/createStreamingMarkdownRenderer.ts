@@ -3,14 +3,27 @@ import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
 
 /**
+ * Structural interface for browser DOM elements.
+ * Matches HTMLElement-like objects without hard dependency on DOM types.
+ */
+interface DOMElement {
+  appendChild?(element: DOMElement): DOMElement;
+  textContent?: string;
+  innerHTML?: string;
+  className?: string;
+  id?: string;
+  [key: string]: any;
+}
+
+/**
  * Options for the browser streaming markdown renderer.
  */
 export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
-  /** Target HTML element where markdown will be rendered. Required. */
-  target: any; // HTMLElement in browser, but we use any for Node.js type compatibility
+  /** Target DOM element where markdown will be rendered. Required. */
+  target: DOMElement;
 
   /** Optional container for thinking blocks. If not provided, thinking is rendered inline. */
-  thinkingContainer?: any | null; // HTMLElement | null in browser
+  thinkingContainer?: DOMElement | null;
 
   /** Callback fired if a security violation is detected during sanitization. */
   onSecurityViolation?: () => void;
@@ -60,6 +73,9 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
+
+  // Guard flag to prevent double onFinish callback invocation
+  let finished = false;
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
@@ -226,16 +242,20 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
           }
         }
 
-        // Finalize streaming: render any remaining markdown
-        if (accumulatedMarkdown) {
+        // Finalize streaming: write any remaining markdown to parser
+        if (accumulatedMarkdown && parser) {
           const { smd } = await getStreamingMarkdownDeps();
 
-          // Create parser if not already created
-          if (!parser && smd.default && smd.default.parser_create) {
-            parser = smd.default.parser_create({ target });
+          // Write final markdown to parser
+          if (smd.default && smd.default.parser_write) {
+            smd.default.parser_write(parser, accumulatedMarkdown);
           }
+        }
 
-          if (parser && smd.default && smd.default.parser_end) {
+        // End the parser (creates final DOM output)
+        if (parser) {
+          const { smd } = await getStreamingMarkdownDeps();
+          if (smd.default && smd.default.parser_end) {
             smd.default.parser_end(parser);
           }
         }
@@ -247,9 +267,10 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         }
       }
 
-      // Fire onFinish callback to signal stream completion
-      if (result?.done && onFinish) {
-        onFinish(result.finishReason, result.usage);
+      // Fire onFinish callback to signal stream completion (guard against double invocation)
+      if (!finished && result?.done && onFinish) {
+        finished = true;
+        await onFinish(result.finishReason, result.usage);
       }
     },
   };

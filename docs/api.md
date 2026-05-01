@@ -792,11 +792,11 @@ export interface ChatResponseStream {
 
 export interface VSCodeChatRendererOptions {
   stream: ChatResponseStream;
-  showThinking?: boolean; // Default: true
+  showThinking?: boolean; // Default: false
   thinkingStyle?: 'blockquote' | 'progress' | 'suppress'; // Default: 'blockquote'
 
   onToolCall?: (call: XmlToolCall) => void | Promise<void>;
-  onFinish?: (message: AccumulatedMessage) => void;
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
   onError?: (error: Error) => void;
 }
 

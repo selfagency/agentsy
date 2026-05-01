@@ -120,8 +120,12 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
 
+  // Guard flag to prevent double onFinish callback invocation
+  let finished = false;
+
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let accumulatedThinking = '';
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
 
@@ -262,8 +266,9 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
           }
         }
 
-        // Fire onFinish callback if stream is done
-        if (chunk.done === true && onFinish) {
+        // Fire onFinish callback if stream is done (guard against double invocation)
+        if (chunk.done === true && !finished && onFinish) {
+          finished = true;
           await onFinish(chunk.finishReason, chunk.usage);
         }
         // Capability detection: report usage if available
@@ -355,8 +360,9 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         }
       }
 
-      // Fire onFinish callback to signal stream completion
-      if (result?.done && onFinish) {
+      // Fire onFinish callback to signal stream completion (if not already fired in writeChunk)
+      if (!finished && result?.done && onFinish) {
+        finished = true;
         await onFinish(result.finishReason, result.usage);
       }
       // Capability detection: report usage if available

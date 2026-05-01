@@ -54,8 +54,13 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
         }
       },
       onEnd: async () => {
-        // Call end() on stream if it has one
-        if (typeof output === 'object' && 'end' in output && typeof output.end === 'function') {
+        // Call end() on stream if it has one (but not on process.stdout)
+        if (
+          typeof output === 'object' &&
+          output !== process.stdout &&
+          'end' in output &&
+          typeof output.end === 'function'
+        ) {
           output.end();
         }
       },

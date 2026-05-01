@@ -207,8 +207,8 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
       console.log(`Tool called: ${call.name}`);
       // Execute tool and return results
     },
-    onFinish: message => {
-      console.log('Chat finished:', message.content);
+    onFinish: (finishReason, usage) => {
+      console.log('Chat finished. Reason:', finishReason, 'Usage:', usage);
     },
   });
 

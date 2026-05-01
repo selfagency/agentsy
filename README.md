@@ -342,7 +342,7 @@ import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers
 const renderer = createPlainTextRenderer({
   showThinking: true,
   thinkingPrefix: '[💭] ', // customize thinking block prefix
-  outputFn: text => process.stdout.write(text), // optional; defaults to console.log
+  output: text => process.stdout.write(text), // optional; defaults to process.stdout
 });
 
 await renderer.write(chunk);
@@ -364,7 +364,7 @@ import { createCliRenderer } from '@selfagency/llm-stream-parser/renderers/cli';
 const renderer = createCliRenderer({
   showThinking: true,
   thinkingStyle: 'blockquote', // or 'suppress'
-  outputFn: text => process.stdout.write(text),
+  output: text => process.stdout.write(text),
 });
 
 await renderer.write(chunk);
