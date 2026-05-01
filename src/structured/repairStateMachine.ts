@@ -2,6 +2,13 @@
  * Stack-based state machine for incremental JSON repair.
  * Improves upon bracket-matching by tracking string/escape state,
  * incomplete numbers/keywords, and providing rollback positions.
+ *
+ * @remarks
+ * This is an alternative JSON repair implementation currently not in use.
+ * The simpler bracket-matching approach in `parseJson.ts` handles current needs well.
+ * This state machine exists as a future-proof upgrade path if repair edge cases
+ * are discovered or stricter handling of escape sequences becomes necessary.
+ * It has comprehensive tests and can be swapped in by updating the repair flow in `parseJson.ts`.
  */
 
 export interface RepairState {
