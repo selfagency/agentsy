@@ -235,6 +235,15 @@ async function main() {
   process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
   const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
 
+  // If NPM_TOKEN is provided in the environment, configure it for npm.
+  if (process.env.NPM_TOKEN) {
+    // Parse registry hostname from the registry URL.
+    const registryUrl = new URL(NPM_REGISTRY);
+    const registryHost = registryUrl.hostname;
+    // Set the auth token for this registry.
+    process.env[`npm_config__${registryHost}_:_authToken`] = process.env.NPM_TOKEN;
+  }
+
   await checkNpmCredentials(NPM_REGISTRY);
 
   const githubToken = await resolveGithubToken();
@@ -397,7 +406,6 @@ async function main() {
     branch: null,
   });
 
-  releaseDone = true;
   console.log(`✅ GitHub release complete: ${tag} → ${headSha}`);
 
   // --- npm publish ----------------------------------------------------------
@@ -411,13 +419,22 @@ async function main() {
   const distTag = version.includes('-') ? 'next' : 'latest';
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   $.verbose = true;
-  // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
-  const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
-    ? ['--access', 'public']
-    : [];
-  await $`npm publish ./dist --tag ${distTag} --registry=${NPM_REGISTRY} ${accessFlag}`;
+  try {
+    // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
+    const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
+      ? ['--access', 'public']
+      : [];
+    await $`npm publish ./dist --tag ${distTag} --registry=${NPM_REGISTRY} ${accessFlag}`;
+  } catch (err) {
+    $.verbose = false;
+    console.error(`❌ npm publish failed.`);
+    // Ensure rollback is not marked as done so that tag/commit cleanup happens.
+    releaseDone = false;
+    throw err;
+  }
   $.verbose = false;
   console.log(`✅ Published ${tag} to npm.`);
+  releaseDone = true;
 }
 
 // ---------------------------------------------------------------------------
