@@ -128,7 +128,7 @@ describe('fieldValidator', () => {
     });
 
     it('enum validator', () => {
-      const status = validators.enum(['active', 'inactive', 'pending']);
+      const status = validators.enumValues(['active', 'inactive', 'pending']);
       expect(status('active')).toBe(true);
       expect(status('unknown')).not.toBe(true);
     });
@@ -148,7 +148,7 @@ describe('fieldValidator', () => {
         },
       });
 
-      const event = validator.validateField('email', 'user@example.com');
+      const event = validator.validateFieldAtPath('email', 'user@example.com');
       expect(event.valid).toBe(true);
       expect(event.path).toBe('email');
       expect(event.value).toBe('user@example.com');
@@ -163,7 +163,7 @@ describe('fieldValidator', () => {
         onFieldValidation,
       });
 
-      validator.validateField('email', 'user@example.com');
+      validator.validateFieldAtPath('email', 'user@example.com');
       expect(onFieldValidation).toHaveBeenCalled();
       const calls = onFieldValidation.mock.calls;
       expect(calls).toHaveLength(1);
@@ -179,7 +179,7 @@ describe('fieldValidator', () => {
         },
       });
 
-      const event = validator.validateField('unknownField', 'value');
+      const event = validator.validateFieldAtPath('unknownField', 'value');
       expect(event.valid).toBe(true);
     });
 
@@ -210,7 +210,7 @@ describe('fieldValidator', () => {
         },
       });
 
-      const event = validator.validateField('age', -5);
+      const event = validator.validateFieldAtPath('age', -5);
       expect(event.valid).toBe(false);
       expect(event.error).toBeDefined();
     });
@@ -224,7 +224,7 @@ describe('fieldValidator', () => {
         startTime,
       });
 
-      const event = validator.validateField('email', 'user@example.com');
+      const event = validator.validateFieldAtPath('email', 'user@example.com');
       expect(event.timestamp).toBeDefined();
       expect(event.timestamp).toBeGreaterThanOrEqual(0);
     });
@@ -363,8 +363,8 @@ describe('fieldValidator', () => {
         },
       });
 
-      expect(validator.validateField('email', 'a@b.c').valid).toBe(false);
-      expect(validator.validateField('email', 'user@example.com').valid).toBe(true);
+      expect(validator.validateFieldAtPath('email', 'a@b.c').valid).toBe(false);
+      expect(validator.validateFieldAtPath('email', 'user@example.com').valid).toBe(true);
     });
 
     it('validates flexible input formats', () => {
@@ -374,9 +374,9 @@ describe('fieldValidator', () => {
         },
       });
 
-      expect(validator.validateField('contact', 'user@example.com').valid).toBe(true);
-      expect(validator.validateField('contact', 'https://example.com').valid).toBe(true);
-      expect(validator.validateField('contact', 'invalid').valid).toBe(false);
+      expect(validator.validateFieldAtPath('contact', 'user@example.com').valid).toBe(true);
+      expect(validator.validateFieldAtPath('contact', 'https://example.com').valid).toBe(true);
+      expect(validator.validateFieldAtPath('contact', 'invalid').valid).toBe(false);
     });
 
     it('validates numeric ranges', () => {
@@ -386,9 +386,9 @@ describe('fieldValidator', () => {
         },
       });
 
-      expect(validator.validateField('rating', 3).valid).toBe(true);
-      expect(validator.validateField('rating', 0).valid).toBe(false);
-      expect(validator.validateField('rating', 6).valid).toBe(false);
+      expect(validator.validateFieldAtPath('rating', 3).valid).toBe(true);
+      expect(validator.validateFieldAtPath('rating', 0).valid).toBe(false);
+      expect(validator.validateFieldAtPath('rating', 6).valid).toBe(false);
     });
   });
 });

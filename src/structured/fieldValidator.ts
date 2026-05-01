@@ -64,13 +64,13 @@ export function validateField(
  * Create a field-level validator for streaming JSON objects.
  */
 export function createFieldValidator(options: FieldValidatorOptions): {
-  validateField: (path: string, value: unknown) => FieldValidationEvent;
+  validateFieldAtPath: (path: string, value: unknown) => FieldValidationEvent;
   validateObject: (obj: Record<string, unknown>) => FieldValidationEvent[];
 } {
   const { schema, onFieldValidation, continueOnError = true, startTime = Date.now() } = options;
 
   return {
-    validateField(_path: string, value: unknown): FieldValidationEvent {
+    validateFieldAtPath(_path: string, value: unknown): FieldValidationEvent {
       const fieldValidator = Object.hasOwn(schema, _path) ? schema[_path] : undefined;
       if (!fieldValidator) {
         // No validator defined for this field, skip validation
@@ -102,7 +102,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
       const events: FieldValidationEvent[] = [];
 
       for (const [path, value] of Object.entries(obj)) {
-        const event = this.validateField(path, value);
+        const event = this.validateFieldAtPath(path, value);
         events.push(event);
         if (!event.valid && !continueOnError) {
           break;
@@ -197,11 +197,11 @@ export const validators = {
       return (typeof value === 'number' && value >= min && value <= max) || `must be between ${min} and ${max}`;
     },
 
-  /** Validates value matches enum */
-  enum:
-    (enumValues: unknown[]) =>
+  /** Validates value matches enum (renamed from 'enum' to avoid reserved keyword) */
+  enumValues:
+    (allowedValues: unknown[]) =>
     (value: unknown): boolean | string => {
-      return enumValues.includes(value) || `must be one of: ${enumValues.join(', ')}`;
+      return allowedValues.includes(value) || `must be one of: ${allowedValues.join(', ')}`;
     },
 };
 

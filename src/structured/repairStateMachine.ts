@@ -18,8 +18,7 @@ export interface RepairState {
 }
 
 export interface RepairStateMachineOptions {
-  /** Maximum nesting depth allowed before truncating */
-  maxDepth?: number;
+  // Reserved for future use — depth limiting is not yet implemented
 }
 
 /**

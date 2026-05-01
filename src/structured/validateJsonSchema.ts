@@ -59,15 +59,6 @@ export type JsonSchemaValidator = (
 
 export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
   validator?: JsonSchemaValidator;
-  /**
-   * Reserved for future use. Intended to limit how long an external
-   * `validator` may run before validation is aborted.
-   *
-   * **Not currently enforced** — synchronous validators cannot be timed out
-   * in single-threaded JavaScript without Worker threads. Callers should
-   * ensure their validator function completes promptly.
-   */
-  validatorTimeoutMs?: number;
 }
 
 function typeOf(value: unknown): string {

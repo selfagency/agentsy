@@ -41,7 +41,9 @@ export interface PipelineEvent {
   provider: NormalizerProvider;
 }
 
-const NORMALIZERS: Record<NormalizerProvider, (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null> = {
+type Normalizer = (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null;
+
+const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   openai: normalizeOpenAIChatChunk,
   anthropic: normalizeAnthropicEvent,
   gemini: normalizeGeminiChunk,
@@ -57,7 +59,7 @@ const NORMALIZERS: Record<NormalizerProvider, (data: unknown) => { chunk: Stream
  */
 async function* processSSEEvent(
   sseEvent: { data?: string },
-  normalizer: (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null,
+  normalizer: Normalizer,
   processor: LLMStreamProcessor,
   provider: NormalizerProvider,
   jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number },
@@ -83,7 +85,8 @@ async function* processSSEEvent(
     return;
   }
 
-  const chunk = (normalized as { chunk: StreamChunk; rawEvent?: unknown }).chunk;
+  // TypeScript knows 'chunk' is in normalized from the guard above
+  const chunk = normalized.chunk;
   const output = processor.process(chunk);
 
   if (output.thinking) {
@@ -124,10 +127,10 @@ function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
 }
 
 function buildJsonParseOptions(options: PipelineOptions): { maxJsonDepth?: number; maxJsonKeys?: number } {
-  return {
-    maxJsonDepth: options.maxJsonDepth,
-    maxJsonKeys: options.maxJsonKeys,
-  };
+  const jsonParseOpts: { maxJsonDepth?: number; maxJsonKeys?: number } = {};
+  if (options.maxJsonDepth !== undefined) jsonParseOpts.maxJsonDepth = options.maxJsonDepth;
+  if (options.maxJsonKeys !== undefined) jsonParseOpts.maxJsonKeys = options.maxJsonKeys;
+  return jsonParseOpts;
 }
 
 export async function* createPipeline(

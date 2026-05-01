@@ -26,11 +26,11 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
   const firstBracket = normalized.search(/[{[]/);
   if (firstBracket === -1) return [];
 
-  const candidate = normalized.slice(firstBracket).trim();
+  const jsonSlice = normalized.slice(firstBracket).trim();
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(candidate);
+    parsed = JSON.parse(jsonSlice);
   } catch {
     return [];
   }
