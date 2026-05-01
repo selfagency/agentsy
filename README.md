@@ -4,6 +4,7 @@ Composable parsers and stream processing utilities for LLM responses.
 
 [![npm](https://img.shields.io/npm/v/@selfagency/llm-stream-parser)](https://www.npmjs.com/package/@selfagency/llm-stream-parser)
 [![CI](https://github.com/selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/selfagency/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/selfagency/llm-stream-parser/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/llm-stream-parser)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/be00077d20c54f9097c7f38bf575603f)](https://app.codacy.com/gh/selfagency/llm-stream-parser/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 

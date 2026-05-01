@@ -482,11 +482,13 @@ export interface ProcessorOptions {
   thinkingCloseTag?: string;
   thinkingTagMap?: Map<string, [string, string]>;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
+  accumulateNativeToolCalls?: boolean; // Default: true
   maxInputLength?: number; // Default: 256 KB
   maxToolCallsPerMessage?: number; // Default: 64
   maxToolArgumentBytes?: number; // Default: 128 KB
   maxWarnings?: number; // Default: 100
   maxXmlNestingDepth?: number; // Default: 64
+  maxResidualBytes?: number; // Default: 1 MB
 }
 
 export interface ProcessedOutput {

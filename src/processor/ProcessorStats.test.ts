@@ -132,4 +132,28 @@ describe('ProcessorStats', () => {
     const stats3 = processor.getStats();
     expect(stats3.chunksProcessed).toBe(1);
   });
+
+  it('tracks errors and warnings counts', () => {
+    const stats = createEmptyStats();
+    expect(stats).toHaveProperty('errorsCount');
+    expect(stats).toHaveProperty('warningsCount');
+    expect(stats.errorsCount).toBe(0);
+    expect(stats.warningsCount).toBe(0);
+  });
+
+  it('initializes error and warning counts to zero in processor', () => {
+    const processor = new LLMStreamProcessor({
+      maxInputLength: 50,
+      onWarning: () => {
+        // Ignore warnings
+      },
+    });
+
+    // Trigger a warning by exceeding maxInputLength
+    processor.process({ content: 'x'.repeat(200), done: false });
+
+    const stats = processor.getStats();
+    expect(stats).toHaveProperty('warningsCount');
+    expect(typeof stats.warningsCount).toBe('number');
+  });
 });

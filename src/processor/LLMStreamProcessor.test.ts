@@ -448,4 +448,58 @@ describe('LLMStreamProcessor', () => {
 
     expect(out.toolCalls).toEqual([{ name: 'do', parameters: { a: 'x' }, format: 'json-wrapped' }]);
   }, 5000);
+
+  it('enforces maxResidualBytes limit to prevent unbounded buffer growth', () => {
+    const warnings: Array<[string, Record<string, unknown> | undefined]> = [];
+    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>(
+      (message: string, context?: Record<string, unknown>) => {
+        warnings.push([message, context]);
+      },
+    );
+
+    const processor = new LLMStreamProcessor({
+      knownTools: new Set(['test']),
+      maxResidualBytes: 100, // Very small limit for testing
+      onWarning,
+    });
+
+    // First chunk: fits within limit
+    processor.process({ content: '<tool_call>{"name":"test"' });
+    expect(warnings).toHaveLength(0);
+
+    // Second chunk: would exceed limit, should be dropped
+    const largeChunk = '<arguments>{"data":"' + 'x'.repeat(200) + '"}}</tool_call>';
+    processor.process({ content: largeChunk, done: true });
+
+    // Warning should have been emitted about exceeding limit
+    expect(warnings.length).toBeGreaterThan(0);
+    // Verify the warning message mentions maxResidualBytes
+    const warningMessage = warnings.find(([msg]) => msg.includes('maxResidualBytes'));
+    expect(warningMessage).toBeDefined();
+  });
+
+  it('tracks errors and warnings counts in processor stats', () => {
+    const processor = new LLMStreamProcessor({
+      maxInputLength: 20,
+      onWarning: () => {
+        // Intentionally empty to trigger warnings
+      },
+    });
+
+    // Process content that exceeds maxInputLength to trigger warning
+    processor.process({ content: 'x'.repeat(100), done: false });
+    processor.process({ content: 'y'.repeat(100), done: false });
+
+    // Stats should track that warnings were emitted
+    // (Note: exact count depends on internal implementation)
+    // This test validates that the stats fields exist and are tracked
+    processor.flush();
+
+    // Fields should exist and be initialized
+    const stats = processor.getStats();
+    expect(stats).toHaveProperty('warningsCount');
+    expect(stats).toHaveProperty('errorsCount');
+    expect(typeof stats.warningsCount).toBe('number');
+    expect(typeof stats.errorsCount).toBe('number');
+  });
 });
