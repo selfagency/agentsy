@@ -2,6 +2,8 @@ import type { UsageInfo } from '../normalizers/types.js';
 import type { ProcessedOutput, StreamChunk, OutputPart } from '../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import type { FinishReason } from '../tool-calls/types.js';
+import type { AgUiEvent } from '../ag-ui/types.js';
+import type { InterruptController } from '../ag-ui/interrupt-handler.js';
 
 export type { ProcessedOutput } from '../processor/LLMStreamProcessor.js';
 export type { FinishReason } from '../tool-calls/types.js';
@@ -31,6 +33,14 @@ export interface AgentLoopOptions {
   stopWhen: StopCondition | StopCondition[];
   /** Optional callback fired after each completed step. */
   onStep?: (result: StepResult) => void | Promise<void>;
+  /** Optional callback fired for AG-UI protocol events (RUN_STARTED, STEP_STARTED, etc). */
+  onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>;
+  /** Unique identifier for this run (e.g., UUID). Used for AG-UI events. */
+  runId?: string;
+  /** Thread ID for this conversation (optional). Passed through AG-UI events. */
+  threadId?: string;
+  /** Optional interrupt controller for cancelling execution. */
+  interruptController?: InterruptController;
   /** Hard cap on loop iterations. Defaults to 20. */
   maxSteps?: number;
   /** Maximum conversation messages to retain. Older messages are trimmed. Defaults to unlimited. */
