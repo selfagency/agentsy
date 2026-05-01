@@ -17,7 +17,7 @@ export type JsonPatchOp = JsonPatchOperation;
  * Detects circular references in an object.
  * @internal
  */
-function hasCircularReference(obj: any, visited = new WeakSet()): boolean {
+function hasCircularReference(obj: unknown, visited = new WeakSet<object>()): boolean {
   if (obj === null || typeof obj !== 'object') {
     return false;
   }
@@ -161,7 +161,7 @@ export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, thr
  */
 export function applyJsonPatches(state: Record<string, any>, patches: JsonPatchOp[]): void {
   for (const patch of patches) {
-    const parts = patch.path.split('/').filter(p => p);
+    const parts = patch.path.split('/').filter(Boolean);
 
     switch (patch.op) {
       case 'add':
@@ -226,14 +226,14 @@ export class StateManager {
     if (hasCircularReference(initialState)) {
       throw new Error('Initial state contains circular references and cannot be processed');
     }
-    this.currentState = JSON.parse(JSON.stringify(initialState));
+    this.currentState = structuredClone(initialState);
   }
 
   /**
    * Gets the current state.
    */
   getCurrentState(): Record<string, any> {
-    return JSON.parse(JSON.stringify(this.currentState));
+    return structuredClone(this.currentState);
   }
 
   /**
@@ -273,7 +273,7 @@ export class StateManager {
     if (hasCircularReference(initialState)) {
       throw new Error('Initial state contains circular references and cannot be processed');
     }
-    this.currentState = JSON.parse(JSON.stringify(initialState));
+    this.currentState = structuredClone(initialState);
     this.snapshotCounter = 0;
   }
 }

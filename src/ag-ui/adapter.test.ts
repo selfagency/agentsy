@@ -48,9 +48,9 @@ describe('toAgUiStream', () => {
     expect(events[0]!.threadId).toBe(threadId);
 
     // Last event should be RUN_FINISHED
-    const lastEvent = events[events.length - 1]!;
-    expect(lastEvent.type).toBe(EventType.RUN_FINISHED);
-    expect(lastEvent.outcome?.type).toBe('success');
+    const lastEvent = events.at(-1);
+    expect(lastEvent?.type).toBe(EventType.RUN_FINISHED);
+    expect(lastEvent?.outcome?.type).toBe('success');
   });
 
   it('should convert delta events to TEXT_MESSAGE_CONTENT', async () => {
@@ -99,8 +99,8 @@ describe('toAgUiStream', () => {
     expect(contentEvents[1]!.content).toBe('Thinking step 2');
 
     // Should end with MESSAGE_END and REASONING_END
-    expect(reasoningEvents[reasoningEvents.length - 2]!.type).toBe(EventType.REASONING_MESSAGE_END);
-    expect(reasoningEvents[reasoningEvents.length - 1]!.type).toBe(EventType.REASONING_END);
+    expect(reasoningEvents.at(-2)?.type).toBe(EventType.REASONING_MESSAGE_END);
+    expect(reasoningEvents.at(-1)?.type).toBe(EventType.REASONING_END);
   });
 
   it('should convert tool_call events to TOOL_CALL_* sequence', async () => {
