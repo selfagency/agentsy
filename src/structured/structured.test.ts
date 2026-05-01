@@ -723,6 +723,42 @@ describe('validateJsonSchema — $defs and $ref', () => {
     expect(result.success).toBe(false);
     expect(result.success === false && result.errors.some(e => e.includes('circular'))).toBe(true);
   });
+
+  it('resolves a $ref to a schema that contains another $ref (tests resolving set tracking)', () => {
+    // Person → Address schema that resolves via $ref → Zip schema
+    // This tests that lines 148-149 properly create a new Set and add defName to it
+    const result = validateJsonSchema('{"address":{"zip":"12345"}}', {
+      $defs: {
+        Address: {
+          type: 'object',
+          properties: { zip: { $ref: '#/$defs/Zip' } },
+        },
+        Zip: { type: 'string', pattern: '^[0-9]{5}$' },
+      },
+      type: 'object',
+      properties: {
+        address: { $ref: '#/$defs/Address' },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('fails when nested $ref resolution does not satisfy schema', () => {
+    const result = validateJsonSchema('{"address":{"zip":"ABCDE"}}', {
+      $defs: {
+        Address: {
+          type: 'object',
+          properties: { zip: { $ref: '#/$defs/Zip' } },
+        },
+        Zip: { type: 'string', pattern: '^[0-9]{5}$' },
+      },
+      type: 'object',
+      properties: {
+        address: { $ref: '#/$defs/Address' },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('validateJsonSchema — string format', () => {
