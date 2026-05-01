@@ -1,5 +1,5 @@
 import { parseJson, type ParseJsonOptions } from './parseJson.js';
-import { type StreamingPartial } from './types.js';
+import type { StreamingPartial } from './types.js';
 
 export interface StreamJsonOptions extends ParseJsonOptions {
   /**

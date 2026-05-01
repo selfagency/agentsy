@@ -328,7 +328,7 @@ export class LLMStreamProcessor {
     const seen = new Set<string>();
     const extractedXmlToolCalls: XmlToolCall[] = [];
     function pushUnique(call: XmlToolCall) {
-      const key = call.name + '|' + JSON.stringify(call.parameters);
+      const key = `${call.name}|${JSON.stringify(call.parameters)}`;
       if (!seen.has(key)) {
         seen.add(key);
         extractedXmlToolCalls.push(call);

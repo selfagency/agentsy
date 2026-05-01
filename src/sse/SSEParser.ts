@@ -41,11 +41,9 @@ export interface SSEParserOptions {
 export class SSEParser {
   private buffer = '';
   private readonly onEventCallback: ((_event: SSEEvent) => void) | undefined;
-  private readonly onErrorCallback: ((_error: Error) => void) | undefined;
 
   constructor(options?: SSEParserOptions) {
     this.onEventCallback = options?.onEvent;
-    this.onErrorCallback = options?.onError;
   }
 
   /**
@@ -142,7 +140,7 @@ export class SSEParser {
         // RFC 8895: multiple data: lines must be concatenated with newlines
         // Use dataInitialized flag (not truthiness of event.data) to handle empty first line
         if (dataInitialized) {
-          event.data = (event.data ?? '') + `\n${value}`;
+          event.data = `${event.data ?? ''}\n${value}`;
         } else {
           event.data = value;
         }

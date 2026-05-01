@@ -1,6 +1,8 @@
 ---
 applyTo: '**/*'
-description: These are some guidelines when using the SonarQube MCP server.
+description: # Important Tool Guidelines
+
+These are some guidelines when using the SonarQube MCP server.
 ---
 
 # Important Tool Guidelines

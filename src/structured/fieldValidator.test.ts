@@ -167,7 +167,8 @@ describe('fieldValidator', () => {
       expect(onFieldValidation).toHaveBeenCalled();
       const calls = onFieldValidation.mock.calls;
       expect(calls).toHaveLength(1);
-      const call = calls[0]!;
+      const call = calls[0];
+      if (!call) throw new Error('call should exist');
       const event = call[0] as FieldValidationEvent;
       expect(event.valid).toBe(true);
     });

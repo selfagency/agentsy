@@ -44,7 +44,7 @@ export interface FieldValidatorOptions {
  * Returns validation result and optional error message.
  */
 export function validateField(
-  path: string,
+  _path: string,
   value: unknown,
   validator: FieldValidator,
 ): { valid: boolean; error?: string } {

@@ -469,7 +469,7 @@ describe('LLMStreamProcessor', () => {
     expect(warnings).toHaveLength(0);
 
     // Second chunk: would exceed limit, should be dropped
-    const largeChunk = '<arguments>{"data":"' + 'x'.repeat(200) + '"}}</tool_call>';
+    const largeChunk = `<arguments>{"data":"${'x'.repeat(200)}"}}</tool_call>`;
     processor.process({ content: largeChunk, done: true });
 
     // Warning should have been emitted about exceeding limit

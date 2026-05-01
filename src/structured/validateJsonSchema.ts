@@ -203,7 +203,7 @@ function checkOneOf(
     return subErrors.length === 0 ? count + 1 : count;
   }, 0);
   if (matchCount !== 1) {
-    errors.push(path + ": value must match exactly one of the 'oneOf' schemas (matched " + String(matchCount) + ')');
+    errors.push(`${path}: value must match exactly one of the 'oneOf' schemas (matched ${String(matchCount)})`);
   }
 }
 

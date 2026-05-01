@@ -18,9 +18,7 @@ export interface RepairState {
 }
 
 // biome-ignore lint/complexity/noEmptyInterface: Reserved for future use
-export interface RepairStateMachineOptions {
-  // Reserved for future use — depth limiting is not yet implemented
-}
+export interface RepairStateMachineOptions {}
 
 /**
  * Create an initial repair state.

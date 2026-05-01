@@ -70,7 +70,8 @@ describe('buildNativeToolsArray', () => {
 
   it('strict mode sets strict:true and enforces additionalProperties:false on nested objects', () => {
     const tools = buildNativeToolsArray([RICH_SCHEMA_TOOL], { strict: true });
-    const fn = tools[0]!.function;
+    const fn = tools[0]?.function;
+    if (!fn) throw new Error('fn should exist');
 
     expect(fn.strict).toBe(true);
     // Top-level parameters already have additionalProperties: false
@@ -83,7 +84,8 @@ describe('buildNativeToolsArray', () => {
   it('strict mode does not mutate non-object properties', () => {
     const tools = buildNativeToolsArray([RICH_SCHEMA_TOOL], { strict: true });
     // buildNativeToolsArray with one input tool always returns a one-element array
-    const props = tools[0]!.function.parameters.properties;
+    const props = tools[0]?.function.parameters.properties;
+    if (!props) throw new Error('props should exist');
     // Non-object schemas are returned as-is
     expect(props.title).toMatchObject({ type: 'string', minLength: 1, maxLength: 200 });
     expect(props.tags).toMatchObject({ type: 'array', items: { type: 'string' } });
