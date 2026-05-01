@@ -95,36 +95,29 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
     }
   };
 
+  /**
+   * Process parts from output, accumulating markdown content.
+   * @internal
+   */
+  function processParts(parts: Array<{ type: string; text?: string }>): void {
+    for (const part of parts) {
+      if (part.type === 'text' && part.text) {
+        accumulatedMarkdown += part.text;
+      } else if (part.type === 'thinking' && showThinking && part.text) {
+        if (thinkingContainer) {
+          accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
+        } else {
+          accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
+        }
+      }
+    }
+  }
+
   return {
     async write(chunk: string): Promise<void> {
       try {
-        // Process expects a StreamChunk, treat entire input as content
         const result = llmProcessor.process({ content: chunk });
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                if (thinkingContainer) {
-                  // Render thinking in separate container
-                  accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-                } else {
-                  // Render thinking inline as blockquote
-                  accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in browser streaming
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
 
         // Incremental streaming: render accumulated markdown so far
         if (accumulatedMarkdown && parser) {
@@ -165,31 +158,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
     async writeChunk(chunk: StreamChunk): Promise<void> {
       try {
         const result = llmProcessor.process(chunk);
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                if (thinkingContainer) {
-                  // Render thinking in separate container
-                  accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-                } else {
-                  // Render thinking inline as blockquote
-                  accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in browser streaming
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
 
         // Fire onFinish callback if stream is done
         if (chunk.done === true && onFinish) {
@@ -208,26 +177,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
         result = llmProcessor.flush();
-
-        // Process any final parts
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
 
         // Finalize streaming: write any remaining markdown to parser
         if (accumulatedMarkdown && parser) {
