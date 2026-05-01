@@ -5,7 +5,7 @@
  * Enables STATE_SNAPSHOT and STATE_DELTA events for incremental state updates.
  */
 
-import type { StateSnapshotEvent, StateDeltaEvent, JsonPatchOperation } from './types.js';
+import type { JsonPatchOperation, StateDeltaEvent, StateSnapshotEvent } from './types.js';
 import { EventType } from './types.js';
 
 /**

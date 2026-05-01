@@ -6,11 +6,11 @@
  */
 
 import type {
-  ReasoningStartEvent,
-  ReasoningMessageStartEvent,
+  ReasoningEndEvent,
   ReasoningMessageContentEvent,
   ReasoningMessageEndEvent,
-  ReasoningEndEvent,
+  ReasoningMessageStartEvent,
+  ReasoningStartEvent,
 } from './types.js';
 import { EventType } from './types.js';
 

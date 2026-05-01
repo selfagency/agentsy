@@ -4,12 +4,12 @@
  * Verifies interrupt detection, event creation, and abort controller behavior
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  InterruptReason,
-  InterruptController,
-  createInterruptEvent,
   createInterruptAbortController,
+  createInterruptEvent,
+  InterruptController,
+  InterruptReason,
   TimeoutInterrupt,
 } from './interrupt-handler.js';
 import { EventType } from './types.js';

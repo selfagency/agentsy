@@ -4,12 +4,12 @@
  * Verifies conversion to CopilotKit and custom UI event formats
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+  convertEventStream,
+  createEventConverter,
   toCopilotKitEvent,
   toCustomUIEvent,
-  createEventConverter,
-  convertEventStream,
   type CopilotKitEvent,
 } from './event-converters.js';
 import { EventType, type RunStartedEvent, type TextMessageContentEvent, type ToolCallStartEvent } from './types.js';

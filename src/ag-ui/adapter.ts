@@ -7,19 +7,19 @@
  */
 
 import type {
-  TextMessageContentEvent,
-  ReasoningStartEvent,
-  ReasoningMessageStartEvent,
+  AgUiEvent,
+  ReasoningEndEvent,
   ReasoningMessageContentEvent,
   ReasoningMessageEndEvent,
-  ReasoningEndEvent,
-  ToolCallStartEvent,
+  ReasoningMessageStartEvent,
+  ReasoningStartEvent,
+  RunErrorEvent,
+  RunFinishedEvent,
+  RunStartedEvent,
+  TextMessageContentEvent,
   ToolCallArgsEvent,
   ToolCallEndEvent,
-  RunFinishedEvent,
-  RunErrorEvent,
-  RunStartedEvent,
-  AgUiEvent,
+  ToolCallStartEvent,
 } from './types.js';
 import { EventType } from './types.js';
 

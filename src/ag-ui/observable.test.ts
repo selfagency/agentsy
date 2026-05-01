@@ -4,7 +4,7 @@
  * Verifies AsyncGenerator to Observable conversion without hard RxJS dependency
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { toObservable } from './observable.js';
 
 describe('toObservable', () => {

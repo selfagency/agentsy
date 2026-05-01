@@ -5,7 +5,7 @@
  * including proper event sequencing, lifecycle wrapping, and state tracking.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { toAgUiStream, type PipelineEvent } from './adapter.js';
 import { EventType } from './types.js';
 

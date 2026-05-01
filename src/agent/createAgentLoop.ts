@@ -1,6 +1,6 @@
-import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
-import { EventType } from '../ag-ui/types.js';
 import { createInterruptEvent } from '../ag-ui/interrupt-handler.js';
+import { EventType } from '../ag-ui/types.js';
+import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
 
 /**

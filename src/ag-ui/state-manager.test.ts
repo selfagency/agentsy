@@ -4,12 +4,12 @@
  * Verifies state snapshots, deltas, and RFC 6902 JSON Patch operations
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  createStateSnapshotEvent,
+  applyJsonPatches,
   computeStateDelta,
   createStateDeltaEvent,
-  applyJsonPatches,
+  createStateSnapshotEvent,
   StateManager,
   type JsonPatchOp,
 } from './state-manager.js';
