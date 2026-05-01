@@ -73,6 +73,22 @@ export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
  * await renderer.end();
  * ```
  */
+// Lazily load streaming-markdown and dompurify with clear error messages
+async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> {
+  try {
+    const smdImported = await import('streaming-markdown');
+    const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
+    const dompurifyImported = await import('dompurify');
+    const dompurifyModule = (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
+
+    return { smd: smdModule as StreamingMarkdownModule, DOMPurify: dompurifyModule as DOMPurifyModule };
+  } catch {
+    throw new Error(
+      'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
+    );
+  }
+}
+
 export function createStreamingMarkdownRenderer(options: StreamingMarkdownRendererOptions): RendererHandle {
   const { target, showThinking = false, onSecurityViolation, processor, onError, onFinish } = options;
 
@@ -88,23 +104,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
-  let parser: unknown | null = null;
-
-  // Lazily load streaming-markdown and dompurify with clear error messages
-  async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> {
-    try {
-      const smdImported = await import('streaming-markdown');
-      const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
-      const dompurifyImported = await import('dompurify');
-      const dompurifyModule = (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
-
-      return { smd: smdModule as StreamingMarkdownModule, DOMPurify: dompurifyModule as DOMPurifyModule };
-    } catch {
-      throw new Error(
-        'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
-      );
-    }
-  }
+  let parser: unknown = null;
 
   // Initialize parser lazily on first write
   async function ensureParser(): Promise<void> {

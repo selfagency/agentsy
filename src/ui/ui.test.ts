@@ -84,8 +84,10 @@ describe('UI Event Sourcing', () => {
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
-      expect(state.messages[0]?.parts[0]?.type).toBe('text');
-      expect(state.messages[0]?.parts[0]?.type === 'text' && state.messages[0]?.parts[0]?.text).toBe('Hello, world!');
+      expect(state.messages[0]?.parts?.[0]?.type).toBe('text');
+      expect(state.messages[0]?.parts?.[0]?.type === 'text' && state.messages[0]?.parts?.[0]?.text).toBe(
+        'Hello, world!',
+      );
     });
 
     it('should add thinking part to message on thinking_part_added event', () => {
@@ -102,8 +104,8 @@ describe('UI Event Sourcing', () => {
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
-      expect(state.messages[0]?.parts[0]?.type).toBe('thinking');
-      expect(state.messages[0]?.parts[0]?.type === 'thinking' && state.messages[0]?.parts[0]?.text).toBe(
+      expect(state.messages[0]?.parts?.[0]?.type).toBe('thinking');
+      expect(state.messages[0]?.parts?.[0]?.type === 'thinking' && state.messages[0]?.parts?.[0]?.text).toBe(
         'Let me think about this...',
       );
     });

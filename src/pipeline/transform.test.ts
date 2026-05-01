@@ -88,15 +88,15 @@ describe('createThinkingFilter', () => {
   });
 });
 
-describe('createToolCallFilter', () => {
-  function makeCall(name: string): OutputPart {
-    return {
-      type: 'tool_call',
-      call: { name, parameters: {}, format: 'native-json' },
-      state: 'input-complete',
-    };
-  }
+function makeCall(name: string): OutputPart {
+  return {
+    type: 'tool_call',
+    call: { name, parameters: {}, format: 'native-json' },
+    state: 'input-complete',
+  };
+}
 
+describe('createToolCallFilter', () => {
   it('passes through only tool calls with matching names', async () => {
     const parts = await writeAndCollect(createToolCallFilter(['search', 'fetch']), [
       makeCall('search'),
