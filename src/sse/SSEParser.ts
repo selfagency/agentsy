@@ -129,6 +129,7 @@ export class SSEParser {
 
     // Only include data if it was explicitly provided.
     if (!hasDataField) {
+      // nosec: SSEEvent interface doesn't have index signature but is mutable
       delete (event as any).data;
     }
 
@@ -144,7 +145,7 @@ export class SSEParser {
         break;
       case 'data':
         if (event.data) {
-          event.data += '\n' + value;
+          event.data += `\n${value}`;
         } else {
           event.data = value;
           hasDataField = true;
@@ -166,6 +167,6 @@ export class SSEParser {
   }
 
   private isValidEvent(event: SSEEvent): boolean {
-    return !!(event.data !== undefined || (event.event ?? event.id) || event.retry !== undefined);
+    return !!(event.data !== undefined || event.event !== undefined || event.id !== undefined || event.retry !== undefined);
   }
 }

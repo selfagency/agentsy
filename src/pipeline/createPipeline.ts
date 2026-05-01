@@ -67,7 +67,7 @@ async function* processSSEEvent(
     return;
   }
 
-  const chunk = (normalized as any).chunk as StreamChunk;
+  const chunk = (normalized as { chunk: StreamChunk; rawEvent?: unknown }).chunk;
   const output = processor.process(chunk);
 
   if (output.thinking) {

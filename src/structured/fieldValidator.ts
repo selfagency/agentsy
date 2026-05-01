@@ -70,21 +70,21 @@ export function createFieldValidator(options: FieldValidatorOptions): {
   const { schema, onFieldValidation, continueOnError = true, startTime = Date.now() } = options;
 
   return {
-    validateField(path: string, value: unknown): FieldValidationEvent {
-      const fieldValidator = schema[path];
+    validateField(_path: string, value: unknown): FieldValidationEvent {
+      const fieldValidator = Object.hasOwn(schema, _path) ? schema[_path] : undefined;
       if (!fieldValidator) {
         // No validator defined for this field, skip validation
         return {
-          path,
+          path: _path,
           value,
           valid: true,
           timestamp: Date.now() - startTime,
         };
       }
 
-      const { valid, error } = validateField(path, value, fieldValidator);
+      const { valid, error } = validateField(_path, value, fieldValidator);
       const event: FieldValidationEvent = {
-        path,
+        path: _path,
         value,
         valid,
         ...(error !== undefined && { error }),

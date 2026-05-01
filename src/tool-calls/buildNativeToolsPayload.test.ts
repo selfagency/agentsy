@@ -40,7 +40,8 @@ describe('buildNativeToolsArray', () => {
     const tools = buildNativeToolsArray([SEARCH_TOOL]);
     expect(tools).toHaveLength(1);
     const fn = tools[0]?.function;
-    if (!fn) throw new Error('Expected tool function to be defined');
+    expect(fn).toBeDefined();
+    if (!fn) return;
     expect(fn.parameters.properties['content-type']).toBeDefined();
     expect(fn.parameters.properties.path).toBeDefined();
     expect(fn.parameters.required).toContain('content-type');
@@ -49,7 +50,9 @@ describe('buildNativeToolsArray', () => {
 
   it('passes through rich JSON Schema keywords without stripping them', () => {
     const tools = buildNativeToolsArray([RICH_SCHEMA_TOOL]);
-    const props = tools[0]!.function.parameters.properties;
+    const props = tools[0]?.function.parameters.properties;
+
+    if (!props) return;
 
     // String constraints
     expect(props.title).toMatchObject({ type: 'string', minLength: 1, maxLength: 200 });

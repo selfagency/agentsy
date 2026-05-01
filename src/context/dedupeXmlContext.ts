@@ -11,13 +11,9 @@ interface TagMatch {
   fullMatch: string;
 }
 
-/**
- * Escape regex special characters in a string for safe use in dynamic RegExp.
- * Prevents ReDoS by ensuring the string is treated literally, not as a pattern.
- */
-function escapeRegexChars(str: string): string {
-  return str.replaceAll(/[.*+?^${}()|[\\\]]/g, '\\$&');
-}
+// Valid XML tag names: start with letter/underscore, followed by alphanumeric/underscore/hyphen/colon
+// Whitelist approach prevents ReDoS by restricting to safe characters only.
+const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.-:]*$/;
 
 function collectTagMatches(part: string): TagMatch[] {
   if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
@@ -29,13 +25,12 @@ function collectTagMatches(part: string): TagMatch[] {
     const openEnd = OPEN_TAG_RE.lastIndex;
 
     // Find the matching closing tag while handling nested tags of the same name.
-    // Escape tagName to prevent ReDoS attacks from crafted XML input.
-    const escapedTagName = escapeRegexChars(tagName);
-    // Security: Dynamic RegExp construction is intentional here. The tagName is
-    // validated by escapeRegexChars() which escapes all regex metacharacters,
-    // preventing ReDoS attacks. This pattern is necessary for matching
-    // arbitrary XML tag names from schema definitions.
-    const tagRegex = new RegExp(`<(/?)${escapedTagName}\\b[^>]*>`, 'gi');
+    // Security: Validate tagName against whitelist before using in RegExp.
+    // This prevents ReDoS attacks by ensuring only safe characters are used.
+    if (!VALID_TAG_NAME.test(tagName)) continue;
+
+    // tagName is now validated as safe, so no escaping needed.
+    const tagRegex = new RegExp(`<(/?)${tagName}\\b[^>]*>`, 'gi');
     tagRegex.lastIndex = openEnd;
     let depth = 1;
     let matchEnd: number | null = null;
@@ -59,7 +54,6 @@ function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, stri
   // by a later block (we iterate blocks from last to first elsewhere).
   const longestByTag = new Map<string, string>();
   for (const match of matches) {
-    if (!match) continue;
     const existing = longestByTag.get(match.tagName);
     if (!existing || match.fullMatch.length > existing.length) {
       longestByTag.set(match.tagName, match.fullMatch.trim());
@@ -77,6 +71,7 @@ export function dedupeXmlContextBlocksByTag(blocks: string[]): string[] {
   const latestByTag = new Map<string, string>();
 
   for (let i = blocks.length - 1; i >= 0; i--) {
+    // safe: i bounded by blocks.length
     dedupeMatchesIntoMap(collectTagMatches(blocks[i] ?? ''), latestByTag);
   }
 

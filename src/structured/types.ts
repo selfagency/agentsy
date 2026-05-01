@@ -18,7 +18,7 @@ export const ItemDoneStreaming = Symbol.for('ItemDoneStreaming');
 export type DeepPartial<T> = T extends object
   ? T extends Date
     ? Date
-    : T extends Array<infer U>
+    : T extends (infer U)[]
       ? DeepPartial<U>[]
       : {
           [K in keyof T]?: DeepPartial<T[K]>;
@@ -37,8 +37,7 @@ export type StreamingPartial<T> = DeepPartial<T> & {
  * Check if a streaming partial is complete (done streaming).
  */
 export function isStreamingDone<T>(partial: StreamingPartial<T>): boolean {
-  // Security: Use Object.hasOwn for safe property access instead of dynamic
-  // bracket access with `as any` which could be exploited for prototype pollution.
+  // safe: Symbol key cannot be injected
   return Object.hasOwn(partial, ItemDoneStreaming) && !!partial[ItemDoneStreaming];
 }
 

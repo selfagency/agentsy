@@ -15,9 +15,14 @@ function getCachedRegex(pattern: string): RegExp {
 
   let regex: RegExp;
   try {
-    // Security: pattern is from trusted JSON Schema definition, not user input.
-    // JSON Schema itself should be validated at application level before reaching here.
-    regex = new RegExp(pattern);
+    // Security: Validate pattern length and characters to prevent ReDoS attacks.
+    // JSON Schema patterns should be relatively simple; overly complex patterns are rejected.
+    if (typeof pattern !== 'string' || pattern.length > 1000 || /[*+?]{3,}/.test(pattern)) {
+      // Pattern is too long, too complex, or not a string: use safe match-nothing regex
+      regex = /(?!)/;
+    } else {
+      regex = new RegExp(pattern);
+    }
   } catch {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
     regex = /(?!)/; // Negative lookahead that never matches

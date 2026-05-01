@@ -18,7 +18,7 @@ import { SSEParser, type SSEEvent } from './SSEParser.js';
  */
 export async function* parseSSEStream(
   source: ReadableStream<string> | AsyncIterable<string>,
-): AsyncGenerator<SSEEvent, void, unknown> {
+): AsyncGenerator<SSEEvent, void> {
   const eventQueue: SSEEvent[] = [];
 
   const parser = new SSEParser({
@@ -36,7 +36,7 @@ export async function* parseSSEStream(
     let iterator: AsyncIterator<string>;
 
     if (isReadableStream(source)) {
-      const reader = (source as ReadableStream<string>).getReader();
+      const reader = source.getReader();
       iterator = {
         async next(): Promise<IteratorResult<string>> {
           try {
@@ -49,7 +49,7 @@ export async function* parseSSEStream(
         },
       };
     } else {
-      iterator = (source as AsyncIterable<string>)[Symbol.asyncIterator]();
+      iterator = source[Symbol.asyncIterator]();
     }
 
     // Feed chunks into the parser and yield events.
@@ -60,7 +60,8 @@ export async function* parseSSEStream(
 
       // Yield all queued events.
       while (eventQueue.length > 0) {
-        yield eventQueue.shift()!;
+        const event = eventQueue.shift();
+        if (event) yield event;
       }
     }
 
@@ -69,7 +70,8 @@ export async function* parseSSEStream(
 
     // Yield any final queued events.
     while (eventQueue.length > 0) {
-      yield eventQueue.shift()!;
+      const event = eventQueue.shift();
+      if (event) yield event;
     }
   } catch {
     // Stream error; stop gracefully without re-throwing

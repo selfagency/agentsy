@@ -111,10 +111,12 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
 function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<string, unknown> {
   // Use a null-prototype object to avoid prototype pollution when assigning
   // properties from untrusted XML input (e.g., <__proto__> tags).
+  // Validate paramName to prevent injection attacks.
+  const VALID_PARAM_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
   const params = Object.create(null) as Record<string, unknown>;
   for (const paramMatch of inner.matchAll(paramPattern)) {
     const paramName = paramMatch[1];
-    if (!paramName) continue;
+    if (!paramName || !VALID_PARAM_NAME.test(paramName)) continue;
     const raw = paramMatch[2];
     params[paramName] = (typeof raw === 'string' ? raw : '').trim();
   }
