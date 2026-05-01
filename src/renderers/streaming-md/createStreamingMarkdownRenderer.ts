@@ -84,8 +84,8 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   // Lazily load streaming-markdown and dompurify with clear error messages
   const getStreamingMarkdownDeps = async () => {
     try {
-      const smd = await import('streaming-markdown');
-      const DOMPurify = await import('dompurify');
+      const smd = (await import('streaming-markdown')) as any;
+      const DOMPurify = (await import('dompurify')) as any;
 
       return { smd, DOMPurify };
     } catch {
@@ -131,23 +131,12 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
           const { smd, DOMPurify } = await getStreamingMarkdownDeps();
 
           // Security check: sanitize accumulated markdown
-          void (DOMPurify.default
-            ? DOMPurify.default.sanitize(accumulatedMarkdown)
-            : DOMPurify.sanitize(accumulatedMarkdown));
+          DOMPurify.sanitize(accumulatedMarkdown);
 
-          if (DOMPurify.default?.removed?.length ?? 0 > 0) {
+          if ((DOMPurify.removed?.length ?? 0) > 0) {
             // Security violation detected
-            if (parser && smd.default.parser_end) {
-              smd.default.parser_end(parser);
-            }
-            if (onSecurityViolation) {
-              onSecurityViolation();
-            }
-            return;
-          } else if (DOMPurify.removed && DOMPurify.removed.length > 0) {
-            // Security violation detected
-            if (parser && smd.default.parser_end) {
-              smd.default.parser_end(parser);
+            if (parser && smd.parser_end) {
+              smd.parser_end(parser);
             }
             if (onSecurityViolation) {
               onSecurityViolation();
@@ -157,8 +146,8 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
           // Append new content to DOM
           try {
-            if (smd.default?.parser_write) {
-              smd.default.parser_write(parser, chunk);
+            if (smd.parser_write) {
+              smd.parser_write(parser, chunk);
             }
           } catch {
             // Continue even if streaming fails
@@ -245,16 +234,16 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
           const { smd } = await getStreamingMarkdownDeps();
 
           // Write final markdown to parser
-          if (smd.default && smd.default.parser_write) {
-            smd.default.parser_write(parser, accumulatedMarkdown);
+          if (smd.parser_write) {
+            smd.parser_write(parser, accumulatedMarkdown);
           }
         }
 
         // End the parser (creates final DOM output)
         if (parser) {
           const { smd } = await getStreamingMarkdownDeps();
-          if (smd.default?.parser_end) {
-            smd.default.parser_end(parser);
+          if (smd.parser_end) {
+            smd.parser_end(parser);
           }
         }
       } catch (error) {
