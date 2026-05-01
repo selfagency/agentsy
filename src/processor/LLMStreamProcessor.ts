@@ -186,6 +186,7 @@ export class LLMStreamProcessor {
 
   private _partsController: ReadableStreamDefaultController<OutputPart> | null = null;
   private _partsSource: ReadableStream<OutputPart>;
+  private _cachedPartsStream: ReadableStream<OutputPart> | null = null;
 
   private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
     if (this._accumulatedUsage !== undefined) {
@@ -230,16 +231,28 @@ export class LLMStreamProcessor {
    *
    * If `transforms` were supplied in the constructor options, the stream is the result of
    * chaining each transform via `pipeThrough()`. The stream is closed automatically after
-   * the first chunk with `done: true` is processed.
+   * the first chunk with `done: true` is processed, or when `reset()` is called.
    *
-   * Note: the stream may only be read once.
+   * **Note on stream completion**: Consumers should not assume the stream closes immediately
+   * after processing a chunk with `done: true`. The stream is closed when the processor is
+   * explicitly reset or destroyed. Call `reset()` or rely on the processor lifecycle methods
+   * to properly complete and reuse the stream.
+   *
+   * Note: the stream may only be read once; subsequent accesses return the cached stream.
    */
   public get partsStream(): ReadableStream<OutputPart> {
+    // Cache the stream to prevent multiple locks on the same stream
+    if (this._cachedPartsStream !== null) {
+      return this._cachedPartsStream;
+    }
+
     const transforms = this.options.transforms ?? [];
-    return transforms.reduce<ReadableStream<OutputPart>>(
+    this._cachedPartsStream = transforms.reduce<ReadableStream<OutputPart>>(
       (stream, transform) => stream.pipeThrough(transform),
       this._partsSource,
     );
+
+    return this._cachedPartsStream;
   }
 
   /**

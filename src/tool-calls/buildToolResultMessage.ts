@@ -44,7 +44,12 @@ export interface GeminiToolResult {
 
 function normalizeContent(result: string | object): string {
   if (typeof result === 'string') return result;
-  return JSON.stringify(result);
+  try {
+    return JSON.stringify(result);
+  } catch {
+    // Handle circular references, BigInt, or other non-serializable values
+    return String(result);
+  }
 }
 
 /**

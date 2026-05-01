@@ -301,7 +301,7 @@ describe('Stop Conditions', () => {
           incompleteness: [],
         },
         toolCallCount: 2,
-        consecutiveIdenticalCalls: 1,
+        consecutiveIdenticalCalls: 2,
       };
 
       expect(condition(state)).toBe(true);

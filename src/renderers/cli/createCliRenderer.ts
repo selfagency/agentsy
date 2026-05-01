@@ -53,6 +53,8 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  // Track if output is a user-supplied stream (vs default process.stdout)
+  const isUserSuppliedStream = output !== process.stdout && output !== process.stderr;
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
@@ -147,13 +149,8 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
           writeOutput(formatted);
         }
 
-        // Only call end() on actual streams, not on process.stdout
-        if (
-          typeof output === 'object' &&
-          output !== process.stdout &&
-          'end' in output &&
-          typeof output.end === 'function'
-        ) {
+        // Only call end() on user-supplied streams, not on process.stdout/stderr
+        if (isUserSuppliedStream && typeof output === 'object' && 'end' in output && typeof output.end === 'function') {
           output.end();
         }
       } catch (error) {

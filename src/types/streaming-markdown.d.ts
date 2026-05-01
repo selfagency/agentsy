@@ -5,10 +5,11 @@
 
 declare module 'streaming-markdown' {
   namespace StreamingMarkdown {
+    function parser_create(options: { target: any }): any;
     function parser_write(text: string): void;
-    function parser_write(parser: string, chunk: string): void;
+    function parser_write(parser: any, chunk: string): void;
     function parser_end(): string;
-    function parser_end(parser: string): string;
+    function parser_end(parser: any): string;
     let removed: unknown[] | undefined;
   }
 

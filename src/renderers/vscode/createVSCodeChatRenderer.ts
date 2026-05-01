@@ -123,30 +123,25 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
 
-  // Accumulators for parts - useful for debugging and future features
-  let accumulatedMarkdown = '';
-  let accumulatedThinking = '';
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
+  let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
 
   /**
-   * Handle text part: accumulate and stream markdown.
+   * Handle text part: stream markdown to the response.
    * @internal
    */
   function handleTextPart(text: string): void {
-    accumulatedMarkdown += text;
     stream.markdown(text);
   }
 
   /**
-   * Handle thinking part: accumulate and stream based on configured style.
+   * Handle thinking part: stream based on configured style.
    * @internal
    */
   function handleThinkingPart(text: string): void {
     if (!showThinking || thinkingStyle === 'suppress') {
       return;
     }
-
-    accumulatedThinking += text;
 
     if (stream.thinkingProgress) {
       stream.thinkingProgress({ text, id: 'thinking' });
@@ -157,9 +152,15 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       if (!blockquoteThinkingStarted) {
         stream.markdown('\n\n> 💭 **Thinking**\n>\n');
         blockquoteThinkingStarted = true;
+        blockquoteNeedsPrefix = true;
       }
-      const blockquoteContent = appendToBlockquote(text, true);
+
+      // Emit blockquote-formatted content, tracking if text ends with newline
+      const blockquoteContent = appendToBlockquote(text, blockquoteNeedsPrefix);
       stream.markdown(blockquoteContent);
+
+      // Next chunk needs prefix if current text ends with newline
+      blockquoteNeedsPrefix = text.endsWith('\n');
     }
   }
 

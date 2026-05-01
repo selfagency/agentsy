@@ -79,19 +79,31 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
-  let parser: string | null = null;
+  let parser: any = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
   const getStreamingMarkdownDeps = async () => {
     try {
-      const smd = (await import('streaming-markdown')) as any;
-      const DOMPurify = (await import('dompurify')) as any;
+      const smdModule = (await import('streaming-markdown')) as any;
+      const smd = smdModule.default || smdModule;
+      const dompurifyModule = (await import('dompurify')) as any;
+      const DOMPurify = dompurifyModule.default || dompurifyModule;
 
       return { smd, DOMPurify };
     } catch {
       throw new Error(
         'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
       );
+    }
+  };
+
+  // Initialize parser lazily on first write
+  const ensureParser = async () => {
+    if (parser === null) {
+      const { smd } = await getStreamingMarkdownDeps();
+      if (smd.parser_create) {
+        parser = smd.parser_create({ target });
+      }
     }
   };
 
@@ -119,7 +131,8 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         const result = llmProcessor.process({ content: chunk });
         processParts(result.parts);
 
-        // Incremental streaming: render accumulated markdown so far
+        // Initialize parser on first write and render accumulated markdown
+        await ensureParser();
         if (accumulatedMarkdown && parser) {
           const { smd, DOMPurify } = await getStreamingMarkdownDeps();
 
@@ -178,6 +191,9 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       try {
         result = llmProcessor.flush();
         processParts(result.parts);
+
+        // Initialize parser if not yet initialized
+        await ensureParser();
 
         // Finalize streaming: write any remaining markdown to parser
         if (accumulatedMarkdown && parser) {
