@@ -54,7 +54,7 @@ export interface VSCodeChatRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererHandle {
-  const { stream, showThinking = false, thinkingStyle = 'blockquote', processor, onError, onToolCall } = options;
+  const { stream, showThinking = false, thinkingStyle = 'blockquote', processor, onError, onToolCall, onFinish } = options;
 
   if (!stream) {
     throw new Error('ChatResponseStream is required for VS Code chat renderer');
@@ -104,6 +104,52 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
               break;
             }
           }
+        }
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async writeChunk(chunk: StreamChunk): Promise<void> {
+      try {
+        const result = llmProcessor.process(chunk);
+
+        for (const part of result.parts) {
+          switch (part.type) {
+            case 'text': {
+              accumulatedMarkdown += part.text;
+              stream.markdown(part.text);
+              break;
+            }
+            case 'thinking': {
+              if (showThinking) {
+                accumulatedThinking += part.text;
+
+                if (thinkingStyle === 'progress') {
+                  stream.progress(part.text);
+                } else {
+                  const blockquoteThinking = `> **💭 Thinking:** ${part.text}`;
+                  stream.markdown(blockquoteThinking);
+                }
+              }
+              break;
+            }
+            case 'tool_call': {
+              if (onToolCall) {
+                onToolCall(part);
+              }
+              break;
+            }
+          }
+        }
+
+        // Fire onFinish callback if stream is done
+        if (chunk.done === true && onFinish) {
+          await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {
         if (onError && error instanceof Error) {

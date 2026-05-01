@@ -1,6 +1,8 @@
 import { appendToBlockquote } from '../markdown/appendToBlockquote.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import type { LLMStreamProcessor, StreamChunk } from '../processor/LLMStreamProcessor.js';
+import type { FinishReason } from '../tool-calls/types.js';
+import type { UsageInfo } from '../normalizers/types.js';
 
 export interface VSCodeChatStream {
   markdown(text: string): void | Promise<void>;
@@ -10,6 +12,7 @@ export interface VSCodeCopilotAdapterOptions {
   processor: LLMStreamProcessor;
   stream: VSCodeChatStream;
   onToolCall: (call: XmlToolCall) => void | Promise<void>;
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
   showThinking?: boolean;
 }
 
@@ -55,6 +58,11 @@ export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions)
   return {
     async write(chunk: StreamChunk): Promise<void> {
       await emit(options.processor.process(chunk));
+
+      // Fire onFinish callback if stream is done
+      if (chunk.done === true && options.onFinish) {
+        await options.onFinish(chunk.finishReason, chunk.usage);
+      }
     },
     async end(): Promise<void> {
       await emit(options.processor.flush());

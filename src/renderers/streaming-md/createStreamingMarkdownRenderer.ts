@@ -44,7 +44,7 @@ export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createStreamingMarkdownRenderer(options: StreamingMarkdownRendererOptions): RendererHandle {
-  const { target, showThinking = false, thinkingContainer = null, onSecurityViolation, processor, onError } = options;
+  const { target, showThinking = false, thinkingContainer = null, onSecurityViolation, processor, onError, onFinish } = options;
 
   if (!target) {
     throw new Error('Target element is required for streaming markdown renderer');
@@ -141,6 +141,48 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
           } catch (e) {
             // Continue even if streaming fails
           }
+        }
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async writeChunk(chunk: StreamChunk): Promise<void> {
+      try {
+        const result = llmProcessor.process(chunk);
+
+        for (const part of result.parts) {
+          switch (part.type) {
+            case 'text': {
+              accumulatedMarkdown += part.text;
+              break;
+            }
+            case 'thinking': {
+              if (showThinking) {
+                if (thinkingContainer) {
+                  // Render thinking in separate container
+                  accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
+                } else {
+                  // Render thinking inline as blockquote
+                  accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
+                }
+              }
+              break;
+            }
+            case 'tool_call': {
+              // Tool calls not rendered in browser streaming
+              break;
+            }
+          }
+        }
+
+        // Fire onFinish callback if stream is done
+        if (chunk.done === true && onFinish) {
+          await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {
         if (onError && error instanceof Error) {

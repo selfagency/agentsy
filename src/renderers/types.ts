@@ -1,5 +1,7 @@
-import type { LLMStreamProcessor, OutputPart } from '../processor/LLMStreamProcessor.js';
+import type { LLMStreamProcessor, OutputPart, StreamChunk } from '../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { FinishReason } from '../tool-calls/types.js';
+import type { UsageInfo } from '../normalizers/types.js';
 
 /**
  * Tool call output part (not rendered, only passed to callbacks).
@@ -32,6 +34,12 @@ export interface BaseRendererOptions {
 
   /** Optional callback fired for each streaming argument delta while a native tool call is assembling. */
   onToolCallDelta?: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
+
+  /** Optional callback fired when the stream finishes with a finish reason and optional usage info. */
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
+
+  /** Optional callback fired when the step index changes (e.g., between tool calls in an agent loop). */
+  onStep?: (stepIndex: number, usage: UsageInfo | undefined) => void | Promise<void>;
 }
 
 /**
@@ -44,11 +52,19 @@ export type ThinkingStyle = 'blockquote' | 'progress' | 'suppress';
  */
 export interface RendererHandle {
   /**
-   * Process a chunk of streamed data.
-   * @param chunk - The data chunk to process.
+   * Process a chunk of streamed data (text).
+   * @param chunk - The text data chunk to process.
    * @returns Promise that resolves when the chunk is processed.
    */
   write(chunk: string): Promise<void>;
+
+  /**
+   * Process a structured chunk of streamed data (raw stream output).
+   * Provides pre-normalized content with thinking, tool calls, done signal, usage, and finish reason.
+   * @param chunk - The StreamChunk to process.
+   * @returns Promise that resolves when the chunk is processed.
+   */
+  writeChunk(chunk: StreamChunk): Promise<void>;
 
   /**
    * Signal end of stream. Flushes any buffered content.

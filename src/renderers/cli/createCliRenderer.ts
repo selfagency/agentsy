@@ -39,7 +39,7 @@ export interface CliRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createCliRenderer(options: CliRendererOptions = {}): RendererHandle {
-  const { output = process.stdout, showThinking = false, thinkingStyle = 'blockquote', processor, onError } = options;
+  const { output = process.stdout, showThinking = false, thinkingStyle = 'blockquote', processor, onError, onFinish } = options;
 
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
@@ -101,6 +101,45 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
               break;
             }
           }
+        }
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async writeChunk(chunk: StreamChunk): Promise<void> {
+      try {
+        const result = llmProcessor.process(chunk);
+
+        for (const part of result.parts) {
+          switch (part.type) {
+            case 'text': {
+              accumulatedMarkdown += part.text;
+              break;
+            }
+            case 'thinking': {
+              if (showThinking) {
+                if (thinkingStyle === 'blockquote') {
+                  accumulatedMarkdown += appendToBlockquote(part.text, true);
+                  accumulatedMarkdown += '\n';
+                }
+              }
+              break;
+            }
+            case 'tool_call': {
+              // Tool calls not rendered in CLI
+              break;
+            }
+          }
+        }
+
+        // Fire onFinish callback if stream is done
+        if (chunk.done === true && onFinish) {
+          await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {
         if (onError && error instanceof Error) {

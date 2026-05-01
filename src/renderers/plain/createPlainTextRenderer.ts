@@ -39,7 +39,7 @@ export interface PlainTextRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createPlainTextRenderer(options: PlainTextRendererOptions = {}): RendererHandle {
-  const { output = process.stdout, showThinking = false, thinkingPrefix = '[Thinking] ', processor, onError } = options;
+  const { output = process.stdout, showThinking = false, thinkingPrefix = '[Thinking] ', processor, onError, onFinish } = options;
 
   // Create processor if not provided (owns it internally)
   const llmProcessor = processor || new LLMStreamProcessor();
@@ -77,6 +77,42 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
               break;
             }
           }
+        }
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async writeChunk(chunk: StreamChunk): Promise<void> {
+      try {
+        const result = llmProcessor.process(chunk);
+
+        for (const part of result.parts) {
+          switch (part.type) {
+            case 'text': {
+              writeOutput(part.text);
+              break;
+            }
+            case 'thinking': {
+              if (showThinking) {
+                writeOutput(thinkingPrefix + part.text + '\n');
+              }
+              break;
+            }
+            case 'tool_call': {
+              // Tool calls not rendered in plain text
+              break;
+            }
+          }
+        }
+
+        // Fire onFinish callback if stream is done
+        if (chunk.done === true && onFinish) {
+          await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {
         if (onError && error instanceof Error) {
