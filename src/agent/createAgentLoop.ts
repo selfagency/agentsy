@@ -11,8 +11,8 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
     return false;
   }
-  const aKeys = Object.keys(a).sort();
-  const bKeys = Object.keys(b).sort();
+  const aKeys = Object.keys(a).sort((x, y) => x.localeCompare(y));
+  const bKeys = Object.keys(b).sort((x, y) => x.localeCompare(y));
   if (aKeys.length !== bKeys.length) return false;
   if (!aKeys.every((k, i) => k === bKeys[i])) return false;
   return aKeys.every(k => parametersEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));

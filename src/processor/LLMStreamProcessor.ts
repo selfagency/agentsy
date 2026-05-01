@@ -174,7 +174,7 @@ export class LLMStreamProcessor {
   private _warningCount = 0;
   private _stats: ProcessorStats;
   /** Tracks which accumulator indices have been emitted mid-stream to avoid double-emission at flush. */
-  private _midStreamEmittedCallIndices = new Set<number>();
+  private readonly _midStreamEmittedCallIndices = new Set<number>();
   // Accumulate filtered XML fragments returned by the XmlStreamFilter so
   // that tool-call blocks spanning multiple chunks can be reconstructed and
   // extracted when they become complete.
