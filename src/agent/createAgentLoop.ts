@@ -181,7 +181,12 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         ...runStartedBase,
         ...(threadId !== undefined && { threadId }),
       };
-      await onAgUiEvent(runStarted as any);
+      try {
+        await onAgUiEvent(runStarted as any);
+      } catch (error) {
+        console.error('Error in onAgUiEvent callback for RUN_STARTED:', error);
+        // Continue despite callback error
+      }
     }
 
     try {
@@ -195,7 +200,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
             threadId,
           );
           if (onAgUiEvent) {
-            await onAgUiEvent(interruptEvent);
+            try {
+              await onAgUiEvent(interruptEvent);
+            } catch (error) {
+              console.error('Error in onAgUiEvent callback for interrupt:', error);
+            }
           }
           break;
         }
@@ -212,13 +221,17 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
             ...stepStartedBase,
             ...(threadId !== undefined && { threadId }),
           };
-          await onAgUiEvent(stepStarted as any);
+          try {
+            await onAgUiEvent(stepStarted as any);
+          } catch (error) {
+            console.error('Error in onAgUiEvent callback for STEP_STARTED:', error);
+          }
         }
 
         const result = await processSingleStep(state, options, currentMessages, abortController, stopConditions);
 
-        // Emit STEP_FINISHED
-        if (onAgUiEvent && result.parts.length > 0) {
+        // Emit STEP_FINISHED (always, regardless of parts)
+        if (onAgUiEvent) {
           const stepFinishedBase = {
             type: EventType.STEP_FINISHED as const,
             runId,
@@ -230,7 +243,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
             ...stepFinishedBase,
             ...(threadId !== undefined && { threadId }),
           };
-          await onAgUiEvent(stepFinished as any);
+          try {
+            await onAgUiEvent(stepFinished as any);
+          } catch (error) {
+            console.error('Error in onAgUiEvent callback for STEP_FINISHED:', error);
+          }
         }
 
         // Yield all parts from this step
@@ -261,7 +278,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           ...runFinishedBase,
           ...(threadId !== undefined && { threadId }),
         };
-        await onAgUiEvent(runFinished as any);
+        try {
+          await onAgUiEvent(runFinished as any);
+        } catch (error) {
+          console.error('Error in onAgUiEvent callback for RUN_FINISHED:', error);
+        }
       }
     } catch (error) {
       // Emit RUN_ERROR on failure
@@ -277,7 +298,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           ...runErrorBase,
           ...(threadId !== undefined && { threadId }),
         };
-        await onAgUiEvent(runError as any);
+        try {
+          await onAgUiEvent(runError as any);
+        } catch (callbackError) {
+          console.error('Error in onAgUiEvent callback for RUN_ERROR:', callbackError);
+        }
       }
       throw error;
     }

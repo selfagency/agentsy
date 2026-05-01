@@ -79,7 +79,7 @@ export function createSSEStream(
     let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
     // Yield a heartbeat comment periodically to keep connection alive
-    const heartbeatGenerator = (async function* () {
+    const _heartbeatGenerator = (async function* () {
       while (true) {
         await new Promise(resolve => setTimeout(resolve, heartbeatInterval));
         if (includeComments) {
@@ -91,7 +91,6 @@ export function createSSEStream(
     try {
       // Race between events and heartbeat
       const eventIterator = events[Symbol.asyncIterator]();
-      const heartbeatIterator = heartbeatGenerator[Symbol.asyncIterator]();
 
       // Collect first chunk with timeout to start sending quickly
       const firstChunk = (await Promise.race([

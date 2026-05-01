@@ -7,7 +7,6 @@
  */
 
 import type {
-  BaseEvent,
   TextMessageContentEvent,
   ReasoningStartEvent,
   ReasoningMessageStartEvent,

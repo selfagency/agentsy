@@ -14,18 +14,48 @@ import { EventType } from './types.js';
 export type JsonPatchOp = JsonPatchOperation;
 
 /**
+ * Detects circular references in an object.
+ * @internal
+ */
+function hasCircularReference(obj: any, visited = new WeakSet()): boolean {
+  if (obj === null || typeof obj !== 'object') {
+    return false;
+  }
+
+  if (visited.has(obj)) {
+    return true; // Circular reference detected
+  }
+
+  visited.add(obj);
+
+  for (const value of Object.values(obj)) {
+    if (hasCircularReference(value, visited)) {
+      return true;
+    }
+  }
+
+  visited.delete(obj);
+  return false;
+}
+
+/**
  * Creates a state snapshot event.
  *
  * @param state - Application state object
  * @param runId - Run ID
  * @param threadId - Optional thread ID
  * @returns State snapshot event
+ * @throws Error if state contains circular references
  */
 export function createStateSnapshotEvent(
   state: Record<string, any>,
   runId: string,
   threadId?: string,
 ): StateSnapshotEvent {
+  if (hasCircularReference(state)) {
+    throw new Error('State object contains circular references and cannot be serialized');
+  }
+
   const eventBase = {
     type: EventType.STATE_SNAPSHOT as const,
     runId,
@@ -47,12 +77,20 @@ export function createStateSnapshotEvent(
  * @param to - New state
  * @param basePathPrefix - Optional path prefix for nested operations
  * @returns Array of JSON Patch operations
+ * @throws Error if either state contains circular references
  */
 export function computeStateDelta(
   from: Record<string, any>,
   to: Record<string, any>,
   basePathPrefix = '',
 ): JsonPatchOp[] {
+  if (hasCircularReference(from)) {
+    throw new Error('Previous state contains circular references and cannot be processed');
+  }
+  if (hasCircularReference(to)) {
+    throw new Error('New state contains circular references and cannot be processed');
+  }
+
   const patches: JsonPatchOp[] = [];
 
   // Handle removed and modified properties
@@ -185,6 +223,9 @@ export class StateManager {
   private snapshotCounter: number = 0;
 
   constructor(initialState: Record<string, any> = {}) {
+    if (hasCircularReference(initialState)) {
+      throw new Error('Initial state contains circular references and cannot be processed');
+    }
     this.currentState = JSON.parse(JSON.stringify(initialState));
   }
 
@@ -209,8 +250,12 @@ export class StateManager {
    * @param runId - Run ID for the event
    * @param threadId - Optional thread ID
    * @returns Computed delta event (if changes exist), undefined otherwise
+   * @throws Error if new state contains circular references
    */
   updateState(newState: Record<string, any>, runId: string, threadId?: string): StateDeltaEvent | undefined {
+    if (hasCircularReference(newState)) {
+      throw new Error('New state contains circular references and cannot be processed');
+    }
     const patches = computeStateDelta(this.currentState, newState);
     if (patches.length === 0) {
       return undefined; // No changes
@@ -222,8 +267,12 @@ export class StateManager {
 
   /**
    * Resets to initial state.
+   * @throws Error if initial state contains circular references
    */
   reset(initialState: Record<string, any> = {}): void {
+    if (hasCircularReference(initialState)) {
+      throw new Error('Initial state contains circular references and cannot be processed');
+    }
     this.currentState = JSON.parse(JSON.stringify(initialState));
     this.snapshotCounter = 0;
   }

@@ -23,4 +23,3 @@ export {
   StateManager,
 } from './state-manager.js';
 export { InterruptReason, InterruptController, createInterruptEvent, TimeoutInterrupt } from './interrupt-handler.js';
-export type {} from './interrupt-handler.js';

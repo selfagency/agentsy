@@ -5,7 +5,7 @@
  * Emits INTERRUPT events to notify frontends of interruption requests.
  */
 
-import type { RunInterruptedEvent, Interrupt } from './types.js';
+import type { RunInterruptedEvent } from './types.js';
 import { EventType } from './types.js';
 
 /**
@@ -128,7 +128,7 @@ export function createInterruptAbortController(): {
 
   return {
     controller,
-    interrupt: (reason?: InterruptReason | string, message?: string) => {
+    interrupt: (_reason?: InterruptReason | string, _message?: string) => {
       controller.abort();
     },
     isInterrupted: () => controller.signal.aborted,
