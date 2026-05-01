@@ -1,0 +1,43 @@
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 575-577,580-582
+src/normalizers/testHelpers.ts
+  f984059b52212cfb 39-42
+src/pipeline/transform.test.ts
+  h_5cf1e2c1161853 153,156
+src/renderers/vscode/createVSCodeChatRenderer.ts
+  f984059b52212cfb 177
+src/renderers/shared.ts
+  f984059b52212cfb 123-125
+src/ui/types.ts
+  f984059b52212cfb 40
+src/ui/ui.test.ts
+  h_5cf1e2c1161853 89-91,94-96
+src/ui/eventHelpers.ts
+  f984059b52212cfb 9-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "13f9e750bbde50405285e77fd670069145b634df",
+  "prompts": {
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 30,
+      "total_deletions": 21,
+      "accepted_lines": 3450,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/da1aecd55f8377e850667a2b4e18c6644bd44181cea8e9bce6d3f01f858e22de"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
