@@ -1,0 +1,35 @@
+src/agent/agent.test.ts
+  h_5cf1e2c1161853 4-5,255-259,264-275,281-289,298-300,319-321,325-347
+  a1ecd8f192ae5997 276-280
+src/ui/ui.test.ts
+  a1ecd8f192ae5997 236-240,252-256,260-265
+  h_5cf1e2c1161853 241-251,257-259,266-273,405-407,410-413,418
+src/renderers/streaming-md/createStreamingMarkdownRenderer.ts
+  h_5cf1e2c1161853 19-39,96,99,106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "63633ebbd09cba90a229de6fb748408486049fe3",
+  "prompts": {
+    "a1ecd8f192ae5997": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c7b67479-d5fa-4efd-bb9d-f39f157fc998",
+        "model": "copilot/claude-haiku-4.5"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 46,
+      "total_deletions": 7,
+      "accepted_lines": 274,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/da507db8d832d6f883b4d2a3b38c60dc9acf629377138d5f6604df382702b970"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
