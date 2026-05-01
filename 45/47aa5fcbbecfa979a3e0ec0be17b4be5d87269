@@ -1,0 +1,59 @@
+src/ui/ui.test.ts
+  h_5cf1e2c1161853 422,424
+src/renderers/vscode/createVSCodeChatRenderer.ts
+  h_5cf1e2c1161853 200-227
+src/normalizers/ollama.ts
+  h_5cf1e2c1161853 45-46,95-96
+src/agent/createAgentLoop.ts
+  h_5cf1e2c1161853 22-40,125
+src/types/streaming-markdown.d.ts
+  h_5cf1e2c1161853 8-12,14,16,23-35
+src/ui/eventSourcing.ts
+  h_5cf1e2c1161853 5-11,15,19-41,45-49,63,94,98
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 576
+src/tool-calls/buildToolResultMessage.ts
+  h_5cf1e2c1161853 48-49
+src/renderers/streaming-md/createStreamingMarkdownRenderer.ts
+  h_5cf1e2c1161853 15,81
+src/renderers/streaming-md/streaming-md.test.ts
+  h_5cf1e2c1161853 26,41
+src/adapters/vscode.ts
+  h_5cf1e2c1161853 33,46
+src/agent/types.ts
+  h_5cf1e2c1161853 2,7-8
+scripts/release.js
+  h_5cf1e2c1161853 428
+src/normalizers/cohere.ts
+  h_5cf1e2c1161853 121
+src/renderers/vscode/vscode.test.ts
+  h_5cf1e2c1161853 31,84,479,481
+src/processor/LLMStreamProcessor.ts
+  h_5cf1e2c1161853 417,533
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "4547aa5fcbbecfa979a3e0ec0be17b4be5d87269",
+  "prompts": {
+    "a1ecd8f192ae5997": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c7b67479-d5fa-4efd-bb9d-f39f157fc998",
+        "model": "copilot/claude-haiku-4.5"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 41,
+      "total_deletions": 61,
+      "accepted_lines": 49,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/61aae996d3d0fde7efcf1d8eac0a3326de8f31f71c55f72b8e93719d3e9ff1b3"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
