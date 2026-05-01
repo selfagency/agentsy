@@ -450,7 +450,7 @@ describe('LLMStreamProcessor', () => {
   }, 5000);
 
   it('enforces maxResidualBytes limit to prevent unbounded buffer growth', () => {
-    const warnings: Array<[string, Record<string, unknown> | undefined]> = [];
+    const warnings: [string, Record<string, unknown> | undefined][] = [];
     const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>(
       (message: string, context?: Record<string, unknown>) => {
         warnings.push([message, context]);
