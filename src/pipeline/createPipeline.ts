@@ -11,6 +11,7 @@ import { normalizeOpenAIChatChunk } from '../normalizers/openai.js';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
+import { parseJson } from '../structured/parseJson.js';
 import { parseSSEStream } from '../sse/index.js';
 
 export type NormalizerProvider =
@@ -25,6 +26,10 @@ export type NormalizerProvider =
 
 export interface PipelineOptions extends ProcessorOptions {
   provider: NormalizerProvider;
+  /** Maximum nesting depth for SSE JSON payloads (default: 64) */
+  maxJsonDepth?: number;
+  /** Maximum number of keys in SSE JSON payloads (default: 10000) */
+  maxJsonKeys?: number;
 }
 
 export interface PipelineEvent {
@@ -51,16 +56,27 @@ const NORMALIZERS: Record<NormalizerProvider, (data: unknown) => { chunk: Stream
  * Processes an SSE event and yields pipeline events.
  */
 async function* processSSEEvent(
-  sseEvent: { data: string },
+  sseEvent: { data?: string },
   normalizer: (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null,
   processor: LLMStreamProcessor,
   provider: NormalizerProvider,
+  jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number },
 ): AsyncGenerator<PipelineEvent> {
   if (!sseEvent.data || sseEvent.data === '[DONE]') {
     return;
   }
 
-  const parsed = JSON.parse(sseEvent.data);
+  const parsed = parseJson(sseEvent.data, jsonParseOptions);
+  if (parsed === null) {
+    // parseJson returns null if no valid JSON is found
+    yield {
+      type: 'error',
+      message: `Failed to parse JSON from SSE data: ${sseEvent.data.substring(0, 50)}...`,
+      provider,
+    };
+    return;
+  }
+
   const normalized = normalizer(parsed);
 
   if (!normalized || typeof normalized !== 'object' || !('chunk' in normalized)) {
@@ -107,6 +123,13 @@ function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
   return processorOpts;
 }
 
+function buildJsonParseOptions(options: PipelineOptions): { maxJsonDepth?: number; maxJsonKeys?: number } {
+  return {
+    maxJsonDepth: options.maxJsonDepth,
+    maxJsonKeys: options.maxJsonKeys,
+  };
+}
+
 export async function* createPipeline(
   source: AsyncIterable<string> | ReadableStream<string>,
   options: PipelineOptions,
@@ -117,11 +140,12 @@ export async function* createPipeline(
   }
 
   const processor = new LLMStreamProcessor(buildProcessorOptions(options));
+  const jsonParseOptions = buildJsonParseOptions(options);
 
   try {
     for await (const sseEvent of parseSSEStream(source)) {
       try {
-        for await (const event of processSSEEvent(sseEvent, normalizer, processor, options.provider)) {
+        for await (const event of processSSEEvent(sseEvent, normalizer, processor, options.provider, jsonParseOptions)) {
           yield event;
         }
       } catch (_error) {

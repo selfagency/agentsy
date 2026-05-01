@@ -5,7 +5,7 @@
 
 export interface SSEEvent {
   event?: string;
-  data: string;
+  data?: string;
   id?: string;
   retry?: number;
 }
@@ -105,9 +105,9 @@ export class SSEParser {
     this.buffer = parts.at(-1) ?? '';
   }
 
-  private fieldsToEvent(fields: string[]): SSEEvent | null {
-    const event: SSEEvent = { data: '' };
-    let hasDataField = false;
+  private fieldsToEvent(fields: string[]): SSEEvent {
+    const event: SSEEvent = {};
+    let dataInitialized = false;
 
     for (const rawLine of fields) {
       const line = rawLine.trim();
@@ -124,31 +124,27 @@ export class SSEParser {
         value = value.substring(1);
       }
 
-      hasDataField = this.parseField(field, value, event) || hasDataField;
-    }
-
-    // Only include data if it was explicitly provided.
-    if (!hasDataField) {
-      // nosec: SSEEvent interface doesn't have index signature but is mutable
-      delete (event as any).data;
+      this.parseField(field, value, event, dataInitialized);
+      if (field === 'data') {
+        dataInitialized = true;
+      }
     }
 
     return event;
   }
 
-  private parseField(field: string, value: string, event: SSEEvent): boolean {
-    let hasDataField = false;
-
+  private parseField(field: string, value: string, event: SSEEvent, dataInitialized: boolean): void {
     switch (field) {
       case 'event':
         event.event = value;
         break;
       case 'data':
-        if (event.data) {
-          event.data += `\n${value}`;
+        // RFC 8895: multiple data: lines must be concatenated with newlines
+        // Use dataInitialized flag (not truthiness of event.data) to handle empty first line
+        if (dataInitialized) {
+          event.data = (event.data ?? '') + `\n${value}`;
         } else {
           event.data = value;
-          hasDataField = true;
         }
         break;
       case 'id':
@@ -162,11 +158,10 @@ export class SSEParser {
         break;
       }
     }
-
-    return hasDataField;
   }
 
   private isValidEvent(event: SSEEvent): boolean {
+    // An event is valid if it has at least one of: event, data, id, or retry fields
     return !!(
       event.data !== undefined ||
       event.event !== undefined ||
