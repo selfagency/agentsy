@@ -24,7 +24,7 @@ describe('processStream', () => {
 describe('createVSCodeCopilotAdapter', () => {
   it('routes thinking/content to markdown and tool calls to callback', async () => {
     const markdown = vi.fn<(text: string) => void>();
-    const onToolCall = vi.fn<(call: any) => void>();
+    const onToolCall = vi.fn<(call: unknown) => void>();
     const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
     const adapter = createVSCodeCopilotAdapter({
       processor,
@@ -95,7 +95,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('routes tool calls to onToolCall callback', async () => {
-    const onToolCall = vi.fn<(call: any) => void>();
+    const onToolCall = vi.fn<(call: unknown) => void>();
     const adapter = createGenericAdapter({ onToolCall }, { parseThinkTags: false, scrubContextTags: false });
 
     await adapter.write({
@@ -112,7 +112,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('propagates errors from callbacks via onError', async () => {
-    const onError = vi.fn<(error: Error, context: any) => void>();
+    const onError = vi.fn<(error: Error, context: unknown) => void>();
     const adapter = createGenericAdapter(
       {
         onContent: () => {
@@ -129,7 +129,7 @@ describe('createGenericAdapter', () => {
   });
 
   it('handles errors when onError callback throws', async () => {
-    const onError = vi.fn<(error: Error, context: any) => void>(() => {
+    const onError = vi.fn<(error: Error, context: unknown) => void>(() => {
       throw new Error('onError failed');
     });
     const adapter = createGenericAdapter(
