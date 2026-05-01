@@ -174,7 +174,7 @@ export interface ToolCallStartEvent extends BaseEvent {
 export interface ToolCallArgsEvent extends BaseEvent {
   type: EventType.TOOL_CALL_ARGS;
   toolCallId: string;
-  args: Record<string, any>;
+  args: Record<string, unknown>;
 }
 
 export interface ToolCallEndEvent extends BaseEvent {

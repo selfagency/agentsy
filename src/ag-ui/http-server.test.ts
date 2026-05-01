@@ -21,8 +21,6 @@ async function* mockEventGenerator() {
 async function* emptyGenerator() {
   // Empty generator - doesn't yield any events
   return;
-  // eslint-disable-next-line no-unreachable
-  yield undefined as unknown as AgUiEvent;
 }
 
 async function* errorGeneratorWithYield() {
@@ -135,7 +133,7 @@ describe('createAgentRunHandler', () => {
 
     const writeHeadHeaders: Record<string, unknown> = {};
     const res = {
-      writeHead: vi.fn((code, headers) => {
+      writeHead: vi.fn((_code, headers) => {
         Object.assign(writeHeadHeaders, headers);
       }),
       write: vi.fn(),

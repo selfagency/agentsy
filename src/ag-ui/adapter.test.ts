@@ -185,7 +185,7 @@ describe('toAgUiStream', () => {
     expect(errorEvent).toBeDefined();
     if (errorEvent && 'error' in errorEvent) {
       expect((errorEvent as Record<string, unknown>).error).toEqual(
-        expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' })
+        expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' }),
       );
     }
   });

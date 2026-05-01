@@ -13,7 +13,7 @@ import {
   StateManager,
   type JsonPatchOp,
 } from './state-manager.js';
-import { EventType } from './types.js';
+import { EventType, type StateSnapshotEvent } from './types.js';
 
 describe('createStateSnapshotEvent', () => {
   it('should create snapshot with state copy and timestamp', () => {
@@ -40,10 +40,12 @@ describe('createStateSnapshotEvent', () => {
 
   it('should generate valid ISO timestamp', () => {
     const state = {};
-    const event = createStateSnapshotEvent(state, 'run_123');
+    const event = createStateSnapshotEvent(state, 'run_123') as StateSnapshotEvent & {
+      timestamp: string;
+    };
 
     expect(typeof event.timestamp).toBe('string');
-    expect(() => new Date(event.timestamp!)).not.toThrow();
+    expect(() => new Date(event.timestamp)).not.toThrow();
     // Verify ISO 8601 format
     expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   });

@@ -247,7 +247,10 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      const bodyFn = c.body as (stream: ReadableStream<Uint8Array> | AsyncGenerator<Uint8Array>, options: Record<string, unknown>) => unknown;
+      const bodyFn = c.body as (
+        stream: ReadableStream<Uint8Array> | AsyncGenerator<Uint8Array>,
+        options: Record<string, unknown>,
+      ) => unknown;
 
       return bodyFn(sseStream.readable, {
         headers: {
