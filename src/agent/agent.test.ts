@@ -383,9 +383,8 @@ describe('createAgentLoop', () => {
       buildToolResultMessages: async () => [],
     });
 
-    const parts: unknown[] = [];
-    for await (const part of loop.run([])) {
-      parts.push(part);
+    for await (const _part of loop.run([])) {
+      // consume loop
     }
 
     expect(executeCount).toBeGreaterThan(0);
@@ -403,9 +402,8 @@ describe('createAgentLoop', () => {
       buildToolResultMessages: async () => [],
     });
 
-    const parts: unknown[] = [];
-    for await (const part of loop.run([])) {
-      parts.push(part);
+    for await (const _part of loop.run([])) {
+      // consume loop
     }
 
     expect(executeCount).toBe(1);
@@ -423,9 +421,8 @@ describe('createAgentLoop', () => {
       buildToolResultMessages: async () => [],
     });
 
-    const parts: unknown[] = [];
-    for await (const part of loop.run([])) {
-      parts.push(part);
+    for await (const _part of loop.run([])) {
+      // consume loop
     }
 
     expect(executeCount).toBe(1);
@@ -443,9 +440,8 @@ describe('createAgentLoop', () => {
       buildToolResultMessages: async () => [],
     });
 
-    const parts: unknown[] = [];
-    for await (const part of loop.run([])) {
-      parts.push(part);
+    for await (const _part of loop.run([])) {
+      // consume loop
     }
 
     expect(onStepSpy).toHaveBeenCalled();
