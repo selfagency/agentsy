@@ -1,0 +1,50 @@
+src/ag-ui/observable.test.ts
+  84a6f90a856eb183 20,24,36,40,55-56,59,81,89,91,98,104,121,140,159,187,190,198,200,207,210,226,244,249
+  h_5cf1e2c1161853 1-19,21-23,25-35,37-39,41-54,57-58,60-80,82-88,90,92-97,99-103,105-120,122-139,141-158,160-186,188-189,191-197,199,201-206,208-209,211-225,227-243,245-248,250-254
+src/ag-ui/http-server.ts
+  h_5cf1e2c1161853 82
+README.md
+  h_5cf1e2c1161853 366,369-370,375,380,382,385-389,393-397,402-403
+src/ag-ui/interrupt-handler.test.ts
+  h_5cf1e2c1161853 1-294
+src/ag-ui/state-manager.test.ts
+  h_5cf1e2c1161853 1-351
+src/ag-ui/interrupt-handler.ts
+  h_5cf1e2c1161853 8,131
+src/ag-ui/event-converters.test.ts
+  h_5cf1e2c1161853 1-315
+docs/plans/ink-renderer.plan.md
+  h_5cf1e2c1161853 1-160
+src/agent/createAgentLoop.ts
+  h_5cf1e2c1161853 184,186-189,203,205-207,224,226-228,233,246,248-250,281,283-285,301,303-305
+src/ag-ui/state-manager.ts
+  h_5cf1e2c1161853 17-40,48,55-58,80,87-93,226-228,253,256-258,270,273-275
+src/ag-ui/reasoning-mapper.test.ts
+  h_5cf1e2c1161853 1-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ff5af71408e3d5d5b41cc6df87afe12967ecbaee",
+  "prompts": {
+    "84a6f90a856eb183": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "81fef36a-0913-4cba-8571-6790328d2805",
+        "model": "copilot/claude-haiku-4.5"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 83,
+      "total_deletions": 78,
+      "accepted_lines": 657,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/1c4653b215c695d054b71a7e749656a44cc7f50e2232cd60658a566a5af905b5"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
