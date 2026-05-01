@@ -250,7 +250,6 @@ export class LLMStreamProcessor {
         // Reset lastIndex since we've mutated the residual
         completeTagRe.lastIndex = 0;
         mm = completeTagRe.exec(this._rawResidual);
-        mm = completeTagRe.exec(this._rawResidual);
       }
     }
 

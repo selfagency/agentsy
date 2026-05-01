@@ -11,9 +11,28 @@ interface TagMatch {
   fullMatch: string;
 }
 
-// Valid XML tag names: start with letter/underscore, followed by alphanumeric/underscore/hyphen/colon
+// Valid XML tag names: start with letter/underscore, followed by alphanumeric/underscore/hyphen/dot/colon
 // Whitelist approach prevents ReDoS by restricting to safe characters only.
-const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.-:]*$/;
+const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
+
+function findMatchingCloseTag(
+  part: string,
+  tagName: string,
+  searchStart: number
+): number | null {
+  // Security: tagName already validated by collectTagMatches before calling here.
+  const tagRegex = new RegExp(String.raw`<(/?)(${tagName})\b[^>]*>`, 'gi');
+  tagRegex.lastIndex = searchStart;
+  let depth = 1;
+  for (let mm = tagRegex.exec(part); mm !== null; mm = tagRegex.exec(part)) {
+    const isClose = mm[1] === '/';
+    depth += isClose ? -1 : 1;
+    if (depth === 0) {
+      return mm.index + mm[0].length;
+    }
+  }
+  return null;
+}
 
 function collectTagMatches(part: string): TagMatch[] {
   if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
@@ -24,24 +43,11 @@ function collectTagMatches(part: string): TagMatch[] {
     if (!tagName) continue;
     const openEnd = OPEN_TAG_RE.lastIndex;
 
-    // Find the matching closing tag while handling nested tags of the same name.
     // Security: Validate tagName against whitelist before using in RegExp.
     // This prevents ReDoS attacks by ensuring only safe characters are used.
     if (!VALID_TAG_NAME.test(tagName)) continue;
 
-    // tagName is now validated as safe, so no escaping needed.
-    const tagRegex = new RegExp(`<(/?)${tagName}\\b[^>]*>`, 'gi');
-    tagRegex.lastIndex = openEnd;
-    let depth = 1;
-    let matchEnd: number | null = null;
-    for (let mm = tagRegex.exec(part); mm !== null; mm = tagRegex.exec(part)) {
-      const isClose = mm[1] === '/';
-      depth += isClose ? -1 : 1;
-      if (depth === 0) {
-        matchEnd = mm.index + mm[0].length;
-        break;
-      }
-    }
+    const matchEnd = findMatchingCloseTag(part, tagName, openEnd);
     if (matchEnd === null) continue;
     results.push({ tagName, fullMatch: part.slice(m.index, matchEnd) });
   }

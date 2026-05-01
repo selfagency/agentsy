@@ -82,6 +82,7 @@ describe('buildNativeToolsArray', () => {
 
   it('strict mode does not mutate non-object properties', () => {
     const tools = buildNativeToolsArray([RICH_SCHEMA_TOOL], { strict: true });
+    // buildNativeToolsArray with one input tool always returns a one-element array
     const props = tools[0]!.function.parameters.properties;
     // Non-object schemas are returned as-is
     expect(props.title).toMatchObject({ type: 'string', minLength: 1, maxLength: 200 });

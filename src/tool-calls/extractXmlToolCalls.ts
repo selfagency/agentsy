@@ -112,7 +112,7 @@ function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<strin
   // Use a null-prototype object to avoid prototype pollution when assigning
   // properties from untrusted XML input (e.g., <__proto__> tags).
   // Validate paramName to prevent injection attacks.
-  const VALID_PARAM_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
   const params = Object.create(null) as Record<string, unknown>;
   for (const paramMatch of inner.matchAll(paramPattern)) {
     const paramName = paramMatch[1];
