@@ -11,8 +11,8 @@ import { normalizeOpenAIChatChunk } from '../normalizers/openai.js';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
-import { parseJson } from '../structured/parseJson.js';
 import { parseSSEStream } from '../sse/index.js';
+import { parseJson } from '../structured/parseJson.js';
 
 export type NormalizerProvider =
   | 'openai'

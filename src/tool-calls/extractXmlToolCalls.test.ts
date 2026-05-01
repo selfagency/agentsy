@@ -1,3 +1,4 @@
+/* eslint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
 import { describe, expect, it } from 'vitest';
 
 import { extractXmlToolCalls } from './extractXmlToolCalls.js';

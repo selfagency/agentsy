@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
-  validateField,
+  allOf,
   createFieldValidator,
+  oneOf,
+  validateField,
   validateObject,
   validators,
-  allOf,
-  oneOf,
   type FieldValidationEvent,
 } from './fieldValidator.js';
 

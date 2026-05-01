@@ -1,3 +1,4 @@
+/* eslint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
 import { describe, expect, it, vi } from 'vitest';
 
 import type { UsageInfo } from '../normalizers/types.js';
