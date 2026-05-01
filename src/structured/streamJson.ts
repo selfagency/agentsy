@@ -61,6 +61,41 @@ export interface StreamJsonResult<T = unknown> {
 // ---------------------------------------------------------------------------
 
 /**
+ * Check deep equality between two values without serialization overhead.
+ * More performant than JSON.stringify comparison for deep equality checks.
+ */
+function deepEqual(a: unknown, b: unknown): boolean {
+  // Fast path: same reference or both primitives
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+
+  // Compare arrays
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false;
+    }
+    return true;
+  }
+
+  // Compare objects
+  if (!Array.isArray(a) && !Array.isArray(b)) {
+    const keysA = Object.keys(a as Record<string, unknown>).sort();
+    const keysB = Object.keys(b as Record<string, unknown>).sort();
+    if (keysA.length !== keysB.length) return false;
+    if (!deepEqual(keysA, keysB)) return false;
+    for (const key of keysA) {
+      if (!deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Collect all leaf (and array-item) paths from a value and return them as
  * `{ path, value }` pairs suitable for diffing across successive parses.
  */
@@ -94,12 +129,13 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
 
 /**
  * Diff two snapshots represented as path→value maps and return the set of
- * paths that are new or have a changed serialised value.
+ * paths that are new or have a changed value (using deep equality).
+ * More efficient than serialization-based comparison.
  */
 function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): string[] {
   const changed: string[] = [];
   for (const [path, val] of next) {
-    if (!prev.has(path) || JSON.stringify(prev.get(path)) !== JSON.stringify(val)) {
+    if (!prev.has(path) || !deepEqual(prev.get(path), val)) {
       changed.push(path);
     }
   }
@@ -132,7 +168,7 @@ export async function* streamJson<T = unknown>(
   }
 
   let accumulated = '';
-  let lastSerialized: string | undefined;
+  let lastParsed: unknown | undefined;
   let lastWasPartial = false;
   let prevPaths: Map<string, unknown> = new Map();
   let rootComplete = false;
@@ -165,11 +201,10 @@ export async function* streamJson<T = unknown>(
     // Try complete parse first
     const complete = tryParse(accumulated, false);
     if (complete !== null) {
-      const serialized = JSON.stringify(complete);
       // Always emit when transitioning partial→complete, even if value is same
-      if (serialized !== lastSerialized || lastWasPartial) {
+      if (!deepEqual(complete, lastParsed) || lastWasPartial) {
         const newFields = computeNewFields(complete, true);
-        lastSerialized = serialized;
+        lastParsed = complete;
         lastWasPartial = false;
         rootComplete = true;
         yield { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields };
@@ -185,11 +220,10 @@ export async function* streamJson<T = unknown>(
     const partial = tryParse(accumulated, true);
     if (partial === null) continue;
 
-    const serialized = JSON.stringify(partial);
-    if (serialized === lastSerialized) continue;
+    if (deepEqual(partial, lastParsed)) continue;
 
     const newFields = computeNewFields(partial, false);
-    lastSerialized = serialized;
+    lastParsed = partial;
     lastWasPartial = true;
     yield { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields };
   }
