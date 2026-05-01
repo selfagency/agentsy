@@ -1,0 +1,53 @@
+src/renderers/vscode/createVSCodeAgentLoop.ts
+  h_5cf1e2c1161853 71
+src/ui/types.ts
+  h_5cf1e2c1161853 37-44
+src/renderers/vscode/createVSCodeChatRenderer.ts
+  h_5cf1e2c1161853 126
+src/pipeline/transform.test.ts
+  h_5cf1e2c1161853 157-159
+src/agent/createAgentLoop.ts
+  h_5cf1e2c1161853 100-102
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 575-581
+src/normalizers/testHelpers.ts
+  h_5cf1e2c1161853 2,9-10,25-26,31,39
+src/renderers/plain/createPlainTextRenderer.ts
+  h_5cf1e2c1161853 53
+src/types/streaming-markdown.d.ts
+  h_5cf1e2c1161853 1-26
+src/renderers/shared.ts
+  h_5cf1e2c1161853 123
+src/ui/eventHelpers.ts
+  h_5cf1e2c1161853 1,9
+src/ui/ui.test.ts
+  h_5cf1e2c1161853 88,90-95
+src/renderers/streaming-md/createStreamingMarkdownRenderer.ts
+  h_5cf1e2c1161853 82,138,160,256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9a67c9523ac902728f1ce1615f2edd90fd96abb7",
+  "prompts": {
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 14,
+      "total_deletions": 16,
+      "accepted_lines": 3614,
+      "overriden_lines": 11,
+      "messages_url": "https://usegitai.com/cas/0808a94f1dcac2dcd43604ddc32e752856a37f5bd3aa4e04bc98c05a0d957b69"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
