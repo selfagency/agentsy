@@ -1,0 +1,29 @@
+src/renderers/streaming-md/createStreamingMarkdownRenderer.ts
+  h_5cf1e2c1161853 98-115,120,161,180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ef57674f61bba9c1831a78c05ad2ed57b8c8baa8",
+  "prompts": {
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 21,
+      "total_deletions": 71,
+      "accepted_lines": 3426,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/b544f3387d7f7a4ba82a92e8ee11be88c860c6da56f382ef5e347a3096492559"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
