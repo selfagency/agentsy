@@ -32,6 +32,12 @@ export interface ProcessorStats {
   /** Number of content deltas emitted */
   contentDeltasCount: number;
 
+  /** Number of errors encountered during processing */
+  errorsCount: number;
+
+  /** Number of warnings emitted during processing */
+  warningsCount: number;
+
   /** Timestamp when stats were last reset */
   resetAt: Date;
 
@@ -58,6 +64,8 @@ export function createEmptyStats(): ProcessorStats {
     thinkingBlocksCount: 0,
     toolCallsCount: 0,
     contentDeltasCount: 0,
+    errorsCount: 0,
+    warningsCount: 0,
     resetAt: now,
   };
 }

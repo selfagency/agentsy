@@ -68,6 +68,13 @@ export interface ProcessorOptions {
    * Default: 64. Set to `0` to disable.
    */
   maxXmlNestingDepth?: number;
+  /**
+   * Maximum byte length of residual buffers (_rawResidual and _filteredResidual combined).
+   * When the total residual buffer size exceeds this limit, further appends are dropped
+   * and a warning is emitted, preventing unbounded memory growth from streaming.
+   * Default: 1,048,576 (1 MiB). Set to `0` to disable.
+   */
+  maxResidualBytes?: number;
   /** Maximum number of warnings emitted per processor lifetime. Default: 100. Set to 0 to disable. */
   maxWarnings?: number;
 }
@@ -115,6 +122,8 @@ export type StreamEventMap = {
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
 const DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE = 64;
 const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
+const DEFAULT_MAX_XML_NESTING_DEPTH = 64;
+const DEFAULT_MAX_RESIDUAL_BYTES = 1024 * 1024; // 1 MiB
 const DEFAULT_MAX_WARNINGS = 100;
 const SHARED_TEXT_ENCODER = new TextEncoder();
 
@@ -229,7 +238,17 @@ export class LLMStreamProcessor {
     // XML stream filter would otherwise scrub them.
     let extractedFromRawResidual: XmlToolCall[] = [];
     if (this.options.knownTools && rawContent) {
-      this._rawResidual += rawContent;
+      // Security: Enforce maxResidualBytes limit to prevent unbounded memory growth
+      const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
+      const newResidualSize = this._rawResidual.length + this._filteredResidual.length + rawContent.length;
+      if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
+        this.warn(
+          `Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping raw content append`,
+          { currentSize: this._rawResidual.length + this._filteredResidual.length, incomingBytes: rawContent.length }
+        );
+      } else {
+        this._rawResidual += rawContent;
+      }
       // Security: Limit tag name length to 50 chars, attribute length to 100,
       // and content length to 100k to prevent ReDoS on large payloads.
       // Limited quantifier scopes prevent catastrophic backtracking.
@@ -263,7 +282,17 @@ export class LLMStreamProcessor {
       // Append filtered delta to residual buffer and extract any complete
       // top-level tags that are now complete across chunks. This lets us
       // handle tool_call blocks that were split between writes.
-      this._filteredResidual += delta;
+      // Security: Enforce maxResidualBytes limit to prevent unbounded memory growth
+      const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
+      const newResidualSize = this._rawResidual.length + this._filteredResidual.length + delta.length;
+      if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
+        this.warn(
+          `Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping filtered delta append`,
+          { currentSize: this._rawResidual.length + this._filteredResidual.length, incomingBytes: delta.length }
+        );
+      } else {
+        this._filteredResidual += delta;
+      }
       const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
       let m = completeTagRe.exec(this._filteredResidual);
       while (m !== null) {
