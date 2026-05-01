@@ -242,10 +242,10 @@ export class LLMStreamProcessor {
       const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
       const newResidualSize = this._rawResidual.length + this._filteredResidual.length + rawContent.length;
       if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
-        this.warn(
-          `Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping raw content append`,
-          { currentSize: this._rawResidual.length + this._filteredResidual.length, incomingBytes: rawContent.length }
-        );
+        this.warn(`Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping raw content append`, {
+          currentSize: this._rawResidual.length + this._filteredResidual.length,
+          incomingBytes: rawContent.length,
+        });
       } else {
         this._rawResidual += rawContent;
       }
@@ -288,7 +288,7 @@ export class LLMStreamProcessor {
       if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
         this.warn(
           `Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping filtered delta append`,
-          { currentSize: this._rawResidual.length + this._filteredResidual.length, incomingBytes: delta.length }
+          { currentSize: this._rawResidual.length + this._filteredResidual.length, incomingBytes: delta.length },
         );
       } else {
         this._filteredResidual += delta;

@@ -148,7 +148,13 @@ export async function* createPipeline(
   try {
     for await (const sseEvent of parseSSEStream(source)) {
       try {
-        for await (const event of processSSEEvent(sseEvent, normalizer, processor, options.provider, jsonParseOptions)) {
+        for await (const event of processSSEEvent(
+          sseEvent,
+          normalizer,
+          processor,
+          options.provider,
+          jsonParseOptions,
+        )) {
           yield event;
         }
       } catch (_error) {
