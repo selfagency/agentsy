@@ -1,0 +1,20 @@
+src/pipeline/index.ts
+  h_5cf1e2c1161853 2
+src/pipeline/transform.ts
+  h_5cf1e2c1161853 1-73
+src/processor/LLMStreamProcessor.ts
+  h_5cf1e2c1161853 83-88,187-189,221-242,536-537,581-587,739
+src/pipeline/transform.test.ts
+  h_5cf1e2c1161853 1-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "0ae230d2e0c77dbfdc920f2a86b60209af3dc424",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
