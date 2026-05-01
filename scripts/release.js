@@ -232,8 +232,27 @@ async function main() {
   gitCmd = resolvedGit;
 
   // Ensure npm uses the user's ~/.npmrc (tokens) and the public npm registry.
-  process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
   const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
+  const npmrcPath = resolve(homedir(), '.npmrc');
+  process.env.NPM_CONFIG_USERCONFIG = npmrcPath;
+
+  // If NPM_TOKEN is provided in the environment, write it to .npmrc so npm can use it.
+  if (process.env.NPM_TOKEN) {
+    const registryUrl = new URL(NPM_REGISTRY);
+    const registryHost = registryUrl.hostname;
+    const authEntry = `//${registryHost}/:_authToken=${process.env.NPM_TOKEN}`;
+
+    try {
+      const existingRcContent = safeRead(npmrcPath, 'utf8');
+      // Check if this registry auth is already configured
+      if (!existingRcContent.includes(`//${registryHost}/:_authToken`)) {
+        safeWrite(npmrcPath, `${existingRcContent}\n${authEntry}\n`);
+      }
+    } catch {
+      // .npmrc doesn't exist; create it with the auth entry
+      safeWrite(npmrcPath, `${authEntry}\n`);
+    }
+  }
 
   await checkNpmCredentials(NPM_REGISTRY);
 
