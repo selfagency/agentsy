@@ -80,6 +80,12 @@ export interface ProcessorOptions {
   maxResidualBytes?: number;
   /** Maximum number of warnings emitted per processor lifetime. Default: 100. Set to 0 to disable. */
   maxWarnings?: number;
+  /**
+   * Optional chain of `TransformStream<OutputPart, OutputPart>` transforms applied to
+   * `processor.partsStream`. Each transform receives the output of the previous one.
+   * Does not affect the synchronous `process()` / `flush()` API.
+   */
+  transforms?: TransformStream<OutputPart, OutputPart>[];
 }
 
 /** A discriminated-union part of a `ProcessedOutput`, enabling structured iteration over output. */
@@ -178,6 +184,9 @@ export class LLMStreamProcessor {
   // even when the xmlFilter will scrub those tags.
   private _rawResidual = '';
 
+  private _partsController: ReadableStreamDefaultController<OutputPart> | null = null;
+  private _partsSource: ReadableStream<OutputPart>;
+
   private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
     if (this._accumulatedUsage !== undefined) {
       return { usage: this._accumulatedUsage };
@@ -209,6 +218,28 @@ export class LLMStreamProcessor {
     this.xmlFilter = this.createXmlFilter();
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
     this._stats = createEmptyStats();
+    this._partsSource = new ReadableStream<OutputPart>({
+      start: (controller) => {
+        this._partsController = controller;
+      },
+    });
+  }
+
+  /**
+   * A `ReadableStream<OutputPart>` that emits every part produced by `process()` and `flush()`.
+   *
+   * If `transforms` were supplied in the constructor options, the stream is the result of
+   * chaining each transform via `pipeThrough()`. The stream is closed automatically after
+   * the first chunk with `done: true` is processed.
+   *
+   * Note: the stream may only be read once.
+   */
+  public get partsStream(): ReadableStream<OutputPart> {
+    const transforms = this.options.transforms ?? [];
+    return transforms.reduce<ReadableStream<OutputPart>>(
+      (stream, transform) => stream.pipeThrough(transform),
+      this._partsSource,
+    );
   }
 
   /**
@@ -502,6 +533,8 @@ export class LLMStreamProcessor {
 
     this.recordOutput(output);
     this.emitOutput(output);
+    this._partsController?.close();
+    this._partsController = null;
     return output;
   }
 
@@ -545,6 +578,13 @@ export class LLMStreamProcessor {
     this._warningCount = 0;
     this._stats = createEmptyStats();
     this._midStreamEmittedCallIndices.clear();
+    this._partsController?.close();
+    this._partsController = null;
+    this._partsSource = new ReadableStream<OutputPart>({
+      start: (controller) => {
+        this._partsController = controller;
+      },
+    });
   }
 
   private createThinkingParser(): ThinkingParser | null {
@@ -696,6 +736,7 @@ export class LLMStreamProcessor {
           listener(part);
         }
       }
+      this._partsController?.enqueue(part);
     }
 
     if (output.thinking) {
