@@ -573,8 +573,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     const toolCallPart = result.parts.find(p => p.type === 'tool_call');
     expect(toolCallPart).toBeDefined();
 
-    // Type guard to narrow type
-    if (!toolCallPart || toolCallPart.type !== 'tool_call') {
+    if (!toolCallPart) {
       throw new Error('Expected tool_call part');
     }
 

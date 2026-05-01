@@ -5,15 +5,32 @@
 
 declare module 'streaming-markdown' {
   namespace StreamingMarkdown {
-    function parser_create(options: { target: any }): any;
+    interface Parser {
+      readonly __brand: 'StreamingMarkdownParser';
+    }
+
+    function parser_create(options: { target: Element | HTMLElement | unknown }): Parser;
     function parser_write(text: string): void;
-    function parser_write(parser: any, chunk: string): void;
+    function parser_write(parser: Parser, chunk: string): void;
     function parser_end(): string;
-    function parser_end(parser: any): string;
+    function parser_end(parser: Parser): string;
     let removed: unknown[] | undefined;
   }
 
   export = StreamingMarkdown;
+}
+
+namespace StreamingMarkdown {
+  interface Parser {
+    readonly __brand: 'StreamingMarkdownParser';
+  }
+
+  function parser_create(options: { target: Element | HTMLElement | unknown }): Parser;
+  function parser_write(text: string): void;
+  function parser_write(parser: Parser, chunk: string): void;
+  function parser_end(): string;
+  function parser_end(parser: Parser): string;
+  let removed: unknown[] | undefined;
 }
 
 declare module 'dompurify' {

@@ -197,6 +197,35 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   }
 
   /**
+   * Handle completion: fire callbacks and close blockquote on stream end.
+   * @internal
+   */
+  async function handleCompletion(done: boolean | undefined, finishReason: unknown, usage: unknown): Promise<void> {
+    if (!done) return;
+
+    // Fire onFinish callback if stream is done (guard against double invocation)
+    if (!finished && onFinish) {
+      finished = true;
+      await onFinish(finishReason as Parameters<typeof onFinish>[0], usage as Parameters<typeof onFinish>[1]);
+    }
+
+    // Capability detection: report usage if available
+    if (usage && stream.usage) {
+      const usageInfo = usage as { inputTokens?: number; outputTokens?: number };
+      stream.usage({
+        promptTokens: usageInfo.inputTokens ?? 0,
+        completionTokens: usageInfo.outputTokens ?? 0,
+      });
+    }
+
+    // Close blockquote if stream ended and we were in blockquote thinking mode
+    if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
+      stream.markdown('\n\n');
+      blockquoteThinkingStarted = false;
+    }
+  }
+
+  /**
    * Process all parts from output, dispatching to appropriate handlers.
    * @internal
    */
@@ -232,26 +261,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       try {
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
-
-        // Fire onFinish callback if stream is done (guard against double invocation)
-        if (chunk.done === true && !finished && onFinish) {
-          finished = true;
-          await onFinish(chunk.finishReason, chunk.usage);
-        }
-
-        // Capability detection: report usage if available
-        if (chunk.done === true && chunk.usage && stream.usage) {
-          stream.usage({
-            promptTokens: chunk.usage.inputTokens ?? 0,
-            completionTokens: chunk.usage.outputTokens ?? 0,
-          });
-        }
-
-        // Close blockquote if stream ended and we were in blockquote thinking mode
-        if (chunk.done === true && blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
-          stream.markdown('\n\n');
-          blockquoteThinkingStarted = false;
-        }
+        await handleCompletion(chunk.done, chunk.finishReason, chunk.usage);
       } catch (error) {
         if (onError && error instanceof Error) {
           onError(error);
@@ -274,25 +284,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         }
       }
 
-      // Fire onFinish callback to signal stream completion (if not already fired in writeChunk)
-      if (!finished && result?.done && onFinish) {
-        finished = true;
-        await onFinish(result.finishReason, result.usage);
-      }
-
-      // Capability detection: report usage if available
-      if (result?.done && result.usage && stream.usage) {
-        stream.usage({
-          promptTokens: result.usage.inputTokens ?? 0,
-          completionTokens: result.usage.outputTokens ?? 0,
-        });
-      }
-
-      // Close blockquote if stream ended and we were in blockquote thinking mode
-      if (result?.done && blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
-        stream.markdown('\n\n');
-        blockquoteThinkingStarted = false;
-      }
+      await handleCompletion(result?.done, result?.finishReason, result?.usage);
     },
   };
 }

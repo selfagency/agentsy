@@ -19,6 +19,26 @@ function parametersEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
+ * Updates the consecutive identical calls counter for doom-loop detection.
+ * Compares the first tool call of the current step with the previous step.
+ * @internal
+ */
+function updateConsecutiveIdenticalCalls(state: AgentLoopState, stepResult: StepResult): void {
+  if (state.steps.length >= 2 && stepResult.toolCalls.length > 0) {
+    const prevStep = state.steps.at(-2);
+    if ((prevStep?.toolCalls.length ?? 0) > 0) {
+      const prev = prevStep!.toolCalls[0]!;
+      const curr = stepResult.toolCalls[0]!;
+      if (prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
+        state.consecutiveIdenticalCalls += 1;
+      } else {
+        state.consecutiveIdenticalCalls = 0;
+      }
+    }
+  }
+}
+
+/**
  * Creates an agent loop handle for multi-step LLM execution with configurable stop conditions.
  * Automatically accumulates tool calls, builds tool results, and manages conversation state.
  */
@@ -102,18 +122,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       state.stepIndex = state.steps.length - 1;
 
       // Update doom-loop counter
-      if (state.steps.length >= 2 && stepResult.toolCalls.length > 0) {
-        const prevStep = state.steps.at(-2);
-        if ((prevStep?.toolCalls.length ?? 0) > 0) {
-          const prev = prevStep?.toolCalls[0];
-          const curr = stepResult.toolCalls[0];
-          if (prev && curr && prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
-            state.consecutiveIdenticalCalls += 1;
-          } else {
-            state.consecutiveIdenticalCalls = 0;
-          }
-        }
-      }
+      updateConsecutiveIdenticalCalls(state, stepResult);
 
       state.toolCallCount += stepResult.toolCalls.length;
 

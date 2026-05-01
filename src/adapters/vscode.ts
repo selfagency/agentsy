@@ -30,6 +30,7 @@ export interface VSCodeChatStream {
 /**
  * @deprecated Use `VSCodeChatRendererOptions` from `createVSCodeChatRenderer` instead.
  */
+// oxlint-disable-next-line no-deprecated
 export interface VSCodeCopilotAdapterOptions {
   processor: LLMStreamProcessor;
   stream: VSCodeChatStream;
@@ -42,6 +43,7 @@ export interface VSCodeCopilotAdapterOptions {
  * @deprecated Use `createVSCodeChatRenderer` from `@selfagency/llm-stream-parser/renderers/vscode` instead.
  * This adapter is maintained for backward compatibility only and will be removed in a future major version.
  */
+// oxlint-disable-next-line no-deprecated
 export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions): {
   write(chunk: StreamChunk): Promise<void>;
   end(): Promise<void>;

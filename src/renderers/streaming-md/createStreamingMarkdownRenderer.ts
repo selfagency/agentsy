@@ -12,7 +12,7 @@ interface DOMElement {
   innerHTML?: string;
   className?: string;
   id?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -57,15 +57,7 @@ export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
  * ```
  */
 export function createStreamingMarkdownRenderer(options: StreamingMarkdownRendererOptions): RendererHandle {
-  const {
-    target,
-    showThinking = false,
-    thinkingContainer = null,
-    onSecurityViolation,
-    processor,
-    onError,
-    onFinish,
-  } = options;
+  const { target, showThinking = false, onSecurityViolation, processor, onError, onFinish } = options;
 
   if (!target) {
     throw new Error('Target element is required for streaming markdown renderer');
@@ -79,17 +71,17 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
-  let parser: any = null;
+  let parser: StreamingMarkdown.Parser | null = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
   const getStreamingMarkdownDeps = async () => {
     try {
-      const smdModule = (await import('streaming-markdown')) as any;
-      const smd = smdModule.default || smdModule;
-      const dompurifyModule = (await import('dompurify')) as any;
-      const DOMPurify = dompurifyModule.default || dompurifyModule;
+      const smdImported = (await import('streaming-markdown')) as any;
+      const smdModule = smdImported.default ?? smdImported;
+      const dompurifyImported = (await import('dompurify')) as any;
+      const dompurifyModule = dompurifyImported.default ?? dompurifyImported;
 
-      return { smd, DOMPurify };
+      return { smd: smdModule, DOMPurify: dompurifyModule };
     } catch {
       throw new Error(
         'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
@@ -116,11 +108,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       if (part.type === 'text' && part.text) {
         accumulatedMarkdown += part.text;
       } else if (part.type === 'thinking' && showThinking && part.text) {
-        if (thinkingContainer) {
-          accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-        } else {
-          accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
-        }
+        accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
       }
     }
   }

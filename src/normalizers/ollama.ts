@@ -42,8 +42,8 @@ export function normalizeOllamaChatChunk(raw: unknown): NormalizerResult | null 
     const message = raw['message'];
     const content = typeof message['content'] === 'string' ? message['content'] : undefined;
     const done = raw['done'] === true ? true : undefined;
-    const usage = done !== undefined ? extractUsage(raw) : undefined;
-    const finishReason: FinishReason | undefined = done !== undefined ? 'stop' : undefined;
+    const usage = done === undefined ? undefined : extractUsage(raw);
+    const finishReason: FinishReason | undefined = done === undefined ? undefined : 'stop';
 
     // Tool calls — Ollama delivers them as a single complete array (not
     // streamed as argument deltas).  Arguments is a parsed object; we
@@ -92,8 +92,8 @@ export function normalizeOllamaGenerateChunk(raw: unknown): NormalizerResult | n
 
     const content = raw['response'];
     const done = raw['done'] === true ? true : undefined;
-    const usage = done !== undefined ? extractUsage(raw) : undefined;
-    const finishReason: FinishReason | undefined = done !== undefined ? 'stop' : undefined;
+    const usage = done === undefined ? undefined : extractUsage(raw);
+    const finishReason: FinishReason | undefined = done === undefined ? undefined : 'stop';
 
     const chunk = {
       content,

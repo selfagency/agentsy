@@ -2,6 +2,52 @@ import { addPartToMessage, finishMessage } from './eventHelpers.js';
 import type { ConversationEvent, UIConversation, UIMessage } from './types.js';
 
 /**
+ * Handle message_started event: create new message.
+ * @internal
+ */
+function handleMessageStarted(state: UIConversation, messageId: string, role: string, now: Date): UIConversation {
+  const newMessage: UIMessage = {
+    id: messageId,
+    role: role as 'user' | 'assistant',
+    parts: [],
+    createdAt: now,
+  };
+
+  return {
+    ...state,
+    messages: [...state.messages, newMessage],
+    lastEventAt: now,
+  };
+}
+
+/**
+ * Handle step_updated event: update current step index.
+ * @internal
+ */
+function handleStepUpdated(state: UIConversation, stepIndex: number, now: Date): UIConversation {
+  return {
+    ...state,
+    stepIndex,
+    lastEventAt: now,
+  };
+}
+
+/**
+ * Handle conversation_reset event: reset to empty conversation.
+ * @internal
+ */
+function handleConversationReset(state: UIConversation, now: Date): UIConversation {
+  return {
+    id: state.id,
+    messages: [],
+    stepIndex: 0,
+    lastEventAt: now,
+    totalTokens: 0,
+    metadata: undefined,
+  };
+}
+
+/**
  * Pure function: Apply a single event to conversation state, returning new state.
  * Original state is never mutated.
  *
@@ -14,19 +60,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
   switch (event.type) {
     case 'message_started': {
-      // Create new message
-      const newMessage: UIMessage = {
-        id: event.messageId,
-        role: event.role,
-        parts: [],
-        createdAt: now,
-      };
-
-      return {
-        ...state,
-        messages: [...state.messages, newMessage],
-        lastEventAt: now,
-      };
+      return handleMessageStarted(state, event.messageId, event.role, now);
     }
 
     case 'text_part_added': {
@@ -57,23 +91,11 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
     }
 
     case 'step_updated': {
-      return {
-        ...state,
-        stepIndex: event.stepIndex,
-        lastEventAt: now,
-      };
+      return handleStepUpdated(state, event.stepIndex, now);
     }
 
     case 'conversation_reset': {
-      // Reset to empty conversation
-      return {
-        id: state.id,
-        messages: [],
-        stepIndex: 0,
-        lastEventAt: now,
-        totalTokens: 0,
-        metadata: undefined,
-      };
+      return handleConversationReset(state, now);
     }
 
     default: {

@@ -414,7 +414,7 @@ export class LLMStreamProcessor {
           index: delta.index,
           name,
           argumentsDelta: delta.argumentsDelta,
-          ...(id !== undefined ? { id } : {}),
+          ...(id === undefined ? {} : { id }),
         };
         toolCallDeltas.push(part);
       }
@@ -530,7 +530,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done: true,
-      ...(this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
+      ...(this._lastFinishReason === undefined ? {} : { finishReason: this._lastFinishReason }),
       ...this.usagePayload,
     });
 

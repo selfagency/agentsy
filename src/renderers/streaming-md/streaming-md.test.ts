@@ -23,7 +23,7 @@ vi.mock('dompurify', () => {
 });
 
 describe('Streaming Markdown Renderer', () => {
-  let mockTarget: any;
+  let mockTarget: Record<string, unknown>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -38,7 +38,7 @@ describe('Streaming Markdown Renderer', () => {
   it('requires target element', () => {
     expect(() => {
       createStreamingMarkdownRenderer({
-        target: null as any,
+        target: null as unknown as Record<string, unknown>,
       });
     }).toThrow('Target element is required');
   });

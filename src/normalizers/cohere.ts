@@ -118,7 +118,7 @@ export function normalizeCohereEvent(raw: unknown): NormalizerResult | null {
 
       case 'message-end': {
         const finishReasonStr = typeof delta?.finish_reason === 'string' ? delta.finish_reason : undefined;
-        const done = finishReasonStr !== undefined ? true : undefined;
+        const done = finishReasonStr === undefined ? undefined : true;
         const finishReason = mapCohereFinishReason(finishReasonStr);
         const usage = buildCohereUsage(delta);
         return {

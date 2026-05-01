@@ -45,7 +45,8 @@ export interface GeminiToolResult {
 function normalizeContent(result: string | object): string {
   if (typeof result === 'string') return result;
   try {
-    return JSON.stringify(result);
+    const serialized = JSON.stringify(result);
+    return serialized !== undefined ? serialized : String(result);
   } catch {
     // Handle circular references, BigInt, or other non-serializable values
     return String(result);

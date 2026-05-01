@@ -28,7 +28,7 @@ describe('VS Code Chat Renderer', () => {
   it('requires ChatResponseStream', () => {
     expect(() => {
       createVSCodeChatRenderer({
-        stream: null as any,
+        stream: null as unknown as ChatResponseStream,
       });
     }).toThrow('ChatResponseStream is required');
   });
@@ -81,7 +81,7 @@ describe('VS Code Chat Renderer', () => {
         stream: {
           ...mockStream,
           thinkingProgress: undefined, // Test fallback to progress()
-        } as any,
+        } as unknown as ChatResponseStream,
         showThinking: true,
         thinkingStyle: 'progress',
       });
@@ -476,7 +476,9 @@ describe('Cancellation Token Bridge', () => {
     expect(signal.aborted).toBe(false);
 
     // Trigger cancellation by calling the registered listener
-    listeners.forEach(listener => listener(undefined));
+    for (const listener of listeners) {
+      listener(undefined);
+    }
 
     expect(signal.aborted).toBe(true);
   });

@@ -1,10 +1,11 @@
 import type { UsageInfo } from '../normalizers/types.js';
-import type { OutputPart, ProcessedOutput, StreamChunk } from '../processor/LLMStreamProcessor.js';
+import type { ProcessedOutput, StreamChunk, OutputPart } from '../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import type { FinishReason } from '../tool-calls/types.js';
 
 export type { ProcessedOutput } from '../processor/LLMStreamProcessor.js';
-export type { FinishReason, OutputPart, StreamChunk };
+export type { FinishReason } from '../tool-calls/types.js';
+export type { OutputPart, StreamChunk } from '../processor/LLMStreamProcessor.js';
 
 export type StopCondition = (state: AgentLoopState) => boolean;
 

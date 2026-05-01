@@ -425,7 +425,7 @@ async function main() {
     const { spawnSync } = await import('child_process');
     const result = spawnSync(
       'npm',
-      ['publish', './dist', '--tag', distTag, '--registry=' + NPM_REGISTRY, ...accessFlag],
+      ['publish', './dist', '--tag', distTag, `--registry=${NPM_REGISTRY}`, ...accessFlag],
       {
         stdio: 'inherit',
         cwd: process.cwd(),
