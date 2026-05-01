@@ -233,6 +233,44 @@ describe('UI Event Sourcing', () => {
   });
 
   describe('ConversationStore', () => {
+    function startMessage(
+      store: ReturnType<typeof createConversationStore>,
+      role: 'user' | 'assistant',
+      messageId: string,
+    ): void {
+      store.dispatch({ type: 'message_started', role, messageId });
+    }
+
+    function addTextPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
+      store.dispatch({ type: 'text_part_added', messageId, text });
+    }
+
+    function addThinkingPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
+      store.dispatch({ type: 'thinking_part_added', messageId, text });
+    }
+
+    function addToolCallPart(
+      store: ReturnType<typeof createConversationStore>,
+      messageId: string,
+      toolCall: { id: string; name: string; parameters: Record<string, unknown> },
+    ): void {
+      store.dispatch({ type: 'tool_call_part_added', messageId, toolCall });
+    }
+
+    function finishMessage(
+      store: ReturnType<typeof createConversationStore>,
+      messageId: string,
+      finishReason?: string,
+      usage?: { inputTokens: number; outputTokens: number; totalTokens: number },
+    ): void {
+      if (finishReason && usage) {
+        store.dispatch({ type: 'message_finished', messageId, finishReason: finishReason as any, usage });
+      } else if (finishReason) {
+        store.dispatch({ type: 'message_finished', messageId, finishReason: finishReason as any });
+      } else {
+        store.dispatch({ type: 'message_finished', messageId });
+      }
+    }
     it('should initialize with empty state', () => {
       const store = createConversationStore('conv-1');
       const state = store.getState();
@@ -364,58 +402,20 @@ describe('UI Event Sourcing', () => {
       const store = createConversationStore('conv-1');
 
       // User message
-      store.dispatch({
-        type: 'message_started',
-        role: 'user',
-        messageId: 'msg-1',
-      });
-
-      store.dispatch({
-        type: 'text_part_added',
-        messageId: 'msg-1',
-        text: 'What is TypeScript?',
-      });
-
-      store.dispatch({
-        type: 'message_finished',
-        messageId: 'msg-1',
-      });
+      startMessage(store, 'user', 'msg-1');
+      addTextPart(store, 'msg-1', 'What is TypeScript?');
+      finishMessage(store, 'msg-1');
 
       // Assistant message with thinking, text, and tool call
-      store.dispatch({
-        type: 'message_started',
-        role: 'assistant',
-        messageId: 'msg-2',
+      startMessage(store, 'assistant', 'msg-2');
+      addThinkingPart(store, 'msg-2', 'The user is asking about TypeScript...');
+      addTextPart(store, 'msg-2', 'TypeScript is a typed superset of JavaScript.');
+      addToolCallPart(store, 'msg-2', {
+        id: 'call-1',
+        name: 'search_docs',
+        parameters: { query: 'TypeScript documentation' },
       });
-
-      store.dispatch({
-        type: 'thinking_part_added',
-        messageId: 'msg-2',
-        text: 'The user is asking about TypeScript...',
-      });
-
-      store.dispatch({
-        type: 'text_part_added',
-        messageId: 'msg-2',
-        text: 'TypeScript is a typed superset of JavaScript.',
-      });
-
-      store.dispatch({
-        type: 'tool_call_part_added',
-        messageId: 'msg-2',
-        toolCall: {
-          id: 'call-1',
-          name: 'search_docs',
-          parameters: { query: 'TypeScript documentation' },
-        },
-      });
-
-      store.dispatch({
-        type: 'message_finished',
-        messageId: 'msg-2',
-        finishReason: 'tool-calls',
-        usage: { inputTokens: 20, outputTokens: 50, totalTokens: 70 },
-      });
+      finishMessage(store, 'msg-2', 'tool-calls', { inputTokens: 20, outputTokens: 50, totalTokens: 70 });
 
       const state = store.getState();
       expect(state.messages).toHaveLength(2);

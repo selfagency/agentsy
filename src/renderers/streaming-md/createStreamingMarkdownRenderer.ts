@@ -16,6 +16,28 @@ interface DOMElement {
 }
 
 /**
+ * Type for streaming-markdown parser instance.
+ */
+type StreamingMarkdownParser = unknown;
+
+/**
+ * Interface for streaming-markdown module.
+ */
+interface StreamingMarkdownModule {
+  parser_create: (options: { target: DOMElement }) => StreamingMarkdownParser;
+  parser_write?: (parser: StreamingMarkdownParser, chunk: string) => void;
+  parser_end?: (parser: StreamingMarkdownParser) => void;
+}
+
+/**
+ * Interface for DOMPurify module.
+ */
+interface DOMPurifyModule {
+  sanitize: (content: string) => string | DOMElement;
+  removed?: Array<unknown>;
+}
+
+/**
  * Options for the browser streaming markdown renderer.
  */
 export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
@@ -71,17 +93,17 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
-  let parser: StreamingMarkdown.Parser | null = null;
+  let parser: StreamingMarkdownParser | null = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
-  const getStreamingMarkdownDeps = async (): Promise<{ smd: any; DOMPurify: any }> => {
+  const getStreamingMarkdownDeps = async (): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> => {
     try {
       const smdImported = await import('streaming-markdown');
       const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
       const dompurifyImported = await import('dompurify');
       const dompurifyModule = (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
 
-      return { smd: smdModule as any, DOMPurify: dompurifyModule as any };
+      return { smd: smdModule as StreamingMarkdownModule, DOMPurify: dompurifyModule as DOMPurifyModule };
     } catch {
       throw new Error(
         'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',

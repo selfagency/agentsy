@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';
-import type { AgentLoopState, OutputPart } from './index.js';
+import type { AgentLoopState, OutputPart, StepResult } from './index.js';
+import type { ProcessedOutput } from '../processor/LLMStreamProcessor.js';
 
 describe('Stop Conditions', () => {
   describe('isStepCount', () => {
@@ -251,6 +252,41 @@ describe('Stop Conditions', () => {
   });
 
   describe('detectDoomLoop', () => {
+    function createMockOutput(toolCalls: XmlToolCall[]): ProcessedOutput {
+      return {
+        thinking: '',
+        content: '',
+        toolCalls,
+        done: false,
+        parts: [],
+        incomplete: false,
+        incompleteness: [],
+      };
+    }
+
+    function createMockStep(toolCall: XmlToolCall): StepResult {
+      return {
+        output: createMockOutput([toolCall]),
+        toolCalls: [toolCall],
+        finishReason: undefined,
+        usage: undefined,
+      };
+    }
+
+    function createMockState(
+      steps: StepResult[],
+      lastToolCalls: XmlToolCall[],
+      consecutiveCount: number,
+    ): AgentLoopState {
+      return {
+        steps,
+        stepIndex: steps.length - 1,
+        lastOutput: createMockOutput(lastToolCalls),
+        toolCallCount: steps.length,
+        consecutiveIdenticalCalls: consecutiveCount,
+      };
+    }
+
     it('should detect identical tool calls repeated n times', () => {
       const condition = detectDoomLoop(2);
       const toolCall: XmlToolCall = {
@@ -259,50 +295,9 @@ describe('Stop Conditions', () => {
         format: 'bare-xml',
         id: '1',
       };
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: '',
-              toolCalls: [toolCall],
-              done: false,
-              parts: [],
-              incomplete: false,
-              incompleteness: [],
-            },
-            toolCalls: [toolCall],
-            finishReason: undefined,
-            usage: undefined,
-          },
-          {
-            output: {
-              thinking: '',
-              content: '',
-              toolCalls: [toolCall],
-              done: false,
-              parts: [],
-              incomplete: false,
-              incompleteness: [],
-            },
-            toolCalls: [toolCall],
-            finishReason: undefined,
-            usage: undefined,
-          },
-        ],
-        stepIndex: 1,
-        lastOutput: {
-          thinking: '',
-          content: '',
-          toolCalls: [toolCall],
-          done: false,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        },
-        toolCallCount: 2,
-        consecutiveIdenticalCalls: 2,
-      };
+      const step1 = createMockStep(toolCall);
+      const step2 = createMockStep(toolCall);
+      const state: AgentLoopState = createMockState([step1, step2], [toolCall], 2);
 
       expect(condition(state)).toBe(true);
     });
@@ -321,52 +316,34 @@ describe('Stop Conditions', () => {
         format: 'bare-xml',
         id: '2',
       };
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: '',
-              toolCalls: [call1],
-              done: false,
-              parts: [],
-              incomplete: false,
-              incompleteness: [],
-            },
-            toolCalls: [call1],
-            finishReason: undefined,
-            usage: undefined,
-          },
-          {
-            output: {
-              thinking: '',
-              content: '',
-              toolCalls: [call2],
-              done: false,
-              parts: [],
-              incomplete: false,
-              incompleteness: [],
-            },
-            toolCalls: [call2],
-            finishReason: undefined,
-            usage: undefined,
-          },
-        ],
-        stepIndex: 1,
-        lastOutput: {
-          thinking: '',
-          content: '',
-          toolCalls: [call2],
-          done: false,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        },
-        toolCallCount: 2,
-        consecutiveIdenticalCalls: 0,
-      };
+      const step1 = createMockStep(call1);
+      const step2 = createMockStep(call2);
+      const state: AgentLoopState = createMockState([step1, step2], [call2], 0);
 
       expect(condition(state)).toBe(false);
+    });
+
+    it('should detect identical tool calls despite parameter key order variations', async () => {
+      const condition = detectDoomLoop(1);
+      // Create two identical tool calls with parameters in different order
+      const call1: XmlToolCall = {
+        name: 'search',
+        parameters: { query: 'test', limit: 10 },
+        format: 'bare-xml',
+        id: '1',
+      };
+      const call2: XmlToolCall = {
+        name: 'search',
+        parameters: { limit: 10, query: 'test' }, // Same params, different order
+        format: 'bare-xml',
+        id: '2',
+      };
+      const step1 = createMockStep(call1);
+      const step2 = createMockStep(call2);
+      const state: AgentLoopState = createMockState([step1, step2], [call2], 1);
+
+      // Should detect as identical despite key order difference
+      expect(condition(state)).toBe(true);
     });
   });
 });
@@ -464,70 +441,6 @@ describe('createAgentLoop', () => {
 
     const result = await gen.next();
     expect(result.done).toBe(true);
-  });
-
-  it('should detect identical tool calls despite parameter key order variations', async () => {
-    const condition = detectDoomLoop(1);
-    // Create two identical tool calls with parameters in different order
-    const call1: XmlToolCall = {
-      name: 'search',
-      parameters: { query: 'test', limit: 10 },
-      format: 'bare-xml',
-      id: '1',
-    };
-    const call2: XmlToolCall = {
-      name: 'search',
-      parameters: { limit: 10, query: 'test' }, // Same params, different order
-      format: 'bare-xml',
-      id: '2',
-    };
-    const state: AgentLoopState = {
-      steps: [
-        {
-          output: {
-            thinking: '',
-            content: '',
-            toolCalls: [call1],
-            done: false,
-            parts: [],
-            incomplete: false,
-            incompleteness: [],
-          },
-          toolCalls: [call1],
-          finishReason: undefined,
-          usage: undefined,
-        },
-        {
-          output: {
-            thinking: '',
-            content: '',
-            toolCalls: [call2],
-            done: false,
-            parts: [],
-            incomplete: false,
-            incompleteness: [],
-          },
-          toolCalls: [call2],
-          finishReason: undefined,
-          usage: undefined,
-        },
-      ],
-      stepIndex: 1,
-      lastOutput: {
-        thinking: '',
-        content: '',
-        toolCalls: [call2],
-        done: false,
-        parts: [],
-        incomplete: false,
-        incompleteness: [],
-      },
-      toolCallCount: 2,
-      consecutiveIdenticalCalls: 1,
-    };
-
-    // Should detect as identical despite key order difference
-    expect(condition(state)).toBe(true);
   });
 
   it('should process and emit output parts from execute function', async () => {
