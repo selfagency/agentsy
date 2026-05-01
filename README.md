@@ -47,9 +47,16 @@ processor.on('text', delta => process.stdout.write(delta));
 processor.on('tool_call', call => executeToolCall(call));
 
 for await (const chunk of apiStream) {
-  processor.process({ content: chunk.content, done: chunk.done });
+  processor.process({
+    content: chunk.content,
+    done: chunk.done,
+    stepIndex: chunk.stepIndex, // optional, useful for multi-step agent loops
+    stepUsage: chunk.stepUsage, // optional per-step token usage
+  });
 }
 ```
+
+`StreamChunk` and `ProcessedOutput` both support optional `stepIndex` and `stepUsage` fields so higher-level agent loops can preserve step-local metadata without custom wrappers.
 
 ## Modules
 
@@ -253,6 +260,45 @@ await adapter.end();
 
 ---
 
+### `@selfagency/llm-stream-parser/ui` — Event-sourced conversation state
+
+```typescript
+import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
+import { createConversationStoreFromProcessor } from '@selfagency/llm-stream-parser/ui';
+
+const processor = new LLMStreamProcessor({ scrubContextTags: false });
+const bridge = createConversationStoreFromProcessor(processor, {
+  conversationId: 'conv-1',
+});
+
+processor.process({ stepIndex: 0, thinking: 'plan' });
+processor.process({ content: 'Hello', done: true, finishReason: 'stop' });
+
+console.log(bridge.store.getState().messages);
+bridge.dispose();
+```
+
+The UI package can now consume reducer-friendly processor events automatically, including step lifecycle markers, streaming tool-call updates, and final message usage.
+
+---
+
+### `@selfagency/llm-stream-parser/pipeline` — Output transforms
+
+```typescript
+import { createSmoothStream, createThinkingFilter } from '@selfagency/llm-stream-parser/pipeline';
+
+const processor = new LLMStreamProcessor({
+  transforms: [
+    createThinkingFilter(),
+    createSmoothStream({ chunkSize: 4, delayMs: 25 }),
+  ],
+});
+```
+
+`createSmoothStream()` splits large text bursts into smaller parts and can optionally pause between sub-chunks with `delayMs` for steadier UI output.
+
+---
+
 ### `@selfagency/llm-stream-parser/formatting` — Output sanitization
 
 ```typescript
@@ -274,9 +320,9 @@ import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
 
 ## Renderers
 
-**Renderers** stream LLM response content to specific output targets (plain text, formatted terminal, browser DOM, VS Code chat). Each renderer owns an internal `LLMStreamProcessor` and handles thinking blocks, tool calls, and error callbacks.
+**Renderers** stream LLM response content to specific output targets (plain text, formatted terminal, browser DOM, VS Code chat). Each renderer owns an internal `LLMStreamProcessor` and handles thinking blocks, tool calls, step changes, and error callbacks.
 
-All renderers use a factory pattern and implement the same `{ write(chunk), end() }` interface:
+All renderers use a factory pattern and implement the same `{ write(chunk), writeChunk(streamChunk), end() }` interface:
 
 ```typescript
 import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers/plain';
@@ -284,10 +330,14 @@ import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers
 const renderer = createPlainTextRenderer({
   showThinking: true,
   onError: err => logger.error(err),
+  onStep: async (stepIndex, usage) => {
+    logger.info(`entered step ${stepIndex}`, usage);
+  },
 });
 
 await renderer.write('# Response\n');
 await renderer.write('Content here');
+await renderer.writeChunk({ content: 'Structured content', stepIndex: 1, done: false });
 await renderer.end();
 ```
 
@@ -407,6 +457,8 @@ const renderer = createVSCodeAgentLoop({
 - `progress`: Send thinking via `stream.progress()` for VS Code progress indicator
 
 Tool calls fire the `onToolCall` callback but are not rendered as content.
+
+When a renderer receives structured chunks via `writeChunk()`, it can also call `onStep(stepIndex, usage)` as step metadata changes.
 
 ---
 

@@ -17,9 +17,10 @@ export type PipelineTransform = TransformStream<OutputPart, OutputPart>;
  */
 export function createSmoothStream(options?: { chunkSize?: number; delayMs?: number }): PipelineTransform {
   const chunkSize = Math.max(1, options?.chunkSize ?? 8);
+  const delayMs = Math.max(0, options?.delayMs ?? 0);
 
   return new TransformStream<OutputPart, OutputPart>({
-    transform(part, controller) {
+    async transform(part, controller) {
       if (part.type !== 'text') {
         controller.enqueue(part);
         return;
@@ -27,6 +28,11 @@ export function createSmoothStream(options?: { chunkSize?: number; delayMs?: num
       const { text } = part;
       let offset = 0;
       while (offset < text.length) {
+        if (delayMs > 0 && offset > 0) {
+          await new Promise(resolve => {
+            setTimeout(resolve, delayMs);
+          });
+        }
         controller.enqueue({ type: 'text', text: text.slice(offset, offset + chunkSize) });
         offset += chunkSize;
       }
