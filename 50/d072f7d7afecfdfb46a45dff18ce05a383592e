@@ -1,0 +1,37 @@
+src/ui/eventHelpers.ts
+  h_5cf1e2c1161853 1-63
+src/renderers/shared.ts
+  h_5cf1e2c1161853 1-125
+src/renderers/plain/createPlainTextRenderer.ts
+  h_5cf1e2c1161853 2,47,49-53,55-57,61,63-64
+src/ui/eventSourcing.ts
+  h_5cf1e2c1161853 2,33,35-36,40,42-43,47,51-52,56
+src/normalizers/testHelpers.ts
+  h_5cf1e2c1161853 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "50d072f7d7afecfdfb46a45dff18ce05a383592e",
+  "prompts": {
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 142,
+      "total_deletions": 230,
+      "accepted_lines": 3596,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/94a37bb85d7dc5280b94687347c0976ec3d76ec6d461e94e6813671eb213db89"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
