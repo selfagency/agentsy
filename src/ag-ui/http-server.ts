@@ -136,6 +136,18 @@ function defaultFormatEvent(event: AgUiEvent): string {
   return `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`;
 }
 
+type NodeResponse = Record<string, unknown> & {
+  writeHead?: (statusCode: number, headers: Record<string, unknown>) => void;
+  write?: (chunk: Uint8Array | string) => void;
+  end?: (data?: Uint8Array | string) => void;
+  setHeader?: (name: string, value: string | string[]) => void;
+  status?: (code: number) => { json: (data: Record<string, unknown>) => void };
+};
+
+type NodeRequest = Record<string, unknown> & {
+  method?: string;
+};
+
 /**
  * Creates a simple HTTP response handler for Node.js.
  *
@@ -143,21 +155,21 @@ function defaultFormatEvent(event: AgUiEvent): string {
  * @returns Handler function for Node.js http module
  */
 export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (req: Record<string, unknown>, res: Record<string, unknown>): Promise<void> => {
+  return async (req: NodeRequest, res: NodeResponse): Promise<void> => {
     // Handle CORS preflight
-    if ((req.method as string) === 'OPTIONS') {
-      (res.writeHead as Function)(200, {
+    if (req.method === 'OPTIONS') {
+      res.writeHead?.(200, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       });
-      (res.end as Function)();
+      res.end?.();
       return;
     }
 
-    if ((req.method as string) !== 'POST' && (req.method as string) !== 'GET') {
-      (res.writeHead as Function)(405, { 'Content-Type': 'application/json' });
-      (res.end as Function)(JSON.stringify({ error: 'Method not allowed' }));
+    if (req.method !== 'POST' && req.method !== 'GET') {
+      res.writeHead?.(405, { 'Content-Type': 'application/json' });
+      res.end?.(JSON.stringify({ error: 'Method not allowed' }));
       return;
     }
 
@@ -167,7 +179,7 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      (res.writeHead as Function)(200, {
+      res.writeHead?.(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
@@ -177,14 +189,14 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       });
 
       for await (const chunk of sseStream) {
-        (res.write as Function)(chunk);
+        res.write?.(chunk);
       }
 
-      (res.end as Function)();
+      res.end?.();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      (res.writeHead as Function)(500, { 'Content-Type': 'application/json' });
-      (res.end as Function)(JSON.stringify({ error: errorMessage }));
+      res.writeHead?.(500, { 'Content-Type': 'application/json' });
+      res.end?.(JSON.stringify({ error: errorMessage }));
     }
   };
 }
@@ -196,26 +208,27 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
  * @returns Express middleware
  */
 export function createExpressMiddleware(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (_req: Record<string, unknown>, res: Record<string, unknown>) => {
+  return async (_req: NodeRequest, res: NodeResponse) => {
     const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     try {
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      (res.setHeader as Function)('Content-Type', 'text/event-stream');
-      (res.setHeader as Function)('Cache-Control', 'no-cache');
-      (res.setHeader as Function)('Connection', 'keep-alive');
-      (res.setHeader as Function)('Access-Control-Allow-Origin', '*');
+      res.setHeader?.('Content-Type', 'text/event-stream');
+      res.setHeader?.('Cache-Control', 'no-cache');
+      res.setHeader?.('Connection', 'keep-alive');
+      res.setHeader?.('Access-Control-Allow-Origin', '*');
 
       for await (const chunk of sseStream) {
-        (res.write as Function)(chunk);
+        res.write?.(chunk);
       }
 
-      (res.end as Function)();
+      res.end?.();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      (res.status as Function)(500).json({ error: errorMessage });
+      const status = res.status?.(500);
+      status?.json({ error: errorMessage });
     }
   };
 }
@@ -234,7 +247,7 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      const bodyFn = c.body as unknown as (stream: ReadableStream<Uint8Array> | AsyncGenerator<Uint8Array>, options: Record<string, unknown>) => unknown;
+      const bodyFn = c.body as (stream: ReadableStream<Uint8Array> | AsyncGenerator<Uint8Array>, options: Record<string, unknown>) => unknown;
 
       return bodyFn(sseStream.readable, {
         headers: {
@@ -246,7 +259,7 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      const _jsonFn = c.json as unknown as (data: Record<string, unknown>, status: number) => unknown;
+      const _jsonFn = c.json as (data: Record<string, unknown>, status: number) => unknown;
       return _jsonFn({ error: errorMessage }, 500);
     }
   };

@@ -301,13 +301,13 @@ describe('convertEventStream', () => {
       },
     ];
 
-    async function* mockSource() {
+    async function* generate() {
       for (const event of events) {
         yield event;
       }
     }
 
-    const converted = convertEventStream(mockSource(), 'custom');
+    const converted = convertEventStream(generate(), 'custom');
 
     const results: (CopilotKitEvent | CustomUIEvent)[] = [];
     for await (const event of converted) {

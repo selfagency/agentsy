@@ -19,11 +19,10 @@ async function* mockEventGenerator() {
 }
 
 async function* emptyGenerator() {
-  // Empty generator for testing - yield statement required for generator syntax
-  if (false) {
-    yield undefined as unknown as AgUiEvent;
-  }
-  // Generator completes immediately
+  // Empty generator - doesn't yield any events
+  return;
+  // eslint-disable-next-line no-unreachable
+  yield undefined as unknown as AgUiEvent;
 }
 
 async function* errorGeneratorWithYield() {
@@ -36,6 +35,11 @@ async function* errorGeneratorWithYield() {
 }
 
 async function* mockErrorGenerator() {
+  yield {
+    type: EventType.RUN_STARTED,
+    runId: 'run_123',
+    timestamp: '2024-01-01T00:00:00Z',
+  } as AgUiEvent;
   throw new Error('Mock generator error');
 }
 
@@ -67,11 +71,10 @@ describe('createSSEStream', () => {
 
   it('should handle stream errors gracefully', async () => {
     const stream = createSSEStream(errorGeneratorWithYield());
-    const readableChunks = [];
 
     try {
-      for await (const chunk of stream) {
-        readableChunks.push(chunk);
+      for await (const _chunk of stream) {
+        // chunks received
       }
     } catch (err) {
       expect(err).toBeInstanceOf(Error);

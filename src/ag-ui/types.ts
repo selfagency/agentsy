@@ -64,7 +64,7 @@ export interface BaseEvent {
   threadId?: string;
   timestamp?: string;
   parentRunId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // ========== Run Lifecycle Events ==========
@@ -208,7 +208,7 @@ export interface Message {
 export interface ToolCall {
   id: string;
   name: string;
-  args: Record<string, any>;
+  args: Record<string, unknown>;
   result?: string;
   isError?: boolean;
 }
@@ -231,7 +231,7 @@ export interface StateDeltaEvent extends BaseEvent {
 export interface JsonPatchOperation {
   op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
   path: string;
-  value?: any;
+  value?: unknown;
   from?: string;
 }
 
@@ -241,20 +241,20 @@ export interface InterruptEvent extends BaseEvent {
   type: EventType.INTERRUPT;
   interruptId: string;
   reason: string;
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
 }
 
 export interface Interrupt {
   id: string;
   reason: string;
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
 }
 
 // ========== Metadata Events ==========
 
 export interface MetadataUpdateEvent extends BaseEvent {
   type: EventType.METADATA_UPDATE;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 // ========== Agent Capabilities ==========
@@ -273,7 +273,7 @@ export interface AgentCapabilities {
 export interface ToolCapability {
   name: string;
   description?: string;
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
   returnType?: string;
 }
 

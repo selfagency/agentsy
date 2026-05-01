@@ -80,7 +80,7 @@ function unescapePathSegment(segment: string): string {
  * @throws Error if state contains circular references
  */
 export function createStateSnapshotEvent(
-  state: Record<string, any>,
+  state: Record<string, unknown>,
   runId: string,
   threadId?: string,
 ): StateSnapshotEvent {
@@ -112,8 +112,8 @@ export function createStateSnapshotEvent(
  * @throws Error if either state contains circular references
  */
 function computeStateDeltaForRemovedAndModified(
-  from: Record<string, any>,
-  to: Record<string, any>,
+  from: Record<string, unknown>,
+  to: Record<string, unknown>,
   basePathPrefix: string,
 ): JsonPatchOp[] {
   const patches: JsonPatchOp[] = [];
@@ -149,7 +149,7 @@ function computeStateDeltaForRemovedAndModified(
 /**
  * Check if value is a plain object (not array, not null).
  */
-function isPlainObject(val: unknown): val is Record<string, any> {
+function isPlainObject(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
@@ -164,8 +164,8 @@ function isPlainObject(val: unknown): val is Record<string, any> {
  * @throws Error if either state contains circular references
  */
 export function computeStateDelta(
-  from: Record<string, any>,
-  to: Record<string, any>,
+  from: Record<string, unknown>,
+  to: Record<string, unknown>,
   basePathPrefix = '',
 ): JsonPatchOp[] {
   if (hasCircularReference(from)) {
@@ -218,17 +218,18 @@ export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, thr
 /**
  * Apply an add operation to a state object.
  */
-function applyAddPatch(state: Record<string, any>, parts: string[], patch: JsonPatchOp): void {
+function applyAddPatch(state: Record<string, unknown>, parts: string[], patch: JsonPatchOp): void {
   if (parts.length === 0) {
     throw new Error('Cannot add to root');
   }
-  const key = parts.pop()!;
-  let target = state;
+  const key = parts.pop();
+  if (!key) throw new Error('Invalid path');
+  let target = state as Record<string, unknown>;
   for (const part of parts) {
     if (!(part in target)) {
-      target[part] = {};
+      (target[part] as Record<string, unknown>) = {};
     }
-    target = target[part];
+    target = target[part] as Record<string, unknown>;
   }
   target[key] = patch.value;
 }
@@ -236,14 +237,15 @@ function applyAddPatch(state: Record<string, any>, parts: string[], patch: JsonP
 /**
  * Apply a remove operation to a state object.
  */
-function applyRemovePatch(state: Record<string, any>, parts: string[]): void {
+function applyRemovePatch(state: Record<string, unknown>, parts: string[]): void {
   if (parts.length === 0) {
     throw new Error('Cannot remove root');
   }
-  const key = parts.pop()!;
-  let target = state;
+  const key = parts.pop();
+  if (!key) throw new Error('Invalid path');
+  let target = state as Record<string, unknown>;
   for (const part of parts) {
-    target = target[part];
+    target = target[part] as Record<string, unknown>;
   }
   delete target[key];
 }
@@ -251,14 +253,15 @@ function applyRemovePatch(state: Record<string, any>, parts: string[]): void {
 /**
  * Apply a replace operation to a state object.
  */
-function applyReplacePatch(state: Record<string, any>, parts: string[], patch: JsonPatchOp): void {
+function applyReplacePatch(state: Record<string, unknown>, parts: string[], patch: JsonPatchOp): void {
   if (parts.length === 0) {
     throw new Error('Cannot replace root');
   }
-  const key = parts.pop()!;
-  let target = state;
+  const key = parts.pop();
+  if (!key) throw new Error('Invalid path');
+  let target = state as Record<string, unknown>;
   for (const part of parts) {
-    target = target[part];
+    target = target[part] as Record<string, unknown>;
   }
   target[key] = patch.value;
 }
@@ -271,7 +274,7 @@ function applyReplacePatch(state: Record<string, any>, parts: string[], patch: J
  * @param patches - JSON Patch operations to apply
  * @throws Error if patch operations are invalid or contain dangerous keys
  */
-export function applyJsonPatches(state: Record<string, any>, patches: JsonPatchOp[]): void {
+export function applyJsonPatches(state: Record<string, unknown>, patches: JsonPatchOp[]): void {
   for (const patch of patches) {
     const parts = patch.path.split('/').filter(Boolean).map(unescapePathSegment);
 
@@ -301,10 +304,9 @@ export function applyJsonPatches(state: Record<string, any>, patches: JsonPatchO
  * State manager for tracking and emitting state changes as AG-UI events.
  */
 export class StateManager {
-  private currentState: Record<string, any>;
-  private snapshotCounter: number = 0;
+  private currentState: Record<string, unknown>;
 
-  constructor(initialState: Record<string, any> = {}) {
+  constructor(initialState: Record<string, unknown> = {}) {
     if (hasCircularReference(initialState)) {
       throw new Error('Initial state contains circular references and cannot be processed');
     }
@@ -314,7 +316,7 @@ export class StateManager {
   /**
    * Gets the current state.
    */
-  getCurrentState(): Record<string, any> {
+  getCurrentState(): Record<string, unknown> {
     return structuredClone(this.currentState);
   }
 
@@ -334,7 +336,7 @@ export class StateManager {
    * @returns Computed delta event (if changes exist), undefined otherwise
    * @throws Error if new state contains circular references
    */
-  updateState(newState: Record<string, any>, runId: string, threadId?: string): StateDeltaEvent | undefined {
+  updateState(newState: Record<string, unknown>, runId: string, threadId?: string): StateDeltaEvent | undefined {
     if (hasCircularReference(newState)) {
       throw new Error('New state contains circular references and cannot be processed');
     }
@@ -344,7 +346,6 @@ export class StateManager {
     }
     // Deep-clone to prevent external mutations
     this.currentState = structuredClone(newState);
-    this.snapshotCounter++;
     return createStateDeltaEvent(patches, runId, threadId);
   }
 
@@ -352,11 +353,10 @@ export class StateManager {
    * Resets to initial state.
    * @throws Error if initial state contains circular references
    */
-  reset(initialState: Record<string, any> = {}): void {
+  reset(initialState: Record<string, unknown> = {}): void {
     if (hasCircularReference(initialState)) {
       throw new Error('Initial state contains circular references and cannot be processed');
     }
     this.currentState = structuredClone(initialState);
-    this.snapshotCounter = 0;
   }
 }

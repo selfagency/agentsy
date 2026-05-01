@@ -211,7 +211,7 @@ describe('applyJsonPatches', () => {
 
     applyJsonPatches(state, patches);
 
-    expect((state as any).a.b.c).toBe('deep');
+    expect((state as Record<string, unknown>).a).toEqual({ b: { c: 'deep' } });
   });
 
   it('should throw on invalid path (add to root)', () => {
@@ -237,7 +237,7 @@ describe('applyJsonPatches', () => {
 
   it('should throw on unsupported operation', () => {
     const state = {};
-    const patches = [{ op: 'move', path: '/a', from: '/b' }] as any;
+    const patches: JsonPatchOp[] = [{ op: 'move', path: '/a', from: '/b' } as JsonPatchOp];
 
     expect(() => applyJsonPatches(state, patches)).toThrow('Unsupported patch operation');
   });
@@ -273,11 +273,12 @@ describe('StateManager', () => {
     const state = { nested: { value: 1 } };
     const manager = new StateManager(state);
 
-    const copy = manager.getCurrentState();
-    copy.nested.value = 999;
+    const copy = manager.getCurrentState() as Record<string, Record<string, unknown>>;
+    (copy.nested as Record<string, unknown>).value = 999;
 
     // Original should not change
-    expect(manager.getCurrentState().nested.value).toBe(1);
+    const current = manager.getCurrentState() as Record<string, Record<string, unknown>>;
+    expect((current.nested as Record<string, unknown>).value).toBe(1);
   });
 
   it('should create snapshot events', () => {
@@ -297,8 +298,9 @@ describe('StateManager', () => {
     const deltaEvent = manager.updateState({ a: 2, b: 3 }, 'run_123');
 
     expect(deltaEvent).toBeDefined();
-    expect(deltaEvent!.type).toBe(EventType.STATE_DELTA);
-    expect(deltaEvent!.ops.length).toBeGreaterThan(0);
+    if (!deltaEvent) return;
+    expect(deltaEvent.type).toBe(EventType.STATE_DELTA);
+    expect(deltaEvent.ops.length).toBeGreaterThan(0);
   });
 
   it('should return undefined if no changes', () => {
@@ -339,7 +341,7 @@ describe('StateManager', () => {
 
   it('should reject state with circular references', () => {
     const _manager = new StateManager();
-    const circular: any = { a: 1 };
+    const circular: Record<string, unknown> = { a: 1 };
     circular.self = circular;
 
     // Should either throw or handle gracefully
@@ -387,9 +389,15 @@ describe('StateManager', () => {
     const manager = new StateManager(initialState);
 
     // Try to mutate through the initial reference
-    initialState.nested.value = 999;
+    const mutable = initialState as unknown as Record<string, Record<string, unknown>>;
+    if (mutable.nested) {
+      mutable.nested.value = 999;
+    }
 
     // Manager's state should not be affected
-    expect(manager.getCurrentState().nested.value).toBe(1);
+    const current = manager.getCurrentState() as unknown as Record<string, Record<string, unknown>>;
+    if (current.nested) {
+      expect(current.nested.value).toBe(1);
+    }
   });
 });

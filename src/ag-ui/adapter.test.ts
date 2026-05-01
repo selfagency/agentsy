@@ -49,9 +49,9 @@ describe('toAgUiStream', () => {
     expect(startEvent?.threadId).toBe(threadId);
 
     // Last event should be RUN_FINISHED
-    const lastEvent = events.at(-1);
+    const lastEvent = events.at(-1) as Record<string, unknown>;
     expect(lastEvent?.type).toBe(EventType.RUN_FINISHED);
-    expect(lastEvent?.outcome?.type).toBe('success');
+    expect((lastEvent?.outcome as Record<string, unknown>)?.type).toBe('success');
   });
 
   it('should convert delta events to TEXT_MESSAGE_CONTENT', async () => {
