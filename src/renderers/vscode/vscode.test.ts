@@ -365,6 +365,33 @@ describe('VS Code Chat Renderer', () => {
       // Renderer should be usable with progress style
       expect(renderer).toBeDefined();
     });
+
+    it('should handle structured chunk output with tool calls', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: false,
+      });
+
+      // Write text content first
+      await renderer.write('I will search for that.');
+
+      // Then write chunk with tool calls (structured output)
+      await renderer.writeChunk({
+        content: '',
+        tool_calls: [
+          {
+            function: { name: 'search', arguments: { query: 'test' } },
+          },
+        ],
+        done: false,
+      });
+
+      // Final completion
+      await renderer.end();
+
+      // Verify markdown was called for text content
+      expect(mockStream.markdown).toHaveBeenCalled();
+    });
   });
 });
 

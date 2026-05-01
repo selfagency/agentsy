@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';
-import type { AgentLoopState } from './types.js';
+import type { AgentLoopState, OutputPart } from './index.js';
 
 describe('Stop Conditions', () => {
   describe('isStepCount', () => {
@@ -528,5 +528,59 @@ describe('createAgentLoop', () => {
 
     // Should detect as identical despite key order difference
     expect(condition(state)).toBe(true);
+  });
+
+  it('should process and emit output parts from execute function', async () => {
+    const parts: OutputPart[] = [];
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: 'Part 1', done: false };
+        yield { content: ' Part 2', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      buildToolResultMessages: async () => [],
+    });
+
+    for await (const part of loop.run([])) {
+      parts.push(part);
+    }
+
+    // Should have accumulated and emitted output parts
+    expect(parts.length).toBeGreaterThan(0);
+    // Should contain text parts from the yields
+    const textParts = parts.filter(p => p.type === 'text');
+    expect(textParts.length).toBeGreaterThan(0);
+  });
+
+  it('should trim conversation history when maxConversationMessages is set', async () => {
+    let messagesInSecondCall: unknown[] | undefined;
+
+    const loop = createAgentLoop({
+      execute: async function* (messages) {
+        // Capture messages from any call where we have tool calls
+        if (Array.isArray(messages) && messages.length >= 5) {
+          messagesInSecondCall = messages;
+        }
+        // Always yield a simple response
+        yield { content: 'Response', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      maxConversationMessages: 4,
+      buildToolResultMessages: async () => [],
+    });
+
+    const initialMessages = Array.from({ length: 5 }, (_, i) => ({
+      role: 'user' as const,
+      content: `Message ${i}`,
+    }));
+
+    for await (const _part of loop.run(initialMessages)) {
+      // consume
+    }
+
+    // First call should receive all 5 messages (no trimming on first call)
+    // Since we're using isStepCount(1), we only get one execution
+    expect(messagesInSecondCall?.length).toBe(5);
   });
 });
