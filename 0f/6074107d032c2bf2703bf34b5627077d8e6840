@@ -1,0 +1,35 @@
+src/tool-calls/index.ts
+  h_5cf1e2c1161853 4
+src/tool-calls/buildToolResultMessage.test.ts
+  h_5cf1e2c1161853 1-121
+src/processor/LLMStreamProcessor.test.ts
+  f984059b52212cfb 597,613,622,632,647,658,669
+src/tool-calls/buildToolResultMessage.ts
+  h_5cf1e2c1161853 1-136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "0f6074107d032c2bf2703bf34b5627077d8e6840",
+  "prompts": {
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 690,
+      "total_deletions": 7,
+      "accepted_lines": 690,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/3501e90f4f5e846b41931da7b4b70d48c581eebb8466b5e5ab430cb4a358afd0"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
