@@ -1,6 +1,6 @@
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
-import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import type { StreamChunk, OutputPart } from '../../processor/LLMStreamProcessor.js';
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
 
 /**
@@ -128,72 +128,100 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   let accumulatedThinking = '';
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
 
+  /**
+   * Handle text part: accumulate and stream markdown.
+   * @internal
+   */
+  function handleTextPart(text: string): void {
+    accumulatedMarkdown += text;
+    stream.markdown(text);
+  }
+
+  /**
+   * Handle thinking part: accumulate and stream based on configured style.
+   * @internal
+   */
+  function handleThinkingPart(text: string): void {
+    if (!showThinking || thinkingStyle === 'suppress') {
+      return;
+    }
+
+    accumulatedThinking += text;
+
+    if (stream.thinkingProgress) {
+      stream.thinkingProgress({ text, id: 'thinking' });
+    } else if (thinkingStyle === 'progress') {
+      stream.progress(text);
+    } else {
+      // Blockquote style with proper multi-line support
+      if (!blockquoteThinkingStarted) {
+        stream.markdown('\n\n> 💭 **Thinking**\n>\n');
+        blockquoteThinkingStarted = true;
+      }
+      const blockquoteContent = appendToBlockquote(text, true);
+      stream.markdown(blockquoteContent);
+    }
+  }
+
+  /**
+   * Handle tool_call part: emit callback and invoke stream method if available.
+   * @internal
+   */
+  function handleToolCallPart(part: OutputPart): void {
+    if (part.type !== 'tool_call') {
+      return;
+    }
+    if (onToolCall) {
+      onToolCall(part);
+    }
+    if (
+      stream.beginToolInvocation &&
+      typeof part.call?.id === 'string' &&
+      typeof part.call?.name === 'string'
+    ) {
+      stream.beginToolInvocation(part.call.id, part.call.name);
+    }
+  }
+
+  /**
+   * Handle tool_call_delta part: emit callback and update invocation if available.
+   * @internal
+   */
+  function handleToolCallDeltaPart(part: OutputPart): void {
+    if (part.type !== 'tool_call_delta') {
+      return;
+    }
+    if (onToolCallDelta) {
+      onToolCallDelta(part);
+    }
+    if (stream.updateToolInvocation && typeof part.id === 'string') {
+      stream.updateToolInvocation(part.id, part);
+    }
+  }
+
+  /**
+   * Process all parts from output, dispatching to appropriate handlers.
+   * @internal
+   */
+  function processParts(parts: OutputPart[]): void {
+    for (const part of parts) {
+      if (part.type === 'text') {
+        handleTextPart(part.text);
+      } else if (part.type === 'thinking') {
+        handleThinkingPart(part.text);
+      } else if (part.type === 'tool_call') {
+        handleToolCallPart(part);
+      } else if (part.type === 'tool_call_delta') {
+        handleToolCallDeltaPart(part);
+      }
+    }
+  }
+
   return {
     async write(chunk: string): Promise<void> {
       try {
-        // Process expects a StreamChunk, treat entire input as content
         const result = llmProcessor.process({ content: chunk });
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              // Stream text incrementally for responsive UI
-              stream.markdown(part.text);
-              break;
-            }
-            case 'thinking': {
-              if (showThinking && thinkingStyle !== 'suppress') {
-                accumulatedThinking += part.text;
-
-                // Capability detection: prefer proposed thinkingProgress over fallback methods
-                if (stream.thinkingProgress) {
-                  stream.thinkingProgress({ text: part.text, id: 'thinking' });
-                } else if (thinkingStyle === 'progress') {
-                  // Fallback: show thinking as a progress indicator
-                  stream.progress(part.text);
-                } else {
-                  // Fallback: show thinking as blockquote with proper multi-line support
-                  if (!blockquoteThinkingStarted) {
-                    // Emit blockquote header on first chunk
-                    stream.markdown('\n\n> 💭 **Thinking**\n>\n');
-                    blockquoteThinkingStarted = true;
-                  }
-                  // Append content to blockquote (proper multi-line handling)
-                  const blockquoteContent = appendToBlockquote(part.text, true);
-                  stream.markdown(blockquoteContent);
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Emit tool call callback but don't render
-              if (onToolCall) {
-                onToolCall(part);
-              }
-              // Capability detection: call tool invocation method if available
-              if (
-                stream.beginToolInvocation &&
-                typeof part.call?.id === 'string' &&
-                typeof part.call?.name === 'string'
-              ) {
-                stream.beginToolInvocation(part.call.id, part.call.name);
-              }
-              break;
-            }
-            case 'tool_call_delta': {
-              // Fire onToolCallDelta callback
-              if (onToolCallDelta) {
-                onToolCallDelta(part);
-              }
-              // Capability detection: update tool invocation if available
-              if (stream.updateToolInvocation && typeof part.id === 'string') {
-                stream.updateToolInvocation(part.id, part);
-              }
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
       } catch (error) {
         if (onError && error instanceof Error) {
           onError(error);
@@ -206,74 +234,22 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     async writeChunk(chunk: StreamChunk): Promise<void> {
       try {
         const result = llmProcessor.process(chunk);
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              stream.markdown(part.text);
-              break;
-            }
-            case 'thinking': {
-              if (showThinking && thinkingStyle !== 'suppress') {
-                accumulatedThinking += part.text;
-
-                // Capability detection: prefer proposed thinkingProgress over fallback methods
-                if (stream.thinkingProgress) {
-                  stream.thinkingProgress({ text: part.text, id: 'thinking' });
-                } else if (thinkingStyle === 'progress') {
-                  stream.progress(part.text);
-                } else {
-                  // Blockquote style with proper multi-line support
-                  if (!blockquoteThinkingStarted) {
-                    // Emit blockquote header on first chunk
-                    stream.markdown('\n\n> 💭 **Thinking**\n>\n');
-                    blockquoteThinkingStarted = true;
-                  }
-                  // Append content to blockquote (proper multi-line handling)
-                  const blockquoteContent = appendToBlockquote(part.text, true);
-                  stream.markdown(blockquoteContent);
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              if (onToolCall) {
-                onToolCall(part);
-              }
-              // Capability detection: call tool invocation method if available
-              if (
-                stream.beginToolInvocation &&
-                typeof part.call?.id === 'string' &&
-                typeof part.call?.name === 'string'
-              ) {
-                stream.beginToolInvocation(part.call.id, part.call.name);
-              }
-              break;
-            }
-            case 'tool_call_delta': {
-              // Fire onToolCallDelta callback
-              if (onToolCallDelta) {
-                onToolCallDelta(part);
-              }
-              // Capability detection: update tool invocation if available
-              if (stream.updateToolInvocation && typeof part.id === 'string') {
-                stream.updateToolInvocation(part.id, part);
-              }
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
           finished = true;
           await onFinish(chunk.finishReason, chunk.usage);
         }
+
         // Capability detection: report usage if available
         if (chunk.done === true && chunk.usage && stream.usage) {
-          stream.usage({ promptTokens: chunk.usage.inputTokens ?? 0, completionTokens: chunk.usage.outputTokens ?? 0 });
+          stream.usage({
+            promptTokens: chunk.usage.inputTokens ?? 0,
+            completionTokens: chunk.usage.outputTokens ?? 0,
+          });
         }
+
         // Close blockquote if stream ended and we were in blockquote thinking mode
         if (chunk.done === true && blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
           stream.markdown('\n\n');
@@ -292,65 +268,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
         result = llmProcessor.flush();
-
-        // Process any final parts
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              stream.markdown(part.text);
-              break;
-            }
-            case 'thinking': {
-              if (showThinking && thinkingStyle !== 'suppress') {
-                accumulatedThinking += part.text;
-
-                // Capability detection: prefer proposed thinkingProgress over fallback methods
-                if (stream.thinkingProgress) {
-                  stream.thinkingProgress({ text: part.text, id: 'thinking' });
-                } else if (thinkingStyle === 'progress') {
-                  stream.progress(part.text);
-                } else {
-                  // Blockquote style with proper multi-line support
-                  if (!blockquoteThinkingStarted) {
-                    // Emit blockquote header on first chunk
-                    stream.markdown('\n\n> 💭 **Thinking**\n>\n');
-                    blockquoteThinkingStarted = true;
-                  }
-                  // Append content to blockquote (proper multi-line handling)
-                  const blockquoteContent = appendToBlockquote(part.text, true);
-                  stream.markdown(blockquoteContent);
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              if (onToolCall) {
-                onToolCall(part);
-              }
-              // Capability detection: call tool invocation method if available
-              if (
-                stream.beginToolInvocation &&
-                typeof part.call?.id === 'string' &&
-                typeof part.call?.name === 'string'
-              ) {
-                stream.beginToolInvocation(part.call.id, part.call.name);
-              }
-              break;
-            }
-            case 'tool_call_delta': {
-              // Fire onToolCallDelta callback
-              if (onToolCallDelta) {
-                onToolCallDelta(part);
-              }
-              // Capability detection: update tool invocation if available
-              if (stream.updateToolInvocation && typeof part.id === 'string') {
-                stream.updateToolInvocation(part.id, part);
-              }
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
       } catch (error) {
         if (onError && error instanceof Error) {
           onError(error);
@@ -364,10 +282,15 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         finished = true;
         await onFinish(result.finishReason, result.usage);
       }
+
       // Capability detection: report usage if available
       if (result?.done && result.usage && stream.usage) {
-        stream.usage({ promptTokens: result.usage.inputTokens ?? 0, completionTokens: result.usage.outputTokens ?? 0 });
+        stream.usage({
+          promptTokens: result.usage.inputTokens ?? 0,
+          completionTokens: result.usage.outputTokens ?? 0,
+        });
       }
+
       // Close blockquote if stream ended and we were in blockquote thinking mode
       if (result?.done && blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
         stream.markdown('\n\n');
