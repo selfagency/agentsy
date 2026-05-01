@@ -1,8 +1,8 @@
 import { appendToBlockquote } from '../markdown/appendToBlockquote.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
-import type { LLMStreamProcessor, StreamChunk } from '../processor/LLMStreamProcessor.js';
-import type { FinishReason } from '../tool-calls/types.js';
 import type { UsageInfo } from '../normalizers/types.js';
+import type { LLMStreamProcessor, StreamChunk } from '../processor/LLMStreamProcessor.js';
+import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { FinishReason } from '../tool-calls/types.js';
 
 /**
  * @deprecated Use `createVSCodeChatRenderer` from `@selfagency/llm-stream-parser/renderers/vscode` instead.

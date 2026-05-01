@@ -27,4 +27,4 @@
  * ```
  */
 
-export type { BaseRendererOptions, ThinkingStyle, RendererHandle, TextOutput, OnToolCall } from './types.js';
+export type { BaseRendererOptions, OnToolCall, RendererHandle, TextOutput, ThinkingStyle } from './types.js';

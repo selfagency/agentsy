@@ -1,7 +1,7 @@
 export {
   createVSCodeChatRenderer,
-  type VSCodeChatRendererOptions,
   type ChatResponseStream,
+  type VSCodeChatRendererOptions,
 } from './createVSCodeChatRenderer.js';
 
 export { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';

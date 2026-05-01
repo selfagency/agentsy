@@ -1,5 +1,5 @@
-import type { BaseRendererOptions, TextOutput, RendererHandle } from '../types.js';
-import { createSharedRendererHandle, createOutputWriter } from '../shared.js';
+import { createOutputWriter, createSharedRendererHandle } from '../shared.js';
+import type { BaseRendererOptions, RendererHandle, TextOutput } from '../types.js';
 
 /**
  * Options for the plain text renderer.

@@ -1,5 +1,5 @@
-import type { FinishReason } from '../tool-calls/types.js';
 import type { UsageInfo } from '../normalizers/types.js';
+import type { FinishReason } from '../tool-calls/types.js';
 
 /**
  * Represents a single UI message in a conversation.

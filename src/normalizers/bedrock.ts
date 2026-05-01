@@ -1,5 +1,5 @@
-import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 import type { FinishReason } from '../tool-calls/types.js';
+import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
 function mapBedrockStopReason(reason: string | undefined): FinishReason | undefined {
   if (!reason) return undefined;

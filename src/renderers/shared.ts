@@ -1,6 +1,6 @@
-import type { RendererHandle, BaseRendererOptions } from './types.js';
+import type { OutputPart, StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
-import type { StreamChunk, OutputPart } from '../processor/LLMStreamProcessor.js';
+import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 /**
  * Shared renderer handler builder to reduce duplication across renderers.

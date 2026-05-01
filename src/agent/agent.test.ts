@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';
 import type { AgentLoopState } from './types.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 
 describe('Stop Conditions', () => {
   describe('isStepCount', () => {

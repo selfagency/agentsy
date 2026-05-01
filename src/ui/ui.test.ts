@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { applyConversationEvent } from './eventSourcing.js';
 import { createConversationStore } from './store.js';
-import type { UIConversation, ConversationEvent } from './types.js';
+import type { ConversationEvent, UIConversation } from './types.js';
 
 describe('UI Event Sourcing', () => {
   describe('applyConversationEvent', () => {

@@ -1,4 +1,4 @@
-import type { AgentLoopState, StopCondition, FinishReason } from './types.js';
+import type { AgentLoopState, FinishReason, StopCondition } from './types.js';
 
 /**
  * Stop after a fixed number of steps.

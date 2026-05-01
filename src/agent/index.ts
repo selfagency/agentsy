@@ -1,3 +1,5 @@
+export { createAgentLoop } from './createAgentLoop.js';
+export { detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './stopConditions.js';
 export type {
   AgentLoopHandle,
   AgentLoopOptions,
@@ -8,5 +10,3 @@ export type {
   StopCondition,
   StreamChunk,
 } from './types.js';
-export { createAgentLoop } from './createAgentLoop.js';
-export { detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './stopConditions.js';

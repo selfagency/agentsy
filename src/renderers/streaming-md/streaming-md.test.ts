@@ -135,4 +135,102 @@ describe('Streaming Markdown Renderer', () => {
 
     expect(renderer).toBeDefined();
   });
+
+  describe('onFinish callback', () => {
+    it('calls onFinish via writeChunk when done=true', async () => {
+      const onFinish = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onFinish,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'stop',
+      });
+
+      expect(onFinish).toHaveBeenCalledWith('stop', undefined);
+    });
+
+    it('passes usage data to onFinish', async () => {
+      const onFinish = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onFinish,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'length',
+        usage: { inputTokens: 10, outputTokens: 20 },
+      });
+
+      expect(onFinish).toHaveBeenCalledWith('length', { inputTokens: 10, outputTokens: 20 });
+    });
+
+    it('prevents double onFinish invocation', async () => {
+      const onFinish = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onFinish,
+      });
+
+      // First call with done=true
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'stop',
+      });
+
+      // Then call end()
+      await renderer.end();
+
+      // Should only be called once (in writeChunk)
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onFinish in end() if not already called', async () => {
+      const onFinish = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onFinish,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      // Should be called once in end()
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Tool call callbacks', () => {
+    it('accepts onToolCall callback', async () => {
+      const onToolCall = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onToolCall,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      expect(renderer).toBeDefined();
+    });
+
+    it('accepts onToolCallDelta callback', async () => {
+      const onToolCallDelta = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onToolCallDelta,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      expect(renderer).toBeDefined();
+    });
+  });
 });

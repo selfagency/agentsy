@@ -1,7 +1,7 @@
-import type { BaseRendererOptions, TextOutput, RendererHandle, ThinkingStyle } from '../types.js';
-import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import type { BaseRendererOptions, RendererHandle, TextOutput, ThinkingStyle } from '../types.js';
 
 /**
  * Options for the CLI markdown renderer.

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createPlainTextRenderer } from './createPlainTextRenderer.js';
 
 describe('Plain Text Renderer', () => {
@@ -109,5 +109,87 @@ describe('Plain Text Renderer', () => {
 
     // Just verify it doesn't error with custom prefix
     expect(output).toHaveBeenCalled();
+  });
+
+  describe('onFinish callback', () => {
+    it('calls onFinish via writeChunk when done=true', async () => {
+      const onFinish = vi.fn();
+      const output = vi.fn();
+      const renderer = createPlainTextRenderer({
+        output,
+        onFinish,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'stop',
+      });
+
+      expect(onFinish).toHaveBeenCalledWith('stop', undefined);
+    });
+
+    it('passes usage data to onFinish', async () => {
+      const onFinish = vi.fn();
+      const output = vi.fn();
+      const renderer = createPlainTextRenderer({
+        output,
+        onFinish,
+      });
+
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'length',
+        usage: { inputTokens: 10, outputTokens: 20 },
+      });
+
+      expect(onFinish).toHaveBeenCalledWith('length', { inputTokens: 10, outputTokens: 20 });
+    });
+
+    it('calls onFinish in end() if not already called', async () => {
+      const onFinish = vi.fn();
+      const output = vi.fn();
+      const renderer = createPlainTextRenderer({
+        output,
+        onFinish,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      // Should be called once in end()
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Tool call callbacks', () => {
+    it('accepts onToolCall callback', async () => {
+      const onToolCall = vi.fn();
+      const output = vi.fn();
+      const renderer = createPlainTextRenderer({
+        output,
+        onToolCall,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      expect(renderer).toBeDefined();
+    });
+
+    it('accepts onToolCallDelta callback', async () => {
+      const onToolCallDelta = vi.fn();
+      const output = vi.fn();
+      const renderer = createPlainTextRenderer({
+        output,
+        onToolCallDelta,
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      expect(renderer).toBeDefined();
+    });
   });
 });

@@ -1,5 +1,5 @@
-import type { NormalizerResult, UsageInfo } from './types.js';
 import type { FinishReason } from '../tool-calls/types.js';
+import type { NormalizerResult, UsageInfo } from './types.js';
 
 function mapHFFinishReason(reason: string | undefined): FinishReason | undefined {
   if (!reason) return undefined;

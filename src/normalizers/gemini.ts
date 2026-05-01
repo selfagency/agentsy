@@ -1,6 +1,6 @@
+import type { FinishReason } from '../tool-calls/types.js';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 import { isObject, toNumber } from './utils.js';
-import type { FinishReason } from '../tool-calls/types.js';
 
 function mapGeminiFinishReason(reason: string | null): FinishReason | undefined {
   if (!reason) return undefined;

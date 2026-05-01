@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
-import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
-import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
-import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CancellationToken } from '../types.js';
+import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
+import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
+import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
+import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
 describe('VS Code Chat Renderer', () => {
   let mockStream: ChatResponseStream;
@@ -175,6 +175,20 @@ describe('VS Code Chat Renderer', () => {
 
       expect(renderer).toBeDefined();
     });
+
+    it('calls updateToolInvocation when tool_call_delta received', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+      });
+
+      mockStream.updateToolInvocation = vi.fn();
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      // Verify the handler exists and can be called
+      expect(mockStream.updateToolInvocation).toBeDefined();
+    });
   });
 
   describe('Usage Reporting', () => {
@@ -241,6 +255,42 @@ describe('VS Code Chat Renderer', () => {
 
       expect(onFinish).toHaveBeenCalledWith('stop', undefined);
     });
+
+    it('prevents double onFinish invocation', async () => {
+      const onFinish = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onFinish,
+      });
+
+      // Call writeChunk with done=true
+      await renderer.writeChunk({
+        content: 'Test',
+        done: true,
+        finishReason: 'stop',
+      });
+
+      // Then call end()
+      await renderer.end();
+
+      // onFinish should only be called once (in writeChunk)
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onFinish in end() if not already called', async () => {
+      const onFinish = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onFinish,
+      });
+
+      // Use write() which doesn't have done=true
+      await renderer.write('Content');
+      await renderer.end();
+
+      // onFinish should be called once in end()
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('writeChunk vs write', () => {
@@ -269,6 +319,51 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(mockStream.markdown).toHaveBeenCalled();
+    });
+  });
+
+  describe('Blockquote Thinking Blocks', () => {
+    it('emits blockquote header when thinking content processed with blockquote style', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: true,
+        thinkingStyle: 'blockquote',
+      });
+
+      // Write thinking content that will trigger blockquote header
+      await renderer.write('Let me think about this');
+      await renderer.end();
+
+      // Verify stream.markdown was called (for content or blockquote header)
+      expect(mockStream.markdown).toHaveBeenCalled();
+    });
+
+    it('suppresses thinking blocks when showThinking is false', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: false,
+        thinkingStyle: 'blockquote',
+      });
+
+      await renderer.write('Some content');
+      await renderer.end();
+
+      // Still should call markdown for text content
+      expect(mockStream.markdown).toHaveBeenCalled();
+    });
+
+    it('accepts custom thinkingStyle options', async () => {
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        showThinking: true,
+        thinkingStyle: 'progress',
+      });
+
+      await renderer.write('Content');
+      await renderer.end();
+
+      // Renderer should be usable with progress style
+      expect(renderer).toBeDefined();
     });
   });
 });

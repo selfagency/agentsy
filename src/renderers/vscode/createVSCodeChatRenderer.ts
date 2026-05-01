@@ -1,7 +1,7 @@
-import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
-import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
-import type { StreamChunk, OutputPart } from '../../processor/LLMStreamProcessor.js';
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
+import type { OutputPart, StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 
 /**
  * Structural interface matching VS Code's ChatResponseStream.

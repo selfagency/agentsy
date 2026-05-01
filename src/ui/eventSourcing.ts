@@ -1,5 +1,5 @@
-import type { UIConversation, UIMessage, ConversationEvent } from './types.js';
 import { addPartToMessage, finishMessage } from './eventHelpers.js';
+import type { ConversationEvent, UIConversation, UIMessage } from './types.js';
 
 /**
  * Pure function: Apply a single event to conversation state, returning new state.

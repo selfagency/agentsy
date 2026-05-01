@@ -1,6 +1,6 @@
+import type { BaseRendererOptions, ThinkingStyle } from '../types.js';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
-import type { BaseRendererOptions, ThinkingStyle } from '../types.js';
 
 /**
  * Options for VS Code agent loop renderer.

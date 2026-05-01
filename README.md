@@ -355,7 +355,7 @@ await renderer.end();
 
 ### CLI Markdown Renderer
 
-Terminal-formatted markdown with blockquote thinking blocks.  
+Terminal-formatted markdown with blockquote thinking blocks.
 **Requires peer dependency**: `npm install cli-markdown`
 
 ```typescript
@@ -380,7 +380,7 @@ await renderer.end();
 
 ### Streaming Markdown Renderer
 
-Browser-based DOM rendering with incremental updates and security sanitization.  
+Browser-based DOM rendering with incremental updates and security sanitization.
 **Requires peer dependencies**: `npm install streaming-markdown dompurify`
 
 ```typescript
@@ -404,7 +404,7 @@ await renderer.end();
 
 ### VS Code Chat Renderer
 
-Integration with VS Code's `ChatResponseStream` for Copilot extensions.  
+Integration with VS Code's `ChatResponseStream` for Copilot extensions.
 **No external dependencies required.**
 
 ```typescript

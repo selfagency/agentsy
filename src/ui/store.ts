@@ -1,5 +1,5 @@
 import { applyConversationEvent } from './eventSourcing.js';
-import type { UIConversation, ConversationEvent } from './types.js';
+import type { ConversationEvent, UIConversation } from './types.js';
 
 /**
  * Listener callback type for store changes.

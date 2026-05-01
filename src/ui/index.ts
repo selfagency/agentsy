@@ -29,13 +29,13 @@
  */
 
 export { applyConversationEvent } from './eventSourcing.js';
-export { createConversationStore, type StoreListener, type ConversationStore } from './store.js';
+export { createConversationStore, type ConversationStore, type StoreListener } from './store.js';
 export type {
+  ConversationEvent,
+  UIConversation,
   UIMessage,
   UIMessagePart,
   UITextPart,
   UIThinkingPart,
   UIToolCallPart,
-  UIConversation,
-  ConversationEvent,
 } from './types.js';

@@ -1,6 +1,6 @@
-import type { BaseRendererOptions, RendererHandle } from '../types.js';
-import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import type { BaseRendererOptions, RendererHandle } from '../types.js';
 
 /**
  * Structural interface for browser DOM elements.
@@ -173,8 +173,9 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
 
-        // Fire onFinish callback if stream is done
-        if (chunk.done === true && onFinish) {
+        // Fire onFinish callback if stream is done (guard against double invocation)
+        if (chunk.done === true && !finished && onFinish) {
+          finished = true;
           await onFinish(chunk.finishReason, chunk.usage);
         }
       } catch (error) {

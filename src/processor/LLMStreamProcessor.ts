@@ -1,8 +1,8 @@
 import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
-import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
