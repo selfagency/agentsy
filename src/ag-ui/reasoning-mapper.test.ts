@@ -13,31 +13,47 @@ describe('mapReasoningToEvents', () => {
     const events = mapReasoningToEvents('thinking...', { runId: 'run_123' });
 
     expect(events).toHaveLength(5);
-    expect(events[0]!.type).toBe(EventType.REASONING_START);
-    expect(events[1]!.type).toBe(EventType.REASONING_MESSAGE_START);
-    expect(events[2]!.type).toBe(EventType.REASONING_MESSAGE_CONTENT);
-    expect(events[3]!.type).toBe(EventType.REASONING_MESSAGE_END);
-    expect(events[4]!.type).toBe(EventType.REASONING_END);
+    const evt0 = events[0];
+    const evt1 = events[1];
+    const evt2 = events[2];
+    const evt3 = events[3];
+    const evt4 = events[4];
+    expect(evt0).toBeDefined();
+    expect(evt1).toBeDefined();
+    expect(evt2).toBeDefined();
+    expect(evt3).toBeDefined();
+    expect(evt4).toBeDefined();
+    expect(evt0?.type).toBe(EventType.REASONING_START);
+    expect(evt1?.type).toBe(EventType.REASONING_MESSAGE_START);
+    expect(evt2?.type).toBe(EventType.REASONING_MESSAGE_CONTENT);
+    expect(evt3?.type).toBe(EventType.REASONING_MESSAGE_END);
+    expect(evt4?.type).toBe(EventType.REASONING_END);
   });
 
   it('should assign consistent messageId across sequence', () => {
     const events = mapReasoningToEvents('thought', { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(3);
-    const messageId = events[1]!.messageId;
-    expect(events[2]!.messageId).toBe(messageId);
-    expect(events[3]!.messageId).toBe(messageId);
+    const evt1 = events[1];
+    const evt2 = events[2];
+    const evt3 = events[3];
+    expect(evt1).toBeDefined();
+    expect(evt2).toBeDefined();
+    expect(evt3).toBeDefined();
+    const messageId = evt1?.messageId;
+    expect(evt2?.messageId).toBe(messageId);
+    expect(evt3?.messageId).toBe(messageId);
   });
 
   it('should set messageId on START and CONTENT events only', () => {
     const events = mapReasoningToEvents('reasoning', { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThanOrEqual(5);
-    expect(events[0]!.messageId).toBeDefined(); // REASONING_START
-    expect(events[1]!.messageId).toBeDefined(); // REASONING_MESSAGE_START
-    expect(events[2]!.messageId).toBeDefined(); // REASONING_MESSAGE_CONTENT
-    expect(events[3]!.messageId).toBeDefined(); // REASONING_MESSAGE_END
-    expect(events[4]!.messageId).toBeDefined(); // REASONING_END
+    for (let i = 0; i < 5; i++) {
+      const evt = events[i];
+      expect(evt).toBeDefined();
+      expect(evt?.messageId).toBeDefined();
+    }
   });
 
   it('should propagate runId to all events', () => {
@@ -74,10 +90,11 @@ describe('mapReasoningToEvents', () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2]!;
-    expect(contentEvent.type).toBe(EventType.REASONING_MESSAGE_CONTENT);
+    const contentEvent = events[2];
+    expect(contentEvent).toBeDefined();
+    expect(contentEvent?.type).toBe(EventType.REASONING_MESSAGE_CONTENT);
     // Content may have encryptedValue instead of plain content
-    expect((contentEvent as any).encryptedValue).toBe('encrypted');
+    expect((contentEvent as Record<string, unknown>)?.encryptedValue).toBe('encrypted');
   });
 
   it('should use plain content when encryption disabled', () => {
@@ -88,8 +105,9 @@ describe('mapReasoningToEvents', () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2]!;
-    expect(contentEvent.content).toBe(reasoning);
+    const contentEvent = events[2];
+    expect(contentEvent).toBeDefined();
+    expect(contentEvent?.content).toBe(reasoning);
   });
 
   it('should default encryption to false', () => {
@@ -97,8 +115,9 @@ describe('mapReasoningToEvents', () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2]!;
-    expect(contentEvent.content).toBe(reasoning);
+    const contentEvent = events[2];
+    expect(contentEvent).toBeDefined();
+    expect(contentEvent?.content).toBe(reasoning);
   });
 
   it('should generate consistent timestamps', () => {
@@ -106,9 +125,11 @@ describe('mapReasoningToEvents', () => {
 
     // All timestamps should be within 10ms of each other (they should be nearly identical)
     expect(events.length).toBeGreaterThan(0);
-    const firstTime = new Date(events[0]!.timestamp!).getTime();
+    const firstEvent = events[0];
+    expect(firstEvent).toBeDefined();
+    const firstTime = firstEvent?.timestamp ? new Date(firstEvent.timestamp).getTime() : 0;
     for (const event of events) {
-      const eventTime = new Date(event.timestamp!).getTime();
+      const eventTime = event.timestamp ? new Date(event.timestamp).getTime() : 0;
       const diff = Math.abs(eventTime - firstTime);
       expect(diff).toBeLessThan(100); // Within 100ms
     }
@@ -119,7 +140,7 @@ describe('mapReasoningToEvents', () => {
 
     for (const event of events) {
       expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-      expect(() => new Date(event.timestamp!)).not.toThrow();
+      expect(() => new Date(event.timestamp as string)).not.toThrow();
     }
   });
 
@@ -130,7 +151,7 @@ describe('mapReasoningToEvents', () => {
   });
 
   it('should handle undefined reasoning gracefully', () => {
-    const events = mapReasoningToEvents(undefined as any, { runId: 'run_123' });
+    const events = mapReasoningToEvents(undefined as unknown as string, { runId: 'run_123' });
 
     expect(events).toHaveLength(0);
   });
@@ -141,9 +162,10 @@ describe('mapReasoningToEvents', () => {
 
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events[2];
-    expect(contentEvent!.content).toContain('line 1');
-    expect(contentEvent!.content).toContain('line 2');
-    expect(contentEvent!.content).toContain('line 3');
+    expect(contentEvent).toBeDefined();
+    expect(contentEvent?.content).toContain('line 1');
+    expect(contentEvent?.content).toContain('line 2');
+    expect(contentEvent?.content).toContain('line 3');
   });
 
   it('should generate unique messageIds for different reasoning calls', () => {
@@ -153,8 +175,12 @@ describe('mapReasoningToEvents', () => {
     expect(events1.length).toBeGreaterThan(1);
     expect(events2.length).toBeGreaterThan(1);
 
-    const messageId1 = events1[1]!.messageId;
-    const messageId2 = events2[1]!.messageId;
+    const evt1 = events1[1];
+    const evt2 = events2[1];
+    expect(evt1).toBeDefined();
+    expect(evt2).toBeDefined();
+    const messageId1 = evt1?.messageId;
+    const messageId2 = evt2?.messageId;
 
     expect(messageId1).not.toBe(messageId2);
   });

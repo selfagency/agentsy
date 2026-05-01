@@ -50,11 +50,13 @@ export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
     [EventType.TOOL_CALL_END]: 'toolCallEnd',
   };
 
-  const copilotKitType = copilotKitMapping[(event as any).type] || (event as any).type;
+  const eventRec = event as unknown as Record<string, unknown>;
+  const eventType = eventRec.type as string | undefined;
+  const copilotKitType = (eventType && copilotKitMapping[eventType]) || eventType || 'unknown';
 
   return {
     type: copilotKitType,
-    ...(event as any),
+    ...eventRec,
   };
 }
 
@@ -65,17 +67,18 @@ export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
  * @returns Custom UI event
  */
 export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
-  const agEvent = event as any;
+  const agEvent = event as unknown as Record<string, unknown>;
 
   // Extract common fields
-  const runId = agEvent.runId || '';
-  const threadId = agEvent.threadId;
-  const timestamp = agEvent.timestamp || new Date().toISOString();
+  const runId = (agEvent.runId as string) || '';
+  const threadId = agEvent.threadId as string | undefined;
+  const timestamp = (agEvent.timestamp as string) || new Date().toISOString();
 
   // Build event-specific payload
-  let payload: Record<string, any> = {};
+  let payload: Record<string, unknown> = {};
+  const eventType = agEvent.type as string;
 
-  switch (agEvent.type) {
+  switch (eventType) {
     case EventType.RUN_STARTED:
       payload = { runId, capabilities: agEvent.capabilities };
       break;
@@ -143,7 +146,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
   }
 
   return {
-    eventType: agEvent.type,
+    eventType: agEvent.type as string,
     runId,
     ...(threadId !== undefined && { threadId }),
     timestamp,

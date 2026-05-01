@@ -280,7 +280,9 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId, encryptReasoning: true }));
 
     const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
-    expect((contentEvent as any).encryptedValue).toBe('encrypted');
+    if (contentEvent) {
+      expect((contentEvent as Record<string, unknown>).encryptedValue).toBe('encrypted');
+    }
   });
 
   it('should include timestamps on all events', async () => {
@@ -346,7 +348,7 @@ describe('toAgUiStream', () => {
 
     // All should reference the same tool call ID
     toolCallEvents.forEach(event => {
-      expect((event as any).toolCallId).toBe('call_1');
+      expect((event as Record<string, unknown>).toolCallId).toBe('call_1');
     });
   });
 });

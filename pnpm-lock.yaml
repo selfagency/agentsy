@@ -61,6 +61,8 @@ importers:
         specifier: ^8.8.5
         version: 8.8.5
 
+  dist: {}
+
 packages:
 
   '@ag-ui/core@0.0.53':

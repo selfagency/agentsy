@@ -102,28 +102,38 @@ describe('createInterruptEvent', () => {
 
     expect(event1.interrupts.length).toBeGreaterThan(0);
     expect(event2.interrupts.length).toBeGreaterThan(0);
-    expect(event1.interrupts[0]!.id).not.toBe(event2.interrupts[0]!.id);
+    const id1 = event1.interrupts[0]?.id;
+    const id2 = event2.interrupts[0]?.id;
+    expect(id1).toBeDefined();
+    expect(id2).toBeDefined();
+    expect(id1).not.toBe(id2);
   });
 
   it('should include reason in interrupt object', () => {
     const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT);
 
     expect(event.interrupts.length).toBeGreaterThan(0);
-    expect(event.interrupts[0]!.reason).toBe(InterruptReason.TIMEOUT);
+    const interrupt = event.interrupts[0];
+    expect(interrupt).toBeDefined();
+    expect(interrupt?.reason).toBe(InterruptReason.TIMEOUT);
   });
 
   it('should include custom message in interrupt object', () => {
     const event = createInterruptEvent('run_123', InterruptReason.USER_REQUEST, 'User clicked stop');
 
     expect(event.interrupts.length).toBeGreaterThan(0);
-    expect(event.interrupts[0]!.options?.message).toBe('User clicked stop');
+    const interrupt = event.interrupts[0];
+    expect(interrupt).toBeDefined();
+    expect(interrupt?.options?.message).toBe('User clicked stop');
   });
 
   it('should not include message if undefined', () => {
     const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT);
 
     expect(event.interrupts.length).toBeGreaterThan(0);
-    expect('options' in event.interrupts[0]!).toBe(false);
+    const interrupt = event.interrupts[0];
+    expect(interrupt).toBeDefined();
+    expect('options' in (interrupt ?? {})).toBe(false);
   });
 
   it('should include optional threadId', () => {
@@ -142,7 +152,7 @@ describe('createInterruptEvent', () => {
     const event = createInterruptEvent('run_123');
 
     expect(typeof event.timestamp).toBe('string');
-    expect(() => new Date(event.timestamp!)).not.toThrow();
+    expect(() => new Date(event.timestamp as string)).not.toThrow();
     expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   });
 

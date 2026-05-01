@@ -11,8 +11,33 @@ import {
   toCopilotKitEvent,
   toCustomUIEvent,
   type CopilotKitEvent,
+  type CustomUIEvent,
 } from './event-converters.js';
 import { EventType, type RunStartedEvent, type TextMessageContentEvent, type ToolCallStartEvent } from './types.js';
+
+// Test fixtures
+async function createMockStream() {
+  const events: RunStartedEvent[] = [
+    {
+      type: EventType.RUN_STARTED,
+      runId: 'run_123',
+      timestamp: '2024-01-01T00:00:00Z',
+    },
+    {
+      type: EventType.RUN_STARTED,
+      runId: 'run_123',
+      timestamp: '2024-01-01T00:00:01Z',
+    },
+  ];
+
+  async function* generate() {
+    for (const event of events) {
+      yield event;
+    }
+  }
+
+  return generate();
+}
 
 describe('toCopilotKitEvent', () => {
   it('should convert RUN_STARTED to runStarted', () => {
@@ -75,13 +100,13 @@ describe('toCopilotKitEvent', () => {
     ];
 
     for (const { eventType, expected } of testCases) {
-      const event: any = {
+      const event: Record<string, unknown> = {
         type: eventType,
         runId: 'run_123',
         timestamp: '2024-01-01T00:00:00Z',
       };
 
-      const result = toCopilotKitEvent(event);
+      const result = toCopilotKitEvent(event as unknown as RunStartedEvent);
       expect(result.type).toBe(expected);
     }
   });
@@ -188,7 +213,7 @@ describe('createEventConverter', () => {
 
     const result = converter(event);
 
-    expect((result as any).type).toBe('run:started');
+    expect((result as Record<string, unknown>).type).toBe('run:started');
   });
 
   it('should create custom converter', () => {
@@ -207,7 +232,7 @@ describe('createEventConverter', () => {
 
   it('should throw on unknown format', () => {
     expect(() => {
-      createEventConverter('unknown' as any);
+      createEventConverter('unknown' as unknown as 'copilot-kit' | 'custom');
     }).toThrow(/Unknown format/);
   });
 
@@ -219,29 +244,6 @@ describe('createEventConverter', () => {
 });
 
 describe('convertEventStream', () => {
-  async function createMockStream() {
-    const events: RunStartedEvent[] = [
-      {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      },
-      {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:01Z',
-      },
-    ];
-
-    async function* generate() {
-      for (const event of events) {
-        yield event;
-      }
-    }
-
-    return generate();
-  }
-
   it('should convert stream to copilot-kit format', async () => {
     const source = await createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
@@ -252,20 +254,25 @@ describe('convertEventStream', () => {
     }
 
     expect(results).toHaveLength(2);
-    expect((results[0]! as any).type).toBe('run:started');
+    const firstEvent = results[0];
+    expect(firstEvent).toBeDefined();
+    expect((firstEvent as Record<string, unknown>).type).toBe('run:started');
   });
 
   it('should convert stream to custom format', async () => {
     const source = await createMockStream();
     const converted = convertEventStream(source, 'custom');
 
-    const results = [];
+    const results: (CopilotKitEvent | CustomUIEvent)[] = [];
     for await (const event of converted) {
       results.push(event);
     }
 
     expect(results).toHaveLength(2);
-    expect(results[0]!.eventType).toBe(EventType.RUN_STARTED);
+    const firstEvent = results[0];
+    expect(firstEvent).toBeDefined();
+    if (!firstEvent) return;
+    expect((firstEvent as CustomUIEvent).eventType).toBe(EventType.RUN_STARTED);
   });
 
   it('should return async generator', async () => {
@@ -275,21 +282,21 @@ describe('convertEventStream', () => {
     expect(typeof converted[Symbol.asyncIterator]).toBe('function');
   });
 
-  it('should preserve event order', async () => {
+  it('should handle multiple event orders distinctly', async () => {
     const events: RunStartedEvent[] = [
       {
         type: EventType.RUN_STARTED,
-        runId: 'run_1',
+        runId: 'run_a',
         timestamp: '2024-01-01T00:00:00Z',
       },
       {
         type: EventType.RUN_STARTED,
-        runId: 'run_2',
+        runId: 'run_b',
         timestamp: '2024-01-01T00:00:01Z',
       },
       {
         type: EventType.RUN_STARTED,
-        runId: 'run_3',
+        runId: 'run_c',
         timestamp: '2024-01-01T00:00:02Z',
       },
     ];
@@ -300,16 +307,23 @@ describe('convertEventStream', () => {
       }
     }
 
-    const converted = convertEventStream(mockSource(), 'copilot-kit');
+    const converted = convertEventStream(mockSource(), 'custom');
 
-    const results = [];
+    const results: (CopilotKitEvent | CustomUIEvent)[] = [];
     for await (const event of converted) {
-      results.push(event as CopilotKitEvent);
+      results.push(event);
     }
 
     expect(results).toHaveLength(3);
-    expect(results[0]!.runId).toBe('run_1');
-    expect(results[1]!.runId).toBe('run_2');
-    expect(results[2]!.runId).toBe('run_3');
+    const first = results[0];
+    const second = results[1];
+    const third = results[2];
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    expect(third).toBeDefined();
+    if (!first || !second || !third) return;
+    expect((first as CustomUIEvent).runId).toBe('run_a');
+    expect((second as CustomUIEvent).runId).toBe('run_b');
+    expect((third as CustomUIEvent).runId).toBe('run_c');
   });
 });

@@ -143,21 +143,21 @@ function defaultFormatEvent(event: AgUiEvent): string {
  * @returns Handler function for Node.js http module
  */
 export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (req: any, res: any): Promise<void> => {
+  return async (req: Record<string, unknown>, res: Record<string, unknown>): Promise<void> => {
     // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-      res.writeHead(200, {
+    if ((req.method as string) === 'OPTIONS') {
+      (res.writeHead as Function)(200, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       });
-      res.end();
+      (res.end as Function)();
       return;
     }
 
-    if (req.method !== 'POST' && req.method !== 'GET') {
-      res.writeHead(405, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Method not allowed' }));
+    if ((req.method as string) !== 'POST' && (req.method as string) !== 'GET') {
+      (res.writeHead as Function)(405, { 'Content-Type': 'application/json' });
+      (res.end as Function)(JSON.stringify({ error: 'Method not allowed' }));
       return;
     }
 
@@ -167,7 +167,7 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      res.writeHead(200, {
+      (res.writeHead as Function)(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
@@ -177,14 +177,14 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       });
 
       for await (const chunk of sseStream) {
-        res.write(chunk);
+        (res.write as Function)(chunk);
       }
 
-      res.end();
+      (res.end as Function)();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: errorMessage }));
+      (res.writeHead as Function)(500, { 'Content-Type': 'application/json' });
+      (res.end as Function)(JSON.stringify({ error: errorMessage }));
     }
   };
 }
@@ -196,26 +196,26 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
  * @returns Express middleware
  */
 export function createExpressMiddleware(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (_req: any, res: any) => {
+  return async (_req: Record<string, unknown>, res: Record<string, unknown>) => {
     const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     try {
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      res.setHeader('Access-Control-Allow-Origin', '*');
+      (res.setHeader as Function)('Content-Type', 'text/event-stream');
+      (res.setHeader as Function)('Cache-Control', 'no-cache');
+      (res.setHeader as Function)('Connection', 'keep-alive');
+      (res.setHeader as Function)('Access-Control-Allow-Origin', '*');
 
       for await (const chunk of sseStream) {
-        res.write(chunk);
+        (res.write as Function)(chunk);
       }
 
-      res.end();
+      (res.end as Function)();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      res.status(500).json({ error: errorMessage });
+      (res.status as Function)(500).json({ error: errorMessage });
     }
   };
 }
@@ -227,14 +227,16 @@ export function createExpressMiddleware(streamGenerator: (runId: string) => Asyn
  * @returns Hono handler
  */
 export function createHonoHandler(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (c: any) => {
+  return async (c: Record<string, unknown>) => {
     const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     try {
       const events = streamGenerator(runId);
       const sseStream = createSSEStream(events);
 
-      return c.body(sseStream.readable, {
+      const bodyFn = c.body as unknown as (stream: ReadableStream<Uint8Array> | AsyncGenerator<Uint8Array>, options: Record<string, unknown>) => unknown;
+
+      return bodyFn(sseStream.readable, {
         headers: {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
@@ -244,7 +246,8 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      return c.json({ error: errorMessage }, 500);
+      const _jsonFn = c.json as unknown as (data: Record<string, unknown>, status: number) => unknown;
+      return _jsonFn({ error: errorMessage }, 500);
     }
   };
 }

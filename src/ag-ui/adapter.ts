@@ -73,7 +73,7 @@ function generateMessageId(): string {
 /**
  * Enriches an event object with optional threadId.
  */
-function enrichEvent<T extends Record<string, any>>(event: T, threadId: string | undefined): T {
+function enrichEvent<T extends Record<string, unknown>>(event: T, threadId: string | undefined): T {
   if (threadId === undefined) return event;
   return { ...event, threadId } as T;
 }

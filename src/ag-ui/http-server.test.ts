@@ -19,8 +19,11 @@ async function* mockEventGenerator() {
 }
 
 async function* emptyGenerator() {
-  // Intentionally empty for testing empty streams - no yield needed
-  // This is a valid generator that completes immediately
+  // Empty generator for testing - yield statement required for generator syntax
+  if (false) {
+    yield undefined as unknown as AgUiEvent;
+  }
+  // Generator completes immediately
 }
 
 async function* errorGeneratorWithYield() {
