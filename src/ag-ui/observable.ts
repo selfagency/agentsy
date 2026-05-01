@@ -20,7 +20,7 @@ export interface Observable<T> {
   subscribe(observer: Partial<Observer<T>>): Subscription;
   subscribe(
     next: ((value: T) => void) | null | undefined,
-    error?: ((error: any) => void) | null | undefined,
+    error?: ((error: unknown) => void) | null | undefined,
     complete?: (() => void) | null | undefined,
   ): Subscription;
 }
@@ -30,7 +30,7 @@ export interface Observable<T> {
  */
 export interface Observer<T> {
   next: (value: T) => void;
-  error: (error: any) => void;
+  error: (error: unknown) => void;
   complete: () => void;
 }
 
@@ -55,7 +55,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
   return {
     subscribe(
       observerOrNext: Partial<Observer<T>> | ((value: T) => void) | null | undefined,
-      error?: ((error: any) => void) | null | undefined,
+      error?: ((error: unknown) => void) | null | undefined,
       complete?: (() => void) | null | undefined,
     ) {
       // Normalize observer

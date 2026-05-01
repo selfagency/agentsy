@@ -58,7 +58,7 @@ function validatePathParts(parts: string[]): void {
  * @internal
  */
 function escapePathSegment(segment: string): string {
-  return segment.replace(/~/g, '~0').replace(/\//g, '~1');
+  return segment.replaceAll('~', '~0').replaceAll('/', '~1');
 }
 
 /**
@@ -67,7 +67,7 @@ function escapePathSegment(segment: string): string {
  * @internal
  */
 function unescapePathSegment(segment: string): string {
-  return segment.replace(/~1/g, '/').replace(/~0/g, '~');
+  return segment.replaceAll('~1', '/').replaceAll('~0', '~');
 }
 
 /**

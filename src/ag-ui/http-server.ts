@@ -196,7 +196,7 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
  * @returns Express middleware
  */
 export function createExpressMiddleware(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (req: any, res: any) => {
+  return async (_req: any, res: any) => {
     const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     try {

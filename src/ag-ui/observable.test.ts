@@ -7,16 +7,73 @@
 import { describe, expect, it, vi } from 'vitest';
 import { toObservable } from './observable.js';
 
+// Module-level generators for test fixtures
+async function* sourceBasic() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+async function* sourceStringPair() {
+  yield 'a';
+  yield 'b';
+}
+
+async function* sourceWithError() {
+  yield 1;
+  throw new Error('Test error');
+}
+
+async function* sourceDouble() {
+  yield 1;
+  yield 2;
+}
+
+async function* sourceWithDelay() {
+  yield 1;
+  await new Promise(resolve => setTimeout(resolve, 10));
+  yield 2;
+  await new Promise(resolve => setTimeout(resolve, 10));
+  yield 3;
+}
+
+async function* sourceTest() {
+  yield 'test';
+}
+
+async function* sourceExpected() {
+  yield 1;
+  throw new Error('Expected');
+}
+
+async function* sourceEmpty() {
+  // Intentionally empty generator for testing completion without values
+}
+
+async function* sourceSingle() {
+  yield 1;
+}
+
+async function* sourceMultiple() {
+  yield 1;
+  yield 2;
+  yield 3;
+  yield 4;
+  yield 5;
+}
+
+async function* sourceAsync() {
+  yield 'start';
+  await new Promise(resolve => setTimeout(resolve, 20));
+  yield 'middle';
+  await new Promise(resolve => setTimeout(resolve, 20));
+  yield 'end';
+}
+
 describe('toObservable', () => {
   it('should subscribe and emit values', async () => {
-    async function* source() {
-      yield 1;
-      yield 2;
-      yield 3;
-    }
-
     const results: number[] = [];
-    toObservable(source()).subscribe({
+    toObservable(sourceBasic()).subscribe({
       next: value => results.push(value),
     });
 
@@ -27,13 +84,8 @@ describe('toObservable', () => {
   });
 
   it('should support callback syntax for next', async () => {
-    async function* source() {
-      yield 'a';
-      yield 'b';
-    }
-
     const results: string[] = [];
-    toObservable(source()).subscribe(value => {
+    toObservable(sourceStringPair()).subscribe(value => {
       results.push(value);
     });
 
@@ -43,15 +95,10 @@ describe('toObservable', () => {
   });
 
   it('should call error handler on generator error', async () => {
-    async function* source() {
-      yield 1;
-      throw new Error('Test error');
-    }
+    const results: number[] = [];
+    const errors: unknown[] = [];
 
-    const results: any[] = [];
-    const errors: any[] = [];
-
-    toObservable(source()).subscribe({
+    toObservable(sourceWithError()).subscribe({
       next: value => results.push(value),
       error: err => errors.push(err),
     });
@@ -60,18 +107,13 @@ describe('toObservable', () => {
 
     expect(results).toHaveLength(1);
     expect(errors).toHaveLength(1);
-    expect(errors[0].message).toBe('Test error');
+    expect((errors[0] as Error).message).toBe('Test error');
   });
 
   it('should call complete handler after generator finishes', async () => {
-    async function* source() {
-      yield 1;
-      yield 2;
-    }
-
     let completed = false;
 
-    toObservable(source()).subscribe({
+    toObservable(sourceDouble()).subscribe({
       next: () => {},
       complete: () => {
         completed = true;
@@ -84,17 +126,9 @@ describe('toObservable', () => {
   });
 
   it('should support unsubscribe to stop consuming', async () => {
-    async function* source() {
-      yield 1;
-      await new Promise(resolve => setTimeout(resolve, 10));
-      yield 2;
-      await new Promise(resolve => setTimeout(resolve, 10));
-      yield 3;
-    }
-
     const results: number[] = [];
 
-    const subscription = toObservable(source()).subscribe({
+    const subscription = toObservable(sourceWithDelay()).subscribe({
       next: value => results.push(value),
     });
 
@@ -108,13 +142,9 @@ describe('toObservable', () => {
   });
 
   it('should normalize observer with just next callback', async () => {
-    async function* source() {
-      yield 'test';
-    }
-
     const next = vi.fn();
 
-    toObservable(source()).subscribe({
+    toObservable(sourceTest()).subscribe({
       next,
     });
 
@@ -124,15 +154,10 @@ describe('toObservable', () => {
   });
 
   it('should handle observer without error handler', async () => {
-    async function* source() {
-      yield 1;
-      throw new Error('Expected');
-    }
-
     const next = vi.fn();
     const complete = vi.fn();
 
-    toObservable(source()).subscribe({
+    toObservable(sourceExpected()).subscribe({
       next,
       complete,
     });
@@ -144,14 +169,10 @@ describe('toObservable', () => {
   });
 
   it('should handle empty generator', async () => {
-    async function* source() {
-      // Empty
-    }
-
     const next = vi.fn();
     const complete = vi.fn();
 
-    toObservable(source()).subscribe({
+    toObservable(sourceEmpty()).subscribe({
       next,
       complete,
     });
@@ -163,27 +184,15 @@ describe('toObservable', () => {
   });
 
   it('should return subscription object', () => {
-    async function* source() {
-      yield 1;
-    }
-
-    const subscription = toObservable(source()).subscribe(() => {});
+    const subscription = toObservable(sourceSingle()).subscribe(() => {});
 
     expect(typeof subscription.unsubscribe).toBe('function');
   });
 
   it('should support multiple values with no delay', async () => {
-    async function* source() {
-      yield 1;
-      yield 2;
-      yield 3;
-      yield 4;
-      yield 5;
-    }
-
     const results: number[] = [];
 
-    toObservable(source()).subscribe({
+    toObservable(sourceMultiple()).subscribe({
       next: value => results.push(value),
     });
 
@@ -193,17 +202,9 @@ describe('toObservable', () => {
   });
 
   it('should handle async operations in generator', async () => {
-    async function* source() {
-      yield 'start';
-      await new Promise(resolve => setTimeout(resolve, 20));
-      yield 'middle';
-      await new Promise(resolve => setTimeout(resolve, 20));
-      yield 'end';
-    }
-
     const results: string[] = [];
 
-    toObservable(source()).subscribe({
+    toObservable(sourceAsync()).subscribe({
       next: value => results.push(value),
     });
 
@@ -215,12 +216,12 @@ describe('toObservable', () => {
   it('should not consume generator if not subscribed', async () => {
     const nextSpy = vi.fn();
 
-    async function* source() {
+    async function* sourceWithSpy() {
       nextSpy();
       yield 1;
     }
 
-    const _observable = toObservable(source());
+    const _observable = toObservable(sourceWithSpy());
 
     // Just create observable, don't subscribe
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -233,14 +234,14 @@ describe('toObservable', () => {
   it('should call error handler with error object', async () => {
     const testError = new Error('Custom error message');
 
-    async function* source() {
+    async function* sourceWithCustomError() {
       yield;
       throw testError;
     }
 
-    let capturedError: any;
+    let capturedError: unknown;
 
-    toObservable(source()).subscribe({
+    toObservable(sourceWithCustomError()).subscribe({
       error: err => {
         capturedError = err;
       },
@@ -249,6 +250,6 @@ describe('toObservable', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(capturedError).toBe(testError);
-    expect(capturedError.message).toBe('Custom error message');
+    expect((capturedError as Error).message).toBe('Custom error message');
   });
 });

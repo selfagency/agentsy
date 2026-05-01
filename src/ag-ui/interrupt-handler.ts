@@ -141,9 +141,9 @@ export function createInterruptAbortController(): {
  */
 export class TimeoutInterrupt {
   private timeoutId: ReturnType<typeof setTimeout> | undefined;
-  private interruptController: InterruptController;
+  private readonly interruptController: InterruptController;
 
-  constructor(private timeoutMs: number) {
+  constructor(private readonly timeoutMs: number) {
     this.interruptController = new InterruptController();
   }
 

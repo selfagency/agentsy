@@ -14,7 +14,7 @@ import { EventType } from './types.js';
  */
 export interface CopilotKitEvent {
   type: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -26,7 +26,7 @@ export interface CustomUIEvent {
   runId: string;
   threadId?: string;
   timestamp: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 /**

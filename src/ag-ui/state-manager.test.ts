@@ -127,7 +127,7 @@ describe('computeStateDelta', () => {
   it('should return empty array for identical states', () => {
     const state = { a: 1, nested: { b: 2 } };
 
-    const patches = computeStateDelta(state, JSON.parse(JSON.stringify(state)));
+    const patches = computeStateDelta(state, structuredClone(state));
 
     expect(patches).toHaveLength(0);
   });
@@ -370,7 +370,7 @@ describe('StateManager', () => {
 
     manager.updateState({ data: { 'sub~key/path': 'value' } }, 'run_123');
 
-    expect((manager.getCurrentState().data as any)['sub~key/path']).toBe('value');
+    expect(manager.getCurrentState().data).toEqual({ 'sub~key/path': 'value' });
   });
 
   it('should handle complex state updates with multiple properties', () => {

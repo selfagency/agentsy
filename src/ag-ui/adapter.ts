@@ -32,13 +32,13 @@ export interface PipelineEvent {
   content?: string;
   toolCallId?: string;
   toolName?: string;
-  toolArgs?: Record<string, any>;
+  toolArgs?: Record<string, unknown>;
   toolArgsJson?: string;
   reasoning?: string;
   message?: string;
   code?: string;
   usage?: { inputTokens?: number; outputTokens?: number };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface AdapterOptions {

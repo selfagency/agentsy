@@ -43,9 +43,10 @@ describe('toAgUiStream', () => {
 
     // Should have at least 3 events: RUN_STARTED, TEXT_MESSAGE_CONTENT, RUN_FINISHED
     expect(events.length).toBeGreaterThanOrEqual(3);
-    expect(events[0]!.type).toBe(EventType.RUN_STARTED);
-    expect(events[0]!.runId).toBe(runId);
-    expect(events[0]!.threadId).toBe(threadId);
+    const startEvent = events[0];
+    expect(startEvent?.type).toBe(EventType.RUN_STARTED);
+    expect(startEvent?.runId).toBe(runId);
+    expect(startEvent?.threadId).toBe(threadId);
 
     // Last event should be RUN_FINISHED
     const lastEvent = events.at(-1);
@@ -66,10 +67,12 @@ describe('toAgUiStream', () => {
     const textEvents = events.filter(e => e.type.includes('text_message'));
 
     expect(textEvents).toHaveLength(2);
-    expect(textEvents[0]!.type).toBe(EventType.TEXT_MESSAGE_CONTENT);
-    expect(textEvents[0]!.content).toBe('Hello ');
-    expect(textEvents[1]!.type).toBe(EventType.TEXT_MESSAGE_CONTENT);
-    expect(textEvents[1]!.content).toBe('world!');
+    const firstText = textEvents[0];
+    const secondText = textEvents[1];
+    expect(firstText?.type).toBe(EventType.TEXT_MESSAGE_CONTENT);
+    expect(firstText?.content).toBe('Hello ');
+    expect(secondText?.type).toBe(EventType.TEXT_MESSAGE_CONTENT);
+    expect(secondText?.content).toBe('world!');
   });
 
   it('should convert thinking events to REASONING_* sequence', async () => {
@@ -89,14 +92,18 @@ describe('toAgUiStream', () => {
     expect(reasoningEvents.length).toBeGreaterThanOrEqual(4);
 
     // Check sequence
-    expect(reasoningEvents[0]!.type).toBe(EventType.REASONING_START);
-    expect(reasoningEvents[1]!.type).toBe(EventType.REASONING_MESSAGE_START);
+    const reasoningStart = reasoningEvents[0];
+    const reasoningMsgStart = reasoningEvents[1];
+    expect(reasoningStart?.type).toBe(EventType.REASONING_START);
+    expect(reasoningMsgStart?.type).toBe(EventType.REASONING_MESSAGE_START);
 
     // Content events should be consecutive
     const contentEvents = reasoningEvents.filter(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
     expect(contentEvents.length).toBe(2);
-    expect(contentEvents[0]!.content).toBe('Thinking step 1');
-    expect(contentEvents[1]!.content).toBe('Thinking step 2');
+    const firstContent = contentEvents[0];
+    const secondContent = contentEvents[1];
+    expect(firstContent?.content).toBe('Thinking step 1');
+    expect(secondContent?.content).toBe('Thinking step 2');
 
     // Should end with MESSAGE_END and REASONING_END
     expect(reasoningEvents.at(-2)?.type).toBe(EventType.REASONING_MESSAGE_END);
@@ -120,14 +127,17 @@ describe('toAgUiStream', () => {
     const toolEvents = events.filter(e => e.type.includes('tool_call'));
 
     expect(toolEvents.length).toBeGreaterThanOrEqual(3);
-    expect(toolEvents[0]!.type).toBe(EventType.TOOL_CALL_START);
-    expect(toolEvents[0]!.toolName).toBe('search');
-    expect(toolEvents[0]!.toolCallId).toBe('call_123');
+    const toolStart = toolEvents[0];
+    const toolArgs = toolEvents[1];
+    const toolEnd = toolEvents[2];
+    expect(toolStart?.type).toBe(EventType.TOOL_CALL_START);
+    expect(toolStart?.toolName).toBe('search');
+    expect(toolStart?.toolCallId).toBe('call_123');
 
-    expect(toolEvents[1]!.type).toBe(EventType.TOOL_CALL_ARGS);
-    expect(toolEvents[1]!.args).toEqual({ query: 'AI trends' });
+    expect(toolArgs?.type).toBe(EventType.TOOL_CALL_ARGS);
+    expect(toolArgs?.args).toEqual({ query: 'AI trends' });
 
-    expect(toolEvents[2]!.type).toBe(EventType.TOOL_CALL_END);
+    expect(toolEnd?.type).toBe(EventType.TOOL_CALL_END);
   });
 
   it('should handle thinking followed by tool_call', async () => {
@@ -152,9 +162,11 @@ describe('toAgUiStream', () => {
     expect(toolStart).toBeDefined();
 
     // Tool call should come after reasoning ends
-    const reasoningEndIdx = events.indexOf(reasoningEnd!);
-    const toolStartIdx = events.indexOf(toolStart!);
-    expect(toolStartIdx).toBeGreaterThan(reasoningEndIdx);
+    if (reasoningEnd && toolStart) {
+      const reasoningEndIdx = events.indexOf(reasoningEnd);
+      const toolStartIdx = events.indexOf(toolStart);
+      expect(toolStartIdx).toBeGreaterThan(reasoningEndIdx);
+    }
   });
 
   it('should emit RUN_ERROR on error event', async () => {
@@ -171,8 +183,11 @@ describe('toAgUiStream', () => {
 
     const errorEvent = events.find(e => e.type === EventType.RUN_ERROR);
     expect(errorEvent).toBeDefined();
-    expect((errorEvent as any).error?.message).toBe('API rate limit exceeded');
-    expect((errorEvent as any).error?.code).toBe('RATE_LIMIT');
+    if (errorEvent && 'error' in errorEvent) {
+      expect((errorEvent as Record<string, unknown>).error).toEqual(
+        expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' })
+      );
+    }
   });
 
   it('should include usage info in RUN_FINISHED', async () => {

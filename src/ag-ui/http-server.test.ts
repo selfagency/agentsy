@@ -9,23 +9,36 @@ import { createAgentRunHandler, createExpressMiddleware, createHonoHandler, crea
 import type { AgUiEvent } from './types.js';
 import { EventType } from './types.js';
 
+// Test fixtures
+async function* mockEventGenerator() {
+  yield {
+    type: EventType.RUN_STARTED,
+    runId: 'run_123',
+    timestamp: '2024-01-01T00:00:00Z',
+  } as AgUiEvent;
+}
+
+async function* emptyGenerator() {
+  // Intentionally empty for testing empty streams - no yield needed
+  // This is a valid generator that completes immediately
+}
+
+async function* errorGeneratorWithYield() {
+  yield {
+    type: EventType.RUN_STARTED,
+    runId: 'run_123',
+    timestamp: '2024-01-01T00:00:00Z',
+  } as AgUiEvent;
+  throw new Error('Generator error');
+}
+
+async function* mockErrorGenerator() {
+  throw new Error('Mock generator error');
+}
+
 describe('createSSEStream', () => {
   it('should convert async generator to SSE stream', async () => {
-    async function* eventGenerator() {
-      yield {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      } as AgUiEvent;
-      yield {
-        type: EventType.RUN_FINISHED,
-        runId: 'run_123',
-        outcome: { type: 'success' as const },
-        timestamp: '2024-01-01T00:00:01Z',
-      } as AgUiEvent;
-    }
-
-    const stream = createSSEStream(eventGenerator());
+    const stream = createSSEStream(mockEventGenerator());
     const chunks = [];
 
     for await (const chunk of stream) {
@@ -39,10 +52,6 @@ describe('createSSEStream', () => {
   });
 
   it('should handle empty event stream', async () => {
-    async function* emptyGenerator() {
-      // Empty
-    }
-
     const stream = createSSEStream(emptyGenerator());
     const chunks = [];
 
@@ -54,16 +63,7 @@ describe('createSSEStream', () => {
   });
 
   it('should handle stream errors gracefully', async () => {
-    async function* errorGenerator() {
-      yield {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      } as AgUiEvent;
-      throw new Error('Stream error');
-    }
-
-    const stream = createSSEStream(errorGenerator());
+    const stream = createSSEStream(errorGeneratorWithYield());
     const readableChunks = [];
 
     try {
@@ -72,20 +72,12 @@ describe('createSSEStream', () => {
       }
     } catch (err) {
       expect(err).toBeInstanceOf(Error);
-      expect((err as Error).message).toContain('Stream error');
+      expect((err as Error).message).toContain('Generator error');
     }
   });
 
   it('should support async iteration directly', async () => {
-    async function* eventGenerator() {
-      yield {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      } as AgUiEvent;
-    }
-
-    const stream = createSSEStream(eventGenerator());
+    const stream = createSSEStream(mockEventGenerator());
 
     // Use Symbol.asyncIterator
     const iterator = stream[Symbol.asyncIterator]();
@@ -97,11 +89,7 @@ describe('createSSEStream', () => {
 
 describe('createAgentRunHandler', () => {
   it('should handle CORS OPTIONS preflight request', async () => {
-    const streamGenerator = vi.fn(async function* () {
-      yield { type: EventType.RUN_STARTED, runId: 'run_1', timestamp: '' } as AgUiEvent;
-    });
-
-    const handler = createAgentRunHandler(streamGenerator);
+    const handler = createAgentRunHandler(() => mockEventGenerator());
 
     const req = { method: 'OPTIONS' };
     const res = {
@@ -122,11 +110,7 @@ describe('createAgentRunHandler', () => {
   });
 
   it('should reject unsupported HTTP methods', async () => {
-    const streamGenerator = vi.fn(async function* () {
-      yield { type: EventType.RUN_STARTED, runId: 'run_1', timestamp: '' } as AgUiEvent;
-    });
-
-    const handler = createAgentRunHandler(streamGenerator);
+    const handler = createAgentRunHandler(() => mockEventGenerator());
 
     const req = { method: 'DELETE' };
     const res = {
@@ -141,18 +125,9 @@ describe('createAgentRunHandler', () => {
   });
 
   it('should handle POST requests and stream events', async () => {
-    async function* mockGenerator() {
-      yield {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      } as AgUiEvent;
-    }
+    const handler = createAgentRunHandler(() => mockEventGenerator());
 
-    const streamGenerator = vi.fn(() => mockGenerator());
-    const handler = createAgentRunHandler(streamGenerator);
-
-    const writeHeadHeaders: any = {};
+    const writeHeadHeaders: Record<string, unknown> = {};
     const res = {
       writeHead: vi.fn((code, headers) => {
         Object.assign(writeHeadHeaders, headers);
@@ -171,12 +146,7 @@ describe('createAgentRunHandler', () => {
   });
 
   it('should handle streaming errors', async () => {
-    async function* errorGenerator() {
-      throw new Error('Generator error');
-    }
-
-    const streamGenerator = vi.fn(() => errorGenerator());
-    const handler = createAgentRunHandler(streamGenerator);
+    const handler = createAgentRunHandler(() => mockErrorGenerator());
 
     const res = {
       writeHead: vi.fn(),
@@ -193,16 +163,7 @@ describe('createAgentRunHandler', () => {
 
 describe('createExpressMiddleware', () => {
   it('should stream events via Express response', async () => {
-    async function* mockGenerator() {
-      yield {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      } as AgUiEvent;
-    }
-
-    const streamGenerator = vi.fn(() => mockGenerator());
-    const middleware = createExpressMiddleware(streamGenerator);
+    const middleware = createExpressMiddleware(() => mockEventGenerator());
 
     const res = {
       setHeader: vi.fn(),
@@ -222,12 +183,7 @@ describe('createExpressMiddleware', () => {
   });
 
   it('should handle errors in Express middleware', async () => {
-    async function* errorGenerator() {
-      throw new Error('Middleware error');
-    }
-
-    const streamGenerator = vi.fn(() => errorGenerator());
-    const middleware = createExpressMiddleware(streamGenerator);
+    const middleware = createExpressMiddleware(() => mockErrorGenerator());
 
     const res = {
       setHeader: vi.fn(),
@@ -247,16 +203,7 @@ describe('createExpressMiddleware', () => {
 
 describe('createHonoHandler', () => {
   it('should return Hono body stream', async () => {
-    async function* mockGenerator() {
-      yield {
-        type: EventType.RUN_STARTED,
-        runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
-      } as AgUiEvent;
-    }
-
-    const streamGenerator = vi.fn(() => mockGenerator());
-    const handler = createHonoHandler(streamGenerator);
+    const handler = createHonoHandler(() => mockEventGenerator());
 
     const c = {
       body: vi.fn(() => ({ status: 200 })),
@@ -276,12 +223,7 @@ describe('createHonoHandler', () => {
   });
 
   it('should handle Hono errors', async () => {
-    async function* errorGenerator() {
-      throw new Error('Hono error');
-    }
-
-    const streamGenerator = vi.fn(() => errorGenerator());
-    const handler = createHonoHandler(streamGenerator);
+    const handler = createHonoHandler(() => mockErrorGenerator());
 
     const c = {
       body: vi.fn(() => ({ status: 200 })),

@@ -40,6 +40,32 @@ function parametersEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
+ * Safely emit an AG-UI event with error handling.
+ * @internal
+ */
+async function safeEmitEvent(
+  event: AgUiEvent,
+  callbackName: string,
+  onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>,
+): Promise<void> {
+  if (!onAgUiEvent) return;
+  try {
+    await Promise.resolve(onAgUiEvent(event));
+  } catch (error) {
+    console.error(`Error in onAgUiEvent callback for ${callbackName}:`, error);
+  }
+}
+
+/**
+ * Add optional threadId to an event object.
+ * @internal
+ */
+function withThreadId(event: AgUiEvent, threadId?: string): AgUiEvent {
+  if (threadId === undefined) return event;
+  return { ...event, threadId } as AgUiEvent;
+}
+
+/**
  * Processes a single step of the agent loop and updates state.
  * @internal
  */
@@ -145,32 +171,6 @@ async function executeStep(
 export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   let aborted = false;
   const abortController = new AbortController();
-
-  /**
-   * Safely emit an AG-UI event with thread ID and error handling.
-   * @internal
-   */
-  async function safeEmitEvent(
-    event: AgUiEvent,
-    callbackName: string,
-    onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>,
-  ): Promise<void> {
-    if (!onAgUiEvent) return;
-    try {
-      await Promise.resolve(onAgUiEvent(event));
-    } catch (error) {
-      console.error(`Error in onAgUiEvent callback for ${callbackName}:`, error);
-    }
-  }
-
-  /**
-   * Add optional threadId to an event object.
-   * @internal
-   */
-  function withThreadId(event: AgUiEvent, threadId?: string): AgUiEvent {
-    if (threadId === undefined) return event;
-    return { ...event, threadId } as AgUiEvent;
-  }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
     const runId = options.runId || `run_${Math.random().toString(36).slice(2, 11)}`;
