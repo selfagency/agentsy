@@ -1,4 +1,4 @@
-import type { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
+import type { LLMStreamProcessor, OutputPart } from '../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 
 /**
@@ -29,6 +29,9 @@ export interface BaseRendererOptions {
 
   /** Optional callback fired when a tool call is encountered (not rendered as content). */
   onToolCall?: OnToolCall;
+
+  /** Optional callback fired for each streaming argument delta while a native tool call is assembling. */
+  onToolCallDelta?: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
 }
 
 /**

@@ -591,3 +591,93 @@ describe('Phase 1 — type exports', () => {
     expect(values).toHaveLength(6);
   });
 });
+
+describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
+  it('emits tool_call_delta parts for each nativeToolCallDelta with argumentsDelta', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const deltaParts: ReturnType<typeof processor.process>['parts'] = [];
+
+    processor.on('tool_call_delta', delta => deltaParts.push(delta));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_1', name: 'get_weather' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"city":' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '"NYC"}' }] });
+    processor.process({ done: true, finishReason: 'tool-calls' });
+
+    expect(deltaParts).toHaveLength(2);
+    expect(deltaParts[0]).toMatchObject({ type: 'tool_call_delta', name: 'get_weather', argumentsDelta: '{"city":' });
+    expect(deltaParts[1]).toMatchObject({ type: 'tool_call_delta', name: 'get_weather', argumentsDelta: '"NYC"}' });
+  });
+
+  it('tool_call_delta part includes id from header delta', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const output = processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }] });
+
+    const deltaPart = output.parts.find(p => p.type === 'tool_call_delta');
+    expect(deltaPart).toBeDefined();
+    expect(deltaPart).toMatchObject({ type: 'tool_call_delta', id: 'call_abc', name: 'fn', argumentsDelta: '{}' });
+  });
+
+  it('tool_call_delta part resolves name from accumulator for subsequent deltas', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'search' }] });
+    const out = processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"q":"ts"}' }] });
+
+    const deltaPart = out.parts.find(p => p.type === 'tool_call_delta');
+    expect(deltaPart).toMatchObject({ type: 'tool_call_delta', name: 'search', argumentsDelta: '{"q":"ts"}' });
+  });
+
+  it('emits completed native call mid-stream before done: true', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const toolCalls: string[] = [];
+    processor.on('tool_call', call => toolCalls.push(call.name));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'lookup', argumentsDelta: '{}' }] });
+    // Arguments are now valid JSON — mid-stream completion should fire tool_call
+    expect(toolCalls).toHaveLength(1);
+    expect(toolCalls[0]).toBe('lookup');
+
+    // done: true should NOT re-emit the same call
+    processor.process({ done: true, finishReason: 'tool-calls' });
+    expect(toolCalls).toHaveLength(1);
+  });
+
+  it('does not duplicate tool_call emission when call completed mid-stream', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const toolCalls: string[] = [];
+    processor.on('tool_call', call => toolCalls.push(call.name));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"a":1}' }] });
+    processor.process({ done: true, finishReason: 'tool-calls' });
+
+    expect(toolCalls).toHaveLength(1);
+  });
+
+  it('tool_call_delta event fires on processor.on("tool_call_delta")', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const fired: string[] = [];
+    processor.on('tool_call_delta', delta => fired.push(delta.argumentsDelta));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"x":' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '1}' }] });
+
+    expect(fired).toEqual(['{"x":', '1}']);
+  });
+
+  it('reset() clears emitted call index tracking so same index can be reused', () => {
+    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const toolCalls: string[] = [];
+    processor.on('tool_call', call => toolCalls.push(call.name));
+
+    // First stream
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{}' }] });
+    expect(toolCalls).toHaveLength(1);
+
+    // Reset and second stream using same index
+    processor.reset();
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn2', argumentsDelta: '{}' }] });
+    expect(toolCalls).toHaveLength(2);
+    expect(toolCalls[1]).toBe('fn2');
+  });
+});
