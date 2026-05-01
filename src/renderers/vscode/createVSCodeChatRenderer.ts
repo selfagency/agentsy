@@ -127,14 +127,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
 
   /**
-   * Handle text part: stream markdown to the response.
-   * @internal
-   */
-  function handleTextPart(text: string): void {
-    stream.markdown(text);
-  }
-
-  /**
    * Handle thinking part: stream based on configured style.
    * @internal
    */
@@ -161,38 +153,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
       // Next chunk needs prefix if current text ends with newline
       blockquoteNeedsPrefix = text.endsWith('\n');
-    }
-  }
-
-  /**
-   * Handle tool_call part: emit callback and invoke stream method if available.
-   * @internal
-   */
-  function handleToolCallPart(part: OutputPart): void {
-    if (part.type !== 'tool_call') {
-      return;
-    }
-    if (onToolCall) {
-      onToolCall(part);
-    }
-    if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
-      stream.beginToolInvocation(part.call.id, part.call.name);
-    }
-  }
-
-  /**
-   * Handle tool_call_delta part: emit callback and update invocation if available.
-   * @internal
-   */
-  function handleToolCallDeltaPart(part: OutputPart): void {
-    if (part.type !== 'tool_call_delta') {
-      return;
-    }
-    if (onToolCallDelta) {
-      onToolCallDelta(part);
-    }
-    if (stream.updateToolInvocation && typeof part.id === 'string') {
-      stream.updateToolInvocation(part.id, part);
     }
   }
 
@@ -227,18 +187,40 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
   /**
    * Process all parts from output, dispatching to appropriate handlers.
+   * Simplified to reduce cyclomatic complexity.
    * @internal
    */
   function processParts(parts: OutputPart[]): void {
     for (const part of parts) {
-      if (part.type === 'text') {
-        handleTextPart(part.text);
-      } else if (part.type === 'thinking') {
-        handleThinkingPart(part.text);
-      } else if (part.type === 'tool_call') {
-        handleToolCallPart(part);
-      } else if (part.type === 'tool_call_delta') {
-        handleToolCallDeltaPart(part);
+      switch (part.type) {
+        case 'text':
+          if ('text' in part && typeof part.text === 'string') {
+            stream.markdown(part.text);
+          }
+          break;
+        case 'thinking':
+          if ('text' in part && typeof part.text === 'string') {
+            handleThinkingPart(part.text);
+          }
+          break;
+        case 'tool_call':
+          if (onToolCall) {
+            onToolCall(part);
+          }
+          if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
+            stream.beginToolInvocation(part.call.id, part.call.name);
+          }
+          break;
+        case 'tool_call_delta':
+          if (onToolCallDelta) {
+            onToolCallDelta(part);
+          }
+          if (stream.updateToolInvocation && typeof part.id === 'string') {
+            stream.updateToolInvocation(part.id, part);
+          }
+          break;
+        default:
+          break;
       }
     }
   }

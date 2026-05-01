@@ -74,14 +74,14 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   let parser: StreamingMarkdown.Parser | null = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
-  const getStreamingMarkdownDeps = async () => {
+  const getStreamingMarkdownDeps = async (): Promise<{ smd: any; DOMPurify: any }> => {
     try {
-      const smdImported = (await import('streaming-markdown')) as any;
-      const smdModule = smdImported.default ?? smdImported;
-      const dompurifyImported = (await import('dompurify')) as any;
-      const dompurifyModule = dompurifyImported.default ?? dompurifyImported;
+      const smdImported = await import('streaming-markdown');
+      const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
+      const dompurifyImported = await import('dompurify');
+      const dompurifyModule = (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
 
-      return { smd: smdModule, DOMPurify: dompurifyModule };
+      return { smd: smdModule as any, DOMPurify: dompurifyModule as any };
     } catch {
       throw new Error(
         'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
@@ -113,6 +113,39 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
     }
   }
 
+  /**
+   * Handles security validation and DOM rendering for accumulated markdown.
+   * @internal
+   */
+  async function renderAccumulatedMarkdown(chunk: string): Promise<void> {
+    if (!accumulatedMarkdown || !parser) return;
+
+    const { smd, DOMPurify } = await getStreamingMarkdownDeps();
+
+    // Security check: sanitize accumulated markdown
+    DOMPurify.sanitize(accumulatedMarkdown);
+
+    if ((DOMPurify.removed?.length ?? 0) > 0) {
+      // Security violation detected
+      if (smd.parser_end) {
+        smd.parser_end(parser);
+      }
+      if (onSecurityViolation) {
+        onSecurityViolation();
+      }
+      return;
+    }
+
+    // Append new content to DOM
+    try {
+      if (smd.parser_write) {
+        smd.parser_write(parser, chunk);
+      }
+    } catch {
+      // Continue even if streaming fails
+    }
+  }
+
   return {
     async write(chunk: string): Promise<void> {
       try {
@@ -121,32 +154,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
         // Initialize parser on first write and render accumulated markdown
         await ensureParser();
-        if (accumulatedMarkdown && parser) {
-          const { smd, DOMPurify } = await getStreamingMarkdownDeps();
-
-          // Security check: sanitize accumulated markdown
-          DOMPurify.sanitize(accumulatedMarkdown);
-
-          if ((DOMPurify.removed?.length ?? 0) > 0) {
-            // Security violation detected
-            if (parser && smd.parser_end) {
-              smd.parser_end(parser);
-            }
-            if (onSecurityViolation) {
-              onSecurityViolation();
-            }
-            return;
-          }
-
-          // Append new content to DOM
-          try {
-            if (smd.parser_write) {
-              smd.parser_write(parser, chunk);
-            }
-          } catch {
-            // Continue even if streaming fails
-          }
-        }
+        await renderAccumulatedMarkdown(chunk);
       } catch (error) {
         if (onError && error instanceof Error) {
           onError(error);

@@ -2,20 +2,94 @@ import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
 
 /**
+ * Checks if both values are objects with matching keys.
+ * @internal
+ */
+function objectKeysMatch(aKeys: string[], bKeys: string[]): boolean {
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((k, i) => k === bKeys[i]);
+}
+
+/**
  * Deep equality comparison for tool parameters.
  * Compares objects structurally rather than by reference.
  * @internal
  */
 function parametersEqual(a: unknown, b: unknown): boolean {
+  // Handle primitives and identity
   if (Object.is(a, b)) return true;
+
+  // Check if both are objects
   if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
     return false;
   }
+
+  // Compare sorted keys
   const aKeys = Object.keys(a).sort((x, y) => x.localeCompare(y));
   const bKeys = Object.keys(b).sort((x, y) => x.localeCompare(y));
-  if (aKeys.length !== bKeys.length) return false;
-  if (!aKeys.every((k, i) => k === bKeys[i])) return false;
-  return aKeys.every(k => parametersEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+
+  if (!objectKeysMatch(aKeys, bKeys)) return false;
+
+  // Recursively compare values for each key
+  const aObj = a as Record<string, unknown>;
+  const bObj = b as Record<string, unknown>;
+  return aKeys.every(k => parametersEqual(aObj[k], bObj[k]));
+}
+
+/**
+ * Processes a single step of the agent loop and updates state.
+ * @internal
+ */
+async function processSingleStep(
+  state: AgentLoopState,
+  options: AgentLoopOptions,
+  currentMessages: unknown[],
+  abortController: AbortController,
+  stopConditions: Array<(state: AgentLoopState) => boolean>,
+): Promise<{ parts: OutputPart[]; continueLoop: boolean; nextMessages?: unknown[] }> {
+  const { processor, isAborted } = await executeStep(options, currentMessages, abortController);
+
+  if (isAborted) {
+    return { parts: [], continueLoop: false };
+  }
+
+  const finalOutput = processor.flush();
+  const parts = finalOutput.parts;
+
+  state.lastOutput = finalOutput;
+
+  // Build step result
+  const stepResult: StepResult = {
+    output: finalOutput,
+    toolCalls: finalOutput.toolCalls,
+    finishReason: finalOutput.finishReason ?? undefined,
+    usage: finalOutput.usage ?? undefined,
+  };
+
+  state.steps.push(stepResult);
+  state.stepIndex = state.steps.length - 1;
+  updateConsecutiveIdenticalCalls(state, stepResult);
+  state.toolCallCount += stepResult.toolCalls.length;
+
+  if (options.onStep) {
+    await options.onStep(stepResult);
+  }
+
+  // Check stop conditions
+  if (stopConditions.some(condition => condition(state)) || stepResult.toolCalls.length === 0) {
+    return { parts, continueLoop: false };
+  }
+
+  // Build next messages with conversation trimming
+  const toolResultMessages = await options.buildToolResultMessages(stepResult.toolCalls);
+  const newMessages = [...currentMessages, { role: 'assistant', content: finalOutput.content }, ...toolResultMessages];
+
+  const nextMessages =
+    options.maxConversationMessages && newMessages.length > options.maxConversationMessages
+      ? newMessages.slice(newMessages.length - options.maxConversationMessages)
+      : newMessages;
+
+  return { parts, continueLoop: true, nextMessages };
 }
 
 /**
@@ -26,9 +100,10 @@ function parametersEqual(a: unknown, b: unknown): boolean {
 function updateConsecutiveIdenticalCalls(state: AgentLoopState, stepResult: StepResult): void {
   if (state.steps.length >= 2 && stepResult.toolCalls.length > 0) {
     const prevStep = state.steps.at(-2);
-    if ((prevStep?.toolCalls.length ?? 0) > 0) {
-      const prev = prevStep!.toolCalls[0]!;
-      const curr = stepResult.toolCalls[0]!;
+    if (prevStep && prevStep.toolCalls.length > 0) {
+      const prev = prevStep.toolCalls[0];
+      const curr = stepResult.toolCalls[0];
+      if (!prev || !curr) return;
       if (prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
         state.consecutiveIdenticalCalls += 1;
       } else {
@@ -38,10 +113,6 @@ function updateConsecutiveIdenticalCalls(state: AgentLoopState, stepResult: Step
   }
 }
 
-/**
- * Creates an agent loop handle for multi-step LLM execution with configurable stop conditions.
- * Automatically accumulates tool calls, builds tool results, and manages conversation state.
- */
 /**
  * Processes a single step of the agent loop: executes LLM and flushes output.
  * @internal
@@ -95,56 +166,22 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     let currentMessages = initialMessages;
 
     while (!aborted && state.steps.length < maxSteps) {
-      const { processor, isAborted } = await executeStep(options, currentMessages, abortController);
+      const result = await processSingleStep(state, options, currentMessages, abortController, stopConditions);
 
-      if (isAborted || aborted) {
-        break;
-      }
-
-      const finalOutput = processor.flush();
-
-      // Emit all parts from this step
-      for (const part of finalOutput.parts) {
+      // Yield all parts from this step
+      for (const part of result.parts) {
         yield part;
       }
 
-      state.lastOutput = finalOutput;
-
-      // Build step result
-      const stepResult: StepResult = {
-        output: finalOutput,
-        toolCalls: finalOutput.toolCalls,
-        finishReason: finalOutput.finishReason ?? undefined,
-        usage: finalOutput.usage ?? undefined,
-      };
-
-      state.steps.push(stepResult);
-      state.stepIndex = state.steps.length - 1;
-
-      // Update doom-loop counter
-      updateConsecutiveIdenticalCalls(state, stepResult);
-
-      state.toolCallCount += stepResult.toolCalls.length;
-
-      if (options.onStep) {
-        await options.onStep(stepResult);
-      }
-
-      if (stopConditions.some(condition => condition(state)) || stepResult.toolCalls.length === 0) {
+      // Check if we should continue
+      if (!result.continueLoop) {
         break;
       }
 
-      const toolResultMessages = await options.buildToolResultMessages(stepResult.toolCalls);
-      const newMessages = [
-        ...currentMessages,
-        { role: 'assistant', content: finalOutput.content },
-        ...toolResultMessages,
-      ];
-
-      currentMessages =
-        options.maxConversationMessages && newMessages.length > options.maxConversationMessages
-          ? newMessages.slice(newMessages.length - options.maxConversationMessages)
-          : newMessages;
+      // Update for next iteration
+      if (result.nextMessages) {
+        currentMessages = result.nextMessages;
+      }
     }
   }
 

@@ -419,9 +419,9 @@ describe('UI Event Sourcing', () => {
 
       const state = store.getState();
       expect(state.messages).toHaveLength(2);
-      expect(state.messages[1]!.parts).toHaveLength(3); // thinking, text, tool_call
+      expect(state.messages[1]?.parts).toHaveLength(3); // thinking, text, tool_call
       expect(state.totalTokens).toBe(70);
-      expect(state.messages[1]!.finishReason).toBe('tool-calls');
+      expect(state.messages[1]?.finishReason).toBe('tool-calls');
     });
   });
 });

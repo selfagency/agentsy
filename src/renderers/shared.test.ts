@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import { createSharedRendererHandle } from './shared.js';
-import type { FinishReason } from '../agent/types.js';
+import type { FinishReason, OutputPart } from '../agent/types.js';
 import type { UsageInfo } from '../normalizers/types.js';
 
 describe('createSharedRendererHandle', () => {
   let mockHandlers: {
     onText: (text: string) => Promise<void>;
     onThinking: (text: string) => Promise<void>;
-    onToolCall?: (part: any) => Promise<void>;
-    onToolCallDelta?: (part: any) => Promise<void>;
+    onToolCall?: (part: OutputPart) => Promise<void>;
+    onToolCallDelta?: (part: OutputPart) => Promise<void>;
     onEnd?: () => Promise<void>;
   };
 
@@ -25,8 +25,8 @@ describe('createSharedRendererHandle', () => {
       onEnd: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockOnFinish = vi.fn().mockResolvedValue(undefined) as any;
-    mockOnError = vi.fn() as any;
+    mockOnFinish = vi.fn().mockResolvedValue(undefined);
+    mockOnError = vi.fn().mockResolvedValue(undefined);
   });
 
   it('creates shared renderer handle with handlers', () => {

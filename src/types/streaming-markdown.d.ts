@@ -30,7 +30,6 @@ namespace StreamingMarkdown {
   function parser_write(parser: Parser, chunk: string): void;
   function parser_end(): string;
   function parser_end(parser: Parser): string;
-  let removed: unknown[] | undefined;
 }
 
 declare module 'dompurify' {
