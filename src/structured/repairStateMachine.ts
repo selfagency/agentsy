@@ -44,8 +44,8 @@ export function createRepairState(): RepairState {
  * Feed a character through the state machine, updating state.
  * Returns the character that should be added to output (may differ from input).
  */
+// #lizard forgives
 export function feedCharToStateMachine(char: string, state: RepairState): string {
-  // #lizard forgives
   // Handle escape sequences within strings
   if (state.escaped) {
     state.escaped = false;

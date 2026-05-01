@@ -145,8 +145,8 @@ function tryRepairCandidate(text: string): string | null {
   return repaired;
 }
 
+// #lizard forgives
 function tryParseRepaired(normalized: string, maxJsonDepth: number, maxJsonKeys: number): unknown {
-  // #lizard forgives
   const repaired = tryRepairCandidate(normalized);
   if (!repaired) return null;
   try {

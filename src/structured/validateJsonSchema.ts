@@ -207,8 +207,8 @@ function checkOneOf(
   }
 }
 
+// #lizard forgives
 function checkAllOf(
-  // #lizard forgives
   value: unknown,
   subSchemas: unknown[],
   path: string,
@@ -368,8 +368,8 @@ function checkObjectConstraints(
   checkAdditionalProperties(value, properties, schema.additionalProperties, path, errors);
 }
 
+// #lizard forgives
 function checkValueTypeConstraints(
-  // #lizard forgives
   value: unknown,
   schema: JsonSchema,
   path: string,
