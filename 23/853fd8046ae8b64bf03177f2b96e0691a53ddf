@@ -1,0 +1,29 @@
+src/renderers/cli/createCliRenderer.ts
+  h_5cf1e2c1161853 87-103,108,121,141,143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "23853fd8046ae8b64bf03177f2b96e0691a53ddf",
+  "prompts": {
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 21,
+      "total_deletions": 71,
+      "accepted_lines": 3476,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/d77f7a80f998be5568a51024c4bc520bd5d8f9346cd6e8b478efb50d050dd4c9"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
