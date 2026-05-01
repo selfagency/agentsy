@@ -594,7 +594,7 @@ describe('Phase 1 — type exports', () => {
 
 describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   it('emits tool_call_delta parts for each nativeToolCallDelta with argumentsDelta', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const deltaParts: ReturnType<typeof processor.process>['parts'] = [];
 
     processor.on('tool_call_delta', delta => deltaParts.push(delta));
@@ -610,7 +610,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   });
 
   it('tool_call_delta part includes id from header delta', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const output = processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }] });
 
     const deltaPart = output.parts.find(p => p.type === 'tool_call_delta');
@@ -619,7 +619,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   });
 
   it('tool_call_delta part resolves name from accumulator for subsequent deltas', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
 
     processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'search' }] });
     const out = processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"q":"ts"}' }] });
@@ -629,7 +629,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   });
 
   it('emits completed native call mid-stream before done: true', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const toolCalls: string[] = [];
     processor.on('tool_call', call => toolCalls.push(call.name));
 
@@ -644,7 +644,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   });
 
   it('does not duplicate tool_call emission when call completed mid-stream', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const toolCalls: string[] = [];
     processor.on('tool_call', call => toolCalls.push(call.name));
 
@@ -655,7 +655,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   });
 
   it('tool_call_delta event fires on processor.on("tool_call_delta")', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const fired: string[] = [];
     processor.on('tool_call_delta', delta => fired.push(delta.argumentsDelta));
 
@@ -666,7 +666,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   });
 
   it('reset() clears emitted call index tracking so same index can be reused', () => {
-    const processor = new LLMStreamProcessor({ enableNativeToolCalls: true });
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const toolCalls: string[] = [];
     processor.on('tool_call', call => toolCalls.push(call.name));
 
