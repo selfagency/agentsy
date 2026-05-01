@@ -1,5 +1,6 @@
 import { createInterruptEvent } from '../ag-ui/interrupt-handler.js';
 import { EventType } from '../ag-ui/types.js';
+import type { AgUiEvent } from '../ag-ui/types.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
 
@@ -150,13 +151,13 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
    * @internal
    */
   async function safeEmitEvent(
-    event: Record<string, any>,
+    event: AgUiEvent,
     callbackName: string,
-    onAgUiEvent?: (event: any) => void | Promise<void>,
+    onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>,
   ): Promise<void> {
     if (!onAgUiEvent) return;
     try {
-      await Promise.resolve(onAgUiEvent(event as any));
+      await Promise.resolve(onAgUiEvent(event));
     } catch (error) {
       console.error(`Error in onAgUiEvent callback for ${callbackName}:`, error);
     }
@@ -166,9 +167,9 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
    * Add optional threadId to an event object.
    * @internal
    */
-  function withThreadId<T extends Record<string, any>>(event: T, threadId?: string): T {
+  function withThreadId(event: AgUiEvent, threadId?: string): AgUiEvent {
     if (threadId === undefined) return event;
-    return { ...event, threadId } as T;
+    return { ...event, threadId } as AgUiEvent;
   }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
