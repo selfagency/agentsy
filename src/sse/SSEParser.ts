@@ -14,13 +14,13 @@ export interface SSEParserOptions {
   /**
    * Called when a complete SSE event is parsed.
    */
-  onEvent?: (event: SSEEvent) => void;
+  onEvent?: (_event: SSEEvent) => void;
 
   /**
    * Called when a parsing error occurs (malformed field, etc).
    * Non-fatal; parsing continues.
    */
-  onError?: (error: Error) => void;
+  onError?: (_error: Error) => void;
 }
 
 /**

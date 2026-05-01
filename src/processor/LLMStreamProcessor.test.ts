@@ -32,9 +32,9 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits events and warning callbacks', () => {
-    const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
-    const onText = vi.fn<(delta: string) => void>();
-    const onThinking = vi.fn<(delta: string) => void>();
+    const onWarning = vi.fn<(_message: string, _context?: Record<string, unknown>) => void>();
+    const onText = vi.fn<(_delta: string) => void>();
+    const onThinking = vi.fn<(_delta: string) => void>();
     const onDone = vi.fn<() => void>();
 
     const processor = new LLMStreamProcessor({
@@ -329,7 +329,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits usage event when chunk carries usage', () => {
-    const onUsage = vi.fn<(usage: UsageInfo) => void>();
+    const onUsage = vi.fn<(_usage: UsageInfo) => void>();
     const processor = new LLMStreamProcessor();
     processor.on('usage', onUsage);
 
@@ -421,7 +421,7 @@ describe('LLMStreamProcessor', () => {
   });
 
   it('emits tool_call and done events when final chunk carries tool calls and done: true', () => {
-    const onToolCall = vi.fn<(call: XmlToolCall) => void>();
+    const onToolCall = vi.fn<(_call: XmlToolCall) => void>();
     const onDone = vi.fn<() => void>();
     const processor = new LLMStreamProcessor();
 

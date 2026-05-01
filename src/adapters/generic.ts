@@ -32,14 +32,15 @@ export async function* processStream(
 
 export interface GenericAdapterCallbacks {
   /** Called with thinking/reasoning text (if enabled). */
-  onThinking?: (text: string) => void | Promise<void>;
+  onThinking?: (_text: string) => void | Promise<void>;
   /** Called with content text. */
-  onContent?: (text: string) => void | Promise<void>;
+  onContent?: (_text: string) => void | Promise<void>;
   /** Called for each extracted tool call. */
-  onToolCall?: (call: XmlToolCall) => void | Promise<void>;
+  onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
   /** Called when the stream is complete. */
-  onDone?: () => void | Promise<void> /** Called when any callback throws an error. */;
-  onError?: (error: Error, context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
+  onDone?: () => void | Promise<void>;
+  /** Called when any callback throws an error. */
+  onError?: (_error: Error, _context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
