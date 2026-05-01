@@ -36,7 +36,10 @@ export function testContentMapping(
  * Test helper for asserting non-terminal chunks don't set finishReason.
  * @internal
  */
-export function testMidStreamNoFinishReason(normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined, setupInput: () => Record<string, unknown>): void {
+export function testMidStreamNoFinishReason(
+  normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
+  setupInput: () => Record<string, unknown>,
+): void {
   const result = normalizer(setupInput());
   expect(result?.chunk.finishReason).toBeUndefined();
   expect(result?.chunk.done).not.toBe(true);

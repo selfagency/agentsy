@@ -120,7 +120,9 @@ export function createSharedRendererHandle(
  * Shared output writer that handles both function and stream interfaces.
  * @internal
  */
-export function createOutputWriter(output: NodeJS.WritableStream | ((text: string) => void) | { write: (text: string) => void }): (text: string) => void {
+export function createOutputWriter(
+  output: NodeJS.WritableStream | ((text: string) => void) | { write: (text: string) => void },
+): (text: string) => void {
   return (text: string): void => {
     if (typeof output === 'function') {
       output(text);

@@ -174,11 +174,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     if (onToolCall) {
       onToolCall(part);
     }
-    if (
-      stream.beginToolInvocation &&
-      typeof part.call?.id === 'string' &&
-      typeof part.call?.name === 'string'
-    ) {
+    if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
       stream.beginToolInvocation(part.call.id, part.call.name);
     }
   }

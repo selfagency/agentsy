@@ -6,7 +6,11 @@ import type { UIConversation, UIMessage, UIMessagePart, UIMessagePartWithoutCrea
  *
  * @internal
  */
-export function addPartToMessage(state: UIConversation, messageId: string, part: UIMessagePartWithoutCreatedAt): UIConversation {
+export function addPartToMessage(
+  state: UIConversation,
+  messageId: string,
+  part: UIMessagePartWithoutCreatedAt,
+): UIConversation {
   const now = new Date();
 
   const messages = state.messages.map(msg => {

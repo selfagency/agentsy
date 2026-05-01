@@ -572,13 +572,14 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     });
     const toolCallPart = result.parts.find(p => p.type === 'tool_call');
     expect(toolCallPart).toBeDefined();
-    expect(toolCallPart).toBeDefined();
-    if (toolCallPart?.type === 'tool_call') {
-      expect(toolCallPart.state).toBe('input-complete');
-      expect(toolCallPart.call.id).toBe('call_abc');
-    } else {
+
+    // Type guard to narrow type
+    if (!toolCallPart || toolCallPart.type !== 'tool_call') {
       throw new Error('Expected tool_call part');
     }
+
+    expect(toolCallPart.state).toBe('input-complete');
+    expect(toolCallPart.call.id).toBe('call_abc');
   });
 });
 

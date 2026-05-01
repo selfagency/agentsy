@@ -150,13 +150,10 @@ describe('LLMStreamProcessor.partsStream', () => {
     // processComplete calls process() + flush() internally, ensuring the stream is closed.
     processor.processComplete({ thinking: 'skip', content: 'abcdef' });
     const parts = await streamPromise;
-    const textParts = parts.filter(p => p.type === 'text');
+    const textParts = parts.filter((p): p is typeof p & { type: 'text' } => p.type === 'text');
     expect(textParts.length).toBeGreaterThan(1);
     for (const p of textParts) {
-      expect(p.type).toBe('text');
-      if (p.type === 'text') {
-        expect(p.text.length).toBeLessThanOrEqual(3);
-      }
+      expect(p.text.length).toBeLessThanOrEqual(3);
     }
   });
 });
