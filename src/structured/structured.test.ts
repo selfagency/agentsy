@@ -370,6 +370,7 @@ describe('repairWithLLM', () => {
   };
 
   it('succeeds on first attempt when output is already valid', async () => {
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const callLLM = async () => 'should not be called';
     const result = await repairWithLLM('{"name":"Ada","age":30}', schema, callLLM);
 
@@ -380,6 +381,7 @@ describe('repairWithLLM', () => {
 
   it('retries and succeeds when LLM fixes the output', async () => {
     let callCount = 0;
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const callLLM = async (prompt: string) => {
       callCount++;
       expect(prompt).toContain('Parse/validation error');
@@ -396,6 +398,7 @@ describe('repairWithLLM', () => {
   });
 
   it('fails after maxAttempts when LLM cannot fix the output', async () => {
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const callLLM = async () => '{"name":"still-bad"}';
 
     const result = await repairWithLLM('{"broken":true}', schema, callLLM, {
@@ -440,6 +443,7 @@ describe('repairWithLLM', () => {
 // Helper: wrap a scalar value for schema testing.
 // parseJson only extracts {} and [] candidates; bare scalars are not supported.
 // All scalar assertions are therefore tested at the property level of an object.
+// biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
 const wrap = (value: unknown, schema: Record<string, unknown>) =>
   validateJsonSchema(`{"v":${JSON.stringify(value)}}`, {
     type: 'object',

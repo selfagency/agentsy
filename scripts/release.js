@@ -292,6 +292,7 @@ async function main() {
       .map(r => r.ref.replace('refs/tags/', ''))
       .filter(t => t !== tag)
       .sort((a, b) => {
+        // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
         const parse = v => v.replace(/^v/, '').split('.').map(Number);
         const [aMaj, aMin, aPatch] = parse(a);
         const [bMaj, bMin, bPatch] = parse(b);
