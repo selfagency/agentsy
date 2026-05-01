@@ -20,7 +20,7 @@ async function* mockEventGenerator() {
 
 async function* emptyGenerator() {
   // Empty generator - doesn't yield any events
-  return;
+  yield* [];
 }
 
 async function* errorGeneratorWithYield() {

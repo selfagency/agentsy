@@ -227,7 +227,7 @@ function applyAddPatch(state: Record<string, unknown>, parts: string[], patch: J
   let target = state as Record<string, unknown>;
   for (const part of parts) {
     if (!(part in target)) {
-      (target[part] as Record<string, unknown>) = {};
+      target[part] = {};
     }
     target = target[part] as Record<string, unknown>;
   }
@@ -243,7 +243,7 @@ function applyRemovePatch(state: Record<string, unknown>, parts: string[]): void
   }
   const key = parts.pop();
   if (!key) throw new Error('Invalid path');
-  let target = state as Record<string, unknown>;
+  let target: Record<string, unknown> = state;
   for (const part of parts) {
     target = target[part] as Record<string, unknown>;
   }
@@ -259,7 +259,7 @@ function applyReplacePatch(state: Record<string, unknown>, parts: string[], patc
   }
   const key = parts.pop();
   if (!key) throw new Error('Invalid path');
-  let target = state as Record<string, unknown>;
+  let target: Record<string, unknown> = state;
   for (const part of parts) {
     target = target[part] as Record<string, unknown>;
   }

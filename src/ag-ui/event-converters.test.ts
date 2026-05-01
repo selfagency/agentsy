@@ -283,31 +283,30 @@ describe('convertEventStream', () => {
   });
 
   it('should handle multiple event orders distinctly', async () => {
-    const events: RunStartedEvent[] = [
-      {
-        type: EventType.RUN_STARTED,
-        runId: 'run_a',
-        timestamp: '2024-01-01T00:00:00Z',
-      },
-      {
-        type: EventType.RUN_STARTED,
-        runId: 'run_b',
-        timestamp: '2024-01-01T00:00:01Z',
-      },
-      {
-        type: EventType.RUN_STARTED,
-        runId: 'run_c',
-        timestamp: '2024-01-01T00:00:02Z',
-      },
-    ];
-
-    async function* generate() {
+    async function* multiEventGenerator() {
+      const events: RunStartedEvent[] = [
+        {
+          type: EventType.RUN_STARTED,
+          runId: 'run_a',
+          timestamp: '2024-01-01T00:00:00Z',
+        },
+        {
+          type: EventType.RUN_STARTED,
+          runId: 'run_b',
+          timestamp: '2024-01-01T00:00:01Z',
+        },
+        {
+          type: EventType.RUN_STARTED,
+          runId: 'run_c',
+          timestamp: '2024-01-01T00:00:02Z',
+        },
+      ];
       for (const event of events) {
         yield event;
       }
     }
 
-    const converted = convertEventStream(generate(), 'custom');
+    const converted = convertEventStream(multiEventGenerator(), 'custom');
 
     const results: (CopilotKitEvent | CustomUIEvent)[] = [];
     for await (const event of converted) {
