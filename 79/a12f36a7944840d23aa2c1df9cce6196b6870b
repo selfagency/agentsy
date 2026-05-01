@@ -1,0 +1,97 @@
+src/ui/types.ts
+  f984059b52212cfb 95-99
+src/processor/LLMStreamProcessor.ts
+  f984059b52212cfb 222,584
+README.md
+  h_5cf1e2c1161853 15,17,20,166,170-215,256-290
+docs/api.md
+  f984059b52212cfb 703,706,709,712,715,723,743,746,748,750-751,757-758,785,797,815,870-874,876,881,883,888
+  h_5cf1e2c1161853 691-702,704-705,707-708,710-711,713-714,716-722,724-742,744-745,747,749,752-756,759-784,786-796,798-814,816-869,875,877-880,882,884-887,889-892
+.oxlintrc.json
+  h_5cf1e2c1161853 6
+src/normalizers/openaiResponses.ts
+  f984059b52212cfb 72-75
+src/pipeline/transform.test.ts
+  h_5cf1e2c1161853 156-157
+  f984059b52212cfb 52,59,65,67,128,130,140-141,153
+src/agent/agent.test.ts
+  h_5cf1e2c1161853 3,474-537
+  f984059b52212cfb 2
+src/agent/index.ts
+  f984059b52212cfb 12
+docs/getting-started.md
+  f984059b52212cfb 164,172-173,177,206,210
+  h_5cf1e2c1161853 152-163,165-171,174-176,178-205,207-209,211-223
+src/renderers/vscode/createVSCodeAgentLoop.ts
+  h_5cf1e2c1161853 1-89
+src/tool-calls/buildToolResultMessage.test.ts
+  h_5cf1e2c1161853 49-60
+src/ui/ui.test.ts
+  f984059b52212cfb 65-67
+  h_5cf1e2c1161853 90-92
+src/ui/eventSourcing.ts
+  f984059b52212cfb 33,59,85,115
+src/adapters/vscode.ts
+  h_5cf1e2c1161853 7-25,30-32,41-44
+CHANGELOG.md
+  h_5cf1e2c1161853 5-91
+src/renderers/vscode/createVSCodeChatRenderer.ts
+  h_5cf1e2c1161853 1,4,7-9,12,14-45,56,126,143,146-150,153-156,183,186-189,215,218-221,232,241,252,269-271,274-277,301,304-305,317-318,327-330
+src/renderers/vscode/index.ts
+  f984059b52212cfb 9
+  h_5cf1e2c1161853 6-8
+src/renderers/types.ts
+  h_5cf1e2c1161853 47-49,53-60
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 575-577
+src/tool-calls/buildToolResultMessage.ts
+  h_5cf1e2c1161853 9,56,64,70-73
+src/renderers/vscode/vscode.test.ts
+  f984059b52212cfb 384
+  h_5cf1e2c1161853 3-4,6,20-24,41,65-76,79-87,89-139,142-154,157-160,162-210,213-292,296-299,301-304,306-307,310-311,314,317,323-325,327,333-336,338,340-347,349,351-352,355-361,363,365,368-369,371-383,386
+src/agent/types.ts
+  h_5cf1e2c1161853 36-37
+src/renderers/plain/plain.test.ts
+  h_5cf1e2c1161853 1
+src/renderers/vscode/cancellationTokenToAbortSignal.ts
+  h_5cf1e2c1161853 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "79a12f36a7944840d23aa2c1df9cce6196b6870b",
+  "prompts": {
+    "13fa38540e5224f5": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1777646612177",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 0,
+      "overriden_lines": 1
+    },
+    "f984059b52212cfb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "04b851ef-f208-4c7d-9da6-267dd0f5f196",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 3072,
+      "total_deletions": 94,
+      "accepted_lines": 3749,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/40f8414394aea920468dc6772060f76fe34820f719746e21f9d72216d5d341bd"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
