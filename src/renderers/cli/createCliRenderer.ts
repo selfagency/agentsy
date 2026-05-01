@@ -84,34 +84,28 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     return cliMarkdown;
   };
 
+  /**
+   * Process parts from output, accumulating markdown content.
+   * @internal
+   */
+  function processParts(parts: Array<{ type: string; text?: string }>): void {
+    for (const part of parts) {
+      if (part.type === 'text' && part.text) {
+        accumulatedMarkdown += part.text;
+      } else if (part.type === 'thinking' && showThinking && part.text) {
+        if (thinkingStyle === 'blockquote') {
+          accumulatedMarkdown += appendToBlockquote(part.text, true);
+          accumulatedMarkdown += '\n';
+        }
+      }
+    }
+  }
+
   return {
     async write(chunk: string): Promise<void> {
       try {
-        // Process expects a StreamChunk, treat entire input as content
         const result = llmProcessor.process({ content: chunk });
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                if (thinkingStyle === 'blockquote') {
-                  accumulatedMarkdown += appendToBlockquote(part.text, true);
-                  accumulatedMarkdown += '\n';
-                }
-                // 'suppress' style doesn't render thinking at all
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in CLI
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
       } catch (error) {
         if (onError && error instanceof Error) {
           onError(error);
@@ -124,28 +118,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     async writeChunk(chunk: StreamChunk): Promise<void> {
       try {
         const result = llmProcessor.process(chunk);
-
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                if (thinkingStyle === 'blockquote') {
-                  accumulatedMarkdown += appendToBlockquote(part.text, true);
-                  accumulatedMarkdown += '\n';
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in CLI
-              break;
-            }
-          }
-        }
+        processParts(result.parts);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -165,34 +138,11 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
         result = llmProcessor.flush();
+        processParts(result.parts);
 
-        // Process any final parts
-        for (const part of result.parts) {
-          switch (part.type) {
-            case 'text': {
-              accumulatedMarkdown += part.text;
-              break;
-            }
-            case 'thinking': {
-              if (showThinking) {
-                if (thinkingStyle === 'blockquote') {
-                  accumulatedMarkdown += appendToBlockquote(part.text, true);
-                  accumulatedMarkdown += '\n';
-                }
-              }
-              break;
-            }
-            case 'tool_call': {
-              // Tool calls not rendered in CLI
-              break;
-            }
-          }
-        }
-
-        // Render accumulated markdown via cli-markdown (safe: only call on actual output streams)
+        // Render accumulated markdown via cli-markdown
         if (accumulatedMarkdown) {
           const md = await getCliMarkdown();
-          // cli-markdown returns ANSI-formatted string
           const formatted = md(accumulatedMarkdown);
           writeOutput(formatted);
         }
