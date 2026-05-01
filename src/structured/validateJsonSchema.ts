@@ -144,9 +144,13 @@ function checkRef(
     errors.push(`${path}: $ref not found in $defs: ${ref}`);
     return true;
   }
-  const newResolving = new Set(context!.resolving);
+  if (context === undefined) {
+    errors.push(`${path}: internal error - context is undefined`);
+    return true;
+  }
+  const newResolving = new Set(context.resolving);
   newResolving.add(defName);
-  validateNode(value, defSchema, path, errors, { defs: context!.defs, resolving: newResolving });
+  validateNode(value, defSchema, path, errors, { defs: context.defs, resolving: newResolving });
   return true;
 }
 

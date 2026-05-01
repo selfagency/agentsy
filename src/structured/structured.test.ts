@@ -188,8 +188,10 @@ describe('streamJson', () => {
     const results = await collect(streamJson(chunked(['{"name":"Ada","age":30}'])));
 
     expect(results).toHaveLength(1);
-    expect(results[0]!.value).toEqual({ name: 'Ada', age: 30 });
-    expect(results[0]!.isPartial).toBe(false);
+    const result = results[0];
+    expect(result).toBeDefined();
+    expect(result?.value).toEqual({ name: 'Ada', age: 30 });
+    expect(result?.isPartial).toBe(false);
   });
 
   it('yields partial objects as JSON is streamed incrementally', async () => {
@@ -201,7 +203,9 @@ describe('streamJson', () => {
 
     expect(partials.length).toBeGreaterThanOrEqual(1);
     expect(completes).toHaveLength(1);
-    expect(completes[0]!.value).toEqual({ name: 'Ada', age: 30 });
+    const complete = completes[0];
+    expect(complete).toBeDefined();
+    expect(complete?.value).toEqual({ name: 'Ada', age: 30 });
   });
 
   it('deduplicates unchanged partial results', async () => {
@@ -220,15 +224,19 @@ describe('streamJson', () => {
     // Only complete results
     expect(results.every(r => !r.isPartial)).toBe(true);
     expect(results).toHaveLength(1);
-    expect(results[0]!.value).toEqual({ name: 'Ada' });
+    const result = results[0];
+    expect(result).toBeDefined();
+    expect(result?.value).toEqual({ name: 'Ada' });
   });
 
   it('handles JSON wrapped in markdown code fences', async () => {
     const results = await collect(streamJson(chunked(['```json\n{"ok":true}\n```'])));
 
     expect(results).toHaveLength(1);
-    expect(results[0]!.value).toEqual({ ok: true });
-    expect(results[0]!.isPartial).toBe(false);
+    const result = results[0];
+    expect(result).toBeDefined();
+    expect(result?.value).toEqual({ ok: true });
+    expect(result?.isPartial).toBe(false);
   });
 
   it('respects maxJsonDepth option', async () => {
@@ -245,8 +253,10 @@ describe('streamJson', () => {
     }
     const results = await collect(streamJson<Person>(chunked(['{"name":"Ada","age":30}'])));
 
-    expect(results[0]!.value.name).toBe('Ada');
-    expect(results[0]!.value.age).toBe(30);
+    const result = results[0];
+    expect(result).toBeDefined();
+    expect(result?.value.name).toBe('Ada');
+    expect(result?.value.age).toBe(30);
   });
 
   it('handles empty stream without error', async () => {
@@ -259,7 +269,9 @@ describe('streamJson', () => {
 
     const completes = results.filter(r => !r.isPartial);
     expect(completes.length).toBeGreaterThanOrEqual(1);
-    expect(completes.at(-1)!.value).toEqual({ result: 42 });
+    const lastComplete = completes.at(-1);
+    expect(lastComplete).toBeDefined();
+    expect(lastComplete?.value).toEqual({ result: 42 });
   });
 
   it('includes status field: partial while streaming, completed on finish', async () => {
@@ -270,28 +282,36 @@ describe('streamJson', () => {
 
     expect(partials.length).toBeGreaterThanOrEqual(1);
     expect(completes).toHaveLength(1);
-    expect(completes[0]!.isPartial).toBe(false);
+    const complete = completes[0];
+    expect(complete).toBeDefined();
+    expect(complete?.isPartial).toBe(false);
   });
 
   it('single-chunk complete JSON has status completed from the start', async () => {
     const results = await collect(streamJson(chunked(['{"x":1}'])));
 
     expect(results).toHaveLength(1);
-    expect(results[0]!.status).toBe('completed');
-    expect(results[0]!.isPartial).toBe(false);
+    const result = results[0];
+    expect(result).toBeDefined();
+    expect(result?.status).toBe('completed');
+    expect(result?.isPartial).toBe(false);
   });
 
   it('emits newFields with emitFields: true for nested objects', async () => {
     const results = await collect(streamJson(chunked(['{"name":"Ada","address":{"city":"Berlin"}}'])));
 
     // Without emitFields, newFields should be empty
-    expect(results[0]!.newFields).toEqual([]);
+    const result = results[0];
+    expect(result).toBeDefined();
+    expect(result?.newFields).toEqual([]);
   });
 
   it('emitFields: true emits leaf paths and values on first complete parse', async () => {
     const results = await collect(streamJson(chunked(['{"name":"Ada","age":30}']), { emitFields: true }));
 
-    const final = results.at(-1)!;
+    const final = results.at(-1);
+    expect(final).toBeDefined();
+    if (!final) return;
     expect(final.status).toBe('completed');
     expect(final.newFields.length).toBeGreaterThanOrEqual(2);
 
@@ -312,13 +332,17 @@ describe('streamJson', () => {
     // Partial emissions should have isComplete: false on their fields
     const partialResults = results.filter(r => r.isPartial);
     expect(partialResults.length).toBeGreaterThan(0);
-    const firstPartial = partialResults[0]!;
+    const firstPartial = partialResults[0];
+    expect(firstPartial).toBeDefined();
+    if (!firstPartial) return;
     firstPartial.newFields.forEach(f => {
       expect(f.isComplete).toBe(false);
     });
 
     // Complete result should have isComplete: true
-    const finalResult = results.at(-1)!;
+    const finalResult = results.at(-1);
+    expect(finalResult).toBeDefined();
+    if (!finalResult) return;
     expect(finalResult.status).toBe('completed');
     finalResult.newFields.forEach(f => {
       expect(f.isComplete).toBe(true);
