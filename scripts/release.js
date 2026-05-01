@@ -235,15 +235,6 @@ async function main() {
   process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
   const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
 
-  // If NPM_TOKEN is provided in the environment, configure it for npm.
-  if (process.env.NPM_TOKEN) {
-    // Parse registry hostname from the registry URL.
-    const registryUrl = new URL(NPM_REGISTRY);
-    const registryHost = registryUrl.hostname;
-    // Set the auth token for this registry.
-    process.env[`npm_config__${registryHost}_:_authToken`] = process.env.NPM_TOKEN;
-  }
-
   await checkNpmCredentials(NPM_REGISTRY);
 
   const githubToken = await resolveGithubToken();
