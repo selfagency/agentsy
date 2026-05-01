@@ -53,6 +53,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  let lastReportedStepIndex: number | undefined;
   // Track if output is a user-supplied stream (vs default process.stdout)
   const isUserSuppliedStream = output !== process.stdout && output !== process.stderr;
 
@@ -103,6 +104,15 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     }
   }
 
+  async function emitStepChange(chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>): Promise<void> {
+    if (options.onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
+      return;
+    }
+
+    lastReportedStepIndex = chunk.stepIndex;
+    await options.onStep(chunk.stepIndex, chunk.stepUsage ?? chunk.usage);
+  }
+
   return {
     async write(chunk: string): Promise<void> {
       try {
@@ -121,6 +131,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       try {
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -141,6 +152,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       try {
         result = llmProcessor.flush();
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Render accumulated markdown via cli-markdown
         if (accumulatedMarkdown) {

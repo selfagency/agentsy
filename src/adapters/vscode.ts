@@ -37,6 +37,7 @@ export interface VSCodeCopilotAdapterOptions {
   stream: VSCodeChatStream;
   onToolCall: (call: XmlToolCall) => void | Promise<void>;
   onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
+  onStep?: (stepIndex: number, usage: UsageInfo | undefined) => void | Promise<void>;
   showThinking?: boolean;
 }
 
@@ -53,6 +54,7 @@ export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions)
   let thinkingStarted = false;
   let thinkingLineStart = true;
   let contentStarted = false;
+  let lastReportedStepIndex: number | undefined;
 
   async function emit(output: ReturnType<LLMStreamProcessor['process']>): Promise<void> {
     if (output.thinking && showThinking) {
@@ -81,6 +83,15 @@ export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions)
 
     for (const toolCall of output.toolCalls) {
       await options.onToolCall(toolCall);
+    }
+
+    if (
+      options.onStep !== undefined &&
+      output.stepIndex !== undefined &&
+      output.stepIndex !== lastReportedStepIndex
+    ) {
+      lastReportedStepIndex = output.stepIndex;
+      await options.onStep(output.stepIndex, output.stepUsage ?? output.usage);
     }
   }
 

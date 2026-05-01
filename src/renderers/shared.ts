@@ -26,6 +26,16 @@ export function createSharedRendererHandle(
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  let lastReportedStepIndex: number | undefined;
+
+  async function emitStepChange(chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>): Promise<void> {
+    if (options.onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
+      return;
+    }
+
+    lastReportedStepIndex = chunk.stepIndex;
+    await options.onStep(chunk.stepIndex, chunk.stepUsage ?? chunk.usage);
+  }
 
   /**
    * Process output parts through registered handlers.
@@ -75,6 +85,7 @@ export function createSharedRendererHandle(
       try {
         const result = llmProcessor.process(chunk);
         await processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -94,6 +105,7 @@ export function createSharedRendererHandle(
       try {
         const result = llmProcessor.flush();
         await processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish if not already fired in writeChunk
         if (!finished && onFinish) {

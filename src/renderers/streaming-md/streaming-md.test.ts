@@ -232,5 +232,21 @@ describe('Streaming Markdown Renderer', () => {
 
       expect(renderer).toBeDefined();
     });
+
+    it('calls onStep when stepIndex changes via writeChunk', async () => {
+      const onStep = vi.fn();
+      const renderer = createStreamingMarkdownRenderer({
+        target: mockTarget,
+        onStep,
+      });
+
+      await renderer.writeChunk({ content: 'step 0', stepIndex: 0, stepUsage: { outputTokens: 2 } });
+      await renderer.writeChunk({ content: 'step 1', stepIndex: 1, usage: { inputTokens: 1, outputTokens: 3 } });
+      await renderer.end();
+
+      expect(onStep).toHaveBeenCalledTimes(2);
+      expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
+      expect(onStep).toHaveBeenNthCalledWith(2, 1, { inputTokens: 1, outputTokens: 3 });
+    });
   });
 });

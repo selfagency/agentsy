@@ -151,6 +151,28 @@ describe('createSharedRendererHandle', () => {
     expect(renderer).toBeDefined();
   });
 
+  it('invokes onStep when stepIndex changes via writeChunk', async () => {
+    const onStep = vi.fn().mockResolvedValue(undefined);
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
+
+    await renderer.writeChunk({ content: 'Step 0', stepIndex: 0, stepUsage: { outputTokens: 3 } });
+    await renderer.writeChunk({ content: 'Still step 0', stepIndex: 0, stepUsage: { outputTokens: 4 } });
+    await renderer.writeChunk({ content: 'Step 1', stepIndex: 1, stepUsage: { outputTokens: 5 } });
+
+    expect(onStep).toHaveBeenCalledTimes(2);
+    expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 3 });
+    expect(onStep).toHaveBeenNthCalledWith(2, 1, { outputTokens: 5 });
+  });
+
+  it('falls back to usage when stepUsage is absent', async () => {
+    const onStep = vi.fn().mockResolvedValue(undefined);
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
+
+    await renderer.writeChunk({ content: 'Step 2', stepIndex: 2, usage: { inputTokens: 9, outputTokens: 6 } });
+
+    expect(onStep).toHaveBeenCalledWith(2, { inputTokens: 9, outputTokens: 6 });
+  });
+
   it('skips onToolCall handler when not provided', async () => {
     const handlersWithoutToolCall = {
       onText: mockHandlers.onText,

@@ -291,6 +291,22 @@ describe('VS Code Chat Renderer', () => {
       // onFinish should be called once in end()
       expect(onFinish).toHaveBeenCalledTimes(1);
     });
+
+    it('calls onStep when stepIndex changes in writeChunk', async () => {
+      const onStep = vi.fn();
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onStep,
+      });
+
+      await renderer.writeChunk({ content: 'Step 0', stepIndex: 0, stepUsage: { outputTokens: 2 } });
+      await renderer.writeChunk({ content: 'Still step 0', stepIndex: 0, stepUsage: { outputTokens: 3 } });
+      await renderer.writeChunk({ content: 'Step 1', stepIndex: 1, usage: { inputTokens: 1, outputTokens: 4 } });
+
+      expect(onStep).toHaveBeenCalledTimes(2);
+      expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
+      expect(onStep).toHaveBeenNthCalledWith(2, 1, { inputTokens: 1, outputTokens: 4 });
+    });
   });
 
   describe('writeChunk vs write', () => {

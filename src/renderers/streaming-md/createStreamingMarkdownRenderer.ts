@@ -101,6 +101,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  let lastReportedStepIndex: number | undefined;
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
@@ -163,6 +164,15 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
     }
   }
 
+  async function emitStepChange(chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>): Promise<void> {
+    if (options.onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
+      return;
+    }
+
+    lastReportedStepIndex = chunk.stepIndex;
+    await options.onStep(chunk.stepIndex, chunk.stepUsage ?? chunk.usage);
+  }
+
   return {
     async write(chunk: string): Promise<void> {
       try {
@@ -185,6 +195,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       try {
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -205,6 +216,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       try {
         result = llmProcessor.flush();
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Initialize parser if not yet initialized
         await ensureParser();
