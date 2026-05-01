@@ -184,8 +184,9 @@ async function resolveGithubToken() {
 
 function wrapBareUrls(text) {
   // Wrap bare URLs in angle brackets for Markdown compliance.
-  // Matches URLs not already wrapped in < >.
-  return text.replace(/(?<!<)(https?:\/\/[^\s<>]+)(?!>)/g, '<$1>');
+  // Skip URLs already wrapped in < > or used as Markdown link destinations,
+  // and avoid including common trailing punctuation in the wrapped URL.
+  return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/g, '<$1>');
 }
 
 function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {

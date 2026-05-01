@@ -22,12 +22,12 @@ _Source: changes from v0.1.2 to v0.1.3._
 
 ## [0.1.2] - 2026-03-13
 
-**Full Changelog**: <https://github.com/selfagency/@selfagency/llm-stream-parser/compare/v0.1.1...v0.1.2>
+**Full Changelog**: <https://github.com/selfagency/llm-stream-parser/compare/v0.1.1...v0.1.2>
 
 _Source: changes from v0.1.1 to v0.1.2._
 
 ## [0.1.1] - 2026-03-13
 
-**Full Changelog**: <https://github.com/selfagency/@selfagency/llm-stream-parser/compare/v0.1.0...v0.1.1>
+**Full Changelog**: <https://github.com/selfagency/llm-stream-parser/compare/v0.1.0...v0.1.1>
 
 _Source: changes from v0.1.0 to v0.1.1._
