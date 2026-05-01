@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { UsageInfo } from '../normalizers/types.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { FinishReason } from '../tool-calls/types.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 
 describe('LLMStreamProcessor', () => {
@@ -502,5 +503,186 @@ describe('LLMStreamProcessor', () => {
     expect(stats).toHaveProperty('errorsCount');
     expect(typeof stats.warningsCount).toBe('number');
     expect(typeof stats.errorsCount).toBe('number');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 1: finishReason propagation and ToolCallState
+// ---------------------------------------------------------------------------
+
+describe('LLMStreamProcessor — finishReason propagation', () => {
+  it('propagates finishReason stop from terminal chunk to ProcessedOutput', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({ content: 'hi', done: true, finishReason: 'stop' as FinishReason });
+    expect(result.finishReason).toBe('stop');
+  });
+
+  it('propagates finishReason tool-calls from terminal chunk', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['search']) });
+    const result = processor.process({ content: '', done: true, finishReason: 'tool-calls' as FinishReason });
+    expect(result.finishReason).toBe('tool-calls');
+  });
+
+  it('propagates finishReason length from terminal chunk', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({ content: 'truncated', done: true, finishReason: 'length' as FinishReason });
+    expect(result.finishReason).toBe('length');
+  });
+
+  it('does not set finishReason when chunk has none', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({ content: 'hi', done: false });
+    expect(result.finishReason).toBeUndefined();
+  });
+
+  it('accumulates finishReason across multi-chunk stream — last chunk wins', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'Hello' });
+    processor.process({ content: ' world' });
+    const result = processor.process({ content: '!', done: true, finishReason: 'stop' as FinishReason });
+    expect(result.finishReason).toBe('stop');
+  });
+
+  it('flush() returns finishReason from last processed chunk', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'Hello', done: false });
+    processor.process({ content: ' world', done: true, finishReason: 'length' as FinishReason });
+    const result = processor.flush();
+    expect(result.finishReason).toBe('length');
+  });
+
+  it('reset() clears finishReason for next stream', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'hi', done: true, finishReason: 'stop' as FinishReason });
+    processor.reset();
+    const result = processor.flush();
+    expect(result.finishReason).toBeUndefined();
+  });
+
+  it('emits tool_call parts with state input-complete', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['get_weather']) });
+    // Feed a complete native tool call via nativeToolCallDeltas (id+name header, then arguments done)
+    processor.process({
+      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'get_weather' }],
+    });
+    const result = processor.process({
+      done: true,
+      nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"city":"NYC"}' }],
+      finishReason: 'tool-calls' as FinishReason,
+    });
+    const toolCallPart = result.parts.find(p => p.type === 'tool_call');
+    expect(toolCallPart).toBeDefined();
+
+    if (!toolCallPart) {
+      throw new Error('Expected tool_call part');
+    }
+
+    expect(toolCallPart.state).toBe('input-complete');
+    expect(toolCallPart.call.id).toBe('call_abc');
+  });
+});
+
+describe('Phase 1 — type exports', () => {
+  it('FinishReason and ToolCallState are valid type-level exports from tool-calls', async () => {
+    const mod = await import('../tool-calls/index.js');
+    // Types-only check: the module should export without error
+    expect(mod).toBeDefined();
+  });
+
+  it('FinishReason values cover expected string literals', () => {
+    const values: FinishReason[] = ['stop', 'length', 'tool-calls', 'content-filter', 'other', 'error'];
+    expect(values).toHaveLength(6);
+  });
+});
+
+describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
+  it('emits tool_call_delta parts for each nativeToolCallDelta with argumentsDelta', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const deltaParts: ReturnType<typeof processor.process>['parts'] = [];
+
+    processor.on('tool_call_delta', delta => deltaParts.push(delta));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_1', name: 'get_weather' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"city":' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '"NYC"}' }] });
+    processor.process({ done: true, finishReason: 'tool-calls' });
+
+    expect(deltaParts).toHaveLength(2);
+    expect(deltaParts[0]).toMatchObject({ type: 'tool_call_delta', name: 'get_weather', argumentsDelta: '{"city":' });
+    expect(deltaParts[1]).toMatchObject({ type: 'tool_call_delta', name: 'get_weather', argumentsDelta: '"NYC"}' });
+  });
+
+  it('tool_call_delta part includes id from header delta', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const output = processor.process({
+      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }],
+    });
+
+    const deltaPart = output.parts.find(p => p.type === 'tool_call_delta');
+    expect(deltaPart).toBeDefined();
+    expect(deltaPart).toMatchObject({ type: 'tool_call_delta', id: 'call_abc', name: 'fn', argumentsDelta: '{}' });
+  });
+
+  it('tool_call_delta part resolves name from accumulator for subsequent deltas', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'search' }] });
+    const out = processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"q":"ts"}' }] });
+
+    const deltaPart = out.parts.find(p => p.type === 'tool_call_delta');
+    expect(deltaPart).toMatchObject({ type: 'tool_call_delta', name: 'search', argumentsDelta: '{"q":"ts"}' });
+  });
+
+  it('emits completed native call mid-stream before done: true', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const toolCalls: string[] = [];
+    processor.on('tool_call', call => toolCalls.push(call.name));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'lookup', argumentsDelta: '{}' }] });
+    // Arguments are now valid JSON — mid-stream completion should fire tool_call
+    expect(toolCalls).toHaveLength(1);
+    expect(toolCalls[0]).toBe('lookup');
+
+    // done: true should NOT re-emit the same call
+    processor.process({ done: true, finishReason: 'tool-calls' });
+    expect(toolCalls).toHaveLength(1);
+  });
+
+  it('does not duplicate tool_call emission when call completed mid-stream', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const toolCalls: string[] = [];
+    processor.on('tool_call', call => toolCalls.push(call.name));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"a":1}' }] });
+    processor.process({ done: true, finishReason: 'tool-calls' });
+
+    expect(toolCalls).toHaveLength(1);
+  });
+
+  it('tool_call_delta event fires on processor.on("tool_call_delta")', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const fired: string[] = [];
+    processor.on('tool_call_delta', delta => fired.push(delta.argumentsDelta));
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{"x":' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '1}' }] });
+
+    expect(fired).toEqual(['{"x":', '1}']);
+  });
+
+  it('reset() clears emitted call index tracking so same index can be reused', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const toolCalls: string[] = [];
+    processor.on('tool_call', call => toolCalls.push(call.name));
+
+    // First stream
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn', argumentsDelta: '{}' }] });
+    expect(toolCalls).toHaveLength(1);
+
+    // Reset and second stream using same index
+    processor.reset();
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn2', argumentsDelta: '{}' }] });
+    expect(toolCalls).toHaveLength(2);
+    expect(toolCalls[1]).toBe('fn2');
   });
 });

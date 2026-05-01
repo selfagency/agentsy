@@ -688,6 +688,208 @@ for await (const chunk of apiStream) {
 await adapter.end();
 ```
 
+## Agent Loops
+
+> **Subpath**: `@selfagency/llm-stream-parser/agent`
+
+Execute multi-step reasoning loops with automatic tool handling and configurable stopping conditions.
+
+### createAgentLoop
+
+```typescript
+export interface AgentLoopOptions {
+  /** Caller-supplied LLM invocation. Receives current message history, returns a stream of chunks. */
+  execute: (messages: unknown[]) => AsyncIterable<StreamChunk>;
+
+  /** Stop condition(s) evaluated after every step. Loop continues only when ALL conditions return false. */
+  stopWhen: StopCondition | StopCondition[];
+
+  /** Optional callback fired after each completed step. */
+  onStep?: (result: StepResult) => void | Promise<void>;
+
+  /** Hard cap on loop iterations. Defaults to 20. */
+  maxSteps?: number;
+
+  /** Maximum conversation messages to retain. Older messages are trimmed. Defaults to unlimited. */
+  maxConversationMessages?: number;
+
+  /** Caller-supplied function that transforms completed tool calls into messages to append. */
+  buildToolResultMessages: (toolCalls: XmlToolCall[]) => Promise<unknown[]>;
+}
+
+export interface AgentLoopHandle {
+  /** Async generator that yields OutputParts across all steps until the loop terminates. */
+  run: (initialMessages: unknown[]) => AsyncGenerator<OutputPart>;
+
+  /** Abort the running loop. No further parts are emitted after abort is called. */
+  abort: () => void;
+}
+
+function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle;
+```
+
+**Example:**
+
+```typescript
+import { createAgentLoop } from '@selfagency/llm-stream-parser/agent';
+
+const agent = createAgentLoop({
+  execute: async function* (messages) {
+    const response = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ messages }) });
+    for await (const chunk of response.body) {
+      yield { content: chunk.toString(), done: false };
+    }
+  },
+
+  stopWhen: [
+    // Stop if no tool calls were made
+    state => state.lastOutput.toolCalls.length === 0,
+    // Stop after 5 steps
+    state => state.steps.length >= 5,
+  ],
+
+  buildToolResultMessages: async toolCalls => {
+    return toolCalls.map(call => ({
+      role: 'user',
+      content: `Tool "${call.name}" result: success`,
+    }));
+  },
+
+  onStep: async result => {
+    console.log(`Step ${result.output.done ? 'done' : 'continuing'}`);
+  },
+});
+
+// Run the loop
+for await (const part of agent.run([{ role: 'user', content: 'Task...' }])) {
+  if (part.type === 'text') console.log(part.text);
+}
+```
+
+## VS Code Chat Integration
+
+> **Subpath**: `@selfagency/llm-stream-parser/renderers/vscode`
+
+Stream LLM responses directly to VS Code's Chat interface with built-in support for thinking blocks, tool invocations, and token usage.
+
+### createVSCodeChatRenderer
+
+```typescript
+export interface ChatResponseStream {
+  markdown(text: string): void;
+  progress(text: string): void;
+  anchor(value: string, title?: string): void;
+  reference(value: string, iconPath?: string): void;
+  button(options: { title: string; command: string; arguments?: unknown[] }): void;
+  filetree(fileStructure: unknown, options?: { selectionHandle?: string }): void;
+
+  // Proposed APIs (capability-detected)
+  thinkingProgress?(title: string): void;
+  beginToolInvocation?(toolName: string, toolCallId: string): void;
+  updateToolInvocation?(toolCallId: string, result: unknown): void;
+  usage?(options: { input_tokens: number; output_tokens: number }): void;
+}
+
+export interface VSCodeChatRendererOptions {
+  stream: ChatResponseStream;
+  showThinking?: boolean; // Default: false
+  thinkingStyle?: 'blockquote' | 'progress' | 'suppress'; // Default: 'blockquote'
+
+  onToolCall?: (call: XmlToolCall) => void | Promise<void>;
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
+  onError?: (error: Error) => void;
+}
+
+function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererHandle;
+```
+
+**Example:**
+
+```typescript
+import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+const renderer = createVSCodeChatRenderer({
+  stream,
+  showThinking: true,
+  thinkingStyle: 'blockquote',
+  onToolCall: async call => {
+    console.log(`Tool: ${call.name}`);
+    // Execute tool and return results to renderer
+  },
+});
+
+for await (const chunk of llmStream) {
+  await renderer.writeChunk(chunk);
+}
+await renderer.end();
+```
+
+### createVSCodeAgentLoop
+
+Specialized factory optimized for multi-step agent reasoning with thinking enabled by default.
+
+```typescript
+export interface VSCodeAgentLoopOptions extends VSCodeChatRendererOptions {
+  // All VSCodeChatRendererOptions apply
+  // showThinking defaults to true for agent loops
+}
+
+function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions): RendererHandle;
+```
+
+**Example:**
+
+```typescript
+import { createVSCodeAgentLoop } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+const renderer = createVSCodeAgentLoop({
+  stream, // Thinking enabled by default for agent reasoning
+  thinkingStyle: 'blockquote',
+});
+```
+
+### cancellationTokenToAbortSignal
+
+Bridge VS Code's `CancellationToken` to Web `AbortSignal` for fetch operations.
+
+```typescript
+interface CancellationToken {
+  isCancellationRequested: boolean;
+  onCancellationRequested(listener: () => void): { dispose(): void };
+}
+
+function cancellationTokenToAbortSignal(token: CancellationToken): AbortSignal;
+```
+
+**Example:**
+
+```typescript
+import { cancellationTokenToAbortSignal } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+// In VS Code command handler
+export async function chatCommand(
+  request: vscode.ChatRequest,
+  stream: vscode.ChatResponseStream,
+  token: vscode.CancellationToken,
+) {
+  const signal = cancellationTokenToAbortSignal(token);
+
+  const response = await fetch('https://api.example.com/chat', {
+    signal, // Automatically aborts if VS Code cancels
+    body: JSON.stringify({ messages: request.prompt }),
+  });
+
+  const renderer = createVSCodeChatRenderer({ stream });
+
+  for await (const chunk of response.body) {
+    if (token.isCancellationRequested) break;
+    await renderer.writeChunk(chunk);
+  }
+
+  await renderer.end();
+}
+```
+
 ## Error Handling
 
 All parsing functions handle errors gracefully:

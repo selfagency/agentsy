@@ -1,18 +1,50 @@
 import { appendToBlockquote } from '../markdown/appendToBlockquote.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { UsageInfo } from '../normalizers/types.js';
 import type { LLMStreamProcessor, StreamChunk } from '../processor/LLMStreamProcessor.js';
+import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { FinishReason } from '../tool-calls/types.js';
 
+/**
+ * @deprecated Use `createVSCodeChatRenderer` from `@selfagency/llm-stream-parser/renderers/vscode` instead.
+ * This legacy adapter is limited to markdown output and does not support the full VS Code Chat API.
+ * The new renderer provides:
+ * - Full ChatResponseStream API (anchor, reference, button, filetree, etc.)
+ * - Proposed API support (thinking progress, tool invocation, usage reporting)
+ * - Capability detection for graceful fallback on older VS Code versions
+ * - Better agent loop integration via `createVSCodeAgentLoop`
+ *
+ * @example
+ * ```typescript
+ * // OLD (deprecated):
+ * const adapter = createVSCodeCopilotAdapter({ stream, processor, ... });
+ *
+ * // NEW (recommended):
+ * import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+ * const renderer = createVSCodeChatRenderer({ stream, processor, ... });
+ * ```
+ */
+// oxlint-disable-next-line no-deprecated
 export interface VSCodeChatStream {
   markdown(text: string): void | Promise<void>;
 }
 
+/**
+ * @deprecated Use `VSCodeChatRendererOptions` from `createVSCodeChatRenderer` instead.
+ */
+// oxlint-disable-next-line no-deprecated
 export interface VSCodeCopilotAdapterOptions {
   processor: LLMStreamProcessor;
   stream: VSCodeChatStream;
   onToolCall: (call: XmlToolCall) => void | Promise<void>;
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
   showThinking?: boolean;
 }
 
+/**
+ * @deprecated Use `createVSCodeChatRenderer` from `@selfagency/llm-stream-parser/renderers/vscode` instead.
+ * This adapter is maintained for backward compatibility only and will be removed in a future major version.
+ */
+// oxlint-disable-next-line no-deprecated
 export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions): {
   write(chunk: StreamChunk): Promise<void>;
   end(): Promise<void>;
@@ -55,6 +87,11 @@ export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions)
   return {
     async write(chunk: StreamChunk): Promise<void> {
       await emit(options.processor.process(chunk));
+
+      // Fire onFinish callback if stream is done
+      if (chunk.done === true && options.onFinish) {
+        await options.onFinish(chunk.finishReason, chunk.usage);
+      }
     },
     async end(): Promise<void> {
       await emit(options.processor.flush());

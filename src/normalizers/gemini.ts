@@ -1,5 +1,16 @@
+import type { FinishReason } from '../tool-calls/types.js';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 import { isObject, toNumber } from './utils.js';
+
+function mapGeminiFinishReason(reason: string | null): FinishReason | undefined {
+  if (!reason) return undefined;
+  if (reason === 'STOP') return 'stop';
+  if (reason === 'MAX_TOKENS') return 'length';
+  if (reason === 'SAFETY' || reason === 'RECITATION' || reason === 'PROHIBITED_CONTENT' || reason === 'SPII')
+    return 'content-filter';
+  if (reason === 'MALFORMED_FUNCTION_CALL') return 'other';
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Normalizer for Google Gemini generateContent streaming chunks
@@ -101,6 +112,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
     const content = candidate['content'];
     const finishReason = typeof candidate['finishReason'] === 'string' ? candidate['finishReason'] : null;
     const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
+    const mappedFinishReason = mapGeminiFinishReason(finishReason);
 
     const parts = isObject(content) && Array.isArray(content.parts) ? (content.parts as unknown[]) : [];
     const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
@@ -112,6 +124,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
       ...(done !== undefined && { done }),
       ...(nativeToolCallList.length > 0 && { nativeToolCallDeltas: nativeToolCallList }),
       ...(usage !== undefined && { usage }),
+      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
     };
 
     return { chunk, rawEvent: raw };

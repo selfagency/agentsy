@@ -149,6 +149,78 @@ console.log('Content:', message.content);
 console.log('Tool calls:', message.toolCalls);
 ```
 
+### Run a multi-step agent loop
+
+```typescript
+import { createAgentLoop } from '@selfagency/llm-stream-parser/agent';
+
+const agent = createAgentLoop({
+  // Your LLM invocation function
+  execute: async function* (messages) {
+    const response = await fetch('https://api.example.com/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    });
+
+    for await (const chunk of response.body) {
+      yield { content: chunk.toString(), done: false };
+    }
+  },
+
+  // Stop when we have a final answer or after 5 steps
+  stopWhen: [
+    state => state.lastOutput.toolCalls.length === 0, // No more tool calls
+    state => state.steps.length >= 5, // Max steps reached
+  ],
+
+  // Convert tool results back to messages
+  buildToolResultMessages: async toolCalls => {
+    return toolCalls.map(call => ({
+      role: 'user',
+      content: `Tool "${call.name}" executed successfully`,
+    }));
+  },
+});
+
+// Execute the agent
+const messages = [{ role: 'user', content: 'Search for the latest AI news' }];
+
+for await (const part of agent.run(messages)) {
+  if (part.type === 'text') console.log('Content:', part.text);
+  if (part.type === 'thinking') console.log('Thinking:', part.text);
+  if (part.type === 'tool_call') console.log('Tool call:', part.call.name);
+}
+```
+
+### Render to VS Code Chat
+
+```typescript
+import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+// In your VS Code extension command
+export async function chatCommand(stream: vscode.ChatResponseStream) {
+  const renderer = createVSCodeChatRenderer({
+    stream,
+    showThinking: true,
+    thinkingStyle: 'blockquote', // Thinking appears as blockquote
+    onToolCall: async call => {
+      console.log(`Tool called: ${call.name}`);
+      // Execute tool and return results
+    },
+    onFinish: (finishReason, usage) => {
+      console.log('Chat finished. Reason:', finishReason, 'Usage:', usage);
+    },
+  });
+
+  // Stream LLM response
+  for await (const chunk of llmStream) {
+    await renderer.writeChunk(chunk);
+  }
+
+  await renderer.end();
+}
+```
+
 ### Use generic adapter for simpler integration
 
 ```typescript

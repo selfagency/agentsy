@@ -1,0 +1,313 @@
+import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
+import type { OutputPart, StreamChunk } from '../../processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
+import type { ToolCallState } from '../../tool-calls/types.js';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
+
+/**
+ * Structural interface matching VS Code's ChatResponseStream.
+ * Stable API methods are required; proposed API methods are optional (capability detection).
+ * Allows renderer to work with actual VS Code ChatResponseStream without hard dependency on vscode module.
+ */
+export interface ChatResponseStream {
+  /** Emit markdown content to the chat response. */
+  markdown(content: string): void;
+
+  /** Emit a progress indicator (e.g., for thinking blocks). */
+  progress(content: string): void;
+
+  /** Anchor to a file or symbol. */
+  anchor(
+    value:
+      | { scheme: string; path: string }
+      | {
+          uri: { scheme: string; path: string };
+          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+        },
+    title?: string,
+  ): void;
+
+  /** Reference a file, location, or variable. */
+  reference(
+    value:
+      | { scheme: string; path: string }
+      | {
+          uri: { scheme: string; path: string };
+          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+        }
+      | { variableName: string; value?: { scheme: string; path: string } },
+    iconPath?:
+      | { scheme: string; path: string }
+      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } },
+  ): void;
+
+  /** Emit a button that runs a command. */
+  button(command: { command: string; title: string; arguments?: unknown[] }): void;
+
+  /** Emit a file tree. */
+  filetree(value: Array<{ name: string; children?: unknown[] }>, baseUri: { scheme: string; path: string }): void;
+
+  /** Push a response part (stable or proposed). */
+  push?(part: unknown): void;
+
+  // Proposed API methods (optional, capability-detection pattern)
+
+  /** Emit thinking progress (proposed API). */
+  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
+
+  /** Begin a tool invocation (proposed API). */
+  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
+
+  /** Update a tool invocation (proposed API). */
+  updateToolInvocation?(toolCallId: string, streamData: unknown): void;
+
+  /** Report token usage (proposed API). */
+  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
+}
+
+/**
+ * Options for the VS Code chat renderer.
+ */
+export interface VSCodeChatRendererOptions extends BaseRendererOptions {
+  /** VS Code ChatResponseStream instance. Required. */
+  stream: ChatResponseStream;
+
+  /** How to render thinking blocks. Default: 'blockquote'. */
+  thinkingStyle?: ThinkingStyle;
+}
+
+/**
+ * Create a VS Code extension chat renderer that streams markdown content
+ * to a ChatResponseStream with support for thinking blocks and tool call callbacks.
+ *
+ * This renderer integrates with VS Code's chat interface, sending markdown
+ * content incrementally as it arrives from the LLM. Thinking blocks can be
+ * rendered as either blockquotes or progress indicators.
+ *
+ * @param options - Configuration options (stream required)
+ * @returns A renderer handle with `write()` and `end()` methods
+ *
+ * @example
+ * ```typescript
+ * import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+ *
+ * const renderer = createVSCodeChatRenderer({
+ *   stream, // ChatResponseStream from VS Code
+ *   showThinking: true,
+ *   thinkingStyle: 'progress',
+ * });
+ *
+ * await renderer.write('# Response\n\n');
+ * await renderer.write('Some content here');
+ * await renderer.end();
+ * ```
+ */
+export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererHandle {
+  const {
+    stream,
+    showThinking = false,
+    thinkingStyle = 'blockquote',
+    processor,
+    onError,
+    onToolCall,
+    onToolCallDelta,
+    onFinish,
+  } = options;
+
+  if (!stream) {
+    throw new Error('ChatResponseStream is required for VS Code chat renderer');
+  }
+
+  // Create processor if not provided (owns it internally)
+  const llmProcessor = processor || new LLMStreamProcessor();
+
+  // Guard flag to prevent double onFinish callback invocation
+  let finished = false;
+
+  let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
+  let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
+
+  /**
+   * Handle thinking part: stream based on configured style.
+   * @internal
+   */
+  function handleThinkingPart(text: string): void {
+    if (!showThinking || thinkingStyle === 'suppress') {
+      return;
+    }
+
+    if (stream.thinkingProgress) {
+      stream.thinkingProgress({ text, id: 'thinking' });
+    } else if (thinkingStyle === 'progress') {
+      stream.progress(text);
+    } else {
+      // Blockquote style with proper multi-line support
+      if (!blockquoteThinkingStarted) {
+        stream.markdown('\n\n> 💭 **Thinking**\n>\n');
+        blockquoteThinkingStarted = true;
+        blockquoteNeedsPrefix = true;
+      }
+
+      // Emit blockquote-formatted content, tracking if text ends with newline
+      const blockquoteContent = appendToBlockquote(text, blockquoteNeedsPrefix);
+      stream.markdown(blockquoteContent);
+
+      // Next chunk needs prefix if current text ends with newline
+      blockquoteNeedsPrefix = text.endsWith('\n');
+    }
+  }
+
+  /**
+   * Handle completion: fire callbacks and close blockquote on stream end.
+   * @internal
+   */
+  async function handleCompletion(done: boolean | undefined, finishReason: unknown, usage: unknown): Promise<void> {
+    if (!done) return;
+
+    // Fire onFinish callback if stream is done (guard against double invocation)
+    if (!finished && onFinish) {
+      finished = true;
+      await onFinish(finishReason as Parameters<typeof onFinish>[0], usage as Parameters<typeof onFinish>[1]);
+    }
+
+    // Capability detection: report usage if available
+    if (usage && stream.usage) {
+      const usageInfo = usage as { inputTokens?: number; outputTokens?: number };
+      stream.usage({
+        promptTokens: usageInfo.inputTokens ?? 0,
+        completionTokens: usageInfo.outputTokens ?? 0,
+      });
+    }
+
+    // Close blockquote if stream ended and we were in blockquote thinking mode
+    if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
+      stream.markdown('\n\n');
+      blockquoteThinkingStarted = false;
+    }
+  }
+
+  /**
+   * Handle text part rendering.
+   * @internal
+   */
+  function handleTextPartRendering(part: { type: 'text'; text: string }): void {
+    if (typeof part.text === 'string') {
+      stream.markdown(part.text);
+    }
+  }
+
+  /**
+   * Handle thinking part rendering.
+   * @internal
+   */
+  function handleThinkingPartRendering(part: { type: 'thinking'; text: string }): void {
+    if (typeof part.text === 'string') {
+      handleThinkingPart(part.text);
+    }
+  }
+
+  /**
+   * Handle tool call part rendering and callbacks.
+   * @internal
+   */
+  function handleToolCallPartRendering(part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }): void {
+    if (onToolCall) {
+      onToolCall({ type: 'tool_call', call: part.call });
+    }
+    if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
+      stream.beginToolInvocation(part.call.id, part.call.name);
+    }
+  }
+
+  /**
+   * Handle tool call delta part rendering and updates.
+   * @internal
+   */
+  function handleToolCallDeltaPartRendering(part: {
+    type: 'tool_call_delta';
+    id?: string;
+    name: string;
+    argumentsDelta: string;
+    index: number;
+  }): void {
+    if (onToolCallDelta) {
+      onToolCallDelta(part);
+    }
+    if (stream.updateToolInvocation && typeof part.id === 'string') {
+      stream.updateToolInvocation(part.id, part as OutputPart);
+    }
+  }
+
+  /**
+   * Process all parts from output, dispatching to appropriate handlers.
+   * @internal
+   */
+  function processParts(parts: OutputPart[]): void {
+    for (const part of parts) {
+      switch (part.type) {
+        case 'text':
+          handleTextPartRendering(part as { type: 'text'; text: string });
+          break;
+        case 'thinking':
+          handleThinkingPartRendering(part as { type: 'thinking'; text: string });
+          break;
+        case 'tool_call':
+          handleToolCallPartRendering(part as { type: 'tool_call'; call: XmlToolCall; state: ToolCallState });
+          break;
+        case 'tool_call_delta':
+          handleToolCallDeltaPartRendering(
+            part as { type: 'tool_call_delta'; id?: string; name: string; argumentsDelta: string; index: number },
+          );
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  return {
+    async write(chunk: string): Promise<void> {
+      try {
+        const result = llmProcessor.process({ content: chunk });
+        processParts(result.parts);
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async writeChunk(chunk: StreamChunk): Promise<void> {
+      try {
+        const result = llmProcessor.process(chunk);
+        processParts(result.parts);
+        await handleCompletion(chunk.done, chunk.finishReason, chunk.usage);
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async end(): Promise<void> {
+      let result: ReturnType<typeof llmProcessor.flush> | undefined;
+      try {
+        result = llmProcessor.flush();
+        processParts(result.parts);
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+
+      await handleCompletion(result?.done, result?.finishReason, result?.usage);
+    },
+  };
+}

@@ -1,4 +1,15 @@
+import type { FinishReason } from '../tool-calls/types.js';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+
+function mapBedrockStopReason(reason: string | undefined): FinishReason | undefined {
+  if (!reason) return undefined;
+  if (reason === 'end_turn') return 'stop';
+  if (reason === 'tool_use') return 'tool-calls';
+  if (reason === 'max_tokens') return 'length';
+  if (reason === 'stop_sequence') return 'stop';
+  if (reason === 'guardrail_intervened' || reason === 'content_filtered') return 'content-filter';
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Internal shape types (SDK-deserialized ConverseStream event union)
@@ -129,7 +140,11 @@ export function normalizeBedrockConverseEvent(raw: unknown): NormalizerResult | 
 
     if (raw.contentBlockDelta) return handleBedrockContentBlockDelta(raw);
     if (raw.contentBlockStart) return handleBedrockContentBlockStart(raw);
-    if (raw.messageStop) return { chunk: { done: true }, rawEvent: raw };
+    if (raw.messageStop) {
+      const stopReason = typeof raw.messageStop.stopReason === 'string' ? raw.messageStop.stopReason : undefined;
+      const finishReason = mapBedrockStopReason(stopReason);
+      return { chunk: { done: true, ...(finishReason !== undefined && { finishReason }) }, rawEvent: raw };
+    }
     if (raw.metadata) return handleBedrockMetadata(raw);
 
     // messageStart, contentBlockStop → no actionable content

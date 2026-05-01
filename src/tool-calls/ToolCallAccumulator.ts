@@ -78,6 +78,52 @@ export class ToolCallAccumulator {
     return result;
   }
 
+  /**
+   * Returns calls whose accumulated argument buffer is valid JSON, together with their
+   * numeric `index` within this accumulator. Does NOT remove them from the accumulator
+   * — call `removeCall(index)` on each one after emitting mid-stream to prevent
+   * double-emission at `flush()` time.
+   */
+  public getCompletedCallsWithIndices(): Array<{ index: number; call: NativeToolCall }> {
+    const result: Array<{ index: number; call: NativeToolCall }> = [];
+    for (const [index, pending] of this.calls.entries()) {
+      if (!pending.name) continue;
+      try {
+        const parsed = JSON.parse(pending.argumentsBuffer);
+        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          const call: NativeToolCall = { name: pending.name, arguments: parsed as Record<string, unknown> };
+          if (pending.id !== undefined) call.id = pending.id;
+          result.push({ index, call });
+        }
+      } catch {
+        // Not yet complete.
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Removes the pending call at the given `index`. Call this after emitting a mid-stream
+   * completed call so that `flush()` does not re-emit it.
+   */
+  public removeCall(index: number): void {
+    this.calls.delete(index);
+  }
+
+  /**
+   * Returns the `name` and `id` accumulated so far for the call at the given `index`.
+   * Useful for building `tool_call_delta` OutputParts for deltas that arrive after
+   * the initial header delta (which carries the name/id).
+   */
+  public getPendingCallInfo(index: number): { name?: string; id?: string } | undefined {
+    const pending = this.calls.get(index);
+    if (pending === undefined) return undefined;
+    const result: { name?: string; id?: string } = {};
+    if (pending.name !== undefined) result.name = pending.name;
+    if (pending.id !== undefined) result.id = pending.id;
+    return result;
+  }
+
   private _flushPendingCall(pending: PendingCall): NativeToolCall | null {
     if (!pending.name) return null;
 

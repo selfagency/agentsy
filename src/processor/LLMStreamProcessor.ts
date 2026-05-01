@@ -2,6 +2,7 @@ import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
@@ -17,6 +18,8 @@ export interface StreamChunk {
   usage?: UsageInfo;
   /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
   nativeToolCallDeltas?: NativeToolCallDelta[];
+  /** Why the stream ended, populated on the final chunk. */
+  finishReason?: FinishReason;
 }
 
 /** Configuration options for `LLMStreamProcessor`. */
@@ -77,13 +80,20 @@ export interface ProcessorOptions {
   maxResidualBytes?: number;
   /** Maximum number of warnings emitted per processor lifetime. Default: 100. Set to 0 to disable. */
   maxWarnings?: number;
+  /**
+   * Optional chain of `TransformStream<OutputPart, OutputPart>` transforms applied to
+   * `processor.partsStream`. Each transform receives the output of the previous one.
+   * Does not affect the synchronous `process()` / `flush()` API.
+   */
+  transforms?: TransformStream<OutputPart, OutputPart>[];
 }
 
 /** A discriminated-union part of a `ProcessedOutput`, enabling structured iteration over output. */
 export type OutputPart =
   | { type: 'text'; text: string }
   | { type: 'thinking'; text: string }
-  | { type: 'tool_call'; call: XmlToolCall };
+  | { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }
+  | { type: 'tool_call_delta'; id?: string; name: string; argumentsDelta: string; index: number };
 
 /** Category of an incompleteness condition detected at stream end. */
 export type IncompletenessType = 'thinking' | 'xml' | 'tool_calls';
@@ -98,6 +108,8 @@ export interface IncompletenessDetail {
 export interface ProcessedOutput {
   thinking: string;
   content: string;
+  /** Why the stream ended; `undefined` while the stream is still in progress. */
+  finishReason?: FinishReason;
   toolCalls: XmlToolCall[];
   done: boolean;
   parts: OutputPart[];
@@ -113,6 +125,8 @@ export type StreamEventMap = {
   text: (delta: string) => void;
   thinking: (delta: string) => void;
   tool_call: (call: XmlToolCall) => void;
+  /** Emitted for each streaming argument delta while a native tool call is assembling. */
+  tool_call_delta: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
   done: () => void;
   warning: (message: string, context?: Record<string, unknown>) => void;
   /** Emitted each time a chunk carrying `usage` data is processed. */
@@ -155,9 +169,12 @@ export class LLMStreamProcessor {
   private _accumulatedContent = '';
   private _accumulatedToolCalls: XmlToolCall[] = [];
   private _accumulatedUsage: UsageInfo | undefined = undefined;
+  private _lastFinishReason: FinishReason | undefined = undefined;
   private doneEmitted = false;
   private _warningCount = 0;
   private _stats: ProcessorStats;
+  /** Tracks which accumulator indices have been emitted mid-stream to avoid double-emission at flush. */
+  private readonly _midStreamEmittedCallIndices = new Set<number>();
   // Accumulate filtered XML fragments returned by the XmlStreamFilter so
   // that tool-call blocks spanning multiple chunks can be reconstructed and
   // extracted when they become complete.
@@ -166,6 +183,10 @@ export class LLMStreamProcessor {
   // reconstruction of tool_call blocks that were split across chunks
   // even when the xmlFilter will scrub those tags.
   private _rawResidual = '';
+
+  private _partsController: ReadableStreamDefaultController<OutputPart> | null = null;
+  private _partsSource: ReadableStream<OutputPart>;
+  private _cachedPartsStream: ReadableStream<OutputPart> | null = null;
 
   private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
     if (this._accumulatedUsage !== undefined) {
@@ -180,6 +201,7 @@ export class LLMStreamProcessor {
     text: new Set(),
     thinking: new Set(),
     tool_call: new Set(),
+    tool_call_delta: new Set(),
     done: new Set(),
     warning: new Set(),
     usage: new Set(),
@@ -197,6 +219,40 @@ export class LLMStreamProcessor {
     this.xmlFilter = this.createXmlFilter();
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
     this._stats = createEmptyStats();
+    this._partsSource = new ReadableStream<OutputPart>({
+      start: controller => {
+        this._partsController = controller;
+      },
+    });
+  }
+
+  /**
+   * A `ReadableStream<OutputPart>` that emits every part produced by `process()` and `flush()`.
+   *
+   * If `transforms` were supplied in the constructor options, the stream is the result of
+   * chaining each transform via `pipeThrough()`. The stream is closed automatically after
+   * the first chunk with `done: true` is processed, or when `reset()` is called.
+   *
+   * **Note on stream completion**: Consumers should not assume the stream closes immediately
+   * after processing a chunk with `done: true`. The stream is closed when the processor is
+   * explicitly reset or destroyed. Call `reset()` or rely on the processor lifecycle methods
+   * to properly complete and reuse the stream.
+   *
+   * Note: the stream may only be read once; subsequent accesses return the cached stream.
+   */
+  public get partsStream(): ReadableStream<OutputPart> {
+    // Cache the stream to prevent multiple locks on the same stream
+    if (this._cachedPartsStream !== null) {
+      return this._cachedPartsStream;
+    }
+
+    const transforms = this.options.transforms ?? [];
+    this._cachedPartsStream = transforms.reduce<ReadableStream<OutputPart>>(
+      (stream, transform) => stream.pipeThrough(transform),
+      this._partsSource,
+    );
+
+    return this._cachedPartsStream;
   }
 
   /**
@@ -339,17 +395,51 @@ export class LLMStreamProcessor {
     for (const c of extractedFromFiltered) pushUnique(c);
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const done = chunk.done === true;
+    if (chunk.finishReason !== undefined) this._lastFinishReason = chunk.finishReason;
 
     this.accumulateUsage(chunk);
     this.accumulateNativeDeltas(chunk);
 
-    // On stream end, flush the accumulator and include assembled calls.
+    // Build tool_call_delta OutputParts for each incoming delta with argumentsDelta.
+    const toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>> = [];
+    if (this.nativeAccumulator && Array.isArray(chunk.nativeToolCallDeltas)) {
+      for (const delta of chunk.nativeToolCallDeltas) {
+        if (typeof delta.argumentsDelta !== 'string') continue;
+        const pending = this.nativeAccumulator.getPendingCallInfo(delta.index);
+        const name = delta.name ?? pending?.name;
+        if (!name) continue;
+        const id = delta.id ?? pending?.id;
+        const part: Extract<OutputPart, { type: 'tool_call_delta' }> = {
+          type: 'tool_call_delta',
+          index: delta.index,
+          name,
+          argumentsDelta: delta.argumentsDelta,
+          ...(id === undefined ? {} : { id }),
+        };
+        toolCallDeltas.push(part);
+      }
+    }
+
+    // Emit completed native calls mid-stream — no need to wait for done: true.
+    const midStreamCalls: XmlToolCall[] = [];
+    if (this.nativeAccumulator) {
+      for (const { index, call } of this.nativeAccumulator.getCompletedCallsWithIndices()) {
+        if (!this._midStreamEmittedCallIndices.has(index)) {
+          this._midStreamEmittedCallIndices.add(index);
+          this.nativeAccumulator.removeCall(index);
+          midStreamCalls.push(...this.mapAccumulatedNativeCalls([call]));
+        }
+      }
+    }
+
+    // On stream end, flush any remaining incomplete calls via JSON repair.
     const accumulatedNativeCalls: XmlToolCall[] =
       done && this.nativeAccumulator ? this.mapAccumulatedNativeCalls(this.nativeAccumulator.flush()) : [];
 
     const toolCalls = this.enforceToolCallLimits([
       ...extractedXmlToolCalls,
       ...nativeToolCalls,
+      ...midStreamCalls,
       ...accumulatedNativeCalls,
     ]);
 
@@ -360,7 +450,9 @@ export class LLMStreamProcessor {
       thinking,
       content,
       toolCalls,
+      ...(toolCallDeltas.length > 0 ? { toolCallDeltas } : {}),
       done,
+      ...(done && this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
       ...this.usagePayload,
     });
     this.recordOutput(output);
@@ -438,6 +530,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done: true,
+      ...(this._lastFinishReason === undefined ? {} : { finishReason: this._lastFinishReason }),
       ...this.usagePayload,
     });
 
@@ -453,6 +546,8 @@ export class LLMStreamProcessor {
 
     this.recordOutput(output);
     this.emitOutput(output);
+    this._partsController?.close();
+    this._partsController = null;
     return output;
   }
 
@@ -491,9 +586,18 @@ export class LLMStreamProcessor {
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
     this._accumulatedUsage = undefined;
+    this._lastFinishReason = undefined;
     this.doneEmitted = false;
     this._warningCount = 0;
     this._stats = createEmptyStats();
+    this._midStreamEmittedCallIndices.clear();
+    this._partsController?.close();
+    this._partsController = null;
+    this._partsSource = new ReadableStream<OutputPart>({
+      start: controller => {
+        this._partsController = controller;
+      },
+    });
   }
 
   private createThinkingParser(): ThinkingParser | null {
@@ -579,10 +683,18 @@ export class LLMStreamProcessor {
     thinking: string;
     content: string;
     toolCalls: XmlToolCall[];
+    toolCallDeltas?: Array<Extract<OutputPart, { type: 'tool_call_delta' }>>;
     done: boolean;
     usage?: UsageInfo;
+    finishReason?: FinishReason;
   }): ProcessedOutput {
     const parts: OutputPart[] = [];
+
+    if (params.toolCallDeltas && params.toolCallDeltas.length > 0) {
+      for (const delta of params.toolCallDeltas) {
+        parts.push(delta);
+      }
+    }
 
     if (params.thinking) {
       parts.push({ type: 'thinking', text: params.thinking });
@@ -593,7 +705,7 @@ export class LLMStreamProcessor {
     }
 
     for (const call of params.toolCalls) {
-      parts.push({ type: 'tool_call', call });
+      parts.push({ type: 'tool_call', call, state: 'input-complete' });
     }
 
     const result: ProcessedOutput = {
@@ -607,6 +719,9 @@ export class LLMStreamProcessor {
     };
     if (params.usage !== undefined) {
       result.usage = params.usage;
+    }
+    if (params.finishReason !== undefined) {
+      result.finishReason = params.finishReason;
     }
     return result;
   }
@@ -628,6 +743,15 @@ export class LLMStreamProcessor {
   }
 
   private emitOutput(output: ProcessedOutput): void {
+    for (const part of output.parts) {
+      if (part.type === 'tool_call_delta') {
+        for (const listener of this.listeners.tool_call_delta) {
+          listener(part);
+        }
+      }
+      this._partsController?.enqueue(part);
+    }
+
     if (output.thinking) {
       for (const listener of this.listeners.thinking) {
         listener(output.thinking);
@@ -689,11 +813,15 @@ export class LLMStreamProcessor {
   private mapAccumulatedNativeCalls(
     calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[],
   ): XmlToolCall[] {
-    return calls.map(call => ({
-      name: call.name,
-      parameters: call.arguments,
-      format: 'native-json' as const,
-    }));
+    return calls.map(call => {
+      const mapped: XmlToolCall = {
+        name: call.name,
+        parameters: call.arguments,
+        format: 'native-json' as const,
+      };
+      if (call.id !== undefined) mapped.id = call.id;
+      return mapped;
+    });
   }
 
   private mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {

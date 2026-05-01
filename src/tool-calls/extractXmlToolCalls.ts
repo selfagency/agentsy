@@ -3,6 +3,8 @@ export interface XmlToolCall {
   parameters: Record<string, unknown>;
   /** How this tool call was encoded in the stream. */
   format: 'bare-xml' | 'json-wrapped' | 'native-json';
+  /** Provider-assigned call ID, present when the provider supplies one (e.g. OpenAI, Anthropic, Bedrock). */
+  id?: string;
 }
 
 function cleanXml(text: string): string {

@@ -1,4 +1,14 @@
+import type { FinishReason } from '../tool-calls/types.js';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+
+function mapCohereFinishReason(reason: string | undefined): FinishReason | undefined {
+  if (!reason) return undefined;
+  if (reason === 'COMPLETE' || reason === 'STOP_SEQUENCE') return 'stop';
+  if (reason === 'MAX_TOKENS') return 'length';
+  if (reason === 'TOOL_CALL') return 'tool-calls';
+  if (reason === 'ERROR' || reason === 'ERROR_LIMIT') return 'error';
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Internal shape types
@@ -107,10 +117,16 @@ export function normalizeCohereEvent(raw: unknown): NormalizerResult | null {
       }
 
       case 'message-end': {
-        const done = typeof delta?.finish_reason === 'string' ? true : undefined;
+        const finishReasonStr = typeof delta?.finish_reason === 'string' ? delta.finish_reason : undefined;
+        const done = finishReasonStr === undefined ? undefined : true;
+        const finishReason = mapCohereFinishReason(finishReasonStr);
         const usage = buildCohereUsage(delta);
         return {
-          chunk: { ...(done !== undefined && { done }), ...(usage !== undefined && { usage }) },
+          chunk: {
+            ...(done !== undefined && { done }),
+            ...(usage !== undefined && { usage }),
+            ...(finishReason !== undefined && { finishReason }),
+          },
           rawEvent: raw,
         };
       }

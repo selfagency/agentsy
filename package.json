@@ -112,6 +112,41 @@
       "types": "./dist/pipeline/index.d.ts",
       "import": "./dist/pipeline/index.js",
       "require": "./dist/pipeline/index.cjs"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js",
+      "require": "./dist/agent/index.cjs"
+    },
+    "./renderers": {
+      "types": "./dist/renderers/index.d.ts",
+      "import": "./dist/renderers/index.js",
+      "require": "./dist/renderers/index.cjs"
+    },
+    "./renderers/plain": {
+      "types": "./dist/renderers/plain/index.d.ts",
+      "import": "./dist/renderers/plain/index.js",
+      "require": "./dist/renderers/plain/index.cjs"
+    },
+    "./renderers/cli": {
+      "types": "./dist/renderers/cli/index.d.ts",
+      "import": "./dist/renderers/cli/index.js",
+      "require": "./dist/renderers/cli/index.cjs"
+    },
+    "./renderers/streaming-md": {
+      "types": "./dist/renderers/streaming-md/index.d.ts",
+      "import": "./dist/renderers/streaming-md/index.js",
+      "require": "./dist/renderers/streaming-md/index.cjs"
+    },
+    "./renderers/vscode": {
+      "types": "./dist/renderers/vscode/index.d.ts",
+      "import": "./dist/renderers/vscode/index.js",
+      "require": "./dist/renderers/vscode/index.cjs"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js",
+      "require": "./dist/ui/index.cjs"
     }
   },
   "scripts": {
@@ -142,5 +177,7 @@
     "vitest": "^4.1.5",
     "zx": "^8.8.5"
   },
+  "peerDependencies": {},
+  "peerDependenciesMeta": {},
   "packageManager": "pnpm@10.31.0"
 }
