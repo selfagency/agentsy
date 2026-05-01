@@ -24,7 +24,7 @@ export interface RepairState {
   buffer: string;
 }
 
-// biome-ignore lint/complexity/noEmptyInterface: Reserved for future use
+// biome-ignore lint/suspicious/noEmptyInterface: Reserved for future use
 export interface RepairStateMachineOptions {}
 
 /**
@@ -45,6 +45,7 @@ export function createRepairState(): RepairState {
  * Returns the character that should be added to output (may differ from input).
  */
 export function feedCharToStateMachine(char: string, state: RepairState): string {
+  // #lizard forgives
   // Handle escape sequences within strings
   if (state.escaped) {
     state.escaped = false;

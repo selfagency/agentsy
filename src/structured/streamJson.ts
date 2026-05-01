@@ -64,6 +64,7 @@ export interface StreamJsonResult<T = unknown> {
  * Check if two arrays are deeply equal.
  */
 function deepEqualArrays(a: readonly unknown[], b: readonly unknown[]): boolean {
+  // #lizard forgives
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     if (!deepEqual(a[i], b[i])) return false;

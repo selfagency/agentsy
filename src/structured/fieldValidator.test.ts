@@ -49,7 +49,7 @@ describe('fieldValidator', () => {
     });
 
     it('handles custom validators', () => {
-      // biome-ignore useQwikValidLexicalScope: legitimate usage
+      // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
       const customValidator = (value: unknown) => {
         if (typeof value === 'number' && value > 0) return true;
         return 'must be a positive number';
@@ -59,7 +59,7 @@ describe('fieldValidator', () => {
     });
 
     it('handles validator errors gracefully', () => {
-      // biome-ignore useQwikValidLexicalScope: legitimate usage
+      // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
       const throwingValidator = () => {
         throw new Error('Validation error');
       };

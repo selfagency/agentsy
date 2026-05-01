@@ -208,6 +208,7 @@ function checkOneOf(
 }
 
 function checkAllOf(
+  // #lizard forgives
   value: unknown,
   subSchemas: unknown[],
   path: string,

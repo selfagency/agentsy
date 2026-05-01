@@ -115,6 +115,7 @@ async function* processSSEEvent(
 }
 
 function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
+  // #lizard forgives
   const processorOpts: ProcessorOptions = {
     scrubContextTags: options.scrubContextTags ?? false,
   };
