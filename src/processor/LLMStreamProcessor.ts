@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
+import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
@@ -17,6 +18,8 @@ export interface StreamChunk {
   usage?: UsageInfo;
   /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
   nativeToolCallDeltas?: NativeToolCallDelta[];
+  /** Why the stream ended, populated on the final chunk. */
+  finishReason?: FinishReason;
 }
 
 /** Configuration options for `LLMStreamProcessor`. */
@@ -83,7 +86,8 @@ export interface ProcessorOptions {
 export type OutputPart =
   | { type: 'text'; text: string }
   | { type: 'thinking'; text: string }
-  | { type: 'tool_call'; call: XmlToolCall };
+  | { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }
+  | { type: 'tool_call_delta'; id: string; name: string; argumentsDelta: string; index: number };
 
 /** Category of an incompleteness condition detected at stream end. */
 export type IncompletenessType = 'thinking' | 'xml' | 'tool_calls';
@@ -98,6 +102,8 @@ export interface IncompletenessDetail {
 export interface ProcessedOutput {
   thinking: string;
   content: string;
+  /** Why the stream ended; `undefined` while the stream is still in progress. */
+  finishReason?: FinishReason;
   toolCalls: XmlToolCall[];
   done: boolean;
   parts: OutputPart[];
@@ -155,6 +161,7 @@ export class LLMStreamProcessor {
   private _accumulatedContent = '';
   private _accumulatedToolCalls: XmlToolCall[] = [];
   private _accumulatedUsage: UsageInfo | undefined = undefined;
+  private _lastFinishReason: FinishReason | undefined = undefined;
   private doneEmitted = false;
   private _warningCount = 0;
   private _stats: ProcessorStats;
@@ -339,6 +346,7 @@ export class LLMStreamProcessor {
     for (const c of extractedFromFiltered) pushUnique(c);
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
     const done = chunk.done === true;
+    if (chunk.finishReason !== undefined) this._lastFinishReason = chunk.finishReason;
 
     this.accumulateUsage(chunk);
     this.accumulateNativeDeltas(chunk);
@@ -361,6 +369,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done,
+      ...(done && this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
       ...this.usagePayload,
     });
     this.recordOutput(output);
@@ -438,6 +447,7 @@ export class LLMStreamProcessor {
       content,
       toolCalls,
       done: true,
+      ...(this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
       ...this.usagePayload,
     });
 
@@ -491,6 +501,7 @@ export class LLMStreamProcessor {
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
     this._accumulatedUsage = undefined;
+    this._lastFinishReason = undefined;
     this.doneEmitted = false;
     this._warningCount = 0;
     this._stats = createEmptyStats();
@@ -581,6 +592,7 @@ export class LLMStreamProcessor {
     toolCalls: XmlToolCall[];
     done: boolean;
     usage?: UsageInfo;
+    finishReason?: FinishReason;
   }): ProcessedOutput {
     const parts: OutputPart[] = [];
 
@@ -593,7 +605,7 @@ export class LLMStreamProcessor {
     }
 
     for (const call of params.toolCalls) {
-      parts.push({ type: 'tool_call', call });
+      parts.push({ type: 'tool_call', call, state: 'input-complete' });
     }
 
     const result: ProcessedOutput = {
@@ -607,6 +619,9 @@ export class LLMStreamProcessor {
     };
     if (params.usage !== undefined) {
       result.usage = params.usage;
+    }
+    if (params.finishReason !== undefined) {
+      result.finishReason = params.finishReason;
     }
     return result;
   }
@@ -689,11 +704,15 @@ export class LLMStreamProcessor {
   private mapAccumulatedNativeCalls(
     calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[],
   ): XmlToolCall[] {
-    return calls.map(call => ({
-      name: call.name,
-      parameters: call.arguments,
-      format: 'native-json' as const,
-    }));
+    return calls.map(call => {
+      const mapped: XmlToolCall = {
+        name: call.name,
+        parameters: call.arguments,
+        format: 'native-json' as const,
+      };
+      if (call.id !== undefined) mapped.id = call.id;
+      return mapped;
+    });
   }
 
   private mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {

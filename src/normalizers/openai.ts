@@ -1,4 +1,14 @@
+import type { FinishReason } from '../tool-calls/types.js';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+
+function mapOpenAIFinishReason(reason: string | null | undefined): FinishReason | undefined {
+  if (!reason) return undefined;
+  if (reason === 'stop') return 'stop';
+  if (reason === 'length') return 'length';
+  if (reason === 'tool_calls' || reason === 'function_call') return 'tool-calls';
+  if (reason === 'content_filter') return 'content-filter';
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Internal shape types (narrow enough for safe access without `any`)
@@ -90,6 +100,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
 
     const finishReason = choice?.finish_reason;
     const done = finishReason !== null && finishReason !== undefined ? true : undefined;
+    const mappedFinishReason = mapOpenAIFinishReason(finishReason);
 
     // Native tool call deltas
     let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
@@ -114,6 +125,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
       ...(done !== undefined && { done }),
       ...(nativeToolCallDeltas !== undefined && { nativeToolCallDeltas }),
       ...(usage !== undefined && { usage }),
+      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
     };
 
     return { chunk, rawEvent: raw };

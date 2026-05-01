@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { UsageInfo } from '../normalizers/types.js';
+import type { FinishReason } from '../tool-calls/types.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 
@@ -502,5 +503,91 @@ describe('LLMStreamProcessor', () => {
     expect(stats).toHaveProperty('errorsCount');
     expect(typeof stats.warningsCount).toBe('number');
     expect(typeof stats.errorsCount).toBe('number');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 1: finishReason propagation and ToolCallState
+// ---------------------------------------------------------------------------
+
+describe('LLMStreamProcessor — finishReason propagation', () => {
+  it('propagates finishReason stop from terminal chunk to ProcessedOutput', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({ content: 'hi', done: true, finishReason: 'stop' as FinishReason });
+    expect(result.finishReason).toBe('stop');
+  });
+
+  it('propagates finishReason tool-calls from terminal chunk', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['search']) });
+    const result = processor.process({ content: '', done: true, finishReason: 'tool-calls' as FinishReason });
+    expect(result.finishReason).toBe('tool-calls');
+  });
+
+  it('propagates finishReason length from terminal chunk', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({ content: 'truncated', done: true, finishReason: 'length' as FinishReason });
+    expect(result.finishReason).toBe('length');
+  });
+
+  it('does not set finishReason when chunk has none', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({ content: 'hi', done: false });
+    expect(result.finishReason).toBeUndefined();
+  });
+
+  it('accumulates finishReason across multi-chunk stream — last chunk wins', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'Hello' });
+    processor.process({ content: ' world' });
+    const result = processor.process({ content: '!', done: true, finishReason: 'stop' as FinishReason });
+    expect(result.finishReason).toBe('stop');
+  });
+
+  it('flush() returns finishReason from last processed chunk', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'Hello', done: false });
+    processor.process({ content: ' world', done: true, finishReason: 'length' as FinishReason });
+    const result = processor.flush();
+    expect(result.finishReason).toBe('length');
+  });
+
+  it('reset() clears finishReason for next stream', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'hi', done: true, finishReason: 'stop' as FinishReason });
+    processor.reset();
+    const result = processor.flush();
+    expect(result.finishReason).toBeUndefined();
+  });
+
+  it('emits tool_call parts with state input-complete', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['get_weather']) });
+    // Feed a complete native tool call via nativeToolCallDeltas (id+name header, then arguments done)
+    processor.process({
+      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'get_weather' }],
+    });
+    const result = processor.process({
+      done: true,
+      nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"city":"NYC"}' }],
+      finishReason: 'tool-calls' as FinishReason,
+    });
+    const toolCallPart = result.parts.find(p => p.type === 'tool_call');
+    expect(toolCallPart).toBeDefined();
+    if (toolCallPart?.type === 'tool_call') {
+      expect(toolCallPart.state).toBe('input-complete');
+      expect(toolCallPart.call.id).toBe('call_abc');
+    }
+  });
+});
+
+describe('Phase 1 — type exports', () => {
+  it('FinishReason and ToolCallState are valid type-level exports from tool-calls', async () => {
+    const mod = await import('../tool-calls/index.js');
+    // Types-only check: the module should export without error
+    expect(mod).toBeDefined();
+  });
+
+  it('FinishReason values cover expected string literals', () => {
+    const values: FinishReason[] = ['stop', 'length', 'tool-calls', 'content-filter', 'other', 'error'];
+    expect(values).toHaveLength(6);
   });
 });

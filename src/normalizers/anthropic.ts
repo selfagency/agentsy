@@ -1,5 +1,15 @@
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 import { isObject, toNumber } from './utils.js';
+import type { FinishReason } from '../tool-calls/types.js';
+
+function mapAnthropicStopReason(reason: string | null): FinishReason | undefined {
+  if (!reason) return undefined;
+  if (reason === 'end_turn') return 'stop';
+  if (reason === 'tool_use') return 'tool-calls';
+  if (reason === 'max_tokens') return 'length';
+  if (reason === 'stop_sequence') return 'stop';
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Normalizer for Anthropic Claude Messages API streaming events (SSE)
@@ -76,6 +86,7 @@ function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | nu
   const stopReason = isObject(deltaObj) && typeof deltaObj.stop_reason === 'string' ? deltaObj.stop_reason : null;
 
   const done = stopReason === 'end_turn' || stopReason === 'tool_use' ? true : undefined;
+  const finishReason = mapAnthropicStopReason(stopReason);
 
   const usageObj = raw['usage'];
   let usage: UsageInfo | undefined;
@@ -87,7 +98,11 @@ function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | nu
   if (done === undefined && usage === undefined) return null;
 
   return {
-    chunk: { ...(done !== undefined && { done }), ...(usage !== undefined && { usage }) },
+    chunk: {
+      ...(done !== undefined && { done }),
+      ...(usage !== undefined && { usage }),
+      ...(finishReason !== undefined && { finishReason }),
+    },
     rawEvent: raw,
   };
 }

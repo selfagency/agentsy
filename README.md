@@ -219,6 +219,125 @@ import {
 import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
 ```
 
+---
+
+## Renderers
+
+**Renderers** stream LLM response content to specific output targets (plain text, formatted terminal, browser DOM, VS Code chat). Each renderer owns an internal `LLMStreamProcessor` and handles thinking blocks, tool calls, and error callbacks.
+
+All renderers use a factory pattern and implement the same `{ write(chunk), end() }` interface:
+
+```typescript
+import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers/plain';
+
+const renderer = createPlainTextRenderer({
+  showThinking: true,
+  onError: err => logger.error(err),
+});
+
+await renderer.write('# Response\n');
+await renderer.write('Content here');
+await renderer.end();
+```
+
+### Plain Text Renderer
+
+Zero-dependency renderer for CLI/logging. Prefix-based thinking blocks.
+
+```typescript
+import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers/plain';
+
+const renderer = createPlainTextRenderer({
+  showThinking: true,
+  thinkingPrefix: '[💭] ', // customize thinking block prefix
+  outputFn: text => process.stdout.write(text), // optional; defaults to console.log
+});
+
+await renderer.write(chunk);
+await renderer.end();
+```
+
+**Thinking Style**: `prefix` (default: `[Thinking]`). Configure with `thinkingPrefix` option.
+
+---
+
+### CLI Markdown Renderer
+
+Terminal-formatted markdown with blockquote thinking blocks.  
+**Requires peer dependency**: `npm install cli-markdown`
+
+```typescript
+import { createCliRenderer } from '@selfagency/llm-stream-parser/renderers/cli';
+
+const renderer = createCliRenderer({
+  showThinking: true,
+  thinkingStyle: 'blockquote', // or 'suppress'
+  outputFn: text => process.stdout.write(text),
+});
+
+await renderer.write(chunk);
+await renderer.end();
+```
+
+**Thinking Styles:**
+
+- `blockquote` (default): Render thinking as `> **💭 Thinking:** ...` markdown blockquote
+- `suppress`: Hide thinking blocks entirely
+
+---
+
+### Streaming Markdown Renderer
+
+Browser-based DOM rendering with incremental updates and security sanitization.  
+**Requires peer dependencies**: `npm install streaming-markdown dompurify`
+
+```typescript
+import { createStreamingMarkdownRenderer } from '@selfagency/llm-stream-parser/renderers/streaming-md';
+
+const target = document.getElementById('response');
+const renderer = createStreamingMarkdownRenderer({
+  target,
+  showThinking: true,
+  thinkingContainer: document.getElementById('thinking'), // optional separate container
+  onSecurityViolation: () => console.warn('XSS attempt blocked'),
+});
+
+await renderer.write(chunk);
+await renderer.end();
+```
+
+**Thinking Style**: `blockquote` (default) or `inline`. Separate container if provided.
+
+---
+
+### VS Code Chat Renderer
+
+Integration with VS Code's `ChatResponseStream` for Copilot extensions.  
+**No external dependencies required.**
+
+```typescript
+import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+
+const renderer = createVSCodeChatRenderer({
+  stream, // ChatResponseStream from VS Code
+  showThinking: true,
+  thinkingStyle: 'progress', // or 'blockquote'
+  onToolCall: call => executeToolCall(call),
+});
+
+await renderer.write(chunk);
+await renderer.end();
+```
+
+**Thinking Styles:**
+
+- `blockquote` (default): Render as `> **💭 Thinking:** ...` markdown
+- `progress`: Send thinking via `stream.progress()` for VS Code progress indicator
+
+Tool calls fire the `onToolCall` callback but are not rendered as content.
+
+---
+
 ## Error Handling
 
 | Category                                                                                     | Behaviour                                                                         |

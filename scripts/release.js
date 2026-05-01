@@ -423,10 +423,14 @@ async function main() {
       : [];
     // Use spawn for interactive npm publish (required for 2FA/OTP prompts)
     const { spawnSync } = await import('child_process');
-    const result = spawnSync('npm', ['publish', './dist', '--tag', distTag, '--registry=' + NPM_REGISTRY, ...accessFlag], {
-      stdio: 'inherit',
-      cwd: process.cwd(),
-    });
+    const result = spawnSync(
+      'npm',
+      ['publish', './dist', '--tag', distTag, '--registry=' + NPM_REGISTRY, ...accessFlag],
+      {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      },
+    );
     if (result.status !== 0) {
       throw new Error(`npm publish exited with code ${result.status}`);
     }

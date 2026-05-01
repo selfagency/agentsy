@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import type { FinishReason } from '../tool-calls/types.js';
 import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
@@ -68,7 +69,7 @@ function handleResponsesCompleted(raw: Record<string, unknown>): NormalizerResul
     if (total !== undefined) usage.totalTokens = total;
   }
 
-  return { chunk: { done: true, ...(usage !== undefined && { usage }) }, rawEvent: raw };
+  return { chunk: { done: true, ...(usage !== undefined && { usage }), finishReason: 'stop' as FinishReason }, rawEvent: raw };
 }
 
 // ---------------------------------------------------------------------------

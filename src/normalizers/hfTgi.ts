@@ -1,4 +1,12 @@
 import type { NormalizerResult, UsageInfo } from './types.js';
+import type { FinishReason } from '../tool-calls/types.js';
+
+function mapHFFinishReason(reason: string | undefined): FinishReason | undefined {
+  if (!reason) return undefined;
+  if (reason === 'length') return 'length';
+  if (reason === 'eos_token' || reason === 'stop_sequence') return 'stop';
+  return 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Internal shape types
@@ -71,6 +79,7 @@ export function normalizeHuggingFaceTGIChunk(raw: unknown): NormalizerResult | n
 
     // Done when the final event arrives with details
     const done = typeof details?.finish_reason === 'string' ? true : undefined;
+    const finishReason = mapHFFinishReason(details?.finish_reason);
 
     // Usage only present in the final event
     const usage = details ? buildHFUsage(details) : undefined;
@@ -83,6 +92,7 @@ export function normalizeHuggingFaceTGIChunk(raw: unknown): NormalizerResult | n
         ...(content !== undefined && { content }),
         ...(done !== undefined && { done }),
         ...(usage !== undefined && { usage }),
+        ...(finishReason !== undefined && { finishReason }),
       },
       rawEvent: raw,
     };
