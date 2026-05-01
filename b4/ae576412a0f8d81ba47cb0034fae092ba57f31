@@ -1,0 +1,84 @@
+src/processor/LLMStreamProcessor.ts
+  h_5cf1e2c1161853 5
+src/tool-calls/index.ts
+  h_5cf1e2c1161853 3-4
+src/normalizers/openaiResponses.ts
+  h_5cf1e2c1161853 2
+src/normalizers/hfTgi.ts
+  h_5cf1e2c1161853 2
+src/renderers/vscode/createVSCodeChatRenderer.ts
+  h_5cf1e2c1161853 2-4
+src/processor/LLMStreamProcessor.test.ts
+  h_5cf1e2c1161853 6
+src/renderers/plain/plain.test.ts
+  h_5cf1e2c1161853 1,113-194
+src/agent/agent.test.ts
+  h_5cf1e2c1161853 1-2
+src/ui/types.ts
+  h_5cf1e2c1161853 2
+README.md
+  h_5cf1e2c1161853 407
+src/renderers/index.ts
+  h_5cf1e2c1161853 30
+src/ui/store.ts
+  h_5cf1e2c1161853 2
+src/ui/index.ts
+  h_5cf1e2c1161853 32,34-35
+src/renderers/streaming-md/createStreamingMarkdownRenderer.ts
+  h_5cf1e2c1161853 2-3,176-178
+src/renderers/shared.test.ts
+  h_5cf1e2c1161853 1-5,156-157,173-174
+src/normalizers/bedrock.ts
+  h_5cf1e2c1161853 2
+src/adapters/vscode.ts
+  h_5cf1e2c1161853 2,4
+src/ui/eventSourcing.ts
+  h_5cf1e2c1161853 2
+src/renderers/cli/cli.test.ts
+  h_5cf1e2c1161853 1,115-218
+src/renderers/shared.ts
+  h_5cf1e2c1161853 1,3
+src/renderers/plain/createPlainTextRenderer.ts
+  h_5cf1e2c1161853 1-2
+src/agent/stopConditions.ts
+  h_5cf1e2c1161853 1
+src/renderers/types.ts
+  h_5cf1e2c1161853 1
+src/renderers/cli/createCliRenderer.ts
+  h_5cf1e2c1161853 3-4
+src/normalizers/gemini.ts
+  h_5cf1e2c1161853 1
+src/normalizers/cohere.ts
+  h_5cf1e2c1161853 2
+src/index.ts
+  h_5cf1e2c1161853 2-3,5,8-9,11-14,16
+src/ui/ui.test.ts
+  h_5cf1e2c1161853 1,4
+src/agent/types.ts
+  h_5cf1e2c1161853 2-4,7
+src/normalizers/ollama.ts
+  h_5cf1e2c1161853 1
+src/renderers/vscode/createVSCodeAgentLoop.ts
+  h_5cf1e2c1161853 1
+src/renderers/vscode/vscode.test.ts
+  h_5cf1e2c1161853 1-2,4,6,178-191,258-293,324-368
+src/normalizers/anthropic.ts
+  h_5cf1e2c1161853 1
+src/renderers/streaming-md/streaming-md.test.ts
+  h_5cf1e2c1161853 138-235
+src/renderers/vscode/index.ts
+  h_5cf1e2c1161853 4
+src/agent/index.ts
+  h_5cf1e2c1161853 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "b4ae576412a0f8d81ba47cb0034fae092ba57f31",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
