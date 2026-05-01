@@ -69,11 +69,11 @@ export function createConversationStore(conversationId: string): ConversationSto
   const listeners = new Set<StoreListener>();
   const eventLog: ConversationEvent[] = [];
 
-  const notifyListeners = () => {
+  function notifyListeners(): void {
     for (const listener of listeners) {
       listener(state);
     }
-  };
+  }
 
   return {
     getState(): UIConversation {

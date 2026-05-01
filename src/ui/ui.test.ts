@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { applyConversationEvent } from './eventSourcing.js';
 import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
+import type { FinishReason } from '../tool-calls/types.js';
 
 describe('UI Event Sourcing', () => {
   describe('applyConversationEvent', () => {
@@ -260,13 +261,13 @@ describe('UI Event Sourcing', () => {
     function finishMessage(
       store: ReturnType<typeof createConversationStore>,
       messageId: string,
-      finishReason?: string,
+      finishReason?: FinishReason,
       usage?: { inputTokens: number; outputTokens: number; totalTokens: number },
     ): void {
       if (finishReason && usage) {
-        store.dispatch({ type: 'message_finished', messageId, finishReason: finishReason as any, usage });
+        store.dispatch({ type: 'message_finished', messageId, finishReason, usage });
       } else if (finishReason) {
-        store.dispatch({ type: 'message_finished', messageId, finishReason: finishReason as any });
+        store.dispatch({ type: 'message_finished', messageId, finishReason });
       } else {
         store.dispatch({ type: 'message_finished', messageId });
       }

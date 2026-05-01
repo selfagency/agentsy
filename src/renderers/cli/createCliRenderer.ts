@@ -60,17 +60,17 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
   let accumulatedMarkdown = '';
 
   // Helper to write to output
-  const writeOutput = (text: string): void => {
+  function writeOutput(text: string): void {
     if (typeof output === 'function') {
       output(text);
     } else if ('write' in output && typeof output.write === 'function') {
       output.write(text);
     }
-  };
+  }
 
   // Lazily load cli-markdown with clear error message
   let cliMarkdown: ((markdown: string) => string) | null = null;
-  const getCliMarkdown = async () => {
+  async function getCliMarkdown(): Promise<(markdown: string) => string> {
     if (!cliMarkdown) {
       try {
         // dynamic import to avoid hard peer dep
@@ -84,7 +84,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       }
     }
     return cliMarkdown;
-  };
+  }
 
   /**
    * Process parts from output, accumulating markdown content.

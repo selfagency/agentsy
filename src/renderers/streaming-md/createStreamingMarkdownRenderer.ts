@@ -96,7 +96,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   let parser: StreamingMarkdownParser | null = null;
 
   // Lazily load streaming-markdown and dompurify with clear error messages
-  const getStreamingMarkdownDeps = async (): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> => {
+  async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> {
     try {
       const smdImported = await import('streaming-markdown');
       const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
@@ -109,17 +109,17 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
       );
     }
-  };
+  }
 
   // Initialize parser lazily on first write
-  const ensureParser = async () => {
+  async function ensureParser(): Promise<void> {
     if (parser === null) {
       const { smd } = await getStreamingMarkdownDeps();
       if (smd.parser_create) {
         parser = smd.parser_create({ target });
       }
     }
-  };
+  }
 
   /**
    * Process parts from output, accumulating markdown content.

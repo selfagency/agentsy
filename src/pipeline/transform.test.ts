@@ -7,13 +7,13 @@ async function writeAndCollect(
   transform: TransformStream<OutputPart, OutputPart>,
   input: OutputPart[],
 ): Promise<OutputPart[]> {
-  const write = async () => {
+  async function write(): Promise<void> {
     const writer = transform.writable.getWriter();
     for (const part of input) await writer.write(part);
     await writer.close();
-  };
+  }
 
-  const read = async () => {
+  async function read(): Promise<OutputPart[]> {
     const parts: OutputPart[] = [];
     const reader = transform.readable.getReader();
     for (;;) {
@@ -22,7 +22,7 @@ async function writeAndCollect(
       parts.push(value);
     }
     return parts;
-  };
+  }
 
   const [, parts] = await Promise.all([write(), read()]);
   return parts;
@@ -89,11 +89,13 @@ describe('createThinkingFilter', () => {
 });
 
 describe('createToolCallFilter', () => {
-  const makeCall = (name: string): OutputPart => ({
-    type: 'tool_call',
-    call: { name, parameters: {}, format: 'native-json' },
-    state: 'input-complete',
-  });
+  function makeCall(name: string): OutputPart {
+    return {
+      type: 'tool_call',
+      call: { name, parameters: {}, format: 'native-json' },
+      state: 'input-complete',
+    };
+  }
 
   it('passes through only tool calls with matching names', async () => {
     const parts = await writeAndCollect(createToolCallFilter(['search', 'fetch']), [
