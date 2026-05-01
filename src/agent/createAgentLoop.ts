@@ -145,6 +145,32 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   let aborted = false;
   const abortController = new AbortController();
 
+  /**
+   * Safely emit an AG-UI event with thread ID and error handling.
+   * @internal
+   */
+  async function safeEmitEvent(
+    event: Record<string, any>,
+    callbackName: string,
+    onAgUiEvent?: (event: any) => void | Promise<void>,
+  ): Promise<void> {
+    if (!onAgUiEvent) return;
+    try {
+      await Promise.resolve(onAgUiEvent(event as any));
+    } catch (error) {
+      console.error(`Error in onAgUiEvent callback for ${callbackName}:`, error);
+    }
+  }
+
+  /**
+   * Add optional threadId to an event object.
+   * @internal
+   */
+  function withThreadId<T extends Record<string, any>>(event: T, threadId?: string): T {
+    if (threadId === undefined) return event;
+    return { ...event, threadId } as T;
+  }
+
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
     const runId = options.runId || `run_${Math.random().toString(36).slice(2, 11)}`;
     const { threadId, onAgUiEvent, interruptController } = options;
@@ -171,84 +197,68 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     let currentMessages = initialMessages;
 
     // Emit RUN_STARTED
-    if (onAgUiEvent) {
-      const runStartedBase = {
-        type: EventType.RUN_STARTED as const,
-        runId,
-        timestamp: new Date().toISOString(),
-      };
-      const runStarted = {
-        ...runStartedBase,
-        ...(threadId !== undefined && { threadId }),
-      };
-      try {
-        await onAgUiEvent(runStarted as any);
-      } catch (error) {
-        console.error('Error in onAgUiEvent callback for RUN_STARTED:', error);
-        // Continue despite callback error
-      }
-    }
+    await safeEmitEvent(
+      withThreadId(
+        {
+          type: EventType.RUN_STARTED as const,
+          runId,
+          timestamp: new Date().toISOString(),
+        },
+        threadId,
+      ),
+      'RUN_STARTED',
+      onAgUiEvent,
+    );
+
+    let abortReason: 'success' | 'interrupt' | 'error' = 'success';
 
     try {
       while (!aborted && state.steps.length < maxSteps) {
         // Check for interrupts
         if (interruptController?.isInterrupted()) {
+          abortReason = 'interrupt';
           const interruptEvent = createInterruptEvent(
             runId,
             interruptController.getReason(),
             interruptController.getMessage(),
             threadId,
           );
-          if (onAgUiEvent) {
-            try {
-              await onAgUiEvent(interruptEvent);
-            } catch (error) {
-              console.error('Error in onAgUiEvent callback for interrupt:', error);
-            }
-          }
+          await safeEmitEvent(interruptEvent, 'interrupt', onAgUiEvent);
           break;
         }
 
         // Emit STEP_STARTED
-        if (onAgUiEvent) {
-          const stepStartedBase = {
-            type: EventType.STEP_STARTED as const,
-            runId,
-            stepIndex: state.steps.length,
-            timestamp: new Date().toISOString(),
-          };
-          const stepStarted = {
-            ...stepStartedBase,
-            ...(threadId !== undefined && { threadId }),
-          };
-          try {
-            await onAgUiEvent(stepStarted as any);
-          } catch (error) {
-            console.error('Error in onAgUiEvent callback for STEP_STARTED:', error);
-          }
-        }
+        await safeEmitEvent(
+          withThreadId(
+            {
+              type: EventType.STEP_STARTED as const,
+              runId,
+              stepIndex: state.steps.length,
+              timestamp: new Date().toISOString(),
+            },
+            threadId,
+          ),
+          'STEP_STARTED',
+          onAgUiEvent,
+        );
 
         const result = await processSingleStep(state, options, currentMessages, abortController, stopConditions);
 
         // Emit STEP_FINISHED (always, regardless of parts)
-        if (onAgUiEvent) {
-          const stepFinishedBase = {
-            type: EventType.STEP_FINISHED as const,
-            runId,
-            stepIndex: state.stepIndex,
-            outputLength: result.parts.length,
-            timestamp: new Date().toISOString(),
-          };
-          const stepFinished = {
-            ...stepFinishedBase,
-            ...(threadId !== undefined && { threadId }),
-          };
-          try {
-            await onAgUiEvent(stepFinished as any);
-          } catch (error) {
-            console.error('Error in onAgUiEvent callback for STEP_FINISHED:', error);
-          }
-        }
+        await safeEmitEvent(
+          withThreadId(
+            {
+              type: EventType.STEP_FINISHED as const,
+              runId,
+              stepIndex: state.stepIndex,
+              outputLength: result.parts.length,
+              timestamp: new Date().toISOString(),
+            },
+            threadId,
+          ),
+          'STEP_FINISHED',
+          onAgUiEvent,
+        );
 
         // Yield all parts from this step
         for (const part of result.parts) {
@@ -266,44 +276,36 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         }
       }
 
-      // Emit RUN_FINISHED on success
-      if (onAgUiEvent) {
-        const runFinishedBase = {
-          type: EventType.RUN_FINISHED as const,
-          runId,
-          outcome: { type: 'success' as const },
-          timestamp: new Date().toISOString(),
-        };
-        const runFinished = {
-          ...runFinishedBase,
-          ...(threadId !== undefined && { threadId }),
-        };
-        try {
-          await onAgUiEvent(runFinished as any);
-        } catch (error) {
-          console.error('Error in onAgUiEvent callback for RUN_FINISHED:', error);
-        }
-      }
+      // Emit RUN_FINISHED with appropriate outcome
+      await safeEmitEvent(
+        withThreadId(
+          {
+            type: EventType.RUN_FINISHED as const,
+            runId,
+            outcome: { type: abortReason },
+            timestamp: new Date().toISOString(),
+          } as const,
+          threadId,
+        ),
+        'RUN_FINISHED',
+        onAgUiEvent,
+      );
     } catch (error) {
       // Emit RUN_ERROR on failure
-      if (onAgUiEvent) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
-        const runErrorBase = {
-          type: EventType.RUN_ERROR as const,
-          runId,
-          error: { message: errorMessage },
-          timestamp: new Date().toISOString(),
-        };
-        const runError = {
-          ...runErrorBase,
-          ...(threadId !== undefined && { threadId }),
-        };
-        try {
-          await onAgUiEvent(runError as any);
-        } catch (callbackError) {
-          console.error('Error in onAgUiEvent callback for RUN_ERROR:', callbackError);
-        }
-      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
+      await safeEmitEvent(
+        withThreadId(
+          {
+            type: EventType.RUN_ERROR as const,
+            runId,
+            error: { message: errorMessage },
+            timestamp: new Date().toISOString(),
+          },
+          threadId,
+        ),
+        'RUN_ERROR',
+        onAgUiEvent,
+      );
       throw error;
     }
   }

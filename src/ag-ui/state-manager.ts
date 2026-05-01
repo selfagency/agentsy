@@ -39,6 +39,20 @@ function hasCircularReference(obj: unknown, visited = new WeakSet<object>()): bo
 }
 
 /**
+ * Validates path parts to prevent prototype pollution.
+ * Rejects dangerous keys like __proto__, constructor, prototype.
+ * @internal
+ */
+function validatePathParts(parts: string[]): void {
+  const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
+  for (const part of parts) {
+    if (dangerousKeys.has(part)) {
+      throw new Error(`Invalid path segment: "${part}" is not allowed (prototype pollution protection)`);
+    }
+  }
+}
+
+/**
  * Creates a state snapshot event.
  *
  * @param state - Application state object
@@ -79,6 +93,57 @@ export function createStateSnapshotEvent(
  * @returns Array of JSON Patch operations
  * @throws Error if either state contains circular references
  */
+function computeStateDeltaForRemovedAndModified(
+  from: Record<string, any>,
+  to: Record<string, any>,
+  basePathPrefix: string,
+): JsonPatchOp[] {
+  const patches: JsonPatchOp[] = [];
+  const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
+
+  for (const key of Object.keys(from)) {
+    // Skip dangerous keys to prevent prototype pollution
+    if (dangerousKeys.has(key)) {
+      continue;
+    }
+
+    const path = basePathPrefix ? `${basePathPrefix}/${key}` : `/${key}`;
+
+    if (!(key in to)) {
+      patches.push({ op: 'remove', path });
+    } else if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {
+      const fromVal = from[key];
+      const toVal = to[key];
+
+      // Recurse for nested objects
+      if (isPlainObject(fromVal) && isPlainObject(toVal)) {
+        patches.push(...computeStateDelta(fromVal, toVal, path));
+      } else {
+        patches.push({ op: 'replace', path, value: toVal });
+      }
+    }
+  }
+
+  return patches;
+}
+
+/**
+ * Check if value is a plain object (not array, not null).
+ */
+function isPlainObject(val: unknown): val is Record<string, any> {
+  return typeof val === 'object' && val !== null && !Array.isArray(val);
+}
+
+/**
+ * Computes a JSON Patch (RFC 6902) delta between two states.
+ * Returns the minimal set of operations to transform `from` to `to`.
+ *
+ * @param from - Previous state
+ * @param to - New state
+ * @param basePathPrefix - Optional path prefix for nested operations
+ * @returns Array of JSON Patch operations
+ * @throws Error if either state contains circular references
+ */
 export function computeStateDelta(
   from: Record<string, any>,
   to: Record<string, any>,
@@ -94,33 +159,12 @@ export function computeStateDelta(
   const patches: JsonPatchOp[] = [];
 
   // Handle removed and modified properties
-  for (const key of Object.keys(from)) {
-    const path = basePathPrefix ? `${basePathPrefix}/${key}` : `/${key}`;
-    if (!(key in to)) {
-      patches.push({ op: 'remove', path });
-    } else if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {
-      const fromVal = from[key];
-      const toVal = to[key];
-
-      // Recurse for nested objects
-      if (
-        typeof fromVal === 'object' &&
-        fromVal !== null &&
-        !Array.isArray(fromVal) &&
-        typeof toVal === 'object' &&
-        toVal !== null &&
-        !Array.isArray(toVal)
-      ) {
-        patches.push(...computeStateDelta(fromVal, toVal, path));
-      } else {
-        patches.push({ op: 'replace', path, value: toVal });
-      }
-    }
-  }
+  patches.push(...computeStateDeltaForRemovedAndModified(from, to, basePathPrefix));
 
   // Handle added properties
+  const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
-    if (!(key in from)) {
+    if (!(key in from) && !dangerousKeys.has(key)) {
       const path = basePathPrefix ? `${basePathPrefix}/${key}` : `/${key}`;
       patches.push({ op: 'add', path, value: to[key] });
     }
@@ -152,61 +196,79 @@ export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, thr
 }
 
 /**
+ * Apply an add operation to a state object.
+ */
+function applyAddPatch(state: Record<string, any>, parts: string[], patch: JsonPatchOp): void {
+  if (parts.length === 0) {
+    throw new Error('Cannot add to root');
+  }
+  const key = parts.pop()!;
+  let target = state;
+  for (const part of parts) {
+    if (!(part in target)) {
+      target[part] = {};
+    }
+    target = target[part];
+  }
+  target[key] = patch.value;
+}
+
+/**
+ * Apply a remove operation to a state object.
+ */
+function applyRemovePatch(state: Record<string, any>, parts: string[]): void {
+  if (parts.length === 0) {
+    throw new Error('Cannot remove root');
+  }
+  const key = parts.pop()!;
+  let target = state;
+  for (const part of parts) {
+    target = target[part];
+  }
+  delete target[key];
+}
+
+/**
+ * Apply a replace operation to a state object.
+ */
+function applyReplacePatch(state: Record<string, any>, parts: string[], patch: JsonPatchOp): void {
+  if (parts.length === 0) {
+    throw new Error('Cannot replace root');
+  }
+  const key = parts.pop()!;
+  let target = state;
+  for (const part of parts) {
+    target = target[part];
+  }
+  target[key] = patch.value;
+}
+
+/**
  * Applies JSON Patch operations to a state object.
  * Mutates the state in place.
  *
  * @param state - State object to patch
  * @param patches - JSON Patch operations to apply
- * @throws Error if patch operations are invalid
+ * @throws Error if patch operations are invalid or contain dangerous keys
  */
 export function applyJsonPatches(state: Record<string, any>, patches: JsonPatchOp[]): void {
   for (const patch of patches) {
     const parts = patch.path.split('/').filter(Boolean);
 
+    // Validate path to prevent prototype pollution
+    validatePathParts(parts);
+
     switch (patch.op) {
       case 'add':
-        {
-          if (parts.length === 0) {
-            throw new Error('Cannot add to root');
-          }
-          const key = parts.pop()!;
-          let target = state;
-          for (const part of parts) {
-            if (!(part in target)) {
-              target[part] = {};
-            }
-            target = target[part];
-          }
-          target[key] = patch.value;
-        }
+        applyAddPatch(state, parts, patch);
         break;
 
       case 'remove':
-        {
-          if (parts.length === 0) {
-            throw new Error('Cannot remove root');
-          }
-          const key = parts.pop()!;
-          let target = state;
-          for (const part of parts) {
-            target = target[part];
-          }
-          delete target[key];
-        }
+        applyRemovePatch(state, parts);
         break;
 
       case 'replace':
-        {
-          if (parts.length === 0) {
-            throw new Error('Cannot replace root');
-          }
-          const key = parts.pop()!;
-          let target = state;
-          for (const part of parts) {
-            target = target[part];
-          }
-          target[key] = patch.value;
-        }
+        applyReplacePatch(state, parts, patch);
         break;
 
       default:

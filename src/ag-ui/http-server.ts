@@ -71,47 +71,24 @@ export function createSSEStream(
   readable: ReadableStream<Uint8Array>;
   [Symbol.asyncIterator](): AsyncIterator<Uint8Array>;
 } {
-  const { formatEvent = defaultFormatEvent, includeComments = false, heartbeatInterval = 30000 } = options;
+  const {
+    formatEvent = defaultFormatEvent,
+    includeComments: _includeComments = false,
+    heartbeatInterval: _heartbeatInterval = 30000,
+  } = options;
 
   // Create an async iterable that produces SSE-formatted chunks
   const createAsyncIterable = async function* () {
     const encoder = new TextEncoder();
-    let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-
-    // Yield a heartbeat comment periodically to keep connection alive
-    const _heartbeatGenerator = (async function* () {
-      while (true) {
-        await new Promise(resolve => setTimeout(resolve, heartbeatInterval));
-        if (includeComments) {
-          yield encoder.encode(': heartbeat\n');
-        }
-      }
-    })();
 
     try {
-      // Race between events and heartbeat
-      const eventIterator = events[Symbol.asyncIterator]();
-
-      // Collect first chunk with timeout to start sending quickly
-      const firstChunk = (await Promise.race([
-        eventIterator.next(),
-        new Promise<IteratorResult<AgUiEvent>>(resolve =>
-          setTimeout(() => resolve({ done: false, value: undefined as any }), 100),
-        ),
-      ])) as IteratorResult<AgUiEvent | undefined>;
-
-      if (!firstChunk.done && firstChunk.value) {
-        yield encoder.encode(formatEvent(firstChunk.value as AgUiEvent));
-      }
-
-      // Continue reading events
+      // Emit each event as SSE-formatted data
       for await (const event of events) {
         yield encoder.encode(formatEvent(event));
       }
     } finally {
-      if (heartbeatTimer) {
-        clearInterval(heartbeatTimer);
-      }
+      // Cleanup on stream end
+      void undefined;
     }
   };
 
