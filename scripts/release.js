@@ -3,7 +3,7 @@ import { Octokit } from '@octokit/rest';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, resolve, relative } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, ProcessOutput, sleep } from 'zx';
@@ -317,7 +317,7 @@ async function main() {
   const pkgPath = resolve(ROOT, 'package.json');
   const pkg = JSON.parse(safeRead(pkgPath, 'utf8'));
   pkg.version = version;
-  safeWrite(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
+  safeWrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
   // --- Update CHANGELOG.md --------------------------------------------------
 

@@ -52,7 +52,7 @@ const NORMALIZERS: Record<NormalizerProvider, (data: unknown) => { chunk: Stream
  */
 async function* processSSEEvent(
   sseEvent: { data: string },
-  normalizer: (_data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null,
+  normalizer: (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null,
   processor: LLMStreamProcessor,
   provider: NormalizerProvider,
 ): AsyncGenerator<PipelineEvent> {

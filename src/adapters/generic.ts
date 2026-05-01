@@ -69,7 +69,7 @@ export interface GenericAdapterOptions extends ProcessorOptions {
 async function safeCall<T>(
   callback: (() => Promise<T>) | undefined,
   fallback: T,
-  onError?: (error: Error) => void,
+  onError?: (_error: Error) => void,
 ): Promise<T> {
   if (!callback) return fallback;
   try {

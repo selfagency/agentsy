@@ -40,8 +40,8 @@ export interface SSEParserOptions {
  */
 export class SSEParser {
   private buffer = '';
-  private readonly onEventCallback: ((event: SSEEvent) => void) | undefined;
-  private readonly onErrorCallback: ((error: Error) => void) | undefined;
+  private readonly onEventCallback: ((_event: SSEEvent) => void) | undefined;
+  private readonly onErrorCallback: ((_error: Error) => void) | undefined;
 
   constructor(options?: SSEParserOptions) {
     this.onEventCallback = options?.onEvent;

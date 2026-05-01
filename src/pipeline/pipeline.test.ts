@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createPipeline } from './createPipeline.js';
 
 // Simulate an async iterable of text chunks from OpenAI
+// Yields SSE-formatted event strings (no await needed; generator yields static values)
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by createPipeline
 async function* mockOpenAIStream() {
   yield 'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n';
   yield 'data: {"choices":[{"delta":{"content":" "}}]}\n\n';
@@ -10,12 +12,14 @@ async function* mockOpenAIStream() {
 }
 
 // Simulate stream with bad JSON
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by createPipeline
 async function* mockStreamWithBadJson() {
   yield 'data: {invalid json}\n\n';
   yield 'data: [DONE]\n\n';
 }
 
 // Simulate stream with valid JSON content
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by createPipeline
 async function* mockStreamWithJson() {
   yield 'data: {"choices":[{"delta":{"content":"hello"}}]}\n\n';
   yield 'data: {"choices":[{"delta":{"content":"world"}}]}\n\n';
@@ -23,6 +27,7 @@ async function* mockStreamWithJson() {
 }
 
 // Simulate Claude stream with thinking blocks
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by createPipeline
 async function* mockClaudeWithThinking() {
   yield 'data: {"type":"content_block_start","index":0,"content_block":{"type":"thinking"}}\n\n';
   yield 'data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Let me think..."}}\n\n';
