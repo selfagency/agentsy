@@ -416,21 +416,26 @@ async function main() {
 
   const distTag = version.includes('-') ? 'next' : 'latest';
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
-  $.verbose = true;
   try {
     // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
     const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf8')).name || '').startsWith('@')
       ? ['--access', 'public']
       : [];
-    await $`npm publish ./dist --tag ${distTag} --registry=${NPM_REGISTRY} ${accessFlag}`;
+    // Use spawn for interactive npm publish (required for 2FA/OTP prompts)
+    const { spawnSync } = await import('child_process');
+    const result = spawnSync('npm', ['publish', './dist', '--tag', distTag, '--registry=' + NPM_REGISTRY, ...accessFlag], {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+    });
+    if (result.status !== 0) {
+      throw new Error(`npm publish exited with code ${result.status}`);
+    }
   } catch (err) {
-    $.verbose = false;
     console.error(`❌ npm publish failed.`);
     // Ensure rollback is not marked as done so that tag/commit cleanup happens.
     releaseDone = false;
     throw err;
   }
-  $.verbose = false;
   console.log(`✅ Published ${tag} to npm.`);
   releaseDone = true;
 }
