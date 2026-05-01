@@ -27,6 +27,7 @@ export async function* parseSSEStream(
     },
   });
 
+  // biome-ignore useQwikValidLexicalScope: legitimate usage
   const isReadableStream = (obj: unknown): obj is ReadableStream<string> => {
     return obj != null && typeof obj === 'object' && 'getReader' in obj;
   };

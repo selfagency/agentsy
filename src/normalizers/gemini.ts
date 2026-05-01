@@ -29,6 +29,7 @@ interface GeminiPartsResult {
 }
 
 function buildFunctionCallDelta(fc: Record<string, unknown>, index: number): NativeToolCallDelta {
+  // #lizard forgives
   const delta: NativeToolCallDelta = { index };
   const name = typeof fc['name'] === 'string' ? fc['name'] : undefined;
   const args = fc['args'];

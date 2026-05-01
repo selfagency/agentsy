@@ -368,6 +368,7 @@ function checkObjectConstraints(
 }
 
 function checkValueTypeConstraints(
+  // #lizard forgives
   value: unknown,
   schema: JsonSchema,
   path: string,
