@@ -32,3 +32,20 @@ export interface Theme {
   border: BorderTheme;
   highlight: HighlightTheme;
 }
+
+export type ThemeName =
+  | 'default'
+  | 'dark'
+  | 'light'
+  | 'minimal'
+  | 'dracula'
+  | 'catppuccin-mocha'
+  | 'catppuccin-latte'
+  | 'catppuccin-macchiato'
+  | 'catppuccin-frappe'
+  | 'ayu-mirage'
+  | 'houston'
+  | 'one-dark'
+  | 'one-candy'
+  | 'github-dark';
+

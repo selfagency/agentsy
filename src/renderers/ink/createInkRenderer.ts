@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { RenderOptions, Instance } from 'ink';
 import type { LLMStreamProcessor } from '../../processor/index.js';
-import type { Theme } from './themes/types.js';
+import type { Theme, ThemeName } from './themes/types.js';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { resolveTheme } from './themes/index.js';
 
@@ -16,7 +16,7 @@ export interface InkRendererOptions {
   onToolCallDelta?: (delta: string) => void;
   onFinish?: () => void;
   inkOptions?: Partial<RenderOptions>;
-  theme?: Theme | 'default' | 'dark' | 'light' | 'minimal';
+  theme?: Theme | ThemeName;
   screenReader?: boolean;
   syntaxHighlight?: boolean;
   keyboard?: KeyboardOptions;

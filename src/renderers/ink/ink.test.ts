@@ -344,4 +344,147 @@ describe('Ink Renderer', () => {
       renderer.unmount();
     }).not.toThrow();
   });
+
+  describe('Theme Resolution', () => {
+    const themeNames = [
+      'default',
+      'dark',
+      'light',
+      'minimal',
+      'dracula',
+      'catppuccin-mocha',
+      'catppuccin-latte',
+      'catppuccin-macchiato',
+      'catppuccin-frappe',
+      'ayu-mirage',
+      'houston',
+      'one-dark',
+      'one-candy',
+      'github-dark',
+    ] as const;
+
+    it.each(themeNames)('resolves %s theme correctly', async themeName => {
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        theme: themeName,
+      });
+
+      processor.process({ content: 'Test content' });
+      processor.process({ done: true });
+
+      expect(onFinish).toHaveBeenCalled();
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('resolves all theme names without throwing', async () => {
+      const { resolveTheme } = await import('./themes/index.js');
+
+      expect(() => {
+        for (const themeName of themeNames) {
+          const theme = resolveTheme(themeName);
+          expect(theme).toBeDefined();
+          expect(theme).toHaveProperty('thinking');
+          expect(theme).toHaveProperty('toolCall');
+          expect(theme).toHaveProperty('text');
+          expect(theme).toHaveProperty('border');
+          expect(theme).toHaveProperty('highlight');
+        }
+      }).not.toThrow();
+    });
+
+    it('returns default theme for undefined', async () => {
+      const { resolveTheme } = await import('./themes/index.js');
+      const { defaultTheme } = await import('./themes/index.js');
+
+      const theme = resolveTheme(undefined);
+      expect(theme).toEqual(defaultTheme);
+    });
+
+    it('returns custom Theme object as-is', async () => {
+      const { resolveTheme } = await import('./themes/index.js');
+      const customTheme = {
+        thinking: { borderColor: 'magenta', textColor: 'magenta', spinnerColor: 'magenta' },
+        toolCall: { pendingColor: 'yellow', doneColor: 'green', pendingSymbol: '?', doneSymbol: '✓' },
+        text: { cursorSymbol: '|', dimColor: false },
+        border: { style: 'single' as const, color: 'gray' },
+        highlight: {},
+      };
+
+      const theme = resolveTheme(customTheme);
+      expect(theme).toBe(customTheme);
+    });
+  });
+
+  describe('Syntax Highlighting', () => {
+    it('processes syntaxHighlight: true option', async () => {
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        syntaxHighlight: true,
+      });
+
+      processor.process({ content: '```javascript\nconst x = 42;\n```' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('disables syntax highlighting when false', async () => {
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        syntaxHighlight: false,
+      });
+
+      processor.process({ content: '```javascript\nconst x = 42;\n```' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('handles multiple code fences', async () => {
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        syntaxHighlight: true,
+      });
+
+      processor.process({
+        content:
+          'First block:\n```ts\nconst a = 1;\n```\n\nSecond block:\n```python\nb = 2\n```',
+      });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('gracefully handles unsupported language', async () => {
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        syntaxHighlight: true,
+      });
+
+      processor.process({ content: '```unknownlang\nfoo bar baz\n```' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+  });
 });
