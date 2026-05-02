@@ -1,5 +1,6 @@
 import type { NativeToolCallDelta } from '../normalizers/types.js';
 import { parseJson } from '../structured/parseJson.js';
+import type { ToolCallState } from './types.js';
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */
 export interface NativeToolCall {
@@ -124,6 +125,31 @@ export class ToolCallAccumulator {
     return result;
   }
 
+  /**
+   * Returns the best-known lifecycle state for the pending call at `index`.
+   */
+  public getPendingToolCallState(index: number): ToolCallState | undefined {
+    const pending = this.calls.get(index);
+    if (pending === undefined || pending.name === undefined) {
+      return undefined;
+    }
+
+    if (pending.argumentsBuffer.length === 0) {
+      return 'awaiting-input';
+    }
+
+    try {
+      const parsed = JSON.parse(pending.argumentsBuffer);
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return 'input-complete';
+      }
+    } catch {
+      // Still streaming.
+    }
+
+    return 'input-streaming';
+  }
+
   private _flushPendingCall(pending: PendingCall): NativeToolCall | null {
     if (!pending.name) return null;
 
@@ -167,6 +193,22 @@ export class ToolCallAccumulator {
     for (const pending of this.calls.values()) {
       const call = this._flushPendingCall(pending);
       if (call !== null) result.push(call);
+    }
+    this.calls.clear();
+    return result;
+  }
+
+  /**
+   * Like `flush()`, but preserves each call's accumulator index for consumers
+   * that need stable synthetic IDs derived from index.
+   */
+  public flushWithIndices(): Array<{ index: number; call: NativeToolCall }> {
+    const result: Array<{ index: number; call: NativeToolCall }> = [];
+    for (const [index, pending] of this.calls.entries()) {
+      const call = this._flushPendingCall(pending);
+      if (call !== null) {
+        result.push({ index, call });
+      }
     }
     this.calls.clear();
     return result;

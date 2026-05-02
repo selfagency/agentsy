@@ -46,6 +46,27 @@ describe('createVSCodeCopilotAdapter', () => {
       format: 'native-json',
     });
   });
+
+  it('reports step changes via onStep callback', async () => {
+    const markdown = vi.fn<(_text: string) => void>();
+    const onToolCall = vi.fn<(call: unknown) => void>();
+    const onStep = vi.fn();
+    const processor = new LLMStreamProcessor({ parseThinkTags: false, scrubContextTags: false });
+    const adapter = createVSCodeCopilotAdapter({
+      processor,
+      stream: { markdown },
+      onToolCall,
+      onStep,
+    });
+
+    await adapter.write({ content: 'First step', stepIndex: 0, stepUsage: { outputTokens: 2 } });
+    await adapter.write({ content: 'Second step', stepIndex: 1, usage: { inputTokens: 1, outputTokens: 3 } });
+    await adapter.end();
+
+    expect(onStep).toHaveBeenCalledTimes(2);
+    expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
+    expect(onStep).toHaveBeenNthCalledWith(2, 1, { inputTokens: 1, outputTokens: 3 });
+  });
 });
 
 describe('createGenericAdapter', () => {

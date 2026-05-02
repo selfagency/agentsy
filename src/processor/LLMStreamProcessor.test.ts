@@ -593,6 +593,28 @@ describe('Phase 1 — type exports', () => {
     const values: FinishReason[] = ['stop', 'length', 'tool-calls', 'content-filter', 'other', 'error'];
     expect(values).toHaveLength(6);
   });
+
+  it('propagates stepIndex and stepUsage from the input chunk', () => {
+    const processor = new LLMStreamProcessor();
+    const result = processor.process({
+      content: 'step output',
+      stepIndex: 2,
+      stepUsage: { inputTokens: 11, outputTokens: 7 },
+    });
+
+    expect(result.stepIndex).toBe(2);
+    expect(result.stepUsage).toEqual({ inputTokens: 11, outputTokens: 7 });
+  });
+
+  it('does not invent step metadata during flush()', () => {
+    const processor = new LLMStreamProcessor();
+    processor.process({ content: 'plain output' });
+
+    const result = processor.flush();
+
+    expect(result.stepIndex).toBeUndefined();
+    expect(result.stepUsage).toBeUndefined();
+  });
 });
 
 describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
@@ -684,5 +706,73 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
     processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'fn2', argumentsDelta: '{}' }] });
     expect(toolCalls).toHaveLength(2);
     expect(toolCalls[1]).toBe('fn2');
+  });
+
+  it('emits step_started with messageId for first step in a conversation', () => {
+    const processor = new LLMStreamProcessor({ scrubContextTags: false });
+    const events: Array<Record<string, unknown>> = [];
+
+    processor.on('conversation_event', event => {
+      events.push(event as unknown as Record<string, unknown>);
+    });
+
+    processor.process({ stepIndex: 0, content: 'hello' });
+
+    const stepStarted = events.find(e => e.type === 'step_started');
+    expect(stepStarted).toBeDefined();
+    expect(typeof stepStarted?.messageId).toBe('string');
+  });
+
+  it('uses previous step usage when emitting step_finished on step switch', () => {
+    const processor = new LLMStreamProcessor({ scrubContextTags: false });
+    const events: Array<Record<string, unknown>> = [];
+
+    processor.on('conversation_event', event => {
+      events.push(event as unknown as Record<string, unknown>);
+    });
+
+    processor.process({ stepIndex: 0, stepUsage: { outputTokens: 3 }, content: 'step 0' });
+    processor.process({ stepIndex: 1, stepUsage: { outputTokens: 9 }, content: 'step 1' });
+
+    const stepFinished = events.find(e => e.type === 'step_finished');
+    expect(stepFinished).toBeDefined();
+    expect(stepFinished?.usage).toEqual({ outputTokens: 3 });
+  });
+
+  it('keeps native toolCallId stable across tool_call_delta and tool_call updates', () => {
+    const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
+    const events: Array<Record<string, unknown>> = [];
+
+    processor.on('conversation_event', event => {
+      events.push(event as unknown as Record<string, unknown>);
+    });
+
+    processor.process({ nativeToolCallDeltas: [{ index: 0, name: 'lookup', argumentsDelta: '{"q":' }] });
+    processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '"ts"}' }] });
+
+    const added = events.find(e => e.type === 'tool_call_part_added') as { toolCall?: { id?: string } } | undefined;
+    const updated = events.find(
+      e => e.type === 'tool_call_updated' && e.state === 'input-complete',
+    ) as { toolCallId?: string } | undefined;
+
+    expect(added?.toolCall?.id).toBeDefined();
+    expect(updated?.toolCallId).toBe(added?.toolCall?.id);
+  });
+
+  it('emits distinct synthetic IDs for multiple XML calls with the same name', () => {
+    const processor = new LLMStreamProcessor({ knownTools: new Set(['search']), scrubContextTags: false });
+    const events: Array<Record<string, unknown>> = [];
+
+    processor.on('conversation_event', event => {
+      events.push(event as unknown as Record<string, unknown>);
+    });
+
+    processor.process({ content: '<search><q>one</q></search><search><q>two</q></search>' });
+
+    const adds = events.filter(e => e.type === 'tool_call_part_added');
+    expect(adds).toHaveLength(2);
+
+    const ids = adds.map(e => (e.toolCall as { id: string }).id);
+    expect(ids[0]).not.toBe(ids[1]);
   });
 });

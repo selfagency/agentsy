@@ -1,5 +1,6 @@
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle } from '../types.js';
 
 /**
@@ -101,6 +102,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  const emitStepChange = createStepChangeEmitter(options.onStep);
 
   // Accumulator for markdown content
   let accumulatedMarkdown = '';
@@ -185,6 +187,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       try {
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -205,6 +208,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       try {
         result = llmProcessor.flush();
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Initialize parser if not yet initialized
         await ensureParser();

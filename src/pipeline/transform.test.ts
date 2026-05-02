@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { OutputPart } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import { createSmoothStream, createThinkingFilter, createToolCallFilter } from './transform.js';
@@ -40,6 +40,10 @@ async function collectStream(stream: ReadableStream<OutputPart>): Promise<Output
 }
 
 describe('createSmoothStream', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('passes non-text parts through unchanged', async () => {
     const call = { name: 'fn', parameters: {}, format: 'native-json' as const };
     const part: OutputPart = { type: 'tool_call', call, state: 'input-complete' };
@@ -65,6 +69,36 @@ describe('createSmoothStream', () => {
     const parts = await writeAndCollect(createSmoothStream(), [{ type: 'text', text: 'x'.repeat(16) }]);
     expect(parts).toHaveLength(2);
     expect(parts.every(p => p.type === 'text' && p.text.length === 8)).toBe(true);
+  });
+
+  it('waits between emitted sub-chunks when delayMs is provided', async () => {
+    vi.useFakeTimers();
+
+    const transform = createSmoothStream({ chunkSize: 2, delayMs: 50 });
+    const writer = transform.writable.getWriter();
+    const reader = transform.readable.getReader();
+
+    const writePromise = writer.write({ type: 'text', text: 'abcd' }).then(async () => {
+      await writer.close();
+    });
+
+    const firstRead = await reader.read();
+    expect(firstRead.value).toEqual({ type: 'text', text: 'ab' });
+
+    let secondResolved = false;
+    const secondReadPromise = reader.read().then(result => {
+      secondResolved = true;
+      return result;
+    });
+
+    await Promise.resolve();
+    expect(secondResolved).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(50);
+    const secondRead = await secondReadPromise;
+    expect(secondRead.value).toEqual({ type: 'text', text: 'cd' });
+
+    await writePromise;
   });
 });
 

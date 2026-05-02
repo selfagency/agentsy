@@ -3,6 +3,7 @@ import type { OutputPart, StreamChunk } from '../../processor/LLMStreamProcessor
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
 import type { ToolCallState } from '../../tool-calls/types.js';
+import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 
 /**
@@ -124,6 +125,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  const handleStepUpdate = createStepChangeEmitter(options.onStep);
 
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
   let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
@@ -213,7 +215,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
    */
   function handleToolCallPartRendering(part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }): void {
     if (onToolCall) {
-      onToolCall({ type: 'tool_call', call: part.call });
+      onToolCall({ type: 'tool_call', call: part.call, state: part.state });
     }
     if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
       stream.beginToolInvocation(part.call.id, part.call.name);
@@ -284,6 +286,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       try {
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
+        await handleStepUpdate(result);
         await handleCompletion(chunk.done, chunk.finishReason, chunk.usage);
       } catch (error) {
         if (onError && error instanceof Error) {
@@ -299,6 +302,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       try {
         result = llmProcessor.flush();
         processParts(result.parts);
+        await handleStepUpdate(result);
       } catch (error) {
         if (onError && error instanceof Error) {
           onError(error);

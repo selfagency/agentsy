@@ -1,4 +1,5 @@
 import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
+import type { ConversationEvent } from '../ui/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
@@ -14,8 +15,12 @@ export interface StreamChunk {
   thinking?: string;
   tool_calls?: Array<{ function?: { name?: string; arguments?: unknown } }>;
   done?: boolean;
+  /** Optional step index supplied by higher-level agent loops or callers. */
+  stepIndex?: number;
   /** Token usage information, populated on the final chunk from the normalizer layer. */
   usage?: UsageInfo;
+  /** Step-local usage information when the caller distinguishes per-step and total usage. */
+  stepUsage?: UsageInfo;
   /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
   nativeToolCallDeltas?: NativeToolCallDelta[];
   /** Why the stream ended, populated on the final chunk. */
@@ -108,6 +113,10 @@ export interface IncompletenessDetail {
 export interface ProcessedOutput {
   thinking: string;
   content: string;
+  /** Step index associated with this output, when supplied by the caller. */
+  stepIndex?: number;
+  /** Step-local usage associated with this output, when supplied by the caller. */
+  stepUsage?: UsageInfo;
   /** Why the stream ended; `undefined` while the stream is still in progress. */
   finishReason?: FinishReason;
   toolCalls: XmlToolCall[];
@@ -125,8 +134,11 @@ export type StreamEventMap = {
   text: (delta: string) => void;
   thinking: (delta: string) => void;
   tool_call: (call: XmlToolCall) => void;
+  tool_call_part: (part: Extract<OutputPart, { type: 'tool_call' }>) => void;
   /** Emitted for each streaming argument delta while a native tool call is assembling. */
   tool_call_delta: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
+  /** Emits reducer-friendly conversation events derived from processor output. */
+  conversation_event: (event: ConversationEvent) => void;
   done: () => void;
   warning: (message: string, context?: Record<string, unknown>) => void;
   /** Emitted each time a chunk carrying `usage` data is processed. */
@@ -187,6 +199,15 @@ export class LLMStreamProcessor {
   private _partsController: ReadableStreamDefaultController<OutputPart> | null = null;
   private _partsSource: ReadableStream<OutputPart>;
   private _cachedPartsStream: ReadableStream<OutputPart> | null = null;
+  private _conversationMessageId: string | null = null;
+  private _conversationMessageCounter = 0;
+  private _lastConversationStepIndex: number | undefined = undefined;
+  private _lastConversationStepUsage: UsageInfo | undefined = undefined;
+  private _syntheticToolCallCounter = 0;
+  private readonly _conversationToolCallsByKey = new Map<string, string>();
+  private readonly _seenConversationToolCallIds = new Set<string>();
+  private readonly _conversationToolCallObjectIds = new WeakMap<XmlToolCall, string>();
+  private conversationDoneEmitted = false;
 
   private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
     if (this._accumulatedUsage !== undefined) {
@@ -201,7 +222,9 @@ export class LLMStreamProcessor {
     text: new Set(),
     thinking: new Set(),
     tool_call: new Set(),
+    tool_call_part: new Set(),
     tool_call_delta: new Set(),
+    conversation_event: new Set(),
     done: new Set(),
     warning: new Set(),
     usage: new Set(),
@@ -421,27 +444,40 @@ export class LLMStreamProcessor {
     }
 
     // Emit completed native calls mid-stream — no need to wait for done: true.
-    const midStreamCalls: XmlToolCall[] = [];
+    const midStreamCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> = [];
     if (this.nativeAccumulator) {
       for (const { index, call } of this.nativeAccumulator.getCompletedCallsWithIndices()) {
         if (!this._midStreamEmittedCallIndices.has(index)) {
           this._midStreamEmittedCallIndices.add(index);
           this.nativeAccumulator.removeCall(index);
-          midStreamCalls.push(...this.mapAccumulatedNativeCalls([call]));
+          midStreamCalls.push(...this.mapAccumulatedNativeCallsWithIndices([{ index, call }], 'input-complete'));
         }
       }
     }
 
     // On stream end, flush any remaining incomplete calls via JSON repair.
-    const accumulatedNativeCalls: XmlToolCall[] =
-      done && this.nativeAccumulator ? this.mapAccumulatedNativeCalls(this.nativeAccumulator.flush()) : [];
+    const accumulatedNativeCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> =
+      done && this.nativeAccumulator
+        ? this.mapAccumulatedNativeCallsWithIndices(this.nativeAccumulator.flushWithIndices(), 'input-complete')
+        : [];
 
-    const toolCalls = this.enforceToolCallLimits([
+    const completedToolCalls = this.enforceToolCallLimits([
       ...extractedXmlToolCalls,
       ...nativeToolCalls,
+      ...midStreamCalls.map(part => part.call),
+      ...accumulatedNativeCalls.map(part => part.call),
+    ]);
+
+    const pendingToolCallParts = this.nativeAccumulator ? this.buildPendingNativeToolCallParts(chunk) : [];
+
+    const toolCallParts: Array<Extract<OutputPart, { type: 'tool_call' }>> = [
+      ...pendingToolCallParts,
       ...midStreamCalls,
       ...accumulatedNativeCalls,
-    ]);
+      ...completedToolCalls
+        .filter(call => !midStreamCalls.some(part => part.call === call) && !accumulatedNativeCalls.some(part => part.call === call))
+        .map(call => ({ type: 'tool_call' as const, call, state: 'input-complete' as const })),
+    ];
 
     // Note: xmlFilter.write() was already invoked earlier to reassemble
     // fragments before extraction.
@@ -449,9 +485,12 @@ export class LLMStreamProcessor {
     const output = this.buildOutput({
       thinking,
       content,
-      toolCalls,
+      toolCalls: completedToolCalls,
+      toolCallParts,
       ...(toolCallDeltas.length > 0 ? { toolCallDeltas } : {}),
       done,
+      ...(chunk.stepIndex === undefined ? {} : { stepIndex: chunk.stepIndex }),
+      ...(chunk.stepUsage === undefined ? {} : { stepUsage: chunk.stepUsage }),
       ...(done && this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
       ...this.usagePayload,
     });
@@ -490,6 +529,8 @@ export class LLMStreamProcessor {
       content: out.content + flushed.content,
       toolCalls: [...out.toolCalls, ...flushed.toolCalls],
       done: true,
+      ...(out.stepIndex === undefined ? {} : { stepIndex: out.stepIndex }),
+      ...(out.stepUsage === undefined ? {} : { stepUsage: out.stepUsage }),
       ...this.usagePayload,
     });
   }
@@ -517,11 +558,11 @@ export class LLMStreamProcessor {
     }
 
     // Flush any remaining accumulated native tool calls that arrived before the done signal.
-    const accumulatedNativeCalls: XmlToolCall[] = this.nativeAccumulator
-      ? this.mapAccumulatedNativeCalls(this.nativeAccumulator.flush())
+    const accumulatedNativeCalls = this.nativeAccumulator
+      ? this.mapAccumulatedNativeCallsWithIndices(this.nativeAccumulator.flushWithIndices(), 'input-complete')
       : [];
 
-    const toolCalls = this.enforceToolCallLimits(accumulatedNativeCalls);
+    const toolCalls = this.enforceToolCallLimits(accumulatedNativeCalls.map(part => part.call));
 
     const incompleteness = this.detectIncompleteness(thinking, content, toolCalls);
 
@@ -529,6 +570,7 @@ export class LLMStreamProcessor {
       thinking,
       content,
       toolCalls,
+      toolCallParts: accumulatedNativeCalls,
       done: true,
       ...(this._lastFinishReason === undefined ? {} : { finishReason: this._lastFinishReason }),
       ...this.usagePayload,
@@ -591,6 +633,14 @@ export class LLMStreamProcessor {
     this._warningCount = 0;
     this._stats = createEmptyStats();
     this._midStreamEmittedCallIndices.clear();
+    this._conversationMessageId = null;
+    this._conversationMessageCounter = 0;
+    this._lastConversationStepIndex = undefined;
+    this._lastConversationStepUsage = undefined;
+    this._syntheticToolCallCounter = 0;
+    this._conversationToolCallsByKey.clear();
+    this._seenConversationToolCallIds.clear();
+    this.conversationDoneEmitted = false;
     this._partsController?.close();
     this._partsController = null;
     this._partsSource = new ReadableStream<OutputPart>({
@@ -683,8 +733,11 @@ export class LLMStreamProcessor {
     thinking: string;
     content: string;
     toolCalls: XmlToolCall[];
+    toolCallParts?: Array<Extract<OutputPart, { type: 'tool_call' }>>;
     toolCallDeltas?: Array<Extract<OutputPart, { type: 'tool_call_delta' }>>;
     done: boolean;
+    stepIndex?: number;
+    stepUsage?: UsageInfo;
     usage?: UsageInfo;
     finishReason?: FinishReason;
   }): ProcessedOutput {
@@ -704,8 +757,12 @@ export class LLMStreamProcessor {
       parts.push({ type: 'text', text: params.content });
     }
 
-    for (const call of params.toolCalls) {
-      parts.push({ type: 'tool_call', call, state: 'input-complete' });
+    if (params.toolCallParts && params.toolCallParts.length > 0) {
+      parts.push(...params.toolCallParts);
+    } else {
+      for (const call of params.toolCalls) {
+        parts.push({ type: 'tool_call', call, state: 'input-complete' });
+      }
     }
 
     const result: ProcessedOutput = {
@@ -719,6 +776,12 @@ export class LLMStreamProcessor {
     };
     if (params.usage !== undefined) {
       result.usage = params.usage;
+    }
+    if (params.stepIndex !== undefined) {
+      result.stepIndex = params.stepIndex;
+    }
+    if (params.stepUsage !== undefined) {
+      result.stepUsage = params.stepUsage;
     }
     if (params.finishReason !== undefined) {
       result.finishReason = params.finishReason;
@@ -743,11 +806,25 @@ export class LLMStreamProcessor {
   }
 
   private emitOutput(output: ProcessedOutput): void {
+    this.emitConversationLifecycle(output);
+
     for (const part of output.parts) {
       if (part.type === 'tool_call_delta') {
         for (const listener of this.listeners.tool_call_delta) {
           listener(part);
         }
+        this.emitConversationToolCallDelta(part);
+      }
+      if (part.type === 'tool_call') {
+        for (const listener of this.listeners.tool_call_part) {
+          listener(part);
+        }
+        if (part.state === 'input-complete' || part.state === 'output-available' || part.state === 'output-error') {
+          for (const listener of this.listeners.tool_call) {
+            listener(part.call);
+          }
+        }
+        this.emitConversationToolCallPart(part);
       }
       this._partsController?.enqueue(part);
     }
@@ -761,14 +838,6 @@ export class LLMStreamProcessor {
     if (output.content) {
       for (const listener of this.listeners.text) {
         listener(output.content);
-      }
-    }
-
-    if (output.toolCalls.length > 0) {
-      for (const call of output.toolCalls) {
-        for (const listener of this.listeners.tool_call) {
-          listener(call);
-        }
       }
     }
 
@@ -810,17 +879,229 @@ export class LLMStreamProcessor {
     }
   }
 
-  private mapAccumulatedNativeCalls(
-    calls: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall[],
-  ): XmlToolCall[] {
-    return calls.map(call => {
+  private mapAccumulatedNativeCallsWithIndices(
+    calls: Array<{ index: number; call: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall }>,
+    state: ToolCallState,
+  ): Array<Extract<OutputPart, { type: 'tool_call' }>> {
+    return calls.map(({ index, call }) => {
       const mapped: XmlToolCall = {
         name: call.name,
         parameters: call.arguments,
         format: 'native-json' as const,
       };
-      if (call.id !== undefined) mapped.id = call.id;
-      return mapped;
+      mapped.id = call.id ?? `native_${index}`;
+      return { type: 'tool_call', call: mapped, state };
+    });
+  }
+
+  private buildPendingNativeToolCallParts(chunk: StreamChunk): Array<Extract<OutputPart, { type: 'tool_call' }>> {
+    if (!Array.isArray(chunk.nativeToolCallDeltas) || chunk.nativeToolCallDeltas.length === 0 || !this.nativeAccumulator) {
+      return [];
+    }
+
+    const seen = new Set<number>();
+    const parts: Array<Extract<OutputPart, { type: 'tool_call' }>> = [];
+    for (const delta of chunk.nativeToolCallDeltas) {
+      if (seen.has(delta.index)) {
+        continue;
+      }
+      seen.add(delta.index);
+
+      const pending = this.nativeAccumulator.getPendingCallInfo(delta.index);
+      const state = this.nativeAccumulator.getPendingToolCallState(delta.index);
+      const name = pending?.name ?? delta.name;
+      if (name === undefined || state === undefined || state === 'input-complete') {
+        continue;
+      }
+
+      const call: XmlToolCall = {
+        name,
+        parameters: {},
+        format: 'native-json',
+      };
+      const id = pending?.id ?? delta.id ?? `native_${delta.index}`;
+      call.id = id;
+      parts.push({ type: 'tool_call', call, state });
+    }
+
+    return parts;
+  }
+
+  private emitConversationEvent(event: ConversationEvent): void {
+    for (const listener of this.listeners.conversation_event) {
+      listener(event);
+    }
+  }
+
+  private ensureConversationMessageId(): string {
+    if (this._conversationMessageId === null) {
+      this._conversationMessageCounter += 1;
+      this._conversationMessageId = `msg_${this._conversationMessageCounter}`;
+      this.emitConversationEvent({
+        type: 'message_started',
+        role: 'assistant',
+        messageId: this._conversationMessageId,
+      });
+    }
+    return this._conversationMessageId;
+  }
+
+  private allocateSyntheticToolCallId(name: string): string {
+    this._syntheticToolCallCounter += 1;
+    return `${name}_${this._syntheticToolCallCounter}`;
+  }
+
+  private resolveConversationToolCallIdFromDelta(part: Extract<OutputPart, { type: 'tool_call_delta' }>): string {
+    if (part.id !== undefined) {
+      return part.id;
+    }
+
+    const fallbackKey = `native-index:${part.index}`;
+    const existing = this._conversationToolCallsByKey.get(fallbackKey);
+    if (existing !== undefined) {
+      return existing;
+    }
+
+    const syntheticId = `native_${part.index}`;
+    this._conversationToolCallsByKey.set(fallbackKey, syntheticId);
+    return syntheticId;
+  }
+
+  private resolveConversationToolCallIdFromPart(part: Extract<OutputPart, { type: 'tool_call' }>): string {
+    if (part.call.id !== undefined) {
+      return part.call.id;
+    }
+
+    const existing = this._conversationToolCallObjectIds.get(part.call);
+    if (existing !== undefined) {
+      return existing;
+    }
+
+    const syntheticId = this.allocateSyntheticToolCallId(part.call.name);
+    this._conversationToolCallObjectIds.set(part.call, syntheticId);
+    return syntheticId;
+  }
+
+  private emitConversationLifecycle(output: ProcessedOutput): void {
+    if (output.stepIndex !== undefined && output.stepIndex !== this._lastConversationStepIndex) {
+      if (this._lastConversationStepIndex !== undefined) {
+        this.emitConversationEvent({
+          type: 'step_finished',
+          stepIndex: this._lastConversationStepIndex,
+          ...(this._conversationMessageId === null ? {} : { messageId: this._conversationMessageId }),
+          ...(this._lastConversationStepUsage === undefined ? {} : { usage: this._lastConversationStepUsage }),
+        });
+      }
+      this._lastConversationStepIndex = output.stepIndex;
+      this.emitConversationEvent({
+        type: 'step_started',
+        stepIndex: output.stepIndex,
+        messageId: this.ensureConversationMessageId(),
+        ...(output.stepUsage === undefined ? {} : { usage: output.stepUsage }),
+      });
+      this._lastConversationStepUsage = output.stepUsage;
+    } else if (output.stepUsage !== undefined) {
+      this._lastConversationStepUsage = output.stepUsage;
+    }
+
+    if ((output.thinking || output.content || output.parts.some(part => part.type === 'tool_call' || part.type === 'tool_call_delta')) &&
+        this._conversationMessageId === null) {
+      this.ensureConversationMessageId();
+    }
+
+    if (output.thinking) {
+      this.emitConversationEvent({
+        type: 'thinking_part_added',
+        messageId: this.ensureConversationMessageId(),
+        text: output.thinking,
+      });
+    }
+
+    if (output.content) {
+      this.emitConversationEvent({
+        type: 'text_part_added',
+        messageId: this.ensureConversationMessageId(),
+        text: output.content,
+      });
+    }
+
+    if (output.done && !this.conversationDoneEmitted && this._conversationMessageId !== null) {
+      this.conversationDoneEmitted = true;
+      this.emitConversationEvent({
+        type: 'message_finished',
+        messageId: this._conversationMessageId,
+        ...(output.finishReason === undefined ? {} : { finishReason: output.finishReason }),
+        ...(output.usage === undefined ? {} : { usage: output.usage }),
+      });
+      if (this._lastConversationStepIndex !== undefined) {
+        this.emitConversationEvent({
+          type: 'step_finished',
+          stepIndex: this._lastConversationStepIndex,
+          messageId: this._conversationMessageId,
+          ...(this._lastConversationStepUsage === undefined ? {} : { usage: this._lastConversationStepUsage }),
+        });
+      }
+      this._conversationMessageId = null;
+      this._lastConversationStepIndex = undefined;
+      this._lastConversationStepUsage = undefined;
+      this._conversationToolCallsByKey.clear();
+      this._seenConversationToolCallIds.clear();
+    }
+  }
+
+  private emitConversationToolCallDelta(part: Extract<OutputPart, { type: 'tool_call_delta' }>): void {
+    const messageId = this.ensureConversationMessageId();
+    const toolCallId = this.resolveConversationToolCallIdFromDelta(part);
+
+    if (!this._seenConversationToolCallIds.has(toolCallId)) {
+      this._seenConversationToolCallIds.add(toolCallId);
+      this.emitConversationEvent({
+        type: 'tool_call_part_added',
+        messageId,
+        toolCall: {
+          id: toolCallId,
+          name: part.name,
+          parameters: {},
+          state: 'input-streaming',
+        },
+      });
+    }
+
+    this.emitConversationEvent({
+      type: 'tool_call_updated',
+      messageId,
+      toolCallId,
+      state: 'input-streaming',
+      argumentsTextDelta: part.argumentsDelta,
+    });
+  }
+
+  private emitConversationToolCallPart(part: Extract<OutputPart, { type: 'tool_call' }>): void {
+    const messageId = this.ensureConversationMessageId();
+    const toolCallId = this.resolveConversationToolCallIdFromPart(part);
+
+    if (!this._seenConversationToolCallIds.has(toolCallId)) {
+      this._seenConversationToolCallIds.add(toolCallId);
+      this.emitConversationEvent({
+        type: 'tool_call_part_added',
+        messageId,
+        toolCall: {
+          id: toolCallId,
+          name: part.call.name,
+          parameters: part.call.parameters,
+          state: part.state,
+          ...(part.state === 'input-complete' ? { argumentsText: JSON.stringify(part.call.parameters) } : {}),
+        },
+      });
+      return;
+    }
+
+    this.emitConversationEvent({
+      type: 'tool_call_updated',
+      messageId,
+      toolCallId,
+      state: part.state,
+      parameters: part.call.parameters,
     });
   }
 

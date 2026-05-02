@@ -2,6 +2,21 @@ import type { OutputPart, StreamChunk } from '../processor/LLMStreamProcessor.js
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { BaseRendererOptions, RendererHandle } from './types.js';
 
+export function createStepChangeEmitter(
+  onStep: BaseRendererOptions['onStep'] | undefined,
+): (chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>) => Promise<void> {
+  let lastReportedStepIndex: number | undefined;
+
+  return async (chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>): Promise<void> => {
+    if (onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
+      return;
+    }
+
+    lastReportedStepIndex = chunk.stepIndex;
+    await onStep(chunk.stepIndex, chunk.stepUsage ?? chunk.usage);
+  };
+}
+
 /**
  * Shared renderer handler builder to reduce duplication across renderers.
  * Handles common pattern: processor initialization, write/writeChunk dispatch to handlers.
@@ -26,6 +41,7 @@ export function createSharedRendererHandle(
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  const emitStepChange = createStepChangeEmitter(options.onStep);
 
   /**
    * Process output parts through registered handlers.
@@ -75,6 +91,7 @@ export function createSharedRendererHandle(
       try {
         const result = llmProcessor.process(chunk);
         await processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -94,6 +111,7 @@ export function createSharedRendererHandle(
       try {
         const result = llmProcessor.flush();
         await processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish if not already fired in writeChunk
         if (!finished && onFinish) {

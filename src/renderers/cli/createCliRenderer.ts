@@ -1,6 +1,7 @@
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle, TextOutput, ThinkingStyle } from '../types.js';
 
 /**
@@ -53,6 +54,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
+  const emitStepChange = createStepChangeEmitter(options.onStep);
   // Track if output is a user-supplied stream (vs default process.stdout)
   const isUserSuppliedStream = output !== process.stdout && output !== process.stderr;
 
@@ -121,6 +123,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       try {
         const result = llmProcessor.process(chunk);
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Fire onFinish callback if stream is done (guard against double invocation)
         if (chunk.done === true && !finished && onFinish) {
@@ -141,6 +144,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       try {
         result = llmProcessor.flush();
         processParts(result.parts);
+        await emitStepChange(result);
 
         // Render accumulated markdown via cli-markdown
         if (accumulatedMarkdown) {

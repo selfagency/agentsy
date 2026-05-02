@@ -61,8 +61,10 @@ export function createConversationStore(conversationId: string): ConversationSto
     id: conversationId,
     messages: [],
     stepIndex: 0,
+    status: 'idle',
     lastEventAt: new Date(),
     totalTokens: 0,
+    totalUsage: {},
     metadata: undefined,
   };
 
