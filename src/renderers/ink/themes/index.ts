@@ -1,6 +1,6 @@
 import type { Theme, ThemeName } from './types.js';
 
-export type { ThemeName };
+export { type ThemeName } from './types.js';
 
 export const defaultTheme: Theme = {
   thinking: { borderColor: 'gray', textColor: 'gray', spinnerColor: 'gray' },
@@ -144,7 +144,8 @@ export const THEME_MAP: Record<ThemeName, Theme> = {
 export function resolveTheme(theme?: Theme | ThemeName): Theme {
   if (!theme || typeof theme === 'string') {
     const themeName = (theme || 'default') as ThemeName;
-    return THEME_MAP[themeName] || defaultTheme;
+    const resolved = THEME_MAP[themeName];
+    return resolved || defaultTheme;
   }
   return theme;
 }

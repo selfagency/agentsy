@@ -70,8 +70,11 @@ function displayThemePreview() {
       const doneColor = theme.toolCall.doneColor || 'green';
       const pendingSymbol = theme.toolCall.pendingSymbol || '⠋';
       const doneSymbol = theme.toolCall.doneSymbol || '✓';
+      const toolsPending = `Tools: ${pendingSymbol}`;
+      const toolsPreview = `pending`;
+      const toolsDone = `${doneSymbol} done`;
       console.log(
-        `  ${applyColor(`└─ Tools: ${pendingSymbol}`, pendingColor)} ${applyColor('pending', pendingColor)} ${applyColor(`${doneSymbol} done`, doneColor)}`,
+        `  ${applyColor(`└─ ${toolsPending}`, pendingColor)} ${applyColor(toolsPreview, pendingColor)} ${applyColor(toolsDone, doneColor)}`,
       );
     }
 

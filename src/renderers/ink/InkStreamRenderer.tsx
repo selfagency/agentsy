@@ -82,15 +82,14 @@ export default function InkStreamRenderer({
   setForceUpdate,
   options,
 }: InkStreamRendererProps) {
+  // tick is used to trigger re-renders when stateRef changes via external listeners
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    setForceUpdate(() => setTick(t => t + 1));
+    setForceUpdate(() => {
+      setTick(t => t + 1);
+    });
   }, [setForceUpdate]);
-
-  // Suppress unused variable warning — forceUpdateRef is used by callers
-  void forceUpdateRef;
-  void tick;
 
   const renderOptions: RenderOptions = {
     showThinking: options.showThinking ?? true,

@@ -9,7 +9,7 @@ interface StreamingTextProps {
   readonly isStreaming: boolean;
   readonly theme: Theme;
   readonly screenReader?: boolean;
-  syntaxHighlight?: boolean;
+  readonly syntaxHighlight?: boolean;
 }
 
 export function StreamingText({
