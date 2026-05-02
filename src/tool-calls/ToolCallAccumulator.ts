@@ -198,6 +198,22 @@ export class ToolCallAccumulator {
     return result;
   }
 
+  /**
+   * Like `flush()`, but preserves each call's accumulator index for consumers
+   * that need stable synthetic IDs derived from index.
+   */
+  public flushWithIndices(): Array<{ index: number; call: NativeToolCall }> {
+    const result: Array<{ index: number; call: NativeToolCall }> = [];
+    for (const [index, pending] of this.calls.entries()) {
+      const call = this._flushPendingCall(pending);
+      if (call !== null) {
+        result.push({ index, call });
+      }
+    }
+    this.calls.clear();
+    return result;
+  }
+
   /** Clears all accumulated state. */
   public reset(): void {
     this.calls.clear();

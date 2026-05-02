@@ -1,6 +1,7 @@
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
 import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle, TextOutput, ThinkingStyle } from '../types.js';
 
 /**
@@ -53,7 +54,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
-  let lastReportedStepIndex: number | undefined;
+  const emitStepChange = createStepChangeEmitter(options.onStep);
   // Track if output is a user-supplied stream (vs default process.stdout)
   const isUserSuppliedStream = output !== process.stdout && output !== process.stderr;
 
@@ -102,15 +103,6 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
         }
       }
     }
-  }
-
-  async function emitStepChange(chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>): Promise<void> {
-    if (options.onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
-      return;
-    }
-
-    lastReportedStepIndex = chunk.stepIndex;
-    await options.onStep(chunk.stepIndex, chunk.stepUsage ?? chunk.usage);
   }
 
   return {

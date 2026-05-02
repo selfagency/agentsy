@@ -3,6 +3,7 @@ import type { OutputPart, StreamChunk } from '../../processor/LLMStreamProcessor
 import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
 import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
 import type { ToolCallState } from '../../tool-calls/types.js';
+import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 
 /**
@@ -124,7 +125,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
-  let lastReportedStepIndex: number | undefined;
+  const handleStepUpdate = createStepChangeEmitter(options.onStep);
 
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
   let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
@@ -186,15 +187,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       stream.markdown('\n\n');
       blockquoteThinkingStarted = false;
     }
-  }
-
-  async function handleStepUpdate(chunk: StreamChunk): Promise<void> {
-    if (options.onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
-      return;
-    }
-
-    lastReportedStepIndex = chunk.stepIndex;
-    await options.onStep(chunk.stepIndex, chunk.stepUsage ?? chunk.usage);
   }
 
   /**

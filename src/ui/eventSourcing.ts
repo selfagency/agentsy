@@ -29,7 +29,7 @@ function handleStepUpdated(state: UIConversation, stepIndex: number, now: Date):
   return {
     ...state,
     stepIndex,
-    status: state.status === 'error' ? 'error' : 'streaming',
+    status: state.status,
     lastEventAt: now,
   };
 }

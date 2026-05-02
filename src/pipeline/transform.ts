@@ -13,7 +13,7 @@ export type PipelineTransform = TransformStream<OutputPart, OutputPart>;
  * LLM output so that downstream renderers receive a steadier stream of tokens.
  *
  * @param options.chunkSize - Maximum characters per emitted text chunk (default: 8).
- * @param options.delayMs - Reserved for future use; currently ignored.
+ * @param options.delayMs - Optional delay in milliseconds between emitted sub-chunks (default: 0).
  */
 export function createSmoothStream(options?: { chunkSize?: number; delayMs?: number }): PipelineTransform {
   const chunkSize = Math.max(1, options?.chunkSize ?? 8);
