@@ -1,14 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Text, Box } from 'ink';
 import { markdownToAnsi } from '../utils/markdownToAnsi.js';
+import type { Theme } from '../themes/types.js';
 
 interface StreamingTextProps {
   text: string;
   markdown?: boolean;
   isStreaming: boolean;
+  theme: Theme;
+  screenReader?: boolean;
+  syntaxHighlight?: boolean;
 }
 
-export function StreamingText({ text, markdown = true, isStreaming }: StreamingTextProps) {
+export function StreamingText({ text, markdown = true, isStreaming, theme, screenReader = false, syntaxHighlight = false }: StreamingTextProps) {
   const [tick, setTick] = useState(0);
 
   const { stablePrefix, unstableSuffix } = useMemo(() => {
@@ -30,12 +34,14 @@ export function StreamingText({ text, markdown = true, isStreaming }: StreamingT
   const [ansiPrefix, setAnsiPrefix] = useState('');
   const [ansiSuffix, setAnsiSuffix] = useState('');
 
+  const effectiveMarkdown = screenReader ? false : markdown;
+
   useEffect(() => {
     let canceled = false;
 
     async function render() {
-      const prefix = markdown ? await markdownToAnsi(stablePrefix) : stablePrefix;
-      const suffix = markdown ? await markdownToAnsi(unstableSuffix) : unstableSuffix;
+      const prefix = effectiveMarkdown ? await markdownToAnsi(stablePrefix, { syntaxHighlight }) : stablePrefix;
+      const suffix = effectiveMarkdown ? await markdownToAnsi(unstableSuffix, { syntaxHighlight }) : unstableSuffix;
 
       if (!canceled) {
         setAnsiPrefix(prefix);
@@ -48,7 +54,7 @@ export function StreamingText({ text, markdown = true, isStreaming }: StreamingT
     return () => {
       canceled = true;
     };
-  }, [stablePrefix, unstableSuffix, markdown, tick]);
+  }, [stablePrefix, unstableSuffix, effectiveMarkdown, tick, syntaxHighlight]);
 
   useEffect(() => {
     if (isStreaming) {
@@ -62,7 +68,7 @@ export function StreamingText({ text, markdown = true, isStreaming }: StreamingT
       <Text>{ansiPrefix}</Text>
       <Text>
         {ansiSuffix}
-        {isStreaming && '▌'}
+        {isStreaming && !screenReader && theme.text.cursorSymbol}
       </Text>
     </Box>
   );

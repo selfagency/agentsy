@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { RenderOptions, Instance } from 'ink';
 import type { LLMStreamProcessor } from '../../processor/index.js';
+import type { Theme } from './themes/types.js';
+import type { KeyboardOptions } from './components/KeyboardHandler.js';
+import { resolveTheme } from './themes/index.js';
 
 export interface InkRendererOptions {
   showThinking?: boolean;
@@ -13,6 +16,10 @@ export interface InkRendererOptions {
   onToolCallDelta?: (delta: string) => void;
   onFinish?: () => void;
   inkOptions?: Partial<RenderOptions>;
+  theme?: Theme | 'default' | 'dark' | 'light' | 'minimal';
+  screenReader?: boolean;
+  syntaxHighlight?: boolean;
+  keyboard?: KeyboardOptions;
 }
 
 export interface InkRendererHandle {
@@ -72,6 +79,8 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
 
   const InkStreamRenderer = (await import('./InkStreamRenderer.js')).default;
 
+  const resolvedTheme = resolveTheme(options.theme);
+
   const instance = render(
     h(InkStreamRenderer, {
       stateRef,
@@ -79,8 +88,18 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
       setForceUpdate: (fn: () => void) => {
         forceUpdate = fn;
       },
-      options,
+      options: {
+        showThinking: options.showThinking,
+        thinkingStyle: options.thinkingStyle,
+        showToolCalls: options.showToolCalls,
+        markdown: options.markdown,
+        theme: resolvedTheme,
+        screenReader: options.screenReader,
+        syntaxHighlight: options.syntaxHighlight,
+        keyboard: options.keyboard,
+      },
     }),
+    options.inkOptions,
   );
 
   return {

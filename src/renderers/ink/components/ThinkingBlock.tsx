@@ -1,40 +1,60 @@
 import { useState, useEffect } from 'react';
 import { Text, Box } from 'ink';
+import type { Theme } from '../themes/types.js';
 
 interface ThinkingBlockProps {
   text: string;
   style: 'blockquote' | 'inline' | 'suppress';
   isStreaming: boolean;
+  theme: Theme;
+  screenReader?: boolean;
 }
 
-const spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-export function ThinkingBlock({ text, style, isStreaming }: ThinkingBlockProps) {
+export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = false }: ThinkingBlockProps) {
+  const [frame, setFrame] = useState(0);
+
+  useEffect(() => {
+    if (style === 'blockquote' && isStreaming && !screenReader) {
+      const interval = setInterval(() => {
+        setFrame(f => (f + 1) % spinnerFrames.length);
+      }, 80);
+      return () => clearInterval(interval);
+    }
+  }, [style, isStreaming, screenReader]);
+
   if (style === 'suppress') {
-    return null as React.ReactNode;
+    return null;
   }
 
   if (style === 'inline') {
+    if (screenReader) {
+      return <Text>Thinking: {text}</Text>;
+    }
+    const textColor = theme.thinking.textColor || undefined;
     return (
-      <Text italic dimColor>
+      <Text italic dimColor={theme.text.dimColor} {...(textColor ? { color: textColor } : {})}>
         [Thinking] {text}
         {isStreaming && '…'}
       </Text>
     );
   }
 
-  const [frame, setFrame] = useState(0);
+  if (screenReader) {
+    return <Text>{'\nThinking:\n' + text + '\n'}</Text>;
+  }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFrame(f => (f + 1) % spinner.length);
-    }, 80);
-    return () => clearInterval(interval);
-  }, [isStreaming]);
+  const borderStyle = theme.border.style !== 'none' ? (theme.border.style as 'single' | 'double' | 'round') : undefined;
+  const borderColor = theme.border.color || undefined;
+  const spinnerSymbol = spinnerFrames[frame] ?? spinnerFrames[0];
+  const spinnerColor = isStreaming ? (theme.thinking.spinnerColor || undefined) : (theme.thinking.textColor || undefined);
 
   return (
-    <Box borderStyle="single" paddingLeft={1} marginBottom={1}>
-      <Text color="gray">│ {isStreaming ? spinner[frame] + ' thinking…' : text}</Text>
+    <Box borderStyle={borderStyle} {...(borderColor ? { borderColor } : {})} paddingLeft={1} marginBottom={1}>
+      <Text {...(spinnerColor ? { color: spinnerColor } : {})}>
+        {isStreaming ? spinnerSymbol + ' thinking…' : text}
+      </Text>
     </Box>
   );
 }
