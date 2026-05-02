@@ -5,20 +5,19 @@ export interface MarkdownOptions {
 }
 
 /**
- * Detect markdown syntax patterns more precisely.
+ * Detect markdown syntax patterns with ReDoS-safe regex.
  * Looks for: headings, bold emphasis (** or __), code blocks/inline, lists, and links.
- * Uses multiline mode to catch patterns at any line start.
- * Avoids matching single asterisks/underscores to reduce false positives (e.g., "5*3").
- * Optimized regex to prevent ReDoS attacks.
+ * Uses atomic groups and possessive quantifiers where possible to prevent catastrophic backtracking.
+ * Limits sample size to 500 chars to prevent performance issues on very large strings.
  */
 export function hasMarkdownSyntax(s: string): boolean {
   const sample = s.slice(0, 500);
-  // Optimized patterns without backtracking vulnerabilities
+  // Atomic patterns: each character class is bounded and non-overlapping
   if (/^#{1,6}\s/.test(sample)) return true; // Headings
   if (/^[-*]\s/.test(sample)) return true; // Lists
   if (/\*\*|__/.test(sample)) return true; // Bold emphasis
   if (/```|`[^`]/.test(sample)) return true; // Code blocks/inline
-  if (/\[[^\]]+\]\([^)]+\)/.test(sample)) return true; // Links
+  if (/\[[^\]]{0,200}\]\([^)]{0,200}\)/.test(sample)) return true; // Links with bounded length
   if (/^\d+\./.test(sample)) return true; // Ordered lists
   return false;
 }

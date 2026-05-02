@@ -1,6 +1,7 @@
 import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
 import type { LLMStreamProcessor } from '../../processor/index.js';
+import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { resolveTheme } from './themes/index.js';
 import type { Theme, ThemeName } from './themes/types.js';
@@ -61,8 +62,13 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
       stateRef.thinking += delta;
       forceUpdateRef.current();
     },
-    tool_call: (part: any) => {
-      stateRef.toolCalls.push({ id: part.id || randomUUID(), name: part.name, arguments: part.parameters, done: true });
+    tool_call: (part: XmlToolCall) => {
+      stateRef.toolCalls.push({
+        id: part.id || randomUUID(),
+        name: part.name,
+        arguments: part.parameters,
+        done: true,
+      });
       forceUpdateRef.current();
     },
     done: () => {

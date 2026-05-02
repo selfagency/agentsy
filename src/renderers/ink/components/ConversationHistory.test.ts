@@ -36,7 +36,9 @@ describe('ConversationHistory Component', () => {
     ];
 
     expect(turns).toHaveLength(1);
-    expect(turns[0]!.role).toBe('user');
+    if (turns[0]) {
+      expect(turns[0].role).toBe('user');
+    }
   });
 
   it('accepts single assistant turn', () => {
@@ -50,7 +52,9 @@ describe('ConversationHistory Component', () => {
     ];
 
     expect(turns).toHaveLength(1);
-    expect(turns[0]!.role).toBe('assistant');
+    if (turns[0]) {
+      expect(turns[0].role).toBe('assistant');
+    }
   });
 
   it('accepts multi-turn conversation', () => {
@@ -83,7 +87,9 @@ describe('ConversationHistory Component', () => {
       },
     ];
 
-    expect(turns[0]!.thinking).toBe('Internal reasoning');
+    if (turns[0]) {
+      expect(turns[0].thinking).toBe('Internal reasoning');
+    }
   });
 
   it('supports tool calls in turns', () => {
@@ -104,7 +110,9 @@ describe('ConversationHistory Component', () => {
       },
     ];
 
-    expect(turns[0]!.toolCalls).toHaveLength(1);
+    if (turns[0]) {
+      expect(turns[0].toolCalls).toHaveLength(1);
+    }
   });
 
   it('supports showThinking option', () => {

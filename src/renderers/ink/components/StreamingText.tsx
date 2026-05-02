@@ -61,7 +61,7 @@ export function StreamingText({
     return () => {
       canceled = true;
     };
-  }, [stablePrefix, unstableSuffix, effectiveMarkdown, tick, syntaxHighlight]);
+  }, [stablePrefix, unstableSuffix, effectiveMarkdown, syntaxHighlight]);
 
   useEffect(() => {
     if (isStreaming) {

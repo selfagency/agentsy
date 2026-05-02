@@ -28,6 +28,54 @@ interface InkStreamRendererProps {
   };
 }
 
+interface RenderOptions {
+  showThinking: boolean;
+  thinkingStyle: 'blockquote' | 'inline' | 'suppress';
+  showToolCalls: boolean;
+  markdown: boolean;
+  theme: Theme;
+  screenReader: boolean;
+  syntaxHighlight: boolean;
+}
+
+function ContentRenderer({
+  text,
+  thinking,
+  toolCalls,
+  isStreaming,
+  options,
+}: {
+  text: string;
+  thinking: string;
+  toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  isStreaming: boolean;
+  options: RenderOptions;
+}) {
+  return (
+    <Box flexDirection="column">
+      {options.showThinking && thinking && (
+        <ThinkingBlock
+          text={thinking}
+          style={options.thinkingStyle}
+          isStreaming={isStreaming}
+          theme={options.theme}
+          screenReader={options.screenReader}
+        />
+      )}
+      {options.showToolCalls &&
+        toolCalls.map(call => <ToolCallBlock key={call.id} call={call} theme={options.theme} screenReader={options.screenReader} />)}
+      <StreamingText
+        text={text}
+        markdown={options.markdown}
+        isStreaming={isStreaming}
+        theme={options.theme}
+        screenReader={options.screenReader}
+        syntaxHighlight={options.syntaxHighlight}
+      />
+    </Box>
+  );
+}
+
 export default function InkStreamRenderer({
   stateRef,
   forceUpdateRef,
@@ -44,41 +92,26 @@ export default function InkStreamRenderer({
   void forceUpdateRef;
   void tick;
 
-  const { text, thinking, toolCalls, isStreaming } = stateRef;
-
-  const {
-    showThinking = true,
-    thinkingStyle = 'blockquote',
-    showToolCalls = true,
-    markdown = true,
-    theme,
-    screenReader = false,
-    syntaxHighlight = false,
-    keyboard,
-  } = options;
+  const renderOptions: RenderOptions = {
+    showThinking: options.showThinking ?? true,
+    thinkingStyle: options.thinkingStyle ?? 'blockquote',
+    showToolCalls: options.showToolCalls ?? true,
+    markdown: options.markdown ?? true,
+    theme: options.theme,
+    screenReader: options.screenReader ?? false,
+    syntaxHighlight: options.syntaxHighlight ?? false,
+  };
 
   return (
     <Box flexDirection="column">
-      {showThinking && thinking && (
-        <ThinkingBlock
-          text={thinking}
-          style={thinkingStyle}
-          isStreaming={isStreaming}
-          theme={theme}
-          screenReader={screenReader}
-        />
-      )}
-      {showToolCalls &&
-        toolCalls.map(call => <ToolCallBlock key={call.id} call={call} theme={theme} screenReader={screenReader} />)}
-      <StreamingText
-        text={text}
-        markdown={markdown}
-        isStreaming={isStreaming}
-        theme={theme}
-        screenReader={screenReader}
-        syntaxHighlight={syntaxHighlight}
+      <ContentRenderer
+        text={stateRef.text}
+        thinking={stateRef.thinking}
+        toolCalls={stateRef.toolCalls}
+        isStreaming={stateRef.isStreaming}
+        options={renderOptions}
       />
-      {keyboard?.enabled === true && <KeyboardHandler keyboard={keyboard} />}
+      {options.keyboard?.enabled === true && <KeyboardHandler keyboard={options.keyboard} />}
     </Box>
   );
 }

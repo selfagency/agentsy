@@ -1,5 +1,6 @@
 import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
+import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
 import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';
 import { resolveTheme } from './themes/index.js';
 
@@ -64,8 +65,13 @@ export async function createInkConversationRenderer(
       stateRef.thinking += delta;
       forceUpdateRef.current();
     },
-    tool_call: (part: any) => {
-      stateRef.toolCalls.push({ id: part.id || randomUUID(), name: part.name, arguments: part.parameters, done: true });
+    tool_call: (part: XmlToolCall) => {
+      stateRef.toolCalls.push({
+        id: part.id || randomUUID(),
+        name: part.name,
+        arguments: part.parameters,
+        done: true,
+      });
       forceUpdateRef.current();
     },
     done: () => {
