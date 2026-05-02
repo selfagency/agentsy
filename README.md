@@ -531,5 +531,5 @@ Set `screenReader: true` to disable animations and output plain text for screen 
 
 ## Error Handling
 
-| Category                                                                                     | Behaviour                                                                         |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Category | Behaviour |
+| -------- | --------- |

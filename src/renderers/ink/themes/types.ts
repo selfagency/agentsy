@@ -50,4 +50,3 @@ export type ThemeName =
   | 'one-dark'
   | 'one-candy'
   | 'github-dark';
-

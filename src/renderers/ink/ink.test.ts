@@ -462,8 +462,7 @@ describe('Ink Renderer', () => {
       });
 
       processor.process({
-        content:
-          'First block:\n```ts\nconst a = 1;\n```\n\nSecond block:\n```python\nb = 2\n```',
+        content: 'First block:\n```ts\nconst a = 1;\n```\n\nSecond block:\n```python\nb = 2\n```',
       });
       processor.process({ done: true });
 
