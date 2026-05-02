@@ -76,6 +76,18 @@ function ContentRenderer({
   );
 }
 
+function buildRenderOptions(options: InkStreamRendererProps['options']): RenderOptions {
+  return {
+    showThinking: options.showThinking ?? true,
+    thinkingStyle: options.thinkingStyle ?? 'blockquote',
+    showToolCalls: options.showToolCalls ?? true,
+    markdown: options.markdown ?? true,
+    theme: options.theme,
+    screenReader: options.screenReader ?? false,
+    syntaxHighlight: options.syntaxHighlight ?? false,
+  };
+}
+
 export default function InkStreamRenderer({
   stateRef,
   forceUpdateRef,
@@ -91,15 +103,7 @@ export default function InkStreamRenderer({
     });
   }, [setForceUpdate]);
 
-  const renderOptions: RenderOptions = {
-    showThinking: options.showThinking ?? true,
-    thinkingStyle: options.thinkingStyle ?? 'blockquote',
-    showToolCalls: options.showToolCalls ?? true,
-    markdown: options.markdown ?? true,
-    theme: options.theme,
-    screenReader: options.screenReader ?? false,
-    syntaxHighlight: options.syntaxHighlight ?? false,
-  };
+  const renderOptions = buildRenderOptions(options);
 
   return (
     <Box flexDirection="column">
