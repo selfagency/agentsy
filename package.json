@@ -165,6 +165,7 @@
     "lint": "oxlint .",
     "format": "oxfmt . --write",
     "test": "vitest run src",
+    "themes:preview": "node scripts/preview-themes.js",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview"
