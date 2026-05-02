@@ -85,11 +85,7 @@ export function createVSCodeCopilotAdapter(options: VSCodeCopilotAdapterOptions)
       await options.onToolCall(toolCall);
     }
 
-    if (
-      options.onStep !== undefined &&
-      output.stepIndex !== undefined &&
-      output.stepIndex !== lastReportedStepIndex
-    ) {
+    if (options.onStep !== undefined && output.stepIndex !== undefined && output.stepIndex !== lastReportedStepIndex) {
       lastReportedStepIndex = output.stepIndex;
       await options.onStep(output.stepIndex, output.stepUsage ?? output.usage);
     }

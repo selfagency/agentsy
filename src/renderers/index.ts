@@ -11,6 +11,7 @@
  * - **CLI** (`./cli`) — ANSI-rich markdown rendering for terminal output (requires `cli-markdown` peer dep)
  * - **Streaming Markdown** (`./streaming-md`) — Append-only DOM streaming for browsers (requires `streaming-markdown` + `dompurify` peer deps)
  * - **VS Code Chat** (`./vscode`) — Streaming output for VS Code extensions via ChatResponseStream (no new deps, uses duck-typed interface)
+ * - **Ink** (`./ink`) — Streaming React/Ink renderer for terminal output (requires `ink` + `react` peer deps)
  *
  * @example
  * ```typescript

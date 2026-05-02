@@ -751,9 +751,9 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
     processor.process({ nativeToolCallDeltas: [{ index: 0, argumentsDelta: '"ts"}' }] });
 
     const added = events.find(e => e.type === 'tool_call_part_added') as { toolCall?: { id?: string } } | undefined;
-    const updated = events.find(
-      e => e.type === 'tool_call_updated' && e.state === 'input-complete',
-    ) as { toolCallId?: string } | undefined;
+    const updated = events.find(e => e.type === 'tool_call_updated' && e.state === 'input-complete') as
+      | { toolCallId?: string }
+      | undefined;
 
     expect(added?.toolCall?.id).toBeDefined();
     expect(updated?.toolCallId).toBe(added?.toolCall?.id);

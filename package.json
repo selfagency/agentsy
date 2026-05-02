@@ -152,6 +152,11 @@
       "types": "./dist/ag-ui/index.d.ts",
       "import": "./dist/ag-ui/index.js",
       "require": "./dist/ag-ui/index.cjs"
+    },
+    "./renderers/ink": {
+      "types": "./dist/renderers/ink/index.d.ts",
+      "import": "./dist/renderers/ink/index.js",
+      "require": "./dist/renderers/ink/index.cjs"
     }
   },
   "scripts": {
@@ -168,6 +173,7 @@
     "@go-task/cli": "^3.50.0",
     "@octokit/rest": "^22.0.1",
     "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
     "@vitest/coverage-v8": "^4.1.5",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
@@ -183,8 +189,20 @@
     "zx": "^8.8.5"
   },
   "peerDependencies": {
-    "@ag-ui/core": "^0.0.53"
+    "@ag-ui/core": "^0.0.53",
+    "ink": ">=4.0.0",
+    "react": ">=18.0.0"
   },
-  "peerDependenciesMeta": {},
+  "peerDependenciesMeta": {
+    "ink": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "cli-markdown": "^3.5.1"
+  },
   "packageManager": "pnpm@10.31.0"
 }

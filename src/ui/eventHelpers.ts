@@ -1,4 +1,10 @@
-import type { UIConversation, UIMessage, UIMessagePart, UIMessagePartWithoutCreatedAt, UIToolCallPart } from './types.js';
+import type {
+  UIConversation,
+  UIMessage,
+  UIMessagePart,
+  UIMessagePartWithoutCreatedAt,
+  UIToolCallPart,
+} from './types.js';
 import type { UsageInfo } from '../normalizers/types.js';
 
 /**

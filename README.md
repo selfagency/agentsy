@@ -288,10 +288,7 @@ The UI package can now consume reducer-friendly processor events automatically, 
 import { createSmoothStream, createThinkingFilter } from '@selfagency/llm-stream-parser/pipeline';
 
 const processor = new LLMStreamProcessor({
-  transforms: [
-    createThinkingFilter(),
-    createSmoothStream({ chunkSize: 4, delayMs: 25 }),
-  ],
+  transforms: [createThinkingFilter(), createSmoothStream({ chunkSize: 4, delayMs: 25 })],
 });
 ```
 

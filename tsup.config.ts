@@ -26,6 +26,7 @@ export default defineConfig({
     'src/renderers/vscode/index.ts',
     'src/ui/index.ts',
     'src/ag-ui/index.ts',
+    'src/renderers/ink/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,

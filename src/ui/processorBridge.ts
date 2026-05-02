@@ -23,10 +23,7 @@ function addListener<K extends keyof StreamEventMap>(
   });
 }
 
-export function bindProcessorToConversationStore(
-  processor: LLMStreamProcessor,
-  store: ConversationStore,
-): () => void {
+export function bindProcessorToConversationStore(processor: LLMStreamProcessor, store: ConversationStore): () => void {
   const removers: Array<() => void> = [];
 
   addListener(
