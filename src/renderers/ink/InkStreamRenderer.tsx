@@ -60,11 +60,16 @@ export default function InkStreamRenderer({
   return (
     <Box flexDirection="column">
       {showThinking && thinking && (
-        <ThinkingBlock text={thinking} style={thinkingStyle} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />
+        <ThinkingBlock
+          text={thinking}
+          style={thinkingStyle}
+          isStreaming={isStreaming}
+          theme={theme}
+          screenReader={screenReader}
+        />
       )}
-      {showToolCalls && toolCalls.map(call => (
-        <ToolCallBlock key={call.id} call={call} theme={theme} screenReader={screenReader} />
-      ))}
+      {showToolCalls &&
+        toolCalls.map(call => <ToolCallBlock key={call.id} call={call} theme={theme} screenReader={screenReader} />)}
       <StreamingText
         text={text}
         markdown={markdown}

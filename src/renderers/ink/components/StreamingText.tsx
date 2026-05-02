@@ -12,7 +12,14 @@ interface StreamingTextProps {
   syntaxHighlight?: boolean;
 }
 
-export function StreamingText({ text, markdown = true, isStreaming, theme, screenReader = false, syntaxHighlight = false }: StreamingTextProps) {
+export function StreamingText({
+  text,
+  markdown = true,
+  isStreaming,
+  theme,
+  screenReader = false,
+  syntaxHighlight = false,
+}: StreamingTextProps) {
   const [tick, setTick] = useState(0);
 
   const { stablePrefix, unstableSuffix } = useMemo(() => {

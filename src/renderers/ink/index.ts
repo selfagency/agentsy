@@ -8,7 +8,14 @@ export {
   type InkConversationRendererHandle,
   type ConversationTurn,
 } from './createInkConversationRenderer.js';
-export { type Theme, type ThinkingTheme, type ToolCallTheme, type TextTheme, type BorderTheme, type HighlightTheme } from './themes/types.js';
+export {
+  type Theme,
+  type ThinkingTheme,
+  type ToolCallTheme,
+  type TextTheme,
+  type BorderTheme,
+  type HighlightTheme,
+} from './themes/types.js';
 export {
   defaultTheme,
   darkTheme,
