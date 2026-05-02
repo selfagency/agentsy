@@ -12,6 +12,7 @@ const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '
 
 export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlockProps) {
   const [frame, setFrame] = useState(0);
+  const spinnerInterval = theme.toolCall.spinnerIntervalMs ?? 80;
 
   const shouldAnimate = !screenReader && !!theme.toolCall.pendingColor;
 
@@ -19,10 +20,10 @@ export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlo
     if (!call.done && shouldAnimate) {
       const interval = setInterval(() => {
         setFrame(f => (f + 1) % spinnerFrames.length);
-      }, 80);
+      }, spinnerInterval);
       return () => clearInterval(interval);
     }
-  }, [call.done, shouldAnimate]);
+  }, [call.done, shouldAnimate, spinnerInterval]);
 
   if (call.done) {
     if (screenReader) {

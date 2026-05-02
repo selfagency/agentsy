@@ -2,6 +2,7 @@ export interface ThinkingTheme {
   borderColor: string;
   textColor: string;
   spinnerColor: string;
+  spinnerIntervalMs?: number;
 }
 
 export interface ToolCallTheme {
@@ -9,6 +10,7 @@ export interface ToolCallTheme {
   doneColor: string;
   pendingSymbol: string;
   doneSymbol: string;
+  spinnerIntervalMs?: number;
 }
 
 export interface TextTheme {

@@ -14,15 +14,16 @@ const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '
 
 export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = false }: ThinkingBlockProps) {
   const [frame, setFrame] = useState(0);
+  const spinnerInterval = theme.thinking.spinnerIntervalMs ?? 80;
 
   useEffect(() => {
     if (style === 'blockquote' && isStreaming && !screenReader) {
       const interval = setInterval(() => {
         setFrame(f => (f + 1) % spinnerFrames.length);
-      }, 80);
+      }, spinnerInterval);
       return () => clearInterval(interval);
     }
-  }, [style, isStreaming, screenReader]);
+  }, [style, isStreaming, screenReader, spinnerInterval]);
 
   if (style === 'suppress') {
     return null;

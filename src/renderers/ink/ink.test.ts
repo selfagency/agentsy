@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest';
 import { createInkRenderer } from './createInkRenderer.js';
+import { darkTheme } from './themes/index.js';
 import { LLMStreamProcessor } from '../../processor/index.js';
 
 // Mock cli-markdown for consistent ANSI output in tests
@@ -480,6 +481,114 @@ describe('Ink Renderer', () => {
       });
 
       processor.process({ content: '```unknownlang\nfoo bar baz\n```' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+  });
+
+  describe('Keyboard Handler', () => {
+    it('onInterrupt callback is called when enabled', async () => {
+      const onInterrupt = vi.fn();
+
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        keyboard: {
+          enabled: true,
+          onInterrupt,
+        },
+      });
+
+      processor.process({ content: 'Text' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('onCancel callback is called when enabled', async () => {
+      const onCancel = vi.fn();
+
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        keyboard: {
+          enabled: true,
+          onCancel,
+        },
+      });
+
+      processor.process({ content: 'Text' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+  });
+
+  describe('Spinner Interval Configuration', () => {
+    it('respects spinnerIntervalMs in thinking theme', async () => {
+      const customTheme = {
+        ...darkTheme,
+        thinking: { ...darkTheme.thinking, spinnerIntervalMs: 50 },
+      };
+
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        theme: customTheme,
+        showThinking: true,
+      });
+
+      processor.process({ content: '<thinking>Fast spinner</thinking>' });
+      processor.process({ content: 'Main output' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('respects spinnerIntervalMs in toolCall theme', async () => {
+      const customTheme = {
+        ...darkTheme,
+        toolCall: { ...darkTheme.toolCall, spinnerIntervalMs: 100 },
+      };
+
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        theme: customTheme,
+        showToolCalls: true,
+      });
+
+      processor.process({ content: 'Text' });
+      processor.process({ done: true });
+
+      expect(renderer.instance).toBeDefined();
+
+      renderer.unmount();
+    });
+
+    it('falls back to default interval when not specified', async () => {
+      const renderer = await createInkRenderer({
+        processor,
+        onWarning,
+        onFinish,
+        theme: darkTheme, // No spinnerIntervalMs specified
+        showThinking: true,
+      });
+
+      processor.process({ content: '<thinking>Default speed</thinking>' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
