@@ -138,20 +138,27 @@ export type ThemeName =
   | 'one-candy'
   | 'github-dark';
 
+const THEME_MAP: Record<ThemeName, Theme> = {
+  default: defaultTheme,
+  dark: darkTheme,
+  light: lightTheme,
+  minimal: minimalTheme,
+  dracula: draculaTheme,
+  'catppuccin-mocha': catppuccinMochaTheme,
+  'catppuccin-latte': catppuccinLatteTheme,
+  'catppuccin-macchiato': catppuccinMacchiatoTheme,
+  'catppuccin-frappe': catppuccinFrappeTheme,
+  'ayu-mirage': ayuMirageTheme,
+  houston: houstonTheme,
+  'one-dark': oneDarkTheme,
+  'one-candy': oneCandyTheme,
+  'github-dark': githubDarkTheme,
+};
+
 export function resolveTheme(theme?: Theme | ThemeName): Theme {
-  if (!theme || theme === 'default') return defaultTheme;
-  if (theme === 'dark') return darkTheme;
-  if (theme === 'light') return lightTheme;
-  if (theme === 'minimal') return minimalTheme;
-  if (theme === 'dracula') return draculaTheme;
-  if (theme === 'catppuccin-mocha') return catppuccinMochaTheme;
-  if (theme === 'catppuccin-latte') return catppuccinLatteTheme;
-  if (theme === 'catppuccin-macchiato') return catppuccinMacchiatoTheme;
-  if (theme === 'catppuccin-frappe') return catppuccinFrappeTheme;
-  if (theme === 'ayu-mirage') return ayuMirageTheme;
-  if (theme === 'houston') return houstonTheme;
-  if (theme === 'one-dark') return oneDarkTheme;
-  if (theme === 'one-candy') return oneCandyTheme;
-  if (theme === 'github-dark') return githubDarkTheme;
+  if (!theme || typeof theme === 'string') {
+    const themeName = (theme || 'default') as ThemeName;
+    return THEME_MAP[themeName] || defaultTheme;
+  }
   return theme;
 }

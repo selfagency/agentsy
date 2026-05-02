@@ -66,13 +66,13 @@ describe('Markdown Detection with Tightened Regex', () => {
     });
 
     it('works with very long strings (only samples first 500 chars)', () => {
-      const longText = 'a'.repeat(600) + '\n# Heading';
+      const longText = `${'a'.repeat(600)}\n# Heading`;
       // Should not detect heading since it's beyond 500 char sample
       expect(hasMarkdownSyntax(longText)).toBe(false);
     });
 
     it('detects markdown within first 500 chars', () => {
-      const textWithHeading = '# Heading\n' + 'a'.repeat(600);
+      const textWithHeading = `# Heading\n${'a'.repeat(600)}`;
       expect(hasMarkdownSyntax(textWithHeading)).toBe(true);
     });
 

@@ -35,7 +35,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('uses consistent hashes for large strings', () => {
-    const renderFn = vi.fn((s: string) => `[cached]`);
+    const renderFn = vi.fn((_s: string) => `[cached]`);
     const largeContent = 'a'.repeat(2000);
 
     const result1 = getCachedAnsi(largeContent, renderFn);

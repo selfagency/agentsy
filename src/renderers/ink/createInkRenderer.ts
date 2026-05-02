@@ -12,8 +12,6 @@ export interface InkRendererOptions {
   markdown?: boolean;
   processor: LLMStreamProcessor;
   onWarning: (message: string) => void;
-  onToolCall?: (tool: { name: string; arguments: Record<string, unknown> }) => void;
-  onToolCallDelta?: (delta: string) => void;
   onFinish?: () => void;
   inkOptions?: Partial<RenderOptions>;
   theme?: Theme | ThemeName;
@@ -49,33 +47,39 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     isStreaming: true,
   };
 
-  let forceUpdate: () => void = () => {};
+  const forceUpdateRef = { current: () => {} };
 
   const { processor } = options;
-  processor.on('text', delta => {
-    stateRef.text += delta;
-    forceUpdate();
-  });
+  
+  // Store listener functions for cleanup on unmount
+  const listeners = {
+    text: (delta: string) => {
+      stateRef.text += delta;
+      forceUpdateRef.current();
+    },
+    thinking: (delta: string) => {
+      stateRef.thinking += delta;
+      forceUpdateRef.current();
+    },
+    tool_call: (part: any) => {
+      stateRef.toolCalls.push({ id: part.id || randomUUID(), name: part.name, arguments: part.parameters, done: true });
+      forceUpdateRef.current();
+    },
+    done: () => {
+      stateRef.isStreaming = false;
+      forceUpdateRef.current();
+      options.onFinish?.();
+    },
+    warning: (error: string) => {
+      options.onWarning?.(error);
+    },
+  };
 
-  processor.on('thinking', delta => {
-    stateRef.thinking += delta;
-    forceUpdate();
-  });
-
-  processor.on('tool_call', part => {
-    stateRef.toolCalls.push({ id: part.id || randomUUID(), name: part.name, arguments: part.parameters, done: true });
-    forceUpdate();
-  });
-
-  processor.on('done', () => {
-    stateRef.isStreaming = false;
-    forceUpdate();
-    options.onFinish?.();
-  });
-
-  processor.on('warning', error => {
-    options.onWarning?.(error);
-  });
+  processor.on('text', listeners.text);
+  processor.on('thinking', listeners.thinking);
+  processor.on('tool_call', listeners.tool_call);
+  processor.on('done', listeners.done);
+  processor.on('warning', listeners.warning);
 
   const InkStreamRenderer = (await import('./InkStreamRenderer.js')).default;
 
@@ -84,9 +88,9 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
   const instance = render(
     h(InkStreamRenderer, {
       stateRef,
-      forceUpdateRef: { current: () => forceUpdate() },
+      forceUpdateRef,
       setForceUpdate: (fn: () => void) => {
-        forceUpdate = fn;
+        forceUpdateRef.current = fn;
       },
       options: {
         showThinking: options.showThinking,
@@ -104,14 +108,20 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
 
   return {
     instance,
-    write(chunk: string): void {
+    write(_chunk: string): void {
       // Ink renderer is event-driven via processor; write is a no-op
     },
     end(): void {
       stateRef.isStreaming = false;
-      forceUpdate();
+      forceUpdateRef.current();
     },
     unmount(): void {
+      // Clean up processor listeners to prevent memory leaks
+      processor.off('text', listeners.text);
+      processor.off('thinking', listeners.thinking);
+      processor.off('tool_call', listeners.tool_call);
+      processor.off('done', listeners.done);
+      processor.off('warning', listeners.warning);
       instance.unmount();
     },
   };

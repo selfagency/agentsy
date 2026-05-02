@@ -32,7 +32,7 @@ export function ConversationHistory({ turns, theme, screenReader = false, option
       {turn => (
         <Box key={turn.id} flexDirection="column" marginBottom={1}>
           {turn.role === 'user' ? (
-            <Text bold>{'› ' + turn.text}</Text>
+            <Text bold>{`› ${turn.text}`}</Text>
           ) : (
             <Box flexDirection="column">
               {showThinking && turn.thinking && (

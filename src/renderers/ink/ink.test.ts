@@ -16,7 +16,7 @@ vi.mock('ink', async () => {
   const actual = await vi.importActual<typeof import('ink')>('ink');
   return {
     ...actual,
-    render: vi.fn((component: any) => {
+    render: vi.fn((component: React.ReactElement) => {
       // Return a mock instance without invoking terminal setup
       return {
         lastFrame: () => '[mock frame]',
@@ -35,8 +35,8 @@ describe('Ink Renderer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    onWarning = vi.fn() as any;
-    onFinish = vi.fn() as any;
+    onWarning = vi.fn();
+    onFinish = vi.fn();
     processor = new LLMStreamProcessor({
       parseThinkTags: true,
       scrubContextTags: true,

@@ -16,10 +16,11 @@ const CODE_FENCE_RE = /```(\w*)\n([\s\S]*?)```/g;
 export async function highlightCodeFences(content: string): Promise<string> {
   const matches: Array<{ full: string; lang: string; code: string }> = [];
 
-  let match: RegExpExecArray | null;
   CODE_FENCE_RE.lastIndex = 0;
-  while ((match = CODE_FENCE_RE.exec(content)) !== null) {
+  let match = CODE_FENCE_RE.exec(content);
+  while (match !== null) {
     matches.push({ full: match[0] ?? '', lang: match[1] ?? '', code: match[2] ?? '' });
+    match = CODE_FENCE_RE.exec(content);
   }
 
   if (matches.length === 0) return content;

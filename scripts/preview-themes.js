@@ -10,7 +10,8 @@ import chalk from 'chalk';
 import {
   ayuMirageTheme,
   catppuccinFrappeTheme,
-  catppuccinLatteDarkTheme,
+  catppuccinLatteTheme,
+  catppuccinMacchiatoTheme,
   catppuccinMochaTheme,
   darkTheme,
   defaultTheme,
@@ -30,7 +31,8 @@ const THEMES = [
   { name: 'minimal', theme: minimalTheme },
   { name: 'dracula', theme: draculaTheme },
   { name: 'catppuccin-mocha', theme: catppuccinMochaTheme },
-  { name: 'catppuccin-latte-dark', theme: catppuccinLatteDarkTheme },
+  { name: 'catppuccin-latte', theme: catppuccinLatteTheme },
+  { name: 'catppuccin-macchiato', theme: catppuccinMacchiatoTheme },
   { name: 'catppuccin-frappe', theme: catppuccinFrappeTheme },
   { name: 'ayu-mirage', theme: ayuMirageTheme },
   { name: 'houston', theme: houstonTheme },
@@ -39,10 +41,18 @@ const THEMES = [
   { name: 'github-dark', theme: githubDarkTheme },
 ];
 
+function applyColor(text, color) {
+  if (!color) return text;
+  if (color.startsWith('#')) {
+    return chalk.hex(color)(text);
+  }
+  return chalk[color]?.(text) ?? text;
+}
+
 function displayThemePreview() {
-  console.log('\n' + chalk.bold.cyan('═══════════════════════════════════'));
+  console.log(`\n${chalk.bold.cyan('═══════════════════════════════════')}`);
   console.log(chalk.bold.cyan('  Available Ink Renderer Themes'));
-  console.log(chalk.bold.cyan('═══════════════════════════════════\n'));
+  console.log(`${chalk.bold.cyan('═══════════════════════════════════')}\n`);
 
   for (const { name, theme } of THEMES) {
     console.log(chalk.bold.white(name.padEnd(25)));
@@ -51,10 +61,7 @@ function displayThemePreview() {
       const textColor = theme.thinking.textColor || 'cyan';
       const spinnerColor = theme.thinking.spinnerColor || 'cyan';
       console.log(
-        '  ' +
-          chalk[textColor]('├─ Thinking:') +
-          ' ' +
-          chalk[spinnerColor](`text=${textColor}, spinner=${spinnerColor}`),
+        `  ${applyColor('├─ Thinking:', textColor)} ${applyColor(`text=${textColor}, spinner=${spinnerColor}`, spinnerColor)}`,
       );
     }
 
@@ -64,17 +71,12 @@ function displayThemePreview() {
       const pendingSymbol = theme.toolCall.pendingSymbol || '⠋';
       const doneSymbol = theme.toolCall.doneSymbol || '✓';
       console.log(
-        '  ' +
-          chalk[pendingColor](`└─ Tools: ${pendingSymbol}`) +
-          ' ' +
-          chalk[pendingColor]('pending') +
-          ' ' +
-          chalk[doneColor](`${doneSymbol} done`),
+        `  ${applyColor(`└─ Tools: ${pendingSymbol}`, pendingColor)} ${applyColor('pending', pendingColor)} ${applyColor(`${doneSymbol} done`, doneColor)}`,
       );
     }
 
     if (theme.border) {
-      console.log('  ' + chalk.dim(`Border: ${theme.border.style}`));
+      console.log(`  ${chalk.dim(`Border: ${theme.border.style}`)}`);
     }
 
     console.log();

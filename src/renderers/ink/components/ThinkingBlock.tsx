@@ -43,7 +43,7 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
   }
 
   if (screenReader) {
-    return <Text>{'\nThinking:\n' + text + '\n'}</Text>;
+    return <Text>{`\nThinking:\n${text}\n`}</Text>;
   }
 
   const borderStyle = theme.border.style !== 'none' ? (theme.border.style as 'single' | 'double' | 'round') : undefined;
@@ -54,7 +54,7 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
   return (
     <Box borderStyle={borderStyle} {...(borderColor ? { borderColor } : {})} paddingLeft={1} marginBottom={1}>
       <Text {...(spinnerColor ? { color: spinnerColor } : {})}>
-        {isStreaming ? spinnerSymbol + ' thinking…' : text}
+        {isStreaming ? `${spinnerSymbol} thinking…` : text}
       </Text>
     </Box>
   );

@@ -50,33 +50,39 @@ export async function createInkConversationRenderer(
     current: options.initialHistory ? [...options.initialHistory] : [],
   };
 
-  let forceUpdate: () => void = () => {};
+  const forceUpdateRef = { current: () => {} };
 
   const { processor } = options;
-  processor.on('text', delta => {
-    stateRef.text += delta;
-    forceUpdate();
-  });
+  
+  // Store listener functions for cleanup on unmount
+  const listeners = {
+    text: (delta: string) => {
+      stateRef.text += delta;
+      forceUpdateRef.current();
+    },
+    thinking: (delta: string) => {
+      stateRef.thinking += delta;
+      forceUpdateRef.current();
+    },
+    tool_call: (part: any) => {
+      stateRef.toolCalls.push({ id: part.id || randomUUID(), name: part.name, arguments: part.parameters, done: true });
+      forceUpdateRef.current();
+    },
+    done: () => {
+      stateRef.isStreaming = false;
+      forceUpdateRef.current();
+      options.onFinish?.();
+    },
+    warning: (error: string) => {
+      options.onWarning?.(error);
+    },
+  };
 
-  processor.on('thinking', delta => {
-    stateRef.thinking += delta;
-    forceUpdate();
-  });
-
-  processor.on('tool_call', part => {
-    stateRef.toolCalls.push({ id: part.id || randomUUID(), name: part.name, arguments: part.parameters, done: true });
-    forceUpdate();
-  });
-
-  processor.on('done', () => {
-    stateRef.isStreaming = false;
-    forceUpdate();
-    options.onFinish?.();
-  });
-
-  processor.on('warning', error => {
-    options.onWarning?.(error);
-  });
+  processor.on('text', listeners.text);
+  processor.on('thinking', listeners.thinking);
+  processor.on('tool_call', listeners.tool_call);
+  processor.on('done', listeners.done);
+  processor.on('warning', listeners.warning);
 
   const InkStreamRenderer = (await import('./InkStreamRenderer.js')).default;
   const { ConversationHistory } = await import('./components/ConversationHistory.js');
@@ -104,9 +110,9 @@ export async function createInkConversationRenderer(
       }),
       h(InkStreamRenderer, {
         stateRef,
-        forceUpdateRef: { current: () => forceUpdate() },
+        forceUpdateRef,
         setForceUpdate: (fn: () => void) => {
-          forceUpdate = fn;
+          forceUpdateRef.current = fn;
         },
         options: rendererOptions,
       }),
@@ -121,15 +127,21 @@ export async function createInkConversationRenderer(
     },
     end(): void {
       stateRef.isStreaming = false;
-      forceUpdate();
+      forceUpdateRef.current();
     },
     unmount(): void {
+      // Clean up processor listeners to prevent memory leaks
+      processor.off('text', listeners.text);
+      processor.off('thinking', listeners.thinking);
+      processor.off('tool_call', listeners.tool_call);
+      processor.off('done', listeners.done);
+      processor.off('warning', listeners.warning);
       instance.unmount();
     },
-    newTurn(_role: 'assistant' = 'assistant'): void {
+    newTurn(role: 'assistant' | 'user' = 'assistant'): void {
       historyRef.current.push({
         id: randomUUID(),
-        role: 'assistant',
+        role,
         text: stateRef.text,
         thinking: stateRef.thinking || undefined,
         toolCalls: [...stateRef.toolCalls],
@@ -139,7 +151,7 @@ export async function createInkConversationRenderer(
       stateRef.thinking = '';
       stateRef.toolCalls = [];
       stateRef.isStreaming = true;
-      forceUpdate();
+      forceUpdateRef.current();
     },
     addUserTurn(text: string): void {
       historyRef.current.push({
@@ -149,7 +161,7 @@ export async function createInkConversationRenderer(
         toolCalls: [],
         timestamp: Date.now(),
       });
-      forceUpdate();
+      forceUpdateRef.current();
     },
     getHistory(): readonly ConversationTurn[] {
       return historyRef.current;
