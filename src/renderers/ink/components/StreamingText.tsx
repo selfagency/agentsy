@@ -4,11 +4,11 @@ import type { Theme } from '../themes/types.js';
 import { markdownToAnsi } from '../utils/markdownToAnsi.js';
 
 interface StreamingTextProps {
-  text: string;
-  markdown?: boolean;
-  isStreaming: boolean;
-  theme: Theme;
-  screenReader?: boolean;
+  readonly text: string;
+  readonly markdown?: boolean;
+  readonly isStreaming: boolean;
+  readonly theme: Theme;
+  readonly screenReader?: boolean;
   syntaxHighlight?: boolean;
 }
 

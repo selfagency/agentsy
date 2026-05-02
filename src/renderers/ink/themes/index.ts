@@ -1,4 +1,6 @@
-import type { Theme } from './types.js';
+import type { Theme, ThemeName } from './types.js';
+
+export type { ThemeName };
 
 export const defaultTheme: Theme = {
   thinking: { borderColor: 'gray', textColor: 'gray', spinnerColor: 'gray' },
@@ -122,23 +124,7 @@ export const githubDarkTheme: Theme = {
   highlight: { theme: 'github-dark' },
 };
 
-export type ThemeName =
-  | 'default'
-  | 'dark'
-  | 'light'
-  | 'minimal'
-  | 'dracula'
-  | 'catppuccin-mocha'
-  | 'catppuccin-latte'
-  | 'catppuccin-macchiato'
-  | 'catppuccin-frappe'
-  | 'ayu-mirage'
-  | 'houston'
-  | 'one-dark'
-  | 'one-candy'
-  | 'github-dark';
-
-const THEME_MAP: Record<ThemeName, Theme> = {
+export const THEME_MAP: Record<ThemeName, Theme> = {
   default: defaultTheme,
   dark: darkTheme,
   light: lightTheme,

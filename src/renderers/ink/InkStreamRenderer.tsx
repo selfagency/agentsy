@@ -8,23 +8,23 @@ import { ToolCallBlock } from './components/ToolCallBlock.js';
 import type { Theme } from './themes/types.js';
 
 interface InkStreamRendererProps {
-  stateRef: {
+  readonly stateRef: {
     text: string;
     thinking: string;
-    toolCalls: Array<{ id: string; name: string; arguments: Record<string, unknown>; done: boolean }>;
+    toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
     isStreaming: boolean;
   };
-  forceUpdateRef: { current: () => void };
-  setForceUpdate: (fn: () => void) => void;
-  options: {
-    showThinking?: boolean | undefined;
-    thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
-    showToolCalls?: boolean | undefined;
-    markdown?: boolean | undefined;
-    theme: Theme;
-    screenReader?: boolean | undefined;
-    syntaxHighlight?: boolean | undefined;
-    keyboard?: KeyboardOptions | undefined;
+  readonly forceUpdateRef: { current: () => void };
+  readonly setForceUpdate: (fn: () => void) => void;
+  readonly options: {
+    readonly showThinking?: boolean | undefined;
+    readonly thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
+    readonly showToolCalls?: boolean | undefined;
+    readonly markdown?: boolean | undefined;
+    readonly theme: Theme;
+    readonly screenReader?: boolean | undefined;
+    readonly syntaxHighlight?: boolean | undefined;
+    readonly keyboard?: KeyboardOptions | undefined;
   };
 }
 

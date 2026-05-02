@@ -6,15 +6,15 @@ import { ThinkingBlock } from './ThinkingBlock.js';
 import { ToolCallBlock } from './ToolCallBlock.js';
 
 interface ConversationHistoryProps {
-  turns: ConversationTurn[];
-  theme: Theme;
-  screenReader?: boolean | undefined;
-  options: {
-    showThinking?: boolean | undefined;
-    thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
-    showToolCalls?: boolean | undefined;
-    markdown?: boolean | undefined;
-    syntaxHighlight?: boolean | undefined;
+  readonly turns: readonly ConversationTurn[];
+  readonly theme: Theme;
+  readonly screenReader?: boolean | undefined;
+  readonly options: {
+    readonly showThinking?: boolean | undefined;
+    readonly thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
+    readonly showToolCalls?: boolean | undefined;
+    readonly markdown?: boolean | undefined;
+    readonly syntaxHighlight?: boolean | undefined;
   };
 }
 
@@ -28,7 +28,7 @@ export function ConversationHistory({ turns, theme, screenReader = false, option
   } = options;
 
   return (
-    <Static items={turns}>
+    <Static items={turns as ConversationTurn[]}>
       {turn => (
         <Box key={turn.id} flexDirection="column" marginBottom={1}>
           {turn.role === 'user' ? (

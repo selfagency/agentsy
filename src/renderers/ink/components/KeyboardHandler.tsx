@@ -9,7 +9,7 @@ export interface KeyboardOptions {
 }
 
 interface KeyboardHandlerProps {
-  keyboard: KeyboardOptions;
+  readonly keyboard: KeyboardOptions;
 }
 
 export function KeyboardHandler({ keyboard }: KeyboardHandlerProps) {

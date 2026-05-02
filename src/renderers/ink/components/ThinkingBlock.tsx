@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import type { Theme } from '../themes/types.js';
 
 interface ThinkingBlockProps {
-  text: string;
-  style: 'blockquote' | 'inline' | 'suppress';
-  isStreaming: boolean;
-  theme: Theme;
-  screenReader?: boolean;
+  readonly text: string;
+  readonly style: 'blockquote' | 'inline' | 'suppress';
+  readonly isStreaming: boolean;
+  readonly theme: Theme;
+  readonly screenReader?: boolean;
 }
 
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];

@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import type { Theme } from '../themes/types.js';
 
 interface ToolCallBlockProps {
-  call: { id: string; name: string; arguments: Record<string, unknown>; done: boolean };
-  theme: Theme;
-  screenReader?: boolean;
+  readonly call: { readonly id: string; readonly name: string; readonly arguments: Record<string, unknown>; readonly done: boolean };
+  readonly theme: Theme;
+  readonly screenReader?: boolean;
 }
 
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
