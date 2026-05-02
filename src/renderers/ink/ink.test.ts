@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LLMStreamProcessor } from '../../processor/index.js';
 import { createInkRenderer } from './createInkRenderer.js';
 import { darkTheme } from './themes/index.js';
-import { LLMStreamProcessor } from '../../processor/index.js';
 
 // Mock cli-markdown for consistent ANSI output in tests
 vi.mock('cli-markdown', () => ({

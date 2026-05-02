@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Text, Box } from 'ink';
+import { Box, Text } from 'ink';
+import { useEffect, useState } from 'react';
 import type { Theme } from '../themes/types.js';
 
 interface ThinkingBlockProps {

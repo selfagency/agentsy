@@ -1,6 +1,6 @@
+import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
-import type { RenderOptions, Instance } from 'ink';
-import type { InkRendererOptions, InkRendererHandle } from './createInkRenderer.js';
+import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';
 import { resolveTheme } from './themes/index.js';
 
 export interface ConversationTurn {

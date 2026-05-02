@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Text, Box } from 'ink';
-import { markdownToAnsi } from '../utils/markdownToAnsi.js';
+import { Box, Text } from 'ink';
+import { useEffect, useMemo, useState } from 'react';
 import type { Theme } from '../themes/types.js';
+import { markdownToAnsi } from '../utils/markdownToAnsi.js';
 
 interface StreamingTextProps {
   text: string;

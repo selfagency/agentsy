@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
 import { Box } from 'ink';
+import { useEffect, useState } from 'react';
+import type { KeyboardOptions } from './components/KeyboardHandler.js';
+import { KeyboardHandler } from './components/KeyboardHandler.js';
+import { StreamingText } from './components/StreamingText.js';
 import { ThinkingBlock } from './components/ThinkingBlock.js';
 import { ToolCallBlock } from './components/ToolCallBlock.js';
-import { StreamingText } from './components/StreamingText.js';
-import { KeyboardHandler } from './components/KeyboardHandler.js';
 import type { Theme } from './themes/types.js';
-import type { KeyboardOptions } from './components/KeyboardHandler.js';
 
 interface InkStreamRendererProps {
   stateRef: {

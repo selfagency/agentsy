@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { hasMarkdownSyntax } from './markdownToAnsi.js';
 
 describe('Markdown Detection with Tightened Regex', () => {

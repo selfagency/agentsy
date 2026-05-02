@@ -1,5 +1,5 @@
-import { useInput } from 'ink';
 import type { Key } from 'ink';
+import { useInput } from 'ink';
 
 export interface KeyboardOptions {
   enabled?: boolean;

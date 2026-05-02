@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getCachedAnsi, _clearCacheForTesting } from './tokenCache.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { _clearCacheForTesting, getCachedAnsi } from './tokenCache.js';
 
 describe('Token Cache with Hashing', () => {
   beforeEach(() => {

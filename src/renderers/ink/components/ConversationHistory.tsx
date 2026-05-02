@@ -1,9 +1,9 @@
-import { Text, Box, Static } from 'ink';
+import { Box, Static, Text } from 'ink';
 import type { ConversationTurn } from '../createInkConversationRenderer.js';
 import type { Theme } from '../themes/types.js';
+import { StreamingText } from './StreamingText.js';
 import { ThinkingBlock } from './ThinkingBlock.js';
 import { ToolCallBlock } from './ToolCallBlock.js';
-import { StreamingText } from './StreamingText.js';
 
 interface ConversationHistoryProps {
   turns: ConversationTurn[];

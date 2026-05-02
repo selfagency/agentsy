@@ -1,9 +1,9 @@
+import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
-import type { RenderOptions, Instance } from 'ink';
 import type { LLMStreamProcessor } from '../../processor/index.js';
-import type { Theme, ThemeName } from './themes/types.js';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { resolveTheme } from './themes/index.js';
+import type { Theme, ThemeName } from './themes/types.js';
 
 export interface InkRendererOptions {
   showThinking?: boolean;
