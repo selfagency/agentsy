@@ -142,10 +142,11 @@ export const THEME_MAP: Record<ThemeName, Theme> = {
 };
 
 export function resolveTheme(theme?: Theme | ThemeName): Theme {
-  if (!theme || typeof theme === 'string') {
-    const themeName = (theme || 'default') as ThemeName;
-    const resolved = THEME_MAP[themeName];
-    return resolved || defaultTheme;
+  if (!theme) {
+    return THEME_MAP.default || defaultTheme;
+  }
+  if (typeof theme === 'string') {
+    return THEME_MAP[theme] || defaultTheme;
   }
   return theme;
 }
