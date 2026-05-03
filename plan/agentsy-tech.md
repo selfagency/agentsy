@@ -1505,6 +1505,340 @@ find . -name "*.ts" -not -path "*/node_modules/*" | xargs sed -i \
 
 ---
 
+## 6.5 Feature Extension Packages
+
+### `@agentsy/caveman`
+
+Token compression via SKILL.md prompt injection and MCP tool-description proxy.
+
+```typescript
+// packages/caveman/src/index.ts
+
+export type CavemanMode =
+  | 'lite'
+  | 'full'
+  | 'ultra'
+  | 'wenyan-lite'
+  | 'wenyan-full'
+  | 'wenyan-ultra';
+
+export interface CavemanOptions {
+  mode?: CavemanMode;            // default: 'full'
+  skillsDir?: string;            // default: bundled skills
+}
+
+export interface CavemanManager {
+  activate(mode?: CavemanMode): void;
+  deactivate(): void;
+  isActive(): boolean;
+  getMode(): CavemanMode | null;
+  /** Returns the SKILL.md content to inject into the system prompt */
+  getSkillContent(mode?: CavemanMode): string;
+  /** Returns the cavemanShrink MCP server command config for MCPOrchestrator */
+  getShrinkServerConfig(): { command: string; args: string[] };
+  /** Returns bundled cavecrew SKILL.md for a subagent variant */
+  getCavecrewSkill(variant: 'investigator' | 'builder' | 'reviewer'): string;
+}
+
+export function createCavemanManager(options?: CavemanOptions): CavemanManager;
+
+/**
+ * Compresses a tool description string using caveman compression rules.
+ * Preserves code literals, URLs, and identifiers. For use in caveman-shrink proxy.
+ */
+export function compressDescription(description: string, mode?: CavemanMode): string;
+```
+
+---
+
+### `@agentsy/skills`
+
+Node.js programmatic wrapper around the `npx skills` CLI (vercel-labs/skills).
+
+```typescript
+// packages/skills/src/index.ts
+
+export interface SkillSearchResult {
+  name: string;
+  description: string;
+  author: string;
+  version: string;
+  installCommand: string;
+  sourceUrl: string;
+}
+
+export interface InstalledSkill {
+  name: string;
+  path: string;
+  version: string;
+  description: string;
+}
+
+export interface SkillsManagerOptions {
+  /** Root directory containing .agents/skills/ (default: cwd) */
+  workspaceRoot?: string;
+  /** Timeout for npx skills subprocess calls in ms (default: 30000) */
+  timeout?: number;
+}
+
+export interface SkillsManager {
+  /** Search the public skills registry by natural language query */
+  find(query: string): Promise<SkillSearchResult[]>;
+  /** Install a skill by registry slug or 'owner/repo' ref (SEC-011: validated) */
+  add(ref: string): Promise<InstalledSkill>;
+  /** List installed skills */
+  list(): Promise<InstalledSkill[]>;
+  /** Remove an installed skill by name */
+  remove(name: string): Promise<void>;
+  /** Update an installed skill to latest version */
+  update(name: string): Promise<InstalledSkill>;
+  /** Initialize a new SKILL.md in the workspace */
+  init(skillName: string, targetPath?: string): Promise<string>;
+}
+
+export function createSkillsManager(options?: SkillsManagerOptions): SkillsManager;
+```
+
+---
+
+### `@agentsy/superpowers`
+
+Context-activated methodology skills from obra/superpowers v5.0.7.
+
+```typescript
+// packages/superpowers/src/index.ts
+
+export type SuperpowerSkillName =
+  | 'brainstorming'
+  | 'git-worktrees'
+  | 'writing-plans'
+  | 'subagent-driven-development'
+  | 'tdd'
+  | 'code-review'
+  | 'finish-branch';
+
+export interface SuperpowersContext {
+  /** Indicates test files are present in the workspace */
+  hasTestFiles?: boolean;
+  /** Indicates a diff or PR diff has been injected */
+  hasDiffContext?: boolean;
+  /** Indicates the session started with an open-ended planning request */
+  isOpenEndedPlanning?: boolean;
+  /** Additional arbitrary context signals for custom activation rules */
+  signals?: Record<string, boolean>;
+}
+
+export interface SuperpowersOptions {
+  /** Skills to always activate regardless of context (default: []) */
+  alwaysActive?: SuperpowerSkillName[];
+  /** Skills to never activate (default: []) */
+  disabled?: SuperpowerSkillName[];
+}
+
+export interface SuperpowersActivator {
+  /**
+   * Returns SKILL.md content for skills relevant to the given context.
+   * ADR-022: context-activated, not always-on.
+   */
+  selectSkills(context: SuperpowersContext): string[];
+  /** Returns the full SKILL.md content for a specific skill */
+  getSkillContent(name: SuperpowerSkillName): string;
+  /** Returns all available skill names */
+  listSkills(): SuperpowerSkillName[];
+}
+
+export function createSuperpowersActivator(options?: SuperpowersOptions): SuperpowersActivator;
+```
+
+---
+
+### `@agentsy/slash-commands`
+
+Pre-model slash command interception and registry.
+
+```typescript
+// packages/slash-commands/src/index.ts
+
+export interface SlashCommandFrontmatter {
+  description: string;
+  'allowed-tools'?: string[];
+  model?: string;
+  'argument-hint'?: string;
+}
+
+export interface SlashCommandManifest {
+  name: string;
+  frontmatter: SlashCommandFrontmatter;
+  /** Path to the SKILL.md file */
+  skillPath: string;
+  /** Whether this is a stock built-in command */
+  builtin: boolean;
+}
+
+export interface SlashCommandExecutionResult {
+  /** Synthetic assistant message to return directly, bypassing model */
+  type: 'synthetic-response';
+  content: string;
+}
+
+export interface SlashCommandRegistryOptions {
+  /** Root directory to discover .agents/skills/<name>/SKILL.md files */
+  workspaceRoot?: string;
+  /** Enable stock built-in commands (default: true) */
+  includeBuiltins?: boolean;
+}
+
+export interface SlashCommandRegistry {
+  /** Returns true if the message starts with a registered slash command */
+  isSlashCommand(message: string): boolean;
+  /**
+   * Execute a slash command. Returns a synthetic response.
+   * ADR-023: intercepts before any model call.
+   */
+  execute(message: string, args?: Record<string, string>): Promise<SlashCommandExecutionResult>;
+  /** List all registered commands */
+  list(): SlashCommandManifest[];
+  /** Register a custom command programmatically */
+  register(manifest: SlashCommandManifest, handler: (args: string) => Promise<string>): void;
+}
+
+export function createSlashCommandRegistry(
+  options?: SlashCommandRegistryOptions
+): SlashCommandRegistry;
+
+// Stock command names
+export const BUILTIN_COMMANDS: readonly string[];
+```
+
+---
+
+### `@agentsy/connectors`
+
+Multi-channel chat connector gateway. ADR-024: pure library, no embedded process manager.
+
+```typescript
+// packages/connectors/src/index.ts
+
+export interface InboundMessage {
+  channelId: string;
+  conversationId: string;
+  userId: string;
+  text: string;
+  /** Raw platform-specific payload (treated as untrusted, sanitized before use) */
+  raw: unknown;
+  timestamp: Date;
+  replyToMessageId?: string;
+}
+
+export interface OutboundMessage {
+  channelId: string;
+  conversationId: string;
+  text: string;
+  /** Optional platform-specific extras (buttons, attachments, etc.) */
+  metadata?: Record<string, unknown>;
+}
+
+export interface ChannelAdapter {
+  readonly channelId: string;
+  /** Start receiving inbound messages */
+  connect(): Promise<void>;
+  /** Stop receiving inbound messages */
+  disconnect(): Promise<void>;
+  /** Send a message to this channel */
+  send(message: OutboundMessage): Promise<void>;
+  /** Register a handler for inbound messages */
+  onMessage(handler: (message: InboundMessage) => Promise<void>): void;
+}
+
+export interface MessageRouter {
+  /** Route an inbound message to the appropriate AgentSession */
+  route(message: InboundMessage): Promise<void>;
+  /** Register a channel adapter */
+  addAdapter(adapter: ChannelAdapter): void;
+}
+
+export interface AgentSessionOptions {
+  /** Session store for persistence and crash-safe resume (REQ-040) */
+  sessionStore?: import('@agentsy/session').SessionStore;
+  /** Maximum concurrent sessions (default: 100) */
+  maxConcurrentSessions?: number;
+}
+
+export interface AgentSession {
+  sessionId: string;
+  conversationId: string;
+  channelId: string;
+  /** Send a message to the originating channel */
+  reply(text: string, metadata?: Record<string, unknown>): Promise<void>;
+}
+
+export interface AgentSessionManager {
+  /** Get or create a session for a conversation */
+  getOrCreateSession(message: InboundMessage): Promise<AgentSession>;
+  /** Terminate and archive a session */
+  terminateSession(conversationId: string): Promise<void>;
+  /** List active session IDs */
+  listActiveSessions(): string[];
+}
+
+export interface ConnectorGatewayOptions {
+  agentSessionOptions?: AgentSessionOptions;
+  /** Adapter registry for channel adapters (default: empty registry) */
+  adapters?: ChannelAdapter[];
+}
+
+export interface ConnectorGateway {
+  readonly router: MessageRouter;
+  readonly sessionManager: AgentSessionManager;
+  /** Register a channel adapter and wire it to the message router */
+  addAdapter(adapter: ChannelAdapter): void;
+  /** Start all registered adapters */
+  start(): Promise<void>;
+  /** Stop all registered adapters gracefully */
+  stop(): Promise<void>;
+}
+
+export function createConnectorGateway(options?: ConnectorGatewayOptions): ConnectorGateway;
+
+// ─── First-party channel adapters ────────────────────────────────────────────
+// Note: platform SDKs are peerDependencies (CON-010)
+
+export interface TelegramAdapterOptions {
+  /** Telegram Bot API token (load from env: SEC-014) */
+  token: string;
+  webhookPath?: string;
+  port?: number;
+}
+
+/** grammy@^1 peerDependency required */
+export function createTelegramAdapter(options: TelegramAdapterOptions): ChannelAdapter;
+
+export interface DiscordAdapterOptions {
+  /** Discord bot token (load from env: SEC-014) */
+  token: string;
+  /** Discord application client ID */
+  clientId: string;
+  intents?: number[];
+}
+
+/** discord.js@^14 peerDependency required */
+export function createDiscordAdapter(options: DiscordAdapterOptions): ChannelAdapter;
+
+export interface SlackAdapterOptions {
+  /** Slack bot token (load from env: SEC-014) */
+  botToken: string;
+  /** Slack signing secret */
+  signingSecret: string;
+  appToken?: string;
+  port?: number;
+}
+
+/** @slack/bolt@^4 peerDependency required */
+export function createSlackAdapter(options: SlackAdapterOptions): ChannelAdapter;
+```
+
+---
+
 ## 7. Risks & Assumptions
 
 - **RISK-001**: Circular dependencies between packages could silently break Turbo builds. Use `madge --circular packages/*/src/index.ts` in CI to detect.
