@@ -10,5 +10,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   target: 'es2022',
-  external: ['vscode', '@agentsy/parser']
+  external: ['vscode', '@agentsy/core']
 });

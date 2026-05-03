@@ -217,8 +217,8 @@ jobs:
       - name: Build all packages
         run: pnpm turbo run build
 
-      - name: Publish @agentsy/parser to npm
-        run: npm publish ./packages/parser/dist --access public
+      - name: Publish @agentsy/core to npm
+        run: npm publish ./packages/core/dist --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

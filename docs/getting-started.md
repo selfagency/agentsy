@@ -195,7 +195,7 @@ for await (const part of agent.run(messages)) {
 ### Render to VS Code Chat
 
 ```typescript
-import { createVSCodeChatRenderer } from '@agentsy/core/renderers/vscode';
+import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
 // In your VS Code extension command
 export async function chatCommand(stream: vscode.ChatResponseStream) {

@@ -826,7 +826,7 @@ function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererH
 **Example:**
 
 ```typescript
-import { createVSCodeChatRenderer } from '@agentsy/core/renderers/vscode';
+import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
 const renderer = createVSCodeChatRenderer({
   stream,
