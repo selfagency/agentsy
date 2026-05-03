@@ -1,6 +1,6 @@
 {
   "name": "@selfagency/llm-stream-parser",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Composable parsers and stream processing utilities for LLM responses",
   "keywords": [
     "ai",

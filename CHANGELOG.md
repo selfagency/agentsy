@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-05-03
+
+## What's Changed
+* fix(renderers): align VS Code contracts, improve Ink renderer, and clean up code quality issues by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/47
+
+
+**Full Changelog**: <https://github>.com/selfagency/llm-stream-parser/compare/v0.3.0...v0.3.1
+
+_Source: changes from v0.3.0 to v0.3.1._
+
+
 ## [0.3.0] - 2026-05-03
 
 ## What's Changed
