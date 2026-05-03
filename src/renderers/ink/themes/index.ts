@@ -1,6 +1,6 @@
 import type { Theme, ThemeName } from './types.js';
 
-export { type ThemeName } from './types.js';
+export type { ThemeName } from './types.js';
 
 export const defaultTheme: Theme = {
   thinking: { borderColor: 'gray', textColor: 'gray', spinnerColor: 'gray' },

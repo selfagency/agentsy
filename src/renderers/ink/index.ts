@@ -1,7 +1,7 @@
 /**
  * Ink renderer module - streaming React/Ink renderer for terminal output
  */
-export { type KeyboardOptions } from './components/KeyboardHandler.js';
+export type { KeyboardOptions } from './components/KeyboardHandler.js';
 export {
   createInkConversationRenderer,
   type ConversationTurn,
@@ -27,11 +27,11 @@ export {
   resolveTheme,
   type ThemeName,
 } from './themes/index.js';
-export {
-  type BorderTheme,
-  type HighlightTheme,
-  type TextTheme,
-  type Theme,
-  type ThinkingTheme,
-  type ToolCallTheme,
+export type {
+  BorderTheme,
+  HighlightTheme,
+  TextTheme,
+  Theme,
+  ThinkingTheme,
+  ToolCallTheme,
 } from './themes/types.js';

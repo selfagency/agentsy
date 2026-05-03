@@ -59,7 +59,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('handles boundary case at exactly 1KB', () => {
-    const renderFn = vi.fn((s: string) => `[rendered]`);
+    const renderFn = vi.fn((_: string) => `[rendered]`);
     const content1024 = 'x'.repeat(1024);
     const content1025 = 'x'.repeat(1025);
 
@@ -72,7 +72,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('caches mixed small and large content independently', () => {
-    const renderFn = vi.fn((s: string) => `[rendered:${s.length}]`);
+    const renderFn = vi.fn((s: string) => `[rendered:${s.length}]`);  // s is intentionally used for length calculation
     const smallContent = 'small';
     const largeContent = 'x'.repeat(2000);
 

@@ -106,14 +106,7 @@ function ContentRenderer({
     <Box flexDirection="column">
       <ThinkingSection thinking={thinking} isStreaming={isStreaming} options={options} />
       <ToolCallsSection toolCalls={toolCalls} options={options} />
-      <StreamingText
-        text={text}
-        markdown={options.markdown}
-        isStreaming={isStreaming}
-        theme={options.theme}
-        screenReader={options.screenReader}
-        syntaxHighlight={options.syntaxHighlight}
-      />
+      <StreamingText text={text} markdown={options.markdown} isStreaming={isStreaming} theme={options.theme} screenReader={options.screenReader} syntaxHighlight={options.syntaxHighlight} />
     </Box>
   );
 }
