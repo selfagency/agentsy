@@ -3,6 +3,13 @@ import { convertMessages, type ChatMessage } from '../message-conversion/index.j
 import type { ProviderApiRequest, ProviderConfig, ProviderStreamChunk } from '../types/errors.js';
 
 /**
+ * Empty async generator for error responses.
+ */
+async function* emptyStream(): AsyncIterable<LanguageModelChatResponseChunk> {
+  // Empty stream - yields nothing
+}
+
+/**
  * Minimal duck-typed interfaces to avoid hard vscode import.
  * These match the shapes used by VS Code's LanguageModelChatProvider.
  */
@@ -187,12 +194,7 @@ export abstract class BaseLanguageModelChatProvider {
   }
 
   protected createErrorResponse(error: unknown, userMessage: string): LanguageModelChatResponse {
-    const errorCode = this.mapErrorToCode(error);
     const msg = userMessage || errorCodeToMessage(errorToProviderCode(error));
-
-    const emptyStream = async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
-      // Empty stream - yields nothing
-    };
 
     return {
       stream: emptyStream(),

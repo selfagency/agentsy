@@ -32,6 +32,8 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
     errorStr = error;
   } else if (typeof error === 'object' && error !== null && 'message' in error) {
     errorStr = String((error as Record<string, unknown>).message);
+  } else if (error && typeof error === 'object') {
+    errorStr = (error as Record<string, unknown>).toString?.() ?? 'Unknown error';
   } else {
     errorStr = String(error);
   }

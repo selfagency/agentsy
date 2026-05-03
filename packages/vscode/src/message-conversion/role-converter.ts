@@ -41,20 +41,23 @@ export function extractTextFromPart(part: unknown): string {
 }
 
 /**
+ * Validates tool call part has required string fields.
+ */
+function isValidToolCallPart(p: Record<string, unknown>): boolean {
+  return typeof p.callId === 'string' && typeof p.name === 'string';
+}
+
+/**
  * Extracts tool call information from a VS Code LanguageModelToolCallPart.
  */
 export function extractToolCall(part: unknown): ChatToolCall | undefined {
   if (!part || typeof part !== 'object') return undefined;
   const p = part as Record<string, unknown>;
 
-  const callId = p.callId;
-  const name = p.name;
-  const input = p.input;
+  if (!isValidToolCallPart(p)) return undefined;
 
-  if (typeof callId !== 'string' || typeof name !== 'string') return undefined;
-
-  const args = parseToolArguments(input);
-  return { id: callId, name, arguments: args };
+  const args = parseToolArguments(p.input);
+  return { id: p.callId as string, name: p.name as string, arguments: args };
 }
 
 /**
