@@ -1,16 +1,22 @@
 import { ErrorCodeToMessage, ProviderErrorCode } from '../types/errors.js';
 
+const STATUS_TO_ERROR_CODE = new Map<number, ProviderErrorCode>([
+  [401, ProviderErrorCode.InvalidApiKey],
+  [403, ProviderErrorCode.InvalidApiKey],
+  [429, ProviderErrorCode.RateLimited],
+  [404, ProviderErrorCode.ModelNotFound],
+  [408, ProviderErrorCode.Timeout],
+  [504, ProviderErrorCode.Timeout],
+  [400, ProviderErrorCode.InvalidRequest],
+]);
+
 /**
  * Maps HTTP status codes to ProviderErrorCode values.
  */
 export function httpStatusToErrorCode(status: number): ProviderErrorCode {
-  if (status === 401 || status === 403) return ProviderErrorCode.InvalidApiKey;
-  if (status === 429) return ProviderErrorCode.RateLimited;
-  if (status === 404) return ProviderErrorCode.ModelNotFound;
-  if (status === 408 || status === 504) return ProviderErrorCode.Timeout;
-  if (status === 400) return ProviderErrorCode.InvalidRequest;
-  if (status >= 500) return ProviderErrorCode.InternalError;
-  return ProviderErrorCode.InternalError;
+  const code = STATUS_TO_ERROR_CODE.get(status);
+  if (code !== undefined) return code;
+  return status >= 500 ? ProviderErrorCode.InternalError : ProviderErrorCode.InternalError;
 }
 
 /**
@@ -27,7 +33,11 @@ function extractErrorString(error: unknown): string {
     return String((error as Record<string, unknown>).message);
   }
   if (error && typeof error === 'object') {
-    return (error as Record<string, unknown>).toString?.() ?? 'Unknown error';
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return 'Unknown error';
+    }
   }
   return String(error);
 }

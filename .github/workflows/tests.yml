@@ -51,11 +51,20 @@ jobs:
         env:
           CI: true
 
+      - name: Prepare coverage reports
+        run: |
+          mkdir -p coverage-input
+          for dir in packages/*/coverage; do
+            if [ -d "$dir" ]; then
+              cp -r "$dir"/* coverage-input/ || true
+            fi
+          done
+
       - name: Merge coverage reports
         uses: selfagency/merge-coverage@16c5a43e7b9428ed3a7c81f193d1061a427c6af9
         with:
           source: ${{ github.workspace }}
-          coverage-reports: ${{ github.workspace }}/packages/*/coverage
+          coverage-reports: ${{ github.workspace }}/coverage-input
           output-folder: ${{ github.workspace }}/coverage
           formats: clover
 

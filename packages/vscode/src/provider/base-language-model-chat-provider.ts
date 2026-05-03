@@ -150,44 +150,41 @@ export abstract class BaseLanguageModelChatProvider {
       ...(signal && { signal }),
     });
 
-    if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      const err = new Error(`HTTP ${response.status}: ${text}`) as Error & { status: number };
-      err.status = response.status;
-      throw err;
-    }
+    if (response.ok && response.body !== null) {
+      return (async function* (): AsyncIterable<ProviderStreamChunk> {
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
 
-    const responseBody = response.body;
-    if (responseBody === null) {
-      throw new Error('No response body from provider');
-    }
-
-    return (async function* (): AsyncIterable<ProviderStreamChunk> {
-      const reader = responseBody.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() ?? '';
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed === 'data: [DONE]') continue;
-            const data = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
-            try {
-              yield JSON.parse(data) as ProviderStreamChunk;
-            } catch {
-              // Skip malformed chunks
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed === 'data: [DONE]') continue;
+              const data = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
+              try {
+                yield JSON.parse(data) as ProviderStreamChunk;
+              } catch {
+                // Skip malformed chunks
+              }
             }
           }
+        } finally {
+          reader.releaseLock();
         }
-      } finally {
-        reader.releaseLock();
-      }
-    })();
+      })();
+    }
+
+    // Handle error response
+    const text = await response.text().catch(() => '');
+    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & { status: number };
+    err.status = response.status;
+    throw err;
   }
 
   protected createErrorResponse(error: unknown, userMessage: string): LanguageModelChatResponse {
