@@ -6,13 +6,13 @@ import type { ApiKeyManagerConfig, ApiKeyChangeListener } from '../types/index.j
  * Provides secure storage, retrieval, and change notifications.
  */
 export class ApiKeyManager {
-  private listeners: Set<ApiKeyChangeListener> = new Set();
+  private readonly listeners: Set<ApiKeyChangeListener> = new Set();
   private apiKey: string | undefined;
   private isInitialized = false;
 
   constructor(
-    private context: ExtensionContext,
-    private config: ApiKeyManagerConfig,
+    private readonly context: ExtensionContext,
+    private readonly config: ApiKeyManagerConfig,
   ) {}
 
   /**

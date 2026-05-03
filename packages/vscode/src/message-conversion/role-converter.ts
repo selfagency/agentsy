@@ -35,8 +35,8 @@ export function convertRole(role: number): ChatMessage['role'] {
 export function extractTextFromPart(part: unknown): string {
   if (!part || typeof part !== 'object') return '';
   const p = part as Record<string, unknown>;
-  if (typeof p.value === 'string') return p.value as string;
-  if (typeof p.content === 'string') return p.content as string;
+  if (typeof p.value === 'string') return p.value;
+  if (typeof p.content === 'string') return p.content;
   return '';
 }
 

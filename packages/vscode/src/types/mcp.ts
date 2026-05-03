@@ -1,5 +1,3 @@
-import type { McpServerDefinition, McpServerProvider } from './errors.js';
-
 /**
  * MCP server registry events.
  */
@@ -10,13 +8,8 @@ export type McpServerEvent = 'registered' | 'unregistered' | 'updated';
  */
 export type McpServerEventListener = (
   event: McpServerEvent,
-  server: McpServerDefinition,
+  server: unknown,
 ) => void;
-
-/**
- * Re-export for convenience.
- */
-export type { McpServerDefinition, McpServerProvider };
 
 /**
  * MCP server configuration options.

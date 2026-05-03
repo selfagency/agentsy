@@ -8,7 +8,7 @@ import type {
  * Mock SecretStorage for testing.
  */
 export class MockSecretStorage implements SecretStorage {
-  private storage: Map<string, string> = new Map();
+  private readonly storage: Map<string, string> = new Map();
 
   async get(key: string): Promise<string | undefined> {
     return this.storage.get(key);
@@ -36,7 +36,7 @@ export class MockSecretStorage implements SecretStorage {
  * Mock Memento for testing.
  */
 export class MockMemento implements Memento {
-  private storage: Map<string, unknown> = new Map();
+  private readonly storage: Map<string, unknown> = new Map();
 
   keys(): readonly string[] {
     return Array.from(this.storage.keys());

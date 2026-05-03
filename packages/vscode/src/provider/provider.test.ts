@@ -50,7 +50,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
 
   protected normalizeStream(response: AsyncIterable<ProviderStreamChunk>): AsyncIterable<LanguageModelChatResponseChunk> {
     const self = this;
-    return (async function* () {
+    return (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
       for await (const chunk of response) {
         self.streamChunks.push(chunk);
         const chunkRecord = chunk as Record<string, unknown>;

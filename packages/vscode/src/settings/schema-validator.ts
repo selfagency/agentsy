@@ -5,7 +5,7 @@ import type { SettingsValidationResult } from '../types/settings.js';
  * Supports type, required, properties, minimum, maximum, and enum.
  */
 export interface SchemaProperty {
-  type?: 'string' | 'number' | 'boolean' | 'object' | 'array' | string;
+  type?: string | 'string' | 'number' | 'boolean' | 'object' | 'array';
   required?: string[];
   properties?: Record<string, SchemaProperty>;
   minimum?: number;
@@ -47,6 +47,31 @@ export function validateSettings(
     : { valid: false, errors };
 }
 
+/**
+ * Validates a numeric value against schema constraints.
+ */
+function validateNumber(value: number, schema: SchemaProperty, path: string, errors: string[]): void {
+  if (schema.minimum !== undefined && value < schema.minimum) {
+    errors.push(`Setting '${path}' must be >= ${schema.minimum}`);
+  }
+  if (schema.maximum !== undefined && value > schema.maximum) {
+    errors.push(`Setting '${path}' must be <= ${schema.maximum}`);
+  }
+}
+
+/**
+ * Validates an object value against schema properties.
+ */
+function validateObject(value: unknown, schema: SchemaProperty, path: string, errors: string[]): void {
+  if (typeof value !== 'object' || Array.isArray(value) || !schema.properties) return;
+  
+  for (const [subKey, subSchema] of Object.entries(schema.properties)) {
+    if (!(subKey in (value as Record<string, unknown>))) continue;
+    const subValue = (value as Record<string, unknown>)[subKey];
+    validateValue(`${path}.${subKey}`, subValue, subSchema, errors);
+  }
+}
+
 function validateValue(
   path: string,
   value: unknown,
@@ -68,20 +93,10 @@ function validateValue(
   }
 
   if (typeof value === 'number') {
-    if (schema.minimum !== undefined && value < schema.minimum) {
-      errors.push(`Setting '${path}' must be >= ${schema.minimum}`);
-    }
-    if (schema.maximum !== undefined && value > schema.maximum) {
-      errors.push(`Setting '${path}' must be <= ${schema.maximum}`);
-    }
+    validateNumber(value, schema, path, errors);
   }
 
-  if (typeof value === 'object' && !Array.isArray(value) && schema.properties) {
-    for (const [subKey, subSchema] of Object.entries(schema.properties)) {
-      const subValue = (value as Record<string, unknown>)[subKey];
-      validateValue(`${path}.${subKey}`, subValue, subSchema, errors);
-    }
-  }
+  validateObject(value, schema, path, errors);
 }
 
 /**

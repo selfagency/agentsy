@@ -105,7 +105,7 @@ export abstract class BaseLanguageModelChatProvider {
           chunks.push(chunk);
           if (chunk.part && typeof chunk.part === 'object') {
             const p = chunk.part as Record<string, unknown>;
-            if (typeof p.value === 'string') fullText += p.value as string;
+            if (typeof p.value === 'string') fullText += p.value;
           }
         }
         onCancel.dispose();
@@ -191,10 +191,8 @@ export abstract class BaseLanguageModelChatProvider {
     const msg = userMessage || errorCodeToMessage(errorToProviderCode(error));
 
     return {
-      stream: (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
-        // Empty stream on error
-        void msg; void errorCode;
-      })(),
+      stream: (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {}
+      )(),
       text: Promise.resolve(msg),
     };
   }

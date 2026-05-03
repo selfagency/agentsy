@@ -8,6 +8,40 @@ import {
 } from './role-converter.js';
 
 /**
+ * Processes a single content part and accumulates results.
+ */
+function processPart(
+  part: unknown,
+  textParts: string[],
+  toolCalls: ChatToolCall[],
+  state: { toolCallId?: string },
+): void {
+  if (!part || typeof part !== 'object') return;
+  const p = part as Record<string, unknown>;
+
+  // LanguageModelToolCallPart: has callId + name + input
+  if ('callId' in p && 'name' in p && 'input' in p) {
+    const tc = extractToolCall(p);
+    if (tc) toolCalls.push(tc);
+    return;
+  }
+
+  // LanguageModelToolResultPart: has callId + content (array)
+  if ('callId' in p && 'content' in p && !('name' in p)) {
+    const tr = extractToolResult(p);
+    if (tr) {
+      state.toolCallId = tr.callId;
+      textParts.push(tr.content);
+    }
+    return;
+  }
+
+  // LanguageModelTextPart: has value
+  const text = extractTextFromPart(p);
+  if (text) textParts.push(text);
+}
+
+/**
  * Converts a VS Code LanguageModelChatMessage to the intermediate ChatMessage format.
  * Works with duck-typed objects to avoid importing vscode at test time.
  */
@@ -31,40 +65,18 @@ export function convertMessage(vsMessage: unknown): ChatMessage {
 
   const textParts: string[] = [];
   const toolCalls: ChatToolCall[] = [];
-  let toolCallId: string | undefined;
+  const state: { toolCallId?: string } = {};
 
   for (const part of rawContent) {
-    if (!part || typeof part !== 'object') continue;
-    const p = part as Record<string, unknown>;
-
-    // LanguageModelToolCallPart: has callId + name + input
-    if ('callId' in p && 'name' in p && 'input' in p) {
-      const tc = extractToolCall(p);
-      if (tc) toolCalls.push(tc);
-      continue;
-    }
-
-    // LanguageModelToolResultPart: has callId + content (array)
-    if ('callId' in p && 'content' in p && !('name' in p)) {
-      const tr = extractToolResult(p);
-      if (tr) {
-        toolCallId = tr.callId;
-        textParts.push(tr.content);
-        continue;
-      }
-    }
-
-    // LanguageModelTextPart: has value
-    const text = extractTextFromPart(p);
-    if (text) textParts.push(text);
+    processPart(part, textParts, toolCalls, state);
   }
 
   const content = textParts.join('');
   const result: ChatMessage = {
-    role: toolCallId ? 'tool' : role,
+    role: state.toolCallId ? 'tool' : role,
     content,
     ...(name ? { name } : {}),
-    ...(toolCallId ? { toolCallId } : {}),
+    ...(state.toolCallId ? { toolCallId: state.toolCallId } : {}),
     ...(toolCalls.length > 0 ? { toolCalls } : {}),
   };
 
