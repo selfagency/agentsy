@@ -735,6 +735,66 @@ describe('VS Code Agent Loop', () => {
     expect(removeEventListener).toHaveBeenCalledTimes(1);
     expect(removeEventListener).toHaveBeenCalledWith('abort', expect.any(Function));
   });
+
+  it('logs error stack when abort cleanup fails', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const testError = new Error('Renderer end failed');
+    testError.stack = 'Error: Renderer end failed\n  at test (test.ts:1:1)';
+
+    // Mock ChatResponseStream methods to fail when rendering ends
+    const failingStream = {
+      progress: vi.fn(),
+      markdown: vi.fn(() => {
+        throw testError; // Fail immediately
+      }),
+      anchor: vi.fn(),
+      reference: vi.fn(),
+      button: vi.fn(),
+      filetree: vi.fn(),
+    } as unknown as ChatResponseStream;
+
+    const abortController = new AbortController();
+    const renderer = createVSCodeAgentLoop({
+      stream: failingStream,
+      abortSignal: abortController.signal,
+    });
+
+    // Write content first to ensure markdown is called later
+    await renderer.write('test content');
+
+    // Abort to trigger error path
+    abortController.abort();
+
+    // Wait for async abort handlers
+    await vi.waitFor(() => {
+      expect(consoleWarnSpy).toHaveBeenCalled();
+    });
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[VS Code Agent Loop] Error'),
+      expect.any(Error),
+    );
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('calls endOnce only once when abort signal is already aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort(); // Pre-abort
+
+    const renderer = createVSCodeAgentLoop({
+      stream: mockStream,
+      abortSignal: abortController.signal,
+    });
+
+    // Give abort handler time to run
+    await Promise.resolve();
+
+    // Calling end() should resolve without double-processing
+    await renderer.end();
+
+    expect(mockStream.markdown).not.toThrow();
+  });
 });
 
 describe('Cancellation Token Bridge', () => {
