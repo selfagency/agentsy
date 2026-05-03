@@ -129,8 +129,8 @@ export default function InkStreamRenderer({
   setForceUpdate,
   options,
 }: InkStreamRendererProps) {
-  // _tick is used internally to trigger re-renders when stateRef is mutated externally
-  const [tick, setTick] = useState(0);
+  // setTick is used internally to trigger re-renders when stateRef is mutated externally
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     setForceUpdate(() => {

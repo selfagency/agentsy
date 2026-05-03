@@ -401,7 +401,7 @@ describe('Ink Renderer', () => {
       const { resolveTheme } = await import('./themes/index.js');
       const { defaultTheme } = await import('./themes/index.js');
 
-      const theme = resolveTheme(undefined);
+      const theme = resolveTheme();
       expect(theme).toEqual(defaultTheme);
     });
 

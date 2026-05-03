@@ -74,12 +74,14 @@ function displayThemePreview() {
       const toolsPending = `Tools: ${pendingSymbol}`;
       const toolsPreview = `pending`;
       const toolsDone = `${doneSymbol} done`;
-      const toolsLine = `  ${applyColor(`└─ ${toolsPending}`, pendingColor)} ${applyColor(toolsPreview, pendingColor)} ${applyColor(toolsDone, doneColor)}`;
+      const toolsPendingText = `└─ ${toolsPending}`;
+      const toolsLine = `  ${applyColor(toolsPendingText, pendingColor)} ${applyColor(toolsPreview, pendingColor)} ${applyColor(toolsDone, doneColor)}`;
       console.log(toolsLine);
     }
 
     if (theme.border) {
-      const borderLine = `  ${chalk.dim(`Border: ${theme.border.style}`)}`;
+      const borderText = `Border: ${theme.border.style}`;
+      const borderLine = `  ${chalk.dim(borderText)}`;
       console.log(borderLine);
     }
 
