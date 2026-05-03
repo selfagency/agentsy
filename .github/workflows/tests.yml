@@ -51,17 +51,11 @@ jobs:
         env:
           CI: true
 
-      - name: Copy coverage reports to unified directory
-        run: |
-          mkdir -p coverage-input
-          cp packages/core/coverage/clover.xml coverage-input/clover-core.xml
-          cp packages/vscode/coverage/clover.xml coverage-input/clover-vscode.xml
-
       - name: Merge coverage reports
         uses: selfagency/merge-coverage@v2
         with:
           source: ${{ github.workspace }}
-          coverage-reports: ${{ github.workspace }}/coverage-input
+          coverage-reports: ${{ github.workspace }}/packages/*/coverage
           output-folder: ${{ github.workspace }}/coverage
           formats: clover
 
