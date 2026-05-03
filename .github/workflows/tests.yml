@@ -51,11 +51,19 @@ jobs:
         env:
           CI: true
 
-      - name: Merge coverage reports
+      - name: Copy coverage reports to unified directory
         run: |
-          mkdir -p coverage
-          cp packages/core/coverage/clover.xml coverage/clover-core.xml
-          cp packages/vscode/coverage/clover.xml coverage/clover-vscode.xml
+          mkdir -p coverage-input
+          cp packages/core/coverage/clover.xml coverage-input/clover-core.xml
+          cp packages/vscode/coverage/clover.xml coverage-input/clover-vscode.xml
+
+      - name: Merge coverage reports
+        uses: selfagency/merge-coverage@v2
+        with:
+          source: ${{ github.workspace }}
+          coverage-reports: ${{ github.workspace }}/coverage-input
+          output-folder: ${{ github.workspace }}/coverage
+          formats: clover
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
@@ -68,17 +76,11 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Run codacy-coverage-reporter for core package
+      - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
         with:
           api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: coverage/clover-core.xml
-
-      - name: Run codacy-coverage-reporter for vscode package
-        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
-        with:
-          api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: coverage/clover-vscode.xml
+          coverage-reports: ${{ github.workspace }}/coverage/clover.xml
 
       - name: Upload coverage artifact
         if: always()
