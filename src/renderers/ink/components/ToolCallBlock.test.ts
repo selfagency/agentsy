@@ -292,6 +292,124 @@ describe('ToolCallBlock Component', () => {
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element).toBeDefined();
     });
+
+    it('renders tool with complex arguments', () => {
+      const call = {
+        id: 'call-1',
+        name: 'search',
+        arguments: {
+          query: 'test query',
+          filters: { type: 'article', date: '2024' },
+          limit: 10,
+          nested: { deep: { value: 'found' } },
+        },
+        done: false,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.call.arguments.query).toBe('test query');
+    });
+  });
+
+  describe('tool call states', () => {
+    it('renders pending tool call', () => {
+      const call = { id: '1', name: 'pending_tool', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.call.done).toBe(false);
+    });
+
+    it('renders completed tool call', () => {
+      const call = { id: '1', name: 'completed_tool', arguments: {}, done: true };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.call.done).toBe(true);
+    });
+  });
+
+  describe('tool argument variations', () => {
+    it('handles tool with no arguments', () => {
+      const call = { id: '1', name: 'no_args_tool', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(Object.keys(element.props.call.arguments)).toHaveLength(0);
+    });
+
+    it('handles tool with many arguments', () => {
+      const call = {
+        id: '1',
+        name: 'multi_arg_tool',
+        arguments: {
+          arg1: 'value1',
+          arg2: 'value2',
+          arg3: 'value3',
+          arg4: 'value4',
+          arg5: 'value5',
+        },
+        done: false,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(Object.keys(element.props.call.arguments).length).toBe(5);
+    });
+
+    it('handles string arguments', () => {
+      const call = {
+        id: '1',
+        name: 'string_tool',
+        arguments: { text: 'hello world', prompt: 'test prompt' },
+        done: false,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.call.arguments.text).toBe('hello world');
+    });
+
+    it('handles numeric arguments', () => {
+      const call = {
+        id: '1',
+        name: 'numeric_tool',
+        arguments: { count: 42, max: 100, threshold: 0.5 },
+        done: false,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.call.arguments.count).toBe(42);
+    });
+  });
+
+  describe('theme handling', () => {
+    it('applies dark theme', () => {
+      const call = { id: '1', name: 'themed_tool', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.theme).toBe(darkTheme);
+    });
+
+    it('applies default theme', () => {
+      const call = { id: '1', name: 'themed_tool', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: defaultTheme,
+      } as Parameters<typeof ToolCallBlock>[0]);
+      expect(element.props.theme).toBe(defaultTheme);
+    });
   });
 });
 

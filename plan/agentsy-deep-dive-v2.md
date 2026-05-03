@@ -338,12 +338,12 @@ user:alice          project:acme-api        team:platform
 
 **Bank boundary options:**
 
-| Boundary | Use when | Good fit |
-| --- | --- | --- |
-| Per-user | several agents serve the same person; cross-user leakage must never happen | personal assistants, customer-facing support |
-| Per-project | agents collaborate on same artifact; project conventions carry across roles | coding teams, research workflows |
-| Per-team | whole team benefits from shared operational knowledge; one trust boundary | internal ops agents, shared playbooks/runbooks |
-| Hybrid | user context + project context + optional team context | most real-world multi-agent systems |
+| Boundary    | Use when                                                                    | Good fit                                       |
+| ----------- | --------------------------------------------------------------------------- | ---------------------------------------------- |
+| Per-user    | several agents serve the same person; cross-user leakage must never happen  | personal assistants, customer-facing support   |
+| Per-project | agents collaborate on same artifact; project conventions carry across roles | coding teams, research workflows               |
+| Per-team    | whole team benefits from shared operational knowledge; one trust boundary   | internal ops agents, shared playbooks/runbooks |
+| Hybrid      | user context + project context + optional team context                      | most real-world multi-agent systems            |
 
 **Hybrid is usually the right answer**: user bank (personal context) + project bank (work context) + optional team bank (general practices). An agent can retain into more than one bank simultaneously depending on what kind of knowledge it is producing.
 
@@ -380,11 +380,11 @@ recall(query) =
 
 **Decision tree:**
 
-| Question | Team-bank action | Skip sharing |
-| --- | --- | --- |
-| Do agents need the same operational playbook? | Add team-level bank | - |
-| Would a mistake be costly if another team saw this? | Tighten isolation | Shared bank may be acceptable |
-| Is memory quality getting noisy? | Narrow the bank boundary | Keep current scope |
+| Question                                            | Team-bank action         | Skip sharing                  |
+| --------------------------------------------------- | ------------------------ | ----------------------------- |
+| Do agents need the same operational playbook?       | Add team-level bank      | -                             |
+| Would a mistake be costly if another team saw this? | Tighten isolation        | Shared bank may be acceptable |
+| Is memory quality getting noisy?                    | Narrow the bank boundary | Keep current scope            |
 
 ---
 
@@ -686,8 +686,8 @@ See `agentsy-prd-notes.md` §2 for full ADR entries.
 | ADR-048 | 12-Factor Agent Design Principles                     | P1       | SRC-25         |
 | ADR-049 | Design Taste Memory                                   | P3       | SRC-26         |
 | ADR-050 | LLM-as-Judge at Every Turn                            | P1       | SRC-27         |
-| ADR-051 | Team-Scoped Memory Bank Boundary Model                  | P2       | SRC-29         |
-| ADR-052 | Hybrid Multi-Scope Memory Retention (user+project+team) | P2       | SRC-29, SRC-24 |
+| ADR-051 | Team-Scoped Memory Bank Boundary Model                | P2       | SRC-29         |
+| ADR-052 | Hybrid Memory Retention (user+project+team)           | P2       | SRC-29, SRC-24 |
 
 ---
 
@@ -721,10 +721,10 @@ See `agentsy-platform-v2.md` §1 for full requirement entries.
 | REQ-064 | Agent loop MUST implement RSI feedback ledger tracking tool execution outcomes           | ADR-042 | P3       |
 | REQ-065 | Sprint lifecycle actions SHOULD be expressible as named skill files in a skill directory | ADR-037 | P2       |
 | REQ-066 | Memory MUST support team-scoped bank as a distinct tier alongside session/project/global | ADR-051 | P2       |
-| REQ-067 | MemoryScope MUST enumerate: session, user, project, team, global; retain multi-scope    | ADR-051 | P2       |
+| REQ-067 | MemoryScope MUST enumerate: session, user, project, team, global; retain multi-scope     | ADR-051 | P2       |
 | REQ-068 | Team-scoped banks MUST require explicit trust model before cross-agent data flows        | ADR-052 | P1       |
 | REQ-069 | Retention into shared banks MUST be selective via `retentionTag` whitelist               | ADR-052 | P2       |
-| REQ-070 | Team bank retrieval MUST support semantic+BM25+graph+temporal strategies via RRF        | ADR-052 | P2       |
+| REQ-070 | Team bank retrieval MUST support semantic+BM25+graph+temporal strategies via RRF         | ADR-052 | P2       |
 
 ---
 

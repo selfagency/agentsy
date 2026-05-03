@@ -60,76 +60,76 @@ The security framework draws on OWASP LLM Top 10:2025 (LLM01–LLM10), the new O
 
 - GOAL-007: Implement test coverage for all 10 OWASP LLM Top 10:2025 vulnerabilities using `@langwatch/scenario` red team and unit patterns.
 
-| Task | Description | Completed | Date |
-| --- | --- | --- | --- |
-| TASK-T051 | LLM01 Prompt Injection: unit tests for direct injection (role override, delimiter break) + scenario tests for indirect injection via retrieved context | | |
-| TASK-T052 | LLM02 Sensitive Information Disclosure: assert system prompt not leaked, PII not echoed, API keys not reflected in tool outputs | | |
-| TASK-T053 | LLM03 Supply Chain: verify tool descriptor signatures; assert no unsigned MCP server connections; dependency audit gate in CI | | |
-| TASK-T054 | LLM04 Data & Model Poisoning: RAG poisoning test — embed malicious instruction in retrieved document; assert guardrail blocks context injection | | |
-| TASK-T055 | LLM05 Improper Output Handling: assert rendered output is HTML-escaped; no XSS via `dangerouslySetInnerHTML`; tool output schemas validated before downstream use | | |
-| TASK-T056 | LLM06 Excessive Agency: assert agent cannot call tools beyond declared permission scope; verify `ALLOWED_TOOLS` enforcement per REQ-078 | | |
-| TASK-T057 | LLM07 System Prompt Leakage: adversarial extraction attempts; assert full system prompt not returned under any user prompt variant | | |
-| TASK-T058 | LLM08 Vector & Embedding Weakness: cross-tenant isolation test — assert user A's embeddings are not retrievable by user B | | |
-| TASK-T059 | LLM09 Misinformation & Hallucination: fact-check scenario with verifiable claims; assert refusal rate on out-of-knowledge queries ≥ 80% | | |
-| TASK-T060 | LLM10 Unbounded Consumption: token bomb test — send max-complexity prompt; assert session quota enforcement (REQ-086) triggers before context limit | | |
+| Task      | Description                                                                                                                                                       | Completed | Date |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-T051 | LLM01 Prompt Injection: unit tests for direct injection (role override, delimiter break) + scenario tests for indirect injection via retrieved context            |           |      |
+| TASK-T052 | LLM02 Sensitive Information Disclosure: assert system prompt not leaked, PII not echoed, API keys not reflected in tool outputs                                   |           |      |
+| TASK-T053 | LLM03 Supply Chain: verify tool descriptor signatures; assert no unsigned MCP server connections; dependency audit gate in CI                                     |           |      |
+| TASK-T054 | LLM04 Data & Model Poisoning: RAG poisoning test — embed malicious instruction in retrieved document; assert guardrail blocks context injection                   |           |      |
+| TASK-T055 | LLM05 Improper Output Handling: assert rendered output is HTML-escaped; no XSS via `dangerouslySetInnerHTML`; tool output schemas validated before downstream use |           |      |
+| TASK-T056 | LLM06 Excessive Agency: assert agent cannot call tools beyond declared permission scope; verify `ALLOWED_TOOLS` enforcement per REQ-078                           |           |      |
+| TASK-T057 | LLM07 System Prompt Leakage: adversarial extraction attempts; assert full system prompt not returned under any user prompt variant                                |           |      |
+| TASK-T058 | LLM08 Vector & Embedding Weakness: cross-tenant isolation test — assert user A's embeddings are not retrievable by user B                                         |           |      |
+| TASK-T059 | LLM09 Misinformation & Hallucination: fact-check scenario with verifiable claims; assert refusal rate on out-of-knowledge queries ≥ 80%                           |           |      |
+| TASK-T060 | LLM10 Unbounded Consumption: token bomb test — send max-complexity prompt; assert session quota enforcement (REQ-086) triggers before context limit               |           |      |
 
 ### Phase 8 — OWASP Agentic Top 10:2026 Security Tests
 
 - GOAL-008: Implement test coverage for all 10 OWASP Agentic Top 10:2026 vulnerabilities (ASI01–ASI10, released December 2025).
 
-| Task | Description | Completed | Date |
-| --- | --- | --- | --- |
-| TASK-T061 | ASI01 Agent Goal Hijack: multi-turn Crescendo test — inject conflicting objective at turn 5; assert agent maintains original declared goal | | |
-| TASK-T062 | ASI02 Tool Misuse & Exploitation: `ToolUsageGuard` tests — parameter validation, rate limiting, policy check, sandbox execution, output validation | | |
-| TASK-T063 | ASI03 Identity & Privilege Abuse: assert NHI credentials scoped to minimum required; no credential inheritance across separate agent invocations | | |
-| TASK-T064 | ASI04 Agentic Supply Chain: MCP server manifest verification; assert tool descriptor hash matches signed registry entry before registration | | |
-| TASK-T065 | ASI05 Unexpected Code Execution: assert agent-generated code runs in sandbox; no host filesystem access; no network egress from sandbox | | |
-| TASK-T066 | ASI06 Memory & Context Poisoning: inject malicious instruction into persistent memory store; assert guardrail detects and quarantines on next retrieval | | |
-| TASK-T067 | ASI07 Insecure Inter-Agent Communication: assert inter-agent messages are signed and verified; spoofed agent message is rejected | | |
-| TASK-T068 | ASI08 Cascading Failures: circuit breaker test — one agent returns false signal; assert downstream agents do not act on unverified output | | |
-| TASK-T069 | ASI09 Human-Agent Trust Exploitation: HITL approval workflow test — assert high-risk tool calls require human confirmation; confidence score surfaced to user | | |
-| TASK-T070 | ASI10 Rogue Agent Detection: behavioral anomaly test — inject misalignment signal; assert monitoring detects deviation from declared capability specification | | |
+| Task      | Description                                                                                                                                                   | Completed | Date |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-T061 | ASI01 Agent Goal Hijack: multi-turn Crescendo test — inject conflicting objective at turn 5; assert agent maintains original declared goal                    |           |      |
+| TASK-T062 | ASI02 Tool Misuse & Exploitation: `ToolUsageGuard` tests — parameter validation, rate limiting, policy check, sandbox execution, output validation            |           |      |
+| TASK-T063 | ASI03 Identity & Privilege Abuse: assert NHI credentials scoped to minimum required; no credential inheritance across separate agent invocations              |           |      |
+| TASK-T064 | ASI04 Agentic Supply Chain: MCP server manifest verification; assert tool descriptor hash matches signed registry entry before registration                   |           |      |
+| TASK-T065 | ASI05 Unexpected Code Execution: assert agent-generated code runs in sandbox; no host filesystem access; no network egress from sandbox                       |           |      |
+| TASK-T066 | ASI06 Memory & Context Poisoning: inject malicious instruction into persistent memory store; assert guardrail detects and quarantines on next retrieval       |           |      |
+| TASK-T067 | ASI07 Insecure Inter-Agent Communication: assert inter-agent messages are signed and verified; spoofed agent message is rejected                              |           |      |
+| TASK-T068 | ASI08 Cascading Failures: circuit breaker test — one agent returns false signal; assert downstream agents do not act on unverified output                     |           |      |
+| TASK-T069 | ASI09 Human-Agent Trust Exploitation: HITL approval workflow test — assert high-risk tool calls require human confirmation; confidence score surfaced to user |           |      |
+| TASK-T070 | ASI10 Rogue Agent Detection: behavioral anomaly test — inject misalignment signal; assert monitoring detects deviation from declared capability specification |           |      |
 
 ### Phase 9 — Guardrails Feature Implementation
 
 - GOAL-009: Implement `@agentsy/guardrails` package with `GuardrailsController`, pluggable providers, input/output pipelines, and observability hooks.
 
-| Task | Description | Completed | Date |
-| --- | --- | --- | --- |
-| TASK-T071 | Scaffold `packages/guardrails/` — `package.json`, `tsconfig.json`, `tsup.config.ts`, barrel `index.ts`; add to pnpm workspace and Turborepo pipeline | | |
-| TASK-T072 | Implement `GuardrailsConfig` interface: `providers`, `allowedTopics`, `blockedTopics`, `piiRedaction`, `tokenQuota`, `retrievalDomains`, `trustHierarchy` | | |
-| TASK-T073 | Implement `GuardrailsController` class: `checkInput(message)` → `GuardrailResult`; `checkOutput(response)` → `GuardrailResult`; emit typed events per REQ-082 | | |
-| TASK-T074 | Implement `GuardrailProvider` interface + `RegexProvider` (zero runtime deps); `PiiRedactionProvider` using pattern-based redaction for common PII types | | |
-| TASK-T075 | Implement `OpenAIModerationProvider` (optional peer dep `openai`): maps API response categories to `GuardrailResult`; handles rate limit errors gracefully | | |
-| TASK-T076 | Implement `LlamaGuardProvider` (optional peer dep: any OpenAI-compatible client): sends dual classification prompt for input and output modes | | |
-| TASK-T077 | Implement `IntentClassifier` with configurable allow/deny topic lists; pluggable backend (regex, embedding similarity, SLM); logs intent + confidence for evals | | |
-| TASK-T078 | Implement `StreamingGuardrailFilter` wrapping `AsyncIterable<string>`; runs pattern checks on a sliding window without full buffering; meets CON-016 | | |
-| TASK-T079 | Implement `RetrievalFirewall.validate(url)`: checks against `retrievalDomains` allowlist; throws `RetrievalBlockedError` on untrusted source | | |
-| TASK-T080 | Implement `TokenQuotaManager`: tracks per-session token usage; emits `guardrail:quota-exceeded` warning; throws `QuotaExceededError` at hard limit | | |
+| Task      | Description                                                                                                                                                     | Completed | Date |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-T071 | Scaffold `packages/guardrails/` — `package.json`, `tsconfig.json`, `tsup.config.ts`, barrel `index.ts`; add to pnpm workspace and Turborepo pipeline            |           |      |
+| TASK-T072 | Implement `GuardrailsConfig` interface: `providers`, `allowedTopics`, `blockedTopics`, `piiRedaction`, `tokenQuota`, `retrievalDomains`, `trustHierarchy`       |           |      |
+| TASK-T073 | Implement `GuardrailsController` class: `checkInput(message)` → `GuardrailResult`; `checkOutput(response)` → `GuardrailResult`; emit typed events per REQ-082   |           |      |
+| TASK-T074 | Implement `GuardrailProvider` interface + `RegexProvider` (zero runtime deps); `PiiRedactionProvider` using pattern-based redaction for common PII types        |           |      |
+| TASK-T075 | Implement `OpenAIModerationProvider` (optional peer dep `openai`): maps API response categories to `GuardrailResult`; handles rate limit errors gracefully      |           |      |
+| TASK-T076 | Implement `LlamaGuardProvider` (optional peer dep: any OpenAI-compatible client): sends dual classification prompt for input and output modes                   |           |      |
+| TASK-T077 | Implement `IntentClassifier` with configurable allow/deny topic lists; pluggable backend (regex, embedding similarity, SLM); logs intent + confidence for evals |           |      |
+| TASK-T078 | Implement `StreamingGuardrailFilter` wrapping `AsyncIterable<string>`; runs pattern checks on a sliding window without full buffering; meets CON-016            |           |      |
+| TASK-T079 | Implement `RetrievalFirewall.validate(url)`: checks against `retrievalDomains` allowlist; throws `RetrievalBlockedError` on untrusted source                    |           |      |
+| TASK-T080 | Implement `TokenQuotaManager`: tracks per-session token usage; emits `guardrail:quota-exceeded` warning; throws `QuotaExceededError` at hard limit              |           |      |
 
 ### Phase 10 — Application-Level Safety Testing
 
 - GOAL-010: Implement black-box application-level safety testing following GovTech Singapore's methodology (ICML 2025, SRC-31).
 
-| Task | Description | Completed | Date |
-| --- | --- | --- | --- |
-| TASK-T081 | Define custom safety risk taxonomy: Undesirable Content (hateful/sexual/violence/self-harm), Specialized Advice (legal/medical/financial), Political Content, Privacy Violation | | |
-| TASK-T082 | Build adversarial prompt benchmark: ≥ 50 basic + ≥ 20 intermediate-complexity prompts per taxonomy category; store in `packages/testing/src/__fixtures__/safety-benchmark/` | | |
-| TASK-T083 | Safety score CI gate: `safetyScore = safeResponses / totalProbes`; assert score ≥ 0.90 (initial baseline) in nightly CI; emit report to LANGWATCH | | |
-| TASK-T084 | LLM-as-judge refusal evaluator: `JudgeAgent` classifies response as safe/unsafe/refusal; validate ≥ 85% agreement against human-annotated ground truth (≥ 50 examples) | | |
-| TASK-T085 | Shift-left safety integration: add safety taxonomy review checklist to PR template; add design-phase safety risk assessment template at `docs/developers/safety-assessment-template.md` | | |
+| Task      | Description                                                                                                                                                                             | Completed | Date |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-T081 | Define custom safety risk taxonomy: Undesirable Content (hateful/sexual/violence/self-harm), Specialized Advice (legal/medical/financial), Political Content, Privacy Violation         |           |      |
+| TASK-T082 | Build adversarial prompt benchmark: ≥ 50 basic + ≥ 20 intermediate-complexity prompts per taxonomy category; store in `packages/testing/src/__fixtures__/safety-benchmark/`             |           |      |
+| TASK-T083 | Safety score CI gate: `safetyScore = safeResponses / totalProbes`; assert score ≥ 0.90 (initial baseline) in nightly CI; emit report to LANGWATCH                                       |           |      |
+| TASK-T084 | LLM-as-judge refusal evaluator: `JudgeAgent` classifies response as safe/unsafe/refusal; validate ≥ 85% agreement against human-annotated ground truth (≥ 50 examples)                  |           |      |
+| TASK-T085 | Shift-left safety integration: add safety taxonomy review checklist to PR template; add design-phase safety risk assessment template at `docs/developers/safety-assessment-template.md` |           |      |
 
 ### Phase 11 — Regulatory Compliance
 
 - GOAL-011: Implement audit trail and compliance evidence generation for EU AI Act, NIST AI RMF, GDPR/HIPAA, and ISO 42001.
 
-| Task | Description | Completed | Date |
-| --- | --- | --- | --- |
-| TASK-T086 | EU AI Act risk classification: document @agentsy risk tier (General-Purpose AI vs. High-Risk); produce conformity assessment checklist at `docs/compliance/eu-ai-act.md` | | |
-| TASK-T087 | NIST AI RMF mapping: map each REQ-076..REQ-090 to Map/Measure/Manage/Govern functions; document at `docs/compliance/nist-ai-rmf.md` | | |
-| TASK-T088 | GDPR/HIPAA PII audit trail: `AuditLogger` records per-request guardrail intervention events with timestamp, redacted field names, provider name — no PII stored in log | | |
-| TASK-T089 | ISO 42001 continuous monitoring: real-time dashboard (intervention rate, false positive rate, latency impact p99); alert threshold: intervention rate spike > 3× 7-day baseline | | |
-| TASK-T090 | Compliance audit log export: `AuditExporter.export(dateRange)` → JSON Lines format; supports EU AI Act Article 12 transparency requirement | | |
+| Task      | Description                                                                                                                                                                     | Completed | Date |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-T086 | EU AI Act risk classification: document @agentsy risk tier (General-Purpose AI vs. High-Risk); produce conformity assessment checklist at `docs/compliance/eu-ai-act.md`        |           |      |
+| TASK-T087 | NIST AI RMF mapping: map each REQ-076..REQ-090 to Map/Measure/Manage/Govern functions; document at `docs/compliance/nist-ai-rmf.md`                                             |           |      |
+| TASK-T088 | GDPR/HIPAA PII audit trail: `AuditLogger` records per-request guardrail intervention events with timestamp, redacted field names, provider name — no PII stored in log          |           |      |
+| TASK-T089 | ISO 42001 continuous monitoring: real-time dashboard (intervention rate, false positive rate, latency impact p99); alert threshold: intervention rate spike > 3× 7-day baseline |           |      |
+| TASK-T090 | Compliance audit log export: `AuditExporter.export(dateRange)` → JSON Lines format; supports EU AI Act Article 12 transparency requirement                                      |           |      |
 
 ---
 

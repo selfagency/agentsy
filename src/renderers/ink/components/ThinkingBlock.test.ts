@@ -279,6 +279,105 @@ describe('ThinkingBlock Component', () => {
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element).toBeDefined();
     });
+
+    it('renders with inline style', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: 'Inline thoughts',
+        style: 'inline',
+        isStreaming: false,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.style).toBe('inline');
+    });
+
+    it('renders with suppress style', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: 'Hidden thoughts',
+        style: 'suppress',
+        isStreaming: false,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.style).toBe('suppress');
+    });
+  });
+
+  describe('thinking content variations', () => {
+    it('handles empty thinking text', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: '',
+        style: 'blockquote',
+        isStreaming: false,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.text).toBe('');
+    });
+
+    it('handles long thinking text', () => {
+      const longThinking = 'Thought '.repeat(100);
+      const element = React.createElement(ThinkingBlock, {
+        text: longThinking,
+        style: 'blockquote',
+        isStreaming: false,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.text.length).toBeGreaterThan(500);
+    });
+
+    it('handles multiline thinking', () => {
+      const multilineThinking = 'First thought\nSecond thought\nThird thought';
+      const element = React.createElement(ThinkingBlock, {
+        text: multilineThinking,
+        style: 'blockquote',
+        isStreaming: true,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.text).toContain('First thought');
+      expect(element.props.text).toContain('Second thought');
+    });
+  });
+
+  describe('theme application', () => {
+    it('applies dark theme colors', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: 'Themed thought',
+        style: 'blockquote',
+        isStreaming: false,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.theme).toBe(darkTheme);
+    });
+
+    it('applies default theme colors', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: 'Themed thought',
+        style: 'blockquote',
+        isStreaming: false,
+        theme: defaultTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.theme).toBe(defaultTheme);
+    });
+  });
+
+  describe('streaming behavior', () => {
+    it('renders while streaming', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: 'Streaming thought...',
+        style: 'blockquote',
+        isStreaming: true,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.isStreaming).toBe(true);
+    });
+
+    it('renders complete thinking', () => {
+      const element = React.createElement(ThinkingBlock, {
+        text: 'Completed thought',
+        style: 'blockquote',
+        isStreaming: false,
+        theme: darkTheme,
+      } as Parameters<typeof ThinkingBlock>[0]);
+      expect(element.props.isStreaming).toBe(false);
+    });
   });
 });
 

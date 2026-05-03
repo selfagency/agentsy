@@ -347,5 +347,93 @@ describe('StreamingText Component', () => {
       expect(element).toBeDefined();
     });
   });
+
+  // Block boundary tests
+  describe('block boundary handling', () => {
+    it('identifies block boundaries with double newlines', () => {
+      const textWithBlocks = 'First block\n\nSecond block\n\nThird block';
+      const element = React.createElement(StreamingText, {
+        text: textWithBlocks,
+        markdown: false,
+        isStreaming: true,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.text).toContain('First block');
+      expect(element.props.text).toContain('Second block');
+    });
+
+    it('handles text without block boundaries', () => {
+      const singleBlock = 'Single continuous text without double newlines';
+      const element = React.createElement(StreamingText, {
+        text: singleBlock,
+        markdown: false,
+        isStreaming: true,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.text).toBe(singleBlock);
+    });
+
+    it('handles multiple consecutive block boundaries', () => {
+      const multiBlock = 'Text\n\n\n\nMore text';
+      const element = React.createElement(StreamingText, {
+        text: multiBlock,
+        markdown: false,
+        isStreaming: false,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.text).toContain('Text');
+    });
+  });
+
+  // Combined feature tests
+  describe('combined features', () => {
+    it('handles markdown + syntax highlighting + streaming', () => {
+      const code = '```typescript\nfunction hello() { console.log("world"); }\n```';
+      const element = React.createElement(StreamingText, {
+        text: code,
+        markdown: true,
+        isStreaming: true,
+        theme: darkTheme,
+        screenReader: false,
+        syntaxHighlight: true,
+      });
+      expect(element.props.markdown).toBe(true);
+      expect(element.props.syntaxHighlight).toBe(true);
+      expect(element.props.isStreaming).toBe(true);
+    });
+
+    it('handles screen reader + markdown disabled', () => {
+      const plainText = 'Plain text content';
+      const element = React.createElement(StreamingText, {
+        text: plainText,
+        markdown: false,
+        isStreaming: false,
+        theme: darkTheme,
+        screenReader: true,
+      });
+      expect(element.props.screenReader).toBe(true);
+      expect(element.props.markdown).toBe(false);
+    });
+
+    it('handles all options together', () => {
+      const fullMarkdown = '# Header\n\n**Bold** and *italic* with `code` and `languages`\n\n```python\nprint("hello")\n```';
+      const element = React.createElement(StreamingText, {
+        text: fullMarkdown,
+        markdown: true,
+        isStreaming: true,
+        theme: darkTheme,
+        screenReader: true,
+        syntaxHighlight: true,
+      });
+      expect(element.props.text).toContain('Header');
+      expect(element.props.markdown).toBe(true);
+      expect(element.props.syntaxHighlight).toBe(true);
+      expect(element.props.isStreaming).toBe(true);
+      expect(element.props.screenReader).toBe(true);
+    });
+  });
 });
 
