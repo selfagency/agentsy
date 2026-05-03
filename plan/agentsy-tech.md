@@ -33,7 +33,13 @@ Complete technical specification for all 15 `@agentsy/*` packages. Includes Type
 @agentsy/core (zero deps)
     ├── @agentsy/normalizers  (→ core)
     ├── @agentsy/processor    (→ core, normalizers)
-    │       └── @agentsy/ag-ui  (→ core, processor)
+    │       ├── @agentsy/ag-ui    (→ core, processor)
+    │       └── @agentsy/renderers (→ core, processor)          ← standalone; no agent-layer deps
+    │               ├── @agentsy/renderers/plain    (zero peer deps)
+    │               ├── @agentsy/renderers/cli      (peer: cli-markdown)
+    │               ├── @agentsy/renderers/ink      (peer: ink, react)
+    │               ├── @agentsy/renderers/vscode   (duck-typed; no vscode dep)
+    │               └── @agentsy/renderers/browser  (peer: streaming-markdown, dompurify)
     ├── @agentsy/session      (→ core)
     ├── @agentsy/cost-tracker (→ core)
     └── @agentsy/agent        (→ core, processor, session, cost-tracker, context-manager)
@@ -46,7 +52,12 @@ Complete technical specification for all 15 `@agentsy/*` packages. Includes Type
                     └── @agentsy/retrieval (→ core, memory)
 
 @agentsy/telemetry (→ core, optional peer dep for all)
-@selfagency/llm-stream-parser (shim → core, normalizers, processor, agent, adapters, ag-ui)
+@selfagency/llm-stream-parser (shim → core, normalizers, processor, renderers, agent, adapters, ag-ui)
+
+Future product-layer packages (see agentsy-standalone-v1.md):
+    @agentsy/renderer-gui    (→ renderers — DisplayPort over Electron IPC / Tauri commands / WebView)
+    @agentsy/extension-vscode (→ agent, renderers/vscode, mcp — VS Code Copilot chat participant)
+    @agentsy/desktop          (→ agent, renderer-gui — Electron/Tauri desktop app factory)
 ```
 
 **CON-006 compliance**: `@agentsy/core` has no `@agentsy/*` dependencies.

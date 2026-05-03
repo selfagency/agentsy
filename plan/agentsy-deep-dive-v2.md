@@ -659,35 +659,52 @@ For high-stakes decisions (architecture choices, security reviews), spawn N agen
 
 See `agentsy-prd-notes.md` §2 for full ADR entries.
 
-| ADR     | Title                                                 | Priority | Source         |
-| ------- | ----------------------------------------------------- | -------- | -------------- |
-| ADR-026 | Code-as-Actions Execution Mode                        | P3       | SRC-11         |
-| ADR-027 | Skill Progressive Loading                             | P2       | SRC-12         |
-| ADR-028 | Tool Card Metadata Schema                             | P2       | SRC-16         |
-| ADR-029 | Dual-Level Planning                                   | P3       | SRC-16         |
-| ADR-030 | Compiler-Driven Function Schema                       | P1       | SRC-17         |
-| ADR-031 | Validation Feedback Loop for Tool Arguments           | P1       | SRC-17         |
-| ADR-032 | Parallel Divided Selection with Eliticism             | P2       | SRC-17         |
-| ADR-033 | DAG-Based Parallel Task Execution + Snapshot Recovery | P2/P3    | SRC-15         |
-| ADR-034 | A2A Protocol Support                                  | P3       | SRC-15, SRC-21 |
-| ADR-035 | White-Box Editable Memory                             | P2       | SRC-20         |
-| ADR-036 | Branching Conversation Trees                          | P3       | SRC-20         |
-| ADR-037 | Sprint Lifecycle Skills Architecture                  | P2       | SRC-26         |
-| ADR-038 | Continuous Checkpoint Mode with WIP Commits           | P2       | SRC-26         |
-| ADR-039 | Simulation-Based Agent Testing                        | P1       | SRC-27         |
-| ADR-040 | pass^k Consistency Metric for Agent Testing           | P1       | SRC-28         |
-| ADR-041 | Crescendo Multi-Turn Red Team Testing                 | P2       | SRC-27         |
-| ADR-042 | RSI Feedback Ledger                                   | P3       | SRC-21         |
-| ADR-043 | Multi-Agent Debate with Confidence-Weighted Consensus | P3       | SRC-21         |
-| ADR-044 | Shared Memory MCP for Multi-Agent Token Efficiency    | P2       | SRC-24         |
-| ADR-045 | Evaluator-Optimizer Workflow Pattern                  | P2       | SRC-23         |
-| ADR-046 | State Dict Cross-Step Data Passing                    | P1       | SRC-11         |
-| ADR-047 | Pluggable Executor Architecture                       | P2       | SRC-17         |
-| ADR-048 | 12-Factor Agent Design Principles                     | P1       | SRC-25         |
-| ADR-049 | Design Taste Memory                                   | P3       | SRC-26         |
-| ADR-050 | LLM-as-Judge at Every Turn                            | P1       | SRC-27         |
-| ADR-051 | Team-Scoped Memory Bank Boundary Model                | P2       | SRC-29         |
-| ADR-052 | Hybrid Memory Retention (user+project+team)           | P2       | SRC-29, SRC-24 |
+| ADR     | Title                                                                                                                             | Priority | Source                    |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------- |
+| ADR-026 | Code-as-Actions Execution Mode                                                                                                    | P3       | SRC-11                    |
+| ADR-027 | Skill Progressive Loading                                                                                                         | P2       | SRC-12                    |
+| ADR-028 | Tool Card Metadata Schema                                                                                                         | P2       | SRC-16                    |
+| ADR-029 | Dual-Level Planning                                                                                                               | P3       | SRC-16                    |
+| ADR-030 | Compiler-Driven Function Schema                                                                                                   | P1       | SRC-17                    |
+| ADR-031 | Validation Feedback Loop for Tool Arguments                                                                                       | P1       | SRC-17                    |
+| ADR-032 | Parallel Divided Selection with Eliticism                                                                                         | P2       | SRC-17                    |
+| ADR-033 | DAG-Based Parallel Task Execution + Snapshot Recovery                                                                             | P2/P3    | SRC-15                    |
+| ADR-034 | A2A Protocol Support                                                                                                              | P3       | SRC-15, SRC-21            |
+| ADR-035 | White-Box Editable Memory                                                                                                         | P2       | SRC-20                    |
+| ADR-036 | Branching Conversation Trees                                                                                                      | P3       | SRC-20                    |
+| ADR-037 | Sprint Lifecycle Skills Architecture                                                                                              | P2       | SRC-26                    |
+| ADR-038 | Continuous Checkpoint Mode with WIP Commits                                                                                       | P2       | SRC-26                    |
+| ADR-039 | Simulation-Based Agent Testing                                                                                                    | P1       | SRC-27                    |
+| ADR-040 | pass^k Consistency Metric for Agent Testing                                                                                       | P1       | SRC-28                    |
+| ADR-041 | Crescendo Multi-Turn Red Team Testing                                                                                             | P2       | SRC-27                    |
+| ADR-042 | RSI Feedback Ledger                                                                                                               | P3       | SRC-21                    |
+| ADR-043 | Multi-Agent Debate with Confidence-Weighted Consensus                                                                             | P3       | SRC-21                    |
+| ADR-044 | Shared Memory MCP for Multi-Agent Token Efficiency                                                                                | P2       | SRC-24                    |
+| ADR-045 | Evaluator-Optimizer Workflow Pattern                                                                                              | P2       | SRC-23                    |
+| ADR-046 | State Dict Cross-Step Data Passing                                                                                                | P1       | SRC-11                    |
+| ADR-047 | Pluggable Executor Architecture                                                                                                   | P2       | SRC-17                    |
+| ADR-048 | 12-Factor Agent Design Principles                                                                                                 | P1       | SRC-25                    |
+| ADR-049 | Design Taste Memory                                                                                                               | P3       | SRC-26                    |
+| ADR-050 | LLM-as-Judge at Every Turn                                                                                                        | P1       | SRC-27                    |
+| ADR-051 | Team-Scoped Memory Bank Boundary Model                                                                                            | P2       | SRC-29                    |
+| ADR-052 | Hybrid Memory Retention (user+project+team)                                                                                       | P2       | SRC-29, SRC-24            |
+| ADR-053 | Inversion of Control as Primary Orchestration Philosophy                                                                          | P1       | SRC-30, SRC-31            |
+| ADR-054 | Lethal Trifecta as Primary Agentic Threat Model                                                                                   | P1       | SRC-30                    |
+| ADR-055 | Plan-Then-Execute with Real Gating as Canonical Multi-Step Pattern                                                                | P1       | SRC-30, SRC-32            |
+| ADR-056 | Gate-Driven Development (Verify Before Implement)                                                                                 | P1       | SRC-32                    |
+| ADR-057 | Sessions Disposable / Repository Durable State Model                                                                              | P2       | SRC-32                    |
+| ADR-058 | Metacognition Design Pattern for Self-Monitoring Agents                                                                           | P2       | SRC-33                    |
+| ADR-059 | Cryptographic Receipts for Agent Action Audit                                                                                     | P2       | SRC-33                    |
+| ADR-060 | Human-in-the-Loop as Sixth Core Agentic Pattern                                                                                   | P1       | SRC-31, SRC-34            |
+| ADR-061 | Three-Layer Agentic Architecture (Workflow / Capability / Production)                                                             | P1       | SRC-35                    |
+| ADR-062 | Additive Complexity Principle for Pattern Selection                                                                               | P1       | SRC-35                    |
+| ADR-063 | Atom of Thought / Tree of Thought / Graph of Thought Reasoning Patterns                                                           | P2       | SRC-36                    |
+| ADR-064 | Trajectory-Based Evaluation (path quality, not just output)                                                                       | P1       | SRC-35                    |
+| ADR-065 | Layered Guardrails Model (not single system prompt)                                                                               | P1       | SRC-35                    |
+| ADR-066 | `@agentsy/renderers` as Standalone Renderer Layer (no orchestration deps; subpath exports per renderer)                           | P1       | REQ-110, CON-024          |
+| ADR-067 | `DisplayPort` Interface as GUI Extension Point (generic output abstraction over DOM / IPC / WebSocket)                            | P1       | REQ-113, REQ-119          |
+| ADR-068 | Duck-Typed Platform Interfaces for VS Code, Electron, Tauri (structural typing; no SDK hard deps)                                 | P1       | REQ-112, CON-026, CON-027 |
+| ADR-069 | Product Extension Pattern (`@agentsy/extension-vscode` and `@agentsy/desktop` as thin compositions of core + renderer primitives) | P2       | REQ-120, REQ-121          |
 
 ---
 
@@ -695,36 +712,40 @@ See `agentsy-prd-notes.md` §2 for full ADR entries.
 
 See `agentsy-platform-v2.md` §1 for full requirement entries.
 
-| REQ     | Description                                                                              | ADR     | Priority |
-| ------- | ---------------------------------------------------------------------------------------- | ------- | -------- |
-| REQ-043 | Agent loop MUST support code-as-actions execution with sandboxed JS executor             | ADR-026 | P3       |
-| REQ-044 | Agent loop MUST support configurable executor backends (local, Docker, E2B, WASM)        | ADR-026 | P3       |
-| REQ-045 | Tool definitions SHOULD support progressive loading from markdown/TOML files             | ADR-027 | P2       |
-| REQ-046 | Tool metadata MUST include capability description, input schema, output schema, version  | ADR-028 | P2       |
-| REQ-047 | Agent MUST support dual-level planning (global task plan + per-step sub-plan)            | ADR-029 | P3       |
-| REQ-048 | Function schemas MUST be compiler-generated from TypeScript types (typia or zod)         | ADR-030 | P1       |
-| REQ-049 | Invalid tool arguments MUST trigger validation feedback loop with structured error retry | ADR-031 | P1       |
-| REQ-050 | Selector MUST support parallel divided selection with eliticism for registries >50 tools | ADR-032 | P2       |
-| REQ-051 | Workflow executor MUST support DAG-based parallel task execution                         | ADR-033 | P2       |
-| REQ-052 | Workflow MUST support pause/resume with snapshot serialization                           | ADR-033 | P2       |
-| REQ-053 | A2A Protocol MUST be supported for agent-to-agent communication                          | ADR-034 | P3       |
-| REQ-054 | Memory MUST support white-box user editing without restart                               | ADR-035 | P2       |
-| REQ-055 | Conversation history MUST support branching tree structure                               | ADR-036 | P3       |
-| REQ-056 | Agent loop executor MUST be fully pluggable via IAgenticaExecutor-style interface        | ADR-047 | P2       |
-| REQ-057 | Test harness MUST support UserSimulatorAgent + JudgeAgent scenario testing               | ADR-039 | P1       |
-| REQ-058 | Test harness MUST report pass^k metric for all agent scenario tests                      | ADR-040 | P1       |
-| REQ-059 | Test harness MUST support Crescendo-style multi-turn adversarial red team testing        | ADR-041 | P2       |
-| REQ-060 | Agent architecture MUST follow 12-factor agent design principles                         | ADR-048 | P1       |
-| REQ-061 | Cross-step binary/large object passing MUST use state dict key reference pattern         | ADR-046 | P1       |
-| REQ-062 | Multi-agent context sharing MUST use compression + delta updates for token efficiency    | ADR-044 | P2       |
-| REQ-063 | Agent loop SHOULD implement evaluator-optimizer sub-pattern for quality-sensitive tasks  | ADR-045 | P2       |
-| REQ-064 | Agent loop MUST implement RSI feedback ledger tracking tool execution outcomes           | ADR-042 | P3       |
-| REQ-065 | Sprint lifecycle actions SHOULD be expressible as named skill files in a skill directory | ADR-037 | P2       |
-| REQ-066 | Memory MUST support team-scoped bank as a distinct tier alongside session/project/global | ADR-051 | P2       |
-| REQ-067 | MemoryScope MUST enumerate: session, user, project, team, global; retain multi-scope     | ADR-051 | P2       |
-| REQ-068 | Team-scoped banks MUST require explicit trust model before cross-agent data flows        | ADR-052 | P1       |
-| REQ-069 | Retention into shared banks MUST be selective via `retentionTag` whitelist               | ADR-052 | P2       |
-| REQ-070 | Team bank retrieval MUST support semantic+BM25+graph+temporal strategies via RRF         | ADR-052 | P2       |
+| REQ     | Description                                                                                                                                   | ADR     | Priority |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| REQ-043 | Agent loop MUST support code-as-actions execution with sandboxed JS executor                                                                  | ADR-026 | P3       |
+| REQ-044 | Agent loop MUST support configurable executor backends (local, Docker, E2B, WASM)                                                             | ADR-026 | P3       |
+| REQ-045 | Tool definitions SHOULD support progressive loading from markdown/TOML files                                                                  | ADR-027 | P2       |
+| REQ-046 | Tool metadata MUST include capability description, input schema, output schema, version                                                       | ADR-028 | P2       |
+| REQ-047 | Agent MUST support dual-level planning (global task plan + per-step sub-plan)                                                                 | ADR-029 | P3       |
+| REQ-048 | Function schemas MUST be compiler-generated from TypeScript types (typia or zod)                                                              | ADR-030 | P1       |
+| REQ-049 | Invalid tool arguments MUST trigger validation feedback loop with structured error retry                                                      | ADR-031 | P1       |
+| REQ-050 | Selector MUST support parallel divided selection with eliticism for registries >50 tools                                                      | ADR-032 | P2       |
+| REQ-051 | Workflow executor MUST support DAG-based parallel task execution                                                                              | ADR-033 | P2       |
+| REQ-052 | Workflow MUST support pause/resume with snapshot serialization                                                                                | ADR-033 | P2       |
+| REQ-053 | A2A Protocol MUST be supported for agent-to-agent communication                                                                               | ADR-034 | P3       |
+| REQ-054 | Memory MUST support white-box user editing without restart                                                                                    | ADR-035 | P2       |
+| REQ-055 | Conversation history MUST support branching tree structure                                                                                    | ADR-036 | P3       |
+| REQ-056 | Agent loop executor MUST be fully pluggable via IAgenticaExecutor-style interface                                                             | ADR-047 | P2       |
+| REQ-057 | Test harness MUST support UserSimulatorAgent + JudgeAgent scenario testing                                                                    | ADR-039 | P1       |
+| REQ-058 | Test harness MUST report pass^k metric for all agent scenario tests                                                                           | ADR-040 | P1       |
+| REQ-059 | Test harness MUST support Crescendo-style multi-turn adversarial red team testing                                                             | ADR-041 | P2       |
+| REQ-060 | Agent architecture MUST follow 12-factor agent design principles                                                                              | ADR-048 | P1       |
+| REQ-061 | Cross-step binary/large object passing MUST use state dict key reference pattern                                                              | ADR-046 | P1       |
+| REQ-062 | Multi-agent context sharing MUST use compression + delta updates for token efficiency                                                         | ADR-044 | P2       |
+| REQ-063 | Agent loop SHOULD implement evaluator-optimizer sub-pattern for quality-sensitive tasks                                                       | ADR-045 | P2       |
+| REQ-064 | Agent loop MUST implement RSI feedback ledger tracking tool execution outcomes                                                                | ADR-042 | P3       |
+| REQ-065 | Sprint lifecycle actions SHOULD be expressible as named skill files in a skill directory                                                      | ADR-037 | P2       |
+| REQ-066 | Memory MUST support team-scoped bank as a distinct tier alongside session/project/global                                                      | ADR-051 | P2       |
+| REQ-067 | MemoryScope MUST enumerate: session, user, project, team, global; retain multi-scope                                                          | ADR-051 | P2       |
+| REQ-068 | Team-scoped banks MUST require explicit trust model before cross-agent data flows                                                             | ADR-052 | P1       |
+| REQ-069 | Retention into shared banks MUST be selective via `retentionTag` whitelist                                                                    | ADR-052 | P2       |
+| REQ-070 | Team bank retrieval MUST support semantic+BM25+graph+temporal strategies via RRF                                                              | ADR-052 | P2       |
+| REQ-071 | Agent loop executor MUST support Human-in-the-Loop approval gate before destructive tool calls                                                | ADR-060 | P1       |
+| REQ-072 | Agent loop MUST implement sessions-disposable / repository-durable pattern: all durable state written to repository files, not session memory | ADR-057 | P2       |
+| REQ-073 | Agent architecture MUST support Metacognition pattern: self-monitoring of reasoning quality and strategy adjustment based on own performance  | ADR-058 | P2       |
+| REQ-074 | Agent action audit trail MUST support Cryptographic Receipts model for tamper-evident agent action verification                               | ADR-059 | P3       |
 
 ---
 
@@ -742,3 +763,10 @@ See `agentsy-platform-v2.md` §1 for full requirement entries.
 - [agenticloops-ai/agentic-ai-engineering](https://github.com/agenticloops-ai/agentic-ai-engineering)
 - [adolfousier/opencrabs](https://github.com/adolfousier/opencrabs)
 - [Anthropic "Building Effective Agents"](https://www.anthropic.com/engineering/building-effective-agents)
+- **SRC-30**: nibzard agentic-handbook (<https://nibzard.com/agentic-handbook>) — Lethal Trifecta, Inversion of Control, Plan-Then-Execute with real gating, Action Trace Monitoring
+- **SRC-31**: agenticloops-ai/agentic-ai-engineering (<https://github.com/agenticloops-ai/agentic-ai-engineering>) — Human-in-the-Loop as 6th pattern, Module 03 advanced techniques, Module 04 testing & evaluation, Module 06 production patterns, 12-Factor Agents
+- **SRC-32**: Daniel Butler “Designing Agentic Workflows: The Core Loop” (<https://dev.to/danielbutlerirl/designing-agentic-workflows-the-core-loop-166d>) — Sessions disposable/repository durable, Gate-Driven Development, `AGENTS.md` non-negotiables, wf-01/wf-02/wf-03/wf-04 workflow sequence, Implementation Notes cross-session continuity
+- **SRC-33**: microsoft/ai-agents-for-beginners (<https://github.com/microsoft/ai-agents-for-beginners>) — Metacognition design pattern (Lesson 09), Securing AI Agents with Cryptographic Receipts (Lesson 18), Agentic Protocols MCP/A2A/NLWeb (Lesson 11), Context Engineering (Lesson 12)
+- **SRC-34**: you.com “The Agent Loop” (<https://you.com/resources/the-agent-loop-how-ai-agents-actually-work-and-how-to-build-one>) — 6-step loop (Goal→Context→Plan→Action→Evaluate→Iterate), reliability before autonomy, rule-based + LLM-based evaluation, observability stack
+- **SRC-35**: vdf.ai “Agentic Design Patterns: A Practical Guide” (<https://vdf.ai/blog/agentic-design-patterns-practical-guide/>) — Three-layer architecture (Workflow/Capability/Production), layered guardrails, trajectory-based evaluation, additive complexity principle (9-step pattern selection framework), plans must be inspectable artifacts, strategic memory forgetting
+- **SRC-36**: pguso/ai-agents-from-scratch (<https://github.com/pguso/ai-agents-from-scratch>) — AI Agent formula (LLM + system prompt + tools + memory + reasoning pattern), Atom of Thought (AoT) planning, Tree of Thought beam search, Graph of Thought DAG merge, error taxonomy (validation/LLM/tools/workflow) with retries + fallbacks

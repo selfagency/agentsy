@@ -92,6 +92,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **REQ-063**: For quality-sensitive tasks, `@agentsy/agent` SHOULD support the evaluator-optimizer sub-pattern: generate response → evaluate against rubric → provide feedback → regenerate, up to `config.optimizerMaxIterations`. (ADR-045, SRC-23)
 - **REQ-064**: `@agentsy/agent` SHOULD implement an RSI feedback ledger: every tool execution outcome (success, failure, partial) is appended to a per-session ledger used to de-prioritize failing tools and avoid retrying known-bad approaches. (ADR-042, SRC-21)
 - **REQ-065**: `@agentsy/skills` MUST support expressing sprint lifecycle actions as named skill files: a skills directory can contain `plan.md`, `review.md`, `ship.md`, etc., each with structured context-passing metadata. (ADR-037, SRC-26)
+- **REQ-066**: `@agentsy/memory` MUST support a team-scoped memory bank as a distinct scope tier alongside session, project, and global scopes, with explicit cross-scope permission gates. (ADR-051, SRC-29)
+- **REQ-067**: Memory bank boundary MUST be configurable via a `MemoryScope` enum (`session | user | project | team | global`); agents MAY retain into multiple banks simultaneously per the hybrid pattern. (ADR-051, SRC-29)
+- **REQ-068**: Team-scoped banks MUST enforce a declared trust model before data flows between agents: `TeamBankConfig { trustedAgents: string[]; allowedTopics: string[] }` must be explicitly set; no implicit cross-agent sharing. (ADR-052, SEC-015, SRC-29)
+- **REQ-069**: Retention into shared (project/team) banks MUST be selective: only entries tagged with a `retentionTag` from `(architecture-decision | convention | failure-mode | deployment-lesson | project-milestone | user-preference)` are eligible for team-scope write. (ADR-052, SRC-29)
+- **REQ-070**: `@agentsy/retrieval` MUST support multi-strategy recall for team-scoped banks: semantic (vector), keyword (BM25/FTS5), graph traversal, and temporal retrieval merged via RRF. (ADR-052, SRC-29)
 
 ### Security Requirements
 
@@ -109,6 +114,8 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **SEC-012**: `mai_install` from `@mcpmarket/mcp-auto-install` must default to `dryRun: true` in all `@agentsy/mcp` contexts. Actual installation requires explicit `{ confirm: true }` after user approval.
 - **SEC-013**: `@agentsy/connectors` inbound message payloads must be treated as untrusted external input. Content must be sanitized before system prompt injection via the existing `stripXmlContextTags` / `dedupeXmlContext` pipeline.
 - **SEC-014**: `@agentsy/connectors` channel adapter credentials (bot tokens, API keys) must be loaded exclusively from environment variables or `@agentsy/runtime` secret store. No credentials in config objects or SKILL.md files.
+- **SEC-015**: Cross-team memory access requires an explicit trust model declaration (`TeamBankConfig.trustedAgents[]`); injecting memory from a team bank into an agent not listed in `trustedAgents` MUST throw `MemoryScopeViolation`.
+- **SEC-016**: Team-scoped bank retention MUST NOT store noisy intermediate reasoning, agent-local scratch work, or PII outside the declared team boundary; `WikiLinter` MUST flag entries missing a valid `retentionTag`.
 
 ### Constraints
 
@@ -150,6 +157,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **PAT-008**: vercel/ai `StopCondition` predicates: async predicates in `@agentsy/agent` control loop termination declaratively, not imperatively.
 - **PAT-009**: tanstack/ai `StreamProcessor` per-message state: `@agentsy/processor` tracks each message's streaming state independently in a `Map`.
 - **PAT-010**: tanstack/ai `AgentLoopStrategy` combinators: `maxIterations(n)`, `untilFinishReason([...])`, `combineStrategies([...])` exported from `@agentsy/agent`.
+- **PAT-011**: Orchestrator-Workers (Anthropic/SRC-31): `MCPOrchestrator` dynamically delegates subtasks to worker agents when subtask scope cannot be predicted upfront. Each worker has narrowly scoped tools and reports results to the orchestrator.
+- **PAT-012**: Swarm Migration (SRC-30): large-scale automated refactors enumerate work items, chunk into atomic units, spawn subagents per chunk, then merge with strict checks (tests + lint + compile). Cap parallelism to what CI can handle.
+- **PAT-013**: Budget-Aware Model Routing (SRC-30): cheap/fast model for planning, classification, and routing decisions; expensive model only for execution steps requiring high reasoning quality. Configured via `ProviderStrategy.routingPolicy`.
+- **PAT-014**: Sessions Disposable / Repository Durable (SRC-32): all agent durable state — gates, task notes, discoveries — is written to repository files. Session context is ephemeral; only file-persisted state survives between agent runs.
+- **PAT-015**: Gate-Driven Development (SRC-32): every multi-step agent workflow defines explicit, independently-verifiable success gates before implementation begins. Agents stop when gates pass; humans commit. Gates are defined in `.agents/tasks/<issue>/gates.md`.
+- **PAT-016**: Atom of Thought (AoT) Planning (SRC-36): atomic decomposition of multi-step computations into dependency-resolved operations with deterministic execution order. Each atom is independently verifiable. `createAgentLoop` `planAndExecute` mode uses this for structured plan artifacts.
+- **PAT-017**: Additive Complexity Principle (SRC-35): introduce agentic complexity only as response to real requirements, in this order: prompt chaining → routing → tool use → planning → parallelization → reflection → memory/RAG → multi-agent → guardrails/HITL/evaluation. Never add a pattern because a framework makes it easy.
 
 ---
 
@@ -603,6 +617,21 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 ---
 
+### Phase X9 — Team-Scoped Memory Bank
+
+- **GOAL-X9**: Extend `@agentsy/memory` with team-level bank scope: `MemoryScope` enum, `TeamBankConfig` trust model, selective retention via `retentionTag`, multi-strategy retrieval for team banks.
+
+| Task        | Description                                                                                                                                                                                                                                              | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X9-001 | Add `MemoryScope` enum to `packages/core/src/types/memory.ts` (`session`, `user`, `project`, `team`, `global`); update `MemoryStore` interface to accept optional `scope` param on all write/read operations.                                            |           |      |
+| TASK-X9-002 | Implement `TeamBankConfig` in `packages/memory/src/team/config.ts`: `{ bankId, trustedAgents: string[], allowedTopics: string[], retentionTags: RetentionTag[] }`; validate on construction.                                                             |           |      |
+| TASK-X9-003 | Extend `WikiStore` to support multi-scope writes: `writePage(page, scope?)` routes to correct bank directory (`~/.agentsy/memory/banks/<bankId>/`); enforce `retentionTag` for team/project scopes (SEC-016).                                            |           |      |
+| TASK-X9-004 | Extend `MemoryLifecycle.startTask()` and `endTask()` to accept `TeamBankConfig`; on synthesis, write shared insights to team bank in addition to session bank; emit `MemoryScopeViolation` on unauthorized cross-scope access (SEC-015).                 |           |      |
+| TASK-X9-005 | Implement multi-strategy team bank retrieval in `packages/retrieval/src/TeamBankRetriever.ts`: vector (semantic) + BM25/FTS5 (keyword) + graph traversal + temporal retrieval merged via RRF (REQ-070). Builds on existing `LibSQLVectorStore` and FTS5. |           |      |
+| TASK-X9-006 | Write tests: `MemoryScope` routing, `TeamBankConfig` trust enforcement (reject unauthorized agent), `retentionTag` filter (reject scratch entries), multi-strategy retrieval result merging, `MemoryScopeViolation` event emission.                      |           |      |
+
+---
+
 ## 3. Alternatives
 
 - **ALT-001**: Single package `@agentsy/agentsy` instead of monorepo. Rejected: violates REQ-021 (independent installability); consumers who only use stream parsing must not pull in memory, MCP, etc.
@@ -662,6 +691,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **FILE-PKG-015**: `packages/retrieval/` — `@agentsy/retrieval`: `VectorStore`, `LibSQLVectorStore`, `TursoVectorStore`, `ChunkStrategy`, `embeddings/`, `tools.ts`.
 - **FILE-PKG-016**: `packages/telemetry/` — `@agentsy/telemetry`: `spans`, `structuredLogger`, `healthCheck`.
 - **FILE-PKG-017**: `packages/shim/` — `@selfagency/llm-stream-parser`: compatibility re-export barrel + deprecated package.json.
+- **FILE-PKG-018**: `packages/renderers/` — `@agentsy/renderers`: RendererHandle, DisplayPort, plain/cli/ink/vscode/browser renderer implementations. No orchestration deps. See `agentsy-standalone-v1.md`.
 
 ### Per-Package Config Files (×16 packages)
 
@@ -831,3 +861,4 @@ Each package in `packages/<domain>/` contains:
 - [Karpathy LLM Wiki Gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — compiled wiki architectural pattern
 - [libSQL / Turso vector32 docs](https://docs.turso.tech/features/vector-similarity-search) — vector store backend for `@agentsy/retrieval`
 - [Turborepo documentation](https://turbo.build/repo/docs) — pipeline config, remote caching, workspace conventions
+- **SRC-29**: [Hindsight — Building Multi-Agent Systems with Shared Memory](https://hindsight.vectorize.io/guides/2026/04/21/guide-building-multi-agent-systems-with-shared-memory) — bank boundary model (per-user/project/team/hybrid), retention discipline, multi-strategy recall (semantic+BM25+graph+temporal+RRF), common mistakes

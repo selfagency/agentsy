@@ -193,6 +193,11 @@ The security framework draws on OWASP LLM Top 10:2025 (LLM01–LLM10), the new O
 - **TEST-014**: `TokenQuotaManager` — accumulate tokens past `maxSessionTokens`; assert throws `QuotaExceededError` with `{ tokensUsed, limit }`
 - **TEST-015**: `AuditLogger` — assert log entry contains `timestamp`, `type`, `provider`; assert no PII values present in log output
 - **TEST-016**: Safety score CI gate — run benchmark set against mock agent returning 92% safe; assert gate passes; drop to 88%; assert gate fails
+- **TEST-017**: Lethal Trifecta path test: construct an agent path that has (1) access to user session data, (2) a tool that fetches from user-supplied URL, and (3) network egress. Assert that `GuardrailsController` blocks execution unless at least one condition is explicitly mitigated via config (`egressAllowList`, `stripUntrustedContext: true`, or `crossUserDataAccess: false`).
+- **TEST-018**: PII Tokenization round-trip test: inject PII (email, phone) into agent context; assert that values seen by LLM are tokens (e.g., `{{PII_EMAIL_001}}`); assert that `deliveryAdapter.send()` receives the resolved value; assert that audit log contains only token references, not raw PII values.
+- **TEST-019**: Action Trace kill-switch test: register `onActionTrace` handler that halts on `toolName === 'file_write' && turnIndex > 10`; run agent loop past the trigger; assert `LoopAborted` event emitted; assert no further tool calls executed; assert partial work is rolled back or flagged.
+- **TEST-020**: Cryptographic Receipt integrity test (Lesson 18 pattern, SRC-33): for each tool call in an agent session, assert that a receipt `{ toolName, args, timestamp, agentId, signature }` is generated and verifiable against the agent's signing key. Tamper with one receipt field; assert verification fails and audit log records `ReceiptTamperedError`.
+- **TEST-021**: Agent Circuit Breaker test: configure `circuitBreakerThreshold: 3`, `circuitBreakerWindowMs: 60000`; simulate 3 consecutive failed task runs; assert `SchedulerCircuitOpen` event; assert next `scheduler.run()` call is a no-op; call `scheduler.resetCircuit()`; assert next run proceeds normally.
 
 ---
 

@@ -43,10 +43,13 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 - **REQ-036**: `@agentsy/slash-commands` must ship a stock command set: `/skills-find`, `/skills-add`, `/skills-list`, `/mcp-list`, `/mcp-install`, `/caveman`, `/caveman-lite`, `/caveman-ultra`, `/compact`, `/status`, `/new`, `/review`.
 - **REQ-037**: Slash command SKILL.md frontmatter must support `allowed-tools`, `description`, `model`, and `argument-hint` fields. Bash execution, file references (`@file`), and positional args (`$1`, `$ARGUMENTS`) must be supported.
 - **REQ-038**: `@agentsy/connectors` must provide a `ConnectorGateway` with an `AdapterRegistry` supporting pluggable channel adapters. Gateway model: inbound message → `MessageRouter` → `AgentSessionManager` → outbound delivery via originating adapter.
-- **REQ-039**: `@agentsy/connectors` must ship three first-party channel adapters: `TelegramAdapter`, `DiscordAdapter`, `SlackAdapter`. Additional adapters installable on demand as `@agentsy/connector-<channel>` packages.
+- **REQ-039**: `@agentsy/connectors` must ship three first-party channel adapters: `SignalAdapter`, `DiscordAdapter`, `SlackAdapter`. Additional adapters installable on demand as `@agentsy/connector-<channel>` packages. See `agentsy-connectors-v1.md` for WhatsApp, Matrix, Telegram, email (IMAP/SMTP), and custom adapter extensions.
 - **REQ-040**: `@agentsy/connectors` `AgentSessionManager` must integrate with `@agentsy/session` for per-conversation session persistence and crash-safe resume across channel disconnects.
 - **REQ-041**: `@agentsy/connectors` inbound messages must pass through the `@agentsy/runtime` approval engine before invoking destructive tools, using `'auto'` approval mode by default.
 - **REQ-042**: `@agentsy/connectors` must support OpenClaw-compatible chat commands as built-in slash commands: `/status`, `/new`, `/reset`, `/compact`, `/think`, `/verbose`, `/usage`.
+- **REQ-101**: `@agentsy/agent` `createAgentLoop` MUST support a `planAndExecute` mode option. When enabled, the agent produces an explicit plan artifact before any tool calls; the plan is subject to a configurable `planApproval` hook before execution begins (Plan-Then-Execute pattern, ADR-055).
+- **REQ-102**: `@agentsy/agent` MUST emit `ActionTrace` events for every tool call: `{ toolName, args, result, durationMs, turnIndex }`. Consumers register `onActionTrace` handlers to implement kill-switch logic.
+- **REQ-108**: `createAgentLoop` MUST support a `humanInTheLoop` approval hook that fires before any destructive tool call (HITL pattern). When set, the agent pauses execution and emits `AwaitingHumanApproval` event with the pending tool call details.
 
 ### New Security Requirements
 
@@ -55,6 +58,7 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 - **SEC-012**: `mai_install` from `@mcpmarket/mcp-auto-install` must default to `dryRun: true` in all `@agentsy/mcp` contexts. Actual installation requires explicit `{ confirm: true }` after user approval.
 - **SEC-013**: `@agentsy/connectors` inbound message payloads must be treated as untrusted external input. Content must be sanitized before system prompt injection via the existing `stripXmlContextTags` / `dedupeXmlContext` pipeline.
 - **SEC-014**: `@agentsy/connectors` channel adapter credentials (bot tokens, API keys) must be loaded exclusively from environment variables or `@agentsy/runtime` secret store. No credentials in config objects or SKILL.md files.
+- **SEC-026**: Every execution path that combines (a) access to private/session data, (b) exposure to untrusted external content (web, email, user input), and (c) network egress capability constitutes a Lethal Trifecta (SRC-30). Such paths MUST break at least one of the three conditions: restrict egress via `egressAllowList`, strip untrusted content before context injection (`stripXmlContextTags`), or limit data scope to non-cross-user.
 
 ### New Constraints
 
@@ -62,12 +66,19 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 - **CON-010**: `@agentsy/connectors` channel adapters must list the respective platform SDK as a `peerDependency`, not a hard dependency.
 - **CON-011**: `caveman-shrink` MCP proxy must be a standalone Node.js stdio process compatible with MCP 2025-06-18 transport spec. It must not require any `@agentsy/*` packages at runtime.
 - **CON-012**: `@agentsy/skills` CLI subprocess calls must use argument arrays — never shell string interpolation — to prevent command injection.
+- **CON-023**: All agent-loop-based packages MUST expose explicit stop conditions: `maxIterations`, `maxToolCalls`, and `stopOnTestFailureCount`. No unbounded loops.
 
 ### New Guidelines
 
 - **GUD-008**: All bundled SKILL.md files must include `source_url`, `version`, and `license` frontmatter fields pointing to the upstream repository.
 - **GUD-009**: All slash commands in the stock set must have a corresponding unit test in `packages/slash-commands/src/*.test.ts`.
 - **GUD-010**: Connector adapters must implement the `ChannelAdapter` interface and never directly reference `@agentsy/agent` internals. All agent communication goes through the `AgentSessionManager` contract.
+- **GUD-013**: Before building multi-agent systems, validate that a single optimized LLM call with retrieval and in-context examples is insufficient (Anthropic simplicity principle). Add agents only when specialization improves quality or throughput in a measurable way.
+- **GUD-014**: Every MCP/local tool definition MUST receive the same engineering effort as system prompts (ACI principle). Tool descriptions must include purpose, parameters, example usage, edge cases, and clear boundaries from similar tools (poka-yoke). Tools are the largest failure surface in agentic systems (SRC-35).
+- **GUD-015**: Each `@agentsy` package that invokes an agent loop MUST define an `AGENTS.md` (or equivalent `agentsy.config.md`) at the workspace root describing: how to run tests, lint rules, forbidden mutations, and what counts as "done". Keep under 200 lines; project-specific override section required (SRC-32).
+- **GUD-017**: Agent action APIs called by `AgentTaskRunner` and `createAgentLoop` MUST be idempotent by design. Non-idempotent actions must be wrapped in a confirmation gate. Reliability must precede autonomy (SRC-34).
+- **GUD-019**: All tool calls exposed by `@agentsy` packages MUST be schema-driven (inputSchema + outputSchema), time-bounded (configurable `toolTimeout`), observable (emit ActionTrace events), and classified as `retryable: boolean`. Non-retryable tools MUST document why (SRC-35).
+- **GUD-020**: Agent plans produced by `planAndExecute` mode MUST be inspectable artifacts — not internal model state. Plans MUST be serialized as JSON with fields: `steps[]`, `dependencies{}`, `successCriteria[]`, and `escalationPoints[]` (SRC-35).
 
 ---
 
