@@ -16,7 +16,7 @@ Deep source-code analysis of 28 open-source agent frameworks and research artifa
 
 - `agentsy-prd-notes.md` — SRC registry (1–9), ADR-001..ADR-025, cross-cutting patterns
 - `agentsy-platform-v2.md` — master requirements (REQ-001..REQ-042)
-- `deep-dive-synthesis-v1.md` — prior synthesis (SRC-1..SRC-9)
+- `agentsy-deep-dive-v1.md` — prior synthesis (SRC-1..SRC-9)
 
 **Methodology**: GitHub README + actual TypeScript/Python source file reading, not just documentation. Verbatim excerpts cited inline.
 
@@ -282,9 +282,28 @@ Users can view, edit, add, and delete individual memory entries in the UI. No re
 
 Multi-agent token efficiency via:
 
-- **Context deduplication**: same facts shared between agents are stored once, referenced by ID
-- **Delta updates**: agents send only diffs; subscribers reconstruct state
-- **6x token efficiency** cited in README for collaborative coding tasks
+- **Context deduplication**: same facts shared between agents are stored once, referenced by ID; 10:1 compression ratio with intelligent summarization — workers receive 100-token summaries instead of full context
+- **Delta updates** (`get_context_delta(since_version)`): agents send only diffs; subscribers reconstruct state without retransmitting full snapshots
+- **Claim-based work coordination**: `publish_work_units` → `claim_work_unit` → `update_work_status`; dependency tracking and reactive task handoff between workers
+- **Lazy loading**: `expand_context_section` on demand; workers request detail only when needed
+- **Discovery sharing**: `add_discovery` (incremental, real-time) → `get_discoveries_since` for downstream workers
+- **Token efficiency profile**: traditional 4K → naïve agentic team 48K+ → shared-memory MCP 8K; **6x token efficiency, 1200% cost ROI**
+
+```text
+┌─────────────────┐    ┌─────────────────────────┐
+│ Coordinator     │───▶│ Shared Memory MCP Server │
+│ - Task planning │    │ - Context Store           │
+│ - Work units    │    │ - Discovery Log           │
+│ - Coordination  │    │ - Work Queue              │
+└─────────────────┘    │ - Dependency tracker      │
+                       └───────────┬─────────────┘
+┌─────────────────┐                │
+│ Workers (N)     │────────────────┘
+│ - Specialized   │
+│ - Parallel      │
+│ - Coordinated   │
+└─────────────────┘
+```
 
 ### 4.4 Two-Stage Memory Consolidation (nanobot SRC-3)
 
@@ -304,6 +323,68 @@ Multi-agent token efficiency via:
 ### 4.5 CRDT Conversation History (LobeHub SRC-20)
 
 Branching conversation trees with CRDT-based merge. Users can fork a conversation, explore an alternative direction, then merge results back. Enables A/B prompt testing within a single session without losing history.
+
+### 4.6 Team-Scoped Bank Boundaries (SRC-29 — Hindsight/Vectorize)
+
+The core design decision for multi-agent memory is the **bank boundary** — which agents share which memory. Getting this wrong leads to one of two failure modes: one noisy global pool (over-sharing) or isolated silos where nothing compounds (under-sharing).
+
+**Memory scope hierarchy:**
+
+```text
+user:alice          project:acme-api        team:platform
+   │                      │                      │
+   └──── local agent ─────┼──── shared agents ───┘
+```
+
+**Bank boundary options:**
+
+| Boundary | Use when | Good fit |
+| --- | --- | --- |
+| Per-user | several agents serve the same person; cross-user leakage must never happen | personal assistants, customer-facing support |
+| Per-project | agents collaborate on same artifact; project conventions carry across roles | coding teams, research workflows |
+| Per-team | whole team benefits from shared operational knowledge; one trust boundary | internal ops agents, shared playbooks/runbooks |
+| Hybrid | user context + project context + optional team context | most real-world multi-agent systems |
+
+**Hybrid is usually the right answer**: user bank (personal context) + project bank (work context) + optional team bank (general practices). An agent can retain into more than one bank simultaneously depending on what kind of knowledge it is producing.
+
+**Good candidates for shared memory** (team-scoped):
+
+- Architecture decisions and accepted conventions
+- Recurring failure modes and deployment lessons
+- Project milestones and user preferences all relevant agents should honor
+
+**Bad candidates for broad sharing:**
+
+- Noisy intermediate reasoning and one-off drafts
+- Sensitive PII outside the intended boundary
+- Agent-local scratch work
+
+**Multi-strategy retrieval** (required for team banks where different agents query differently):
+
+```text
+recall(query) =
+  semantic retrieval          (vector similarity)
+  + BM25 keyword retrieval    (exact term matching)
+  + graph traversal           (entity relationship)
+  + temporal retrieval        (time-bounded chains)
+  ──────────────────────────────────────────────
+  reranked merged result set (RRF)
+```
+
+**Common mistakes:**
+
+- One giant global bank — feels efficient, becomes noisy fast
+- No retention discipline — every turn retained equally; bank fills with low-value clutter
+- Sharing without a trust model — if you cannot explain who should see what, the bank design is not ready
+- Treating retrieval problems as storage problems — a bank can contain the right knowledge and still feel broken if recall is weak
+
+**Decision tree:**
+
+| Question | Team-bank action | Skip sharing |
+| --- | --- | --- |
+| Do agents need the same operational playbook? | Add team-level bank | - |
+| Would a mistake be costly if another team saw this? | Tighten isolation | Shared bank may be acceptable |
+| Is memory quality getting noisy? | Narrow the bank boundary | Keep current scope |
 
 ---
 
@@ -605,6 +686,8 @@ See `agentsy-prd-notes.md` §2 for full ADR entries.
 | ADR-048 | 12-Factor Agent Design Principles                     | P1       | SRC-25         |
 | ADR-049 | Design Taste Memory                                   | P3       | SRC-26         |
 | ADR-050 | LLM-as-Judge at Every Turn                            | P1       | SRC-27         |
+| ADR-051 | Team-Scoped Memory Bank Boundary Model                  | P2       | SRC-29         |
+| ADR-052 | Hybrid Multi-Scope Memory Retention (user+project+team) | P2       | SRC-29, SRC-24 |
 
 ---
 
@@ -637,6 +720,11 @@ See `agentsy-platform-v2.md` §1 for full requirement entries.
 | REQ-063 | Agent loop SHOULD implement evaluator-optimizer sub-pattern for quality-sensitive tasks  | ADR-045 | P2       |
 | REQ-064 | Agent loop MUST implement RSI feedback ledger tracking tool execution outcomes           | ADR-042 | P3       |
 | REQ-065 | Sprint lifecycle actions SHOULD be expressible as named skill files in a skill directory | ADR-037 | P2       |
+| REQ-066 | Memory MUST support team-scoped bank as a distinct tier alongside session/project/global | ADR-051 | P2       |
+| REQ-067 | MemoryScope MUST enumerate: session, user, project, team, global; retain multi-scope    | ADR-051 | P2       |
+| REQ-068 | Team-scoped banks MUST require explicit trust model before cross-agent data flows        | ADR-052 | P1       |
+| REQ-069 | Retention into shared banks MUST be selective via `retentionTag` whitelist               | ADR-052 | P2       |
+| REQ-070 | Team bank retrieval MUST support semantic+BM25+graph+temporal strategies via RRF        | ADR-052 | P2       |
 
 ---
 
@@ -648,6 +736,7 @@ See `agentsy-platform-v2.md` §1 for full requirement entries.
 - [Eko plan.ts](https://github.com/FellouAI/eko/blob/main/packages/eko-core/src/agent/plan.ts)
 - [Eko chain.ts](https://github.com/FellouAI/eko/blob/main/packages/eko-core/src/agent/chain.ts)
 - [gstack README](https://github.com/garrytan/gstack)
+- **SRC-29**: [Hindsight — Building Multi-Agent Systems with Shared Memory](https://hindsight.vectorize.io/guides/2026/04/21/guide-building-multi-agent-systems-with-shared-memory) — bank boundary model (user/project/team/hybrid), retention discipline, multi-strategy recall (semantic+BM25+graph+temporal+RRF), common mistakes
 - [langwatch/scenario README](https://github.com/langwatch/scenario)
 - [awesome-ai-agent-testing](https://github.com/chaosync-org/awesome-ai-agent-testing)
 - [agenticloops-ai/agentic-ai-engineering](https://github.com/agenticloops-ai/agentic-ai-engineering)

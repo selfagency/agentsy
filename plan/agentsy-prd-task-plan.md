@@ -16,7 +16,7 @@ Tracks the creation of the four-file PRD documentation set for the `@agentsy` pl
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: All four files must be consistent with `agentsy-platform-v2.md` and `deep-dive-synthesis-v1.md`.
+- **REQ-001**: All four files must be consistent with `agentsy-platform-v2.md` and `agentsy-deep-dive-v1.md`.
 - **REQ-002**: `prd.md` must reference specific requirements (REQ-001…REQ-024) by ID.
 - **REQ-003**: `prd-notes.md` must include primary-source citations with GitHub URLs for every design decision.
 - **REQ-004**: `tech.md` must include TypeScript type signatures for all public package APIs.
@@ -97,9 +97,9 @@ Tracks the creation of the four-file PRD documentation set for the `@agentsy` pl
 - **FILE-003**: `plan/agentsy-prd.md` — product requirements
 - **FILE-004**: `plan/agentsy-tech.md` — technical design
 - **FILE-005**: `plan/agentsy-platform-v2.md` — source of truth for implementation tasks
-- **FILE-006**: `plan/deep-dive-synthesis-v1.md` — source of truth for research findings
+- **FILE-006**: `plan/agentsy-deep-dive-v1.md` — source of truth for research findings
 
 ## 4. Related Specifications / Further Reading
 
 - [agentsy-platform-v2.md](./agentsy-platform-v2.md) — master implementation plan
-- [deep-dive-synthesis-v1.md](./deep-dive-synthesis-v1.md) — research synthesis from 9 reference codebases
+- [agentsy-deep-dive-v1.md](./agentsy-deep-dive-v1.md) — research synthesis from 9 reference codebases

@@ -353,7 +353,7 @@ Expected behavior: MCP tools proxied transparently. Untrusted server tools block
 - [agentsy-platform-v2.md](./agentsy-platform-v2.md) — complete implementation task plan
 - [agentsy-prd-notes.md](./agentsy-prd-notes.md) — research findings with primary source citations
 - [agentsy-tech.md](./agentsy-tech.md) — full TypeScript API design
-- [deep-dive-synthesis-v1.md](./deep-dive-synthesis-v1.md) — 9-project synthesis analysis
+- [agentsy-deep-dive-v1.md](./agentsy-deep-dive-v1.md) — 9-project synthesis analysis
 - [MCP 2025-06-18 spec](https://spec.modelcontextprotocol.io)
 - [Agent Skills open standard](https://github.com/github/awesome-copilot)
 - [Karpathy blended memory architecture](https://karpathy.ai/memory)

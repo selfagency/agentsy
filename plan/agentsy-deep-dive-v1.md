@@ -807,7 +807,7 @@ Stream processors that handle complex AG-UI event sequences are best tested via 
 ## 7. Files
 
 - **FILE-001**: `plan/agentsy-platform-v1.md` — primary file to patch with HIGH-priority findings.
-- **FILE-002**: `plan/deep-dive-synthesis-v1.md` — this document (read-only reference).
+- **FILE-002**: `plan/agentsy-deep-dive-v1.md` — this document (read-only reference).
 
 ---
 
