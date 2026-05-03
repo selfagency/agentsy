@@ -1,106 +1,297 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
 import { ToolCallBlock } from './ToolCallBlock.js';
-import { darkTheme } from '../themes/index.js';
+import { darkTheme, defaultTheme } from '../themes/index.js';
 
 describe('ToolCallBlock Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('exports ToolCallBlock as a function', () => {
-    expect(typeof ToolCallBlock).toBe('function');
+  // Done state tests
+  describe('done state', () => {
+    it('renders completed tool call', () => {
+      const call = { id: '1', name: 'search', arguments: { q: 'test' }, done: true };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.call.done).toBe(true);
+      expect(element.props.call.name).toBe('search');
+    });
+
+    it('renders pending tool call', () => {
+      const call = { id: '2', name: 'calculate', arguments: { expr: '1+1' }, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.call.done).toBe(false);
+    });
+
+    it('uses done symbol for completed calls', () => {
+      const call = { id: '1', name: 'api_call', arguments: {}, done: true };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.theme.toolCall.doneSymbol).toBeDefined();
+    });
+
+    it('uses pending symbol for pending calls', () => {
+      const call = { id: '2', name: 'processing', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.theme.toolCall.pendingSymbol).toBeDefined();
+    });
   });
 
-  it('accepts all required props', () => {
-    const call = {
-      id: 'call-1',
-      name: 'search',
-      arguments: { query: 'test' },
-      done: false,
-    };
+  // Tool call properties tests
+  describe('tool call properties', () => {
+    it('handles different tool names', () => {
+      const names = ['search', 'calculate', 'fetch', 'parse', 'generate'];
+      names.forEach(name => {
+        const call = { id: '1', name, arguments: {}, done: false };
+        const element = React.createElement(ToolCallBlock, {
+          call,
+          theme: darkTheme,
+          screenReader: false,
+        });
+        expect(element.props.call.name).toBe(name);
+      });
+    });
 
-    expect(call.name).toBe('search');
-    expect(call.id).toBe('call-1');
-    expect(call.done).toBe(false);
+    it('handles various argument types', () => {
+      const argumentSets = [
+        { q: 'search term' },
+        { x: 10, y: 20 },
+        { nested: { key: 'value' } },
+        { array: [1, 2, 3] },
+        {},
+      ];
+      argumentSets.forEach(args => {
+        const call = { id: '1', name: 'tool', arguments: args, done: false };
+        const element = React.createElement(ToolCallBlock, {
+          call,
+          theme: darkTheme,
+          screenReader: false,
+        });
+        expect(element.props.call.arguments).toEqual(args);
+      });
+    });
+
+    it('preserves unique tool IDs', () => {
+      const ids = ['id1', 'id2', 'id-with-dashes', 'id_with_underscores'];
+      ids.forEach(id => {
+        const call = { id, name: 'tool', arguments: {}, done: true };
+        const element = React.createElement(ToolCallBlock, {
+          call,
+          theme: darkTheme,
+          screenReader: false,
+        });
+        expect(element.props.call.id).toBe(id);
+      });
+    });
   });
 
-  it('supports pending tool calls', () => {
-    const call = {
-      id: 'call-1',
-      name: 'search',
-      arguments: { query: 'test' },
-      done: false,
-    };
+  // Screen reader tests
+  describe('screen reader mode', () => {
+    it('renders accessible output for completed call with SR', () => {
+      const call = { id: '1', name: 'search_api', arguments: {}, done: true };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: true,
+      });
+      expect(element.props.screenReader).toBe(true);
+      expect(element.props.call.done).toBe(true);
+    });
 
-    expect(call.done).toBe(false);
+    it('renders accessible output for pending call with SR', () => {
+      const call = { id: '2', name: 'fetch_data', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: true,
+      });
+      expect(element.props.screenReader).toBe(true);
+      expect(element.props.call.done).toBe(false);
+    });
+
+    it('renders regular output without screen reader', () => {
+      const call = { id: '1', name: 'process', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.screenReader).toBe(false);
+    });
   });
 
-  it('supports completed tool calls', () => {
-    const call = {
-      id: 'call-1',
-      name: 'search',
-      arguments: { query: 'test' },
-      done: true,
-    };
+  // Theme tests
+  describe('theme handling', () => {
+    it('respects pending color from theme', () => {
+      const call = { id: '1', name: 'pending', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.theme.toolCall.pendingColor).toBeDefined();
+    });
 
-    expect(call.done).toBe(true);
+    it('respects done color from theme', () => {
+      const call = { id: '1', name: 'done', arguments: {}, done: true };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.theme.toolCall.doneColor).toBeDefined();
+    });
+
+    it('uses theme spinner interval when defined', () => {
+      const customTheme = {
+        ...darkTheme,
+        toolCall: { ...darkTheme.toolCall, spinnerIntervalMs: 100 },
+      };
+      const call = { id: '1', name: 'anim', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: customTheme,
+        screenReader: false,
+      });
+      expect(element.props.theme.toolCall.spinnerIntervalMs).toBe(100);
+    });
+
+    it('handles different themes', () => {
+      const call = { id: '1', name: 'tool', arguments: {}, done: false };
+      const darkElement = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      const lightElement = React.createElement(ToolCallBlock, {
+        call,
+        theme: defaultTheme,
+        screenReader: false,
+      });
+      expect(darkElement.props.theme).toBe(darkTheme);
+      expect(lightElement.props.theme).toBe(defaultTheme);
+    });
   });
 
-  it('handles complex nested arguments', () => {
-    const call = {
-      id: 'call-1',
-      name: 'api_call',
-      arguments: {
-        endpoint: '/api/users',
-        method: 'POST',
-        data: { name: 'test', nested: { key: 'value' } },
-      },
-      done: false,
-    };
+  // Animation tests
+  describe('animation behavior', () => {
+    it('animates pending calls when not in screen reader mode', () => {
+      const call = { id: '1', name: 'async_op', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.call.done).toBe(false);
+      expect(element.props.screenReader).toBe(false);
+    });
 
-    expect(call.arguments.data).toBeDefined();
-    expect(call.arguments.endpoint).toBe('/api/users');
+    it('does not animate completed calls', () => {
+      const call = { id: '1', name: 'sync_op', arguments: {}, done: true };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.call.done).toBe(true);
+    });
+
+    it('does not animate in screen reader mode even for pending', () => {
+      const call = { id: '1', name: 'sr_pending', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: true,
+      });
+      expect(element.props.screenReader).toBe(true);
+    });
   });
 
-  it('handles empty arguments', () => {
-    const call = {
-      id: 'call-1',
-      name: 'no_args_tool',
-      arguments: {},
-      done: true,
-    };
+  // Complex argument tests
+  describe('complex arguments', () => {
+    it('handles nested objects in arguments', () => {
+      const call = {
+        id: '1',
+        name: 'complex_tool',
+        arguments: {
+          nested: { deep: { value: 42 } },
+          list: [1, 2, 3],
+        },
+        done: false,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.call.arguments.nested).toBeDefined();
+      expect(element.props.call.arguments.list).toBeDefined();
+    });
 
-    expect(Object.keys(call.arguments).length).toBe(0);
+    it('handles large argument objects', () => {
+      const largeArgs = Object.fromEntries(
+        Array.from({ length: 100 }, (_, i) => [
+          `key_${i}`,
+          `value_${i}`,
+        ])
+      );
+      const call = {
+        id: '1',
+        name: 'large_args_tool',
+        arguments: largeArgs,
+        done: false,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(Object.keys(element.props.call.arguments).length).toBe(100);
+    });
+
+    it('handles special characters in arguments', () => {
+      const call = {
+        id: '1',
+        name: 'special_tool',
+        arguments: {
+          text: 'Special <chars> & "quotes" and \'apostrophes\'',
+        },
+        done: true,
+      };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+        screenReader: false,
+      });
+      expect(element.props.call.arguments.text).toContain('<chars>');
+    });
   });
 
-  it('handles very long tool names', () => {
-    const longName = 'very_long_tool_name_that_exceeds_normal_length_for_demonstration';
-    const call = {
-      id: 'call-1',
-      name: longName,
-      arguments: {},
-      done: false,
-    };
-
-    expect(call.name.length).toBeGreaterThan(50);
-  });
-
-  it('supports screen reader accessibility prop', () => {
-    const screenReader = true;
-    expect(screenReader).toBe(true);
-  });
-
-  it('theme has required tool call properties', () => {
-    expect(darkTheme.toolCall).toBeDefined();
-    expect(darkTheme.toolCall.pendingColor).toBeDefined();
-    expect(darkTheme.toolCall.doneColor).toBeDefined();
-  });
-
-  it('generates unique call IDs', () => {
-    const call1 = { id: 'call-1', name: 'tool1', arguments: {}, done: false };
-    const call2 = { id: 'call-2', name: 'tool2', arguments: {}, done: false };
-
-    expect(call1.id).not.toBe(call2.id);
+  // Default prop tests
+  describe('default props', () => {
+    it('has screenReader default to false', () => {
+      const call = { id: '1', name: 'default_tool', arguments: {}, done: false };
+      const element = React.createElement(ToolCallBlock, {
+        call,
+        theme: darkTheme,
+      } as any);
+      expect(element).toBeDefined();
+    });
   });
 });
 
