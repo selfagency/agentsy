@@ -16,7 +16,7 @@ vi.mock('ink', async () => {
   const actual = await vi.importActual<typeof import('ink')>('ink');
   return {
     ...actual,
-    render: vi.fn((component: React.ReactElement) => {
+    render: vi.fn((_component: React.ReactElement) => {
       // Return a mock instance without invoking terminal setup
       return {
         lastFrame: () => '[mock frame]',

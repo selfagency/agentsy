@@ -60,8 +60,9 @@ function displayThemePreview() {
     if (theme.thinking) {
       const textColor = theme.thinking.textColor || 'cyan';
       const spinnerColor = theme.thinking.spinnerColor || 'cyan';
+      const thinkingText = `text=${textColor}, spinner=${spinnerColor}`;
       console.log(
-        `  ${applyColor('├─ Thinking:', textColor)} ${applyColor(`text=${textColor}, spinner=${spinnerColor}`, spinnerColor)}`,
+        `  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`,
       );
     }
 

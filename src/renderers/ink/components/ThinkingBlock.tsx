@@ -46,7 +46,11 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
     return <Text>{`\nThinking:\n${text}\n`}</Text>;
   }
 
-  const borderStyle = theme.border.style !== 'none' ? (theme.border.style as 'single' | 'double' | 'round') : undefined;
+  const borderStyle: 'single' | 'double' | 'round' | undefined = !theme.border.style || theme.border.style === 'none'
+    ? undefined
+    : (theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round'
+        ? theme.border.style
+        : undefined);
   const borderColor = theme.border.color || undefined;
   const spinnerSymbol = spinnerFrames[frame] ?? spinnerFrames[0];
   const spinnerColor = isStreaming ? theme.thinking.spinnerColor || undefined : theme.thinking.textColor || undefined;

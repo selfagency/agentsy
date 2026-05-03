@@ -29,13 +29,32 @@ interface InkStreamRendererProps {
 }
 
 interface RenderOptions {
-  showThinking: boolean;
-  thinkingStyle: 'blockquote' | 'inline' | 'suppress';
-  showToolCalls: boolean;
-  markdown: boolean;
-  theme: Theme;
-  screenReader: boolean;
-  syntaxHighlight: boolean;
+  readonly showThinking: boolean;
+  readonly thinkingStyle: 'blockquote' | 'inline' | 'suppress';
+  readonly showToolCalls: boolean;
+  readonly markdown: boolean;
+  readonly theme: Theme;
+  readonly screenReader: boolean;
+  readonly syntaxHighlight: boolean;
+}
+
+function ToolCallsRenderer({
+  toolCalls,
+  theme,
+  screenReader,
+}: {
+  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly theme: Theme;
+  readonly screenReader: boolean;
+}) {
+  if (!toolCalls.length) return null;
+  return (
+    <>
+      {toolCalls.map(call => (
+        <ToolCallBlock key={call.id} call={call} theme={theme} screenReader={screenReader} />
+      ))}
+    </>
+  );
 }
 
 function ContentRenderer({
@@ -62,8 +81,7 @@ function ContentRenderer({
           screenReader={options.screenReader}
         />
       )}
-      {options.showToolCalls &&
-        toolCalls.map(call => <ToolCallBlock key={call.id} call={call} theme={options.theme} screenReader={options.screenReader} />)}
+      {options.showToolCalls && <ToolCallsRenderer toolCalls={toolCalls} theme={options.theme} screenReader={options.screenReader} />}
       <StreamingText
         text={text}
         markdown={options.markdown}
@@ -90,12 +108,12 @@ function buildRenderOptions(options: InkStreamRendererProps['options']): RenderO
 
 export default function InkStreamRenderer({
   stateRef,
-  forceUpdateRef,
+  forceUpdateRef: _forceUpdateRef,
   setForceUpdate,
   options,
 }: InkStreamRendererProps) {
-  // tick is used to trigger re-renders when stateRef changes via external listeners
-  const [tick, setTick] = useState(0);
+  // _tick is used internally to trigger re-renders when stateRef is mutated externally
+  const [_tick, setTick] = useState(0);
 
   useEffect(() => {
     setForceUpdate(() => {
