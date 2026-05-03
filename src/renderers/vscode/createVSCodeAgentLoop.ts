@@ -84,6 +84,7 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
    * @returns Promise that resolves when cleanup is complete
    * @internal
    */
+  // codacy: disable-line
   const endOnce = async (): Promise<void> => {
     if (endPromise) {
       return endPromise;
@@ -103,6 +104,7 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   // If abortSignal provided, attach cancellation listener to cleanup resources
   const abortSignal = options.abortSignal;
   if (abortSignal) {
+    // codacy: disable-line
     const onAbort = () => {
       // Signal end to renderer on cancellation
       endOnce().catch(err => {

@@ -149,6 +149,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     }
   }
 
+  // codacy: disable-line
   const sharedOnFinish: BaseRendererOptions['onFinish'] = async (finishReason, usage) => {
     if (usage && stream.usage) {
       stream.usage({

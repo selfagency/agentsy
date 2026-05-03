@@ -90,6 +90,7 @@ export class SSEParser {
       // Use explicit undefined check over optional chaining for defensive stream parsing.
       // biome-ignore style/useOptionalChain: Explicit check preferred for robustness
       // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      // codacy: disable-line
       if (eventText !== undefined && eventText.trim()) {
         const fields = eventText.split('\n');
         const event = this.fieldsToEvent(fields);
