@@ -25,7 +25,17 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
     if (typeof status === 'number') return httpStatusToErrorCode(status);
   }
 
-  const message = String(error instanceof Error ? error.message : error).toLowerCase();
+  let errorStr: string;
+  if (error instanceof Error) {
+    errorStr = error.message;
+  } else if (typeof error === 'string') {
+    errorStr = error;
+  } else if (typeof error === 'object' && error !== null && 'message' in error) {
+    errorStr = String((error as Record<string, unknown>).message);
+  } else {
+    errorStr = String(error);
+  }
+  const message = errorStr.toLowerCase();
 
   // Pattern-based error matching with early returns to reduce complexity
   const patterns: Array<[string[], ProviderErrorCode]> = [

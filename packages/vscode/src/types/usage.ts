@@ -10,3 +10,5 @@ export type UsageEventListener = (
   event: UsageEvent,
   quota: unknown,
 ) => void;
+
+export { type IQuotaDataSource, type UsageQuota } from './errors.js';

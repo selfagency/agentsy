@@ -51,9 +51,9 @@ export function convertMessage(vsMessage: unknown): ChatMessage {
   }
 
   const msg = vsMessage as Record<string, unknown>;
-  const role = convertRole(typeof msg.role === 'number' ? (msg.role as number) : 1);
+  const role = convertRole(typeof msg.role === 'number' ? msg.role : 1);
   const rawContent = msg.content;
-  const name = typeof msg.name === 'string' ? (msg.name as string) : undefined;
+  const name = typeof msg.name === 'string' ? msg.name : undefined;
 
   if (typeof rawContent === 'string') {
     return { role, content: rawContent, ...(name ? { name } : {}) };
@@ -90,4 +90,4 @@ export function convertMessages(vsMessages: unknown[]): ChatMessage[] {
   return vsMessages.map(convertMessage);
 }
 
-export type { ChatMessage, ChatToolCall };
+export { type ChatMessage, type ChatToolCall } from './role-converter.js';
