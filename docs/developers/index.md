@@ -1,6 +1,6 @@
 # Developer Guide
 
-This document covers local development, testing, and release operations for `@selfagency/llm-stream-parser`.
+This document covers local development, testing, and release operations for `@agentsy/core`.
 
 ## Prerequisites
 
@@ -264,7 +264,7 @@ Documentation sources:
 ## Project Structure
 
 ```text
-@selfagency/llm-stream-parser/
+@agentsy/core/
 ├── src/
 │   ├── thinking/         # Thinking tag extraction
 │   ├── xml-filter/       # XML context filtering

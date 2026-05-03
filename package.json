@@ -1,7 +1,21 @@
 {
-  "name": "@selfagency/llm-stream-parser",
-  "version": "0.3.1",
-  "description": "Composable parsers and stream processing utilities for LLM responses",
+  "name": "@agentsy/monorepo",
+  "version": "0.1.0",
+  "description": "Monorepo for Agentsy agentic development framework",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "precommit": "turbo run precommit"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.8"
+  },
   "keywords": [
     "ai",
     "anthropic",
@@ -15,197 +29,7 @@
     "tools",
     "xml"
   ],
-  "homepage": "https://llmstreamparser.self.agency",
-  "bugs": {
-    "url": "https://github.com/selfagency/llm-stream-parser/issues"
-  },
-  "license": "MIT",
   "author": "Daniel Sieradski <daniel@self.agency>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/selfagency/llm-stream-parser.git"
-  },
-  "files": [
-    "dist"
-  ],
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./thinking": {
-      "types": "./dist/thinking/index.d.ts",
-      "import": "./dist/thinking/index.js",
-      "require": "./dist/thinking/index.cjs"
-    },
-    "./xml-filter": {
-      "types": "./dist/xml-filter/index.d.ts",
-      "import": "./dist/xml-filter/index.js",
-      "require": "./dist/xml-filter/index.cjs"
-    },
-    "./tool-calls": {
-      "types": "./dist/tool-calls/index.d.ts",
-      "import": "./dist/tool-calls/index.js",
-      "require": "./dist/tool-calls/index.cjs"
-    },
-    "./context": {
-      "types": "./dist/context/index.d.ts",
-      "import": "./dist/context/index.js",
-      "require": "./dist/context/index.cjs"
-    },
-    "./structured": {
-      "types": "./dist/structured/index.d.ts",
-      "import": "./dist/structured/index.js",
-      "require": "./dist/structured/index.cjs"
-    },
-    "./formatting": {
-      "types": "./dist/formatting/index.d.ts",
-      "import": "./dist/formatting/index.js",
-      "require": "./dist/formatting/index.cjs"
-    },
-    "./processor": {
-      "types": "./dist/processor/index.d.ts",
-      "import": "./dist/processor/index.js",
-      "require": "./dist/processor/index.cjs"
-    },
-    "./markdown": {
-      "types": "./dist/markdown/index.d.ts",
-      "import": "./dist/markdown/index.js",
-      "require": "./dist/markdown/index.cjs"
-    },
-    "./adapters": {
-      "types": "./dist/adapters/index.d.ts",
-      "import": "./dist/adapters/index.js",
-      "require": "./dist/adapters/index.cjs"
-    },
-    "./adapters/generic": {
-      "types": "./dist/adapters/generic.d.ts",
-      "import": "./dist/adapters/generic.js",
-      "require": "./dist/adapters/generic.cjs"
-    },
-    "./adapters/vscode": {
-      "types": "./dist/adapters/vscode.d.ts",
-      "import": "./dist/adapters/vscode.js",
-      "require": "./dist/adapters/vscode.cjs"
-    },
-    "./normalizers": {
-      "types": "./dist/normalizers/index.d.ts",
-      "import": "./dist/normalizers/index.js",
-      "require": "./dist/normalizers/index.cjs"
-    },
-    "./recovery": {
-      "types": "./dist/recovery/index.d.ts",
-      "import": "./dist/recovery/index.js",
-      "require": "./dist/recovery/index.cjs"
-    },
-    "./sse": {
-      "types": "./dist/sse/index.d.ts",
-      "import": "./dist/sse/index.js",
-      "require": "./dist/sse/index.cjs"
-    },
-    "./pipeline": {
-      "types": "./dist/pipeline/index.d.ts",
-      "import": "./dist/pipeline/index.js",
-      "require": "./dist/pipeline/index.cjs"
-    },
-    "./agent": {
-      "types": "./dist/agent/index.d.ts",
-      "import": "./dist/agent/index.js",
-      "require": "./dist/agent/index.cjs"
-    },
-    "./renderers": {
-      "types": "./dist/renderers/index.d.ts",
-      "import": "./dist/renderers/index.js",
-      "require": "./dist/renderers/index.cjs"
-    },
-    "./renderers/plain": {
-      "types": "./dist/renderers/plain/index.d.ts",
-      "import": "./dist/renderers/plain/index.js",
-      "require": "./dist/renderers/plain/index.cjs"
-    },
-    "./renderers/cli": {
-      "types": "./dist/renderers/cli/index.d.ts",
-      "import": "./dist/renderers/cli/index.js",
-      "require": "./dist/renderers/cli/index.cjs"
-    },
-    "./renderers/streaming-md": {
-      "types": "./dist/renderers/streaming-md/index.d.ts",
-      "import": "./dist/renderers/streaming-md/index.js",
-      "require": "./dist/renderers/streaming-md/index.cjs"
-    },
-    "./renderers/vscode": {
-      "types": "./dist/renderers/vscode/index.d.ts",
-      "import": "./dist/renderers/vscode/index.js",
-      "require": "./dist/renderers/vscode/index.cjs"
-    },
-    "./ui": {
-      "types": "./dist/ui/index.d.ts",
-      "import": "./dist/ui/index.js",
-      "require": "./dist/ui/index.cjs"
-    },
-    "./ag-ui": {
-      "types": "./dist/ag-ui/index.d.ts",
-      "import": "./dist/ag-ui/index.js",
-      "require": "./dist/ag-ui/index.cjs"
-    },
-    "./renderers/ink": {
-      "types": "./dist/renderers/ink/index.d.ts",
-      "import": "./dist/renderers/ink/index.js",
-      "require": "./dist/renderers/ink/index.cjs"
-    }
-  },
-  "scripts": {
-    "build": "tsup",
-    "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt . --write",
-    "test": "vitest run src",
-    "themes:preview": "node scripts/preview-themes.js",
-    "docs:dev": "vitepress dev",
-    "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
-  },
-  "devDependencies": {
-    "@go-task/cli": "^3.50.0",
-    "@octokit/rest": "^22.0.1",
-    "@types/node": "^25.6.0",
-    "@types/react": "^19.2.14",
-    "@vitest/coverage-v8": "^4.1.5",
-    "chalk": "^5.6.2",
-    "husky": "^9.1.7",
-    "ink-testing-library": "^4.0.0",
-    "lint-staged": "^16.4.0",
-    "ora": "^9.4.0",
-    "oxfmt": "^0.47.0",
-    "oxlint": "^1.62.0",
-    "oxlint-tsgolint": "^0.22.1",
-    "tsup": "^8.5.1",
-    "typescript": "6.0.3",
-    "vite": "^8.0.10",
-    "vitepress": "^1.6.4",
-    "vitest": "^4.1.5",
-    "zx": "^8.8.5"
-  },
-  "peerDependencies": {
-    "@ag-ui/core": "^0.0.53",
-    "ink": ">=4.0.0",
-    "react": ">=18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "ink": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    }
-  },
-  "optionalDependencies": {
-    "cli-markdown": "^3.5.1"
-  },
-  "packageManager": "pnpm@10.31.0"
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.2"
 }

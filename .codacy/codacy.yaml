@@ -1,5 +1,5 @@
 ---
-# Codacy configuration for @selfagency/llm-stream-parser
+# Codacy configuration for @agentsy/core
 # TypeScript ESM streaming parser library
 # Node.js 22+ required, 526 tests with vitest
 
@@ -10,10 +10,8 @@ exclude_paths:
   - .codacy/**
   - .coverage/**
   - .gh-pages/**
-  - dist/**
-  - node_modules/**
-  - '**/*.test.ts' # Exclude tests from complexity analysis
-  - '**/*.spec.ts' # Exclude specs from complexity analysis
+  - '**/dist/**'
+  - '**/node_modules/**'
 
 # Runtimes needed for analysis (Node.js only for this TypeScript project)
 runtimes:
@@ -40,8 +38,8 @@ engines:
   # but Codacy can also run ESLint for additional checks
   eslint-8:
     exclude_paths:
-      - dist/**
-      - node_modules/**
+      - '**/dist/**'
+      - '**/node_modules/**'
 
 # Language configuration
 languages:

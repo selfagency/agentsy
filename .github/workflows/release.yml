@@ -2,11 +2,11 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: [ "v*" ]
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g. 1.2.3)'
+        description: "Version to release (e.g. 1.2.3)"
         required: true
         type: string
 
@@ -208,27 +208,31 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Build all packages
+        run: pnpm turbo run build
 
-      - name: Write dist package.json
-        run: node scripts/write-dist-package.js
+      - name: Publish @agentsy/core to npm
+        run: npm publish ./packages/core/dist --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Pack npm tarball
-        run: npm pack ./dist --pack-destination .
+      - name: Publish @agentsy/vscode to npm
+        run: npm publish ./packages/vscode/dist --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
           tag_name: ${{ needs.detect-tag.outputs.release_tag }}
           body_path: release-notes.md
-          files: '*.tgz'
+          files: "*.tgz"
           draft: false
           prerelease: ${{ contains(needs.detect-tag.outputs.release_tag, '-') }}
         env:

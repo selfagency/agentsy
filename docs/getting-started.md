@@ -1,30 +1,30 @@
 # Getting Started
 
-Get up and running with `@selfagency/llm-stream-parser` in a few minutes.
+Get up and running with `@agentsy/core` in a few minutes.
 
 ## Installation
 
 ### With npm
 
 ```bash
-npm install @selfagency/llm-stream-parser
+npm install @agentsy/core
 ```
 
 ### With pnpm
 
 ```bash
-pnpm add @selfagency/llm-stream-parser
+pnpm add @agentsy/core
 ```
 
 ### With yarn
 
 ```bash
-yarn add @selfagency/llm-stream-parser
+yarn add @agentsy/core
 ```
 
 ## Requirements
 
-- Node.js 18+
+- Node.js 22+ (or 18+ with compatibility)
 - TypeScript 5.0+ (if using TypeScript)
 
 ## Basic Examples
@@ -32,7 +32,7 @@ yarn add @selfagency/llm-stream-parser
 ### Extract thinking from streaming response
 
 ```typescript
-import { ThinkingParser } from '@selfagency/llm-stream-parser';
+import { ThinkingParser } from '@agentsy/core';
 
 const parser = new ThinkingParser();
 
@@ -50,7 +50,7 @@ const [finalThinking, finalContent] = parser.flush();
 ### Parse JSON from response
 
 ```typescript
-import { parseJson } from '@selfagency/llm-stream-parser';
+import { parseJson } from '@agentsy/core';
 
 const response = await llm.complete('Return JSON: {key: "value"}');
 const data = parseJson(response);
@@ -65,7 +65,7 @@ if (data !== null) {
 ### Validate JSON against schema
 
 ```typescript
-import { validateJsonSchema } from '@selfagency/llm-stream-parser';
+import { validateJsonSchema } from '@agentsy/core';
 
 const schema = {
   type: 'object',
@@ -87,7 +87,7 @@ if (result.success) {
 ### Extract tool calls
 
 ```typescript
-import { extractXmlToolCalls } from '@selfagency/llm-stream-parser';
+import { extractXmlToolCalls } from '@agentsy/core';
 
 const response = await llm.complete('Use tools to search the codebase');
 
@@ -103,7 +103,7 @@ for (const call of toolCalls) {
 ### Filter context blocks
 
 ```typescript
-import { createXmlStreamFilter } from '@selfagency/llm-stream-parser';
+import { createXmlStreamFilter } from '@agentsy/core';
 
 const filter = createXmlStreamFilter({
   enforcePrivacyTags: true,
@@ -120,7 +120,7 @@ output.write(filter.end());
 ### Process complete stream response
 
 ```typescript
-import { LLMStreamProcessor } from '@selfagency/llm-stream-parser';
+import { LLMStreamProcessor } from '@agentsy/core';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
@@ -152,7 +152,7 @@ console.log('Tool calls:', message.toolCalls);
 ### Run a multi-step agent loop
 
 ```typescript
-import { createAgentLoop } from '@selfagency/llm-stream-parser/agent';
+import { createAgentLoop } from '@agentsy/core/agent';
 
 const agent = createAgentLoop({
   // Your LLM invocation function
@@ -195,7 +195,7 @@ for await (const part of agent.run(messages)) {
 ### Render to VS Code Chat
 
 ```typescript
-import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
 // In your VS Code extension command
 export async function chatCommand(stream: vscode.ChatResponseStream) {
@@ -224,7 +224,7 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
 ### Use generic adapter for simpler integration
 
 ```typescript
-import { processStream } from '@selfagency/llm-stream-parser/adapters';
+import { processStream } from '@agentsy/core/adapters';
 
 for await (const output of processStream(apiStream, {
   parseThinkTags: true,
@@ -334,8 +334,8 @@ const processor = new LLMStreamProcessor({
 - **Use subpath imports** to reduce bundle size:
 
   ```typescript
-  import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
-  import { parseJson } from '@selfagency/llm-stream-parser/structured';
+  import { ThinkingParser } from '@agentsy/core/thinking';
+  import { parseJson } from '@agentsy/core/structured';
   ```
 
 - **Stream processing** instead of buffering:

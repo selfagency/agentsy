@@ -52,7 +52,7 @@ Complete technical specification for all 15 `@agentsy/*` packages. Includes Type
                     └── @agentsy/retrieval (→ core, memory)
 
 @agentsy/telemetry (→ core, optional peer dep for all)
-@selfagency/llm-stream-parser (shim → core, normalizers, processor, renderers, agent, adapters, ag-ui)
+@agentsy/core (shim → core, normalizers, processor, renderers, agent, adapters, ag-ui)
 
 Future product-layer packages (see agentsy-standalone-v1.md):
     @agentsy/renderer-gui    (→ renderers — DisplayPort over Electron IPC / Tauri commands / WebView)
@@ -1304,7 +1304,7 @@ export function createVSCodeAdapter(options: VSCodeAdapterOptions): {
 
 ---
 
-### 4.16 `@selfagency/llm-stream-parser` (shim)
+### 4.16 `@agentsy/core` (shim)
 
 **100% backward-compatible re-export shim. All existing consumers continue to work.**
 
@@ -1317,7 +1317,7 @@ export * from '@agentsy/agent';
 export * from '@agentsy/adapters';
 export * from '@agentsy/ag-ui';
 
-// All subpath exports (e.g., @selfagency/llm-stream-parser/thinking)
+// All subpath exports (e.g., @agentsy/core/thinking)
 // are mapped in packages/shim/package.json exports field to corresponding
 // @agentsy/* package subpath exports.
 ```
@@ -1480,38 +1480,38 @@ finalizeStream(): void {
 
 ---
 
-## 6. Migration Path: `@selfagency/llm-stream-parser` → `@agentsy/*`
+## 6. Migration Path: `@agentsy/core` → `@agentsy/*`
 
 | Old import path                             | New import path                  |
 | ------------------------------------------- | -------------------------------- |
-| `@selfagency/llm-stream-parser`             | `@agentsy/core` (or any package) |
-| `@selfagency/llm-stream-parser/thinking`    | `@agentsy/core/thinking`         |
-| `@selfagency/llm-stream-parser/xml-filter`  | `@agentsy/core/xml-filter`       |
-| `@selfagency/llm-stream-parser/tool-calls`  | `@agentsy/core/tool-calls`       |
-| `@selfagency/llm-stream-parser/structured`  | `@agentsy/core/structured`       |
-| `@selfagency/llm-stream-parser/context`     | `@agentsy/core/context`          |
-| `@selfagency/llm-stream-parser/formatting`  | `@agentsy/core/formatting`       |
-| `@selfagency/llm-stream-parser/markdown`    | `@agentsy/core/markdown`         |
-| `@selfagency/llm-stream-parser/processor`   | `@agentsy/processor`             |
-| `@selfagency/llm-stream-parser/adapters`    | `@agentsy/adapters`              |
-| `@selfagency/llm-stream-parser/ag-ui`       | `@agentsy/ag-ui`                 |
-| `@selfagency/llm-stream-parser/normalizers` | `@agentsy/normalizers`           |
-| `@selfagency/llm-stream-parser/agent`       | `@agentsy/agent`                 |
-| `@selfagency/llm-stream-parser/sse`         | `@agentsy/core/sse`              |
-| `@selfagency/llm-stream-parser/recovery`    | `@agentsy/core/recovery`         |
-| `@selfagency/llm-stream-parser/pipeline`    | `@agentsy/processor/pipeline`    |
+| `@agentsy/core`             | `@agentsy/core` (or any package) |
+| `@agentsy/core/thinking`    | `@agentsy/core/thinking`         |
+| `@agentsy/core/xml-filter`  | `@agentsy/core/xml-filter`       |
+| `@agentsy/core/tool-calls`  | `@agentsy/core/tool-calls`       |
+| `@agentsy/core/structured`  | `@agentsy/core/structured`       |
+| `@agentsy/core/context`     | `@agentsy/core/context`          |
+| `@agentsy/core/formatting`  | `@agentsy/core/formatting`       |
+| `@agentsy/core/markdown`    | `@agentsy/core/markdown`         |
+| `@agentsy/core/processor`   | `@agentsy/processor`             |
+| `@agentsy/core/adapters`    | `@agentsy/adapters`              |
+| `@agentsy/core/ag-ui`       | `@agentsy/ag-ui`                 |
+| `@agentsy/core/normalizers` | `@agentsy/normalizers`           |
+| `@agentsy/core/agent`       | `@agentsy/agent`                 |
+| `@agentsy/core/sse`         | `@agentsy/core/sse`              |
+| `@agentsy/core/recovery`    | `@agentsy/core/recovery`         |
+| `@agentsy/core/pipeline`    | `@agentsy/processor/pipeline`    |
 
 **sed migration one-liners** (TASK-R1-003):
 
 ```bash
-# Replace all @selfagency/llm-stream-parser imports in src/
+# Replace all @agentsy/core imports in src/
 find . -name "*.ts" -not -path "*/node_modules/*" | xargs sed -i \
-  "s|@selfagency/llm-stream-parser/processor|@agentsy/processor|g" \
-  "s|@selfagency/llm-stream-parser/adapters|@agentsy/adapters|g" \
-  "s|@selfagency/llm-stream-parser/ag-ui|@agentsy/ag-ui|g" \
-  "s|@selfagency/llm-stream-parser/normalizers|@agentsy/normalizers|g" \
-  "s|@selfagency/llm-stream-parser/agent|@agentsy/agent|g" \
-  "s|@selfagency/llm-stream-parser|@agentsy/core|g"
+  "s|@agentsy/core/processor|@agentsy/processor|g" \
+  "s|@agentsy/core/adapters|@agentsy/adapters|g" \
+  "s|@agentsy/core/ag-ui|@agentsy/ag-ui|g" \
+  "s|@agentsy/core/normalizers|@agentsy/normalizers|g" \
+  "s|@agentsy/core/agent|@agentsy/agent|g" \
+  "s|@agentsy/core|@agentsy/core|g"
 ```
 
 ---

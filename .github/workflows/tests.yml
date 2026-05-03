@@ -2,20 +2,18 @@ name: Test & Build
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
-      - 'src/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'Taskfile.yaml'
-      - 'vitest.config.ts'
+      - "packages/**"
+      - "turbo.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
   pull_request:
     paths:
-      - 'src/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'Taskfile.yaml'
-      - 'vitest.config.ts'
+      - "packages/**"
+      - "turbo.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
   workflow_dispatch:
 
 permissions:
@@ -41,16 +39,37 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run unit tests with coverage
-        run: ./node_modules/.bin/task unit-test-coverage -- --reporter=junit --outputFile=test-report.junit.xml
+        run: |
+          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml
         env:
           CI: true
+
+      - name: Prepare coverage reports
+        run: |
+          mkdir -p coverage-input
+          for package in packages/*/; do
+            package_name=$(basename "$package")
+            coverage_dir="$package/coverage"
+            if [ -d "$coverage_dir" ]; then
+              mkdir -p "coverage-input/$package_name"
+              cp -r "$coverage_dir"/* "coverage-input/$package_name/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Merge coverage reports
+        uses: selfagency/merge-coverage@16c5a43e7b9428ed3a7c81f193d1061a427c6af9
+        with:
+          source: ${{ github.workspace }}
+          coverage-reports: ${{ github.workspace }}/coverage-input
+          output-folder: ${{ github.workspace }}/coverage
+          formats: clover
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
@@ -67,7 +86,7 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
         with:
           api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: coverage/clover.xml
+          coverage-reports: ${{ github.workspace }}/coverage/clover.xml
 
       - name: Upload coverage artifact
         if: always()

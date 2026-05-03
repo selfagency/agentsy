@@ -1,0 +1,55 @@
+{
+  "name": "@agentsy/vscode",
+  "version": "0.1.0",
+  "description": "Unified VS Code integration library for Language Model Chat Providers",
+  "keywords": [
+    "chat-provider",
+    "copilot",
+    "language-model",
+    "llm",
+    "streaming",
+    "vscode"
+  ],
+  "license": "MIT",
+  "author": "Selfagency",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
+    "precommit": "npm run check-types && npm run lint && npm run format:check"
+  },
+  "dependencies": {
+    "@agentsy/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/vscode": "^1.118.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
