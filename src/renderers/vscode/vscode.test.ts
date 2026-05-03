@@ -6,6 +6,35 @@ import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
+/** Factory function to create a mock LLMStreamProcessor for testing */
+function createFakeProcessor(
+  processParts: Record<string, unknown>[] = [],
+  customFlush?: ReturnType<typeof vi.fn>,
+) {
+  return {
+    process: vi.fn(() => ({
+      thinking: '',
+      content: '',
+      toolCalls: [],
+      done: false,
+      parts: processParts,
+      incomplete: false,
+      incompleteness: [],
+    })),
+    flush:
+      customFlush ||
+      vi.fn(() => ({
+        thinking: '',
+        content: '',
+        toolCalls: [],
+        done: true,
+        parts: [],
+        incomplete: false,
+        incompleteness: [],
+      })),
+  } as unknown as LLMStreamProcessor;
+}
+
 describe('VS Code Chat Renderer', () => {
   let mockStream: ChatResponseStream;
 
@@ -146,32 +175,13 @@ describe('VS Code Chat Renderer', () => {
   describe('Tool Call Feedback', () => {
     it('fires onToolCall callback', async () => {
       const onToolCall = vi.fn();
-      const fakeProcessor = {
-        process: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: false,
-          parts: [
-            {
-              type: 'tool_call' as const,
-              call: { id: 'tc_callback', name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' as const },
-              state: 'pending' as const,
-            },
-          ],
-          incomplete: false,
-          incompleteness: [],
-        })),
-        flush: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        })),
-      } as unknown as LLMStreamProcessor;
+      const fakeProcessor = createFakeProcessor([
+        {
+          type: 'tool_call',
+          call: { id: 'tc_callback', name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' },
+          state: 'pending',
+        },
+      ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
@@ -193,32 +203,13 @@ describe('VS Code Chat Renderer', () => {
     });
 
     it('invokes beginToolInvocation when available', async () => {
-      const fakeProcessor = {
-        process: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: false,
-          parts: [
-            {
-              type: 'tool_call' as const,
-              call: { id: 'tc_begin', name: 'weather', parameters: { city: 'NYC' }, format: 'bare-xml' as const },
-              state: 'pending' as const,
-            },
-          ],
-          incomplete: false,
-          incompleteness: [],
-        })),
-        flush: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        })),
-      } as unknown as LLMStreamProcessor;
+      const fakeProcessor = createFakeProcessor([
+        {
+          type: 'tool_call',
+          call: { id: 'tc_begin', name: 'weather', parameters: { city: 'NYC' }, format: 'bare-xml' },
+          state: 'pending',
+        },
+      ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
@@ -234,34 +225,15 @@ describe('VS Code Chat Renderer', () => {
 
     it('fires onToolCallDelta callback', async () => {
       const onToolCallDelta = vi.fn();
-      const fakeProcessor = {
-        process: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: false,
-          parts: [
-            {
-              type: 'tool_call_delta' as const,
-              id: 'tc_delta',
-              name: 'search',
-              argumentsDelta: '{"query":',
-              index: 0,
-            },
-          ],
-          incomplete: false,
-          incompleteness: [],
-        })),
-        flush: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        })),
-      } as unknown as LLMStreamProcessor;
+      const fakeProcessor = createFakeProcessor([
+        {
+          type: 'tool_call_delta',
+          id: 'tc_delta',
+          name: 'search',
+          argumentsDelta: '{"query":',
+          index: 0,
+        },
+      ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
@@ -284,34 +256,15 @@ describe('VS Code Chat Renderer', () => {
     });
 
     it('calls updateToolInvocation when tool_call_delta received', async () => {
-      const fakeProcessor = {
-        process: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: false,
-          parts: [
-            {
-              type: 'tool_call_delta' as const,
-              id: 'tc_update',
-              name: 'search',
-              argumentsDelta: '"docs"}',
-              index: 1,
-            },
-          ],
-          incomplete: false,
-          incompleteness: [],
-        })),
-        flush: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        })),
-      } as unknown as LLMStreamProcessor;
+      const fakeProcessor = createFakeProcessor([
+        {
+          type: 'tool_call_delta',
+          id: 'tc_update',
+          name: 'search',
+          argumentsDelta: '"docs"}',
+          index: 1,
+        },
+      ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
@@ -345,32 +298,13 @@ describe('VS Code Chat Renderer', () => {
         callbackCompleted = true;
       });
 
-      const fakeProcessor = {
-        process: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: false,
-          parts: [
-            {
-              type: 'tool_call' as const,
-              call: { id: 'tc1', name: 'search', arguments: {} },
-              state: 'pending' as const,
-            },
-          ],
-          incomplete: false,
-          incompleteness: [],
-        })),
-        flush: vi.fn(() => ({
-          thinking: '',
-          content: '',
-          toolCalls: [],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: [],
-        })),
-      } as unknown as LLMStreamProcessor;
+      const fakeProcessor = createFakeProcessor([
+        {
+          type: 'tool_call',
+          call: { id: 'tc1', name: 'search', arguments: {} },
+          state: 'pending',
+        },
+      ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
@@ -672,18 +606,7 @@ describe('VS Code Agent Loop', () => {
       incompleteness: [],
     }));
 
-    const fakeProcessor = {
-      process: vi.fn(() => ({
-        thinking: '',
-        content: '',
-        toolCalls: [],
-        done: false,
-        parts: [],
-        incomplete: false,
-        incompleteness: [],
-      })),
-      flush,
-    } as unknown as LLMStreamProcessor;
+    const fakeProcessor = createFakeProcessor([], flush);
 
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
