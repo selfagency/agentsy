@@ -57,6 +57,38 @@ function ToolCallsRenderer({
   );
 }
 
+function ThinkingSection({
+  thinking,
+  isStreaming,
+  options,
+}: {
+  thinking: string;
+  isStreaming: boolean;
+  options: RenderOptions;
+}) {
+  if (!options.showThinking || !thinking) return null;
+  return (
+    <ThinkingBlock
+      text={thinking}
+      style={options.thinkingStyle}
+      isStreaming={isStreaming}
+      theme={options.theme}
+      screenReader={options.screenReader}
+    />
+  );
+}
+
+function ToolCallsSection({
+  toolCalls,
+  options,
+}: {
+  toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  options: RenderOptions;
+}) {
+  if (!options.showToolCalls) return null;
+  return <ToolCallsRenderer toolCalls={toolCalls} theme={options.theme} screenReader={options.screenReader} />;
+}
+
 function ContentRenderer({
   text,
   thinking,
@@ -72,16 +104,8 @@ function ContentRenderer({
 }) {
   return (
     <Box flexDirection="column">
-      {options.showThinking && thinking && (
-        <ThinkingBlock
-          text={thinking}
-          style={options.thinkingStyle}
-          isStreaming={isStreaming}
-          theme={options.theme}
-          screenReader={options.screenReader}
-        />
-      )}
-      {options.showToolCalls && <ToolCallsRenderer toolCalls={toolCalls} theme={options.theme} screenReader={options.screenReader} />}
+      <ThinkingSection thinking={thinking} isStreaming={isStreaming} options={options} />
+      <ToolCallsSection toolCalls={toolCalls} options={options} />
       <StreamingText
         text={text}
         markdown={options.markdown}

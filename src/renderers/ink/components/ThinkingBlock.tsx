@@ -12,38 +12,53 @@ interface ThinkingBlockProps {
 
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = false }: ThinkingBlockProps) {
-  const [frame, setFrame] = useState(0);
-  const spinnerInterval = theme.thinking.spinnerIntervalMs ?? 80;
+function SuppressedThinking(): null {
+  return null;
+}
 
-  useEffect(() => {
-    if (style === 'blockquote' && isStreaming && !screenReader) {
-      const interval = setInterval(() => {
-        setFrame(f => (f + 1) % spinnerFrames.length);
-      }, spinnerInterval);
-      return () => clearInterval(interval);
-    }
-  }, [style, isStreaming, screenReader, spinnerInterval]);
+function ScreenReaderThinking({ text }: { text: string }) {
+  return <Text>{`\nThinking:\n${text}\n`}</Text>;
+}
 
-  if (style === 'suppress') {
-    return null;
-  }
-
-  if (style === 'inline') {
-    if (screenReader) {
-      return <Text>Thinking: {text}</Text>;
-    }
-    const textColor = theme.thinking.textColor || undefined;
-    return (
-      <Text italic dimColor={theme.text.dimColor} {...(textColor ? { color: textColor } : {})}>
-        [Thinking] {text}
-        {isStreaming && '…'}
-      </Text>
-    );
-  }
-
+function InlineThinking({
+  text,
+  isStreaming,
+  theme,
+  screenReader,
+}: {
+  text: string;
+  isStreaming: boolean;
+  theme: Theme;
+  screenReader: boolean;
+}) {
   if (screenReader) {
-    return <Text>{`\nThinking:\n${text}\n`}</Text>;
+    return <ScreenReaderThinking text={text} />;
+  }
+
+  const textColor = theme.thinking.textColor || undefined;
+  return (
+    <Text italic dimColor={theme.text.dimColor} {...(textColor ? { color: textColor } : {})}>
+      [Thinking] {text}
+      {isStreaming && '…'}
+    </Text>
+  );
+}
+
+function BlockquoteThinking({
+  text,
+  frame,
+  isStreaming,
+  theme,
+  screenReader,
+}: {
+  text: string;
+  frame: number;
+  isStreaming: boolean;
+  theme: Theme;
+  screenReader: boolean;
+}) {
+  if (screenReader) {
+    return <ScreenReaderThinking text={text} />;
   }
 
   const borderStyle: 'single' | 'double' | 'round' | undefined = !theme.border.style || theme.border.style === 'none'
@@ -62,4 +77,28 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
       </Text>
     </Box>
   );
+}
+
+export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = false }: ThinkingBlockProps) {
+  const [frame, setFrame] = useState(0);
+  const spinnerInterval = theme.thinking.spinnerIntervalMs ?? 80;
+
+  useEffect(() => {
+    if (style === 'blockquote' && isStreaming && !screenReader) {
+      const interval = setInterval(() => {
+        setFrame(f => (f + 1) % spinnerFrames.length);
+      }, spinnerInterval);
+      return () => clearInterval(interval);
+    }
+  }, [style, isStreaming, screenReader, spinnerInterval]);
+
+  if (style === 'suppress') {
+    return <SuppressedThinking />;
+  }
+
+  if (style === 'inline') {
+    return <InlineThinking text={text} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />;
+  }
+
+  return <BlockquoteThinking text={text} frame={frame} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />;
 }
