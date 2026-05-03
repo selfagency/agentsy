@@ -84,13 +84,13 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
-    signal?.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer);
-        reject(new Error('Operation aborted'));
-      },
-      { once: true },
-    );
+    if (!signal) return;
+
+    const abortHandler = () => {
+      clearTimeout(timer);
+      signal.removeEventListener('abort', abortHandler);
+      reject(new Error('Operation aborted'));
+    };
+    signal.addEventListener('abort', abortHandler, { once: true });
   });
 }

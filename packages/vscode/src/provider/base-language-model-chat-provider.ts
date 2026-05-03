@@ -91,9 +91,11 @@ export abstract class BaseLanguageModelChatProvider {
     }
 
     let abortController: AbortController | undefined;
+    let onCancel: { dispose(): void } | undefined;
+
     try {
       abortController = new AbortController();
-      const onCancel = token.onCancellationRequested(() => abortController?.abort());
+      onCancel = token.onCancellationRequested(() => abortController?.abort());
 
       const messages = convertMessages(request.messages);
       const providerRequest = await this.buildRequest(messages, request);
@@ -103,33 +105,34 @@ export abstract class BaseLanguageModelChatProvider {
       const normalizedStream = this.normalizeStream(rawStream);
 
       let fullText = '';
-      const chunks: LanguageModelChatResponseChunk[] = [];
-
-      const collectStream = async (): Promise<void> => {
-        for await (const chunk of normalizedStream) {
-          chunks.push(chunk);
-          if (chunk.part && typeof chunk.part === 'object') {
-            const p = chunk.part as Record<string, unknown>;
-            if (typeof p.value === 'string') fullText += String(p.value);
-          }
-        }
-        onCancel.dispose();
-      };
-
-      const streamPromise = collectStream();
+      let resolveText: (value: string) => void;
+      const textPromise = new Promise<string>(resolve => {
+        resolveText = resolve;
+      });
 
       const generateStream = async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
-        await streamPromise;
-        yield* chunks;
+        try {
+          for await (const chunk of normalizedStream) {
+            if (chunk.part && typeof chunk.part === 'object') {
+              const p = chunk.part as Record<string, unknown>;
+              if (typeof p.value === 'string') fullText += String(p.value);
+            }
+            yield chunk;
+          }
+        } finally {
+          resolveText(fullText);
+        }
       };
 
       return {
         stream: generateStream(),
-        text: streamPromise.then(() => fullText),
+        text: textPromise,
       };
     } catch (error) {
       abortController?.abort();
       return this.createErrorResponse(error, errorCodeToMessage(errorToProviderCode(error)));
+    } finally {
+      onCancel?.dispose();
     }
   }
 
@@ -184,6 +187,8 @@ export abstract class BaseLanguageModelChatProvider {
           }
         } finally {
           reader.releaseLock();
+          // Flush any remaining partial characters
+          buffer += decoder.decode();
         }
       })();
     }

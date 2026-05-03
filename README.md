@@ -13,7 +13,7 @@ Agentsy is a **Turbo monorepo** with independent, composable packages for proces
 
 ### 📦 Packages
 
-- **[@agentsy/core](./packages/core/README.md)** (v1.0.0) — Stream parsing & orchestration (foundation layer). [npm](https://www.npmjs.com/package/@agentsy/core) | [docs](./docs/index.md)
+- **[@agentsy/core](./packages/core/README.md)** (v0.1.0) — Stream parsing & orchestration (foundation layer). [npm](https://www.npmjs.com/package/@agentsy/core) | [docs](./docs/index.md)
 - **[@agentsy/vscode](./packages/vscode/README.md)** (v0.1.0) — VS Code integration utilities. [npm](https://www.npmjs.com/package/@agentsy/vscode)
 
 ### 🚀 Coming Soon
