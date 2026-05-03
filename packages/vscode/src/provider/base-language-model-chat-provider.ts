@@ -141,7 +141,9 @@ export abstract class BaseLanguageModelChatProvider {
     _token: CancellationToken,
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const { url, method, headers, body, signal } = request;
-    if (!url) throw new Error('Provider API request URL is required');
+    if (url === undefined || url === null) {
+      throw new Error('Provider API request URL is required');
+    }
 
     const response = await fetch(url, {
       method: method ?? 'POST',
@@ -152,7 +154,7 @@ export abstract class BaseLanguageModelChatProvider {
 
     if (response.ok && response.body !== null) {
       return (async function* (): AsyncIterable<ProviderStreamChunk> {
-        const reader = response.body!.getReader();
+        const reader = (response.body as ReadableStream<Uint8Array>).getReader();
         const decoder = new TextDecoder();
         let buffer = '';
         try {

@@ -1,127 +1,267 @@
-# Copilot Instructions — @agentsy/core
+# Copilot Instructions — @agentsy Monorepo
 
-Composable parsers and stream processing utilities for LLM responses. TypeScript, ESM-first, published as `@agentsy/core` on npm.
+Production-oriented TypeScript monorepo for LLM stream parsing, agent infrastructure, and VS Code integration. The current repo contains `@agentsy/core` and `@agentsy/vscode`; the `plan/` directory defines the broader `@agentsy/*` package roadmap.
 
-## Tool Priority
+## Repo Identity
 
-Always prefer higher-level tools over the terminal. The CLI is a **last resort**.
+- This repository is a **pnpm workspace monorepo** orchestrated with **Turborepo**.
+- Current published packages live under `packages/`:
+  - `packages/core` → `@agentsy/core`: foundation parsing, orchestration, renderers, adapters, structured output helpers.
+  - `packages/vscode` → `@agentsy/vscode`: VS Code integration utilities built on top of `@agentsy/core`.
+- The `plan/` directory is not throwaway notes. It contains the product and technical direction for future package extraction and platform evolution. When implementing planned packages or major architectural work, consult:
+  - `plan/agentsy-prd.md`
+  - `plan/agentsy-tech.md`
+  - `plan/agentsy-platform-v2.md`
 
-1. **VS Code extension commands** — use built-in IDE actions (rename symbol, find references, run tests via Test Explorer, etc.) whenever possible.
-2. **Chat participants** — use `@workspace`, `@terminal`, `@beans`, and other chat participants for context and task management.
-3. **MCP servers** — use available MCP tools (Git, GitHub, Playwright, Desktop Commander, etc.) for operations instead of shelling out.
-4. **Skills** — invoke relevant skills for specialized tasks (Beans workflows, testing, Svelte, TypeScript types, etc.).
-5. **CLI (last resort)** — only fall back to terminal commands when no dedicated tool, participant, skill, or MCP server can accomplish the task.
+## Preferred Workflow
 
-## Documentation Search
+Use the highest-level tool available. Prefer IDE actions and repository-native scripts over ad hoc shell work.
 
-Three MCP-based documentation sources are available. **Always consult documentation before implementing** — do not guess at API surfaces or library behavior.
+1. **VS Code / language-server actions** for symbol-aware operations.
+2. **Repository tooling** via root scripts and per-package scripts.
+3. **Terminal commands** only when no higher-level option exists.
 
-- **DeepWiki** (`mcp_cognitionai_d_*`) — AI-powered documentation for any GitHub repository. Use `ask_question` for targeted queries or `read_wiki_contents` for full docs.
-- **Exa** (`mcp_exa_*`) — web search and code context retrieval. Use for finding examples, blog posts, and up-to-date references.
-- **Context7** — up-to-date library documentation, correct syntax, and best practices via the Context7-Expert agent.
+## Toolchain and Commands
 
-## Commands
+This repo uses **pnpm + Turborepo**, not a Taskfile-driven workflow.
 
-Prefer **Taskfile** commands over `pnpm run` scripts. The Taskfile provides the canonical task definitions.
+### Root commands
+
+Run these from the repository root:
 
 ```bash
-task unit-tests        # vitest run src
-task check-types       # tsc --noEmit
-task compile           # tsup → dist/
-task lint              # oxlint .
-task format            # oxfmt . --write
-task check-all         # check-types + lint + check-formatting
-task test-all          # run all tests
-task precommit         # check-types + lint-fix + format
+pnpm build           # turbo run build
+pnpm test            # turbo run test
+pnpm test:coverage   # turbo run test:coverage
+pnpm check-types     # turbo run check-types
+pnpm lint            # turbo run lint
+pnpm lint:fix        # turbo run lint:fix
+pnpm format          # turbo run format
+pnpm precommit       # turbo run precommit
 ```
 
-Always run `task check-types` and `task unit-tests` before considering work complete.
+### Per-package commands
 
-## TypeScript
+Use package-local scripts when working on one package in isolation:
 
-- **Strict mode** — `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `isolatedModules` are all enabled. Never use `any`.
-- **ESM imports** — Always use `.js` extensions in relative imports (e.g., `from './parsing.js'`), even in `.ts` files.
-- **Module system** — `"type": "module"` in package.json. Dual ESM/CJS output via tsup.
-- **Target** — ES2022.
+```bash
+cd packages/core && pnpm build
+cd packages/core && pnpm test
+cd packages/core && pnpm coverage
 
-## Project Structure
-
-```text
-src/
-  index.ts              ← barrel re-exports all modules
-  thinking/             ← ThinkingParser (streaming think-tag extraction)
-  xml-filter/           ← XmlStreamFilter (XML tag scrubbing/filtering)
-  tool-calls/           ← XML tool call extraction & system prompt building
-  context/              ← XML context tag splitting/stripping/deduplication
-  structured/           ← JSON parsing, validation, repair, Zod adapter
-  processor/            ← LLMStreamProcessor (unified event-driven processor)
-  formatting/           ← Display formatting & sanitization
-  markdown/             ← Markdown utilities (blockquote appending)
-  adapters/             ← Generic and VS Code adapter integrations
+cd packages/vscode && pnpm build
+cd packages/vscode && pnpm test
+cd packages/vscode && pnpm coverage
 ```
 
-Each module has its own `index.ts` barrel export. Tests are colocated (`module.test.ts` next to source).
+### Completion gate
 
-## Coding Conventions
+Before considering work complete, run at minimum:
 
-### Architecture
-
-- **Factory functions** over direct class instantiation: `createXmlStreamFilter()`, `createGenericAdapter()`, `processStream()`.
-- **Classes** for stateful parsers: `ThinkingParser`, `LLMStreamProcessor`. Use private fields and public method APIs.
-- **Options objects** with optional properties and sensible defaults via `??` (nullish coalescing). Export default constants (e.g., `DEFAULT_MAX_JSON_DEPTH`).
-- **Barrel exports** — every module re-exports its public API through `index.ts`.
-
-### Naming
-
-- Factory functions: `create*` (e.g., `createXmlStreamFilter`)
-- Parser classes: `*Parser` (e.g., `ThinkingParser`)
-- Processor classes: `*Processor` (e.g., `LLMStreamProcessor`)
-- Validators: `validate*` (e.g., `validateJsonSchema`)
-- Builders: `build*` (e.g., `buildXmlToolSystemPrompt`)
-- Extractors: `extract*` (e.g., `extractXmlToolCalls`)
-
-### Error Handling
-
-- **Silent failure by default** for stream processing — malformed input is skipped, not thrown. Parsers must be resilient to garbage input.
-- **Explicit throws** only for critical validation (invalid tool names, missing peer dependencies).
-- **Warning callbacks** (`onWarning`) for recoverable issues. No custom error classes — use plain `Error` with descriptive messages.
-
-### Streaming Patterns
-
-- Chunk-based `write(chunk)` / `end()` interface for filters.
-- `addContent(chunk)` + `flush()` pattern for parsers that accumulate state across chunks.
-- Async generators (`async function*`) for composable stream pipelines.
-- Event emitter pattern with typed listener maps for `LLMStreamProcessor`.
-
-### Security
-
-- Enforce limits: nesting depth, key counts, input length, tool call counts, argument sizes. Use the existing `DEFAULT_*` constants.
-- Privacy tags (`PRIVACY_TAG_NAMES`) are always scrubbed by default (`enforcePrivacyTags: true`).
-- Never trust LLM output — all parsers must handle adversarial/malformed input gracefully.
-
-## Testing
-
-- **Vitest** — tests colocated as `*.test.ts` files. Use `describe()` / `it()` / `expect()`.
-- Test streaming behavior by feeding content chunk-by-chunk (simulating real streaming).
-- Test edge cases: partial tags split across chunks, empty input, malformed XML/JSON, whitespace handling.
-- Use `vi.fn()` for callback spies.
-- Parsers should "never throw" on malformed input — verify with adversarial test cases.
-
-## Package Exports
-
-The package provides granular subpath exports for tree-shaking:
-
-```ts
-import { ThinkingParser } from '@agentsy/core/thinking';
-import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
-import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
-import { parseJson } from '@agentsy/core/structured';
+```bash
+pnpm check-types
+pnpm test
 ```
 
-When adding a new module, update `package.json` exports, `tsup.config.ts` entry points, and `src/index.ts` barrel export.
+When a change is package-scoped, you may run the corresponding package scripts first, but finish with the relevant root checks if the change affects shared code, exports, docs, or monorepo wiring.
 
-## Dependencies
+## Runtime and Language Baseline
 
-- **Runtime**: `saxophone` (SAX-based streaming XML parser). Types are shimmed locally in `src/saxophone.d.ts`.
-- **Package manager**: pnpm (see `packageManager` field).
-- **Linter/formatter**: oxlint + oxfmt (not ESLint/Prettier).
+- Develop against **Node.js 22** to match CI.
+- `packages/vscode` declares `>=18`, but repo development should still target Node 22 for consistency.
+- Package manager is **pnpm**.
+- Module system is **ESM-first**.
+- Build tool is **tsup**.
+- Test framework is **Vitest**.
+- Linter is **oxlint**.
+- Formatter is **oxfmt**.
+
+## TypeScript Rules
+
+Follow the root `tsconfig.json` as the source of truth.
+
+- `strict: true`
+- `noUncheckedIndexedAccess: true`
+- `exactOptionalPropertyTypes: true`
+- `verbatimModuleSyntax: true`
+- `isolatedModules: true`
+- `noUncheckedSideEffectImports: true`
+
+### Type safety requirements
+
+- Never introduce `any`.
+- Prefer `unknown`, `Record<string, unknown>`, null-prototype objects, and explicit narrowing for untrusted shapes.
+- Preserve exact optional-property behavior; do not add `undefined` loosely where omission is intended.
+
+### Import rules
+
+- Use `.js` extensions in **relative imports inside `.ts` files**.
+- Keep imports ESM-compatible.
+- Do not use cross-package relative imports like `../../core/...`; use workspace package imports instead.
+
+## Linting and Formatting
+
+- Use **oxlint**, not ESLint.
+- Use **oxfmt**, not Prettier.
+- Respect root config in:
+  - `.oxlintrc.json`
+  - `.oxfmtrc.json`
+
+Key formatter conventions:
+
+- `singleQuote: true`
+- `semi: true`
+- `printWidth: 120`
+- `arrowParens: avoid`
+- `tabWidth: 2`
+
+## Package Boundaries
+
+### `@agentsy/core`
+
+- Foundation layer.
+- Keep it lightweight and reusable.
+- Avoid introducing runtime dependencies unless they are clearly justified and consistent with the package mission.
+- Prefer composable primitives, parser utilities, structured output helpers, renderers, and generic adapters.
+- Maintain granular subpath exports.
+
+### `@agentsy/vscode`
+
+- VS Code-specific integration layer.
+- It depends on `@agentsy/core` via `workspace:*`.
+- Keep VS Code APIs and extension-specific concerns here, not in core.
+- Preserve its ESM-only packaging and explicit externals (`vscode`, `@agentsy/core`).
+
+### General boundary rule
+
+- If code can work without VS Code types or APIs, it probably belongs in `@agentsy/core`.
+- If code depends on VS Code extension runtime behavior, editor integration, secret storage, status bars, chat providers, or extension settings, it belongs in `@agentsy/vscode`.
+
+## Architecture and Naming Conventions
+
+Follow existing naming patterns throughout the repo:
+
+- Factory functions: `create*`
+- Parser classes: `*Parser`
+- Processor classes: `*Processor`
+- Validators: `validate*`
+- Builders: `build*`
+- Extractors: `extract*`
+
+### Code structure patterns
+
+- Prefer **factory functions** over direct instantiation for public APIs.
+- Use **classes** for stateful streaming/parser components where the codebase already does so.
+- Use **options objects** with sensible defaults via `??`.
+- Export public module APIs through `index.ts` barrel files.
+- Keep tests colocated beside the source they verify.
+
+## Error Handling and Safety
+
+This repo distinguishes between setup-time failures and streaming-time resilience.
+
+### Streaming/parsing paths
+
+- Prefer graceful degradation.
+- Malformed LLM output should usually be skipped, partially recovered, or surfaced through warnings rather than thrown exceptions.
+- Use `onWarning`-style callbacks for recoverable issues.
+
+### Setup/validation paths
+
+- Throw explicit `Error` values for invalid configuration, invalid public API input, or impossible setup states.
+
+### Security posture
+
+- Treat model output as untrusted input.
+- Preserve existing limits for depth, key counts, nesting, and tool-call size.
+- Keep privacy-tag scrubbing and safety defaults intact.
+- Do not weaken bounded parsing, validation, or sanitization logic for convenience.
+
+## Exports and Packaging
+
+### When adding a new `@agentsy/core` module or subpath export
+
+Update all relevant surfaces together:
+
+1. Add the source module under `packages/core/src/...`
+2. Export it from the nearest `index.ts` barrel
+3. Add a tsup entry in `packages/core/tsup.config.ts`
+4. Add the matching export in `packages/core/package.json`
+5. Add or update tests
+6. Update docs when the new API is user-facing
+
+### When changing package structure
+
+- Keep package boundaries explicit.
+- Preserve independent installability.
+- Do not accidentally inline or blur package boundaries through incorrect build config.
+
+## Testing Conventions
+
+- Use **Vitest**.
+- Keep tests colocated as `*.test.ts` files.
+- For parser and streaming logic, test chunk-by-chunk behavior explicitly.
+- Add adversarial and malformed-input cases for parsing and recovery code.
+- Use `vi.fn()` or equivalent spies for callbacks and event handlers.
+
+### What to test
+
+- Partial chunks and boundary splits
+- Empty and malformed input
+- Warning and recovery behavior
+- Safety rails and size/depth limits
+- Exported API behavior, not just internals
+
+### Coverage scripts
+
+- `packages/core`: `pnpm coverage`
+- `packages/vscode`: `pnpm coverage`
+
+## Documentation Rules
+
+- Update docs when public APIs, commands, package names, or workflows change.
+- Keep root docs aligned with the current monorepo structure.
+- Do not reintroduce stale references to obsolete package names, old folder layouts, or missing tooling.
+
+### Current documentation truths to preserve
+
+- The repo is a **monorepo**.
+- Root workflow is **pnpm + turbo**.
+- Package names are `@agentsy/core` and `@agentsy/vscode`.
+- CI uses **Node 22**.
+
+## Documentation Search and Planning
+
+Before major architectural work, review the relevant plan documents. Use them especially when:
+
+- adding new `@agentsy/*` packages
+- splitting code out of `core`
+- implementing agent runtime, memory, provider, MCP, or session features
+- aligning current code with the long-term platform architecture
+
+The plans describe intended package boundaries, dependency direction, and API contracts. Use them as guidance, but verify against the actual current code before editing.
+
+## CI and Release Awareness
+
+- CI workflows live under `.github/workflows/`.
+- Keep commands aligned with the current root scripts and Turbo tasks.
+- Do not assume one-package release logic in monorepo changes.
+- When changing scripts, package paths, coverage outputs, or build artifacts, check whether workflows also need updates.
+
+## Common Gotchas
+
+- Do **not** recommend `task ...` commands unless a real Taskfile is added to the repo.
+- Do **not** use old package names such as `@agentsy/parser` or pre-monorepo paths.
+- Do **not** add `any` to “fix” strict TypeScript friction.
+- Do **not** forget `.js` extensions on relative TypeScript imports.
+- Do **not** place VS Code-specific logic in `@agentsy/core`.
+
+## Rule of Thumb
+
+When uncertain, optimize for:
+
+1. consistency with the current monorepo
+2. strict type safety
+3. clear package boundaries
+4. resilient handling of malformed LLM output
+5. docs and CI staying in sync with code

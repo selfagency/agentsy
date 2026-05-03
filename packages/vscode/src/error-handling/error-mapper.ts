@@ -15,8 +15,7 @@ const STATUS_TO_ERROR_CODE = new Map<number, ProviderErrorCode>([
  */
 export function httpStatusToErrorCode(status: number): ProviderErrorCode {
   const code = STATUS_TO_ERROR_CODE.get(status);
-  if (code !== undefined) return code;
-  return status >= 500 ? ProviderErrorCode.InternalError : ProviderErrorCode.InternalError;
+  return code ?? ProviderErrorCode.InternalError;
 }
 
 /**
