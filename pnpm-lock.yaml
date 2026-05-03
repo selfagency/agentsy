@@ -39,6 +39,9 @@ importers:
       husky:
         specifier: ^9.1.7
         version: 9.1.7
+      ink-testing-library:
+        specifier: ^4.0.0
+        version: 4.0.0(@types/react@19.2.14)
       lint-staged:
         specifier: ^16.4.0
         version: 16.4.0
@@ -65,7 +68,7 @@ importers:
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2)
       vitepress:
         specifier: ^1.6.4
-        version: 1.6.4(@algolia/client-search@5.49.2)(@types/node@25.6.0)(@types/react@19.2.14)(axios@1.15.0)(change-case@5.4.4)(lightningcss@1.32.0)(postcss@8.5.13)(react@19.2.5)(search-insights@2.17.3)(typescript@6.0.3)
+        version: 1.6.4(@algolia/client-search@5.49.2)(@types/node@25.6.0)(@types/react@19.2.14)(axios@1.15.0)(change-case@5.4.4)(lightningcss@1.32.0)(postcss@8.5.13)(search-insights@2.17.3)(typescript@6.0.3)
       vitest:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
@@ -76,6 +79,8 @@ importers:
       cli-markdown:
         specifier: ^3.5.1
         version: 3.5.1
+
+  dist: {}
 
 packages:
 
@@ -2018,6 +2023,15 @@ packages:
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
+  ink-testing-library@4.0.0:
+    resolution: {integrity: sha512-yF92kj3pmBvk7oKbSq5vEALO//o7Z9Ck/OaLNlkzXNeYdwfpxMQkSowGTFUCS5MSu9bWfSZMewGpp7bFc66D7Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   ink@7.0.1:
     resolution: {integrity: sha512-o6LAC268PLawlGVYrXTyaTfke4VtJftEheuwbgkQf7yvSXyWp1nRwBbAyKEkWXFZZsW/la5wrMuNbuBvZK2C1w==}
     engines: {node: '>=22'}
@@ -3192,9 +3206,9 @@ snapshots:
 
   '@docsearch/css@3.8.2': {}
 
-  '@docsearch/js@3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(react@19.2.5)(search-insights@2.17.3)':
+  '@docsearch/js@3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(search-insights@2.17.3)':
     dependencies:
-      '@docsearch/react': 3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(react@19.2.5)(search-insights@2.17.3)
+      '@docsearch/react': 3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(search-insights@2.17.3)
       preact: 10.29.0
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -3203,7 +3217,7 @@ snapshots:
       - react-dom
       - search-insights
 
-  '@docsearch/react@3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(react@19.2.5)(search-insights@2.17.3)':
+  '@docsearch/react@3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(search-insights@2.17.3)':
     dependencies:
       '@algolia/autocomplete-core': 1.17.7(@algolia/client-search@5.49.2)(algoliasearch@5.49.2)(search-insights@2.17.3)
       '@algolia/autocomplete-preset-algolia': 1.17.7(@algolia/client-search@5.49.2)(algoliasearch@5.49.2)
@@ -3211,7 +3225,6 @@ snapshots:
       algoliasearch: 5.49.2
     optionalDependencies:
       '@types/react': 19.2.14
-      react: 19.2.5
       search-insights: 2.17.3
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -4738,6 +4751,10 @@ snapshots:
 
   inherits@2.0.4: {}
 
+  ink-testing-library@4.0.0(@types/react@19.2.14):
+    optionalDependencies:
+      '@types/react': 19.2.14
+
   ink@7.0.1(@types/react@19.2.14)(react@19.2.5):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.3.0
@@ -5705,10 +5722,10 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.8.2
 
-  vitepress@1.6.4(@algolia/client-search@5.49.2)(@types/node@25.6.0)(@types/react@19.2.14)(axios@1.15.0)(change-case@5.4.4)(lightningcss@1.32.0)(postcss@8.5.13)(react@19.2.5)(search-insights@2.17.3)(typescript@6.0.3):
+  vitepress@1.6.4(@algolia/client-search@5.49.2)(@types/node@25.6.0)(@types/react@19.2.14)(axios@1.15.0)(change-case@5.4.4)(lightningcss@1.32.0)(postcss@8.5.13)(search-insights@2.17.3)(typescript@6.0.3):
     dependencies:
       '@docsearch/css': 3.8.2
-      '@docsearch/js': 3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(react@19.2.5)(search-insights@2.17.3)
+      '@docsearch/js': 3.8.2(@algolia/client-search@5.49.2)(@types/react@19.2.14)(search-insights@2.17.3)
       '@iconify-json/simple-icons': 1.2.73
       '@shikijs/core': 2.5.0
       '@shikijs/transformers': 2.5.0

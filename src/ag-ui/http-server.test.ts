@@ -76,7 +76,7 @@ describe('createSSEStream', () => {
       }
     } catch (err) {
       expect(err).toBeInstanceOf(Error);
-      expect((err as Error).message).toContain('Generator error');
+      expect((err as unknown as Error).message).toContain('Generator error');
     }
   });
 

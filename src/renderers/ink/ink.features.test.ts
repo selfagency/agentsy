@@ -235,7 +235,9 @@ describe('Ink Renderer features', () => {
         showToolCalls: true,
       });
 
-      processor.process({ content: '<tool_call id="1" name="search"><arguments>{"query":"test"}</arguments></tool_call>' });
+      processor.process({
+        content: '<tool_call id="1" name="search"><arguments>{"query":"test"}</arguments></tool_call>',
+      });
       processor.process({ content: 'Search results...' });
       processor.process({ done: true });
 

@@ -74,16 +74,62 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   // Create the base renderer
   const renderer = createVSCodeChatRenderer(mergedOptions);
 
-  // If abortSignal provided, attach cancellation listener to cleanup resources
-  if (options.abortSignal) {
-    options.abortSignal.addEventListener('abort', () => {
-      // Signal end to renderer on cancellation
-      renderer.end().catch(err => {
-        // Log but don't throw (signal already aborted)
-        console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', err);
-      });
+  let endPromise: Promise<void> | null = null;
+  let detachAbortListener: (() => void) | undefined;
+  /**
+   * Ends the renderer exactly once, cleaning up resources and abort listeners.
+   * If called via the abort signal, errors are logged but not thrown (stream already terminating).
+   * If called directly, errors are propagated to the caller.
+   *
+   * @returns Promise that resolves when cleanup is complete
+   * @internal
+   */
+  // codacy: disable-line
+  const endOnce = async (): Promise<void> => {
+    if (endPromise) {
+      return endPromise;
+    }
+
+    detachAbortListener?.();
+    detachAbortListener = undefined;
+
+    endPromise = renderer.end().finally(() => {
+      detachAbortListener?.();
+      detachAbortListener = undefined;
     });
+
+    return endPromise;
+  };
+
+  // If abortSignal provided, attach cancellation listener to cleanup resources
+  const abortSignal = options.abortSignal;
+  if (abortSignal) {
+    // codacy: disable-line
+    const onAbort = () => {
+      // Signal end to renderer on cancellation
+      endOnce().catch(err => {
+        // Log but don't throw (signal already aborted)
+        // Include error stack for debugging cleanup issues
+        console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', err);
+        if (err instanceof Error && err.stack) {
+          console.warn('[VS Code Agent Loop] Cleanup error stack:', err.stack);
+        }
+      });
+    };
+
+    if (abortSignal.aborted) {
+      onAbort();
+    } else {
+      abortSignal.addEventListener('abort', onAbort, { once: true });
+      detachAbortListener = () => {
+        abortSignal.removeEventListener('abort', onAbort);
+      };
+    }
   }
 
-  return renderer;
+  return {
+    write: renderer.write,
+    writeChunk: renderer.writeChunk,
+    end: endOnce,
+  };
 }

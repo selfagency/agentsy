@@ -15,7 +15,7 @@ export interface ToolCallPart {
 /**
  * Tool call handler callback.
  */
-export type OnToolCall = (part: ToolCallPart) => void;
+export type OnToolCall = (part: ToolCallPart) => void | Promise<void>;
 
 /**
  * Options common to all renderers.

@@ -418,5 +418,4 @@ describe('Ink Renderer', () => {
       expect(theme).toBe(customTheme);
     });
   });
-
 });

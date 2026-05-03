@@ -27,11 +27,4 @@ export {
   resolveTheme,
   type ThemeName,
 } from './themes/index.js';
-export type {
-  BorderTheme,
-  HighlightTheme,
-  TextTheme,
-  Theme,
-  ThinkingTheme,
-  ToolCallTheme,
-} from './themes/types.js';
+export type { BorderTheme, HighlightTheme, TextTheme, Theme, ThinkingTheme, ToolCallTheme } from './themes/types.js';

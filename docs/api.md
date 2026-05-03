@@ -776,18 +776,38 @@ Stream LLM responses directly to VS Code's Chat interface with built-in support 
 
 ```typescript
 export interface ChatResponseStream {
-  markdown(text: string): void;
-  progress(text: string): void;
-  anchor(value: string, title?: string): void;
-  reference(value: string, iconPath?: string): void;
-  button(options: { title: string; command: string; arguments?: unknown[] }): void;
-  filetree(fileStructure: unknown, options?: { selectionHandle?: string }): void;
+  markdown(content: string): void;
+  progress(content: string): void;
+  anchor(
+    value:
+      | { scheme: string; path: string }
+      | {
+          uri: { scheme: string; path: string };
+          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+        },
+    title?: string,
+  ): void;
+  reference(
+    value:
+      | { scheme: string; path: string }
+      | {
+          uri: { scheme: string; path: string };
+          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+        }
+      | { variableName: string; value?: { scheme: string; path: string } },
+    iconPath?:
+      | { scheme: string; path: string }
+      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } },
+  ): void;
+  button(command: { command: string; title: string; arguments?: unknown[] }): void;
+  filetree(value: Array<{ name: string; children?: unknown[] }>, baseUri: { scheme: string; path: string }): void;
+  push?(part: unknown): void;
 
   // Proposed APIs (capability-detected)
-  thinkingProgress?(title: string): void;
-  beginToolInvocation?(toolName: string, toolCallId: string): void;
-  updateToolInvocation?(toolCallId: string, result: unknown): void;
-  usage?(options: { input_tokens: number; output_tokens: number }): void;
+  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
+  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
+  updateToolInvocation?(toolCallId: string, streamData: unknown): void;
+  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
 }
 
 export interface VSCodeChatRendererOptions {
@@ -795,7 +815,7 @@ export interface VSCodeChatRendererOptions {
   showThinking?: boolean; // Default: false
   thinkingStyle?: 'blockquote' | 'progress' | 'suppress'; // Default: 'blockquote'
 
-  onToolCall?: (call: XmlToolCall) => void | Promise<void>;
+  onToolCall?: (part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }) => void | Promise<void>;
   onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
   onError?: (error: Error) => void;
 }
@@ -812,8 +832,8 @@ const renderer = createVSCodeChatRenderer({
   stream,
   showThinking: true,
   thinkingStyle: 'blockquote',
-  onToolCall: async call => {
-    console.log(`Tool: ${call.name}`);
+  onToolCall: async part => {
+    console.log(`Tool: ${part.call.name}`);
     // Execute tool and return results to renderer
   },
 });

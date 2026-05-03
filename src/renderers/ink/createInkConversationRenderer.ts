@@ -54,7 +54,7 @@ export async function createInkConversationRenderer(
   const forceUpdateRef = { current: () => {} };
 
   const { processor } = options;
-  
+
   // Store listener functions for cleanup on unmount
   const listeners = {
     text: (delta: string) => {

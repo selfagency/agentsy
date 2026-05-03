@@ -61,8 +61,8 @@ function BlockquoteThinking({
     return <ScreenReaderThinking text={text} />;
   }
 
-  const borderStyle: 'single' | 'double' | 'round' | undefined = 
-    (theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round')
+  const borderStyle: 'single' | 'double' | 'round' | undefined =
+    theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round'
       ? theme.border.style
       : undefined;
   const borderColor = theme.border.color || undefined;
@@ -99,5 +99,7 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
     return <InlineThinking text={text} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />;
   }
 
-  return <BlockquoteThinking text={text} frame={frame} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />;
+  return (
+    <BlockquoteThinking text={text} frame={frame} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />
+  );
 }

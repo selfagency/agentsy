@@ -61,9 +61,7 @@ function displayThemePreview() {
       const textColor = theme.thinking.textColor || 'cyan';
       const spinnerColor = theme.thinking.spinnerColor || 'cyan';
       const thinkingText = `text=${textColor}, spinner=${spinnerColor}`;
-      console.log(
-        `  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`,
-      );
+      console.log(`  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`);
     }
 
     if (theme.toolCall) {
