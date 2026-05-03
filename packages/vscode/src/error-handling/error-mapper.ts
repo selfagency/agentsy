@@ -14,6 +14,25 @@ export function httpStatusToErrorCode(status: number): ProviderErrorCode {
 }
 
 /**
+ * Extracts a string representation from an unknown error value.
+ */
+function extractErrorString(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as Record<string, unknown>).message);
+  }
+  if (error && typeof error === 'object') {
+    return (error as Record<string, unknown>).toString?.() ?? 'Unknown error';
+  }
+  return String(error);
+}
+
+/**
  * Maps a generic unknown error to a ProviderErrorCode.
  * Inspects error messages for common patterns.
  */
@@ -25,19 +44,7 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
     if (typeof status === 'number') return httpStatusToErrorCode(status);
   }
 
-  let errorStr: string;
-  if (error instanceof Error) {
-    errorStr = error.message;
-  } else if (typeof error === 'string') {
-    errorStr = error;
-  } else if (typeof error === 'object' && error !== null && 'message' in error) {
-    errorStr = String((error as Record<string, unknown>).message);
-  } else if (error && typeof error === 'object') {
-    errorStr = (error as Record<string, unknown>).toString?.() ?? 'Unknown error';
-  } else {
-    errorStr = String(error);
-  }
-  const message = errorStr.toLowerCase();
+  const message = extractErrorString(error).toLowerCase();
 
   // Pattern-based error matching with early returns to reduce complexity
   const patterns: Array<[string[], ProviderErrorCode]> = [

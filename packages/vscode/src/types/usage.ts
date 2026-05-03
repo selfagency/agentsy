@@ -8,4 +8,4 @@ export type UsageEvent = 'quota_updated' | 'threshold_reached' | 'limit_exceeded
  */
 export type UsageEventListener = (event: UsageEvent, quota: unknown) => void;
 
-export { type IQuotaDataSource, type UsageQuota } from './errors.js';
+export type { IQuotaDataSource, UsageQuota } from './errors.js';

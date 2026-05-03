@@ -90,4 +90,4 @@ export function convertMessages(vsMessages: unknown[]): ChatMessage[] {
   return vsMessages.map(convertMessage);
 }
 
-export { type ChatMessage, type ChatToolCall } from './role-converter.js';
+export type { ChatMessage, ChatToolCall } from './role-converter.js';

@@ -52,7 +52,7 @@ jobs:
           CI: true
 
       - name: Merge coverage reports
-        uses: selfagency/merge-coverage@v2
+        uses: selfagency/merge-coverage@16c5a43e7b9428ed3a7c81f193d1061a427c6af9
         with:
           source: ${{ github.workspace }}
           coverage-reports: ${{ github.workspace }}/packages/*/coverage
