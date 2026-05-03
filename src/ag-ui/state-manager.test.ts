@@ -6,12 +6,12 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-    applyJsonPatches,
-    computeStateDelta,
-    createStateDeltaEvent,
-    createStateSnapshotEvent,
-    StateManager,
-    type JsonPatchOp,
+  applyJsonPatches,
+  computeStateDelta,
+  createStateDeltaEvent,
+  createStateSnapshotEvent,
+  StateManager,
+  type JsonPatchOp,
 } from './state-manager.js';
 import { EventType, type StateSnapshotEvent } from './types.js';
 

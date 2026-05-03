@@ -8,20 +8,20 @@
 
 import chalk from 'chalk';
 import {
-    ayuMirageTheme,
-    catppuccinFrappeTheme,
-    catppuccinLatteTheme,
-    catppuccinMacchiatoTheme,
-    catppuccinMochaTheme,
-    darkTheme,
-    defaultTheme,
-    draculaTheme,
-    githubDarkTheme,
-    houstonTheme,
-    lightTheme,
-    minimalTheme,
-    oneCandyTheme,
-    oneDarkTheme,
+  ayuMirageTheme,
+  catppuccinFrappeTheme,
+  catppuccinLatteTheme,
+  catppuccinMacchiatoTheme,
+  catppuccinMochaTheme,
+  darkTheme,
+  defaultTheme,
+  draculaTheme,
+  githubDarkTheme,
+  houstonTheme,
+  lightTheme,
+  minimalTheme,
+  oneCandyTheme,
+  oneDarkTheme,
 } from '../dist/renderers/ink/themes/index.js';
 
 const THEMES = [
@@ -61,9 +61,7 @@ function displayThemePreview() {
       const textColor = theme.thinking.textColor || 'cyan';
       const spinnerColor = theme.thinking.spinnerColor || 'cyan';
       const thinkingText = `text=${textColor}, spinner=${spinnerColor}`;
-      console.log(
-        `  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`,
-      );
+      console.log(`  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`);
     }
 
     if (theme.toolCall) {

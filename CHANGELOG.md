@@ -5,15 +5,14 @@
 ## [0.3.0] - 2026-05-03
 
 ## What's Changed
-* feat: multi-phase LLM streaming enhancements with schema quality improvements by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/43
-* feat: Complete AG-UI protocol integration (Phases 1-4) by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/44
-* feat: complete remediation plan for lifecycle, UI event sourcing, and renderer step propagation by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/45
 
+- feat: multi-phase LLM streaming enhancements with schema quality improvements by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/43
+- feat: Complete AG-UI protocol integration (Phases 1-4) by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/44
+- feat: complete remediation plan for lifecycle, UI event sourcing, and renderer step propagation by @selfagency in <https://github>.com/selfagency/llm-stream-parser/pull/45
 
 **Full Changelog**: <https://github>.com/selfagency/llm-stream-parser/compare/v0.2.0...v0.3.0
 
 _Source: changes from v0.2.0 to v0.3.0._
-
 
 ### Breaking Changes
 

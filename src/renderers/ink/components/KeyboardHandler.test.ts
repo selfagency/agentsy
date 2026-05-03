@@ -41,7 +41,7 @@ describe('KeyboardHandler Component Props', () => {
       ];
 
       expect(configs).toHaveLength(4);
-      configs.forEach((config) => {
+      configs.forEach(config => {
         expect(typeof config.enabled).toBe('boolean');
       });
     });
@@ -148,9 +148,27 @@ describe('KeyboardHandler Component Props', () => {
     it('maintains state during rapid toggles', () => {
       let enabled = true;
       const toggles = [
-        { before: enabled, toggle: () => { enabled = !enabled; }, after: !enabled },
-        { before: enabled, toggle: () => { enabled = !enabled; }, after: !enabled },
-        { before: enabled, toggle: () => { enabled = !enabled; }, after: !enabled },
+        {
+          before: enabled,
+          toggle: () => {
+            enabled = !enabled;
+          },
+          after: !enabled,
+        },
+        {
+          before: enabled,
+          toggle: () => {
+            enabled = !enabled;
+          },
+          after: !enabled,
+        },
+        {
+          before: enabled,
+          toggle: () => {
+            enabled = !enabled;
+          },
+          after: !enabled,
+        },
       ];
 
       expect(toggles).toHaveLength(3);
@@ -165,7 +183,7 @@ describe('KeyboardHandler Component Props', () => {
       ];
 
       // Simulate concurrent calls
-      options.forEach((opt) => {
+      options.forEach(opt => {
         if (opt.onInterrupt) opt.onInterrupt();
       });
 
