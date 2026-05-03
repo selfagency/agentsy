@@ -288,10 +288,7 @@ The UI package can now consume reducer-friendly processor events automatically, 
 import { createSmoothStream, createThinkingFilter } from '@selfagency/llm-stream-parser/pipeline';
 
 const processor = new LLMStreamProcessor({
-  transforms: [
-    createThinkingFilter(),
-    createSmoothStream({ chunkSize: 4, delayMs: 25 }),
-  ],
+  transforms: [createThinkingFilter(), createSmoothStream({ chunkSize: 4, delayMs: 25 })],
 });
 ```
 
@@ -460,38 +457,79 @@ Tool calls fire the `onToolCall` callback but are not rendered as content.
 
 When a renderer receives structured chunks via `writeChunk()`, it can also call `onStep(stepIndex, usage)` as step metadata changes.
 
+### Ink Terminal Renderer
+
+Beautiful, themeable terminal output for CLI/TUI applications built on React/Ink.
+**Requires peer dependencies**: `npm install ink react`
+
+```typescript
+import { createInkRenderer } from '@selfagency/llm-stream-parser/renderers/ink';
+
+const renderer = await createInkRenderer({
+  processor, // LLMStreamProcessor instance
+  showThinking: true,
+  thinkingStyle: 'blockquote', // 'blockquote' | 'inline' | 'suppress'
+  showToolCalls: true,
+  markdown: true,
+  syntaxHighlight: true, // Code fence highlighting (requires cli-highlight)
+  theme: 'catppuccin-mocha', // See available themes below
+  screenReader: false, // Accessibility mode
+  keyboard: {
+    enabled: true,
+    onInterrupt: () => process.exit(0),
+    onCancel: () => renderer.end(),
+  },
+  onWarning: msg => console.warn(msg),
+  onFinish: () => console.log('Stream complete'),
+});
+
+// Stream chunks via processor events
+processor.on('text', delta => renderer.write(delta));
+processor.on('done', () => renderer.end());
+
+renderer.unmount(); // Cleanup when done
+```
+
+**Available Themes:**
+
+- `default`, `dark`, `light`, `minimal` — Basic themes
+- `dracula` — Dark purple/cyan theme
+- `catppuccin-mocha`, `catppuccin-latte`, `catppuccin-macchiato`, `catppuccin-frappe` — Pastel Catppuccin palette
+- `ayu-mirage` — Dark gray/amber theme
+- `houston` — Astro's dark blue/mint theme
+- `one-dark` — Classic Atom One Dark theme
+- `one-candy` — One Dark with pastel candy accents
+- `github-dark` — GitHub Primer dark theme
+
+**Custom Themes:**
+
+```typescript
+import type { Theme } from '@selfagency/llm-stream-parser/renderers/ink';
+
+const customTheme: Theme = {
+  thinking: { borderColor: 'magenta', textColor: 'magenta', spinnerColor: 'magenta' },
+  toolCall: { pendingColor: 'yellow', doneColor: 'green', pendingSymbol: '?', doneSymbol: '✓' },
+  text: { cursorSymbol: '|', dimColor: false },
+  border: { style: 'round', color: 'gray' },
+  highlight: { theme: 'monokai' },
+};
+
+const renderer = await createInkRenderer({ theme: customTheme, ... });
+```
+
+**Thinking Styles:**
+
+- `blockquote` (default): Render as bordered block with spinner
+- `inline`: Render as italic inline text with prefix
+- `suppress`: Hide thinking blocks entirely
+
+**Accessibility:**
+
+Set `screenReader: true` to disable animations and output plain text for screen reader users.
+
 ---
 
 ## Error Handling
 
-| Category                                                                                     | Behaviour                                                                         |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Streaming / parsing (`parseJson`, `ThinkingParser`, `XmlStreamFilter`, `LLMStreamProcessor`) | **Never throw.** Return best-effort results; malformed input is silently skipped. |
-| Configuration (`buildXmlToolSystemPrompt`)                                                   | **Throw** `Error` on invalid arguments (caught at setup time).                    |
-| Validation (`validateJsonSchema`)                                                            | Return `{ success: true; data }` or `{ success: false; errors }` — never throw.   |
-
-## Development
-
-```bash
-pnpm install
-task check-types     # TypeScript type check
-task unit-tests      # Run Vitest suite
-task lint            # oxlint
-task format          # oxfmt
-task compile         # tsup → dist/
-task precommit       # check-types + lint-fix + format
-```
-
-## Contributing
-
-1. Fork and clone the repository
-2. Create a branch: `feat/your-feature`, `fix/your-fix`, etc.
-3. Make changes with colocated tests (`module.test.ts` next to source)
-4. Run `task precommit` before pushing
-5. Open a pull request
-
-See [docs/developers/contributing.md](docs/developers/contributing.md) for full details.
-
-## License
-
-MIT ©2026 [The Self Agency, LLC](https://self.agency)
+| Category | Behaviour |
+| -------- | --------- |

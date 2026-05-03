@@ -76,7 +76,6 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     if (!cliMarkdown) {
       try {
         // dynamic import to avoid hard peer dep
-        // @ts-expect-error cli-markdown is a peer dependency
         const mod = await import('cli-markdown');
         cliMarkdown = mod.default as (markdown: string) => string;
       } catch {

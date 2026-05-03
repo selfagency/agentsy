@@ -475,7 +475,11 @@ export class LLMStreamProcessor {
       ...midStreamCalls,
       ...accumulatedNativeCalls,
       ...completedToolCalls
-        .filter(call => !midStreamCalls.some(part => part.call === call) && !accumulatedNativeCalls.some(part => part.call === call))
+        .filter(
+          call =>
+            !midStreamCalls.some(part => part.call === call) &&
+            !accumulatedNativeCalls.some(part => part.call === call),
+        )
         .map(call => ({ type: 'tool_call' as const, call, state: 'input-complete' as const })),
     ];
 
@@ -895,7 +899,11 @@ export class LLMStreamProcessor {
   }
 
   private buildPendingNativeToolCallParts(chunk: StreamChunk): Array<Extract<OutputPart, { type: 'tool_call' }>> {
-    if (!Array.isArray(chunk.nativeToolCallDeltas) || chunk.nativeToolCallDeltas.length === 0 || !this.nativeAccumulator) {
+    if (
+      !Array.isArray(chunk.nativeToolCallDeltas) ||
+      chunk.nativeToolCallDeltas.length === 0 ||
+      !this.nativeAccumulator
+    ) {
       return [];
     }
 
@@ -1004,8 +1012,12 @@ export class LLMStreamProcessor {
       this._lastConversationStepUsage = output.stepUsage;
     }
 
-    if ((output.thinking || output.content || output.parts.some(part => part.type === 'tool_call' || part.type === 'tool_call_delta')) &&
-        this._conversationMessageId === null) {
+    if (
+      (output.thinking ||
+        output.content ||
+        output.parts.some(part => part.type === 'tool_call' || part.type === 'tool_call_delta')) &&
+      this._conversationMessageId === null
+    ) {
       this.ensureConversationMessageId();
     }
 
