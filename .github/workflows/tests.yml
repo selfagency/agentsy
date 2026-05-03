@@ -51,6 +51,12 @@ jobs:
         env:
           CI: true
 
+      - name: Merge coverage reports
+        run: |
+          mkdir -p coverage
+          cp packages/core/coverage/clover.xml coverage/clover-core.xml
+          cp packages/vscode/coverage/clover.xml coverage/clover-vscode.xml
+
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3
@@ -62,11 +68,17 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Run codacy-coverage-reporter
+      - name: Run codacy-coverage-reporter for core package
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
         with:
           api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: coverage/clover.xml
+          coverage-reports: coverage/clover-core.xml
+
+      - name: Run codacy-coverage-reporter for vscode package
+        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
+        with:
+          api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-reports: coverage/clover-vscode.xml
 
       - name: Upload coverage artifact
         if: always()
