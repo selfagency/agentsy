@@ -12,7 +12,7 @@ tags: ['architecture', 'migration', 'feature', 'memory', 'mcp', 'tui']
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
-This plan covers the full transformation of `@selfagency/llm-stream-parser` into `@selfagency/agentsy`: a composable, extensible TypeScript agent-infrastructure library. It integrates deep architectural insights from the Claude Code source leak, OpenCode (anomalyco fork), Hermes Agent (NousResearch), nanobot (HKUDS), Gemini CLI (Google), and OpenAI Codex. The plan is organized into three tracks executed in an optimized interleaved sequence: **Track R** (rebrand), **Track P** (core infrastructure), and **Track X** (extensibility + blended memory).
+This plan covers the full transformation of `@agentsy/core` into `@selfagency/agentsy`: a composable, extensible TypeScript agent-infrastructure library. It integrates deep architectural insights from the Claude Code source leak, OpenCode (anomalyco fork), Hermes Agent (NousResearch), nanobot (HKUDS), Gemini CLI (Google), and OpenAI Codex. The plan is organized into three tracks executed in an optimized interleaved sequence: **Track R** (rebrand), **Track P** (core infrastructure), and **Track X** (extensibility + blended memory).
 
 **Library identity:** `@selfagency/agentsy` — a Node.js 22 ESM-first library consumed by downstream application projects. It is not an end-user CLI or app; it provides the building blocks for building agents.
 
@@ -23,7 +23,7 @@ This plan covers the full transformation of `@selfagency/llm-stream-parser` into
 ### Functional Requirements
 
 - **REQ-001**: Package must be publishable as `@selfagency/agentsy` on npm with full dual ESM/CJS output via tsup.
-- **REQ-002**: Old package `@selfagency/llm-stream-parser` must remain installable as a compatibility shim re-exporting all public APIs unchanged.
+- **REQ-002**: Old package `@agentsy/core` must remain installable as a compatibility shim re-exporting all public APIs unchanged.
 - **REQ-003**: All existing subpath exports (`./thinking`, `./xml-filter`, `./tool-calls`, `./context`, `./structured`, `./formatting`, `./processor`, `./markdown`, `./adapters`, `./normalizers`, `./ag-ui`, `./agent`, `./pipeline`, `./renderers/ink`, `./sse`, `./recovery`, `./ui`) must remain valid on the new package name.
 - **REQ-004**: Agent loop (`createAgentLoop`) must support hook injection points: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort`.
 - **REQ-005**: Agent loop must call `memoryEngine.startTask()` at loop start and `memoryEngine.endTask()` at loop end when a memory engine is provided.
@@ -97,7 +97,7 @@ This plan covers the full transformation of `@selfagency/llm-stream-parser` into
 
 | Task        | Description                                                                                                                                                                                               | Completed | Date |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-R0-001 | Rename `package.json` `name` field from `@selfagency/llm-stream-parser` to `@selfagency/agentsy`. Update `description`, `homepage`, `repository` fields.                                                  |           |      |
+| TASK-R0-001 | Rename `package.json` `name` field from `@agentsy/core` to `@selfagency/agentsy`. Update `description`, `homepage`, `repository` fields.                                                  |           |      |
 | TASK-R0-002 | Update `README.md` title, badges, and install instructions to reference `@selfagency/agentsy`.                                                                                                            |           |      |
 | TASK-R0-003 | Create `packages/llm-stream-parser/` compatibility shim package: `package.json` with `peerDependencies: { "@selfagency/agentsy": "*" }` and an `index.ts` that re-exports `* from '@selfagency/agentsy'`. |           |      |
 | TASK-R0-004 | Update `pnpm-workspace.yaml` to include the compatibility shim package.                                                                                                                                   |           |      |
@@ -113,7 +113,7 @@ This plan covers the full transformation of `@selfagency/llm-stream-parser` into
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-R1-001 | Add `deprecated` field to the shim `package.json`: `"deprecated": "Renamed to @selfagency/agentsy — please update your imports."` |           |      |
 | TASK-R1-002 | Add deprecation notice to top of `README.md` of the shim package.                                                                 |           |      |
-| TASK-R1-003 | Publish shim package to npm as `@selfagency/llm-stream-parser@0.3.0` after `@selfagency/agentsy@0.3.0` is published.              |           |      |
+| TASK-R1-003 | Publish shim package to npm as `@agentsy/core@0.3.0` after `@selfagency/agentsy@0.3.0` is published.              |           |      |
 
 ---
 
@@ -476,7 +476,7 @@ This plan covers the full transformation of `@selfagency/llm-stream-parser` into
 | TASK-P12-001 | Write E2E integration tests in `src/**/*.e2e.test.ts` covering: full agent loop (3 steps, 2 tool calls), session resume after simulated crash, MCP tool invocation, memory search injection, wiki synthesis pass. |           |      |
 | TASK-P12-002 | Write adversarial test corpus: malformed JSON tool args, truncated SSE stream, oversized context (>200K tokens), wiki page with injection payload, plugin with invalid checksum.                                  |           |      |
 | TASK-P12-003 | Add performance benchmarks to `memory-tests/` and `perf-tests/` directories mirroring Gemini CLI's test structure.                                                                                                |           |      |
-| TASK-P12-004 | Publish `@selfagency/agentsy@0.3.0` to npm `latest` channel. Publish `@selfagency/llm-stream-parser@0.3.0` shim.                                                                                                  |           |      |
+| TASK-P12-004 | Publish `@selfagency/agentsy@0.3.0` to npm `latest` channel. Publish `@agentsy/core@0.3.0` shim.                                                                                                  |           |      |
 | TASK-P12-005 | Tag `v0.3.0` in git. Create GitHub release with `CHANGELOG.md` entry.                                                                                                                                             |           |      |
 
 ---

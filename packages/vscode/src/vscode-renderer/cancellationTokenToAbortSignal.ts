@@ -1,4 +1,4 @@
-import type { CancellationToken } from '@selfagency/llm-stream-parser/renderers';
+import type { CancellationToken } from '@agentsy/core/renderers';
 
 /**
  * Convert a VS Code CancellationToken to an AbortSignal for use with fetch, stream operations,

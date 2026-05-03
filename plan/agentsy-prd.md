@@ -16,7 +16,7 @@ tags: ['prd', 'agentsy', 'requirements', 'product']
 
 ## 1. Problem Statement
 
-Building production-grade AI agents in TypeScript requires stitching together a dozen undocumented abstractions: stream parsing, tool-call routing, approval flows, context compression, session persistence, memory retrieval, and MCP integrations. Every team reinvents these primitives. The existing `@selfagency/llm-stream-parser` package solves the stream-parsing slice but leaves the rest to the consumer.
+Building production-grade AI agents in TypeScript requires stitching together a dozen undocumented abstractions: stream parsing, tool-call routing, approval flows, context compression, session persistence, memory retrieval, and MCP integrations. Every team reinvents these primitives. The existing `@agentsy/core` package solves the stream-parsing slice but leaves the rest to the consumer.
 
 **The gap**: There is no composable, independently installable TypeScript library collection that covers the full agent-infrastructure stack — from raw byte stream to persistent memory — while remaining unopinionated about the application layer (CLI, chat UI, server, background process).
 
@@ -27,7 +27,7 @@ Building production-grade AI agents in TypeScript requires stitching together a 
 ## 2. Goals
 
 - **G-001**: Provide a complete, independently installable TypeScript library for building production LLM agents — covering stream parsing, agent loop, context management, session persistence, tool execution, approval flows, MCP integration, memory, and vector retrieval.
-- **G-002**: Maintain 100% backward compatibility with `@selfagency/llm-stream-parser` consumer import paths via a shim package.
+- **G-002**: Maintain 100% backward compatibility with `@agentsy/core` consumer import paths via a shim package.
 - **G-003**: Support selective installation — a developer who only needs stream parsing should not need to install `@agentsy/memory` or `@agentsy/mcp`.
 - **G-004**: Provide evidence-based design decisions informed by the most successful open-source agent codebases (Claude Code, Gemini CLI, OpenCode, vercel/ai, TanStack AI, nanobot, Hermes, Codex).
 - **G-005**: Enable crash-safe, deterministically resumable agent sessions.
@@ -136,7 +136,7 @@ Requirements inherited from `agentsy-platform-v2.md` §1. Reproduced here with u
 | ID      | Requirement                                                                                                                                                                                                             | Priority | User Profiles | V0.3.0 |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------- | ------ |
 | REQ-001 | All packages publish under `@agentsy` npm org.                                                                                                                                                                          | P0       | All           | ✅     |
-| REQ-002 | `@selfagency/llm-stream-parser` shim re-exports all existing APIs unchanged.                                                                                                                                            | P0       | UP-1, UP-2    | ✅     |
+| REQ-002 | `@agentsy/core` shim re-exports all existing APIs unchanged.                                                                                                                                            | P0       | UP-1, UP-2    | ✅     |
 | REQ-003 | All existing subpath exports available on shim without modification.                                                                                                                                                    | P0       | UP-1          | ✅     |
 | REQ-004 | Agent loop supports hook injection: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort`.                                                                                                 | P1       | UP-2, UP-3    | ✅     |
 | REQ-005 | Agent loop calls `memoryEngine.startTask()` / `memoryEngine.endTask()` when memory engine is provided.                                                                                                                  | P1       | UP-3          | ✅     |
@@ -205,7 +205,7 @@ Requirements inherited from `agentsy-platform-v2.md` §1. Reproduced here with u
 | Turborepo warm cache hit rate                | ≥ 90%               | `turbo run build --dry` cache stats        |
 | Test suite coverage (all packages)           | ≥ 80% line coverage | vitest coverage reporter                   |
 | TypeScript strict compile (all packages)     | 0 errors            | `turbo run typecheck`                      |
-| Shim compatibility (existing consumer tests) | 100% pass           | `@selfagency/llm-stream-parser` test suite |
+| Shim compatibility (existing consumer tests) | 100% pass           | `@agentsy/core` test suite |
 | Stream processor adversarial inputs          | 0 uncaught throws   | adversarial test suite per parser module   |
 | Build time (cold, all packages)              | ≤ 60s               | CI build step timer                        |
 | Build time (warm cache)                      | ≤ 5s                | CI build step timer after cache warm       |
@@ -317,7 +317,7 @@ Expected behavior: MCP tools proxied transparently. Untrusted server tools block
 | `@agentsy/memory`                      | 3-layer memory (raw log → wiki synthesis → RAG injection). The Karpathy blended memory stack.                                        |
 | `@agentsy/retrieval`                   | Vector store abstraction over libSQL/Turso. Wiki page indexing and semantic search.                                                  |
 | `@agentsy/telemetry`                   | OpenTelemetry instrumentation — traces, spans, metrics. Lazy-loaded, zero cost when unused.                                          |
-| `@selfagency/llm-stream-parser` (shim) | Backward compat. Re-exports all `@agentsy/*` APIs under existing import paths.                                                       |
+| `@agentsy/core` (shim) | Backward compat. Re-exports all `@agentsy/*` APIs under existing import paths.                                                       |
 
 ---
 

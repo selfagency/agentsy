@@ -1,4 +1,4 @@
-import type { BaseRendererOptions, ThinkingStyle } from '@selfagency/llm-stream-parser/renderers';
+import type { BaseRendererOptions, ThinkingStyle } from '@agentsy/core/renderers';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 

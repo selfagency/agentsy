@@ -62,7 +62,7 @@ Transform this stream-parsing library into **21 composable TypeScript packages**
 @agentsy/retrieval     →  core
 @agentsy/memory        →  core, retrieval
 @agentsy/telemetry     →  core
-@selfagency/llm-stream-parser (shim) → core, processor, agent, adapters, ag-ui (peerDeps)
+@agentsy/core (shim) → core, processor, agent, adapters, ag-ui (peerDeps)
 ```
 
 **Feature packages** (added after P12):
@@ -168,7 +168,7 @@ Also add to `packages/agent/src/`:
 ### R1 + R2 (parallel)
 
 **R1 — Shim Deprecation Notice**
-`plan/agentsy-platform-v2.md` lines ~420–430 (TASK-R1-001 through R1-003): Add deprecation warning to `@selfagency/llm-stream-parser` package; write `docs/migration.md` (FILE-DOC-003).
+`plan/agentsy-platform-v2.md` lines ~420–430 (TASK-R1-001 through R1-003): Add deprecation warning to `@agentsy/core` package; write `docs/migration.md` (FILE-DOC-003).
 
 **R2 — Docs Repositioning**
 `plan/agentsy-platform-v2.md` lines ~430–440 (TASK-R2-001 through R2-004): Write `docs/architecture.md` (Mermaid package dependency graph, FILE-DOC-001) and `docs/packages.md` (reference table, FILE-DOC-002).

@@ -42,7 +42,9 @@ export function validateSettings(
     }
   }
 
-  return { valid: errors.length === 0, errors: errors.length ? errors : undefined };
+  return errors.length === 0
+    ? { valid: true }
+    : { valid: false, errors };
 }
 
 function validateValue(

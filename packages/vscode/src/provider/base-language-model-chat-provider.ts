@@ -1,6 +1,6 @@
-import type { ProviderConfig, ProviderApiRequest, ProviderStreamChunk } from '../types/errors.js';
+import { errorCodeToMessage, errorToProviderCode } from '../error-handling/error-mapper.js';
 import { convertMessages, type ChatMessage } from '../message-conversion/index.js';
-import { errorToProviderCode, errorCodeToMessage } from '../error-handling/error-mapper.js';
+import type { ProviderApiRequest, ProviderConfig, ProviderStreamChunk } from '../types/errors.js';
 
 /**
  * Minimal duck-typed interfaces to avoid hard vscode import.
@@ -135,12 +135,13 @@ export abstract class BaseLanguageModelChatProvider {
     _token: CancellationToken,
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const { url, method, headers, body, signal } = request;
+    if (!url) throw new Error('Provider API request URL is required');
 
     const response = await fetch(url, {
       method: method ?? 'POST',
       headers: headers as HeadersInit,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      signal,
+      body: body !== undefined ? JSON.stringify(body) : null,
+      ...(signal && { signal }),
     });
 
     if (!response.ok) {

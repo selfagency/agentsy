@@ -10,5 +10,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   target: 'es2022',
-  external: ['vscode', '@selfagency/llm-stream-parser']
+  external: ['vscode', '@agentsy/parser']
 });

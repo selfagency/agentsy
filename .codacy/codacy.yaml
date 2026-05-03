@@ -1,5 +1,5 @@
 ---
-# Codacy configuration for @selfagency/llm-stream-parser
+# Codacy configuration for @agentsy/core
 # TypeScript ESM streaming parser library
 # Node.js 22+ required, 526 tests with vitest
 

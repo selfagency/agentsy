@@ -1,6 +1,6 @@
+import type { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { CancellationToken } from '@agentsy/core/renderers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
-import type { CancellationToken } from '@selfagency/llm-stream-parser/renderers';
 import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
 import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';

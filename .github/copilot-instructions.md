@@ -1,6 +1,6 @@
-# Copilot Instructions — @selfagency/llm-stream-parser
+# Copilot Instructions — @agentsy/core
 
-Composable parsers and stream processing utilities for LLM responses. TypeScript, ESM-first, published as `@selfagency/llm-stream-parser` on npm.
+Composable parsers and stream processing utilities for LLM responses. TypeScript, ESM-first, published as `@agentsy/core` on npm.
 
 ## Tool Priority
 
@@ -112,10 +112,10 @@ Each module has its own `index.ts` barrel export. Tests are colocated (`module.t
 The package provides granular subpath exports for tree-shaking:
 
 ```ts
-import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
-import { createXmlStreamFilter } from '@selfagency/llm-stream-parser/xml-filter';
-import { extractXmlToolCalls } from '@selfagency/llm-stream-parser/tool-calls';
-import { parseJson } from '@selfagency/llm-stream-parser/structured';
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
+import { parseJson } from '@agentsy/core/structured';
 ```
 
 When adding a new module, update `package.json` exports, `tsup.config.ts` entry points, and `src/index.ts` barrel export.

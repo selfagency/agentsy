@@ -63,12 +63,7 @@ describe('StreamingText', () => {
 
   it('splits text at last double newline when streaming', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText
-        text="Para 1\n\nPara 2 incomplete"
-        markdown={false}
-        isStreaming={true}
-        theme={mockTheme}
-      />,
+      <StreamingText text="Para 1\n\nPara 2 incomplete" markdown={false} isStreaming={true} theme={mockTheme} />,
     );
 
     await vi.runAllTimersAsync();
@@ -149,10 +144,7 @@ describe('StreamingText', () => {
 
     await vi.runAllTimersAsync();
 
-    expect(markdownToAnsi).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({ syntaxHighlight: true }),
-    );
+    expect(markdownToAnsi).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ syntaxHighlight: true }));
 
     unmount();
   });
@@ -187,9 +179,7 @@ describe('StreamingText', () => {
     expect(streamingOutput).toContain('▌');
 
     // Stop streaming
-    rerender(
-      <StreamingText text="Complete text" markdown={false} isStreaming={false} theme={mockTheme} />,
-    );
+    rerender(<StreamingText text="Complete text" markdown={false} isStreaming={false} theme={mockTheme} />);
 
     await vi.runAllTimersAsync();
     const completedOutput = lastFrame();

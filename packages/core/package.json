@@ -1,7 +1,7 @@
 {
-  "name": "@selfagency/llm-stream-parser",
-  "version": "0.3.1",
-  "description": "Composable parsers and stream processing utilities for LLM responses",
+  "name": "@agentsy/core",
+  "version": "1.0.0",
+  "description": "Foundation stream parsing layer for Agentsy agentic development framework: thinking extraction, XML filtering, tool-call routing, JSON validation, provider normalization.",
   "keywords": [
     "ai",
     "anthropic",
@@ -15,15 +15,15 @@
     "tools",
     "xml"
   ],
-  "homepage": "https://llmstreamparser.self.agency",
+  "homepage": "https://agentsy.self.agency",
   "bugs": {
-    "url": "https://github.com/selfagency/llm-stream-parser/issues"
+    "url": "https://github.com/selfagency/agentsy/issues"
   },
   "license": "MIT",
   "author": "Daniel Sieradski <daniel@self.agency>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/selfagency/llm-stream-parser.git"
+    "url": "https://github.com/selfagency/agentsy.git"
   },
   "files": [
     "dist"

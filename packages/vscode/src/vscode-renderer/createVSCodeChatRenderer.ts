@@ -1,7 +1,7 @@
-import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
-import type { OutputPart } from '@selfagency/llm-stream-parser/processor';
-import { createSharedRendererHandle } from '@selfagency/llm-stream-parser/renderers';
-import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@selfagency/llm-stream-parser/renderers';
+import { appendToBlockquote } from '@agentsy/core/markdown';
+import type { OutputPart } from '@agentsy/core/processor';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/core/renderers';
+import { createSharedRendererHandle } from '@agentsy/core/renderers';
 
 /**
  * Structural interface matching VS Code's ChatResponseStream.

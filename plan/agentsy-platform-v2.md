@@ -12,7 +12,7 @@ tags: ['architecture', 'monorepo', 'turbo', 'migration', 'feature', 'memory', 'm
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
-This plan covers the full transformation of `@selfagency/llm-stream-parser` into the **`@agentsy` npm org monorepo**: a collection of composable, independently installable TypeScript packages that together form a complete agent-infrastructure platform. It supersedes v1 which targeted a single `@selfagency/agentsy` package. The `@agentsy` npm org is now available and all packages will publish under it.
+This plan covers the full transformation of `@agentsy/core` into the **`@agentsy` npm org monorepo**: a collection of composable, independently installable TypeScript packages that together form a complete agent-infrastructure platform. It supersedes v1 which targeted a single `@selfagency/agentsy` package. The `@agentsy` npm org is now available and all packages will publish under it.
 
 The plan integrates architectural insights from Claude Code, OpenCode, Hermes Agent, nanobot, Gemini CLI, OpenAI Codex, vercel/ai, and tanstack/ai. It is organized into four tracks executed in an optimized interleaved sequence: **Track MONO** (monorepo infrastructure), **Track R** (package identity + repositioning), **Track P** (core agent infrastructure), and **Track X** (extensibility + blended memory).
 
@@ -25,8 +25,8 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 ### Functional Requirements
 
 - **REQ-001**: All packages must publish under the `@agentsy` npm org. Package names follow the pattern `@agentsy/<domain>`.
-- **REQ-002**: Old package `@selfagency/llm-stream-parser` must remain installable as a compatibility shim re-exporting all existing public APIs unchanged.
-- **REQ-003**: All existing subpath exports from `@selfagency/llm-stream-parser` must be available on the shim package without modification to consumer import paths.
+- **REQ-002**: Old package `@agentsy/core` must remain installable as a compatibility shim re-exporting all existing public APIs unchanged.
+- **REQ-003**: All existing subpath exports from `@agentsy/core` must be available on the shim package without modification to consumer import paths.
 - **REQ-004**: Agent loop (`createAgentLoop`) in `@agentsy/agent` must support hook injection points: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort`.
 - **REQ-005**: Agent loop must call `memoryEngine.startTask()` at loop start and `memoryEngine.endTask()` at loop end when a memory engine is provided.
 - **REQ-006**: `LLMStreamProcessor` in `@agentsy/processor` must emit new events: `ContextWindowWillOverflow`, `ChatCompressed`, `LoopDetected`, `Citation`, `Retry`, `InvalidStream`.
@@ -184,7 +184,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | TASK-M0-003 | Update `pnpm-workspace.yaml`: set `packages: ["packages/*"]`. Remove or archive any previous workspace config.                                                                                                                                                                                                                                         |           |      |
 | TASK-M0-004 | Create `packages/tsconfig/` with `base.json` (strict TS settings from current `tsconfig.json`: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax, isolatedModules, target ES2022, moduleResolution bundler) and `library.json` (extends base, composite: true, declarationMap: true). Publish as `@agentsy/tsconfig`. |           |      |
 | TASK-M0-005 | Create the 16 package directories under `packages/`: `core/`, `normalizers/`, `processor/`, `agent/`, `adapters/`, `ag-ui/`, `runtime/`, `context-manager/`, `cost-tracker/`, `session/`, `mcp/`, `providers/`, `memory/`, `retrieval/`, `telemetry/`, `shim/`.                                                                                        |           |      |
-| TASK-M0-006 | For each of the 16 packages, create a `package.json` stub with: `name` (`@agentsy/<domain>` or `@selfagency/llm-stream-parser` for shim), `version: "0.3.0"`, `type: "module"`, `"publishConfig": { "access": "public" }`, `scripts: { build, test, typecheck, lint }` delegating to `tsup`, `vitest`, `tsc --noEmit`, `oxlint`.                       |           |      |
+| TASK-M0-006 | For each of the 16 packages, create a `package.json` stub with: `name` (`@agentsy/<domain>` or `@agentsy/core` for shim), `version: "0.3.0"`, `type: "module"`, `"publishConfig": { "access": "public" }`, `scripts: { build, test, typecheck, lint }` delegating to `tsup`, `vitest`, `tsc --noEmit`, `oxlint`.                       |           |      |
 | TASK-M0-007 | For each package, create `tsconfig.json` extending `@agentsy/tsconfig/library.json`; set `rootDir: "./src"`, `outDir: "./dist"`. Add package references to root `tsconfig.json` using TypeScript project references.                                                                                                                                   |           |      |
 | TASK-M0-008 | For each package, create `tsup.config.ts` with dual ESM/CJS output, `.d.ts` generation, and `external` array listing all `@agentsy/*` sibling packages (to prevent bundling internals). Mirror the current root `tsup.config.ts` pattern.                                                                                                              |           |      |
 | TASK-M0-009 | For each package, create `vitest.config.ts` extending the root vitest config pattern. Colocate test files as `src/**/*.test.ts`.                                                                                                                                                                                                                       |           |      |
@@ -232,7 +232,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | Task        | Description                                                                                                                                                                                                               | Completed | Date |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-R0-001 | Verify npm org `@agentsy` is claimed and the `selfagency` npm user has publish access. Run `npm org ls @agentsy` to confirm.                                                                                              |           |      |
-| TASK-R0-002 | Set `version: "0.3.0-alpha.0"` in all 15 `@agentsy/*` package `package.json` files. Set shim `@selfagency/llm-stream-parser` to `"0.3.0-alpha.0"` as well.                                                                |           |      |
+| TASK-R0-002 | Set `version: "0.3.0-alpha.0"` in all 15 `@agentsy/*` package `package.json` files. Set shim `@agentsy/core` to `"0.3.0-alpha.0"` as well.                                                                |           |      |
 | TASK-R0-003 | Add `"repository"`, `"homepage"`, `"keywords"`, `"license": "MIT"` to each package `package.json`. All pointing to the same repo root with appropriate `directory` field.                                                 |           |      |
 | TASK-R0-004 | Configure `.npmrc` at repo root with `@agentsy:registry=https://registry.npmjs.org`. Verify `publishConfig.access: "public"` is set on all packages.                                                                      |           |      |
 | TASK-R0-005 | Update `README.md` at repo root to reflect the `@agentsy` monorepo identity: list all packages with one-line descriptions and install commands.                                                                           |           |      |
@@ -244,13 +244,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 ### Phase R1 — Shim Deprecation Notice
 
-- **GOAL-R1**: Communicate the migration path from `@selfagency/llm-stream-parser` to `@agentsy/*` packages without breaking existing consumer installs.
+- **GOAL-R1**: Communicate the migration path from `@agentsy/core` to `@agentsy/*` packages without breaking existing consumer installs.
 
 | Task        | Description                                                                                                                                                        | Completed | Date |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
 | TASK-R1-001 | Add `"deprecated": "Migrated to @agentsy/* monorepo packages — see https://github.com/selfagency/llm-stream-parser#migration"` to `packages/shim/package.json`.    |           |      |
 | TASK-R1-002 | Write `packages/shim/README.md` with a full migration guide mapping old import paths to new `@agentsy/*` equivalents.                                              |           |      |
-| TASK-R1-003 | Create `docs/migration.md` at repo root documenting the `@selfagency/llm-stream-parser` → `@agentsy/*` migration with `sed` one-liners for common import rewrites. |           |      |
+| TASK-R1-003 | Create `docs/migration.md` at repo root documenting the `@agentsy/core` → `@agentsy/*` migration with `sed` one-liners for common import rewrites. |           |      |
 
 ---
 
@@ -613,7 +613,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | TASK-P12-002 | Write adversarial test corpus: malformed JSON tool args, truncated SSE stream, oversized context (>200K tokens), wiki page with injection payload, plugin with invalid checksum.                                                                                  |           |      |
 | TASK-P12-003 | Add performance benchmarks to per-package `perf/` directories mirroring Gemini CLI's test structure.                                                                                                                                                              |           |      |
 | TASK-P12-004 | Publish all `@agentsy/*` packages at `v0.3.0` to npm `latest` channel. Publish `@agentsy/*@0.3.0-nightly` nightly builds via CI cron. Tag `v0.3.0` in git. Create GitHub release with `CHANGELOG.md` entry. Three release channels: `latest`, `alpha`, `nightly`. |           |      |
-| TASK-P12-005 | Publish `@selfagency/llm-stream-parser@0.3.0` shim to npm with `deprecated` notice pointing to `@agentsy/*` migration guide.                                                                                                                                      |           |      |
+| TASK-P12-005 | Publish `@agentsy/core@0.3.0` shim to npm with `deprecated` notice pointing to `@agentsy/*` migration guide.                                                                                                                                      |           |      |
 
 ---
 
@@ -690,7 +690,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **FILE-PKG-014**: `packages/memory/` — `@agentsy/memory`: `RawEventLog`, `WikiStore`, `MemoryLifecycle`, `WikiLinter`.
 - **FILE-PKG-015**: `packages/retrieval/` — `@agentsy/retrieval`: `VectorStore`, `LibSQLVectorStore`, `TursoVectorStore`, `ChunkStrategy`, `embeddings/`, `tools.ts`.
 - **FILE-PKG-016**: `packages/telemetry/` — `@agentsy/telemetry`: `spans`, `structuredLogger`, `healthCheck`.
-- **FILE-PKG-017**: `packages/shim/` — `@selfagency/llm-stream-parser`: compatibility re-export barrel + deprecated package.json.
+- **FILE-PKG-017**: `packages/shim/` — `@agentsy/core`: compatibility re-export barrel + deprecated package.json.
 - **FILE-PKG-018**: `packages/renderers/` — `@agentsy/renderers`: RendererHandle, DisplayPort, plain/cli/ink/vscode/browser renderer implementations. No orchestration deps. See `agentsy-standalone-v1.md`.
 
 ### Per-Package Config Files (×16 packages)
@@ -730,7 +730,7 @@ Each package in `packages/<domain>/` contains:
 
 - **FILE-DOC-001**: `docs/architecture.md` — Mermaid package dependency graph + layer separation description
 - **FILE-DOC-002**: `docs/packages.md` — reference table of all 15 `@agentsy/*` packages
-- **FILE-DOC-003**: `docs/migration.md` — `@selfagency/llm-stream-parser` → `@agentsy/*` migration guide
+- **FILE-DOC-003**: `docs/migration.md` — `@agentsy/core` → `@agentsy/*` migration guide
 - **FILE-DOC-004**: `docs/downstream-app-starter.md` — consumer project starter guide
 - **FILE-DOC-005**: `packages/shim/README.md` — shim migration guide with import path mapping
 
@@ -768,7 +768,7 @@ Each package in `packages/<domain>/` contains:
 
 - **RISK-001**: Circular dependencies in the `@agentsy/*` package graph if module boundaries are not carefully enforced during MONO-1. **Mitigation**: Define the dependency graph in this plan (see Section 8 package graph); add a CI check for circular deps using `madge`.
 - **RISK-002**: Turborepo remote cache requires a Vercel account or self-hosted endpoint. **Mitigation**: Scaffold `TURBO_TOKEN`/`TURBO_TEAM` env vars in CI; remote cache is optional (local cache still accelerates builds). Local cache alone provides value.
-- **RISK-003**: Breaking change: consumers who pinned `@selfagency/llm-stream-parser` subpath exports will get a deprecation warning but imports still work. **Mitigation**: shim re-exports all existing paths; no consumer code changes required for the shim version.
+- **RISK-003**: Breaking change: consumers who pinned `@agentsy/core` subpath exports will get a deprecation warning but imports still work. **Mitigation**: shim re-exports all existing paths; no consumer code changes required for the shim version.
 - **RISK-004**: 16 packages × dual ESM/CJS × TypeScript declarations = large `dist/` surface area. **Mitigation**: `turbo` incremental builds; tsup `external` arrays prevent duplicate bundling of `@agentsy/core`.
 - **RISK-005**: libSQL `vector32` API may change between releases. **Mitigation**: pin `@libsql/client` minor version; `VectorStore` interface allows backend swap.
 - **RISK-006**: Wiki synthesis LLM call in `endTask()` may be slow or fail. **Mitigation**: async and non-blocking; raw event log always captures truth; log warning on failure.
@@ -826,7 +826,7 @@ Each package in `packages/<domain>/` contains:
 @agentsy/retrieval     →  @agentsy/core
 @agentsy/memory        →  @agentsy/core, @agentsy/retrieval
 @agentsy/telemetry     →  @agentsy/core
-@selfagency/llm-stream-parser (shim) →
+@agentsy/core (shim) →
   @agentsy/core, @agentsy/processor, @agentsy/agent,
   @agentsy/adapters, @agentsy/ag-ui  (all as peerDependencies)
 

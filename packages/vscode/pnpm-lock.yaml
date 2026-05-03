@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@selfagency/llm-stream-parser':
+      '@agentsy/core':
         specifier: file:/Users/daniel/Developer/llm-stream-parser
         version: file:../../../llm-stream-parser(@ag-ui/core@0.0.53)
     devDependencies:
@@ -492,7 +492,7 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@selfagency/llm-stream-parser@file:../../../llm-stream-parser':
+  '@agentsy/core@file:../../../llm-stream-parser':
     resolution: {directory: ../../../llm-stream-parser, type: directory}
     peerDependencies:
       '@ag-ui/core': ^0.0.53
@@ -1699,7 +1699,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.2':
     optional: true
 
-  '@selfagency/llm-stream-parser@file:../../../llm-stream-parser(@ag-ui/core@0.0.53)':
+  '@agentsy/core@file:../../../llm-stream-parser(@ag-ui/core@0.0.53)':
     dependencies:
       '@ag-ui/core': 0.0.53
     optionalDependencies:

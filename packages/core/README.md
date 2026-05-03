@@ -1,41 +1,45 @@
-# @selfagency/llm-stream-parser
+# @agentsy/core
 
-Composable parsers and stream processing utilities for LLM responses.
+Foundation stream parsing layer for agent infrastructure. Thinking extraction, XML filtering, tool-call routing, JSON validation, provider normalization.
 
-[![npm](https://img.shields.io/npm/v/@selfagency/llm-stream-parser)](https://www.npmjs.com/package/@selfagency/llm-stream-parser)
-[![CI](https://github.com/selfagency/llm-stream-parser/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/selfagency/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/selfagency/llm-stream-parser/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/llm-stream-parser)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/be00077d20c54f9097c7f38bf575603f)](https://app.codacy.com/gh/selfagency/llm-stream-parser/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![npm](https://img.shields.io/npm/v/@agentsy/core)](https://www.npmjs.com/package/@agentsy/core)
+[![CI](https://github.com/agentsy/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/agentsy/agentsy/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Features
 
 - 🧠 **Thinking extraction** — Parse and separate `<think>` reasoning sections from visible output, chunk-by-chunk
-- 🧼 **XML stream filtering** — Scrub context blocks and privacy tags from streaming output
+- 🧼 **XML stream filtering** — Scrub context blocks and privacy tags from streaming output with deduplication
 - 🛠️ **Tool-call extraction** — Extract and validate structured XML and native tool invocations
 - 🏛️ **Structured output** — JSON parsing with schema validation, depth/key limits, and auto-repair
 - 🤖 **Agent loops** — Multi-step LLM execution with configurable stop conditions and tool handling
 - 🚰 **Stream processor** — Event-driven orchestrator that composes all parsers in a single pipeline
 - 🔌 **Normalizers** — Adapters for OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock, and HF TGI
-- 💻 **VS Code integration** — ChatResponseStream renderers with thinking progress, tool feedback, and cancellation support
 - 👮‍♂️ **Safety by default** — Privacy tags are always scrubbed; JSON depth, key counts, and tool-call sizes are bounded
+- ✨ **Zero dependencies** — Foundation layer has no runtime dependencies beyond Node.js built-ins
 
 ## Installation
 
 ```bash
-npm install @selfagency/llm-stream-parser
+npm install @agentsy/core
 # or
-pnpm add @selfagency/llm-stream-parser
+pnpm add @agentsy/core
 # or
-yarn add @selfagency/llm-stream-parser
+yarn add @agentsy/core
 ```
 
 **Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)
 
+**For VS Code Extensions:** If you're building a VS Code Language Model Chat Provider, also install `[@agentsy/vscode](../vscode#readme)`:
+
+```bash
+npm install @agentsy/vscode @agentsy/parser vscode
+```
+
 ## Quick Start
 
 ```typescript
-import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
@@ -60,12 +64,12 @@ for await (const chunk of apiStream) {
 
 ## Modules
 
-### `@selfagency/llm-stream-parser/thinking` — ThinkingParser
+### `@agentsy/core/thinking` — ThinkingParser
 
 Chunk-by-chunk extraction of `<think>` blocks. Returns `[thinkingContent, regularContent]` on every call.
 
 ```typescript
-import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
+import { ThinkingParser } from '@agentsy/core/thinking';
 
 const parser = new ThinkingParser();
 
@@ -87,12 +91,12 @@ const parser = ThinkingParser.forModel('granite'); // <|thinking|></|thinking|>
 
 ---
 
-### `@selfagency/llm-stream-parser/xml-filter` — XmlStreamFilter
+### `@agentsy/core/xml-filter` — XmlStreamFilter
 
 Stream-safe scrubbing of XML context and privacy blocks.
 
 ```typescript
-import { createXmlStreamFilter } from '@selfagency/llm-stream-parser/xml-filter';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const filter = createXmlStreamFilter({ enforcePrivacyTags: true });
 
@@ -106,14 +110,10 @@ Privacy tags are enforced by default (`enforcePrivacyTags: true`). Pass `enforce
 
 ---
 
-### `@selfagency/llm-stream-parser/context` — Context splitting & dedup
+### `@agentsy/core/context` — Context splitting & dedup
 
 ```typescript
-import {
-  splitLeadingXmlContextBlocks,
-  dedupeXmlContextBlocksByTag,
-  stripXmlContextTags,
-} from '@selfagency/llm-stream-parser/context';
+import { splitLeadingXmlContextBlocks, dedupeXmlContextBlocksByTag, stripXmlContextTags } from '@agentsy/core/context';
 
 const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(response);
 const unique = dedupeXmlContextBlocksByTag(contextBlocks);
@@ -122,10 +122,10 @@ const clean = stripXmlContextTags(remaining);
 
 ---
 
-### `@selfagency/llm-stream-parser/tool-calls` — XML tool-call extraction
+### `@agentsy/core/tool-calls` — XML tool-call extraction
 
 ```typescript
-import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@selfagency/llm-stream-parser/tool-calls';
+import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@agentsy/core/tool-calls';
 
 // Extract tool calls from a response
 const calls = extractXmlToolCalls(response, new Set(['search', 'edit_file']));
@@ -148,10 +148,10 @@ const systemPrompt = buildXmlToolSystemPrompt([
 
 ---
 
-### `@selfagency/llm-stream-parser/structured` — JSON parsing & validation
+### `@agentsy/core/structured` — JSON parsing & validation
 
 ```typescript
-import { parseJson, validateJsonSchema } from '@selfagency/llm-stream-parser/structured';
+import { parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
 // Tolerant parse — returns null on failure, never throws
 const data = parseJson(responseText, { maxJsonDepth: 10, maxJsonKeys: 100 });
@@ -174,12 +174,12 @@ Additional utilities: `buildFormatInstructions`, `buildRepairPrompt`, `streamJso
 
 ---
 
-### `@selfagency/llm-stream-parser/agent` — Multi-step agent loops
+### `@agentsy/core/agent` — Multi-step agent loops
 
 Execute multi-step reasoning loops with automatic tool handling and configurable stopping conditions.
 
 ```typescript
-import { createAgentLoop } from '@selfagency/llm-stream-parser/agent';
+import { createAgentLoop } from '@agentsy/core/agent';
 
 const agent = createAgentLoop({
   // Call your LLM with current message history
@@ -223,12 +223,12 @@ for await (const part of agent.run([{ role: 'user', content: 'Solve this...' }])
 
 ---
 
-### `@selfagency/llm-stream-parser/normalizers` — Provider normalizers
+### `@agentsy/core/normalizers` — Provider normalizers
 
 Normalize streaming events from different providers into a common `StreamChunk` shape:
 
 ```typescript
-import { normalizeOpenAI } from '@selfagency/llm-stream-parser/normalizers';
+import { normalizeOpenAI } from '@agentsy/core/normalizers';
 
 for await (const event of openaiStream) {
   const { chunk } = normalizeOpenAI(event);
@@ -240,10 +240,10 @@ Supported: `openai`, `openaiResponses`, `anthropic`, `gemini`, `mistral`, `coher
 
 ---
 
-### `@selfagency/llm-stream-parser/adapters` — High-level adapters
+### `@agentsy/core/adapters` — High-level adapters
 
 ```typescript
-import { createGenericAdapter } from '@selfagency/llm-stream-parser/adapters';
+import { createGenericAdapter } from '@agentsy/core/adapters';
 
 const adapter = createGenericAdapter(
   {
@@ -260,11 +260,11 @@ await adapter.end();
 
 ---
 
-### `@selfagency/llm-stream-parser/ui` — Event-sourced conversation state
+### `@agentsy/core/ui` — Event-sourced conversation state
 
 ```typescript
-import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
-import { createConversationStoreFromProcessor } from '@selfagency/llm-stream-parser/ui';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { createConversationStoreFromProcessor } from '@agentsy/core/ui';
 
 const processor = new LLMStreamProcessor({ scrubContextTags: false });
 const bridge = createConversationStoreFromProcessor(processor, {
@@ -282,10 +282,10 @@ The UI package can now consume reducer-friendly processor events automatically, 
 
 ---
 
-### `@selfagency/llm-stream-parser/pipeline` — Output transforms
+### `@agentsy/core/pipeline` — Output transforms
 
 ```typescript
-import { createSmoothStream, createThinkingFilter } from '@selfagency/llm-stream-parser/pipeline';
+import { createSmoothStream, createThinkingFilter } from '@agentsy/core/pipeline';
 
 const processor = new LLMStreamProcessor({
   transforms: [createThinkingFilter(), createSmoothStream({ chunkSize: 4, delayMs: 25 })],
@@ -296,21 +296,18 @@ const processor = new LLMStreamProcessor({
 
 ---
 
-### `@selfagency/llm-stream-parser/formatting` — Output sanitization
+### `@agentsy/core/formatting` — Output sanitization
 
 ```typescript
-import {
-  sanitizeNonStreamingModelOutput,
-  formatXmlLikeResponseForDisplay,
-} from '@selfagency/llm-stream-parser/formatting';
+import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from '@agentsy/core/formatting';
 ```
 
 ---
 
-### `@selfagency/llm-stream-parser/markdown` — Markdown utilities
+### `@agentsy/core/markdown` — Markdown utilities
 
 ```typescript
-import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
+import { appendToBlockquote } from '@agentsy/core/markdown';
 ```
 
 ---
@@ -322,7 +319,7 @@ import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
 All renderers use a factory pattern and implement the same `{ write(chunk), writeChunk(streamChunk), end() }` interface:
 
 ```typescript
-import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers/plain';
+import { createPlainTextRenderer } from '@agentsy/core/renderers/plain';
 
 const renderer = createPlainTextRenderer({
   showThinking: true,
@@ -343,7 +340,7 @@ await renderer.end();
 Zero-dependency renderer for CLI/logging. Prefix-based thinking blocks.
 
 ```typescript
-import { createPlainTextRenderer } from '@selfagency/llm-stream-parser/renderers/plain';
+import { createPlainTextRenderer } from '@agentsy/core/renderers/plain';
 
 const renderer = createPlainTextRenderer({
   showThinking: true,
@@ -365,7 +362,7 @@ Terminal-formatted markdown with blockquote thinking blocks.
 **Requires peer dependency**: `npm install cli-markdown`
 
 ```typescript
-import { createCliRenderer } from '@selfagency/llm-stream-parser/renderers/cli';
+import { createCliRenderer } from '@agentsy/core/renderers/cli';
 
 const renderer = createCliRenderer({
   showThinking: true,
@@ -390,7 +387,7 @@ Browser-based DOM rendering with incremental updates and security sanitization.
 **Requires peer dependencies**: `npm install streaming-markdown dompurify`
 
 ```typescript
-import { createStreamingMarkdownRenderer } from '@selfagency/llm-stream-parser/renderers/streaming-md';
+import { createStreamingMarkdownRenderer } from '@agentsy/core/renderers/streaming-md';
 
 const target = document.getElementById('response');
 const renderer = createStreamingMarkdownRenderer({
@@ -421,7 +418,7 @@ Integration with VS Code's `ChatResponseStream` for Copilot extensions. Stream L
 - CancellationToken support via `cancellationTokenToAbortSignal()`
 
 ```typescript
-import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+import { createVSCodeChatRenderer } from '@agentsy/core/renderers/vscode';
 
 const renderer = createVSCodeChatRenderer({
   stream, // VS Code ChatResponseStream
@@ -440,7 +437,7 @@ await renderer.end();
 **For agent loops:**
 
 ```typescript
-import { createVSCodeAgentLoop } from '@selfagency/llm-stream-parser/renderers/vscode';
+import { createVSCodeAgentLoop } from '@agentsy/core/renderers/vscode';
 
 const renderer = createVSCodeAgentLoop({
   stream,
@@ -463,7 +460,7 @@ Beautiful, themeable terminal output for CLI/TUI applications built on React/Ink
 **Requires peer dependencies**: `npm install ink react`
 
 ```typescript
-import { createInkRenderer } from '@selfagency/llm-stream-parser/renderers/ink';
+import { createInkRenderer } from '@agentsy/core/renderers/ink';
 
 const renderer = await createInkRenderer({
   processor, // LLMStreamProcessor instance
@@ -504,7 +501,7 @@ renderer.unmount(); // Cleanup when done
 **Custom Themes:**
 
 ```typescript
-import type { Theme } from '@selfagency/llm-stream-parser/renderers/ink';
+import type { Theme } from '@agentsy/core/renderers/ink';
 
 const customTheme: Theme = {
   thinking: { borderColor: 'magenta', textColor: 'magenta', spinnerColor: 'magenta' },

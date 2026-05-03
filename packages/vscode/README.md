@@ -1,11 +1,12 @@
 # @agentsy/vscode
 
-Unified VS Code integration library for Language Model Chat Providers with **llm-stream-parser 0.3.1 support**.
+Unified VS Code integration library for Language Model Chat Providers with **@agentsy/parser support**.
 
 ## Features
 
 - **ApiKeyManager** — Centralized secrets management with VS Code SecretStorage
-- **BaseLanguageModelChatProvider** — Abstract provider template with processor integration
+- **BaseLanguageModelChatProvider** — Abstract provider template with [@agentsy/parser](../parser#readme) processor integration
+- **ChatResponseStream renderers** — Thinking progress display, tool execution feedback, cancellation support
 - **UsageStatusBar** — Quota tracking UI with configurable windows
 - **McpServerRegistry** — MCP server definition pattern
 - **SettingsLoader** — Typed configuration with schema validation
@@ -15,18 +16,17 @@ Unified VS Code integration library for Language Model Chat Providers with **llm
 ## Installation
 
 ```bash
-npm install @agentsy/vscode @selfagency/llm-stream-parser vscode
+npm install @agentsy/vscode @agentsy/parser vscode
 ```
+
+**Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)
 
 ## Quick Start
 
 ### 1. Create a Custom Provider
 
 ```typescript
-import {
-  BaseLanguageModelChatProvider,
-  type ProviderConfig,
-} from '@agentsy/vscode';
+import { BaseLanguageModelChatProvider, type ProviderConfig } from '@agentsy/vscode';
 
 export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
   constructor(context: ExtensionContext) {
@@ -78,11 +78,9 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
 Normalizers convert provider-specific streaming chunks to the standard StreamChunk format:
 
 ```typescript
-import { type StreamChunk } from '@selfagency/llm-stream-parser';
+import { type StreamChunk } from '@agentsy/core';
 
-export async function* normalizeMyProviderStream(
-  response: AsyncIterable<MyProviderChunk>,
-): AsyncIterable<StreamChunk> {
+export async function* normalizeMyProviderStream(response: AsyncIterable<MyProviderChunk>): AsyncIterable<StreamChunk> {
   for await (const chunk of response) {
     yield {
       content: chunk.text,
@@ -110,23 +108,23 @@ export async function* normalizeMyProviderStream(
 Use `LLMStreamProcessor` to handle tool accumulation and thinking parsing:
 
 ```typescript
-import { LLMStreamProcessor } from '@selfagency/llm-stream-parser';
+import { LLMStreamProcessor } from '@agentsy/core';
 
 const processor = new LLMStreamProcessor({
   accumulateNativeToolCalls: true,
   parseThinkTags: true,
-  onFinish: (output) => {
+  onFinish: output => {
     console.log('Stream finished:', output);
   },
-  onStep: (part) => {
+  onStep: part => {
     if (part.type === 'tool_call') {
       console.log('Tool called:', part.call);
     }
   },
-  onToolCallDelta: (delta) => {
+  onToolCallDelta: delta => {
     console.log('Tool delta:', delta);
   },
-  onWarning: (message) => {
+  onWarning: message => {
     console.warn('Warning:', message);
   },
 });
@@ -149,15 +147,13 @@ const apiKeyManager = new ApiKeyManager(context, {
 });
 
 // Register command to set API key
-commands.registerCommand('myProvider.setApiKey', () =>
-  apiKeyManager.setApiKey(),
-);
+commands.registerCommand('myProvider.setApiKey', () => apiKeyManager.setApiKey());
 
 // Get API key when needed
 const key = await apiKeyManager.getApiKey();
 
 // Listen for changes
-apiKeyManager.onDidChangeApiKey((newKey) => {
+apiKeyManager.onDidChangeApiKey(newKey => {
   // Reconnect provider with new key
 });
 ```
@@ -209,8 +205,7 @@ export async function* normalizeOllamaChatChunk(
           ? {
               inputTokens: chunk.prompt_eval_count,
               outputTokens: chunk.eval_count,
-              totalTokens:
-                chunk.prompt_eval_count + (chunk.eval_count || 0),
+              totalTokens: chunk.prompt_eval_count + (chunk.eval_count || 0),
             }
           : undefined,
     };
@@ -221,9 +216,7 @@ export async function* normalizeOllamaChatChunk(
 ### Z.ai
 
 ```typescript
-export async function* normalizeZAiChunk(
-  response: AsyncIterable<ZAiStreamEvent>,
-): AsyncIterable<StreamChunk> {
+export async function* normalizeZAiChunk(response: AsyncIterable<ZAiStreamEvent>): AsyncIterable<StreamChunk> {
   for await (const event of response) {
     if (event.type === 'content_block_delta') {
       yield {
@@ -290,7 +283,7 @@ pnpm lint
 
 ## Architecture
 
-```
+```text
 @agentsy/vscode (library)
 ├── ApiKeyManager              ← SecretStorage integration
 ├── BaseLanguageModelChatProvider ← Template with processor integration
@@ -302,7 +295,7 @@ pnpm lint
 
 ↓ (depends on)
 
-@selfagency/llm-stream-parser 0.3.1
+@agentsy/core 0.3.1
 ├── LLMStreamProcessor         ← Tool accumulation, thinking parsing
 ├── StreamChunk               ← Standard streaming format
 └── Normalizers               ← Provider-specific converters
@@ -342,6 +335,6 @@ MIT
 
 ## See Also
 
-- [@selfagency/llm-stream-parser](https://github.com/selfagency/llm-stream-parser) — Core streaming parser
+- [@agentsy/core](https://github.com/selfagency/llm-stream-parser) — Core streaming parser
 - [VS Code Language Model API](https://code.visualstudio.com/api/extension-guides/language-model)
 - [MCP Protocol](https://modelcontextprotocol.io/)

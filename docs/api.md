@@ -1,26 +1,26 @@
 # API Reference
 
-Complete API documentation for `@selfagency/llm-stream-parser`. All exports are available from the root or via subpath imports.
+Complete API documentation for `@agentsy/core`. All exports are available from the root or via subpath imports.
 
 ## Module Exports
 
 ### Root export
 
 ```typescript
-import * as llmStreamParser from '@selfagency/llm-stream-parser';
+import * as llmStreamParser from '@agentsy/core';
 ```
 
 ### Subpath exports
 
 ```typescript
-import { ThinkingParser } from '@selfagency/llm-stream-parser/thinking';
-import { createXmlStreamFilter, XmlStreamFilter } from '@selfagency/llm-stream-parser/xml-filter';
-import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@selfagency/llm-stream-parser/tool-calls';
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { createXmlStreamFilter, XmlStreamFilter } from '@agentsy/core/xml-filter';
+import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@agentsy/core/tool-calls';
 import {
   splitLeadingXmlContextBlocks,
   dedupeXmlContextBlocksByTag,
   stripXmlContextTags,
-} from '@selfagency/llm-stream-parser/context';
+} from '@agentsy/core/context';
 import {
   parseJson,
   validateJsonSchema,
@@ -31,19 +31,19 @@ import {
   zodToJsonSchema,
   validateWithZod,
   repairWithLLM,
-} from '@selfagency/llm-stream-parser/structured';
+} from '@agentsy/core/structured';
 import {
   sanitizeNonStreamingModelOutput,
   formatXmlLikeResponseForDisplay,
-} from '@selfagency/llm-stream-parser/formatting';
-import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
-import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
-import { processStream } from '@selfagency/llm-stream-parser/adapters';
+} from '@agentsy/core/formatting';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { appendToBlockquote } from '@agentsy/core/markdown';
+import { processStream } from '@agentsy/core/adapters';
 ```
 
 ## Thinking Extraction
 
-> **Subpath**: `@selfagency/llm-stream-parser/thinking`
+> **Subpath**: `@agentsy/core/thinking`
 
 Streaming-first parser for extracting reasoning sections from LLM responses.
 
@@ -105,7 +105,7 @@ const parser4 = ThinkingParser.forModel('my-model', customMap);
 
 ## XML/Context Filtering
 
-> **Subpath**: `@selfagency/llm-stream-parser/xml-filter` + `@selfagency/llm-stream-parser/context`
+> **Subpath**: `@agentsy/core/xml-filter` + `@agentsy/core/context`
 
 Stream-safe XML context block filtering and deduplication.
 
@@ -174,7 +174,7 @@ const stripped = stripXmlContextTags(remaining);
 
 ## Tool-Call Extraction
 
-> **Subpath**: `@selfagency/llm-stream-parser/tool-calls`
+> **Subpath**: `@agentsy/core/tool-calls`
 
 Extract structured tool calls from XML format in responses.
 
@@ -232,7 +232,7 @@ const systemPrompt = buildXmlToolSystemPrompt(tools);
 
 ## Structured Output Parsing
 
-> **Subpath**: `@selfagency/llm-stream-parser/structured`
+> **Subpath**: `@agentsy/core/structured`
 
 JSON parsing with schema validation, repair prompts, and composable pipelines.
 
@@ -383,7 +383,7 @@ Incrementally parse JSON from a text stream, yielding partial and complete objec
 **Example:**
 
 ```typescript
-import { streamJson } from '@selfagency/llm-stream-parser/structured';
+import { streamJson } from '@agentsy/core/structured';
 
 for await (const result of streamJson<{ name: string }>(textStream)) {
   console.log(result.isPartial ? '(partial)' : '(complete)', result.value);
@@ -418,7 +418,7 @@ Automatically retries parsing and validation by sending repair prompts to the LL
 **Example:**
 
 ```typescript
-import { repairWithLLM } from '@selfagency/llm-stream-parser/structured';
+import { repairWithLLM } from '@agentsy/core/structured';
 
 const result = await repairWithLLM(llmOutput, schema, async prompt => await callModel(prompt), {
   maxAttempts: 3,
@@ -448,7 +448,7 @@ export async function validateWithZod<T = unknown>(
 
 ```typescript
 import { z } from 'zod';
-import { validateWithZod } from '@selfagency/llm-stream-parser/structured';
+import { validateWithZod } from '@agentsy/core/structured';
 
 const PersonSchema = z.object({ name: z.string(), age: z.number() });
 const result = await validateWithZod(response, PersonSchema);
@@ -456,7 +456,7 @@ const result = await validateWithZod(response, PersonSchema);
 
 ## Stream Processing
 
-> **Subpath**: `@selfagency/llm-stream-parser/processor`
+> **Subpath**: `@agentsy/core/processor`
 
 Orchestrate multiple parsers to process complete LLM stream responses.
 
@@ -583,7 +583,7 @@ const result = processor.processComplete({
 
 ## Formatting & Helpers
 
-> **Subpath**: `@selfagency/llm-stream-parser/formatting`
+> **Subpath**: `@agentsy/core/formatting`
 
 Output normalization and display formatting.
 
@@ -605,7 +605,7 @@ console.log(formatted);
 
 ## Markdown Processing
 
-> **Subpath**: `@selfagency/llm-stream-parser/markdown`
+> **Subpath**: `@agentsy/core/markdown`
 
 Utilities for working with markdown content.
 
@@ -624,7 +624,7 @@ const quoted = appendToBlockquote('some text\nmore text', true);
 
 ## Adapters
 
-> **Subpath**: `@selfagency/llm-stream-parser/adapters`
+> **Subpath**: `@agentsy/core/adapters`
 
 Pre-built adapters for common streaming patterns.
 
@@ -640,7 +640,7 @@ export async function* processStream(
 **Example:**
 
 ```typescript
-import { processStream } from '@selfagency/llm-stream-parser/adapters';
+import { processStream } from '@agentsy/core/adapters';
 
 for await (const output of processStream(apiStream, options)) {
   console.log('Thinking:', output.thinking);
@@ -674,7 +674,7 @@ Environment-agnostic callback adapter. Use for HTTP SSE, WebSocket, CLI, or any 
 **Example:**
 
 ```typescript
-import { createGenericAdapter } from '@selfagency/llm-stream-parser/adapters';
+import { createGenericAdapter } from '@agentsy/core/adapters';
 
 const adapter = createGenericAdapter({
   onContent: text => process.stdout.write(text),
@@ -690,7 +690,7 @@ await adapter.end();
 
 ## Agent Loops
 
-> **Subpath**: `@selfagency/llm-stream-parser/agent`
+> **Subpath**: `@agentsy/core/agent`
 
 Execute multi-step reasoning loops with automatic tool handling and configurable stopping conditions.
 
@@ -731,7 +731,7 @@ function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle;
 **Example:**
 
 ```typescript
-import { createAgentLoop } from '@selfagency/llm-stream-parser/agent';
+import { createAgentLoop } from '@agentsy/core/agent';
 
 const agent = createAgentLoop({
   execute: async function* (messages) {
@@ -768,7 +768,7 @@ for await (const part of agent.run([{ role: 'user', content: 'Task...' }])) {
 
 ## VS Code Chat Integration
 
-> **Subpath**: `@selfagency/llm-stream-parser/renderers/vscode`
+> **Subpath**: `@agentsy/core/renderers/vscode`
 
 Stream LLM responses directly to VS Code's Chat interface with built-in support for thinking blocks, tool invocations, and token usage.
 
@@ -826,7 +826,7 @@ function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererH
 **Example:**
 
 ```typescript
-import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+import { createVSCodeChatRenderer } from '@agentsy/core/renderers/vscode';
 
 const renderer = createVSCodeChatRenderer({
   stream,
@@ -860,7 +860,7 @@ function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions): RendererHandle;
 **Example:**
 
 ```typescript
-import { createVSCodeAgentLoop } from '@selfagency/llm-stream-parser/renderers/vscode';
+import { createVSCodeAgentLoop } from '@agentsy/core/renderers/vscode';
 
 const renderer = createVSCodeAgentLoop({
   stream, // Thinking enabled by default for agent reasoning
@@ -884,7 +884,7 @@ function cancellationTokenToAbortSignal(token: CancellationToken): AbortSignal;
 **Example:**
 
 ```typescript
-import { cancellationTokenToAbortSignal } from '@selfagency/llm-stream-parser/renderers/vscode';
+import { cancellationTokenToAbortSignal } from '@agentsy/core/renderers/vscode';
 
 // In VS Code command handler
 export async function chatCommand(
@@ -968,7 +968,7 @@ const processor = new LLMStreamProcessor({
 Full TypeScript support with strict types:
 
 ```typescript
-import type { XmlToolCall, ProcessedOutput, StreamChunk } from '@selfagency/llm-stream-parser';
+import type { XmlToolCall, ProcessedOutput, StreamChunk } from '@agentsy/core';
 
 const output: ProcessedOutput = processor.process(chunk);
 const calls: XmlToolCall[] = output.toolCalls;

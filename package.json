@@ -1,13 +1,35 @@
 {
-  "name": "llm-stream-parser",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@agentsy/monorepo",
+  "version": "0.1.0",
+  "description": "Monorepo for Agentsy agentic development framework",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "precommit": "turbo run precommit"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^2.9.8"
+  },
+  "keywords": [
+    "ai",
+    "anthropic",
+    "gemini",
+    "json",
+    "llm",
+    "mistral",
+    "openai",
+    "parser",
+    "streaming",
+    "tools",
+    "xml"
+  ],
+  "author": "Daniel Sieradski <daniel@self.agency>",
+  "license": "MIT",
   "packageManager": "pnpm@10.33.2"
 }

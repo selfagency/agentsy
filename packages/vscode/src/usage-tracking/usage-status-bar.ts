@@ -1,4 +1,4 @@
-import type { UsageStatusBarConfig, UsageQuota } from '../types/errors.js';
+import type { UsageQuota, UsageStatusBarConfig } from '../types/errors.js';
 
 const DEFAULT_REFRESH_INTERVAL = 60_000;
 const DEFAULT_TOOLTIP = '{{used}} / {{total}} {{unit}} used ({{percent}}%)';
@@ -10,7 +10,8 @@ const DEFAULT_ERROR_THRESHOLD = 0.95;
  * Uses dynamic import to gracefully degrade when VS Code is unavailable.
  */
 export class UsageStatusBar {
-  private statusBarItem: { text: string; tooltip: string; backgroundColor?: { new(color: string): unknown }; color?: string; show(): void; hide(): void; dispose(): void } | undefined;
+  // Use unknown to avoid type compatibility issues with VS Code's StatusBarItem
+  private statusBarItem: unknown = undefined;
   private refreshTimer: ReturnType<typeof setTimeout> | undefined;
   private readonly disposables: Array<{ dispose(): void }> = [];
 
@@ -23,16 +24,18 @@ export class UsageStatusBar {
   async show(): Promise<void> {
     try {
       const vscode = await import('vscode');
-      this.statusBarItem = vscode.window.createStatusBarItem(
+      const item = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Right,
         100,
       );
+      if (!item) return;
+      this.statusBarItem = item;
       if (this.config.onClickRefresh) {
-        (this.statusBarItem as unknown as Record<string, unknown>)['command'] = 'agentsy.refreshUsage';
+        (item as unknown as Record<string, unknown>)['command'] = 'agentsy.refreshUsage';
       }
-      this.disposables.push(this.statusBarItem);
+      this.disposables.push(item);
       await this.refresh();
-      this.statusBarItem.show();
+      item.show();
       this.startAutoRefresh();
     } catch {
       // VS Code not available
@@ -58,15 +61,16 @@ export class UsageStatusBar {
   updateDisplay(quota: UsageQuota): void {
     if (!this.statusBarItem) return;
 
+    const item = this.statusBarItem as Record<string, unknown>;
     const percent = Math.round(quota.percentUsed * 100);
     const warning = this.config.warningThreshold ?? DEFAULT_WARNING_THRESHOLD;
     const error = this.config.errorThreshold ?? DEFAULT_ERROR_THRESHOLD;
 
     const text = `$(pulse) ${this.config.displayName}: ${quota.used.toLocaleString()} / ${quota.total.toLocaleString()} ${quota.unit}`;
-    this.statusBarItem.text = text;
+    item.text = text;
 
     const template = this.config.tooltipTemplate ?? DEFAULT_TOOLTIP;
-    this.statusBarItem.tooltip = template
+    item.tooltip = template
       .replace('{{used}}', quota.used.toLocaleString())
       .replace('{{total}}', quota.total.toLocaleString())
       .replace('{{unit}}', quota.unit)
@@ -75,17 +79,17 @@ export class UsageStatusBar {
     if (quota.percentUsed >= error) {
       const colorScheme = this.config.colorScheme;
       if (colorScheme) {
-        (this.statusBarItem as unknown as Record<string, unknown>)['color'] = colorScheme.error;
+        item.color = colorScheme.error;
       }
     } else if (quota.percentUsed >= warning) {
       const colorScheme = this.config.colorScheme;
       if (colorScheme) {
-        (this.statusBarItem as unknown as Record<string, unknown>)['color'] = colorScheme.warning;
+        item.color = colorScheme.warning;
       }
     } else {
       const colorScheme = this.config.colorScheme;
       if (colorScheme) {
-        (this.statusBarItem as unknown as Record<string, unknown>)['color'] = colorScheme.normal;
+        item.color = colorScheme.normal;
       }
     }
   }
@@ -94,7 +98,11 @@ export class UsageStatusBar {
    * Hide the status bar item.
    */
   hide(): void {
-    this.statusBarItem?.hide();
+    if (this.statusBarItem) {
+      const item = this.statusBarItem as Record<string, unknown>;
+      const hide = item.hide as (() => void) | undefined;
+      hide?.();
+    }
   }
 
   dispose(): void {

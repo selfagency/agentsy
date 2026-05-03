@@ -28,5 +28,12 @@
  * ```
  */
 
-export type { BaseRendererOptions, CancellationToken, OnToolCall, RendererHandle, TextOutput, ThinkingStyle } from './types.js';
+export type {
+  BaseRendererOptions,
+  CancellationToken,
+  OnToolCall,
+  RendererHandle,
+  TextOutput,
+  ThinkingStyle,
+} from './types.js';
 export { createSharedRendererHandle, createStepChangeEmitter } from './shared.js';

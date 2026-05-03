@@ -4,56 +4,55 @@ export * from './types/index.js';
 // API key management
 export { ApiKeyManager } from './api-key-manager/api-key-manager.js';
 
-// VS Code renderer (extracted from @selfagency/llm-stream-parser)
+// VS Code renderer (extracted from @agentsy/core)
 export {
-  cancellationTokenToAbortSignal,
-  createVSCodeAgentLoop,
-  createVSCodeChatRenderer,
+    cancellationTokenToAbortSignal,
+    createVSCodeAgentLoop,
+    createVSCodeChatRenderer
 } from './vscode-renderer/index.js';
 export type {
-  ChatResponseStream,
-  VSCodeAgentLoopOptions,
-  VSCodeChatRendererOptions,
+    ChatResponseStream,
+    VSCodeAgentLoopOptions,
+    VSCodeChatRendererOptions
 } from './vscode-renderer/index.js';
 
 // Error handling
 export {
-  httpStatusToErrorCode,
-  errorToProviderCode,
-  errorCodeToMessage,
-  createProviderError,
+    createProviderError,
+    errorCodeToMessage,
+    errorToProviderCode,
+    httpStatusToErrorCode
 } from './error-handling/error-mapper.js';
 export {
-  isRetryableError,
-  calculateRetryDelay,
-  withRetry,
+    calculateRetryDelay,
+    isRetryableError,
+    withRetry
 } from './error-handling/error-recovery.js';
 export type { RetryOptions } from './error-handling/error-recovery.js';
 
 // Message conversion
-export {
-  convertRole,
-  extractTextFromPart,
-  extractToolCall,
-  extractToolResult,
-} from './message-conversion/role-converter.js';
 export { convertMessage, convertMessages } from './message-conversion/message-adapter.js';
+export {
+    convertRole,
+    extractTextFromPart,
+    extractToolCall,
+    extractToolResult
+} from './message-conversion/role-converter.js';
 export type { ChatMessage, ChatToolCall } from './message-conversion/role-converter.js';
 
 // Base provider
 export { BaseLanguageModelChatProvider } from './provider/index.js';
 export type {
-  LanguageModelChatRequest,
-  CancellationToken,
-  LanguageModelChatResponseChunk,
-  LanguageModelChatResponse,
-  ExtensionContext,
+    CancellationToken,
+    ExtensionContext,
+    LanguageModelChatRequest,
+    LanguageModelChatResponse,
+    LanguageModelChatResponseChunk
 } from './provider/index.js';
 
 // Settings
-export { SettingsLoader } from './settings/index.js';
-export { validateSettings, applyDefaults } from './settings/index.js';
-export type { SettingsSchema, SchemaProperty } from './settings/index.js';
+export { SettingsLoader, applyDefaults, validateSettings } from './settings/index.js';
+export type { SchemaProperty, SettingsSchema } from './settings/index.js';
 
 // Usage tracking
 export { UsageStatusBar, formatQuotaText, getQuotaStatus } from './usage-tracking/index.js';

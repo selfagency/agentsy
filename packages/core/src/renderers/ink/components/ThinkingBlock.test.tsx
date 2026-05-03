@@ -104,13 +104,7 @@ describe('ThinkingBlock', () => {
 
   it('renders screen reader friendly inline thinking', () => {
     const { lastFrame } = render(
-      <ThinkingBlock
-        text="SR reasoning"
-        style="inline"
-        isStreaming={false}
-        theme={mockTheme}
-        screenReader={true}
-      />,
+      <ThinkingBlock text="SR reasoning" style="inline" isStreaming={false} theme={mockTheme} screenReader={true} />,
     );
 
     const output = lastFrame();
@@ -120,13 +114,7 @@ describe('ThinkingBlock', () => {
 
   it('renders screen reader friendly blockquote thinking', () => {
     const { lastFrame } = render(
-      <ThinkingBlock
-        text="SR thought"
-        style="blockquote"
-        isStreaming={false}
-        theme={mockTheme}
-        screenReader={true}
-      />,
+      <ThinkingBlock text="SR thought" style="blockquote" isStreaming={false} theme={mockTheme} screenReader={true} />,
     );
 
     const output = lastFrame();
@@ -152,9 +140,7 @@ describe('ThinkingBlock', () => {
   });
 
   it('handles empty thinking text', () => {
-    const { lastFrame } = render(
-      <ThinkingBlock text="" style="inline" isStreaming={true} theme={mockTheme} />,
-    );
+    const { lastFrame } = render(<ThinkingBlock text="" style="inline" isStreaming={true} theme={mockTheme} />);
 
     const output = lastFrame();
     expect(output).toContain('[Thinking]');
