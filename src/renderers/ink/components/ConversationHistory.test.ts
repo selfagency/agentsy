@@ -35,7 +35,7 @@ describe('ConversationHistory Component', () => {
         options: {},
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(1);
-      expect(element.props.turns[0]!.role).toBe('user');
+      expect(element.props.turns.at(0)?.role).toBe('user');
     });
 
     it('renders multiple user turns', () => {
@@ -61,7 +61,7 @@ describe('ConversationHistory Component', () => {
         theme: darkTheme,
         options: {},
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.text).toBe(userText);
+      expect(element.props.turns.at(0)?.text).toBe(userText);
     });
 
     it('handles user messages with special characters', () => {
@@ -74,7 +74,7 @@ describe('ConversationHistory Component', () => {
         theme: darkTheme,
         options: {},
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.text).toContain('<html>');
+      expect(element.props.turns.at(0)?.text).toContain('<html>');
     });
   });
 
@@ -90,7 +90,7 @@ describe('ConversationHistory Component', () => {
         options: {},
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(1);
-      expect(element.props.turns[0]!.role).toBe('assistant');
+      expect(element.props.turns.at(0)?.role).toBe('assistant');
     });
 
     it('renders assistant turn with thinking', () => {
@@ -109,7 +109,7 @@ describe('ConversationHistory Component', () => {
         theme: darkTheme,
         options: { showThinking: true },
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.thinking).toBe('Internal reasoning');
+      expect(element.props.turns.at(0)?.thinking).toBe('Internal reasoning');
     });
 
     it('renders assistant turn with tool calls', () => {
@@ -134,7 +134,7 @@ describe('ConversationHistory Component', () => {
         theme: darkTheme,
         options: { showToolCalls: true },
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.toolCalls).toHaveLength(1);
+      expect(element.props.turns.at(0)?.toolCalls).toHaveLength(1);
     });
 
     it('renders assistant with both thinking and tool calls', () => {
@@ -164,8 +164,8 @@ describe('ConversationHistory Component', () => {
           showToolCalls: true,
         },
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.thinking).toBeDefined();
-      expect(element.props.turns[0]!.toolCalls).toBeDefined();
+      expect(element.props.turns.at(0)?.thinking).toBeDefined();
+      expect(element.props.turns.at(0)?.toolCalls).toBeDefined();
     });
   });
 
@@ -184,8 +184,8 @@ describe('ConversationHistory Component', () => {
         options: {},
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(4);
-      expect(element.props.turns[0]!.role).toBe('user');
-      expect(element.props.turns[1]!.role).toBe('assistant');
+      expect(element.props.turns.at(0)?.role).toBe('user');
+      expect(element.props.turns.at(1)?.role).toBe('assistant');
     });
 
     it('preserves conversation order', () => {
@@ -199,9 +199,9 @@ describe('ConversationHistory Component', () => {
         theme: darkTheme,
         options: {},
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.text).toBe('First');
-      expect(element.props.turns[1]!.text).toBe('Second');
-      expect(element.props.turns[2]!.text).toBe('Third');
+      expect(element.props.turns.at(0)?.text).toBe('First');
+      expect(element.props.turns.at(1)?.text).toBe('Second');
+      expect(element.props.turns.at(2)?.text).toBe('Third');
     });
   });
 
@@ -423,7 +423,7 @@ describe('ConversationHistory Component', () => {
         theme: darkTheme,
         options: { showToolCalls: true },
       } as Parameters<typeof ConversationHistory>[0]);
-      expect(element.props.turns[0]!.toolCalls).toHaveLength(3);
+      expect(element.props.turns.at(0)?.toolCalls).toHaveLength(3);
     });
   });
 

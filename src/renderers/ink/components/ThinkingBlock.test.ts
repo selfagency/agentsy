@@ -276,7 +276,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: false,
         theme: darkTheme,
-      } as any);
+      } as Parameters<typeof ThinkingBlock>[0]);
       expect(element).toBeDefined();
     });
   });

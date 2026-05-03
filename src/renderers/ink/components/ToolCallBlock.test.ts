@@ -289,7 +289,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-      } as any);
+      } as Parameters<typeof ToolCallBlock>[0]);
       expect(element).toBeDefined();
     });
   });
