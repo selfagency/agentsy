@@ -107,19 +107,19 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-MONO-0**: Establish the monorepo scaffold before any source migration. All subsequent phases depend on a working Turborepo workspace with per-package build pipelines.
 
-| Task          | Description                                                                                                                                                                                                                                                  | Completed | Date |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-M0-001   | Add `turbo` to root `package.json` `devDependencies`. Add `turbo run build`, `turbo run test`, `turbo run typecheck`, `turbo run lint` scripts to root `package.json`. Set `"packageManager": "pnpm@9"` if not already set.                                  |           |      |
-| TASK-M0-002   | Create `turbo.json` at repo root with tasks: `build` (`dependsOn: ["^build"]`, `outputs: ["dist/**"]`), `typecheck` (`dependsOn: ["^build"]`), `test` (`dependsOn: ["build"]`), `lint` (no deps), `format` (no deps). Set `"ui": "tui"`.                    |           |      |
-| TASK-M0-003   | Update `pnpm-workspace.yaml`: set `packages: ["packages/*"]`. Remove or archive any previous workspace config.                                                                                                                                               |           |      |
-| TASK-M0-004   | Create `packages/tsconfig/` with `base.json` (strict TS settings from current `tsconfig.json`: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax, isolatedModules, target ES2022, moduleResolution bundler) and `library.json` (extends base, composite: true, declarationMap: true). Publish as `@agentsy/tsconfig`. |           |      |
-| TASK-M0-005   | Create the 16 package directories under `packages/`: `core/`, `normalizers/`, `processor/`, `agent/`, `adapters/`, `ag-ui/`, `runtime/`, `context-manager/`, `cost-tracker/`, `session/`, `mcp/`, `providers/`, `memory/`, `retrieval/`, `telemetry/`, `shim/`. |           |      |
-| TASK-M0-006   | For each of the 16 packages, create a `package.json` stub with: `name` (`@agentsy/<domain>` or `@selfagency/llm-stream-parser` for shim), `version: "0.3.0"`, `type: "module"`, `"publishConfig": { "access": "public" }`, `scripts: { build, test, typecheck, lint }` delegating to `tsup`, `vitest`, `tsc --noEmit`, `oxlint`. |           |      |
-| TASK-M0-007   | For each package, create `tsconfig.json` extending `@agentsy/tsconfig/library.json`; set `rootDir: "./src"`, `outDir: "./dist"`. Add package references to root `tsconfig.json` using TypeScript project references.                                         |           |      |
-| TASK-M0-008   | For each package, create `tsup.config.ts` with dual ESM/CJS output, `.d.ts` generation, and `external` array listing all `@agentsy/*` sibling packages (to prevent bundling internals). Mirror the current root `tsup.config.ts` pattern.                   |           |      |
-| TASK-M0-009   | For each package, create `vitest.config.ts` extending the root vitest config pattern. Colocate test files as `src/**/*.test.ts`.                                                                                                                             |           |      |
-| TASK-M0-010   | Update root `Taskfile.yaml`: add tasks `mono:build` (`turbo run build`), `mono:test` (`turbo run test`), `mono:typecheck` (`turbo run typecheck`), `mono:lint` (`turbo run lint`). Keep existing single-package tasks for backward compat during migration.  |           |      |
-| TASK-M0-011   | Verify workspace resolves: run `pnpm install` from repo root; confirm all 16 packages appear in `pnpm list --depth 0`.                                                                                                                                       |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                                                                            | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-M0-001 | Add `turbo` to root `package.json` `devDependencies`. Add `turbo run build`, `turbo run test`, `turbo run typecheck`, `turbo run lint` scripts to root `package.json`. Set `"packageManager": "pnpm@9"` if not already set.                                                                                                                            |           |      |
+| TASK-M0-002 | Create `turbo.json` at repo root with tasks: `build` (`dependsOn: ["^build"]`, `outputs: ["dist/**"]`), `typecheck` (`dependsOn: ["^build"]`), `test` (`dependsOn: ["build"]`), `lint` (no deps), `format` (no deps). Set `"ui": "tui"`.                                                                                                               |           |      |
+| TASK-M0-003 | Update `pnpm-workspace.yaml`: set `packages: ["packages/*"]`. Remove or archive any previous workspace config.                                                                                                                                                                                                                                         |           |      |
+| TASK-M0-004 | Create `packages/tsconfig/` with `base.json` (strict TS settings from current `tsconfig.json`: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax, isolatedModules, target ES2022, moduleResolution bundler) and `library.json` (extends base, composite: true, declarationMap: true). Publish as `@agentsy/tsconfig`. |           |      |
+| TASK-M0-005 | Create the 16 package directories under `packages/`: `core/`, `normalizers/`, `processor/`, `agent/`, `adapters/`, `ag-ui/`, `runtime/`, `context-manager/`, `cost-tracker/`, `session/`, `mcp/`, `providers/`, `memory/`, `retrieval/`, `telemetry/`, `shim/`.                                                                                        |           |      |
+| TASK-M0-006 | For each of the 16 packages, create a `package.json` stub with: `name` (`@agentsy/<domain>` or `@selfagency/llm-stream-parser` for shim), `version: "0.3.0"`, `type: "module"`, `"publishConfig": { "access": "public" }`, `scripts: { build, test, typecheck, lint }` delegating to `tsup`, `vitest`, `tsc --noEmit`, `oxlint`.                       |           |      |
+| TASK-M0-007 | For each package, create `tsconfig.json` extending `@agentsy/tsconfig/library.json`; set `rootDir: "./src"`, `outDir: "./dist"`. Add package references to root `tsconfig.json` using TypeScript project references.                                                                                                                                   |           |      |
+| TASK-M0-008 | For each package, create `tsup.config.ts` with dual ESM/CJS output, `.d.ts` generation, and `external` array listing all `@agentsy/*` sibling packages (to prevent bundling internals). Mirror the current root `tsup.config.ts` pattern.                                                                                                              |           |      |
+| TASK-M0-009 | For each package, create `vitest.config.ts` extending the root vitest config pattern. Colocate test files as `src/**/*.test.ts`.                                                                                                                                                                                                                       |           |      |
+| TASK-M0-010 | Update root `Taskfile.yaml`: add tasks `mono:build` (`turbo run build`), `mono:test` (`turbo run test`), `mono:typecheck` (`turbo run typecheck`), `mono:lint` (`turbo run lint`). Keep existing single-package tasks for backward compat during migration.                                                                                            |           |      |
+| TASK-M0-011 | Verify workspace resolves: run `pnpm install` from repo root; confirm all 16 packages appear in `pnpm list --depth 0`.                                                                                                                                                                                                                                 |           |      |
 
 ---
 
@@ -129,29 +129,29 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 **Migration mapping (source → destination package):**
 
-| Source directory | Destination package |
-|---|---|
-| `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/types/` (new), `src/vendor/`, `src/ui/` | `@agentsy/core` |
-| `src/normalizers/` | `@agentsy/normalizers` |
-| `src/processor/`, `src/pipeline/` | `@agentsy/processor` |
-| `src/agent/` | `@agentsy/agent` |
-| `src/adapters/` | `@agentsy/adapters` |
-| `src/ag-ui/` | `@agentsy/ag-ui` |
+| Source directory                                                                                                                                                                                        | Destination package    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/types/` (new), `src/vendor/`, `src/ui/` | `@agentsy/core`        |
+| `src/normalizers/`                                                                                                                                                                                      | `@agentsy/normalizers` |
+| `src/processor/`, `src/pipeline/`                                                                                                                                                                       | `@agentsy/processor`   |
+| `src/agent/`                                                                                                                                                                                            | `@agentsy/agent`       |
+| `src/adapters/`                                                                                                                                                                                         | `@agentsy/adapters`    |
+| `src/ag-ui/`                                                                                                                                                                                            | `@agentsy/ag-ui`       |
 
-| Task          | Description                                                                                                                                                                                                               | Completed | Date |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-M1-001   | Copy `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/vendor/`, `src/ui/` into `packages/core/src/`. Create `packages/core/src/index.ts` barrel re-exporting all modules. |           |      |
-| TASK-M1-002   | Copy `src/normalizers/` into `packages/normalizers/src/`. Add `"@agentsy/core": "workspace:*"` to `packages/normalizers/package.json` dependencies. Update all internal imports.                                          |           |      |
-| TASK-M1-003   | Copy `src/processor/` and `src/pipeline/` into `packages/processor/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/normalizers": "workspace:*"` as dependencies. Update imports.                              |           |      |
-| TASK-M1-004   | Copy `src/agent/` into `packages/agent/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as dependencies. Update imports.                                                             |           |      |
-| TASK-M1-005   | Copy `src/adapters/` into `packages/adapters/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/agent": "workspace:*"` as dependencies.                                                                           |           |      |
-| TASK-M1-006   | Copy `src/ag-ui/` into `packages/ag-ui/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as dependencies.                                                                             |           |      |
-| TASK-M1-007   | Create `packages/shim/src/index.ts` that re-exports `* from '@agentsy/core'`, `* from '@agentsy/processor'`, `* from '@agentsy/agent'`, `* from '@agentsy/adapters'`, `* from '@agentsy/ag-ui'`. Add all five as peer dependencies. |           |      |
-| TASK-M1-008   | Update all internal cross-module imports across all packages to use workspace package names (`@agentsy/core`, etc.) instead of relative `../` paths.                                                                      |           |      |
-| TASK-M1-009   | Remove old `src/` directories from repo root (archive to `src/_legacy/` temporarily if needed during migration). Update root `src/index.ts` and `src/index.test.ts` to import from `@agentsy/*` packages.                |           |      |
-| TASK-M1-010   | Run `pnpm install && turbo run build` from repo root. All 16 packages must build successfully. Fix any import resolution or circular dependency issues.                                                                    |           |      |
-| TASK-M1-011   | Run `turbo run typecheck`. All packages must pass TypeScript strict-mode checks. Fix all errors.                                                                                                                           |           |      |
-| TASK-M1-012   | Run `turbo run test`. All existing tests must pass in their new package locations.                                                                                                                                         |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                              | Completed | Date |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-M1-001 | Copy `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/vendor/`, `src/ui/` into `packages/core/src/`. Create `packages/core/src/index.ts` barrel re-exporting all modules. |           |      |
+| TASK-M1-002 | Copy `src/normalizers/` into `packages/normalizers/src/`. Add `"@agentsy/core": "workspace:*"` to `packages/normalizers/package.json` dependencies. Update all internal imports.                                                                                                         |           |      |
+| TASK-M1-003 | Copy `src/processor/` and `src/pipeline/` into `packages/processor/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/normalizers": "workspace:*"` as dependencies. Update imports.                                                                                              |           |      |
+| TASK-M1-004 | Copy `src/agent/` into `packages/agent/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as dependencies. Update imports.                                                                                                                            |           |      |
+| TASK-M1-005 | Copy `src/adapters/` into `packages/adapters/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/agent": "workspace:*"` as dependencies.                                                                                                                                          |           |      |
+| TASK-M1-006 | Copy `src/ag-ui/` into `packages/ag-ui/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as dependencies.                                                                                                                                            |           |      |
+| TASK-M1-007 | Create `packages/shim/src/index.ts` that re-exports `* from '@agentsy/core'`, `* from '@agentsy/processor'`, `* from '@agentsy/agent'`, `* from '@agentsy/adapters'`, `* from '@agentsy/ag-ui'`. Add all five as peer dependencies.                                                      |           |      |
+| TASK-M1-008 | Update all internal cross-module imports across all packages to use workspace package names (`@agentsy/core`, etc.) instead of relative `../` paths.                                                                                                                                     |           |      |
+| TASK-M1-009 | Remove old `src/` directories from repo root (archive to `src/_legacy/` temporarily if needed during migration). Update root `src/index.ts` and `src/index.test.ts` to import from `@agentsy/*` packages.                                                                                |           |      |
+| TASK-M1-010 | Run `pnpm install && turbo run build` from repo root. All 16 packages must build successfully. Fix any import resolution or circular dependency issues.                                                                                                                                  |           |      |
+| TASK-M1-011 | Run `turbo run typecheck`. All packages must pass TypeScript strict-mode checks. Fix all errors.                                                                                                                                                                                         |           |      |
+| TASK-M1-012 | Run `turbo run test`. All existing tests must pass in their new package locations.                                                                                                                                                                                                       |           |      |
 
 ---
 
@@ -162,11 +162,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | Task        | Description                                                                                                                                                                                                               | Completed | Date |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-R0-001 | Verify npm org `@agentsy` is claimed and the `selfagency` npm user has publish access. Run `npm org ls @agentsy` to confirm.                                                                                              |           |      |
-| TASK-R0-002 | Set `version: "0.3.0-alpha.0"` in all 15 `@agentsy/*` package `package.json` files. Set shim `@selfagency/llm-stream-parser` to `"0.3.0-alpha.0"` as well.                                                               |           |      |
-| TASK-R0-003 | Add `"repository"`, `"homepage"`, `"keywords"`, `"license": "MIT"` to each package `package.json`. All pointing to the same repo root with appropriate `directory` field.                                                  |           |      |
-| TASK-R0-004 | Configure `.npmrc` at repo root with `@agentsy:registry=https://registry.npmjs.org`. Verify `publishConfig.access: "public"` is set on all packages.                                                                     |           |      |
+| TASK-R0-002 | Set `version: "0.3.0-alpha.0"` in all 15 `@agentsy/*` package `package.json` files. Set shim `@selfagency/llm-stream-parser` to `"0.3.0-alpha.0"` as well.                                                                |           |      |
+| TASK-R0-003 | Add `"repository"`, `"homepage"`, `"keywords"`, `"license": "MIT"` to each package `package.json`. All pointing to the same repo root with appropriate `directory` field.                                                 |           |      |
+| TASK-R0-004 | Configure `.npmrc` at repo root with `@agentsy:registry=https://registry.npmjs.org`. Verify `publishConfig.access: "public"` is set on all packages.                                                                      |           |      |
 | TASK-R0-005 | Update `README.md` at repo root to reflect the `@agentsy` monorepo identity: list all packages with one-line descriptions and install commands.                                                                           |           |      |
-| TASK-R0-006 | Create per-package `README.md` stubs with: package name, one-line description, install command, basic usage snippet, link to monorepo root docs.                                                                         |           |      |
+| TASK-R0-006 | Create per-package `README.md` stubs with: package name, one-line description, install command, basic usage snippet, link to monorepo root docs.                                                                          |           |      |
 | TASK-R0-007 | Update `.github/workflows/release.yml` and `tests.yml` to use `turbo run build/test/typecheck` instead of per-package task commands. Add `TURBO_TOKEN` and `TURBO_TEAM` secrets for remote cache (optional but scaffold). |           |      |
 | TASK-R0-008 | Run `turbo run build` to produce `dist/` in all packages. Verify all subpath exports resolve.                                                                                                                             |           |      |
 
@@ -176,11 +176,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-R1**: Communicate the migration path from `@selfagency/llm-stream-parser` to `@agentsy/*` packages without breaking existing consumer installs.
 
-| Task        | Description                                                                                                                                                                                                  | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-R1-001 | Add `"deprecated": "Migrated to @agentsy/* monorepo packages — see https://github.com/selfagency/llm-stream-parser#migration"` to `packages/shim/package.json`.                                              |           |      |
-| TASK-R1-002 | Write `packages/shim/README.md` with a full migration guide mapping old import paths to new `@agentsy/*` equivalents.                                                                                        |           |      |
-| TASK-R1-003 | Create `docs/migration.md` at repo root documenting the `@selfagency/llm-stream-parser` → `@agentsy/*` migration with `sed` one-liners for common import rewrites.                                           |           |      |
+| Task        | Description                                                                                                                                                        | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-R1-001 | Add `"deprecated": "Migrated to @agentsy/* monorepo packages — see https://github.com/selfagency/llm-stream-parser#migration"` to `packages/shim/package.json`.    |           |      |
+| TASK-R1-002 | Write `packages/shim/README.md` with a full migration guide mapping old import paths to new `@agentsy/*` equivalents.                                              |           |      |
+| TASK-R1-003 | Create `docs/migration.md` at repo root documenting the `@selfagency/llm-stream-parser` → `@agentsy/*` migration with `sed` one-liners for common import rewrites. |           |      |
 
 ---
 
@@ -190,10 +190,10 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 | Task        | Description                                                                                                                                                           | Completed | Date |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-R2-001 | Rewrite `docs/index.md` to reflect `@agentsy` positioning: "composable agent infrastructure — one org, many packages, bring your own app."                           |           |      |
-| TASK-R2-002 | Update `docs/getting-started.md` to lead with selective package installation and `createAgentLoop` usage; show the minimal install (`@agentsy/agent`).               |           |      |
+| TASK-R2-001 | Rewrite `docs/index.md` to reflect `@agentsy` positioning: "composable agent infrastructure — one org, many packages, bring your own app."                            |           |      |
+| TASK-R2-002 | Update `docs/getting-started.md` to lead with selective package installation and `createAgentLoop` usage; show the minimal install (`@agentsy/agent`).                |           |      |
 | TASK-R2-003 | Add `docs/architecture.md` describing: the package dependency graph (as Mermaid diagram), the layer separation (core → normalizers → processor → agent → extensions). |           |      |
-| TASK-R2-004 | Add `docs/packages.md` with a reference table of all 15 `@agentsy/*` packages: name, description, key exports, install size, peer deps.                              |           |      |
+| TASK-R2-004 | Add `docs/packages.md` with a reference table of all 15 `@agentsy/*` packages: name, description, key exports, install size, peer deps.                               |           |      |
 
 ---
 
@@ -201,19 +201,19 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P0**: Freeze the public API contracts, event model, and security invariants before any new module is built. All contracts live in `@agentsy/core`; agent-specific contracts live in `@agentsy/agent`.
 
-| Task        | Description                                                                                                                                                                                                                                              | Completed | Date |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P0-001 | In `packages/core/src/types/events.ts`: extend existing `EventType` enum with `CONTEXT_WINDOW_WILL_OVERFLOW`, `CHAT_COMPRESSED`, `LOOP_DETECTED`, `CITATION`, `RETRY`, `INVALID_STREAM`, `COST_THRESHOLD_EXCEEDED`, `MEMORY_INJECTION_SUSPECTED`.       |           |      |
-| TASK-P0-002 | In `packages/core/src/types/hooks.ts`: define `HookEvent`, `HookDecision` (`allow`/`ask`/`deny`/`defer`), `HookContext`, `HookResult` interfaces.                                                                                                        |           |      |
-| TASK-P0-003 | In `packages/core/src/types/memory.ts`: define `MemoryStore`, `MemoryRetriever`, `MemoryFeedback`, `MemoryMaintenance` interfaces (Layer 0/1/2 contracts).                                                                                               |           |      |
-| TASK-P0-004 | In `packages/core/src/types/skills.ts`: define `SkillManifest` (name, description, file, triggers, schema) compatible with Agent Skills open standard.                                                                                                  |           |      |
-| TASK-P0-005 | In `packages/core/src/types/plugins.ts`: define `PluginManifest` (id, version, checksum, tools, hooks, entrypoint) compatible with Claude plugin subset.                                                                                                 |           |      |
-| TASK-P0-006 | In `packages/core/src/types/providers.ts`: define `ProviderCapability` matrix (`contextWindow`, `supportsVision`, `supportsTools`, `supportsStreaming`, `costPerInputToken`, `costPerOutputToken`) and `ProviderStrategy` interface.                     |           |      |
-| TASK-P0-007 | In `packages/core/src/types/approval.ts`: define `ApprovalMode` union (`'allow' \| 'ask' \| 'deny' \| 'auto' \| 'plan'`), `ApprovalRequest`, `ApprovalResponse`, `ApprovalEngine` interface. Include `'plan'` as 4th production mode (tool-call dry-run). |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                            | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P0-001 | In `packages/core/src/types/events.ts`: extend existing `EventType` enum with `CONTEXT_WINDOW_WILL_OVERFLOW`, `CHAT_COMPRESSED`, `LOOP_DETECTED`, `CITATION`, `RETRY`, `INVALID_STREAM`, `COST_THRESHOLD_EXCEEDED`, `MEMORY_INJECTION_SUSPECTED`.                                      |           |      |
+| TASK-P0-002 | In `packages/core/src/types/hooks.ts`: define `HookEvent`, `HookDecision` (`allow`/`ask`/`deny`/`defer`), `HookContext`, `HookResult` interfaces.                                                                                                                                      |           |      |
+| TASK-P0-003 | In `packages/core/src/types/memory.ts`: define `MemoryStore`, `MemoryRetriever`, `MemoryFeedback`, `MemoryMaintenance` interfaces (Layer 0/1/2 contracts).                                                                                                                             |           |      |
+| TASK-P0-004 | In `packages/core/src/types/skills.ts`: define `SkillManifest` (name, description, file, triggers, schema) compatible with Agent Skills open standard.                                                                                                                                 |           |      |
+| TASK-P0-005 | In `packages/core/src/types/plugins.ts`: define `PluginManifest` (id, version, checksum, tools, hooks, entrypoint) compatible with Claude plugin subset.                                                                                                                               |           |      |
+| TASK-P0-006 | In `packages/core/src/types/providers.ts`: define `ProviderCapability` matrix (`contextWindow`, `supportsVision`, `supportsTools`, `supportsStreaming`, `costPerInputToken`, `costPerOutputToken`) and `ProviderStrategy` interface.                                                   |           |      |
+| TASK-P0-007 | In `packages/core/src/types/approval.ts`: define `ApprovalMode` union (`'allow' \| 'ask' \| 'deny' \| 'auto' \| 'plan'`), `ApprovalRequest`, `ApprovalResponse`, `ApprovalEngine` interface. Include `'plan'` as 4th production mode (tool-call dry-run).                              |           |      |
 | TASK-P0-008 | In `packages/agent/src/types.ts`: add `StopCondition` async predicate type `(state: AgentLoopState) => Promise<boolean>` and update `AgentLoopOptions` to accept `stopConditions?: StopCondition[]`. Export `isStepCount(n)`, `hasToolCall()`, `isLoopFinished()` built-in predicates. |           |      |
-| TASK-P0-009 | In `packages/agent/src/types.ts`: add `prepareStep?: (step: StepContext) => Promise<Partial<AgentLoopOptions>>` hook to `AgentLoopOptions`. Add `mergeCallbacks(base, override)` utility to merge settings-level and call-level hooks without override. |           |      |
-| TASK-P0-010 | Export all new `@agentsy/core` types through `packages/core/src/types/index.ts`. Export all new `@agentsy/agent` types through `packages/agent/src/index.ts`.                                                                                           |           |      |
-| TASK-P0-011 | Write unit tests in `packages/core/src/types/types.test.ts` for all new type narrowing helpers and discriminated unions.                                                                                                                                  |           |      |
+| TASK-P0-009 | In `packages/agent/src/types.ts`: add `prepareStep?: (step: StepContext) => Promise<Partial<AgentLoopOptions>>` hook to `AgentLoopOptions`. Add `mergeCallbacks(base, override)` utility to merge settings-level and call-level hooks without override.                                |           |      |
+| TASK-P0-010 | Export all new `@agentsy/core` types through `packages/core/src/types/index.ts`. Export all new `@agentsy/agent` types through `packages/agent/src/index.ts`.                                                                                                                          |           |      |
+| TASK-P0-011 | Write unit tests in `packages/core/src/types/types.test.ts` for all new type narrowing helpers and discriminated unions.                                                                                                                                                               |           |      |
 
 ---
 
@@ -221,13 +221,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P1**: Ship fast unblocking fixes and additions that don't require new packages.
 
-| Task        | Description                                                                                                                                                                  | Completed | Date |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P1-001 | In `packages/processor/src/pipeline/createPipeline.ts`: add `openaiResponses` to `NormalizerProvider` union; wire to `packages/normalizers/src/openaiResponses.ts`.         |           |      |
-| TASK-P1-002 | In `packages/core/src/structured/autoRepair.ts`: add `strategy: 'fast' \| 'safe' \| 'aggressive'` option with strategy-driven backoff behavior.                             |           |      |
-| TASK-P1-003 | In `packages/adapters/package.json`: move `cli-markdown` to `peerDependencies` with optional peer flag; guard import with dynamic `import()` in `packages/adapters/src/`.  |           |      |
-| TASK-P1-004 | In `packages/adapters/src/vscode.ts`: mark as `@deprecated` via JSDoc; add migration note pointing to the `@agentsy/mcp` adapter pattern.                                  |           |      |
-| TASK-P1-005 | In `packages/agent/src/createAgentLoop.ts`: fix `stepUsage` accumulation reset to zero at the start of each step.                                                           |           |      |
+| Task        | Description                                                                                                                                                               | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P1-001 | In `packages/processor/src/pipeline/createPipeline.ts`: add `openaiResponses` to `NormalizerProvider` union; wire to `packages/normalizers/src/openaiResponses.ts`.       |           |      |
+| TASK-P1-002 | In `packages/core/src/structured/autoRepair.ts`: add `strategy: 'fast' \| 'safe' \| 'aggressive'` option with strategy-driven backoff behavior.                           |           |      |
+| TASK-P1-003 | In `packages/adapters/package.json`: move `cli-markdown` to `peerDependencies` with optional peer flag; guard import with dynamic `import()` in `packages/adapters/src/`. |           |      |
+| TASK-P1-004 | In `packages/adapters/src/vscode.ts`: mark as `@deprecated` via JSDoc; add migration note pointing to the `@agentsy/mcp` adapter pattern.                                 |           |      |
+| TASK-P1-005 | In `packages/agent/src/createAgentLoop.ts`: fix `stepUsage` accumulation reset to zero at the start of each step.                                                         |           |      |
 
 ---
 
@@ -235,17 +235,17 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P2**: Emit the missing lifecycle events from `LLMStreamProcessor` in `@agentsy/processor` so consumers can react to all meaningful state transitions.
 
-| Task        | Description                                                                                                                                                                                                        | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-P2-001 | In `packages/processor/src/LLMStreamProcessor.ts`: add `ContextWindowWillOverflow` emission when token count exceeds configurable `contextWindowWarningThreshold` (default: 90% of model max).                    |           |      |
-| TASK-P2-002 | Add `ChatCompressed` event emission after `compressConversation()` completes (wired from `@agentsy/context-manager`, Phase P3).                                                                                    |           |      |
-| TASK-P2-003 | Add `LoopDetected` event emission in `packages/agent/src/createAgentLoop.ts` when `parametersEqual()` doom-loop detection fires. Currently only logs; must emit typed event.                                       |           |      |
-| TASK-P2-004 | Add `Citation` event: emitted when a tool result or memory retrieval result is injected as grounded context. Payload: `{ source: string, content: string, score?: number }`.                                       |           |      |
-| TASK-P2-005 | Add `Retry` event: emitted before each provider retry attempt. Payload: `{ attempt: number, maxAttempts: number, delayMs: number, reason: string }`.                                                               |           |      |
-| TASK-P2-006 | Add `InvalidStream` event: emitted when a stream chunk fails schema validation. Payload: `{ chunk: unknown, error: string }`.                                                                                       |           |      |
+| Task        | Description                                                                                                                                                                                                                                    | Completed | Date |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P2-001 | In `packages/processor/src/LLMStreamProcessor.ts`: add `ContextWindowWillOverflow` emission when token count exceeds configurable `contextWindowWarningThreshold` (default: 90% of model max).                                                 |           |      |
+| TASK-P2-002 | Add `ChatCompressed` event emission after `compressConversation()` completes (wired from `@agentsy/context-manager`, Phase P3).                                                                                                                |           |      |
+| TASK-P2-003 | Add `LoopDetected` event emission in `packages/agent/src/createAgentLoop.ts` when `parametersEqual()` doom-loop detection fires. Currently only logs; must emit typed event.                                                                   |           |      |
+| TASK-P2-004 | Add `Citation` event: emitted when a tool result or memory retrieval result is injected as grounded context. Payload: `{ source: string, content: string, score?: number }`.                                                                   |           |      |
+| TASK-P2-005 | Add `Retry` event: emitted before each provider retry attempt. Payload: `{ attempt: number, maxAttempts: number, delayMs: number, reason: string }`.                                                                                           |           |      |
+| TASK-P2-006 | Add `InvalidStream` event: emitted when a stream chunk fails schema validation. Payload: `{ chunk: unknown, error: string }`.                                                                                                                  |           |      |
 | TASK-P2-007 | Migrate `LLMStreamProcessor` per-message state to a `Map<messageId, MessageStreamState>` (tanstack/ai pattern). Add `prepareAssistantMessage()` → `ensureAssistantMessage()` lazy-creation lifecycle with whitespace-only pruning on finalize. |           |      |
-| TASK-P2-008 | Add `StreamProcessor.replay(recording)` method for deterministic test replay of recorded chunk sequences (tanstack/ai pattern).                                                                                    |           |      |
-| TASK-P2-009 | Write tests for all 6 new events plus per-message state map, lazy message creation, and replay functionality in `packages/processor/src/LLMStreamProcessor.test.ts`.                                               |           |      |
+| TASK-P2-008 | Add `StreamProcessor.replay(recording)` method for deterministic test replay of recorded chunk sequences (tanstack/ai pattern).                                                                                                                |           |      |
+| TASK-P2-009 | Write tests for all 6 new events plus per-message state map, lazy message creation, and replay functionality in `packages/processor/src/LLMStreamProcessor.test.ts`.                                                                           |           |      |
 
 ---
 
@@ -253,14 +253,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P3**: Proactive token budget management that auto-compresses conversations before hitting provider limits.
 
-| Task        | Description                                                                                                                                                                                                                                           | Completed | Date |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P3-001 | Create `packages/context-manager/src/` with `index.ts`, `ContextManager.ts`, `compressConversation.ts`, `tokenBudget.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` to package deps.                            |           |      |
-| TASK-P3-002 | Implement `TokenBudget`: tracks running input token count against model `contextWindow` from `ProviderCapability` matrix; exposes `remaining()`, `usedFraction()`, `willOverflow(tokens: number)`. Auto-compact skips active tool-call messages.      |           |      |
-| TASK-P3-003 | Implement `compressConversation(messages, options)`: summarize oldest message window using a configured summarization prompt; return compressed messages array + `compressionStats`.                                                                  |           |      |
-| TASK-P3-004 | Implement `ContextManager` class: wraps `TokenBudget`; auto-triggers `compressConversation()` when `usedFraction()` exceeds `autoCompactThreshold` (default 0.85); emits `ContextWindowWillOverflow` before compression, `ChatCompressed` after.     |           |      |
-| TASK-P3-005 | Add `contextManager?: ContextManager` optional param to `AgentLoopOptions` in `packages/agent/src/types.ts`. Wire into `createAgentLoop.ts`: call `contextManager.check(messages)` before each step.                                                 |           |      |
-| TASK-P3-006 | Write tests: overflow detection, compression trigger at threshold, post-compression message count reduction, `ChatCompressed` event emission, active-task skip.                                                                                       |           |      |
+| Task        | Description                                                                                                                                                                                                                                      | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-P3-001 | Create `packages/context-manager/src/` with `index.ts`, `ContextManager.ts`, `compressConversation.ts`, `tokenBudget.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` to package deps.                        |           |      |
+| TASK-P3-002 | Implement `TokenBudget`: tracks running input token count against model `contextWindow` from `ProviderCapability` matrix; exposes `remaining()`, `usedFraction()`, `willOverflow(tokens: number)`. Auto-compact skips active tool-call messages. |           |      |
+| TASK-P3-003 | Implement `compressConversation(messages, options)`: summarize oldest message window using a configured summarization prompt; return compressed messages array + `compressionStats`.                                                             |           |      |
+| TASK-P3-004 | Implement `ContextManager` class: wraps `TokenBudget`; auto-triggers `compressConversation()` when `usedFraction()` exceeds `autoCompactThreshold` (default 0.85); emits `ContextWindowWillOverflow` before compression, `ChatCompressed` after. |           |      |
+| TASK-P3-005 | Add `contextManager?: ContextManager` optional param to `AgentLoopOptions` in `packages/agent/src/types.ts`. Wire into `createAgentLoop.ts`: call `contextManager.check(messages)` before each step.                                             |           |      |
+| TASK-P3-006 | Write tests: overflow detection, compression trigger at threshold, post-compression message count reduction, `ChatCompressed` event emission, active-task skip.                                                                                  |           |      |
 
 ---
 
@@ -268,14 +268,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P4**: Token cost accounting with budget enforcement — cost tracked at every tool loop iteration (Claude Code pattern).
 
-| Task        | Description                                                                                                                                                                                                                                       | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P4-001 | Create `packages/cost-tracker/src/` with `index.ts`, `CostTracker.ts`, `pricingMap.ts`. Add `"@agentsy/core": "workspace:*"` to package deps.                                                                                                    |           |      |
-| TASK-P4-002 | Implement `pricingMap.ts`: map of `NormalizerProvider` → `{ inputCostPer1kTokens, outputCostPer1kTokens }` for all 9 current providers + `openaiResponses`. Values in `PRICING` constant; overridable via config.                                |           |      |
-| TASK-P4-003 | Implement `CostTracker`: accumulates `{ inputTokens, outputTokens, totalCostUsd }` per step and session; exposes `record(usage)`, `sessionTotal()`, `stepTotal()`, `reset()`.                                                                    |           |      |
-| TASK-P4-004 | Add optional `budgetUsd?: number` to `CostTracker` constructor; emit `CostThresholdExceeded` event and throw `BudgetExceededError` when `sessionTotal().totalCostUsd` exceeds budget.                                                             |           |      |
-| TASK-P4-005 | Add `costTracker?: CostTracker` optional param to `AgentLoopOptions`; wire into `createAgentLoop.ts` to call `costTracker.record(usage)` after each step.                                                                                        |           |      |
-| TASK-P4-006 | Write tests for accumulation, budget enforcement, `CostThresholdExceeded` event, per-step reset.                                                                                                                                                 |           |      |
+| Task        | Description                                                                                                                                                                                                       | Completed | Date |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P4-001 | Create `packages/cost-tracker/src/` with `index.ts`, `CostTracker.ts`, `pricingMap.ts`. Add `"@agentsy/core": "workspace:*"` to package deps.                                                                     |           |      |
+| TASK-P4-002 | Implement `pricingMap.ts`: map of `NormalizerProvider` → `{ inputCostPer1kTokens, outputCostPer1kTokens }` for all 9 current providers + `openaiResponses`. Values in `PRICING` constant; overridable via config. |           |      |
+| TASK-P4-003 | Implement `CostTracker`: accumulates `{ inputTokens, outputTokens, totalCostUsd }` per step and session; exposes `record(usage)`, `sessionTotal()`, `stepTotal()`, `reset()`.                                     |           |      |
+| TASK-P4-004 | Add optional `budgetUsd?: number` to `CostTracker` constructor; emit `CostThresholdExceeded` event and throw `BudgetExceededError` when `sessionTotal().totalCostUsd` exceeds budget.                             |           |      |
+| TASK-P4-005 | Add `costTracker?: CostTracker` optional param to `AgentLoopOptions`; wire into `createAgentLoop.ts` to call `costTracker.record(usage)` after each step.                                                         |           |      |
+| TASK-P4-006 | Write tests for accumulation, budget enforcement, `CostThresholdExceeded` event, per-step reset.                                                                                                                  |           |      |
 
 ---
 
@@ -283,14 +283,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P5**: Safe concurrent tool execution with bounded parallelism and `areAllToolsComplete()` auto-continuation guard (tanstack/ai pattern).
 
-| Task        | Description                                                                                                                                                                                                                                     | Completed | Date |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P5-001 | Create `packages/runtime/src/tool-executor/` with `index.ts`, `ToolExecutor.ts`, `concurrencyPool.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/agent": "workspace:*"` to `packages/runtime/package.json`.                          |           |      |
-| TASK-P5-002 | Implement `ConcurrencyPool(maxConcurrent: number)`: token-bucket style pool; `acquire()` / `release()` with `AbortSignal` support; rejects immediately on abort.                                                                                |           |      |
-| TASK-P5-003 | Implement `ToolExecutor`: accepts an array of `ToolCall` + an `ApprovalEngine` + a `ConcurrencyPool`; fans out execution; collects results in deterministic submission order; re-throws first error after all settle.                           |           |      |
-| TASK-P5-004 | Add `areAllToolsComplete(toolCalls, results): boolean` predicate to `ToolExecutor`; used as auto-continuation guard in `createAgentLoop.ts` before deciding whether to do another loop iteration.                                               |           |      |
-| TASK-P5-005 | Add `toolExecutor?: ToolExecutor` optional param to `AgentLoopOptions`; when present, replace sequential tool-call loop in `createAgentLoop.ts` with `toolExecutor.executeAll(toolCalls)`.                                                     |           |      |
-| TASK-P5-006 | Write tests: sequential ordering guarantee, concurrency cap enforcement, abort cancels pending calls, first-error semantics, `areAllToolsComplete` guard.                                                                                       |           |      |
+| Task        | Description                                                                                                                                                                                                           | Completed | Date |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P5-001 | Create `packages/runtime/src/tool-executor/` with `index.ts`, `ToolExecutor.ts`, `concurrencyPool.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/agent": "workspace:*"` to `packages/runtime/package.json`. |           |      |
+| TASK-P5-002 | Implement `ConcurrencyPool(maxConcurrent: number)`: token-bucket style pool; `acquire()` / `release()` with `AbortSignal` support; rejects immediately on abort.                                                      |           |      |
+| TASK-P5-003 | Implement `ToolExecutor`: accepts an array of `ToolCall` + an `ApprovalEngine` + a `ConcurrencyPool`; fans out execution; collects results in deterministic submission order; re-throws first error after all settle. |           |      |
+| TASK-P5-004 | Add `areAllToolsComplete(toolCalls, results): boolean` predicate to `ToolExecutor`; used as auto-continuation guard in `createAgentLoop.ts` before deciding whether to do another loop iteration.                     |           |      |
+| TASK-P5-005 | Add `toolExecutor?: ToolExecutor` optional param to `AgentLoopOptions`; when present, replace sequential tool-call loop in `createAgentLoop.ts` with `toolExecutor.executeAll(toolCalls)`.                            |           |      |
+| TASK-P5-006 | Write tests: sequential ordering guarantee, concurrency cap enforcement, abort cancels pending calls, first-error semantics, `areAllToolsComplete` guard.                                                             |           |      |
 
 ---
 
@@ -298,17 +298,17 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P6**: The approval engine, sandbox modes, risk classifier, and `toolApproval` as loop-stop (not exception) — vercel/ai pattern: `ApprovalEngine` returns `ApprovalRequired` result, does NOT throw.
 
-| Task        | Description                                                                                                                                                                                                                                                           | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P6-001 | Create `packages/runtime/src/approvals/` with `ApprovalEngine.ts`, `patterns.ts`, `ApprovalStore.ts`.                                                                                                                                                                |           |      |
-| TASK-P6-002 | Implement `ApprovalEngine`: evaluates `ToolCall` against policy list; returns `ApprovalDecision` (`allow` / `ask` / `deny` / `plan`). Returns `{ type: 'ApprovalRequired', request }` result object — never throws — when interactive approval is needed.            |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                                    | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P6-001 | Create `packages/runtime/src/approvals/` with `ApprovalEngine.ts`, `patterns.ts`, `ApprovalStore.ts`.                                                                                                                                                                                                          |           |      |
+| TASK-P6-002 | Implement `ApprovalEngine`: evaluates `ToolCall` against policy list; returns `ApprovalDecision` (`allow` / `ask` / `deny` / `plan`). Returns `{ type: 'ApprovalRequired', request }` result object — never throws — when interactive approval is needed.                                                      |           |      |
 | TASK-P6-003 | Implement `ApprovalStore`: persists `allow-always` decisions to `.agentsy/approvals.json`. `allow_patterns` entries take priority over `deny_patterns` (warning-first guardrails: prefer warning events to hard blocks). Issue a `PermissionWarning` event on first encounter of a new pattern before denying. |           |      |
-| TASK-P6-004 | Create `packages/runtime/src/policy/RiskClassifier.ts`: assigns `RiskLevel` (`low` / `medium` / `high` / `critical`) to a `ToolCall` based on tool name pattern, destructive argument markers (`rm`, `DELETE`, `drop`, `overwrite`), and file-system path scope.     |           |      |
-| TASK-P6-005 | Create `packages/runtime/src/sandbox/SandboxMode.ts` (`none` / `process` / `container`): `none` = direct exec; `process` = spawn with restricted env vars and no network; `container` = Docker exec (optional, requires Docker peer dep).                            |           |      |
-| TASK-P6-006 | Wire `RiskClassifier` output into `ApprovalEngine`: `critical` risk always escalates to `ask` regardless of policy.                                                                                                                                                   |           |      |
-| TASK-P6-007 | Add `approvalEngine`, `riskClassifier`, `sandboxMode` optional params to `AgentLoopOptions` in `packages/agent/src/types.ts`.                                                                                                                                         |           |      |
-| TASK-P6-008 | Add `experimental_repairToolCall` hook to `AgentLoopOptions`: called when a tool call fails schema validation; receives the raw call and returns a repaired version or `null` to skip. Wire to `packages/core/src/structured/autoRepair.ts`.                         |           |      |
-| TASK-P6-009 | Write tests for each risk level, pattern matching, policy override, `ApprovalRequired` result (not throw), `repairToolCall` hook invocation.                                                                                                                         |           |      |
+| TASK-P6-004 | Create `packages/runtime/src/policy/RiskClassifier.ts`: assigns `RiskLevel` (`low` / `medium` / `high` / `critical`) to a `ToolCall` based on tool name pattern, destructive argument markers (`rm`, `DELETE`, `drop`, `overwrite`), and file-system path scope.                                               |           |      |
+| TASK-P6-005 | Create `packages/runtime/src/sandbox/SandboxMode.ts` (`none` / `process` / `container`): `none` = direct exec; `process` = spawn with restricted env vars and no network; `container` = Docker exec (optional, requires Docker peer dep).                                                                      |           |      |
+| TASK-P6-006 | Wire `RiskClassifier` output into `ApprovalEngine`: `critical` risk always escalates to `ask` regardless of policy.                                                                                                                                                                                            |           |      |
+| TASK-P6-007 | Add `approvalEngine`, `riskClassifier`, `sandboxMode` optional params to `AgentLoopOptions` in `packages/agent/src/types.ts`.                                                                                                                                                                                  |           |      |
+| TASK-P6-008 | Add `experimental_repairToolCall` hook to `AgentLoopOptions`: called when a tool call fails schema validation; receives the raw call and returns a repaired version or `null` to skip. Wire to `packages/core/src/structured/autoRepair.ts`.                                                                   |           |      |
+| TASK-P6-009 | Write tests for each risk level, pattern matching, policy override, `ApprovalRequired` result (not throw), `repairToolCall` hook invocation.                                                                                                                                                                   |           |      |
 
 ---
 
@@ -316,11 +316,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-R3**: Freeze public contracts at v0.3.0-alpha across all packages to give downstream consumers a stable base.
 
-| Task        | Description                                                                                                                                                              | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-R3-001 | Mark all public interfaces across all packages as `@public` JSDoc and all experimental interfaces as `@experimental`.                                                    |           |      |
-| TASK-R3-002 | Run `turbo run typecheck` and resolve all TypeScript errors introduced by P0–P6 additions across all packages.                                                            |           |      |
-| TASK-R3-003 | Bump all package versions to `0.3.0-alpha.0`. Publish all `@agentsy/*` packages to npm with `alpha` dist-tag using `turbo run build && pnpm -r publish --tag alpha`.    |           |      |
+| Task        | Description                                                                                                                                                          | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-R3-001 | Mark all public interfaces across all packages as `@public` JSDoc and all experimental interfaces as `@experimental`.                                                |           |      |
+| TASK-R3-002 | Run `turbo run typecheck` and resolve all TypeScript errors introduced by P0–P6 additions across all packages.                                                       |           |      |
+| TASK-R3-003 | Bump all package versions to `0.3.0-alpha.0`. Publish all `@agentsy/*` packages to npm with `alpha` dist-tag using `turbo run build && pnpm -r publish --tag alpha`. |           |      |
 
 ---
 
@@ -328,15 +328,15 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P7**: Durable `StreamSnapshot` checkpoints enabling crash-safe resume. Atomic write + lazy session + early user-message persistence (Hermes Agent pattern).
 
-| Task        | Description                                                                                                                                                                                                                                             | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P7-001 | Create `packages/session/src/` with `index.ts`, `SessionStore.ts`, `FileSystemSessionStore.ts`, `SessionResumeOptions.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as deps.                                       |           |      |
-| TASK-P7-002 | Define `SessionStore` interface: `save(sessionId, snapshot): Promise<void>`, `load(sessionId): Promise<StreamSnapshot \| null>`, `list(): Promise<string[]>`, `delete(sessionId): Promise<void>`.                                                        |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                                                                                               | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P7-001 | Create `packages/session/src/` with `index.ts`, `SessionStore.ts`, `FileSystemSessionStore.ts`, `SessionResumeOptions.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as deps.                                                                                                                                                        |           |      |
+| TASK-P7-002 | Define `SessionStore` interface: `save(sessionId, snapshot): Promise<void>`, `load(sessionId): Promise<StreamSnapshot \| null>`, `list(): Promise<string[]>`, `delete(sessionId): Promise<void>`.                                                                                                                                                                         |           |      |
 | TASK-P7-003 | Implement `FileSystemSessionStore`: atomic write (write to `.tmp` then `rename`) under `~/.agentsy/sessions/<sessionId>.json`. File-lock for concurrent access. **Lazy session**: create session file on first assistant message, NOT on loop start. **Early user-message persistence**: persist user message BEFORE starting LLM call (Hermes pattern for crash safety). |           |      |
-| TASK-P7-004 | Add `sessionStore?: SessionStore` optional param to `AgentLoopOptions`; call `sessionStore.save(runId, snapshot)` after each step in `createAgentLoop.ts`.                                                                                               |           |      |
-| TASK-P7-005 | Implement `resumeSession(sessionId, options)` factory: loads snapshot, reconstructs messages array, returns pre-initialized `AgentLoopHandle` ready to `run()`.                                                                                          |           |      |
-| TASK-P7-006 | Extend `packages/core/src/recovery/index.ts` `captureStreamState` to accept optional `sessionStore` and auto-persist when provided.                                                                                                                      |           |      |
-| TASK-P7-007 | Write tests: round-trip save/load, atomic write crash simulation, lazy session creation timing, early user-message persistence ordering, resume reconstructs correct message history.                                                                     |           |      |
+| TASK-P7-004 | Add `sessionStore?: SessionStore` optional param to `AgentLoopOptions`; call `sessionStore.save(runId, snapshot)` after each step in `createAgentLoop.ts`.                                                                                                                                                                                                                |           |      |
+| TASK-P7-005 | Implement `resumeSession(sessionId, options)` factory: loads snapshot, reconstructs messages array, returns pre-initialized `AgentLoopHandle` ready to `run()`.                                                                                                                                                                                                           |           |      |
+| TASK-P7-006 | Extend `packages/core/src/recovery/index.ts` `captureStreamState` to accept optional `sessionStore` and auto-persist when provided.                                                                                                                                                                                                                                       |           |      |
+| TASK-P7-007 | Write tests: round-trip save/load, atomic write crash simulation, lazy session creation timing, early user-message persistence ordering, resume reconstructs correct message history.                                                                                                                                                                                     |           |      |
 
 ---
 
@@ -344,15 +344,15 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P8**: First-class MCP 2025-06-18 compliant server lifecycle management with WebSocket idle timeout (ACP reference pattern).
 
-| Task        | Description                                                                                                                                                                                                                                               | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P8-001 | Create `packages/mcp/src/` with `index.ts`, `MCPOrchestrator.ts`, `MCPServerConfig.ts`, `MCPTrustLevel.ts`, `MCPCapabilityNegotiator.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/runtime": "workspace:*"` as deps. Add `@modelcontextprotocol/sdk` as peer dep. |           |      |
-| TASK-P8-002 | Define `MCPServerConfig`: `{ id, command, args, env, trustLevel: 'trusted' \| 'untrusted' \| 'readonly', autoStart: boolean, restartOnCrash: boolean, timeout: number, idleTimeoutMs?: number }`. Add `idleTimeoutMs` for WebSocket connection idle timeout. |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                                                                                     | Completed | Date |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P8-001 | Create `packages/mcp/src/` with `index.ts`, `MCPOrchestrator.ts`, `MCPServerConfig.ts`, `MCPTrustLevel.ts`, `MCPCapabilityNegotiator.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/runtime": "workspace:*"` as deps. Add `@modelcontextprotocol/sdk` as peer dep.                                                                                    |           |      |
+| TASK-P8-002 | Define `MCPServerConfig`: `{ id, command, args, env, trustLevel: 'trusted' \| 'untrusted' \| 'readonly', autoStart: boolean, restartOnCrash: boolean, timeout: number, idleTimeoutMs?: number }`. Add `idleTimeoutMs` for WebSocket connection idle timeout.                                                                                                    |           |      |
 | TASK-P8-003 | Implement `MCPOrchestrator`: manages registry of `MCPServerConfig`s; `start(id)`, `stop(id)`, `restart(id)`, `listTools(id)`, `callTool(id, name, args, signal)` methods. Implement WebSocket idle timeout: disconnect after `idleTimeoutMs` of no tool calls; reconnect on next call. Emits `MCPServerStarted`, `MCPServerStopped`, `MCPServerCrashed` events. |           |      |
-| TASK-P8-004 | Implement `MCPCapabilityNegotiator`: handshakes per MCP 2025-06-18 spec; caches `ServerCapabilities`; re-negotiates on reconnect.                                                                                                                        |           |      |
-| TASK-P8-005 | Enforce trust-level filtering in `MCPOrchestrator.callTool`: `readonly` servers blocked from `write`/`exec` annotation tools; `untrusted` servers always go through `ApprovalEngine`.                                                                    |           |      |
-| TASK-P8-006 | Add `mcpOrchestrator?: MCPOrchestrator` optional param to `AgentLoopOptions`; auto-discover and merge MCP tools into agent's tool registry at loop start.                                                                                                |           |      |
-| TASK-P8-007 | Write tests: server lifecycle, capability negotiation, trust-level rejection, tool call dispatch, idle timeout reconnect.                                                                                                                                 |           |      |
+| TASK-P8-004 | Implement `MCPCapabilityNegotiator`: handshakes per MCP 2025-06-18 spec; caches `ServerCapabilities`; re-negotiates on reconnect.                                                                                                                                                                                                                               |           |      |
+| TASK-P8-005 | Enforce trust-level filtering in `MCPOrchestrator.callTool`: `readonly` servers blocked from `write`/`exec` annotation tools; `untrusted` servers always go through `ApprovalEngine`.                                                                                                                                                                           |           |      |
+| TASK-P8-006 | Add `mcpOrchestrator?: MCPOrchestrator` optional param to `AgentLoopOptions`; auto-discover and merge MCP tools into agent's tool registry at loop start.                                                                                                                                                                                                       |           |      |
+| TASK-P8-007 | Write tests: server lifecycle, capability negotiation, trust-level rejection, tool call dispatch, idle timeout reconnect.                                                                                                                                                                                                                                       |           |      |
 
 ---
 
@@ -360,14 +360,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P9**: Multi-provider capability matrix with configurable fallback chains.
 
-| Task        | Description                                                                                                                                                                                                                    | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-P9-001 | Create `packages/providers/src/` with `index.ts`, `ProviderRegistry.ts`, `CapabilityMatrix.ts`, `FallbackChain.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/normalizers": "workspace:*"` as deps.                 |           |      |
-| TASK-P9-002 | Populate `CapabilityMatrix` for all 9 providers (8 existing + `openaiResponses`) with `contextWindow`, `supportsVision`, `supportsTools`, `supportsStreaming`, `inputCostPer1kTokens`, `outputCostPer1kTokens`.                |           |      |
-| TASK-P9-003 | Implement `FallbackChain`: ordered provider list; `next(currentProvider)` returns next; supports `CostThresholdExceeded` and `ContextWindowWillOverflow` as automatic fallback triggers.                                       |           |      |
-| TASK-P9-004 | Implement `ProviderRegistry`: holds active `FallbackChain` + `CapabilityMatrix`; `selectProvider(requirements)` returns best matching provider.                                                                               |           |      |
-| TASK-P9-005 | Wire `ProviderRegistry` into `packages/processor/src/pipeline/createPipeline.ts`: when `providerRegistry` is in `PipelineOptions`, auto-select provider before creating normalizer.                                           |           |      |
-| TASK-P9-006 | Write tests: capability filtering, fallback on overflow, fallback on cost limit, cost accounting integration.                                                                                                                  |           |      |
+| Task        | Description                                                                                                                                                                                                     | Completed | Date |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P9-001 | Create `packages/providers/src/` with `index.ts`, `ProviderRegistry.ts`, `CapabilityMatrix.ts`, `FallbackChain.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/normalizers": "workspace:*"` as deps.   |           |      |
+| TASK-P9-002 | Populate `CapabilityMatrix` for all 9 providers (8 existing + `openaiResponses`) with `contextWindow`, `supportsVision`, `supportsTools`, `supportsStreaming`, `inputCostPer1kTokens`, `outputCostPer1kTokens`. |           |      |
+| TASK-P9-003 | Implement `FallbackChain`: ordered provider list; `next(currentProvider)` returns next; supports `CostThresholdExceeded` and `ContextWindowWillOverflow` as automatic fallback triggers.                        |           |      |
+| TASK-P9-004 | Implement `ProviderRegistry`: holds active `FallbackChain` + `CapabilityMatrix`; `selectProvider(requirements)` returns best matching provider.                                                                 |           |      |
+| TASK-P9-005 | Wire `ProviderRegistry` into `packages/processor/src/pipeline/createPipeline.ts`: when `providerRegistry` is in `PipelineOptions`, auto-select provider before creating normalizer.                             |           |      |
+| TASK-P9-006 | Write tests: capability filtering, fallback on overflow, fallback on cost limit, cost accounting integration.                                                                                                   |           |      |
 
 ---
 
@@ -375,13 +375,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X1**: Define all extensibility interfaces; add tool interface predicates for `readOnly`, `destructive`, `requiresApproval` (tanstack/ai `ToolDefinition` annotation pattern).
 
-| Task        | Description                                                                                                                                                                                                                                                                 | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X1-001 | In `packages/runtime/src/hooks/types.ts`: `HookRegistry` interface, `HookHandler<T>` type, `HookDispatcher` interface with `dispatch(event): Promise<HookResult>` and `register(eventType, handler)`.                                                                       |           |      |
-| TASK-X1-002 | In `packages/runtime/src/skills/types.ts`: `SkillManifest` (re-export from `@agentsy/core`), `SkillLoader` interface, `SkillRegistry` interface.                                                                                                                            |           |      |
-| TASK-X1-003 | In `packages/runtime/src/plugins/types.ts`: `PluginManifest` (re-export from `@agentsy/core`), `PluginLoader` interface, `PluginRuntime` interface.                                                                                                                         |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X1-001 | In `packages/runtime/src/hooks/types.ts`: `HookRegistry` interface, `HookHandler<T>` type, `HookDispatcher` interface with `dispatch(event): Promise<HookResult>` and `register(eventType, handler)`.                                                                      |           |      |
+| TASK-X1-002 | In `packages/runtime/src/skills/types.ts`: `SkillManifest` (re-export from `@agentsy/core`), `SkillLoader` interface, `SkillRegistry` interface.                                                                                                                           |           |      |
+| TASK-X1-003 | In `packages/runtime/src/plugins/types.ts`: `PluginManifest` (re-export from `@agentsy/core`), `PluginLoader` interface, `PluginRuntime` interface.                                                                                                                        |           |      |
 | TASK-X1-004 | In `packages/core/src/types/tools.ts`: extend `ToolDefinition` with `annotations?: { readOnly?: boolean, destructive?: boolean, requiresApproval?: boolean, idempotent?: boolean }`. These annotations feed the `RiskClassifier` in Phase P6 as a declarative risk signal. |           |      |
-| TASK-X1-005 | Add `./hooks`, `./skills`, `./plugins` stub subpath exports from `@agentsy/runtime` barrel (types files) so consumers can import types before implementations land.                                                                                                         |           |      |
+| TASK-X1-005 | Add `./hooks`, `./skills`, `./plugins` stub subpath exports from `@agentsy/runtime` barrel (types files) so consumers can import types before implementations land.                                                                                                        |           |      |
 
 ---
 
@@ -389,13 +389,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X2**: The lifecycle dispatch engine.
 
-| Task        | Description                                                                                                                                                                                                     | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| Task        | Description                                                                                                                                                                                                              | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
 | TASK-X2-001 | Create `packages/runtime/src/hooks/HookDispatcher.ts`: ordered handler registry per event type; `dispatch(event, context)` awaits handlers in registration order; first `deny` result short-circuits remaining handlers. |           |      |
-| TASK-X2-002 | Implement audit trail: every dispatch appends `{ eventType, decision, handlerName, timestamp }` to in-memory audit log; expose `getAuditLog()` and `clearAuditLog()`.                                            |           |      |
-| TASK-X2-003 | Wire `HookDispatcher` into `packages/agent/src/createAgentLoop.ts`: dispatch `beforeStep` / `afterStep` / `beforeToolCall` / `afterToolCall` / `onError` / `onAbort`.                                           |           |      |
-| TASK-X2-004 | Add `hookDispatcher?: HookDispatcher` to `AgentLoopOptions`.                                                                                                                                                    |           |      |
-| TASK-X2-005 | Write tests: handler ordering, short-circuit on deny, audit log correctness, async handler timeout.                                                                                                             |           |      |
+| TASK-X2-002 | Implement audit trail: every dispatch appends `{ eventType, decision, handlerName, timestamp }` to in-memory audit log; expose `getAuditLog()` and `clearAuditLog()`.                                                    |           |      |
+| TASK-X2-003 | Wire `HookDispatcher` into `packages/agent/src/createAgentLoop.ts`: dispatch `beforeStep` / `afterStep` / `beforeToolCall` / `afterToolCall` / `onError` / `onAbort`.                                                    |           |      |
+| TASK-X2-004 | Add `hookDispatcher?: HookDispatcher` to `AgentLoopOptions`.                                                                                                                                                             |           |      |
+| TASK-X2-005 | Write tests: handler ordering, short-circuit on deny, audit log correctness, async handler timeout.                                                                                                                      |           |      |
 
 ---
 
@@ -403,13 +403,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X3**: Agent Skills open standard compatibility.
 
-| Task        | Description                                                                                                                                                                                                                   | Completed | Date |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X3-001 | Implement `packages/runtime/src/skills/SkillLoader.ts`: scans `~/.agents/skills/` and `.agents/skills/`; parses `SKILL.md` frontmatter (name, description, triggers, schema); returns `SkillManifest[]`.                     |           |      |
-| TASK-X3-002 | Implement `packages/runtime/src/skills/SkillRegistry.ts`: in-memory registry; `register(manifest)`, `lookup(trigger): SkillManifest[]`, `list(): SkillManifest[]`.                                                           |           |      |
-| TASK-X3-003 | Implement `packages/runtime/src/skills/SkillExecutor.ts`: `execute(manifest, context)` injects full `SKILL.md` as `<skill_context>` XML tag into system prompt via `splitLeadingXmlContext` from `@agentsy/core`.             |           |      |
-| TASK-X3-004 | Add `skillRegistry?: SkillRegistry` to `AgentLoopOptions`; at loop start, scan and register skills from configured paths.                                                                                                    |           |      |
-| TASK-X3-005 | Write tests: skill discovery from two-directory scan, frontmatter parsing, trigger lookup, `<skill_context>` injection.                                                                                                      |           |      |
+| Task        | Description                                                                                                                                                                                                       | Completed | Date |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X3-001 | Implement `packages/runtime/src/skills/SkillLoader.ts`: scans `~/.agents/skills/` and `.agents/skills/`; parses `SKILL.md` frontmatter (name, description, triggers, schema); returns `SkillManifest[]`.          |           |      |
+| TASK-X3-002 | Implement `packages/runtime/src/skills/SkillRegistry.ts`: in-memory registry; `register(manifest)`, `lookup(trigger): SkillManifest[]`, `list(): SkillManifest[]`.                                                |           |      |
+| TASK-X3-003 | Implement `packages/runtime/src/skills/SkillExecutor.ts`: `execute(manifest, context)` injects full `SKILL.md` as `<skill_context>` XML tag into system prompt via `splitLeadingXmlContext` from `@agentsy/core`. |           |      |
+| TASK-X3-004 | Add `skillRegistry?: SkillRegistry` to `AgentLoopOptions`; at loop start, scan and register skills from configured paths.                                                                                         |           |      |
+| TASK-X3-005 | Write tests: skill discovery from two-directory scan, frontmatter parsing, trigger lookup, `<skill_context>` injection.                                                                                           |           |      |
 
 ---
 
@@ -417,12 +417,12 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X4**: Claude plugin manifest compatibility subset — signed checksums, trust isolation.
 
-| Task        | Description                                                                                                                                                                                                                 | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X4-001 | Implement `packages/runtime/src/plugins/PluginLoader.ts`: loads `PluginManifest` from local path or npm package; verifies `checksum` (SHA-256 HMAC, key = `pluginSigningKey` config) before executing entrypoint.           |           |      |
-| TASK-X4-002 | Implement `packages/runtime/src/plugins/PluginRuntime.ts`: calls loaded plugin's exported `register(context)` function; collects returned `ToolDefinition[]` and `HookRegistration[]`; enforces no built-in tool override.  |           |      |
-| TASK-X4-003 | Add `plugins?: PluginManifest[]` to `AgentLoopOptions`; load and register all plugins at loop initialization.                                                                                                               |           |      |
-| TASK-X4-004 | Write tests: checksum verification pass/fail, plugin tool registration, built-in tool override rejection.                                                                                                                   |           |      |
+| Task        | Description                                                                                                                                                                                                                | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X4-001 | Implement `packages/runtime/src/plugins/PluginLoader.ts`: loads `PluginManifest` from local path or npm package; verifies `checksum` (SHA-256 HMAC, key = `pluginSigningKey` config) before executing entrypoint.          |           |      |
+| TASK-X4-002 | Implement `packages/runtime/src/plugins/PluginRuntime.ts`: calls loaded plugin's exported `register(context)` function; collects returned `ToolDefinition[]` and `HookRegistration[]`; enforces no built-in tool override. |           |      |
+| TASK-X4-003 | Add `plugins?: PluginManifest[]` to `AgentLoopOptions`; load and register all plugins at loop initialization.                                                                                                              |           |      |
+| TASK-X4-004 | Write tests: checksum verification pass/fail, plugin tool registration, built-in tool override rejection.                                                                                                                  |           |      |
 
 ---
 
@@ -430,13 +430,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P10**: Parent→child subagent spawning with depth caps.
 
-| Task         | Description                                                                                                                                                                                                                                              | Completed | Date |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P10-001 | Create `packages/agent/src/SubagentRunner.ts`: spawns child `createAgentLoop` with copy of parent options minus `memoryEngine` (child uses same wiki read but separate session); `run(task, options?): Promise<StepResult>`.                            |           |      |
-| TASK-P10-002 | Add `maxSubagentDepth?: number` (default: 3) to `AgentLoopOptions`; pass `_depth` counter through subagent options; throw `MaxDepthExceededError` at limit.                                                                                             |           |      |
-| TASK-P10-003 | Implement `SubagentCoordinator` in `packages/agent/src/SubagentCoordinator.ts`: manages pool of `SubagentRunner` instances; `spawnParallel(tasks): Promise<StepResult[]>` with concurrency bounded by `toolExecutor.concurrencyPool`.                   |           |      |
-| TASK-P10-004 | Add `subagentCoordinator?: SubagentCoordinator` to `AgentLoopOptions`.                                                                                                                                                                                   |           |      |
-| TASK-P10-005 | Write tests: sequential subagent, parallel subagents, depth cap enforcement, parent abort propagates to children.                                                                                                                                        |           |      |
+| Task         | Description                                                                                                                                                                                                                           | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P10-001 | Create `packages/agent/src/SubagentRunner.ts`: spawns child `createAgentLoop` with copy of parent options minus `memoryEngine` (child uses same wiki read but separate session); `run(task, options?): Promise<StepResult>`.          |           |      |
+| TASK-P10-002 | Add `maxSubagentDepth?: number` (default: 3) to `AgentLoopOptions`; pass `_depth` counter through subagent options; throw `MaxDepthExceededError` at limit.                                                                           |           |      |
+| TASK-P10-003 | Implement `SubagentCoordinator` in `packages/agent/src/SubagentCoordinator.ts`: manages pool of `SubagentRunner` instances; `spawnParallel(tasks): Promise<StepResult[]>` with concurrency bounded by `toolExecutor.concurrencyPool`. |           |      |
+| TASK-P10-004 | Add `subagentCoordinator?: SubagentCoordinator` to `AgentLoopOptions`.                                                                                                                                                                |           |      |
+| TASK-P10-005 | Write tests: sequential subagent, parallel subagents, depth cap enforcement, parent abort propagates to children.                                                                                                                     |           |      |
 
 ---
 
@@ -444,14 +444,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P11**: Structured logging, OpenTelemetry spans, audit trail, health checks. Load OTel lazily (Gemini CLI + Claude Code pattern).
 
-| Task         | Description                                                                                                                                                                                                                                | Completed | Date |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-P11-001 | Create `packages/telemetry/src/` with `index.ts`, `spans.ts`, `structuredLogger.ts`, `healthCheck.ts`. Add `"@agentsy/core": "workspace:*"` as dep. Add `@opentelemetry/api` as optional peer dep.                                        |           |      |
-| TASK-P11-002 | Implement `structuredLogger.ts`: JSON-structured emitter (`info`, `warn`, `error`, `debug`); redacts secrets via regex patterns from SEC-003; writes to stderr; accepts optional `WritableStream`.                                         |           |      |
-| TASK-P11-003 | Implement `spans.ts`: wraps `@opentelemetry/api` behind dynamic `import()` guard; no-ops when OTel not installed. Exposes `startSpan(name, attrs)`, `endSpan(span, status)`, `recordException(span, error)`.                              |           |      |
-| TASK-P11-004 | Add OTel span instrumentation (via dynamic import) to: `createAgentLoop` (loop span in `@agentsy/agent`), `ToolExecutor.executeAll` (per-tool span in `@agentsy/runtime`), `MCPOrchestrator.callTool` (MCP span in `@agentsy/mcp`).       |           |      |
-| TASK-P11-005 | Implement `healthCheck.ts`: `checkHealth(options): Promise<HealthStatus>` — verifies provider connectivity, MCP server reachability, session store writability, vector store connectivity.                                                 |           |      |
-| TASK-P11-006 | Write tests for structured log redaction and health check status aggregation. Verify OTel no-ops when package not installed.                                                                                                               |           |      |
+| Task         | Description                                                                                                                                                                                                                         | Completed | Date |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P11-001 | Create `packages/telemetry/src/` with `index.ts`, `spans.ts`, `structuredLogger.ts`, `healthCheck.ts`. Add `"@agentsy/core": "workspace:*"` as dep. Add `@opentelemetry/api` as optional peer dep.                                  |           |      |
+| TASK-P11-002 | Implement `structuredLogger.ts`: JSON-structured emitter (`info`, `warn`, `error`, `debug`); redacts secrets via regex patterns from SEC-003; writes to stderr; accepts optional `WritableStream`.                                  |           |      |
+| TASK-P11-003 | Implement `spans.ts`: wraps `@opentelemetry/api` behind dynamic `import()` guard; no-ops when OTel not installed. Exposes `startSpan(name, attrs)`, `endSpan(span, status)`, `recordException(span, error)`.                        |           |      |
+| TASK-P11-004 | Add OTel span instrumentation (via dynamic import) to: `createAgentLoop` (loop span in `@agentsy/agent`), `ToolExecutor.executeAll` (per-tool span in `@agentsy/runtime`), `MCPOrchestrator.callTool` (MCP span in `@agentsy/mcp`). |           |      |
+| TASK-P11-005 | Implement `healthCheck.ts`: `checkHealth(options): Promise<HealthStatus>` — verifies provider connectivity, MCP server reachability, session store writability, vector store connectivity.                                          |           |      |
+| TASK-P11-006 | Write tests for structured log redaction and health check status aggregation. Verify OTel no-ops when package not installed.                                                                                                        |           |      |
 
 ---
 
@@ -459,18 +459,18 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X5**: The 3-layer blended memory system. Nanobot Dream lifecycle architecture: the compiled wiki is a maintained artifact, NOT a retrieval index.
 
-| Task        | Description                                                                                                                                                                                                                                                           | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X5-001 | Create `packages/memory/src/` with `index.ts`, `store.ts`, `RawEventLog.ts`, `WikiStore.ts`, `MemoryLifecycle.ts`, `WikiLinter.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/retrieval": "workspace:*"` as deps.                                           |           |      |
-| TASK-X5-002 | Define interfaces in `store.ts`: `MemoryStore`, `MemoryRetriever`, `MemoryFeedback`, `MemoryMaintenance` (re-export from `@agentsy/core` types).                                                                                                                      |           |      |
-| TASK-X5-003 | Implement `RawEventLog`: append-only JSONL file at `~/.agentsy/memory/raw/sessions/<sessionId>.jsonl`; `append(snapshot)`, `readAll(sessionId)`, `list()`.                                                                                                            |           |      |
-| TASK-X5-004 | Implement `WikiStore`: manages `~/.agentsy/memory/wiki/` directory tree (`entities/`, `concepts/`, `sources/`, `synthesis/`); `writePage`, `readPage`, `deletePage`, `listPages`, `appendToLog`, `updateIndex`. File-level advisory locking via `proper-lockfile` peer dep to prevent concurrent write corruption. |           |      |
-| TASK-X5-005 | Write `schema/AGENT.md` template: LLM-facing wiki page structural conventions — frontmatter fields (`id`, `category`, `created`, `updated`, `citations`, `confidence`), heading conventions, citation format. Nanobot Dream lifecycle alignment: `dream` = wiki synthesis. |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                                                                                                                                              | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-X5-001 | Create `packages/memory/src/` with `index.ts`, `store.ts`, `RawEventLog.ts`, `WikiStore.ts`, `MemoryLifecycle.ts`, `WikiLinter.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/retrieval": "workspace:*"` as deps.                                                                                                                                                                                              |           |      |
+| TASK-X5-002 | Define interfaces in `store.ts`: `MemoryStore`, `MemoryRetriever`, `MemoryFeedback`, `MemoryMaintenance` (re-export from `@agentsy/core` types).                                                                                                                                                                                                                                                                         |           |      |
+| TASK-X5-003 | Implement `RawEventLog`: append-only JSONL file at `~/.agentsy/memory/raw/sessions/<sessionId>.jsonl`; `append(snapshot)`, `readAll(sessionId)`, `list()`.                                                                                                                                                                                                                                                               |           |      |
+| TASK-X5-004 | Implement `WikiStore`: manages `~/.agentsy/memory/wiki/` directory tree (`entities/`, `concepts/`, `sources/`, `synthesis/`); `writePage`, `readPage`, `deletePage`, `listPages`, `appendToLog`, `updateIndex`. File-level advisory locking via `proper-lockfile` peer dep to prevent concurrent write corruption.                                                                                                       |           |      |
+| TASK-X5-005 | Write `schema/AGENT.md` template: LLM-facing wiki page structural conventions — frontmatter fields (`id`, `category`, `created`, `updated`, `citations`, `confidence`), heading conventions, citation format. Nanobot Dream lifecycle alignment: `dream` = wiki synthesis.                                                                                                                                               |           |      |
 | TASK-X5-006 | Implement `MemoryLifecycle` (memelord + nanobot Dream pattern): `startTask(taskDescription)` → vector-searches wiki → returns relevant pages as `<memory_context>` XML; `report(insight)` → appends to session observations; `endTask(feedback)` → scores feedback, triggers wiki synthesis LLM call, updates wiki pages; `contradict(pageId, replacement)` → deletes old page, writes replacement, queues re-embedding. |           |      |
-| TASK-X5-007 | Implement `WikiLinter`: `lint()` scans for (a) contradictions, (b) orphan pages, (c) stale pages (confidence < 0.3, last-updated > 30 days). Returns `LintResult[]`. Exposes as `memory_lint()` tool.                                                                |           |      |
-| TASK-X5-008 | Implement `decay()`: reduces confidence of wiki pages not cited in last N sessions (configurable `decayWindow`, default 10); GCs pages below `gcThreshold` (default 0.1).                                                                                             |           |      |
-| TASK-X5-009 | Add `memoryEngine?: MemoryLifecycle` to `AgentLoopOptions`; call `startTask` / `endTask` at agent loop boundaries in `createAgentLoop.ts`.                                                                                                                            |           |      |
-| TASK-X5-010 | Write tests: raw event log append/read, wiki CRUD, lifecycle startTask/endTask, contradiction resolution, linter detection, decay below threshold.                                                                                                                    |           |      |
+| TASK-X5-007 | Implement `WikiLinter`: `lint()` scans for (a) contradictions, (b) orphan pages, (c) stale pages (confidence < 0.3, last-updated > 30 days). Returns `LintResult[]`. Exposes as `memory_lint()` tool.                                                                                                                                                                                                                    |           |      |
+| TASK-X5-008 | Implement `decay()`: reduces confidence of wiki pages not cited in last N sessions (configurable `decayWindow`, default 10); GCs pages below `gcThreshold` (default 0.1).                                                                                                                                                                                                                                                |           |      |
+| TASK-X5-009 | Add `memoryEngine?: MemoryLifecycle` to `AgentLoopOptions`; call `startTask` / `endTask` at agent loop boundaries in `createAgentLoop.ts`.                                                                                                                                                                                                                                                                               |           |      |
+| TASK-X5-010 | Write tests: raw event log append/read, wiki CRUD, lifecycle startTask/endTask, contradiction resolution, linter detection, decay below threshold.                                                                                                                                                                                                                                                                       |           |      |
 
 ---
 
@@ -478,18 +478,18 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X6**: Layer 2 of the memory stack. libSQL/Turso `vector32` backend; `ChunkStrategy` interface (tanstack/ai pattern); OpenBrain-compatible tool surface.
 
-| Task        | Description                                                                                                                                                                                                                                                                                   | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X6-001 | Create `packages/retrieval/src/` with `index.ts`, `VectorStore.ts`, `LibSQLVectorStore.ts`, `ChunkStrategy.ts`, `embeddings/`. Add `@libsql/client` as optional peer dep.                                                                                                                     |           |      |
-| TASK-X6-002 | Define `VectorStore` interface: `upsert(id, vector, metadata)`, `search(vector, topK, filter?): Promise<VectorResult[]>`, `delete(id)`, `count()`.                                                                                                                                            |           |      |
-| TASK-X6-003 | Implement `LibSQLVectorStore`: connects to `~/.agentsy/memory/vector.db`; creates `wiki_embeddings` table with `vector32`; implements `VectorStore`. Graceful fallback when libSQL not installed.                                                                                              |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                         | Completed | Date |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X6-001 | Create `packages/retrieval/src/` with `index.ts`, `VectorStore.ts`, `LibSQLVectorStore.ts`, `ChunkStrategy.ts`, `embeddings/`. Add `@libsql/client` as optional peer dep.                                                                                                                           |           |      |
+| TASK-X6-002 | Define `VectorStore` interface: `upsert(id, vector, metadata)`, `search(vector, topK, filter?): Promise<VectorResult[]>`, `delete(id)`, `count()`.                                                                                                                                                  |           |      |
+| TASK-X6-003 | Implement `LibSQLVectorStore`: connects to `~/.agentsy/memory/vector.db`; creates `wiki_embeddings` table with `vector32`; implements `VectorStore`. Graceful fallback when libSQL not installed.                                                                                                   |           |      |
 | TASK-X6-004 | Implement `ChunkStrategy` interface with two implementations: `ImmediateStrategy` (chunk on every write) and `WordBoundaryStrategy` (accumulate until word boundary, configurable window). `ChunkStrategy` applies configurable `chunkSize` (default 512 tokens) and `overlap` (default 64 tokens). |           |      |
-| TASK-X6-005 | Create `packages/retrieval/src/embeddings/` with `EmbeddingProvider.ts` interface (`embed(texts): Promise<number[][]>`), `OpenAIEmbeddingProvider.ts`, `LocalEmbeddingProvider.ts`.                                                                                                            |           |      |
-| TASK-X6-006 | Implement wiki indexer: on `WikiStore.writePage()`, auto-chunk page, embed, upsert vectors. On `WikiStore.deletePage()`, delete all chunk vectors for that page.                                                                                                                               |           |      |
-| TASK-X6-007 | Implement OpenBrain tool surface: `memory_search(query, opts)`, `memory_capture(insight)`, `memory_list(category?, filter?)`, `memory_stats()`, `memory_lint()`. Export from `packages/retrieval/src/tools.ts`.                                                                               |           |      |
+| TASK-X6-005 | Create `packages/retrieval/src/embeddings/` with `EmbeddingProvider.ts` interface (`embed(texts): Promise<number[][]>`), `OpenAIEmbeddingProvider.ts`, `LocalEmbeddingProvider.ts`.                                                                                                                 |           |      |
+| TASK-X6-006 | Implement wiki indexer: on `WikiStore.writePage()`, auto-chunk page, embed, upsert vectors. On `WikiStore.deletePage()`, delete all chunk vectors for that page.                                                                                                                                    |           |      |
+| TASK-X6-007 | Implement OpenBrain tool surface: `memory_search(query, opts)`, `memory_capture(insight)`, `memory_list(category?, filter?)`, `memory_stats()`, `memory_lint()`. Export from `packages/retrieval/src/tools.ts`.                                                                                     |           |      |
 | TASK-X6-008 | Wire retrieval context injection: `memory_search` results formatted as `<memory_context id="{pageId}" score="{score}">...</memory_context>` tags fed through `splitLeadingXmlContext` → `dedupeXmlContext` → `stripXmlContextTags` pipeline from `@agentsy/core`. Apply `enforcePrivacyTags: true`. |           |      |
-| TASK-X6-009 | Add SEC-009 injection detection: scan retrieved chunk content for instruction-override patterns before injection; emit `MemoryInjectionSuspected` and drop chunk if detected.                                                                                                                  |           |      |
-| TASK-X6-010 | Write tests: chunk strategy (both implementations), vector upsert/search, `memory_search` tool result format, `MemoryInjectionSuspected` detection.                                                                                                                                           |           |      |
+| TASK-X6-009 | Add SEC-009 injection detection: scan retrieved chunk content for instruction-override patterns before injection; emit `MemoryInjectionSuspected` and drop chunk if detected.                                                                                                                       |           |      |
+| TASK-X6-010 | Write tests: chunk strategy (both implementations), vector upsert/search, `memory_search` tool result format, `MemoryInjectionSuspected` detection.                                                                                                                                                 |           |      |
 
 ---
 
@@ -497,12 +497,12 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X7**: Allow swapping local libSQL for remote Turso via config — zero code change for consumers.
 
-| Task        | Description                                                                                                                                                                                          | Completed | Date |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X7-001 | Implement `TursoVectorStore` in `packages/retrieval/src/TursoVectorStore.ts`: same `VectorStore` interface, uses remote Turso URL + auth token from config.                                           |           |      |
-| TASK-X7-002 | Add `vectorStoreUrl?: string` and `vectorStoreAuthToken?: string` to `MemoryLifecycle` options; auto-select `TursoVectorStore` vs `LibSQLVectorStore` based on URL scheme.                            |           |      |
-| TASK-X7-003 | Document the local→remote switch in `docs/developer-guide.md`.                                                                                                                                      |           |      |
-| TASK-X7-004 | Write tests: backend selection logic, Turso connection URL parsing.                                                                                                                                 |           |      |
+| Task        | Description                                                                                                                                                                | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X7-001 | Implement `TursoVectorStore` in `packages/retrieval/src/TursoVectorStore.ts`: same `VectorStore` interface, uses remote Turso URL + auth token from config.                |           |      |
+| TASK-X7-002 | Add `vectorStoreUrl?: string` and `vectorStoreAuthToken?: string` to `MemoryLifecycle` options; auto-select `TursoVectorStore` vs `LibSQLVectorStore` based on URL scheme. |           |      |
+| TASK-X7-003 | Document the local→remote switch in `docs/developer-guide.md`.                                                                                                             |           |      |
+| TASK-X7-004 | Write tests: backend selection logic, Turso connection URL parsing.                                                                                                        |           |      |
 
 ---
 
@@ -510,11 +510,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-R4**: Produce a starter spec and integration guide for downstream consumer projects.
 
-| Task        | Description                                                                                                                                                                                                          | Completed | Date |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-R4-001 | Create `docs/downstream-app-starter.md`: describes building a CLI app on top of `@agentsy/agent` + other packages; `createAgentLoop` setup, provider config, tool registration, memory engine wiring, MCP config.   |           |      |
-| TASK-R4-002 | Create `examples/minimal-agent/` with a 50-line `index.ts`: minimal agent, one tool, console streaming output. Show selective `@agentsy/*` imports.                                                                  |           |      |
-| TASK-R4-003 | Ensure all `@public` API surface has TSDoc comments consumable by downstream projects.                                                                                                                              |           |      |
+| Task        | Description                                                                                                                                                                                                       | Completed | Date |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-R4-001 | Create `docs/downstream-app-starter.md`: describes building a CLI app on top of `@agentsy/agent` + other packages; `createAgentLoop` setup, provider config, tool registration, memory engine wiring, MCP config. |           |      |
+| TASK-R4-002 | Create `examples/minimal-agent/` with a 50-line `index.ts`: minimal agent, one tool, console streaming output. Show selective `@agentsy/*` imports.                                                               |           |      |
+| TASK-R4-003 | Ensure all `@public` API surface has TSDoc comments consumable by downstream projects.                                                                                                                            |           |      |
 
 ---
 
@@ -522,14 +522,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-X8**: Verify conformance to all relevant open standards and performance SLOs before release.
 
-| Task        | Description                                                                                                                                                                                                                           | Completed | Date |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-X8-001 | Agent Skills conformance: verify `SkillLoader` in `@agentsy/runtime` correctly parses all frontmatter fields; run against 5 sample skills from agentskills.io Skills Hub.                                                             |           |      |
-| TASK-X8-002 | MCP 2025-06-18 conformance: run official MCP conformance test suite against `@agentsy/mcp` `MCPOrchestrator`.                                                                                                                         |           |      |
-| TASK-X8-003 | AG-UI protocol conformance: verify `@agentsy/ag-ui` adapters emit complete `RUN_STARTED`→`MESSAGES_SNAPSHOT`→`RUN_FINISHED` envelope per AG-UI spec; test `TOOL_CALL_END` dual-role (args-done vs args-done+result).                  |           |      |
-| TASK-X8-004 | Claude plugin subset conformance: verify `@agentsy/runtime` `PluginLoader` accepts manifests from 3 published Claude plugins (tools subset only).                                                                                    |           |      |
-| TASK-X8-005 | Security suite: prompt injection corpus against SEC-009 detection; SEC-002 path confinement rejects 20 traversal patterns; SEC-003 redaction strips 15 secret patterns.                                                              |           |      |
-| TASK-X8-006 | Performance suite: startup latency (p50/p95), first-token latency (warm provider), streaming repaint budget, memory ceiling (30-min session), memory retrieval latency. Assert against SLOs in Section 7.                            |           |      |
+| Task        | Description                                                                                                                                                                                                          | Completed | Date |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-X8-001 | Agent Skills conformance: verify `SkillLoader` in `@agentsy/runtime` correctly parses all frontmatter fields; run against 5 sample skills from agentskills.io Skills Hub.                                            |           |      |
+| TASK-X8-002 | MCP 2025-06-18 conformance: run official MCP conformance test suite against `@agentsy/mcp` `MCPOrchestrator`.                                                                                                        |           |      |
+| TASK-X8-003 | AG-UI protocol conformance: verify `@agentsy/ag-ui` adapters emit complete `RUN_STARTED`→`MESSAGES_SNAPSHOT`→`RUN_FINISHED` envelope per AG-UI spec; test `TOOL_CALL_END` dual-role (args-done vs args-done+result). |           |      |
+| TASK-X8-004 | Claude plugin subset conformance: verify `@agentsy/runtime` `PluginLoader` accepts manifests from 3 published Claude plugins (tools subset only).                                                                    |           |      |
+| TASK-X8-005 | Security suite: prompt injection corpus against SEC-009 detection; SEC-002 path confinement rejects 20 traversal patterns; SEC-003 redaction strips 15 secret patterns.                                              |           |      |
+| TASK-X8-006 | Performance suite: startup latency (p50/p95), first-token latency (warm provider), streaming repaint budget, memory ceiling (30-min session), memory retrieval latency. Assert against SLOs in Section 7.            |           |      |
 
 ---
 
@@ -537,13 +537,13 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P12**: Production-ready release with full E2E matrix, adversarial tests, and three-channel release publishing.
 
-| Task         | Description                                                                                                                                                                                                                                                | Completed | Date |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P12-001 | Write E2E integration tests covering: full agent loop (3 steps, 2 tool calls), session resume after simulated crash, MCP tool invocation, memory search injection, wiki synthesis pass. Place in `packages/agent/src/agent.e2e.test.ts`.                   |           |      |
-| TASK-P12-002 | Write adversarial test corpus: malformed JSON tool args, truncated SSE stream, oversized context (>200K tokens), wiki page with injection payload, plugin with invalid checksum.                                                                           |           |      |
-| TASK-P12-003 | Add performance benchmarks to per-package `perf/` directories mirroring Gemini CLI's test structure.                                                                                                                                                      |           |      |
+| Task         | Description                                                                                                                                                                                                                                                       | Completed | Date |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P12-001 | Write E2E integration tests covering: full agent loop (3 steps, 2 tool calls), session resume after simulated crash, MCP tool invocation, memory search injection, wiki synthesis pass. Place in `packages/agent/src/agent.e2e.test.ts`.                          |           |      |
+| TASK-P12-002 | Write adversarial test corpus: malformed JSON tool args, truncated SSE stream, oversized context (>200K tokens), wiki page with injection payload, plugin with invalid checksum.                                                                                  |           |      |
+| TASK-P12-003 | Add performance benchmarks to per-package `perf/` directories mirroring Gemini CLI's test structure.                                                                                                                                                              |           |      |
 | TASK-P12-004 | Publish all `@agentsy/*` packages at `v0.3.0` to npm `latest` channel. Publish `@agentsy/*@0.3.0-nightly` nightly builds via CI cron. Tag `v0.3.0` in git. Create GitHub release with `CHANGELOG.md` entry. Three release channels: `latest`, `alpha`, `nightly`. |           |      |
-| TASK-P12-005 | Publish `@selfagency/llm-stream-parser@0.3.0` shim to npm with `deprecated` notice pointing to `@agentsy/*` migration guide.                                                                                                                              |           |      |
+| TASK-P12-005 | Publish `@selfagency/llm-stream-parser@0.3.0` shim to npm with `deprecated` notice pointing to `@agentsy/*` migration guide.                                                                                                                                      |           |      |
 
 ---
 
@@ -610,6 +610,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 ### Per-Package Config Files (×16 packages)
 
 Each package in `packages/<domain>/` contains:
+
 - `package.json` — name, version, deps, scripts, publishConfig, exports map
 - `tsconfig.json` — extends `@agentsy/tsconfig/library.json`
 - `tsup.config.ts` — dual ESM/CJS, externals list, `.d.ts`
@@ -702,19 +703,19 @@ Each package in `packages/<domain>/` contains:
 
 ### SLO Targets
 
-| Metric | Target |
-|---|---|
-| Startup latency p50 | ≤ 500ms |
-| Startup latency p95 | ≤ 900ms |
-| First-token latency p50 (warm provider) | ≤ 350ms |
-| Streaming repaint budget | ≥ 20 FPS under sustained token stream |
-| Memory ceiling (30-min session) | ≤ 220MB |
-| Tool reliability (non-destructive built-ins) | ≥ 95% |
-| Session resume reliability | ≥ 99% deterministic restore |
-| Memory retrieval p95 (local libSQL) | ≤ 50ms |
-| Memory retrieval p95 (remote Turso) | ≤ 150ms |
-| Wiki synthesis latency | Async / non-blocking (task-end trigger only) |
-| Turbo build cache hit rate (warm) | ≥ 90% |
+| Metric                                       | Target                                       |
+| -------------------------------------------- | -------------------------------------------- |
+| Startup latency p50                          | ≤ 500ms                                      |
+| Startup latency p95                          | ≤ 900ms                                      |
+| First-token latency p50 (warm provider)      | ≤ 350ms                                      |
+| Streaming repaint budget                     | ≥ 20 FPS under sustained token stream        |
+| Memory ceiling (30-min session)              | ≤ 220MB                                      |
+| Tool reliability (non-destructive built-ins) | ≥ 95%                                        |
+| Session resume reliability                   | ≥ 99% deterministic restore                  |
+| Memory retrieval p95 (local libSQL)          | ≤ 50ms                                       |
+| Memory retrieval p95 (remote Turso)          | ≤ 150ms                                      |
+| Wiki synthesis latency                       | Async / non-blocking (task-end trigger only) |
+| Turbo build cache hit rate (warm)            | ≥ 90%                                        |
 
 ---
 
@@ -722,7 +723,7 @@ Each package in `packages/<domain>/` contains:
 
 ### Package Dependency Graph
 
-```
+```plaintext
 @agentsy/tsconfig         (no deps)
 @agentsy/core             (no @agentsy deps — zero transitive weight)
 @agentsy/normalizers   →  @agentsy/core
@@ -764,4 +765,3 @@ Each package in `packages/<domain>/` contains:
 - [Karpathy LLM Wiki Gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — compiled wiki architectural pattern
 - [libSQL / Turso vector32 docs](https://docs.turso.tech/features/vector-similarity-search) — vector store backend for `@agentsy/retrieval`
 - [Turborepo documentation](https://turbo.build/repo/docs) — pipeline config, remote caching, workspace conventions
-

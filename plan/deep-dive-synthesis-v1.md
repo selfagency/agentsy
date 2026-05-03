@@ -47,20 +47,20 @@ Nine reference codebases were studied to extract production-validated architectu
 
 - **GOAL-002**: Apply targeted patches to `agentsy-platform-v1.md` for HIGH-priority findings.
 
-| Task     | Description                                                                                          | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-008 | P7: Add atomic write + lazy session + early user-message persistence sub-tasks                           |           |      |
-| TASK-009 | P6: Add `allow_patterns` priority rule + warning-first guardrails to RiskClassifier                      |           |      |
-| TASK-010 | P3: Add auto-compact skips active tasks constraint to ContextManager                                     |           |      |
-| TASK-011 | P9: Add `plan` mode (read-only agent) as 4th approval mode                                               |           |      |
-| TASK-012 | X1: Add `isConcurrencySafe` / `isReadOnly` / `isDestructive` / `interruptBehavior` to tool interface     |           |      |
-| TASK-013 | P8: Add ACP reference + WebSocket idle timeout to MCPOrchestrator                                        |           |      |
-| TASK-014 | X5: Align MemoryLifecycle with nanobot two-stage flow (Consolidator → Dream)                             |           |      |
-| TASK-015 | P12: Add three release channels (preview/stable/nightly) and perf test dirs                              |           |      |
-| TASK-016 | P0/P2: Add `prepareStep` callback to `AgentLoopOptions` for per-step model/tool reconfiguration          |           |      |
-| TASK-017 | P5: Add `repairToolCall` hook to `ToolExecutor` for malformed LLM tool-call recovery                     |           |      |
-| TASK-018 | P5: Lazy `UIMessage` creation in `LLMStreamProcessor` — no message until first content chunk arrives     |           |      |
-| TASK-019 | P0: Chunk recording/replay fixture pattern in `StreamProcessor` for deterministic edge-case tests        |           |      |
+| Task     | Description                                                                                               | Completed | Date |
+| -------- | --------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-008 | P7: Add atomic write + lazy session + early user-message persistence sub-tasks                            |           |      |
+| TASK-009 | P6: Add `allow_patterns` priority rule + warning-first guardrails to RiskClassifier                       |           |      |
+| TASK-010 | P3: Add auto-compact skips active tasks constraint to ContextManager                                      |           |      |
+| TASK-011 | P9: Add `plan` mode (read-only agent) as 4th approval mode                                                |           |      |
+| TASK-012 | X1: Add `isConcurrencySafe` / `isReadOnly` / `isDestructive` / `interruptBehavior` to tool interface      |           |      |
+| TASK-013 | P8: Add ACP reference + WebSocket idle timeout to MCPOrchestrator                                         |           |      |
+| TASK-014 | X5: Align MemoryLifecycle with nanobot two-stage flow (Consolidator → Dream)                              |           |      |
+| TASK-015 | P12: Add three release channels (preview/stable/nightly) and perf test dirs                               |           |      |
+| TASK-016 | P0/P2: Add `prepareStep` callback to `AgentLoopOptions` for per-step model/tool reconfiguration           |           |      |
+| TASK-017 | P5: Add `repairToolCall` hook to `ToolExecutor` for malformed LLM tool-call recovery                      |           |      |
+| TASK-018 | P5: Lazy `UIMessage` creation in `LLMStreamProcessor` — no message until first content chunk arrives      |           |      |
+| TASK-019 | P0: Chunk recording/replay fixture pattern in `StreamProcessor` for deterministic edge-case tests         |           |      |
 | TASK-020 | P2: `mergeCallbacks` utility — settings-level + call-level lifecycle callbacks must both fire (no shadow) |           |      |
 
 ---
@@ -454,8 +454,8 @@ The canonical Vercel AI agent is a class implementing an `Agent<CALL_OPTIONS, TO
 
 ```typescript
 class ToolLoopAgent {
-  async generate(params: AgentCallParameters): Promise<GenerateTextResult>
-  async stream(params: AgentStreamParameters): Promise<StreamTextResult>
+  async generate(params: AgentCallParameters): Promise<GenerateTextResult>;
+  async stream(params: AgentStreamParameters): Promise<StreamTextResult>;
 }
 ```
 
@@ -469,13 +469,13 @@ Stop conditions are external, composable predicates — not inline flags inside 
 
 ```typescript
 type StopCondition<TOOLS, RUNTIME_CONTEXT> = (options: {
-  steps: Array<StepResult<TOOLS, RUNTIME_CONTEXT>>
-}) => PromiseLike<boolean> | boolean
+  steps: Array<StepResult<TOOLS, RUNTIME_CONTEXT>>;
+}) => PromiseLike<boolean> | boolean;
 
 // Built-in factories:
-isStepCount(20)          // default: stop after 20 steps
-isLoopFinished()         // never stops via condition (natural termination only)
-hasToolCall('planTool')  // stop when a named tool is called
+isStepCount(20); // default: stop after 20 steps
+isLoopFinished(); // never stops via condition (natural termination only)
+hasToolCall('planTool'); // stop when a named tool is called
 ```
 
 Stop conditions are evaluated after each step via `isStopConditionMet()` which runs all conditions in parallel via `Promise.all()`. The first `true` wins.
@@ -528,10 +528,7 @@ This fires **after** a tool call JSON parse failure and **before** surfacing the
 Both settings-level and call-level lifecycle callbacks are merged so both fire:
 
 ```typescript
-experimental_onStart: mergeCallbacks(
-  this.settings.experimental_onStart,
-  callParams.experimental_onStart
-)
+experimental_onStart: mergeCallbacks(this.settings.experimental_onStart, callParams.experimental_onStart);
 ```
 
 This prevents call-level callbacks from silently overriding settings-level callbacks. Both always fire, in settings-first order.
@@ -542,10 +539,14 @@ This prevents call-level callbacks from silently overriding settings-level callb
 
 ```typescript
 async function createAgentUIStream({
-  agent, uiMessages, options, abortSignal,
-  experimental_transform, onStepFinish,
+  agent,
+  uiMessages,
+  options,
+  abortSignal,
+  experimental_transform,
+  onStepFinish,
   ...uiMessageStreamOptions
-}): Promise<AsyncIterableStream<UIMessageChunk>>
+}): Promise<AsyncIterableStream<UIMessageChunk>>;
 ```
 
 This function: (1) validates and converts `UIMessage[]` → `ModelMessage[]`; (2) calls `agent.stream()`; (3) calls `result.toUIMessageStream()`. It is the single integration point between the agent loop and the UI layer.
@@ -586,15 +587,15 @@ TanStack's `StreamProcessor` is a single-class AG-UI event state machine that ma
 
 ```typescript
 type AgentLoopStrategy = (state: {
-  iterationCount: number
-  finishReason: string | null
-  messages: UIMessage[]
-}) => boolean
+  iterationCount: number;
+  finishReason: string | null;
+  messages: UIMessage[];
+}) => boolean;
 
 // Built-in factories:
-maxIterations(n)                         // stop after n iterations
-untilFinishReason(['stop', 'length'])     // stop on finish reason
-combineStrategies([stratA, stratB])      // AND composition
+maxIterations(n); // stop after n iterations
+untilFinishReason(['stop', 'length']); // stop on finish reason
+combineStrategies([stratA, stratB]); // AND composition
 ```
 
 Both Vercel (`StopCondition`) and TanStack (`AgentLoopStrategy`) independently converged on the same functional predicate pattern for loop termination. This is confirmed consensus.
@@ -617,7 +618,7 @@ This dual role eliminates a separate `TOOL_CALL_RESULT` event for the common ser
 TanStack separates message **preparation** from message **creation**:
 
 ```typescript
-processor.prepareAssistantMessage()  // resets stream state, NO message yet
+processor.prepareAssistantMessage(); // resets stream state, NO message yet
 // message is created lazily on first TEXT_MESSAGE_CONTENT or TOOL_CALL_START
 ```
 
@@ -631,14 +632,14 @@ Flicker guard: `finalizeStream()` removes whitespace-only assistant messages tha
 
 ```typescript
 interface ChunkStrategy {
-  shouldEmit(chunkPortion: string, currentText: string): boolean
-  reset?(): void
+  shouldEmit(chunkPortion: string, currentText: string): boolean;
+  reset?(): void;
 }
 
 // Built-in:
-new ImmediateStrategy()      // emit every chunk (default)
-new WordBoundaryStrategy()   // emit only on word boundaries (less re-render churn)
-new PunctuationStrategy()    // emit on punctuation (sentence-level batching)
+new ImmediateStrategy(); // emit every chunk (default)
+new WordBoundaryStrategy(); // emit only on word boundaries (less re-render churn)
+new PunctuationStrategy(); // emit on punctuation (sentence-level batching)
 ```
 
 The strategy is injected via constructor options and can be swapped at runtime. This decouples the emission rate policy from the core accumulation logic.

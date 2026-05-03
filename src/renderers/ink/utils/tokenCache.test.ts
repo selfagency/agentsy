@@ -47,7 +47,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('differentiates between different large strings', () => {
-    const renderFn = vi.fn((s: string) => `[rendered]`);
+    const renderFn = vi.fn((_: string) => `[rendered]`);
     const content1 = 'a'.repeat(2000);
     const content2 = 'b'.repeat(2000);
 
