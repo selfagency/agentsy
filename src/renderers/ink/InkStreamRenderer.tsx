@@ -89,6 +89,49 @@ function ToolCallsSection({
   return <ToolCallsRenderer toolCalls={toolCalls} theme={options.theme} screenReader={options.screenReader} />;
 }
 
+function ThinkingContent({
+  thinking,
+  isStreaming,
+  options,
+}: {
+  readonly thinking: string;
+  readonly isStreaming: boolean;
+  readonly options: RenderOptions;
+}) {
+  return <ThinkingSection thinking={thinking} isStreaming={isStreaming} options={options} />;
+}
+
+function ToolCallsContent({
+  toolCalls,
+  options,
+}: {
+  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly options: RenderOptions;
+}) {
+  return <ToolCallsSection toolCalls={toolCalls} options={options} />;
+}
+
+function TextContent({
+  text,
+  isStreaming,
+  options,
+}: {
+  readonly text: string;
+  readonly isStreaming: boolean;
+  readonly options: RenderOptions;
+}) {
+  return (
+    <StreamingText
+      text={text}
+      markdown={options.markdown}
+      isStreaming={isStreaming}
+      theme={options.theme}
+      screenReader={options.screenReader}
+      syntaxHighlight={options.syntaxHighlight}
+    />
+  );
+}
+
 function ContentRenderer({
   text,
   thinking,
@@ -102,20 +145,11 @@ function ContentRenderer({
   readonly isStreaming: boolean;
   readonly options: RenderOptions;
 }) {
-  const streamingProps = {
-    text,
-    markdown: options.markdown,
-    isStreaming,
-    theme: options.theme,
-    screenReader: options.screenReader,
-    syntaxHighlight: options.syntaxHighlight,
-  };
-
   return (
     <Box flexDirection="column">
-      <ThinkingSection thinking={thinking} isStreaming={isStreaming} options={options} />
-      <ToolCallsSection toolCalls={toolCalls} options={options} />
-      <StreamingText {...streamingProps} />
+      <ThinkingContent thinking={thinking} isStreaming={isStreaming} options={options} />
+      <ToolCallsContent toolCalls={toolCalls} options={options} />
+      <TextContent text={text} isStreaming={isStreaming} options={options} />
     </Box>
   );
 }
@@ -138,8 +172,8 @@ export default function InkStreamRenderer({
   setForceUpdate,
   options,
 }: InkStreamRendererProps) {
-  // setTick is used internally to trigger re-renders when stateRef is mutated externally
-  const [, setTick] = useState(0);
+  // tick is used internally to trigger re-renders when stateRef is mutated externally
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     setForceUpdate(() => {

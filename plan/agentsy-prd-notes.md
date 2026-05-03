@@ -298,6 +298,76 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ---
 
+### ADR-019: Caveman Mode as Bundled Skill, Not Runtime Filter
+
+**Decision**: Token compression in `@agentsy/caveman` is implemented as bundled SKILL.md system-prompt injections, not as a post-processing filter on model output tokens.
+
+**Evidence**: JuliusBrussee/caveman v1.7.0 (52.5k stars): the entire compression mechanism is a SKILL.md that instructs the model to produce compressed output. `caveman-shrink` MCP proxy compresses tool _descriptions_ (input to model) — reducing prompt tokens, not output tokens.
+
+**Rationale**: Post-processing token compression would require streaming token-by-token mutation, which is fragile and destructive to structured output (JSON, code). Prompt-side compression leverages the model's own language capabilities at zero inference-time overhead. The two techniques (prompt injection + tool description compression) are orthogonal and complementary.
+
+---
+
+### ADR-020: Skills CLI as Subprocess, Not Library Import
+
+**Decision**: `@agentsy/skills` wraps `npx skills` as a child subprocess rather than importing vercel-labs/skills internals as a library.
+
+**Evidence**: vercel-labs/skills is designed as a CLI tool with no published programmatic Node.js API surface. `@mcpmarket/mcp-auto-install` uses the same pattern.
+
+**Rationale**: Importing CLI internals creates tight coupling to internal module structure that changes without semver guarantees. Subprocess spawning treats the CLI as a stable, versioned interface. Input validation (SEC-011) on the `ref` argument prevents command injection through the subprocess call.
+
+---
+
+### ADR-021: MCP Auto-Install in dryRun by Default
+
+**Decision**: `mai_install` and `mai_remove` in `@agentsy/mcp` default to `dryRun: true`. Actual MCP client config mutation requires explicit two-step: agent calls `mai_install` (returns dry-run plan), then `/mcp-install` slash command surfaces user confirmation gate before calling `mai_install({ confirm: true })`.
+
+**Evidence**: `@mcpmarket/mcp-auto-install v0.2.1` includes `dryRun` option precisely because MCP config file mutation is non-reversible. SEC-012: any tool mutating user MCP client config must require explicit confirmation.
+
+**Rationale**: MCP server installation modifies persistent system configuration files (e.g., `~/.config/claude/mcp.json`). An agent that auto-installs without user awareness creates a supply-chain trust issue. The dry-run default + confirmation fence mirrors the `ask` approval mode applied to all other destructive operations in `@agentsy/runtime`.
+
+---
+
+### ADR-022: Superpowers Skills as Context-Activated, Not Always-On
+
+**Decision**: `@agentsy/superpowers` skills are activated by context signals (presence of test files, diff context, open-ended planning intent) rather than being injected into every agent session's system prompt.
+
+**Evidence**: obra/superpowers v5.0.7 README describes a "progressive activation" model. ADR-001/GUD-002: avoid over-injecting context; add only what the session needs. Always-on superpowers injection adds ~2000 tokens to every prompt unnecessarily.
+
+**Rationale**: Context-based activation via `SuperpowersActivator.selectSkills(context)` injects only the subset relevant to the current task, preserving context window budget.
+
+---
+
+### ADR-023: Slash Commands Intercept Before Model, Not After
+
+**Decision**: `SlashCommandRegistry` in `@agentsy/agent` intercepts `/`-prefixed user messages _before_ any model call. Matched commands execute directly, returning a synthetic assistant message. Unrecognized `/`-prefixed messages pass through unmodified.
+
+**Evidence**: Claude Code SDK: custom commands in `.claude/commands/<name>.md` are resolved before the message is sent to the model. OpenClaw chat commands are intercepted by the gateway layer. Slash command semantics are fully deterministic — no LLM interpretation needed.
+
+**Rationale**: Sending slash commands to the model creates non-deterministic behavior. Pre-model interception ensures `/new` always creates a new session, `/status` always returns metadata, etc. It also eliminates unnecessary LLM round-trips for operational commands.
+
+---
+
+### ADR-024: Connector Gateway as Pure Library (No Embedded Application)
+
+**Decision**: `@agentsy/connectors` is a library providing `ConnectorGateway`, `ChannelAdapter`, `AgentSessionManager`, and three first-party adapter implementations. It includes no CLI binary, HTTP server, or persistent process manager.
+
+**Evidence**: NanoClaw architecture: gateway logic isolated from host process. CON-010: channel adapter platform SDKs are peer dependencies.
+
+**Rationale**: Embedding process management would conflict with the consumer's own deployment model (serverless, containers, desktop). The library exposes the minimal API surface; process management is the consumer's responsibility.
+
+---
+
+### ADR-025: Connector Inbound Messages Sanitized via Existing XML Pipeline
+
+**Decision**: All inbound messages in `@agentsy/connectors` pass through `stripXmlContextTags` and `dedupeXmlContext` before being forwarded to the agent loop, reusing the existing pipeline.
+
+**Evidence**: SEC-006: retrieved wiki content treated as untrusted; `<script>`, HTML injection, executable patterns stripped before injection. SEC-013: inbound connector message payloads are untrusted external input. The existing pipeline in `@agentsy/core/context` is already designed for untrusted LLM-generated XML — the same threat model applies.
+
+**Rationale**: External chat messages (especially from public channels) are high-risk prompt injection vectors. Reusing the existing XML sanitization pipeline avoids a second code path and ensures consistent defense-in-depth.
+
+---
+
 ## 3. Cross-Cutting Patterns (Consensus ≥ 3 Projects)
 
 | Pattern                                   | Sources             | Priority | Maps To               |

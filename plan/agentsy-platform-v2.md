@@ -48,6 +48,24 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **REQ-022**: Turborepo must orchestrate all build, test, typecheck, and lint tasks with proper dependency-aware caching.
 - **REQ-023**: `StopCondition` predicates (`isStepCount`, `hasToolCall`, `isLoopFinished`) must be exported from `@agentsy/agent` (vercel/ai pattern).
 - **REQ-024**: `prepareStep` callback and `mergeCallbacks` utility must be available in `@agentsy/agent` for per-step dynamic reconfiguration (vercel/ai pattern).
+- **REQ-025**: `@agentsy/caveman` must ship the `caveman` SKILL.md (JuliusBrussee/caveman v1.7.0) as a bundled default skill, activatable by consumer agents without a separate `npx skills add` step.
+- **REQ-026**: `@agentsy/caveman` must include `caveman-shrink` — an MCP stdio proxy that wraps any downstream MCP server and compresses tool description tokens while preserving code literals, URLs, and identifiers byte-for-byte.
+- **REQ-027**: `@agentsy/caveman` must expose `cavecrew` subagent variant SKILL.md files (investigator, builder, reviewer) that emit ~60% fewer output tokens than vanilla equivalents.
+- **REQ-028**: Caveman mode intensity must be settable via `CavemanMode`: `'lite' | 'full' | 'ultra' | 'wenyan-lite' | 'wenyan-full' | 'wenyan-ultra'`. Default: `'full'`.
+- **REQ-029**: `@agentsy/skills` must provide a `SkillsManager` factory with async methods: `find(query)`, `add(ref)`, `list()`, `remove(name)`, `update(name)`, `init(path)` — a Node.js wrapper around the `npx skills` CLI (vercel-labs/skills).
+- **REQ-030**: `@agentsy/skills` must support searching the public skills registry at skills.sh by natural language query, returning ranked `SkillSearchResult[]` with name, description, author, and install command.
+- **REQ-031**: `@agentsy/mcp` must bundle `@mcpmarket/mcp-auto-install v0.2.1` as a default MCP server in every `MCPOrchestrator` instance. The five `mai_*` tools (`mai_search`, `mai_details`, `mai_readme`, `mai_install`, `mai_remove`) must be exposed as first-class tools to the agent loop.
+- **REQ-032**: MCP auto-install must support `dryRun` mode (default: `true`) — `mai_install` and `mai_remove` must require explicit `{ dryRun: false }` to mutate the user's MCP client config.
+- **REQ-033**: `@agentsy/superpowers` must bundle the core superpowers methodology skills (obra/superpowers v5.0.7): `brainstorming`, `git-worktrees`, `writing-plans`, `subagent-driven-development`, `tdd`, `code-review`, `finish-branch`.
+- **REQ-034**: Superpowers skills must auto-activate based on context signals: `tdd` when test files are present, `code-review` when diff/PR context is injected, `brainstorming` on open-ended planning prompts.
+- **REQ-035**: `@agentsy/slash-commands` must provide a `SlashCommandRegistry` that discovers commands from `.agents/skills/<name>/SKILL.md` files and makes them invocable via `registry.execute('/name', args)`.
+- **REQ-036**: `@agentsy/slash-commands` must ship a stock command set: `/skills-find`, `/skills-add`, `/skills-list`, `/mcp-list`, `/mcp-install`, `/caveman`, `/caveman-lite`, `/caveman-ultra`, `/compact`, `/status`, `/new`, `/review`.
+- **REQ-037**: Slash command SKILL.md frontmatter must support `allowed-tools`, `description`, `model`, and `argument-hint` fields. Bash execution, file references (`@file`), and positional args (`$1`, `$ARGUMENTS`) must be supported.
+- **REQ-038**: `@agentsy/connectors` must provide a `ConnectorGateway` with an `AdapterRegistry` supporting pluggable channel adapters. Gateway model: inbound message → `MessageRouter` → `AgentSessionManager` → outbound delivery via originating adapter.
+- **REQ-039**: `@agentsy/connectors` must ship three first-party channel adapters: `TelegramAdapter`, `DiscordAdapter`, `SlackAdapter`. Additional adapters installable on demand as `@agentsy/connector-<channel>` packages.
+- **REQ-040**: `@agentsy/connectors` `AgentSessionManager` must integrate with `@agentsy/session` for per-conversation session persistence and crash-safe resume across channel disconnects.
+- **REQ-041**: `@agentsy/connectors` inbound messages must pass through the `@agentsy/runtime` approval engine before invoking destructive tools, using `'auto'` approval mode by default.
+- **REQ-042**: `@agentsy/connectors` must support OpenClaw-compatible chat commands as built-in slash commands: `/status`, `/new`, `/reset`, `/compact`, `/think`, `/verbose`, `/usage`.
 
 ### Security Requirements
 
@@ -60,6 +78,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **SEC-007**: MCP server connections must be filtered by trust level (`trusted` / `untrusted` / `readonly`); untrusted servers may not invoke destructive built-in tools.
 - **SEC-008**: SSRF prevention: HTTP fetch tools must validate destination URLs against a configurable egress allowlist.
 - **SEC-009**: Prompt injection detection: retrieved memory content carrying instruction-override patterns must trigger a `MemoryInjectionSuspected` warning event and drop the chunk.
+- **SEC-010**: `caveman-shrink` MCP proxy must never alter tool `inputSchema` definitions — only compress `description` strings. Altered schemas must trigger a startup validation error.
+- **SEC-011**: `@agentsy/skills` `add(ref)` must validate `ref` against pattern `owner/repo` or a registry slug. Arbitrary URL inputs must be rejected to prevent SSRF via the skills CLI subprocess.
+- **SEC-012**: `mai_install` from `@mcpmarket/mcp-auto-install` must default to `dryRun: true` in all `@agentsy/mcp` contexts. Actual installation requires explicit `{ confirm: true }` after user approval.
+- **SEC-013**: `@agentsy/connectors` inbound message payloads must be treated as untrusted external input. Content must be sanitized before system prompt injection via the existing `stripXmlContextTags` / `dedupeXmlContext` pipeline.
+- **SEC-014**: `@agentsy/connectors` channel adapter credentials (bot tokens, API keys) must be loaded exclusively from environment variables or `@agentsy/runtime` secret store. No credentials in config objects or SKILL.md files.
 
 ### Constraints
 
@@ -71,6 +94,10 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **CON-006**: `@agentsy/core` must have zero runtime dependencies beyond Node.js built-ins; it is the dependency-free foundation.
 - **CON-007**: libSQL/Turso is the default vector store backend for `@agentsy/retrieval` Layer 2; the backend must be swappable via configuration interface.
 - **CON-008**: Turborepo remote caching is optional but the pipeline must be configured to support it (Vercel Remote Cache or self-hosted).
+- **CON-009**: `@agentsy/caveman`, `@agentsy/skills`, `@agentsy/superpowers`, and `@agentsy/slash-commands` must have zero runtime dependencies beyond `@agentsy/core`. SKILL.md files are static assets, not compiled code.
+- **CON-010**: `@agentsy/connectors` channel adapters must list the respective platform SDK as a `peerDependency`, not a hard dependency.
+- **CON-011**: `caveman-shrink` MCP proxy must be a standalone Node.js stdio process compatible with MCP 2025-06-18 transport spec. It must not require any `@agentsy/*` packages at runtime.
+- **CON-012**: `@agentsy/skills` CLI subprocess calls must use argument arrays — never shell string interpolation — to prevent command injection.
 
 ### Guidelines
 
@@ -81,6 +108,9 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **GUD-005**: Tests colocated as `*.test.ts` in each package's `src/`; adversarial/malformed-input test cases required for all parser and memory modules.
 - **GUD-006**: Inter-package dependencies use the pnpm workspace protocol (`"@agentsy/core": "workspace:*"`), NOT relative paths.
 - **GUD-007**: Each package's `package.json` includes `"publishConfig": { "access": "public" }` for `@agentsy` scoped publishing.
+- **GUD-008**: All bundled SKILL.md files must include `source_url`, `version`, and `license` frontmatter fields pointing to the upstream repository.
+- **GUD-009**: All slash commands in the stock set must have a corresponding unit test in `packages/slash-commands/src/*.test.ts`.
+- **GUD-010**: Connector adapters must implement the `ChannelAdapter` interface and never directly reference `@agentsy/agent` internals. All agent communication goes through the `AgentSessionManager` contract.
 
 ### Patterns to Follow
 
@@ -743,6 +773,16 @@ Each package in `packages/<domain>/` contains:
 @selfagency/llm-stream-parser (shim) →
   @agentsy/core, @agentsy/processor, @agentsy/agent,
   @agentsy/adapters, @agentsy/ag-ui  (all as peerDependencies)
+
+# Feature Extensions (agentsy-features-v1.md)
+@agentsy/slash-commands  →  @agentsy/core
+@agentsy/skills          →  @agentsy/core
+@agentsy/caveman         →  @agentsy/core
+@agentsy/superpowers     →  @agentsy/core
+@agentsy/connectors      →  @agentsy/core, @agentsy/agent,
+                             @agentsy/session, @agentsy/runtime
+# @agentsy/mcp (existing) also spawns @mcpmarket/mcp-auto-install
+#   as child process (not a package dependency)
 ```
 
 ### Reference Codebases

@@ -105,6 +105,30 @@ Building production-grade AI agents in TypeScript requires stitching together a 
 
 ---
 
+### UP-6: Token-Efficiency Developer
+
+**Who**: A developer or power user who operates under tight context-window budgets — working with long codebases, large documents, or many concurrent agent sessions.
+
+**Need**: Reduce token consumption without sacrificing accuracy. Apply compression at prompt (via SKILL.md injection), at tool descriptions (via `caveman-shrink` MCP proxy), and at subagent outputs (via `cavecrew` variants).
+
+**Install**: `npm install @agentsy/caveman`
+
+**Key packages**: `@agentsy/caveman` (CavemanManager, bundled SKILL.md, `caveman-shrink` MCP proxy, `cavecrew` subagent variants)
+
+---
+
+### UP-7: Chat Platform Operator
+
+**Who**: A developer deploying an AI agent to one or more messaging platforms (Telegram, Discord, Slack) as a chatbot or automation tool.
+
+**Need**: Receive inbound messages from chat channels, route them to an agent session, manage per-conversation context, and deliver responses back to the originating channel. Needs crash-safe session persistence and slash command support in chat.
+
+**Install**: `npm install @agentsy/connectors @agentsy/slash-commands @agentsy/session`
+
+**Key packages**: `@agentsy/connectors` (ConnectorGateway, TelegramAdapter, DiscordAdapter, SlackAdapter, AgentSessionManager), `@agentsy/slash-commands` (SlashCommandRegistry), `@agentsy/session` (per-conversation persistence)
+
+---
+
 ## 5. Functional Requirements
 
 Requirements inherited from `agentsy-platform-v2.md` §1. Reproduced here with user-profile mapping.
@@ -135,6 +159,24 @@ Requirements inherited from `agentsy-platform-v2.md` §1. Reproduced here with u
 | REQ-022 | Turborepo orchestrates build/test/typecheck/lint with dependency-aware caching.                                                                       | P0       | All (tooling) | ✅     |
 | REQ-023 | `StopCondition` predicates (`isStepCount`, `hasToolCall`, `isLoopFinished`, `untilFinishReason`, `combineStrategies`) exported from `@agentsy/agent`. | P1       | UP-2          | ✅     |
 | REQ-024 | `prepareStep` callback and `mergeCallbacks` utility available in `@agentsy/agent`.                                                                    | P1       | UP-2, UP-4    | ✅     |
+| REQ-025 | `@agentsy/caveman` ships bundled `caveman` SKILL.md (JuliusBrussee/caveman v1.7.0) activatable without `npx skills add`.                             | P2       | UP-6          |        |
+| REQ-026 | `@agentsy/caveman` includes `caveman-shrink` MCP stdio proxy that compresses tool descriptions while preserving code, URLs, and identifiers.          | P2       | UP-6          |        |
+| REQ-027 | `@agentsy/caveman` includes `cavecrew` subagent SKILL.md variants (investigator, builder, reviewer) emitting ~60% fewer output tokens.                | P2       | UP-6          |        |
+| REQ-028 | Caveman mode intensity settable via `CavemanMode`: `'lite'\|'full'\|'ultra'\|'wenyan-lite'\|'wenyan-full'\|'wenyan-ultra'`. Default: `'full'`.        | P2       | UP-6          |        |
+| REQ-029 | `@agentsy/skills` provides `SkillsManager` with `find`, `add`, `list`, `remove`, `update`, `init` — wrapping `npx skills` CLI.                       | P2       | UP-5, UP-6    |        |
+| REQ-030 | `@agentsy/skills` supports natural-language search of the skills.sh registry, returning ranked `SkillSearchResult[]`.                                 | P2       | UP-5          |        |
+| REQ-031 | `@agentsy/mcp` bundles `@mcpmarket/mcp-auto-install v0.2.1`; five `mai_*` tools exposed to agent loop as first-class tools.                          | P2       | UP-2, UP-4    |        |
+| REQ-032 | MCP auto-install supports `dryRun` mode (default: `true`); mutation requires explicit `{ dryRun: false }`.                                            | P2       | UP-2          |        |
+| REQ-033 | `@agentsy/superpowers` bundles obra/superpowers v5.0.7 methodology skills: brainstorming, git-worktrees, writing-plans, subagent-driven-development, tdd, code-review, finish-branch. | P2 | UP-5 | |
+| REQ-034 | Superpowers skills auto-activate on context signals: `tdd` on test files, `code-review` on diff context, `brainstorming` on planning prompts.        | P2       | UP-5          |        |
+| REQ-035 | `@agentsy/slash-commands` provides `SlashCommandRegistry` discovering commands from `.agents/skills/<name>/SKILL.md`.                                 | P1       | UP-7, All     |        |
+| REQ-036 | `@agentsy/slash-commands` ships 12 stock commands: `/skills-find`, `/skills-add`, `/skills-list`, `/mcp-list`, `/mcp-install`, `/caveman`, `/caveman-lite`, `/caveman-ultra`, `/compact`, `/status`, `/new`, `/review`. | P1 | UP-7 | |
+| REQ-037 | Slash command SKILL.md frontmatter supports `allowed-tools`, `description`, `model`, `argument-hint`. Bash execution, `@file`, `$ARGUMENTS` supported. | P1 | UP-7, UP-5 | |
+| REQ-038 | `@agentsy/connectors` provides `ConnectorGateway` with `AdapterRegistry`. Gateway model: inbound → `MessageRouter` → `AgentSessionManager` → outbound. | P2 | UP-7 | |
+| REQ-039 | `@agentsy/connectors` ships three first-party adapters: `TelegramAdapter`, `DiscordAdapter`, `SlackAdapter`. Additional adapters as `@agentsy/connector-<channel>` packages. | P2 | UP-7 | |
+| REQ-040 | `@agentsy/connectors` `AgentSessionManager` integrates with `@agentsy/session` for per-conversation persistence and crash-safe resume.               | P2       | UP-7          |        |
+| REQ-041 | `@agentsy/connectors` inbound messages pass through `@agentsy/runtime` approval engine using `'auto'` mode by default.                               | P2       | UP-7          |        |
+| REQ-042 | `@agentsy/connectors` supports OpenClaw-compatible built-in chat commands: `/status`, `/new`, `/reset`, `/compact`, `/think`, `/verbose`, `/usage`.  | P2       | UP-7          |        |
 
 ---
 
