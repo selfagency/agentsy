@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import React from 'react';
 
 // Since KeyboardHandler may not be directly testable without Ink's actual DOM,
 // we test its prop structure and factory function
@@ -183,8 +182,8 @@ describe('KeyboardHandler Component Props', () => {
     });
 
     it('interrupt key is discoverable', () => {
-      const interruptKey = 'ctrl+c';
-      expect(interruptKey).toBe('ctrl+c');
+      const interruptShortcut = 'ctrl+c';
+      expect(interruptShortcut).toBe('ctrl+c');
     });
   });
 });

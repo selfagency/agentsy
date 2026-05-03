@@ -189,7 +189,7 @@ describe('Markdown to ANSI Conversion', () => {
     });
 
     it('handles escaped characters', async () => {
-      const result = await markdownToAnsi('Escaped \\*asterisk\\*');
+      const result = await markdownToAnsi(String.raw`Escaped \*asterisk\*`);
       expect(result).toBeDefined();
       expect(typeof result).toBe('string');
     });
