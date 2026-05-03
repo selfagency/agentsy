@@ -98,6 +98,7 @@ export abstract class BaseLanguageModelChatProvider {
       const messages = convertMessages(request.messages);
       const providerRequest = await this.buildRequest(messages, request);
 
+      // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
       const rawStream = await this.streamChat({ ...providerRequest, signal: abortController.signal }, token);
       const normalizedStream = this.normalizeStream(rawStream);
 
@@ -152,9 +153,14 @@ export abstract class BaseLanguageModelChatProvider {
       ...(signal && { signal }),
     });
 
-    if (response.ok && response.body !== null) {
+    if (response.ok) {
+      const body = response.body;
+      if (body === null) {
+        throw new Error('HTTP response has no body');
+      }
       return (async function* (): AsyncIterable<ProviderStreamChunk> {
-        const reader = (response.body as ReadableStream<Uint8Array>).getReader();
+        // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
+        const reader = (body as ReadableStream<Uint8Array>).getReader();
         const decoder = new TextDecoder();
         let buffer = '';
         try {

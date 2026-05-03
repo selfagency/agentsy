@@ -58,6 +58,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
       this.streamChunks.push(chunk);
     };
 
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
     return (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
       for await (const chunk of response) {
         pushChunk(chunk);
