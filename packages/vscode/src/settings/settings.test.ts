@@ -24,7 +24,7 @@ describe('validateSettings', () => {
     };
     const result = validateSettings({ port: 'not-a-number' }, schema);
     expect(result.valid).toBe(false);
-    expect(result.errors![0]).toContain("'port' must be of type 'number'");
+    expect(result.errors?.[0]).toContain("'port' must be of type 'number'");
   });
 
   it('validates enum values', () => {
@@ -34,7 +34,7 @@ describe('validateSettings', () => {
     expect(validateSettings({ level: 'info' }, schema).valid).toBe(true);
     const bad = validateSettings({ level: 'verbose' }, schema);
     expect(bad.valid).toBe(false);
-    expect(bad.errors![0]).toContain('one of: debug, info, error');
+    expect(bad.errors?.[0]).toContain('one of: debug, info, error');
   });
 
   it('validates number minimum', () => {

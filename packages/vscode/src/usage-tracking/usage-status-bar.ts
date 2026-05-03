@@ -31,7 +31,8 @@ export class UsageStatusBar {
       if (!item) return;
       this.statusBarItem = item;
       if (this.config.onClickRefresh) {
-        (item as unknown as Record<string, unknown>)['command'] = 'agentsy.refreshUsage';
+        const itemWithCommand = item as unknown as { command: string };
+        itemWithCommand.command = 'agentsy.refreshUsage';
       }
       this.disposables.push(item);
       await this.refresh();

@@ -35,8 +35,8 @@ export function convertRole(role: number): ChatMessage['role'] {
 export function extractTextFromPart(part: unknown): string {
   if (!part || typeof part !== 'object') return '';
   const p = part as Record<string, unknown>;
-  if (typeof p['value'] === 'string') return p['value'];
-  if (typeof p['content'] === 'string') return p['content'];
+  if (typeof p.value === 'string') return p.value as string;
+  if (typeof p.content === 'string') return p.content as string;
   return '';
 }
 
@@ -47,27 +47,34 @@ export function extractToolCall(part: unknown): ChatToolCall | undefined {
   if (!part || typeof part !== 'object') return undefined;
   const p = part as Record<string, unknown>;
 
-  const callId = p['callId'];
-  const name = p['name'];
-  const input = p['input'];
+  const callId = p.callId;
+  const name = p.name;
+  const input = p.input;
 
   if (typeof callId !== 'string' || typeof name !== 'string') return undefined;
 
-  let args: Record<string, unknown> = {};
+  const args = parseToolArguments(input);
+  return { id: callId, name, arguments: args };
+}
+
+/**
+ * Parse tool arguments from various input formats.
+ */
+function parseToolArguments(input: unknown): Record<string, unknown> {
   if (input && typeof input === 'object' && !Array.isArray(input)) {
-    args = input as Record<string, unknown>;
-  } else if (typeof input === 'string') {
+    return input as Record<string, unknown>;
+  }
+  if (typeof input === 'string') {
     try {
       const parsed = JSON.parse(input);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        args = parsed as Record<string, unknown>;
+        return parsed as Record<string, unknown>;
       }
     } catch {
-      args = {};
+      // Fall through to empty object
     }
   }
-
-  return { id: callId, name, arguments: args };
+  return {};
 }
 
 /**
@@ -77,16 +84,22 @@ export function extractToolResult(part: unknown): { callId: string; content: str
   if (!part || typeof part !== 'object') return undefined;
   const p = part as Record<string, unknown>;
 
-  const callId = p['callId'];
+  const callId = p.callId;
   if (typeof callId !== 'string') return undefined;
 
-  let content = '';
-  const innerContent = p['content'];
-  if (Array.isArray(innerContent)) {
-    content = innerContent.map(extractTextFromPart).join('');
-  } else if (typeof innerContent === 'string') {
-    content = innerContent;
-  }
-
+  const content = extractContentFromPart(p.content);
   return { callId, content };
+}
+
+/**
+ * Extract content from a content part (array or string).
+ */
+function extractContentFromPart(innerContent: unknown): string {
+  if (Array.isArray(innerContent)) {
+    return innerContent.map(extractTextFromPart).join('');
+  }
+  if (typeof innerContent === 'string') {
+    return innerContent;
+  }
+  return '';
 }

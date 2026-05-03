@@ -17,9 +17,9 @@ export function convertMessage(vsMessage: unknown): ChatMessage {
   }
 
   const msg = vsMessage as Record<string, unknown>;
-  const role = convertRole(typeof msg['role'] === 'number' ? msg['role'] : 1);
-  const rawContent = msg['content'];
-  const name = typeof msg['name'] === 'string' ? msg['name'] : undefined;
+  const role = convertRole(typeof msg.role === 'number' ? (msg.role as number) : 1);
+  const rawContent = msg.content;
+  const name = typeof msg.name === 'string' ? (msg.name as string) : undefined;
 
   if (typeof rawContent === 'string') {
     return { role, content: rawContent, ...(name ? { name } : {}) };

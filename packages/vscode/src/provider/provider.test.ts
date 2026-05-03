@@ -53,7 +53,8 @@ class TestProvider extends BaseLanguageModelChatProvider {
     return (async function* () {
       for await (const chunk of response) {
         self.streamChunks.push(chunk);
-        yield { part: { value: (chunk as Record<string, unknown>)['content'] ?? '' } };
+        const chunkRecord = chunk as Record<string, unknown>;
+        yield { part: { value: (chunkRecord.content as string) ?? '' } };
       }
     })();
   }
@@ -120,7 +121,8 @@ describe('BaseLanguageModelChatProvider', () => {
       const token = makeCancellationToken();
       await provider.makeRequest(request, token);
       expect(provider.builtRequest).toBeDefined();
-      const body = provider.builtRequest!.body as { messages: ChatMessage[]; model: string };
+      if (!provider.builtRequest) throw new Error('builtRequest should be defined');
+      const body = provider.builtRequest.body as { messages: ChatMessage[]; model: string };
       expect(body.messages[0].content).toBe('Hello');
       expect(body.model).toBe('my-model');
     });

@@ -27,29 +27,20 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
 
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
 
-  if (message.includes('invalid api key') || message.includes('unauthorized') || message.includes('authentication')) {
-    return ProviderErrorCode.InvalidApiKey;
-  }
-  if (message.includes('rate limit') || message.includes('too many requests') || message.includes('429')) {
-    return ProviderErrorCode.RateLimited;
-  }
-  if (message.includes('model not found') || message.includes('no such model')) {
-    return ProviderErrorCode.ModelNotFound;
-  }
-  if (message.includes('context length') || message.includes('token limit') || message.includes('too long')) {
-    return ProviderErrorCode.ContextLengthExceeded;
-  }
-  if (message.includes('econnrefused') || message.includes('connection refused') || message.includes('network') || message.includes('fetch failed')) {
-    return ProviderErrorCode.ConnectionError;
-  }
-  if (message.includes('timeout') || message.includes('timed out') || message.includes('etimedout')) {
-    return ProviderErrorCode.Timeout;
-  }
-  if (message.includes('cancelled') || message.includes('aborted')) {
-    return ProviderErrorCode.Cancelled;
-  }
-  if (message.includes('invalid request') || message.includes('bad request')) {
-    return ProviderErrorCode.InvalidRequest;
+  // Pattern-based error matching with early returns to reduce complexity
+  const patterns: Array<[string[], ProviderErrorCode]> = [
+    [['invalid api key', 'unauthorized', 'authentication'], ProviderErrorCode.InvalidApiKey],
+    [['rate limit', 'too many requests', '429'], ProviderErrorCode.RateLimited],
+    [['model not found', 'no such model'], ProviderErrorCode.ModelNotFound],
+    [['context length', 'token limit', 'too long'], ProviderErrorCode.ContextLengthExceeded],
+    [['econnrefused', 'connection refused', 'network', 'fetch failed'], ProviderErrorCode.ConnectionError],
+    [['timeout', 'timed out', 'etimedout'], ProviderErrorCode.Timeout],
+    [['cancelled', 'aborted'], ProviderErrorCode.Cancelled],
+    [['invalid request', 'bad request'], ProviderErrorCode.InvalidRequest],
+  ];
+
+  for (const [keywords, code] of patterns) {
+    if (keywords.some(kw => message.includes(kw))) return code;
   }
 
   return ProviderErrorCode.InternalError;

@@ -46,7 +46,7 @@ export function calculateRetryDelay(
   attempt: number,
   options: Required<Pick<RetryOptions, 'initialDelayMs' | 'backoffMultiplier' | 'maxDelayMs'>>,
 ): number {
-  const delay = options.initialDelayMs * Math.pow(options.backoffMultiplier, attempt);
+  const delay = options.initialDelayMs * (options.backoffMultiplier ** attempt);
   return Math.min(delay, options.maxDelayMs);
 }
 

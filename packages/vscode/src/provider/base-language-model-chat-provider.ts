@@ -105,7 +105,7 @@ export abstract class BaseLanguageModelChatProvider {
           chunks.push(chunk);
           if (chunk.part && typeof chunk.part === 'object') {
             const p = chunk.part as Record<string, unknown>;
-            if (typeof p['value'] === 'string') fullText += p['value'];
+            if (typeof p.value === 'string') fullText += p.value as string;
           }
         }
         onCancel.dispose();
@@ -113,11 +113,13 @@ export abstract class BaseLanguageModelChatProvider {
 
       const streamPromise = collectStream();
 
+      const generateStream = async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
+        await streamPromise;
+        yield* chunks;
+      };
+
       return {
-        stream: (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
-          await streamPromise;
-          yield* chunks;
-        })(),
+        stream: generateStream(),
         text: streamPromise.then(() => fullText),
       };
     } catch (error) {
@@ -146,8 +148,8 @@ export abstract class BaseLanguageModelChatProvider {
 
     if (!response.ok) {
       const text = await response.text().catch(() => '');
-      const err = new Error(`HTTP ${response.status}: ${text}`);
-      (err as unknown as Record<string, unknown>)['status'] = response.status;
+      const err = new Error(`HTTP ${response.status}: ${text}`) as Error & { status: number };
+      err.status = response.status;
       throw err;
     }
 
