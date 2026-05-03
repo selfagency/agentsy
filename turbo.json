@@ -18,6 +18,15 @@
       ],
       "cache": true
     },
+    "coverage": {
+      "dependsOn": [
+        "build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ],
+      "cache": true
+    },
     "check-types": {
       "dependsOn": [
         "^build"

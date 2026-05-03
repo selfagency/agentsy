@@ -47,8 +47,7 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          pnpm turbo run test --filter=@agentsy/core -- --reporter=junit --outputFile=test-report.junit.xml
-          pnpm turbo run coverage --filter=@agentsy/vscode -- --reporter=junit --outputFile=test-report-vscode.junit.xml
+          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml
         env:
           CI: true
 

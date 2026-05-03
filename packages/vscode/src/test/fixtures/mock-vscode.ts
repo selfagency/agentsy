@@ -2,7 +2,16 @@ import type {
   ExtensionContext,
   SecretStorage,
   Memento,
+  Event,
+  SecretStorageChangeEvent,
 } from 'vscode';
+
+/**
+ * Mock Event implementation for testing.
+ */
+function createMockEvent<T>(): Event<T> {
+  return (_listener: (e: T) => void) => ({ dispose: () => {} });
+}
 
 /**
  * Mock SecretStorage for testing.
@@ -22,9 +31,11 @@ export class MockSecretStorage implements SecretStorage {
     this.storage.delete(key);
   }
 
-  async onDidChange() {
-    // Mock implementation
+  async keys(): Promise<string[]> {
+    return Array.from(this.storage.keys());
   }
+
+  onDidChange: Event<SecretStorageChangeEvent> = createMockEvent();
 
   // Clear for test cleanup
   clear(): void {
@@ -62,66 +73,57 @@ export class MockMemento implements Memento {
  * Mock ExtensionContext for testing.
  */
 export function createMockExtensionContext(): ExtensionContext {
-  return {
-    subscriptions: [],
-    extensionPath: '/mock/path',
-    extensionUri: {
+  const mockUri = {
+    scheme: 'file',
+    authority: '',
+    path: '/mock/path',
+    query: '',
+    fragment: '',
+    fsPath: '/mock/path',
+    with: () => ({
       scheme: 'file',
       authority: '',
       path: '/mock/path',
       query: '',
       fragment: '',
       fsPath: '/mock/path',
-      with: () => ({
-        scheme: 'file',
-        authority: '',
-        path: '/mock/path',
-        query: '',
-        fragment: '',
-        fsPath: '/mock/path',
-        with: () => ({}),
-        toJSON: () => ({}),
-      } as unknown),
+      with: () => ({}),
       toJSON: () => ({}),
-    } as unknown,
+    } as unknown),
+    toJSON: () => ({}),
+  } as unknown;
+
+  return {
+    subscriptions: [],
+    extensionPath: '/mock/path',
+    extensionUri: mockUri,
     globalStoragePath: '/mock/global',
-    globalStorageUri: {
-      scheme: 'file',
-      authority: '',
-      path: '/mock/global',
-      query: '',
-      fragment: '',
-      fsPath: '/mock/global',
-      with: () => ({}),
-      toJSON: () => ({}),
-    } as unknown,
+    globalStorageUri: mockUri,
     workspaceStoragePath: '/mock/workspace',
-    workspaceStorageUri: {
-      scheme: 'file',
-      authority: '',
-      path: '/mock/workspace',
-      query: '',
-      fragment: '',
-      fsPath: '/mock/workspace',
-      with: () => ({}),
-      toJSON: () => ({}),
-    } as unknown,
+    workspaceStorageUri: mockUri,
     logPath: '/mock/log',
-    logUri: {
-      scheme: 'file',
-      authority: '',
-      path: '/mock/log',
-      query: '',
-      fragment: '',
-      fsPath: '/mock/log',
-      with: () => ({}),
-      toJSON: () => ({}),
-    } as unknown,
+    logUri: mockUri,
     logsPath: '/mock/logs',
     secrets: new MockSecretStorage(),
     globalState: new MockMemento(),
     workspaceState: new MockMemento(),
     extensionMode: 0 as unknown,
     environmentVariableCollection: {} as unknown,
-  } as ExtensionContext;
+    asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
+    storageUri: mockUri,
+    storagePath: '/mock/storage',
+    extension: {
+      id: 'mock-extension',
+      extensionPath: '/mock/path',
+      extensionUri: mockUri,
+      packageJSON: {},
+      isActive: true,
+      exports: undefined,
+      activate: async () => undefined,
+    } as unknown,
+    languageModelAccessInformation: {
+      models: [],
+      onDidChange: createMockEvent(),
+    } as unknown,
+  } as unknown as ExtensionContext;
 }

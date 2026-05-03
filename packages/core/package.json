@@ -155,6 +155,7 @@
     "lint": "oxlint .",
     "format": "oxfmt . --write",
     "test": "vitest run src",
+    "coverage": "vitest run src --coverage",
     "themes:preview": "node scripts/preview-themes.js",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
