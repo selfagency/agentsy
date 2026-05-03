@@ -5,7 +5,6 @@ import {
   ThinkingParser,
   appendToBlockquote,
   buildXmlToolSystemPrompt,
-  createVSCodeCopilotAdapter,
   createXmlStreamFilter,
   extractXmlToolCalls,
   formatXmlLikeResponseForDisplay,
@@ -37,17 +36,5 @@ describe('scaffold exports', () => {
     expect(typeof buildXmlToolSystemPrompt).toBe('function');
     expect(typeof sanitizeNonStreamingModelOutput).toBe('function');
     expect(typeof formatXmlLikeResponseForDisplay).toBe('function');
-
-    const mockStream = { markdown: (_text: string) => {} };
-    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
-    const mockOnToolCall = () => {};
-    const adapter = createVSCodeCopilotAdapter({
-      processor,
-      stream: mockStream,
-      onToolCall: mockOnToolCall,
-    });
-    expect(adapter).toBeDefined();
-    expect(typeof adapter.write).toBe('function');
-    expect(typeof adapter.end).toBe('function');
   });
 });

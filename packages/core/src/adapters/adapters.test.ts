@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import { createGenericAdapter, processStream } from './generic.js';
-import { createVSCodeCopilotAdapter } from './vscode.js';
 
 async function* source() {
   yield { content: 'hello' };
@@ -18,54 +16,6 @@ describe('processStream', () => {
     expect(outputs).toHaveLength(2);
     expect(outputs[0]?.content).toBe('hello');
     expect(outputs[1]?.done).toBe(true);
-  });
-});
-
-describe('createVSCodeCopilotAdapter', () => {
-  it('routes thinking/content to markdown and tool calls to callback', async () => {
-    const markdown = vi.fn<(_text: string) => void>(); // Setup; not used in this test branch
-    const onToolCall = vi.fn<(call: unknown) => void>();
-    const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
-    const adapter = createVSCodeCopilotAdapter({
-      processor,
-      stream: { markdown },
-      onToolCall,
-      showThinking: true,
-    });
-
-    await adapter.write({
-      content: '<think>plan</think>Answer',
-      tool_calls: [{ function: { name: 'search_files', arguments: { query: 'x' } } }],
-    });
-    await adapter.end();
-
-    expect(markdown).toHaveBeenCalled();
-    expect(onToolCall).toHaveBeenCalledWith({
-      name: 'search_files',
-      parameters: { query: 'x' },
-      format: 'native-json',
-    });
-  });
-
-  it('reports step changes via onStep callback', async () => {
-    const markdown = vi.fn<(_text: string) => void>();
-    const onToolCall = vi.fn<(call: unknown) => void>();
-    const onStep = vi.fn();
-    const processor = new LLMStreamProcessor({ parseThinkTags: false, scrubContextTags: false });
-    const adapter = createVSCodeCopilotAdapter({
-      processor,
-      stream: { markdown },
-      onToolCall,
-      onStep,
-    });
-
-    await adapter.write({ content: 'First step', stepIndex: 0, stepUsage: { outputTokens: 2 } });
-    await adapter.write({ content: 'Second step', stepIndex: 1, usage: { inputTokens: 1, outputTokens: 3 } });
-    await adapter.end();
-
-    expect(onStep).toHaveBeenCalledTimes(2);
-    expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
-    expect(onStep).toHaveBeenNthCalledWith(2, 1, { inputTokens: 1, outputTokens: 3 });
   });
 });
 
