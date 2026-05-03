@@ -1514,17 +1514,11 @@ Token compression via SKILL.md prompt injection and MCP tool-description proxy.
 ```typescript
 // packages/caveman/src/index.ts
 
-export type CavemanMode =
-  | 'lite'
-  | 'full'
-  | 'ultra'
-  | 'wenyan-lite'
-  | 'wenyan-full'
-  | 'wenyan-ultra';
+export type CavemanMode = 'lite' | 'full' | 'ultra' | 'wenyan-lite' | 'wenyan-full' | 'wenyan-ultra';
 
 export interface CavemanOptions {
-  mode?: CavemanMode;            // default: 'full'
-  skillsDir?: string;            // default: bundled skills
+  mode?: CavemanMode; // default: 'full'
+  skillsDir?: string; // default: bundled skills
 }
 
 export interface CavemanManager {
@@ -1702,9 +1696,7 @@ export interface SlashCommandRegistry {
   register(manifest: SlashCommandManifest, handler: (args: string) => Promise<string>): void;
 }
 
-export function createSlashCommandRegistry(
-  options?: SlashCommandRegistryOptions
-): SlashCommandRegistry;
+export function createSlashCommandRegistry(options?: SlashCommandRegistryOptions): SlashCommandRegistry;
 
 // Stock command names
 export const BUILTIN_COMMANDS: readonly string[];

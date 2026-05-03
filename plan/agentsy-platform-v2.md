@@ -67,6 +67,32 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **REQ-041**: `@agentsy/connectors` inbound messages must pass through the `@agentsy/runtime` approval engine before invoking destructive tools, using `'auto'` approval mode by default.
 - **REQ-042**: `@agentsy/connectors` must support OpenClaw-compatible chat commands as built-in slash commands: `/status`, `/new`, `/reset`, `/compact`, `/think`, `/verbose`, `/usage`.
 
+### Extended Requirements (SRC-11..SRC-28 Research Corpus)
+
+- **REQ-043**: `@agentsy/agent` MUST support code-as-actions execution mode: the LLM generates sandboxed JS/TS instead of JSON tool calls; the executor runs the code and returns results. (ADR-026, SRC-11)
+- **REQ-044**: Agent executor backends MUST be pluggable: `local` (Node `vm`), `docker`, `e2b`, `modal`, `wasm`. The `createAgentLoop()` factory accepts an `executor` option. (ADR-026, SRC-11)
+- **REQ-045**: Tool definitions SHOULD support progressive loading from TOML or markdown skill files at runtime without restarting the agent loop. (ADR-027, SRC-12)
+- **REQ-046**: Tool metadata MUST include `capability` description, `inputSchema`, `outputSchema`, and `version` fields following an OctoTools-compatible Tool Card schema. (ADR-028, SRC-16)
+- **REQ-047**: `@agentsy/agent` SHOULD support dual-level planning: a global task plan generated once, plus a per-step sub-plan generated before each tool invocation for complex multi-step tasks. (ADR-029, SRC-16)
+- **REQ-048**: Function schemas used in tool registration MUST be compiler-generated from TypeScript types using `typia` or `zod`. Hand-authored JSON schemas are disallowed for typed tool inputs. (ADR-030, SRC-17)
+- **REQ-049**: When tool argument validation fails, `@agentsy/agent` MUST inject the structured validation errors as a tool response and system correction prompt, then retry up to `config.retry` times before throwing. (ADR-031, SRC-17)
+- **REQ-050**: When the tool registry exceeds 50 entries, the selector MUST support parallel divided selection across domain groups, followed by an eliticism pass over the union of selections. (ADR-032, SRC-17)
+- **REQ-051**: `@agentsy/agent` MUST support DAG-based parallel workflow execution: workflow nodes without upstream dependencies execute concurrently; downstream nodes await all prerequisites. (ADR-033, SRC-15)
+- **REQ-052**: Multi-step workflows MUST support pause/resume via snapshot serialization. `task_snapshot` captures completed nodes, pending nodes, and accumulated tool results as a serializable POJO. (ADR-033, SRC-15)
+- **REQ-053**: `@agentsy/agent` SHOULD implement Agent-to-Agent (A2A) protocol for peer-to-peer inter-agent communication, with scoped session tokens and isolated context boundaries. (ADR-034, SRC-15, SRC-21)
+- **REQ-054**: `@agentsy/memory` MUST expose a white-box editing API: users can read, create, update, and delete individual memory entries at runtime without restarting the agent loop. (ADR-035, SRC-20)
+- **REQ-055**: Conversation history in `@agentsy/session` SHOULD support branching: a conversation can be forked at any point, the fork explored independently, and results optionally merged back. (ADR-036, SRC-20)
+- **REQ-056**: The `createAgentLoop()` executor API MUST match the Agentica `IAgenticaExecutor` pattern: each orchestration step (`initialize`, `select`, `call`, `describe`) is independently replaceable via the executor option. Default steps are pure functions. (ADR-047, SRC-17)
+- **REQ-057**: The `@agentsy/agent` test harness MUST support simulation-based scenario testing with three roles: `UserSimulatorAgent`, `JudgeAgent(criteria=[...])`, and optional `RedTeamAgent`. (ADR-039, SRC-27)
+- **REQ-058**: Agent scenario test suites MUST report `pass^k` consistency score alongside average task completion rate, where k ≥ 3. Test regressions where `pass^k` drops while average rate is stable MUST surface as failures. (ADR-040, SRC-28)
+- **REQ-059**: The test harness MUST support Crescendo-style multi-turn adversarial red team testing: incrementally escalating requests, per-turn scoring, refusal detection, and automatic backtracking. (ADR-041, SRC-27)
+- **REQ-060**: `@agentsy/agent` architecture MUST follow the 12-factor agent design principles: stateless execution, externalized configuration, declared dependencies, environment parity, and structured telemetry. (ADR-048, SRC-25)
+- **REQ-061**: Cross-step binary or large-object data passing MUST use the state dict key reference pattern: tools store blobs in a shared `state` map under a string key; subsequent tool invocations receive the key as a string argument and the framework resolves it at call time, never serializing the payload to JSON. (ADR-046, SRC-11)
+- **REQ-062**: Multi-agent context sharing MUST use compression and delta update semantics: shared context is stored once by ID, agents receive diffs rather than full snapshots, achieving ≥ 3x token efficiency versus naive full-context broadcast. (ADR-044, SRC-24)
+- **REQ-063**: For quality-sensitive tasks, `@agentsy/agent` SHOULD support the evaluator-optimizer sub-pattern: generate response → evaluate against rubric → provide feedback → regenerate, up to `config.optimizerMaxIterations`. (ADR-045, SRC-23)
+- **REQ-064**: `@agentsy/agent` SHOULD implement an RSI feedback ledger: every tool execution outcome (success, failure, partial) is appended to a per-session ledger used to de-prioritize failing tools and avoid retrying known-bad approaches. (ADR-042, SRC-21)
+- **REQ-065**: `@agentsy/skills` MUST support expressing sprint lifecycle actions as named skill files: a skills directory can contain `plan.md`, `review.md`, `ship.md`, etc., each with structured context-passing metadata. (ADR-037, SRC-26)
+
 ### Security Requirements
 
 - **SEC-001**: All tool calls with destructive potential (file overwrite, shell exec, network egress) must pass through the approval engine in `@agentsy/runtime` before execution.

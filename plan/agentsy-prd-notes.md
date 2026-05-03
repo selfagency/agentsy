@@ -29,6 +29,25 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 | SRC-7 | vercel/ai        | HEAD             | <https://github.com/vercel/ai/blob/main/packages/ai/src/agent/tool-loop-agent.ts>                         | StopCondition, prepareStep, mergeCallbacks       |
 | SRC-8 | TanStack AI      | HEAD             | <https://github.com/TanStack/ai/blob/main/packages/typescript/ai/src/activities/chat/stream/processor.ts> | StreamProcessor state machine, ChunkStrategy     |
 | SRC-9 | nano-claude-code | v3.0             | <https://github.com/chauncygu/collection-claude-code-source-code/blob/main/README.MD>                     | Minimal tool registry, context injection only    |
+| SRC-10 | janhq/jan | HEAD | <https://github.com/janhq/jan> | Local LLM runner, OpenAI-compatible localhost:1337, MCP integration |
+| SRC-11 | huggingface/smolagents | HEAD | <https://github.com/huggingface/smolagents> | CodeAgent code-as-actions (~30% fewer steps), parallel ThreadPoolExecutor tool calls, state dict cross-step passing |
+| SRC-12 | bytedance/deer-flow | HEAD | <https://github.com/bytedance/deer-flow> | Skills-as-markdown progressive loading, context compression, LangGraph orchestrator |
+| SRC-13 | OpenHands/OpenHands | HEAD | <https://github.com/All-Hands-AI/OpenHands> | Software Agent SDK, RBAC, Slack/Jira/Linear integrations, ToM module |
+| SRC-14 | The-Pocket/PocketFlow | HEAD | <https://github.com/The-Pocket/PocketFlow> | 100-line graph core, A2A protocol, LLM-as-judge, heartbeat monitoring |
+| SRC-15 | FellouAI/eko | v4.1.3 | <https://github.com/FellouAI/eko> | DAG parallel execution, pause/resume/snapshot, A2A protocol, replan capability, streaming XML workflow generation |
+| SRC-16 | octotools/octotools | HEAD | <https://github.com/octotools/octotools> | Tool Cards (structured metadata), dual-level planning (global+per-step), toolset optimization |
+| SRC-17 | wrtnlabs/agentica | HEAD | <https://github.com/wrtnlabs/agentica> | Compiler-driven typia schemas, validation feedback loop, parallel divided selection, eliticism, pluggable IAgenticaExecutor |
+| SRC-18 | Pythagora-io/gpt-pilot | UNMAINTAINED | <https://github.com/Pythagora-io/gpt-pilot> | Named pipeline, step persistence (reference only; unmaintained) |
+| SRC-19 | bitswired/agentic-loop | HEAD | <https://github.com/bitswired/agentic-loop> | Minimal reference loop implementation |
+| SRC-20 | lobehub/lobe-chat | HEAD | <https://github.com/lobehub/lobe-chat> | 505+ agents, branching CRDT conversation trees, white-box editable memory |
+| SRC-21 | adolfousier/opencrabs | HEAD | <https://github.com/adolfousier/opencrabs> | Rust A2A; 3-tier memory (FTS5+vector RRF); RSI feedback ledger; typed sub-agents; self-healing; Bee Colony debate |
+| SRC-22 | nibzard/awesome-agentic-patterns | HEAD | <https://github.com/nibzard/awesome-agentic-patterns> | 120+ named patterns in 8 categories |
+| SRC-23 | Anthropic "Building Effective Agents" | 2024 | <https://www.anthropic.com/engineering/building-effective-agents> | Canonical 5-workflow taxonomy (chaining/routing/parallelization/orchestrator-workers/evaluator-optimizer) |
+| SRC-24 | evalops/shared-memory-mcp | HEAD | <https://github.com/evalops/shared-memory-mcp> | 6x token efficiency via context dedup and delta updates for multi-agent sharing |
+| SRC-25 | agenticloops-ai/agentic-ai-engineering | HEAD | <https://github.com/agenticloops-ai/agentic-ai-engineering> | 6-module curriculum: foundations→production; 12-factor agents |
+| SRC-26 | garrytan/gstack | HEAD | <https://github.com/garrytan/gstack> | 88k-star Claude Code skill pack; sprint lifecycle 23 skills; continuous checkpoint WIP commits; GBrain PGLite/Supabase; ML prompt injection defense; taste memory; 10-15 parallel sprints |
+| SRC-27 | langwatch/scenario | HEAD | <https://github.com/langwatch/scenario> | UserSimulator+JudgeAgent+RedTeamAgent testing framework; Crescendo escalation attack; pass^k consistency; autopilot+scripted modes; cache reproducibility |
+| SRC-28 | chaosync-org/awesome-ai-agent-testing | HEAD | <https://github.com/chaosync-org/awesome-ai-agent-testing> | Curated testing list; pass^k metric; chaos engineering patterns; OpenTelemetry GenAI semantic conventions; benchmarks: GAIA, tau-bench, WebArena, SWE-Bench |
 
 ---
 
@@ -365,6 +384,256 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 **Evidence**: SEC-006: retrieved wiki content treated as untrusted; `<script>`, HTML injection, executable patterns stripped before injection. SEC-013: inbound connector message payloads are untrusted external input. The existing pipeline in `@agentsy/core/context` is already designed for untrusted LLM-generated XML — the same threat model applies.
 
 **Rationale**: External chat messages (especially from public channels) are high-risk prompt injection vectors. Reusing the existing XML sanitization pipeline avoids a second code path and ensures consistent defense-in-depth.
+
+---
+
+### ADR-026: Code-as-Actions Execution Mode (CodeAgent Pattern)
+
+**Decision**: `@agentsy/agent` SHOULD support a `mode: "code"` option where the LLM generates executable JS/TS code blocks instead of JSON tool call structures. A sandboxed executor runs the code and returns results as the next iteration's observation.
+
+**Evidence**: SRC-11 (smolagents CodeAgent): code-as-actions reduces API calls by ~30% because multiple tool calls can be batched in a single code block and arithmetic/string operations happen in the executor without tool overhead. Executor backends: `local`, `e2b`, `docker`, `modal`, `blaxel`, `wasm`. The calling code is backend-agnostic.
+
+**Rationale**: For data-heavy tasks (image processing, statistical analysis, report generation), JSON tool calls round-trip to the LLM for every operation. Code-as-actions batches operations and reduces total LLM calls. The executor abstraction ensures safe isolation.
+
+---
+
+### ADR-027: Skill Progressive Loading
+
+**Decision**: `@agentsy/skills` MUST support runtime lazy loading of skill/tool definitions from markdown or TOML files. Skills are not compiled in — they are discovered and loaded on demand when the agent loop needs them.
+
+**Evidence**: SRC-12 (DeerFlow): skills defined in markdown files loaded progressively. SRC-16 (OctoTools): Tool Cards loaded by the planner as needed. SRC-26 (gstack): 23 skill files, each a self-contained prompt with structured metadata. The pattern is consistent across 3+ frameworks.
+
+**Rationale**: Including all tool definitions in the initial context wastes tokens. Progressive loading means only the tools the planner selects for the current task are included. This directly reduces per-turn token cost on large registries.
+
+---
+
+### ADR-028: Tool Card Metadata Schema
+
+**Decision**: All tool registrations in `@agentsy/agent` MUST include a structured Tool Card with: `name`, `description`, `inputSchema`, `outputSchema`, `version`, `tags[]`, and optional `example_inputs[]`.
+
+**Evidence**: SRC-16 (OctoTools): Tool Cards drive both planning (global planner reads descriptions) and execution (local executor reads schemas). Standardized metadata enables the selector to make principled inclusion/exclusion decisions.
+
+**Rationale**: Ad-hoc tool descriptions (just a string) are insufficient for the parallel divided selector (ADR-032) to reason about tool overlap and coverage. Structured Tool Cards enable automated toolset optimization.
+
+---
+
+### ADR-029: Dual-Level Planning
+
+**Decision**: For complex multi-step tasks, `@agentsy/agent` SHOULD support dual-level planning: a _global_ task plan produced once at task start (listing all major steps), plus a _per-step_ sub-plan produced before each tool invocation (detailing the immediate action).
+
+**Evidence**: SRC-16 (OctoTools): global planner + local planner pattern. SRC-12 (DeerFlow): graph-level plan + node-level execution. The dual-level structure reduces hallucination on multi-step tasks by maintaining task-level context at each step without bloating a single prompt.
+
+**Rationale**: Single-level planning forces the LLM to hold the entire task in context at every step. Dual-level amortizes this: the global plan is a short summary (5-10 items), the local plan focuses the LLM on the immediate action.
+
+---
+
+### ADR-030: Compiler-Driven Function Schema
+
+**Decision**: All function/tool schemas used by `@agentsy/agent` MUST be generated at compile time from TypeScript types, not authored by hand as JSON objects.
+
+**Evidence**: SRC-17 (Agentica): `typia.llm.application<IMyFunctions>()` generates the entire JSON schema from TypeScript types at compile time. Schema drift (code changes but schema not updated) is structurally impossible.
+
+**Rationale**: Hand-authored JSON schemas diverge from code over time — a classic maintenance failure mode. Compiler-generated schemas guarantee schema-code alignment with no developer overhead.
+
+---
+
+### ADR-031: Validation Feedback Loop for Tool Arguments
+
+**Decision**: When an LLM-generated tool call fails schema validation, `@agentsy/agent` MUST inject the structured validation errors as a tool response + system correction prompt and retry, up to `config.retry` attempts, before throwing.
+
+**Evidence**: SRC-17 (Agentica `select.ts`): `emendMessages(failures)` produces: (1) an assistant message repeating the bad tool call, (2) a tool response containing the `typia` validation errors as JSON, (3) a system prompt "Correct it at the next function calling." The retry counter increments; `tool_choice` switches from `"auto"` to `"required"` on retry.
+
+**Rationale**: LLMs reliably produce schema-conformant arguments when shown the specific violation rather than a generic "invalid input" error. The typia/zod validation output is machine-generated structured feedback — the highest-quality correction signal available.
+
+---
+
+### ADR-032: Parallel Divided Selection with Eliticism
+
+**Decision**: When the tool registry exceeds 50 entries, `@agentsy/agent` MUST partition tools into domain groups and run one LLM selector per group in parallel (`Promise.all`), then run a final _eliticism pass_ — one more LLM selector call over the union of all selected tools from all groups — to produce the final selection.
+
+**Evidence**: SRC-17 (Agentica `select.ts`): `ctx.operations.divided` triggers `Promise.all` across groups, each with an isolated `stack`. Eliticism guard: `if ELITICISM && stacks.some(s => s.length !== 0) → step(ctx, stacks.flat().map(...))`. See verbatim code in `agentsy-deep-dive-v2.md` §2.2.
+
+**Rationale**: A single LLM call with 100+ tool descriptions exceeds most models' attention span for precise selection. Dividing reduces per-selector context 3-10x. Eliticism eliminates cross-group false positives by doing one final arbitration. Net: better precision + better recall vs naïve single call.
+
+---
+
+### ADR-033: DAG-Based Parallel Workflow Execution with Snapshot Recovery
+
+**Decision**: Multi-step workflows in `@agentsy/agent` SHOULD be represented as a directed acyclic graph (DAG). Nodes without pending upstream dependencies execute in parallel. A `task_snapshot` POJO captures running state for pause/resume.
+
+**Evidence**: SRC-15 (Eko v3.0+): `plan.ts` `Planner` generates XML workflow streamed to callback (`streamDone: false` for incremental UI). `chain.ts` `Chain` / `AgentChain` / `ToolChain` hierarchy is the audit trail. README: `task_snapshot` captures pending/running/completed nodes + tool results. `a2a.ts` + `replan.ts` for mid-workflow adjustments.
+
+**Rationale**: Sequential execution of independent steps doubles or triples wall-clock time. Snapshot recovery enables long-horizon tasks to survive crashes, context resets, and human-in-the-loop pauses without restarting from scratch.
+
+---
+
+### ADR-034: Agent-to-Agent (A2A) Protocol Support
+
+**Decision**: `@agentsy/runtime` SHOULD expose an A2A protocol endpoint. Agents can invoke other agents as tools via the A2A protocol, with scoped authentication tokens and isolated context boundaries.
+
+**Evidence**: SRC-15 (Eko `a2a.ts`). SRC-14 (PocketFlow A2A). SRC-21 (OpenCrabs typed sub-agent roles). The A2A pattern is emerging as a cross-framework standard for agent composition.
+
+**Rationale**: Direct package imports between agents create tight coupling. A2A protocol-based invocation allows agents to be independently deployed and versioned. Scoped tokens enforce least-privilege between agents.
+
+---
+
+### ADR-035: White-Box Editable Memory
+
+**Decision**: `@agentsy/memory` MUST expose a white-box API: users (via UI or CLI) can read, create, update, and delete individual memory entries at runtime without restarting the agent loop.
+
+**Evidence**: SRC-20 (LobeHub): memory entries displayed as editable key-value pairs. SRC-2 (nanobot): `memory lint` CLI command for inspecting and cleaning entries. GBrain (SRC-26): per-page trust tiers with explicit promote/demote.
+
+**Rationale**: Black-box memory erodes user trust. Users who can see and correct what the agent remembers about them are more willing to engage with persistent memory features. White-box also enables debugging of memory-induced misbehavior.
+
+---
+
+### ADR-036: Branching Conversation Trees
+
+**Decision**: `@agentsy/session` SHOULD support conversation branching: a conversation can be forked at any turn, the fork explored independently, and branches compared side-by-side. CRDT-based merge for reconnection.
+
+**Evidence**: SRC-20 (LobeHub): branching conversation trees with CRDT merge. Enables A/B prompt testing within a single session. Design analogy: git branch/merge applied to conversation history.
+
+**Rationale**: Users often want to explore "what if I had phrased this differently." Branching makes prompt engineering first-class UX rather than requiring the user to manually copy-paste conversation history.
+
+---
+
+### ADR-037: Sprint Lifecycle Skills Architecture
+
+**Decision**: `@agentsy/skills` SHOULD include a stock set of sprint lifecycle skills following the gstack model: `office-hours`, `plan-eng-review`, `review`, `qa`, `ship`, with structured context-passing between skills via persistent files.
+
+**Evidence**: SRC-26 (gstack): 23 skills forming a complete sprint lifecycle. Each skill reads prior skill output from a shared context file. `/office-hours` → `/plan-ceo-review` → `/plan-eng-review` → `/design-shotgun` → implementation → `/review` → `/qa` → `/ship`.
+
+**Rationale**: Structuring the development workflow as a sequence of skill invocations with explicit context hand-offs produces higher-quality outputs than ad-hoc prompting. The explicit hand-off structure also makes the workflow auditable.
+
+---
+
+### ADR-038: Continuous Checkpoint Mode with WIP Commits
+
+**Decision**: `@agentsy/agent` SHOULD support a `checkpoint_mode: "continuous"` option that auto-commits after each significant action with a `WIP:` prefix and a structured `[agentsy-context]` body capturing `decisions`, `remaining`, and `failed_approaches`. A `/context-restore` command reconstructs session state from these commits.
+
+**Evidence**: SRC-26 (gstack): `checkpoint_mode` auto-commits with `[gstack-context]` structured body. `/context-restore` reads WIP commits to reconstruct prior context after crash. `/ship` filter-squashes WIP commits before PR creation.
+
+**Rationale**: LLM context windows are ephemeral. WIP commits in git provide durable, zero-infrastructure session recovery. Filter-squashing before PR keeps `git bisect` and blame clean while preserving the recovery trail during active work.
+
+---
+
+### ADR-039: Simulation-Based Agent Testing with User Simulator and Judge
+
+**Decision**: `@agentsy/agent` test infrastructure MUST support simulation-based scenario testing with three roles: (1) `UserSimulatorAgent` generating realistic user messages guided by scenario description, (2) `JudgeAgent(criteria=[...])` evaluating conversation quality at each turn, (3) optional `RedTeamAgent` for adversarial testing.
+
+**Evidence**: SRC-27 (langwatch/scenario): `scenario.run(name, description, agents=[...], script=[...], max_turns=N)`. Hybrid script/autopilot: fixed messages at critical checkpoints, auto-generated turns between. `JudgeAgent` can trigger early termination on clear success/failure. `cache_key` for deterministic replay.
+
+**Rationale**: Unit tests with hardcoded inputs test code, not agent behavior. Simulation tests with a LLM-powered user simulator test the full conversation dynamics including multi-turn coherence, context retention, and tool invocation correctness.
+
+---
+
+### ADR-040: pass^k Consistency Metric for Agent Test Suites
+
+**Decision**: All agent scenario tests in `@agentsy/agent` MUST be run k ≥ 3 times. Test suites MUST report both average task completion rate and `pass^k = P(all k runs succeed)`. A regression where `pass^k` drops while average rate holds stable MUST surface as a CI failure.
+
+**Evidence**: SRC-28 (awesome-ai-agent-testing): `pass^k` metric from tau-bench and Berkeley Function Calling Leaderboard. Agents with high average completion rate but low `pass^k` are unpredictable and unsuitable for production. The metric is the industry standard for evaluating agent reliability.
+
+**Rationale**: Average success rate hides variance. An agent that succeeds 80% of the time but always fails the same 20% of tasks has `pass^3 = 0.512` (borderline). An agent that randomly fails 20% has `pass^3 = 0.512` too — but the predictable failure case is fundamentally worse for UX. Tracking both exposes the difference.
+
+---
+
+### ADR-041: Crescendo Multi-Turn Red Team Testing
+
+**Decision**: `@agentsy/agent` security test suite MUST include Crescendo-style adversarial testing: a `RedTeamAgent` starts with benign requests and incrementally escalates across up to 50 turns toward a specified attack target, scoring each turn and backtracking on refusals.
+
+**Evidence**: SRC-27 (langwatch/scenario): `RedTeamAgent.crescendo(target=..., model=..., total_turns=50)`. Per-turn scoring, refusal detection (agent refused, reduce escalation), backtracking (try alternative path). Industry standard for LLM safety evaluation.
+
+**Rationale**: Point-in-time injection tests miss multi-turn manipulation patterns. Crescendo simulates how a sophisticated attacker builds up to a harmful request across a long conversation — the realistic threat model for production agents.
+
+---
+
+### ADR-042: RSI Feedback Ledger
+
+**Decision**: `@agentsy/agent` SHOULD maintain a per-session RSI (Reinforcement Signal Index) feedback ledger: every tool execution outcome (success, failure, partial) is appended with structured context. The ledger is read by the selector to de-prioritize failing tools and avoid repeating known-bad approaches.
+
+**Evidence**: SRC-21 (OpenCrabs): RSI feedback ledger with tool execution outcomes. Outcomes feed back into tool selection weight. Self-healing engine uses the ledger to identify and replace tools that have failed multiple times.
+
+**Rationale**: Without feedback, an agent retrying the same failing tool wastes tokens and time. The ledger provides an intra-session learning signal without requiring model fine-tuning or cross-session persistence.
+
+---
+
+### ADR-043: Multi-Agent Debate with Confidence-Weighted Consensus
+
+**Decision**: For high-stakes decisions (architecture reviews, security analysis), `@agentsy/agent` SHOULD support spawning N debate agents with different role prompts (advocate, critic, neutral), collecting their outputs, and aggregating via confidence-weighted consensus.
+
+**Evidence**: SRC-21 (OpenCrabs): Bee Colony debate — multiple agents with different roles debate hypotheses. Confidence-weighted aggregation similar to ensemble ML methods. SRC-23 (Anthropic): parallelization workflow with voting/aggregation.
+
+**Rationale**: Single-agent analysis is subject to anchoring and confirmation bias from the prompt framing. Multi-agent debate with diverse roles surfaces objections that a single agent would suppress. Confidence weighting reduces the impact of poorly-grounded positions.
+
+---
+
+### ADR-044: Shared Memory MCP for Multi-Agent Token Efficiency
+
+**Decision**: In multi-agent `@agentsy` sessions, shared context MUST be stored once via a shared memory MCP server, referenced by ID. Agents receive delta updates rather than full context snapshots.
+
+**Evidence**: SRC-24 (evalops/shared-memory-mcp): 6x token efficiency in collaborative coding tasks via context deduplication and delta updates. Each agent subscribes to a shared context channel; only diffs are transmitted.
+
+**Rationale**: Naïve multi-agent coordination broadcasts the full context to every agent on every turn. For 10 agents with 100k token context, this is 10M tokens per turn. Shared memory + deltas reduces this to ~1M tokens (the base) + incremental diffs.
+
+---
+
+### ADR-045: Evaluator-Optimizer Workflow Pattern
+
+**Decision**: For quality-sensitive generative tasks, `@agentsy/agent` SHOULD expose an evaluator-optimizer sub-pattern: generate candidate → evaluate against rubric → provide structured feedback → regenerate, up to `config.optimizerMaxIterations` cycles.
+
+**Evidence**: SRC-23 (Anthropic "Building Effective Agents"): evaluator-optimizer as one of the five canonical agentic workflows. Demonstrated value in tasks like translation (evaluate naturalness), code generation (evaluate test pass rate), and content writing (evaluate against style guide).
+
+**Rationale**: Single-shot generation quality is model-limited. Iterative evaluation and regeneration with structured feedback consistently improves output quality, especially for tasks with a clearly articulable quality criterion.
+
+---
+
+### ADR-046: State Dict Pattern for Cross-Step Large Object Passing
+
+**Decision**: `@agentsy/agent` MUST implement a per-session `state` dictionary. Tool return values that are binary or large objects (images, DataFrames, audio, embeddings) are stored in `state` under a string key. Subsequent tool calls receive the string key as an argument and the framework resolves it to the actual object at call time, never serializing to JSON.
+
+**Evidence**: SRC-11 (smolagents `_substitute_state_variables`): `self.state["image_1"] = AgentImage(bytes)`. Later: `tool_call(input="image_1")` → framework substitutes `self.state["image_1"]` before invoking the tool. ThreadPoolExecutor workers receive `copy_context()` so the state dict is accessible.
+
+**Rationale**: Serializing a 5MB image to base64 JSON and back adds ~6.6MB of token overhead per round-trip. The state dict pattern keeps large objects in memory on the server side — tools receive opaque references.
+
+---
+
+### ADR-047: Pluggable Executor Architecture (IAgenticaExecutor Pattern)
+
+**Decision**: The `createAgentLoop()` factory MUST accept an `executor` option conforming to an `IAgentExecutor` interface with optional step overrides: `initialize`, `select`, `call`, `describe`, `cancel`. Default implementations are pure functions. Passing `null` for any step disables it.
+
+**Evidence**: SRC-17 (Agentica `execute.ts`): `export function execute(executor: Partial<IAgenticaExecutor> | null)`. Each step falls back to the default: `await (executor?.select ?? select)(ctx)`. Passing `{ describe: null }` disables description generation. Full code in `agentsy-deep-dive-v2.md` §2.2.
+
+**Rationale**: This is the cleanest hexagonal architecture pattern seen across all 28 sources. Every step is independently testable and replaceable. Mock executors enable deterministic unit testing of agent logic without LLM calls.
+
+---
+
+### ADR-048: 12-Factor Agent Design Principles
+
+**Decision**: `@agentsy/agent` architecture MUST conform to the 12-factor agent design principles: (1) stateless execution, (2) externalized configuration, (3) declared dependencies, (4) environment parity, (5) structured telemetry, (6) explicit session boundaries, (7) idempotent tool calls, (8) graceful degradation, (9) fail-fast validation, (10) observable context, (11) versioned schemas, (12) reproducible runs.
+
+**Evidence**: SRC-25 (agenticloops-ai/agentic-ai-engineering): 6-module curriculum covering foundations to production; 12-factor agents chapter. Analogy to 12-factor app (Heroku) applied to agent systems.
+
+**Rationale**: Agents that violate these principles are hard to test, debug, and operate in production. Stateful execution makes parallel testing impossible. Non-externalized configuration prevents environment parity. Non-reproducible runs make `pass^k` measurement meaningless.
+
+---
+
+### ADR-049: Design Taste Memory with Temporal Decay
+
+**Decision**: `@agentsy/skills` design review workflow SHOULD maintain a per-project taste profile: approval/rejection signals from design reviews are recorded with timestamps and decay 5% per week. New design generation uses the profile to bias toward confirmed preferences.
+
+**Evidence**: SRC-26 (gstack `gstack-taste-update`): taste profile per project, 5%/week decay, feeds into `design-shotgun` generation. The temporal decay prevents stale preferences from dominating (e.g., a style approved 6 months ago when the product direction was different).
+
+**Rationale**: Design quality is contextual and temporal. A pure accumulation of preferences without decay leads to stale bias. The decay constant ensures only recent (~last 3 months at 5%/week) preferences significantly influence generation.
+
+---
+
+### ADR-050: LLM-as-Judge Evaluation at Every Turn
+
+**Decision**: `@agentsy/agent` SHOULD support a `JudgeAgent(criteria: string[])` that evaluates agent responses against a rubric at each conversation turn, emitting a `JudgeEvent` with score and verdict. Enable early termination on clear success or failure.
+
+**Evidence**: SRC-27 (langwatch/scenario): `JudgeAgent(criteria=["answered correctly", "used the tool", "did not hallucinate"])` evaluates each turn. Early termination reduces token cost 40-60% on test runs. Used in both production quality monitoring and test scenarios.
+
+**Rationale**: End-of-conversation evaluation misses turn-level quality signals and allows low-quality intermediate steps to continue consuming tokens. Per-turn evaluation enables both early termination (cost reduction) and fine-grained quality metrics.
 
 ---
 
