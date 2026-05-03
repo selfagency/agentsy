@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type { ChatMessage } from '../message-conversion/index.js';
+import type { ProviderApiRequest, ProviderStreamChunk } from '../types/errors.js';
 import {
   BaseLanguageModelChatProvider,
-  type LanguageModelChatRequest,
   type CancellationToken,
+  type LanguageModelChatRequest,
   type LanguageModelChatResponseChunk,
 } from './base-language-model-chat-provider.js';
-import type { ProviderApiRequest, ProviderStreamChunk } from '../types/errors.js';
-import type { ChatMessage } from '../message-conversion/index.js';
 
 function makeCancellationToken(cancelled = false): CancellationToken {
   return {
@@ -38,7 +38,10 @@ class TestProvider extends BaseLanguageModelChatProvider {
   public streamChunks: ProviderStreamChunk[] = [];
   public errorCode = 'internal_error';
 
-  protected async buildRequest(messages: ChatMessage[], request: LanguageModelChatRequest): Promise<ProviderApiRequest> {
+  protected async buildRequest(
+    messages: ChatMessage[],
+    request: LanguageModelChatRequest,
+  ): Promise<ProviderApiRequest> {
     this.builtRequest = {
       url: 'http://localhost:11434/api/chat',
       method: 'POST',
@@ -48,7 +51,9 @@ class TestProvider extends BaseLanguageModelChatProvider {
     return this.builtRequest;
   }
 
-  protected normalizeStream(response: AsyncIterable<ProviderStreamChunk>): AsyncIterable<LanguageModelChatResponseChunk> {
+  protected normalizeStream(
+    response: AsyncIterable<ProviderStreamChunk>,
+  ): AsyncIterable<LanguageModelChatResponseChunk> {
     const pushChunk = (chunk: ProviderStreamChunk): void => {
       this.streamChunks.push(chunk);
     };
@@ -159,8 +164,9 @@ describe('BaseLanguageModelChatProvider', () => {
   describe('createErrorResponse', () => {
     it('produces empty stream', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const response = (provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> })
-        .createErrorResponse(new Error('test'), 'Something went wrong');
+      const response = (
+        provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> }
+      ).createErrorResponse(new Error('test'), 'Something went wrong');
       const chunks: unknown[] = [];
       for await (const chunk of response.stream) {
         chunks.push(chunk);
@@ -170,8 +176,9 @@ describe('BaseLanguageModelChatProvider', () => {
 
     it('resolves text with provided message', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const response = (provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> })
-        .createErrorResponse(new Error('test'), 'User-facing message');
+      const response = (
+        provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> }
+      ).createErrorResponse(new Error('test'), 'User-facing message');
       const text = await response.text;
       expect(text).toBe('User-facing message');
     });

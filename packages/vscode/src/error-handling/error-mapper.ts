@@ -1,4 +1,4 @@
-import { ProviderErrorCode, ErrorCodeToMessage } from '../types/errors.js';
+import { ErrorCodeToMessage, ProviderErrorCode } from '../types/errors.js';
 
 /**
  * Maps HTTP status codes to ProviderErrorCode values.

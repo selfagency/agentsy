@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  convertRole,
-  extractTextFromPart,
-  extractToolCall,
-  extractToolResult,
-} from './role-converter.js';
+import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
 import { convertMessage, convertMessages } from './message-adapter.js';
 
 describe('role-converter', () => {

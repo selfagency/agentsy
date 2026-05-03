@@ -1,10 +1,4 @@
-import type {
-  ExtensionContext,
-  SecretStorage,
-  Memento,
-  Event,
-  SecretStorageChangeEvent,
-} from 'vscode';
+import type { Event, ExtensionContext, Memento, SecretStorage, SecretStorageChangeEvent } from 'vscode';
 
 /**
  * Mock Event implementation for testing.
@@ -80,16 +74,17 @@ export function createMockExtensionContext(): ExtensionContext {
     query: '',
     fragment: '',
     fsPath: '/mock/path',
-    with: () => ({
-      scheme: 'file',
-      authority: '',
-      path: '/mock/path',
-      query: '',
-      fragment: '',
-      fsPath: '/mock/path',
-      with: () => ({}),
-      toJSON: () => ({}),
-    } as unknown),
+    with: () =>
+      ({
+        scheme: 'file',
+        authority: '',
+        path: '/mock/path',
+        query: '',
+        fragment: '',
+        fsPath: '/mock/path',
+        with: () => ({}),
+        toJSON: () => ({}),
+      }) as unknown,
     toJSON: () => ({}),
   } as unknown;
 

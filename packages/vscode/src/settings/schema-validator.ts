@@ -20,10 +20,7 @@ export type SettingsSchema = SchemaProperty;
 /**
  * Validates settings against a JSON Schema subset.
  */
-export function validateSettings(
-  settings: Record<string, unknown>,
-  schema: SettingsSchema,
-): SettingsValidationResult {
+export function validateSettings(settings: Record<string, unknown>, schema: SettingsSchema): SettingsValidationResult {
   const errors: string[] = [];
 
   if (schema.required) {
@@ -42,9 +39,7 @@ export function validateSettings(
     }
   }
 
-  return errors.length === 0
-    ? { valid: true }
-    : { valid: false, errors };
+  return errors.length === 0 ? { valid: true } : { valid: false, errors };
 }
 
 /**
@@ -64,7 +59,7 @@ function validateNumber(value: number, schema: SchemaProperty, path: string, err
  */
 function validateObject(value: unknown, schema: SchemaProperty, path: string, errors: string[]): void {
   if (typeof value !== 'object' || Array.isArray(value) || !schema.properties) return;
-  
+
   for (const [subKey, subSchema] of Object.entries(schema.properties)) {
     if (!(subKey in (value as Record<string, unknown>))) continue;
     const subValue = (value as Record<string, unknown>)[subKey];
@@ -72,12 +67,7 @@ function validateObject(value: unknown, schema: SchemaProperty, path: string, er
   }
 }
 
-function validateValue(
-  path: string,
-  value: unknown,
-  schema: SchemaProperty,
-  errors: string[],
-): void {
+function validateValue(path: string, value: unknown, schema: SchemaProperty, errors: string[]): void {
   if (value === undefined || value === null) return;
 
   if (schema.type) {

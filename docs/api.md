@@ -16,11 +16,7 @@ import * as llmStreamParser from '@agentsy/core';
 import { ThinkingParser } from '@agentsy/core/thinking';
 import { createXmlStreamFilter, XmlStreamFilter } from '@agentsy/core/xml-filter';
 import { extractXmlToolCalls, buildXmlToolSystemPrompt } from '@agentsy/core/tool-calls';
-import {
-  splitLeadingXmlContextBlocks,
-  dedupeXmlContextBlocksByTag,
-  stripXmlContextTags,
-} from '@agentsy/core/context';
+import { splitLeadingXmlContextBlocks, dedupeXmlContextBlocksByTag, stripXmlContextTags } from '@agentsy/core/context';
 import {
   parseJson,
   validateJsonSchema,
@@ -32,10 +28,7 @@ import {
   validateWithZod,
   repairWithLLM,
 } from '@agentsy/core/structured';
-import {
-  sanitizeNonStreamingModelOutput,
-  formatXmlLikeResponseForDisplay,
-} from '@agentsy/core/formatting';
+import { sanitizeNonStreamingModelOutput, formatXmlLikeResponseForDisplay } from '@agentsy/core/formatting';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { appendToBlockquote } from '@agentsy/core/markdown';
 import { processStream } from '@agentsy/core/adapters';

@@ -85,10 +85,7 @@ export abstract class BaseLanguageModelChatProvider {
     return Math.ceil(text.length / 4);
   }
 
-  async makeRequest(
-    request: LanguageModelChatRequest,
-    token: CancellationToken,
-  ): Promise<LanguageModelChatResponse> {
+  async makeRequest(request: LanguageModelChatRequest, token: CancellationToken): Promise<LanguageModelChatResponse> {
     if (token.isCancellationRequested) {
       return this.createErrorResponse(new Error('Cancelled'), 'Request was cancelled.');
     }

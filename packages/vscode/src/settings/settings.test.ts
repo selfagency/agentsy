@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SettingsLoader } from './settings-loader.js';
-import { validateSettings, applyDefaults } from './schema-validator.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SettingsSchema } from './schema-validator.js';
+import { applyDefaults, validateSettings } from './schema-validator.js';
+import { SettingsLoader } from './settings-loader.js';
 
 // --- Schema Validator Tests ---
 
@@ -152,10 +152,12 @@ describe('SettingsLoader', () => {
     await loader.load();
 
     const events: unknown[] = [];
-    loader.onDidChange((e) => events.push(e));
+    loader.onDidChange(e => events.push(e));
 
     // Simulate internal change notification
-    const notifyListeners = (loader as unknown as { notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void }).notifyListeners?.bind(loader);
+    const notifyListeners = (
+      loader as unknown as { notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void }
+    ).notifyListeners?.bind(loader);
     if (notifyListeners) {
       notifyListeners({ port: 80 }, { port: 443 });
     }
@@ -173,7 +175,9 @@ describe('SettingsLoader', () => {
     const disposable = loader.onDidChange(listener);
     disposable.dispose();
 
-    const notifyListeners = (loader as unknown as { notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void }).notifyListeners?.bind(loader);
+    const notifyListeners = (
+      loader as unknown as { notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void }
+    ).notifyListeners?.bind(loader);
     if (notifyListeners) {
       notifyListeners({ key: 'old' }, { key: 'new' });
     }

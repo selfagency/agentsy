@@ -21,4 +21,4 @@ export interface SettingsChangeEvent {
  */
 export type SettingsChangeListener = (event: SettingsChangeEvent) => void;
 
-export { type SettingsLoaderConfig, type LoadedSettings } from './errors.js';
+export { type LoadedSettings, type SettingsLoaderConfig } from './errors.js';

@@ -24,10 +24,7 @@ export class UsageStatusBar {
   async show(): Promise<void> {
     try {
       const vscode = await import('vscode');
-      const item = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Right,
-        100,
-      );
+      const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
       if (!item) return;
       this.statusBarItem = item;
       if (this.config.onClickRefresh) {

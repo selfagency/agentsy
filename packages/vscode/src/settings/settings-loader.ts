@@ -67,7 +67,7 @@ export class SettingsLoader {
   async watch(): Promise<void> {
     try {
       const vscode = await import('vscode');
-      const disposable = vscode.workspace.onDidChangeConfiguration(async (e) => {
+      const disposable = vscode.workspace.onDidChangeConfiguration(async e => {
         if (e.affectsConfiguration(this.config.namespace)) {
           const oldSettings = { ...this.cachedSettings };
           const newSettings = await this.load();
@@ -105,14 +105,8 @@ export class SettingsLoader {
     }
   }
 
-  private notifyListeners(
-    oldSettings: LoadedSettings,
-    newSettings: LoadedSettings,
-  ): void {
-    const allKeys = new Set([
-      ...Object.keys(oldSettings),
-      ...Object.keys(newSettings),
-    ]);
+  private notifyListeners(oldSettings: LoadedSettings, newSettings: LoadedSettings): void {
+    const allKeys = new Set([...Object.keys(oldSettings), ...Object.keys(newSettings)]);
 
     for (const key of allKeys) {
       const oldValue = oldSettings[key];

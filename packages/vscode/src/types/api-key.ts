@@ -6,10 +6,7 @@ export type ApiKeyEvent = 'changed' | 'deleted' | 'updated';
 /**
  * Listener for API key changes.
  */
-export type ApiKeyChangeListener = (
-  event: ApiKeyEvent,
-  newKey: string | undefined,
-) => void;
+export type ApiKeyChangeListener = (event: ApiKeyEvent, newKey: string | undefined) => void;
 
 /**
  * Storage provider interface for API keys.

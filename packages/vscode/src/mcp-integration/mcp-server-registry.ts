@@ -98,11 +98,7 @@ export class McpServerRegistry {
         }
       }
 
-      await config.update(
-        this.config.namespace,
-        merged,
-        vscode.ConfigurationTarget.Workspace,
-      );
+      await config.update(this.config.namespace, merged, vscode.ConfigurationTarget.Workspace);
     } catch {
       // VS Code not available
     }

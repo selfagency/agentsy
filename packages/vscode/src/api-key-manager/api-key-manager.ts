@@ -1,5 +1,5 @@
 import type { ExtensionContext } from 'vscode';
-import type { ApiKeyManagerConfig, ApiKeyChangeListener } from '../types/index.js';
+import type { ApiKeyChangeListener, ApiKeyManagerConfig } from '../types/index.js';
 
 /**
  * Centralized API key management with VS Code SecretStorage.
@@ -137,10 +137,7 @@ export class ApiKeyManager {
   async _debugShowStoredKey(): Promise<string | undefined> {
     const key = await this.getApiKey();
     if (key) {
-      const masked =
-        key.substring(0, 4) +
-        '*'.repeat(Math.max(0, key.length - 8)) +
-        key.substring(key.length - 4);
+      const masked = key.substring(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.substring(key.length - 4);
       return masked;
     }
     return undefined;
@@ -161,11 +158,7 @@ export class ApiKeyManager {
   /**
    * Show input prompt.
    */
-  private async promptForInput(
-    _title: string,
-    prompt: string,
-    password: boolean,
-  ): Promise<string | undefined> {
+  private async promptForInput(_title: string, prompt: string, password: boolean): Promise<string | undefined> {
     try {
       const { window } = await import('vscode');
       return await window.showInputBox({
@@ -182,10 +175,7 @@ export class ApiKeyManager {
   /**
    * Notify all listeners of API key changes.
    */
-  private notifyListeners(
-    event: 'changed' | 'deleted' | 'updated',
-    newKey: string | undefined,
-  ): void {
+  private notifyListeners(event: 'changed' | 'deleted' | 'updated', newKey: string | undefined): void {
     for (const listener of this.listeners) {
       try {
         listener(event, newKey);

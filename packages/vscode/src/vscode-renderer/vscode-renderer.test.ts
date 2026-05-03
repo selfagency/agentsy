@@ -7,10 +7,7 @@ import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
 /** Factory function to create a mock LLMStreamProcessor for testing */
-function createFakeProcessor(
-  processParts: Record<string, unknown>[] = [],
-  customFlush?: ReturnType<typeof vi.fn>,
-) {
+function createFakeProcessor(processParts: Record<string, unknown>[] = [], customFlush?: ReturnType<typeof vi.fn>) {
   return {
     process: vi.fn(() => ({
       thinking: '',

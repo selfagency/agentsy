@@ -62,16 +62,15 @@ describe('McpServerRegistry', () => {
     registry.register(makeServer({ name: 'b' }));
     const all = registry.getAll();
     expect(all).toHaveLength(2);
-    expect(all.map((s) => s.name)).toContain('a');
-    expect(all.map((s) => s.name)).toContain('b');
+    expect(all.map(s => s.name)).toContain('a');
+    expect(all.map(s => s.name)).toContain('b');
   });
 
   it('loadFromProviders populates servers from provider', async () => {
     const provider: McpServerProvider = {
-      provide: vi.fn().mockResolvedValue([
-        makeServer({ name: 'prov-server-1' }),
-        makeServer({ name: 'prov-server-2' }),
-      ]),
+      provide: vi
+        .fn()
+        .mockResolvedValue([makeServer({ name: 'prov-server-1' }), makeServer({ name: 'prov-server-2' })]),
     };
     const registry = new McpServerRegistry({
       namespace: 'ext.mcpServers',

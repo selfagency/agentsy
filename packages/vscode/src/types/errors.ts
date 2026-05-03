@@ -21,22 +21,16 @@ export enum ProviderErrorCode {
  * User-friendly messages for each error code.
  */
 export const ErrorCodeToMessage: Record<ProviderErrorCode, string> = {
-  [ProviderErrorCode.InvalidApiKey]:
-    'Invalid API key. Please check your credentials in settings.',
-  [ProviderErrorCode.RateLimited]:
-    'Rate limited. Please wait a moment and try again.',
-  [ProviderErrorCode.ModelNotFound]:
-    'Model not found. Please check your model configuration.',
+  [ProviderErrorCode.InvalidApiKey]: 'Invalid API key. Please check your credentials in settings.',
+  [ProviderErrorCode.RateLimited]: 'Rate limited. Please wait a moment and try again.',
+  [ProviderErrorCode.ModelNotFound]: 'Model not found. Please check your model configuration.',
   [ProviderErrorCode.ContextLengthExceeded]:
     'Context length exceeded. Please reduce your message length or use a model with more context.',
-  [ProviderErrorCode.ConnectionError]:
-    'Connection failed. Please check your network and provider URL.',
+  [ProviderErrorCode.ConnectionError]: 'Connection failed. Please check your network and provider URL.',
   [ProviderErrorCode.Timeout]: 'Request timed out. Please try again.',
-  [ProviderErrorCode.InvalidRequest]:
-    'Invalid request. Please check your input format.',
+  [ProviderErrorCode.InvalidRequest]: 'Invalid request. Please check your input format.',
   [ProviderErrorCode.InternalError]: 'Internal server error. Please try again.',
-  [ProviderErrorCode.NotImplemented]:
-    'Feature not implemented by this provider.',
+  [ProviderErrorCode.NotImplemented]: 'Feature not implemented by this provider.',
   [ProviderErrorCode.Cancelled]: 'Request was cancelled.',
 };
 

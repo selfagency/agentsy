@@ -46,24 +46,15 @@ export function calculateRetryDelay(
   attempt: number,
   options: Required<Pick<RetryOptions, 'initialDelayMs' | 'backoffMultiplier' | 'maxDelayMs'>>,
 ): number {
-  const delay = options.initialDelayMs * (options.backoffMultiplier ** attempt);
+  const delay = options.initialDelayMs * options.backoffMultiplier ** attempt;
   return Math.min(delay, options.maxDelayMs);
 }
 
 /**
  * Executes an operation with automatic retry on retryable errors.
  */
-export async function withRetry<T>(
-  operation: () => Promise<T>,
-  options: RetryOptions = {},
-): Promise<T> {
-  const {
-    maxAttempts = 3,
-    initialDelayMs = 1000,
-    backoffMultiplier = 2,
-    maxDelayMs = 30000,
-    signal,
-  } = options;
+export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+  const { maxAttempts = 3, initialDelayMs = 1000, backoffMultiplier = 2, maxDelayMs = 30000, signal } = options;
 
   let lastError: unknown;
 
@@ -93,9 +84,13 @@ export async function withRetry<T>(
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
-    signal?.addEventListener('abort', () => {
-      clearTimeout(timer);
-      reject(new Error('Operation aborted'));
-    }, { once: true });
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        reject(new Error('Operation aborted'));
+      },
+      { once: true },
+    );
   });
 }
