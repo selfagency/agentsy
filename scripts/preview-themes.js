@@ -8,20 +8,20 @@
 
 import chalk from 'chalk';
 import {
-  ayuMirageTheme,
-  catppuccinFrappeTheme,
-  catppuccinLatteTheme,
-  catppuccinMacchiatoTheme,
-  catppuccinMochaTheme,
-  darkTheme,
-  defaultTheme,
-  draculaTheme,
-  githubDarkTheme,
-  houstonTheme,
-  lightTheme,
-  minimalTheme,
-  oneCandyTheme,
-  oneDarkTheme,
+    ayuMirageTheme,
+    catppuccinFrappeTheme,
+    catppuccinLatteTheme,
+    catppuccinMacchiatoTheme,
+    catppuccinMochaTheme,
+    darkTheme,
+    defaultTheme,
+    draculaTheme,
+    githubDarkTheme,
+    houstonTheme,
+    lightTheme,
+    minimalTheme,
+    oneCandyTheme,
+    oneDarkTheme,
 } from '../dist/renderers/ink/themes/index.js';
 
 const THEMES = [

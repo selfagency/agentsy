@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { ConversationHistory } from './ConversationHistory.js';
-import { darkTheme, defaultTheme } from '../themes/index.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ConversationTurn } from '../createInkConversationRenderer.js';
+import { darkTheme, defaultTheme } from '../themes/index.js';
+import { ConversationHistory } from './ConversationHistory.js';
 
 describe('ConversationHistory Component', () => {
   beforeEach(() => {
@@ -282,9 +282,7 @@ describe('ConversationHistory Component', () => {
           role: 'assistant',
           text: 'Using tools',
           timestamp: Date.now(),
-          toolCalls: [
-            { id: 'c1', name: 'tool1', arguments: {}, done: true },
-          ],
+          toolCalls: [{ id: 'c1', name: 'tool1', arguments: {}, done: true }],
         },
       ];
       const element = React.createElement(ConversationHistory, {
@@ -302,9 +300,7 @@ describe('ConversationHistory Component', () => {
           role: 'assistant',
           text: 'Using tools',
           timestamp: Date.now(),
-          toolCalls: [
-            { id: 'c1', name: 'tool1', arguments: {}, done: true },
-          ],
+          toolCalls: [{ id: 'c1', name: 'tool1', arguments: {}, done: true }],
         },
       ];
       const element = React.createElement(ConversationHistory, {
@@ -467,4 +463,3 @@ describe('ConversationHistory Component', () => {
     });
   });
 });
-

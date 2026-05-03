@@ -103,14 +103,17 @@ describe('VS Code Chat Renderer', () => {
         thinkingStyle: 'blockquote',
       });
 
-      // Mock stream with proposed API
-      mockStream.thinkingProgress = vi.fn();
-
-      await renderer.write('Content');
+      await renderer.writeChunk({
+        thinking: 'Internal reasoning',
+        content: 'Visible content',
+      });
       await renderer.end();
 
-      // When proposed API is available, it should be preferred
-      expect(mockStream.markdown).toHaveBeenCalled();
+      expect(mockStream.thinkingProgress).toHaveBeenCalledWith({
+        text: 'Internal reasoning',
+        id: 'thinking',
+      });
+      expect(mockStream.progress).not.toHaveBeenCalled();
     });
 
     it('suppresses thinking when style is suppress', async () => {
@@ -143,52 +146,191 @@ describe('VS Code Chat Renderer', () => {
   describe('Tool Call Feedback', () => {
     it('fires onToolCall callback', async () => {
       const onToolCall = vi.fn();
+      const fakeProcessor = {
+        process: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: false,
+          parts: [
+            {
+              type: 'tool_call' as const,
+              call: { id: 'tc_callback', name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' as const },
+              state: 'pending' as const,
+            },
+          ],
+          incomplete: false,
+          incompleteness: [],
+        })),
+        flush: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: true,
+          parts: [],
+          incomplete: false,
+          incompleteness: [],
+        })),
+      } as unknown as LLMStreamProcessor;
+
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         onToolCall,
+        processor: fakeProcessor,
       });
 
-      await renderer.write('Tool use call');
+      await renderer.writeChunk({ content: 'Tool use call' });
       await renderer.end();
 
-      // Tool call handling depends on processor parsing XML
-      expect(renderer).toBeDefined();
+      expect(onToolCall).toHaveBeenCalledTimes(1);
+      expect(onToolCall).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'tool_call',
+          call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
+          state: 'pending',
+        }),
+      );
     });
 
     it('invokes beginToolInvocation when available', async () => {
+      const fakeProcessor = {
+        process: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: false,
+          parts: [
+            {
+              type: 'tool_call' as const,
+              call: { id: 'tc_begin', name: 'weather', parameters: { city: 'NYC' }, format: 'bare-xml' as const },
+              state: 'pending' as const,
+            },
+          ],
+          incomplete: false,
+          incompleteness: [],
+        })),
+        flush: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: true,
+          parts: [],
+          incomplete: false,
+          incompleteness: [],
+        })),
+      } as unknown as LLMStreamProcessor;
+
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
+        processor: fakeProcessor,
       });
 
-      expect(renderer).toBeDefined();
-      expect(mockStream.beginToolInvocation).toBeDefined();
+      await renderer.writeChunk({ content: 'invoke tool' });
+      await renderer.end();
+
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledTimes(1);
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather');
     });
 
     it('fires onToolCallDelta callback', async () => {
       const onToolCallDelta = vi.fn();
+      const fakeProcessor = {
+        process: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: false,
+          parts: [
+            {
+              type: 'tool_call_delta' as const,
+              id: 'tc_delta',
+              name: 'search',
+              argumentsDelta: '{"query":',
+              index: 0,
+            },
+          ],
+          incomplete: false,
+          incompleteness: [],
+        })),
+        flush: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: true,
+          parts: [],
+          incomplete: false,
+          incompleteness: [],
+        })),
+      } as unknown as LLMStreamProcessor;
+
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         onToolCallDelta,
+        processor: fakeProcessor,
       });
 
-      await renderer.write('Tool call');
+      await renderer.writeChunk({ content: 'Tool delta' });
       await renderer.end();
 
-      expect(renderer).toBeDefined();
+      expect(onToolCallDelta).toHaveBeenCalledTimes(1);
+      expect(onToolCallDelta).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'tool_call_delta',
+          id: 'tc_delta',
+          name: 'search',
+          argumentsDelta: '{"query":',
+        }),
+      );
     });
 
     it('calls updateToolInvocation when tool_call_delta received', async () => {
+      const fakeProcessor = {
+        process: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: false,
+          parts: [
+            {
+              type: 'tool_call_delta' as const,
+              id: 'tc_update',
+              name: 'search',
+              argumentsDelta: '"docs"}',
+              index: 1,
+            },
+          ],
+          incomplete: false,
+          incompleteness: [],
+        })),
+        flush: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: true,
+          parts: [],
+          incomplete: false,
+          incompleteness: [],
+        })),
+      } as unknown as LLMStreamProcessor;
+
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
+        processor: fakeProcessor,
       });
 
-      mockStream.updateToolInvocation = vi.fn();
-
-      await renderer.write('Content');
+      await renderer.writeChunk({ content: 'delta content' });
       await renderer.end();
 
-      // Verify the handler exists and can be called
-      expect(mockStream.updateToolInvocation).toBeDefined();
+      expect(mockStream.updateToolInvocation).toHaveBeenCalledTimes(1);
+      expect(mockStream.updateToolInvocation).toHaveBeenCalledWith(
+        'tc_update',
+        expect.objectContaining({
+          type: 'tool_call_delta',
+          id: 'tc_update',
+          name: 'search',
+          argumentsDelta: '"docs"}',
+        }),
+      );
     });
 
     it('awaits async onToolCall callback before writeChunk resolves', async () => {
@@ -569,6 +711,29 @@ describe('VS Code Agent Loop', () => {
     await renderer.end();
 
     expect(flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('detaches abort listener when end() is called before cancellation', async () => {
+    const addEventListener = vi.fn();
+    const removeEventListener = vi.fn();
+
+    const fakeAbortSignal = {
+      aborted: false,
+      addEventListener,
+      removeEventListener,
+    } as unknown as AbortSignal;
+
+    const renderer = createVSCodeAgentLoop({
+      stream: mockStream,
+      abortSignal: fakeAbortSignal,
+    });
+
+    await renderer.end();
+
+    expect(addEventListener).toHaveBeenCalledTimes(1);
+    expect(addEventListener).toHaveBeenCalledWith('abort', expect.any(Function), { once: true });
+    expect(removeEventListener).toHaveBeenCalledTimes(1);
+    expect(removeEventListener).toHaveBeenCalledWith('abort', expect.any(Function));
   });
 });
 

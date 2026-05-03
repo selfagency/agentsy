@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { StreamingText } from './StreamingText.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { darkTheme, defaultTheme } from '../themes/index.js';
+import { StreamingText } from './StreamingText.js';
 
 // Mock cli-markdown
 vi.mock('cli-markdown', () => ({
@@ -419,7 +419,8 @@ describe('StreamingText Component', () => {
     });
 
     it('handles all options together', () => {
-      const fullMarkdown = '# Header\n\n**Bold** and *italic* with `code` and `languages`\n\n```python\nprint("hello")\n```';
+      const fullMarkdown =
+        '# Header\n\n**Bold** and *italic* with `code` and `languages`\n\n```python\nprint("hello")\n```';
       const element = React.createElement(StreamingText, {
         text: fullMarkdown,
         markdown: true,
@@ -436,4 +437,3 @@ describe('StreamingText Component', () => {
     });
   });
 });
-

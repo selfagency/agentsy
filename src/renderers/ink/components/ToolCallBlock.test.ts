@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { ToolCallBlock } from './ToolCallBlock.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { darkTheme, defaultTheme } from '../themes/index.js';
+import { ToolCallBlock } from './ToolCallBlock.js';
 
 describe('ToolCallBlock Component', () => {
   beforeEach(() => {
@@ -244,12 +244,7 @@ describe('ToolCallBlock Component', () => {
     });
 
     it('handles large argument objects', () => {
-      const largeArgs = Object.fromEntries(
-        Array.from({ length: 100 }, (_, i) => [
-          `key_${i}`,
-          `value_${i}`,
-        ])
-      );
+      const largeArgs = Object.fromEntries(Array.from({ length: 100 }, (_, i) => [`key_${i}`, `value_${i}`]));
       const call = {
         id: '1',
         name: 'large_args_tool',
@@ -412,4 +407,3 @@ describe('ToolCallBlock Component', () => {
     });
   });
 });
-

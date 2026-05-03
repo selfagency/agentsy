@@ -75,18 +75,27 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   const renderer = createVSCodeChatRenderer(mergedOptions);
 
   let endPromise: Promise<void> | null = null;
+  let detachAbortListener: (() => void) | undefined;
 
   const endOnce = async (): Promise<void> => {
     if (endPromise) {
       return endPromise;
     }
 
-    endPromise = renderer.end();
+    detachAbortListener?.();
+    detachAbortListener = undefined;
+
+    endPromise = renderer.end().finally(() => {
+      detachAbortListener?.();
+      detachAbortListener = undefined;
+    });
+
     return endPromise;
   };
 
   // If abortSignal provided, attach cancellation listener to cleanup resources
-  if (options.abortSignal) {
+  const abortSignal = options.abortSignal;
+  if (abortSignal) {
     const onAbort = () => {
       // Signal end to renderer on cancellation
       endOnce().catch(err => {
@@ -95,10 +104,13 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
       });
     };
 
-    if (options.abortSignal.aborted) {
+    if (abortSignal.aborted) {
       onAbort();
     } else {
-      options.abortSignal.addEventListener('abort', onAbort, { once: true });
+      abortSignal.addEventListener('abort', onAbort, { once: true });
+      detachAbortListener = () => {
+        abortSignal.removeEventListener('abort', onAbort);
+      };
     }
   }
 

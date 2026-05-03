@@ -72,7 +72,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('caches mixed small and large content independently', () => {
-    const renderFn = vi.fn((s: string) => `[rendered:${s.length}]`);  // s is intentionally used for length calculation
+    const renderFn = vi.fn((s: string) => `[rendered:${s.length}]`); // s is intentionally used for length calculation
     const smallContent = 'small';
     const largeContent = 'x'.repeat(2000);
 

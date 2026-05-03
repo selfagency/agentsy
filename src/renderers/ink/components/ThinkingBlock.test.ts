@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { ThinkingBlock } from './ThinkingBlock.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { darkTheme, defaultTheme } from '../themes/index.js';
+import { ThinkingBlock } from './ThinkingBlock.js';
 
 // Mock Ink render to avoid terminal setup in test environment
 vi.mock('ink', async () => {
@@ -380,4 +380,3 @@ describe('ThinkingBlock Component', () => {
     });
   });
 });
-
