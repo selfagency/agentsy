@@ -166,7 +166,7 @@ describe('ThinkingBlock', () => {
     );
 
     vi.advanceTimersByTime(160); // Advance past animation
-    const streamingFrame = lastFrame();
+    const _streamingFrame = lastFrame();
 
     // Re-render without streaming
     unmount();

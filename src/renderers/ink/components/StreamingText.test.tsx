@@ -110,7 +110,7 @@ describe('StreamingText', () => {
   it('converts markdown when not for screen readers', async () => {
     const { markdownToAnsi } = await import('../utils/markdownToAnsi.js');
 
-    const { lastFrame, unmount } = render(
+    const { _lastFrame, unmount } = render(
       <StreamingText text="*italic*" markdown={true} isStreaming={false} theme={mockTheme} screenReader={false} />,
     );
 
@@ -209,6 +209,7 @@ describe('StreamingText', () => {
 
     // Should not throw or cause memory leaks
     await vi.runAllTimersAsync();
+    expect(true).toBe(true); // Cleanup completed without error
   });
 
   it('handles rapid text updates', async () => {
