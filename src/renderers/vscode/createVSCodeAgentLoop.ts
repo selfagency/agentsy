@@ -78,7 +78,8 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   let detachAbortListener: (() => void) | undefined;
   /**
    * Ends the renderer exactly once, cleaning up resources and abort listeners.
-   * Errors during cleanup are logged but not thrown because the stream is already terminating.
+   * If called via the abort signal, errors are logged but not thrown (stream already terminating).
+   * If called directly, errors are propagated to the caller.
    *
    * @returns Promise that resolves when cleanup is complete
    * @internal

@@ -87,7 +87,8 @@ export class SSEParser {
     for (let i = 0; i < parts.length - 1; i++) {
       const eventText = parts[i];
       // eventText is from array access; may be undefined or empty string.
-      // Check for both undefined and empty string before processing.
+      // Use explicit undefined check over optional chaining for defensive stream parsing.
+      // biome-ignore style/useOptionalChain: Explicit check preferred for robustness
       if (eventText !== undefined && eventText.trim()) {
         const fields = eventText.split('\n');
         const event = this.fieldsToEvent(fields);
