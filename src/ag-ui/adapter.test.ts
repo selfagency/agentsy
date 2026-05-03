@@ -183,6 +183,7 @@ describe('toAgUiStream', () => {
 
     const errorEvent = events.find(e => e.type === EventType.RUN_ERROR);
     expect(errorEvent).toBeDefined();
+    // biome-ignore lint/suspicious/noExplicitAny: Type guard verifies error property exists
     if (errorEvent && 'error' in errorEvent) {
       expect((errorEvent as Record<string, unknown>).error).toEqual(
         expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' }),
@@ -280,6 +281,7 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId, encryptReasoning: true }));
 
     const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
+    // biome-ignore lint/suspicious/noExplicitAny: Type guard verifies encryptedValue property exists
     if (contentEvent) {
       expect((contentEvent as Record<string, unknown>).encryptedValue).toBe('encrypted');
     }

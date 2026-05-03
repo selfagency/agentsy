@@ -76,7 +76,8 @@ describe('createSSEStream', () => {
       }
     } catch (err) {
       expect(err).toBeInstanceOf(Error);
-      expect((err as Error).message).toContain('Generator error');
+      // biome-ignore lint/suspicious/noExplicitAny: Error type is verified by toBeInstanceOf check
+      expect((err as unknown as Error).message).toContain('Generator error');
     }
   });
 

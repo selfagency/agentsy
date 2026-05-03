@@ -76,7 +76,13 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
 
   let endPromise: Promise<void> | null = null;
   let detachAbortListener: (() => void) | undefined;
-
+  /**
+   * Ends the renderer exactly once, cleaning up resources and abort listeners.
+   * Errors during cleanup are logged but not thrown because the stream is already terminating.
+   *
+   * @returns Promise that resolves when cleanup is complete
+   * @internal
+   */
   const endOnce = async (): Promise<void> => {
     if (endPromise) {
       return endPromise;
@@ -100,7 +106,11 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
       // Signal end to renderer on cancellation
       endOnce().catch(err => {
         // Log but don't throw (signal already aborted)
+        // Include error stack for debugging cleanup issues
         console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', err);
+        if (err instanceof Error && err.stack) {
+          console.warn('[VS Code Agent Loop] Cleanup error stack:', err.stack);
+        }
       });
     };
 
