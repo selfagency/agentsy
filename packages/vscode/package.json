@@ -1,0 +1,52 @@
+{
+  "name": "@agentsy/vscode",
+  "version": "0.1.0-beta.1",
+  "description": "Unified VS Code integration library for Language Model Chat Providers with llm-stream-parser 0.3.1 support",
+  "keywords": [
+    "vscode",
+    "language-model",
+    "chat-provider",
+    "llm",
+    "copilot",
+    "streaming"
+  ],
+  "license": "MIT",
+  "author": "Selfagency",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "@selfagency/llm-stream-parser": "file:/Users/daniel/Developer/llm-stream-parser"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/vscode": "^1.93.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "typescript": "^6.0.3",
+    "tsup": "^8.5.1",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

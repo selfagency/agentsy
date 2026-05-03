@@ -1,0 +1,29 @@
+import type { SettingsLoaderConfig, LoadedSettings } from './errors.js';
+
+/**
+ * Settings validation result.
+ */
+export interface SettingsValidationResult {
+  valid: boolean;
+  errors?: string[];
+  warnings?: string[];
+}
+
+/**
+ * Settings change event.
+ */
+export interface SettingsChangeEvent {
+  key: string;
+  oldValue: unknown;
+  newValue: unknown;
+}
+
+/**
+ * Settings change listener.
+ */
+export type SettingsChangeListener = (event: SettingsChangeEvent) => void;
+
+/**
+ * Re-export for convenience.
+ */
+export type { SettingsLoaderConfig, LoadedSettings };

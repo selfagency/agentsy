@@ -1,7 +1,7 @@
-import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
-import type { OutputPart } from '../../processor/LLMStreamProcessor.js';
-import { createSharedRendererHandle } from '../shared.js';
-import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
+import { appendToBlockquote } from '@selfagency/llm-stream-parser/markdown';
+import type { OutputPart } from '@selfagency/llm-stream-parser/processor';
+import { createSharedRendererHandle } from '@selfagency/llm-stream-parser/renderers';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@selfagency/llm-stream-parser/renderers';
 
 /**
  * Structural interface matching VS Code's ChatResponseStream.
@@ -88,7 +88,7 @@ export interface VSCodeChatRendererOptions extends BaseRendererOptions {
  *
  * @example
  * ```typescript
- * import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
+ * import { createVSCodeChatRenderer } from '@agentsy/vscode';
  *
  * const renderer = createVSCodeChatRenderer({
  *   stream, // ChatResponseStream from VS Code
@@ -119,10 +119,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
   let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
 
-  /**
-   * Handle thinking part: stream based on configured style.
-   * @internal
-   */
   function handleThinkingPart(text: string): void {
     if (!showThinking || thinkingStyle === 'suppress') {
       return;
@@ -140,11 +136,8 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         blockquoteNeedsPrefix = true;
       }
 
-      // Emit blockquote-formatted content, tracking if text ends with newline
       const blockquoteContent = appendToBlockquote(text, blockquoteNeedsPrefix);
       stream.markdown(blockquoteContent);
-
-      // Next chunk needs prefix if current text ends with newline
       blockquoteNeedsPrefix = text.endsWith('\n');
     }
   }
@@ -158,7 +151,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       });
     }
 
-    // Close blockquote if stream ended and we were in blockquote thinking mode
     if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
       stream.markdown('\n\n');
       blockquoteThinkingStarted = false;

@@ -1,4 +1,4 @@
-import type { BaseRendererOptions, ThinkingStyle } from '../types.js';
+import type { BaseRendererOptions, ThinkingStyle } from '@selfagency/llm-stream-parser/renderers';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
@@ -33,7 +33,7 @@ export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
  *
  * @example
  * ```typescript
- * import { createVSCodeAgentLoop } from '@selfagency/llm-stream-parser/renderers/vscode';
+ * import { createVSCodeAgentLoop, cancellationTokenToAbortSignal } from '@agentsy/vscode';
  *
  * export async function handleAgentChat(
  *   request: vscode.ChatRequest,
@@ -45,8 +45,8 @@ export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
  *
  *   const renderer = createVSCodeAgentLoop({
  *     stream,
- *     showThinking: true, // Show agent reasoning steps
- *     thinkingStyle: 'progress', // Use progress indicators for thinking
+ *     showThinking: true,
+ *     thinkingStyle: 'progress',
  *     abortSignal,
  *     onToolCall: (toolCall) => {
  *       // Handle tool invocation in agent workflow
@@ -65,26 +65,16 @@ export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
  * ```
  */
 export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
-  // Default showThinking to true for agent loops (agent thinking is valuable context)
   const mergedOptions = {
     ...options,
     showThinking: options.showThinking !== false,
   };
 
-  // Create the base renderer
   const renderer = createVSCodeChatRenderer(mergedOptions);
 
   let endPromise: Promise<void> | null = null;
   let detachAbortListener: (() => void) | undefined;
-  /**
-   * Ends the renderer exactly once, cleaning up resources and abort listeners.
-   * If called via the abort signal, errors are logged but not thrown (stream already terminating).
-   * If called directly, errors are propagated to the caller.
-   *
-   * @returns Promise that resolves when cleanup is complete
-   * @internal
-   */
-  // codacy: disable-line
+
   const endOnce = async (): Promise<void> => {
     if (endPromise) {
       return endPromise;
@@ -101,15 +91,10 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
     return endPromise;
   };
 
-  // If abortSignal provided, attach cancellation listener to cleanup resources
   const abortSignal = options.abortSignal;
   if (abortSignal) {
-    // codacy: disable-line
     const onAbort = () => {
-      // Signal end to renderer on cancellation
       endOnce().catch(err => {
-        // Log but don't throw (signal already aborted)
-        // Include error stack for debugging cleanup issues
         console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', err);
         if (err instanceof Error && err.stack) {
           console.warn('[VS Code Agent Loop] Cleanup error stack:', err.stack);

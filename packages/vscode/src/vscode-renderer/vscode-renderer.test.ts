@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LLMStreamProcessor } from '../../processor/index.js';
-import type { CancellationToken } from '../types.js';
+import type { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
+import type { CancellationToken } from '@selfagency/llm-stream-parser/renderers';
 import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
 import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
 import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
@@ -155,7 +155,6 @@ describe('VS Code Chat Renderer', () => {
       await renderer.write('Content');
       await renderer.end();
 
-      // No thinking should be emitted
       expect(mockStream.progress).not.toHaveBeenCalled();
     });
 
@@ -354,7 +353,6 @@ describe('VS Code Chat Renderer', () => {
         done: true,
       });
 
-      // Should not crash
       expect(renderer).toBeDefined();
     });
   });
@@ -367,11 +365,9 @@ describe('VS Code Chat Renderer', () => {
         onError,
       });
 
-      // Normal flow - no error
       await renderer.write('Content');
       await renderer.end();
 
-      // Error handler defined
       expect(onError).toBeDefined();
     });
 
@@ -398,17 +394,14 @@ describe('VS Code Chat Renderer', () => {
         onFinish,
       });
 
-      // Call writeChunk with done=true
       await renderer.writeChunk({
         content: 'Test',
         done: true,
         finishReason: 'stop',
       });
 
-      // Then call end()
       await renderer.end();
 
-      // onFinish should only be called once (in writeChunk)
       expect(onFinish).toHaveBeenCalledTimes(1);
     });
 
@@ -419,11 +412,9 @@ describe('VS Code Chat Renderer', () => {
         onFinish,
       });
 
-      // Use write() which doesn't have done=true
       await renderer.write('Content');
       await renderer.end();
 
-      // onFinish should be called once in end()
       expect(onFinish).toHaveBeenCalledTimes(1);
     });
 
@@ -481,11 +472,9 @@ describe('VS Code Chat Renderer', () => {
         thinkingStyle: 'blockquote',
       });
 
-      // Write thinking content that will trigger blockquote header
       await renderer.write('Let me think about this');
       await renderer.end();
 
-      // Verify stream.markdown was called (for content or blockquote header)
       expect(mockStream.markdown).toHaveBeenCalled();
     });
 
@@ -561,7 +550,6 @@ describe('VS Code Agent Loop', () => {
       stream: mockStream,
     });
 
-    // showThinking defaults to true for agent loops
     expect(renderer).toBeDefined();
   });
 
@@ -590,7 +578,6 @@ describe('VS Code Agent Loop', () => {
 
     expect(renderer).toBeDefined();
 
-    // Trigger abort - should not throw
     abortController.abort();
   });
 
@@ -649,11 +636,10 @@ describe('VS Code Agent Loop', () => {
     const testError = new Error('Renderer end failed');
     testError.stack = 'Error: Renderer end failed\n  at test (test.ts:1:1)';
 
-    // Mock ChatResponseStream methods to fail when rendering ends
     const failingStream = {
       progress: vi.fn(),
       markdown: vi.fn(() => {
-        throw testError; // Fail immediately
+        throw testError;
       }),
       anchor: vi.fn(),
       reference: vi.fn(),
@@ -667,13 +653,10 @@ describe('VS Code Agent Loop', () => {
       abortSignal: abortController.signal,
     });
 
-    // Write content first to ensure markdown is called later
     await renderer.write('test content');
 
-    // Abort to trigger error path
     abortController.abort();
 
-    // Wait for async abort handlers
     await vi.waitFor(() => {
       expect(consoleWarnSpy).toHaveBeenCalled();
     });
@@ -688,17 +671,14 @@ describe('VS Code Agent Loop', () => {
 
   it('calls endOnce only once when abort signal is already aborted', async () => {
     const abortController = new AbortController();
-    abortController.abort(); // Pre-abort
+    abortController.abort();
 
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
       abortSignal: abortController.signal,
     });
 
-    // Give abort handler time to run
     await Promise.resolve();
-
-    // Calling end() should resolve without double-processing
     await renderer.end();
 
     expect(mockStream.markdown).not.toThrow();
@@ -748,7 +728,6 @@ describe('Cancellation Token Bridge', () => {
 
     expect(signal.aborted).toBe(false);
 
-    // Trigger cancellation by calling the registered listener
     for (const listener of listeners) {
       listener(undefined);
     }

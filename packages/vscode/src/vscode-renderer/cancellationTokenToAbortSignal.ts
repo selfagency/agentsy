@@ -1,4 +1,4 @@
-import type { CancellationToken } from '../types.js';
+import type { CancellationToken } from '@selfagency/llm-stream-parser/renderers';
 
 /**
  * Convert a VS Code CancellationToken to an AbortSignal for use with fetch, stream operations,
@@ -12,8 +12,7 @@ import type { CancellationToken } from '../types.js';
  *
  * @example
  * ```typescript
- * import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
- * import { cancellationTokenToAbortSignal } from '@selfagency/llm-stream-parser/renderers/vscode';
+ * import { createVSCodeChatRenderer, cancellationTokenToAbortSignal } from '@agentsy/vscode';
  *
  * export async function handleChat(
  *   request: vscode.ChatRequest,
@@ -33,14 +32,12 @@ import type { CancellationToken } from '../types.js';
  * ```
  */
 export function cancellationTokenToAbortSignal(token: CancellationToken): AbortSignal {
-  // If token is already cancelled, return pre-aborted signal
   if (token.isCancellationRequested) {
     const controller = new AbortController();
     controller.abort();
     return controller.signal;
   }
 
-  // Create controller and link to token's cancellation event
   const controller = new AbortController();
   const cancellationListener = token.onCancellationRequested(() => {
     controller.abort();
