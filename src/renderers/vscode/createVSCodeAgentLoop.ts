@@ -74,16 +74,37 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   // Create the base renderer
   const renderer = createVSCodeChatRenderer(mergedOptions);
 
+  let endPromise: Promise<void> | null = null;
+
+  const endOnce = async (): Promise<void> => {
+    if (endPromise) {
+      return endPromise;
+    }
+
+    endPromise = renderer.end();
+    return endPromise;
+  };
+
   // If abortSignal provided, attach cancellation listener to cleanup resources
   if (options.abortSignal) {
-    options.abortSignal.addEventListener('abort', () => {
+    const onAbort = () => {
       // Signal end to renderer on cancellation
-      renderer.end().catch(err => {
+      endOnce().catch(err => {
         // Log but don't throw (signal already aborted)
         console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', err);
       });
-    });
+    };
+
+    if (options.abortSignal.aborted) {
+      onAbort();
+    } else {
+      options.abortSignal.addEventListener('abort', onAbort, { once: true });
+    }
   }
 
-  return renderer;
+  return {
+    write: renderer.write,
+    writeChunk: renderer.writeChunk,
+    end: endOnce,
+  };
 }

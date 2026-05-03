@@ -787,7 +787,7 @@ export interface ChatResponseStream {
   thinkingProgress?(title: string): void;
   beginToolInvocation?(toolName: string, toolCallId: string): void;
   updateToolInvocation?(toolCallId: string, result: unknown): void;
-  usage?(options: { input_tokens: number; output_tokens: number }): void;
+  usage?(options: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
 }
 
 export interface VSCodeChatRendererOptions {
@@ -795,7 +795,7 @@ export interface VSCodeChatRendererOptions {
   showThinking?: boolean; // Default: false
   thinkingStyle?: 'blockquote' | 'progress' | 'suppress'; // Default: 'blockquote'
 
-  onToolCall?: (call: XmlToolCall) => void | Promise<void>;
+  onToolCall?: (part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }) => void | Promise<void>;
   onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
   onError?: (error: Error) => void;
 }

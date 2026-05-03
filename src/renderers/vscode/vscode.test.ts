@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LLMStreamProcessor } from '../../processor/index.js';
 import type { CancellationToken } from '../types.js';
 import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
 import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
@@ -188,6 +189,64 @@ describe('VS Code Chat Renderer', () => {
 
       // Verify the handler exists and can be called
       expect(mockStream.updateToolInvocation).toBeDefined();
+    });
+
+    it('awaits async onToolCall callback before writeChunk resolves', async () => {
+      let releaseCallback: (() => void) | undefined;
+      let callbackCompleted = false;
+      const callbackGate = new Promise<void>(resolve => {
+        releaseCallback = resolve;
+      });
+
+      const onToolCall = vi.fn(async () => {
+        await callbackGate;
+        callbackCompleted = true;
+      });
+
+      const fakeProcessor = {
+        process: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: false,
+          parts: [
+            {
+              type: 'tool_call' as const,
+              call: { id: 'tc1', name: 'search', arguments: {} },
+              state: 'pending' as const,
+            },
+          ],
+          incomplete: false,
+          incompleteness: [],
+        })),
+        flush: vi.fn(() => ({
+          thinking: '',
+          content: '',
+          toolCalls: [],
+          done: true,
+          parts: [],
+          incomplete: false,
+          incompleteness: [],
+        })),
+      } as unknown as LLMStreamProcessor;
+
+      const renderer = createVSCodeChatRenderer({
+        stream: mockStream,
+        onToolCall,
+        processor: fakeProcessor,
+      });
+
+      const writePromise = renderer.writeChunk({ content: 'chunk' });
+
+      // If writeChunk correctly awaits onToolCall, callback should still be pending here.
+      await Promise.resolve();
+      expect(callbackCompleted).toBe(false);
+
+      releaseCallback?.();
+      await writePromise;
+
+      expect(onToolCall).toHaveBeenCalledTimes(1);
+      expect(callbackCompleted).toBe(true);
     });
   });
 
@@ -472,6 +531,44 @@ describe('VS Code Agent Loop', () => {
 
     // Trigger abort - should not throw
     abortController.abort();
+  });
+
+  it('prevents double flush when abort and end are both triggered', async () => {
+    const abortController = new AbortController();
+    const flush = vi.fn(() => ({
+      thinking: '',
+      content: '',
+      toolCalls: [],
+      done: true,
+      parts: [],
+      incomplete: false,
+      incompleteness: [],
+    }));
+
+    const fakeProcessor = {
+      process: vi.fn(() => ({
+        thinking: '',
+        content: '',
+        toolCalls: [],
+        done: false,
+        parts: [],
+        incomplete: false,
+        incompleteness: [],
+      })),
+      flush,
+    } as unknown as LLMStreamProcessor;
+
+    const renderer = createVSCodeAgentLoop({
+      stream: mockStream,
+      abortSignal: abortController.signal,
+      processor: fakeProcessor,
+    });
+
+    abortController.abort();
+    await Promise.resolve();
+    await renderer.end();
+
+    expect(flush).toHaveBeenCalledTimes(1);
   });
 });
 

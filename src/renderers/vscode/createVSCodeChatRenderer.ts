@@ -1,9 +1,6 @@
 import { appendToBlockquote } from '../../markdown/appendToBlockquote.js';
-import type { OutputPart, StreamChunk } from '../../processor/LLMStreamProcessor.js';
-import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
-import type { XmlToolCall } from '../../tool-calls/extractXmlToolCalls.js';
-import type { ToolCallState } from '../../tool-calls/types.js';
-import { createStepChangeEmitter } from '../shared.js';
+import type { OutputPart } from '../../processor/LLMStreamProcessor.js';
+import { createSharedRendererHandle } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '../types.js';
 
 /**
@@ -109,7 +106,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     stream,
     showThinking = false,
     thinkingStyle = 'blockquote',
-    processor,
     onError,
     onToolCall,
     onToolCallDelta,
@@ -119,13 +115,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   if (!stream) {
     throw new Error('ChatResponseStream is required for VS Code chat renderer');
   }
-
-  // Create processor if not provided (owns it internally)
-  const llmProcessor = processor || new LLMStreamProcessor();
-
-  // Guard flag to prevent double onFinish callback invocation
-  let finished = false;
-  const handleStepUpdate = createStepChangeEmitter(options.onStep);
 
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
   let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
@@ -160,25 +149,11 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     }
   }
 
-  /**
-   * Handle completion: fire callbacks and close blockquote on stream end.
-   * @internal
-   */
-  async function handleCompletion(done: boolean | undefined, finishReason: unknown, usage: unknown): Promise<void> {
-    if (!done) return;
-
-    // Fire onFinish callback if stream is done (guard against double invocation)
-    if (!finished && onFinish) {
-      finished = true;
-      await onFinish(finishReason as Parameters<typeof onFinish>[0], usage as Parameters<typeof onFinish>[1]);
-    }
-
-    // Capability detection: report usage if available
+  const sharedOnFinish: BaseRendererOptions['onFinish'] = async (finishReason, usage) => {
     if (usage && stream.usage) {
-      const usageInfo = usage as { inputTokens?: number; outputTokens?: number };
       stream.usage({
-        promptTokens: usageInfo.inputTokens ?? 0,
-        completionTokens: usageInfo.outputTokens ?? 0,
+        promptTokens: usage.inputTokens ?? 0,
+        completionTokens: usage.outputTokens ?? 0,
       });
     }
 
@@ -187,131 +162,57 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
       stream.markdown('\n\n');
       blockquoteThinkingStarted = false;
     }
-  }
 
-  /**
-   * Handle text part rendering.
-   * @internal
-   */
-  function handleTextPartRendering(part: { type: 'text'; text: string }): void {
-    if (typeof part.text === 'string') {
-      stream.markdown(part.text);
+    if (onFinish) {
+      await onFinish(finishReason, usage);
     }
-  }
-
-  /**
-   * Handle thinking part rendering.
-   * @internal
-   */
-  function handleThinkingPartRendering(part: { type: 'thinking'; text: string }): void {
-    if (typeof part.text === 'string') {
-      handleThinkingPart(part.text);
-    }
-  }
-
-  /**
-   * Handle tool call part rendering and callbacks.
-   * @internal
-   */
-  function handleToolCallPartRendering(part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }): void {
-    if (onToolCall) {
-      onToolCall({ type: 'tool_call', call: part.call, state: part.state });
-    }
-    if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
-      stream.beginToolInvocation(part.call.id, part.call.name);
-    }
-  }
-
-  /**
-   * Handle tool call delta part rendering and updates.
-   * @internal
-   */
-  function handleToolCallDeltaPartRendering(part: {
-    type: 'tool_call_delta';
-    id?: string;
-    name: string;
-    argumentsDelta: string;
-    index: number;
-  }): void {
-    if (onToolCallDelta) {
-      onToolCallDelta(part);
-    }
-    if (stream.updateToolInvocation && typeof part.id === 'string') {
-      stream.updateToolInvocation(part.id, part as OutputPart);
-    }
-  }
-
-  /**
-   * Process all parts from output, dispatching to appropriate handlers.
-   * @internal
-   */
-  function processParts(parts: OutputPart[]): void {
-    for (const part of parts) {
-      switch (part.type) {
-        case 'text':
-          handleTextPartRendering(part as { type: 'text'; text: string });
-          break;
-        case 'thinking':
-          handleThinkingPartRendering(part as { type: 'thinking'; text: string });
-          break;
-        case 'tool_call':
-          handleToolCallPartRendering(part as { type: 'tool_call'; call: XmlToolCall; state: ToolCallState });
-          break;
-        case 'tool_call_delta':
-          handleToolCallDeltaPartRendering(
-            part as { type: 'tool_call_delta'; id?: string; name: string; argumentsDelta: string; index: number },
-          );
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
-  return {
-    async write(chunk: string): Promise<void> {
-      try {
-        const result = llmProcessor.process({ content: chunk });
-        processParts(result.parts);
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
-    async writeChunk(chunk: StreamChunk): Promise<void> {
-      try {
-        const result = llmProcessor.process(chunk);
-        processParts(result.parts);
-        await handleStepUpdate(result);
-        await handleCompletion(chunk.done, chunk.finishReason, chunk.usage);
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
-    async end(): Promise<void> {
-      let result: ReturnType<typeof llmProcessor.flush> | undefined;
-      try {
-        result = llmProcessor.flush();
-        processParts(result.parts);
-        await handleStepUpdate(result);
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-
-      await handleCompletion(result?.done, result?.finishReason, result?.usage);
-    },
   };
+
+  const sharedOptions: BaseRendererOptions = {
+    onFinish: sharedOnFinish,
+  };
+
+  if (options.processor) {
+    sharedOptions.processor = options.processor;
+  }
+
+  if (options.onStep) {
+    sharedOptions.onStep = options.onStep;
+  }
+
+  return createSharedRendererHandle(
+    sharedOptions,
+    {
+      onText: async (text: string) => {
+        stream.markdown(text);
+      },
+      onThinking: async (text: string) => {
+        handleThinkingPart(text);
+      },
+      onToolCall: async part => {
+        if (onToolCall) {
+          await onToolCall(part);
+        }
+
+        if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
+          stream.beginToolInvocation(part.call.id, part.call.name);
+        }
+      },
+      onToolCallDelta: async part => {
+        if (onToolCallDelta) {
+          onToolCallDelta(part);
+        }
+        if (stream.updateToolInvocation && typeof part.id === 'string') {
+          stream.updateToolInvocation(part.id, part as OutputPart);
+        }
+      },
+      onEnd: async () => {
+        if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
+          stream.markdown('\n\n');
+          blockquoteThinkingStarted = false;
+        }
+      },
+    },
+    onError,
+  );
 }
