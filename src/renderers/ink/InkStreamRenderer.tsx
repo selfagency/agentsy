@@ -62,9 +62,9 @@ function ThinkingSection({
   isStreaming,
   options,
 }: {
-  thinking: string;
-  isStreaming: boolean;
-  options: RenderOptions;
+  readonly thinking: string;
+  readonly isStreaming: boolean;
+  readonly options: RenderOptions;
 }) {
   if (!options.showThinking || !thinking) return null;
   return (
@@ -82,8 +82,8 @@ function ToolCallsSection({
   toolCalls,
   options,
 }: {
-  toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
-  options: RenderOptions;
+  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly options: RenderOptions;
 }) {
   if (!options.showToolCalls) return null;
   return <ToolCallsRenderer toolCalls={toolCalls} theme={options.theme} screenReader={options.screenReader} />;
@@ -96,11 +96,11 @@ function ContentRenderer({
   isStreaming,
   options,
 }: {
-  text: string;
-  thinking: string;
-  toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
-  isStreaming: boolean;
-  options: RenderOptions;
+  readonly text: string;
+  readonly thinking: string;
+  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly isStreaming: boolean;
+  readonly options: RenderOptions;
 }) {
   return (
     <Box flexDirection="column">

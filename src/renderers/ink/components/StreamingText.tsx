@@ -20,8 +20,7 @@ export function StreamingText({
   screenReader = false,
   syntaxHighlight = false,
 }: StreamingTextProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [tick, setTick] = useState(0);  // Used to force re-renders for cursor animation via setInterval
+  const [, setTick] = useState(0);  // Used to force re-renders for cursor animation via setInterval
 
   const { stablePrefix, unstableSuffix } = useMemo(() => {
     if (!isStreaming) {

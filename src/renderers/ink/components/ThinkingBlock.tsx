@@ -16,7 +16,7 @@ function SuppressedThinking(): null {
   return null;
 }
 
-function ScreenReaderThinking({ text }: { text: string }) {
+function ScreenReaderThinking({ text }: { readonly text: string }) {
   return <Text>{`\nThinking:\n${text}\n`}</Text>;
 }
 
@@ -26,10 +26,10 @@ function InlineThinking({
   theme,
   screenReader,
 }: {
-  text: string;
-  isStreaming: boolean;
-  theme: Theme;
-  screenReader: boolean;
+  readonly text: string;
+  readonly isStreaming: boolean;
+  readonly theme: Theme;
+  readonly screenReader: boolean;
 }) {
   if (screenReader) {
     return <ScreenReaderThinking text={text} />;
@@ -51,21 +51,20 @@ function BlockquoteThinking({
   theme,
   screenReader,
 }: {
-  text: string;
-  frame: number;
-  isStreaming: boolean;
-  theme: Theme;
-  screenReader: boolean;
+  readonly text: string;
+  readonly frame: number;
+  readonly isStreaming: boolean;
+  readonly theme: Theme;
+  readonly screenReader: boolean;
 }) {
   if (screenReader) {
     return <ScreenReaderThinking text={text} />;
   }
 
-  const borderStyle: 'single' | 'double' | 'round' | undefined = !theme.border.style || theme.border.style === 'none'
-    ? undefined
-    : (theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round'
-        ? theme.border.style
-        : undefined);
+  const borderStyle: 'single' | 'double' | 'round' | undefined = 
+    (theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round')
+      ? theme.border.style
+      : undefined;
   const borderColor = theme.border.color || undefined;
   const spinnerSymbol = spinnerFrames[frame] ?? spinnerFrames[0];
   const spinnerColor = isStreaming ? theme.thinking.spinnerColor || undefined : theme.thinking.textColor || undefined;
