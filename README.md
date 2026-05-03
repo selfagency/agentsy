@@ -2,7 +2,7 @@
 
 Production-ready LLM stream parsing and VS Code integration for multi-step agent workflows.
 
-[![npm @agentsy/parser](https://img.shields.io/npm/v/@agentsy/parser?label=%40agentsy%2Fparser)](https://www.npmjs.com/package/@agentsy/parser)
+[![npm @agentsy/core](https://img.shields.io/npm/v/@agentsy/core?label=%40agentsy%2Fcore)](https://www.npmjs.com/package/@agentsy/core)
 [![npm @agentsy/vscode](https://img.shields.io/npm/v/@agentsy/vscode?label=%40agentsy%2Fvscode)](https://www.npmjs.com/package/@agentsy/vscode)
 [![CI](https://github.com/agentsy/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/agentsy/agentsy/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
