@@ -102,11 +102,20 @@ function ContentRenderer({
   readonly isStreaming: boolean;
   readonly options: RenderOptions;
 }) {
+  const streamingProps = {
+    text,
+    markdown: options.markdown,
+    isStreaming,
+    theme: options.theme,
+    screenReader: options.screenReader,
+    syntaxHighlight: options.syntaxHighlight,
+  };
+
   return (
     <Box flexDirection="column">
       <ThinkingSection thinking={thinking} isStreaming={isStreaming} options={options} />
       <ToolCallsSection toolCalls={toolCalls} options={options} />
-      <StreamingText text={text} markdown={options.markdown} isStreaming={isStreaming} theme={options.theme} screenReader={options.screenReader} syntaxHighlight={options.syntaxHighlight} />
+      <StreamingText {...streamingProps} />
     </Box>
   );
 }
