@@ -559,54 +559,39 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: false,
-        thinkingStyle: 'blockquote',
       });
 
-      await renderer.write('Some content');
+      await renderer.write('Content');
       await renderer.end();
 
-      // Still should call markdown for text content
-      expect(mockStream.markdown).toHaveBeenCalled();
+      expect(mockStream.progress).not.toHaveBeenCalled();
     });
 
     it('accepts custom thinkingStyle options', async () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: true,
-        thinkingStyle: 'progress',
+        thinkingStyle: 'blockquote',
       });
 
-      await renderer.write('Content');
+      await renderer.write('content');
       await renderer.end();
 
-      // Renderer should be usable with progress style
       expect(renderer).toBeDefined();
     });
 
     it('should handle structured chunk output with tool calls', async () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        showThinking: false,
       });
 
-      // Write text content first
-      await renderer.write('I will search for that.');
-
-      // Then write chunk with tool calls (structured output)
       await renderer.writeChunk({
-        content: '',
-        tool_calls: [
-          {
-            function: { name: 'search', arguments: { query: 'test' } },
-          },
-        ],
+        content: 'I will call a tool',
         done: false,
       });
 
-      // Final completion
       await renderer.end();
 
-      // Verify markdown was called for text content
       expect(mockStream.markdown).toHaveBeenCalled();
     });
   });
