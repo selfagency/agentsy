@@ -12,10 +12,11 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "precommit": "turbo run precommit",
-    "release": "node scripts/release-per-package.js"
+    "release": "pnpm exec zx scripts/release-per-package.js"
   },
   "devDependencies": {
-    "turbo": "^2.9.8"
+    "turbo": "^2.9.8",
+    "zx": "^8.1.9"
   },
   "keywords": [
     "ai",

@@ -78,15 +78,11 @@ jobs:
                 ? (await github.rest.git.getTag({ owner, repo, tag_sha: refObj.sha })).data.object.sha
                 : refObj.sha;
 
-            const mainBranch = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
-            const mainSha = mainBranch.data.commit.sha;
-
-            if (taggedSha !== mainSha) {
-              core.setFailed(
-                `Release blocked: tag ${tag} points to ${taggedSha}, but latest main is ${mainSha}.`
-              );
-              return;
-            }
+            // Note: We don't check if tag points to the absolute latest main,
+            // because that would block concurrent releases (if two commits land on main
+            // close together, the first tag still points to a passing commit, but this
+            // check would reject it as soon as main advances). Instead, we just verify
+            // the tag commit passed CI and is on main (checked above with branch query).
 
             // Verify CI passed
             const requiredWorkflows = ['Test & Build'];
@@ -174,9 +170,12 @@ jobs:
                   .map(tag => tag.name)
                   .filter(name => name.startsWith(`${packageName}@`) && name !== currentTag)
                   .sort((a, b) => {
-                    const parseVer = v => v.split('@')[1].split('.').map(Number);
-                    const [aMaj, aMin, aPatch] = parseVer(a);
-                    const [bMaj, bMin, bPatch] = parseVer(b);
+                    const parseVer = v => {
+                      const version = v.slice(v.lastIndexOf('@') + 1);
+                      return version.split('.').map(Number);
+                    };
+                    const [aMaj = 0, aMin = 0, aPatch = 0] = parseVer(a);
+                    const [bMaj = 0, bMin = 0, bPatch = 0] = parseVer(b);
                     return aMaj - bMaj || aMin - bMin || aPatch - bPatch;
                   })
                   .at(-1) ?? '';
@@ -237,7 +236,8 @@ jobs:
         run: |
           PACKAGE_DIR="packages/${{ needs.detect-release.outputs.package_dir }}"
           echo "📤 Publishing ${{ needs.detect-release.outputs.package_name }}@${{ needs.detect-release.outputs.version }}..."
-          npm publish "$PACKAGE_DIR/dist" --access public
+          DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
+          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -245,8 +245,9 @@ jobs:
         if: needs.detect-release.outputs.is_per_package != 'true'
         run: |
           echo "📤 Publishing all packages..."
-          npm publish ./packages/core/dist --access public
-          npm publish ./packages/vscode/dist --access public
+          DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
+          npm publish ./packages/core/dist --access public --tag="$DIST_TAG"
+          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

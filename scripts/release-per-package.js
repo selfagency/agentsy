@@ -105,6 +105,15 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
+// Validate package name matches actual package.json
+const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
+if (pkgJson.name !== packageName) {
+  console.error(`❌ Package name mismatch:`);
+  console.error(`   Argument: ${packageName}`);
+  console.error(`   package.json: ${pkgJson.name}`);
+  process.exit(1);
+}
+
 const tag = `${packageName}@${version}`;
 
 // ---------------------------------------------------------------------------
@@ -304,12 +313,12 @@ async function main() {
 
   // Derive owner/repo from git remote
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
-  const repoMatch = remoteUrl.match(/[:/]([^/]+)\/([^/.]+?)(\.git)?$/);
-  if (!repoMatch) {
+  const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
+  if (!match) {
     console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
     process.exit(1);
   }
-  const [, owner, repo] = repoMatch;
+  const [, owner, repo] = match;
 
   // Check for existing tags
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
@@ -337,8 +346,8 @@ async function main() {
 
   // Filter tags for this package, sort by semver
   const parseVer = v => {
-    const [maj, min, patch] = v.split('@')[1].split('.').map(Number);
-    return [maj, min, patch];
+    const version = v.slice(v.lastIndexOf('@') + 1);
+    return version.split('.').map(Number);
   };
 
   const previousTag =
@@ -346,8 +355,8 @@ async function main() {
       .map(r => r.ref.replace('refs/tags/', ''))
       .filter(t => t.startsWith(`${packageName}@`) && t !== tag)
       .sort((a, b) => {
-        const [aMaj, aMin, aPatch] = parseVer(a);
-        const [bMaj, bMin, bPatch] = parseVer(b);
+        const [aMaj = 0, aMin = 0, aPatch = 0] = parseVer(a);
+        const [bMaj = 0, bMin = 0, bPatch = 0] = parseVer(b);
         return aMaj - bMaj || aMin - bMin || aPatch - bPatch;
       })
       .at(-1) ?? '';
@@ -356,13 +365,17 @@ async function main() {
 
   console.log(`📝 Generating release notes for ${tag}...`);
 
-  const notesResp = await octokit.repos.generateReleaseNotes({
+  const releaseNotesOpts = {
     owner,
     repo,
     tag_name: tag,
     target_commitish: 'main',
-    ...(previousTag ? { previous_tag_name: previousTag } : {}),
-  });
+  };
+  if (previousTag) {
+    releaseNotesOpts.previous_tag_name = previousTag;
+  }
+
+  const notesResp = await octokit.repos.generateReleaseNotes(releaseNotesOpts);
   const releaseNotes = notesResp.data.body?.trim() || '- No notable changes.';
 
   // --- Update package.json -------------------------------------------------
@@ -395,19 +408,28 @@ async function main() {
     console.log('ℹ️  No version/changelog changes; nothing to commit.');
   }
 
+  // --- Dry-run exit (BEFORE pushing) ----------------------------------------
+
+  if (isDryRun) {
+    console.log(`\n[dry-run] Would perform the following:`);
+    console.log(`[dry-run]   1. Commit: "chore(release): ${tag}"`);
+    console.log(`[dry-run]   2. Push to origin/main`);
+    console.log(`[dry-run]   3. Wait for Test & Build workflow to pass`);
+    console.log(`[dry-run]   4. Create tag: ${tag}`);
+    console.log(`[dry-run]   5. Trigger GitHub Release workflow`);
+    console.log(`[dry-run]   6. Publish to npm`);
+    console.log(`[dry-run]`);
+    console.log(`[dry-run] Release notes preview:`);
+    console.log(`[dry-run] ${releaseNotes}`);
+    return;
+  }
+
   console.log('🚀 Pushing main...');
   runGit(['push', 'origin', 'main']);
   commitPushed = true;
   commitLocal = false;
 
   const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
-
-  // --- Dry-run exit --------------------------------------------------------
-
-  if (isDryRun) {
-    console.log(`\n[dry-run] Would wait for CI, create tag '${tag}', push, and dispatch release workflow.`);
-    console.log(`[dry-run] Release notes preview:\n${releaseNotes}`);
-    return;
   }
 
   // --- Wait for required workflows -----------------------------------------
@@ -486,14 +508,7 @@ async function waitForWorkflow(
     const run = runsResp.data.workflow_runs.find(r => !cancelledRunIds.has(r.id));
 
     if (!run) {
-      if (autoDispatch && !triggered) {
-        spinner.text = `${name}: triggering workflow_dispatch...`;
-        await octokit.actions.createWorkflowDispatch({ owner, repo, workflow_id: workflow.id, ref: 'main' });
-        triggered = true;
-        spinner.text = `${name}: waiting for run...`;
-      } else {
-        spinner.text = `${name}: waiting for run...`;
-      }
+      spinner.text = `${name}: waiting for workflow run...`;
     } else if (run.status !== 'completed') {
       const elapsed = Math.round((Date.now() - new Date(run.created_at).getTime()) / 1000);
       spinner.text = `${name}: ${run.status} (${elapsed}s)`;
