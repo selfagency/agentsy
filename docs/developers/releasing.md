@@ -1,6 +1,11 @@
 # Releasing Packages
 
-Releases are per-package in this monorepo. Each package gets its own version tag and npm publishing. The workflow supports simultaneous releases of multiple packages.
+Releases are per-package in this monorepo. Each package uses a two-lane model:
+
+1. **Bootstrap publish (one-time, local)** for packages never published on npm before.
+2. **Trusted publishing (ongoing, CI/OIDC)** after bootstrap and npm trusted publisher setup.
+
+Releases remain merge-approved via `main` and triggered by package tags.
 
 ## Single Package Release
 
@@ -11,6 +16,29 @@ pnpm release @agentsy/core 0.2.0
 # Release @agentsy/vscode@0.1.5
 pnpm release @agentsy/vscode 0.1.5
 ```
+
+## First Publish (Bootstrap, one-time)
+
+Use this only for packages that have never been published and are still marked `bootstrap-required` in `config/release-state.json`.
+
+```bash
+pnpm bootstrap-release @agentsy/renderers 0.1.0 --yes-i-know-this-is-first-publish
+```
+
+What bootstrap does:
+
+- updates package version
+- builds package output
+- writes `dist/package.json`
+- publishes from local machine once
+- marks package as `oidc-ready` in `config/release-state.json`
+
+After bootstrap, configure trusted publisher on npmjs package settings:
+
+- provider: GitHub Actions
+- repository: `selfagency/agentsy` (exact match)
+- workflow filename: `release.yml` (exact match)
+- optional environment: only if you use GitHub environments
 
 ## What Happens
 
@@ -29,14 +57,24 @@ pnpm release @agentsy/vscode 0.1.5
 6. **Publishing**:
    - Builds the package: `pnpm -F @agentsy/core build`
    - Runs `node scripts/write-dist-package.js` for that package
-   - Publishes to npm with `--access public`
+   - Publishes to npm with OIDC trusted publishing (no publish token)
    - Creates GitHub Release with release notes
 
 ## Prerequisites
 
 - **Git**: Repository clean, on main branch, pushed to origin
-- **npm**: Authenticated (`npm login` or `NPM_TOKEN` env var)
+- **npm CLI**: version `>= 11.5.1` (required for trusted publishing)
 - **GitHub**: Token via `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth token`
+- **Runner**: GitHub-hosted runners (self-hosted not currently supported by npm trusted publishing)
+
+## Release State Gate
+
+`config/release-state.json` controls whether a package may publish via CI:
+
+- `bootstrap-required`: blocked in CI release workflow
+- `oidc-ready`: allowed to publish via OIDC
+
+CI release runs fail fast for packages that are not `oidc-ready`.
 
 ## Tag Format
 
@@ -77,6 +115,24 @@ npm login
 export NPM_TOKEN="npm_xxxx..."
 ```
 
+### "Release blocked: package is not oidc-ready"
+
+Run one-time bootstrap publish first, then configure trusted publisher on npmjs.com:
+
+```bash
+pnpm bootstrap-release @agentsy/<package> <version> --yes-i-know-this-is-first-publish
+```
+
+### "Unable to authenticate" during CI publish
+
+Check all trusted publisher fields on npmjs package settings are exact and case-sensitive:
+
+- organization/user
+- repository
+- workflow filename (`release.yml`)
+
+Also ensure package `repository.url` resolves to `selfagency/agentsy`.
+
 ### "No GitHub token found"
 
 ```bash
@@ -96,6 +152,8 @@ git tag -d @agentsy/core@0.2.0
 ## Configuration Files
 
 - **scripts/release-per-package.js**: Main orchestrator (per-package aware)
+- **scripts/bootstrap-release.js**: One-time first publish helper
 - **.github/workflows/release.yml**: GitHub Actions (detects tag format, publishes)
 - **scripts/write-dist-package.js**: Builds dist/package.json for publishing
+- **config/release-state.json**: Package trusted-publishing readiness state
 - **packages/[package]/CHANGELOG.md**: Release notes per-package

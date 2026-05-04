@@ -1,0 +1,6 @@
+{
+  "defaultState": "bootstrap-required",
+  "packages": {
+    "@agentsy/vscode": "oidc-ready"
+  }
+}
