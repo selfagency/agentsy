@@ -8,8 +8,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { LLMStreamProcessor } from '@agentsy/processor';
-import { createPlainTextRenderer } from '@agentsy/renderers';
-import { createSharedRendererHandle, type BaseRendererOptions } from '@agentsy/renderers';
+import { createPlainTextRenderer, createSharedRendererHandle, type BaseRendererOptions } from '@agentsy/renderers';
 
 // ---------------------------------------------------------------------------
 // Plain-text renderer
@@ -77,7 +76,12 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
       onFinish,
     });
 
-    await renderer.writeChunk({ content: 'done', done: true, finishReason: 'stop', usage: { inputTokens: 5, outputTokens: 3 } });
+    await renderer.writeChunk({
+      content: 'done',
+      done: true,
+      finishReason: 'stop',
+      usage: { inputTokens: 5, outputTokens: 3 },
+    });
     await renderer.end();
 
     expect(onFinish).toHaveBeenCalledWith('stop', { inputTokens: 5, outputTokens: 3 });
@@ -123,9 +127,15 @@ describe('createSharedRendererHandle', () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: async t => { texts.push(t); },
-        onThinking: async t => { thinkings.push(t); },
-        onToolCall: async part => { toolCalls.push(part.call.name); },
+        onText: async t => {
+          texts.push(t);
+        },
+        onThinking: async t => {
+          thinkings.push(t);
+        },
+        onToolCall: async part => {
+          toolCalls.push(part.call.name);
+        },
       },
     );
 
@@ -144,7 +154,12 @@ describe('createSharedRendererHandle', () => {
 
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
-      { onText: async t => { texts.push(t); }, onThinking: async () => {} },
+      {
+        onText: async t => {
+          texts.push(t);
+        },
+        onThinking: async () => {},
+      },
     );
 
     await handle.write('direct write');
@@ -186,11 +201,7 @@ describe('processStream generic adapter', () => {
   it('yields ProcessedOutput for each StreamChunk via processStream', async () => {
     const { processStream } = await import('@agentsy/adapters');
 
-    const chunks = [
-      { content: 'Hello' },
-      { content: ' world' },
-      { content: '', done: true },
-    ];
+    const chunks = [{ content: 'Hello' }, { content: ' world' }, { content: '', done: true }];
 
     async function* gen() {
       for (const c of chunks) yield c;

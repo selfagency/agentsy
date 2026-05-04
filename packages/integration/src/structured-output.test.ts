@@ -6,17 +6,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { parseJson, validateJsonSchema, buildRepairPrompt } from '@agentsy/structured';
+import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/context';
 import {
   appendToBlockquote,
   formatXmlLikeResponseForDisplay,
   sanitizeNonStreamingModelOutput,
 } from '@agentsy/formatting';
-import {
-  stripXmlContextTags,
-  dedupeXmlContextBlocksByTag,
-  splitLeadingXmlContextBlocks,
-} from '@agentsy/context';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/structured';
 
 // ---------------------------------------------------------------------------
 // parseJson

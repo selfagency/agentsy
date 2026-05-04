@@ -8,8 +8,8 @@ import { describe, expect, it } from 'vitest';
 
 import { LLMStreamProcessor } from '@agentsy/processor';
 import { ThinkingParser } from '@agentsy/thinking';
-import { createXmlStreamFilter } from '@agentsy/xml-filter';
 import { extractXmlToolCalls } from '@agentsy/tool-calls';
+import { createXmlStreamFilter } from '@agentsy/xml-filter';
 
 // ---------------------------------------------------------------------------
 // Thinking tag parsing through the processor

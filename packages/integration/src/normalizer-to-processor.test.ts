@@ -8,6 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import type { NormalizerResult } from '@agentsy/normalizers';
 import {
   normalizeAnthropicEvent,
   normalizeBedrockConverseEvent,
@@ -17,7 +18,6 @@ import {
   normalizeOpenAIResponseEvent,
 } from '@agentsy/normalizers';
 import { LLMStreamProcessor } from '@agentsy/processor';
-import type { NormalizerResult } from '@agentsy/normalizers';
 
 // ---------------------------------------------------------------------------
 // Helper: pump a list of raw provider events through a normalizer and a fresh
@@ -35,7 +35,7 @@ function pump<T>(
   let done = false;
 
   for (const event of events) {
-    const result = normalizer(event as Parameters<typeof normalizer>[0]);
+    const result = normalizer(event);
     if (!result) continue;
     const out = processor.process(result.chunk);
     content += out.content ?? '';
@@ -86,7 +86,9 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
         choices: [
           {
             delta: {
-              tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'get_weather', arguments: '' } }],
+              tool_calls: [
+                { index: 0, id: 'call_1', type: 'function', function: { name: 'get_weather', arguments: '' } },
+              ],
             },
             finish_reason: null,
           },

@@ -26,7 +26,10 @@ function sseLine(data: unknown): string {
 }
 
 // Collect all events from a pipeline into an array
-async function collectPipelineEvents(source: AsyncIterable<string>, provider: Parameters<typeof createPipeline>[1]['provider']): Promise<PipelineEvent[]> {
+async function collectPipelineEvents(
+  source: AsyncIterable<string>,
+  provider: Parameters<typeof createPipeline>[1]['provider'],
+): Promise<PipelineEvent[]> {
   const events: PipelineEvent[] = [];
   for await (const event of createPipeline(source, { provider })) {
     events.push(event);
@@ -57,17 +60,11 @@ describe('createPipeline (openai)', () => {
   });
 
   it('emits a tool_call event for XML-style tool calls in content', async () => {
-    const xmlContent =
-      'Sure! <search_files><query>integration tests</query></search_files>';
+    const xmlContent = 'Sure! <search_files><query>integration tests</query></search_files>';
 
-    const sse =
-      sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] }) +
-      'data: [DONE]\n\n';
+    const sse = sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n';
 
-    const events = await collectPipelineEvents(
-      sseSource(sse),
-      'openai',
-    );
+    const events = await collectPipelineEvents(sseSource(sse), 'openai');
 
     // The pipeline emits tool_call only when knownTools option includes the name.
     // Without knownTools the XML is treated as regular content.
@@ -79,9 +76,7 @@ describe('createPipeline (openai)', () => {
   it('emits tool_call events when knownTools is configured', async () => {
     const xmlContent = '<search_files><query>cats</query></search_files>';
 
-    const sse =
-      sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] }) +
-      'data: [DONE]\n\n';
+    const sse = sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n';
 
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
@@ -100,9 +95,7 @@ describe('createPipeline (openai)', () => {
   it('emits thinking event when parseThinkTags=true', async () => {
     const content = '<think>internal reasoning</think>Final answer';
 
-    const sse =
-      sseLine({ choices: [{ delta: { content }, finish_reason: 'stop' }] }) +
-      'data: [DONE]\n\n';
+    const sse = sseLine({ choices: [{ delta: { content }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n';
 
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
@@ -165,7 +158,10 @@ describe('createPipeline (anthropic)', () => {
     const thinking = events.find(e => e.type === 'thinking');
     expect(thinking?.thinking).toBe('my reasoning');
 
-    const text = events.filter(e => e.type === 'delta').map(e => e.content).join('');
+    const text = events
+      .filter(e => e.type === 'delta')
+      .map(e => e.content)
+      .join('');
     expect(text).toBe('answer');
   });
 });
@@ -185,7 +181,10 @@ describe('createPipeline (gemini)', () => {
 
     const events = await collectPipelineEvents(sseSource(sse), 'gemini');
 
-    const text = events.filter(e => e.type === 'delta').map(e => e.content).join('');
+    const text = events
+      .filter(e => e.type === 'delta')
+      .map(e => e.content)
+      .join('');
     expect(text).toBe('Gemini here');
   });
 });
