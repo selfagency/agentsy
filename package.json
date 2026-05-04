@@ -1,27 +1,8 @@
 {
   "name": "@agentsy/monorepo",
   "version": "0.1.0",
-  "type": "module",
-  "description": "Monorepo for Agentsy agentic development framework",
   "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "check-types": "turbo run check-types",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "format": "turbo run format",
-    "test": "turbo run test",
-    "test:coverage": "turbo run test:coverage",
-    "precommit": "turbo run precommit",
-    "release": "pnpm exec zx scripts/release-per-package.js"
-  },
-  "devDependencies": {
-    "@octokit/rest": "22.0.1",
-    "@types/node": "^25.6.0",
-    "ora": "9.4.0",
-    "turbo": "^2.9.8",
-    "zx": "^8.8.5"
-  },
+  "description": "Monorepo for Agentsy agentic development framework",
   "keywords": [
     "ai",
     "anthropic",
@@ -35,7 +16,40 @@
     "tools",
     "xml"
   ],
-  "author": "Daniel Sieradski <daniel@self.agency>",
   "license": "MIT",
+  "author": "Daniel Sieradski <daniel@self.agency>",
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "precommit": "turbo run precommit",
+    "release": "pnpm exec zx scripts/release-per-package.js",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@octokit/rest": "22.0.1",
+    "@types/node": "^25.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "ora": "9.4.0",
+    "oxfmt": "0.47.0",
+    "oxlint": "1.62.0",
+    "turbo": "^2.9.8",
+    "zx": "^8.8.5"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,mjs,cjs}": [
+      "oxlint --fix",
+      "oxfmt --write"
+    ],
+    "**/*.{json,md,yaml,yml}": [
+      "oxfmt --write"
+    ]
+  },
   "packageManager": "pnpm@10.33.2"
 }
