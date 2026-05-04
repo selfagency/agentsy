@@ -43,9 +43,6 @@ export async function* parseSSEStream(
         }
         yield value ?? '';
       }
-    } catch {
-      // Stream closed or read error; end iteration gracefully.
-      return;
     } finally {
       reader.releaseLock();
     }

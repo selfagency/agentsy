@@ -43,10 +43,14 @@ function findNextTagOccurrence(
     let index = -1;
     let isClose = false;
 
-    if (nextClose !== -1 && (nextOpen === -1 || nextClose < nextOpen)) {
+    const hasClose = nextClose >= 0;
+    const hasOpen = nextOpen >= 0;
+    const closeComesFirst = hasClose && (!hasOpen || nextClose < nextOpen);
+
+    if (closeComesFirst) {
       index = nextClose;
       isClose = true;
-    } else if (nextOpen !== -1) {
+    } else if (hasOpen) {
       index = nextOpen;
     } else {
       return null;
@@ -61,10 +65,9 @@ function findNextTagOccurrence(
       if (end === -1) return null;
 
       return { index, isClose, end: end + 1 };
-    } else {
-      searchIndex = afterTagName;
-      continue;
     }
+
+    searchIndex = afterTagName;
   }
 
   return null;

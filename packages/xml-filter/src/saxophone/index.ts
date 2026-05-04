@@ -232,6 +232,18 @@ export class Saxophone extends EventEmitter {
     return tagClose + 1;
   }
 
+  private _dispatchTagChunk(input: string, pos: number, nextChar: string): ParserStepResult {
+    if (nextChar === '!') {
+      return this._handleMarkupDeclaration(input, pos);
+    }
+
+    if (nextChar === '?') {
+      return this._handleProcessingInstruction(input, pos);
+    }
+
+    return this._handleTagChunk(input, pos);
+  }
+
   private _parseChunk(input: string): Error | null {
     input = this._unwait() + input;
 
@@ -246,29 +258,7 @@ export class Saxophone extends EventEmitter {
 
       pos += 1;
       const nextChar = input.charAt(pos);
-
-      if (nextChar === '!') {
-        const nextPos = this._handleMarkupDeclaration(input, pos);
-        if (nextPos === null) {
-          break;
-        }
-        if (nextPos instanceof Error) {
-          return nextPos;
-        }
-        pos = nextPos;
-        continue;
-      }
-
-      if (nextChar === '?') {
-        const nextPos = this._handleProcessingInstruction(input, pos);
-        if (nextPos === null) {
-          break;
-        }
-        pos = nextPos;
-        continue;
-      }
-
-      const nextPos = this._handleTagChunk(input, pos);
+      const nextPos = this._dispatchTagChunk(input, pos, nextChar);
       if (nextPos === null) {
         break;
       }
