@@ -1,6 +1,7 @@
 import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJsonOptions } from './parseJson.js';
+import type { JsonObject } from '@agentsy/types';
 
-type JsonSchema = Record<string, unknown>;
+type JsonSchema = JsonObject;
 
 const REGEX_CACHE_MAX = 256;
 const regexCache = new Map<string, RegExp & { _accessTimestamp: number }>();
@@ -49,7 +50,7 @@ function getCachedRegex(pattern: string): RegExp {
 
 export type JsonSchemaValidator = (
   data: unknown,
-  schema: Record<string, unknown>,
+  schema: JsonObject,
 ) =>
   | boolean
   | {
@@ -457,7 +458,7 @@ function walkForLimits(node: unknown, depth: number, maxDepth: number, maxKeys: 
  */
 export function validateJsonSchema<T = unknown>(
   text: string,
-  schema: Record<string, unknown>,
+  schema: JsonObject,
   options: ValidateJsonSchemaOptions = {},
 ): { success: true; data: T } | { success: false; errors: string[] } {
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;

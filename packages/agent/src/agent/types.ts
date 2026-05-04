@@ -1,9 +1,7 @@
-import type { InterruptController } from '@agentsy/ag-ui';
-import type { AgUiEvent } from '@agentsy/ag-ui';
-import type { UsageInfo } from '@agentsy/types';
+import type { InterruptController, AgUiEvent } from '@agentsy/ag-ui';
 import type { OutputPart, ProcessedOutput, StreamChunk } from '@agentsy/processor';
+import type { FinishReason, UsageInfo } from '@agentsy/types';
 import type { XmlToolCall } from '@agentsy/tool-calls';
-import type { FinishReason } from '@agentsy/types';
 
 export type { OutputPart, ProcessedOutput, StreamChunk } from '@agentsy/processor';
 export type { FinishReason } from '@agentsy/types';

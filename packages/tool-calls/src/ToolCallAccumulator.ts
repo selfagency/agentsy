@@ -1,3 +1,4 @@
+import type { JsonObject } from '@agentsy/types';
 import type { NativeToolCallDelta } from '@agentsy/types';
 import { parseJson } from '@agentsy/structured';
 import type { ToolCallState } from './types.js';
@@ -7,7 +8,7 @@ export interface NativeToolCall {
   /** Provider-assigned call ID, present when supplied by the provider (e.g. OpenAI `id` field). */
   id?: string | undefined;
   name: string;
-  arguments: Record<string, unknown>;
+  arguments: JsonObject;
 }
 
 interface PendingCall {
@@ -68,7 +69,7 @@ export class ToolCallAccumulator {
       try {
         const parsed = JSON.parse(pending.argumentsBuffer);
         if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          const call: NativeToolCall = { name: pending.name, arguments: parsed as Record<string, unknown> };
+          const call: NativeToolCall = { name: pending.name, arguments: parsed as JsonObject };
           if (pending.id !== undefined) call.id = pending.id;
           result.push(call);
         }
@@ -92,7 +93,7 @@ export class ToolCallAccumulator {
       try {
         const parsed = JSON.parse(pending.argumentsBuffer);
         if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          const call: NativeToolCall = { name: pending.name, arguments: parsed as Record<string, unknown> };
+          const call: NativeToolCall = { name: pending.name, arguments: parsed as JsonObject };
           if (pending.id !== undefined) call.id = pending.id;
           result.push({ index, call });
         }
@@ -156,7 +157,7 @@ export class ToolCallAccumulator {
     try {
       const parsed = JSON.parse(pending.argumentsBuffer);
       if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        const call: NativeToolCall = { name: pending.name, arguments: parsed as Record<string, unknown> };
+        const call: NativeToolCall = { name: pending.name, arguments: parsed as JsonObject };
         if (pending.id !== undefined) call.id = pending.id;
         return call;
       }
@@ -169,7 +170,7 @@ export class ToolCallAccumulator {
       name: pending.name,
       arguments:
         repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired)
-          ? (repaired as Record<string, unknown>)
+              ? (repaired as JsonObject)
           : {},
     };
     if (pending.id !== undefined) flushedCall.id = pending.id;

@@ -1,5 +1,4 @@
-import type { UsageInfo } from '@agentsy/types';
-import type { FinishReason, ToolCallState } from '@agentsy/types';
+import type { FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
 
 /**
  * Represents a single UI message in a conversation.
@@ -25,7 +24,7 @@ export interface UIMessage {
   createdAt: Date;
 
   /** Metadata: custom key-value pairs. */
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }
 
 /**
@@ -69,7 +68,7 @@ export interface UIToolCallPart {
   type: 'tool_call';
   id: string;
   name: string;
-  parameters: Record<string, unknown>;
+  parameters: JsonObject;
   state: ToolCallState;
   argumentsText?: string;
   result?: unknown;
@@ -124,7 +123,7 @@ export interface UIConversation {
   totalUsage: UsageInfo;
 
   /** Metadata: custom key-value pairs. */
-  metadata: Record<string, unknown> | undefined;
+  metadata: JsonObject | undefined;
 }
 
 /**
@@ -140,7 +139,7 @@ export type ConversationEvent =
       toolCall: {
         id: string;
         name: string;
-        parameters: Record<string, unknown>;
+        parameters: JsonObject;
         state?: ToolCallState;
         argumentsText?: string;
       };
@@ -151,7 +150,7 @@ export type ConversationEvent =
       toolCallId: string;
       state?: ToolCallState;
       argumentsTextDelta?: string;
-      parameters?: Record<string, unknown>;
+      parameters?: JsonObject;
     }
   | { type: 'tool_call_result_added'; messageId: string; toolCallId: string; result: unknown; isError?: boolean }
   | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }

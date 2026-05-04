@@ -1,3 +1,5 @@
+import type { JsonObject } from 'type-fest';
+
 import type { FinishReason, ToolCallState, UsageInfo } from './index.js';
 
 /**
@@ -13,7 +15,7 @@ export type ConversationEvent =
       toolCall: {
         id: string;
         name: string;
-        parameters: Record<string, unknown>;
+        parameters: JsonObject;
         state?: ToolCallState;
         argumentsText?: string;
       };
@@ -24,7 +26,7 @@ export type ConversationEvent =
       toolCallId: string;
       state?: ToolCallState;
       argumentsTextDelta?: string;
-      parameters?: Record<string, unknown>;
+      parameters?: JsonObject;
     }
   | { type: 'tool_call_result_added'; messageId: string; toolCallId: string; result: unknown; isError?: boolean }
   | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }

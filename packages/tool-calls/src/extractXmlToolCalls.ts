@@ -1,6 +1,8 @@
+import type { JsonObject } from '@agentsy/types';
+
 export interface XmlToolCall {
   name: string;
-  parameters: Record<string, unknown>;
+  parameters: JsonObject;
   /** How this tool call was encoded in the stream. */
   format: 'bare-xml' | 'json-wrapped' | 'native-json';
   /** Provider-assigned call ID, present when the provider supplies one (e.g. OpenAI, Anthropic, Bedrock). */
@@ -51,7 +53,7 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
     }
     const args = obj.arguments ?? obj.parameters ?? {};
     const parameters =
-      typeof args === 'object' && !Array.isArray(args) ? Object.assign(Object.create(null), args) : Object.create(null);
+      typeof args === 'object' && !Array.isArray(args) ? (Object.assign(Object.create(null), args) as JsonObject) : {};
 
     results.push({ name, parameters, format: 'json-wrapped' });
   }
@@ -77,15 +79,13 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
       return null;
     }
 
-    let argumentsValue: Record<string, unknown>;
+    let argumentsValue: JsonObject;
     if (parsed.arguments && typeof parsed.arguments === 'object' && !Array.isArray(parsed.arguments)) {
-      argumentsValue = Object.create(null);
-      Object.assign(argumentsValue, parsed.arguments);
+      argumentsValue = Object.assign(Object.create(null), parsed.arguments) as JsonObject;
     } else if (parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)) {
-      argumentsValue = Object.create(null);
-      Object.assign(argumentsValue, parsed.parameters);
+      argumentsValue = Object.assign(Object.create(null), parsed.parameters) as JsonObject;
     } else {
-      argumentsValue = Object.create(null);
+      argumentsValue = {};
     }
 
     return {

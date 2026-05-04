@@ -16,6 +16,7 @@ import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
 import { parseSSEStream } from '../sse/index.js';
 import { parseJson } from '@agentsy/structured';
+import type { JsonObject } from '@agentsy/types';
 
 export type NormalizerProvider =
   | 'openai'
@@ -40,7 +41,7 @@ export interface PipelineEvent {
   type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   content?: string;
   thinking?: string;
-  tool_call?: { name: string; parameters: Record<string, unknown> };
+  tool_call?: { name: string; parameters: JsonObject };
   message?: string;
   provider: NormalizerProvider;
 }

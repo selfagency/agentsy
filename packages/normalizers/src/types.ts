@@ -1,4 +1,4 @@
-import type { NativeToolCallDelta, StreamChunk, UsageInfo } from '@agentsy/types';
+import type { StreamChunk } from '@agentsy/types';
 
 export type { NativeToolCallDelta, UsageInfo } from '@agentsy/types';
 
