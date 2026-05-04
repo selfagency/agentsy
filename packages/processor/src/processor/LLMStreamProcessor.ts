@@ -1,4 +1,12 @@
-import type { ConversationEvent, FinishReason, NativeToolCallDelta, StreamChunk, ToolCallState, UsageInfo } from '@agentsy/types';
+import type {
+  ConversationEvent,
+  FinishReason,
+  JsonObject,
+  NativeToolCallDelta,
+  StreamChunk,
+  ToolCallState,
+  UsageInfo,
+} from '@agentsy/types';
 import { ThinkingParser, type ThinkingTagPair } from '@agentsy/thinking';
 import { extractXmlToolCalls, ToolCallAccumulator, type XmlToolCall } from '@agentsy/tool-calls';
 import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
@@ -1226,16 +1234,16 @@ export class LLMStreamProcessor {
     return true;
   }
 
-  private normalizeToolArguments(value: unknown): Record<string, unknown> {
+  private normalizeToolArguments(value: unknown): JsonObject {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
-      return value as Record<string, unknown>;
+      return value as JsonObject;
     }
 
     if (typeof value === 'string' && value.trim()) {
       try {
         const parsed = JSON.parse(value);
         if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          return parsed as Record<string, unknown>;
+          return parsed as JsonObject;
         }
       } catch {
         // Ignore malformed tool argument payloads; treat as empty args.

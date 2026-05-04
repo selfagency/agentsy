@@ -39,6 +39,7 @@ export interface PlainTextRendererOptions extends BaseRendererOptions {
  */
 export function createPlainTextRenderer(options: PlainTextRendererOptions = {}): RendererHandle {
   const { output = process.stdout, showThinking = false, thinkingPrefix = '[Thinking] ' } = options;
+  const onToolCall = options.onToolCall;
 
   const writeOutput = createOutputWriter(output);
 
@@ -53,9 +54,9 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
           writeOutput(`${thinkingPrefix}${text}\n`);
         }
       },
-      ...(options.onToolCall !== undefined && {
+      ...(onToolCall !== undefined && {
         onToolCall: async (part: Parameters<NonNullable<typeof options.onToolCall>>[0]) => {
-          await options.onToolCall!(part);
+          await onToolCall(part);
         },
       }),
       onEnd: async () => {

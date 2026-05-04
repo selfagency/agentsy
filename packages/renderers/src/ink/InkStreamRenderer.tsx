@@ -106,7 +106,7 @@ function ToolCallsContent({
   toolCalls,
   options,
 }: {
-  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly options: RenderOptions;
 }) {
   return <ToolCallsSection toolCalls={toolCalls} options={options} />;

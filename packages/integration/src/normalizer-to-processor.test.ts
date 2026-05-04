@@ -17,6 +17,7 @@ import {
   normalizeOpenAIResponseEvent,
 } from '@agentsy/normalizers';
 import { LLMStreamProcessor } from '@agentsy/processor';
+import type { NormalizerResult } from '@agentsy/normalizers';
 
 // ---------------------------------------------------------------------------
 // Helper: pump a list of raw provider events through a normalizer and a fresh
@@ -25,7 +26,7 @@ import { LLMStreamProcessor } from '@agentsy/processor';
 
 function pump<T>(
   events: T[],
-  normalizer: (e: T) => { chunk: { content?: string; thinking?: string; done?: boolean; [k: string]: unknown } } | null,
+  normalizer: (e: T) => NormalizerResult | null,
   options: ConstructorParameters<typeof LLMStreamProcessor>[0] = {},
 ) {
   const processor = new LLMStreamProcessor(options);
@@ -34,9 +35,9 @@ function pump<T>(
   let done = false;
 
   for (const event of events) {
-    const result = normalizer(event as unknown as Parameters<typeof normalizer>[0]);
+    const result = normalizer(event as Parameters<typeof normalizer>[0]);
     if (!result) continue;
-    const out = processor.process(result.chunk as Parameters<typeof processor.process>[0]);
+    const out = processor.process(result.chunk);
     content += out.content ?? '';
     thinking += out.thinking ?? '';
     if (out.done) done = true;
@@ -62,7 +63,7 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
       { choices: [{ delta: { content: 'world!' }, finish_reason: 'stop' }] },
     ];
 
-    const { content, done } = pump(chunks, normalizeOpenAIChatChunk as (e: unknown) => ReturnType<typeof normalizeOpenAIChatChunk>);
+    const { content, done } = pump(chunks, normalizeOpenAIChatChunk);
     expect(content).toBe('Hello, world!');
     expect(done).toBe(true);
   });
@@ -73,7 +74,7 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
       { choices: [{ delta: { reasoning_content: ' step 2', content: 'answer' }, finish_reason: 'stop' }] },
     ];
 
-    const { content, thinking } = pump(chunks, normalizeOpenAIChatChunk as (e: unknown) => ReturnType<typeof normalizeOpenAIChatChunk>);
+    const { content, thinking } = pump(chunks, normalizeOpenAIChatChunk);
     expect(thinking).toBe('step 1 step 2');
     expect(content).toBe('answer');
   });
@@ -182,7 +183,7 @@ describe('normalizeAnthropicEvent → LLMStreamProcessor', () => {
       { type: 'message_stop' },
     ];
 
-    const { content, done, processor } = pump(events, normalizeAnthropicEvent as (e: unknown) => ReturnType<typeof normalizeAnthropicEvent>);
+    const { content, done, processor } = pump(events, normalizeAnthropicEvent);
     expect(content).toBe('Hello Claude');
     expect(done).toBe(true);
     expect(processor.accumulatedMessage.usage?.inputTokens).toBe(20);
@@ -198,7 +199,7 @@ describe('normalizeAnthropicEvent → LLMStreamProcessor', () => {
       { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 5 } },
     ];
 
-    const { thinking, content } = pump(events, normalizeAnthropicEvent as (e: unknown) => ReturnType<typeof normalizeAnthropicEvent>);
+    const { thinking, content } = pump(events, normalizeAnthropicEvent);
     expect(thinking).toBe('Let me think');
     expect(content).toBe('answer');
   });
@@ -264,7 +265,7 @@ describe('normalizeBedrockConverseEvent → LLMStreamProcessor', () => {
       { messageStop: { stopReason: 'end_turn' } },
     ];
 
-    const { content, done } = pump(events, normalizeBedrockConverseEvent as (e: unknown) => ReturnType<typeof normalizeBedrockConverseEvent>);
+    const { content, done } = pump(events, normalizeBedrockConverseEvent);
     expect(content).toBe('Bedrock response');
     expect(done).toBe(true);
   });
@@ -282,7 +283,7 @@ describe('normalizeCohereEvent → LLMStreamProcessor', () => {
       { type: 'message-end', delta: { finish_reason: 'COMPLETE' } },
     ];
 
-    const { content, done } = pump(events, normalizeCohereEvent as (e: unknown) => ReturnType<typeof normalizeCohereEvent>);
+    const { content, done } = pump(events, normalizeCohereEvent);
     expect(content).toBe('Cohere');
     expect(done).toBe(true);
   });

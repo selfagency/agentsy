@@ -3,7 +3,7 @@ import { applyConversationEvent } from './eventSourcing.js';
 import { createConversationStoreFromProcessor } from './processorBridge.js';
 import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
-import type { FinishReason } from '@agentsy/types';
+import type { FinishReason, JsonObject } from '@agentsy/types';
 import { LLMStreamProcessor } from '@agentsy/processor';
 
 // Helper functions for ConversationStore tests
@@ -26,7 +26,7 @@ function addThinkingPart(store: ReturnType<typeof createConversationStore>, mess
 function addToolCallPart(
   store: ReturnType<typeof createConversationStore>,
   messageId: string,
-  toolCall: { id: string; name: string; parameters: Record<string, unknown> },
+  toolCall: { id: string; name: string; parameters: JsonObject },
 ): void {
   store.dispatch({ type: 'tool_call_part_added', messageId, toolCall });
 }

@@ -71,7 +71,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   });
 
   it('calls onFinish with finishReason and usage after end()', async () => {
-    const onFinish = vi.fn<Parameters<NonNullable<BaseRendererOptions['onFinish']>>>();
+    const onFinish = vi.fn<NonNullable<BaseRendererOptions['onFinish']>>();
     const renderer = createPlainTextRenderer({
       output: () => {},
       onFinish,
@@ -84,7 +84,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   });
 
   it('calls onToolCall when an XML tool call is encountered', async () => {
-    const onToolCall = vi.fn<Parameters<NonNullable<BaseRendererOptions['onToolCall']>>>();
+    const onToolCall = vi.fn<NonNullable<BaseRendererOptions['onToolCall']>>();
     const processor = new LLMStreamProcessor({ knownTools: new Set(['lookup']) });
 
     const renderer = createPlainTextRenderer({
