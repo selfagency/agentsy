@@ -22,7 +22,7 @@ import {
   minimalTheme,
   oneCandyTheme,
   oneDarkTheme,
-} from '../dist/renderers/ink/themes/index.js';
+} from '../src/ink/themes/index.js';
 
 const THEMES = [
   { name: 'default', theme: defaultTheme },
