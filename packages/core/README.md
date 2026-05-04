@@ -14,7 +14,7 @@ Foundation stream parsing layer for agent infrastructure. Thinking extraction, X
 - 🏛️ **Structured output** — JSON parsing with schema validation, depth/key limits, and auto-repair
 - 🤖 **Agent loops** — Multi-step LLM execution with configurable stop conditions and tool handling
 - 🚰 **Stream processor** — Event-driven orchestrator that composes all parsers in a single pipeline
-- 🔌 **Normalizers** — Adapters for OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock, and HF TGI
+- 🔌 **Normalizers** — Adapters for OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock, HF TGI, and Z.ai
 - 👮‍♂️ **Safety by default** — Privacy tags are always scrubbed; JSON depth, key counts, and tool-call sizes are bounded
 - ✨ **Zero dependencies** — Foundation layer has no runtime dependencies beyond Node.js built-ins
 
@@ -236,7 +236,7 @@ for await (const event of openaiStream) {
 }
 ```
 
-Supported: `openai`, `openaiResponses`, `anthropic`, `gemini`, `mistral`, `cohere`, `ollama`, `bedrock`, `hfTgi`.
+Supported: `openai`, `openaiResponses`, `anthropic`, `gemini`, `mistral`, `cohere`, `ollama`, `bedrock`, `hfTgi`, `zai`.
 
 ---
 
@@ -256,6 +256,58 @@ const adapter = createGenericAdapter(
 
 await adapter.write(chunk);
 await adapter.end();
+```
+
+Mistral outbound request mapping is available via `@agentsy/core/adapters/mistral`:
+
+```typescript
+import { toMistralMessages } from '@agentsy/core/adapters/mistral';
+
+const mistralMessages = toMistralMessages([
+  {
+    role: 'system',
+    parts: [{ type: 'text', text: 'You are concise.' }],
+  },
+  {
+    role: 'user',
+    parts: [{ type: 'text', text: 'Search docs for tool calls.' }],
+  },
+]);
+```
+
+OpenAI-compatible outbound mapping (including DeepSeek, Kimi, Qwen, Llama, and Granite) is centralized in `@agentsy/core/adapters/openai-compatible`:
+
+```typescript
+import {
+  OPENAI_COMPATIBLE_PROVIDERS,
+  toOpenAICompatibleMessages,
+} from '@agentsy/core/adapters/openai-compatible';
+
+const messages = toOpenAICompatibleMessages([
+  {
+    role: 'user',
+    parts: [{ type: 'text', text: 'Call weather tool for Boston.' }],
+  },
+]);
+
+console.log(OPENAI_COMPATIBLE_PROVIDERS);
+// ['openai', 'deepseek', 'kimi', 'qwen', 'llama', 'granite']
+```
+
+Processor callback parity helper for stable callback wiring across versions:
+
+```typescript
+import { createProcessorEventAdapter, LLMStreamProcessor } from '@agentsy/core/processor';
+
+const processor = new LLMStreamProcessor();
+const adapter = createProcessorEventAdapter(processor, {
+  onToolCallDelta: delta => console.log(delta),
+  onStep: (stepIndex, usage) => console.log(stepIndex, usage),
+  onFinish: (finishReason, usage) => console.log(finishReason, usage),
+});
+
+// later
+adapter.dispose();
 ```
 
 ---
@@ -405,54 +457,20 @@ await renderer.end();
 
 ---
 
-### VS Code Chat Renderer
+### VS Code integrations
 
-Integration with VS Code's `ChatResponseStream` for Copilot extensions. Stream LLM responses directly to VS Code's Chat interface with built-in support for thinking blocks, tool invocations, and token usage.
-**No external dependencies required.**
+`@agentsy/core` is editor-agnostic. VS Code-specific renderers and utilities live in [`@agentsy/vscode`](../vscode#readme), including:
 
-**Features:**
+- `createVSCodeChatRenderer`
+- `createVSCodeAgentLoop`
+- `cancellationTokenToAbortSignal`
+- `ApiKeyManager`, `UsageStatusBar`, and MCP helpers
 
-- Automatic thinking block rendering (blockquote or progress indicator)
-- Tool invocation callbacks for real-time feedback
-- Token usage reporting
-- CancellationToken support via `cancellationTokenToAbortSignal()`
+Install both packages when building VS Code extensions:
 
-```typescript
-import { createVSCodeChatRenderer } from '@agentsy/core/renderers/vscode';
-
-const renderer = createVSCodeChatRenderer({
-  stream, // VS Code ChatResponseStream
-  showThinking: true,
-  thinkingStyle: 'blockquote', // 'blockquote' | 'progress' | 'suppress'
-});
-
-// Stream chunks from your LLM
-for await (const chunk of llmStream) {
-  await renderer.writeChunk(chunk);
-}
-
-await renderer.end();
+```bash
+npm install @agentsy/core @agentsy/vscode vscode
 ```
-
-**For agent loops:**
-
-```typescript
-import { createVSCodeAgentLoop } from '@agentsy/core/renderers/vscode';
-
-const renderer = createVSCodeAgentLoop({
-  stream,
-  thinkingStyle: 'blockquote', // Thinking enabled by default for agent reasoning
-});
-```
-
-**Thinking Styles:**
-
-- `blockquote` (default): Render as `> **💭 Thinking:** ...` markdown
-- `progress`: Send thinking via `stream.progress()` for VS Code progress indicator
-
-Tool calls fire the `onToolCall` callback but are not rendered as content.
-
-When a renderer receives structured chunks via `writeChunk()`, it can also call `onStep(stepIndex, usage)` as step metadata changes.
 
 ### Ink Terminal Renderer
 

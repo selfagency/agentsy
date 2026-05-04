@@ -761,146 +761,46 @@ for await (const part of agent.run([{ role: 'user', content: 'Task...' }])) {
 
 ## VS Code Chat Integration
 
-> **Subpath**: `@agentsy/core/renderers/vscode`
+VS Code-specific renderer/provider helpers are published from `@agentsy/vscode`.
 
-Stream LLM responses directly to VS Code's Chat interface with built-in support for thinking blocks, tool invocations, and token usage.
+Core stays editor-agnostic; use `@agentsy/core` for chunk normalization and processing, then connect to VS Code via `@agentsy/vscode`.
 
-### createVSCodeChatRenderer
+### Key exports (`@agentsy/vscode`)
 
 ```typescript
-export interface ChatResponseStream {
-  markdown(content: string): void;
-  progress(content: string): void;
-  anchor(
-    value:
-      | { scheme: string; path: string }
-      | {
-          uri: { scheme: string; path: string };
-          range: { start: { line: number; character: number }; end: { line: number; character: number } };
-        },
-    title?: string,
-  ): void;
-  reference(
-    value:
-      | { scheme: string; path: string }
-      | {
-          uri: { scheme: string; path: string };
-          range: { start: { line: number; character: number }; end: { line: number; character: number } };
-        }
-      | { variableName: string; value?: { scheme: string; path: string } },
-    iconPath?:
-      | { scheme: string; path: string }
-      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } },
-  ): void;
-  button(command: { command: string; title: string; arguments?: unknown[] }): void;
-  filetree(value: Array<{ name: string; children?: unknown[] }>, baseUri: { scheme: string; path: string }): void;
-  push?(part: unknown): void;
+createVSCodeChatRenderer(options)
+createVSCodeAgentLoop(options)
+cancellationTokenToAbortSignal(token)
 
-  // Proposed APIs (capability-detected)
-  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
-  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
-  updateToolInvocation?(toolCallId: string, streamData: unknown): void;
-  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
-}
+ToolCallDeltaAccumulator
+accumulateToolCallDeltas(accumulator, deltaPart)
+toVSCodeToolCallPart(toolCallPart)
 
-export interface VSCodeChatRendererOptions {
-  stream: ChatResponseStream;
-  showThinking?: boolean; // Default: false
-  thinkingStyle?: 'blockquote' | 'progress' | 'suppress'; // Default: 'blockquote'
-
-  onToolCall?: (part: { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }) => void | Promise<void>;
-  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
-  onError?: (error: Error) => void;
-}
-
-function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererHandle;
+mapUsageToVSCode(usage)
 ```
 
-**Example:**
+### Example
 
 ```typescript
-import { createVSCodeChatRenderer } from '@agentsy/vscode';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import {
+  createVSCodeChatRenderer,
+  mapUsageToVSCode,
+  ToolCallDeltaAccumulator,
+  accumulateToolCallDeltas,
+} from '@agentsy/vscode';
 
-const renderer = createVSCodeChatRenderer({
-  stream,
-  showThinking: true,
-  thinkingStyle: 'blockquote',
-  onToolCall: async part => {
-    console.log(`Tool: ${part.call.name}`);
-    // Execute tool and return results to renderer
-  },
-});
+const processor = new LLMStreamProcessor();
+const renderer = createVSCodeChatRenderer({ stream, showThinking: true, thinkingStyle: 'blockquote' });
+const accumulator = new ToolCallDeltaAccumulator();
+
+processor.on('tool_call_delta', part => accumulateToolCallDeltas(accumulator, part));
 
 for await (const chunk of llmStream) {
   await renderer.writeChunk(chunk);
 }
+
 await renderer.end();
-```
-
-### createVSCodeAgentLoop
-
-Specialized factory optimized for multi-step agent reasoning with thinking enabled by default.
-
-```typescript
-export interface VSCodeAgentLoopOptions extends VSCodeChatRendererOptions {
-  // All VSCodeChatRendererOptions apply
-  // showThinking defaults to true for agent loops
-}
-
-function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions): RendererHandle;
-```
-
-**Example:**
-
-```typescript
-import { createVSCodeAgentLoop } from '@agentsy/core/renderers/vscode';
-
-const renderer = createVSCodeAgentLoop({
-  stream, // Thinking enabled by default for agent reasoning
-  thinkingStyle: 'blockquote',
-});
-```
-
-### cancellationTokenToAbortSignal
-
-Bridge VS Code's `CancellationToken` to Web `AbortSignal` for fetch operations.
-
-```typescript
-interface CancellationToken {
-  isCancellationRequested: boolean;
-  onCancellationRequested(listener: () => void): { dispose(): void };
-}
-
-function cancellationTokenToAbortSignal(token: CancellationToken): AbortSignal;
-```
-
-**Example:**
-
-```typescript
-import { cancellationTokenToAbortSignal } from '@agentsy/core/renderers/vscode';
-
-// In VS Code command handler
-export async function chatCommand(
-  request: vscode.ChatRequest,
-  stream: vscode.ChatResponseStream,
-  token: vscode.CancellationToken,
-) {
-  const signal = cancellationTokenToAbortSignal(token);
-
-  const response = await fetch('https://api.example.com/chat', {
-    signal, // Automatically aborts if VS Code cancels
-    body: JSON.stringify({ messages: request.prompt }),
-  });
-
-  const renderer = createVSCodeChatRenderer({ stream });
-
-  for await (const chunk of response.body) {
-    if (token.isCancellationRequested) break;
-    await renderer.writeChunk(chunk);
-  }
-
-  await renderer.end();
-}
 ```
 
 ## Error Handling
