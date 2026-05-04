@@ -140,7 +140,7 @@ export class MyProvider extends BaseLanguageModelChatProvider {
 ```text
 agentsy/
 ├── packages/
-│   ├── parser/      # @agentsy/parser (stream processing core)
+│   ├── parser/      # @agentsy/core (stream processing core)
 │   └── vscode/      # @agentsy/vscode (VS Code integration)
 ├── docs/            # Unified documentation
 ├── turbo.json       # Monorepo orchestration (build, test, lint, format)
@@ -151,7 +151,7 @@ All packages are published independently to npm under the `@agentsy` scope.
 
 ## 🔗 Links
 
-- npm: [@agentsy/parser](https://www.npmjs.com/package/@agentsy/parser) | [@agentsy/vscode](https://www.npmjs.com/package/@agentsy/vscode)
+- npm: [@agentsy/core](https://www.npmjs.com/package/@agentsy/core) | [@agentsy/vscode](https://www.npmjs.com/package/@agentsy/vscode)
 - GitHub: [agentsy/agentsy](https://github.com/agentsy/agentsy)
 - Discussions: [GitHub Discussions](https://github.com/agentsy/agentsy/discussions)
 

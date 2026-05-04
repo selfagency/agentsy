@@ -1,0 +1,21 @@
+# Changelog
+
+All notable changes to `@agentsy/core` will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- Initial release of `@agentsy/core`
+- LLM stream parsing and structured output extraction
+- Event converter and state management for agent UI feedback
+- Reasoning mapper for o1-style thinking tokens
+- Context XML utilities for system prompt construction
+- Tool call extraction and schema validation
+- SSE (Server-Sent Events) stream handling
+- Markdown and text formatting utilities
+- Recovery mechanisms for malformed LLM output
+- Support for Claude, GPT, and Grok models via adapters
+- Comprehensive test coverage (87.36%)

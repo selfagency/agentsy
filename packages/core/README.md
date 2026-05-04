@@ -33,7 +33,7 @@ yarn add @agentsy/core
 **For VS Code Extensions:** If you're building a VS Code Language Model Chat Provider, also install `[@agentsy/vscode](../vscode#readme)`:
 
 ```bash
-npm install @agentsy/vscode @agentsy/parser vscode
+npm install @agentsy/vscode @agentsy/core vscode
 ```
 
 ## Quick Start
