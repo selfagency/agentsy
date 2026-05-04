@@ -1,4 +1,4 @@
-import type { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { LLMStreamProcessor } from '@agentsy/processor';
 import type { CancellationToken } from '@agentsy/core/renderers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';

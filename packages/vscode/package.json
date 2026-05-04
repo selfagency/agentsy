@@ -45,7 +45,9 @@
     "precommit": "npm run check-types && npm run lint && npm run format:check"
   },
   "dependencies": {
-    "@agentsy/core": "workspace:*"
+    "@agentsy/core": "workspace:*",
+    "@agentsy/processor": "workspace:*",
+    "@agentsy/structured": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

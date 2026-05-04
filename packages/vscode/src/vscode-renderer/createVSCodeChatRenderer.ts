@@ -1,5 +1,5 @@
 import { appendToBlockquote } from '@agentsy/core/markdown';
-import type { OutputPart } from '@agentsy/core/processor';
+import type { OutputPart } from '@agentsy/processor';
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/core/renderers';
 import { createSharedRendererHandle } from '@agentsy/core/renderers';
 import { mapUsageToVSCode } from '../usage-tracking/map-usage.js';

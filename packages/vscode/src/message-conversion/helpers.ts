@@ -1,4 +1,4 @@
-import type { StreamChunk } from '@agentsy/core';
+import type { StreamChunk } from '@agentsy/processor';
 import type { LanguageModelChatResponseChunk } from '../provider/index.js';
 
 /**
