@@ -45,8 +45,10 @@
     "precommit": "npm run check-types && npm run lint && npm run format:check"
   },
   "dependencies": {
-    "@agentsy/core": "workspace:*",
+    "@agentsy/formatting": "workspace:*",
+    "@agentsy/normalizers": "workspace:*",
     "@agentsy/processor": "workspace:*",
+    "@agentsy/renderers": "workspace:*",
     "@agentsy/structured": "workspace:*"
   },
   "devDependencies": {

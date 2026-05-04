@@ -37,3 +37,4 @@ export type {
   ThinkingStyle,
 } from './types.js';
 export { createSharedRendererHandle, createStepChangeEmitter } from './shared.js';
+export { createPlainTextRenderer, type PlainTextRendererOptions } from './plain/index.js';

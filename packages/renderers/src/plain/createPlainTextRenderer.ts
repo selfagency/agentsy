@@ -53,6 +53,11 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
           writeOutput(`${thinkingPrefix}${text}\n`);
         }
       },
+      ...(options.onToolCall !== undefined && {
+        onToolCall: async (part: Parameters<NonNullable<typeof options.onToolCall>>[0]) => {
+          await options.onToolCall!(part);
+        },
+      }),
       onEnd: async () => {
         // Call end() on stream if it has one (but not on process.stdout)
         if (

@@ -1,4 +1,4 @@
-import type { CancellationToken } from '@agentsy/core/renderers';
+import type { CancellationToken } from '@agentsy/renderers';
 
 type CancellationListener = () => void;
 
