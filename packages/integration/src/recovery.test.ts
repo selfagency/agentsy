@@ -12,6 +12,14 @@ import {
   type StreamSnapshot,
 } from '@agentsy/recovery';
 
+function makeSnapshot(content: string): StreamSnapshot {
+  const processor = new LLMStreamProcessor({ scrubContextTags: false });
+  if (content) {
+    processor.process({ content });
+  }
+  return captureStreamState(processor);
+}
+
 // ---------------------------------------------------------------------------
 // captureStreamState
 // ---------------------------------------------------------------------------
@@ -90,14 +98,6 @@ describe('captureStreamState', () => {
 // ---------------------------------------------------------------------------
 
 describe('buildContinuationPrompt', () => {
-  function makeSnapshot(content: string): StreamSnapshot {
-    const processor = new LLMStreamProcessor({ scrubContextTags: false });
-    if (content) {
-      processor.process({ content });
-    }
-    return captureStreamState(processor);
-  }
-
   it('returns a single user message when snapshot has no content', () => {
     const messages = buildContinuationPrompt(makeSnapshot(''));
 

@@ -100,9 +100,11 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     await renderer.end();
 
     expect(onToolCall).toHaveBeenCalledTimes(1);
-    const call = onToolCall.mock.calls[0]![0];
-    expect(call.call.name).toBe('lookup');
-    expect(call.call.parameters).toEqual({ term: 'vitest' });
+    const firstCall = onToolCall.mock.calls[0];
+    expect(firstCall).toBeDefined();
+    const call = firstCall?.[0];
+    expect(call?.call.name).toBe('lookup');
+    expect(call?.call.parameters).toEqual({ term: 'vitest' });
   });
 });
 
@@ -169,8 +171,10 @@ describe('createSharedRendererHandle', () => {
     await handle.end();
 
     expect(finishArgs).toHaveLength(1);
-    expect(finishArgs[0]![0]).toBe('stop');
-    expect(finishArgs[0]![1]).toMatchObject({ outputTokens: 2 });
+    const firstFinish = finishArgs[0];
+    expect(firstFinish).toBeDefined();
+    expect(firstFinish?.[0]).toBe('stop');
+    expect(firstFinish?.[1]).toMatchObject({ outputTokens: 2 });
   });
 });
 

@@ -32,7 +32,7 @@ describe('LLMStreamProcessor — thinking tag integration', () => {
 
     processor.process({ content: '<think>part one' });
     processor.process({ content: ' part two</think>answer' });
-    const flush = processor.flush();
+    processor.flush();
 
     expect(processor.accumulatedThinking).toBe('part one part two');
     // After flush content may be fully flushed

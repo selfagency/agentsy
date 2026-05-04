@@ -17,7 +17,7 @@ async function* sseSource(text: string): AsyncGenerator<string> {
   // Yield the SSE text one "network chunk" at a time — split at newlines to
   // exercise real incremental SSE parsing.
   for (const line of text.split('\n')) {
-    yield line + '\n';
+    yield `${line}\n`;
   }
 }
 
@@ -69,7 +69,6 @@ describe('createPipeline (openai)', () => {
       'openai',
     );
 
-    const toolCalls = events.filter(e => e.type === 'tool_call');
     // The pipeline emits tool_call only when knownTools option includes the name.
     // Without knownTools the XML is treated as regular content.
     const textDeltas = events.filter(e => e.type === 'delta');
@@ -201,6 +200,6 @@ describe('createPipeline (unknown provider)', () => {
       provider: 'unknown-provider' as Parameters<typeof createPipeline>[1]['provider'],
     });
     // The error is thrown when the generator function body begins executing
-    expect(gen.next()).rejects.toThrow('Unknown provider');
+    return expect(gen.next()).rejects.toThrow('Unknown provider');
   });
 });

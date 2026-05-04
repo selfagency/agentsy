@@ -19,7 +19,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@agentsy/processor": "workspace:*",
