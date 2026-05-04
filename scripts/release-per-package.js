@@ -336,12 +336,16 @@ async function main() {
   });
 
   // Filter tags for this package, sort by semver
+  const parseVer = v => {
+    const [maj, min, patch] = v.split('@')[1].split('.').map(Number);
+    return [maj, min, patch];
+  };
+
   const previousTag =
     tagsResp
       .map(r => r.ref.replace('refs/tags/', ''))
       .filter(t => t.startsWith(`${packageName}@`) && t !== tag)
       .sort((a, b) => {
-        const parseVer = v => v.split('@')[1].split('.').map(Number);
         const [aMaj, aMin, aPatch] = parseVer(a);
         const [bMaj, bMin, bPatch] = parseVer(b);
         return aMaj - bMaj || aMin - bMin || aPatch - bPatch;

@@ -3,16 +3,6 @@ name: Release
 on:
   push:
     tags: ['@agentsy/*@*', 'v*']
-  workflow_dispatch:
-    inputs:
-      package:
-        description: "Package to release (e.g. @agentsy/core)"
-        required: true
-        type: string
-      version:
-        description: "Version to release (e.g. 0.2.0)"
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -49,36 +39,10 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            let packageName, version, tag;
-
-            // Handle workflow_dispatch or tag-based trigger
-            if (context.eventName === 'workflow_dispatch') {
-              packageName = '${{ inputs.package }}'.trim();
-              version = '${{ inputs.version }}'.trim();
-              tag = `${packageName}@${version}`;
-
-              // Verify tag doesn't already exist
-              try {
-                await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` });
-                core.setFailed(`Tag ${tag} already exists.`);
-                return;
-              } catch (err) {
-                if (err.status !== 404) throw err;
-              }
-
-              // Create tag at current main HEAD
-              const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
-              const mainSha = main.data.commit.sha;
-              core.info(`Creating tag ${tag} at ${mainSha}...`);
-              await github.rest.git.createRef({
-                owner,
-                repo,
-                ref: `refs/tags/${tag}`,
-                sha: mainSha,
-              });
-            } else {
-              tag = context.ref.replace('refs/tags/', '');
-            }
+            // Releases are triggered only by tag pushes.
+            // Use: git tag @agentsy/core@0.2.0 && git push origin @agentsy/core@0.2.0
+            // Or use: pnpm release @agentsy/core 0.2.0
+            const tag = context.ref.replace('refs/tags/', '');
 
             // Parse tag: either "@scope/package@version" or "v1.2.3" (root monorepo version)
             const perPackageMatch = tag.match(/^(@[^/]+\/[^@]+)@(.+)$/);
