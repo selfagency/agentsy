@@ -4,7 +4,7 @@ import Saxophone, {
   type SaxophoneTag,
   type SaxophoneTagClose,
   type SaxophoneText,
-} from '@agentsy/vendor';
+} from './saxophone/index.js';
 
 import { DEFAULT_SCRUB_TAG_NAMES, PRIVACY_TAG_NAMES } from './tagLists.js';
 

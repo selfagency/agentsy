@@ -38,8 +38,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@agentsy/types": "workspace:*",
-    "@agentsy/vendor": "workspace:*"
+    "@agentsy/types": "workspace:*"
   },
   "scripts": {
     "build": "tsup",
