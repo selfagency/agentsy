@@ -47,7 +47,7 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml
+          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
         env:
           CI: true
 
