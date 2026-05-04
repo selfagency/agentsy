@@ -11,6 +11,7 @@ import type {
 } from '@agentsy/types';
 import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
+import { ensureText, estimateChunkSize, mapNativeToolCalls } from './chunkUtils.js';
 import { detectIncompleteness } from './incompleteness.js';
 import type {
   IncompletenessDetail,
@@ -173,7 +174,7 @@ export class LLMStreamProcessor {
    */
   public process(chunk: StreamChunk): ProcessedOutput {
     const startTime = performance.now();
-    const chunkSize = this.estimateChunkSize(chunk);
+    const chunkSize = estimateChunkSize(chunk, SHARED_TEXT_ENCODER);
 
     this._stats.chunksProcessed++;
     this._stats.bytesProcessed += chunkSize;
@@ -185,8 +186,8 @@ export class LLMStreamProcessor {
     const hasThinkingInput = typeof chunk.thinking === 'string' && chunk.thinking.length > 0;
     const done = chunk.done === true;
 
-    const rawThinking = this.enforceMaxLength(this.ensureText(chunk.thinking), 'thinking');
-    let rawContent = this.enforceMaxLength(this.ensureText(chunk.content), 'content');
+    const rawThinking = this.enforceMaxLength(ensureText(chunk.thinking), 'thinking');
+    let rawContent = this.enforceMaxLength(ensureText(chunk.content), 'content');
 
     const inlineToolCallParse = this.parseInlineToolCalls(rawContent, done);
     rawContent = inlineToolCallParse.content;
@@ -313,7 +314,7 @@ export class LLMStreamProcessor {
     for (const c of extractedFromRaw) pushUnique(c);
     for (const c of extractedFromRawResidual) pushUnique(c);
     for (const c of extractedFromFiltered) pushUnique(c);
-    const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
+    const nativeToolCalls = mapNativeToolCalls(chunk.tool_calls);
     if (chunk.finishReason !== undefined) this._lastFinishReason = chunk.finishReason;
 
     this.accumulateUsage(chunk);
@@ -1045,29 +1046,6 @@ export class LLMStreamProcessor {
     });
   }
 
-  private mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {
-    if (!Array.isArray(calls) || calls.length === 0) {
-      return [];
-    }
-
-    const mapped: XmlToolCall[] = [];
-
-    for (const call of calls) {
-      const name = typeof call?.function?.name === 'string' ? call.function.name : null;
-      if (!name) {
-        continue;
-      }
-
-      mapped.push({
-        name,
-        parameters: this.normalizeToolArguments(call.function?.arguments),
-        format: 'native-json',
-      });
-    }
-
-    return mapped;
-  }
-
   private enforceToolCallLimits(toolCalls: XmlToolCall[]): XmlToolCall[] {
     const maxToolCalls = this.options.maxToolCallsPerMessage ?? DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE;
     const maxToolArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
@@ -1127,54 +1105,6 @@ export class LLMStreamProcessor {
       return false;
     }
     return true;
-  }
-
-  private normalizeToolArguments(value: unknown): JsonObject {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      return value as JsonObject;
-    }
-
-    if (typeof value === 'string' && value.trim()) {
-      try {
-        const parsed = JSON.parse(value);
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          return parsed as JsonObject;
-        }
-      } catch {
-        // Ignore malformed tool argument payloads; treat as empty args.
-      }
-    }
-
-    return {};
-  }
-
-  private ensureText(value: unknown): string {
-    return typeof value === 'string' ? value : '';
-  }
-
-  private estimateChunkSize(chunk: StreamChunk): number {
-    let size = 0;
-    if (typeof chunk.content === 'string') size += SHARED_TEXT_ENCODER.encode(chunk.content).length;
-    if (typeof chunk.thinking === 'string') size += SHARED_TEXT_ENCODER.encode(chunk.thinking).length;
-    if (Array.isArray(chunk.tool_calls)) {
-      for (const call of chunk.tool_calls) {
-        try {
-          size += JSON.stringify(call).length;
-        } catch {
-          // Skip serialization errors (circular refs, BigInt, etc.)
-        }
-      }
-    }
-    if (Array.isArray(chunk.nativeToolCallDeltas)) {
-      for (const delta of chunk.nativeToolCallDeltas) {
-        try {
-          size += JSON.stringify(delta).length;
-        } catch {
-          // Skip serialization errors
-        }
-      }
-    }
-    return size;
   }
 
   private enforceMaxLength(value: string, field: 'content' | 'thinking'): string {
