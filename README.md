@@ -2,7 +2,6 @@
 
 Production-ready LLM stream parsing and VS Code integration for multi-step agent workflows.
 
-[![npm @agentsy/core](https://img.shields.io/npm/v/@agentsy/core?label=%40agentsy%2Fcore)](https://www.npmjs.com/package/@agentsy/core)
 [![npm @agentsy/vscode](https://img.shields.io/npm/v/@agentsy/vscode?label=%40agentsy%2Fvscode)](https://www.npmjs.com/package/@agentsy/vscode)
 [![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
@@ -13,8 +12,22 @@ Agentsy is a **Turbo monorepo** with independent, composable packages for proces
 
 ### 📦 Packages
 
-- **[@agentsy/core](./packages/core/README.md)** (v0.1.0) — Stream parsing & orchestration (foundation layer). [npm](https://www.npmjs.com/package/@agentsy/core) | [docs](./docs/index.md)
-- **[@agentsy/vscode](./packages/vscode/README.md)** (v0.1.0) — VS Code integration utilities. [npm](https://www.npmjs.com/package/@agentsy/vscode)
+**Published:**
+
+- **[@agentsy/vscode](./packages/vscode/README.md)** (v0.1.0) — VS Code Language Model Chat Provider utilities. [npm](https://www.npmjs.com/package/@agentsy/vscode)
+
+**Internal (not yet published):**
+
+- `@agentsy/processor` — Event-driven LLM stream orchestrator
+- `@agentsy/normalizers` — Provider-specific response normalizers (OpenAI, Anthropic, Gemini, Mistral, and more)
+- `@agentsy/agent` — Multi-step agent loop with stop conditions
+- `@agentsy/adapters` — OpenAI-compatible and provider-specific adapters
+- `@agentsy/thinking` — `<think>` tag extraction
+- `@agentsy/tool-calls` — XML and native tool call parsing
+- `@agentsy/structured` — JSON parse/repair and streaming validation
+- `@agentsy/renderers` — CLI, Ink/React TUI, and plain-text renderers
+- `@agentsy/ag-ui` — AG-UI protocol adapter
+- …and more (see `packages/`)
 
 ### 🚀 Coming Soon
 
@@ -25,40 +38,12 @@ Agentsy is a **Turbo monorepo** with independent, composable packages for proces
 
 ## ⚡ Quick Start
 
-### Stream Parsing
-
-Parse LLM responses chunk-by-chunk with `@agentsy/core`:
-
-```bash
-npm install @agentsy/core
-```
-
-```typescript
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-
-const processor = new LLMStreamProcessor({
-  parseThinkTags: true,
-  knownTools: new Set(['search', 'edit_file']),
-});
-
-processor.on('thinking', delta => console.log(`[💭] ${delta}`));
-processor.on('text', delta => process.stdout.write(delta));
-processor.on('tool_call', call => executeTool(call));
-
-for await (const chunk of llmStream) {
-  processor.process({
-    content: chunk.content,
-    done: chunk.done,
-  });
-}
-```
-
 ### VS Code Provider
 
 Build Language Model Chat Providers with `@agentsy/vscode`:
 
 ```bash
-npm install @agentsy/vscode @agentsy/core vscode
+npm install @agentsy/vscode vscode
 ```
 
 ```typescript
@@ -103,25 +88,25 @@ export function activate(context: ExtensionContext) {
 ```text
 agentsy/
 ├── packages/
-│   ├── core/                    # @agentsy/core (v1.0.0 — foundation)
+│   ├── vscode/                  # @agentsy/vscode (published)
 │   │   ├── src/
-│   │   │   ├── thinking/        # <think> tag extraction
-│   │   │   ├── xml-filter/      # XML context scrubbing
-│   │   │   ├── tool-calls/      # Tool call extraction
-│   │   │   ├── structured/      # JSON parsing & validation
-│   │   │   ├── processor/       # Event-driven orchestrator
-│   │   │   ├── adapters/        # Provider normalizers
-│   │   │   ├── agent/           # Multi-step agent loops
+│   │   │   ├── extension/       # Extension hooks
+│   │   │   ├── provider/        # BaseLanguageModelChatProvider
+│   │   │   ├── api-key-manager/ # SecretStorage integration
+│   │   │   ├── error-handling/  # Error mapping
 │   │   │   └── ...more modules
 │   │   └── package.json
-│   └── vscode/                  # @agentsy/vscode (v0.1.0)
-│       ├── src/
-│       │   ├── extension/       # Extension hooks
-│       │   ├── provider/        # BaseLanguageModelChatProvider
-│       │   ├── api-key-manager/ # SecretStorage integration
-│       │   ├── error-handling/  # Error mapping
-│       │   └── ...more modules
-│       └── package.json
+│   ├── processor/               # @agentsy/processor
+│   ├── normalizers/             # @agentsy/normalizers
+│   ├── agent/                   # @agentsy/agent
+│   ├── adapters/                # @agentsy/adapters
+│   ├── thinking/                # @agentsy/thinking
+│   ├── tool-calls/              # @agentsy/tool-calls
+│   ├── structured/              # @agentsy/structured
+│   ├── renderers/               # @agentsy/renderers
+│   ├── ag-ui/                   # @agentsy/ag-ui
+│   ├── integration/             # (private) cross-package integration tests
+│   └── ...more packages
 ├── docs/                        # Unified documentation
 │   ├── index.md                 # Overview
 │   ├── getting-started.md
@@ -175,16 +160,7 @@ pnpm turbo run precommit    # Pre-commit hook (types + lint + format)
 
 ### Local Package Development
 
-Both packages use `workspace:*` dependencies, so local changes are reflected immediately:
-
-```typescript
-// packages/vscode/package.json
-{
-  "dependencies": {
-    "@agentsy/core": "workspace:*"  // Always uses local packages/ version
-  }
-}
-```
+All packages use `workspace:*` dependencies, so local changes are reflected immediately across the monorepo.
 
 ## 🧪 Testing
 
@@ -192,13 +168,13 @@ Each package has full test coverage with Vitest:
 
 ```bash
 # Test single package
-cd packages/core && pnpm test
+cd packages/vscode && pnpm test
 
 # Test all packages
 pnpm turbo run test
 
 # Test with coverage
-pnpm turbo run test -- --coverage
+pnpm turbo run test:coverage
 ```
 
 ## 📦 Publishing
@@ -209,8 +185,7 @@ Both packages are published independently to npm:
 # Build for distribution
 pnpm turbo run build
 
-# Create release tags
-git tag @agentsy/core@1.0.0
+# Create a release tag
 git tag @agentsy/vscode@0.1.0
 
 # Push tags to trigger GitHub Actions release workflow
