@@ -90,12 +90,11 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
 
 // Resolve package directory
 const PACKAGES_DIR = resolve(ROOT, 'packages');
-let normalizedPackageName = packageName;
 
 // Normalize short names (e.g., "core" -> "@agentsy/core")
-if (!packageName.includes('/')) {
-  normalizedPackageName = `@agentsy/${packageName}`;
-}
+const normalizedPackageName = packageName.includes('/')
+  ? packageName
+  : `@agentsy/${packageName}`;
 
 const pkgShortName = normalizedPackageName.replace(/^@[^/]+\//, '');
 const pkgDir = resolve(PACKAGES_DIR, pkgShortName);
@@ -112,7 +111,7 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-// Load package.json and verify it matches
+// Load actual package name from package.json
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
 
@@ -349,14 +348,14 @@ async function main() {
 
   // Filter tags for this package, sort by semver
   const parseVer = v => {
-    const version = v.slice(v.lastIfullPdexOf('@') + 1);
+    const version = v.slice(v.lastIndexOf('@') + 1);
     return version.split('.').map(Number);
   };
 
   const previousTag =
     tagsResp
       .map(r => r.ref.replace('refs/tags/', ''))
-      .filter(t => t.startsWith(`${packageName}@`) && t !== tag)
+      .filter(t => t.startsWith(`${fullPackageName}@`) && t !== tag)
       .sort((a, b) => {
         const [aMaj = 0, aMin = 0, aPatch = 0] = parseVer(a);
         const [bMaj = 0, bMin = 0, bPatch = 0] = parseVer(b);
@@ -376,14 +375,14 @@ async function main() {
   };
   if (previousTag) {
     releaseNotesOpts.previous_tag_name = previousTag;
-  }fullPackageName} 
+  }
 
   const notesResp = await octokit.repos.generateReleaseNotes(releaseNotesOpts);
   const releaseNotes = notesResp.data.body?.trim() || '- No notable changes.';
 
   // --- Update package.json -------------------------------------------------
 
-  console.log(`🧩 Updating ${packageName}/package.json to ${version}...`);
+  console.log(`🧩 Updating ${fullPackageName} to ${version}...`);
   const pkg = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
   pkg.version = version;
   safeWrite(pkgJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
@@ -432,7 +431,7 @@ async function main() {
   commitPushed = true;
   commitLocal = false;
 
-  // Capture commit SHA after push
+  // Capture pushed commit SHA
   const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
 
   // --- Wait for required workflows -----------------------------------------
