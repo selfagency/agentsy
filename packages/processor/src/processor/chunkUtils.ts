@@ -71,3 +71,35 @@ export function mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCal
 
   return mapped;
 }
+
+export function enforceMaxLength(
+  value: string,
+  field: 'content' | 'thinking',
+  maxInputLength: number,
+  onWarning: (message: string, context?: Record<string, unknown>) => void,
+): string {
+  if (maxInputLength <= 0 || value.length <= maxInputLength) {
+    return value;
+  }
+
+  onWarning(`Chunk ${field} exceeded maxInputLength and was truncated`, {
+    field,
+    maxInputLength,
+    originalLength: value.length,
+  });
+
+  // Truncate at a tag boundary so we don't hand a partial `<tag...` fragment
+  // to the XML parser. Walk back from the cut point to the last `<` that has
+  // no matching `>` after it within the kept region.
+  let cut = maxInputLength;
+  const openIdx = value.lastIndexOf('<', maxInputLength - 1);
+  if (openIdx !== -1) {
+    const closeIdx = value.indexOf('>', openIdx);
+    // If the closing `>` is beyond the cut (or absent), the tag is partial.
+    if (closeIdx === -1 || closeIdx >= maxInputLength) {
+      cut = openIdx;
+    }
+  }
+
+  return value.slice(0, cut);
+}
