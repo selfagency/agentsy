@@ -104,7 +104,7 @@ jobs:
                 repo,
                 workflow_id: workflow.id,
                 branch: 'main',
-                head_sha: mainSha,
+                head_sha: taggedSha,
                 status: 'completed',
                 per_page: 10,
               });
