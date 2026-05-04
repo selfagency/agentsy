@@ -225,6 +225,11 @@ jobs:
           node-version: "22"
           cache: "pnpm"
 
+      - name: Clear Node.js auth token
+        run: npm config delete //${NPM_REGISTRY}/:_authToken || true
+        env:
+          NPM_REGISTRY: registry.npmjs.org
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
