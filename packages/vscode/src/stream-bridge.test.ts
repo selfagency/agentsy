@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import type { StreamChunk } from '@agentsy/processor';
 import { VSCodeStreamBridge, bridgeStream } from './stream-bridge.js';
 
+async function* sourceChunks(): AsyncIterable<StreamChunk> {
+  yield { content: 'a' };
+  yield { thinking: 'b' };
+}
+
 describe('VSCodeStreamBridge', () => {
   it('writes mapped chunks in order and calls onRawChunk first', async () => {
     const calls: string[] = [];
@@ -31,13 +36,8 @@ describe('VSCodeStreamBridge', () => {
 
 describe('bridgeStream', () => {
   it('yields mapped VS Code chunks from stream source', async () => {
-    async function* source(): AsyncIterable<StreamChunk> {
-      yield { content: 'a' };
-      yield { thinking: 'b' };
-    }
-
     const out = [];
-    for await (const chunk of bridgeStream(source())) {
+    for await (const chunk of bridgeStream(sourceChunks())) {
       out.push(chunk);
     }
 
