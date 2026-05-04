@@ -22,7 +22,7 @@
     "check-types": "tsc --noEmit",
     "lint": "oxlint .",
     "format": "oxfmt . --write",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
