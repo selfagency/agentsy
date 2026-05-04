@@ -32,29 +32,32 @@ export async function* parseSSEStream(
     return obj != null && typeof obj === 'object' && 'getReader' in obj;
   };
 
-  try {
-    // Convert source to async iterable.
-    let iterator: AsyncIterator<string>;
-
+  async function* iterateChunks(): AsyncGenerator<string> {
     if (isReadableStream(source)) {
       const reader = source.getReader();
-      iterator = {
-        async next(): Promise<IteratorResult<string>> {
-          try {
-            const { done, value } = await reader.read();
-            return { done, value: value ?? '' };
-          } catch {
-            // Stream closed or read error; end iteration gracefully
-            return { done: true, value: undefined };
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            return;
           }
-        },
-      };
-    } else {
-      iterator = source[Symbol.asyncIterator]();
+          yield value ?? '';
+        }
+      } catch {
+        // Stream closed or read error; end iteration gracefully.
+        return;
+      } finally {
+        reader.releaseLock();
+      }
     }
 
+    yield* source;
+  }
+
+  try {
     // Feed chunks into the parser and yield events.
-    for await (const chunk of { [Symbol.asyncIterator]: () => iterator }) {
+    for await (const chunk of iterateChunks()) {
       if (chunk) {
         parser.write(chunk);
       }
