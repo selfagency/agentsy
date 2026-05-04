@@ -1,6 +1,6 @@
-import type { LLMStreamProcessor, ProcessorOptions } from '../processor/LLMStreamProcessor.js';
+import type { LLMStreamProcessor, ProcessorOptions } from '@agentsy/processor';
 import type { XmlToolCall } from '@agentsy/tool-calls';
-import type { UsageInfo } from '../normalizers/types.js';
+import type { UsageInfo } from '@agentsy/types';
 
 export interface StreamSnapshot {
   /** Accumulated assistant content at the time the snapshot was taken. */

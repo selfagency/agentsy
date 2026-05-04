@@ -1,5 +1,5 @@
-import type { StreamChunk } from '../../processor/LLMStreamProcessor.js';
-import { LLMStreamProcessor } from '../../processor/LLMStreamProcessor.js';
+import type { StreamChunk } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/processor';
 import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle } from '../types.js';
 

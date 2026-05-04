@@ -42,65 +42,20 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./thinking": {
-      "types": "./dist/thinking/index.d.ts",
-      "import": "./dist/thinking/index.js",
-      "require": "./dist/thinking/index.cjs"
-    },
-    "./xml-filter": {
-      "types": "./dist/xml-filter/index.d.ts",
-      "import": "./dist/xml-filter/index.js",
-      "require": "./dist/xml-filter/index.cjs"
-    },
-    "./tool-calls": {
-      "types": "./dist/tool-calls/index.d.ts",
-      "import": "./dist/tool-calls/index.js",
-      "require": "./dist/tool-calls/index.cjs"
-    },
     "./context": {
       "types": "./dist/context/index.d.ts",
       "import": "./dist/context/index.js",
       "require": "./dist/context/index.cjs"
-    },
-    "./structured": {
-      "types": "./dist/structured/index.d.ts",
-      "import": "./dist/structured/index.js",
-      "require": "./dist/structured/index.cjs"
     },
     "./formatting": {
       "types": "./dist/formatting/index.d.ts",
       "import": "./dist/formatting/index.js",
       "require": "./dist/formatting/index.cjs"
     },
-    "./processor": {
-      "types": "./dist/processor/index.d.ts",
-      "import": "./dist/processor/index.js",
-      "require": "./dist/processor/index.cjs"
-    },
     "./markdown": {
       "types": "./dist/markdown/index.d.ts",
       "import": "./dist/markdown/index.js",
       "require": "./dist/markdown/index.cjs"
-    },
-    "./adapters": {
-      "types": "./dist/adapters/index.d.ts",
-      "import": "./dist/adapters/index.js",
-      "require": "./dist/adapters/index.cjs"
-    },
-    "./adapters/generic": {
-      "types": "./dist/adapters/generic.d.ts",
-      "import": "./dist/adapters/generic.js",
-      "require": "./dist/adapters/generic.cjs"
-    },
-    "./adapters/mistral": {
-      "types": "./dist/adapters/mistral.d.ts",
-      "import": "./dist/adapters/mistral.js",
-      "require": "./dist/adapters/mistral.cjs"
-    },
-    "./adapters/openai-compatible": {
-      "types": "./dist/adapters/openai-compatible.d.ts",
-      "import": "./dist/adapters/openai-compatible.js",
-      "require": "./dist/adapters/openai-compatible.cjs"
     },
     "./normalizers": {
       "types": "./dist/normalizers/index.d.ts",
@@ -116,16 +71,6 @@
       "types": "./dist/sse/index.d.ts",
       "import": "./dist/sse/index.js",
       "require": "./dist/sse/index.cjs"
-    },
-    "./pipeline": {
-      "types": "./dist/pipeline/index.d.ts",
-      "import": "./dist/pipeline/index.js",
-      "require": "./dist/pipeline/index.cjs"
-    },
-    "./agent": {
-      "types": "./dist/agent/index.d.ts",
-      "import": "./dist/agent/index.js",
-      "require": "./dist/agent/index.cjs"
     },
     "./renderers": {
       "types": "./dist/renderers/index.d.ts",
@@ -152,11 +97,6 @@
       "import": "./dist/ui/index.js",
       "require": "./dist/ui/index.cjs"
     },
-    "./ag-ui": {
-      "types": "./dist/ag-ui/index.d.ts",
-      "import": "./dist/ag-ui/index.js",
-      "require": "./dist/ag-ui/index.cjs"
-    },
     "./renderers/ink": {
       "types": "./dist/renderers/ink/index.d.ts",
       "import": "./dist/renderers/ink/index.js",
@@ -165,11 +105,9 @@
   },
   "dependencies": {
     "@agentsy/normalizers": "workspace:*",
-    "@agentsy/structured": "workspace:*",
-    "@agentsy/thinking": "workspace:*",
+    "@agentsy/processor": "workspace:*",
     "@agentsy/tool-calls": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "@agentsy/vendor": "workspace:*",
     "@agentsy/xml-filter": "workspace:*"
   },
   "scripts": {
@@ -185,6 +123,7 @@
     "docs:preview": "vitepress preview"
   },
   "devDependencies": {
+    "@agentsy/processor": "workspace:*",
     "@go-task/cli": "^3.50.0",
     "@octokit/rest": "^22.0.1",
     "@types/node": "^25.6.0",

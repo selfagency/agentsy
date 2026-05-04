@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LLMStreamProcessor } from '../../processor/index.js';
+import { LLMStreamProcessor } from '@agentsy/processor';
 import { createInkRenderer } from './createInkRenderer.js';
 import { darkTheme } from './themes/index.js';
 

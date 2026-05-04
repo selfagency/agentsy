@@ -1,5 +1,5 @@
-import type { UsageInfo } from '../normalizers/types.js';
-import type { LLMStreamProcessor, OutputPart, StreamChunk } from '../processor/LLMStreamProcessor.js';
+import type { UsageInfo } from '@agentsy/types';
+import type { LLMStreamProcessor, OutputPart, StreamChunk } from '@agentsy/processor';
 import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { FinishReason, ToolCallState } from '@agentsy/types';
 

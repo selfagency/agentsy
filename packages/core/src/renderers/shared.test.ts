@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '@agentsy/processor';
 import { createSharedRendererHandle } from './shared.js';
-import type { FinishReason, OutputPart } from '../agent/types.js';
+import type { FinishReason } from '@agentsy/types';
+import type { OutputPart } from '@agentsy/processor';
 import type { UsageInfo } from '../normalizers/types.js';
 
 describe('createSharedRendererHandle', () => {

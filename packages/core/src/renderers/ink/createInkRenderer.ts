@@ -1,6 +1,6 @@
 import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
-import type { LLMStreamProcessor } from '../../processor/index.js';
+import type { LLMStreamProcessor } from '@agentsy/processor';
 import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { resolveTheme } from './themes/index.js';
