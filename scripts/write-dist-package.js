@@ -12,7 +12,7 @@ async function main() {
   const outDir = resolve(packagePath, 'dist');
   const raw = await readFile(rootPkgPath, 'utf8');
   const pkg = JSON.parse(raw);
-  const { name, version, description, keywords, homepage, bugs, repository, license, author, private: isPrivate, access } = pkg;
+  const { name, version, description, keywords, homepage, bugs, repository, license, author, private: isPrivate, publishConfig } = pkg;
 
   // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
   /** @type {Record<string, Record<string, string>>} */
@@ -30,7 +30,7 @@ async function main() {
     name,
     version,
     private: isPrivate,
-    access,
+    publishConfig,
     description,
     keywords,
     homepage,
