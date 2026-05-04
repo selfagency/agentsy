@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { LLMStreamProcessor } from '@agentsy/processor';
-import { createSharedRendererHandle } from './shared.js';
 import type { OutputPart } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/processor';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createSharedRendererHandle } from './shared.js';
 
 describe('createSharedRendererHandle', () => {
   let mockHandlers: {

@@ -66,7 +66,7 @@ function BlockquoteThinking({
       ? theme.border.style
       : undefined;
   const borderColor = theme.border.color || undefined;
-  const spinnerSymbol = spinnerFrames[frame] ?? spinnerFrames[0];
+  const spinnerSymbol = spinnerFrames.at(frame) ?? '⠋';
   const spinnerColor = isStreaming ? theme.thinking.spinnerColor || undefined : theme.thinking.textColor || undefined;
 
   return (

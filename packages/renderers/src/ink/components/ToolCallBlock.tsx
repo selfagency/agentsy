@@ -46,7 +46,7 @@ export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlo
     return <Text>Calling: {call.name}(...)</Text>;
   }
 
-  const symbol = shouldAnimate ? (spinnerFrames[frame] ?? spinnerFrames[0]) : theme.toolCall.pendingSymbol;
+  const symbol = shouldAnimate ? (spinnerFrames.at(frame) ?? '⠋') : theme.toolCall.pendingSymbol;
   const pendingColor = theme.toolCall.pendingColor || undefined;
   return (
     <Text {...(pendingColor ? { color: pendingColor } : {})}>
