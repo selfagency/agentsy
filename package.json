@@ -1,6 +1,7 @@
 {
   "name": "@agentsy/monorepo",
   "version": "0.1.0",
+  "type": "module",
   "description": "Monorepo for Agentsy agentic development framework",
   "private": true,
   "scripts": {
@@ -15,6 +16,8 @@
     "release": "pnpm exec zx scripts/release-per-package.js"
   },
   "devDependencies": {
+    "@octokit/rest": "^21.1.0",
+    "ora": "^8.1.1",
     "turbo": "^2.9.8",
     "zx": "^8.1.9"
   },
