@@ -90,7 +90,14 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
 
 // Resolve package directory
 const PACKAGES_DIR = resolve(ROOT, 'packages');
-const pkgShortName = packageName.replace(/^@[^/]+\//, '');
+let normalizedPackageName = packageName;
+
+// Normalize short names (e.g., "core" -> "@agentsy/core")
+if (!packageName.includes('/')) {
+  normalizedPackageName = `@agentsy/${packageName}`;
+}
+
+const pkgShortName = normalizedPackageName.replace(/^@[^/]+\//, '');
 const pkgDir = resolve(PACKAGES_DIR, pkgShortName);
 const pkgJsonPath = resolve(pkgDir, 'package.json');
 
@@ -105,16 +112,11 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-// Validate package name matches actual package.json
+// Load package.json and verify it matches
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
-if (pkgJson.name !== packageName) {
-  console.error(`❌ Package name mismatch:`);
-  console.error(`   Argument: ${packageName}`);
-  console.error(`   package.json: ${pkgJson.name}`);
-  process.exit(1);
-}
+const fullPackageName = pkgJson.name;
 
-const tag = `${packageName}@${version}`;
+const tag = `${fullPackageName}@${version}`;
 
 // ---------------------------------------------------------------------------
 // Rollback state
@@ -347,7 +349,7 @@ async function main() {
 
   // Filter tags for this package, sort by semver
   const parseVer = v => {
-    const version = v.slice(v.lastIndexOf('@') + 1);
+    const version = v.slice(v.lastIfullPdexOf('@') + 1);
     return version.split('.').map(Number);
   };
 
@@ -374,7 +376,7 @@ async function main() {
   };
   if (previousTag) {
     releaseNotesOpts.previous_tag_name = previousTag;
-  }
+  }fullPackageName} 
 
   const notesResp = await octokit.repos.generateReleaseNotes(releaseNotesOpts);
   const releaseNotes = notesResp.data.body?.trim() || '- No notable changes.';
