@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Foundation stream parsing layer for Agentsy agentic development framework: thinking extraction, XML filtering, tool-call routing, JSON validation, provider normalization.",
   "keywords": [
     "ai",
