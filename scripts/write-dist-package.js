@@ -11,25 +11,24 @@ async function main() {
   const rootPkgPath = resolve(packagePath, 'package.json');
   const outDir = resolve(packagePath, 'dist');
   const raw = await readFile(rootPkgPath, 'utf8');
-  const pkg = JSON.parse(raw);
-  const { name, version, description, keywords, homepage, bugs, repository, license, author, private: isPrivate } = pkg;
+  const { name, version, description, keywords, homepage, bugs, repository, license, author } = JSON.parse(raw);
 
   // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
-  /** @type {Record<string, Record<string, string>>} */
-  const rootExports = pkg.exports;
-  /** @type {Record<string, Record<string, string>>} */
+  /** @type {Record<string, { types: string; import: string; require: string }>} */
+  const rootExports = JSON.parse(raw).exports;
+  /** @type {Record<string, { types: string; import: string; require: string }>} */
   const distExports = {};
   for (const [key, value] of Object.entries(rootExports)) {
-    distExports[key] = {};
-    if (value.types) distExports[key].types = value.types.replace('./dist/', './');
-    if (value.import) distExports[key].import = value.import.replace('./dist/', './');
-    if (value.require) distExports[key].require = value.require.replace('./dist/', './');
+    distExports[key] = {
+      types: value.types.replace('./dist/', './'),
+      import: value.import.replace('./dist/', './'),
+      require: value.require.replace('./dist/', './'),
+    };
   }
 
   const distPkg = {
     name,
     version,
-    private: isPrivate,
     description,
     keywords,
     homepage,
