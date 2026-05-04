@@ -37,16 +37,26 @@ function nonEmptyString(value: string | null | undefined): string | undefined {
 }
 
 function mapToolCallDelta(delta: ZAiToolCallDelta): NativeToolCallDelta {
-  const id = nonEmptyString(delta.id);
-  const name = nonEmptyString(delta.function?.name);
-  const argumentsDelta = nonEmptyString(delta.function?.arguments);
-
-  return {
+  const mapped: NativeToolCallDelta = {
     index: delta.index,
-    ...(id === undefined ? {} : { id }),
-    ...(name === undefined ? {} : { name }),
-    ...(argumentsDelta === undefined ? {} : { argumentsDelta }),
   };
+
+  const id = nonEmptyString(delta.id);
+  if (id !== undefined) {
+    mapped.id = id;
+  }
+
+  const name = nonEmptyString(delta.function?.name);
+  if (name !== undefined) {
+    mapped.name = name;
+  }
+
+  const argumentsDelta = nonEmptyString(delta.function?.arguments);
+  if (argumentsDelta !== undefined) {
+    mapped.argumentsDelta = argumentsDelta;
+  }
+
+  return mapped;
 }
 
 function isZAiToolCallDelta(value: unknown): value is ZAiToolCallDelta {

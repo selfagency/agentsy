@@ -89,7 +89,7 @@ interface WaitState {
  * emits typed events for each XML node encountered.
  */
 export class Saxophone extends EventEmitter {
-  private _tagStack: string[] = [];
+  private readonly _tagStack: string[] = [];
   private _waiting: WaitState | null = null;
 
   // ── wait-state helpers ────────────────────────────────────────────────────

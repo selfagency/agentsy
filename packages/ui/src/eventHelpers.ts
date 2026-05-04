@@ -69,7 +69,7 @@ export function finishMessage(
 
   return {
     ...state,
-    messages: messages as UIMessage[],
+    messages,
     status: state.status === 'error' ? 'error' : 'idle',
     totalTokens,
     totalUsage,

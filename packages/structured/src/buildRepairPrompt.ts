@@ -1,7 +1,9 @@
+import type { JsonObject } from '@agentsy/types';
+
 export interface BuildRepairPromptOptions {
   failedOutput: string;
   error: string;
-  schema?: Record<string, unknown>;
+  schema?: JsonObject;
   originalPrompt?: string;
 }
 

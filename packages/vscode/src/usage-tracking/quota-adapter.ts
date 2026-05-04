@@ -20,6 +20,12 @@ export interface QuotaAdapterOptions<TPayload> {
 }
 
 const DEFAULT_WINDOW_ORDER: QuotaWindow[] = ['hourly', 'daily', 'weekly', 'monthly'];
+const EMPTY_QUOTA_WINDOW: QuotaWindowValue = {
+  used: 0,
+  total: 1,
+  unit: 'requests',
+  window: 'daily',
+};
 
 function percentUsed(windowValue: QuotaWindowValue): number {
   if (windowValue.total <= 0) return 0;
@@ -33,12 +39,7 @@ export function pickActiveQuotaWindow(
   preferredOrder: QuotaWindow[] = DEFAULT_WINDOW_ORDER,
 ): QuotaWindowValue {
   if (windows.length === 0) {
-    return {
-      used: 0,
-      total: 1,
-      unit: 'requests',
-      window: 'daily',
-    };
+    return { ...EMPTY_QUOTA_WINDOW };
   }
 
   if (strategy === 'preferred-order') {
@@ -50,23 +51,13 @@ export function pickActiveQuotaWindow(
     if (first !== undefined) {
       return first;
     }
-    return {
-      used: 0,
-      total: 1,
-      unit: 'requests',
-      window: 'daily',
-    };
+    return { ...EMPTY_QUOTA_WINDOW };
   }
 
   if (strategy === 'highest-percent') {
     const [first, ...rest] = windows;
     if (first === undefined) {
-      return {
-        used: 0,
-        total: 1,
-        unit: 'requests',
-        window: 'daily',
-      };
+      return { ...EMPTY_QUOTA_WINDOW };
     }
 
     return rest.reduce((best, current) => (percentUsed(current) > percentUsed(best) ? current : best), first);
@@ -75,12 +66,7 @@ export function pickActiveQuotaWindow(
   // most-constrained: prefer highest percent, then lower absolute remaining budget.
   const [first, ...rest] = windows;
   if (first === undefined) {
-    return {
-      used: 0,
-      total: 1,
-      unit: 'requests',
-      window: 'daily',
-    };
+    return { ...EMPTY_QUOTA_WINDOW };
   }
 
   return rest.reduce((best, current) => {

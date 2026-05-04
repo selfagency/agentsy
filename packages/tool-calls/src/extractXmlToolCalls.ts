@@ -110,12 +110,12 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
  * @returns An array of successfully parsed tool calls. Malformed or unrecognised
  *          tool calls are silently skipped — the function never throws.
  */
-function extractBareXmlParams(inner: string, paramPattern: RegExp): Record<string, unknown> {
+function extractBareXmlParams(inner: string, paramPattern: RegExp): JsonObject {
   // Use a null-prototype object to avoid prototype pollution when assigning
   // properties from untrusted XML input (e.g., <__proto__> tags).
   // Validate paramName to prevent injection attacks.
   const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
-  const params = Object.create(null) as Record<string, unknown>;
+  const params = Object.create(null) as JsonObject;
   for (const paramMatch of inner.matchAll(paramPattern)) {
     const paramName = paramMatch[1];
     if (!paramName || !VALID_PARAM_NAME.test(paramName)) continue;

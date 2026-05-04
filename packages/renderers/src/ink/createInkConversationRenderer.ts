@@ -1,5 +1,6 @@
 import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
+import type { JsonObject } from '@agentsy/types';
 import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';
 import { resolveTheme } from './themes/index.js';
@@ -9,7 +10,7 @@ export interface ConversationTurn {
   role: 'user' | 'assistant';
   text: string;
   thinking?: string | undefined;
-  toolCalls: Array<{ id: string; name: string; arguments: Record<string, unknown>; done: boolean }>;
+  toolCalls: Array<{ id: string; name: string; arguments: JsonObject; done: boolean }>;
   timestamp: number;
 }
 
@@ -43,7 +44,7 @@ export async function createInkConversationRenderer(
   const stateRef = {
     text: '',
     thinking: '',
-    toolCalls: [] as Array<{ id: string; name: string; arguments: Record<string, unknown>; done: boolean }>,
+    toolCalls: [] as Array<{ id: string; name: string; arguments: JsonObject; done: boolean }>,
     isStreaming: true,
   };
 

@@ -10,6 +10,7 @@
  */
 
 import { validateJsonSchema, type ValidateJsonSchemaOptions } from './validateJsonSchema.js';
+import type { JsonObject } from '@agentsy/types';
 
 // Use dynamic imports so consumers without Zod don't pay a load-time penalty.
 // The types below cover the minimal surface we use from Zod.
@@ -25,8 +26,8 @@ export interface ZodLike {
  *
  * @throws If `zod-to-json-schema` is not installed.
  */
-export async function zodToJsonSchema(zodSchema: ZodLike): Promise<Record<string, unknown>> {
-  let zodToJsonSchemaFn: (schema: ZodLike) => Record<string, unknown>;
+export async function zodToJsonSchema(zodSchema: ZodLike): Promise<JsonObject> {
+  let zodToJsonSchemaFn: (schema: ZodLike) => JsonObject;
   try {
     // Dynamic import — zod-to-json-schema is an optional peer dependency.
     // @ts-expect-error — module may not be installed; caught at runtime.
