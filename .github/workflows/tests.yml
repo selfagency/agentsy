@@ -2,18 +2,18 @@ name: Test & Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - "packages/**"
-      - "turbo.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - 'packages/**'
+      - 'turbo.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   pull_request:
     paths:
-      - "packages/**"
-      - "turbo.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - 'packages/**'
+      - 'turbo.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 permissions:
@@ -39,8 +39,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: '22'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -81,12 +81,6 @@ jobs:
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Run codacy-coverage-reporter
-        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
-        with:
-          api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: ${{ github.workspace }}/coverage/lcov.info
 
       - name: Upload coverage artifact
         if: always()

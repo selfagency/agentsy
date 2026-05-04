@@ -104,7 +104,7 @@ describe('ApiKeyManager', () => {
         validateBeforeStore: () => false,
       };
       const validatingManager = new ApiKeyManager(mockContext, configWithValidator);
-      await expect(validatingManager.setApiKey('invalid-key')).rejects.toThrow();
+      await expect(validatingManager.setApiKey('invalid-key')).rejects.toThrow('API key validation failed');
     });
 
     it('should call onError if validation fails', async () => {

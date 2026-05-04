@@ -1,25 +1,25 @@
 # Getting Started
 
-Get up and running with `@agentsy/core` in a few minutes.
+Get up and running with `@agentsy/vscode` (published) and the workspace parser packages in a few minutes.
 
 ## Installation
 
 ### With npm
 
 ```bash
-npm install @agentsy/core
+npm install @agentsy/vscode vscode
 ```
 
 ### With pnpm
 
 ```bash
-pnpm add @agentsy/core
+pnpm add @agentsy/vscode vscode
 ```
 
 ### With yarn
 
 ```bash
-yarn add @agentsy/core
+yarn add @agentsy/vscode vscode
 ```
 
 ## Requirements
@@ -32,7 +32,7 @@ yarn add @agentsy/core
 ### Extract thinking from streaming response
 
 ```typescript
-import { ThinkingParser } from '@agentsy/core';
+import { ThinkingParser } from '@agentsy/thinking';
 
 const parser = new ThinkingParser();
 
@@ -50,7 +50,7 @@ const [finalThinking, finalContent] = parser.flush();
 ### Parse JSON from response
 
 ```typescript
-import { parseJson } from '@agentsy/core';
+import { parseJson } from '@agentsy/structured';
 
 const response = await llm.complete('Return JSON: {key: "value"}');
 const data = parseJson(response);
@@ -65,7 +65,7 @@ if (data !== null) {
 ### Validate JSON against schema
 
 ```typescript
-import { validateJsonSchema } from '@agentsy/core';
+import { validateJsonSchema } from '@agentsy/structured';
 
 const schema = {
   type: 'object',

@@ -8,18 +8,6 @@ Agentsy is a Turbo monorepo providing composable, battle-tested utilities for pr
 
 ### 📦 Available Packages
 
-#### **@agentsy/core** (v1.0.0)
-
-Foundation stream parsing layer:
-
-- **Thinking extraction** — Chunk-by-chunk `<think>` tag processing
-- **XML filtering** — Privacy-aware context scrubbing and deduplication
-- **Tool-call extraction** — Validate and normalize tool invocations
-- **Structured output** — JSON parsing with depth/key limits and auto-repair
-- **Stream processor** — Event-driven multi-parser orchestration
-- **Normalizers** — OpenAI, Anthropic, Gemini, Mistral, Cohere, Ollama, AWS Bedrock adapters
-- **Zero dependencies** — Foundation layer has no runtime dependencies beyond Node.js built-ins
-
 #### **@agentsy/vscode** (v0.1.0)
 
 VS Code integration library for Language Model Chat Providers:
@@ -42,40 +30,12 @@ VS Code integration library for Language Model Chat Providers:
 
 ### Choose Your Path
 
-#### 🧠 Building a Stream Parser
-
-Use `@agentsy/core` for chunk-by-chunk LLM output processing:
-
-```bash
-npm install @agentsy/core
-```
-
-```typescript
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-
-const processor = new LLMStreamProcessor({
-  parseThinkTags: true,
-  knownTools: new Set(['search', 'edit_file']),
-});
-
-processor.on('thinking', delta => console.log(`[think] ${delta}`));
-processor.on('text', delta => console.log(delta));
-processor.on('tool_call', call => executeTool(call));
-
-for await (const chunk of llmStream) {
-  processor.process({
-    content: chunk.content,
-    done: chunk.done,
-  });
-}
-```
-
 #### 💻 Building a VS Code Provider
 
 Use `@agentsy/vscode` to integrate Language Model Chat Providers:
 
 ```bash
-npm install @agentsy/vscode @agentsy/core vscode
+npm install @agentsy/vscode vscode
 ```
 
 ```typescript
@@ -119,12 +79,6 @@ export class MyProvider extends BaseLanguageModelChatProvider {
 
 ## 📚 Documentation
 
-### For @agentsy/core
-
-- [Getting Started](/getting-started) — Core layer setup and patterns
-- [API Reference](/api/core) — Complete core API docs
-- [Integration Examples](/examples/core-parsing) — Anthropic, OpenAI, Gemini patterns
-
 ### For @agentsy/vscode
 
 - [VS Code Integration Guide](/developers/integration-vscode) — Provider setup and hooks
@@ -140,8 +94,11 @@ export class MyProvider extends BaseLanguageModelChatProvider {
 ```text
 agentsy/
 ├── packages/
-│   ├── parser/      # @agentsy/core (stream processing core)
-│   └── vscode/      # @agentsy/vscode (VS Code integration)
+│   ├── vscode/      # @agentsy/vscode (published)
+│   ├── processor/   # @agentsy/processor
+│   ├── normalizers/ # @agentsy/normalizers
+│   ├── renderers/   # @agentsy/renderers
+│   └── ...          # additional internal packages
 ├── docs/            # Unified documentation
 ├── turbo.json       # Monorepo orchestration (build, test, lint, format)
 └── pnpm-workspace.yaml
@@ -151,7 +108,7 @@ All packages are published independently to npm under the `@agentsy` scope.
 
 ## 🔗 Links
 
-- npm: [@agentsy/core](https://www.npmjs.com/package/@agentsy/core) | [@agentsy/vscode](https://www.npmjs.com/package/@agentsy/vscode)
+- npm: [@agentsy/vscode](https://www.npmjs.com/package/@agentsy/vscode)
 - GitHub: [agentsy/agentsy](https://github.com/agentsy/agentsy)
 - Discussions: [GitHub Discussions](https://github.com/agentsy/agentsy/discussions)
 

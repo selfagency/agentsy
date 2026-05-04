@@ -201,11 +201,12 @@ describe('error-recovery', () => {
 
     it('exhausts retries and throws last error', async () => {
       const op = vi.fn().mockRejectedValue(new Error('rate limit exceeded'));
-      const resultPromise = expect(
-        withRetry(op, { maxAttempts: 3, initialDelayMs: 10, backoffMultiplier: 1, maxDelayMs: 100 }),
-      ).rejects.toThrow('rate limit exceeded');
+      const retryPromise = withRetry(op, { maxAttempts: 3, initialDelayMs: 10, backoffMultiplier: 1, maxDelayMs: 100 });
+      const rejectionAssertion = (async () => {
+        await expect(retryPromise).rejects.toThrow('rate limit exceeded');
+      })();
       await vi.runAllTimersAsync();
-      await resultPromise;
+      await rejectionAssertion;
       expect(op).toHaveBeenCalledTimes(3);
     });
 

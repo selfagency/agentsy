@@ -1,6 +1,6 @@
 # GitHub Copilot Chat Integration
 
-This guide describes how `@agentsy/core` can be integrated with GitHub Copilot Chat extensions and chat hosts.
+This guide describes how `@agentsy/*` stream-processing packages can be integrated with GitHub Copilot Chat extensions and chat hosts.
 
 ## Goals
 
@@ -52,7 +52,8 @@ const final = processor.accumulatedMessage;
 Process chunks immediately without buffering:
 
 ```typescript
-import { ThinkingParser, createXmlStreamFilter } from '@agentsy/core';
+import { ThinkingParser } from '@agentsy/thinking';
+import { createXmlStreamFilter } from '@agentsy/xml-filter';
 
 const thinking = new ThinkingParser({ openingTag: '<think>', closingTag: '</think>' });
 const filter = createXmlStreamFilter({ enforcePrivacyTags: true });
@@ -86,7 +87,7 @@ updateChatDisplay(finalFiltered);
 Extract and execute structured tool calls:
 
 ```typescript
-import { extractXmlToolCalls } from '@agentsy/core';
+import { extractXmlToolCalls } from '@agentsy/tool-calls';
 
 const response = await chatCompletion(messages);
 
@@ -108,7 +109,7 @@ for (const call of toolCalls) {
 Validate structured outputs and prompt for repairs:
 
 ```typescript
-import { parseJson, validateJsonSchema, buildRepairPrompt } from '@agentsy/core';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/structured';
 
 const schema = {
   type: 'object',
@@ -223,7 +224,7 @@ For safe integration into existing Copilot Chat hosts:
 
 ```typescript
 // Feature flag for gradual rollout
-const useLLMStreamParser = features.isEnabled('@agentsy/core');
+const useLLMStreamParser = features.isEnabled('@agentsy/processor');
 
 const processor = useLLMStreamParser ? new LLMStreamProcessor(config) : legacyParsingPath(config);
 
@@ -241,7 +242,7 @@ if (process.env.VERIFY_PARITY) {
 ## Performance Tips
 
 - **Stream processing** - Process chunks immediately instead of buffering entire responses
-- **Subpath imports** - Only import what you need: `import { ThinkingParser } from '@agentsy/core/thinking'`
+- **Package-scoped imports** - Only import what you need: `import { ThinkingParser } from '@agentsy/thinking'`
 - **Limit tuning** - Adjust `maxJsonDepth` and `maxJsonKeys` based on expected response types
 - **Caching** - Cache parsed schemas and processors across multiple chat turns
 
@@ -252,7 +253,7 @@ Enable diagnostics for stream processing using the `onWarning` hook:
 ```typescript
 const processor = new LLMStreamProcessor({
   onWarning: (message, context) => {
-    console.log(`[@agentsy/core] ${message}`, context);
+    console.log(`[@agentsy/processor] ${message}`, context);
   },
   ...config,
 });

@@ -5,11 +5,9 @@ Releases are per-package in this monorepo. Each package gets its own version tag
 ## Single Package Release
 
 ```bash
-# Release @agentsy/core@0.2.0
-pnpm release @agentsy/core 0.2.0
-
-# Release @agentsy/vscode@0.1.5
+# Release any package in the workspace
 pnpm release @agentsy/vscode 0.1.5
+pnpm release @agentsy/processor 0.2.0
 ```
 
 ## What Happens
@@ -24,10 +22,10 @@ pnpm release @agentsy/vscode 0.1.5
 4. **Workflow Execution**:
    - Waits for "Test & Build" workflow to pass on the commit
 5. **Tagging**:
-   - Creates annotated tag: `@agentsy/core@0.2.0`
+   - Creates annotated tag: `@agentsy/<package>@<version>`
    - Pushes tag to origin (triggers Release workflow)
 6. **Publishing**:
-   - Builds the package: `pnpm -F @agentsy/core build`
+   - Builds the package: `pnpm -F @agentsy/<package> build`
    - Runs `node scripts/write-dist-package.js` for that package
    - Publishes to npm with `--access public`
    - Creates GitHub Release with release notes
@@ -41,7 +39,7 @@ pnpm release @agentsy/vscode 0.1.5
 ## Tag Format
 
 - **Root**: `v1.2.3` (single monorepo version)
-- **Per-package**: `@agentsy/core@0.2.0`, `@agentsy/vscode@0.1.5`
+- **Per-package**: `@agentsy/<package>@<version>` (for example `@agentsy/vscode@0.1.5`)
 
 The tag format tells the release workflow which package to publish.
 
@@ -50,8 +48,8 @@ The tag format tells the release workflow which package to publish.
 You can release multiple packages without waiting:
 
 ```bash
-pnpm release @agentsy/core 0.2.0 &
 pnpm release @agentsy/vscode 0.1.5 &
+pnpm release @agentsy/processor 0.2.0 &
 wait
 ```
 
@@ -90,7 +88,7 @@ export GH_TOKEN="ghp_xxx..."
 Delete the local tag:
 
 ```bash
-git tag -d @agentsy/core@0.2.0
+git tag -d @agentsy/vscode@0.1.5
 ```
 
 ## Configuration Files

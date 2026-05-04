@@ -247,3 +247,4 @@ package-lock.json
 .gh-pages
 .turbo
 test-report.junit.xml
+.rumdl_cache

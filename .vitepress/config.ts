@@ -14,7 +14,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Why @agentsy', link: '/why-agentsy' },
-      { text: 'Packages', link: '/packages/core' },
+      { text: 'Packages', link: '/packages/vscode' },
       {
         text: 'Learn',
         items: [
@@ -25,10 +25,7 @@ export default defineConfig({
       },
       {
         text: 'API',
-        items: [
-          { text: '@agentsy/core (Stream Parsing)', link: '/api/core' },
-          { text: '@agentsy/vscode (VS Code Integration)', link: '/api/vscode' },
-        ],
+        items: [{ text: '@agentsy/vscode (VS Code Integration)', link: '/api/vscode' }],
       },
       { text: 'Developers', link: '/developers/' },
     ],
@@ -36,10 +33,7 @@ export default defineConfig({
       '/packages/': [
         {
           text: 'Available Packages (v0.3.0)',
-          items: [
-            { text: '@agentsy/core (Foundation)', link: '/packages/core' },
-            { text: '@agentsy/vscode (VS Code)', link: '/packages/vscode' },
-          ],
+          items: [{ text: '@agentsy/vscode (VS Code)', link: '/packages/vscode' }],
         },
         {
           text: 'Coming Soon',

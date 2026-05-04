@@ -1,6 +1,0 @@
-runtimes:
-    - java@17.0.10
-tools:
-    - opengrep@1.16.4
-    - pmd@7.11.0
-    - trivy@0.69.3
