@@ -3,7 +3,6 @@ import { extractXmlToolCalls, ToolCallAccumulator, type XmlToolCall } from '@age
 import type {
   ConversationEvent,
   FinishReason,
-  JsonObject,
   NativeToolCallDelta,
   StreamChunk,
   ToolCallState,
