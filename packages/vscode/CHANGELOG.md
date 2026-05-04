@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-04
+
+## What's Changed
+* refactor: migrate to @agentsy monorepo and rename @agentsy/parser to @agentsy/core by @selfagency in https://github.com/selfagency/agentsy/pull/49
+* docs: move release guide to developer docs by @selfagency in https://github.com/selfagency/agentsy/pull/50
+
+
+**Full Changelog**: https://github.com/selfagency/agentsy/compare/v0.3.1...@agentsy/vscode@0.2.0
+
+
 ## [0.1.0] - 2025-01-16
 
 ### Added
