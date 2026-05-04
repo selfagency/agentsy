@@ -1,30 +1,31 @@
 import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
-import type { ConversationEvent } from '../ui/types.js';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
+import type { ConversationEvent } from '../ui/types.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
+import type { ToolCallParser } from './ToolCallParser.js';
 import { detectIncompleteness } from './incompleteness.js';
 
 /** A single chunk of output from a normalised LLM stream. */
 export interface StreamChunk {
-  content?: string;
-  thinking?: string;
-  tool_calls?: Array<{ function?: { name?: string; arguments?: unknown } }>;
-  done?: boolean;
+  content?: string | undefined;
+  thinking?: string | undefined;
+  tool_calls?: Array<{ function?: { name?: string | undefined; arguments?: unknown } }> | undefined;
+  done?: boolean | undefined;
   /** Optional step index supplied by higher-level agent loops or callers. */
-  stepIndex?: number;
+  stepIndex?: number | undefined;
   /** Token usage information, populated on the final chunk from the normalizer layer. */
-  usage?: UsageInfo;
+  usage?: UsageInfo | undefined;
   /** Step-local usage information when the caller distinguishes per-step and total usage. */
-  stepUsage?: UsageInfo;
+  stepUsage?: UsageInfo | undefined;
   /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
-  nativeToolCallDeltas?: NativeToolCallDelta[];
+  nativeToolCallDeltas?: NativeToolCallDelta[] | undefined;
   /** Why the stream ended, populated on the final chunk. */
-  finishReason?: FinishReason;
+  finishReason?: FinishReason | undefined;
 }
 
 /** Configuration options for `LLMStreamProcessor`. */
@@ -85,6 +86,8 @@ export interface ProcessorOptions {
   maxResidualBytes?: number;
   /** Maximum number of warnings emitted per processor lifetime. Default: 100. Set to 0 to disable. */
   maxWarnings?: number;
+  /** Optional parser chain for provider-specific inline tool-call token formats. */
+  toolCallParsers?: ToolCallParser[];
   /**
    * Optional chain of `TransformStream<OutputPart, OutputPart>` transforms applied to
    * `processor.partsStream`. Each transform receives the output of the previous one.
@@ -176,6 +179,7 @@ export class LLMStreamProcessor {
   private thinkingParser: ThinkingParser | null;
   private xmlFilter: XmlStreamFilter | null;
   private readonly nativeAccumulator: ToolCallAccumulator | null;
+  private readonly toolCallParsers: ToolCallParser[];
 
   private _accumulatedThinking = '';
   private _accumulatedContent = '';
@@ -241,6 +245,7 @@ export class LLMStreamProcessor {
     this.thinkingParser = this.createThinkingParser();
     this.xmlFilter = this.createXmlFilter();
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
+    this.toolCallParsers = options.toolCallParsers ?? [];
     this._stats = createEmptyStats();
     this._partsSource = new ReadableStream<OutputPart>({
       start: controller => {
@@ -294,9 +299,17 @@ export class LLMStreamProcessor {
     // Track if this chunk has content or thinking input
     const hasContentInput = typeof chunk.content === 'string' && chunk.content.length > 0;
     const hasThinkingInput = typeof chunk.thinking === 'string' && chunk.thinking.length > 0;
+    const done = chunk.done === true;
 
     const rawThinking = this.enforceMaxLength(this.ensureText(chunk.thinking), 'thinking');
-    const rawContent = this.enforceMaxLength(this.ensureText(chunk.content), 'content');
+    let rawContent = this.enforceMaxLength(this.ensureText(chunk.content), 'content');
+
+    const inlineToolCallParse = this.parseInlineToolCalls(rawContent, done);
+    rawContent = inlineToolCallParse.content;
+    const nativeToolCallDeltas = [
+      ...(Array.isArray(chunk.nativeToolCallDeltas) ? chunk.nativeToolCallDeltas : []),
+      ...(inlineToolCallParse.nativeToolCallDeltas ?? []),
+    ];
 
     let thinking = rawThinking;
     let content = rawContent;
@@ -417,16 +430,15 @@ export class LLMStreamProcessor {
     for (const c of extractedFromRawResidual) pushUnique(c);
     for (const c of extractedFromFiltered) pushUnique(c);
     const nativeToolCalls = this.mapNativeToolCalls(chunk.tool_calls);
-    const done = chunk.done === true;
     if (chunk.finishReason !== undefined) this._lastFinishReason = chunk.finishReason;
 
     this.accumulateUsage(chunk);
-    this.accumulateNativeDeltas(chunk);
+    this.accumulateNativeDeltas(nativeToolCallDeltas);
 
     // Build tool_call_delta OutputParts for each incoming delta with argumentsDelta.
     const toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>> = [];
-    if (this.nativeAccumulator && Array.isArray(chunk.nativeToolCallDeltas)) {
-      for (const delta of chunk.nativeToolCallDeltas) {
+    if (this.nativeAccumulator && nativeToolCallDeltas.length > 0) {
+      for (const delta of nativeToolCallDeltas) {
         if (typeof delta.argumentsDelta !== 'string') continue;
         const pending = this.nativeAccumulator.getPendingCallInfo(delta.index);
         const name = delta.name ?? pending?.name;
@@ -468,7 +480,9 @@ export class LLMStreamProcessor {
       ...accumulatedNativeCalls.map(part => part.call),
     ]);
 
-    const pendingToolCallParts = this.nativeAccumulator ? this.buildPendingNativeToolCallParts(chunk) : [];
+    const pendingToolCallParts = this.nativeAccumulator
+      ? this.buildPendingNativeToolCallParts(nativeToolCallDeltas)
+      : [];
 
     const toolCallParts: Array<Extract<OutputPart, { type: 'tool_call' }>> = [
       ...pendingToolCallParts,
@@ -628,6 +642,9 @@ export class LLMStreamProcessor {
     this.thinkingParser = this.createThinkingParser();
     this.xmlFilter = this.createXmlFilter();
     this.nativeAccumulator?.reset();
+    for (const parser of this.toolCallParsers) {
+      parser.reset?.();
+    }
     this._accumulatedThinking = '';
     this._accumulatedContent = '';
     this._accumulatedToolCalls = [];
@@ -861,10 +878,10 @@ export class LLMStreamProcessor {
     }
   }
 
-  private accumulateNativeDeltas(chunk: StreamChunk): void {
-    if (!this.nativeAccumulator || !Array.isArray(chunk.nativeToolCallDeltas)) return;
+  private accumulateNativeDeltas(nativeToolCallDeltas: NativeToolCallDelta[]): void {
+    if (!this.nativeAccumulator || nativeToolCallDeltas.length === 0) return;
     const maxArgumentBytes = this.options.maxToolArgumentBytes ?? DEFAULT_MAX_TOOL_ARGUMENT_BYTES;
-    for (const delta of chunk.nativeToolCallDeltas) {
+    for (const delta of nativeToolCallDeltas) {
       if (
         maxArgumentBytes > 0 &&
         typeof delta.argumentsDelta === 'string' &&
@@ -898,18 +915,16 @@ export class LLMStreamProcessor {
     });
   }
 
-  private buildPendingNativeToolCallParts(chunk: StreamChunk): Array<Extract<OutputPart, { type: 'tool_call' }>> {
-    if (
-      !Array.isArray(chunk.nativeToolCallDeltas) ||
-      chunk.nativeToolCallDeltas.length === 0 ||
-      !this.nativeAccumulator
-    ) {
+  private buildPendingNativeToolCallParts(
+    nativeToolCallDeltas: NativeToolCallDelta[],
+  ): Array<Extract<OutputPart, { type: 'tool_call' }>> {
+    if (nativeToolCallDeltas.length === 0 || !this.nativeAccumulator) {
       return [];
     }
 
     const seen = new Set<number>();
     const parts: Array<Extract<OutputPart, { type: 'tool_call' }>> = [];
-    for (const delta of chunk.nativeToolCallDeltas) {
+    for (const delta of nativeToolCallDeltas) {
       if (seen.has(delta.index)) {
         continue;
       }
@@ -933,6 +948,35 @@ export class LLMStreamProcessor {
     }
 
     return parts;
+  }
+
+  private parseInlineToolCalls(
+    content: string,
+    done: boolean,
+  ): { content: string; nativeToolCallDeltas?: NativeToolCallDelta[] } {
+    if (this.toolCallParsers.length === 0 || content.length === 0) {
+      return { content };
+    }
+
+    let currentContent = content;
+    const nativeToolCallDeltas: NativeToolCallDelta[] = [];
+
+    for (const parser of this.toolCallParsers) {
+      try {
+        const parsed = parser.parse(currentContent, { done });
+        currentContent = parsed.content;
+        if (Array.isArray(parsed.nativeToolCallDeltas) && parsed.nativeToolCallDeltas.length > 0) {
+          nativeToolCallDeltas.push(...parsed.nativeToolCallDeltas);
+        }
+      } catch {
+        // Non-fatal parser errors must not interrupt stream processing.
+      }
+    }
+
+    return {
+      content: currentContent,
+      ...(nativeToolCallDeltas.length > 0 ? { nativeToolCallDeltas } : {}),
+    };
   }
 
   private emitConversationEvent(event: ConversationEvent): void {

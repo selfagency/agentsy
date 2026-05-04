@@ -7,7 +7,13 @@ import { normalizeHuggingFaceTGIChunk } from './hfTgi.js';
 import { normalizeMistralChunk } from './mistral.js';
 import { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
+import {
+  OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS,
+  isOpenAICompatibleNormalizerProvider,
+  normalizeOpenAICompatibleChunk,
+} from './openai-compatible.js';
 import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
+import { normalizeZAiChunk } from './zai.js';
 
 // ---------------------------------------------------------------------------
 // OpenAI Chat Completions streaming chunk normalizer
@@ -200,6 +206,30 @@ describe('normalizeOpenAIChatChunk', () => {
     expect(() => normalizeOpenAIChatChunk({ choices: 'not-an-array' })).not.toThrow();
     expect(() => normalizeOpenAIChatChunk({ choices: [null] })).not.toThrow();
     expect(() => normalizeOpenAIChatChunk(undefined)).not.toThrow();
+  });
+});
+
+describe('openai-compatible normalizer', () => {
+  it('exposes expected provider registry', () => {
+    expect(OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS).toEqual(['openai', 'kimi', 'qwen', 'llama', 'granite']);
+  });
+
+  it('checks provider compatibility', () => {
+    expect(isOpenAICompatibleNormalizerProvider('openai')).toBe(true);
+    expect(isOpenAICompatibleNormalizerProvider('qwen')).toBe(true);
+    expect(isOpenAICompatibleNormalizerProvider('mistral')).toBe(false);
+  });
+
+  it('normalizes openai-compatible chunks through shared helper', () => {
+    const result = normalizeOpenAICompatibleChunk('kimi', {
+      id: 'chatcmpl-kimi-1',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
+      model: 'kimi-k2',
+      choices: [{ index: 0, delta: { content: 'Hello from kimi' }, finish_reason: null }],
+    });
+
+    expect(result?.chunk.content).toBe('Hello from kimi');
   });
 });
 
@@ -1087,6 +1117,64 @@ describe('normalizeBedrockConverseEvent', () => {
     expect(() => normalizeBedrockConverseEvent({ contentBlockDelta: null })).not.toThrow();
     expect(() => normalizeBedrockConverseEvent({ contentBlockDelta: { delta: null } })).not.toThrow();
     expect(() => normalizeBedrockConverseEvent(undefined)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Z.ai normalizer
+// ---------------------------------------------------------------------------
+
+describe('normalizeZAiChunk', () => {
+  it('maps content delta to chunk.content', () => {
+    const result = normalizeZAiChunk({
+      choices: [{ index: 0, delta: { content: 'Hello from Z.ai' }, finish_reason: null }],
+    });
+
+    expect(result?.chunk.content).toBe('Hello from Z.ai');
+    expect(result?.chunk.done).toBeUndefined();
+  });
+
+  it('maps finish reasons to canonical finishReason and done', () => {
+    expect(normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] })?.chunk.finishReason).toBe(
+      'stop',
+    );
+    expect(
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }] })?.chunk.finishReason,
+    ).toBe('tool-calls');
+    expect(normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'length' }] })?.chunk.finishReason).toBe(
+      'length',
+    );
+    expect(
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'sensitive' }] })?.chunk.finishReason,
+    ).toBe('content-filter');
+    expect(
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'model_context_window_exceeded' }] })?.chunk
+        .finishReason,
+    ).toBe('error');
+    expect(
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'network_error' }] })?.chunk.finishReason,
+    ).toBe('error');
+
+    expect(normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] })?.chunk.done).toBe(true);
+  });
+
+  it('extracts usage from z.ai usage fields', () => {
+    const result = normalizeZAiChunk({
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
+      usage: { input_tokens: 7, output_tokens: 13 },
+    });
+
+    expect(result?.chunk.usage).toEqual({
+      inputTokens: 7,
+      outputTokens: 13,
+      totalTokens: 20,
+    });
+  });
+
+  it('returns null for unrecognized payloads', () => {
+    expect(normalizeZAiChunk(null)).toBeNull();
+    expect(normalizeZAiChunk({})).toBeNull();
+    expect(normalizeZAiChunk({ choices: [] })).toBeNull();
   });
 });
 

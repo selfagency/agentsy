@@ -8,6 +8,7 @@ import { normalizeHuggingFaceTGIChunk } from '../normalizers/hfTgi.js';
 import { normalizeMistralChunk } from '../normalizers/mistral.js';
 import { normalizeOllamaChatChunk } from '../normalizers/ollama.js';
 import { normalizeOpenAIChatChunk } from '../normalizers/openai.js';
+import { normalizeZAiChunk } from '../normalizers/zai.js';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
@@ -22,7 +23,8 @@ export type NormalizerProvider =
   | 'mistral'
   | 'ollama'
   | 'cohere'
-  | 'hugging-face';
+  | 'hugging-face'
+  | 'zai';
 
 export interface PipelineOptions extends ProcessorOptions {
   provider: NormalizerProvider;
@@ -52,6 +54,7 @@ const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   ollama: normalizeOllamaChatChunk,
   cohere: normalizeCohereEvent,
   'hugging-face': normalizeHuggingFaceTGIChunk,
+  zai: normalizeZAiChunk,
 };
 
 /**

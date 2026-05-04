@@ -92,6 +92,16 @@
       "import": "./dist/adapters/generic.js",
       "require": "./dist/adapters/generic.cjs"
     },
+    "./adapters/mistral": {
+      "types": "./dist/adapters/mistral.d.ts",
+      "import": "./dist/adapters/mistral.js",
+      "require": "./dist/adapters/mistral.cjs"
+    },
+    "./adapters/openai-compatible": {
+      "types": "./dist/adapters/openai-compatible.d.ts",
+      "import": "./dist/adapters/openai-compatible.js",
+      "require": "./dist/adapters/openai-compatible.cjs"
+    },
     "./normalizers": {
       "types": "./dist/normalizers/index.d.ts",
       "import": "./dist/normalizers/index.js",

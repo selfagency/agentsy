@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createGenericAdapter, processStream } from './generic.js';
+import {
+  OPENAI_COMPATIBLE_PROVIDERS,
+  isOpenAICompatibleProvider,
+  toOpenAICompatibleMessages,
+} from './openai-compatible.js';
 
 async function* source() {
   yield { content: 'hello' };
@@ -201,5 +206,37 @@ describe('createGenericAdapter', () => {
     for (let i = 0; i < 20; i++) {
       expect(received[i]).toBe(`chunk${i}`);
     }
+  });
+});
+
+describe('openai-compatible adapter', () => {
+  it('exposes expected provider registry', () => {
+    expect(OPENAI_COMPATIBLE_PROVIDERS).toEqual(['openai', 'deepseek', 'kimi', 'qwen', 'llama', 'granite']);
+  });
+
+  it('checks provider compatibility', () => {
+    expect(isOpenAICompatibleProvider('openai')).toBe(true);
+    expect(isOpenAICompatibleProvider('deepseek')).toBe(true);
+    expect(isOpenAICompatibleProvider('mistral')).toBe(false);
+  });
+
+  it('maps tool call and tool result messages using openai-compatible schema', () => {
+    const mapped = toOpenAICompatibleMessages([
+      {
+        role: 'assistant',
+        parts: [{ type: 'tool-call', callId: 'tc_1', name: 'search', input: { q: 'weather' } }],
+      },
+      {
+        role: 'user',
+        parts: [{ type: 'tool-result', callId: 'tc_1', content: '{"ok":true}' }],
+      },
+    ]);
+
+    expect(mapped[0]).toMatchObject({
+      role: 'assistant',
+      content: null,
+      tool_calls: [{ id: 'tc_1', type: 'function', function: { name: 'search', arguments: '{"q":"weather"}' } }],
+    });
+    expect(mapped[1]).toMatchObject({ role: 'tool', tool_call_id: 'tc_1', content: '{"ok":true}' });
   });
 });

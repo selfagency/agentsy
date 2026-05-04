@@ -13,6 +13,8 @@ export default defineConfig({
     'markdown/index': 'src/markdown/index.ts',
     'adapters/index': 'src/adapters/index.ts',
     'adapters/generic': 'src/adapters/generic.ts',
+    'adapters/mistral': 'src/adapters/mistral.ts',
+    'adapters/openai-compatible': 'src/adapters/openai-compatible.ts',
     'normalizers/index': 'src/normalizers/index.ts',
     'recovery/index': 'src/recovery/index.ts',
     'sse/index': 'src/sse/index.ts',

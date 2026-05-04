@@ -5,6 +5,7 @@ import type { UsageInfo } from '../normalizers/types.js';
 import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
 import type { FinishReason } from '../tool-calls/types.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
+import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';
 
 describe('LLMStreamProcessor', () => {
   it('processes thinking tags, scrubs content, and extracts xml-wrapped tool calls', () => {
@@ -774,5 +775,48 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 
     const ids = adds.map(e => (e.toolCall as { id: string }).id);
     expect(ids[0]).not.toBe(ids[1]);
+  });
+});
+
+describe('LLMStreamProcessor — Z.ai inline tool-call parser', () => {
+  it('strips Z.ai inline tool tokens from content and emits tool call parts', () => {
+    const processor = new LLMStreamProcessor({
+      toolCallParsers: [createZAiInlineToolCallParser()],
+    });
+
+    processor.process({
+      content: '<|tool_call_begin|>get_weather<|tool_call_argument_begin|>{"city":"Boston"}<|tool_call_end|>',
+      done: false,
+    });
+
+    const flushed = processor.flush();
+
+    expect(processor.accumulatedMessage.content).toBe('');
+    expect(flushed.toolCalls).toHaveLength(0);
+
+    const complete = processor.accumulatedMessage.toolCalls;
+    expect(complete).toHaveLength(1);
+    expect(complete[0]).toMatchObject({
+      name: 'get_weather',
+      parameters: { city: 'Boston' },
+      format: 'native-json',
+    });
+  });
+
+  it('handles token boundaries split across chunks', () => {
+    const processor = new LLMStreamProcessor({
+      toolCallParsers: [createZAiInlineToolCallParser()],
+    });
+
+    processor.process({ content: 'Hello <|tool_call_be' });
+    processor.process({ content: 'gin|>search<|tool_call_argument_begin|>{"q":"a"}<|tool_call_end|> world' });
+    processor.flush();
+
+    expect(processor.accumulatedMessage.content).toBe('Hello  world');
+    expect(processor.accumulatedMessage.toolCalls).toHaveLength(1);
+    expect(processor.accumulatedMessage.toolCalls[0]).toMatchObject({
+      name: 'search',
+      parameters: { q: 'a' },
+    });
   });
 });
