@@ -90,7 +90,7 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
 
 // Resolve package directory
 const PACKAGES_DIR = resolve(ROOT, 'packages');
-let pkgShortName = packageName.replace(/^@[^/]+\//, '');
+const pkgShortName = packageName.replace(/^@[^/]+\//, '');
 const pkgDir = resolve(PACKAGES_DIR, pkgShortName);
 const pkgJsonPath = resolve(pkgDir, 'package.json');
 
@@ -105,11 +105,16 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-// Load package.json and use its full scoped name (normalize input)
+// Validate package name matches actual package.json
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
-const fullPackageName = pkgJson.name;
+if (pkgJson.name !== packageName) {
+  console.error(`❌ Package name mismatch:`);
+  console.error(`   Argument: ${packageName}`);
+  console.error(`   package.json: ${pkgJson.name}`);
+  process.exit(1);
+}
 
-const tag = `${fullPackageName}@${version}`;
+const tag = `${packageName}@${version}`;
 
 // ---------------------------------------------------------------------------
 // Rollback state
@@ -349,7 +354,7 @@ async function main() {
   const previousTag =
     tagsResp
       .map(r => r.ref.replace('refs/tags/', ''))
-      .filter(t => t.startsWith(`${fullPackageName}@`) && t !== tag)
+      .filter(t => t.startsWith(`${packageName}@`) && t !== tag)
       .sort((a, b) => {
         const [aMaj = 0, aMin = 0, aPatch = 0] = parseVer(a);
         const [bMaj = 0, bMin = 0, bPatch = 0] = parseVer(b);
@@ -376,7 +381,7 @@ async function main() {
 
   // --- Update package.json -------------------------------------------------
 
-  console.log(`🧩 Updating ${fullPackageName} package.json to ${version}...`);
+  console.log(`🧩 Updating ${packageName}/package.json to ${version}...`);
   const pkg = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
   pkg.version = version;
   safeWrite(pkgJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
