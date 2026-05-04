@@ -10,7 +10,7 @@ import type {
 } from '@agentsy/types';
 import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
-import { ensureText, estimateChunkSize, mapNativeToolCalls } from './chunkUtils.js';
+import { enforceMaxLength, ensureText, estimateChunkSize, mapNativeToolCalls } from './chunkUtils.js';
 import { detectIncompleteness } from './incompleteness.js';
 import type {
   IncompletenessDetail,
@@ -185,8 +185,9 @@ export class LLMStreamProcessor {
     const hasThinkingInput = typeof chunk.thinking === 'string' && chunk.thinking.length > 0;
     const done = chunk.done === true;
 
-    const rawThinking = this.enforceMaxLength(ensureText(chunk.thinking), 'thinking');
-    let rawContent = this.enforceMaxLength(ensureText(chunk.content), 'content');
+    const maxInputLength = this.options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
+    const rawThinking = enforceMaxLength(ensureText(chunk.thinking), 'thinking', maxInputLength, this.warn.bind(this));
+    let rawContent = enforceMaxLength(ensureText(chunk.content), 'content', maxInputLength, this.warn.bind(this));
 
     const inlineToolCallParse = this.parseInlineToolCalls(rawContent, done);
     rawContent = inlineToolCallParse.content;
@@ -1104,34 +1105,6 @@ export class LLMStreamProcessor {
       return false;
     }
     return true;
-  }
-
-  private enforceMaxLength(value: string, field: 'content' | 'thinking'): string {
-    const max = this.options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
-    if (max <= 0 || value.length <= max) {
-      return value;
-    }
-
-    this.warn(`Chunk ${field} exceeded maxInputLength and was truncated`, {
-      field,
-      maxInputLength: max,
-      originalLength: value.length,
-    });
-
-    // Truncate at a tag boundary so we don't hand a partial `<tag...` fragment
-    // to the XML parser. Walk back from the cut point to the last `<` that has
-    // no matching `>` after it within the kept region.
-    let cut = max;
-    const openIdx = value.lastIndexOf('<', max - 1);
-    if (openIdx !== -1) {
-      const closeIdx = value.indexOf('>', openIdx);
-      // If the closing `>` is beyond the cut (or absent), the tag is partial.
-      if (closeIdx === -1 || closeIdx >= max) {
-        cut = openIdx;
-      }
-    }
-
-    return value.slice(0, cut);
   }
 
   private warn(message: string, context?: Record<string, unknown>): void {

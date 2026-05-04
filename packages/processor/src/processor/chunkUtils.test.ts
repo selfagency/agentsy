@@ -31,7 +31,7 @@ describe('chunkUtils', () => {
   describe('mapNativeToolCalls', () => {
     it('maps valid native calls and ignores invalid/missing-name calls', () => {
       const calls = [
-        { function: { name: 'read_file', arguments: { path: '/tmp/a.ts' } } },
+        { function: { name: 'read_file', arguments: { path: './fixtures/a.ts' } } },
         { function: { name: '', arguments: {} } },
         { function: { arguments: {} } },
       ];
@@ -39,7 +39,7 @@ describe('chunkUtils', () => {
       expect(mapNativeToolCalls(calls as never)).toEqual([
         {
           name: 'read_file',
-          parameters: { path: '/tmp/a.ts' },
+          parameters: { path: './fixtures/a.ts' },
           format: 'native-json',
         },
       ]);
