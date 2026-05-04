@@ -1,6 +1,8 @@
 {
   "name": "@agentsy/vscode",
-  "version": "0.2.0",
+  "version": "0.1.0",
+  "private": false,
+  "access": "public",
   "description": "Unified VS Code integration library for Language Model Chat Providers",
   "keywords": [
     "chat-provider",
