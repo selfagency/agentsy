@@ -2,9 +2,6 @@
   "name": "@agentsy/vscode",
   "version": "0.1.0",
   "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "description": "Unified VS Code integration library for Language Model Chat Providers",
   "keywords": [
     "chat-provider",
@@ -31,6 +28,9 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",

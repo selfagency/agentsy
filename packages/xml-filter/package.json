@@ -2,16 +2,13 @@
   "name": "@agentsy/xml-filter",
   "version": "0.1.0",
   "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "description": "XML tag filtering and privacy-aware content scrubbing utilities for Agentsy LLM stream processing",
   "keywords": [
-    "xml",
     "filter",
     "privacy",
+    "saxaphone",
     "scrubbing",
-    "saxaphone"
+    "xml"
   ],
   "homepage": "https://agentsy.self.agency",
   "bugs": {
@@ -27,6 +24,9 @@
     "dist"
   ],
   "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -34,11 +34,8 @@
       "require": "./dist/index.cjs"
     }
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "dependencies": {
-    "@agentsy/types": "workspace:*"
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",
@@ -48,6 +45,9 @@
     "test": "vitest run src",
     "coverage": "vitest run src --coverage",
     "precommit": "pnpm check-types && pnpm lint"
+  },
+  "dependencies": {
+    "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

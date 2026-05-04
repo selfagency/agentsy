@@ -2,9 +2,6 @@
   "name": "@agentsy/formatting",
   "version": "0.1.0",
   "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "description": "Text and XML formatting utilities for the @agentsy platform.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -16,6 +13,9 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",

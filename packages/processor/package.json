@@ -2,6 +2,18 @@
   "name": "@agentsy/processor",
   "version": "0.1.0",
   "description": "LLM stream processor with chunking, normalization, and event handling",
+  "keywords": [
+    "agent",
+    "llm",
+    "normalization",
+    "pipeline",
+    "processor",
+    "stream"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,9 +25,6 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
@@ -29,7 +38,6 @@
     "@agentsy/types": "workspace:*",
     "@agentsy/xml-filter": "workspace:*"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
@@ -37,13 +45,5 @@
     "typescript": "6.0.3",
     "vitest": "^4.1.5"
   },
-  "keywords": [
-    "agent",
-    "llm",
-    "stream",
-    "processor",
-    "pipeline",
-    "normalization"
-  ],
-  "license": "MIT"
+  "peerDependencies": {}
 }
