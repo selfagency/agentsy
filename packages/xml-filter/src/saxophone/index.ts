@@ -80,6 +80,8 @@ interface WaitState {
   data: string;
 }
 
+type ParserStepResult = number | Error | null;
+
 // ---------------------------------------------------------------------------
 // Saxophone parser
 // ---------------------------------------------------------------------------
@@ -135,7 +137,7 @@ export class Saxophone extends EventEmitter {
     return cdataClose + 3;
   }
 
-  private _handleComment(input: string, pos: number): number | Error | null {
+  private _handleComment(input: string, pos: number): ParserStepResult {
     pos += 2;
     const commentClose = input.indexOf('--', pos);
 
@@ -152,7 +154,7 @@ export class Saxophone extends EventEmitter {
     return commentClose + 3;
   }
 
-  private _handleMarkupDeclaration(input: string, pos: number): number | Error | null {
+  private _handleMarkupDeclaration(input: string, pos: number): ParserStepResult {
     pos += 1;
     const c2 = input.charAt(pos);
 
@@ -169,7 +171,7 @@ export class Saxophone extends EventEmitter {
       return this._handleComment(input, pos);
     }
 
-    return new Error('Unrecognized sequence: <!' + c2);
+    return new Error(`Unrecognized sequence: <!${c2}`);
   }
 
   private _handleProcessingInstruction(input: string, pos: number): number | null {
@@ -187,7 +189,7 @@ export class Saxophone extends EventEmitter {
     return piClose + 2;
   }
 
-  private _handleTagChunk(input: string, pos: number): number | Error | null {
+  private _handleTagChunk(input: string, pos: number): ParserStepResult {
     const tagClose = findIndexOutside(input, ch => ch === '>', '"', pos);
 
     if (tagClose === -1) {

@@ -43,11 +43,7 @@ async function collectPipelineEvents(
 
 describe('createPipeline (openai)', () => {
   it('emits delta events for each content chunk', async () => {
-    const sse =
-      sseLine({ choices: [{ delta: { content: 'Hello' }, finish_reason: null }] }) +
-      sseLine({ choices: [{ delta: { content: ', world!' }, finish_reason: null }] }) +
-      sseLine({ choices: [{ delta: {}, finish_reason: 'stop' }] }) +
-      'data: [DONE]\n\n';
+    const sse = `${sseLine({ choices: [{ delta: { content: 'Hello' }, finish_reason: null }] })}${sseLine({ choices: [{ delta: { content: ', world!' }, finish_reason: null }] })}${sseLine({ choices: [{ delta: {}, finish_reason: 'stop' }] })}data: [DONE]\n\n`;
 
     const events = await collectPipelineEvents(sseSource(sse), 'openai');
 
@@ -62,7 +58,7 @@ describe('createPipeline (openai)', () => {
   it('emits a tool_call event for XML-style tool calls in content', async () => {
     const xmlContent = 'Sure! <search_files><query>integration tests</query></search_files>';
 
-    const sse = sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n';
+    const sse = `${sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] })}data: [DONE]\n\n`;
 
     const events = await collectPipelineEvents(sseSource(sse), 'openai');
 
@@ -76,7 +72,7 @@ describe('createPipeline (openai)', () => {
   it('emits tool_call events when knownTools is configured', async () => {
     const xmlContent = '<search_files><query>cats</query></search_files>';
 
-    const sse = sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n';
+    const sse = `${sseLine({ choices: [{ delta: { content: xmlContent }, finish_reason: 'stop' }] })}data: [DONE]\n\n`;
 
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
@@ -95,7 +91,7 @@ describe('createPipeline (openai)', () => {
   it('emits thinking event when parseThinkTags=true', async () => {
     const content = '<think>internal reasoning</think>Final answer';
 
-    const sse = sseLine({ choices: [{ delta: { content }, finish_reason: 'stop' }] }) + 'data: [DONE]\n\n';
+    const sse = `${sseLine({ choices: [{ delta: { content }, finish_reason: 'stop' }] })}data: [DONE]\n\n`;
 
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {

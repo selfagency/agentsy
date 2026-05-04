@@ -1,15 +1,18 @@
 import type { FinishReason } from '@agentsy/types';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
+const ZAI_FINISH_REASON_MAP: Record<string, FinishReason> = {
+  stop: 'stop',
+  tool_calls: 'tool-calls',
+  length: 'length',
+  sensitive: 'content-filter',
+  model_context_window_exceeded: 'error',
+  network_error: 'error',
+};
+
 function mapZAiFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) return undefined;
-  if (reason === 'stop') return 'stop';
-  if (reason === 'tool_calls') return 'tool-calls';
-  if (reason === 'length') return 'length';
-  if (reason === 'sensitive') return 'content-filter';
-  if (reason === 'model_context_window_exceeded') return 'error';
-  if (reason === 'network_error') return 'error';
-  return 'other';
+  return ZAI_FINISH_REASON_MAP[reason] ?? 'other';
 }
 
 interface ZAiToolCallDelta {

@@ -55,15 +55,16 @@ function findNextTagOccurrence(
     const afterTagName = index + (isClose ? closeNeedle.length : openNeedle.length);
     const nextChar = part.charAt(afterTagName);
 
-    if (nextChar !== '' && !isTagBoundary(nextChar)) {
+    const isBoundary = nextChar === '' || isTagBoundary(nextChar);
+    if (isBoundary) {
+      const end = part.indexOf('>', afterTagName);
+      if (end === -1) return null;
+
+      return { index, isClose, end: end + 1 };
+    } else {
       searchIndex = afterTagName;
       continue;
     }
-
-    const end = part.indexOf('>', afterTagName);
-    if (end === -1) return null;
-
-    return { index, isClose, end: end + 1 };
   }
 
   return null;
