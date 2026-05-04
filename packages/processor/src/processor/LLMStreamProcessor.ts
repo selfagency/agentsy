@@ -11,17 +11,16 @@ import type {
 } from '@agentsy/types';
 import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
-import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
-import type { ToolCallParser } from './ToolCallParser.js';
 import { detectIncompleteness } from './incompleteness.js';
 import type {
   IncompletenessDetail,
-  IncompletenessType,
   OutputPart,
   ProcessedOutput,
   ProcessorOptions,
   StreamEventMap,
 } from './LLMStreamProcessor.types.js';
+import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
+import type { ToolCallParser } from './ToolCallParser.js';
 
 export type { StreamChunk } from '@agentsy/types';
 export type {

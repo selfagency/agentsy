@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { httpStatusToErrorCode, errorToProviderCode, errorCodeToMessage, createProviderError } from './error-mapper.js';
-import { isRetryableError, calculateRetryDelay, withRetry } from './error-recovery.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProviderErrorCode } from '../types/errors.js';
+import { createProviderError, errorCodeToMessage, errorToProviderCode, httpStatusToErrorCode } from './error-mapper.js';
+import { calculateRetryDelay, isRetryableError, withRetry } from './error-recovery.js';
 
 describe('error-mapper', () => {
   describe('httpStatusToErrorCode', () => {
