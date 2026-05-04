@@ -258,6 +258,14 @@ Documentation sources:
 - `docs/` - Markdown documentation
 - `.vitepress/config.ts` - VitePress configuration
 
+## Documentation map
+
+- [Documentation home](../index.md)
+- [Package inventory](../packages.md)
+- [Roadmap (planned)](../roadmap.md)
+- [Integration guide](./integration-copilot.md)
+- [Releasing](./releasing.md)
+
 ## Project Structure
 
 ```text

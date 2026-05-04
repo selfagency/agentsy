@@ -2,6 +2,11 @@
 
 Unified VS Code integration library for Language Model Chat Providers built on the `@agentsy/*` monorepo packages.
 
+## Status
+
+- Published package: available on npm as `@agentsy/vscode`
+- Repository development baseline: Node.js 22+
+
 ## Features
 
 - **ApiKeyManager** — Centralized secrets management with VS Code SecretStorage
@@ -25,6 +30,24 @@ Dual module support is available:
 - CommonJS: `const { createVSCodeAgentLoop } = require('@agentsy/vscode')`
 
 **Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)
+
+## Development
+
+```bash
+cd packages/vscode
+pnpm build
+pnpm check-types
+pnpm lint
+pnpm test
+```
+
+From repository root:
+
+```bash
+pnpm check-types
+pnpm test
+pnpm lint
+```
 
 ## Quick Start
 

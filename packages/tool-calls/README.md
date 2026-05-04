@@ -1,0 +1,32 @@
+# @agentsy/tool-calls
+
+Tool-call extraction, accumulation, and prompt helpers.
+
+## Purpose
+
+`@agentsy/tool-calls` parses tool calls from XML/native formats and provides accumulation utilities for streamed tool deltas.
+
+## Role in Agentsy
+
+This package bridges model output and tool execution orchestration in `@agentsy/processor` and `@agentsy/agent` flows.
+
+## Status
+
+- Internal/pre-release package in this monorepo.
+
+## Usage
+
+```ts
+import { extractXmlToolCalls, ToolCallAccumulator, buildXmlToolSystemPrompt } from '@agentsy/tool-calls';
+
+const calls = extractXmlToolCalls(output, knownTools);
+```
+
+## Development
+
+```bash
+cd packages/tool-calls
+pnpm build
+pnpm check-types
+pnpm test
+```

@@ -1,6 +1,6 @@
 # Getting Started
 
-Get up and running with `@agentsy/vscode` (published) and the workspace parser packages in a few minutes.
+Get up and running with the published VS Code package and internal package usage patterns.
 
 ## Installation
 
@@ -24,7 +24,7 @@ yarn add @agentsy/vscode vscode
 
 ## Requirements
 
-- Node.js 22+ (or 18+ with compatibility)
+- Node.js 22+
 - TypeScript 5.0+ (if using TypeScript)
 
 ## Basic Examples
@@ -87,7 +87,7 @@ if (result.success) {
 ### Extract tool calls
 
 ```typescript
-import { extractXmlToolCalls } from '@agentsy/core';
+import { extractXmlToolCalls } from '@agentsy/tool-calls';
 
 const response = await llm.complete('Use tools to search the codebase');
 
@@ -103,7 +103,7 @@ for (const call of toolCalls) {
 ### Filter context blocks
 
 ```typescript
-import { createXmlStreamFilter } from '@agentsy/core';
+import { createXmlStreamFilter } from '@agentsy/xml-filter';
 
 const filter = createXmlStreamFilter({
   enforcePrivacyTags: true,
@@ -120,7 +120,7 @@ output.write(filter.end());
 ### Process complete stream response
 
 ```typescript
-import { LLMStreamProcessor } from '@agentsy/core';
+import { LLMStreamProcessor } from '@agentsy/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
@@ -152,7 +152,7 @@ console.log('Tool calls:', message.toolCalls);
 ### Run a multi-step agent loop
 
 ```typescript
-import { createAgentLoop } from '@agentsy/core/agent';
+import { createAgentLoop } from '@agentsy/agent';
 
 const agent = createAgentLoop({
   // Your LLM invocation function
@@ -220,6 +220,12 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
   await renderer.end();
 }
 ```
+
+## Notes on package status
+
+- `@agentsy/vscode` is currently published.
+- Most other `@agentsy/*` packages in this repository are internal/pre-release and documented for contributor usage.
+- Planned future packages are tracked in `plan/*.md` and summarized in [Roadmap](./roadmap.md).
 
 ### Use generic adapter for simpler integration
 
