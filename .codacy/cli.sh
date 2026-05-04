@@ -6,6 +6,19 @@ set -e +o pipefail
 # Set up paths first
 bin_name="codacy-cli-v2"
 
+# Prefer a globally available codacy-cli-v2 from PATH.
+if command -v "$bin_name" > /dev/null 2>&1; then
+    run_command="$(command -v "$bin_name")"
+
+    if [ "$#" -eq 1 ] && [ "$1" = "download" ]; then
+        echo "Codacy cli v2 download succeeded (already available in PATH)"
+    else
+        eval "$run_command $*"
+    fi
+
+    exit $?
+fi
+
 # Determine OS-specific paths
 os_name=$(uname)
 arch=$(uname -m)
@@ -37,7 +50,8 @@ version_file="$CODACY_CLI_V2_TMP_FOLDER/version.yaml"
 
 get_version_from_yaml() {
     if [ -f "$version_file" ]; then
-        local version=$(grep -o 'version: *"[^"]*"' "$version_file" | cut -d'"' -f2)
+        local version
+        version=$(grep -o 'version: *"[^"]*"' "$version_file" | cut -d'"' -f2)
         if [ -n "$version" ]; then
             echo "$version"
             return 0
@@ -55,7 +69,8 @@ get_latest_version() {
     fi
 
     handle_rate_limit "$response"
-    local version=$(echo "$response" | grep -m 1 tag_name | cut -d'"' -f4)
+    local version
+    version=$(echo "$response" | grep -m 1 tag_name | cut -d'"' -f4)
     echo "$version"
 }
 
