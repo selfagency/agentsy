@@ -309,7 +309,6 @@ for await (const chunk of mistralStream) {
 }
 ```
 
-
 ## Development
 
 ```bash
