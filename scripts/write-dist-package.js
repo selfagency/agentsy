@@ -6,8 +6,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 async function main() {
-  const rootPkgPath = resolve(__dirname, '..', 'package.json');
-  const outDir = resolve(__dirname, '..', 'dist');
+  // If a package path is provided as an argument, use it; otherwise use root
+  const packagePath = process.argv[2] ? resolve(process.argv[2]) : resolve(__dirname, '..');
+  const rootPkgPath = resolve(packagePath, 'package.json');
+  const outDir = resolve(packagePath, 'dist');
   const raw = await readFile(rootPkgPath, 'utf8');
   const { name, version, description, keywords, homepage, bugs, repository, license, author } = JSON.parse(raw);
 
