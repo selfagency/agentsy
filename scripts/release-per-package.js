@@ -218,7 +218,8 @@ process.on('SIGTERM', async () => {
 
 async function checkNpmCredentials(npmRegistry) {
   try {
-    await $`npm whoami --registry=${npmRegistry}`;
+    const registry = String(npmRegistry).trim();
+    await $`npm whoami --registry=${registry}`;
   } catch {
     console.error(`❌ Not logged in to npm (registry: ${npmRegistry}).`);
     console.error('   Tips:');
@@ -429,9 +430,6 @@ async function main() {
   commitPushed = true;
   commitLocal = false;
 
-  const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
-  }
-
   // --- Wait for required workflows -----------------------------------------
 
   console.log(`🔎 Waiting for workflows on ${headSha.slice(0, 7)}...`);
@@ -482,7 +480,7 @@ async function waitForWorkflow(
   repo,
   headSha,
   spinner,
-  { timeoutMs = 3_600_000, pollMs = 15_000, autoDispatch = true, branch = 'main' } = {}
+  { timeoutMs = 3_600_000, pollMs = 15_000, branch = 'main' } = {}
 ) {
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
   const workflow = workflowsResp.data.workflows.find(w => w.name === name);
@@ -492,7 +490,6 @@ async function waitForWorkflow(
   }
 
   const deadline = Date.now() + timeoutMs;
-  let triggered = false;
   const cancelledRunIds = new Set();
 
   while (Date.now() < deadline) {
