@@ -43,6 +43,7 @@ $.verbose = false;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
+const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
 // Defensive filesystem helpers
@@ -64,6 +65,20 @@ function safeRead(p, enc = 'utf8') {
 function safeWrite(p, data) {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
   return writeFileSync(resolve(p), data);
+}
+
+function readReleaseState() {
+  if (!existsSync(RELEASE_STATE_PATH)) {
+    return { defaultState: 'bootstrap-required', packages: {} };
+  }
+
+  const raw = JSON.parse(safeRead(RELEASE_STATE_PATH, 'utf8'));
+  const defaultState =
+    raw && typeof raw === 'object' && typeof raw.defaultState === 'string' ? raw.defaultState : 'bootstrap-required';
+  const packages =
+    raw && typeof raw === 'object' && raw.packages && typeof raw.packages === 'object' ? raw.packages : {};
+
+  return { defaultState, packages };
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +127,16 @@ if (!existsSync(pkgJsonPath)) {
 // Load actual package name from package.json
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
+
+const releaseState = readReleaseState();
+const packageReleaseState = releaseState.packages[fullPackageName] ?? releaseState.defaultState;
+
+if (packageReleaseState !== 'oidc-ready') {
+  console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
+  console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
+  console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
+  process.exit(1);
+}
 
 const tag = `${fullPackageName}@${version}`;
 

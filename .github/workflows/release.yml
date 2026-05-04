@@ -7,7 +7,6 @@ on:
 permissions:
   contents: read
   actions: read
-  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -130,7 +129,7 @@ jobs:
 
   release:
     name: Build and Release
-    needs: detect-release
+    needs: [detect-release, verify-publish-readiness]
     if: needs.detect-release.outputs.tag != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -228,6 +227,23 @@ jobs:
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
+        run: |
+          set -euo pipefail
+          CURRENT_NPM="$(npm --version)"
+          echo "Current npm: ${CURRENT_NPM}"
+
+          if ! node -e "
+            const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '').split('.').map(v => Number.parseInt(v, 10));
+            const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
+            process.exit(ok ? 0 : 1);
+          " "${CURRENT_NPM}"; then
+            echo "Upgrading npm to ^11.5.1 for trusted publishing support"
+            npm install -g npm@^11.5.1
+          fi
+
+          npm --version
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -270,3 +286,89 @@ jobs:
           prerelease: ${{ needs.detect-release.outputs.is_prerelease == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  verify-publish-readiness:
+    name: Verify trusted publishing readiness
+    needs: detect-release
+    if: needs.detect-release.outputs.tag != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ needs.detect-release.outputs.tag }}
+
+      - name: Verify release state and package repository URL
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        env:
+          IS_PER_PACKAGE: ${{ needs.detect-release.outputs.is_per_package }}
+          PACKAGE_NAME: ${{ needs.detect-release.outputs.package_name }}
+          PACKAGE_DIR: ${{ needs.detect-release.outputs.package_dir }}
+          REPOSITORY: ${{ github.repository }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+
+            const isPerPackage = process.env.IS_PER_PACKAGE === 'true';
+            if (!isPerPackage) {
+              core.info('Root tag release detected; skipping per-package trusted publishing gate.');
+              return;
+            }
+
+            const packageName = process.env.PACKAGE_NAME;
+            const packageDir = process.env.PACKAGE_DIR;
+            const expectedRepo = process.env.REPOSITORY;
+
+            const statePath = path.join(process.env.GITHUB_WORKSPACE, 'config', 'release-state.json');
+            if (!fs.existsSync(statePath)) {
+              core.setFailed('Release blocked: config/release-state.json is missing.');
+              return;
+            }
+
+            const stateDoc = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+            const defaultState = typeof stateDoc.defaultState === 'string' ? stateDoc.defaultState : 'bootstrap-required';
+            const packages = stateDoc && typeof stateDoc.packages === 'object' && stateDoc.packages !== null
+              ? stateDoc.packages
+              : {};
+
+            const releaseState = packages[packageName] ?? defaultState;
+            if (releaseState !== 'oidc-ready') {
+              core.setFailed(
+                `Release blocked: ${packageName} is '${releaseState}', not 'oidc-ready'. ` +
+                `Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.`
+              );
+              return;
+            }
+
+            const pkgJsonPath = path.join(process.env.GITHUB_WORKSPACE, 'packages', packageDir, 'package.json');
+            if (!fs.existsSync(pkgJsonPath)) {
+              core.setFailed(`Release blocked: package.json not found at ${pkgJsonPath}`);
+              return;
+            }
+
+            const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+            const repoField = typeof pkg.repository === 'string'
+              ? pkg.repository
+              : (pkg.repository && typeof pkg.repository.url === 'string' ? pkg.repository.url : '');
+
+            const normalized = String(repoField)
+              .replace(/^git\+/, '')
+              .replace(/^https?:\/\/github\.com\//i, '')
+              .replace(/^git@github\.com:/i, '')
+              .replace(/\.git$/i, '')
+              .trim();
+
+            if (normalized !== expectedRepo) {
+              core.setFailed(
+                `Release blocked: ${packageName} repository.url must match ${expectedRepo} for npm trusted publishing. ` +
+                `Current value resolves to '${normalized || '(empty)'}'.`
+              );
+              return;
+            }
+
+            core.info(`✅ Trusted publishing readiness checks passed for ${packageName}.`);
