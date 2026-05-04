@@ -1,13 +1,13 @@
 # Copilot Instructions — @agentsy Monorepo
 
-Production-oriented TypeScript monorepo for LLM stream parsing, agent infrastructure, and VS Code integration. The current repo contains `@agentsy/core` and `@agentsy/vscode`; the `plan/` directory defines the broader `@agentsy/*` package roadmap.
+Production-oriented TypeScript monorepo for LLM stream parsing, agent infrastructure, and VS Code integration. The `plan/` directory defines the broader `@agentsy/*` package roadmap.
 
 ## Repo Identity
 
 - This repository is a **pnpm workspace monorepo** orchestrated with **Turborepo**.
-- Current published packages live under `packages/`:
-  - `packages/core` → `@agentsy/core`: foundation parsing, orchestration, renderers, adapters, structured output helpers.
-  - `packages/vscode` → `@agentsy/vscode`: VS Code integration utilities built on top of `@agentsy/core`.
+- Packages live under `packages/`. The only currently **published** package is:
+  - `packages/vscode` → `@agentsy/vscode`: VS Code Language Model Chat Provider utilities.
+- Additional packages exist under `packages/` as internal/pre-release packages: `processor`, `normalizers`, `agent`, `adapters`, `thinking`, `tool-calls`, `structured`, `renderers`, `ag-ui`, `ui`, `context`, `formatting`, `sse`, `markdown`, `recovery`, `xml-filter`, `types`, `integration` (private).
 - The `plan/` directory is not throwaway notes. It contains the product and technical direction for future package extraction and platform evolution. When implementing planned packages or major architectural work, consult:
   - `plan/agentsy-prd.md`
   - `plan/agentsy-tech.md`
@@ -45,13 +45,13 @@ pnpm precommit       # turbo run precommit
 Use package-local scripts when working on one package in isolation:
 
 ```bash
-cd packages/core && pnpm build
-cd packages/core && pnpm test
-cd packages/core && pnpm coverage
-
 cd packages/vscode && pnpm build
 cd packages/vscode && pnpm test
 cd packages/vscode && pnpm coverage
+
+# Or any other package, e.g.:
+cd packages/processor && pnpm build
+cd packages/normalizers && pnpm test
 ```
 
 ### Completion gate
@@ -117,25 +117,31 @@ Key formatter conventions:
 
 ## Package Boundaries
 
-### `@agentsy/core`
-
-- Foundation layer.
-- Keep it lightweight and reusable.
-- Avoid introducing runtime dependencies unless they are clearly justified and consistent with the package mission.
-- Prefer composable primitives, parser utilities, structured output helpers, renderers, and generic adapters.
-- Maintain granular subpath exports.
-
 ### `@agentsy/vscode`
 
 - VS Code-specific integration layer.
-- It depends on `@agentsy/core` via `workspace:*`.
-- Keep VS Code APIs and extension-specific concerns here, not in core.
-- Preserve its ESM-only packaging and explicit externals (`vscode`, `@agentsy/core`).
+- Depends on internal workspace packages (`@agentsy/processor`, `@agentsy/normalizers`, etc.) via `workspace:*`.
+- Keep VS Code APIs and extension-specific concerns here, not in other packages.
+- Preserve ESM-only packaging and explicit externals (`vscode` and any `@agentsy/*` peers).
+
+### Internal packages (under `packages/`)
+
+- `@agentsy/processor` — event-driven LLM stream orchestrator
+- `@agentsy/normalizers` — provider-specific response normalization
+- `@agentsy/agent` — multi-step agent loop
+- `@agentsy/adapters` — provider adapters (OpenAI-compat, etc.)
+- `@agentsy/thinking` — `<think>` tag extraction
+- `@agentsy/tool-calls` — XML and native tool call parsing
+- `@agentsy/structured` — JSON parse/repair and streaming validation
+- `@agentsy/renderers` — CLI/TUI/plain-text renderers
+- `@agentsy/ag-ui` — AG-UI protocol adapter
+- `@agentsy/context`, `@agentsy/formatting`, `@agentsy/sse`, `@agentsy/markdown`, `@agentsy/recovery`, `@agentsy/xml-filter`, `@agentsy/types`, `@agentsy/ui` — utilities and primitives
+- `@agentsy/integration` (private) — cross-package integration tests
 
 ### General boundary rule
 
-- If code can work without VS Code types or APIs, it probably belongs in `@agentsy/core`.
 - If code depends on VS Code extension runtime behavior, editor integration, secret storage, status bars, chat providers, or extension settings, it belongs in `@agentsy/vscode`.
+- Everything else belongs in the appropriate focused package.
 
 ## Architecture and Naming Conventions
 
@@ -179,14 +185,14 @@ This repo distinguishes between setup-time failures and streaming-time resilienc
 
 ## Exports and Packaging
 
-### When adding a new `@agentsy/core` module or subpath export
+### When adding a new package or subpath export
 
 Update all relevant surfaces together:
 
-1. Add the source module under `packages/core/src/...`
+1. Add the source module under `packages/<name>/src/...`
 2. Export it from the nearest `index.ts` barrel
-3. Add a tsup entry in `packages/core/tsup.config.ts`
-4. Add the matching export in `packages/core/package.json`
+3. Add a tsup entry in `packages/<name>/tsup.config.ts`
+4. Add the matching export in `packages/<name>/package.json`
 5. Add or update tests
 6. Update docs when the new API is user-facing
 
@@ -214,8 +220,8 @@ Update all relevant surfaces together:
 
 ### Coverage scripts
 
-- `packages/core`: `pnpm coverage`
-- `packages/vscode`: `pnpm coverage`
+- Any package: `cd packages/<name> && pnpm coverage`
+- All packages: `pnpm test:coverage`
 
 ## Documentation Rules
 
@@ -227,7 +233,7 @@ Update all relevant surfaces together:
 
 - The repo is a **monorepo**.
 - Root workflow is **pnpm + turbo**.
-- Package names are `@agentsy/core` and `@agentsy/vscode`.
+- The only currently published package is `@agentsy/vscode`.
 - CI uses **Node 22**.
 
 ## Documentation Search and Planning
@@ -235,7 +241,6 @@ Update all relevant surfaces together:
 Before major architectural work, review the relevant plan documents. Use them especially when:
 
 - adding new `@agentsy/*` packages
-- splitting code out of `core`
 - implementing agent runtime, memory, provider, MCP, or session features
 - aligning current code with the long-term platform architecture
 
@@ -251,10 +256,10 @@ The plans describe intended package boundaries, dependency direction, and API co
 ## Common Gotchas
 
 - Do **not** recommend `task ...` commands unless a real Taskfile is added to the repo.
-- Do **not** use old package names such as `@agentsy/parser` or pre-monorepo paths.
-- Do **not** add `any` to “fix” strict TypeScript friction.
+- Do **not** use old package names such as `@agentsy/parser`, `@agentsy/core`, or pre-monorepo paths.
+- Do **not** add `any` to "fix" strict TypeScript friction.
 - Do **not** forget `.js` extensions on relative TypeScript imports.
-- Do **not** place VS Code-specific logic in `@agentsy/core`.
+- Do **not** place VS Code-specific logic in non-vscode packages.
 
 ## Rule of Thumb
 
