@@ -225,10 +225,12 @@ jobs:
           node-version: "22"
           cache: "pnpm"
 
-      - name: Clear Node.js auth token
-        run: npm config delete //${NPM_REGISTRY}/:_authToken || true
+      - name: Configure npm authentication
+        run: |
+          npm config delete //registry.npmjs.org/:_authToken || true
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
         env:
-          NPM_REGISTRY: registry.npmjs.org
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -248,8 +250,6 @@ jobs:
 
       - name: Publish per-package release
         if: needs.detect-release.outputs.is_per_package == 'true'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PACKAGE_DIR="packages/${{ needs.detect-release.outputs.package_dir }}"
           echo "📤 Publishing ${{ needs.detect-release.outputs.package_name }}@${{ needs.detect-release.outputs.version }}..."
@@ -258,8 +258,6 @@ jobs:
 
       - name: Publish root monorepo release
         if: needs.detect-release.outputs.is_per_package != 'true'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "📤 Publishing all packages..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
