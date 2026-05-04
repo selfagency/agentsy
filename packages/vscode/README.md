@@ -1,11 +1,11 @@
 # @agentsy/vscode
 
-Unified VS Code integration library for Language Model Chat Providers with **@agentsy/parser support**.
+Unified VS Code integration library for Language Model Chat Providers with **@agentsy/core support**.
 
 ## Features
 
 - **ApiKeyManager** — Centralized secrets management with VS Code SecretStorage
-- **BaseLanguageModelChatProvider** — Abstract provider template with [@agentsy/parser](../parser#readme) processor integration
+- **BaseLanguageModelChatProvider** — Abstract provider template with [@agentsy/core](../parser#readme) processor integration
 - **ChatResponseStream renderers** — Thinking progress display, tool execution feedback, cancellation support
 - **UsageStatusBar** — Quota tracking UI with configurable windows
 - **McpServerRegistry** — MCP server definition pattern
@@ -16,7 +16,7 @@ Unified VS Code integration library for Language Model Chat Providers with **@ag
 ## Installation
 
 ```bash
-npm install @agentsy/vscode @agentsy/parser vscode
+npm install @agentsy/vscode @agentsy/core vscode
 ```
 
 **Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)

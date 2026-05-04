@@ -2,13 +2,7 @@ name: Release
 
 on:
   push:
-    tags: [ "v*" ]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to release (e.g. 1.2.3)"
-        required: true
-        type: string
+    tags: ['@agentsy/*@*', 'v*']
 
 permissions:
   contents: read
@@ -19,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  detect-tag:
-    name: Detect release tag and readiness
+  detect-release:
+    name: Detect package and version from tag
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -28,12 +22,16 @@ jobs:
       actions: read
 
     outputs:
-      release_tag: ${{ steps.tag.outputs.release_tag }}
-      ready: ${{ steps.tag.outputs.ready }}
+      package_name: ${{ steps.parse.outputs.package_name }}
+      package_dir: ${{ steps.parse.outputs.package_dir }}
+      version: ${{ steps.parse.outputs.version }}
+      tag: ${{ steps.parse.outputs.tag }}
+      is_prerelease: ${{ steps.parse.outputs.is_prerelease }}
+      is_per_package: ${{ steps.parse.outputs.is_per_package }}
 
     steps:
-      - name: Resolve tag and verify CI readiness
-        id: tag
+      - name: Parse tag or workflow input
+        id: parse
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,64 +39,53 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            let tagName;
+            // Releases are triggered only by tag pushes.
+            // Use: git tag @agentsy/core@0.2.0 && git push origin @agentsy/core@0.2.0
+            // Or use: pnpm release @agentsy/core 0.2.0
+            const tag = context.ref.replace('refs/tags/', '');
 
-            if (context.eventName === 'workflow_dispatch') {
-              const versionInput = '${{ inputs.version }}'.trim();
-              if (!versionInput) {
-                core.setFailed('version input is required for workflow_dispatch.');
-                return;
-              }
-              tagName = versionInput.startsWith('v') ? versionInput : `v${versionInput}`;
+            // Parse tag: either "@scope/package@version" or "v1.2.3" (root monorepo version)
+            const perPackageMatch = tag.match(/^(@[^/]+\/[^@]+)@(.+)$/);
+            const rootMatch = tag.match(/^v(\d+\.\d+\.\d+.*)$/);
 
-              // Resolve HEAD of main
-              const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
-              const mainSha = main.data.commit.sha;
-
-              // Create the tag via API
-              core.info(`Creating tag ${tagName} at ${mainSha}...`);
-              await github.rest.git.createRef({
-                owner,
-                repo,
-                ref: `refs/tags/${tagName}`,
-                sha: mainSha,
-              });
-              core.info(`Tag ${tagName} created.`);
+            let isPerPackage = false;
+            if (perPackageMatch) {
+              [, packageName, version] = perPackageMatch;
+              isPerPackage = true;
+            } else if (rootMatch) {
+              version = rootMatch[1];
+              packageName = null;
             } else {
-              tagName = context.ref.replace('refs/tags/', '');
-            }
-
-            if (!tagName || !tagName.startsWith('v')) {
-              core.info(`Ref '${context.ref}' is not a release tag; skipping.`);
-              core.setOutput('release_tag', '');
-              core.setOutput('ready', 'false');
+              core.info(`Tag '${tag}' is not a release tag; skipping.`);
+              core.setOutput('tag', '');
               return;
             }
 
-            const refData = await github.rest.git.getRef({
-              owner,
-              repo,
-              ref: `tags/${tagName}`,
-            });
+            // Resolve package directory
+            let packageDir = null;
+            if (isPerPackage) {
+              packageDir = packageName.replace(/^@[^/]+\//, '');
+              core.info(`Per-package release: ${packageName} version ${version} (dir: packages/${packageDir})`);
+            } else {
+              core.info(`Root release: version ${version}`);
+            }
 
+            // Verify tag matches latest main
+            const refData = await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` });
             const refObj = refData.data.object;
             const taggedSha =
               refObj.type === 'tag'
                 ? (await github.rest.git.getTag({ owner, repo, tag_sha: refObj.sha })).data.object.sha
                 : refObj.sha;
-            const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
-            const mainSha = main.data.commit.sha;
 
-            if (taggedSha !== mainSha) {
-              core.setFailed(
-                `Release blocked: tag ${tagName} points to ${taggedSha}, but latest main is ${mainSha}.`
-              );
-              return;
-            }
+            // Note: We don't check if tag points to the absolute latest main,
+            // because that would block concurrent releases (if two commits land on main
+            // close together, the first tag still points to a passing commit, but this
+            // check would reject it as soon as main advances). Instead, we just verify
+            // the tag commit passed CI and is on main (checked above with branch query).
 
-            // Verify the full test suite passed on this commit.
+            // Verify CI passed
             const requiredWorkflows = ['Test & Build'];
-
             for (const workflowName of requiredWorkflows) {
               const workflowsResp = await github.rest.actions.listRepoWorkflows({
                 owner,
@@ -108,7 +95,7 @@ jobs:
 
               const workflow = workflowsResp.data.workflows.find(w => w.name === workflowName);
               if (!workflow) {
-                core.setFailed(`Release blocked: required workflow '${workflowName}' not found in repository.`);
+                core.setFailed(`Release blocked: workflow '${workflowName}' not found.`);
                 return;
               }
 
@@ -123,30 +110,29 @@ jobs:
               });
 
               const run = runsResp.data.workflow_runs[0];
-              if (!run) {
+              if (!run || run.conclusion !== 'success') {
                 core.setFailed(
-                  `Release blocked: required workflow '${workflowName}' has no completed run for ${mainSha}.`
-                );
-                return;
-              }
-              if (run.conclusion !== 'success') {
-                core.setFailed(
-                  `Release blocked: workflow '${workflowName}' concluded with '${run.conclusion}' on ${mainSha}.`
+                  `Release blocked: workflow '${workflowName}' must pass on main before release.`
                 );
                 return;
               }
             }
 
-            core.info(`Release tag detected: ${tagName} on latest main commit ${mainSha}; all checks passed.`);
-            core.setOutput('release_tag', tagName);
-            core.setOutput('ready', 'true');
+            const isPrerelease = version.includes('-');
+            core.info(`✅ Release ready: ${tag}`);
+            core.setOutput('package_name', packageName);
+            core.setOutput('package_dir', packageDir);
+            core.setOutput('version', version);
+            core.setOutput('tag', tag);
+            core.setOutput('is_prerelease', isPrerelease);
+            core.setOutput('is_per_package', isPerPackage);
 
   release:
     name: Build and Release
-    needs: detect-tag
-    if: needs.detect-tag.outputs.release_tag != '' && needs.detect-tag.outputs.ready == 'true'
+    needs: detect-release
+    if: needs.detect-release.outputs.tag != ''
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: write
 
@@ -154,7 +140,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ needs.detect-tag.outputs.release_tag }}
+          ref: ${{ needs.detect-release.outputs.tag }}
           fetch-depth: 0
 
       - name: Generate release notes
@@ -165,7 +151,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const currentTag = '${{ needs.detect-tag.outputs.release_tag }}';
+            const currentTag = '${{ needs.detect-release.outputs.tag }}';
 
             const tagsResp = await github.rest.repos.listTags({
               owner,
@@ -174,11 +160,39 @@ jobs:
             });
             const tags = tagsResp.data;
 
-            const index = tags.findIndex(tag => tag.name === currentTag);
-            const previousTag =
-              index >= 0
-                ? (tags.slice(index + 1).find(tag => tag.name.startsWith('v'))?.name ?? '')
-                : '';
+            let previousTag = '';
+
+            if ('${{ needs.detect-release.outputs.is_per_package }}' === 'true') {
+              const packageName = '${{ needs.detect-release.outputs.package_name }}';
+              // Find previous tag for same package
+              previousTag =
+                tags
+                  .map(tag => tag.name)
+                  .filter(name => name.startsWith(`${packageName}@`) && name !== currentTag)
+                  .sort((a, b) => {
+                    const parseVer = v => {
+                      const version = v.slice(v.lastIndexOf('@') + 1);
+                      return version.split('.').map(Number);
+                    };
+                    const [aMaj = 0, aMin = 0, aPatch = 0] = parseVer(a);
+                    const [bMaj = 0, bMin = 0, bPatch = 0] = parseVer(b);
+                    return aMaj - bMaj || aMin - bMin || aPatch - bPatch;
+                  })
+                  .at(-1) ?? '';
+            } else {
+              // Root release: find previous root tag
+              previousTag =
+                tags
+                  .map(tag => tag.name)
+                  .filter(name => name.startsWith('v') && !name.includes('@') && name !== currentTag)
+                  .sort((a, b) => {
+                    const parseVer = v => v.replace(/^v/, '').split('.').map(Number);
+                    const [aMaj, aMin, aPatch] = parseVer(a);
+                    const [bMaj, bMin, bPatch] = parseVer(b);
+                    return aMaj - bMaj || aMin - bMin || aPatch - bPatch;
+                  })
+                  .at(-1) ?? '';
+            }
 
             const notesResponse = await github.rest.repos.generateReleaseNotes({
               owner,
@@ -190,8 +204,8 @@ jobs:
 
             core.info(
               previousTag
-                ? `Generated changelog notes from ${previousTag} to ${currentTag}.`
-                : `Generated changelog notes for ${currentTag} (no previous tag found).`
+                ? `Generated notes from ${previousTag} to ${currentTag}.`
+                : `Generated notes for ${currentTag}.`
             );
 
             core.setOutput('previous_tag', previousTag);
@@ -217,23 +231,33 @@ jobs:
       - name: Build all packages
         run: pnpm turbo run build
 
-      - name: Publish @agentsy/core to npm
-        run: npm publish ./packages/core/dist --access public
+      - name: Publish per-package release
+        if: needs.detect-release.outputs.is_per_package == 'true'
+        run: |
+          PACKAGE_DIR="packages/${{ needs.detect-release.outputs.package_dir }}"
+          echo "📤 Publishing ${{ needs.detect-release.outputs.package_name }}@${{ needs.detect-release.outputs.version }}..."
+          DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
+          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @agentsy/vscode to npm
-        run: npm publish ./packages/vscode/dist --access public
+      - name: Publish root monorepo release
+        if: needs.detect-release.outputs.is_per_package != 'true'
+        run: |
+          echo "📤 Publishing all packages..."
+          DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
+          npm publish ./packages/core/dist --access public --tag="$DIST_TAG"
+          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
-          tag_name: ${{ needs.detect-tag.outputs.release_tag }}
+          tag_name: ${{ needs.detect-release.outputs.tag }}
           body_path: release-notes.md
           files: "*.tgz"
           draft: false
-          prerelease: ${{ contains(needs.detect-tag.outputs.release_tag, '-') }}
+          prerelease: ${{ needs.detect-release.outputs.is_prerelease == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

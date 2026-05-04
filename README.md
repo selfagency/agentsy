@@ -181,7 +181,7 @@ Both packages use `workspace:*` dependencies, so local changes are reflected imm
 // packages/vscode/package.json
 {
   "dependencies": {
-    "@agentsy/parser": "workspace:*"  // Always uses local packages/ version
+    "@agentsy/core": "workspace:*"  // Always uses local packages/ version
   }
 }
 ```
@@ -210,7 +210,7 @@ Both packages are published independently to npm:
 pnpm turbo run build
 
 # Create release tags
-git tag @agentsy/parser@1.0.0
+git tag @agentsy/core@1.0.0
 git tag @agentsy/vscode@0.1.0
 
 # Push tags to trigger GitHub Actions release workflow

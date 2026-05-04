@@ -11,6 +11,9 @@ importers:
       turbo:
         specifier: ^2.9.8
         version: 2.9.8
+      zx:
+        specifier: ^8.1.9
+        version: 8.8.5
 
   packages/core:
     dependencies:
