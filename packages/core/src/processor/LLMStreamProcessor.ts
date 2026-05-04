@@ -1,4 +1,4 @@
-import type { NativeToolCallDelta, UsageInfo } from '../normalizers/types.js';
+import type { NativeToolCallDelta, StreamChunk, UsageInfo } from '@agentsy/types';
 import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
 import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
 import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
@@ -10,23 +10,7 @@ import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
 import type { ToolCallParser } from './ToolCallParser.js';
 import { detectIncompleteness } from './incompleteness.js';
 
-/** A single chunk of output from a normalised LLM stream. */
-export interface StreamChunk {
-  content?: string | undefined;
-  thinking?: string | undefined;
-  tool_calls?: Array<{ function?: { name?: string | undefined; arguments?: unknown } }> | undefined;
-  done?: boolean | undefined;
-  /** Optional step index supplied by higher-level agent loops or callers. */
-  stepIndex?: number | undefined;
-  /** Token usage information, populated on the final chunk from the normalizer layer. */
-  usage?: UsageInfo | undefined;
-  /** Step-local usage information when the caller distinguishes per-step and total usage. */
-  stepUsage?: UsageInfo | undefined;
-  /** Streaming deltas for native (non-XML) tool calls from providers that use JSON-format tool calls. */
-  nativeToolCallDeltas?: NativeToolCallDelta[] | undefined;
-  /** Why the stream ended, populated on the final chunk. */
-  finishReason?: FinishReason | undefined;
-}
+export type { StreamChunk } from '@agentsy/types';
 
 /** Configuration options for `LLMStreamProcessor`. */
 export interface ProcessorOptions {

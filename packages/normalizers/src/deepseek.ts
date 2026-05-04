@@ -1,4 +1,4 @@
-import type { FinishReason } from '../tool-calls/types.js';
+import type { FinishReason } from '@agentsy/types';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
 const DEEPSEEK_FINISH_REASON_MAP: Record<string, FinishReason> = {

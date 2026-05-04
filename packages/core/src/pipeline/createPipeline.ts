@@ -1,14 +1,16 @@
 import type { ReadableStream } from 'node:stream/web';
 
-import { normalizeAnthropicEvent } from '../normalizers/anthropic.js';
-import { normalizeBedrockConverseEvent } from '../normalizers/bedrock.js';
-import { normalizeCohereEvent } from '../normalizers/cohere.js';
-import { normalizeGeminiChunk } from '../normalizers/gemini.js';
-import { normalizeHuggingFaceTGIChunk } from '../normalizers/hfTgi.js';
-import { normalizeMistralChunk } from '../normalizers/mistral.js';
-import { normalizeOllamaChatChunk } from '../normalizers/ollama.js';
-import { normalizeOpenAIChatChunk } from '../normalizers/openai.js';
-import { normalizeZAiChunk } from '../normalizers/zai.js';
+import {
+  normalizeAnthropicEvent,
+  normalizeBedrockConverseEvent,
+  normalizeCohereEvent,
+  normalizeGeminiChunk,
+  normalizeHuggingFaceTGIChunk,
+  normalizeMistralChunk,
+  normalizeOllamaChatChunk,
+  normalizeOpenAIChatChunk,
+  normalizeZAiChunk,
+} from '@agentsy/normalizers';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';

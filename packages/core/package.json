@@ -163,6 +163,10 @@
       "require": "./dist/renderers/ink/index.cjs"
     }
   },
+  "dependencies": {
+    "@agentsy/normalizers": "workspace:*",
+    "@agentsy/types": "workspace:*"
+  },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",

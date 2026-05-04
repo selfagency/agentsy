@@ -1,4 +1,4 @@
-import type { FinishReason } from '../tool-calls/types.js';
+import type { FinishReason } from '@agentsy/types';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
 function mapCohereFinishReason(reason: string | undefined): FinishReason | undefined {
