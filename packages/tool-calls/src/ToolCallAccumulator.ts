@@ -1,6 +1,5 @@
-import type { JsonObject } from '@agentsy/types';
-import type { NativeToolCallDelta } from '@agentsy/types';
 import { parseJson } from '@agentsy/structured';
+import type { JsonObject, NativeToolCallDelta } from '@agentsy/types';
 import type { ToolCallState } from './types.js';
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */
@@ -169,9 +168,7 @@ export class ToolCallAccumulator {
     const flushedCall: NativeToolCall = {
       name: pending.name,
       arguments:
-        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired)
-              ? (repaired as JsonObject)
-          : {},
+        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired) ? (repaired as JsonObject) : {},
     };
     if (pending.id !== undefined) flushedCall.id = pending.id;
     return flushedCall;

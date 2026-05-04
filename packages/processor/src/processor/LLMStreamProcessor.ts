@@ -1,3 +1,5 @@
+import { ThinkingParser, type ThinkingTagPair } from '@agentsy/thinking';
+import { extractXmlToolCalls, ToolCallAccumulator, type XmlToolCall } from '@agentsy/tool-calls';
 import type {
   ConversationEvent,
   FinishReason,
@@ -7,8 +9,6 @@ import type {
   ToolCallState,
   UsageInfo,
 } from '@agentsy/types';
-import { ThinkingParser, type ThinkingTagPair } from '@agentsy/thinking';
-import { extractXmlToolCalls, ToolCallAccumulator, type XmlToolCall } from '@agentsy/tool-calls';
 import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';

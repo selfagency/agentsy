@@ -1,9 +1,4 @@
-import {
-  LLMStreamProcessor,
-  type ProcessedOutput,
-  type ProcessorOptions,
-  type StreamChunk,
-} from '@agentsy/processor';
+import { LLMStreamProcessor, type ProcessedOutput, type ProcessorOptions, type StreamChunk } from '@agentsy/processor';
 import type { XmlToolCall } from '@agentsy/tool-calls';
 
 /**

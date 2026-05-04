@@ -92,10 +92,7 @@ export class ZAiInlineToolCallParser implements ToolCallParser {
     this.headerEmitted = false;
   }
 
-  private processCurrentState(
-    deltas: NativeToolCallDelta[],
-    appendVisibleContent: (value: string) => void,
-  ): boolean {
+  private processCurrentState(deltas: NativeToolCallDelta[], appendVisibleContent: (value: string) => void): boolean {
     if (this.state === 'idle') {
       return this.processIdleState(appendVisibleContent);
     }

@@ -1,11 +1,5 @@
-import type {
-  UIConversation,
-  UIMessage,
-  UIMessagePart,
-  UIMessagePartWithoutCreatedAt,
-  UIToolCallPart,
-} from './types.js';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
+import type { UIConversation, UIMessagePart, UIMessagePartWithoutCreatedAt, UIToolCallPart } from './types.js';
 
 /**
  * Helper to reduce duplication in event handlers that add parts to messages.
