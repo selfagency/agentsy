@@ -89,21 +89,35 @@ export class McpServerRegistry {
       const merged: Record<string, unknown> = { ...existing };
 
       for (const server of this.servers.values()) {
-        if (!server.disabled) {
-          merged[server.name] = {
-            command: server.command,
-            ...(server.args?.length ? { args: server.args } : {}),
-            ...(server.env !== undefined ? { env: server.env } : {}),
-            ...(server.headers !== undefined ? { headers: server.headers } : {}),
-            ...(server.alwaysAllow ? { alwaysAllow: true } : {}),
-          };
-        }
+        if (server.disabled) continue;
+        merged[server.name] = this.toWorkspaceServerConfig(server);
       }
 
       await config.update(this.config.namespace, merged, vscode.ConfigurationTarget.Workspace);
     } catch {
       // VS Code not available
     }
+  }
+
+  private toWorkspaceServerConfig(server: McpServerDefinition): Record<string, unknown> {
+    const config: Record<string, unknown> = {
+      command: server.command,
+    };
+
+    if (server.args?.length) {
+      config.args = server.args;
+    }
+    if (server.env !== undefined) {
+      config.env = server.env;
+    }
+    if (server.headers !== undefined) {
+      config.headers = server.headers;
+    }
+    if (server.alwaysAllow === true) {
+      config.alwaysAllow = true;
+    }
+
+    return config;
   }
 
   dispose(): void {

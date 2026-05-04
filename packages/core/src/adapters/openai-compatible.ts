@@ -39,7 +39,7 @@ export function toOpenAICompatibleMessages(
     const toolCallPart = msg.parts.find(p => p.type === 'tool-call');
     const toolResultPart = msg.parts.find(p => p.type === 'tool-result');
 
-    if (toolResultPart && toolResultPart.type === 'tool-result') {
+    if (toolResultPart?.type === 'tool-result') {
       return {
         role: 'tool',
         content: toolResultPart.content,
@@ -50,7 +50,7 @@ export function toOpenAICompatibleMessages(
     if (msg.role === 'system') return { role: 'system', content: text };
     if (msg.role === 'user') return { role: 'user', content: text };
 
-    if (toolCallPart && toolCallPart.type === 'tool-call') {
+    if (toolCallPart?.type === 'tool-call') {
       return {
         role: 'assistant',
         content: text || null,

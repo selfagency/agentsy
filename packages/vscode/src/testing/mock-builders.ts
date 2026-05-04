@@ -18,11 +18,11 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
   let key = initialKey;
   const listeners = new Set<ApiKeyChangeListener>();
 
-  const emit = (event: 'updated' | 'deleted', nextKey: string | undefined): void => {
+  function emit(event: 'updated' | 'deleted', nextKey: string | undefined): void {
     for (const listener of listeners) {
       listener(event, nextKey);
     }
-  };
+  }
 
   return {
     async initialize(): Promise<void> {

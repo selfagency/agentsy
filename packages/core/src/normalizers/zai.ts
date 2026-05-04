@@ -32,18 +32,52 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object';
 }
 
+function nonEmptyString(value: string | null | undefined): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
 function mapToolCallDelta(delta: ZAiToolCallDelta): NativeToolCallDelta {
-  const mapped: NativeToolCallDelta = { index: delta.index };
-  if (typeof delta.id === 'string' && delta.id.length > 0) {
-    mapped.id = delta.id;
+  const id = nonEmptyString(delta.id);
+  const name = nonEmptyString(delta.function?.name);
+  const argumentsDelta = nonEmptyString(delta.function?.arguments);
+
+  return {
+    index: delta.index,
+    ...(id === undefined ? {} : { id }),
+    ...(name === undefined ? {} : { name }),
+    ...(argumentsDelta === undefined ? {} : { argumentsDelta }),
+  };
+}
+
+function isZAiToolCallDelta(value: unknown): value is ZAiToolCallDelta {
+  return isRecord(value) && typeof value.index === 'number';
+}
+
+function extractNativeToolCallDeltas(delta: ZAiChoice['delta']): NativeToolCallDelta[] | undefined {
+  if (!Array.isArray(delta?.tool_calls) || delta.tool_calls.length === 0) {
+    return undefined;
   }
-  if (typeof delta.function?.name === 'string' && delta.function.name.length > 0) {
-    mapped.name = delta.function.name;
-  }
-  if (typeof delta.function?.arguments === 'string' && delta.function.arguments.length > 0) {
-    mapped.argumentsDelta = delta.function.arguments;
-  }
-  return mapped;
+
+  const mapped = delta.tool_calls.filter(isZAiToolCallDelta).map(mapToolCallDelta);
+  return mapped.length > 0 ? mapped : undefined;
+}
+
+function buildChunkFromParts(parts: {
+  content?: string;
+  thinking?: string;
+  nativeToolCallDeltas?: NativeToolCallDelta[];
+  done?: boolean;
+  finishReason?: FinishReason;
+  usage?: UsageInfo;
+}): NormalizerResult['chunk'] {
+  const chunk: NormalizerResult['chunk'] = {};
+  if (parts.content !== undefined) chunk.content = parts.content;
+  if (parts.thinking !== undefined) chunk.thinking = parts.thinking;
+  if (parts.nativeToolCallDeltas !== undefined) chunk.nativeToolCallDeltas = parts.nativeToolCallDeltas;
+  if (parts.done !== undefined) chunk.done = parts.done;
+  if (parts.finishReason !== undefined) chunk.finishReason = parts.finishReason;
+  if (parts.usage !== undefined) chunk.usage = parts.usage;
+  return chunk;
 }
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
@@ -87,25 +121,20 @@ export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
     const content = typeof delta?.content === 'string' ? delta.content : undefined;
     const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
 
-    let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
-    if (Array.isArray(delta?.tool_calls) && delta.tool_calls.length > 0) {
-      nativeToolCallDeltas = delta.tool_calls
-        .filter(tc => isRecord(tc) && typeof tc.index === 'number')
-        .map(tc => mapToolCallDelta(tc as ZAiToolCallDelta));
-    }
+    const nativeToolCallDeltas = extractNativeToolCallDeltas(delta);
 
     const mappedFinishReason = mapZAiFinishReason(choice.finish_reason ?? null);
-    const done = choice.finish_reason !== null && choice.finish_reason !== undefined ? true : undefined;
+    const done = choice.finish_reason == null ? undefined : true;
     const usage = normalizeUsage(raw.usage);
 
-    const chunk = {
-      ...(content !== undefined ? { content } : {}),
-      ...(thinking !== undefined ? { thinking } : {}),
-      ...(nativeToolCallDeltas !== undefined ? { nativeToolCallDeltas } : {}),
-      ...(done !== undefined ? { done } : {}),
-      ...(mappedFinishReason !== undefined ? { finishReason: mappedFinishReason } : {}),
-      ...(usage !== undefined ? { usage } : {}),
-    };
+    const chunk = buildChunkFromParts({
+      ...(content === undefined ? {} : { content }),
+      ...(thinking === undefined ? {} : { thinking }),
+      ...(nativeToolCallDeltas === undefined ? {} : { nativeToolCallDeltas }),
+      ...(done === undefined ? {} : { done }),
+      ...(mappedFinishReason === undefined ? {} : { finishReason: mappedFinishReason }),
+      ...(usage === undefined ? {} : { usage }),
+    });
 
     if (Object.keys(chunk).length === 0) return null;
     return { chunk, rawEvent: raw };

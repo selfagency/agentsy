@@ -1,14 +1,43 @@
 import type { FinishReason } from '../tool-calls/types.js';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
+const DEEPSEEK_FINISH_REASON_MAP: Record<string, FinishReason> = {
+  stop: 'stop',
+  tool_calls: 'tool-calls',
+  length: 'length',
+  content_filter: 'content-filter',
+  insufficient_balance: 'error',
+};
+
+interface DeepSeekToolCallDeltaRaw {
+  index: number;
+  id?: string;
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+}
+
 function mapDeepSeekFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) return undefined;
-  if (reason === 'stop') return 'stop';
-  if (reason === 'tool_calls') return 'tool-calls';
-  if (reason === 'length') return 'length';
-  if (reason === 'content_filter') return 'content-filter';
-  if (reason === 'insufficient_balance') return 'error';
-  return 'other';
+  return DEEPSEEK_FINISH_REASON_MAP[reason] ?? 'other';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
+function isDeepSeekToolCallDeltaRaw(value: unknown): value is DeepSeekToolCallDeltaRaw {
+  return isRecord(value) && typeof value.index === 'number';
+}
+
+function toNativeToolCallDelta(raw: DeepSeekToolCallDeltaRaw): NativeToolCallDelta {
+  return {
+    index: raw.index,
+    ...(raw.id ? { id: raw.id } : {}),
+    ...(raw.function?.name ? { name: raw.function.name } : {}),
+    ...(raw.function?.arguments ? { argumentsDelta: raw.function.arguments } : {}),
+  };
 }
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
@@ -42,12 +71,7 @@ export function normalizeDeepSeekChunk(raw: unknown): NormalizerResult | null {
 
   let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
   if (Array.isArray(delta.tool_calls)) {
-    nativeToolCallDeltas = delta.tool_calls.map((tc: any) => ({
-      index: tc.index,
-      id: tc.id || undefined,
-      name: tc.function?.name || undefined,
-      argumentsDelta: tc.function?.arguments || undefined,
-    }));
+    nativeToolCallDeltas = delta.tool_calls.filter(isDeepSeekToolCallDeltaRaw).map(toNativeToolCallDelta);
   }
 
   const finishReason = mapDeepSeekFinishReason(choice.finish_reason as string);

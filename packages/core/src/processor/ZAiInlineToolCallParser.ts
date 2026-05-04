@@ -55,82 +55,10 @@ export class ZAiInlineToolCallParser implements ToolCallParser {
     this.residual += content;
 
     while (this.residual.length > 0) {
-      if (this.state === 'idle') {
-        const beginAt = this.residual.indexOf(TOOL_CALL_BEGIN);
-        if (beginAt < 0) {
-          const partial = getTrailingPartialPrefixLength(this.residual, TOOL_CALL_BEGIN);
-          const keep = partial > 0 ? this.residual.slice(-partial) : '';
-          const emit = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
-          visibleContent += emit;
-          this.residual = keep;
-          break;
-        }
-
-        visibleContent += this.residual.slice(0, beginAt);
-        this.residual = this.residual.slice(beginAt + TOOL_CALL_BEGIN.length);
-        this.state = 'reading-name';
-        this.currentName = '';
-        this.currentArgsSeen = false;
-        this.headerEmitted = false;
-        continue;
-      }
-
-      if (this.state === 'reading-name') {
-        const argBeginAt = this.residual.indexOf(TOOL_CALL_ARGUMENT_BEGIN);
-        const endAt = this.residual.indexOf(TOOL_CALL_END);
-
-        const hasArgBegin = argBeginAt >= 0;
-        const hasEnd = endAt >= 0;
-
-        if (!hasArgBegin && !hasEnd) {
-          const partial = getMaxTrailingPartialPrefixLength(this.residual, [TOOL_CALL_ARGUMENT_BEGIN, TOOL_CALL_END]);
-          const consume = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
-          this.currentName += consume;
-          this.residual = partial > 0 ? this.residual.slice(-partial) : '';
-          break;
-        }
-
-        const useArgBegin = hasArgBegin && (!hasEnd || argBeginAt <= endAt);
-
-        if (useArgBegin) {
-          this.currentName += this.residual.slice(0, argBeginAt);
-          this.residual = this.residual.slice(argBeginAt + TOOL_CALL_ARGUMENT_BEGIN.length);
-          this.emitHeaderIfNeeded(deltas);
-          this.state = 'reading-arguments';
-          continue;
-        }
-
-        this.currentName += this.residual.slice(0, endAt);
-        this.residual = this.residual.slice(endAt + TOOL_CALL_END.length);
-        this.emitHeaderIfNeeded(deltas);
-        if (!this.currentArgsSeen) {
-          deltas.push({ index: this.currentIndex, argumentsDelta: '{}' });
-        }
-        this.completeCurrentCall();
-        continue;
-      }
-
-      const endAt = this.residual.indexOf(TOOL_CALL_END);
-      if (endAt < 0) {
-        const partial = getTrailingPartialPrefixLength(this.residual, TOOL_CALL_END);
-        const emitArgs = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
-        if (emitArgs.length > 0) {
-          deltas.push({ index: this.currentIndex, argumentsDelta: emitArgs });
-          this.currentArgsSeen = true;
-        }
-        this.residual = partial > 0 ? this.residual.slice(-partial) : '';
-        break;
-      }
-
-      const argumentChunk = this.residual.slice(0, endAt);
-      if (argumentChunk.length > 0) {
-        deltas.push({ index: this.currentIndex, argumentsDelta: argumentChunk });
-        this.currentArgsSeen = true;
-      } else if (!this.currentArgsSeen) {
-        deltas.push({ index: this.currentIndex, argumentsDelta: '{}' });
-      }
-      this.residual = this.residual.slice(endAt + TOOL_CALL_END.length);
-      this.completeCurrentCall();
+      const shouldContinue = this.processCurrentState(deltas, append => {
+        visibleContent += append;
+      });
+      if (!shouldContinue) break;
     }
 
     return {
@@ -162,6 +90,101 @@ export class ZAiInlineToolCallParser implements ToolCallParser {
     this.currentName = '';
     this.currentArgsSeen = false;
     this.headerEmitted = false;
+  }
+
+  private processCurrentState(
+    deltas: NativeToolCallDelta[],
+    appendVisibleContent: (value: string) => void,
+  ): boolean {
+    if (this.state === 'idle') {
+      return this.processIdleState(appendVisibleContent);
+    }
+
+    if (this.state === 'reading-name') {
+      return this.processReadingNameState(deltas);
+    }
+
+    return this.processReadingArgumentsState(deltas);
+  }
+
+  private processIdleState(appendVisibleContent: (value: string) => void): boolean {
+    const beginAt = this.residual.indexOf(TOOL_CALL_BEGIN);
+    if (beginAt < 0) {
+      const partial = getTrailingPartialPrefixLength(this.residual, TOOL_CALL_BEGIN);
+      const keep = partial > 0 ? this.residual.slice(-partial) : '';
+      const emit = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
+      appendVisibleContent(emit);
+      this.residual = keep;
+      return false;
+    }
+
+    appendVisibleContent(this.residual.slice(0, beginAt));
+    this.residual = this.residual.slice(beginAt + TOOL_CALL_BEGIN.length);
+    this.state = 'reading-name';
+    this.currentName = '';
+    this.currentArgsSeen = false;
+    this.headerEmitted = false;
+    return true;
+  }
+
+  private processReadingNameState(deltas: NativeToolCallDelta[]): boolean {
+    const argBeginAt = this.residual.indexOf(TOOL_CALL_ARGUMENT_BEGIN);
+    const endAt = this.residual.indexOf(TOOL_CALL_END);
+
+    const hasArgBegin = argBeginAt >= 0;
+    const hasEnd = endAt >= 0;
+
+    if (!hasArgBegin && !hasEnd) {
+      const partial = getMaxTrailingPartialPrefixLength(this.residual, [TOOL_CALL_ARGUMENT_BEGIN, TOOL_CALL_END]);
+      const consume = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
+      this.currentName += consume;
+      this.residual = partial > 0 ? this.residual.slice(-partial) : '';
+      return false;
+    }
+
+    const useArgBegin = hasArgBegin && (!hasEnd || argBeginAt <= endAt);
+
+    if (useArgBegin) {
+      this.currentName += this.residual.slice(0, argBeginAt);
+      this.residual = this.residual.slice(argBeginAt + TOOL_CALL_ARGUMENT_BEGIN.length);
+      this.emitHeaderIfNeeded(deltas);
+      this.state = 'reading-arguments';
+      return true;
+    }
+
+    this.currentName += this.residual.slice(0, endAt);
+    this.residual = this.residual.slice(endAt + TOOL_CALL_END.length);
+    this.emitHeaderIfNeeded(deltas);
+    if (!this.currentArgsSeen) {
+      deltas.push({ index: this.currentIndex, argumentsDelta: '{}' });
+    }
+    this.completeCurrentCall();
+    return true;
+  }
+
+  private processReadingArgumentsState(deltas: NativeToolCallDelta[]): boolean {
+    const endAt = this.residual.indexOf(TOOL_CALL_END);
+    if (endAt < 0) {
+      const partial = getTrailingPartialPrefixLength(this.residual, TOOL_CALL_END);
+      const emitArgs = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
+      if (emitArgs.length > 0) {
+        deltas.push({ index: this.currentIndex, argumentsDelta: emitArgs });
+        this.currentArgsSeen = true;
+      }
+      this.residual = partial > 0 ? this.residual.slice(-partial) : '';
+      return false;
+    }
+
+    const argumentChunk = this.residual.slice(0, endAt);
+    if (argumentChunk.length > 0) {
+      deltas.push({ index: this.currentIndex, argumentsDelta: argumentChunk });
+      this.currentArgsSeen = true;
+    } else if (!this.currentArgsSeen) {
+      deltas.push({ index: this.currentIndex, argumentsDelta: '{}' });
+    }
+    this.residual = this.residual.slice(endAt + TOOL_CALL_END.length);
+    this.completeCurrentCall();
+    return true;
   }
 }
 

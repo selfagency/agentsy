@@ -64,29 +64,7 @@ export class ToolCallDeltaAccumulator {
     for (const [index, call] of this.calls.entries()) {
       const fallbackId = call.id ?? `native_${index}`;
       const fallbackName = call.name ?? 'tool_call';
-
-      let parsed: Record<string, unknown> = {};
-      if (call.argumentsBuffer.length > 0) {
-        try {
-          const json = JSON.parse(call.argumentsBuffer);
-          if (json !== null && typeof json === 'object' && !Array.isArray(json)) {
-            parsed = json as Record<string, unknown>;
-          }
-        } catch {
-          if (repairIncomplete) {
-            const repaired = parseJson(call.argumentsBuffer, { repairIncomplete: true });
-            if (repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired)) {
-              parsed = repaired as Record<string, unknown>;
-            } else {
-              options?.onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', {
-                index,
-              });
-            }
-          } else {
-            options?.onWarning?.('Malformed tool_call_delta arguments; using empty input.', { index });
-          }
-        }
-      }
+      const parsed = this.parseArgumentsBuffer(call.argumentsBuffer, index, repairIncomplete, options?.onWarning);
 
       parts.push({
         callId: fallbackId,
@@ -101,6 +79,56 @@ export class ToolCallDeltaAccumulator {
 
   reset(): void {
     this.calls.clear();
+  }
+
+  private parseArgumentsBuffer(
+    argumentsBuffer: string,
+    index: number,
+    repairIncomplete: boolean,
+    onWarning?: (message: string, context?: Record<string, unknown>) => void,
+  ): Record<string, unknown> {
+    if (argumentsBuffer.length === 0) {
+      return {};
+    }
+
+    const parsed = this.parseStrictJsonObject(argumentsBuffer);
+    if (parsed !== null) {
+      return parsed;
+    }
+
+    if (!repairIncomplete) {
+      onWarning?.('Malformed tool_call_delta arguments; using empty input.', { index });
+      return {};
+    }
+
+    const repaired = this.parseRepairedJsonObject(argumentsBuffer);
+    if (repaired !== null) {
+      return repaired;
+    }
+
+    onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', { index });
+    return {};
+  }
+
+  private parseStrictJsonObject(value: string): Record<string, unknown> | null {
+    try {
+      const json = JSON.parse(value);
+      return this.asObjectRecord(json);
+    } catch {
+      return null;
+    }
+  }
+
+  private parseRepairedJsonObject(value: string): Record<string, unknown> | null {
+    const repaired = parseJson(value, { repairIncomplete: true });
+    return this.asObjectRecord(repaired);
+  }
+
+  private asObjectRecord(value: unknown): Record<string, unknown> | null {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    return value as Record<string, unknown>;
   }
 }
 

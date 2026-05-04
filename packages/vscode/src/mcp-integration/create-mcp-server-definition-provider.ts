@@ -70,8 +70,8 @@ export function createMcpServerDefinitionProvider(
       return rawServers.map(server => {
         const enabled = resolveEnabled(server, options.settings, defaultEnabled);
 
-        const env = { ...(server.env ?? {}) };
-        const headers = { ...(server.headers ?? {}) };
+        const env = Object.assign({}, server.env);
+        const headers = Object.assign({}, server.headers);
 
         if (typeof apiKey === 'string' && apiKey.length > 0) {
           const envKey = server.apiKeyEnvVar ?? options.defaultApiKeyEnvVar;

@@ -21,13 +21,27 @@ export function createProcessorEventAdapter(
   processor: LLMStreamProcessor,
   options: ProcessorCallbackAdapterOptions,
 ): { dispose(): void } {
-  const textListener: StreamEventMap['text'] = delta => options.onText?.(delta);
-  const thinkingListener: StreamEventMap['thinking'] = delta => options.onThinking?.(delta);
-  const toolCallListener: StreamEventMap['tool_call'] = call => options.onToolCall?.(call);
-  const toolCallDeltaListener: StreamEventMap['tool_call_delta'] = delta => options.onToolCallDelta?.(delta);
-  const warningListener: StreamEventMap['warning'] = (message, context) => options.onWarning?.(message, context);
+  function textListener(delta: string): void {
+    options.onText?.(delta);
+  }
 
-  const conversationListener: StreamEventMap['conversation_event'] = event => {
+  function thinkingListener(delta: string): void {
+    options.onThinking?.(delta);
+  }
+
+  function toolCallListener(call: Parameters<StreamEventMap['tool_call']>[0]): void {
+    options.onToolCall?.(call);
+  }
+
+  function toolCallDeltaListener(delta: Extract<OutputPart, { type: 'tool_call_delta' }>): void {
+    options.onToolCallDelta?.(delta);
+  }
+
+  function warningListener(message: string, context?: Record<string, unknown>): void {
+    options.onWarning?.(message, context);
+  }
+
+  function conversationListener(event: ConversationEvent): void {
     options.onConversationEvent?.(event);
 
     if (event.type === 'step_started') {
@@ -38,7 +52,7 @@ export function createProcessorEventAdapter(
     if (event.type === 'message_finished') {
       options.onFinish?.(event.finishReason, event.usage);
     }
-  };
+  }
 
   processor.on('text', textListener);
   processor.on('thinking', thinkingListener);

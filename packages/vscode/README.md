@@ -220,10 +220,6 @@ const finalized = accumulator.finalize({ repairIncomplete: true });
 const toolCallPartPayload = toVSCodeToolCallPart(toolCallOutputPart);
 ```
 
-## API Documentation
-
-See [docs/](./docs/) for complete API documentation, migration guides, and examples.
-
 ## Processor Integration Examples
 
 ### Opilot (Ollama)
@@ -374,16 +370,6 @@ const apiKeyManager = createMockApiKeyManager('demo-key');
 const renderer = createMockRendererHandle();
 const normalize = createChunkNormalizerStub<{ text: string }>(event => ({ content: event.text }));
 ```
-
-## Migration Guides
-
-- [Opilot Migration](./docs/migration-opilot.md)
-- [Z-models-vscode Migration](./docs/migration-z-models.md)
-- [Mistral-models-vscode Migration](./docs/migration-mistral.md)
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## License
 

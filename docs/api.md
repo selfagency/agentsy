@@ -768,15 +768,15 @@ Core stays editor-agnostic; use `@agentsy/core` for chunk normalization and proc
 ### Key exports (`@agentsy/vscode`)
 
 ```typescript
-createVSCodeChatRenderer(options)
-createVSCodeAgentLoop(options)
-cancellationTokenToAbortSignal(token)
+createVSCodeChatRenderer(options);
+createVSCodeAgentLoop(options);
+cancellationTokenToAbortSignal(token);
 
-ToolCallDeltaAccumulator
-accumulateToolCallDeltas(accumulator, deltaPart)
-toVSCodeToolCallPart(toolCallPart)
+ToolCallDeltaAccumulator;
+accumulateToolCallDeltas(accumulator, deltaPart);
+toVSCodeToolCallPart(toolCallPart);
 
-mapUsageToVSCode(usage)
+mapUsageToVSCode(usage);
 ```
 
 ### Example

@@ -278,10 +278,7 @@ const mistralMessages = toMistralMessages([
 OpenAI-compatible outbound mapping (including DeepSeek, Kimi, Qwen, Llama, and Granite) is centralized in `@agentsy/core/adapters/openai-compatible`:
 
 ```typescript
-import {
-  OPENAI_COMPATIBLE_PROVIDERS,
-  toOpenAICompatibleMessages,
-} from '@agentsy/core/adapters/openai-compatible';
+import { OPENAI_COMPATIBLE_PROVIDERS, toOpenAICompatibleMessages } from '@agentsy/core/adapters/openai-compatible';
 
 const messages = toOpenAICompatibleMessages([
   {

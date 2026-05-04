@@ -6,13 +6,13 @@ export { normalizeGeminiChunk } from './gemini.js';
 export { normalizeHuggingFaceTGIChunk } from './hfTgi.js';
 export { normalizeMistralChunk } from './mistral.js';
 export { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
-export { normalizeOpenAIChatChunk } from './openai.js';
 export {
-	OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS,
-	isOpenAICompatibleNormalizerProvider,
-	normalizeOpenAICompatibleChunk,
-	type OpenAICompatibleNormalizerProvider,
+  isOpenAICompatibleNormalizerProvider,
+  normalizeOpenAICompatibleChunk,
+  OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS,
+  type OpenAICompatibleNormalizerProvider,
 } from './openai-compatible.js';
+export { normalizeOpenAIChatChunk } from './openai.js';
 export { normalizeOpenAIResponseEvent } from './openaiResponses.js';
 export * from './types.js';
 export { normalizeZAiChunk } from './zai.js';

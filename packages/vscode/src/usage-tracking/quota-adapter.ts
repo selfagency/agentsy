@@ -59,11 +59,31 @@ export function pickActiveQuotaWindow(
   }
 
   if (strategy === 'highest-percent') {
-    return windows.reduce((best, current) => (percentUsed(current) > percentUsed(best) ? current : best));
+    const [first, ...rest] = windows;
+    if (first === undefined) {
+      return {
+        used: 0,
+        total: 1,
+        unit: 'requests',
+        window: 'daily',
+      };
+    }
+
+    return rest.reduce((best, current) => (percentUsed(current) > percentUsed(best) ? current : best), first);
   }
 
   // most-constrained: prefer highest percent, then lower absolute remaining budget.
-  return windows.reduce((best, current) => {
+  const [first, ...rest] = windows;
+  if (first === undefined) {
+    return {
+      used: 0,
+      total: 1,
+      unit: 'requests',
+      window: 'daily',
+    };
+  }
+
+  return rest.reduce((best, current) => {
     const bestPercent = percentUsed(best);
     const currentPercent = percentUsed(current);
     if (currentPercent > bestPercent) return current;
@@ -72,7 +92,7 @@ export function pickActiveQuotaWindow(
     const bestRemaining = best.total - best.used;
     const currentRemaining = current.total - current.used;
     return currentRemaining < bestRemaining ? current : best;
-  });
+  }, first);
 }
 
 /** Format a standard quota tooltip across integrations. */
@@ -92,7 +112,7 @@ export function createQuotaDataSourceAdapter<TPayload>(options: QuotaAdapterOpti
   const strategy = options.strategy ?? 'most-constrained';
   const preferredOrder = options.preferredOrder ?? DEFAULT_WINDOW_ORDER;
 
-  const normalize = (payload: TPayload): UsageQuota => {
+  function normalize(payload: TPayload): UsageQuota {
     const windows = options.mapWindows(payload);
     const active = pickActiveQuotaWindow(windows, strategy, preferredOrder);
     const percent = percentUsed(active);
@@ -104,7 +124,7 @@ export function createQuotaDataSourceAdapter<TPayload>(options: QuotaAdapterOpti
       percentUsed: percent,
       ...(active.expiresAt === undefined ? {} : { expiresAt: active.expiresAt }),
     };
-  };
+  }
 
   return {
     async getQuota(): Promise<UsageQuota> {
