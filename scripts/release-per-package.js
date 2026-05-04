@@ -430,6 +430,9 @@ async function main() {
   commitPushed = true;
   commitLocal = false;
 
+  // Capture commit SHA after push
+  const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
+
   // --- Wait for required workflows -----------------------------------------
 
   console.log(`🔎 Waiting for workflows on ${headSha.slice(0, 7)}...`);
