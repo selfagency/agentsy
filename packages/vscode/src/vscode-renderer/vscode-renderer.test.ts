@@ -216,7 +216,7 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(mockStream.beginToolInvocation).toHaveBeenCalledTimes(1);
-      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather');
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', { city: 'NYC' });
     });
 
     it('fires onToolCallDelta callback', async () => {
@@ -730,5 +730,14 @@ describe('Cancellation Token Bridge', () => {
     }
 
     expect(signal.aborted).toBe(true);
+  });
+
+  it('returns a non-aborted signal for partial tokens without onCancellationRequested', () => {
+    const signal = cancellationTokenToAbortSignal({
+      isCancellationRequested: false,
+    });
+
+    expect(signal).toBeDefined();
+    expect(signal.aborted).toBe(false);
   });
 });

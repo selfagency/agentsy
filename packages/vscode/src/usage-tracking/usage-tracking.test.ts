@@ -1,6 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { IQuotaDataSource, UsageQuota } from '../types/errors.js';
+import { mapUsageToVSCode } from './map-usage.js';
+import {
+  createQuotaDataSourceAdapter,
+  formatStandardQuotaTooltip,
+  pickActiveQuotaWindow,
+  type QuotaWindowValue,
+} from './quota-adapter.js';
 import { UsageStatusBar, formatQuotaText, getQuotaStatus } from './usage-status-bar.js';
-import type { UsageQuota, IQuotaDataSource } from '../types/errors.js';
 
 function makeQuota(overrides: Partial<UsageQuota> = {}): UsageQuota {
   return {
@@ -137,5 +144,58 @@ describe('UsageStatusBar', () => {
     const bar = new UsageStatusBar({ displayName: 'Test Usage', quotaDataSource: ds });
     expect(() => bar.hide()).not.toThrow();
     bar.dispose();
+  });
+});
+
+describe('Quota adapter utilities', () => {
+  it('pickActiveQuotaWindow prefers most constrained window by default', () => {
+    const windows: QuotaWindowValue[] = [
+      { used: 50, total: 100, unit: 'tokens', window: 'hourly' },
+      { used: 900, total: 1000, unit: 'tokens', window: 'daily' },
+    ];
+
+    const active = pickActiveQuotaWindow(windows);
+    expect(active.window).toBe('daily');
+  });
+
+  it('createQuotaDataSourceAdapter maps multi-window payloads', async () => {
+    const source = createQuotaDataSourceAdapter({
+      fetch: async () => ({
+        windows: [
+          { used: 20, total: 100, unit: 'tokens' as const, window: 'hourly' as const },
+          { used: 850, total: 1000, unit: 'tokens' as const, window: 'monthly' as const },
+        ],
+      }),
+      mapWindows: payload => payload.windows,
+      strategy: 'highest-percent',
+    });
+
+    const quota = await source.getQuota();
+    expect(quota.window).toBe('monthly');
+    expect(quota.percentUsed).toBe(0.85);
+  });
+
+  it('formatStandardQuotaTooltip formats consistent tooltip text', () => {
+    const tooltip = formatStandardQuotaTooltip('Z.ai Usage', {
+      used: 800,
+      total: 1000,
+      unit: 'tokens',
+      window: 'weekly',
+      percentUsed: 0.8,
+    });
+
+    expect(tooltip).toContain('Z.ai Usage: 800 / 1,000 tokens (80%)');
+    expect(tooltip).toContain('weekly');
+  });
+});
+
+describe('mapUsageToVSCode', () => {
+  it('maps input/output tokens to prompt/completion tokens', () => {
+    const mapped = mapUsageToVSCode({ inputTokens: 11, outputTokens: 22 });
+    expect(mapped).toEqual({ promptTokens: 11, completionTokens: 22 });
+  });
+
+  it('returns undefined for undefined usage', () => {
+    expect(mapUsageToVSCode(undefined)).toBeUndefined();
   });
 });

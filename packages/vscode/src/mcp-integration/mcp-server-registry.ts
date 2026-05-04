@@ -1,4 +1,4 @@
-import type { McpServerRegistryConfig, McpServerDefinition } from '../types/errors.js';
+import type { McpServerDefinition, McpServerRegistryConfig } from '../types/errors.js';
 
 /**
  * Manages registration and lifecycle of MCP (Model Context Protocol) servers.
@@ -93,6 +93,8 @@ export class McpServerRegistry {
           merged[server.name] = {
             command: server.command,
             ...(server.args?.length ? { args: server.args } : {}),
+            ...(server.env !== undefined ? { env: server.env } : {}),
+            ...(server.headers !== undefined ? { headers: server.headers } : {}),
             ...(server.alwaysAllow ? { alwaysAllow: true } : {}),
           };
         }

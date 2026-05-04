@@ -120,8 +120,13 @@ export class ApiKeyManager {
   /**
    * Listen for API key changes.
    */
-  onDidChangeApiKey(listener: ApiKeyChangeListener): void {
+  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void } {
     this.listeners.add(listener);
+    return {
+      dispose: () => {
+        this.listeners.delete(listener);
+      },
+    };
   }
 
   /**

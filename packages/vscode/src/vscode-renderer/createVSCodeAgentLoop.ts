@@ -1,5 +1,5 @@
 import type { BaseRendererOptions, ThinkingStyle } from '@agentsy/core/renderers';
-import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
+import type { MinimalChatResponseStream } from './createVSCodeChatRenderer.js';
 import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
 /**
@@ -7,7 +7,7 @@ import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
  */
 export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
   /** VS Code ChatResponseStream instance. Required. */
-  stream: ChatResponseStream;
+  stream: MinimalChatResponseStream;
 
   /** How to render thinking blocks. Default: 'blockquote'. */
   thinkingStyle?: ThinkingStyle;

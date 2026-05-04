@@ -6,11 +6,20 @@ export { ApiKeyManager } from './api-key-manager/api-key-manager.js';
 
 // VS Code renderer (extracted from @agentsy/core)
 export {
+  accumulateToolCallDeltas,
   cancellationTokenToAbortSignal,
   createVSCodeAgentLoop,
   createVSCodeChatRenderer,
+  ToolCallDeltaAccumulator,
+  toVSCodeToolCallPart,
 } from './vscode-renderer/index.js';
-export type { ChatResponseStream, VSCodeAgentLoopOptions, VSCodeChatRendererOptions } from './vscode-renderer/index.js';
+export type {
+  ChatResponseStream,
+  MinimalChatResponseStream,
+  VSCodeAgentLoopOptions,
+  VSCodeChatRendererOptions,
+  VSCodeToolCallPartLike,
+} from './vscode-renderer/index.js';
 
 // Error handling
 export {
@@ -23,7 +32,7 @@ export { calculateRetryDelay, isRetryableError, withRetry } from './error-handli
 export type { RetryOptions } from './error-handling/error-recovery.js';
 
 // Message conversion
-export { convertMessage, convertMessages } from './message-conversion/message-adapter.js';
+export { convertMessage, convertMessages, mapStreamChunkToVsCode } from './message-conversion/index.js';
 export {
   convertRole,
   extractTextFromPart,
@@ -31,6 +40,10 @@ export {
   extractToolResult,
 } from './message-conversion/role-converter.js';
 export type { ChatMessage, ChatToolCall } from './message-conversion/role-converter.js';
+
+// Stream bridge
+export { bridgeStream, VSCodeStreamBridge } from './stream-bridge.js';
+export type { VSCodeStreamBridgeOptions } from './stream-bridge.js';
 
 // Base provider
 export { BaseLanguageModelChatProvider } from './provider/index.js';
@@ -43,11 +56,39 @@ export type {
 } from './provider/index.js';
 
 // Settings
-export { SettingsLoader, applyDefaults, validateSettings } from './settings/index.js';
+export { applyDefaults, SettingsLoader, validateSettings } from './settings/index.js';
 export type { SchemaProperty, SettingsSchema } from './settings/index.js';
 
 // Usage tracking
-export { UsageStatusBar, formatQuotaText, getQuotaStatus } from './usage-tracking/index.js';
+export {
+  createQuotaDataSourceAdapter,
+  formatQuotaText,
+  formatStandardQuotaTooltip,
+  getQuotaStatus,
+  mapUsageToVSCode,
+  pickActiveQuotaWindow,
+  UsageStatusBar,
+  type ActiveQuotaWindowStrategy,
+  type QuotaAdapterOptions,
+  type QuotaWindow,
+  type QuotaWindowValue,
+  type VSCodeUsage,
+} from './usage-tracking/index.js';
 
 // MCP integration
-export { McpServerRegistry } from './mcp-integration/index.js';
+export {
+  createMcpServerDefinitionProvider,
+  McpServerRegistry,
+  type CreateMcpServerDefinitionProviderOptions,
+  type McpProviderServerDefinition,
+  type McpProviderSettingsReader,
+} from './mcp-integration/index.js';
+
+// Testing utilities
+export {
+  createChunkNormalizerStub,
+  createMockApiKeyManager,
+  createMockRendererHandle,
+  type MockApiKeyManager,
+  type MockRendererHandle,
+} from './testing/index.js';
