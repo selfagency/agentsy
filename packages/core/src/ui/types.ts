@@ -1,5 +1,5 @@
 import type { UsageInfo } from '../normalizers/types.js';
-import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
+import type { FinishReason, ToolCallState } from '@agentsy/types';
 
 /**
  * Represents a single UI message in a conversation.

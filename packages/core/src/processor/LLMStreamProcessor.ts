@@ -1,10 +1,10 @@
 import type { NativeToolCallDelta, StreamChunk, UsageInfo } from '@agentsy/types';
-import { ThinkingParser, type ThinkingTagPair } from '../thinking/ThinkingParser.js';
-import { ToolCallAccumulator } from '../tool-calls/ToolCallAccumulator.js';
-import { extractXmlToolCalls, type XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
-import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
+import { ThinkingParser, type ThinkingTagPair } from '@agentsy/thinking';
+import { ToolCallAccumulator } from '@agentsy/tool-calls';
+import { extractXmlToolCalls, type XmlToolCall } from '@agentsy/tool-calls';
+import type { FinishReason, ToolCallState } from '@agentsy/types';
 import type { ConversationEvent } from '../ui/types.js';
-import { createXmlStreamFilter, type XmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
+import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { createEmptyStats, type ProcessorStats } from './ProcessorStats.js';
 import type { ToolCallParser } from './ToolCallParser.js';
@@ -885,7 +885,7 @@ export class LLMStreamProcessor {
   }
 
   private mapAccumulatedNativeCallsWithIndices(
-    calls: Array<{ index: number; call: import('../tool-calls/ToolCallAccumulator.js').NativeToolCall }>,
+    calls: Array<{ index: number; call: import('@agentsy/tool-calls').NativeToolCall }>,
     state: ToolCallState,
   ): Array<Extract<OutputPart, { type: 'tool_call' }>> {
     return calls.map(({ index, call }) => {

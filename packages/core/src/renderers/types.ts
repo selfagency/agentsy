@@ -1,7 +1,7 @@
 import type { UsageInfo } from '../normalizers/types.js';
 import type { LLMStreamProcessor, OutputPart, StreamChunk } from '../processor/LLMStreamProcessor.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
-import type { FinishReason, ToolCallState } from '../tool-calls/types.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
+import type { FinishReason, ToolCallState } from '@agentsy/types';
 
 /**
  * Tool call output part (not rendered, only passed to callbacks).

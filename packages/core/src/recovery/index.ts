@@ -1,5 +1,5 @@
 import type { LLMStreamProcessor, ProcessorOptions } from '../processor/LLMStreamProcessor.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { UsageInfo } from '../normalizers/types.js';
 
 export interface StreamSnapshot {

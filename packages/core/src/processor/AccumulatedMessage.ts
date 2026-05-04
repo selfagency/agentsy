@@ -1,5 +1,5 @@
 import type { UsageInfo } from '../normalizers/types.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
 
 export interface AccumulatedMessage {
   thinking: string;

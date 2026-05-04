@@ -1,4 +1,4 @@
-import { ELEVATED_CONTEXT_TAG_NAMES } from '../xml-filter/tagLists.js';
+import { ELEVATED_CONTEXT_TAG_NAMES } from '@agentsy/xml-filter';
 
 const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]*)[^>]*>[\s\S]*?<\/\1>/gi;
 

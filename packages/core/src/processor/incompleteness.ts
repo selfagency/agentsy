@@ -1,4 +1,4 @@
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { IncompletenessDetail } from './LLMStreamProcessor.js';
 
 /**

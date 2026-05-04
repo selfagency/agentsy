@@ -1,0 +1,53 @@
+{
+  "name": "@agentsy/vendor",
+  "version": "0.1.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Vendored third-party dependencies for Agentsy: Saxophone XML parser",
+  "keywords": [
+    "vendor",
+    "saxophone",
+    "xml",
+    "parser"
+  ],
+  "homepage": "https://agentsy.self.agency",
+  "bugs": {
+    "url": "https://github.com/selfagency/agentsy/issues"
+  },
+  "license": "MIT",
+  "author": "Daniel Sieradski <daniel@self.agency>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt . --write",
+    "test": "vitest run src",
+    "coverage": "vitest run src --coverage",
+    "precommit": "pnpm check-types && pnpm lint"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.5"
+  }
+}

@@ -1,4 +1,4 @@
-import { createXmlStreamFilter } from '../xml-filter/XmlStreamFilter.js';
+import { createXmlStreamFilter } from '@agentsy/xml-filter';
 
 export function stripXmlContextTags(input: string): string {
   if (!input.includes('<')) {

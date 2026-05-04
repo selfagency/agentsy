@@ -1,1 +1,1 @@
-export * from './ThinkingParser.js';
+export * from '@agentsy/thinking';

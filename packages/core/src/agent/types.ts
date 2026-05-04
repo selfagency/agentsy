@@ -2,11 +2,11 @@ import type { InterruptController } from '../ag-ui/interrupt-handler.js';
 import type { AgUiEvent } from '../ag-ui/types.js';
 import type { UsageInfo } from '../normalizers/types.js';
 import type { OutputPart, ProcessedOutput, StreamChunk } from '../processor/LLMStreamProcessor.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
-import type { FinishReason } from '../tool-calls/types.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
+import type { FinishReason } from '@agentsy/types';
 
 export type { OutputPart, ProcessedOutput, StreamChunk } from '../processor/LLMStreamProcessor.js';
-export type { FinishReason } from '../tool-calls/types.js';
+export type { FinishReason } from '@agentsy/types';
 
 export type StopCondition = (state: AgentLoopState) => boolean;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
 import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';
 import type { ProcessedOutput } from '../processor/LLMStreamProcessor.js';

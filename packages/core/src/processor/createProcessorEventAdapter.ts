@@ -1,5 +1,5 @@
 import type { UsageInfo } from '../normalizers/types.js';
-import type { FinishReason } from '../tool-calls/types.js';
+import type { FinishReason } from '@agentsy/types';
 import type { ConversationEvent } from '../ui/types.js';
 import type { LLMStreamProcessor, OutputPart, StreamEventMap } from './LLMStreamProcessor.js';
 

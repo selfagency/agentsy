@@ -165,7 +165,12 @@
   },
   "dependencies": {
     "@agentsy/normalizers": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/structured": "workspace:*",
+    "@agentsy/thinking": "workspace:*",
+    "@agentsy/tool-calls": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "@agentsy/vendor": "workspace:*",
+    "@agentsy/xml-filter": "workspace:*"
   },
   "scripts": {
     "build": "tsup",

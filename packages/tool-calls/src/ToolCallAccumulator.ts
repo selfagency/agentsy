@@ -1,5 +1,5 @@
-import type { NativeToolCallDelta } from '../normalizers/types.js';
-import { parseJson } from '../structured/parseJson.js';
+import type { NativeToolCallDelta } from '@agentsy/types';
+import { parseJson } from '@agentsy/structured';
 import type { ToolCallState } from './types.js';
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */

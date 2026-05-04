@@ -3,7 +3,7 @@ import { applyConversationEvent } from './eventSourcing.js';
 import { createConversationStoreFromProcessor } from './processorBridge.js';
 import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
-import type { FinishReason } from '../tool-calls/types.js';
+import type { FinishReason } from '@agentsy/types';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 
 // Helper functions for ConversationStore tests

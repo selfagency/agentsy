@@ -2,8 +2,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { UsageInfo } from '../normalizers/types.js';
-import type { XmlToolCall } from '../tool-calls/extractXmlToolCalls.js';
-import type { FinishReason } from '../tool-calls/types.js';
+import type { XmlToolCall } from '@agentsy/tool-calls';
+import type { FinishReason } from '@agentsy/types';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';
 

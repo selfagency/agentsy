@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from './index.js';
-import { createXmlStreamFilter } from '../xml-filter/index.js';
+import { createXmlStreamFilter } from '@agentsy/xml-filter';
 
 describe('createXmlStreamFilter', () => {
   it('strips context tags across chunk boundaries', () => {

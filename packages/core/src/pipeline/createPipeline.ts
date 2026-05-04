@@ -15,7 +15,7 @@ import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
 import { parseSSEStream } from '../sse/index.js';
-import { parseJson } from '../structured/parseJson.js';
+import { parseJson } from '@agentsy/structured';
 
 export type NormalizerProvider =
   | 'openai'

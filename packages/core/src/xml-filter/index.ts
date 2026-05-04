@@ -1,2 +1,1 @@
-export * from './XmlStreamFilter.js';
-export * from './tagLists.js';
+export * from '@agentsy/xml-filter';
