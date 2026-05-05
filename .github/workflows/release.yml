@@ -315,22 +315,19 @@ jobs:
             " "$1"
           }
 
-          BASE_NPM="$(npm --version)"
-          echo "Runner npm: ${BASE_NPM}"
+          RUNNER_NPM="$(npm --version)"
+          echo "Runner npm: ${RUNNER_NPM}"
           echo "runner npm path: $(command -v npm)"
 
-          corepack enable
-          corepack prepare npm@11.6.2 --activate
+          PNPM_NPM="$(pnpm dlx npm@11.6.2 --version)"
+          echo "pnpm-managed npm: ${PNPM_NPM}"
 
-          COREPACK_NPM="$(corepack npm --version)"
-          echo "Corepack npm: ${COREPACK_NPM}"
-
-          if ! version_is_supported "${COREPACK_NPM}"; then
-            echo "❌ corepack npm ${COREPACK_NPM} does not meet trusted publishing minimum (>=11.5.1)."
+          if ! version_is_supported "${PNPM_NPM}"; then
+            echo "❌ pnpm-managed npm ${PNPM_NPM} does not meet trusted publishing minimum (>=11.5.1)."
             exit 1
           fi
 
-          echo "✅ Using corepack npm ${COREPACK_NPM} for publish steps"
+          echo "✅ Using pnpm dlx npm@11.6.2 for publish steps"
 
       - name: Publish per-package release
         if: needs.detect-release.outputs.is_per_package == 'true'
@@ -355,7 +352,7 @@ jobs:
             local dist_tag="$2"
 
             set +e
-            corepack npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
+            pnpm dlx npm@11.6.2 publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
             local publish_exit=$?
             set -e
 
@@ -395,7 +392,7 @@ jobs:
             local dist_tag="$2"
 
             set +e
-            corepack npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
+            pnpm dlx npm@11.6.2 publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
             local publish_exit=$?
             set -e
 
