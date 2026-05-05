@@ -1,0 +1,32 @@
+scripts/release-per-package.js
+  fcf78ea824193e33 490,495,505
+  h_5cf1e2c1161853 488,491-494,496-498,502-504,506-507,509,513
+.github/workflows/release.yml
+  h_5cf1e2c1161853 89-122,141,149,267-276,279,281-283,286-293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "284cb9c2c980d2ed32b392554fb4d38aab2d11dd",
+  "prompts": {
+    "fcf78ea824193e33": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8eaa1107-7fd9-4556-b74f-6ec897358045",
+        "model": "z/glm-4.7"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 18,
+      "accepted_lines": 9,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/f5854152de38e94a5189faa921c18b663fe5c79afb2f1da8a394fc253ffc5489"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
