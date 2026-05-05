@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/formatting",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Text and XML formatting utilities for the @agentsy platform.",
   "repository": {
