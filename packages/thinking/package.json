@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/thinking",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "LLM thinking/reasoning block parser for the @agentsy platform.",
   "repository": {
