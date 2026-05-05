@@ -1,6 +1,8 @@
 import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { JsonObject, StreamChunk } from '@agentsy/types';
 
+const SHARED_TEXT_ENCODER = new TextEncoder();
+
 export function ensureText(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
@@ -12,7 +14,7 @@ export function estimateChunkSize(chunk: StreamChunk, encoder: TextEncoder): num
   if (Array.isArray(chunk.tool_calls)) {
     for (const call of chunk.tool_calls) {
       try {
-        size += JSON.stringify(call).length;
+        size += encoder.encode(JSON.stringify(call)).length;
       } catch {
         // Skip serialization errors (circular refs, BigInt, etc.)
       }
@@ -21,7 +23,7 @@ export function estimateChunkSize(chunk: StreamChunk, encoder: TextEncoder): num
   if (Array.isArray(chunk.nativeToolCallDeltas)) {
     for (const delta of chunk.nativeToolCallDeltas) {
       try {
-        size += JSON.stringify(delta).length;
+        size += encoder.encode(JSON.stringify(delta)).length;
       } catch {
         // Skip serialization errors
       }
@@ -78,25 +80,42 @@ export function enforceMaxLength(
   maxInputLength: number,
   onWarning: (message: string, context?: Record<string, unknown>) => void,
 ): string {
-  if (maxInputLength <= 0 || value.length <= maxInputLength) {
+  const valueBytes = SHARED_TEXT_ENCODER.encode(value).length;
+  if (maxInputLength <= 0 || valueBytes <= maxInputLength) {
     return value;
   }
 
   onWarning(`Chunk ${field} exceeded maxInputLength and was truncated`, {
     field,
     maxInputLength,
-    originalLength: value.length,
+    originalLength: valueBytes,
   });
+
+  const charIndexForByteLimit = (() => {
+    let bytes = 0;
+    let index = 0;
+    for (const char of value) {
+      const charBytes = SHARED_TEXT_ENCODER.encode(char).length;
+      if (bytes + charBytes > maxInputLength) {
+        break;
+      }
+      bytes += charBytes;
+      index += char.length;
+    }
+    return index;
+  })();
 
   // Truncate at a tag boundary so we don't hand a partial `<tag...` fragment
   // to the XML parser. Walk back from the cut point to the last `<` that has
   // no matching `>` after it within the kept region.
-  let cut = maxInputLength;
-  const openIdx = value.lastIndexOf('<', maxInputLength - 1);
+  let cut = charIndexForByteLimit;
+  const openIdx = value.lastIndexOf('<', charIndexForByteLimit - 1);
   if (openIdx !== -1) {
+    const nextChar = value[openIdx + 1] ?? '';
+    const looksLikeTagStart = /[A-Za-z_/:!?]/.test(nextChar);
     const closeIdx = value.indexOf('>', openIdx);
     // If the closing `>` is beyond the cut (or absent), the tag is partial.
-    if (closeIdx === -1 || closeIdx >= maxInputLength) {
+    if (looksLikeTagStart && (closeIdx === -1 || closeIdx >= charIndexForByteLimit)) {
       cut = openIdx;
     }
   }

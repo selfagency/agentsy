@@ -107,12 +107,8 @@ export class McpServerRegistry {
     if (server.args?.length) {
       config.args = server.args;
     }
-    if (server.env !== undefined) {
-      config.env = server.env;
-    }
-    if (server.headers !== undefined) {
-      config.headers = server.headers;
-    }
+    // Never persist env/headers into workspace settings to avoid writing
+    // secrets (tokens, API keys) to plain-text configuration.
     if (server.alwaysAllow === true) {
       config.alwaysAllow = true;
     }

@@ -61,29 +61,25 @@ export async function* parseSSEStream(
     yield* iterateAsyncIterable(source);
   }
 
-  try {
-    // Feed chunks into the parser and yield events.
-    for await (const chunk of iterateChunks()) {
-      if (chunk) {
-        parser.write(chunk);
-      }
-
-      // Yield all queued events.
-      while (eventQueue.length > 0) {
-        const event = eventQueue.shift();
-        if (event) yield event;
-      }
+  // Feed chunks into the parser and yield events.
+  for await (const chunk of iterateChunks()) {
+    if (chunk) {
+      parser.write(chunk);
     }
 
-    // End of stream; flush remaining data.
-    parser.end();
-
-    // Yield any final queued events.
+    // Yield all queued events.
     while (eventQueue.length > 0) {
       const event = eventQueue.shift();
       if (event) yield event;
     }
-  } catch {
-    // Stream error; stop gracefully without re-throwing
+  }
+
+  // End of stream; flush remaining data.
+  parser.end();
+
+  // Yield any final queued events.
+  while (eventQueue.length > 0) {
+    const event = eventQueue.shift();
+    if (event) yield event;
   }
 }

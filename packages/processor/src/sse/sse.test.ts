@@ -306,7 +306,7 @@ describe('parseSSEStream', () => {
     expect(events).toEqual([{ data: 'from-stream' }]);
   });
 
-  it('handles readable stream read errors gracefully', async () => {
+  it('propagates readable stream read errors', async () => {
     const releaseLock = vi.fn();
     const badStream = {
       getReader: () => ({
@@ -317,12 +317,11 @@ describe('parseSSEStream', () => {
       }),
     } as unknown as ReadableStream<string>;
 
-    const events = [];
-    for await (const event of parseSSEStream(badStream)) {
-      events.push(event);
-    }
-
-    expect(events).toEqual([]);
+    await expect(async () => {
+      for await (const _event of parseSSEStream(badStream)) {
+        // iterate until error
+      }
+    }).rejects.toThrow('read failed');
     expect(releaseLock).toHaveBeenCalledTimes(1);
   });
 });

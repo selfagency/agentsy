@@ -124,5 +124,20 @@ describe('chunkUtils', () => {
       const input = '<unclosed tag content';
       expect(enforceMaxLength(input, 'content', 5, warn)).toBe('');
     });
+
+    it('applies maxInputLength as UTF-8 bytes (not UTF-16 code units)', () => {
+      const warn = vi.fn();
+      // 😀 is 4 bytes in UTF-8. Byte cap 6 should keep one emoji + "ab".
+      const input = '😀ab😀';
+      expect(enforceMaxLength(input, 'content', 6, warn)).toBe('😀ab');
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not treat literal less-than as XML tag start', () => {
+      const warn = vi.fn();
+      const input = 'math: a < b and c';
+      // 10 bytes => "math: a < "; should not backtrack to before '<'.
+      expect(enforceMaxLength(input, 'thinking', 10, warn)).toBe('math: a < ');
+    });
   });
 });

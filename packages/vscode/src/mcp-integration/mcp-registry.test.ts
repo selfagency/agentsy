@@ -106,7 +106,7 @@ describe('McpServerRegistry', () => {
     await expect(registry.registerWithVscode()).resolves.not.toThrow();
   });
 
-  it('registerWithVscode serializes and writes server configuration', async () => {
+  it('registerWithVscode serializes and writes server configuration without persisting secrets', async () => {
     vi.resetModules();
     const update = vi.fn(async () => undefined);
     const get = vi.fn(() => ({ existing: { command: 'existing-cmd' } }));
@@ -141,8 +141,6 @@ describe('McpServerRegistry', () => {
         'zai-server': {
           command: 'node',
           args: ['mcp.js'],
-          env: { API_KEY: 'x' },
-          headers: { Authorization: 'Bearer x' },
           alwaysAllow: true,
         },
       }),
