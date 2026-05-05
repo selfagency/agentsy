@@ -49,7 +49,7 @@ test('validateRepositoryMatch returns failure for mismatch', () => {
 });
 
 test('checkTrustedPublishReadiness passes for oidc-ready package with matching repo', () => {
-  const { pkgDir, releaseStatePath } = setupBase();
+  const { base, pkgDir, releaseStatePath } = setupBase();
 
   writeFileSync(
     join(pkgDir, 'package.json'),
@@ -67,13 +67,14 @@ test('checkTrustedPublishReadiness passes for oidc-ready package with matching r
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
+    repoRoot: base,
   });
 
   assert.deepEqual(result, { ok: true });
 });
 
 test('checkTrustedPublishReadiness fails for bootstrap-required package', () => {
-  const { pkgDir, releaseStatePath } = setupBase();
+  const { base, pkgDir, releaseStatePath } = setupBase();
 
   writeFileSync(
     join(pkgDir, 'package.json'),
@@ -88,6 +89,32 @@ test('checkTrustedPublishReadiness fails for bootstrap-required package', () => 
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
+    repoRoot: base,
+  });
+
+  assert.equal(result.ok, false);
+});
+
+test('checkTrustedPublishReadiness fails when workflow file is missing under provided repoRoot', () => {
+  const { base, pkgDir, releaseStatePath } = setupBase();
+
+  writeFileSync(
+    join(pkgDir, 'package.json'),
+    JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } }),
+  );
+
+  writeFileSync(
+    releaseStatePath,
+    JSON.stringify({ defaultState: 'bootstrap-required', packages: { '@agentsy/testpkg': 'oidc-ready' } }),
+  );
+
+  const result = checkTrustedPublishReadiness({
+    packageName: '@agentsy/testpkg',
+    packageDir: pkgDir,
+    expectedRepo: 'selfagency/agentsy',
+    releaseStatePath,
+    workflowFilename: 'missing.yml',
+    repoRoot: base,
   });
 
   assert.equal(result.ok, false);

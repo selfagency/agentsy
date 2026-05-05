@@ -105,6 +105,12 @@ async function checkNpmCredentials() {
 async function main() {
   await checkNpmCredentials();
 
+  const dirty = (await $`git status --porcelain`).stdout.trim();
+  if (dirty.length > 0) {
+    console.error('❌ Working tree is not clean. Commit or stash changes first.');
+    process.exit(1);
+  }
+
   console.log(`📦 Bootstrap publishing ${fullPackageName}@${version} (state: ${currentState})`);
 
   if (isDryRun) {
@@ -117,6 +123,10 @@ async function main() {
   // Keep version in package metadata aligned for first publish.
   pkgJson.version = version;
   safeWrite(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+
+  // Keep workspace lockfile in sync with package version metadata so CI
+  // frozen-lockfile installs remain consistent after bootstrap updates.
+  await $`pnpm install --lockfile-only`;
 
   await $`pnpm --filter ${fullPackageName} build`;
   await $`node scripts/write-dist-package.js ${`packages/${pkgShortName}`}`;
@@ -131,7 +141,8 @@ async function main() {
   console.log('  2) Configure Trusted Publisher: GitHub Actions.');
   console.log('  3) Ensure workflow filename is exactly: release.yml');
   console.log('  4) Confirm repo and org/user fields match exactly (case-sensitive).');
-  console.log('  5) (Recommended) set Publishing access to disallow tokens after verification.');
+  console.log('  5) Commit updated package.json + pnpm-lock.yaml + config/release-state.json, then push to main.');
+  console.log('  6) (Recommended) set Publishing access to disallow tokens after verification.');
 }
 
 await main();

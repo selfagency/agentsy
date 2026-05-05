@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs as parseNodeArgs } from 'node:util';
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = resolve(__filename, '..');
+const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
 
 /** @param {unknown} repository */
@@ -59,12 +60,14 @@ export function validateRepositoryMatch(pkgRepoValue, expectedRepo) {
  *   releaseStatePath: string,
  *   expectedState?: string,
  *   workflowFilename?: string,
+ *   repoRoot?: string,
  * }} input
  * @returns {{ok: true} | {ok: false, error: string}}
  */
 export function checkTrustedPublishReadiness(input) {
   const expectedState = input.expectedState ?? 'oidc-ready';
   const workflowFilename = input.workflowFilename ?? 'release.yml';
+  const repoRoot = input.repoRoot ?? ROOT;
 
   const state = readReleaseState(input.releaseStatePath);
   const packageState = getPackageReleaseState(state, input.packageName);
@@ -88,7 +91,7 @@ export function checkTrustedPublishReadiness(input) {
     return repoCheck;
   }
 
-  const workflowPath = resolve(ROOT, '.github', 'workflows', workflowFilename);
+  const workflowPath = resolve(repoRoot, '.github', 'workflows', workflowFilename);
   if (!existsSync(workflowPath)) {
     return {
       ok: false,
@@ -99,25 +102,19 @@ export function checkTrustedPublishReadiness(input) {
   return { ok: true };
 }
 
-function parseArgs(argv) {
-  const out = {};
-  for (let i = 2; i < argv.length; i += 1) {
-    const token = argv[i];
-    if (!token || !token.startsWith('--')) continue;
-    const key = token.slice(2);
-    const value = argv[i + 1];
-    if (typeof value === 'string' && !value.startsWith('--')) {
-      out[key] = value;
-      i += 1;
-    } else {
-      out[key] = 'true';
-    }
-  }
-  return out;
-}
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const args = parseArgs(process.argv);
+if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filename) {
+  const { values: args } = parseNodeArgs({
+    options: {
+      'package-name': { type: 'string' },
+      'package-dir': { type: 'string' },
+      'expected-repo': { type: 'string' },
+      'release-state-path': { type: 'string' },
+      'workflow-filename': { type: 'string' },
+      'expected-state': { type: 'string' },
+      'repo-root': { type: 'string' },
+    },
+    allowPositionals: false,
+  });
 
   const packageName = args['package-name'];
   const packageDir = args['package-dir'];
@@ -140,6 +137,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     releaseStatePath: resolve(releaseStatePath),
     workflowFilename,
     expectedState,
+    ...(args['repo-root'] === undefined ? {} : { repoRoot: resolve(args['repo-root']) }),
   });
 
   if (!result.ok) {
