@@ -1,0 +1,22 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "d5dbadf4113c9273774e137055f190d6a1555a44",
+  "prompts": {
+    "6356a138b51d4fde": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "02a3bb8c-4069-4615-bc41-eaf3d6fe205b",
+        "model": "copilot/gpt-5.4"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 477,
+      "total_deletions": 0,
+      "accepted_lines": 477,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/08bb614d491a93a2a01cec6f6defc004e99f925e73817308cb664d13dd342e7a"
+    }
+  }
+}
