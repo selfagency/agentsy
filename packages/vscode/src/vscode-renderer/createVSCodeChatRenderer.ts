@@ -5,6 +5,9 @@ import { createSharedRendererHandle } from '@agentsy/renderers';
 import { mapUsageToVSCode } from '../usage-tracking/map-usage.js';
 import { toVSCodeToolCallPart } from './tool-call-lifecycle.js';
 
+/** Module-level counter for generating unique fallback tool call IDs. */
+let _toolCallCounter = 0;
+
 /**
  * Structural interface matching VS Code's ChatResponseStream.
  * Stable API methods are required; proposed API methods are optional (capability detection).
@@ -207,7 +210,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
         if (stream.beginToolInvocation && typeof part.call?.name === 'string') {
           const vscodePart = toVSCodeToolCallPart(part, {
-            fallbackCallId: `tool_call_${part.call.name}`,
+            fallbackCallId: `tool_call_${part.call.name}_${++_toolCallCounter}`,
           });
           stream.beginToolInvocation(vscodePart.callId, vscodePart.name, vscodePart.input);
         }

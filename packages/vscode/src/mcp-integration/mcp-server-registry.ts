@@ -107,12 +107,9 @@ export class McpServerRegistry {
     if (server.args?.length) {
       config.args = server.args;
     }
-    if (server.env !== undefined) {
-      config.env = server.env;
-    }
-    if (server.headers !== undefined) {
-      config.headers = server.headers;
-    }
+    // env and headers are intentionally omitted from persisted workspace settings
+    // to prevent secrets (e.g. API keys) from being written to settings.json in plain text.
+    // These values should only be applied at runtime when spawning the MCP process.
     if (server.alwaysAllow === true) {
       config.alwaysAllow = true;
     }

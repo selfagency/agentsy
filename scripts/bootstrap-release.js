@@ -126,7 +126,6 @@ async function main() {
   await $`git fetch origin main`;
   await $`git pull --ff-only origin main`;
 
-
   console.log(`📦 Bootstrap publishing ${fullPackageName}@${version} (state: ${currentState})`);
 
   if (isDryRun) {
@@ -152,7 +151,6 @@ async function main() {
 
   releaseState.packages[fullPackageName] = 'oidc-ready';
   writeReleaseState(RELEASE_STATE_PATH, releaseState);
-
 
   console.log('✅ Bootstrap publish complete.');
   console.log('Next steps:');
