@@ -22,8 +22,8 @@ pnpm release @agentsy/vscode 0.1.5
 Use this only for packages that have never been published and are still marked `bootstrap-required` in `config/release-state.json`.
 
 ```bash
-# Replace <new-package> with the actual package short name (e.g. a newly added package)
-pnpm bootstrap-release @agentsy/<new-package> 0.1.0 --yes-i-know-this-is-first-publish
+# Replace 'example-pkg' with the actual package short name (e.g. a newly added workspace package)
+pnpm bootstrap-release @agentsy/example-pkg 0.1.0 --yes-i-know-this-is-first-publish
 ```
 
 What bootstrap does:
@@ -46,7 +46,7 @@ Once trusted publisher is configured, manually update `config/release-state.json
 ```json
 {
   "packages": {
-    "@agentsy/<new-package>": "oidc-ready"
+    "@agentsy/example-pkg": "oidc-ready"
   }
 }
 ```
@@ -133,7 +133,7 @@ export NPM_TOKEN="npm_xxxx..."
 Run one-time bootstrap publish first, then configure trusted publisher on npmjs.com:
 
 ```bash
-pnpm bootstrap-release @agentsy/<package> <version> --yes-i-know-this-is-first-publish
+pnpm bootstrap-release @agentsy/example-pkg 0.1.0 --yes-i-know-this-is-first-publish
 ```
 
 ### "Unable to authenticate" during CI publish

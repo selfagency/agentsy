@@ -311,9 +311,9 @@ async function main() {
   runGit(['pull', '--ff-only', 'origin', 'main']);
 
   // Re-read pkgJson and release state now that main is up to date.
-  const freshPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
-  const freshReleaseState = readReleaseState(RELEASE_STATE_PATH);
-  const packageReleaseState = getPackageReleaseState(freshReleaseState, fullPackageName);
+  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
+  const latestReleaseState = readReleaseState(RELEASE_STATE_PATH);
+  const packageReleaseState = getPackageReleaseState(latestReleaseState, fullPackageName);
 
   if (packageReleaseState !== 'oidc-ready') {
     console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
@@ -332,7 +332,7 @@ async function main() {
   const [, owner, repo] = match;
 
   const expectedRepo = `${owner}/${repo}`;
-  const repoCheck = validateRepositoryMatch(getRepositoryField(freshPkgJson.repository), expectedRepo);
+  const repoCheck = validateRepositoryMatch(getRepositoryField(latestPkgJson.repository), expectedRepo);
   if (!repoCheck.ok) {
     console.error(`❌ ${repoCheck.error}`);
     process.exit(1);
