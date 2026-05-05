@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/adapters",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Provider adapters and integration utilities",
   "keywords": [
     "adapters",
