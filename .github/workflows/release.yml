@@ -7,7 +7,6 @@ on:
 permissions:
   contents: read
   actions: read
-  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -19,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
       actions: read
 
     outputs:
@@ -130,7 +129,7 @@ jobs:
 
   release:
     name: Build and Release
-    needs: detect-release
+    needs: [detect-release, verify-publish-readiness]
     if: needs.detect-release.outputs.tag != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -228,6 +227,23 @@ jobs:
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
 
+      - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
+        run: |
+          set -euo pipefail
+          CURRENT_NPM="$(npm --version)"
+          echo "Current npm: ${CURRENT_NPM}"
+
+          if ! node -e "
+            const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '').split('.').map(v => Number.parseInt(v, 10));
+            const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
+            process.exit(ok ? 0 : 1);
+          " "${CURRENT_NPM}"; then
+            echo "Upgrading npm to ^11.5.1 for trusted publishing support"
+            npm install -g npm@^11.5.1
+          fi
+
+          npm --version
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -250,15 +266,15 @@ jobs:
           PACKAGE_DIR="packages/${{ needs.detect-release.outputs.package_dir }}"
           echo "📤 Publishing ${{ needs.detect-release.outputs.package_name }}@${{ needs.detect-release.outputs.version }}..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
-          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG"
+          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG" --provenance
 
       - name: Publish root monorepo release
         if: needs.detect-release.outputs.is_per_package != 'true'
         run: |
           echo "📤 Publishing all packages..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
-          npm publish ./packages/core/dist --access public --tag="$DIST_TAG"
-          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG"
+          npm publish ./packages/core/dist --access public --tag="$DIST_TAG" --provenance
+          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG" --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
@@ -270,3 +286,49 @@ jobs:
           prerelease: ${{ needs.detect-release.outputs.is_prerelease == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  verify-publish-readiness:
+    name: Verify trusted publishing readiness
+    needs: detect-release
+    if: needs.detect-release.outputs.tag != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ needs.detect-release.outputs.tag }}
+
+      - name: Verify release state and package repository URL
+        shell: bash
+        env:
+          IS_PER_PACKAGE: ${{ needs.detect-release.outputs.is_per_package }}
+          PACKAGE_NAME: ${{ needs.detect-release.outputs.package_name }}
+          PACKAGE_DIR: ${{ needs.detect-release.outputs.package_dir }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${IS_PER_PACKAGE}" == "true" ]]; then
+            node scripts/trusted-publish-readiness.js \
+              --package-name "${PACKAGE_NAME}" \
+              --package-dir "packages/${PACKAGE_DIR}" \
+              --expected-repo "${REPOSITORY}" \
+              --release-state-path "config/release-state.json" \
+              --workflow-filename "release.yml" \
+              --expected-state "oidc-ready"
+          else
+            # Root release: verify all published packages are oidc-ready before publishing any.
+            for pkg in core vscode; do
+              node scripts/trusted-publish-readiness.js \
+                --package-name "@agentsy/${pkg}" \
+                --package-dir "packages/${pkg}" \
+                --expected-repo "${REPOSITORY}" \
+                --release-state-path "config/release-state.json" \
+                --workflow-filename "release.yml" \
+                --expected-state "oidc-ready"
+            done
+          fi
