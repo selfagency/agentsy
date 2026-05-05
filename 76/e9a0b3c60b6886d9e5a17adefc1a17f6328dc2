@@ -1,0 +1,65 @@
+packages/agent/README.md
+  h_5cf1e2c1161853 50-51
+packages/processor/README.md
+  h_5cf1e2c1161853 56-57
+README.md
+  h_5cf1e2c1161853 43,46-52
+packages/normalizers/README.md
+  h_5cf1e2c1161853 58-59
+packages/structured/README.md
+  h_5cf1e2c1161853 46,51
+packages/formatting/README.md
+  h_5cf1e2c1161853 45
+packages/thinking/README.md
+  h_5cf1e2c1161853 43
+packages/tool-calls/README.md
+  h_5cf1e2c1161853 45
+packages/recovery/README.md
+  h_5cf1e2c1161853 44
+packages/ag-ui/README.md
+  h_5cf1e2c1161853 48
+packages/sse/README.md
+  h_5cf1e2c1161853 44
+packages/types/README.md
+  h_5cf1e2c1161853 37
+docs/packages/structured.md
+  h_5cf1e2c1161853 48-50
+docs/index.md
+  h_5cf1e2c1161853 34
+packages/ui/README.md
+  h_5cf1e2c1161853 45
+packages/context/README.md
+  h_5cf1e2c1161853 45
+packages/renderers/README.md
+  h_5cf1e2c1161853 58
+packages/adapters/README.md
+  h_5cf1e2c1161853 56
+packages/xml-filter/README.md
+  h_5cf1e2c1161853 45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "76e9a0b3c60b6886d9e5a17adefc1a17f6328dc2",
+  "prompts": {
+    "6356a138b51d4fde": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "02a3bb8c-4069-4615-bc41-eaf3d6fe205b",
+        "model": "copilot/gpt-5.4"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 8,
+      "total_deletions": 8,
+      "accepted_lines": 481,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/b02b9bae490b4774985cc0036ebdf552a827d54dd52cc729ea7150b4dc7ad152"
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
