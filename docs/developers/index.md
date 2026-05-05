@@ -258,6 +258,24 @@ Documentation sources:
 - `docs/` - Markdown documentation
 - `.vitepress/config.ts` - VitePress configuration
 
+### Documentation maintenance rules
+
+When you change the public-facing behavior of a package, update these surfaces together:
+
+1. the package source exports in `packages/<name>/src/index.ts`
+2. the package-local `README.md`
+3. the corresponding page in `docs/packages/`
+4. the cross-package index in `docs/api.md` when exported symbols changed
+
+If the change also affects ecosystem positioning, update one or more of:
+
+- `docs/index.md`
+- `docs/packages.md`
+- `docs/architecture/*.md`
+- `docs/roadmap.md`
+
+Future-facing changes should be grounded in the relevant file under `plan/` rather than described as already implemented.
+
 ## Documentation map
 
 - [Documentation home](../index.md)

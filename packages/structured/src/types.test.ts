@@ -26,14 +26,13 @@ test('DeepPartial preserves nested array partials', () => {
     ],
   };
 
-  expectTypeOf(partial).toMatchTypeOf<{
-    items?: Array<{
-      id?: string;
-      nested?: {
+  expectTypeOf(partial.items?.[0]?.id).toEqualTypeOf<string | undefined>();
+  expectTypeOf(partial.items?.[0]?.nested).toMatchTypeOf<
+    | {
         enabled?: boolean;
-      };
-    }>;
-  }>();
+      }
+    | undefined
+  >();
 });
 
 test('streaming completion marker is preserved', () => {

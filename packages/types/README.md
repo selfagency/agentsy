@@ -12,13 +12,29 @@ This package is the foundation for type-level compatibility between `normalizers
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you want shared type contracts without pulling in implementation-heavy runtime packages.
+
+## API overview
+
+- conversation types
+- stream event types
+- tool-call types
+- usage types
+- JSON helper types re-exported from `type-fest`
 
 ## Usage
 
 ```ts
 import type { StreamChunk, FinishReason, UsageInfo } from '@agentsy/types';
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/types)
 
 ## Development
 

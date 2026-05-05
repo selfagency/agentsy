@@ -12,17 +12,50 @@ This package sits downstream of `@agentsy/processor` and `@agentsy/agent` to pre
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need plain-text rendering today or when you are extending renderer surfaces in the monorepo.
+
+Typical neighbors:
+
+- `@agentsy/processor`
+- `@agentsy/formatting`
+- `@agentsy/ui`
+- `@agentsy/vscode`
+
+## API overview
+
+- `createPlainTextRenderer`
+- shared renderer utilities and types
+
+Source contains additional CLI, Ink, and streaming Markdown implementations, but the documented stable entry point is the package root surface.
 
 ## Usage
 
 ```ts
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { LLMStreamProcessor } from '@agentsy/processor';
 import { createPlainTextRenderer } from '@agentsy/renderers';
 
-const renderer = createPlainTextRenderer();
-renderer.writeChunk(chunk);
-renderer.end();
+const processor = new LLMStreamProcessor();
+const renderer = createPlainTextRenderer({
+  output: text => process.stdout.write(text),
+});
+
+processor.on('text', text => void renderer.write(text));
+
+for await (const rawChunk of openAiStream) {
+  processor.process(normalizeOpenAIChatChunk(rawChunk));
+}
+
+await renderer.end();
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/renderers)
 
 ## Development
 

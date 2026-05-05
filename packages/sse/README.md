@@ -12,7 +12,21 @@ This package feeds normalized stream fragments into higher-level packages like `
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need low-level SSE parsing before provider normalization or processor orchestration.
+
+Typical neighbors:
+
+- `@agentsy/normalizers`
+- `@agentsy/processor`
+
+## API overview
+
+- `SSEParser`
+- `parseSSEStream`
 
 ## Usage
 
@@ -24,6 +38,10 @@ for await (const event of parseSSEStream(stream)) {
   // handle parsed SSE event
 }
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/sse)
 
 ## Development
 

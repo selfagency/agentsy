@@ -12,7 +12,30 @@ Used in parsing pipelines where model output must be converted into reliable typ
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when model output must become reliable typed data before downstream logic runs.
+
+Typical neighbors:
+
+- `@agentsy/processor`
+- `@agentsy/tool-calls`
+- `@agentsy/agent`
+
+## API overview
+
+- `parseJson`
+- `validateJsonSchema`
+- `buildFormatInstructions`
+- `buildRepairPrompt`
+- `streamJson`
+- `autoRepair`
+- `providerFormats`
+- `repairStateMachine`
+- `fieldValidator`
+- `zodAdapter`
 
 ## Usage
 
@@ -20,8 +43,12 @@ Used in parsing pipelines where model output must be converted into reliable typ
 import { parseJson, validateJsonSchema, buildRepairPrompt } from '@agentsy/structured';
 
 const parsed = parseJson(text);
-const result = validateJsonSchema(JSON.stringify(parsed), schema);
+const result = validateJsonSchema(text, schema);
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/structured)
 
 ## Development
 

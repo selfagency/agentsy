@@ -12,18 +12,43 @@ This package composes `processor`, `tool-calls`, and surrounding infrastructure 
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when a single model response is not enough and you need iterative tool-use or multi-step orchestration.
+
+Typical neighbors:
+
+- `@agentsy/processor` for lower-level stream handling
+- `@agentsy/tool-calls` for tool request/result shaping
+- `@agentsy/renderers` or `@agentsy/ui` for projection of loop output
+
+## API overview
+
+- `createAgentLoop`
+- `detectDoomLoop`
+- `finishReasonIs`
+- `hasNoToolCalls`
+- `isStepCount`
 
 ## Usage
 
 ```ts
 import { createAgentLoop, isStepCount } from '@agentsy/agent';
+import { buildToolResultMessage } from '@agentsy/tool-calls';
 
 const loop = createAgentLoop({
   execute,
   stopWhen: [isStepCount(5)],
+  buildToolResultMessages: async toolCalls => toolCalls.map(call => buildToolResultMessage(call, { ok: true })),
 });
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/agent)
+- [Platform evolution](https://agentsy.self.agency/architecture/platform-evolution)
 
 ## Development
 

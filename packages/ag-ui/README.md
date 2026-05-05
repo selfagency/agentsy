@@ -12,15 +12,40 @@ Used when integrating Agentsy output with AG-UI clients and protocol-aware front
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need to adapt processor or UI events into AG-UI-compatible streams, state deltas, or observable-style integrations.
+
+Typical neighbors:
+
+- `@agentsy/ui`
+- `@agentsy/processor`
+- `@agentsy/agent`
+
+## API overview
+
+- `toAgUiStream`
+- `convertEventStream`
+- `createEventConverter`
+- `toCopilotKitEvent`
+- `toCustomUIEvent`
+- `InterruptController`, `TimeoutInterrupt`, `createInterruptEvent`
+- `StateManager`, `applyJsonPatches`, `computeStateDelta`, `createStateDeltaEvent`, `createStateSnapshotEvent`
+- `toObservable`
 
 ## Usage
 
 ```ts
-import { mapToAgUiEvent } from '@agentsy/ag-ui';
+import { toAgUiStream } from '@agentsy/ag-ui';
 
-const event = mapToAgUiEvent(processorEvent);
+const stream = toAgUiStream(processedEventStream, { runId: 'run-1' });
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/ag-ui)
 
 ## Development
 

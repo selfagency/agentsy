@@ -12,7 +12,21 @@ Used directly by `@agentsy/processor` and available as a standalone parser for c
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need focused reasoning-tag parsing without pulling in the full processing stack.
+
+Typical neighbors:
+
+- `@agentsy/processor`
+- `@agentsy/formatting`
+- `@agentsy/renderers`
+
+## API overview
+
+- `ThinkingParser`
 
 ## Usage
 
@@ -23,6 +37,10 @@ const parser = new ThinkingParser();
 const [thinking, content] = parser.addContent(chunk);
 const [finalThinking, finalContent] = parser.flush();
 ```
+
+## Learn more
+
+- [Package page](https://agentsy.self.agency/packages/thinking)
 
 ## Development
 

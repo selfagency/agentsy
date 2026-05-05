@@ -2,6 +2,8 @@
 
 Get up and running with the published VS Code package and internal package usage patterns.
 
+Migrating from the old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](./migrating-from-llm-stream-parser.md).
+
 ## Installation
 
 ### With npm
@@ -224,13 +226,13 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
 ## Notes on package status
 
 - `@agentsy/vscode` is currently published.
-- Most other `@agentsy/*` packages in this repository are internal/pre-release and documented for contributor usage.
+- The current `@agentsy/*` package family is published; use the focused packages you need and treat the still-unwritten agentic tooling from `plan/` as future work.
 - Planned future packages are tracked in `plan/*.md` and summarized in [Roadmap](./roadmap.md).
 
 ### Use generic adapter for simpler integration
 
 ```typescript
-import { processStream } from '@agentsy/core/adapters';
+import { processStream } from '@agentsy/adapters';
 
 for await (const output of processStream(apiStream, {
   parseThinkTags: true,
@@ -339,9 +341,11 @@ const processor = new LLMStreamProcessor({
 
 - **Use subpath imports** to reduce bundle size:
 
+  Prefer focused package imports that match the capability you need:
+
   ```typescript
-  import { ThinkingParser } from '@agentsy/core/thinking';
-  import { parseJson } from '@agentsy/core/structured';
+  import { ThinkingParser } from '@agentsy/thinking';
+  import { parseJson } from '@agentsy/structured';
   ```
 
 - **Stream processing** instead of buffering:
