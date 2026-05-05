@@ -487,7 +487,7 @@ async function main() {
   const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
   const parentSha = runGit(['rev-parse', `${headSha}^`]).stdout.trim();
 
-  const changedFiles = runGit(['show', '--name-only', '--pretty=format:', '--', headSha])
+  const changedFiles = runGit(['show', '--name-only', '--pretty=format:', headSha])
     .stdout.split(/\r?\n/)
     .map(line => line.trim())
     .filter(Boolean);
@@ -535,9 +535,8 @@ async function main() {
 
   // --- Monitor Release workflow --------------------------------------------
 
-  spinner.text = 'Release: waiting for workflow to trigger...';
-  spinner.start();
-  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, spinner, {
+  const releaseSpinner = ora('Release: waiting for workflow to trigger...').start();
+  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, releaseSpinner, {
     autoDispatch: false,
     branch: null,
   });

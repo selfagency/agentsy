@@ -286,37 +286,6 @@ jobs:
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
-        run: |
-          set -euo pipefail
-          version_is_supported() {
-            node -e "
-              const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '')
-                .split('.')
-                .map(v => Number.parseInt(v, 10));
-              const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
-              process.exit(ok ? 0 : 1);
-            " "$1"
-          }
-
-          CURRENT_NPM="$(npm --version)"
-          echo "Current npm: ${CURRENT_NPM}"
-          echo "npm path: $(command -v npm)"
-
-          if ! version_is_supported "${CURRENT_NPM}"; then
-            echo "Installing npm@^11.5.1 for trusted publishing support"
-            npm install -g npm@^11.5.1
-          fi
-
-          FINAL_NPM="$(npm --version)"
-          echo "Final npm: ${FINAL_NPM}"
-          echo "npm path: $(command -v npm)"
-
-          if ! version_is_supported "${FINAL_NPM}"; then
-            echo "❌ npm ${FINAL_NPM} does not meet trusted publishing minimum (>=11.5.1)."
-            exit 1
-          fi
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -332,6 +301,36 @@ jobs:
         run: |
           node scripts/write-dist-package.js packages/core
           node scripts/write-dist-package.js packages/vscode
+
+      - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
+        run: |
+          set -euo pipefail
+          version_is_supported() {
+            node -e "
+              const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '')
+                .split('.')
+                .map(v => Number.parseInt(v, 10));
+              const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
+              process.exit(ok ? 0 : 1);
+            " "$1"
+          }
+
+          BASE_NPM="$(npm --version)"
+          echo "Runner npm: ${BASE_NPM}"
+          echo "runner npm path: $(command -v npm)"
+
+          corepack enable
+          corepack prepare npm@11.6.2 --activate
+
+          COREPACK_NPM="$(corepack npm --version)"
+          echo "Corepack npm: ${COREPACK_NPM}"
+
+          if ! version_is_supported "${COREPACK_NPM}"; then
+            echo "❌ corepack npm ${COREPACK_NPM} does not meet trusted publishing minimum (>=11.5.1)."
+            exit 1
+          fi
+
+          echo "✅ Using corepack npm ${COREPACK_NPM} for publish steps"
 
       - name: Publish per-package release
         if: needs.detect-release.outputs.is_per_package == 'true'
@@ -356,7 +355,7 @@ jobs:
             local dist_tag="$2"
 
             set +e
-            npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
+            corepack npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
             local publish_exit=$?
             set -e
 
@@ -396,7 +395,7 @@ jobs:
             local dist_tag="$2"
 
             set +e
-            npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
+            corepack npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
             local publish_exit=$?
             set -e
 
