@@ -95,6 +95,7 @@ export class LLMStreamProcessor {
   private readonly _conversationToolCallsByKey = new Map<string, string>();
   private readonly _seenConversationToolCallIds = new Set<string>();
   private readonly _conversationToolCallObjectIds = new WeakMap<XmlToolCall, string>();
+  private readonly _warnCallback: (message: string, context?: Record<string, unknown>) => void;
   private conversationDoneEmitted = false;
 
   private get usagePayload(): { usage: UsageInfo } | Record<string, never> {
@@ -131,6 +132,7 @@ export class LLMStreamProcessor {
     this.nativeAccumulator = (options.accumulateNativeToolCalls ?? true) ? new ToolCallAccumulator() : null;
     this.toolCallParsers = options.toolCallParsers ?? [];
     this._stats = createEmptyStats();
+    this._warnCallback = this.warn.bind(this);
     this._partsSource = new ReadableStream<OutputPart>({
       start: controller => {
         this._partsController = controller;
@@ -186,8 +188,8 @@ export class LLMStreamProcessor {
     const done = chunk.done === true;
 
     const maxInputLength = this.options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
-    const rawThinking = enforceMaxLength(ensureText(chunk.thinking), 'thinking', maxInputLength, this.warn.bind(this));
-    let rawContent = enforceMaxLength(ensureText(chunk.content), 'content', maxInputLength, this.warn.bind(this));
+    const rawThinking = enforceMaxLength(ensureText(chunk.thinking), 'thinking', maxInputLength, this._warnCallback);
+    let rawContent = enforceMaxLength(ensureText(chunk.content), 'content', maxInputLength, this._warnCallback);
 
     const inlineToolCallParse = this.parseInlineToolCalls(rawContent, done);
     rawContent = inlineToolCallParse.content;

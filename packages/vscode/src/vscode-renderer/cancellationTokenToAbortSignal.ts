@@ -56,6 +56,9 @@ export function cancellationTokenToAbortSignal(token: CancellationTokenLike): Ab
       controller.abort();
       cancellationListener?.dispose();
     });
+    if (controller.signal.aborted) {
+      cancellationListener?.dispose();
+    }
   } catch {
     // Gracefully fall back to a non-cancelled signal in partial/mock host environments.
   }

@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { ensureText, estimateChunkSize, mapNativeToolCalls, normalizeToolArguments } from './chunkUtils.js';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  enforceMaxLength,
+  ensureText,
+  estimateChunkSize,
+  mapNativeToolCalls,
+  normalizeToolArguments,
+} from './chunkUtils.js';
 
 describe('chunkUtils', () => {
   describe('ensureText', () => {
@@ -79,6 +85,44 @@ describe('chunkUtils', () => {
       );
 
       expect(size).toBeGreaterThan(0);
+    });
+  });
+
+  describe('enforceMaxLength', () => {
+    it('returns unchanged value when within limit', () => {
+      const warn = vi.fn();
+      expect(enforceMaxLength('hello', 'content', 10, warn)).toBe('hello');
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('truncates exactly at max length when no partial tag is present', () => {
+      const warn = vi.fn();
+      expect(enforceMaxLength('abcdef', 'content', 3, warn)).toBe('abc');
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('backs up to opening bracket when truncation would cut a tag', () => {
+      const warn = vi.fn();
+      const input = 'text <tool_call name="x">payload';
+      expect(enforceMaxLength(input, 'content', 14, warn)).toBe('text ');
+    });
+
+    it('returns full string when tag close is before truncation boundary', () => {
+      const warn = vi.fn();
+      const input = '<a>ok</a> tail';
+      expect(enforceMaxLength(input, 'content', 10, warn)).toBe('<a>ok</a> ');
+    });
+
+    it('handles max length landing on an opening bracket by dropping partial fragment', () => {
+      const warn = vi.fn();
+      const input = 'hello <';
+      expect(enforceMaxLength(input, 'thinking', 6, warn)).toBe('hello ');
+    });
+
+    it('returns empty string when oversized input starts with an unclosed tag', () => {
+      const warn = vi.fn();
+      const input = '<unclosed tag content';
+      expect(enforceMaxLength(input, 'content', 5, warn)).toBe('');
     });
   });
 });
