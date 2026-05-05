@@ -740,4 +740,17 @@ describe('Cancellation Token Bridge', () => {
     expect(signal).toBeDefined();
     expect(signal.aborted).toBe(false);
   });
+
+  it('does not throw when cancellation callback fires synchronously during registration', () => {
+    const mockToken: CancellationToken = {
+      isCancellationRequested: false,
+      onCancellationRequested: vi.fn(listener => {
+        listener(undefined);
+        return { dispose: vi.fn() };
+      }),
+    };
+
+    const signal = cancellationTokenToAbortSignal(mockToken);
+    expect(signal.aborted).toBe(true);
+  });
 });
