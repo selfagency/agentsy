@@ -76,6 +76,7 @@ function safeWrite(p, data) {
 const packageName = argv._[0];
 const version = argv._[1];
 const isDryRun = argv['dry-run'] || argv.dryRun;
+const isRetag = argv.retag || argv.retag;
 
 if (!packageName || !version) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
@@ -363,8 +364,18 @@ async function main() {
 
   try {
     await octokit.git.getRef({ owner, repo, ref: `tags/${tag}` });
-    console.error(`❌ Remote tag '${tag}' already exists.`);
-    process.exit(1);
+    if (isRetag) {
+      console.log(`⚠️  Remote tag '${tag}' exists — deleting for retag...`);
+      await octokit.git.deleteRef({ owner, repo, ref: `tags/${tag}` });
+      console.log(`↩️  Remote tag deleted.`);
+      // Delete local tag if present
+      const localTagExists = runGit(['tag', '-l', tag]).stdout.trim();
+      if (localTagExists) runGit(['tag', '-d', tag]);
+    } else {
+      console.error(`❌ Remote tag '${tag}' already exists.`);
+      console.error(`   If the previous CI run failed and you want to retag, rerun with --retag.`);
+      process.exit(1);
+    }
   } catch (err) {
     if (err.status !== 404) throw err;
   }
