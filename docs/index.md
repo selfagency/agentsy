@@ -1,32 +1,88 @@
-# Agentsy documentation
+---
+layout: home
 
-Agentsy is a composable TypeScript ecosystem for building production-grade LLM features: provider normalization, stream parsing, structured output handling, tool-call accumulation, renderer surfaces, agent loops, and VS Code integrations.
+hero:
+  name: Agentsy
+  text: Composable infrastructure for production-grade LLM systems
+  tagline: Build headless agentic workflows in Node.js-compatible runtimes, align with open standards like MCP and AG-UI, and add UI layers only when you actually need them.
+  actions:
+    - theme: brand
+      text: Get started
+      link: /getting-started
+    - theme: alt
+      text: Explore packages
+      link: /packages
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/selfagency/agentsy
+      target: _blank
+      rel: noreferrer
 
-This site documents two things at once:
-
-- **What exists today** in `packages/*`
-- **Where the platform is heading** based on the design work in `plan/`
-
-Every page calls out implementation status so the current package surface stays distinct from roadmap material.
+features:
+  - icon: 🔌
+    title: Provider normalization
+    details: Convert incompatible provider payloads into a shared stream vocabulary before the rest of your stack ever sees them.
+    link: /packages/normalizers
+    linkText: See normalizers
+  - icon: 🌊
+    title: Streaming-first processing
+    details: Handle chunk boundaries, partial outputs, reasoning tags, tool-call deltas, and finish states as first-class concerns.
+    link: /packages/processor
+    linkText: See processor
+  - icon: 🧰
+    title: Focused utility packages
+    details: Adopt only the layers you need for structured output, context cleanup, SSE parsing, recovery, formatting, and XML scrubbing.
+    link: /packages
+    linkText: Browse package catalog
+  - icon: 🤖
+    title: Headless-first agent runtime
+    details: Build multi-step loops, state stores, protocol bridges, renderers, and CLI or operator-style workflows without requiring a frontend, TUI, or web app first.
+    link: /architecture/package-ecosystem
+    linkText: See the architecture
+  - icon: 🌐
+    title: Open stack, not a captive ecosystem
+    details: Agentsy aims to align with open standards and credible interoperability efforts like MCP, AG-UI, and skills-style workflows instead of forcing developers into one vendor-owned world.
+    link: /why-agentsy
+    linkText: Read the rationale
+  - icon: 🧭
+    title: Honest roadmap boundaries
+    details: This site separates what ships today from what is planned so teams can adopt the current packages without mistaking roadmap material for runtime reality.
+    link: /roadmap
+    linkText: Read the roadmap
+  - icon: 🛡️
+    title: Type-safe and defensive
+    details: Agentsy treats model output as untrusted input and is built around strict TypeScript contracts, bounded parsing, and recoverable streaming behavior.
+    link: /why-agentsy
+    linkText: Why Agentsy exists
+---
 
 ## Start here
 
-### If you are evaluating Agentsy
+### Evaluate the framework
 
-- Read [Why Agentsy](./why-agentsy.md)
-- Skim the [Architecture overview](./architecture/index.md)
-- Browse the [Package catalog](./packages.md)
+- Read [Why Agentsy](/why-agentsy)
+- Skim the [architecture overview](/architecture/)
+- Browse the [package catalog](/packages)
 
-### If you are adopting the current packages
+## Why this stack exists
 
-- Follow [Getting started](./getting-started.md)
-- Use the [API index](./api.md)
-- If you came from the old monolith, use [Migrating from `@selfagency/llm-stream-parser`](./migrating-from-llm-stream-parser.md)
+Agentsy is meant for developers building agentic tools that need dependable runtime plumbing more than flashy first-party surfaces:
 
-### If you are contributing to the monorepo
+- headless workflows running in Node.js-compatible runtimes
+- CLI and operator tooling
+- editor integrations and coding agents
+- standards-aware systems that want to work with open ecosystem protocols instead of a captive vendor stack
 
-- Open the [Developer guide](./developers/index.md)
-- Review the [Roadmap](./roadmap.md)
+### Adopt the current packages
+
+- Follow [Getting started](/getting-started)
+- Use the [API index](/api)
+- If you came from the old monolith, use [Migrating from `@selfagency/llm-stream-parser`](/migrating-from-llm-stream-parser)
+
+### Contribute to the monorepo
+
+- Open the [developer guide](/developers/)
+- Review the [roadmap](/roadmap)
 - Cross-check future-facing work against the `plan/` documents referenced throughout the architecture pages
 
 ## Package status model
@@ -39,32 +95,13 @@ Agentsy documentation uses three labels consistently:
 | **Private**   | Repo-internal package used for verification or tooling    |
 | **Planned**   | Described in `plan/`, not yet implemented as package code |
 
-## Ecosystem at a glance
-
-### Foundation and parsing layers
-
-- `@agentsy/normalizers` converts provider responses into a shared event vocabulary.
-- `@agentsy/processor` orchestrates incremental processing and pipeline transforms.
-- `@agentsy/thinking`, `@agentsy/tool-calls`, `@agentsy/structured`, `@agentsy/xml-filter`, `@agentsy/context`, `@agentsy/recovery`, `@agentsy/formatting`, `@agentsy/sse`, and `@agentsy/types` support focused parsing and recovery concerns.
-
-### Runtime and UI layers
-
-- `@agentsy/agent` builds multi-step loops on top of processed events.
-- `@agentsy/ui` and `@agentsy/ag-ui` turn event streams into state models and protocol bridges.
-- `@agentsy/renderers` provides human-facing rendering surfaces.
-- `@agentsy/adapters` helps package the pipeline for integration-specific entry points.
-
-### Product-facing integration layer
-
-- `@agentsy/vscode` is the current flagship published package for VS Code chat-provider integrations.
-
 ## Recommended reading path
 
-1. [Why Agentsy](./why-agentsy.md)
-2. [Architecture overview](./architecture/index.md)
-3. [Stream processing flow](./architecture/stream-processing.md)
-4. [Package catalog](./packages.md)
-5. [API index](./api.md)
+1. [Why Agentsy](/why-agentsy)
+2. [Architecture overview](/architecture/)
+3. [Stream processing flow](/architecture/stream-processing)
+4. [Package catalog](/packages)
+5. [API index](/api)
 
 ## Planning sources
 

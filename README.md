@@ -1,6 +1,6 @@
 # Agentsy monorepo
 
-Production-grade TypeScript packages for stream parsing, agent loops, rendering, and VS Code integration.
+Production-grade TypeScript packages for stream parsing, agent loops, headless Node.js workflows, and standards-aware integrations.
 
 [![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
@@ -9,8 +9,26 @@ Production-grade TypeScript packages for stream parsing, agent loops, rendering,
 
 This repository is a **pnpm workspace monorepo** managed by **Turborepo**. It contains the `@agentsy/*` package family.
 
+Agentsy is designed as an **open stack for agentic tooling**:
+
+- build workflows that run in Node.js-compatible runtimes without requiring a frontend
+- compose parsing, processing, tool-use, and runtime layers independently
+- align with open or emerging standards like **MCP**, **AG-UI**, and **skills-style interoperability** where they are useful
+- avoid turning core developer infrastructure into a proprietary ecosystem maintained by one corporate platform
+
 - **Published packages:** the current `@agentsy/*` package family under `packages/`
 - **Private package:** `@agentsy/integration` (cross-package integration tests)
+
+## Why Agentsy
+
+Agentsy is a good fit when you want to build:
+
+- headless automation and background agent workflows
+- coding agents and editor-native tooling
+- CLI and operator-style applications
+- systems that may grow UI layers later, but should not depend on them at the start
+
+The package family is intentionally split so you can adopt only the layers you need instead of swallowing an all-or-nothing framework.
 
 ## Package map
 

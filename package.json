@@ -27,9 +27,9 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "docs:build": "vitepress build docs",
-    "docs:dev": "vitepress dev docs",
-    "docs:preview": "vitepress preview docs",
+    "docs:build": "vitepress build",
+    "docs:dev": "vitepress dev",
+    "docs:preview": "vitepress preview",
     "check-types": "turbo run check-types",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
