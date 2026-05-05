@@ -264,18 +264,82 @@ jobs:
       - name: Publish per-package release
         if: needs.detect-release.outputs.is_per_package == 'true'
         run: |
+          set -euo pipefail
+
+          dump_npm_debug_log() {
+            local latest_log
+            latest_log="$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)"
+            if [[ -n "${latest_log}" && -f "${latest_log}" ]]; then
+              echo "📄 npm debug log: ${latest_log}"
+              echo "----- npm debug log (last 120 lines) -----"
+              tail -n 120 "${latest_log}" || true
+              echo "------------------------------------------"
+            else
+              echo "ℹ️ No npm debug log found in /home/runner/.npm/_logs"
+            fi
+          }
+
+          publish_with_diagnostics() {
+            local pkg_dir="$1"
+            local dist_tag="$2"
+
+            set +e
+            npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
+            local publish_exit=$?
+            set -e
+
+            if [[ ${publish_exit} -ne 0 ]]; then
+              echo "❌ npm publish failed (exit ${publish_exit})."
+              echo "ℹ️ Diagnostic context: trusted publishing uses OIDC + provenance; failures after provenance often indicate package authorization mismatch in npm registry settings."
+              dump_npm_debug_log
+              exit ${publish_exit}
+            fi
+          }
+
           PACKAGE_DIR="packages/${{ needs.detect-release.outputs.package_dir }}"
           echo "📤 Publishing ${{ needs.detect-release.outputs.package_name }}@${{ needs.detect-release.outputs.version }}..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
-          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG" --provenance
+          publish_with_diagnostics "$PACKAGE_DIR/dist" "$DIST_TAG"
 
       - name: Publish root monorepo release
         if: needs.detect-release.outputs.is_per_package != 'true'
         run: |
+          set -euo pipefail
+
+          dump_npm_debug_log() {
+            local latest_log
+            latest_log="$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)"
+            if [[ -n "${latest_log}" && -f "${latest_log}" ]]; then
+              echo "📄 npm debug log: ${latest_log}"
+              echo "----- npm debug log (last 120 lines) -----"
+              tail -n 120 "${latest_log}" || true
+              echo "------------------------------------------"
+            else
+              echo "ℹ️ No npm debug log found in /home/runner/.npm/_logs"
+            fi
+          }
+
+          publish_with_diagnostics() {
+            local pkg_dir="$1"
+            local dist_tag="$2"
+
+            set +e
+            npm publish "${pkg_dir}" --access public --tag="${dist_tag}" --provenance
+            local publish_exit=$?
+            set -e
+
+            if [[ ${publish_exit} -ne 0 ]]; then
+              echo "❌ npm publish failed for ${pkg_dir} (exit ${publish_exit})."
+              echo "ℹ️ Diagnostic context: trusted publishing uses OIDC + provenance; failures after provenance often indicate package authorization mismatch in npm registry settings."
+              dump_npm_debug_log
+              exit ${publish_exit}
+            fi
+          }
+
           echo "📤 Publishing all packages..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
-          npm publish ./packages/core/dist --access public --tag="$DIST_TAG" --provenance
-          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG" --provenance
+          publish_with_diagnostics ./packages/core/dist "$DIST_TAG"
+          publish_with_diagnostics ./packages/vscode/dist "$DIST_TAG"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
