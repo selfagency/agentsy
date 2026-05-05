@@ -27,7 +27,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "typecheck": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {

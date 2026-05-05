@@ -53,7 +53,9 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
     }
     const args = obj.arguments ?? obj.parameters ?? {};
     const parameters =
-      typeof args === 'object' && !Array.isArray(args) ? (Object.assign(Object.create(null), args) as JsonObject) : {};
+      typeof args === 'object' && !Array.isArray(args)
+        ? (Object.assign(Object.create(null), args) as JsonObject)
+        : (Object.create(null) as JsonObject);
 
     results.push({ name, parameters, format: 'json-wrapped' });
   }
@@ -85,7 +87,7 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
     } else if (parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)) {
       argumentsValue = Object.assign(Object.create(null), parsed.parameters) as JsonObject;
     } else {
-      argumentsValue = {};
+      argumentsValue = Object.create(null) as JsonObject;
     }
 
     return {

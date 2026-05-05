@@ -446,8 +446,8 @@ importers:
   packages/types:
     dependencies:
       type-fest:
-        specifier: 5.6.0
-        version: 5.6.0
+        specifier: 4.26.1
+        version: 4.26.1
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
@@ -2347,8 +2347,8 @@ packages:
     resolution: {integrity: sha512-REEB2rVTVDTf4hav1gJ5dIsGylWZrNonvjXFtk1dCi8gND3PhZtnYkyry1bra/Fo+iP6ctTEZbg6vWfdfHq/1A==}
     hasBin: true
 
-  type-fest@4.41.0:
-    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+  type-fest@4.26.1:
+    resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
     engines: {node: '>=16'}
 
   type-fest@5.6.0:
@@ -3152,7 +3152,7 @@ snapshots:
       chalk: 5.6.2
       cli-boxes: 3.0.0
       string-width: 7.2.0
-      type-fest: 4.41.0
+      type-fest: 4.26.1
       widest-line: 5.0.0
       wrap-ansi: 9.0.2
     optional: true
@@ -4152,8 +4152,7 @@ snapshots:
       '@turbo/windows-64': 2.9.8
       '@turbo/windows-arm64': 2.9.8
 
-  type-fest@4.41.0:
-    optional: true
+  type-fest@4.26.1: {}
 
   type-fest@5.6.0:
     dependencies:
