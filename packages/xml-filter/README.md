@@ -42,7 +42,7 @@ const remaining = filter.end();
 
 ## Learn more
 
-- `/docs/packages/xml-filter.md`
+- [Package page](../../docs/packages/xml-filter.md)
 
 ## Development
 

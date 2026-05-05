@@ -45,7 +45,7 @@ const stream = toAgUiStream(processedEventStream, { runId: 'run-1' });
 
 ## Learn more
 
-- `/docs/packages/ag-ui.md`
+- [Package page](../../docs/packages/ag-ui.md)
 
 ## Development
 

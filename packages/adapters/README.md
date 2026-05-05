@@ -35,21 +35,25 @@ Typical neighbors:
 
 ```ts
 import { createGenericAdapter } from '@agentsy/adapters';
-import { normalizeOpenAICompatibleChunk } from '@agentsy/normalizers';
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
 
-const adapter = createGenericAdapter({
-  normalizeChunk: normalizeOpenAICompatibleChunk,
-  parseThinkTags: true,
-});
+const adapter = createGenericAdapter(
+  {
+    onContent: text => process.stdout.write(text),
+  },
+  { parseThinkTags: true },
+);
 
-for await (const part of adapter.process(source)) {
-  console.log(part);
+for await (const rawChunk of source) {
+  await adapter.write(normalizeOpenAIChatChunk(rawChunk));
 }
+
+await adapter.end();
 ```
 
 ## Learn more
 
-- `/docs/packages/adapters.md`
+- [Package page](../../docs/packages/adapters.md)
 
 ## Development
 

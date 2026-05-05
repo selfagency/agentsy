@@ -48,7 +48,7 @@ const result = validateJsonSchema(parsed, schema);
 
 ## Learn more
 
-- `/docs/packages/structured.md`
+- [Package page](../../docs/packages/structured.md)
 
 ## Development
 

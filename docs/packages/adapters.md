@@ -42,9 +42,8 @@ const adapter = createGenericAdapter({
 ## Implementation example with neighbors
 
 ```ts
-import { createGenericAdapter } from '@agentsy/adapters';
-import { normalizeOpenAICompatibleChunk } from '@agentsy/normalizers';
-import { processStream } from '@agentsy/adapters';
+import { createGenericAdapter, processStream } from '@agentsy/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
 
 for await (const output of processStream(normalizedStream, { parseThinkTags: true })) {
   console.log(output.content);
@@ -59,7 +58,7 @@ const adapter = createGenericAdapter(
 );
 
 for await (const rawChunk of streamFromProvider) {
-  await adapter.write(normalizeOpenAICompatibleChunk(rawChunk));
+  await adapter.write(normalizeOpenAIChatChunk(rawChunk));
 }
 
 await adapter.end();

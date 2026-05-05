@@ -41,7 +41,7 @@ const prompt = buildContinuationPrompt(snapshot);
 
 ## Learn more
 
-- `/docs/packages/recovery.md`
+- [Package page](../../docs/packages/recovery.md)
 
 ## Development
 

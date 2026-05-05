@@ -53,8 +53,8 @@ console.log(final.content);
 
 ## Learn more
 
-- `/docs/packages/processor.md`
-- `/docs/architecture/stream-processing.md`
+- [Package page](../../docs/packages/processor.md)
+- [Stream processing](../../docs/architecture/stream-processing.md)
 
 ## Development
 

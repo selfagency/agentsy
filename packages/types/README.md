@@ -34,7 +34,7 @@ import type { StreamChunk, FinishReason, UsageInfo } from '@agentsy/types';
 
 ## Learn more
 
-- `/docs/packages/types.md`
+- [Package page](../../docs/packages/types.md)
 
 ## Development
 

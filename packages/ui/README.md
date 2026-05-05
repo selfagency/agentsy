@@ -42,7 +42,7 @@ store.dispatch(event);
 
 ## Learn more
 
-- `/docs/packages/ui.md`
+- [Package page](../../docs/packages/ui.md)
 
 ## Development
 

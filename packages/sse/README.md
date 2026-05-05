@@ -41,7 +41,7 @@ for await (const event of parseSSEStream(stream)) {
 
 ## Learn more
 
-- `/docs/packages/sse.md`
+- [Package page](../../docs/packages/sse.md)
 
 ## Development
 

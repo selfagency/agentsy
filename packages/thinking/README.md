@@ -40,7 +40,7 @@ const [finalThinking, finalContent] = parser.flush();
 
 ## Learn more
 
-- `/docs/packages/thinking.md`
+- [Package page](../../docs/packages/thinking.md)
 
 ## Development
 

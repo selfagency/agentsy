@@ -55,7 +55,7 @@ await renderer.end();
 
 ## Learn more
 
-- `/docs/packages/renderers.md`
+- [Package page](../../docs/packages/renderers.md)
 
 ## Development
 

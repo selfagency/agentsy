@@ -55,8 +55,8 @@ for await (const raw of openAiStream) {
 
 ## Learn more
 
-- `/docs/packages/normalizers.md`
-- `/docs/architecture/stream-processing.md`
+- [Package page](../../docs/packages/normalizers.md)
+- [Stream processing](../../docs/architecture/stream-processing.md)
 
 ## Development
 

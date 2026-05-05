@@ -1,5 +1,12 @@
 import { defineConfig } from 'vitepress';
 
+const architectureItems = [
+  { text: 'Overview', link: '/architecture/' },
+  { text: 'Package ecosystem', link: '/architecture/package-ecosystem' },
+  { text: 'Stream processing flow', link: '/architecture/stream-processing' },
+  { text: 'Platform evolution', link: '/architecture/platform-evolution' },
+];
+
 export default defineConfig({
   title: 'Agentsy',
   description:
@@ -34,12 +41,7 @@ export default defineConfig({
       },
       {
         text: 'Architecture',
-        items: [
-          { text: 'Overview', link: '/architecture/' },
-          { text: 'Package ecosystem', link: '/architecture/package-ecosystem' },
-          { text: 'Stream processing flow', link: '/architecture/stream-processing' },
-          { text: 'Platform evolution', link: '/architecture/platform-evolution' },
-        ],
+        items: architectureItems,
       },
       { text: 'Packages', link: '/packages' },
       {
@@ -56,12 +58,7 @@ export default defineConfig({
       '/architecture/': [
         {
           text: 'Architecture',
-          items: [
-            { text: 'Overview', link: '/architecture/' },
-            { text: 'Package ecosystem', link: '/architecture/package-ecosystem' },
-            { text: 'Stream processing flow', link: '/architecture/stream-processing' },
-            { text: 'Platform evolution', link: '/architecture/platform-evolution' },
-          ],
+          items: architectureItems,
         },
       ],
       '/packages/': [

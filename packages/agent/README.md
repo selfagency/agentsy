@@ -47,8 +47,8 @@ const loop = createAgentLoop({
 
 ## Learn more
 
-- `/docs/packages/agent.md`
-- `/docs/architecture/platform-evolution.md`
+- [Package page](../../docs/packages/agent.md)
+- [Platform evolution](../../docs/architecture/platform-evolution.md)
 
 ## Development
 

@@ -42,7 +42,7 @@ const plain = stripXmlContextTags(remaining);
 
 ## Learn more
 
-- `/docs/packages/context.md`
+- [Package page](../../docs/packages/context.md)
 
 ## Development
 

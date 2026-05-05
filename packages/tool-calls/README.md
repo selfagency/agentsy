@@ -42,7 +42,7 @@ const calls = extractXmlToolCalls(output, knownTools);
 
 ## Learn more
 
-- `/docs/packages/tool-calls.md`
+- [Package page](../../docs/packages/tool-calls.md)
 
 ## Development
 

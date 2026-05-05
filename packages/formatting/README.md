@@ -42,7 +42,7 @@ import {
 
 ## Learn more
 
-- `/docs/packages/formatting.md`
+- [Package page](../../docs/packages/formatting.md)
 
 ## Development
 

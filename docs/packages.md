@@ -11,7 +11,7 @@ For the high-level architecture behind these packages, start with the [Architect
 | **Published** | Stable package currently published to npm              |
 | **Private**   | Internal repo package used for verification or tooling |
 
-## Published package
+## Integration packages
 
 | Package           | Role                                                                      | Status    | Docs                                 |
 | ----------------- | ------------------------------------------------------------------------- | --------- | ------------------------------------ |
