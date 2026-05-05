@@ -9,6 +9,10 @@
     "ui"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git"
+  },
   "files": [
     "dist"
   ],

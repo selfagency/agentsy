@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": false,
   "description": "Tool call utilities and XML tool system prompts for the @agentsy platform.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
