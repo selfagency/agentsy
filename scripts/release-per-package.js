@@ -37,12 +37,15 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, sleep } from 'zx';
+import { getPackageReleaseState, readReleaseState } from './release-state.js';
+import { getRepositoryField, validateRepositoryMatch } from './trusted-publish-readiness.js';
 
 $.verbose = false;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
+const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
 // Defensive filesystem helpers
@@ -112,6 +115,16 @@ if (!existsSync(pkgJsonPath)) {
 // Load actual package name from package.json
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
+
+const releaseState = readReleaseState(RELEASE_STATE_PATH);
+const packageReleaseState = getPackageReleaseState(releaseState, fullPackageName);
+
+if (packageReleaseState !== 'oidc-ready') {
+  console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
+  console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
+  console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
+  process.exit(1);
+}
 
 const tag = `${fullPackageName}@${version}`;
 
@@ -313,6 +326,21 @@ async function main() {
     process.exit(1);
   }
   const [, owner, repo] = match;
+
+  const expectedRepo = `${owner}/${repo}`;
+  const packageRepository = getRepositoryField(pkgJson.repository);
+  if (!packageRepository) {
+    console.error(
+      `❌ Package ${pkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`,
+    );
+    process.exit(1);
+  }
+
+  const repoCheck = validateRepositoryMatch(packageRepository, expectedRepo);
+  if (!repoCheck.ok) {
+    console.error(`❌ ${repoCheck.error}`);
+    process.exit(1);
+  }
 
   // Check for existing tags
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();

@@ -26,9 +26,11 @@
     "lint:fix": "turbo run lint:fix",
     "format": "turbo run format",
     "test": "turbo run test",
+    "test:release": "node --test scripts/release-state.test.js scripts/trusted-publish-readiness.test.js",
     "test:coverage": "turbo run test:coverage",
     "precommit": "turbo run precommit",
     "release": "pnpm exec zx scripts/release-per-package.js",
+    "bootstrap-release": "pnpm exec zx scripts/bootstrap-release.js",
     "prepare": "husky"
   },
   "devDependencies": {
