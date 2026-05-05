@@ -97,7 +97,7 @@ This plan covers the full transformation of `@agentsy/core` into `@selfagency/ag
 
 | Task        | Description                                                                                                                                                                                               | Completed | Date |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-R0-001 | Rename `package.json` `name` field from `@agentsy/core` to `@selfagency/agentsy`. Update `description`, `homepage`, `repository` fields.                                                  |           |      |
+| TASK-R0-001 | Rename `package.json` `name` field from `@agentsy/core` to `@selfagency/agentsy`. Update `description`, `homepage`, `repository` fields.                                                                  |           |      |
 | TASK-R0-002 | Update `README.md` title, badges, and install instructions to reference `@selfagency/agentsy`.                                                                                                            |           |      |
 | TASK-R0-003 | Create `packages/llm-stream-parser/` compatibility shim package: `package.json` with `peerDependencies: { "@selfagency/agentsy": "*" }` and an `index.ts` that re-exports `* from '@selfagency/agentsy'`. |           |      |
 | TASK-R0-004 | Update `pnpm-workspace.yaml` to include the compatibility shim package.                                                                                                                                   |           |      |
@@ -113,7 +113,7 @@ This plan covers the full transformation of `@agentsy/core` into `@selfagency/ag
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-R1-001 | Add `deprecated` field to the shim `package.json`: `"deprecated": "Renamed to @selfagency/agentsy — please update your imports."` |           |      |
 | TASK-R1-002 | Add deprecation notice to top of `README.md` of the shim package.                                                                 |           |      |
-| TASK-R1-003 | Publish shim package to npm as `@agentsy/core@0.3.0` after `@selfagency/agentsy@0.3.0` is published.              |           |      |
+| TASK-R1-003 | Publish shim package to npm as `@agentsy/core@0.3.0` after `@selfagency/agentsy@0.3.0` is published.                              |           |      |
 
 ---
 
@@ -134,7 +134,7 @@ This plan covers the full transformation of `@agentsy/core` into `@selfagency/ag
 - **GOAL-P0**: Freeze the public API contracts, event model, and security invariants before any new module is built. Everything else builds on this.
 
 | Task        | Description                                                                                                                                                                                                                             | Completed | Date   |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------------------------------------------------------------------------- | --- | --- |
 | TASK-P0-001 | Create `src/types/events.ts`: extend existing `EventType` enum with `CONTEXT_WINDOW_WILL_OVERFLOW`, `CHAT_COMPRESSED`, `LOOP_DETECTED`, `CITATION`, `RETRY`, `INVALID_STREAM`, `COST_THRESHOLD_EXCEEDED`, `MEMORY_INJECTION_SUSPECTED`. |           |        |
 | TASK-P0-002 | Create `src/types/hooks.ts`: define `HookEvent`, `HookDecision` (`allow`/`ask`/`deny`/`defer`), `HookContext`, `HookResult` interfaces.                                                                                                 |           |        |
 | TASK-P0-003 | Create `src/types/memory.ts`: define `MemoryStore`, `MemoryRetriever`, `MemoryFeedback`, `MemoryMaintenance` interfaces (Layer 0/1/2 contracts).                                                                                        |           |        |
@@ -476,7 +476,7 @@ This plan covers the full transformation of `@agentsy/core` into `@selfagency/ag
 | TASK-P12-001 | Write E2E integration tests in `src/**/*.e2e.test.ts` covering: full agent loop (3 steps, 2 tool calls), session resume after simulated crash, MCP tool invocation, memory search injection, wiki synthesis pass. |           |      |
 | TASK-P12-002 | Write adversarial test corpus: malformed JSON tool args, truncated SSE stream, oversized context (>200K tokens), wiki page with injection payload, plugin with invalid checksum.                                  |           |      |
 | TASK-P12-003 | Add performance benchmarks to `memory-tests/` and `perf-tests/` directories mirroring Gemini CLI's test structure.                                                                                                |           |      |
-| TASK-P12-004 | Publish `@selfagency/agentsy@0.3.0` to npm `latest` channel. Publish `@agentsy/core@0.3.0` shim.                                                                                                  |           |      |
+| TASK-P12-004 | Publish `@selfagency/agentsy@0.3.0` to npm `latest` channel. Publish `@agentsy/core@0.3.0` shim.                                                                                                                  |           |      |
 | TASK-P12-005 | Tag `v0.3.0` in git. Create GitHub release with `CHANGELOG.md` entry.                                                                                                                                             |           |      |
 
 ---

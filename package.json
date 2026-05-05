@@ -41,16 +41,16 @@
     "ora": "9.4.0",
     "oxfmt": "0.47.0",
     "oxlint": "1.62.0",
-    "turbo": "^2.9.8",
+    "turbo": "^2.9.9",
     "zx": "^8.8.5"
   },
   "lint-staged": {
     "**/*.{ts,tsx,js,mjs,cjs}": [
-      "oxlint --fix",
-      "oxfmt --write"
+      "oxlint --no-error-on-unmatched-pattern .",
+      "oxfmt --no-error-on-unmatched-pattern --write ."
     ],
     "**/*.{json,md,yaml,yml}": [
-      "oxfmt --write"
+      "oxfmt --no-error-on-unmatched-pattern --write ."
     ]
   },
   "packageManager": "pnpm@10.33.2"

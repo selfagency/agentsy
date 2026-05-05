@@ -40,8 +40,6 @@ After bootstrap, configure trusted publisher on npmjs package settings:
 - workflow filename: `release.yml` (exact match)
 - optional environment: only if you use GitHub environments
 
-
-
 ## What Happens
 
 1. **Validation**: Script checks prerequisites (git, npm auth, GitHub token)
