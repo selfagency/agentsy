@@ -38,6 +38,7 @@ import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, sleep } from 'zx';
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
+import { getRepositoryField, validateRepositoryMatch } from './trusted-publish-readiness.js';
 
 $.verbose = false;
 
@@ -327,6 +328,13 @@ async function main() {
     process.exit(1);
   }
   const [, owner, repo] = match;
+
+  const expectedRepo = `${owner}/${repo}`;
+  const repoCheck = validateRepositoryMatch(getRepositoryField(pkgJson.repository), expectedRepo);
+  if (!repoCheck.ok) {
+    console.error(`❌ ${repoCheck.error}`);
+    process.exit(1);
+  }
 
   // Check for existing tags
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
