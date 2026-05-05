@@ -94,6 +94,10 @@ if (currentState === 'oidc-ready' && !force) {
 const distTag = explicitTag ?? (version.includes('-') ? 'prerelease' : 'latest');
 
 async function checkNpmCredentials() {
+  const npmToken = process.env.NPM_TOKEN ?? process.env.NODE_AUTH_TOKEN;
+  if (npmToken) {
+    await $`npm config set //registry.npmjs.org/:_authToken ${npmToken}`;
+  }
   try {
     await $`npm whoami --registry=https://registry.npmjs.org/`;
   } catch {
@@ -105,11 +109,23 @@ async function checkNpmCredentials() {
 async function main() {
   await checkNpmCredentials();
 
+  // Require clean working tree and main branch to avoid shipping dirty or branch content.
   const dirty = (await $`git status --porcelain`).stdout.trim();
-  if (dirty.length > 0) {
+  if (dirty) {
     console.error('❌ Working tree is not clean. Commit or stash changes first.');
     process.exit(1);
   }
+
+  const branch = (await $`git rev-parse --abbrev-ref HEAD`).stdout.trim();
+  if (branch !== 'main') {
+    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
+    process.exit(1);
+  }
+
+  console.log('🔄 Fetching latest refs...');
+  await $`git fetch origin main`;
+  await $`git pull --ff-only origin main`;
+
 
   console.log(`📦 Bootstrap publishing ${fullPackageName}@${version} (state: ${currentState})`);
 
@@ -136,6 +152,7 @@ async function main() {
 
   releaseState.packages[fullPackageName] = 'oidc-ready';
   writeReleaseState(RELEASE_STATE_PATH, releaseState);
+
 
   console.log('✅ Bootstrap publish complete.');
   console.log('Next steps:');

@@ -67,7 +67,7 @@ test('checkTrustedPublishReadiness passes for oidc-ready package with matching r
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
-    repoRoot: base,
+    rootDir: base,
   });
 
   assert.deepEqual(result, { ok: true });
@@ -89,13 +89,13 @@ test('checkTrustedPublishReadiness fails for bootstrap-required package', () => 
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
-    repoRoot: base,
+    rootDir: base,
   });
 
   assert.equal(result.ok, false);
 });
 
-test('checkTrustedPublishReadiness fails when workflow file is missing under provided repoRoot', () => {
+test('checkTrustedPublishReadiness fails when workflow file is missing under provided rootDir', () => {
   const { base, pkgDir, releaseStatePath } = setupBase();
 
   writeFileSync(
@@ -114,7 +114,7 @@ test('checkTrustedPublishReadiness fails when workflow file is missing under pro
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'missing.yml',
-    repoRoot: base,
+    rootDir: base,
   });
 
   assert.equal(result.ok, false);

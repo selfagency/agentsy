@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = resolve(__filename, '..');
 const ROOT = resolve(__dirname, '..');
 
 /** @param {unknown} repository */

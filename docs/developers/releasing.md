@@ -20,11 +20,13 @@ pnpm release @agentsy/processor 0.2.0
 Use this only for packages that have never been published and are still marked `bootstrap-required` in `config/release-state.json`.
 
 ```bash
-pnpm bootstrap-release @agentsy/renderers 0.1.0 --yes-i-know-this-is-first-publish
+# Replace 'pkg-name' with the actual package short name (e.g. a newly added workspace package)
+pnpm bootstrap-release @agentsy/pkg-name 0.1.0 --yes-i-know-this-is-first-publish
 ```
 
 What bootstrap does:
 
+- validates working tree is clean and on `main`
 - updates package version
 - builds package output
 - writes `dist/package.json`
@@ -37,6 +39,7 @@ After bootstrap, configure trusted publisher on npmjs package settings:
 - repository: `selfagency/agentsy` (exact match)
 - workflow filename: `release.yml` (exact match)
 - optional environment: only if you use GitHub environments
+
 
 ## What Happens
 

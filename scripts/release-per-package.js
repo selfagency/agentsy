@@ -112,7 +112,7 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-// Load actual package name from package.json
+// Load actual package name from package.json (needed for tag construction below)
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
 
@@ -318,6 +318,18 @@ async function main() {
   runGit(['fetch', 'origin', 'main']);
   runGit(['pull', '--ff-only', 'origin', 'main']);
 
+  // Re-read pkgJson and release state now that main is up to date.
+  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
+  const latestReleaseState = readReleaseState(RELEASE_STATE_PATH);
+  const packageReleaseState = getPackageReleaseState(latestReleaseState, fullPackageName);
+
+  if (packageReleaseState !== 'oidc-ready') {
+    console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
+    console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
+    console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
+    process.exit(1);
+  }
+
   // Derive owner/repo from git remote
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
@@ -328,10 +340,10 @@ async function main() {
   const [, owner, repo] = match;
 
   const expectedRepo = `${owner}/${repo}`;
-  const packageRepository = getRepositoryField(pkgJson.repository);
+  const packageRepository = getRepositoryField(latestPkgJson.repository);
   if (!packageRepository) {
     console.error(
-      `❌ Package ${pkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`,
+      `❌ Package ${latestPkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`,
     );
     process.exit(1);
   }

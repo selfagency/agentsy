@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths:
       - 'packages/**'
+      - 'scripts/**'
       - 'turbo.json'
       - 'package.json'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
       - 'packages/**'
+      - 'scripts/**'
       - 'turbo.json'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -44,6 +46,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Run release tooling tests
+        run: pnpm test:release
+        env:
+          CI: true
 
       - name: Run unit tests with coverage
         run: |
