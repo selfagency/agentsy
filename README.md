@@ -192,7 +192,7 @@ Each package has full test coverage with Vitest:
 
 ```bash
 # Test single package
-cd packages/core && pnpm test
+cd packages/vscode && pnpm test
 
 # Test all packages
 pnpm turbo run test

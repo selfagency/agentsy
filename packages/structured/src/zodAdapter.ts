@@ -29,9 +29,8 @@ export async function zodToJsonSchema(zodSchema: ZodLike): Promise<Record<string
   let zodToJsonSchemaFn: (schema: ZodLike) => Record<string, unknown>;
   try {
     // Dynamic import — zod-to-json-schema is an optional peer dependency.
-    // @ts-expect-error — module may not be installed; caught at runtime.
     const mod = await import('zod-to-json-schema');
-    zodToJsonSchemaFn = (mod.default ?? mod) as typeof zodToJsonSchemaFn;
+    zodToJsonSchemaFn = (mod.default ?? mod) as unknown as typeof zodToJsonSchemaFn;
   } catch {
     throw new Error('zod-to-json-schema is required for Zod integration. Install it: pnpm add zod-to-json-schema');
   }
