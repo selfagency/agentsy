@@ -86,6 +86,40 @@ jobs:
 
             // Verify CI passed
             const requiredWorkflows = ['Test & Build'];
+            let ciValidationSha = taggedSha;
+
+            if (isPerPackage) {
+              const commitResp = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: taggedSha,
+              });
+
+              const changedFiles = (commitResp.data.files ?? []).map(file => file.filename);
+              const metadataOnlyFiles = [
+                `packages/${packageDir}/package.json`,
+                `packages/${packageDir}/CHANGELOG.md`,
+              ];
+
+              const isMetadataOnlyCommit =
+                changedFiles.length > 0 &&
+                changedFiles.every(filename => metadataOnlyFiles.includes(filename));
+
+              if (isMetadataOnlyCommit) {
+                const parentSha = commitResp.data.parents?.[0]?.sha;
+                if (!parentSha) {
+                  core.setFailed('Release blocked: metadata-only release commit has no parent commit to validate.');
+                  return;
+                }
+
+                ciValidationSha = parentSha;
+                core.info(
+                  `Metadata-only release commit detected for ${packageName}. ` +
+                  `Validating required workflows on parent commit ${parentSha.slice(0, 7)} instead of tag commit ${taggedSha.slice(0, 7)}.`
+                );
+              }
+            }
+
             for (const workflowName of requiredWorkflows) {
               const workflowsResp = await github.rest.actions.listRepoWorkflows({
                 owner,
@@ -104,7 +138,7 @@ jobs:
                 repo,
                 workflow_id: workflow.id,
                 branch: 'main',
-                head_sha: taggedSha,
+                head_sha: ciValidationSha,
                 status: 'completed',
                 per_page: 10,
               });
@@ -112,7 +146,7 @@ jobs:
               const run = runsResp.data.workflow_runs[0];
               if (!run || run.conclusion !== 'success') {
                 core.setFailed(
-                  `Release blocked: workflow '${workflowName}' must pass on main before release.`
+                  `Release blocked: workflow '${workflowName}' must pass on main for commit ${ciValidationSha}.`
                 );
                 return;
               }
@@ -230,20 +264,33 @@ jobs:
       - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
         run: |
           set -euo pipefail
+          version_is_supported() {
+            node -e "
+              const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '')
+                .split('.')
+                .map(v => Number.parseInt(v, 10));
+              const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
+              process.exit(ok ? 0 : 1);
+            " "$1"
+          }
+
           CURRENT_NPM="$(npm --version)"
           echo "Current npm: ${CURRENT_NPM}"
+          echo "npm path: $(command -v npm)"
 
-          if ! node -e "
-            const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '').split('.').map(v => Number.parseInt(v, 10));
-            const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
-            process.exit(ok ? 0 : 1);
-          " "${CURRENT_NPM}"; then
-            echo "Upgrading npm to ^11.5.1 via corepack"
-            corepack enable
-            corepack prepare npm@11 --activate
+          if ! version_is_supported "${CURRENT_NPM}"; then
+            echo "Installing npm@^11.5.1 for trusted publishing support"
+            npm install -g npm@^11.5.1
           fi
 
-          npm --version
+          FINAL_NPM="$(npm --version)"
+          echo "Final npm: ${FINAL_NPM}"
+          echo "npm path: $(command -v npm)"
+
+          if ! version_is_supported "${FINAL_NPM}"; then
+            echo "❌ npm ${FINAL_NPM} does not meet trusted publishing minimum (>=11.5.1)."
+            exit 1
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

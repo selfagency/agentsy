@@ -485,14 +485,32 @@ async function main() {
 
   // Capture pushed commit SHA
   const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
+  const parentSha = runGit(['rev-parse', `${headSha}^`]).stdout.trim();
+
+  const changedFiles = runGit(['show', '--name-only', '--pretty=format:', '--', headSha])
+    .stdout.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  const metadataOnlyFiles = new Set([`packages/${pkgShortName}/package.json`, `packages/${pkgShortName}/CHANGELOG.md`]);
+
+  const isMetadataOnlyReleaseCommit =
+    changedFiles.length > 0 && changedFiles.every(file => metadataOnlyFiles.has(file));
 
   // --- Wait for required workflows -----------------------------------------
 
-  console.log(`🔎 Waiting for workflows on ${headSha.slice(0, 7)}...`);
+  const shaToValidate = isMetadataOnlyReleaseCommit ? parentSha : headSha;
+  if (isMetadataOnlyReleaseCommit) {
+    console.log(
+      `⚡ Metadata-only release commit detected; validating Test & Build on parent commit ${parentSha.slice(0, 7)} instead of ${headSha.slice(0, 7)}.`,
+    );
+  }
+
+  console.log(`🔎 Waiting for workflows on ${shaToValidate.slice(0, 7)}...`);
   await sleep(10_000);
 
   const spinner = ora('Test & Build: queued').start();
-  await waitForWorkflow(octokit, 'Test & Build', owner, repo, headSha, spinner);
+  await waitForWorkflow(octokit, 'Test & Build', owner, repo, shaToValidate, spinner);
 
   // --- Tag + push ----------------------------------------------------------
 
