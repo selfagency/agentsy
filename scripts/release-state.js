@@ -1,0 +1,44 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+
+export const DEFAULT_RELEASE_STATE = 'bootstrap-required';
+
+/**
+ * @param {string} releaseStatePath
+ * @returns {{defaultState: string, packages: Record<string, string>}}
+ */
+export function readReleaseState(releaseStatePath) {
+  if (!existsSync(releaseStatePath)) {
+    return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
+  }
+
+  const raw = JSON.parse(readFileSync(releaseStatePath, 'utf8'));
+  const defaultState =
+    raw && typeof raw === 'object' && typeof raw.defaultState === 'string' ? raw.defaultState : DEFAULT_RELEASE_STATE;
+  const packages =
+    raw && typeof raw === 'object' && raw.packages && typeof raw.packages === 'object' && !Array.isArray(raw.packages)
+      ? raw.packages
+      : {};
+
+  return { defaultState, packages };
+}
+
+/**
+ * @param {{defaultState: string, packages: Record<string, string>}} state
+ * @param {string} packageName
+ * @returns {string}
+ */
+export function getPackageReleaseState(state, packageName) {
+  return state.packages[packageName] ?? state.defaultState;
+}
+
+/**
+ * @param {string} releaseStatePath
+ * @param {{defaultState: string, packages: Record<string, string>}} state
+ */
+export function writeReleaseState(releaseStatePath, state) {
+  const sortedPackages = Object.fromEntries(Object.entries(state.packages).sort(([a], [b]) => a.localeCompare(b)));
+  writeFileSync(
+    releaseStatePath,
+    `${JSON.stringify({ defaultState: state.defaultState, packages: sortedPackages }, null, 2)}\n`,
+  );
+}

@@ -37,6 +37,7 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, sleep } from 'zx';
+import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
 $.verbose = false;
 
@@ -65,20 +66,6 @@ function safeRead(p, enc = 'utf8') {
 function safeWrite(p, data) {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
   return writeFileSync(resolve(p), data);
-}
-
-function readReleaseState() {
-  if (!existsSync(RELEASE_STATE_PATH)) {
-    return { defaultState: 'bootstrap-required', packages: {} };
-  }
-
-  const raw = JSON.parse(safeRead(RELEASE_STATE_PATH, 'utf8'));
-  const defaultState =
-    raw && typeof raw === 'object' && typeof raw.defaultState === 'string' ? raw.defaultState : 'bootstrap-required';
-  const packages =
-    raw && typeof raw === 'object' && raw.packages && typeof raw.packages === 'object' ? raw.packages : {};
-
-  return { defaultState, packages };
 }
 
 // ---------------------------------------------------------------------------
@@ -130,8 +117,8 @@ if (!existsSync(pkgJsonPath)) {
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
 
-const releaseState = readReleaseState();
-const packageReleaseState = releaseState.packages[fullPackageName] ?? releaseState.defaultState;
+const releaseState = readReleaseState(RELEASE_STATE_PATH);
+const packageReleaseState = getPackageReleaseState(releaseState, fullPackageName);
 
 if (packageReleaseState !== 'oidc-ready') {
   console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
