@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createGenericAdapter, processStream } from './generic.js';
+import {
+  applyDecisionAction,
+  createGenericAdapter,
+  processRawStream,
+  processStream,
+  runStructuredDecisionFromRawStream,
+} from './generic.js';
 import {
   OPENAI_COMPATIBLE_PROVIDERS,
   isOpenAICompatibleProvider,
@@ -21,6 +27,110 @@ describe('processStream', () => {
     expect(outputs).toHaveLength(2);
     expect(outputs[0]?.content).toBe('hello');
     expect(outputs[1]?.done).toBe(true);
+  });
+});
+
+describe('processRawStream', () => {
+  async function* rawSource() {
+    yield { text: 'hello' };
+  }
+
+  it('normalizes raw chunks before processing and flushes once at end', async () => {
+    const outputs = [];
+    for await (const out of processRawStream(rawSource(), chunk => ({ content: chunk.text }))) {
+      outputs.push(out);
+    }
+
+    expect(outputs).toHaveLength(2);
+    expect(outputs.map(output => output.content).join('')).toBe('hello');
+    expect(outputs[1]?.done).toBe(true);
+  });
+});
+
+describe('runStructuredDecisionFromRawStream', () => {
+  async function* decisionSource() {
+    yield { text: '{"shouldBlock":true,"targetIp":"203.0.113.10"' };
+    yield { text: ',"reason":"burst traffic","ttlSeconds":300,"evidence":["spike"]}' };
+  }
+
+  const schema = {
+    type: 'object',
+    required: ['shouldBlock', 'targetIp', 'reason', 'ttlSeconds', 'evidence'],
+    properties: {
+      shouldBlock: { type: 'boolean' },
+      targetIp: { type: 'string' },
+      reason: { type: 'string' },
+      ttlSeconds: { type: 'number' },
+      evidence: { type: 'array', items: { type: 'string' } },
+    },
+  } as const;
+
+  it('returns typed decision when validation succeeds', async () => {
+    const result = await runStructuredDecisionFromRawStream({
+      source: decisionSource(),
+      normalize: chunk => ({ content: chunk.text }),
+      schema,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.decision).toMatchObject({
+        shouldBlock: true,
+        targetIp: '203.0.113.10',
+      });
+      expect(result.finalOutput.done).toBe(true);
+    }
+  });
+
+  it('returns errors when validation fails schema checks', async () => {
+    async function* invalidSource() {
+      yield { text: '{"shouldBlock":true}' };
+    }
+
+    const result = await runStructuredDecisionFromRawStream({
+      source: invalidSource(),
+      normalize: chunk => ({ content: chunk.text }),
+      schema,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('applyDecisionAction', () => {
+  it('executes action when predicate passes', async () => {
+    const action = vi.fn(async () => 'blocked');
+    const result = await applyDecisionAction(
+      { shouldBlock: true },
+      {
+        shouldAct: decision => decision.shouldBlock,
+        action,
+      },
+    );
+
+    expect(result).toEqual({ acted: true, result: 'blocked' });
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it('skips action when predicate fails and runs onSkip', async () => {
+    const action = vi.fn(async () => 'blocked');
+    const onSkip = vi.fn<(_decision: { shouldBlock: boolean }) => void>();
+
+    const result = await applyDecisionAction(
+      { shouldBlock: false },
+      {
+        shouldAct: decision => decision.shouldBlock,
+        action,
+        onSkip,
+      },
+    );
+
+    expect(result).toEqual({ acted: false });
+    expect(action).not.toHaveBeenCalled();
+    expect(onSkip).toHaveBeenCalledOnce();
   });
 });
 
