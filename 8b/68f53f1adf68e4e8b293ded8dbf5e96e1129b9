@@ -1,0 +1,131 @@
+docs/api.md
+  h_5cf1e2c1161853 3,5,7,9-11,13,15-19,21,23-31,33,35-47
+docs/packages/sse.md
+  h_5cf1e2c1161853 1-30
+docs/packages/recovery.md
+  h_5cf1e2c1161853 1-37
+packages/structured/README.md
+  h_5cf1e2c1161853 15,17-38,46,49-51
+docs/packages/adapters.md
+  h_5cf1e2c1161853 1-70
+packages/context/README.md
+  h_5cf1e2c1161853 15,17-31,43-45
+docs/packages/ag-ui.md
+  h_5cf1e2c1161853 1-37
+docs/packages/agent.md
+  h_5cf1e2c1161853 1-66
+docs/why-agentsy.md
+  h_5cf1e2c1161853 3,5,7,9-14,16,18,20-39,43-49,51-53,55,57-60
+README.md
+  h_5cf1e2c1161853 12,17,43,46,78
+packages/agent/README.md
+  h_5cf1e2c1161853 15,17-33,39,44,48-52
+docs/packages.md
+  h_5cf1e2c1161853 1,3,5,7,9-12,14,16-18,20,22-28,30-65
+docs/architecture/stream-processing.md
+  h_5cf1e2c1161853 1-56
+packages/thinking/README.md
+  h_5cf1e2c1161853 15,17-29,41-43
+packages/structured/src/types.test.ts
+  h_5cf1e2c1161853 29-31,34
+docs/packages/thinking.md
+  h_5cf1e2c1161853 1-38
+docs/packages/xml-filter.md
+  h_5cf1e2c1161853 1-36
+packages/ui/README.md
+  h_5cf1e2c1161853 15,17-32,39,43-45
+docs/getting-started.md
+  h_5cf1e2c1161853 5-6,229,235,344,347-348
+packages/recovery/README.md
+  h_5cf1e2c1161853 15,17-29,34,37-38,42-44
+docs/packages/context.md
+  h_5cf1e2c1161853 1-38
+packages/processor/README.md
+  h_5cf1e2c1161853 15,17-36,41,45-49,51,54-57
+packages/adapters/README.md
+  h_5cf1e2c1161853 15,17-32,37-38,40-43,45-47,50-52
+docs/migrating-from-llm-stream-parser.md
+  h_5cf1e2c1161853 1-248
+packages/sse/README.md
+  h_5cf1e2c1161853 15,17-29,42-44
+packages/types/README.md
+  h_5cf1e2c1161853 15,17-27,35-37
+docs/packages/formatting.md
+  h_5cf1e2c1161853 1-41
+packages/renderers/README.md
+  h_5cf1e2c1161853 15,17-33,38-39,42-47,49-53,56-58
+docs/roadmap.md
+  h_5cf1e2c1161853 1,3,5,7,9,11,13-19,21,23,25,27,29-32,34-36,38-50,53-60,62-72,74,76-78
+docs/index.md
+  h_5cf1e2c1161853 1,3,5,7-8,10,12,14,16-18,20,22-24,26,28-30,32,34,36-78
+docs/packages/renderers.md
+  h_5cf1e2c1161853 1-57
+packages/normalizers/README.md
+  h_5cf1e2c1161853 15,17-41,46-47,49,51-53,56-59
+docs/packages/tool-calls.md
+  h_5cf1e2c1161853 1-44
+docs/packages/integration.md
+  h_5cf1e2c1161853 1-13
+docs/packages/ui.md
+  h_5cf1e2c1161853 1-46
+packages/ag-ui/README.md
+  h_5cf1e2c1161853 15,17-36,41,43,46-48
+docs/architecture/platform-evolution.md
+  h_5cf1e2c1161853 1-50
+docs/packages/normalizers.md
+  h_5cf1e2c1161853 1-67
+packages/formatting/README.md
+  h_5cf1e2c1161853 15,17-31,43-45
+.vitepress/config.ts
+  h_5cf1e2c1161853 4,6,11-20,24,28,30-32,36,38-50,56-66,69,71-77,81,83-94,99,101,104-123,127,133-138
+docs/architecture/index.md
+  h_5cf1e2c1161853 1-62
+docs/packages/types.md
+  h_5cf1e2c1161853 1-20
+docs/packages/structured.md
+  h_5cf1e2c1161853 1-51
+docs/developers/index.md
+  h_5cf1e2c1161853 261-278
+packages/xml-filter/README.md
+  h_5cf1e2c1161853 15,17-31,43-45
+package.json
+  h_5cf1e2c1161853 3,5
+  68bc9879070ac110 14-15,20
+docs/packages/vscode.md
+  h_5cf1e2c1161853 1,3-4,6,8,10-17,20-43,45,47-50,52-53,55,57-59,62,64,66
+packages/integration/README.md
+  h_5cf1e2c1161853 18-21
+docs/developer-guide.md
+  h_5cf1e2c1161853 39-40
+docs/architecture/package-ecosystem.md
+  h_5cf1e2c1161853 1-63
+packages/tool-calls/README.md
+  h_5cf1e2c1161853 15,17-33,43-45
+docs/packages/processor.md
+  h_5cf1e2c1161853 1-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "8b68f53f1adf68e4e8b293ded8dbf5e96e1129b9",
+  "prompts": {
+    "68bc9879070ac110": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1778005293459",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 4,
+      "overriden_lines": 7
+    }
+  },
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
