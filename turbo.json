@@ -2,42 +2,26 @@
   "$schema": "https://turbo.build/json-schema.json",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        ".next/**",
-        "*.tgz"
-      ],
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "*.tgz"],
       "cache": true
     },
     "test": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "cache": true
     },
     "coverage": {
-      "dependsOn": [
-        "build"
-      ],
-      "outputs": [
-        "coverage/**"
-      ],
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"],
       "cache": true
     },
     "check-types": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "cache": true
     },
     "lint": {
       "cache": true,
-      "outputs": [
-        ".eslintcache"
-      ]
+      "outputs": [".eslintcache"]
     },
     "lint:fix": {
       "cache": false
@@ -46,9 +30,7 @@
       "cache": false
     },
     "precommit": {
-      "dependsOn": [
-        "check-types"
-      ],
+      "dependsOn": ["check-types"],
       "cache": false
     }
   }

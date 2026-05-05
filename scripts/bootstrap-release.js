@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { $, argv, cd } from 'zx';
-import { getPackageReleaseState, readReleaseState } from './release-state.js';
+import { getPackageReleaseState, readReleaseState, writeReleaseState } from './release-state.js';
 
 $.verbose = false;
 
@@ -130,7 +130,7 @@ async function main() {
 
   if (isDryRun) {
     console.log(
-      '[dry-run] Would run package build, write dist package.json, and publish once locally.',
+      '[dry-run] Would run package build, write dist package.json, publish once locally, and mark oidc-ready.',
     );
     return;
   }
@@ -148,6 +148,9 @@ async function main() {
   const distPath = `${packagePath}/dist`;
   await $`node scripts/write-dist-package.js ${packagePath}`;
   await $`npm publish ${distPath} --access public --tag=${distTag}`;
+
+  releaseState.packages[fullPackageName] = 'oidc-ready';
+  writeReleaseState(RELEASE_STATE_PATH, releaseState);
 
   console.log('✅ Bootstrap publish complete.');
   console.log('Next steps:');

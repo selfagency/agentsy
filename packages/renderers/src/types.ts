@@ -1,7 +1,6 @@
-import type { UsageInfo } from '@agentsy/types';
 import type { LLMStreamProcessor, OutputPart, StreamChunk } from '@agentsy/processor';
 import type { XmlToolCall } from '@agentsy/tool-calls';
-import type { FinishReason, ToolCallState } from '@agentsy/types';
+import type { FinishReason, ToolCallState, UsageInfo } from '@agentsy/types';
 
 /**
  * Tool call output part (not rendered, only passed to callbacks).

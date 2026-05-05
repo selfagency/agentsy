@@ -63,15 +63,14 @@ export function createMcpServerDefinitionProvider(
 
   return {
     async provide(): Promise<McpServerDefinition[]> {
-      const rawServers =
-        typeof options.servers === 'function' ? await Promise.resolve(options.servers()) : options.servers;
+      const rawServers = typeof options.servers === 'function' ? await options.servers() : options.servers;
       const apiKey = await options.getApiKey?.();
 
       return rawServers.map(server => {
         const enabled = resolveEnabled(server, options.settings, defaultEnabled);
 
-        const env = Object.assign({}, server.env);
-        const headers = Object.assign({}, server.headers);
+        const env = { ...server.env };
+        const headers = { ...server.headers };
 
         if (typeof apiKey === 'string' && apiKey.length > 0) {
           const envKey = server.apiKeyEnvVar ?? options.defaultApiKeyEnvVar;

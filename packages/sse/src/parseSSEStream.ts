@@ -32,49 +32,54 @@ export async function* parseSSEStream(
     return obj != null && typeof obj === 'object' && 'getReader' in obj;
   };
 
-  try {
-    // Convert source to async iterable.
-    let iterator: AsyncIterator<string>;
+  async function* iterateReadableStream(stream: ReadableStream<string>): AsyncGenerator<string> {
+    const reader = stream.getReader();
 
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          return;
+        }
+        yield value ?? '';
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  async function* iterateAsyncIterable(iterable: AsyncIterable<string>): AsyncGenerator<string> {
+    yield* iterable;
+  }
+
+  async function* iterateChunks(): AsyncGenerator<string> {
     if (isReadableStream(source)) {
-      const reader = source.getReader();
-      iterator = {
-        async next(): Promise<IteratorResult<string>> {
-          try {
-            const { done, value } = await reader.read();
-            return { done, value: value ?? '' };
-          } catch {
-            // Stream closed or read error; end iteration gracefully
-            return { done: true, value: undefined };
-          }
-        },
-      };
-    } else {
-      iterator = source[Symbol.asyncIterator]();
+      yield* iterateReadableStream(source);
+      return;
     }
 
-    // Feed chunks into the parser and yield events.
-    for await (const chunk of { [Symbol.asyncIterator]: () => iterator }) {
-      if (chunk) {
-        parser.write(chunk);
-      }
+    yield* iterateAsyncIterable(source);
+  }
 
-      // Yield all queued events.
-      while (eventQueue.length > 0) {
-        const event = eventQueue.shift();
-        if (event) yield event;
-      }
+  // Feed chunks into the parser and yield events.
+  for await (const chunk of iterateChunks()) {
+    if (chunk) {
+      parser.write(chunk);
     }
 
-    // End of stream; flush remaining data.
-    parser.end();
-
-    // Yield any final queued events.
+    // Yield all queued events.
     while (eventQueue.length > 0) {
       const event = eventQueue.shift();
       if (event) yield event;
     }
-  } catch {
-    // Stream error; stop gracefully without re-throwing
+  }
+
+  // End of stream; flush remaining data.
+  parser.end();
+
+  // Yield any final queued events.
+  while (eventQueue.length > 0) {
+    const event = eventQueue.shift();
+    if (event) yield event;
   }
 }

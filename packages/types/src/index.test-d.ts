@@ -1,5 +1,14 @@
 import { assertType, expectTypeOf, test } from 'vitest';
-import type { FinishReason, NativeToolCallDelta, StreamChunk, ToolCallState, UsageInfo } from './index.js';
+import type {
+  FinishReason,
+  JsonObject,
+  JsonValue,
+  NativeToolCallDelta,
+  PartialDeep,
+  StreamChunk,
+  ToolCallState,
+  UsageInfo,
+} from './index.js';
 
 test('UsageInfo shape', () => {
   expectTypeOf<UsageInfo>().toMatchTypeOf<{
@@ -55,4 +64,36 @@ test('StreamChunk.tool_calls element shape', () => {
   type ToolCallEntry = NonNullable<StreamChunk['tool_calls']>[number];
   const _entry = {} as ToolCallEntry;
   expectTypeOf(_entry.function).toEqualTypeOf<{ name?: string | undefined; arguments?: unknown } | undefined>();
+});
+
+test('JsonObject and JsonValue exports are available', () => {
+  const jsonObject: JsonObject = {
+    label: 'agentsy',
+    nested: { enabled: true },
+    items: [1, 'two', null],
+  };
+
+  const jsonValue: JsonValue = jsonObject;
+
+  expectTypeOf(jsonObject).toMatchTypeOf<JsonObject>();
+  expectTypeOf(jsonValue).toMatchTypeOf<JsonValue>();
+});
+
+test('PartialDeep supports recursive array partials when requested', () => {
+  type Input = {
+    items: Array<{
+      id: string;
+      metadata: {
+        count: number;
+      };
+    }>;
+  };
+
+  type PartialInput = PartialDeep<Input, { recurseIntoArrays: true }>;
+
+  const value1: PartialInput = { items: [{ metadata: {} }] };
+  const value2: PartialInput = { items: [{ id: 'abc', metadata: { count: 1 } }] };
+
+  expectTypeOf(value1).toMatchTypeOf<PartialInput>();
+  expectTypeOf(value2).toMatchTypeOf<PartialInput>();
 });

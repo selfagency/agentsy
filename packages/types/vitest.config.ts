@@ -7,5 +7,9 @@ export default defineConfig({
       include: ['src/**/*.test-d.ts'],
     },
     include: ['src/**/*.test-d.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
   },
 });

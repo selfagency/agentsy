@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -89,6 +89,31 @@ test('checkTrustedPublishReadiness fails for bootstrap-required package', () => 
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
+    rootDir: base,
+  });
+
+  assert.equal(result.ok, false);
+});
+
+test('checkTrustedPublishReadiness fails when workflow file is missing under provided rootDir', () => {
+  const { base, pkgDir, releaseStatePath } = setupBase();
+
+  writeFileSync(
+    join(pkgDir, 'package.json'),
+    JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } }),
+  );
+
+  writeFileSync(
+    releaseStatePath,
+    JSON.stringify({ defaultState: 'bootstrap-required', packages: { '@agentsy/testpkg': 'oidc-ready' } }),
+  );
+
+  const result = checkTrustedPublishReadiness({
+    packageName: '@agentsy/testpkg',
+    packageDir: pkgDir,
+    expectedRepo: 'selfagency/agentsy',
+    releaseStatePath,
+    workflowFilename: 'missing.yml',
     rootDir: base,
   });
 

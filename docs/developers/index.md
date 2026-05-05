@@ -1,12 +1,11 @@
 # Developer Guide
 
-This document covers local development, testing, and release operations for `@agentsy/core`.
+This document covers local development, testing, and release operations for the `@agentsy` monorepo.
 
 ## Prerequisites
 
-- Node.js 20+ (18+ minimum, but 20+ recommended for tooling compatibility)
+- Node.js 22+
 - pnpm (version pinned in `package.json`)
-- `task` CLI (optional, recommended)
 
 ## Quick Start
 
@@ -21,59 +20,58 @@ pnpm install
 ### 2. Build and verify
 
 ```bash
-task compile
-task check-types
-task unit-tests
-task lint
-task check-formatting
+pnpm build
+pnpm check-types
+pnpm test
+pnpm lint
+pnpm format
 ```
 
 Or run all checks at once:
 
 ```bash
-task check-all
+pnpm check-types && pnpm test && pnpm lint
 ```
 
 ## Development Workflow
 
 ### Running tasks
 
-We use Taskfile.yaml for consistent workflows:
+We use root `pnpm` scripts orchestrated by Turborepo:
 
 ```bash
-task <task-name>
+pnpm build
+pnpm check-types
+pnpm lint
+pnpm lint:fix
+pnpm format
+pnpm test
+pnpm test:coverage
+pnpm precommit
 ```
 
-View all available tasks:
+### Common scripts
 
-```bash
-task --list
-```
-
-### Common tasks
-
-| Task                 | Purpose                                   |
-| -------------------- | ----------------------------------------- |
-| `check-types`        | Run TypeScript type checker               |
-| `lint`               | Run linter (oxlint)                       |
-| `lint-fix`           | Auto-fix linting issues                   |
-| `check-formatting`   | Check code formatting                     |
-| `formatting`         | Auto-format code                          |
-| `compile`            | Build distribution (tsup)                 |
-| `unit-tests`         | Run all tests                             |
-| `unit-test-coverage` | Run tests with coverage report            |
-| `precommit`          | Run pre-commit checks (lint-fix + format) |
-| `watch`              | Watch for changes and recompile           |
+| Script               | Purpose                             |
+| -------------------- | ----------------------------------- |
+| `pnpm check-types`   | Run TypeScript type checker         |
+| `pnpm lint`          | Run linter (oxlint)                 |
+| `pnpm lint:fix`      | Auto-fix linting issues             |
+| `pnpm format`        | Auto-format code (oxfmt)            |
+| `pnpm build`         | Build distribution (tsup via turbo) |
+| `pnpm test`          | Run all tests                       |
+| `pnpm test:coverage` | Run tests with coverage report      |
+| `pnpm precommit`     | Run pre-commit checks               |
 
 ### Development mode
 
 Watch for changes and automatically rebuild:
 
 ```bash
-task watch
+pnpm --filter @agentsy/vscode test -- --watch
 ```
 
-This runs tsup in watch mode.
+For package-specific watch workflows, run the package-local scripts inside that package directory.
 
 ## Testing Strategy
 
@@ -106,13 +104,13 @@ src/
 
 ```bash
 # Run all tests
-task unit-tests
+pnpm test
 
 # Run tests with coverage
-task unit-test-coverage
+pnpm test:coverage
 
 # Run specific test file
-task unit-tests src/thinking/thinking.test.ts
+pnpm --filter @agentsy/thinking test -- src/ThinkingParser.test.ts
 
 # Watch mode
 pnpm vitest src
@@ -125,7 +123,7 @@ pnpm vitest src
 The package uses `tsup` for building:
 
 ```bash
-task compile
+pnpm build
 ```
 
 This generates:
@@ -155,7 +153,7 @@ The package uses scripted release automation:
 4. After merge to main:
 
    ```bash
-   task release -- <version>
+   pnpm release
    ```
 
 The release script:
@@ -172,8 +170,7 @@ The release script:
 Example:
 
 ```bash
-task release -- 0.2.0        # Stable release
-task release -- 0.2.0-alpha.1 # Prerelease
+pnpm release # per-package scripted release helper
 ```
 
 ## CI/CD
@@ -188,7 +185,7 @@ See `.github/workflows/`:
 ### Check all code quality rules
 
 ```bash
-task check-all
+pnpm check-types && pnpm lint && pnpm format
 ```
 
 This runs:
@@ -200,7 +197,7 @@ This runs:
 ### Auto-fix issues
 
 ```bash
-task precommit
+pnpm lint:fix && pnpm format
 ```
 
 This runs:
@@ -214,7 +211,7 @@ Pre-commit hooks are configured via husky:
 
 ```bash
 # Install git hooks
-pnpm husky install
+pnpm install
 ```
 
 ## Debugging
@@ -222,7 +219,7 @@ pnpm husky install
 ### TypeScript errors
 
 ```bash
-task check-types
+pnpm check-types
 
 # Or directly:
 pnpm tsc --noEmit
@@ -231,7 +228,7 @@ pnpm tsc --noEmit
 ### Linting errors
 
 ```bash
-task lint-fix
+pnpm lint:fix
 ```
 
 ### Test failures
@@ -261,36 +258,43 @@ Documentation sources:
 - `docs/` - Markdown documentation
 - `.vitepress/config.ts` - VitePress configuration
 
+## Documentation map
+
+- [Documentation home](../index.md)
+- [Package inventory](../packages.md)
+- [Roadmap (planned)](../roadmap.md)
+- [Integration guide](./integration-copilot.md)
+- [Releasing](./releasing.md)
+
 ## Project Structure
 
 ```text
-@agentsy/core/
-├── src/
-│   ├── thinking/         # Thinking tag extraction
-│   ├── xml-filter/       # XML context filtering
-│   ├── tool-calls/       # Tool call extraction
-│   ├── context/          # Context block processing
-│   ├── structured/       # JSON parsing & schema validation
-│   ├── formatting/       # Output formatting
-│   ├── processor/        # Stream processor orchestration
-│   ├── markdown/         # Markdown parsing
-│   ├── adapters/         # Pre-built adapters
-│   └── index.ts          # Main entry point
-├── dist/                 # Compiled output (tsup)
-├── docs/                 # Documentation (VitePress)
-├── .vitepress/          # VitePress config
-├── scripts/             # Build and release scripts
-├── Taskfile.yaml        # Task definitions
-├── tsconfig.json        # TypeScript config
-├── tsup.config.ts       # Build config
-└── package.json         # Package metadata
+agentsy/
+├── packages/
+│   ├── vscode/            # Published package
+│   ├── processor/         # Stream orchestrator
+│   ├── normalizers/       # Provider normalizers
+│   ├── agent/             # Agent loop
+│   ├── adapters/          # Provider adapters
+│   ├── thinking/          # <think> parser
+│   ├── tool-calls/        # Tool call parsing
+│   ├── structured/        # JSON parse/repair/validation
+│   ├── renderers/         # CLI/TUI/plain renderers
+│   ├── ag-ui/             # AG-UI protocol bridge
+│   └── ...other internal packages
+├── docs/
+├── .vitepress/
+├── scripts/
+├── turbo.json
+├── pnpm-workspace.yaml
+└── package.json
 ```
 
 ## Contributing Guidelines
 
 1. Create a feature branch from `main`
 2. Make changes and add tests
-3. Run `task check-all` and `task unit-tests` locally
+3. Run `pnpm check-types`, `pnpm lint`, and `pnpm test` locally
 4. Commit with clear messages
 5. Push and create pull request
 6. Address review feedback
@@ -307,21 +311,21 @@ Documentation sources:
 ### Type errors after changes
 
 ```bash
-task check-types --force
+pnpm check-types
 ```
 
 ### Tests pass locally but fail in CI
 
 - Check Node.js version in CI matches local
 - Check environment variables
-- Run `task check-all` locally
+- Run `pnpm check-types && pnpm lint && pnpm test` locally
 
 ### Build artifacts missing
 
 ```bash
 rm -rf dist pnpm-lock.yaml
 pnpm install
-task compile
+pnpm build
 ```
 
 ## Additional Resources

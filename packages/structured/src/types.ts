@@ -2,6 +2,7 @@
  * Streaming type utilities for typed partial JSON.
  * Inspired by gjp-4-gpt's symbolic completion markers and jsonchunk's DeepPartial pattern.
  */
+import type { PartialDeep } from '@agentsy/types';
 
 /**
  * Symbolic marker for streaming completion status.
@@ -15,15 +16,7 @@ export const ItemDoneStreaming = Symbol.for('ItemDoneStreaming');
  * Objects become { key?: DeepPartial<value> }, arrays become DeepPartial<T>[],
  * and primitives remain unchanged.
  */
-export type DeepPartial<T> = T extends object
-  ? T extends Date
-    ? Date
-    : T extends (infer U)[]
-      ? DeepPartial<U>[]
-      : {
-          [K in keyof T]?: DeepPartial<T[K]>;
-        }
-  : T;
+export type DeepPartial<T> = T extends object ? PartialDeep<T, { recurseIntoArrays: true }> : T;
 
 /**
  * Streaming partial type combining DeepPartial with symbolic completion marker.

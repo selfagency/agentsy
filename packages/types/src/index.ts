@@ -1,3 +1,4 @@
+export type { JsonArray, JsonObject, JsonPrimitive, JsonValue, PartialDeep } from 'type-fest';
 export * from './conversation.js';
 export * from './stream.js';
 export * from './tool-calls.js';

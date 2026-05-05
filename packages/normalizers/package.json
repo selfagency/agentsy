@@ -2,9 +2,6 @@
   "name": "@agentsy/normalizers",
   "version": "0.1.0",
   "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "description": "Provider-specific LLM stream normalizers for the @agentsy platform.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -17,11 +14,14 @@
       "require": "./dist/index.cjs"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt . --write",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest run",
     "coverage": "vitest run --coverage"
   },

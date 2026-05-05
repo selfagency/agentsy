@@ -15,18 +15,83 @@ interface TagMatch {
 // Whitelist approach prevents ReDoS by restricting to safe characters only.
 const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
-function findMatchingCloseTag(part: string, tagName: string, searchStart: number): number | null {
-  // Security: tagName already validated by collectTagMatches before calling here.
-  const tagRegex = new RegExp(String.raw`<(/?)(${tagName})\b[^>]*>`, 'gi');
-  tagRegex.lastIndex = searchStart;
-  let depth = 1;
-  for (let mm = tagRegex.exec(part); mm !== null; mm = tagRegex.exec(part)) {
-    const isClose = mm[1] === '/';
-    depth += isClose ? -1 : 1;
-    if (depth === 0) {
-      return mm.index + mm[0].length;
+function isTagBoundary(character: string): boolean {
+  return (
+    character === '' ||
+    character === '>' ||
+    character === '/' ||
+    character === ' ' ||
+    character === '\t' ||
+    character === '\n' ||
+    character === '\r' ||
+    character === '\f'
+  );
+}
+
+function findNextTagOccurrence(
+  part: string,
+  tagName: string,
+  searchStart: number,
+): { index: number; isClose: boolean; end: number } | null {
+  const openNeedle = `<${tagName}`;
+  const closeNeedle = `</${tagName}`;
+  let searchIndex = searchStart;
+
+  while (searchIndex < part.length) {
+    const nextOpen = part.indexOf(openNeedle, searchIndex);
+    const nextClose = part.indexOf(closeNeedle, searchIndex);
+    let index = -1;
+    let isClose = false;
+
+    const hasClose = nextClose >= 0;
+    const hasOpen = nextOpen >= 0;
+    const closeComesFirst = hasClose && (!hasOpen || nextClose < nextOpen);
+
+    if (closeComesFirst) {
+      index = nextClose;
+      isClose = true;
+    } else if (hasOpen) {
+      index = nextOpen;
+    } else {
+      return null;
     }
+
+    const afterTagName = index + (isClose ? closeNeedle.length : openNeedle.length);
+    const nextChar = part.charAt(afterTagName);
+
+    const isBoundary = nextChar === '' || isTagBoundary(nextChar);
+    if (isBoundary) {
+      const end = part.indexOf('>', afterTagName);
+      if (end === -1) return null;
+
+      return { index, isClose, end: end + 1 };
+    }
+
+    searchIndex = afterTagName;
   }
+
+  return null;
+}
+
+function findMatchingCloseTag(part: string, tagName: string, searchStart: number): number | null {
+  let depth = 1;
+  let searchIndex = searchStart;
+
+  while (searchIndex < part.length) {
+    const occurrence = findNextTagOccurrence(part, tagName, searchIndex);
+
+    if (occurrence === null) {
+      return null;
+    }
+
+    depth += occurrence.isClose ? -1 : 1;
+    if (depth === 0) {
+      return occurrence.end;
+    }
+
+    searchIndex = occurrence.end;
+  }
+
   return null;
 }
 
@@ -72,9 +137,8 @@ function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, stri
 export function dedupeXmlContextBlocksByTag(blocks: string[]): string[] {
   const latestByTag = new Map<string, string>();
 
-  for (let i = blocks.length - 1; i >= 0; i--) {
-    // safe: i bounded by blocks.length
-    dedupeMatchesIntoMap(collectTagMatches(blocks[i] ?? ''), latestByTag);
+  for (const block of blocks.slice().reverse()) {
+    dedupeMatchesIntoMap(collectTagMatches(block), latestByTag);
   }
 
   return [...latestByTag.values()].reverse();

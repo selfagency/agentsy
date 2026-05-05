@@ -1,5 +1,6 @@
 import { buildRepairPrompt } from './buildRepairPrompt.js';
 import { validateJsonSchema, type ValidateJsonSchemaOptions } from './validateJsonSchema.js';
+import type { JsonObject } from '@agentsy/types';
 
 export interface AutoRepairOptions extends ValidateJsonSchemaOptions {
   /** Maximum number of repair attempts. Defaults to 3. */
@@ -36,7 +37,7 @@ export interface AutoRepairResult<T = unknown> {
  */
 export async function repairWithLLM<T = unknown>(
   initialOutput: string,
-  schema: Record<string, unknown>,
+  schema: JsonObject,
   callLLM: (repairPrompt: string) => Promise<string>,
   options: AutoRepairOptions = {},
 ): Promise<AutoRepairResult<T>> {

@@ -28,6 +28,8 @@
  * ```
  */
 
+export { createPlainTextRenderer, type PlainTextRendererOptions } from './plain/index.js';
+export { createSharedRendererHandle, createStepChangeEmitter } from './shared.js';
 export type {
   BaseRendererOptions,
   CancellationToken,
@@ -36,5 +38,3 @@ export type {
   TextOutput,
   ThinkingStyle,
 } from './types.js';
-export { createSharedRendererHandle, createStepChangeEmitter } from './shared.js';
-export { createPlainTextRenderer, type PlainTextRendererOptions } from './plain/index.js';

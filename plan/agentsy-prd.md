@@ -136,7 +136,7 @@ Requirements inherited from `agentsy-platform-v2.md` §1. Reproduced here with u
 | ID      | Requirement                                                                                                                                                                                                             | Priority | User Profiles | V0.3.0 |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------- | ------ |
 | REQ-001 | All packages publish under `@agentsy` npm org.                                                                                                                                                                          | P0       | All           | ✅     |
-| REQ-002 | `@agentsy/core` shim re-exports all existing APIs unchanged.                                                                                                                                            | P0       | UP-1, UP-2    | ✅     |
+| REQ-002 | `@agentsy/core` shim re-exports all existing APIs unchanged.                                                                                                                                                            | P0       | UP-1, UP-2    | ✅     |
 | REQ-003 | All existing subpath exports available on shim without modification.                                                                                                                                                    | P0       | UP-1          | ✅     |
 | REQ-004 | Agent loop supports hook injection: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort`.                                                                                                 | P1       | UP-2, UP-3    | ✅     |
 | REQ-005 | Agent loop calls `memoryEngine.startTask()` / `memoryEngine.endTask()` when memory engine is provided.                                                                                                                  | P1       | UP-3          | ✅     |
@@ -198,17 +198,17 @@ Requirements inherited from `agentsy-platform-v2.md` §1. Reproduced here with u
 
 ## 7. Success Criteria (SLOs)
 
-| Metric                                       | Target              | Measurement                                |
-| -------------------------------------------- | ------------------- | ------------------------------------------ |
-| Agent loop startup (no memory, hot deps)     | p50 ≤ 500ms         | `perf-tests/` benchmark suite              |
-| Memory retrieval, local vector store         | p95 ≤ 50ms          | `memory-tests/` integration suite          |
-| Turborepo warm cache hit rate                | ≥ 90%               | `turbo run build --dry` cache stats        |
-| Test suite coverage (all packages)           | ≥ 80% line coverage | vitest coverage reporter                   |
-| TypeScript strict compile (all packages)     | 0 errors            | `turbo run typecheck`                      |
-| Shim compatibility (existing consumer tests) | 100% pass           | `@agentsy/core` test suite |
-| Stream processor adversarial inputs          | 0 uncaught throws   | adversarial test suite per parser module   |
-| Build time (cold, all packages)              | ≤ 60s               | CI build step timer                        |
-| Build time (warm cache)                      | ≤ 5s                | CI build step timer after cache warm       |
+| Metric                                       | Target              | Measurement                              |
+| -------------------------------------------- | ------------------- | ---------------------------------------- |
+| Agent loop startup (no memory, hot deps)     | p50 ≤ 500ms         | `perf-tests/` benchmark suite            |
+| Memory retrieval, local vector store         | p95 ≤ 50ms          | `memory-tests/` integration suite        |
+| Turborepo warm cache hit rate                | ≥ 90%               | `turbo run build --dry` cache stats      |
+| Test suite coverage (all packages)           | ≥ 80% line coverage | vitest coverage reporter                 |
+| TypeScript strict compile (all packages)     | 0 errors            | `turbo run typecheck`                    |
+| Shim compatibility (existing consumer tests) | 100% pass           | `@agentsy/core` test suite               |
+| Stream processor adversarial inputs          | 0 uncaught throws   | adversarial test suite per parser module |
+| Build time (cold, all packages)              | ≤ 60s               | CI build step timer                      |
+| Build time (warm cache)                      | ≤ 5s                | CI build step timer after cache warm     |
 
 ---
 
@@ -300,24 +300,24 @@ Expected behavior: MCP tools proxied transparently. Untrusted server tools block
 
 ## 9. Package Rationale
 
-| Package                                | Rationale                                                                                                                            |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `@agentsy/core`                        | Zero-dep foundation — stream primitives, XML processing, structured output, SSE. Widest install base; must never pull in heavy deps. |
-| `@agentsy/normalizers`                 | Provider-specific wire format adaptation. Keeps `@agentsy/core` provider-agnostic.                                                   |
-| `@agentsy/processor`                   | Event state machine over normalized events. Event emission, per-message state tracking (ADR-003), lazy message creation (ADR-004).   |
-| `@agentsy/agent`                       | The agent loop itself. Stop conditions, prepareStep, mergeCallbacks, tool dispatch orchestration, subagent spawning.                 |
-| `@agentsy/adapters`                    | Thin adapter layer for generic and VS Code integrations.                                                                             |
-| `@agentsy/ag-ui`                       | AG-UI protocol adapter — converts agent loop output to AG-UI events for front-end consumption.                                       |
-| `@agentsy/runtime`                     | Tool approval engine, sandbox enforcement, plugin/skill loading. The trust enforcement layer.                                        |
-| `@agentsy/context-manager`             | Token budget monitoring and context compression. Plugs into agent loop via `beforeStep` hook.                                        |
-| `@agentsy/cost-tracker`                | Real-time cost accumulation per model/provider. Optional budget enforcement.                                                         |
-| `@agentsy/session`                     | Durable session persistence (JSONL + atomic writes). Crash-safe resume (ADR-010).                                                    |
-| `@agentsy/mcp`                         | MCP 2025-06-18 client — server lifecycle, capability negotiation, WebSocket idle timeout (ADR-014), trust filtering.                 |
-| `@agentsy/providers`                   | Provider capability matrix and fallback chains. Router between model endpoints.                                                      |
-| `@agentsy/memory`                      | 3-layer memory (raw log → wiki synthesis → RAG injection). The Karpathy blended memory stack.                                        |
-| `@agentsy/retrieval`                   | Vector store abstraction over libSQL/Turso. Wiki page indexing and semantic search.                                                  |
-| `@agentsy/telemetry`                   | OpenTelemetry instrumentation — traces, spans, metrics. Lazy-loaded, zero cost when unused.                                          |
-| `@agentsy/core` (shim) | Backward compat. Re-exports all `@agentsy/*` APIs under existing import paths.                                                       |
+| Package                    | Rationale                                                                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `@agentsy/core`            | Zero-dep foundation — stream primitives, XML processing, structured output, SSE. Widest install base; must never pull in heavy deps. |
+| `@agentsy/normalizers`     | Provider-specific wire format adaptation. Keeps `@agentsy/core` provider-agnostic.                                                   |
+| `@agentsy/processor`       | Event state machine over normalized events. Event emission, per-message state tracking (ADR-003), lazy message creation (ADR-004).   |
+| `@agentsy/agent`           | The agent loop itself. Stop conditions, prepareStep, mergeCallbacks, tool dispatch orchestration, subagent spawning.                 |
+| `@agentsy/adapters`        | Thin adapter layer for generic and VS Code integrations.                                                                             |
+| `@agentsy/ag-ui`           | AG-UI protocol adapter — converts agent loop output to AG-UI events for front-end consumption.                                       |
+| `@agentsy/runtime`         | Tool approval engine, sandbox enforcement, plugin/skill loading. The trust enforcement layer.                                        |
+| `@agentsy/context-manager` | Token budget monitoring and context compression. Plugs into agent loop via `beforeStep` hook.                                        |
+| `@agentsy/cost-tracker`    | Real-time cost accumulation per model/provider. Optional budget enforcement.                                                         |
+| `@agentsy/session`         | Durable session persistence (JSONL + atomic writes). Crash-safe resume (ADR-010).                                                    |
+| `@agentsy/mcp`             | MCP 2025-06-18 client — server lifecycle, capability negotiation, WebSocket idle timeout (ADR-014), trust filtering.                 |
+| `@agentsy/providers`       | Provider capability matrix and fallback chains. Router between model endpoints.                                                      |
+| `@agentsy/memory`          | 3-layer memory (raw log → wiki synthesis → RAG injection). The Karpathy blended memory stack.                                        |
+| `@agentsy/retrieval`       | Vector store abstraction over libSQL/Turso. Wiki page indexing and semantic search.                                                  |
+| `@agentsy/telemetry`       | OpenTelemetry instrumentation — traces, spans, metrics. Lazy-loaded, zero cost when unused.                                          |
+| `@agentsy/core` (shim)     | Backward compat. Re-exports all `@agentsy/*` APIs under existing import paths.                                                       |
 
 ---
 

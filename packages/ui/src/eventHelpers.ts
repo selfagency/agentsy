@@ -1,11 +1,5 @@
-import type {
-  UIConversation,
-  UIMessage,
-  UIMessagePart,
-  UIMessagePartWithoutCreatedAt,
-  UIToolCallPart,
-} from './types.js';
-import type { UsageInfo } from '@agentsy/types';
+import type { FinishReason, UsageInfo } from '@agentsy/types';
+import type { UIConversation, UIMessagePart, UIMessagePartWithoutCreatedAt, UIToolCallPart } from './types.js';
 
 /**
  * Helper to reduce duplication in event handlers that add parts to messages.
@@ -44,7 +38,7 @@ export function addPartToMessage(
 export function finishMessage(
   state: UIConversation,
   messageId: string,
-  finishReason: string | undefined,
+  finishReason: FinishReason | undefined,
   usage: UsageInfo | undefined,
 ): UIConversation {
   const now = new Date();
@@ -60,8 +54,8 @@ export function finishMessage(
 
       return {
         ...msg,
-        finishReason,
-        usage,
+        ...(finishReason === undefined ? {} : { finishReason }),
+        ...(usage === undefined ? {} : { usage }),
       };
     }
     return msg;
@@ -69,7 +63,7 @@ export function finishMessage(
 
   return {
     ...state,
-    messages: messages as UIMessage[],
+    messages,
     status: state.status === 'error' ? 'error' : 'idle',
     totalTokens,
     totalUsage,

@@ -1,11 +1,16 @@
 # @agentsy/vscode
 
-Unified VS Code integration library for Language Model Chat Providers with **@agentsy/core support**.
+Unified VS Code integration library for Language Model Chat Providers built on the `@agentsy/*` monorepo packages.
+
+## Status
+
+- Published package: available on npm as `@agentsy/vscode`
+- Repository development baseline: Node.js 22+
 
 ## Features
 
 - **ApiKeyManager** — Centralized secrets management with VS Code SecretStorage
-- **BaseLanguageModelChatProvider** — Abstract provider template with [@agentsy/core](../core#readme) processor integration
+- **BaseLanguageModelChatProvider** — Abstract provider template with processor integration
 - **ChatResponseStream renderers** — Thinking progress display, tool execution feedback, cancellation support
 - **UsageStatusBar** — Quota tracking UI with configurable windows
 - **McpServerRegistry** — MCP server definition pattern
@@ -16,7 +21,7 @@ Unified VS Code integration library for Language Model Chat Providers with **@ag
 ## Installation
 
 ```bash
-npm install @agentsy/vscode @agentsy/core vscode
+npm install @agentsy/vscode vscode
 ```
 
 Dual module support is available:
@@ -25,6 +30,24 @@ Dual module support is available:
 - CommonJS: `const { createVSCodeAgentLoop } = require('@agentsy/vscode')`
 
 **Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)
+
+## Development
+
+```bash
+cd packages/vscode
+pnpm build
+pnpm check-types
+pnpm lint
+pnpm test
+```
+
+From repository root:
+
+```bash
+pnpm check-types
+pnpm test
+pnpm lint
+```
 
 ## Quick Start
 
@@ -93,7 +116,7 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
 Normalizers convert provider-specific streaming chunks to the standard StreamChunk format:
 
 ```typescript
-import { type StreamChunk } from '@agentsy/core';
+import { type StreamChunk } from '@agentsy/processor';
 
 export async function* normalizeMyProviderStream(response: AsyncIterable<MyProviderChunk>): AsyncIterable<StreamChunk> {
   for await (const chunk of response) {
@@ -118,12 +141,12 @@ export async function* normalizeMyProviderStream(response: AsyncIterable<MyProvi
 }
 ```
 
-### 3. Integrate with @agentsy/core
+### 3. Integrate with processor packages
 
 Use `LLMStreamProcessor` to handle tool accumulation and thinking parsing:
 
 ```typescript
-import { LLMStreamProcessor } from '@agentsy/core';
+import { LLMStreamProcessor } from '@agentsy/processor';
 
 const processor = new LLMStreamProcessor({
   accumulateNativeToolCalls: true,
@@ -248,8 +271,8 @@ export async function* normalizeOllamaChatChunk(
 ### Z.ai
 
 ```typescript
-import { normalizeZAiChunk } from '@agentsy/core/normalizers';
-import { createZAiInlineToolCallParser, LLMStreamProcessor } from '@agentsy/core/processor';
+import { normalizeZAiChunk } from '@agentsy/normalizers';
+import { createZAiInlineToolCallParser, LLMStreamProcessor } from '@agentsy/processor';
 
 const processor = new LLMStreamProcessor({
   toolCallParsers: [createZAiInlineToolCallParser()],
@@ -296,7 +319,7 @@ for (const server of servers) {
 ### Mistral
 
 ```typescript
-import { normalizeMistralChunk } from '@agentsy/core/normalizers';
+import { normalizeMistralChunk } from '@agentsy/normalizers';
 
 for await (const chunk of mistralStream) {
   const normalized = normalizeMistralChunk(chunk);
@@ -346,7 +369,7 @@ pnpm lint
 
 ↓ (depends on)
 
-@agentsy/core
+@agentsy/processor + @agentsy/normalizers
 ├── LLMStreamProcessor         ← Tool accumulation, thinking parsing
 ├── StreamChunk               ← Standard streaming format
 └── Normalizers               ← Provider-specific converters (including normalizeZAiChunk)
@@ -377,6 +400,7 @@ MIT
 
 ## See Also
 
-- [@agentsy/core](https://github.com/selfagency/llm-stream-parser) — Core streaming parser
+- [@agentsy/processor](https://github.com/selfagency/agentsy/tree/main/packages/processor) — Stream processor
+- [@agentsy/normalizers](https://github.com/selfagency/agentsy/tree/main/packages/normalizers) — Provider normalizers
 - [VS Code Language Model API](https://code.visualstudio.com/api/extension-guides/language-model)
 - [MCP Protocol](https://modelcontextprotocol.io/)

@@ -1,15 +1,18 @@
 import type { FinishReason } from '@agentsy/types';
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
+const ZAI_FINISH_REASON_MAP: Record<string, FinishReason> = {
+  stop: 'stop',
+  tool_calls: 'tool-calls',
+  length: 'length',
+  sensitive: 'content-filter',
+  model_context_window_exceeded: 'error',
+  network_error: 'error',
+};
+
 function mapZAiFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) return undefined;
-  if (reason === 'stop') return 'stop';
-  if (reason === 'tool_calls') return 'tool-calls';
-  if (reason === 'length') return 'length';
-  if (reason === 'sensitive') return 'content-filter';
-  if (reason === 'model_context_window_exceeded') return 'error';
-  if (reason === 'network_error') return 'error';
-  return 'other';
+  return ZAI_FINISH_REASON_MAP[reason] ?? 'other';
 }
 
 interface ZAiToolCallDelta {
@@ -37,16 +40,26 @@ function nonEmptyString(value: string | null | undefined): string | undefined {
 }
 
 function mapToolCallDelta(delta: ZAiToolCallDelta): NativeToolCallDelta {
-  const id = nonEmptyString(delta.id);
-  const name = nonEmptyString(delta.function?.name);
-  const argumentsDelta = nonEmptyString(delta.function?.arguments);
-
-  return {
+  const mapped: NativeToolCallDelta = {
     index: delta.index,
-    ...(id === undefined ? {} : { id }),
-    ...(name === undefined ? {} : { name }),
-    ...(argumentsDelta === undefined ? {} : { argumentsDelta }),
   };
+
+  const id = nonEmptyString(delta.id);
+  if (id !== undefined) {
+    mapped.id = id;
+  }
+
+  const name = nonEmptyString(delta.function?.name);
+  if (name !== undefined) {
+    mapped.name = name;
+  }
+
+  const argumentsDelta = nonEmptyString(delta.function?.arguments);
+  if (argumentsDelta !== undefined) {
+    mapped.argumentsDelta = argumentsDelta;
+  }
+
+  return mapped;
 }
 
 function isZAiToolCallDelta(value: unknown): value is ZAiToolCallDelta {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SSEParser, parseSSEStream } from './index.js';
 
 // Helper to create SSEParser with event collection
@@ -288,5 +288,40 @@ describe('parseSSEStream', () => {
     expect(events[0]?.data).toContain('Hello');
     expect(events[1]?.data).toContain('world');
     expect(events[2]?.data).toEqual('[DONE]');
+  });
+
+  it('parses events from a ReadableStream source', async () => {
+    const stream = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue('data: from-stream\n\n');
+        controller.close();
+      },
+    });
+
+    const events = [];
+    for await (const event of parseSSEStream(stream)) {
+      events.push(event);
+    }
+
+    expect(events).toEqual([{ data: 'from-stream' }]);
+  });
+
+  it('propagates readable stream read errors', async () => {
+    const releaseLock = vi.fn();
+    const badStream = {
+      getReader: () => ({
+        read: async () => {
+          throw new Error('read failed');
+        },
+        releaseLock,
+      }),
+    } as unknown as ReadableStream<string>;
+
+    await expect(async () => {
+      for await (const _event of parseSSEStream(badStream)) {
+        // iterate until error
+      }
+    }).rejects.toThrow('read failed');
+    expect(releaseLock).toHaveBeenCalledTimes(1);
   });
 });

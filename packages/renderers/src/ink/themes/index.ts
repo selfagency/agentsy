@@ -143,10 +143,41 @@ export const THEME_MAP: Record<ThemeName, Theme> = {
 
 export function resolveTheme(theme?: Theme | ThemeName): Theme {
   if (!theme) {
-    return THEME_MAP.default || defaultTheme;
+    return defaultTheme;
   }
   if (typeof theme === 'string') {
-    return THEME_MAP[theme] || defaultTheme;
+    switch (theme) {
+      case 'default':
+        return defaultTheme;
+      case 'dark':
+        return darkTheme;
+      case 'light':
+        return lightTheme;
+      case 'minimal':
+        return minimalTheme;
+      case 'dracula':
+        return draculaTheme;
+      case 'catppuccin-mocha':
+        return catppuccinMochaTheme;
+      case 'catppuccin-latte':
+        return catppuccinLatteTheme;
+      case 'catppuccin-macchiato':
+        return catppuccinMacchiatoTheme;
+      case 'catppuccin-frappe':
+        return catppuccinFrappeTheme;
+      case 'ayu-mirage':
+        return ayuMirageTheme;
+      case 'houston':
+        return houstonTheme;
+      case 'one-dark':
+        return oneDarkTheme;
+      case 'one-candy':
+        return oneCandyTheme;
+      case 'github-dark':
+        return githubDarkTheme;
+      default:
+        return defaultTheme;
+    }
   }
   return theme;
 }

@@ -84,14 +84,8 @@ export class SSEParser {
     const parts = this.buffer.split('\n\n');
 
     // Keep the last part in the buffer (incomplete event).
-    for (let i = 0; i < parts.length - 1; i++) {
-      const eventText = parts[i];
-      // eventText is from array access; may be undefined or empty string.
-      // Use explicit undefined check over optional chaining for defensive stream parsing.
-      // biome-ignore style/useOptionalChain: Explicit check preferred for robustness
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      // codacy: disable-line
-      if (eventText !== undefined && eventText.trim()) {
+    for (const eventText of parts.slice(0, -1)) {
+      if (eventText.trim()) {
         const fields = eventText.split('\n');
         const event = this.fieldsToEvent(fields);
         if (event && this.isValidEvent(event)) {

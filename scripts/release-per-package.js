@@ -5,7 +5,7 @@
  * Usage: pnpm release <package-name> <version> [--dry-run]
  *
  * Examples:
- *   pnpm release @agentsy/core 0.2.0
+ *   pnpm release @agentsy/vscode 0.2.0
  *   pnpm release @agentsy/vscode 0.1.5 --dry-run
  *
  * Flow:
@@ -81,7 +81,7 @@ if (!packageName || !version) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
   console.error('');
   console.error('Examples:');
-  console.error('  pnpm release @agentsy/core 0.2.0');
+  console.error('  pnpm release @agentsy/vscode 0.2.0');
   console.error('  pnpm release @agentsy/vscode 0.1.5 --dry-run');
   process.exit(1);
 }
@@ -94,10 +94,8 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
 // Resolve package directory
 const PACKAGES_DIR = resolve(ROOT, 'packages');
 
-// Normalize short names (e.g., "core" -> "@agentsy/core")
-const normalizedPackageName = packageName.includes('/')
-  ? packageName
-  : `@agentsy/${packageName}`;
+// Normalize short names (e.g., "vscode" -> "@agentsy/vscode")
+const normalizedPackageName = packageName.includes('/') ? packageName : `@agentsy/${packageName}`;
 
 const pkgShortName = normalizedPackageName.replace(/^@[^/]+\//, '');
 const pkgDir = resolve(PACKAGES_DIR, pkgShortName);
@@ -105,7 +103,7 @@ const pkgJsonPath = resolve(pkgDir, 'package.json');
 
 if (!existsSync(pkgDir)) {
   console.error(`❌ Package directory not found: ${pkgDir}`);
-  console.error(`   Available packages: @agentsy/core, @agentsy/vscode`);
+  console.error(`   Available packages include: @agentsy/vscode and other @agentsy/* workspace packages`);
   process.exit(1);
 }
 
@@ -117,6 +115,16 @@ if (!existsSync(pkgJsonPath)) {
 // Load actual package name from package.json (needed for tag construction below)
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
+
+const releaseState = readReleaseState(RELEASE_STATE_PATH);
+const packageReleaseState = getPackageReleaseState(releaseState, fullPackageName);
+
+if (packageReleaseState !== 'oidc-ready') {
+  console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
+  console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
+  console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
+  process.exit(1);
+}
 
 const tag = `${fullPackageName}@${version}`;
 
@@ -421,9 +429,13 @@ async function main() {
 
   // --- Commit + push -------------------------------------------------------
 
-  const hasChanges = runGit(
-    ['diff', '--name-only', '--', resolve(pkgDir, 'package.json'), resolve(pkgDir, 'CHANGELOG.md')]
-  ).stdout.trim();
+  const hasChanges = runGit([
+    'diff',
+    '--name-only',
+    '--',
+    resolve(pkgDir, 'package.json'),
+    resolve(pkgDir, 'CHANGELOG.md'),
+  ]).stdout.trim();
 
   if (hasChanges) {
     console.log('📦 Committing release metadata...');
@@ -508,7 +520,7 @@ async function waitForWorkflow(
   repo,
   headSha,
   spinner,
-  { timeoutMs = 3_600_000, pollMs = 15_000, branch = 'main' } = {}
+  { timeoutMs = 3_600_000, pollMs = 15_000, branch = 'main' } = {},
 ) {
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
   const workflow = workflowsResp.data.workflows.find(w => w.name === name);

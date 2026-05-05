@@ -1,5 +1,6 @@
 import { Box } from 'ink';
 import { useEffect, useState } from 'react';
+import type { JsonObject } from '@agentsy/types';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { KeyboardHandler } from './components/KeyboardHandler.js';
 import { StreamingText } from './components/StreamingText.js';
@@ -11,7 +12,7 @@ interface InkStreamRendererProps {
   readonly stateRef: {
     text: string;
     thinking: string;
-    toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+    toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
     isStreaming: boolean;
   };
   readonly forceUpdateRef: { current: () => void };
@@ -43,7 +44,7 @@ function ToolCallsRenderer({
   theme,
   screenReader,
 }: {
-  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly theme: Theme;
   readonly screenReader: boolean;
 }) {
@@ -82,7 +83,7 @@ function ToolCallsSection({
   toolCalls,
   options,
 }: {
-  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly options: RenderOptions;
 }) {
   if (!options.showToolCalls) return null;
@@ -105,7 +106,7 @@ function ToolCallsContent({
   toolCalls,
   options,
 }: {
-  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly options: RenderOptions;
 }) {
   return <ToolCallsSection toolCalls={toolCalls} options={options} />;
@@ -141,7 +142,7 @@ function ContentRenderer({
 }: {
   readonly text: string;
   readonly thinking: string;
-  readonly toolCalls: readonly { id: string; name: string; arguments: Record<string, unknown>; done: boolean }[];
+  readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly isStreaming: boolean;
   readonly options: RenderOptions;
 }) {

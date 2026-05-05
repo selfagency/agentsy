@@ -1,6 +1,7 @@
 import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
 import type { LLMStreamProcessor } from '@agentsy/processor';
+import type { JsonObject } from '@agentsy/types';
 import type { XmlToolCall } from '@agentsy/tool-calls';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { resolveTheme } from './themes/index.js';
@@ -44,7 +45,7 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
   const stateRef = {
     text: '',
     thinking: '',
-    toolCalls: [] as Array<{ id: string; name: string; arguments: Record<string, unknown>; done: boolean }>,
+    toolCalls: [] as Array<{ id: string; name: string; arguments: JsonObject; done: boolean }>,
     isStreaming: true,
   };
 

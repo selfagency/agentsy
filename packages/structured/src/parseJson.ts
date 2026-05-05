@@ -255,7 +255,7 @@ function selectBestCandidate(parsedValues: unknown[], selectMostComprehensive: b
  * @returns The parsed value, or `null` if no valid JSON is found.
  *          Never throws — malformed candidates are silently skipped.
  */
-export function parseJson(text: string, options: ParseJsonOptions = {}): unknown {
+export function parseJson<T = unknown>(text: string, options: ParseJsonOptions = {}): T | null {
   const normalized = stripCodeFences(text);
   const selectMostComprehensive = options.selectMostComprehensive ?? true;
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
@@ -264,11 +264,11 @@ export function parseJson(text: string, options: ParseJsonOptions = {}): unknown
   const parsedValues = collectParsedCandidates(normalized, maxJsonDepth, maxJsonKeys);
 
   if (parsedValues.length > 0) {
-    return selectBestCandidate(parsedValues, selectMostComprehensive);
+    return selectBestCandidate(parsedValues, selectMostComprehensive) as T;
   }
 
   if (options.repairIncomplete) {
-    return tryParseRepaired(normalized, maxJsonDepth, maxJsonKeys);
+    return tryParseRepaired(normalized, maxJsonDepth, maxJsonKeys) as T | null;
   }
 
   return null;

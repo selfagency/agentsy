@@ -2,19 +2,16 @@
   "name": "@agentsy/types",
   "version": "0.1.0",
   "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "description": "Shared TypeScript types for the @agentsy/* package family.",
+  "homepage": "https://agentsy.self.agency",
+  "bugs": {
+    "url": "https://github.com/selfagency/agentsy/issues"
+  },
   "license": "MIT",
   "author": "Daniel Sieradski <daniel@self.agency>",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"
-  },
-  "homepage": "https://agentsy.self.agency",
-  "bugs": {
-    "url": "https://github.com/selfagency/agentsy/issues"
   },
   "files": [
     "dist"
@@ -30,13 +27,19 @@
       "require": "./dist/index.cjs"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt . --write",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --typecheck run",
     "coverage": "vitest --typecheck run --coverage"
+  },
+  "dependencies": {
+    "type-fest": "4.26.1"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
