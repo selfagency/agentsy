@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { $, argv, cd } from 'zx';
-import { getPackageReleaseState, readReleaseState, writeReleaseState } from './release-state.js';
+import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
 $.verbose = false;
 
@@ -94,6 +94,10 @@ if (currentState === 'oidc-ready' && !force) {
 const distTag = explicitTag ?? (version.includes('-') ? 'prerelease' : 'latest');
 
 async function checkNpmCredentials() {
+  const npmToken = process.env.NPM_TOKEN ?? process.env.NODE_AUTH_TOKEN;
+  if (npmToken) {
+    await $`npm config set //registry.npmjs.org/:_authToken ${npmToken}`;
+  }
   try {
     await $`npm whoami --registry=https://registry.npmjs.org/`;
   } catch {
@@ -105,11 +109,28 @@ async function checkNpmCredentials() {
 async function main() {
   await checkNpmCredentials();
 
+  // Require clean working tree and main branch to avoid shipping dirty or branch content.
+  const dirty = (await $`git status --porcelain`).stdout.trim();
+  if (dirty) {
+    console.error('❌ Working tree is not clean. Commit or stash changes first.');
+    process.exit(1);
+  }
+
+  const branch = (await $`git rev-parse --abbrev-ref HEAD`).stdout.trim();
+  if (branch !== 'main') {
+    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
+    process.exit(1);
+  }
+
+  console.log('🔄 Fetching latest refs...');
+  await $`git fetch origin main`;
+  await $`git pull --ff-only origin main`;
+
   console.log(`📦 Bootstrap publishing ${fullPackageName}@${version} (state: ${currentState})`);
 
   if (isDryRun) {
     console.log(
-      '[dry-run] Would run package build, write dist package.json, publish once locally, and mark oidc-ready.',
+      '[dry-run] Would run package build, write dist package.json, and publish once locally.',
     );
     return;
   }
@@ -122,9 +143,6 @@ async function main() {
   await $`node scripts/write-dist-package.js ${`packages/${pkgShortName}`}`;
   await $`npm publish ${`packages/${pkgShortName}/dist`} --access public --tag=${distTag}`;
 
-  releaseState.packages[fullPackageName] = 'oidc-ready';
-  writeReleaseState(RELEASE_STATE_PATH, releaseState);
-
   console.log('✅ Bootstrap publish complete.');
   console.log('Next steps:');
   console.log(`  1) On npmjs.com, open package settings for ${fullPackageName}.`);
@@ -132,6 +150,9 @@ async function main() {
   console.log('  3) Ensure workflow filename is exactly: release.yml');
   console.log('  4) Confirm repo and org/user fields match exactly (case-sensitive).');
   console.log('  5) (Recommended) set Publishing access to disallow tokens after verification.');
+  console.log(`  6) Once trusted publisher is configured, update config/release-state.json:`);
+  console.log(`     Set "${fullPackageName}": "oidc-ready"`);
+  console.log(`     Then commit and push the change to main.`);
 }
 
 await main();

@@ -49,7 +49,7 @@ test('validateRepositoryMatch returns failure for mismatch', () => {
 });
 
 test('checkTrustedPublishReadiness passes for oidc-ready package with matching repo', () => {
-  const { pkgDir, releaseStatePath } = setupBase();
+  const { base, pkgDir, releaseStatePath } = setupBase();
 
   writeFileSync(
     join(pkgDir, 'package.json'),
@@ -67,13 +67,14 @@ test('checkTrustedPublishReadiness passes for oidc-ready package with matching r
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
+    rootDir: base,
   });
 
   assert.deepEqual(result, { ok: true });
 });
 
 test('checkTrustedPublishReadiness fails for bootstrap-required package', () => {
-  const { pkgDir, releaseStatePath } = setupBase();
+  const { base, pkgDir, releaseStatePath } = setupBase();
 
   writeFileSync(
     join(pkgDir, 'package.json'),
@@ -88,6 +89,7 @@ test('checkTrustedPublishReadiness fails for bootstrap-required package', () => 
     expectedRepo: 'selfagency/agentsy',
     releaseStatePath,
     workflowFilename: 'release.yml',
+    rootDir: base,
   });
 
   assert.equal(result.ok, false);

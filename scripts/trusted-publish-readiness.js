@@ -59,6 +59,7 @@ export function validateRepositoryMatch(pkgRepoValue, expectedRepo) {
  *   releaseStatePath: string,
  *   expectedState?: string,
  *   workflowFilename?: string,
+ *   rootDir?: string,
  * }} input
  * @returns {{ok: true} | {ok: false, error: string}}
  */
@@ -88,7 +89,7 @@ export function checkTrustedPublishReadiness(input) {
     return repoCheck;
   }
 
-  const workflowPath = resolve(ROOT, '.github', 'workflows', workflowFilename);
+  const workflowPath = resolve(input.rootDir ?? ROOT, '.github', 'workflows', workflowFilename);
   if (!existsSync(workflowPath)) {
     return {
       ok: false,

@@ -114,19 +114,9 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-// Load actual package name from package.json
+// Load actual package name from package.json (needed for tag construction below)
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
-
-const releaseState = readReleaseState(RELEASE_STATE_PATH);
-const packageReleaseState = getPackageReleaseState(releaseState, fullPackageName);
-
-if (packageReleaseState !== 'oidc-ready') {
-  console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
-  console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
-  console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
-  process.exit(1);
-}
 
 const tag = `${fullPackageName}@${version}`;
 
@@ -320,6 +310,18 @@ async function main() {
   runGit(['fetch', 'origin', 'main']);
   runGit(['pull', '--ff-only', 'origin', 'main']);
 
+  // Re-read pkgJson and release state now that main is up to date.
+  const freshPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
+  const freshReleaseState = readReleaseState(RELEASE_STATE_PATH);
+  const packageReleaseState = getPackageReleaseState(freshReleaseState, fullPackageName);
+
+  if (packageReleaseState !== 'oidc-ready') {
+    console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
+    console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
+    console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
+    process.exit(1);
+  }
+
   // Derive owner/repo from git remote
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
@@ -330,7 +332,7 @@ async function main() {
   const [, owner, repo] = match;
 
   const expectedRepo = `${owner}/${repo}`;
-  const repoCheck = validateRepositoryMatch(getRepositoryField(pkgJson.repository), expectedRepo);
+  const repoCheck = validateRepositoryMatch(getRepositoryField(freshPkgJson.repository), expectedRepo);
   if (!repoCheck.ok) {
     console.error(`❌ ${repoCheck.error}`);
     process.exit(1);

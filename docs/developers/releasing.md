@@ -22,16 +22,17 @@ pnpm release @agentsy/vscode 0.1.5
 Use this only for packages that have never been published and are still marked `bootstrap-required` in `config/release-state.json`.
 
 ```bash
-pnpm bootstrap-release @agentsy/renderers 0.1.0 --yes-i-know-this-is-first-publish
+# Replace <new-package> with the actual package short name (e.g. a newly added package)
+pnpm bootstrap-release @agentsy/<new-package> 0.1.0 --yes-i-know-this-is-first-publish
 ```
 
 What bootstrap does:
 
+- validates working tree is clean and on `main`
 - updates package version
 - builds package output
 - writes `dist/package.json`
 - publishes from local machine once
-- marks package as `oidc-ready` in `config/release-state.json`
 
 After bootstrap, configure trusted publisher on npmjs package settings:
 
@@ -39,6 +40,18 @@ After bootstrap, configure trusted publisher on npmjs package settings:
 - repository: `selfagency/agentsy` (exact match)
 - workflow filename: `release.yml` (exact match)
 - optional environment: only if you use GitHub environments
+
+Once trusted publisher is configured, manually update `config/release-state.json`:
+
+```json
+{
+  "packages": {
+    "@agentsy/<new-package>": "oidc-ready"
+  }
+}
+```
+
+Commit and push this change to `main` before triggering the first CI release.
 
 ## What Happens
 
@@ -74,7 +87,7 @@ After bootstrap, configure trusted publisher on npmjs package settings:
 - `bootstrap-required`: blocked in CI release workflow
 - `oidc-ready`: allowed to publish via OIDC
 
-CI release runs fail fast for packages that are not `oidc-ready`.
+CI release runs fail fast for all packages (both per-package `@scope/pkg@version` tags and root `v*` tags) that are not `oidc-ready`. Root releases check every published package.
 
 ## Tag Format
 

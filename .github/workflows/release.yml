@@ -312,15 +312,23 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ "${IS_PER_PACKAGE}" != "true" ]]; then
-            echo "Root tag release detected; skipping per-package trusted publishing gate."
-            exit 0
+          if [[ "${IS_PER_PACKAGE}" == "true" ]]; then
+            node scripts/trusted-publish-readiness.js \
+              --package-name "${PACKAGE_NAME}" \
+              --package-dir "packages/${PACKAGE_DIR}" \
+              --expected-repo "${REPOSITORY}" \
+              --release-state-path "config/release-state.json" \
+              --workflow-filename "release.yml" \
+              --expected-state "oidc-ready"
+          else
+            # Root release: verify all published packages are oidc-ready before publishing any.
+            for pkg in core vscode; do
+              node scripts/trusted-publish-readiness.js \
+                --package-name "@agentsy/${pkg}" \
+                --package-dir "packages/${pkg}" \
+                --expected-repo "${REPOSITORY}" \
+                --release-state-path "config/release-state.json" \
+                --workflow-filename "release.yml" \
+                --expected-state "oidc-ready"
+            done
           fi
-
-          node scripts/trusted-publish-readiness.js \
-            --package-name "${PACKAGE_NAME}" \
-            --package-dir "packages/${PACKAGE_DIR}" \
-            --expected-repo "${REPOSITORY}" \
-            --release-state-path "config/release-state.json" \
-            --workflow-filename "release.yml" \
-            --expected-state "oidc-ready"
