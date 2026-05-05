@@ -60,14 +60,13 @@ export function validateRepositoryMatch(pkgRepoValue, expectedRepo) {
  *   releaseStatePath: string,
  *   expectedState?: string,
  *   workflowFilename?: string,
- *   repoRoot?: string,
+ *   rootDir?: string,
  * }} input
  * @returns {{ok: true} | {ok: false, error: string}}
  */
 export function checkTrustedPublishReadiness(input) {
   const expectedState = input.expectedState ?? 'oidc-ready';
   const workflowFilename = input.workflowFilename ?? 'release.yml';
-  const repoRoot = input.repoRoot ?? ROOT;
 
   const state = readReleaseState(input.releaseStatePath);
   const packageState = getPackageReleaseState(state, input.packageName);
@@ -91,7 +90,7 @@ export function checkTrustedPublishReadiness(input) {
     return repoCheck;
   }
 
-  const workflowPath = resolve(repoRoot, '.github', 'workflows', workflowFilename);
+  const workflowPath = resolve(input.rootDir ?? ROOT, '.github', 'workflows', workflowFilename);
   if (!existsSync(workflowPath)) {
     return {
       ok: false,
@@ -111,7 +110,7 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
       'release-state-path': { type: 'string' },
       'workflow-filename': { type: 'string' },
       'expected-state': { type: 'string' },
-      'repo-root': { type: 'string' },
+      'root-dir': { type: 'string' },
     },
     allowPositionals: false,
   });
@@ -137,7 +136,7 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
     releaseStatePath: resolve(releaseStatePath),
     workflowFilename,
     expectedState,
-    ...(args['repo-root'] === undefined ? {} : { repoRoot: resolve(args['repo-root']) }),
+    ...(args['root-dir'] === undefined ? {} : { rootDir: resolve(args['root-dir']) }),
   });
 
   if (!result.ok) {

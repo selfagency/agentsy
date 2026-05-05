@@ -129,8 +129,10 @@ async function main() {
   await $`pnpm install --lockfile-only`;
 
   await $`pnpm --filter ${fullPackageName} build`;
-  await $`node scripts/write-dist-package.js ${`packages/${pkgShortName}`}`;
-  await $`npm publish ${`packages/${pkgShortName}/dist`} --access public --tag=${distTag}`;
+  const packagePath = `packages/${pkgShortName}`;
+  const distPath = `${packagePath}/dist`;
+  await $`node scripts/write-dist-package.js ${packagePath}`;
+  await $`npm publish ${distPath} --access public --tag=${distTag}`;
 
   releaseState.packages[fullPackageName] = 'oidc-ready';
   writeReleaseState(RELEASE_STATE_PATH, releaseState);
@@ -143,6 +145,9 @@ async function main() {
   console.log('  4) Confirm repo and org/user fields match exactly (case-sensitive).');
   console.log('  5) Commit updated package.json + pnpm-lock.yaml + config/release-state.json, then push to main.');
   console.log('  6) (Recommended) set Publishing access to disallow tokens after verification.');
+  console.log(`  7) Once trusted publisher is configured, update config/release-state.json:`);
+  console.log(`     Set "${fullPackageName}": "oidc-ready"`);
+  console.log('     Then commit and push the change to main.');
 }
 
 await main();
