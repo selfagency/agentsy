@@ -499,18 +499,21 @@ async function main() {
 
   // --- Wait for required workflows -----------------------------------------
 
-  const shaToValidate = isMetadataOnlyReleaseCommit ? parentSha : headSha;
   if (isMetadataOnlyReleaseCommit) {
     console.log(
       `⚡ Metadata-only release commit detected; validating Test & Build on parent commit ${parentSha.slice(0, 7)} instead of ${headSha.slice(0, 7)}.`,
     );
+    const spinner = ora('Test & Build: checking latest successful run on main').start();
+    await waitForLatestSuccessfulWorkflow(octokit, 'Test & Build', owner, repo, spinner);
+    spinner.succeed('Test & Build: latest successful run on main found');
+  } else {
+    const shaToValidate = headSha;
+    console.log(`🔎 Waiting for workflows on ${shaToValidate.slice(0, 7)}...`);
+    await sleep(10_000);
+
+    const spinner = ora('Test & Build: queued').start();
+    await waitForWorkflow(octokit, 'Test & Build', owner, repo, shaToValidate, spinner);
   }
-
-  console.log(`🔎 Waiting for workflows on ${shaToValidate.slice(0, 7)}...`);
-  await sleep(10_000);
-
-  const spinner = ora('Test & Build: queued').start();
-  await waitForWorkflow(octokit, 'Test & Build', owner, repo, shaToValidate, spinner);
 
   // --- Tag + push ----------------------------------------------------------
 
@@ -599,6 +602,46 @@ async function waitForWorkflow(
 
   spinner.fail(`${name}: timed out`);
   throw new Error(`Timed out waiting for "${name}".`);
+}
+
+async function waitForLatestSuccessfulWorkflow(
+  octokit,
+  name,
+  owner,
+  repo,
+  spinner,
+  { timeoutMs = 600_000, pollMs = 10_000, branch = 'main' } = {},
+) {
+  const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
+  const workflow = workflowsResp.data.workflows.find(w => w.name === name);
+  if (!workflow) {
+    spinner.fail(`${name}: workflow not found`);
+    throw new Error(`[${name}] workflow not found in ${owner}/${repo}`);
+  }
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const runsResp = await octokit.actions.listWorkflowRuns({
+      owner,
+      repo,
+      workflow_id: workflow.id,
+      branch,
+      status: 'completed',
+      per_page: 20,
+    });
+
+    const successRun = runsResp.data.workflow_runs.find(r => r.conclusion === 'success');
+    if (successRun) {
+      spinner.text = `${name}: latest success on ${successRun.head_sha.slice(0, 7)}`;
+      return;
+    }
+
+    spinner.text = `${name}: waiting for a successful completed run on ${branch}...`;
+    await sleep(pollMs);
+  }
+
+  spinner.fail(`${name}: no successful completed run found`);
+  throw new Error(`Timed out waiting for a successful '${name}' workflow run on ${branch}.`);
 }
 
 // ---------------------------------------------------------------------------

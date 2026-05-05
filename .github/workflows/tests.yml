@@ -28,6 +28,7 @@ concurrency:
 jobs:
   unit-test-coverage:
     name: Run unit tests with coverage
+    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
