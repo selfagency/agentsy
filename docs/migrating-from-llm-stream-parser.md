@@ -28,20 +28,20 @@ If you depended on deeper monolith surfaces like agent loops, UI state, pipeline
 
 ## Choose the smallest modern package set
 
-| If you used `@selfagency/llm-stream-parser` for… | Start with…            | Notes                                                         |
-| ------------------------------------------------ | ---------------------- | ------------------------------------------------------------- |
-| VS Code chat providers and renderers             | `@agentsy/vscode`      | Best-supported migration path today.                          |
-| Thinking extraction                              | `@agentsy/thinking`    | Direct focused replacement.                                   |
-| XML/privacy scrubbing                            | `@agentsy/xml-filter`  | Direct focused replacement.                                   |
-| Context block splitting and dedupe               | `@agentsy/context`     | Direct focused replacement.                                   |
-| XML/native tool-call extraction                  | `@agentsy/tool-calls`  | Direct focused replacement.                                   |
-| JSON parsing / validation / repair               | `@agentsy/structured`  | Direct focused replacement.                                   |
-| Provider event normalization                     | `@agentsy/normalizers` | Pair with `@agentsy/processor`.                               |
-| Stream orchestration / transforms                | `@agentsy/processor`   | Includes processor, pipeline helpers, and SSE helpers.        |
-| Generic integration adapters                     | `@agentsy/adapters`    | High-level adapter utilities.                                 |
-| Event-sourced UI state                           | `@agentsy/ui`          | Store + reducer + processor bridge.                           |
-| Agent loops                                      | `@agentsy/agent`       | Equivalent capability, now separated from parsing primitives. |
-| Formatting / markdown helper utilities           | `@agentsy/formatting`  | `appendToBlockquote` moved here.                              |
+| If you used `@selfagency/llm-stream-parser` for… | Start with…            | Notes                                                                                                               |
+| ------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| VS Code chat providers and renderers             | `@agentsy/vscode`      | Best-supported migration path today.                                                                                |
+| Thinking extraction                              | `@agentsy/thinking`    | Direct focused replacement.                                                                                         |
+| XML/privacy scrubbing                            | `@agentsy/xml-filter`  | Direct focused replacement.                                                                                         |
+| Context block splitting and dedupe               | `@agentsy/context`     | Direct focused replacement.                                                                                         |
+| XML/native tool-call extraction                  | `@agentsy/tool-calls`  | Direct focused replacement.                                                                                         |
+| JSON parsing / validation / repair               | `@agentsy/structured`  | Direct focused replacement.                                                                                         |
+| Provider event normalization                     | `@agentsy/normalizers` | Pair with `@agentsy/processor`.                                                                                     |
+| Stream orchestration / transforms                | `@agentsy/processor`   | Includes processor, pipeline helpers, and SSE helpers.                                                              |
+| Generic integration adapters                     | `@agentsy/adapters`    | High-level utilities including `processRawStream`, `runStructuredDecisionFromRawStream`, and `applyDecisionAction`. |
+| Event-sourced UI state                           | `@agentsy/ui`          | Store + reducer + processor bridge.                                                                                 |
+| Agent loops                                      | `@agentsy/agent`       | Equivalent capability, now separated from parsing primitives.                                                       |
+| Formatting / markdown helper utilities           | `@agentsy/formatting`  | `appendToBlockquote` moved here.                                                                                    |
 
 ## Install migration
 
@@ -170,6 +170,77 @@ import { createGenericAdapter } from '@selfagency/llm-stream-parser/adapters';
 
 ```ts
 import { createGenericAdapter } from '@agentsy/adapters';
+```
+
+### Manual normalize + process loop → `processRawStream`
+
+If your old monolith usage had custom loops that manually normalized chunks and fed a processor, prefer `processRawStream` in the new stack.
+
+#### Before
+
+```ts
+for await (const rawChunk of providerStream) {
+  const normalized = normalizeOpenAIChatChunk(rawChunk);
+  if (!normalized) continue;
+  const output = processor.process(normalized.chunk);
+  render(output);
+}
+render(processor.flush());
+```
+
+#### After
+
+```ts
+import { processRawStream } from '@agentsy/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+
+for await (const output of processRawStream(providerStream, normalizeOpenAIChatChunk, { parseThinkTags: true })) {
+  render(output);
+}
+```
+
+### Manual parse + validate + conditional action → `runStructuredDecisionFromRawStream` + `applyDecisionAction`
+
+If your monolith migration path still has repetitive "extract final content → validate schema → conditionally run side effect" code, move that orchestration to `@agentsy/adapters` helpers.
+
+#### Before
+
+```ts
+for await (const rawChunk of providerStream) {
+  const normalized = normalizeOpenAIChatChunk(rawChunk);
+  if (!normalized) continue;
+  processor.process(normalized.chunk);
+}
+
+const content = processor.accumulatedMessage.content;
+const validated = validateJsonSchema(content, schema);
+if (!validated.success) throw new Error(validated.errors.join('; '));
+
+if (validated.data.shouldBlock) {
+  await updateRemoteDns(validated.data);
+}
+```
+
+#### After
+
+```ts
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+
+const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
+  source: providerStream,
+  normalize: normalizeOpenAIChatChunk,
+  schema,
+});
+
+if (!decision.success) {
+  throw new Error(decision.errors.join('; '));
+}
+
+await applyDecisionAction(decision.decision, {
+  shouldAct: value => value.shouldBlock,
+  action: async value => updateRemoteDns(value),
+});
 ```
 
 ### UI state

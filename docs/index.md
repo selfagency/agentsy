@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: Agentsy
-  text: Composable infrastructure for production-grade LLM systems
+  text: Composable infrastructure for LLM systems
   tagline: Build headless agentic workflows in Node.js-compatible runtimes, align with open standards like MCP and AG-UI, and add UI layers only when you actually need them.
   actions:
     - theme: brand

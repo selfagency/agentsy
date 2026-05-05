@@ -11,12 +11,18 @@
 
 - `createGenericAdapter`
 - `processStream`
+- `processRawStream`
+- `runStructuredDecisionFromRawStream`
+- `applyDecisionAction`
 - Mistral adapter helpers
 - OpenAI-compatible adapter helpers
 
 ## Available APIs
 
 - Generic adapter creation and streaming utilities
+- Raw-stream normalization + processor orchestration helpers
+- Structured decision orchestration helpers
+- Side-effect gating helper for validated decisions
 - Provider-oriented adapter helpers for Mistral and OpenAI-compatible surfaces
 
 ## Use it when
@@ -42,11 +48,38 @@ const adapter = createGenericAdapter({
 ## Implementation example with neighbors
 
 ```ts
-import { createGenericAdapter, processStream } from '@agentsy/adapters';
+import { applyDecisionAction, createGenericAdapter, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
 import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
 
-for await (const output of processStream(normalizedStream, { parseThinkTags: true })) {
-  console.log(output.content);
+const schema = {
+  type: 'object',
+  required: ['shouldBlock', 'targetIp', 'reason', 'ttlSeconds', 'evidence'],
+  properties: {
+    shouldBlock: { type: 'boolean' },
+    targetIp: { type: 'string' },
+    reason: { type: 'string' },
+    ttlSeconds: { type: 'number' },
+    evidence: { type: 'array', items: { type: 'string' } },
+  },
+} as const;
+
+const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
+  source: rawProviderStream,
+  normalize: raw => {
+    const normalized = normalizeOpenAIChatChunk(raw);
+    return normalized ? normalized.chunk : null;
+  },
+  schema,
+  processorOptions: { parseThinkTags: true },
+});
+
+if (decision.success) {
+  await applyDecisionAction(decision.decision, {
+    shouldAct: value => value.shouldBlock,
+    action: async value => {
+      await updateRemoteDns(value);
+    },
+  });
 }
 
 const adapter = createGenericAdapter(
@@ -58,7 +91,11 @@ const adapter = createGenericAdapter(
 );
 
 for await (const rawChunk of streamFromProvider) {
-  await adapter.write(normalizeOpenAIChatChunk(rawChunk));
+  const normalized = normalizeOpenAIChatChunk(rawChunk);
+  if (!normalized) {
+    continue;
+  }
+  await adapter.write(normalized.chunk);
 }
 
 await adapter.end();

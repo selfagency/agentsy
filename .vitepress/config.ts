@@ -36,6 +36,7 @@ export default defineConfig({
         items: [
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Why Agentsy', link: '/why-agentsy' },
+          { text: 'Examples', link: '/examples/' },
           { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' },
         ],
       },
@@ -98,6 +99,20 @@ export default defineConfig({
         { text: 'Copilot integration', link: '/developers/integration-copilot' },
         { text: 'Releasing', link: '/developers/releasing' },
       ],
+      '/examples/': [
+        {
+          text: 'Examples',
+          items: [
+            { text: 'Overview', link: '/examples/' },
+            { text: 'CLI log summarizer (easy)', link: '/examples/cli-log-summarizer' },
+            { text: 'Node DNS blocklist workflow', link: '/examples/dns-blocklist' },
+            { text: 'Multi-provider policy gate', link: '/examples/multi-provider-policy-gate' },
+            { text: 'Agent tool loop with retries + continuation', link: '/examples/tool-loop-retries-continuation' },
+            { text: 'Stateful ops copilot backend', link: '/examples/stateful-ops-copilot' },
+            { text: 'All-tooling end-to-end workflow', link: '/examples/all-tooling-end-to-end' },
+          ],
+        },
+      ],
       '/': [
         {
           text: 'Guide',
@@ -105,6 +120,7 @@ export default defineConfig({
             { text: 'Home', link: '/' },
             { text: 'Getting started', link: '/getting-started' },
             { text: 'Why Agentsy', link: '/why-agentsy' },
+            { text: 'Examples', link: '/examples/' },
             { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' },
             { text: 'Roadmap', link: '/roadmap' },
           ],

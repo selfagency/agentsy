@@ -47,6 +47,9 @@ importers:
       '@agentsy/processor':
         specifier: workspace:*
         version: link:../processor
+      '@agentsy/structured':
+        specifier: workspace:*
+        version: link:../structured
       '@agentsy/tool-calls':
         specifier: workspace:*
         version: link:../tool-calls
