@@ -104,7 +104,7 @@ function parseArgs(argv) {
   const out = {};
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
-    if (!token || !token.startsWith('--')) continue;
+    if (!token?.startsWith('--')) continue;
     const key = token.slice(2);
     const value = argv[i + 1];
     if (typeof value === 'string' && !value.startsWith('--')) {

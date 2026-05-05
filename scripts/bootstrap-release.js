@@ -140,8 +140,10 @@ async function main() {
   safeWrite(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
 
   await $`pnpm --filter ${fullPackageName} build`;
-  await $`node scripts/write-dist-package.js ${`packages/${pkgShortName}`}`;
-  await $`npm publish ${`packages/${pkgShortName}/dist`} --access public --tag=${distTag}`;
+    const packagePath = `packages/${pkgShortName}`;
+    const distPath = `${packagePath}/dist`;
+    await $`node scripts/write-dist-package.js ${packagePath}`;
+    await $`npm publish ${distPath} --access public --tag=${distTag}`;
 
   console.log('✅ Bootstrap publish complete.');
   console.log('Next steps:');
