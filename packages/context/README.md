@@ -12,7 +12,23 @@ Used by parsing and orchestration layers to keep injected context clean and stab
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need to split, dedupe, or strip XML context blocks before continuing through the pipeline.
+
+Typical neighbors:
+
+- `@agentsy/xml-filter`
+- `@agentsy/structured`
+- `@agentsy/agent`
+
+## API overview
+
+- `splitLeadingXmlContextBlocks`
+- `dedupeXmlContextBlocksByTag`
+- `stripXmlContextTags`
 
 ## Usage
 
@@ -23,6 +39,10 @@ const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(input);
 const deduped = dedupeXmlContextBlocksByTag(contextBlocks);
 const plain = stripXmlContextTags(remaining);
 ```
+
+## Learn more
+
+- `/docs/packages/context.md`
 
 ## Development
 

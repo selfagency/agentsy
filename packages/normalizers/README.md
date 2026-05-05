@@ -12,15 +12,51 @@ This package sits between raw provider responses and `@agentsy/processor` so dow
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when your application consumes multiple provider formats and you want a shared downstream event shape.
+
+Typical neighbors:
+
+- `@agentsy/processor` for orchestration
+- `@agentsy/adapters` for integration packaging
+- `@agentsy/vscode` in VS Code-specific flows
+
+## API overview
+
+- `normalizeOpenAIChatChunk`
+- `normalizeOpenAIResponseEvent`
+- `normalizeAnthropicEvent`
+- `normalizeGeminiChunk`
+- `normalizeMistralChunk`
+- `normalizeCohereEvent`
+- `normalizeOllamaChatChunk`
+- `normalizeOllamaGenerateChunk`
+- `normalizeBedrockConverseEvent`
+- `normalizeDeepSeekChunk`
+- `normalizeHuggingFaceTGIChunk`
+- `normalizeZAiChunk`
+- OpenAI-compatible helpers
 
 ## Usage
 
 ```ts
-import { normalizeOpenAIChatChunk, normalizeAnthropicEvent } from '@agentsy/normalizers';
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { LLMStreamProcessor } from '@agentsy/processor';
 
-const chunk = normalizeOpenAIChatChunk(raw);
+const processor = new LLMStreamProcessor();
+
+for await (const raw of openAiStream) {
+  processor.process(normalizeOpenAIChatChunk(raw));
+}
 ```
+
+## Learn more
+
+- `/docs/packages/normalizers.md`
+- `/docs/architecture/stream-processing.md`
 
 ## Development
 

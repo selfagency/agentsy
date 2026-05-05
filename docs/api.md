@@ -1,36 +1,47 @@
 # API index
 
-This page indexes package-level APIs in the Agentsy monorepo.
+This page is a link-first map of the currently available APIs.
 
-## Published package
+Detailed API breakdowns, examples, and composition guidance live on the individual package pages under `docs/packages/`. This page helps you find the right package quickly instead of forcing every export detail into one long reference blob.
 
-- [`@agentsy/vscode`](../packages/vscode/README.md)
+## Status notes
 
-## Internal/pre-release package APIs
+- **Published** means the package is live on npm now.
+- **Private** means the package is repo-internal.
+- Future agentic tooling described in `plan/` remains roadmap material until package code exists.
 
-- [`@agentsy/adapters`](../packages/adapters/README.md)
-- [`@agentsy/ag-ui`](../packages/ag-ui/README.md)
-- [`@agentsy/agent`](../packages/agent/README.md)
-- [`@agentsy/context`](../packages/context/README.md)
-- [`@agentsy/formatting`](../packages/formatting/README.md)
-- [`@agentsy/normalizers`](../packages/normalizers/README.md)
-- [`@agentsy/processor`](../packages/processor/README.md)
-- [`@agentsy/recovery`](../packages/recovery/README.md)
-- [`@agentsy/renderers`](../packages/renderers/README.md)
-- [`@agentsy/sse`](../packages/sse/README.md)
-- [`@agentsy/structured`](../packages/structured/README.md)
-- [`@agentsy/thinking`](../packages/thinking/README.md)
-- [`@agentsy/tool-calls`](../packages/tool-calls/README.md)
-- [`@agentsy/types`](../packages/types/README.md)
-- [`@agentsy/ui`](../packages/ui/README.md)
-- [`@agentsy/xml-filter`](../packages/xml-filter/README.md)
+## Runtime and orchestration
 
-## Private package
+- [`@agentsy/processor`](./packages/processor.md) — `LLMStreamProcessor`, `createProcessorEventAdapter`, `ToolCallParser`, `ZAiInlineToolCallParser`, `createPipeline`, `createSmoothStream`, `createThinkingFilter`, `createToolCallFilter`
+- [`@agentsy/normalizers`](./packages/normalizers.md) — `normalizeOpenAIChatChunk`, `normalizeOpenAIResponseEvent`, `normalizeAnthropicEvent`, `normalizeGeminiChunk`, `normalizeMistralChunk`, `normalizeOllamaChatChunk`, `normalizeOpenAICompatibleChunk`, more provider helpers
+- [`@agentsy/agent`](./packages/agent.md) — `createAgentLoop`, `detectDoomLoop`, `finishReasonIs`, `hasNoToolCalls`, `isStepCount`
+- [`@agentsy/adapters`](./packages/adapters.md) — `createGenericAdapter`, `processStream`, provider adapter helpers
+- [`@agentsy/renderers`](./packages/renderers.md) — `createPlainTextRenderer`, shared renderer types and utilities
 
-- [`@agentsy/integration`](../packages/integration/README.md)
+## Parsing and shaping utilities
 
-## API stability notes
+- [`@agentsy/thinking`](./packages/thinking.md) — `ThinkingParser`
+- [`@agentsy/tool-calls`](./packages/tool-calls.md) — `extractXmlToolCalls`, `ToolCallAccumulator`, `buildNativeToolsPayload`, `buildToolResultMessage`, `buildXmlToolSystemPrompt`
+- [`@agentsy/structured`](./packages/structured.md) — `parseJson`, `validateJsonSchema`, `buildFormatInstructions`, `buildRepairPrompt`, `streamJson`, `autoRepair`, `providerFormats`, `repairStateMachine`, `fieldValidator`, `zodAdapter`
+- [`@agentsy/context`](./packages/context.md) — `splitLeadingXmlContextBlocks`, `dedupeXmlContextBlocksByTag`, `stripXmlContextTags`
+- [`@agentsy/formatting`](./packages/formatting.md) — `appendToBlockquote`, `formatXmlLikeResponseForDisplay`, `sanitizeNonStreamingModelOutput`
+- [`@agentsy/recovery`](./packages/recovery.md) — `captureStreamState`, `buildContinuationPrompt`
+- [`@agentsy/xml-filter`](./packages/xml-filter.md) — `createXmlStreamFilter`, `tagLists`, `XmlStreamFilter`
+- [`@agentsy/sse`](./packages/sse.md) — `SSEParser`, `parseSSEStream`
+- [`@agentsy/types`](./packages/types.md) — shared conversation, stream, tool-call, and usage types
 
-- APIs in **published packages** follow semver expectations.
-- APIs in **internal/pre-release packages** can evolve while platform work continues.
-- Future APIs described in `plan/` are roadmap material until implementation lands in `packages/`.
+## State and integration surfaces
+
+- [`@agentsy/ui`](./packages/ui.md) — `createConversationStore`, `createConversationStoreFromProcessor`, `bindProcessorToConversationStore`, `applyConversationEvent`
+- [`@agentsy/ag-ui`](./packages/ag-ui.md) — `toAgUiStream`, `convertEventStream`, `createEventConverter`, `toCopilotKitEvent`, `toCustomUIEvent`, `StateManager`, `InterruptController`, `toObservable`
+- [`@agentsy/vscode`](./packages/vscode.md) — `createVSCodeAgentLoop`, `createVSCodeChatRenderer`, `BaseLanguageModelChatProvider`, `ApiKeyManager`, settings, usage, and MCP helpers
+
+## Private verification package
+
+- [`@agentsy/integration`](./packages/integration.md) — repo-only integration verification coverage
+
+## Related docs
+
+- [Package catalog](./packages.md)
+- [Architecture overview](./architecture/index.md)
+- [Migrating from `@selfagency/llm-stream-parser`](./migrating-from-llm-stream-parser.md)

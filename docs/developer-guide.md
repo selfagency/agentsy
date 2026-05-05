@@ -36,3 +36,5 @@ pnpm check-types
 - [Developer docs index](./developers/index.md)
 - [Contributing](./developers/contributing.md)
 - [Releasing](./developers/releasing.md)
+- [Architecture overview](./architecture/index.md)
+- [Package catalog](./packages.md)

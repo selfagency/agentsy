@@ -12,16 +12,37 @@ This package bridges processing/agent events into deterministic UI state updates
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you want deterministic conversation state derived from processor or agent events.
+
+Typical neighbors:
+
+- `@agentsy/processor`
+- `@agentsy/renderers`
+- `@agentsy/vscode`
+
+## API overview
+
+- `createConversationStore`
+- `createConversationStoreFromProcessor`
+- `bindProcessorToConversationStore`
+- `applyConversationEvent`
 
 ## Usage
 
 ```ts
 import { createConversationStore, applyConversationEvent } from '@agentsy/ui';
 
-const store = createConversationStore();
+const store = createConversationStore('conversation-1');
 store.dispatch(event);
 ```
+
+## Learn more
+
+- `/docs/packages/ui.md`
 
 ## Development
 

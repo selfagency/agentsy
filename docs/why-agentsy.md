@@ -1,31 +1,60 @@
 # Why Agentsy
 
-Agentsy exists to provide composable infrastructure primitives for production LLM applications in TypeScript.
+Agentsy exists so teams do not have to keep rebuilding the same LLM plumbing from scratch every quarter and then pretending it was a strategic decision.
 
-## Problem
+## The problem it solves
 
-Teams often rebuild the same low-level pieces repeatedly:
+Modern LLM features usually need the same set of hard, boring, failure-prone building blocks:
 
-- Streaming response parsing
-- Tool-call extraction and accumulation
-- Structured output parsing/repair
-- Provider normalization
-- Rendering and integration surfaces
+- streaming provider response parsing
+- normalization across incompatible provider payloads
+- structured-output parsing and repair
+- tool-call accumulation across partial chunks
+- renderer and UI integration surfaces
+- state management around multi-step loops
 
-## Approach
+Many libraries solve one slice. Most applications need several slices composed together.
 
-Agentsy splits these concerns into focused packages so consumers can compose only what they need.
+## The Agentsy approach
+
+Agentsy organizes those concerns into focused packages that can be adopted independently or composed into a larger stack.
+
+At a high level, the ecosystem looks like this:
+
+1. **Normalize** provider-specific payloads into a shared stream vocabulary.
+2. **Process** the stream into stable events and transforms.
+3. **Extract and validate** tool calls, structured data, and reasoning tags.
+4. **Project** the stream into renderers, state stores, or product-specific integrations.
+5. **Loop** on top of the pipeline when you need agent behavior.
+
+## Why package boundaries matter here
+
+Agentsy is intentionally not a single monolith anymore.
+
+That gives teams a few advantages:
+
+- adopt only the layers you need
+- test lower-level parsing independently from runtime behavior
+- keep VS Code and product-specific code out of foundation packages
+- evolve roadmap concepts without pretending they already belong in every runtime
 
 ## Design principles
 
-- Small, focused packages
-- Strict TypeScript contracts
-- ESM-first outputs
-- Test-first behavior around stream edge cases
-- Clear separation of implemented behavior vs roadmap planning
+- **Composable over monolithic** — package boundaries mirror real concerns.
+- **Strict TypeScript contracts** — model output is treated as untrusted input.
+- **Streaming-first** — chunk boundaries, malformed partials, and recovery paths are first-class concerns.
+- **Integration-aware** — UI, renderer, and editor surfaces are documented as consumers of the processing stack, not magical exceptions.
+- **Honest roadmap language** — planned packages stay labeled planned until they exist.
 
-## Who it is for
+## Who this ecosystem is for
 
-- VS Code extension developers building chat providers
-- Teams building internal agent loops and pipelines
-- Contributors who need reusable stream-processing primitives
+- teams building internal LLM products that need reusable parsing and orchestration primitives
+- extension authors building chat providers or editor-native AI experiences
+- contributors who want a layered TypeScript foundation for future runtime, memory, MCP, or connector work
+
+## Where to go next
+
+- [Getting started](./getting-started.md)
+- [Architecture overview](./architecture/index.md)
+- [Package catalog](./packages.md)
+- [Roadmap](./roadmap.md)

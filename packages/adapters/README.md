@@ -12,15 +12,44 @@ Used as a bridge layer between provider I/O and normalized processing flow.
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you want to package lower-level normalization and processing into a cleaner provider or application integration boundary.
+
+Typical neighbors:
+
+- `@agentsy/normalizers`
+- `@agentsy/processor`
+- `@agentsy/agent`
+
+## API overview
+
+- `createGenericAdapter`
+- `processStream`
+- Mistral adapter helpers
+- OpenAI-compatible adapter helpers
 
 ## Usage
 
 ```ts
-import { processStream } from '@agentsy/adapters';
+import { createGenericAdapter } from '@agentsy/adapters';
+import { normalizeOpenAICompatibleChunk } from '@agentsy/normalizers';
 
-const parts = await processStream(source, options);
+const adapter = createGenericAdapter({
+  normalizeChunk: normalizeOpenAICompatibleChunk,
+  parseThinkTags: true,
+});
+
+for await (const part of adapter.process(source)) {
+  console.log(part);
+}
 ```
+
+## Learn more
+
+- `/docs/packages/adapters.md`
 
 ## Development
 

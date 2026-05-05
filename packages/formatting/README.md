@@ -12,7 +12,23 @@ Used by renderers and integration layers to keep output readable and consistent.
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need focused post-processing helpers for display-ready model output.
+
+Typical neighbors:
+
+- `@agentsy/renderers`
+- `@agentsy/ui`
+- `@agentsy/vscode`
+
+## API overview
+
+- `appendToBlockquote`
+- `formatXmlLikeResponseForDisplay`
+- `sanitizeNonStreamingModelOutput`
 
 ## Usage
 
@@ -23,6 +39,10 @@ import {
   sanitizeNonStreamingModelOutput,
 } from '@agentsy/formatting';
 ```
+
+## Learn more
+
+- `/docs/packages/formatting.md`
 
 ## Development
 

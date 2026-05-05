@@ -12,7 +12,25 @@ This package bridges model output and tool execution orchestration in `@agentsy/
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when your workflow needs to extract, accumulate, or answer tool calls from streamed model output.
+
+Typical neighbors:
+
+- `@agentsy/processor`
+- `@agentsy/structured`
+- `@agentsy/agent`
+
+## API overview
+
+- `extractXmlToolCalls`
+- `ToolCallAccumulator`
+- `buildNativeToolsPayload`
+- `buildToolResultMessage`
+- `buildXmlToolSystemPrompt`
 
 ## Usage
 
@@ -21,6 +39,10 @@ import { extractXmlToolCalls, ToolCallAccumulator, buildXmlToolSystemPrompt } fr
 
 const calls = extractXmlToolCalls(output, knownTools);
 ```
+
+## Learn more
+
+- `/docs/packages/tool-calls.md`
 
 ## Development
 

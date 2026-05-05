@@ -1,42 +1,78 @@
-# Roadmap (planned)
+# Roadmap
 
-This roadmap summarizes future implementation plans from `plan/*.md`.
+This page summarizes where the broader Agentsy platform is heading.
 
-## Important
+## Read this page carefully
 
-Everything on this page is **planned**, not guaranteed until implemented in `packages/`.
+Everything below is roadmap context unless it is explicitly called out as already implemented in `packages/`.
 
-## Current implementation baseline
+## What is already real
 
-- Monorepo package split is in place for stream parsing/orchestration layers.
-- Published package today: `@agentsy/vscode`.
+The current repo already implements the lower layers of the platform:
 
-## Planned platform tracks
+- provider normalization
+- stream processing and transforms
+- structured-output parsing and repair
+- tool-call parsing
+- conversation-state helpers
+- renderer primitives
+- a VS Code integration package
 
-From `plan/agentsy-platform-v2.md`:
+Those layers are documented in the [Architecture overview](./architecture/index.md) and [Package catalog](./packages.md).
 
-- Additional runtime-oriented packages (`runtime`, `session`, `memory`, `retrieval`, `providers`, `mcp`, etc.).
-- Compatibility and migration layers around historical `@agentsy/core` usage.
-- Expanded extensibility hooks and agent lifecycle capabilities.
+## Major planned tracks
 
-From `plan/agentsy-features-v1.md`:
+### Runtime expansion
 
-- Slash command registry and skill management packages.
-- Caveman/superpowers feature families.
-- Connector gateway and first-party chat adapters.
+Planning documents point toward additional runtime-oriented packages and capabilities, including:
 
-## Source plan docs
+- richer agent runtime/session concepts
+- memory and retrieval primitives
+- provider-management and MCP-oriented layers
+- more explicit lifecycle and telemetry surfaces
 
-- `plan/agentsy-platform-v2.md`
-- `plan/agentsy-prd.md`
-- `plan/agentsy-features-v1.md`
+Primary sources:
+
 - `plan/agentsy-tech.md`
-- `plan/agentsy-agents-v1.md`
+- `plan/agentsy-platform-v2.md`
+
+### Feature platform expansion
+
+The planning set also sketches a larger feature ecosystem around agent applications, including:
+
+- slash commands
+- skills
+- caveman-mode style productivity layers
+- superpowers and workflow automation concepts
+- connector ecosystems and product-specific integrations
+
+Primary sources:
+
+- `plan/agentsy-features-v1.md`
 - `plan/agentsy-connectors-v1.md`
+- `plan/agentsy-agents-v1.md`
+
+### Product surfaces
+
+Several plan documents explore how these packages support product-facing experiences beyond low-level infrastructure, such as standalone apps and integration-first developer tooling.
+
+Primary sources:
+
 - `plan/agentsy-standalone-v1.md`
+- `plan/agentsy-prd.md`
 
-## How to interpret roadmap status
+## Documentation policy for planned work
 
-- **Implemented**: functionality exists in package source under `packages/`.
-- **Planned**: specified in `plan/` but not yet implemented.
-- **In progress**: actively being delivered on the current working branch/PR.
+This docs site follows three guardrails:
+
+1. **Current APIs are documented from code that exists now.**
+2. **Planned packages are described as architecture or roadmap only.**
+3. **Future-facing pages link back to the plan docs instead of inventing stable API references early.**
+
+That keeps the platform story useful without turning into vaporware fan fiction. The silicon deserves better.
+
+## Best next reads
+
+- [Architecture overview](./architecture/index.md)
+- [Platform evolution](./architecture/platform-evolution.md)
+- [Package catalog](./packages.md)

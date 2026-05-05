@@ -15,6 +15,10 @@ This package is the monorepo-level confidence layer. It is not intended as a run
 - Private/internal package.
 - Not published for external consumption.
 
+## Notes
+
+This is the one current package in the repo that is intentionally not part of the public published package family.
+
 ## Usage
 
 Run integration tests from this package or from repo root.

@@ -12,16 +12,36 @@ Used by resilience and long-running agent workflows to recover from partial outp
 
 ## Status
 
-- Internal/pre-release package in this monorepo.
+- Published `@agentsy` package.
+
+## When to install it
+
+Install this package when you need to resume interrupted model responses or persist enough processor state to continue later.
+
+Typical neighbors:
+
+- `@agentsy/processor`
+- `@agentsy/agent`
+
+## API overview
+
+- `captureStreamState`
+- `buildContinuationPrompt`
 
 ## Usage
 
 ```ts
+import { LLMStreamProcessor } from '@agentsy/processor';
 import { captureStreamState, buildContinuationPrompt } from '@agentsy/recovery';
 
-const snapshot = captureStreamState({ content, thinking, toolCalls });
+const processor = new LLMStreamProcessor();
+const snapshot = captureStreamState(processor);
 const prompt = buildContinuationPrompt(snapshot);
 ```
+
+## Learn more
+
+- `/docs/packages/recovery.md`
 
 ## Development
 

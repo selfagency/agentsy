@@ -9,18 +9,14 @@ Production-grade TypeScript packages for stream parsing, agent loops, rendering,
 
 This repository is a **pnpm workspace monorepo** managed by **Turborepo**. It contains the `@agentsy/*` package family.
 
-- **Currently published:** `@agentsy/vscode`
-- **Internal/pre-release packages:** stream parsing and agent-infra packages under `packages/`
+- **Published packages:** the current `@agentsy/*` package family under `packages/`
 - **Private package:** `@agentsy/integration` (cross-package integration tests)
 
 ## Package map
 
-### Published package
+### Published packages
 
 - [`@agentsy/vscode`](./packages/vscode/README.md) — VS Code Language Model Chat Provider helpers, rendering, settings, and usage tracking.
-
-### Internal / pre-release packages
-
 - `@agentsy/adapters`
 - `@agentsy/ag-ui`
 - `@agentsy/agent`
@@ -44,10 +40,10 @@ This repository is a **pnpm workspace monorepo** managed by **Turborepo**. It co
 
 ## Quick start
 
-### Use the published VS Code package
+### Install current packages
 
 ```bash
-npm install @agentsy/vscode vscode
+npm install @agentsy/vscode @agentsy/processor @agentsy/normalizers
 ```
 
 ### Work on the monorepo
@@ -79,6 +75,7 @@ pnpm precommit
 
 - [Documentation home](./docs/index.md)
 - [Getting started](./docs/getting-started.md)
+- [Migrating from `@selfagency/llm-stream-parser`](./docs/migrating-from-llm-stream-parser.md)
 - [API index](./docs/api.md)
 - [Package inventory](./docs/packages.md)
 - [Roadmap (planned)](./docs/roadmap.md)
