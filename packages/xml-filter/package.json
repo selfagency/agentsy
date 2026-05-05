@@ -40,8 +40,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt . --write",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest run src",
     "coverage": "vitest run src --coverage",
     "precommit": "pnpm check-types && pnpm lint"

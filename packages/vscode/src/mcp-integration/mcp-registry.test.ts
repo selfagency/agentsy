@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { McpServerRegistry } from './mcp-server-registry.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { McpServerDefinition, McpServerProvider } from '../types/errors.js';
+import { McpServerRegistry } from './mcp-server-registry.js';
 
 function makeServer(overrides: Partial<McpServerDefinition> = {}): McpServerDefinition {
   return {

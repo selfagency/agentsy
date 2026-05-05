@@ -42,10 +42,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "format": "oxfmt --write",
-    "format:check": "oxfmt --check",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "precommit": "npm run check-types && npm run lint && npm run format:check"
   },
   "dependencies": {

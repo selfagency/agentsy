@@ -33,8 +33,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt . --write",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --typecheck run",
     "coverage": "vitest --typecheck run --coverage"
   },
