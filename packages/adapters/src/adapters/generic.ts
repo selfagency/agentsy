@@ -28,7 +28,8 @@ export async function* processStream(
 }
 
 /**
- * Async generator that normalises raw provider chunks and processes them through `LLMStreamProcessor`.
+ * Async generator that normalises provider events (already parsed from transport)
+ * and processes them through `LLMStreamProcessor`.
  *
  * This removes the common boilerplate of manually normalising each chunk before calling `processor.process(...)`.
  */
@@ -46,7 +47,7 @@ export async function* processRawStream<TRawChunk>(
   yield processor.flush();
 }
 
-export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk, TDecision> {
+export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk> {
   source: AsyncIterable<TRawChunk>;
   normalize: (_chunk: TRawChunk) => StreamChunk;
   schema: JsonObject;
@@ -83,7 +84,7 @@ export type StructuredDecisionResult<TDecision> =
  * repeat this orchestration in each app.
  */
 export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = unknown>(
-  options: RunStructuredDecisionFromRawStreamOptions<TRawChunk, TDecision>,
+  options: RunStructuredDecisionFromRawStreamOptions<TRawChunk>,
 ): Promise<StructuredDecisionResult<TDecision>> {
   const processor = new LLMStreamProcessor(options.processorOptions);
 

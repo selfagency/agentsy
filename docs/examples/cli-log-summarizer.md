@@ -10,7 +10,7 @@ This example shows a minimal, practical workflow for local operations:
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/normalizers @agentsy/renderers
+npm install @agentsy/adapters @agentsy/normalizers @agentsy/renderers @agentsy/sse
 ```
 
 ## Illustrative implementation
@@ -19,6 +19,7 @@ npm install @agentsy/adapters @agentsy/normalizers @agentsy/renderers
 import { processRawStream } from '@agentsy/adapters';
 import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
 import { createPlainTextRenderer } from '@agentsy/renderers';
+import { parseSSEStream } from '@agentsy/sse';
 
 async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
   const response = await fetch('https://api.example.com/v1/chat/completions', {
@@ -31,8 +32,21 @@ async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
     }),
   });
 
-  for await (const chunk of response.body as AsyncIterable<unknown>) {
-    yield chunk;
+  const textStream = response.body?.pipeThrough(new TextDecoderStream());
+  if (!textStream) {
+    return;
+  }
+
+  for await (const event of parseSSEStream(textStream)) {
+    if (event.data === '[DONE]') {
+      return;
+    }
+
+    try {
+      yield JSON.parse(event.data) as unknown;
+    } catch {
+      // Ignore malformed SSE payloads in this showcase example.
+    }
   }
 }
 

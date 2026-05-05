@@ -98,6 +98,46 @@ describe('runStructuredDecisionFromRawStream', () => {
       expect(result.errors.length).toBeGreaterThan(0);
     }
   });
+
+  it('calls onOutput for each processed chunk and final flush', async () => {
+    const onOutput = vi.fn<(_output: unknown) => void>();
+
+    const result = await runStructuredDecisionFromRawStream({
+      source: decisionSource(),
+      normalize: chunk => ({ content: chunk.text }),
+      schema,
+      onOutput,
+    });
+
+    expect(result.success).toBe(true);
+    // 2 source chunks + 1 flush output
+    expect(onOutput).toHaveBeenCalledTimes(3);
+  });
+
+  it('uses selectValidationText as validation source', async () => {
+    const result = await runStructuredDecisionFromRawStream({
+      source: decisionSource(),
+      normalize: chunk => ({ content: chunk.text }),
+      schema,
+      selectValidationText: () =>
+        JSON.stringify({
+          shouldBlock: false,
+          targetIp: '198.51.100.20',
+          reason: 'selectValidationText override',
+          ttlSeconds: 120,
+          evidence: ['override'],
+        }),
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.decision).toMatchObject({
+        shouldBlock: false,
+        targetIp: '198.51.100.20',
+      });
+      expect(result.validationText).toContain('selectValidationText override');
+    }
+  });
 });
 
 describe('applyDecisionAction', () => {

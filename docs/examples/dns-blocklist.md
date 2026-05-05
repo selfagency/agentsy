@@ -12,7 +12,7 @@ This example shows a workflow you could build with Agentsy:
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/normalizers
+npm install @agentsy/adapters @agentsy/normalizers @agentsy/sse
 ```
 
 ## Illustrative implementation
@@ -23,6 +23,7 @@ import path from 'node:path';
 
 import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
 import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { parseSSEStream } from '@agentsy/sse';
 
 type DnsBlockDecision = {
   shouldBlock: boolean;
@@ -55,7 +56,6 @@ async function loadLogFile(fileName: string): Promise<string> {
 
 async function* streamModelDecision(prompt: string): AsyncGenerator<unknown> {
   // Replace this with your provider SDK stream call.
-  // The only requirement here is: yield raw provider chunks.
   const response = await fetch('https://api.example.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -73,8 +73,21 @@ async function* streamModelDecision(prompt: string): AsyncGenerator<unknown> {
     }),
   });
 
-  for await (const chunk of response.body as AsyncIterable<unknown>) {
-    yield chunk;
+  const textStream = response.body?.pipeThrough(new TextDecoderStream());
+  if (!textStream) {
+    return;
+  }
+
+  for await (const event of parseSSEStream(textStream)) {
+    if (event.data === '[DONE]') {
+      return;
+    }
+
+    try {
+      yield JSON.parse(event.data) as unknown;
+    } catch {
+      // Ignore malformed SSE payloads in this showcase example.
+    }
   }
 }
 
