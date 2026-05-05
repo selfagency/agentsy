@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -61,7 +61,11 @@ async function main() {
   await writeFile(resolve(outDir, 'package.json'), JSON.stringify(distPkg, null, 2) + '\n', 'utf8');
   console.log('Wrote', resolve(outDir, 'package.json'));
 
-  const readmeSrc = resolve(__dirname, '..', 'README.md');
+  const pkgReadme = resolve(packagePath, 'README.md');
+  const rootReadme = resolve(__dirname, '..', 'README.md');
+  const readmeSrc = await access(pkgReadme)
+    .then(() => pkgReadme)
+    .catch(() => rootReadme);
   const readmeDest = resolve(outDir, 'README.md');
   await copyFile(readmeSrc, readmeDest);
   console.log('Copied', readmeSrc, 'to', readmeDest);
