@@ -266,15 +266,15 @@ jobs:
           PACKAGE_DIR="packages/${{ needs.detect-release.outputs.package_dir }}"
           echo "📤 Publishing ${{ needs.detect-release.outputs.package_name }}@${{ needs.detect-release.outputs.version }}..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
-          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG"
+          npm publish "$PACKAGE_DIR/dist" --access public --tag="$DIST_TAG" --provenance
 
       - name: Publish root monorepo release
         if: needs.detect-release.outputs.is_per_package != 'true'
         run: |
           echo "📤 Publishing all packages..."
           DIST_TAG="$([[ '${{ needs.detect-release.outputs.is_prerelease }}' == 'true' ]] && echo 'prerelease' || echo 'latest')"
-          npm publish ./packages/core/dist --access public --tag="$DIST_TAG"
-          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG"
+          npm publish ./packages/core/dist --access public --tag="$DIST_TAG" --provenance
+          npm publish ./packages/vscode/dist --access public --tag="$DIST_TAG" --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda

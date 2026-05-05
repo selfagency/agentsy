@@ -332,7 +332,15 @@ async function main() {
   const [, owner, repo] = match;
 
   const expectedRepo = `${owner}/${repo}`;
-  const repoCheck = validateRepositoryMatch(getRepositoryField(latestPkgJson.repository), expectedRepo);
+  const packageRepository = getRepositoryField(latestPkgJson.repository);
+  if (!packageRepository) {
+    console.error(
+      `❌ Package ${latestPkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`,
+    );
+    process.exit(1);
+  }
+
+  const repoCheck = validateRepositoryMatch(packageRepository, expectedRepo);
   if (!repoCheck.ok) {
     console.error(`❌ ${repoCheck.error}`);
     process.exit(1);

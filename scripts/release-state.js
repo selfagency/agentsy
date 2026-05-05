@@ -11,7 +11,12 @@ export function readReleaseState(releaseStatePath) {
     return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
   }
 
-  const raw = JSON.parse(readFileSync(releaseStatePath, 'utf8'));
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(releaseStatePath, 'utf8'));
+  } catch {
+    return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
+  }
   const defaultState =
     raw && typeof raw === 'object' && typeof raw.defaultState === 'string' ? raw.defaultState : DEFAULT_RELEASE_STATE;
   const packages =

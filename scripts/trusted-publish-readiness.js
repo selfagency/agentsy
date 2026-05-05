@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs as parseNodeArgs } from 'node:util';
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -100,25 +101,19 @@ export function checkTrustedPublishReadiness(input) {
   return { ok: true };
 }
 
-function parseArgs(argv) {
-  const out = {};
-  for (let i = 2; i < argv.length; i += 1) {
-    const token = argv[i];
-    if (!token?.startsWith('--')) continue;
-    const key = token.slice(2);
-    const value = argv[i + 1];
-    if (typeof value === 'string' && !value.startsWith('--')) {
-      out[key] = value;
-      i += 1;
-    } else {
-      out[key] = 'true';
-    }
-  }
-  return out;
-}
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const args = parseArgs(process.argv);
+if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filename) {
+  const { values: args } = parseNodeArgs({
+    options: {
+      'package-name': { type: 'string' },
+      'package-dir': { type: 'string' },
+      'expected-repo': { type: 'string' },
+      'release-state-path': { type: 'string' },
+      'workflow-filename': { type: 'string' },
+      'expected-state': { type: 'string' },
+      'root-dir': { type: 'string' },
+    },
+    allowPositionals: false,
+  });
 
   const packageName = args['package-name'];
   const packageDir = args['package-dir'];
@@ -141,6 +136,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     releaseStatePath: resolve(releaseStatePath),
     workflowFilename,
     expectedState,
+    ...(args['root-dir'] === undefined ? {} : { rootDir: resolve(args['root-dir']) }),
   });
 
   if (!result.ok) {

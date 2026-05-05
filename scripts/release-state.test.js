@@ -51,3 +51,13 @@ test('readReleaseState tolerates invalid structure', () => {
   assert.equal(state.defaultState, DEFAULT_RELEASE_STATE);
   assert.deepEqual(state.packages, {});
 });
+
+test('readReleaseState tolerates malformed JSON by returning defaults', () => {
+  const base = mkdtempSync(join(tmpdir(), 'agentsy-release-state-'));
+  const p = join(base, 'release-state.json');
+  writeFileSync(p, '{"defaultState":');
+
+  const state = readReleaseState(p);
+  assert.equal(state.defaultState, DEFAULT_RELEASE_STATE);
+  assert.deepEqual(state.packages, {});
+});
