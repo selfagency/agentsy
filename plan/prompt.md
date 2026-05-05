@@ -7,10 +7,10 @@ description: 'Comprehensive resumable implementation guide for the @agentsy plat
 
 ## How to Use This Prompt
 
-1. **Check current progress**: Open `plan/agentsy-platform-v2.md` and scan the `Completed` column in each task table. The first unchecked task is your resume point.
-2. **Follow execution order** exactly as listed in §2 of this guide.
-3. **Verify before advancing**: Run `turbo run build && turbo run typecheck && turbo run test` after each phase.
-4. **Reference planning docs** at the line numbers cited for each phase — do not guess; read the spec.
+1. **Check current repo reality first**: inspect `packages/`, recent package changelogs, and current docs before trusting task-table checkboxes.
+2. **Then consult plans**: use `plan/agentsy-platform-v2.md` and companion plans as the target architecture/spec source.
+3. **Use §2 in this file for resume guidance**: it tracks verified completed slices vs planned slices.
+4. **Verify before advancing**: run `pnpm build && pnpm check-types && pnpm test` after each implementation slice.
 
 ---
 
@@ -19,9 +19,9 @@ description: 'Comprehensive resumable implementation guide for the @agentsy plat
 ### What Exists Now
 
 Repository: `/Users/daniel/Developer/agentsy`
-Active branch: `feature/provider-vscode-parity-dedupe` (PR #51)
+Default working branch: `main`
 
-**MONO-0 through P1 are COMPLETE. 18 packages are live in `packages/`.**
+**Current package surface in repo:** 18 packages are live in `packages/`.
 
 | Package                | Status                   |
 | ---------------------- | ------------------------ |
@@ -44,11 +44,21 @@ Active branch: `feature/provider-vscode-parity-dedupe` (PR #51)
 | `@agentsy/vscode`      | ✅ live                  |
 | `@agentsy/integration` | ✅ live (private)        |
 
-See `plan/agentsy-platform-v2.md` for full MONO/R/P/X task tables with `Completed` column.
+### Completed slices (verified)
+
+These slices are verified from the current repository state and release artifacts:
+
+- ✅ Core package-family extraction and package catalog structure (`packages/` contains 18 live packages).
+- ✅ `@agentsy/adapters@0.1.2` released (2026-05-05) with orchestration helpers:
+  - `processRawStream`
+  - `runStructuredDecisionFromRawStream`
+  - `applyDecisionAction`
+- ✅ Progressive real-world examples/docs were added and linked (easy → advanced + end-to-end showcase).
+- ✅ Migration guide now recommends adapter helpers where they replace monolith-era boilerplate (`docs/migrating-from-llm-stream-parser.md`).
 
 ### What Is Being Built
 
-**Core layer (18 packages) is complete.** Next: agent infrastructure and extension packages.
+Next major slices remain the extension/runtime tracks from the planning docs.
 
 **Extension packages** (NOT YET STARTED — depend on core layer):
 
@@ -81,33 +91,28 @@ Full dependency graph (canonical): `plan/agentsy-platform-v2.md` lines ~820–85
 
 ## 2. Execution Order
 
-Phases marked ✅ are complete. Resume at Phase 0 (pending commits) then Phase 2.
+Use this as the practical resume order based on current repo reality.
 
 ```text
-✅ MONO-0 → ✅ MONO-1 → ✅ R0 → ✅ P0
-  → ✅ R1 + ✅ R2 (parallel)
-  → ✅ P1
-  → ✅ X1 + ✅ X2 (parallel)
-  → ✅ P2 → ✅ P3 (basic) → ...
+✅ Core package family + docs examples + adapters helper slice
   [RESUME HERE:]
-  ⏳ Phase 0 (flush pending commits on PR #51)
   → P3 → P4 → P5 → P6
   → R3
   → X3 + X4 (parallel)
   → P7 → P8 → X5 → X6 → X7
   → P9 → P10 → P11
   → R4 → X8 → P12
-  [then features-v1.md phases:]
+  [then feature-extension phases from PRD task plan:]
   → F5 → F6 → F7 → F8 → F9
 ```
 
-Source of truth for this order: `plan/agentsy-platform-v2.md` lines ~440–460.
+Specs for these phases live in `plan/agentsy-platform-v2.md` and `plan/agentsy-prd-task-plan.md`.
 
 ---
 
 ## 3. Phase-by-Phase Implementation Guide
 
-### MONO-0 — Turborepo Bootstrap ✅ COMPLETE
+### MONO-0 — Turborepo Bootstrap (reference spec)
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~50–130 (TASK-M0-001 through M0-011)
 
@@ -121,7 +126,7 @@ Source of truth for this order: `plan/agentsy-platform-v2.md` lines ~440–460.
 
 ---
 
-### MONO-1 — Source Migration ✅ COMPLETE
+### MONO-1 — Source Migration (reference spec)
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~200–290 (TASK-M1-001 through M1-012)
 
@@ -131,7 +136,7 @@ Move each source directory (see §1 table above) to the correct `packages/*/src/
 
 ---
 
-### R0 — npm Org Setup ✅ COMPLETE
+### R0 — npm Org Setup (reference spec)
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~290–340 (TASK-R0-001 through R0-008)
 
@@ -142,7 +147,7 @@ Move each source directory (see §1 table above) to the correct `packages/*/src/
 
 ---
 
-### P0 — Architecture Contracts ✅ COMPLETE
+### P0 — Architecture Contracts (reference spec)
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~340–420 (TASK-P0-001 through P0-011)
 
@@ -168,7 +173,7 @@ Also add to `packages/agent/src/`:
 
 ---
 
-### R1 + R2 (parallel) ✅ COMPLETE
+### R1 + R2 (parallel) (reference spec)
 
 **R1 — Shim Deprecation Notice**
 `plan/agentsy-platform-v2.md` lines ~420–430 (TASK-R1-001 through R1-003): Add deprecation warning to `@agentsy/core` package; write `docs/migration.md` (FILE-DOC-003).
@@ -178,7 +183,7 @@ Also add to `packages/agent/src/`:
 
 ---
 
-### P1 — Normalizer + Adapter Patches ✅ COMPLETE
+### P1 — Normalizer + Adapter Patches (reference spec)
 
 **Spec**: `plan/agentsy-platform-v2.md` (TASK-P1-001 through P1-005)
 
@@ -190,7 +195,7 @@ Also add to `packages/agent/src/`:
 
 ---
 
-### X1 + X2 (parallel) ✅ COMPLETE
+### X1 + X2 (parallel) (reference spec)
 
 **X1 — Extensibility Contracts**
 `plan/agentsy-platform-v2.md` (TASK-X1-001 through X1-005): `HookRegistry`, `SkillManifest`, `PluginManifest`, tool annotation types (`readOnly`/`destructive`/`requiresApproval`). These go in `@agentsy/core`.
@@ -452,11 +457,11 @@ SLO targets (platform-v2.md lines ~790–805):
 
 ## 4. Features-v1 Phases (After P12)
 
-All tasks below are in `plan/agentsy-features-v1.md`.
+All tasks below are tracked in `plan/agentsy-prd-task-plan.md`.
 
 ### F5 — Slash Commands + Skills Manager
 
-**Spec**: `plan/agentsy-features-v1.md` lines 1–130 (TASK-F5-001 through F5-015)
+**Spec**: `plan/agentsy-prd-task-plan.md` (Phase 3, TASK-F5-001 through F5-015)
 
 - `@agentsy/slash-commands`: `SlashCommandRegistry` (TASK-F5-001 through F5-007) — discovers SKILL.md files with `slash_command: true` frontmatter; substitutes `$1`/`$2` positional args; `execute(name, args)` returns string result
 - `@agentsy/skills`: `SkillsManager` (TASK-F5-008 through F5-015) — wraps `npx skills <subcommand>` as subprocess (ADR-020); validates `ref` against `/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/` before subprocess call (SEC-011)
@@ -467,7 +472,7 @@ Stock SKILL.md commands: `/skills-find.md`, `/skills-add.md`, `/skills-list.md`
 
 ### F6 — Caveman + Superpowers
 
-**Spec**: `plan/agentsy-features-v1.md` lines ~130–230 (TASK-F6-001 through F6-019)
+**Spec**: `plan/agentsy-prd-task-plan.md` (Phase 3, TASK-F6-001 through F6-019)
 
 **`@agentsy/caveman`** (TASK-F6-001 through F6-012):
 
@@ -486,7 +491,7 @@ Stock SKILL.md commands: `/skills-find.md`, `/skills-add.md`, `/skills-list.md`
 
 ### F7 — MCP Auto-Install
 
-**Spec**: `plan/agentsy-features-v1.md` lines ~230–280 (TASK-F7-001 through F7-008)
+**Spec**: `plan/agentsy-prd-task-plan.md` (Phase 3, TASK-F7-001 through F7-008)
 
 - Add `@mcpmarket/mcp-auto-install@^0.2.1` as `devDependency` in `packages/mcp/` (spawned as child process, not imported — ADR-021)
 - `MCPAutoInstallServer` spawns `npx @mcpmarket/mcp-auto-install` as stdio MCP server, registers as `__mai__`
@@ -497,7 +502,7 @@ Stock SKILL.md commands: `/skills-find.md`, `/skills-add.md`, `/skills-list.md`
 
 ### F8 — Chat Platform Connectors
 
-**Spec**: `plan/agentsy-features-v1.md` lines ~280–350 (TASK-F8-001 through F8-013)
+**Spec**: `plan/agentsy-prd-task-plan.md` (Phase 3, TASK-F8-001 through F8-013)
 
 Package: `packages/connectors/src/`
 
@@ -516,7 +521,7 @@ ADR-024: `@agentsy/connectors` is a pure library — no embedded CLI, HTTP serve
 
 ### F9 — Cross-Package Slash Command Integration
 
-**Spec**: `plan/agentsy-features-v1.md` lines ~350–372 (TASK-F9-001 through F9-006)
+**Spec**: `plan/agentsy-prd-task-plan.md` (Phase 3, TASK-F9-001 through F9-006)
 
 - Add `slashCommands?: SlashCommandRegistry` to `AgentLoopOptions`
 - Agent loop intercepts `/`-prefixed messages before model call; unrecognized pass through (RISK-015)
@@ -548,26 +553,26 @@ isolatedModules: true
 
 ## 6. Architecture Decision Records (Critical ADRs)
 
-| ADR     | Decision                                                                            | Source         |
-| ------- | ----------------------------------------------------------------------------------- | -------------- |
-| ADR-001 | Factory functions (`create*`) over class constructors in public API                 | prd-notes.md   |
-| ADR-002 | `StopCondition` as composable async predicates (vercel/ai pattern)                  | prd-notes.md   |
-| ADR-003 | Per-message state `Map` in `LLMStreamProcessor`                                     | prd-notes.md   |
-| ADR-004 | Lazy assistant message — no eager `UIMessage` allocation                            | prd-notes.md   |
-| ADR-005 | User message write: blocking. Assistant message write: fire-and-forget              | prd-notes.md   |
-| ADR-006 | `ApprovalEngine` returns `ApprovalRequired` result — **never throws**               | prd-notes.md   |
-| ADR-007 | Two-stage memory: Consolidator → Dream (nanobot lifecycle)                          | prd-notes.md   |
-| ADR-008 | Warning-first loop guardrails: `LoopDetected` → grace period → `LoopExceeded`       | prd-notes.md   |
-| ADR-009 | `allow_patterns` take priority over `deny` (specificity wins)                       | prd-notes.md   |
-| ADR-019 | Caveman = bundled SKILL.md prompt injection, not output filter                      | features-v1.md |
-| ADR-020 | Skills CLI as subprocess (not library import) — input validated pre-spawn           | features-v1.md |
-| ADR-021 | MCP auto-install defaults to `dryRun: true`; `confirm: true` required for mutations | features-v1.md |
-| ADR-022 | Superpowers skills context-activated, not always-on                                 | features-v1.md |
-| ADR-023 | Slash commands intercept before model — deterministic, no LLM round-trip            | features-v1.md |
-| ADR-024 | `@agentsy/connectors` is a pure library — no embedded process                       | features-v1.md |
-| ADR-025 | Connector inbound messages sanitized via existing XML pipeline                      | features-v1.md |
+| ADR     | Decision                                                                            | Source           |
+| ------- | ----------------------------------------------------------------------------------- | ---------------- |
+| ADR-001 | Factory functions (`create*`) over class constructors in public API                 | prd-notes.md     |
+| ADR-002 | `StopCondition` as composable async predicates (vercel/ai pattern)                  | prd-notes.md     |
+| ADR-003 | Per-message state `Map` in `LLMStreamProcessor`                                     | prd-notes.md     |
+| ADR-004 | Lazy assistant message — no eager `UIMessage` allocation                            | prd-notes.md     |
+| ADR-005 | User message write: blocking. Assistant message write: fire-and-forget              | prd-notes.md     |
+| ADR-006 | `ApprovalEngine` returns `ApprovalRequired` result — **never throws**               | prd-notes.md     |
+| ADR-007 | Two-stage memory: Consolidator → Dream (nanobot lifecycle)                          | prd-notes.md     |
+| ADR-008 | Warning-first loop guardrails: `LoopDetected` → grace period → `LoopExceeded`       | prd-notes.md     |
+| ADR-009 | `allow_patterns` take priority over `deny` (specificity wins)                       | prd-notes.md     |
+| ADR-019 | Caveman = bundled SKILL.md prompt injection, not output filter                      | prd-task-plan.md |
+| ADR-020 | Skills CLI as subprocess (not library import) — input validated pre-spawn           | prd-task-plan.md |
+| ADR-021 | MCP auto-install defaults to `dryRun: true`; `confirm: true` required for mutations | prd-task-plan.md |
+| ADR-022 | Superpowers skills context-activated, not always-on                                 | prd-task-plan.md |
+| ADR-023 | Slash commands intercept before model — deterministic, no LLM round-trip            | prd-task-plan.md |
+| ADR-024 | `@agentsy/connectors` is a pure library — no embedded process                       | prd-task-plan.md |
+| ADR-025 | Connector inbound messages sanitized via existing XML pipeline                      | prd-task-plan.md |
 
-Full ADR text: `plan/agentsy-prd-notes.md` (ADR-001 through ADR-018 in the main file; ADR-019 through ADR-025 in `plan/agentsy-features-v1.md` §8).
+Full ADR text: `plan/agentsy-prd-notes.md` (ADR-001 through ADR-018) and extension ADRs in `plan/agentsy-prd-task-plan.md`.
 
 ---
 
@@ -577,15 +582,15 @@ Enforce throughout all phases. Non-negotiable.
 
 | ID      | Requirement                                                                             | Source                   |
 | ------- | --------------------------------------------------------------------------------------- | ------------------------ |
-| SEC-010 | `caveman-shrink` MUST NOT alter any `inputSchema` field — startup assertion             | features-v1.md           |
-| SEC-011 | Skills `ref` validated against `/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/` before subprocess | features-v1.md           |
-| SEC-012 | Any tool mutating MCP client config requires explicit `{ confirm: true }`               | features-v1.md           |
-| SEC-013 | All inbound connector messages pass through `stripXmlContextTags`                       | features-v1.md           |
-| SEC-014 | Connector bot tokens from env vars only — never hardcoded                               | features-v1.md           |
+| SEC-010 | `caveman-shrink` MUST NOT alter any `inputSchema` field — startup assertion             | prd-task-plan.md         |
+| SEC-011 | Skills `ref` validated against `/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/` before subprocess | prd-task-plan.md         |
+| SEC-012 | Any tool mutating MCP client config requires explicit `{ confirm: true }`               | prd-task-plan.md         |
+| SEC-013 | All inbound connector messages pass through `stripXmlContextTags`                       | prd-task-plan.md         |
+| SEC-014 | Connector bot tokens from env vars only — never hardcoded                               | prd-task-plan.md         |
 | SEC-016 | "Lethal Trifecta" prevention: destructive tool + no approval + no session = blocked     | prd.md                   |
 | General | No hardcoded secrets, parameterized queries, path sanitization, no `any` (OWASP Top 10) | security.instructions.md |
 
-Full security requirements: `plan/agentsy-prd.md` §6 (SEC-001 through SEC-016) and `plan/agentsy-features-v1.md` §1 (SEC-010 through SEC-026).
+Full security requirements: `plan/agentsy-prd.md` §6 and extension security notes in `plan/agentsy-prd-task-plan.md`.
 
 ---
 
@@ -623,7 +628,7 @@ CI runs Node.js 22. All packages target Node ≥ 22.
 After each phase, confirm:
 
 - [ ] `turbo run build` — zero errors, zero warnings
-- [ ] `turbo run typecheck` — zero errors
+- [ ] `turbo run check-types` — zero errors
 - [ ] `turbo run test` — all tests pass
 - [ ] No `any` types introduced (`grep -r ': any' packages/*/src/`)
 - [ ] No relative `../` imports crossing package boundary
@@ -641,20 +646,20 @@ After MONO-1 specifically:
 
 ## 10. Key Reference Files
 
-| File                               | Purpose                                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `plan/agentsy-platform-v2.md`      | **Master implementation plan** — all MONO/R/P/X task tables with `Completed` column. Resume here. |
-| `plan/agentsy-features-v1.md`      | Feature extensions F5–F9 task tables                                                              |
-| `plan/agentsy-prd.md`              | Product requirements, goals, SLOs                                                                 |
-| `plan/agentsy-prd-notes.md`        | ADR-001 through ADR-018 + research corpus (SRC-1 through SRC-29)                                  |
-| `plan/agentsy-tech.md`             | TypeScript API surface definitions per package                                                    |
-| `plan/agentsy-testing-plan.md`     | Full test strategy                                                                                |
-| `plan/agentsy-deep-dive-v1.md`     | Research synthesis from 28 reference codebases                                                    |
-| `plan/agentsy-deep-dive-v2.md`     | Extended research notes                                                                           |
-| `plan/agentsy-connectors-v1.md`    | Connectors deep-dive                                                                              |
-| `plan/agentsy-scheduler-v1.md`     | Scheduler design notes                                                                            |
-| `plan/agentsy-standalone-v1.md`    | Standalone binary design                                                                          |
-| `plan/owasp-security-testing-1.md` | OWASP security test plan                                                                          |
+| File                               | Purpose                                                          |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `plan/agentsy-platform-v2.md`      | **Master architecture/spec plan** for MONO/R/P/X tracks.         |
+| `plan/agentsy-prd-task-plan.md`    | Feature-extension execution tasks (including F5–F9 details).     |
+| `plan/agentsy-prd.md`              | Product requirements, goals, SLOs                                |
+| `plan/agentsy-prd-notes.md`        | ADR-001 through ADR-018 + research corpus (SRC-1 through SRC-29) |
+| `plan/agentsy-tech.md`             | TypeScript API surface definitions per package                   |
+| `plan/agentsy-testing-plan.md`     | Full test strategy                                               |
+| `plan/agentsy-deep-dive-v1.md`     | Research synthesis from 28 reference codebases                   |
+| `plan/agentsy-deep-dive-v2.md`     | Extended research notes                                          |
+| `plan/agentsy-connectors-v1.md`    | Connectors deep-dive                                             |
+| `plan/agentsy-scheduler-v1.md`     | Scheduler design notes                                           |
+| `plan/agentsy-standalone-v1.md`    | Standalone binary design                                         |
+| `plan/owasp-security-testing-1.md` | OWASP security test plan                                         |
 
 **Reference codebases** (from prd-notes.md SRC-\* and platform-v2.md §8):
 
@@ -670,9 +675,8 @@ After MONO-1 specifically:
 
 ## 11. Open Questions / Blockers
 
-1. **ASSUMPTION-001**: ✅ RESOLVED — Ink renderer merged; all 18 packages live.
-2. **ASSUMPTION-002**: Is `@agentsy` npm org claimed? Required before publishing extension packages (Phase 2+).
-3. **RISK-007**: Verify `@modelcontextprotocol/sdk` current version matches MCP 2025-06-18 spec before P8.
-4. **ASSUMPTION-008/009**: Verify obra/superpowers v5.0.7 and JuliusBrussee/caveman v1.7.0 are MIT-licensed before F6.
-5. **TURBO_TOKEN/TURBO_TEAM**: Configure in CI secrets for remote cache (RISK-002 — local cache alone still accelerates, not a blocker).
-6. **Phase 0 (pending)**: Flush uncommitted changes on PR #51 — watch-mode fix, Codacy cleanup, lockfile, types batch (user owns `@agentsy/types` edits).
+1. **ASSUMPTION-002**: Confirm `@agentsy` npm org access remains valid for all maintainers publishing extension packages.
+2. **RISK-007**: Verify `@modelcontextprotocol/sdk` version matches MCP 2025-06-18 expectations before P8.
+3. **ASSUMPTION-008/009**: Verify obra/superpowers v5.0.7 and JuliusBrussee/caveman v1.7.0 license compatibility before F6.
+4. **TURBO_TOKEN/TURBO_TEAM**: Configure CI remote cache secrets if build times become a bottleneck.
+5. **Plan/doc drift**: Keep `plan/prompt.md`, `plan/agentsy-platform-v2.md`, and release changelogs synchronized after each completed slice.
