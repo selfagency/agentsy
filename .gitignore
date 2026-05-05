@@ -248,4 +248,3 @@ package-lock.json
 .turbo
 test-report.junit.xml
 .rumdl_cache
-config/release-state.json
