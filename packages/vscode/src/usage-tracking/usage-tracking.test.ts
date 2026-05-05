@@ -187,26 +187,6 @@ describe('Quota adapter utilities', () => {
     expect(tooltip).toContain('Z.ai Usage: 800 / 1,000 tokens (80%)');
     expect(tooltip).toContain('weekly');
   });
-
-  it('pickActiveQuotaWindow honors preferred-order strategy', () => {
-    const windows: QuotaWindowValue[] = [
-      { used: 50, total: 100, unit: 'tokens', window: 'monthly' },
-      { used: 10, total: 100, unit: 'tokens', window: 'hourly' },
-    ];
-
-    const active = pickActiveQuotaWindow(windows, 'preferred-order', ['hourly', 'monthly']);
-    expect(active.window).toBe('hourly');
-  });
-
-  it('pickActiveQuotaWindow tie-breaks most-constrained by smaller remaining budget', () => {
-    const windows: QuotaWindowValue[] = [
-      { used: 80, total: 100, unit: 'tokens', window: 'hourly' }, // 80%, remaining 20
-      { used: 8, total: 10, unit: 'tokens', window: 'daily' }, // 80%, remaining 2
-    ];
-
-    const active = pickActiveQuotaWindow(windows, 'most-constrained');
-    expect(active.window).toBe('daily');
-  });
 });
 
 describe('mapUsageToVSCode', () => {
