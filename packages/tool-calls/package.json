@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/tool-calls",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Tool call utilities and XML tool system prompts for the @agentsy platform.",
   "repository": {
