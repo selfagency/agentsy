@@ -1,0 +1,23 @@
+scripts/preview-themes.js
+  30853d313c02c6be 92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "8880b63d9d212fe79a811f72a2744205851e8854",
+  "prompts": {
+    "30853d313c02c6be": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1777990705599",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
