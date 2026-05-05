@@ -37,12 +37,15 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
 import { $, argv, cd, sleep } from 'zx';
+import { getPackageReleaseState, readReleaseState } from './release-state.js';
+import { getRepositoryField, validateRepositoryMatch } from './trusted-publish-readiness.js';
 
 $.verbose = false;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
+const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
 // Defensive filesystem helpers
@@ -111,7 +114,7 @@ if (!existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-// Load actual package name from package.json
+// Load actual package name from package.json (needed for tag construction below)
 const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
 const fullPackageName = pkgJson.name;
 
@@ -307,6 +310,18 @@ async function main() {
   runGit(['fetch', 'origin', 'main']);
   runGit(['pull', '--ff-only', 'origin', 'main']);
 
+  // Re-read pkgJson and release state now that main is up to date.
+  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
+  const latestReleaseState = readReleaseState(RELEASE_STATE_PATH);
+  const packageReleaseState = getPackageReleaseState(latestReleaseState, fullPackageName);
+
+  if (packageReleaseState !== 'oidc-ready') {
+    console.error(`❌ ${fullPackageName} is '${packageReleaseState}', not 'oidc-ready'.`);
+    console.error('   This package must be bootstrap-published locally once before CI OIDC publishing is allowed.');
+    console.error(`   Run: pnpm bootstrap-release ${fullPackageName} ${version} --yes-i-know-this-is-first-publish`);
+    process.exit(1);
+  }
+
   // Derive owner/repo from git remote
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
@@ -315,6 +330,21 @@ async function main() {
     process.exit(1);
   }
   const [, owner, repo] = match;
+
+  const expectedRepo = `${owner}/${repo}`;
+  const packageRepository = getRepositoryField(latestPkgJson.repository);
+  if (!packageRepository) {
+    console.error(
+      `❌ Package ${latestPkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`,
+    );
+    process.exit(1);
+  }
+
+  const repoCheck = validateRepositoryMatch(packageRepository, expectedRepo);
+  if (!repoCheck.ok) {
+    console.error(`❌ ${repoCheck.error}`);
+    process.exit(1);
+  }
 
   // Check for existing tags
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
