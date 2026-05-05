@@ -6,6 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { $, argv, cd } from 'zx';
+import { getPackageReleaseState, readReleaseState, writeReleaseState } from './release-state.js';
 
 $.verbose = false;
 
@@ -35,28 +36,6 @@ function safeRead(p, enc = 'utf8') {
 function safeWrite(p, data) {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
   return writeFileSync(resolve(p), data);
-}
-
-function readReleaseState() {
-  if (!existsSync(RELEASE_STATE_PATH)) {
-    return { defaultState: 'bootstrap-required', packages: {} };
-  }
-
-  const raw = JSON.parse(safeRead(RELEASE_STATE_PATH, 'utf8'));
-  const packages =
-    raw && typeof raw === 'object' && raw.packages && typeof raw.packages === 'object' ? raw.packages : {};
-  const defaultState =
-    raw && typeof raw === 'object' && typeof raw.defaultState === 'string' ? raw.defaultState : 'bootstrap-required';
-
-  return { defaultState, packages };
-}
-
-function writeReleaseState(state) {
-  const sortedPackages = Object.fromEntries(Object.entries(state.packages).sort(([a], [b]) => a.localeCompare(b)));
-  safeWrite(
-    RELEASE_STATE_PATH,
-    `${JSON.stringify({ defaultState: state.defaultState, packages: sortedPackages }, null, 2)}\n`,
-  );
 }
 
 const packageArg = argv._[0];
@@ -103,8 +82,8 @@ if (typeof fullPackageName !== 'string' || fullPackageName.length === 0) {
   process.exit(1);
 }
 
-const releaseState = readReleaseState();
-const currentState = releaseState.packages[fullPackageName] ?? releaseState.defaultState;
+const releaseState = readReleaseState(RELEASE_STATE_PATH);
+const currentState = getPackageReleaseState(releaseState, fullPackageName);
 
 if (currentState === 'oidc-ready' && !force) {
   console.error(`❌ ${fullPackageName} is already marked oidc-ready.`);
@@ -144,7 +123,7 @@ async function main() {
   await $`npm publish ${`packages/${pkgShortName}/dist`} --access public --tag=${distTag}`;
 
   releaseState.packages[fullPackageName] = 'oidc-ready';
-  writeReleaseState(releaseState);
+  writeReleaseState(RELEASE_STATE_PATH, releaseState);
 
   console.log('✅ Bootstrap publish complete.');
   console.log('Next steps:');
