@@ -44,10 +44,11 @@ const isDryRun = Boolean(argv['dry-run'] || argv.dryRun);
 const confirm = Boolean(argv['yes-i-know-this-is-first-publish']);
 const force = Boolean(argv.force);
 const explicitTag = typeof argv.tag === 'string' ? argv.tag : undefined;
+const otp = typeof argv.otp === 'string' || typeof argv.otp === 'number' ? String(argv.otp) : undefined;
 
 if (!packageArg || !version) {
   console.error(
-    'Usage: pnpm bootstrap-release <package-name> <version> [--tag latest|prerelease] [--dry-run] --yes-i-know-this-is-first-publish',
+    'Usage: pnpm bootstrap-release <package-name> <version> [--tag latest|prerelease] [--otp=<code>] [--dry-run] --yes-i-know-this-is-first-publish',
   );
   process.exit(1);
 }
@@ -147,7 +148,9 @@ async function main() {
   const packagePath = `packages/${pkgShortName}`;
   const distPath = `${packagePath}/dist`;
   await $`node scripts/write-dist-package.js ${packagePath}`;
-  await $`npm publish ${distPath} --access public --tag=${distTag}`;
+  const publishArgs = ['publish', distPath, '--access', 'public', `--tag=${distTag}`];
+  if (otp) publishArgs.push(`--otp=${otp}`);
+  await $`npm ${publishArgs}`;
 
   releaseState.packages[fullPackageName] = 'oidc-ready';
   writeReleaseState(RELEASE_STATE_PATH, releaseState);
