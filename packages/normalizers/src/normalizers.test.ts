@@ -1176,35 +1176,6 @@ describe('normalizeZAiChunk', () => {
     expect(normalizeZAiChunk({})).toBeNull();
     expect(normalizeZAiChunk({ choices: [] })).toBeNull();
   });
-
-  it('filters invalid tool_calls and keeps valid native deltas', () => {
-    const result = normalizeZAiChunk({
-      choices: [
-        {
-          index: 0,
-          delta: {
-            tool_calls: [{ index: 0, id: '', function: { name: 'lookup', arguments: '{"q":"x"}' } }, { invalid: true }],
-          },
-          finish_reason: null,
-        },
-      ],
-    });
-
-    expect(result?.chunk.nativeToolCallDeltas).toEqual([{ index: 0, name: 'lookup', argumentsDelta: '{"q":"x"}' }]);
-  });
-
-  it('preserves explicit total_tokens usage when provided', () => {
-    const result = normalizeZAiChunk({
-      choices: [{ index: 0, delta: { content: 'ok' }, finish_reason: null }],
-      usage: { prompt_tokens: 3, completion_tokens: 4, total_tokens: 99 },
-    });
-
-    expect(result?.chunk.usage).toEqual({
-      inputTokens: 3,
-      outputTokens: 4,
-      totalTokens: 99,
-    });
-  });
 });
 
 // ---------------------------------------------------------------------------

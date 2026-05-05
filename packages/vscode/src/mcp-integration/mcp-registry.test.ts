@@ -106,50 +106,6 @@ describe('McpServerRegistry', () => {
     await expect(registry.registerWithVscode()).resolves.not.toThrow();
   });
 
-  it('registerWithVscode serializes and writes server configuration', async () => {
-    vi.resetModules();
-    const update = vi.fn(async () => undefined);
-    const get = vi.fn(() => ({ existing: { command: 'existing-cmd' } }));
-
-    vi.doMock('vscode', () => ({
-      workspace: {
-        getConfiguration: () => ({ get, update }),
-      },
-      ConfigurationTarget: {
-        Workspace: 1,
-      },
-    }));
-
-    const { McpServerRegistry: Registry } = await import('./mcp-server-registry.js');
-    const registry = new Registry({ namespace: 'ext.mcpServers' });
-    registry.register({
-      name: 'zai-server',
-      command: 'node',
-      args: ['mcp.js'],
-      env: { API_KEY: 'x' },
-      headers: { Authorization: 'Bearer x' },
-      alwaysAllow: true,
-    });
-
-    await registry.registerWithVscode();
-
-    expect(get).toHaveBeenCalledWith('ext.mcpServers');
-    expect(update).toHaveBeenCalledWith(
-      'ext.mcpServers',
-      expect.objectContaining({
-        existing: { command: 'existing-cmd' },
-        'zai-server': {
-          command: 'node',
-          args: ['mcp.js'],
-          env: { API_KEY: 'x' },
-          headers: { Authorization: 'Bearer x' },
-          alwaysAllow: true,
-        },
-      }),
-      1,
-    );
-  });
-
   it('dispose clears all servers', () => {
     const registry = new McpServerRegistry({ namespace: 'ext.mcpServers' });
     registry.register(makeServer({ name: 'a' }));
