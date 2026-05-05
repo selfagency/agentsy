@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/ag-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agentic UI rendering primitives and state management",
   "keywords": [
     "agentic",
