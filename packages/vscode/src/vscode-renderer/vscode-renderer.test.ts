@@ -1,5 +1,5 @@
-import type { LLMStreamProcessor } from '@agentsy/core/processor';
-import type { CancellationToken } from '@agentsy/core/renderers';
+import type { LLMStreamProcessor } from '@agentsy/processor';
+import type { CancellationToken } from '@agentsy/renderers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
 import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
@@ -216,7 +216,7 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(mockStream.beginToolInvocation).toHaveBeenCalledTimes(1);
-      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather');
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', { city: 'NYC' });
     });
 
     it('fires onToolCallDelta callback', async () => {
@@ -730,5 +730,29 @@ describe('Cancellation Token Bridge', () => {
     }
 
     expect(signal.aborted).toBe(true);
+  });
+
+  it('returns a non-aborted signal for partial tokens without onCancellationRequested', () => {
+    const signal = cancellationTokenToAbortSignal({
+      isCancellationRequested: false,
+    });
+
+    expect(signal).toBeDefined();
+    expect(signal.aborted).toBe(false);
+  });
+
+  it('does not throw when cancellation callback fires synchronously during registration', () => {
+    const dispose = vi.fn();
+    const mockToken: CancellationToken = {
+      isCancellationRequested: false,
+      onCancellationRequested: vi.fn(listener => {
+        listener(undefined);
+        return { dispose };
+      }),
+    };
+
+    const signal = cancellationTokenToAbortSignal(mockToken);
+    expect(signal.aborted).toBe(true);
+    expect(dispose).toHaveBeenCalledTimes(1);
   });
 });

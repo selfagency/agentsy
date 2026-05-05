@@ -1,11 +1,16 @@
 # @agentsy/vscode
 
-Unified VS Code integration library for Language Model Chat Providers with **@agentsy/core support**.
+Unified VS Code integration library for Language Model Chat Providers built on the `@agentsy/*` monorepo packages.
+
+## Status
+
+- Published package: available on npm as `@agentsy/vscode`
+- Repository development baseline: Node.js 22+
 
 ## Features
 
 - **ApiKeyManager** — Centralized secrets management with VS Code SecretStorage
-- **BaseLanguageModelChatProvider** — Abstract provider template with [@agentsy/core](../parser#readme) processor integration
+- **BaseLanguageModelChatProvider** — Abstract provider template with processor integration
 - **ChatResponseStream renderers** — Thinking progress display, tool execution feedback, cancellation support
 - **UsageStatusBar** — Quota tracking UI with configurable windows
 - **McpServerRegistry** — MCP server definition pattern
@@ -16,10 +21,33 @@ Unified VS Code integration library for Language Model Chat Providers with **@ag
 ## Installation
 
 ```bash
-npm install @agentsy/vscode @agentsy/core vscode
+npm install @agentsy/vscode vscode
 ```
 
+Dual module support is available:
+
+- ESM: `import { createVSCodeAgentLoop } from '@agentsy/vscode'`
+- CommonJS: `const { createVSCodeAgentLoop } = require('@agentsy/vscode')`
+
 **Requirements**: Node.js 18+, TypeScript 5.0+ (if using TypeScript)
+
+## Development
+
+```bash
+cd packages/vscode
+pnpm build
+pnpm check-types
+pnpm lint
+pnpm test
+```
+
+From repository root:
+
+```bash
+pnpm check-types
+pnpm test
+pnpm lint
+```
 
 ## Quick Start
 
@@ -46,20 +74,30 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
   ): Promise<ProviderApiRequest> {
     // Convert VS Code messages to your provider's API format
     return {
-      model: request.model.id,
-      messages: messages.map(m => ({
-        role: m.role,
-        content: m.content,
-      })),
-      stream: true,
+      url: 'https://api.example.com/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${await this.getApiKey()}`,
+        'Content-Type': 'application/json',
+      },
+      body: {
+        model: request.model?.id,
+        messages,
+        stream: true,
+      },
     };
   }
 
-  protected normalizeStream(
+  protected async *normalizeStream(
     response: AsyncIterable<ProviderStreamChunk>,
   ): AsyncIterable<LanguageModelChatResponseChunk> {
-    // Normalize provider stream chunks to LLMStreamProcessor format
-    return normalizeMyProviderStream(response);
+    for await (const chunk of response) {
+      const text = extractText(chunk); // provider-specific extraction
+      if (!text) continue;
+      yield {
+        part: { value: text },
+      } as LanguageModelChatResponseChunk;
+    }
   }
 
   protected mapErrorToCode(error: unknown): string {
@@ -78,7 +116,7 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
 Normalizers convert provider-specific streaming chunks to the standard StreamChunk format:
 
 ```typescript
-import { type StreamChunk } from '@agentsy/core';
+import { type StreamChunk } from '@agentsy/processor';
 
 export async function* normalizeMyProviderStream(response: AsyncIterable<MyProviderChunk>): AsyncIterable<StreamChunk> {
   for await (const chunk of response) {
@@ -103,30 +141,26 @@ export async function* normalizeMyProviderStream(response: AsyncIterable<MyProvi
 }
 ```
 
-### 3. Integrate with llm-stream-parser 0.3.1
+### 3. Integrate with processor packages
 
 Use `LLMStreamProcessor` to handle tool accumulation and thinking parsing:
 
 ```typescript
-import { LLMStreamProcessor } from '@agentsy/core';
+import { LLMStreamProcessor } from '@agentsy/processor';
 
 const processor = new LLMStreamProcessor({
   accumulateNativeToolCalls: true,
   parseThinkTags: true,
-  onFinish: output => {
-    console.log('Stream finished:', output);
-  },
-  onStep: part => {
-    if (part.type === 'tool_call') {
-      console.log('Tool called:', part.call);
-    }
-  },
-  onToolCallDelta: delta => {
-    console.log('Tool delta:', delta);
-  },
   onWarning: message => {
     console.warn('Warning:', message);
   },
+});
+
+processor.on('tool_call', call => {
+  console.log('Tool called:', call);
+});
+processor.on('tool_call_delta', delta => {
+  console.log('Tool delta:', delta);
 });
 
 for await (const chunk of normalizeMyProviderStream(response)) {
@@ -153,9 +187,13 @@ commands.registerCommand('myProvider.setApiKey', () => apiKeyManager.setApiKey()
 const key = await apiKeyManager.getApiKey();
 
 // Listen for changes
-apiKeyManager.onDidChangeApiKey(newKey => {
+const apiKeySubscription = apiKeyManager.onDidChangeApiKey((event, newKey) => {
+  if (event !== 'updated') return;
   // Reconnect provider with new key
 });
+
+// Dispose on extension shutdown
+context.subscriptions.push(apiKeySubscription);
 ```
 
 ### 5. Track Usage with Status Bar
@@ -181,12 +219,29 @@ const statusBar = new UsageStatusBar(context, {
   errorThreshold: 0.95,
 });
 
-await statusBar.initialize();
+await statusBar.show();
 ```
 
-## API Documentation
+Map core usage into VS Code usage shape with `mapUsageToVSCode`:
 
-See [docs/](./docs/) for complete API documentation, migration guides, and examples.
+```typescript
+import { mapUsageToVSCode } from '@agentsy/vscode';
+
+const usage = mapUsageToVSCode({ inputTokens: 120, outputTokens: 45 });
+// => { promptTokens: 120, completionTokens: 45 }
+```
+
+Tool-call lifecycle helpers for provider integrations:
+
+```typescript
+import { ToolCallDeltaAccumulator, accumulateToolCallDeltas, toVSCodeToolCallPart } from '@agentsy/vscode';
+
+const accumulator = new ToolCallDeltaAccumulator();
+accumulateToolCallDeltas(accumulator, deltaPart);
+const finalized = accumulator.finalize({ repairIncomplete: true });
+
+const toolCallPartPayload = toVSCodeToolCallPart(toolCallOutputPart);
+```
 
 ## Processor Integration Examples
 
@@ -216,43 +271,60 @@ export async function* normalizeOllamaChatChunk(
 ### Z.ai
 
 ```typescript
-export async function* normalizeZAiChunk(response: AsyncIterable<ZAiStreamEvent>): AsyncIterable<StreamChunk> {
-  for await (const event of response) {
-    if (event.type === 'content_block_delta') {
-      yield {
-        content: event.delta.text,
-      };
-    } else if (event.type === 'message_stop') {
-      yield {
-        done: true,
-        usage: {
-          inputTokens: event.message.usage.input_tokens,
-          outputTokens: event.message.usage.output_tokens,
-        },
-      };
-    }
-  }
+import { normalizeZAiChunk } from '@agentsy/normalizers';
+import { createZAiInlineToolCallParser, LLMStreamProcessor } from '@agentsy/processor';
+
+const processor = new LLMStreamProcessor({
+  toolCallParsers: [createZAiInlineToolCallParser()],
+});
+
+for await (const raw of zaiStream) {
+  const normalized = normalizeZAiChunk(raw);
+  if (!normalized) continue;
+  const output = processor.process(normalized.chunk);
+  // Consume output.parts
+}
+
+const final = processor.flush();
+if (final.done) {
+  console.log('Stream complete');
+}
+```
+
+### MCP provider helper
+
+```typescript
+import { createMcpServerDefinitionProvider } from '@agentsy/vscode';
+
+const provider = createMcpServerDefinitionProvider({
+  servers: [
+    {
+      name: 'zai-mcp',
+      command: 'node',
+      args: ['dist/server.js'],
+      enabledSettingKey: 'mcp.zai.enabled',
+      apiKeyEnvVar: 'ZAI_API_KEY',
+    },
+  ],
+  settings: settingsLoader,
+  getApiKey: async () => apiKeyManager.getApiKey(),
+});
+
+const servers = await provider.provide();
+for (const server of servers) {
+  registry.register(server);
 }
 ```
 
 ### Mistral
 
 ```typescript
-export async function* normalizeMistralStreamEvent(
-  response: AsyncIterable<MistralStreamEvent>,
-): AsyncIterable<StreamChunk> {
-  for await (const event of response) {
-    if (event.data.type === 'content_block_delta') {
-      yield {
-        content: event.data.delta.text,
-      };
-    } else if (event.data.type === 'message_stop') {
-      yield {
-        done: true,
-        finishReason: event.data.finish_reason,
-      };
-    }
-  }
+import { normalizeMistralChunk } from '@agentsy/normalizers';
+
+for await (const chunk of mistralStream) {
+  const normalized = normalizeMistralChunk(chunk);
+  if (!normalized) continue;
+  processor.process(normalized.chunk);
 }
 ```
 
@@ -275,7 +347,7 @@ pnpm test:watch
 pnpm coverage
 
 # Type checking
-pnpm type-check
+pnpm check-types
 
 # Linting
 pnpm lint
@@ -290,15 +362,17 @@ pnpm lint
 ├── Message Conversion         ← Role/message format converters
 ├── Error Handling             ← Standard error codes
 ├── UsageStatusBar             ← Quota UI
-├── McpServerRegistry          ← MCP server patterns
+├── Quota adapter utilities    ← Multi-window quota normalization helpers
+├── McpServerRegistry          ← MCP server settings registry
+├── createMcpServerDefinitionProvider ← MCP provider API helper
 └── SettingsLoader            ← Config validation
 
 ↓ (depends on)
 
-@agentsy/core 0.3.1
+@agentsy/processor + @agentsy/normalizers
 ├── LLMStreamProcessor         ← Tool accumulation, thinking parsing
 ├── StreamChunk               ← Standard streaming format
-└── Normalizers               ← Provider-specific converters
+└── Normalizers               ← Provider-specific converters (including normalizeZAiChunk)
 
 ↓ (used by)
 
@@ -313,21 +387,12 @@ Provider Extensions (Opilot, Z.ai, Mistral)
 The library includes test fixtures for mocking VS Code APIs:
 
 ```typescript
-import { createMockVSCode, createMockChatRequest } from '@agentsy/vscode/test';
+import { createChunkNormalizerStub, createMockApiKeyManager, createMockRendererHandle } from '@agentsy/vscode';
 
-const mockVSCode = createMockVSCode();
-const mockRequest = createMockChatRequest();
+const apiKeyManager = createMockApiKeyManager('demo-key');
+const renderer = createMockRendererHandle();
+const normalize = createChunkNormalizerStub<{ text: string }>(event => ({ content: event.text }));
 ```
-
-## Migration Guides
-
-- [Opilot Migration](./docs/migration-opilot.md)
-- [Z-models-vscode Migration](./docs/migration-z-models.md)
-- [Mistral-models-vscode Migration](./docs/migration-mistral.md)
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## License
 
@@ -335,6 +400,7 @@ MIT
 
 ## See Also
 
-- [@agentsy/core](https://github.com/selfagency/llm-stream-parser) — Core streaming parser
+- [@agentsy/processor](https://github.com/selfagency/agentsy/tree/main/packages/processor) — Stream processor
+- [@agentsy/normalizers](https://github.com/selfagency/agentsy/tree/main/packages/normalizers) — Provider normalizers
 - [VS Code Language Model API](https://code.visualstudio.com/api/extension-guides/language-model)
 - [MCP Protocol](https://modelcontextprotocol.io/)

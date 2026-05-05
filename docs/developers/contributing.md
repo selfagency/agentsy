@@ -1,6 +1,6 @@
 # Contributing
 
-We welcome contributions to `@agentsy/core`! This guide explains how to contribute.
+We welcome contributions to the `@agentsy` monorepo! This guide explains how to contribute.
 
 ## Getting Started
 
@@ -37,10 +37,10 @@ Our code style is enforced by tools:
 
 ```bash
 # Check formatting and linting
-task check-all
+pnpm check-types && pnpm lint && pnpm format
 
 # Auto-fix issues
-task precommit
+pnpm lint:fix && pnpm format
 ```
 
 Tools used:
@@ -55,10 +55,10 @@ All changes must include tests:
 
 ```bash
 # Run tests
-task unit-tests
+pnpm test
 
 # Run with coverage
-task unit-test-coverage
+pnpm test:coverage
 ```
 
 Test structure:
@@ -75,8 +75,9 @@ Test structure:
 1. **Before opening**: Ensure local checks pass
 
    ```bash
-   task check-all
-   task unit-tests
+   pnpm check-types
+   pnpm lint
+   pnpm test
    ```
 
 2. **Create PR** with:

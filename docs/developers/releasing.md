@@ -10,11 +10,9 @@ Releases remain merge-approved via `main` and triggered by package tags.
 ## Single Package Release
 
 ```bash
-# Release @agentsy/core@0.2.0
-pnpm release @agentsy/core 0.2.0
-
-# Release @agentsy/vscode@0.1.5
+# Release any package in the workspace
 pnpm release @agentsy/vscode 0.1.5
+pnpm release @agentsy/processor 0.2.0
 ```
 
 ## First Publish (Bootstrap, one-time)
@@ -22,8 +20,8 @@ pnpm release @agentsy/vscode 0.1.5
 Use this only for packages that have never been published and are still marked `bootstrap-required` in `config/release-state.json`.
 
 ```bash
-# Replace 'example-pkg' with the actual package short name (e.g. a newly added workspace package)
-pnpm bootstrap-release @agentsy/example-pkg 0.1.0 --yes-i-know-this-is-first-publish
+# Replace 'pkg-name' with the actual package short name (e.g. a newly added workspace package)
+pnpm bootstrap-release @agentsy/pkg-name 0.1.0 --yes-i-know-this-is-first-publish
 ```
 
 What bootstrap does:
@@ -33,6 +31,7 @@ What bootstrap does:
 - builds package output
 - writes `dist/package.json`
 - publishes from local machine once
+- marks package as `oidc-ready` in `config/release-state.json`
 
 After bootstrap, configure trusted publisher on npmjs package settings:
 
@@ -40,18 +39,6 @@ After bootstrap, configure trusted publisher on npmjs package settings:
 - repository: `selfagency/agentsy` (exact match)
 - workflow filename: `release.yml` (exact match)
 - optional environment: only if you use GitHub environments
-
-Once trusted publisher is configured, manually update `config/release-state.json`:
-
-```json
-{
-  "packages": {
-    "@agentsy/example-pkg": "oidc-ready"
-  }
-}
-```
-
-Commit and push this change to `main` before triggering the first CI release.
 
 ## What Happens
 
@@ -65,10 +52,10 @@ Commit and push this change to `main` before triggering the first CI release.
 4. **Workflow Execution**:
    - Waits for "Test & Build" workflow to pass on the commit
 5. **Tagging**:
-   - Creates annotated tag: `@agentsy/core@0.2.0`
+   - Creates annotated tag: `@agentsy/<package>@<version>`
    - Pushes tag to origin (triggers Release workflow)
 6. **Publishing**:
-   - Builds the package: `pnpm -F @agentsy/core build`
+   - Builds the package: `pnpm -F @agentsy/<package> build`
    - Runs `node scripts/write-dist-package.js` for that package
    - Publishes to npm with OIDC trusted publishing (no publish token)
    - Creates GitHub Release with release notes
@@ -87,12 +74,12 @@ Commit and push this change to `main` before triggering the first CI release.
 - `bootstrap-required`: blocked in CI release workflow
 - `oidc-ready`: allowed to publish via OIDC
 
-CI release runs fail fast for all packages (both per-package `@scope/pkg@version` tags and root `v*` tags) that are not `oidc-ready`. Root releases check every published package.
+CI release runs fail fast for packages that are not `oidc-ready`.
 
 ## Tag Format
 
 - **Root**: `v1.2.3` (single monorepo version)
-- **Per-package**: `@agentsy/core@0.2.0`, `@agentsy/vscode@0.1.5`
+- **Per-package**: `@agentsy/<package>@<version>` (for example `@agentsy/vscode@0.1.5`)
 
 The tag format tells the release workflow which package to publish.
 
@@ -101,8 +88,8 @@ The tag format tells the release workflow which package to publish.
 You can release multiple packages without waiting:
 
 ```bash
-pnpm release @agentsy/core 0.2.0 &
 pnpm release @agentsy/vscode 0.1.5 &
+pnpm release @agentsy/processor 0.2.0 &
 wait
 ```
 
@@ -133,7 +120,7 @@ export NPM_TOKEN="npm_xxxx..."
 Run one-time bootstrap publish first, then configure trusted publisher on npmjs.com:
 
 ```bash
-pnpm bootstrap-release @agentsy/example-pkg 0.1.0 --yes-i-know-this-is-first-publish
+pnpm bootstrap-release @agentsy/<package> <version> --yes-i-know-this-is-first-publish
 ```
 
 ### "Unable to authenticate" during CI publish
@@ -159,7 +146,7 @@ export GH_TOKEN="ghp_xxx..."
 Delete the local tag:
 
 ```bash
-git tag -d @agentsy/core@0.2.0
+git tag -d @agentsy/vscode@0.1.5
 ```
 
 ## Configuration Files

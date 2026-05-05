@@ -2,20 +2,20 @@ name: Test & Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - "packages/**"
-      - "scripts/**"
-      - "turbo.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - 'packages/**'
+      - 'scripts/**'
+      - 'turbo.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   pull_request:
     paths:
-      - "packages/**"
-      - "scripts/**"
-      - "turbo.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - 'packages/**'
+      - 'scripts/**'
+      - 'turbo.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 permissions:
@@ -41,8 +41,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: '22'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml
+          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
         env:
           CI: true
 
@@ -64,19 +64,24 @@ jobs:
           for package in packages/*/; do
             package_name=$(basename "$package")
             coverage_dir="$package/coverage"
-            if [ -d "$coverage_dir" ]; then
+            coverage_json="$coverage_dir/coverage-final.json"
+
+            if [ -f "$coverage_json" ]; then
               mkdir -p "coverage-input/$package_name"
-              cp -r "$coverage_dir"/* "coverage-input/$package_name/" 2>/dev/null || true
+              cp "$coverage_json" "coverage-input/$package_name/coverage-final.json"
+              echo "Prepared coverage for $package_name"
+            else
+              echo "Skipping $package_name: coverage-final.json not found"
             fi
           done
 
       - name: Merge coverage reports
-        uses: selfagency/merge-coverage@16c5a43e7b9428ed3a7c81f193d1061a427c6af9
+        uses: selfagency/merge-coverage@4f847ad20e457b1b08b73acd5e8de2fca504385c
         with:
           source: ${{ github.workspace }}
           coverage-reports: ${{ github.workspace }}/coverage-input
           output-folder: ${{ github.workspace }}/coverage
-          formats: clover
+          formats: lcov
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
@@ -93,7 +98,7 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
         with:
           api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: ${{ github.workspace }}/coverage/clover.xml
+          coverage-reports: ${{ github.workspace }}/coverage/lcov.info
 
       - name: Upload coverage artifact
         if: always()

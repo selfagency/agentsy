@@ -18,39 +18,39 @@ description: 'Comprehensive resumable implementation guide for the @agentsy plat
 
 ### What Exists Now
 
-Repository: `/Users/daniel/Developer/llm-stream-parser`
-Active branch: `feature/ink-renderer` (assume merged to `main` before MONO-0 — see ASSUMPTION-001, platform-v2.md line ~827)
+Repository: `/Users/daniel/Developer/agentsy`
+Active branch: `feature/provider-vscode-parity-dedupe` (PR #51)
 
-Current `src/` structure to be migrated:
+**MONO-0 through P1 are COMPLETE. 18 packages are live in `packages/`.**
 
-| Directory                                                                                                                                                                           | Target Package         |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/vendor/`, `src/ui/` | `@agentsy/core`        |
-| `src/normalizers/`                                                                                                                                                                  | `@agentsy/normalizers` |
-| `src/processor/`, `src/pipeline/`                                                                                                                                                   | `@agentsy/processor`   |
-| `src/agent/`                                                                                                                                                                        | `@agentsy/agent`       |
-| `src/adapters/`                                                                                                                                                                     | `@agentsy/adapters`    |
-| `src/ag-ui/`                                                                                                                                                                        | `@agentsy/ag-ui`       |
+| Package                | Status                   |
+| ---------------------- | ------------------------ |
+| `@agentsy/types`       | ✅ live                  |
+| `@agentsy/xml-filter`  | ✅ live                  |
+| `@agentsy/context`     | ✅ live                  |
+| `@agentsy/formatting`  | ✅ live                  |
+| `@agentsy/sse`         | ✅ live                  |
+| `@agentsy/thinking`    | ✅ live — 20 tests added |
+| `@agentsy/normalizers` | ✅ live                  |
+| `@agentsy/structured`  | ✅ live                  |
+| `@agentsy/tool-calls`  | ✅ live                  |
+| `@agentsy/processor`   | ✅ live                  |
+| `@agentsy/recovery`    | ✅ live                  |
+| `@agentsy/ag-ui`       | ✅ live                  |
+| `@agentsy/agent`       | ✅ live                  |
+| `@agentsy/adapters`    | ✅ live                  |
+| `@agentsy/renderers`   | ✅ live                  |
+| `@agentsy/ui`          | ✅ live                  |
+| `@agentsy/vscode`      | ✅ live                  |
+| `@agentsy/integration` | ✅ live (private)        |
 
-Full migration task list: `plan/agentsy-platform-v2.md` lines ~200–290 (TASK-M1-001 through M1-012).
+See `plan/agentsy-platform-v2.md` for full MONO/R/P/X task tables with `Completed` column.
 
 ### What Is Being Built
 
-Transform this stream-parsing library into **21 composable TypeScript packages** under the `@agentsy` npm org. The existing package becomes a backward-compat shim.
+**Core layer (18 packages) is complete.** Next: agent infrastructure and extension packages.
 
-**Core packages** (build-order layers):
-
-```text
-@agentsy/tsconfig        (no deps)
-@agentsy/core            (no @agentsy deps)
-@agentsy/normalizers  →  core
-@agentsy/processor    →  core, normalizers
-@agentsy/agent        →  core, processor
-@agentsy/adapters     →  core, agent
-@agentsy/ag-ui        →  core, processor
-```
-
-**Extension packages** (depend on core layer):
+**Extension packages** (NOT YET STARTED — depend on core layer):
 
 ```text
 @agentsy/runtime       →  core, agent
@@ -81,14 +81,17 @@ Full dependency graph (canonical): `plan/agentsy-platform-v2.md` lines ~820–85
 
 ## 2. Execution Order
 
-Execute phases in this exact sequence. Phases marked `(parallel)` may run simultaneously.
+Phases marked ✅ are complete. Resume at Phase 0 (pending commits) then Phase 2.
 
 ```text
-MONO-0 → MONO-1 → R0 → P0
-  → R1 + R2 (parallel)
-  → P1
-  → X1 + X2 (parallel)
-  → P2 → P3 → P4 → P5 → P6
+✅ MONO-0 → ✅ MONO-1 → ✅ R0 → ✅ P0
+  → ✅ R1 + ✅ R2 (parallel)
+  → ✅ P1
+  → ✅ X1 + ✅ X2 (parallel)
+  → ✅ P2 → ✅ P3 (basic) → ...
+  [RESUME HERE:]
+  ⏳ Phase 0 (flush pending commits on PR #51)
+  → P3 → P4 → P5 → P6
   → R3
   → X3 + X4 (parallel)
   → P7 → P8 → X5 → X6 → X7
@@ -104,7 +107,7 @@ Source of truth for this order: `plan/agentsy-platform-v2.md` lines ~440–460.
 
 ## 3. Phase-by-Phase Implementation Guide
 
-### MONO-0 — Turborepo Bootstrap
+### MONO-0 — Turborepo Bootstrap ✅ COMPLETE
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~50–130 (TASK-M0-001 through M0-011)
 
@@ -118,7 +121,7 @@ Source of truth for this order: `plan/agentsy-platform-v2.md` lines ~440–460.
 
 ---
 
-### MONO-1 — Source Migration
+### MONO-1 — Source Migration ✅ COMPLETE
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~200–290 (TASK-M1-001 through M1-012)
 
@@ -128,7 +131,7 @@ Move each source directory (see §1 table above) to the correct `packages/*/src/
 
 ---
 
-### R0 — npm Org Setup
+### R0 — npm Org Setup ✅ COMPLETE
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~290–340 (TASK-R0-001 through R0-008)
 
@@ -139,7 +142,7 @@ Move each source directory (see §1 table above) to the correct `packages/*/src/
 
 ---
 
-### P0 — Architecture Contracts
+### P0 — Architecture Contracts ✅ COMPLETE
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~340–420 (TASK-P0-001 through P0-011)
 
@@ -165,7 +168,7 @@ Also add to `packages/agent/src/`:
 
 ---
 
-### R1 + R2 (parallel)
+### R1 + R2 (parallel) ✅ COMPLETE
 
 **R1 — Shim Deprecation Notice**
 `plan/agentsy-platform-v2.md` lines ~420–430 (TASK-R1-001 through R1-003): Add deprecation warning to `@agentsy/core` package; write `docs/migration.md` (FILE-DOC-003).
@@ -175,7 +178,7 @@ Also add to `packages/agent/src/`:
 
 ---
 
-### P1 — Normalizer + Adapter Patches
+### P1 — Normalizer + Adapter Patches ✅ COMPLETE
 
 **Spec**: `plan/agentsy-platform-v2.md` (TASK-P1-001 through P1-005)
 
@@ -187,7 +190,7 @@ Also add to `packages/agent/src/`:
 
 ---
 
-### X1 + X2 (parallel)
+### X1 + X2 (parallel) ✅ COMPLETE
 
 **X1 — Extensibility Contracts**
 `plan/agentsy-platform-v2.md` (TASK-X1-001 through X1-005): `HookRegistry`, `SkillManifest`, `PluginManifest`, tool annotation types (`readOnly`/`destructive`/`requiresApproval`). These go in `@agentsy/core`.
@@ -590,28 +593,26 @@ Full security requirements: `plan/agentsy-prd.md` §6 (SEC-001 through SEC-016) 
 
 ```bash
 # Build all packages
-turbo run build
+pnpm build        # turbo run build
 
 # Type-check all packages
-turbo run typecheck
-# or: task check-types  (single package, root)
+pnpm check-types  # turbo run check-types
 
 # Run all tests
-turbo run test
-# or: task unit-tests   (root src/ only)
+pnpm test         # turbo run test
 
 # Lint + format
-task lint
-task format
-
-# All checks at once
-task check-all
+pnpm lint
+pnpm lint:fix
+pnpm format
 
 # Pre-commit
-task precommit
-```
+pnpm precommit
 
-Taskfile canonical commands: `Taskfile.yaml` in repo root.
+# Per-package (from package dir)
+cd packages/core && pnpm build
+cd packages/core && pnpm test
+```
 
 CI runs Node.js 22. All packages target Node ≥ 22.
 
@@ -667,10 +668,11 @@ After MONO-1 specifically:
 
 ---
 
-## 11. Open Questions / Blockers Before Starting
+## 11. Open Questions / Blockers
 
-1. **ASSUMPTION-001**: Is PR for Ink renderer merged to `main`? Check before MONO-0.
-2. **ASSUMPTION-002**: Is `@agentsy` npm org claimed? Required before R0.
+1. **ASSUMPTION-001**: ✅ RESOLVED — Ink renderer merged; all 18 packages live.
+2. **ASSUMPTION-002**: Is `@agentsy` npm org claimed? Required before publishing extension packages (Phase 2+).
 3. **RISK-007**: Verify `@modelcontextprotocol/sdk` current version matches MCP 2025-06-18 spec before P8.
 4. **ASSUMPTION-008/009**: Verify obra/superpowers v5.0.7 and JuliusBrussee/caveman v1.7.0 are MIT-licensed before F6.
 5. **TURBO_TOKEN/TURBO_TEAM**: Configure in CI secrets for remote cache (RISK-002 — local cache alone still accelerates, not a blocker).
+6. **Phase 0 (pending)**: Flush uncommitted changes on PR #51 — watch-mode fix, Codacy cleanup, lockfile, types batch (user owns `@agentsy/types` edits).

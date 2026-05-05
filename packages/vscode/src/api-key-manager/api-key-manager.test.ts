@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ApiKeyManager } from './api-key-manager.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockExtensionContext } from '../test/fixtures/mock-vscode.js';
 import type { ApiKeyManagerConfig } from '../types/index.js';
+import { ApiKeyManager } from './api-key-manager.js';
 
 describe('ApiKeyManager', () => {
   let mockContext: ReturnType<typeof createMockExtensionContext>;
@@ -104,7 +104,7 @@ describe('ApiKeyManager', () => {
         validateBeforeStore: () => false,
       };
       const validatingManager = new ApiKeyManager(mockContext, configWithValidator);
-      await expect(validatingManager.setApiKey('invalid-key')).rejects.toThrow();
+      await expect(validatingManager.setApiKey('invalid-key')).rejects.toThrow('API key validation failed');
     });
 
     it('should call onError if validation fails', async () => {
@@ -165,6 +165,16 @@ describe('ApiKeyManager', () => {
       manager.onDidChangeApiKey(listener);
       manager.offDidChangeApiKey(listener);
       await manager.setApiKey('test-key');
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('returns a disposable from onDidChangeApiKey', async () => {
+      const listener = vi.fn();
+      const disposable = manager.onDidChangeApiKey(listener);
+
+      disposable.dispose();
+      await manager.setApiKey('test-key');
+
       expect(listener).not.toHaveBeenCalled();
     });
 

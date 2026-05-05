@@ -1482,8 +1482,8 @@ finalizeStream(): void {
 
 ## 6. Migration Path: `@agentsy/core` → `@agentsy/*`
 
-| Old import path                             | New import path                  |
-| ------------------------------------------- | -------------------------------- |
+| Old import path             | New import path                  |
+| --------------------------- | -------------------------------- |
 | `@agentsy/core`             | `@agentsy/core` (or any package) |
 | `@agentsy/core/thinking`    | `@agentsy/core/thinking`         |
 | `@agentsy/core/xml-filter`  | `@agentsy/core/xml-filter`       |

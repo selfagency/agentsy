@@ -190,6 +190,8 @@ export interface McpServerDefinition {
   name: string;
   command: string;
   args?: string[];
+  env?: Record<string, string>;
+  headers?: Record<string, string>;
   disabled?: boolean;
   alwaysAllow?: boolean;
 }

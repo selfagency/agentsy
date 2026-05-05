@@ -1,20 +1,43 @@
-import { appendToBlockquote } from '@agentsy/core/markdown';
-import type { OutputPart } from '@agentsy/core/processor';
-import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/core/renderers';
-import { createSharedRendererHandle } from '@agentsy/core/renderers';
+import { appendToBlockquote } from '@agentsy/formatting';
+import type { OutputPart } from '@agentsy/processor';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/renderers';
+import { createSharedRendererHandle } from '@agentsy/renderers';
+import { mapUsageToVSCode } from '../usage-tracking/map-usage.js';
+import { toVSCodeToolCallPart } from './tool-call-lifecycle.js';
+
+/** Module-level counter for generating unique fallback tool call IDs. */
+let _toolCallCounter = 0;
 
 /**
  * Structural interface matching VS Code's ChatResponseStream.
  * Stable API methods are required; proposed API methods are optional (capability detection).
  * Allows renderer to work with actual VS Code ChatResponseStream without hard dependency on vscode module.
  */
-export interface ChatResponseStream {
+export interface MinimalChatResponseStream {
   /** Emit markdown content to the chat response. */
   markdown(content: string): void;
 
   /** Emit a progress indicator (e.g., for thinking blocks). */
-  progress(content: string): void;
+  progress?(content: string): void;
 
+  /** Emit thinking progress (proposed API). */
+  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
+
+  /** Begin a tool invocation (proposed API). */
+  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
+
+  /** Update a tool invocation (proposed API). */
+  updateToolInvocation?(toolCallId: string, streamData: unknown): void;
+
+  /** Report token usage (proposed API). */
+  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
+}
+
+/**
+ * Full structural interface matching VS Code's ChatResponseStream.
+ * Includes advanced methods that are not required by agentsy renderers.
+ */
+export interface ChatResponseStream extends MinimalChatResponseStream {
   /** Anchor to a file or symbol. */
   anchor(
     value:
@@ -69,7 +92,7 @@ export interface ChatResponseStream {
  */
 export interface VSCodeChatRendererOptions extends BaseRendererOptions {
   /** VS Code ChatResponseStream instance. Required. */
-  stream: ChatResponseStream;
+  stream: MinimalChatResponseStream;
 
   /** How to render thinking blocks. Default: 'blockquote'. */
   thinkingStyle?: ThinkingStyle;
@@ -127,7 +150,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     if (stream.thinkingProgress) {
       stream.thinkingProgress({ text, id: 'thinking' });
     } else if (thinkingStyle === 'progress') {
-      stream.progress(text);
+      stream.progress?.(text);
     } else {
       // Blockquote style with proper multi-line support
       if (!blockquoteThinkingStarted) {
@@ -144,11 +167,9 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
   // codacy: disable-line
   const sharedOnFinish: BaseRendererOptions['onFinish'] = async (finishReason, usage) => {
-    if (usage && stream.usage) {
-      stream.usage({
-        promptTokens: usage.inputTokens ?? 0,
-        completionTokens: usage.outputTokens ?? 0,
-      });
+    const mappedUsage = mapUsageToVSCode(usage);
+    if (mappedUsage && stream.usage) {
+      stream.usage(mappedUsage);
     }
 
     if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
@@ -187,8 +208,11 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
           await onToolCall(part);
         }
 
-        if (stream.beginToolInvocation && typeof part.call?.id === 'string' && typeof part.call?.name === 'string') {
-          stream.beginToolInvocation(part.call.id, part.call.name);
+        if (stream.beginToolInvocation && typeof part.call?.name === 'string') {
+          const vscodePart = toVSCodeToolCallPart(part, {
+            fallbackCallId: `tool_call_${part.call.name}_${++_toolCallCounter}`,
+          });
+          stream.beginToolInvocation(vscodePart.callId, vscodePart.name, vscodePart.input);
         }
       },
       onToolCallDelta: async part => {

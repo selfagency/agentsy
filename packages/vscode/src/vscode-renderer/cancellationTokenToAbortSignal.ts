@@ -1,4 +1,11 @@
-import type { CancellationToken } from '@agentsy/core/renderers';
+import type { CancellationToken } from '@agentsy/renderers';
+
+type CancellationListener = () => void;
+
+type CancellationTokenLike = Partial<CancellationToken> & {
+  isCancellationRequested?: boolean;
+  onCancellationRequested?: (listener: CancellationListener) => { dispose(): void };
+};
 
 /**
  * Convert a VS Code CancellationToken to an AbortSignal for use with fetch, stream operations,
@@ -31,18 +38,30 @@ import type { CancellationToken } from '@agentsy/core/renderers';
  * }
  * ```
  */
-export function cancellationTokenToAbortSignal(token: CancellationToken): AbortSignal {
-  if (token.isCancellationRequested) {
+export function cancellationTokenToAbortSignal(token: CancellationTokenLike): AbortSignal {
+  if (token.isCancellationRequested === true) {
     const controller = new AbortController();
     controller.abort();
     return controller.signal;
   }
 
   const controller = new AbortController();
-  const cancellationListener = token.onCancellationRequested(() => {
-    controller.abort();
-    cancellationListener.dispose();
-  });
+  if (typeof token.onCancellationRequested !== 'function') {
+    return controller.signal;
+  }
+
+  try {
+    let cancellationListener: { dispose(): void } | undefined;
+    cancellationListener = token.onCancellationRequested(() => {
+      controller.abort();
+      cancellationListener?.dispose();
+    });
+    if (controller.signal.aborted) {
+      cancellationListener?.dispose();
+    }
+  } catch {
+    // Gracefully fall back to a non-cancelled signal in partial/mock host environments.
+  }
 
   return controller.signal;
 }

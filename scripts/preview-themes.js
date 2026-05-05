@@ -89,7 +89,7 @@ function displayThemePreview() {
   console.log(chalk.dim('═══════════════════════════════════'));
   console.log(chalk.dim('\nUsage:'));
   console.log(chalk.dim('  createInkRenderer({ theme: "theme-name" })'));
-  console.log(chalk.dim('  import { draculaTheme } from "@agentsy/core"\n'));
+  console.log(chalk.dim(String.raw`  import { draculaTheme } from "../src/ink/themes/index.js"\n`));
 }
 
 displayThemePreview();

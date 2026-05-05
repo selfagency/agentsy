@@ -1,4 +1,4 @@
-import type { McpServerRegistryConfig, McpServerDefinition } from '../types/errors.js';
+import type { McpServerDefinition, McpServerRegistryConfig } from '../types/errors.js';
 
 /**
  * Manages registration and lifecycle of MCP (Model Context Protocol) servers.
@@ -89,19 +89,32 @@ export class McpServerRegistry {
       const merged: Record<string, unknown> = { ...existing };
 
       for (const server of this.servers.values()) {
-        if (!server.disabled) {
-          merged[server.name] = {
-            command: server.command,
-            ...(server.args?.length ? { args: server.args } : {}),
-            ...(server.alwaysAllow ? { alwaysAllow: true } : {}),
-          };
-        }
+        if (server.disabled) continue;
+        merged[server.name] = this.toWorkspaceServerConfig(server);
       }
 
       await config.update(this.config.namespace, merged, vscode.ConfigurationTarget.Workspace);
     } catch {
       // VS Code not available
     }
+  }
+
+  private toWorkspaceServerConfig(server: McpServerDefinition): Record<string, unknown> {
+    const config: Record<string, unknown> = {
+      command: server.command,
+    };
+
+    if (server.args?.length) {
+      config.args = server.args;
+    }
+    // env and headers are intentionally omitted from persisted workspace settings
+    // to prevent secrets (e.g. API keys) from being written to settings.json in plain text.
+    // These values should only be applied at runtime when spawning the MCP process.
+    if (server.alwaysAllow === true) {
+      config.alwaysAllow = true;
+    }
+
+    return config;
   }
 
   dispose(): void {

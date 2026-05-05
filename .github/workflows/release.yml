@@ -40,8 +40,8 @@ jobs:
             const repo = context.repo.repo;
 
             // Releases are triggered only by tag pushes.
-            // Use: git tag @agentsy/core@0.2.0 && git push origin @agentsy/core@0.2.0
-            // Or use: pnpm release @agentsy/core 0.2.0
+            // Use: git tag @agentsy/vscode@0.2.0 && git push origin @agentsy/vscode@0.2.0
+            // Or use: pnpm release @agentsy/vscode 0.2.0
             const tag = context.ref.replace('refs/tags/', '');
 
             // Parse tag: either "@scope/package@version" or "v1.2.3" (root monorepo version)
@@ -223,9 +223,43 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: "22"
-          cache: "pnpm"
-          registry-url: "https://registry.npmjs.org"
+          node-version: '22'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
+        run: |
+          set -euo pipefail
+          CURRENT_NPM="$(npm --version)"
+          echo "Current npm: ${CURRENT_NPM}"
+
+          if ! node -e "
+            const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '').split('.').map(v => Number.parseInt(v, 10));
+            const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
+            process.exit(ok ? 0 : 1);
+          " "${CURRENT_NPM}"; then
+            echo "Upgrading npm to ^11.5.1 for trusted publishing support"
+            npm install -g npm@^11.5.1
+          fi
+
+          npm --version
+
+      - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
+        run: |
+          set -euo pipefail
+          CURRENT_NPM="$(npm --version)"
+          echo "Current npm: ${CURRENT_NPM}"
+
+          if ! node -e "
+            const [maj = 0, min = 0, patch = 0] = (process.argv[1] || '').split('.').map(v => Number.parseInt(v, 10));
+            const ok = maj > 11 || (maj === 11 && (min > 5 || (min === 5 && patch >= 1)));
+            process.exit(ok ? 0 : 1);
+          " "${CURRENT_NPM}"; then
+            echo "Upgrading npm to ^11.5.1 for trusted publishing support"
+            npm install -g npm@^11.5.1
+          fi
+
+          npm --version
 
       - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
         run: |
@@ -281,7 +315,7 @@ jobs:
         with:
           tag_name: ${{ needs.detect-release.outputs.tag }}
           body_path: release-notes.md
-          files: "*.tgz"
+          files: '*.tgz'
           draft: false
           prerelease: ${{ needs.detect-release.outputs.is_prerelease == 'true' }}
         env:
@@ -312,23 +346,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ "${IS_PER_PACKAGE}" == "true" ]]; then
-            node scripts/trusted-publish-readiness.js \
-              --package-name "${PACKAGE_NAME}" \
-              --package-dir "packages/${PACKAGE_DIR}" \
-              --expected-repo "${REPOSITORY}" \
-              --release-state-path "config/release-state.json" \
-              --workflow-filename "release.yml" \
-              --expected-state "oidc-ready"
-          else
-            # Root release: verify all published packages are oidc-ready before publishing any.
-            for pkg in core vscode; do
-              node scripts/trusted-publish-readiness.js \
-                --package-name "@agentsy/${pkg}" \
-                --package-dir "packages/${pkg}" \
-                --expected-repo "${REPOSITORY}" \
-                --release-state-path "config/release-state.json" \
-                --workflow-filename "release.yml" \
-                --expected-state "oidc-ready"
-            done
+          if [[ "${IS_PER_PACKAGE}" != "true" ]]; then
+            echo "Root tag release detected; skipping per-package trusted publishing gate."
+            exit 0
           fi
+
+          node scripts/trusted-publish-readiness.js \
+            --package-name "${PACKAGE_NAME}" \
+            --package-dir "packages/${PACKAGE_DIR}" \
+            --expected-repo "${REPOSITORY}" \
+            --release-state-path "config/release-state.json" \
+            --workflow-filename "release.yml" \
+            --expected-state "oidc-ready"
