@@ -26,7 +26,7 @@ Agentsy already powers third-party model support in VS Code extensions for GitHu
 ## Example workflows
 
 - [CLI log summarizer (easy)](./docs/examples/cli-log-summarizer.md) — stream model output into terminal-ready summaries with minimal wiring.
-- [DNS blocklist workflow example](./docs/examples/dns-blocklist.md) — ingest multiple logs, stream model output, validate schema, and update remote DNS when a source IP should be blocked.
+- [DNS blocklist workflow](./docs/examples/dns-blocklist.md) — ingest multiple logs, stream model output, validate schema, and update remote DNS when a source IP should be blocked.
 - [Multi-provider policy gate](./docs/examples/multi-provider-policy-gate.md) — switch providers while keeping one schema-gated automation contract.
 - [Agent tool loop with retries + continuation](./docs/examples/tool-loop-retries-continuation.md) — run a multi-step tool loop, retry transient failures, and resume interrupted streams.
 - [Stateful ops copilot backend](./docs/examples/stateful-ops-copilot.md) — project stream events into state and AG-UI clients with continuation recovery.
