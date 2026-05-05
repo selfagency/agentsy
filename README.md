@@ -2,7 +2,6 @@
 
 Production-grade TypeScript packages for stream parsing, agent loops, rendering, and VS Code integration.
 
-[![npm @agentsy/vscode](https://img.shields.io/npm/v/@agentsy/vscode?label=%40agentsy%2Fvscode)](https://www.npmjs.com/package/@agentsy/vscode)
 [![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
