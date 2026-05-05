@@ -40,10 +40,16 @@ This repository is a **pnpm workspace monorepo** managed by **Turborepo**. It co
 
 ## Quick start
 
-### Install current packages
+### Use the published VS Code package
 
 ```bash
-npm install @agentsy/vscode @agentsy/processor @agentsy/normalizers
+npm install @agentsy/vscode vscode
+```
+
+### Build with the lower-level pipeline packages
+
+```bash
+npm install @agentsy/processor @agentsy/normalizers
 ```
 
 ### Work on the monorepo

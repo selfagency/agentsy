@@ -53,7 +53,7 @@ await adapter.end();
 
 ## Learn more
 
-- [Package page](../../docs/packages/adapters.md)
+- [Package page](https://agentsy.self.agency/packages/adapters)
 
 ## Development
 

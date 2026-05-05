@@ -41,7 +41,7 @@ const prompt = buildContinuationPrompt(snapshot);
 
 ## Learn more
 
-- [Package page](../../docs/packages/recovery.md)
+- [Package page](https://agentsy.self.agency/packages/recovery)
 
 ## Development
 

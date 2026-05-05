@@ -42,7 +42,7 @@ const calls = extractXmlToolCalls(output, knownTools);
 
 ## Learn more
 
-- [Package page](../../docs/packages/tool-calls.md)
+- [Package page](https://agentsy.self.agency/packages/tool-calls)
 
 ## Development
 

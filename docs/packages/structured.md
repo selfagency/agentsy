@@ -45,7 +45,8 @@ for await (const rawChunk of stream) {
   processor.process(normalizeOpenAIChatChunk(rawChunk));
 }
 
-const payload = parseJson(processor.accumulatedMessage.content);
-const validated = validateJsonSchema(payload, responseSchema);
+const content = processor.accumulatedMessage.content;
+const payload = parseJson(content);
+const validated = validateJsonSchema(content, responseSchema);
 console.log(validated.success);
 ```

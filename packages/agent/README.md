@@ -47,8 +47,8 @@ const loop = createAgentLoop({
 
 ## Learn more
 
-- [Package page](../../docs/packages/agent.md)
-- [Platform evolution](../../docs/architecture/platform-evolution.md)
+- [Package page](https://agentsy.self.agency/packages/agent)
+- [Platform evolution](https://agentsy.self.agency/architecture/platform-evolution)
 
 ## Development
 

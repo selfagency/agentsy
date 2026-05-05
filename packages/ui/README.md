@@ -42,7 +42,7 @@ store.dispatch(event);
 
 ## Learn more
 
-- [Package page](../../docs/packages/ui.md)
+- [Package page](https://agentsy.self.agency/packages/ui)
 
 ## Development
 

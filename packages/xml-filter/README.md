@@ -42,7 +42,7 @@ const remaining = filter.end();
 
 ## Learn more
 
-- [Package page](../../docs/packages/xml-filter.md)
+- [Package page](https://agentsy.self.agency/packages/xml-filter)
 
 ## Development
 

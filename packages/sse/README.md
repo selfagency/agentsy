@@ -41,7 +41,7 @@ for await (const event of parseSSEStream(stream)) {
 
 ## Learn more
 
-- [Package page](../../docs/packages/sse.md)
+- [Package page](https://agentsy.self.agency/packages/sse)
 
 ## Development
 

@@ -53,8 +53,8 @@ console.log(final.content);
 
 ## Learn more
 
-- [Package page](../../docs/packages/processor.md)
-- [Stream processing](../../docs/architecture/stream-processing.md)
+- [Package page](https://agentsy.self.agency/packages/processor)
+- [Stream processing](https://agentsy.self.agency/architecture/stream-processing)
 
 ## Development
 

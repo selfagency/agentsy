@@ -40,7 +40,7 @@ const [finalThinking, finalContent] = parser.flush();
 
 ## Learn more
 
-- [Package page](../../docs/packages/thinking.md)
+- [Package page](https://agentsy.self.agency/packages/thinking)
 
 ## Development
 

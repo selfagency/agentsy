@@ -42,7 +42,7 @@ const plain = stripXmlContextTags(remaining);
 
 ## Learn more
 
-- [Package page](../../docs/packages/context.md)
+- [Package page](https://agentsy.self.agency/packages/context)
 
 ## Development
 

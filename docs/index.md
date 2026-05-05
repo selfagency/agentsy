@@ -31,7 +31,7 @@ Every page calls out implementation status so the current package surface stays 
 
 ## Package status model
 
-Agentsy documentation uses four labels consistently:
+Agentsy documentation uses three labels consistently:
 
 | Status        | Meaning                                                   |
 | ------------- | --------------------------------------------------------- |

@@ -43,12 +43,12 @@ Typical neighbors:
 import { parseJson, validateJsonSchema, buildRepairPrompt } from '@agentsy/structured';
 
 const parsed = parseJson(text);
-const result = validateJsonSchema(parsed, schema);
+const result = validateJsonSchema(text, schema);
 ```
 
 ## Learn more
 
-- [Package page](../../docs/packages/structured.md)
+- [Package page](https://agentsy.self.agency/packages/structured)
 
 ## Development
 

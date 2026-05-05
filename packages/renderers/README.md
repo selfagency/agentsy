@@ -55,7 +55,7 @@ await renderer.end();
 
 ## Learn more
 
-- [Package page](../../docs/packages/renderers.md)
+- [Package page](https://agentsy.self.agency/packages/renderers)
 
 ## Development
 

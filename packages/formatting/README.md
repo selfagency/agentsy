@@ -42,7 +42,7 @@ import {
 
 ## Learn more
 
-- [Package page](../../docs/packages/formatting.md)
+- [Package page](https://agentsy.self.agency/packages/formatting)
 
 ## Development
 
