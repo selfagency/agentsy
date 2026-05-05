@@ -63,9 +63,12 @@ const schema = {
   },
 } as const;
 
-const decision = await runStructuredDecisionFromRawStream<{ content?: string }, { shouldBlock: boolean }>({
+const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
   source: rawProviderStream,
-  normalize: normalizeOpenAIChatChunk,
+  normalize: raw => {
+    const normalized = normalizeOpenAIChatChunk(raw);
+    return normalized ? normalized.chunk : null;
+  },
   schema,
   processorOptions: { parseThinkTags: true },
 });
@@ -88,7 +91,11 @@ const adapter = createGenericAdapter(
 );
 
 for await (const rawChunk of streamFromProvider) {
-  await adapter.write(normalizeOpenAIChatChunk(rawChunk));
+  const normalized = normalizeOpenAIChatChunk(rawChunk);
+  if (!normalized) {
+    continue;
+  }
+  await adapter.write(normalized.chunk);
 }
 
 await adapter.end();

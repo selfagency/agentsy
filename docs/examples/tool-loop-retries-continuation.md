@@ -41,7 +41,12 @@ async function* executeWithRetries(messages: Array<{ role: string; content: stri
       });
 
       for await (const rawChunk of response.body as AsyncIterable<unknown>) {
-        const output = processor.process(normalizeOpenAIChatChunk(rawChunk));
+        const normalized = normalizeOpenAIChatChunk(rawChunk);
+        if (!normalized) {
+          continue;
+        }
+
+        const output = processor.process(normalized.chunk);
         if (output.content) {
           yield { type: 'text' as const, text: output.content };
         }

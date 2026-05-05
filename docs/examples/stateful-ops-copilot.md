@@ -10,7 +10,7 @@ This example shows a backend architecture for an operations copilot experience:
 ## Packages used
 
 ```bash
-npm install @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/ui
+npm install @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/sse @agentsy/ui
 ```
 
 ## Illustrative implementation
@@ -20,6 +20,7 @@ import { toAgUiStream } from '@agentsy/ag-ui';
 import { normalizeOpenAIResponseEvent } from '@agentsy/normalizers';
 import { createProcessorEventAdapter, LLMStreamProcessor } from '@agentsy/processor';
 import { buildContinuationPrompt, captureStreamState } from '@agentsy/recovery';
+import { parseSSEStream } from '@agentsy/sse';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 async function* providerStream(messages: Array<{ role: string; content: string }>) {
@@ -29,8 +30,26 @@ async function* providerStream(messages: Array<{ role: string; content: string }
     body: JSON.stringify({ model: 'gpt-4.1-mini', stream: true, messages }),
   });
 
-  for await (const event of response.body as AsyncIterable<unknown>) {
-    yield normalizeOpenAIResponseEvent(event);
+  const textStream = response.body?.pipeThrough(new TextDecoderStream());
+  if (!textStream) {
+    return;
+  }
+
+  for await (const event of parseSSEStream(textStream)) {
+    if (event.data === '[DONE]') {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(event.data) as unknown;
+      const normalized = normalizeOpenAIResponseEvent(parsed);
+      if (normalized === null) {
+        continue;
+      }
+      yield normalized.chunk;
+    } catch {
+      // Ignore malformed SSE payloads in this showcase example.
+    }
   }
 }
 

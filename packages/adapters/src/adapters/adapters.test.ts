@@ -45,6 +45,28 @@ describe('processRawStream', () => {
     expect(outputs.map(output => output.content).join('')).toBe('hello');
     expect(outputs[1]?.done).toBe(true);
   });
+
+  it('skips null normalized chunks and still flushes', async () => {
+    async function* sourceWithSkippedChunk() {
+      yield { text: 'first', skip: false };
+      yield { text: 'ignored', skip: true };
+      yield { text: 'second', skip: false };
+    }
+
+    const outputs = [];
+    for await (const out of processRawStream(sourceWithSkippedChunk(), chunk => {
+      if (chunk.skip) {
+        return null;
+      }
+      return { content: chunk.text };
+    })) {
+      outputs.push(out);
+    }
+
+    expect(outputs).toHaveLength(3);
+    expect(outputs.map(output => output.content).join('')).toBe('firstsecond');
+    expect(outputs[2]?.done).toBe(true);
+  });
 });
 
 describe('runStructuredDecisionFromRawStream', () => {

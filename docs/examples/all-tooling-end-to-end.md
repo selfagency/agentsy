@@ -64,9 +64,28 @@ async function* executeProviderStream(messages: Array<{ role: string; content: s
     }),
   });
 
+  if (!response.body) {
+    throw new Error('Provider response did not include a body.');
+  }
+
+  const textStream = response.body.pipeThrough(new TextDecoderStream());
+
   // 1) SSE parsing + 2) provider normalization
-  for await (const sseEvent of parseSSEStream(response.body)) {
-    yield normalizeOpenAIResponseEvent(sseEvent);
+  for await (const sseEvent of parseSSEStream(textStream)) {
+    if (sseEvent.data === '[DONE]') {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(sseEvent.data) as unknown;
+      const normalized = normalizeOpenAIResponseEvent(parsed);
+      if (normalized === null) {
+        continue;
+      }
+      yield normalized.chunk;
+    } catch {
+      // Ignore malformed SSE payloads in this showcase example.
+    }
   }
 }
 
@@ -181,7 +200,10 @@ async function runFullWorkflow(): Promise<void> {
 async function runSimplePath(rawSource: AsyncIterable<unknown>) {
   const simpleDecision = await runStructuredDecisionFromRawStream<unknown, SecurityDecision>({
     source: rawSource,
-    normalize: normalizeOpenAIResponseEvent,
+    normalize: event => {
+      const normalized = normalizeOpenAIResponseEvent(event);
+      return normalized ? normalized.chunk : null;
+    },
     schema: decisionSchema,
   });
 

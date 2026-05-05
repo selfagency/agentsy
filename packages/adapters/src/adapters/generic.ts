@@ -35,13 +35,19 @@ export async function* processStream(
  */
 export async function* processRawStream<TRawChunk>(
   source: AsyncIterable<TRawChunk>,
-  normalize: (_chunk: TRawChunk) => StreamChunk,
+  normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined,
   options: ProcessorOptions = {},
 ): AsyncGenerator<ProcessedOutput> {
   const processor = new LLMStreamProcessor(options);
 
   for await (const rawChunk of source) {
-    yield processor.process(normalize(rawChunk));
+    const normalized = normalize(rawChunk);
+    if (normalized === null || normalized === undefined) {
+      continue;
+    }
+
+    const chunk = 'chunk' in normalized ? normalized.chunk : normalized;
+    yield processor.process(chunk);
   }
 
   yield processor.flush();
@@ -49,7 +55,7 @@ export async function* processRawStream<TRawChunk>(
 
 export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk> {
   source: AsyncIterable<TRawChunk>;
-  normalize: (_chunk: TRawChunk) => StreamChunk;
+  normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined;
   schema: JsonObject;
   processorOptions?: ProcessorOptions;
   validationOptions?: ValidateJsonSchemaOptions;
@@ -89,7 +95,13 @@ export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = 
   const processor = new LLMStreamProcessor(options.processorOptions);
 
   for await (const rawChunk of options.source) {
-    const output = processor.process(options.normalize(rawChunk));
+    const normalized = options.normalize(rawChunk);
+    if (normalized === null || normalized === undefined) {
+      continue;
+    }
+
+    const chunk = 'chunk' in normalized ? normalized.chunk : normalized;
+    const output = processor.process(chunk);
     if (options.onOutput !== undefined) {
       await options.onOutput(output);
     }

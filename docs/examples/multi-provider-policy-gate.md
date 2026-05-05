@@ -53,7 +53,7 @@ async function runPolicyGate(provider: 'openai' | 'anthropic', prompt: string): 
 
   const decision = await runStructuredDecisionFromRawStream<unknown, PolicyDecision>({
     source,
-    normalize,
+    normalize: raw => normalize(raw),
     schema: policySchema,
   });
 
