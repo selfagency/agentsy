@@ -30,6 +30,16 @@ Agentsy is a good fit when you want to build:
 
 The package family is intentionally split so you can adopt only the layers you need instead of swallowing an all-or-nothing framework.
 
+## Already in production
+
+This framework is already in use in three VS Code extensions that provide third-party model support inside **GitHub Copilot Chat**:
+
+- [Opilot](https://marketplace.visualstudio.com/items?itemName=selfagency.opilot) — Ollama models in Copilot Chat with local-model workflows, tool calling, vision, and streaming
+- [Z.ai for Copilot](https://marketplace.visualstudio.com/items?itemName=selfagency.z-models-vscode) — Z.ai coding models in Copilot Chat with streaming, tool calling, and MCP-assisted capabilities
+- [Mistral for Copilot](https://marketplace.visualstudio.com/items?itemName=selfagency.mistral-models-vscode) — Mistral AI models in Copilot Chat with streaming, tool calling, and vision support
+
+That existing usage matters because Agentsy is already supporting real editor-native integrations, not just hypothetical future app surfaces.
+
 ## Package map
 
 ### Published packages

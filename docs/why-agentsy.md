@@ -53,6 +53,16 @@ Agentsy is intentionally shaped for that kind of system. The package boundaries 
 - operate entirely headless
 - add UI, TUI, or editor integrations only when they are actually needed
 
+## Already proving itself in real integrations
+
+This stack is not only for future runtime plans. It is already being used in three VS Code extensions that provide third-party model support inside GitHub Copilot Chat:
+
+- [Opilot](https://marketplace.visualstudio.com/items?itemName=selfagency.opilot) — Ollama models in Copilot Chat with tool support, vision support, streaming, and local-model workflows
+- [Z.ai for Copilot](https://marketplace.visualstudio.com/items?itemName=selfagency.z-models-vscode) — Z.ai coding models in Copilot Chat with tool calling, streaming, and MCP-backed capabilities
+- [Mistral for Copilot](https://marketplace.visualstudio.com/items?itemName=selfagency.mistral-models-vscode) — Mistral AI models in Copilot Chat with tool calling, streaming, and vision support
+
+That gives Agentsy something useful beyond architecture intent: it is already being exercised in production-like editor integrations where provider normalization, streaming, tool handling, protocol bridges, and runtime ergonomics all matter.
+
 ## Why package boundaries matter here
 
 Agentsy is intentionally not a single monolith anymore.

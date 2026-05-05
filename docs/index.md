@@ -13,6 +13,9 @@ hero:
       text: Explore packages
       link: /packages
     - theme: alt
+      text: Used in VS Code
+      link: /#used-by
+    - theme: alt
       text: View on GitHub
       link: https://github.com/selfagency/agentsy
       target: _blank
@@ -55,6 +58,20 @@ features:
     link: /why-agentsy
     linkText: Why Agentsy exists
 ---
+
+<div id="used-by"></div>
+
+## Used today in VS Code Copilot Chat
+
+Agentsy already powers third-party model support in three published VS Code extensions for GitHub Copilot Chat:
+
+| Extension                                                                                                   | What it brings into Copilot Chat                                                      |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [Opilot](https://marketplace.visualstudio.com/items?itemName=selfagency.opilot)                             | Ollama models with tool support, vision support, streaming, and local-model workflows |
+| [Z.ai for Copilot](https://marketplace.visualstudio.com/items?itemName=selfagency.z-models-vscode)          | Z.ai coding models with tool calling, streaming, and MCP-assisted capabilities        |
+| [Mistral for Copilot](https://marketplace.visualstudio.com/items?itemName=selfagency.mistral-models-vscode) | Mistral AI models with streaming, tool calling, and vision support                    |
+
+That means this package family is already doing real work in editor-native integrations — not just waiting around in a roadmap wearing a fake mustache.
 
 ## Start here
 
