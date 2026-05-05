@@ -28,6 +28,18 @@
   "dependencies": {
     "@agentsy/types": "workspace:*"
   },
+  "peerDependencies": {
+    "zod": ">=3",
+    "zod-to-json-schema": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "zod-to-json-schema": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",

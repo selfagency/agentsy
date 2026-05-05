@@ -94,6 +94,11 @@ This repo intentionally separates:
 
 Planned items are documented as roadmap, not guaranteed availability.
 
+```bash
+# Test single package
+cd packages/vscode && pnpm test
+```
+
 ## License
 
 [MIT](LICENSE.md)

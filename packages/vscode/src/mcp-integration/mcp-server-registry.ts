@@ -107,8 +107,14 @@ export class McpServerRegistry {
     if (server.args?.length) {
       config.args = server.args;
     }
+<<<<<<< split/stack-3-parser-vscode-hardening-v2
     // Never persist env/headers into workspace settings to avoid writing
     // secrets (tokens, API keys) to plain-text configuration.
+=======
+    // env and headers are intentionally omitted from persisted workspace settings
+    // to prevent secrets (e.g. API keys) from being written to settings.json in plain text.
+    // These values should only be applied at runtime when spawning the MCP process.
+>>>>>>> split/stack-2-quality-ci-docs
     if (server.alwaysAllow === true) {
       config.alwaysAllow = true;
     }
