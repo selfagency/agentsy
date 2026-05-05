@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/types",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "private": false,
   "description": "Shared TypeScript types for the @agentsy/* package family.",
   "homepage": "https://agentsy.self.agency",
