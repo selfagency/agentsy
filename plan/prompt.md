@@ -72,7 +72,7 @@ Next major slices remain the extension/runtime tracks from the planning docs.
 @agentsy/retrieval     →  core
 @agentsy/memory        →  core, retrieval
 @agentsy/telemetry     →  core
-@agentsy/core (shim) → core, processor, agent, adapters, ag-ui (peerDeps)
+No legacy `@agentsy/core` shim package is present in the current repo.
 ```
 
 **Feature packages** (added after P12):
@@ -151,7 +151,7 @@ Move each source directory (see §1 table above) to the correct `packages/*/src/
 
 **Spec**: `plan/agentsy-platform-v2.md` lines ~340–420 (TASK-P0-001 through P0-011)
 
-Create all type contracts in `packages/core/src/types/`:
+Create all type contracts in `packages/types/src/`:
 
 | File           | Contents                                                                                                                                                                                                         |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -176,7 +176,7 @@ Also add to `packages/agent/src/`:
 ### R1 + R2 (parallel) (reference spec)
 
 **R1 — Shim Deprecation Notice**
-`plan/agentsy-platform-v2.md` lines ~420–430 (TASK-R1-001 through R1-003): Add deprecation warning to `@agentsy/core` package; write `docs/migration.md` (FILE-DOC-003).
+`plan/agentsy-platform-v2.md` lines ~420–430 (TASK-R1-001 through R1-003): legacy shim/deprecation work from the old monolith plan; keep migration docs current in `docs/migrating-from-llm-stream-parser.md`.
 
 **R2 — Docs Repositioning**
 `plan/agentsy-platform-v2.md` lines ~430–440 (TASK-R2-001 through R2-004): Write `docs/architecture.md` (Mermaid package dependency graph, FILE-DOC-001) and `docs/packages.md` (reference table, FILE-DOC-002).
@@ -198,7 +198,7 @@ Also add to `packages/agent/src/`:
 ### X1 + X2 (parallel) (reference spec)
 
 **X1 — Extensibility Contracts**
-`plan/agentsy-platform-v2.md` (TASK-X1-001 through X1-005): `HookRegistry`, `SkillManifest`, `PluginManifest`, tool annotation types (`readOnly`/`destructive`/`requiresApproval`). These go in `@agentsy/core`.
+`plan/agentsy-platform-v2.md` (TASK-X1-001 through X1-005): `HookRegistry`, `SkillManifest`, `PluginManifest`, tool annotation types (`readOnly`/`destructive`/`requiresApproval`). In the current repo layout these contracts belong under shared type packages (primarily `@agentsy/types`).
 
 **X2 — Hook Runtime Engine**
 `plan/agentsy-platform-v2.md` (TASK-X2-001 through X2-005): `HookDispatcher` in `packages/runtime/src/hooks/` — handler ordering, `deny` short-circuit, audit trail, async timeout. Hooks: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`. Test: TEST-008.
@@ -209,7 +209,7 @@ Also add to `packages/agent/src/`:
 
 **Spec**: `plan/agentsy-platform-v2.md` (TASK-P2-001 through P2-009)
 
-Six new events (all go in `packages/core/src/types/events.ts`):
+Six new events (all go in `packages/types/src/...` in current layout):
 
 - `ContextWindowWillOverflow`, `ChatCompressed`, `LoopDetected`, `Citation`, `Retry`, `InvalidStream`
 
@@ -615,8 +615,8 @@ pnpm format
 pnpm precommit
 
 # Per-package (from package dir)
-cd packages/core && pnpm build
-cd packages/core && pnpm test
+cd packages/adapters && pnpm build
+cd packages/adapters && pnpm test
 ```
 
 CI runs Node.js 22. All packages target Node ≥ 22.
