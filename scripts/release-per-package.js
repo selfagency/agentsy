@@ -358,8 +358,13 @@ async function main() {
   // Check for existing tags
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
   if (localTag) {
-    console.error(`❌ Local tag '${tag}' already exists. Run: git tag -d '${tag}'`);
-    process.exit(1);
+    if (isRetag) {
+      console.log(`⚠️  Local tag '${tag}' exists — deleting for retag...`);
+      runGit(['tag', '-d', tag]);
+    } else {
+      console.error(`❌ Local tag '${tag}' already exists. Run: git tag -d '${tag}'`);
+      process.exit(1);
+    }
   }
 
   try {
