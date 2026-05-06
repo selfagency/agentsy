@@ -90,7 +90,15 @@ function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unk
     const keysA = Object.keys(aObj);
     const keysB = Object.keys(bObj);
     if (keysA.length !== keysB.length) return false;
-    return keysA.every(k => Object.hasOwn(bObj, k) && deepEqual(aObj[k], bObj[k]));
+    return keysA.every(k => {
+      // Reject keys that could be used for prototype pollution or accessing
+      // dangerous builtins. These keys should not appear on plain JSON objects
+      // produced by parsing untrusted input; if they do, treat as mismatch.
+      if (k === '__proto__' || k === 'constructor') return false;
+      if (!Object.hasOwn(bObj, k)) return false;
+      // Safe to access own property now
+      return deepEqual(aObj[k], bObj[k]);
+    });
   }
 }
 
