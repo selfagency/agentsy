@@ -215,4 +215,40 @@ describe('ApiKeyManager', () => {
       expect(listener).not.toHaveBeenCalled();
     });
   });
+
+  describe('initialization error handling', () => {
+    it('should throw when initialize() fails and safeMode is not enabled', async () => {
+      // Create a broken context where secrets.get always throws
+      const brokenContext: any = {
+        secrets: {
+          get: async (_: string) => {
+            throw new Error('boom');
+          },
+          store: vi.fn(),
+          delete: vi.fn(),
+          keys: async () => [],
+        },
+      };
+      const brokenManager = new ApiKeyManager(brokenContext, config);
+      await expect(brokenManager.initialize()).rejects.toThrow('boom');
+    });
+
+    it('should not throw when initialize() fails in safe mode and allow getApiKey(true) to resolve to undefined', async () => {
+      const brokenContext: any = {
+        secrets: {
+          get: async (_: string) => {
+            throw new Error('boom');
+          },
+          store: vi.fn(),
+          delete: vi.fn(),
+          keys: async () => [],
+        },
+      };
+      const brokenManager = new ApiKeyManager(brokenContext, config);
+      await expect(brokenManager.initialize(true)).resolves.toBeUndefined();
+      // Safe retrieval should not throw and should yield undefined when no key is present
+      const key = await brokenManager.getApiKey(true);
+      expect(key).toBeUndefined();
+    });
+  });
 });

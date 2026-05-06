@@ -2,6 +2,33 @@ import { describe, it, expect } from 'vitest';
 import { isProviderTool, providerToolToNative, nativeToProviderTool } from './providerToolsContract.js';
 
 describe('Provider Tools Contract', () => {
+  describe('additional edge cases', () => {
+    it('should consider missing parameters as valid in isProviderTool', () => {
+      const tool: any = {
+        name: 'edgeTool',
+        // parameters intentionally omitted to test default handling
+      };
+      expect(isProviderTool(tool)).toBe(true);
+    });
+
+    it('should handle missing parameters when converting to native format', () => {
+      const providerTool: any = {
+        name: 'edgeTool',
+        // undefined parameters should default to empty object
+        id: 'id-123',
+      };
+      const native = providerToolToNative(providerTool);
+      expect(native).toEqual({ name: 'edgeTool', arguments: {}, id: 'id-123' });
+    });
+
+    it('should convert native tool to provider format without id', () => {
+      const nativeTool = { name: 'edgeTool', arguments: { a: 1 } } as any;
+      const provider = nativeToProviderTool(nativeTool);
+      expect(provider).toEqual({ name: 'edgeTool', parameters: { a: 1 }, format: 'native-json' });
+      // Ensure id is not added when undefined
+      expect((provider as any).id).toBeUndefined();
+    });
+  });
   describe('isProviderTool', () => {
     it('should return true for valid provider tool', () => {
       const validTool = {
