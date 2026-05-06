@@ -1,0 +1,31 @@
+packages/tool-calls/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+packages/renderers/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+packages/ag-ui/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+packages/structured/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+packages/processor/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+packages/normalizers/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+packages/recovery/CHANGELOG.md
+  s_19332addbca339::t_f957b48cfe52be 9-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "f0b0f946a971d3c60107ec551616ffd4c47362bc",
+  "prompts": {},
+  "sessions": {
+    "s_19332addbca339": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0331deb7-39a3-4725-8237-c7bfc8efb3de",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
