@@ -1,5 +1,3 @@
-import { CancellationToken } from 'vscode';
-
 export interface RetryOptions {
   maxAttempts?: number;
   initialDelayMs?: number;
