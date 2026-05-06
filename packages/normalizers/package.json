@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/normalizers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "description": "Provider-specific LLM stream normalizers for the @agentsy platform.",
   "repository": {
