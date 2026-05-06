@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added new subpath exports for modular APIs in `@agentsy/vscode` package.
+- Introduced new APIs: MCPChatBridge, VSCodeMCPBridgeHelper, RetryUtility, VSCodeChatResponseStream overloads.
+- Created detailed migration guides for upgrading from v0.x to v1.
+- Added production-style example usage in docs.
+- Updated `docs/getting-started.md` with dependency matrix and modern usage patterns.
+
+### Improved
+
+- Improved developer experience by modularizing exports and enhancing MCP streaming integration.
+- Added extensive documentation for new submodules and usage guides.
+
 ## [0.1.1] - 2026-05-05
 
 **Full Changelog**: <https://github.com/selfagency/agentsy/compare/@agentsy/agent@0.1.1...@agentsy/vscode@0.1.1>

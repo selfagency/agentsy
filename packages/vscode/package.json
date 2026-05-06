@@ -32,6 +32,56 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./renderer": {
+      "types": "./dist/renderer/index.d.ts",
+      "import": "./dist/renderer/index.js",
+      "require": "./dist/renderer/index.cjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js",
+      "require": "./dist/mcp/index.cjs"
+    },
+    "./mcp-integration": {
+      "types": "./dist/mcp-integration/index.d.ts",
+      "import": "./dist/mcp-integration/index.js",
+      "require": "./dist/mcp-integration/index.cjs"
+    },
+    "./retry": {
+      "types": "./dist/retry/index.d.ts",
+      "import": "./dist/retry/index.js",
+      "require": "./dist/retry/index.cjs"
+    },
+    "./stream-bridge": {
+      "types": "./dist/stream-bridge/index.d.ts",
+      "import": "./dist/stream-bridge/index.js",
+      "require": "./dist/stream-bridge/index.cjs"
+    },
+    "./vscode-overloads": {
+      "types": "./dist/vscode-overloads/index.d.ts",
+      "import": "./dist/vscode-overloads/index.js",
+      "require": "./dist/vscode-overloads/index.cjs"
+    },
+    "./api-key-manager": {
+      "types": "./dist/api-key-manager/index.d.ts",
+      "import": "./dist/api-key-manager/index.js",
+      "require": "./dist/api-key-manager/index.cjs"
+    },
+    "./settings": {
+      "types": "./dist/settings/index.d.ts",
+      "import": "./dist/settings/index.js",
+      "require": "./dist/settings/index.cjs"
+    },
+    "./error-handling": {
+      "types": "./dist/error-handling/index.d.ts",
+      "import": "./dist/error-handling/index.js",
+      "require": "./dist/error-handling/index.cjs"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js",
+      "require": "./dist/testing/index.cjs"
     }
   },
   "publishConfig": {

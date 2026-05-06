@@ -26,8 +26,34 @@ yarn add @agentsy/vscode vscode
 
 ## Requirements
 
-- Node.js 22+
-- TypeScript 5.0+ (if using TypeScript)
+## Dependency Matrix
+
+| Package                | Version Required | Notes                             |
+| ---------------------- | ---------------- | --------------------------------- |
+| `@agentsy/vscode`      | ^1.0.0           | VS Code chat provider integration |
+| `@agentsy/processor`   | Latest           | Core LLM stream processing        |
+| `@agentsy/thinking`    | Latest           | Think tag parsing                 |
+| `@agentsy/normalizers` | Latest           | Provider chunk normalization      |
+| VS Code                | >=1.80           | Needed for extension APIs         |
+
+## Getting started the modern way
+
+To use the `@agentsy/vscode` v1 modular ecosystem:
+
+1. Install the latest `@agentsy/vscode` package.
+2. Utilize the new subpath imports from `@agentsy/vscode/*`, e.g., `@agentsy/vscode/renderer`.
+3. Adopt new APIs such as `createMCPChatBridge`, `createRetryUtility`, and enhanced agent loop utilities.
+4. Integrate MCP streaming and VS Code CancellationTokens for robust chat experience.
+
+Example:
+
+```ts
+import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
+
+const renderer = createVSCodeChatRenderer({ stream: responseStream });
+```
+
+Refer to the new [Production Provider Example](../examples/production-provider.md) for a complete usage demonstration.
 
 ## Basic Examples
 
