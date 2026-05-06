@@ -1,0 +1,27 @@
+plan/agentsy-utils-extraction-plan.md
+  s_2b1d21c4f56fc5::t_7f5542b47bcdb4 1-97
+plan/agentsy-secrets.md
+  h_627b419bd8fa0f 1-143,145-146,152-186
+  s_2b1d21c4f56fc5::t_2c35c567930c66 144,147-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "37c9c5f7a37cf10fea35f31d222fe18d981a37ab",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_2b1d21c4f56fc5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cec43470-7cbe-42d1-aa00-679b4bd0975a",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
