@@ -5,9 +5,9 @@ import type { CancellationToken } from 'vscode';
  * in VS Code extensions using @agentsy packages.
  */
 export class RetryUtility {
-  private maxRetries: number;
-  private delayMs: number;
-  private cancellationToken: CancellationToken;
+  private readonly maxRetries: number;
+  private readonly delayMs: number;
+  private readonly cancellationToken: CancellationToken;
 
   constructor(maxRetries: number, delayMs: number, cancellationToken: CancellationToken) {
     this.maxRetries = maxRetries;
@@ -25,34 +25,57 @@ export class RetryUtility {
     operation: () => Promise<T>,
     onRetry?: (attempt: number, error: unknown) => void,
   ): Promise<T> {
+    return this.performRetryWithBackoff(operation, onRetry);
+  }
+
+  /**
+   * Performs retry with a simple backoff strategy.
+   * Extracted to reduce cognitive complexity of executeWithRetry.
+   */
+  private async performRetryWithBackoff<T>(
+    operation: () => Promise<T>,
+    onRetry?: (attempt: number, error: unknown) => void,
+  ): Promise<T> {
     let lastError: unknown;
     let attempt = 0;
 
     while (attempt <= this.maxRetries) {
-      if (this.cancellationToken.isCancellationRequested) {
-        throw new Error('Operation cancelled');
-      }
+      this.throwIfCancelled();
 
       try {
         attempt++;
         return await operation();
       } catch (error) {
         lastError = error;
-
-        if (attempt < this.maxRetries) {
-          if (onRetry) {
-            onRetry(attempt, error);
-          }
-
-          // Wait before retrying
-          if (this.delayMs > 0) {
-            await new Promise(resolve => setTimeout(resolve, this.delayMs));
-          }
-        }
+        await this.handleRetry(attempt, error, onRetry);
       }
     }
 
     throw lastError;
+  }
+
+  private throwIfCancelled(): void {
+    if (this.cancellationToken.isCancellationRequested) {
+      throw new Error('Operation cancelled');
+    }
+  }
+
+  private async handleRetry(
+    attempt: number,
+    error: unknown,
+    onRetry?: (attempt: number, error: unknown) => void,
+  ): Promise<void> {
+    if (attempt >= this.maxRetries) {
+      return;
+    }
+
+    if (onRetry) {
+      onRetry(attempt, error);
+    }
+
+    if (this.delayMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, this.delayMs));
+    }
   }
 
   /**

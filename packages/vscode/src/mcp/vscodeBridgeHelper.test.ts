@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { VSCodeMCPBridgeHelper, createVSCodeMCPBridge } from './vscodeBridgeHelper.js';
 import type { MCPTransport } from '@agentsy/processor';
-import type { ChatResponseStream, CancellationToken } from 'vscode';
+import type { CancellationToken } from 'vscode';
 
 describe('VSCode MCP Bridge Helper', () => {
   const mockTransport: MCPTransport = {

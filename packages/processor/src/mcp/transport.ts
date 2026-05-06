@@ -1,4 +1,4 @@
-import type { ReadableStream } from 'stream/web';
+import type { ReadableStream } from 'node:stream/web';
 
 /**
  * Typed union representing the two supported MCP transport modes.

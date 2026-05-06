@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { MCPChatBridge, createMCPChatBridge } from './mcpChatBridge.js';
 import type { MCPTransport } from '@agentsy/processor';
-import type { ChatResponseStream, CancellationToken } from 'vscode';
+import type { CancellationToken } from 'vscode';
 
 describe('VSCode Stream Bridge', () => {
   const mockTransport: MCPTransport = {

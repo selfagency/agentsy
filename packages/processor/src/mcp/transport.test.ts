@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { adaptTransportToStream, createCompatibilityAdapter } from './transport.js';
-import { Readable, Writable } from 'stream';
+import { Readable, Writable } from 'node:stream';
 
 describe('MCP Transport', () => {
   describe('adaptTransportToStream', () => {
