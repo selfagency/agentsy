@@ -1,0 +1,27 @@
+.vitepress/config.ts
+  h_627b419bd8fa0f 39-40
+docs/migration/index.md
+  h_627b419bd8fa0f 5-6
+  s_2b1d21c4f56fc5::t_9073485867c763 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "f608cdfa4d6b414975c555551b0dca324f491314",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_2b1d21c4f56fc5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cec43470-7cbe-42d1-aa00-679b4bd0975a",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
