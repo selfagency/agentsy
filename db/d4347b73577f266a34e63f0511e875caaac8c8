@@ -1,0 +1,115 @@
+packages/vscode/src/mcp/index.ts
+  s_19332addbca339::t_0dd3fe6b96ac10 2
+  s_19332addbca339::t_367badd38b9e10 1
+packages/vscode/src/vscode-overloads/index.ts
+  ai_agent 2
+  s_19332addbca339::t_732d782c07a948 1
+packages/tool-calls/src/providerToolsContract.ts
+  ai_agent 39,44-45,47-52,77
+  s_19332addbca339::t_9c7553015a82b1 63
+  s_19332addbca339::t_c1e69b459852e2 1-38,40-43,46,53-62,64-73,75-76
+  s_19332addbca339::t_fec2273b16560b 74
+packages/vscode/src/vscode-overloads/chatResponseStream.ts
+  s_19332addbca339::t_129714e9bd8e5a 2-15,17-25,27-35,37-47,49-54,57-60,62-66,69-73
+  s_19332addbca339::t_5d8a8a65bce2c2 16
+  s_19332addbca339::t_ca8eedf899773d 36
+  s_19332addbca339::t_460a94e9d2a353 61
+  s_19332addbca339::t_b1852e1737cc50 67-68
+  s_19332addbca339::t_d5eb1aa3628f12 26
+  ai_agent 48,74
+  s_19332addbca339::t_f74cd7b95eb201 55-56
+  s_19332addbca339::t_aed6ec9fa83e6a 1
+packages/vscode/src/api-key-manager/api-key-manager.ts
+  s_19332addbca339::t_b6fa9622a59636 20,22,25-36
+  s_19332addbca339::t_7f0dd92058f23b 41,43-53
+packages/vscode/src/stream-bridge/mcpChatBridge.test.ts
+  s_19332addbca339::t_5fa518265904d2 2-55
+  ai_agent 60
+packages/tool-calls/src/providerToolsContract.test.ts
+  s_19332addbca339::t_9e5e284cc6728d 1-38,40-50,52-53,55-70,72-83,85-86,88-96
+  ai_agent 39,54,71,87,97
+  s_19332addbca339::t_d8f63c9f328ab5 84
+  s_19332addbca339::t_f028ccd4914bac 51
+packages/vscode/src/error-handling/error-mapper.ts
+  s_19332addbca339::t_9b4f0da98e5db3 84-90,94-99,102-104,107-109
+  ai_agent 100-101
+packages/vscode/src/retry/retryUtility.test.ts
+  s_19332addbca339::t_e90651c5fee7bf 1-22,24-30,33-35,37-44,46-51,54,56,58-66,68-69,71-84
+  ai_agent 23,31-32,36,45,52-53,55,57,67,70,85
+packages/processor/src/mcp/index.ts
+  ai_agent 2
+  s_19332addbca339::t_e2d64d5a19a8f9 1
+packages/vscode/src/stream-bridge/mcpChatBridge.ts
+  ai_agent 11,42,44
+  s_19332addbca339::t_5fa518265904d2 6-9,40,43
+packages/vscode/src/stream-bridge/index.ts
+  s_19332addbca339::t_e7e2d7e693200c 1
+packages/vscode/tsup.config.ts
+  s_19332addbca339::t_53dbd59ed86d34 6-15
+packages/processor/src/mcp/transport.ts
+  s_19332addbca339::t_be4c6d08dd6e43 1-7,9-23,26-38,40-51,56,58-61,64-66,68
+  ai_agent 8,24-25,39,52-55,57,67,69
+  s_19332addbca339::t_de9ca8581f370c 62-63
+packages/processor/src/index.ts
+  s_19332addbca339::t_244cef5c6e23f8 4
+packages/vscode/src/mcp/vscodeBridgeHelper.test.ts
+  s_19332addbca339::t_39c5824009a810 41-47
+  ai_agent 59
+  s_19332addbca339::t_e5fe6eb8612ed0 1-40,48-58
+packages/tool-calls/src/buildToolResultMessage.test.ts
+  s_19332addbca339::t_94adb687fd9f85 1-58
+packages/vscode/src/index.ts
+  s_19332addbca339::t_a86928fc92de90 88,97-98
+  s_19332addbca339::t_16d5c0a56d6422 44,48-56
+packages/tool-calls/README.md
+  s_19332addbca339::t_e9bbc637d0adf7 43-50
+packages/vscode/src/vscode-overloads/chatResponseStream.test.ts
+  ai_agent 71
+  s_19332addbca339::t_96c9e1994b550d 1-2,4-70
+  s_19332addbca339::t_bd4d31b0608521 3
+packages/vscode/src/error-handling/error-handling.test.ts
+  s_19332addbca339::t_efda24d37e3289 115-132
+HANDOFF.md
+  s_19332addbca339::t_c47798d7945624 1-5,7-14,16-58,60-66,68-136,138-151,153-158,160-173,175-208
+  ai_agent 6,15,59,67,137,152,159,174,209-230
+packages/vscode/src/retry/retryUtility.ts
+  s_19332addbca339::t_6b8894a9c4152a 1-10,12-40,42-45,47-88
+  ai_agent 11,41,46,89
+packages/vscode/src/retry/index.ts
+  ai_agent 1
+packages/vscode/package.json
+  s_19332addbca339::t_7e66eb1b23b0bf 26
+packages/tool-calls/src/index.ts
+  s_19332addbca339::t_8a255afc954433 7
+docs/packages/tool-calls.md
+  s_19332addbca339::t_4eb9c8c1f553ea 20-26,51-53
+packages/processor/src/mcp/transport.test.ts
+  ai_agent 18,40,77,85
+  s_19332addbca339::t_98359d420fc2b9 1-17,19-39,41-76,78-84
+packages/vscode/src/mcp/vscodeBridgeHelper.ts
+  s_19332addbca339::t_6ed8c433e71359 29-31,55
+  s_19332addbca339::t_37d298e6ea4cfe 1
+  s_19332addbca339::t_30e167b339643d 2-10,12-27,52-53,56-81
+  s_19332addbca339::t_b7557f9f04fe0d 32-51
+  ai_agent 11,28,54,82
+packages/tool-calls/src/buildToolResultMessage.ts
+  s_19332addbca339::t_f13145587dae9a 86
+  s_19332addbca339::t_b4cc357118b8fd 45-52,80-84
+  s_19332addbca339::t_f9ac7fde4002cd 77-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "dbd4347b73577f266a34e63f0511e875caaac8c8",
+  "prompts": {},
+  "sessions": {
+    "s_19332addbca339": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0331deb7-39a3-4725-8237-c7bfc8efb3de",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
