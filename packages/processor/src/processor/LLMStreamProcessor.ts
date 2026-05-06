@@ -181,7 +181,7 @@ export class LLMStreamProcessor {
 
     const preparedInput = this.prepareChunkInput(chunk, done);
     const parsedThinking = this.applyThinkingParserToContent(preparedInput.rawThinking, preparedInput.content);
-    let thinking = parsedThinking.thinking;
+    const thinking = parsedThinking.thinking;
     let content = parsedThinking.content;
 
     const toolCallState = this.computeToolCallState({

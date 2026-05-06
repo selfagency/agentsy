@@ -74,11 +74,7 @@ interface ResolveContext {
 }
 
 function areArraysEqual(a: unknown[], b: unknown[]): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (!deepEqual(a[i], b[i])) return false;
-  }
-  return true;
+  return a.length === b.length && a.every((val, i) => deepEqual(val, b[i]));
 }
 
 function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unknown>): boolean {
