@@ -36,8 +36,8 @@ export default defineConfig({
         items: [
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Why Agentsy', link: '/why-agentsy' },
-          { text: 'Examples', link: '/examples/' },
-          { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' },
+          { text: 'Examples', link: '/examples' },
+          { text: 'Migration', link: '/migration' },
         ],
       },
       {
