@@ -80,27 +80,26 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
 function getContentParts(delta: OpenAIDelta | undefined): { content?: string; thinking?: string } {
   const content = typeof delta?.content === 'string' ? delta.content : undefined;
   const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
-  return {
-    ...(content !== undefined ? { content } : {}),
-    ...(thinking !== undefined ? { thinking } : {}),
-  };
+  const out: { content?: string; thinking?: string } = {};
+  if (content !== undefined) out.content = content;
+  if (thinking !== undefined) out.thinking = thinking;
+  return out;
 }
 
 function getFinishReasonParts(choice: OpenAIChoice | undefined): { done?: true; finishReason?: FinishReason } {
   const finishReason = choice?.finish_reason;
-  const done = finishReason !== null && finishReason !== undefined ? true : undefined;
   const mappedFinishReason = mapOpenAIFinishReason(finishReason);
-  return {
-    ...(done !== undefined && { done }),
-    ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
-  };
+  const out: { done?: true; finishReason?: FinishReason } = {};
+  if (finishReason !== null && finishReason !== undefined) out.done = true;
+  if (mappedFinishReason !== undefined) out.finishReason = mappedFinishReason;
+  return out;
 }
 
 function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCallDelta[] | undefined {
   const toolCalls = delta?.tool_calls;
   if (Array.isArray(toolCalls) && toolCalls.length > 0) {
     return toolCalls
-      .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
+      .filter((tc): tc is OpenAIToolCallDelta => tc && typeof tc === 'object')
       .map(mapOpenAIToolCallDelta);
   }
 

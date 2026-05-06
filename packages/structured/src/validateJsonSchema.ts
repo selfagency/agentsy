@@ -74,7 +74,13 @@ interface ResolveContext {
 }
 
 function areArraysEqual(a: unknown[], b: unknown[]): boolean {
-  return a.length === b.length && a.every((val, i) => deepEqual(val, b[i]));
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    // Fallback to element-wise comparison if JSON.stringify fails for some reason
+    if (a.length !== b.length) return false;
+    return a.every((val, i) => deepEqual(val, b[i]));
+  }
 }
 
 function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unknown>): boolean {
