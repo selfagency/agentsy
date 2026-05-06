@@ -42,8 +42,8 @@ interface GeminiPartsResult {
 // #lizard forgives
 function buildFunctionCallDelta(fc: Record<string, unknown>, index: number): NativeToolCallDelta {
   const delta: NativeToolCallDelta = { index };
-  const name = typeof fc['name'] === 'string' ? fc['name'] : undefined;
-  const args = fc['args'];
+  const name = typeof fc.name === 'string' ? fc.name : undefined;
+  const args = fc.args;
   if (name !== undefined) delta.name = name;
   if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
   return delta;
@@ -58,17 +58,17 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
   for (const part of parts) {
     if (!isObject(part)) continue;
 
-    if (part['thought'] === true && typeof part['text'] === 'string') {
-      thinking = (thinking ?? '') + part['text'];
+    if (part.thought === true && typeof part.text === 'string') {
+      thinking = (thinking ?? '') + part.text;
       continue;
     }
 
-    if (typeof part['text'] === 'string') {
-      textContent = (textContent ?? '') + part['text'];
+    if (typeof part.text === 'string') {
+      textContent = (textContent ?? '') + part.text;
       continue;
     }
 
-    const fc = part['functionCall'];
+    const fc = part.functionCall;
     if (isObject(fc)) {
       nativeToolCallList.push(buildFunctionCallDelta(fc, toolCallIndex++));
     }
@@ -78,12 +78,12 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
 }
 
 function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined {
-  const usageMetadata = raw['usageMetadata'];
+  const usageMetadata = raw.usageMetadata;
   if (!isObject(usageMetadata)) return undefined;
   const usage: UsageInfo = {};
-  const input = toNumber(usageMetadata['promptTokenCount']);
-  const output = toNumber(usageMetadata['candidatesTokenCount']);
-  const total = toNumber(usageMetadata['totalTokenCount']);
+  const input = toNumber(usageMetadata.promptTokenCount);
+  const output = toNumber(usageMetadata.candidatesTokenCount);
+  const total = toNumber(usageMetadata.totalTokenCount);
   if (input !== undefined) usage.inputTokens = input;
   if (output !== undefined) usage.outputTokens = output;
   if (total !== undefined) usage.totalTokens = total;
@@ -104,13 +104,13 @@ function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined
 export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) return null;
-    if (!Array.isArray(raw['candidates']) || raw['candidates'].length === 0) return null;
+    if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) return null;
 
-    const candidate = raw['candidates'][0];
+    const candidate = raw.candidates[0];
     if (!isObject(candidate)) return null;
 
-    const content = candidate['content'];
-    const finishReason = typeof candidate['finishReason'] === 'string' ? candidate['finishReason'] : null;
+    const content = candidate.content;
+    const finishReason = typeof candidate.finishReason === 'string' ? candidate.finishReason : null;
     const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
     const mappedFinishReason = mapGeminiFinishReason(finishReason);
 

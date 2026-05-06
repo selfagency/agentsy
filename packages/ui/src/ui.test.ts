@@ -89,9 +89,7 @@ describe('UI Event Sourcing', () => {
 
       expect(state.messages[0]?.parts).toHaveLength(1);
       expect(state.messages[0]?.parts?.[0]?.type).toBe('text');
-      expect(state.messages[0]?.parts?.[0]?.type === 'text' && state.messages[0]?.parts?.[0]?.text).toBe(
-        'Hello, world!',
-      );
+      expect(state.messages[0]?.parts?.[0]?.type === 'text' && state.messages[0]?.parts[0]?.text).toBe('Hello, world!');
     });
 
     it('should add thinking part to message on thinking_part_added event', () => {
@@ -109,7 +107,7 @@ describe('UI Event Sourcing', () => {
 
       expect(state.messages[0]?.parts).toHaveLength(1);
       expect(state.messages[0]?.parts?.[0]?.type).toBe('thinking');
-      expect(state.messages[0]?.parts?.[0]?.type === 'thinking' && state.messages[0]?.parts?.[0]?.text).toBe(
+      expect(state.messages[0]?.parts?.[0]?.type === 'thinking' && state.messages[0]?.parts[0]?.text).toBe(
         'Let me think about this...',
       );
     });
@@ -135,7 +133,7 @@ describe('UI Event Sourcing', () => {
       const part = state.messages[0]?.parts?.[0];
 
       // Type guard to narrow type
-      if (!part || part.type !== 'tool_call') {
+      if (part?.type !== 'tool_call') {
         throw new Error('Expected tool_call part');
       }
 
@@ -171,7 +169,7 @@ describe('UI Event Sourcing', () => {
       });
 
       const part = state.messages[0]?.parts?.[0];
-      if (!part || part.type !== 'tool_call') {
+      if (part?.type !== 'tool_call') {
         throw new Error('Expected tool_call part');
       }
 
@@ -204,7 +202,7 @@ describe('UI Event Sourcing', () => {
       });
 
       const part = state.messages[0]?.parts?.[0];
-      if (!part || part.type !== 'tool_call') {
+      if (part?.type !== 'tool_call') {
         throw new Error('Expected tool_call part');
       }
 
@@ -411,7 +409,7 @@ describe('UI Event Sourcing', () => {
       });
 
       expect(listener).toHaveBeenCalledTimes(1);
-      expect(listener.mock.calls[0]?.[0].messages).toHaveLength(1);
+      expect(listener.mock.calls[0]?.[0]?.messages).toHaveLength(1);
     });
 
     it('should unsubscribe listener', () => {

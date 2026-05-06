@@ -58,8 +58,8 @@ function isOpenAIChatChunk(value: unknown): value is OpenAIChatChunk {
   const v = value as Record<string, unknown>;
   // Accept if object field matches, or if there's a choices array (permissive
   // for providers that use OpenAI-compatible formats without the object field).
-  if (v['object'] !== undefined && v['object'] !== 'chat.completion.chunk') return false;
-  if (!Array.isArray(v['choices'])) return false;
+  if (v.object !== undefined && v.object !== 'chat.completion.chunk') return false;
+  if (!Array.isArray(v.choices)) return false;
   return true;
 }
 
@@ -77,6 +77,47 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
   return result;
 }
 
+function getContentParts(delta: OpenAIDelta | undefined): { content?: string; thinking?: string } {
+  const content = typeof delta?.content === 'string' ? delta.content : undefined;
+  const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
+  const out: { content?: string; thinking?: string } = {};
+  if (content !== undefined) out.content = content;
+  if (thinking !== undefined) out.thinking = thinking;
+  return out;
+}
+
+function getFinishReasonParts(choice: OpenAIChoice | undefined): { done?: true; finishReason?: FinishReason } {
+  const finishReason = choice?.finish_reason;
+  const mappedFinishReason = mapOpenAIFinishReason(finishReason);
+  const out: { done?: true; finishReason?: FinishReason } = {};
+  if (finishReason !== null && finishReason !== undefined) out.done = true;
+  if (mappedFinishReason !== undefined) out.finishReason = mappedFinishReason;
+  return out;
+}
+
+function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCallDelta[] | undefined {
+  const toolCalls = delta?.tool_calls;
+  if (Array.isArray(toolCalls) && toolCalls.length > 0) {
+    return toolCalls
+      .filter((tc): tc is OpenAIToolCallDelta => tc && typeof tc === 'object')
+      .map(mapOpenAIToolCallDelta);
+  }
+
+  return undefined;
+}
+
+function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
+  if (raw.usage) {
+    const usage: UsageInfo = {};
+    if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
+    if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
+    if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
+    return { usage };
+  }
+
+  return {};
+}
+
 // ---------------------------------------------------------------------------
 // Normalizer
 // ---------------------------------------------------------------------------
@@ -90,45 +131,24 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
  */
 export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!isOpenAIChatChunk(raw)) return null;
+    if (isOpenAIChatChunk(raw)) {
+      const choice = raw.choices[0];
+      const delta = choice?.delta;
+      const nativeToolCallDeltas = getNativeToolCallDeltas(delta);
 
-    const choice = raw.choices[0];
-    const delta = choice?.delta;
+      const chunk: { [k: string]: unknown } = {
+        ...getContentParts(delta),
+        ...getFinishReasonParts(choice),
+        ...getUsageParts(raw),
+      };
+      if (nativeToolCallDeltas !== undefined) {
+        chunk.nativeToolCallDeltas = nativeToolCallDeltas;
+      }
 
-    const content = typeof delta?.content === 'string' ? delta.content : undefined;
-    const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
-
-    const finishReason = choice?.finish_reason;
-    const done = finishReason !== null && finishReason !== undefined ? true : undefined;
-    const mappedFinishReason = mapOpenAIFinishReason(finishReason);
-
-    // Native tool call deltas
-    let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
-    if (Array.isArray(delta?.tool_calls) && delta.tool_calls.length > 0) {
-      nativeToolCallDeltas = delta.tool_calls
-        .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
-        .map(mapOpenAIToolCallDelta);
+      return { chunk, rawEvent: raw };
     }
 
-    // Usage — only present on the final chunk when stream_options.include_usage=true
-    let usage: UsageInfo | undefined;
-    if (raw.usage) {
-      usage = {};
-      if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
-      if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
-      if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
-    }
-
-    const chunk = {
-      ...(content !== undefined && { content }),
-      ...(thinking !== undefined && { thinking }),
-      ...(done !== undefined && { done }),
-      ...(nativeToolCallDeltas !== undefined && { nativeToolCallDeltas }),
-      ...(usage !== undefined && { usage }),
-      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
-    };
-
-    return { chunk, rawEvent: raw };
+    return null;
   } catch {
     return null;
   }

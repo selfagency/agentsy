@@ -141,43 +141,21 @@ export const THEME_MAP: Record<ThemeName, Theme> = {
   'github-dark': githubDarkTheme,
 };
 
+function isThemeName(value: string): value is ThemeName {
+  return Object.hasOwn(THEME_MAP, value);
+}
+
 export function resolveTheme(theme?: Theme | ThemeName): Theme {
   if (!theme) {
     return defaultTheme;
   }
-  if (typeof theme === 'string') {
-    switch (theme) {
-      case 'default':
-        return defaultTheme;
-      case 'dark':
-        return darkTheme;
-      case 'light':
-        return lightTheme;
-      case 'minimal':
-        return minimalTheme;
-      case 'dracula':
-        return draculaTheme;
-      case 'catppuccin-mocha':
-        return catppuccinMochaTheme;
-      case 'catppuccin-latte':
-        return catppuccinLatteTheme;
-      case 'catppuccin-macchiato':
-        return catppuccinMacchiatoTheme;
-      case 'catppuccin-frappe':
-        return catppuccinFrappeTheme;
-      case 'ayu-mirage':
-        return ayuMirageTheme;
-      case 'houston':
-        return houstonTheme;
-      case 'one-dark':
-        return oneDarkTheme;
-      case 'one-candy':
-        return oneCandyTheme;
-      case 'github-dark':
-        return githubDarkTheme;
-      default:
-        return defaultTheme;
-    }
+  if (typeof theme !== 'string') {
+    return theme;
   }
-  return theme;
+
+  if (isThemeName(theme)) {
+    return THEME_MAP[theme];
+  }
+
+  return defaultTheme;
 }

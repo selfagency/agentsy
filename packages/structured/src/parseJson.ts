@@ -93,6 +93,37 @@ function processRepairBracket(char: string, stack: string[]): string | null {
   return result;
 }
 
+function consumeRepairChar(
+  char: string,
+  state: { inString: boolean; escaped: boolean; stack: string[] },
+): { append: string; skip: boolean } {
+  if (state.escaped) {
+    state.escaped = false;
+    return { append: char, skip: false };
+  }
+
+  if (char === '\\') {
+    state.escaped = true;
+    return { append: char, skip: false };
+  }
+
+  if (char === '"') {
+    state.inString = !state.inString;
+    return { append: char, skip: false };
+  }
+
+  if (state.inString) {
+    return { append: char, skip: false };
+  }
+
+  if (char === '{' || char === '[' || char === '}' || char === ']') {
+    const addition = processRepairBracket(char, state.stack);
+    return addition === null ? { append: '', skip: true } : { append: addition, skip: false };
+  }
+
+  return { append: char, skip: false };
+}
+
 function tryRepairCandidate(text: string): string | null {
   const start = text.search(/[[{]/);
   if (start === -1) {
@@ -102,39 +133,17 @@ function tryRepairCandidate(text: string): string | null {
   const trimmed = text.slice(start).trim();
   const stack: string[] = [];
   let repaired = '';
-  let inString = false;
-  let escaped = false;
+  const state = { inString: false, escaped: false, stack };
 
   for (const char of trimmed) {
-    if (escaped) {
-      repaired += char;
-      escaped = false;
+    const { append, skip } = consumeRepairChar(char, state);
+    if (skip) {
       continue;
     }
-    if (char === '\\') {
-      repaired += char;
-      escaped = true;
-      continue;
-    }
-    if (char === '"') {
-      repaired += char;
-      inString = !inString;
-      continue;
-    }
-    if (inString) {
-      repaired += char;
-      continue;
-    }
-
-    if (char === '{' || char === '[' || char === '}' || char === ']') {
-      const addition = processRepairBracket(char, stack);
-      if (addition !== null) repaired += addition;
-    } else {
-      repaired += char;
-    }
+    repaired += append;
   }
 
-  if (inString) {
+  if (state.inString) {
     return null;
   }
 

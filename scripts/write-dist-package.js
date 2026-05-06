@@ -58,7 +58,7 @@ async function main() {
   };
 
   await mkdir(outDir, { recursive: true });
-  await writeFile(resolve(outDir, 'package.json'), JSON.stringify(distPkg, null, 2) + '\n', 'utf8');
+  await writeFile(resolve(outDir, 'package.json'), `${JSON.stringify(distPkg, null, 2)}\n`, 'utf8');
   console.log('Wrote', resolve(outDir, 'package.json'));
 
   const pkgReadme = resolve(packagePath, 'README.md');

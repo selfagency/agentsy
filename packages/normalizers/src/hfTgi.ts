@@ -40,7 +40,7 @@ interface HFTGIStreamResponse {
 function isHFTGIStreamResponse(value: unknown): value is HFTGIStreamResponse {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return v['token'] !== null && typeof v['token'] === 'object';
+  return v.token !== null && typeof v.token === 'object';
 }
 
 // ---------------------------------------------------------------------------

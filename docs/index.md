@@ -59,8 +59,6 @@ features:
     linkText: Why Agentsy exists
 ---
 
-<div id="used-by"></div>
-
 ## Used today in VS Code Copilot Chat
 
 Agentsy already powers third-party model support in three published VS Code extensions for GitHub Copilot Chat:

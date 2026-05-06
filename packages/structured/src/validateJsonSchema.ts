@@ -1,5 +1,5 @@
-import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJsonOptions } from './parseJson.js';
 import type { JsonObject } from '@agentsy/types';
+import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJsonOptions } from './parseJson.js';
 
 type JsonSchema = JsonObject;
 
@@ -73,29 +73,43 @@ interface ResolveContext {
   resolving: Set<string>;
 }
 
+function areArraysEqual(a: unknown[], b: unknown[]): boolean {
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    // Fallback to element-wise comparison if JSON.stringify fails for some reason
+    if (a.length !== b.length) return false;
+    return a.every((val, i) => deepEqual(val, b[i]));
+  }
+}
+
+function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unknown>): boolean {
+  try {
+    return JSON.stringify(aObj) === JSON.stringify(bObj);
+  } catch {
+    const keysA = Object.keys(aObj);
+    const keysB = Object.keys(bObj);
+    if (keysA.length !== keysB.length) return false;
+    return keysA.every(k => {
+      // Reject keys that could be used for prototype pollution or accessing
+      // dangerous builtins. These keys should not appear on plain JSON objects
+      // produced by parsing untrusted input; if they do, treat as mismatch.
+      if (k === '__proto__' || k === 'constructor') return false;
+      if (!Object.hasOwn(bObj, k)) return false;
+      // Safe to access own property now
+      return deepEqual(aObj[k], bObj[k]);
+    });
+  }
+}
+
 function deepEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
   if (a === null || b === null) return false;
   if (typeof a !== typeof b) return false;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
-    }
-    return true;
-  }
+  if (Array.isArray(a) && Array.isArray(b)) return areArraysEqual(a, b);
   if (Array.isArray(a) || Array.isArray(b)) return false;
-  if (typeof a === 'object' && typeof b === 'object') {
-    const aObj = a as Record<string, unknown>;
-    const bObj = b as Record<string, unknown>;
-    const keysA = Object.keys(aObj);
-    const keysB = Object.keys(bObj);
-    if (keysA.length !== keysB.length) return false;
-    for (const k of keysA) {
-      if (!Object.hasOwn(bObj, k) || !deepEqual(aObj[k], bObj[k])) return false;
-    }
-    return true;
-  }
+  if (typeof a === 'object' && typeof b === 'object')
+    return areObjectsEqual(a as Record<string, unknown>, b as Record<string, unknown>);
   return false;
 }
 
@@ -140,17 +154,19 @@ function checkRef(
     errors.push(`${path}: circular $ref detected: ${ref}`);
     return true;
   }
-  const defSchema = context !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
+  const defSchema =
+    context?.defs !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
   if (defSchema === undefined) {
     errors.push(`${path}: $ref not found in $defs: ${ref}`);
     return true;
   }
-  // Context must be defined at this point since defSchema was found in context.defs.
-  // biome-ignore lint/suspicious/noNonNullAssertion: safe due to control flow
-  const newResolving = new Set(context!.resolving);
+  if (context === undefined) {
+    errors.push(`${path}: internal error resolving $ref context: ${ref}`);
+    return true;
+  }
+  const newResolving = new Set(context.resolving);
   newResolving.add(defName);
-  // biome-ignore lint/suspicious/noNonNullAssertion: safe due to control flow
-  validateNode(value, defSchema, path, errors, { defs: context!.defs, resolving: newResolving });
+  validateNode(value, defSchema, path, errors, { defs: context.defs, resolving: newResolving });
   return true;
 }
 
@@ -449,6 +465,50 @@ function walkForLimits(node: unknown, depth: number, maxDepth: number, maxKeys: 
   }
 }
 
+function parseWithLimits(
+  text: string,
+  options: ValidateJsonSchemaOptions,
+  maxJsonDepth: number,
+  maxJsonKeys: number,
+): unknown {
+  const parsedWithLimits = parseJson(text, { ...options, maxJsonDepth, maxJsonKeys });
+  if (parsedWithLimits !== null) {
+    return parsedWithLimits;
+  }
+  return parseJson(text, { ...options, maxJsonDepth: 0, maxJsonKeys: 0 });
+}
+
+function runExternalValidator(
+  parsed: unknown,
+  schema: JsonObject,
+  options: ValidateJsonSchemaOptions,
+): { success: false; errors: string[] } | null {
+  if (!options.validator) {
+    return null;
+  }
+
+  try {
+    const validated = options.validator(parsed, schema);
+    if (typeof validated === 'boolean') {
+      if (!validated) {
+        return { success: false, errors: ['$: external validator failed'] };
+      }
+      return null;
+    }
+
+    if (!validated.valid) {
+      return {
+        success: false,
+        errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
+      };
+    }
+    return null;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { success: false, errors: [`$: external validator threw: ${message}`] };
+  }
+}
+
 /**
  * Parses JSON from text and validates it against a JSON Schema.
  *
@@ -464,8 +524,7 @@ export function validateJsonSchema<T = unknown>(
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
   const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
 
-  const parsedWithLimits = parseJson(text, { ...options, maxJsonDepth, maxJsonKeys });
-  const parsed = parsedWithLimits ?? parseJson(text, { ...options, maxJsonDepth: 0, maxJsonKeys: 0 });
+  const parsed = parseWithLimits(text, options, maxJsonDepth, maxJsonKeys);
 
   if (parsed === null) {
     return { success: false, errors: ['$: no valid JSON found in input'] };
@@ -487,23 +546,9 @@ export function validateJsonSchema<T = unknown>(
   const errors: string[] = [];
   validateNode(parsed, schema, '$', errors, context);
 
-  if (options.validator) {
-    try {
-      const validated = options.validator(parsed, schema);
-      if (typeof validated === 'boolean') {
-        if (!validated) {
-          return { success: false, errors: ['$: external validator failed'] };
-        }
-      } else if (!validated.valid) {
-        return {
-          success: false,
-          errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
-        };
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return { success: false, errors: [`$: external validator threw: ${message}`] };
-    }
+  const externalResult = runExternalValidator(parsed, schema, options);
+  if (externalResult !== null) {
+    return externalResult;
   }
 
   if (errors.length > 0) {

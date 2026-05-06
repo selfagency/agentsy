@@ -66,20 +66,20 @@ export function buildContinuationPrompt(
   const partialContent = snapshot.content.trim();
 
   // If nothing was accumulated, there is nothing to continue from.
-  if (!partialContent) {
-    return [{ role: 'user', content: 'Please continue.' }];
+  if (partialContent) {
+    if (provider === 'anthropic') {
+      // Anthropic supports prefilling: end the exchange with a partial assistant
+      // message and the model continues from where it left off.
+      return [{ role: 'assistant', content: partialContent }];
+    }
+
+    // OpenAI / Ollama: include the partial assistant turn then add a user message
+    // asking the model to continue.
+    return [
+      { role: 'assistant', content: partialContent },
+      { role: 'user', content: 'Please continue from exactly where you left off.' },
+    ];
   }
 
-  if (provider === 'anthropic') {
-    // Anthropic supports prefilling: end the exchange with a partial assistant
-    // message and the model continues from where it left off.
-    return [{ role: 'assistant', content: partialContent }];
-  }
-
-  // OpenAI / Ollama: include the partial assistant turn then add a user message
-  // asking the model to continue.
-  return [
-    { role: 'assistant', content: partialContent },
-    { role: 'user', content: 'Please continue from exactly where you left off.' },
-  ];
+  return [{ role: 'user', content: 'Please continue.' }];
 }

@@ -56,6 +56,18 @@ export interface StreamJsonResult<T = unknown> {
   newFields: StreamJsonField[];
 }
 
+interface StreamJsonLoopState {
+  accumulated: string;
+  lastParsed: unknown;
+  lastWasPartial: boolean;
+  rootComplete: boolean;
+}
+
+interface StreamJsonEmission<T> {
+  state: StreamJsonLoopState;
+  result?: StreamJsonResult<StreamingPartial<T>>;
+}
+
 // ---------------------------------------------------------------------------
 // Internal field diffing helpers
 // ---------------------------------------------------------------------------
@@ -155,6 +167,76 @@ function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): stri
   return changed;
 }
 
+function getNextEmission<T>(
+  chunk: string,
+  state: StreamJsonLoopState,
+  options: {
+    emitPartials: boolean;
+    stopAfterRoot: boolean;
+    tryParse: (text: string, repair: boolean) => unknown;
+    computeNewFields: (parsed: unknown, isComplete: boolean) => StreamJsonField[];
+  },
+): StreamJsonEmission<T> {
+  if (options.stopAfterRoot && state.rootComplete) {
+    return { state };
+  }
+
+  const accumulated = state.accumulated + chunk;
+  const complete = options.tryParse(accumulated, false);
+  if (complete !== null) {
+    if (!deepEqual(complete, state.lastParsed) || state.lastWasPartial) {
+      const newFields = options.computeNewFields(complete, true);
+      return {
+        state: {
+          accumulated,
+          lastParsed: complete,
+          lastWasPartial: false,
+          rootComplete: true,
+        },
+        result: { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields },
+      };
+    }
+    return {
+      state: {
+        accumulated,
+        lastParsed: state.lastParsed,
+        lastWasPartial: false,
+        rootComplete: true,
+      },
+    };
+  }
+
+  if (!options.emitPartials) {
+    return {
+      state: {
+        ...state,
+        accumulated,
+      },
+    };
+  }
+
+  const partial = options.tryParse(accumulated, true);
+  if (partial === null || deepEqual(partial, state.lastParsed)) {
+    return {
+      state: {
+        ...state,
+        accumulated,
+      },
+    };
+  }
+
+  const newFields = options.computeNewFields(partial, false);
+  return {
+    state: {
+      accumulated,
+      lastParsed: partial,
+      lastWasPartial: true,
+      rootComplete: false,
+    },
+    result: { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields },
+  };
+}
+
 /**
  * Incrementally parses JSON from a text stream, yielding partial and complete
  * objects as chunks arrive. Inspired by Vercel AI SDK's `Output.object` pattern.
@@ -180,11 +262,13 @@ export async function* streamJson<T = unknown>(
     parseOpts.maxJsonKeys = options.maxJsonKeys;
   }
 
-  let accumulated = '';
-  let lastParsed: unknown;
-  let lastWasPartial = false;
+  let loopState: StreamJsonLoopState = {
+    accumulated: '',
+    lastParsed: undefined,
+    lastWasPartial: false,
+    rootComplete: false,
+  };
   let prevPaths: Map<string, unknown> = new Map();
-  let rootComplete = false;
 
   function tryParse(text: string, repair: boolean): unknown {
     return parseJson(text, repair ? { ...parseOpts, repairIncomplete: true } : parseOpts);
@@ -204,40 +288,20 @@ export async function* streamJson<T = unknown>(
   }
 
   for await (const chunk of source) {
-    // If yap filter is enabled and we've already completed, stop
-    if (stopAfterRoot && rootComplete) {
+    const { state, result } = getNextEmission<T>(chunk, loopState, {
+      emitPartials,
+      stopAfterRoot,
+      tryParse,
+      computeNewFields,
+    });
+    loopState = state;
+
+    if (result !== undefined) {
+      yield result;
+    }
+
+    if (stopAfterRoot && loopState.rootComplete) {
       break;
     }
-
-    accumulated += chunk;
-
-    // Try complete parse first
-    const complete = tryParse(accumulated, false);
-    if (complete !== null) {
-      // Always emit when transitioning partial→complete, even if value is same
-      if (!deepEqual(complete, lastParsed) || lastWasPartial) {
-        const newFields = computeNewFields(complete, true);
-        lastParsed = complete;
-        lastWasPartial = false;
-        rootComplete = true;
-        yield { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields };
-      }
-      if (stopAfterRoot) {
-        break;
-      }
-      continue;
-    }
-
-    if (!emitPartials) continue;
-
-    const partial = tryParse(accumulated, true);
-    if (partial === null) continue;
-
-    if (deepEqual(partial, lastParsed)) continue;
-
-    const newFields = computeNewFields(partial, false);
-    lastParsed = partial;
-    lastWasPartial = true;
-    yield { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields };
   }
 }

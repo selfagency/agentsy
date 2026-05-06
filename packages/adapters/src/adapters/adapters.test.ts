@@ -17,6 +17,25 @@ async function* source() {
   yield { content: 'hello' };
 }
 
+async function* rawSource() {
+  yield { text: 'hello' };
+}
+
+async function* sourceWithSkippedChunk() {
+  yield { text: 'first', skip: false };
+  yield { text: 'ignored', skip: true };
+  yield { text: 'second', skip: false };
+}
+
+async function* decisionSource() {
+  yield { text: '{"shouldBlock":true,"targetIp":"203.0.113.10"' };
+  yield { text: ',"reason":"burst traffic","ttlSeconds":300,"evidence":["spike"]}' };
+}
+
+async function* invalidSource() {
+  yield { text: '{"shouldBlock":true}' };
+}
+
 describe('processStream', () => {
   it('yields processed outputs and final flush output', async () => {
     const outputs = [];
@@ -31,10 +50,6 @@ describe('processStream', () => {
 });
 
 describe('processRawStream', () => {
-  async function* rawSource() {
-    yield { text: 'hello' };
-  }
-
   it('normalizes raw chunks before processing and flushes once at end', async () => {
     const outputs = [];
     for await (const out of processRawStream(rawSource(), chunk => ({ content: chunk.text }))) {
@@ -47,12 +62,6 @@ describe('processRawStream', () => {
   });
 
   it('skips null normalized chunks and still flushes', async () => {
-    async function* sourceWithSkippedChunk() {
-      yield { text: 'first', skip: false };
-      yield { text: 'ignored', skip: true };
-      yield { text: 'second', skip: false };
-    }
-
     const outputs = [];
     for await (const out of processRawStream(sourceWithSkippedChunk(), chunk => {
       if (chunk.skip) {
@@ -70,11 +79,6 @@ describe('processRawStream', () => {
 });
 
 describe('runStructuredDecisionFromRawStream', () => {
-  async function* decisionSource() {
-    yield { text: '{"shouldBlock":true,"targetIp":"203.0.113.10"' };
-    yield { text: ',"reason":"burst traffic","ttlSeconds":300,"evidence":["spike"]}' };
-  }
-
   const schema = {
     type: 'object',
     required: ['shouldBlock', 'targetIp', 'reason', 'ttlSeconds', 'evidence'],
@@ -105,10 +109,6 @@ describe('runStructuredDecisionFromRawStream', () => {
   });
 
   it('returns errors when validation fails schema checks', async () => {
-    async function* invalidSource() {
-      yield { text: '{"shouldBlock":true}' };
-    }
-
     const result = await runStructuredDecisionFromRawStream({
       source: invalidSource(),
       normalize: chunk => ({ content: chunk.text }),

@@ -217,6 +217,57 @@ function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, 
   safeWrite(changelogPath, updated);
 }
 
+function ensureCleanMainBranch() {
+  const dirty = runGit(['status', '--porcelain']).stdout.trim();
+  if (dirty) {
+    console.error('❌ Working tree is not clean. Commit or stash changes first.');
+    process.exit(1);
+  }
+
+  const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
+  if (branch !== 'main') {
+    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
+    process.exit(1);
+  }
+}
+
+function syncMainBranch() {
+  console.log('🔄 Fetching latest refs...');
+  runGit(['fetch', 'origin', 'main']);
+  runGit(['pull', '--ff-only', 'origin', 'main']);
+}
+
+function resolveOwnerRepoFromOrigin() {
+  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
+  const repoMatch = remoteUrl.match(/[:/]([^/]+)\/([^/.]+?)(\.git)?$/);
+  if (!repoMatch) {
+    console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
+    process.exit(1);
+  }
+  const [, owner, repo] = repoMatch;
+  return { owner, repo };
+}
+
+function ensureLocalTagDoesNotExist() {
+  const localTag = runGit(['tag', '-l', tag]).stdout.trim();
+  if (localTag) {
+    console.error(`❌ Local tag ${tag} already exists.`);
+    process.exit(1);
+  }
+}
+
+async function ensureRemoteTagDoesNotExist(octokit, owner, repo) {
+  try {
+    await octokit.git.getRef({ owner, repo, ref: `tags/${tag}` });
+    console.error(`❌ Remote tag ${tag} already exists.`);
+    process.exit(1);
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main — wrapped so any unhandled error triggers rollback
 // ---------------------------------------------------------------------------
@@ -248,50 +299,17 @@ async function main() {
   const octokit = new Octokit({ auth: githubToken });
 
   // --- Precondition checks --------------------------------------------------
-
-  const dirty = runGit(['status', '--porcelain']).stdout.trim();
-  if (dirty) {
-    console.error('❌ Working tree is not clean. Commit or stash changes first.');
-    process.exit(1);
-  }
-
-  const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
-  if (branch !== 'main') {
-    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
-    process.exit(1);
-  }
-
-  console.log('🔄 Fetching latest refs...');
-  runGit(['fetch', 'origin', 'main']);
-  runGit(['pull', '--ff-only', 'origin', 'main']);
+  ensureCleanMainBranch();
+  syncMainBranch();
 
   // Derive owner/repo from the git remote URL.
-  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
-  const repoMatch = remoteUrl.match(/[:/]([^/]+)\/([^/.]+?)(\.git)?$/);
-  if (!repoMatch) {
-    console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
-    process.exit(1);
-  }
-  const [, owner, repo] = repoMatch;
+  const { owner, repo } = resolveOwnerRepoFromOrigin();
 
   // Check for existing local tag.
-  const localTag = runGit(['tag', '-l', tag]).stdout.trim();
-  if (localTag) {
-    console.error(`❌ Local tag ${tag} already exists.`);
-    process.exit(1);
-  }
+  ensureLocalTagDoesNotExist();
 
   // Check for existing remote tag via the API.
-  try {
-    await octokit.git.getRef({ owner, repo, ref: `tags/${tag}` });
-    console.error(`❌ Remote tag ${tag} already exists.`);
-    process.exit(1);
-  } catch (err) {
-    if (err.status !== 404) {
-      throw err;
-    }
-    // 404 = tag does not exist; that's what we want.
-  }
+  await ensureRemoteTagDoesNotExist(octokit, owner, repo);
 
   // --- Previous tag (for release notes diff) --------------------------------
 
@@ -422,7 +440,7 @@ async function main() {
       ? ['--access', 'public']
       : [];
     // Use spawn for interactive npm publish (required for 2FA/OTP prompts)
-    const { spawnSync } = await import('child_process');
+    const { spawnSync } = await import('node:child_process');
     const result = spawnSync(
       'npm',
       ['publish', './dist', '--tag', distTag, `--registry=${NPM_REGISTRY}`, ...accessFlag],

@@ -178,8 +178,8 @@ describe('LLMStreamProcessor', () => {
     const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
     const processor = new LLMStreamProcessor({ onWarning });
 
-    const circular: Record<string, unknown> = {};
-    circular['self'] = circular;
+    const circular: { self?: unknown } = {};
+    circular.self = circular;
 
     const out = processor.process({
       tool_calls: [{ function: { name: 'circular_tool', arguments: circular } }],

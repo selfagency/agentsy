@@ -20,19 +20,19 @@ import { isObject, toNumber } from './utils.js';
 // ---------------------------------------------------------------------------
 
 function handleResponsesTextDelta(raw: Record<string, unknown>): NormalizerResult | null {
-  const delta = raw['delta'];
+  const delta = raw.delta;
   if (typeof delta !== 'string') return null;
   return { chunk: { content: delta }, rawEvent: raw };
 }
 
 function handleResponsesOutputItemAdded(raw: Record<string, unknown>): NormalizerResult | null {
-  const item = raw['item'];
+  const item = raw.item;
   if (!isObject(item)) return null;
-  if (item['type'] !== 'function_call') return null;
+  if (item.type !== 'function_call') return null;
 
-  const outputIndex = toNumber(raw['output_index']) ?? 0;
-  const callId = typeof item['call_id'] === 'string' ? item['call_id'] : undefined;
-  const name = typeof item['name'] === 'string' ? item['name'] : undefined;
+  const outputIndex = toNumber(raw.output_index) ?? 0;
+  const callId = typeof item.call_id === 'string' ? item.call_id : undefined;
+  const name = typeof item.name === 'string' ? item.name : undefined;
 
   const delta: NativeToolCallDelta = { index: outputIndex };
   if (callId !== undefined) delta.id = callId;
@@ -42,11 +42,11 @@ function handleResponsesOutputItemAdded(raw: Record<string, unknown>): Normalize
 }
 
 function handleResponsesFunctionCallArgumentsDelta(raw: Record<string, unknown>): NormalizerResult | null {
-  const argsDelta = raw['delta'];
+  const argsDelta = raw.delta;
   if (typeof argsDelta !== 'string') return null;
 
-  const outputIndex = toNumber(raw['output_index']) ?? 0;
-  const callId = typeof raw['call_id'] === 'string' ? raw['call_id'] : undefined;
+  const outputIndex = toNumber(raw.output_index) ?? 0;
+  const callId = typeof raw.call_id === 'string' ? raw.call_id : undefined;
 
   const delta: NativeToolCallDelta = { index: outputIndex, argumentsDelta: argsDelta };
   if (callId !== undefined) delta.id = callId;
@@ -55,15 +55,15 @@ function handleResponsesFunctionCallArgumentsDelta(raw: Record<string, unknown>)
 }
 
 function handleResponsesCompleted(raw: Record<string, unknown>): NormalizerResult | null {
-  const response = raw['response'];
+  const response = raw.response;
   let usage: UsageInfo | undefined;
 
-  if (isObject(response) && isObject(response['usage'])) {
-    const u = response['usage'];
+  if (isObject(response) && isObject(response.usage)) {
+    const u = response.usage;
     usage = {};
-    const input = toNumber(u['input_tokens']);
-    const output = toNumber(u['output_tokens']);
-    const total = toNumber(u['total_tokens']);
+    const input = toNumber(u.input_tokens);
+    const output = toNumber(u.output_tokens);
+    const total = toNumber(u.total_tokens);
     if (input !== undefined) usage.inputTokens = input;
     if (output !== undefined) usage.outputTokens = output;
     if (total !== undefined) usage.totalTokens = total;
@@ -89,7 +89,7 @@ function handleResponsesCompleted(raw: Record<string, unknown>): NormalizerResul
 export function normalizeOpenAIResponseEvent(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) return null;
-    const type = raw['type'];
+    const type = raw.type;
     if (typeof type !== 'string') return null;
 
     if (type === 'response.output_text.delta' || type === 'response.refusal.delta')
