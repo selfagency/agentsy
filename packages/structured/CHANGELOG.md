@@ -6,11 +6,11 @@
 
 ## What's Changed
 
-- docs: expand platform catalog and package references by @selfagency in <https://github.com/selfagency/agentsy/pull/60
-- Add orchestration helpers and progressive real-world examples by @selfagency in <https://github.com/selfagency/agentsy/pull/61
-- refactor: resolve code-smell findings across monorepo by @selfagency in <https://github.com/selfagency/agentsy/pull/62
+- docs: expand platform catalog and package references by @selfagency in <<https://github.com/selfagency/agentsy/pull/60>
+- Add orchestration helpers and progressive real-world examples by @selfagency in <<https://github.com/selfagency/agentsy/pull/61>
+- refactor: resolve code-smell findings across monorepo by @selfagency in <<https://github.com/selfagency/agentsy/pull/62>
 
-**Full Changelog**: https://github.com/selfagency/agentsy/compare/@agentsy/structured@0.1.1...@agentsy/structured@0.1.2
+**Full Changelog**: <https://github.com/selfagency/agentsy/compare/@agentsy/structured@0.1.1...@agentsy/structured@0.1.2>
 
 _Source: changes from @agentsy/structured@0.1.1 to @agentsy/structured@0.1.2._
 

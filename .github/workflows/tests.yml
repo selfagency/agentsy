@@ -36,6 +36,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
+      - name: Validate workspace layout (packages/* must be real packages)
+        run: node scripts/validate-workspace.mjs
+
+      - name: Block legacy monolith refs in docs (non-migration only)
+        run: node scripts/scan-legacy-strings.mjs
+
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
 
