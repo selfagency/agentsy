@@ -1,0 +1,27 @@
+packages/vscode/src/mcp/vscodeBridgeHelper.test.ts
+  s_2b1d21c4f56fc5::t_c11166258a5ea8 4
+packages/vscode/src/stream-bridge/mcpChatBridge.test.ts
+  s_2b1d21c4f56fc5::t_c11166258a5ea8 4
+packages/vscode/src/retry/retryUtility.ts
+  s_2b1d21c4f56fc5::t_b961d207433847 8-10,27-37,43,50,57-78
+packages/processor/src/mcp/transport.test.ts
+  s_2b1d21c4f56fc5::t_a0d18909693a19 3
+packages/processor/src/mcp/transport.ts
+  s_2b1d21c4f56fc5::t_fc0892ede3f2fb 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "e678478f38923a238206b126ff45a94de58bc20d",
+  "prompts": {},
+  "sessions": {
+    "s_2b1d21c4f56fc5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cec43470-7cbe-42d1-aa00-679b4bd0975a",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
