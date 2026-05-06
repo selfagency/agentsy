@@ -97,25 +97,26 @@ function getFinishReasonParts(choice: OpenAIChoice | undefined): { done?: true; 
 }
 
 function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCallDelta[] | undefined {
-  if (!Array.isArray(delta?.tool_calls) || delta.tool_calls.length === 0) {
-    return undefined;
+  const toolCalls = delta?.tool_calls;
+  if (Array.isArray(toolCalls) && toolCalls.length > 0) {
+    return toolCalls
+      .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
+      .map(mapOpenAIToolCallDelta);
   }
 
-  return delta.tool_calls
-    .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
-    .map(mapOpenAIToolCallDelta);
+  return undefined;
 }
 
 function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
-  if (!raw.usage) {
-    return {};
+  if (raw.usage) {
+    const usage: UsageInfo = {};
+    if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
+    if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
+    if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
+    return { usage };
   }
 
-  const usage: UsageInfo = {};
-  if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
-  if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
-  if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
-  return { usage };
+  return {};
 }
 
 // ---------------------------------------------------------------------------
@@ -131,20 +132,22 @@ function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
  */
 export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!isOpenAIChatChunk(raw)) return null;
+    if (isOpenAIChatChunk(raw)) {
+      const choice = raw.choices[0];
+      const delta = choice?.delta;
+      const nativeToolCallDeltas = getNativeToolCallDeltas(delta);
 
-    const choice = raw.choices[0];
-    const delta = choice?.delta;
-    const nativeToolCallDeltas = getNativeToolCallDeltas(delta);
+      const chunk = {
+        ...getContentParts(delta),
+        ...getFinishReasonParts(choice),
+        ...(nativeToolCallDeltas !== undefined ? { nativeToolCallDeltas } : {}),
+        ...getUsageParts(raw),
+      };
 
-    const chunk = {
-      ...getContentParts(delta),
-      ...getFinishReasonParts(choice),
-      ...(nativeToolCallDeltas !== undefined ? { nativeToolCallDeltas } : {}),
-      ...getUsageParts(raw),
-    };
+      return { chunk, rawEvent: raw };
+    }
 
-    return { chunk, rawEvent: raw };
+    return null;
   } catch {
     return null;
   }
