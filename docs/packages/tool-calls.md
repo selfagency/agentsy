@@ -17,6 +17,13 @@
 - Incremental tool-call accumulation
 - Tool system-prompt and tool-result message builders
 
+`buildToolResultMessage` now supports both:
+
+- full `XmlToolCall` objects
+- minimal tool references: `{ id?: string; name: string }`
+
+This is useful when you only have native tool metadata and do not want to construct an XML-shaped object.
+
 ## Where it fits
 
 Use this package when your application needs reliable tool-call handling across partial chunks or wants helpers for XML-style tool prompting.
@@ -41,4 +48,7 @@ for (const call of calls) {
   const message = buildToolResultMessage(call, result);
   console.log(message);
 }
+
+const nativeMessage = buildToolResultMessage({ id: 'call_1', name: 'search' }, { ok: true });
+console.log(nativeMessage);
 ```

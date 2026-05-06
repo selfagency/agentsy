@@ -41,9 +41,19 @@ export {
 } from './message-conversion/role-converter.js';
 export type { ChatMessage, ChatToolCall } from './message-conversion/role-converter.js';
 
-// Stream bridge
+// Stream bridge (StreamChunk → VSCode)
 export { bridgeStream, VSCodeStreamBridge } from './stream-bridge.js';
 export type { VSCodeStreamBridgeOptions } from './stream-bridge.js';
+
+// MCP chat bridge (MCPTransport → ChatResponseStream)
+export { MCPChatBridge, createMCPChatBridge } from './stream-bridge/index.js';
+
+// VS Code chat response stream overloads
+export { createVSCodeChatResponseStream } from './vscode-overloads/index.js';
+export type { VSCodeChatResponseStream } from './vscode-overloads/index.js';
+
+// Retry utility with CancellationToken support
+export { RetryUtility, createRetryUtility } from './retry/index.js';
 
 // Base provider
 export { BaseLanguageModelChatProvider } from './provider/index.js';
@@ -75,7 +85,7 @@ export {
   type VSCodeUsage,
 } from './usage-tracking/index.js';
 
-// MCP integration
+// MCP integration (server definitions / registry)
 export {
   createMcpServerDefinitionProvider,
   McpServerRegistry,
@@ -83,6 +93,9 @@ export {
   type McpProviderServerDefinition,
   type McpProviderSettingsReader,
 } from './mcp-integration/index.js';
+
+// MCP bridge helper (MCPTransport ↔ VS Code)
+export { VSCodeMCPBridgeHelper, createVSCodeMCPBridge } from './mcp/index.js';
 
 // Testing utilities
 export {

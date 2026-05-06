@@ -40,6 +40,14 @@ import { extractXmlToolCalls, ToolCallAccumulator, buildXmlToolSystemPrompt } fr
 const calls = extractXmlToolCalls(output, knownTools);
 ```
 
+`buildToolResultMessage` accepts either a full `XmlToolCall` or a minimal native reference:
+
+```ts
+import { buildToolResultMessage } from '@agentsy/tool-calls';
+
+const message = buildToolResultMessage({ id: 'call_1', name: 'lookup' }, { ok: true });
+```
+
 ## Learn more
 
 - [Package page](https://agentsy.self.agency/packages/tool-calls)

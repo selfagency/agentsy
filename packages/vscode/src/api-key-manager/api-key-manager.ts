@@ -17,23 +17,41 @@ export class ApiKeyManager {
 
   /**
    * Initialize the manager and load stored API key.
+   * @param safeMode If true, silently fails instead of throwing errors
    */
-  async initialize(): Promise<void> {
+  async initialize(safeMode: boolean = false): Promise<void> {
     if (this.isInitialized) return;
 
-    this.apiKey = await this.context.secrets.get(this.config.secretKey);
-    this.isInitialized = true;
-    await this.setupContextVariable();
+    try {
+      this.apiKey = await this.context.secrets.get(this.config.secretKey);
+      this.isInitialized = true;
+      await this.setupContextVariable();
+    } catch (error) {
+      if (safeMode) {
+        // Silently fail in safe mode
+        this.isInitialized = false;
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
    * Get the stored API key.
+   * @param safeMode If true, returns undefined instead of throwing errors
    */
-  async getApiKey(): Promise<string | undefined> {
-    if (!this.isInitialized) {
-      await this.initialize();
+  async getApiKey(safeMode: boolean = false): Promise<string | undefined> {
+    try {
+      if (!this.isInitialized) {
+        await this.initialize();
+      }
+      return this.apiKey;
+    } catch (error) {
+      if (safeMode) {
+        return undefined;
+      }
+      throw error;
     }
-    return this.apiKey;
   }
 
   /**

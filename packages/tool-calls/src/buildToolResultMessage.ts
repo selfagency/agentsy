@@ -42,6 +42,14 @@ export interface GeminiToolResult {
   ];
 }
 
+/** Minimal tool-call reference for result message helpers. */
+export interface ToolCallReference {
+  /** Provider-assigned call ID, if available. */
+  id?: string;
+  /** Tool/function name. */
+  name: string;
+}
+
 function normalizeContent(result: string | object): string {
   if (typeof result === 'string') return result;
   try {
@@ -64,6 +72,18 @@ function normalizeContent(result: string | object): string {
  */
 export function buildToolResultMessage(
   toolCall: XmlToolCall,
+  result: string | object,
+  options?: { isError?: boolean },
+): ToolResultMessage;
+
+export function buildToolResultMessage(
+  toolCall: ToolCallReference,
+  result: string | object,
+  options?: { isError?: boolean },
+): ToolResultMessage;
+
+export function buildToolResultMessage(
+  toolCall: ToolCallReference | XmlToolCall,
   result: string | object,
   options?: { isError?: boolean },
 ): ToolResultMessage {
