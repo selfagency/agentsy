@@ -175,42 +175,20 @@ export class LLMStreamProcessor {
    */
   public process(chunk: StreamChunk): ProcessedOutput {
     const startTime = performance.now();
-    const chunkSize = estimateChunkSize(chunk, SHARED_TEXT_ENCODER);
-
-    this._stats.chunksProcessed++;
-    this._stats.bytesProcessed += chunkSize;
-    this._stats.firstChunkAt ??= new Date();
-    this._stats.lastChunkAt = new Date();
-
-    // Track if this chunk has content or thinking input
-    const hasContentInput = typeof chunk.content === 'string' && chunk.content.length > 0;
-    const hasThinkingInput = typeof chunk.thinking === 'string' && chunk.thinking.length > 0;
+    this.recordChunkStats(chunk);
+    const { hasContentInput, hasThinkingInput } = this.getChunkInputFlags(chunk);
     const done = chunk.done === true;
 
-    const maxInputLength = this.options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
-    const rawThinking = enforceMaxLength(ensureText(chunk.thinking), 'thinking', maxInputLength, this._warnCallback);
-    let rawContent = enforceMaxLength(ensureText(chunk.content), 'content', maxInputLength, this._warnCallback);
+    const preparedInput = this.prepareChunkInput(chunk, done);
+    const parsedThinking = this.applyThinkingParserToContent(preparedInput.rawThinking, preparedInput.content);
+    let thinking = parsedThinking.thinking;
+    let content = parsedThinking.content;
 
-    const inlineToolCallParse = this.parseInlineToolCalls(rawContent, done);
-    rawContent = inlineToolCallParse.content;
-    const nativeToolCallDeltas = [
-      ...(Array.isArray(chunk.nativeToolCallDeltas) ? chunk.nativeToolCallDeltas : []),
-      ...(inlineToolCallParse.nativeToolCallDeltas ?? []),
-    ];
-
-    let thinking = rawThinking;
-    let content = rawContent;
-
-    if (this.thinkingParser && content) {
-      const [thinkingDelta, contentDelta] = this.thinkingParser.addContent(content);
-      thinking += thinkingDelta;
-      content = contentDelta;
-    }
     const toolCallState = this.computeToolCallState({
       chunk,
-      rawContent,
+      rawContent: preparedInput.content,
       content,
-      nativeToolCallDeltas,
+      nativeToolCallDeltas: preparedInput.nativeToolCallDeltas,
       done,
     });
     content = toolCallState.content;
@@ -232,14 +210,68 @@ export class LLMStreamProcessor {
     });
     this.recordOutput(output);
     this.emitOutput(output);
+    this.updatePostProcessStats(startTime, hasThinkingInput, hasContentInput, output);
 
-    // Update stats after recordOutput() has accumulated content
+    return output;
+  }
+
+  private recordChunkStats(chunk: StreamChunk): void {
+    const chunkSize = estimateChunkSize(chunk, SHARED_TEXT_ENCODER);
+    this._stats.chunksProcessed++;
+    this._stats.bytesProcessed += chunkSize;
+    this._stats.firstChunkAt ??= new Date();
+    this._stats.lastChunkAt = new Date();
+  }
+
+  private getChunkInputFlags(chunk: StreamChunk): { hasContentInput: boolean; hasThinkingInput: boolean } {
+    return {
+      hasContentInput: typeof chunk.content === 'string' && chunk.content.length > 0,
+      hasThinkingInput: typeof chunk.thinking === 'string' && chunk.thinking.length > 0,
+    };
+  }
+
+  private prepareChunkInput(
+    chunk: StreamChunk,
+    done: boolean,
+  ): { rawThinking: string; content: string; nativeToolCallDeltas: NativeToolCallDelta[] } {
+    const maxInputLength = this.options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
+    const rawThinking = enforceMaxLength(ensureText(chunk.thinking), 'thinking', maxInputLength, this._warnCallback);
+    const rawContent = enforceMaxLength(ensureText(chunk.content), 'content', maxInputLength, this._warnCallback);
+
+    const inlineToolCallParse = this.parseInlineToolCalls(rawContent, done);
+    return {
+      rawThinking,
+      content: inlineToolCallParse.content,
+      nativeToolCallDeltas: [
+        ...(Array.isArray(chunk.nativeToolCallDeltas) ? chunk.nativeToolCallDeltas : []),
+        ...(inlineToolCallParse.nativeToolCallDeltas ?? []),
+      ],
+    };
+  }
+
+  private applyThinkingParserToContent(rawThinking: string, rawContent: string): { thinking: string; content: string } {
+    if (!(this.thinkingParser && rawContent)) {
+      return { thinking: rawThinking, content: rawContent };
+    }
+
+    const [thinkingDelta, contentDelta] = this.thinkingParser.addContent(rawContent);
+    return {
+      thinking: rawThinking + thinkingDelta,
+      content: contentDelta,
+    };
+  }
+
+  private updatePostProcessStats(
+    startTime: number,
+    hasThinkingInput: boolean,
+    hasContentInput: boolean,
+    output: ProcessedOutput,
+  ): void {
     this._stats.parseTimeMs += performance.now() - startTime;
     if (hasThinkingInput) this._stats.thinkingBlocksCount++;
-    this._stats.toolCallsCount += output.toolCalls.length;
     if (hasContentInput) this._stats.contentDeltasCount++;
+    this._stats.toolCallsCount += output.toolCalls.length;
 
-    // Update buffer size based on accumulated content (updated by recordOutput)
     const bufferSize = this._accumulatedContent.length + this._accumulatedThinking.length;
     this._stats.currentBufferSize = bufferSize;
     if (bufferSize > this._stats.peakBufferSize) {
@@ -248,8 +280,6 @@ export class LLMStreamProcessor {
     if (this._stats.chunksProcessed > 0) {
       this._stats.averageChunkSize = this._stats.bytesProcessed / this._stats.chunksProcessed;
     }
-
-    return output;
   }
 
   private computeToolCallState(params: {

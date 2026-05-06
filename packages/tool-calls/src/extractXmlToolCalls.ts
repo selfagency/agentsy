@@ -64,40 +64,66 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
 }
 
 function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: Set<string>): XmlToolCall | null {
-  const wrapperName = rawTag.toLowerCase();
-  if (wrapperName !== 'toolcall' && wrapperName !== 'tool_call') {
+  if (!isJsonToolCallWrapper(rawTag)) {
     return null;
   }
 
+  const parsed = parseJsonToolCallPayload(inner);
+  if (parsed === null) {
+    return null;
+  }
+
+  const name = parseKnownToolName(parsed.name, knownTools);
+  if (name === null) {
+    return null;
+  }
+
+  return {
+    name,
+    parameters: normalizeWrappedToolCallArguments(parsed),
+    format: 'json-wrapped',
+  };
+}
+
+function isJsonToolCallWrapper(rawTag: string): boolean {
+  const wrapperName = rawTag.toLowerCase();
+  return wrapperName === 'toolcall' || wrapperName === 'tool_call';
+}
+
+function parseJsonToolCallPayload(inner: string): { name?: unknown; arguments?: unknown; parameters?: unknown } | null {
   try {
-    const parsed = JSON.parse(inner.trim()) as {
+    return JSON.parse(inner.trim()) as {
       name?: unknown;
       arguments?: unknown;
       parameters?: unknown;
     };
-
-    const name = typeof parsed.name === 'string' ? parsed.name : null;
-    if (!name || !knownTools.has(name)) {
-      return null;
-    }
-
-    let argumentsValue: JsonObject;
-    if (parsed.arguments && typeof parsed.arguments === 'object' && !Array.isArray(parsed.arguments)) {
-      argumentsValue = Object.assign(Object.create(null), parsed.arguments) as JsonObject;
-    } else if (parsed.parameters && typeof parsed.parameters === 'object' && !Array.isArray(parsed.parameters)) {
-      argumentsValue = Object.assign(Object.create(null), parsed.parameters) as JsonObject;
-    } else {
-      argumentsValue = Object.create(null) as JsonObject;
-    }
-
-    return {
-      name,
-      parameters: argumentsValue,
-      format: 'json-wrapped',
-    };
   } catch {
     return null;
   }
+}
+
+function parseKnownToolName(name: unknown, knownTools: Set<string>): string | null {
+  if (typeof name !== 'string') {
+    return null;
+  }
+  return knownTools.has(name) ? name : null;
+}
+
+function normalizeWrappedToolCallArguments(parsed: { arguments?: unknown; parameters?: unknown }): JsonObject {
+  const args = pickFirstObjectValue(parsed.arguments, parsed.parameters);
+  if (args === null) {
+    return Object.create(null) as JsonObject;
+  }
+  return Object.assign(Object.create(null), args) as JsonObject;
+}
+
+function pickFirstObjectValue(...values: unknown[]): Record<string, unknown> | null {
+  for (const value of values) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
+    }
+  }
+  return null;
 }
 
 /**
@@ -139,35 +165,10 @@ export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlT
   const paramPattern = /<([^/\s>]+)>([\s\S]*?)<\/\1>/g;
 
   for (const toolMatch of cleaned.matchAll(toolPattern)) {
-    const toolName = toolMatch[1];
-    const inner = toolMatch[2] ?? '';
-
-    if (!toolName) {
-      continue;
+    const parsed = parseXmlToolCallMatch(toolMatch, knownTools, paramPattern);
+    if (parsed !== null) {
+      results.push(parsed);
     }
-
-    // Skip <think> reasoning blocks emitted by Qwen3 / DeepSeek-R1 models.
-    if (toolName.toLowerCase() === 'think') {
-      continue;
-    }
-
-    const jsonWrapped = extractJsonWrappedToolCall(toolName, inner, knownTools);
-    if (jsonWrapped) {
-      results.push(jsonWrapped);
-      continue;
-    }
-
-    if (!knownTools.has(toolName)) {
-      continue;
-    }
-
-    const params = extractBareXmlParams(inner, paramPattern);
-
-    results.push({
-      name: toolName,
-      parameters: params,
-      format: 'bare-xml',
-    });
   }
 
   // Fallback: models like Qwen2.5Coder that ignore the XML system prompt and
@@ -177,4 +178,31 @@ export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlT
   }
 
   return results;
+}
+
+function parseXmlToolCallMatch(
+  toolMatch: RegExpMatchArray,
+  knownTools: Set<string>,
+  paramPattern: RegExp,
+): XmlToolCall | null {
+  const toolName = toolMatch[1];
+  const inner = toolMatch[2] ?? '';
+  if (!toolName || toolName.toLowerCase() === 'think') {
+    return null;
+  }
+
+  const jsonWrapped = extractJsonWrappedToolCall(toolName, inner, knownTools);
+  if (jsonWrapped !== null) {
+    return jsonWrapped;
+  }
+
+  if (!knownTools.has(toolName)) {
+    return null;
+  }
+
+  return {
+    name: toolName,
+    parameters: extractBareXmlParams(inner, paramPattern),
+    format: 'bare-xml',
+  };
 }

@@ -1,5 +1,5 @@
-import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJsonOptions } from './parseJson.js';
 import type { JsonObject } from '@agentsy/types';
+import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson, type ParseJsonOptions } from './parseJson.js';
 
 type JsonSchema = JsonObject;
 
@@ -73,29 +73,32 @@ interface ResolveContext {
   resolving: Set<string>;
 }
 
+function areArraysEqual(a: unknown[], b: unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!deepEqual(a[i], b[i])) return false;
+  }
+  return true;
+}
+
+function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unknown>): boolean {
+  const keysA = Object.keys(aObj);
+  const keysB = Object.keys(bObj);
+  if (keysA.length !== keysB.length) return false;
+  for (const k of keysA) {
+    if (!Object.hasOwn(bObj, k) || !deepEqual(aObj[k], bObj[k])) return false;
+  }
+  return true;
+}
+
 function deepEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
   if (a === null || b === null) return false;
   if (typeof a !== typeof b) return false;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false;
-    }
-    return true;
-  }
+  if (Array.isArray(a) && Array.isArray(b)) return areArraysEqual(a, b);
   if (Array.isArray(a) || Array.isArray(b)) return false;
-  if (typeof a === 'object' && typeof b === 'object') {
-    const aObj = a as Record<string, unknown>;
-    const bObj = b as Record<string, unknown>;
-    const keysA = Object.keys(aObj);
-    const keysB = Object.keys(bObj);
-    if (keysA.length !== keysB.length) return false;
-    for (const k of keysA) {
-      if (!Object.hasOwn(bObj, k) || !deepEqual(aObj[k], bObj[k])) return false;
-    }
-    return true;
-  }
+  if (typeof a === 'object' && typeof b === 'object')
+    return areObjectsEqual(a as Record<string, unknown>, b as Record<string, unknown>);
   return false;
 }
 
