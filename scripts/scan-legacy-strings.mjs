@@ -13,27 +13,29 @@ const INCLUDE = ['README.md', 'docs'];
 
 const EXCLUDE_PREFIXES = [path.join('docs', 'migration'), '.gh-pages', 'coverage', 'dist'];
 
-async function isExcluded(relPath) {
+/** @param {string} relPath */
+function isExcluded(relPath) {
   return EXCLUDE_PREFIXES.some(prefix => relPath === prefix || relPath.startsWith(prefix + path.sep));
 }
 
+/** @param {string} relDir @param {Set<string>} out */
 async function walk(relDir, out) {
   const absDir = path.join(ROOT, relDir);
   const entries = await readdir(absDir, { withFileTypes: true });
   for (const ent of entries) {
     const rel = path.join(relDir, ent.name);
-    if (await isExcluded(rel)) continue;
-    const abs = path.join(ROOT, rel);
+    if (isExcluded(rel)) continue;
     if (ent.isDirectory()) {
       await walk(rel, out);
     } else if (ent.isFile()) {
       if (!ent.name.endsWith('.md')) continue;
-      out.push(rel);
+      out.add(rel);
     }
   }
 }
 
 async function main() {
+  /** @type {Set<string>} */
   const candidates = new Set();
 
   for (const p of INCLUDE) {
