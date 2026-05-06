@@ -2,7 +2,7 @@
 
 Get up and running with the published VS Code package and internal package usage patterns.
 
-Migrating from the old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](./migrating-from-llm-stream-parser.md).
+Migrating from old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](./migration/llm-stream-parser.md).
 
 ## Installation
 

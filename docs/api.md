@@ -44,4 +44,4 @@ Detailed API breakdowns, examples, and composition guidance live on the individu
 
 - [Package catalog](./packages.md)
 - [Architecture overview](./architecture/index.md)
-- [Migrating from `@selfagency/llm-stream-parser`](./migrating-from-llm-stream-parser.md)
+- [Migrating from `@selfagency/llm-stream-parser`](./migration/llm-stream-parser.md)

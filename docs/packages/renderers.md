@@ -54,4 +54,4 @@ await renderer.end();
 
 ## Migration note
 
-If you previously used historical renderer subpaths from `@selfagency/llm-stream-parser`, see the dedicated [migration guide](../migrating-from-llm-stream-parser.md) for what maps cleanly and what does not.
+If you previously used historical renderer subpaths from `@selfagency/llm-stream-parser`, see the dedicated [migration guide](../migration/llm-stream-parser.md) for what maps cleanly and what does not.
