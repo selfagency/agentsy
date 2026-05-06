@@ -265,84 +265,8 @@ export class LLMStreamProcessor {
     toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>>;
   } {
     const { chunk, rawContent, nativeToolCallDeltas, done } = params;
-    let { content } = params;
-
-    const extractedFromRaw =
-      this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
-
-    let extractedFromRawResidual: XmlToolCall[] = [];
-    if (this.options.knownTools && rawContent) {
-      const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
-      const newResidualSize = this._rawResidual.length + this._filteredResidual.length + rawContent.length;
-      if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
-        this.warn(`Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping raw content append`, {
-          currentSize: this._rawResidual.length + this._filteredResidual.length,
-          incomingBytes: rawContent.length,
-        });
-      } else {
-        this._rawResidual += rawContent;
-      }
-
-      const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
-      let mm = completeTagRe.exec(this._rawResidual);
-      while (mm !== null) {
-        const full = mm[0];
-        try {
-          const found = extractXmlToolCalls(full, this.options.knownTools);
-          extractedFromRawResidual = extractedFromRawResidual.concat(found);
-        } catch {
-          break;
-        }
-        this._rawResidual = this._rawResidual.replace(full, '');
-        completeTagRe.lastIndex = 0;
-        mm = completeTagRe.exec(this._rawResidual);
-      }
-    }
-
-    if (this.xmlFilter && content) {
-      const delta = this.xmlFilter.write(content);
-      content = delta;
-      const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
-      const newResidualSize = this._rawResidual.length + this._filteredResidual.length + delta.length;
-      if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
-        this.warn(
-          `Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping filtered delta append`,
-          { currentSize: this._rawResidual.length + this._filteredResidual.length, incomingBytes: delta.length },
-        );
-      } else {
-        this._filteredResidual += delta;
-      }
-
-      const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
-      let m = completeTagRe.exec(this._filteredResidual);
-      while (m !== null) {
-        const full = m[0];
-        try {
-          this._filteredResidual = this._filteredResidual.replace(full, '');
-          content += full;
-          completeTagRe.lastIndex = 0;
-          m = completeTagRe.exec(this._filteredResidual);
-        } catch {
-          break;
-        }
-      }
-    }
-
-    const extractedFromFiltered =
-      this.options.knownTools && content ? extractXmlToolCalls(content, this.options.knownTools) : [];
-
-    const seen = new Set<string>();
-    const extractedXmlToolCalls: XmlToolCall[] = [];
-    const pushUnique = (call: XmlToolCall): void => {
-      const key = `${call.name}|${JSON.stringify(call.parameters)}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        extractedXmlToolCalls.push(call);
-      }
-    };
-    for (const c of extractedFromRaw) pushUnique(c);
-    for (const c of extractedFromRawResidual) pushUnique(c);
-    for (const c of extractedFromFiltered) pushUnique(c);
+    const extraction = this.extractToolCallsFromXmlBuffers(rawContent, params.content);
+    const { content, extractedXmlToolCalls } = extraction;
 
     const nativeToolCalls = mapNativeToolCalls(chunk.tool_calls);
     if (chunk.finishReason !== undefined) this._lastFinishReason = chunk.finishReason;
@@ -350,34 +274,8 @@ export class LLMStreamProcessor {
     this.accumulateUsage(chunk);
     this.accumulateNativeDeltas(nativeToolCallDeltas);
 
-    const toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>> = [];
-    if (this.nativeAccumulator && nativeToolCallDeltas.length > 0) {
-      for (const delta of nativeToolCallDeltas) {
-        if (typeof delta.argumentsDelta !== 'string') continue;
-        const pending = this.nativeAccumulator.getPendingCallInfo(delta.index);
-        const name = delta.name ?? pending?.name;
-        if (!name) continue;
-        const id = delta.id ?? pending?.id;
-        toolCallDeltas.push({
-          type: 'tool_call_delta',
-          index: delta.index,
-          name,
-          argumentsDelta: delta.argumentsDelta,
-          ...(id === undefined ? {} : { id }),
-        });
-      }
-    }
-
-    const midStreamCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> = [];
-    if (this.nativeAccumulator) {
-      for (const { index, call } of this.nativeAccumulator.getCompletedCallsWithIndices()) {
-        if (!this._midStreamEmittedCallIndices.has(index)) {
-          this._midStreamEmittedCallIndices.add(index);
-          this.nativeAccumulator.removeCall(index);
-          midStreamCalls.push(...this.mapAccumulatedNativeCallsWithIndices([{ index, call }], 'input-complete'));
-        }
-      }
-    }
+    const toolCallDeltas = this.buildToolCallDeltaParts(nativeToolCallDeltas);
+    const midStreamCalls = this.collectMidStreamCompletedToolCalls();
 
     const accumulatedNativeCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> =
       done && this.nativeAccumulator
@@ -395,18 +293,12 @@ export class LLMStreamProcessor {
       ? this.buildPendingNativeToolCallParts(nativeToolCallDeltas)
       : [];
 
-    const toolCallParts: Array<Extract<OutputPart, { type: 'tool_call' }>> = [
-      ...pendingToolCallParts,
-      ...midStreamCalls,
-      ...accumulatedNativeCalls,
-      ...completedToolCalls
-        .filter(
-          call =>
-            !midStreamCalls.some(part => part.call === call) &&
-            !accumulatedNativeCalls.some(part => part.call === call),
-        )
-        .map(call => ({ type: 'tool_call' as const, call, state: 'input-complete' as const })),
-    ];
+    const toolCallParts = this.composeToolCallParts(
+      pendingToolCallParts,
+      midStreamCalls,
+      accumulatedNativeCalls,
+      completedToolCalls,
+    );
 
     return {
       content,
@@ -414,6 +306,175 @@ export class LLMStreamProcessor {
       toolCallParts,
       toolCallDeltas,
     };
+  }
+
+  private extractToolCallsFromXmlBuffers(
+    rawContent: string,
+    initialContent: string,
+  ): { content: string; extractedXmlToolCalls: XmlToolCall[] } {
+    let content = initialContent;
+    const extractedFromRaw =
+      this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
+
+    const extractedFromRawResidual = this.extractFromRawResidual(rawContent);
+    content = this.appendFilteredResidualContent(content);
+
+    const extractedFromFiltered =
+      this.options.knownTools && content ? extractXmlToolCalls(content, this.options.knownTools) : [];
+
+    return {
+      content,
+      extractedXmlToolCalls: this.mergeUniqueToolCalls(
+        extractedFromRaw,
+        extractedFromRawResidual,
+        extractedFromFiltered,
+      ),
+    };
+  }
+
+  private extractFromRawResidual(rawContent: string): XmlToolCall[] {
+    if (!(this.options.knownTools && rawContent)) {
+      return [];
+    }
+
+    const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
+    const newResidualSize = this._rawResidual.length + this._filteredResidual.length + rawContent.length;
+    if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
+      this.warn(`Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping raw content append`, {
+        currentSize: this._rawResidual.length + this._filteredResidual.length,
+        incomingBytes: rawContent.length,
+      });
+      return [];
+    }
+
+    this._rawResidual += rawContent;
+    const extracted: XmlToolCall[] = [];
+    const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
+    let mm = completeTagRe.exec(this._rawResidual);
+    while (mm !== null) {
+      const full = mm[0];
+      try {
+        extracted.push(...extractXmlToolCalls(full, this.options.knownTools));
+      } catch {
+        break;
+      }
+      this._rawResidual = this._rawResidual.replace(full, '');
+      completeTagRe.lastIndex = 0;
+      mm = completeTagRe.exec(this._rawResidual);
+    }
+
+    return extracted;
+  }
+
+  private appendFilteredResidualContent(content: string): string {
+    if (!(this.xmlFilter && content)) {
+      return content;
+    }
+
+    const delta = this.xmlFilter.write(content);
+    content = delta;
+    const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
+    const newResidualSize = this._rawResidual.length + this._filteredResidual.length + delta.length;
+    if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
+      this.warn(`Residual buffer would exceed maxResidualBytes (${maxResidualBytes}), skipping filtered delta append`, {
+        currentSize: this._rawResidual.length + this._filteredResidual.length,
+        incomingBytes: delta.length,
+      });
+      return content;
+    }
+
+    this._filteredResidual += delta;
+    const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
+    let m = completeTagRe.exec(this._filteredResidual);
+    while (m !== null) {
+      const full = m[0];
+      try {
+        this._filteredResidual = this._filteredResidual.replace(full, '');
+        content += full;
+        completeTagRe.lastIndex = 0;
+        m = completeTagRe.exec(this._filteredResidual);
+      } catch {
+        break;
+      }
+    }
+    return content;
+  }
+
+  private mergeUniqueToolCalls(...groups: XmlToolCall[][]): XmlToolCall[] {
+    const seen = new Set<string>();
+    const merged: XmlToolCall[] = [];
+    for (const group of groups) {
+      for (const call of group) {
+        const key = `${call.name}|${JSON.stringify(call.parameters)}`;
+        if (seen.has(key)) {
+          continue;
+        }
+        seen.add(key);
+        merged.push(call);
+      }
+    }
+    return merged;
+  }
+
+  private buildToolCallDeltaParts(
+    nativeToolCallDeltas: NativeToolCallDelta[],
+  ): Array<Extract<OutputPart, { type: 'tool_call_delta' }>> {
+    const toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>> = [];
+    if (!this.nativeAccumulator || nativeToolCallDeltas.length === 0) {
+      return toolCallDeltas;
+    }
+
+    for (const delta of nativeToolCallDeltas) {
+      if (typeof delta.argumentsDelta !== 'string') continue;
+      const pending = this.nativeAccumulator.getPendingCallInfo(delta.index);
+      const name = delta.name ?? pending?.name;
+      if (!name) continue;
+      const id = delta.id ?? pending?.id;
+      toolCallDeltas.push({
+        type: 'tool_call_delta',
+        index: delta.index,
+        name,
+        argumentsDelta: delta.argumentsDelta,
+        ...(id === undefined ? {} : { id }),
+      });
+    }
+
+    return toolCallDeltas;
+  }
+
+  private collectMidStreamCompletedToolCalls(): Array<Extract<OutputPart, { type: 'tool_call' }>> {
+    const midStreamCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> = [];
+    if (!this.nativeAccumulator) {
+      return midStreamCalls;
+    }
+
+    for (const { index, call } of this.nativeAccumulator.getCompletedCallsWithIndices()) {
+      if (this._midStreamEmittedCallIndices.has(index)) {
+        continue;
+      }
+
+      this._midStreamEmittedCallIndices.add(index);
+      this.nativeAccumulator.removeCall(index);
+      midStreamCalls.push(...this.mapAccumulatedNativeCallsWithIndices([{ index, call }], 'input-complete'));
+    }
+
+    return midStreamCalls;
+  }
+
+  private composeToolCallParts(
+    pendingToolCallParts: Array<Extract<OutputPart, { type: 'tool_call' }>>,
+    midStreamCalls: Array<Extract<OutputPart, { type: 'tool_call' }>>,
+    accumulatedNativeCalls: Array<Extract<OutputPart, { type: 'tool_call' }>>,
+    completedToolCalls: XmlToolCall[],
+  ): Array<Extract<OutputPart, { type: 'tool_call' }>> {
+    const completeParts = completedToolCalls
+      .filter(
+        call =>
+          !midStreamCalls.some(part => part.call === call) && !accumulatedNativeCalls.some(part => part.call === call),
+      )
+      .map(call => ({ type: 'tool_call' as const, call, state: 'input-complete' as const }));
+
+    return [...pendingToolCallParts, ...midStreamCalls, ...accumulatedNativeCalls, ...completeParts];
   }
 
   /**

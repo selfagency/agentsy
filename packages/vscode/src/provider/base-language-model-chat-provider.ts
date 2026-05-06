@@ -145,7 +145,7 @@ export abstract class BaseLanguageModelChatProvider {
     _token: CancellationToken,
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const { url, method, headers, body, signal } = request;
-    if (url == null) {
+    if (url === undefined || url === null) {
       throw new Error('Provider API request URL is required');
     }
 
@@ -176,7 +176,7 @@ export abstract class BaseLanguageModelChatProvider {
 
             for (const line of lines) {
               const trimmed = line.trim();
-              if (trimmed === '' || trimmed === 'data: [DONE]') continue;
+              if (!trimmed || trimmed === 'data: [DONE]') continue;
               const data = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
               try {
                 yield JSON.parse(data) as ProviderStreamChunk;

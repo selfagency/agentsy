@@ -619,7 +619,7 @@ cd packages/adapters && pnpm build
 cd packages/adapters && pnpm test
 ```
 
-CI runs Node.js 22. All packages target Node ≥ 22.
+CI runs Node.js 22, and repo development should target Node 22 for consistency. Published package runtime support may be broader; for example, `@agentsy/vscode` currently declares Node >=18.
 
 ---
 

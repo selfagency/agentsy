@@ -20,8 +20,7 @@ export function StreamingText({
   screenReader = false,
   syntaxHighlight = false,
 }: StreamingTextProps) {
-  const [tick, setTick] = useState(0); // tick triggers re-renders for cursor animation
-  void tick;
+  const [_tick, setTick] = useState(0); // tick triggers re-renders for cursor animation
 
   const { stablePrefix, unstableSuffix } = useMemo(() => {
     if (!isStreaming) {

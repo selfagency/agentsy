@@ -464,11 +464,11 @@ function parseWithLimits(
   return parseJson(text, { ...options, maxJsonDepth: 0, maxJsonKeys: 0 });
 }
 
-function runExternalValidator<T>(
+function runExternalValidator(
   parsed: unknown,
   schema: JsonObject,
   options: ValidateJsonSchemaOptions,
-): { success: true; data: T } | { success: false; errors: string[] } | null {
+): { success: false; errors: string[] } | null {
   if (!options.validator) {
     return null;
   }
@@ -532,7 +532,7 @@ export function validateJsonSchema<T = unknown>(
   const errors: string[] = [];
   validateNode(parsed, schema, '$', errors, context);
 
-  const externalResult = runExternalValidator<T>(parsed, schema, options);
+  const externalResult = runExternalValidator(parsed, schema, options);
   if (externalResult !== null) {
     return externalResult;
   }
