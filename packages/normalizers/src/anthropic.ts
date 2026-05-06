@@ -27,24 +27,24 @@ function mapAnthropicStopReason(reason: string | null): FinishReason | undefined
 // ---------------------------------------------------------------------------
 
 function handleMessageStart(raw: Record<string, unknown>): NormalizerResult | null {
-  const message = raw['message'];
+  const message = raw.message;
   if (!isObject(message)) return null;
-  const msgUsage = message['usage'];
+  const msgUsage = message.usage;
   if (!isObject(msgUsage)) return null;
-  const inputTokens = toNumber(msgUsage['input_tokens']);
+  const inputTokens = toNumber(msgUsage.input_tokens);
   if (inputTokens === undefined) return null;
   const usage: UsageInfo = { inputTokens };
   return { chunk: { usage }, rawEvent: raw };
 }
 
 function handleContentBlockStart(raw: Record<string, unknown>): NormalizerResult | null {
-  const contentBlock = raw['content_block'];
+  const contentBlock = raw.content_block;
   if (!isObject(contentBlock)) return null;
-  if (contentBlock['type'] !== 'tool_use') return null;
+  if (contentBlock.type !== 'tool_use') return null;
 
-  const index = toNumber(raw['index']) ?? 0;
-  const id = typeof contentBlock['id'] === 'string' ? contentBlock['id'] : undefined;
-  const name = typeof contentBlock['name'] === 'string' ? contentBlock['name'] : undefined;
+  const index = toNumber(raw.index) ?? 0;
+  const id = typeof contentBlock.id === 'string' ? contentBlock.id : undefined;
+  const name = typeof contentBlock.name === 'string' ? contentBlock.name : undefined;
 
   const delta: NativeToolCallDelta = { index };
   if (id !== undefined) delta.id = id;
@@ -54,25 +54,25 @@ function handleContentBlockStart(raw: Record<string, unknown>): NormalizerResult
 }
 
 function handleContentBlockDelta(raw: Record<string, unknown>): NormalizerResult | null {
-  const deltaObj = raw['delta'];
+  const deltaObj = raw.delta;
   if (!isObject(deltaObj)) return null;
-  const deltaType = deltaObj['type'];
-  const index = toNumber(raw['index']) ?? 0;
+  const deltaType = deltaObj.type;
+  const index = toNumber(raw.index) ?? 0;
 
   if (deltaType === 'text_delta') {
-    const text = deltaObj['text'];
+    const text = deltaObj.text;
     if (typeof text !== 'string') return null;
     return { chunk: { content: text }, rawEvent: raw };
   }
 
   if (deltaType === 'thinking_delta') {
-    const thinking = deltaObj['thinking'];
+    const thinking = deltaObj.thinking;
     if (typeof thinking !== 'string') return null;
     return { chunk: { thinking }, rawEvent: raw };
   }
 
   if (deltaType === 'input_json_delta') {
-    const partialJson = deltaObj['partial_json'];
+    const partialJson = deltaObj.partial_json;
     if (typeof partialJson !== 'string') return null;
     const tcDelta: NativeToolCallDelta = { index, argumentsDelta: partialJson };
     return { chunk: { nativeToolCallDeltas: [tcDelta] }, rawEvent: raw };
@@ -82,16 +82,16 @@ function handleContentBlockDelta(raw: Record<string, unknown>): NormalizerResult
 }
 
 function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | null {
-  const deltaObj = raw['delta'];
+  const deltaObj = raw.delta;
   const stopReason = isObject(deltaObj) && typeof deltaObj.stop_reason === 'string' ? deltaObj.stop_reason : null;
 
   const done = stopReason === 'end_turn' || stopReason === 'tool_use' ? true : undefined;
   const finishReason = mapAnthropicStopReason(stopReason);
 
-  const usageObj = raw['usage'];
+  const usageObj = raw.usage;
   let usage: UsageInfo | undefined;
   if (isObject(usageObj)) {
-    const outputTokens = toNumber(usageObj['output_tokens']);
+    const outputTokens = toNumber(usageObj.output_tokens);
     if (outputTokens !== undefined) usage = { outputTokens };
   }
 
@@ -117,7 +117,7 @@ function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | nu
 export function normalizeAnthropicEvent(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) return null;
-    const type = raw['type'];
+    const type = raw.type;
     if (typeof type !== 'string') return null;
 
     if (type === 'message_start') return handleMessageStart(raw);

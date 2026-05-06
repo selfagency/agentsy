@@ -46,7 +46,7 @@ interface CohereEvent {
 function isCohereEvent(value: unknown): value is CohereEvent {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return typeof v['type'] === 'string';
+  return typeof v.type === 'string';
 }
 
 // ---------------------------------------------------------------------------

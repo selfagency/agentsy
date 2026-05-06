@@ -18,8 +18,8 @@ import { isObject, toNumber } from './utils.js';
 // ---------------------------------------------------------------------------
 
 function extractUsage(raw: Record<string, unknown>): UsageInfo | undefined {
-  const inputTokens = toNumber(raw['prompt_eval_count']);
-  const outputTokens = toNumber(raw['eval_count']);
+  const inputTokens = toNumber(raw.prompt_eval_count);
+  const outputTokens = toNumber(raw.eval_count);
   if (inputTokens === undefined && outputTokens === undefined) return undefined;
   const usage: UsageInfo = {};
   if (inputTokens !== undefined) usage.inputTokens = inputTokens;
@@ -37,11 +37,11 @@ function extractUsage(raw: Record<string, unknown>): UsageInfo | undefined {
 export function normalizeOllamaChatChunk(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) return null;
-    if (!isObject(raw['message'])) return null;
+    if (!isObject(raw.message)) return null;
 
-    const message = raw['message'];
-    const content = typeof message['content'] === 'string' ? message['content'] : undefined;
-    const done = raw['done'] === true ? true : undefined;
+    const message = raw.message;
+    const content = typeof message.content === 'string' ? message.content : undefined;
+    const done = raw.done === true ? true : undefined;
     const usage = done === undefined ? undefined : extractUsage(raw);
     const finishReason: FinishReason | undefined = done === undefined ? undefined : 'stop';
 
@@ -49,13 +49,13 @@ export function normalizeOllamaChatChunk(raw: unknown): NormalizerResult | null 
     // streamed as argument deltas).  Arguments is a parsed object; we
     // serialize to string to fit NativeToolCallDelta.argumentsDelta.
     let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
-    if (Array.isArray(message['tool_calls'])) {
-      const mapped = (message['tool_calls'] as unknown[]).flatMap((tc, i) => {
+    if (Array.isArray(message.tool_calls)) {
+      const mapped = (message.tool_calls as unknown[]).flatMap((tc, i) => {
         if (!isObject(tc)) return [];
-        const fn = tc['function'];
+        const fn = tc.function;
         if (!isObject(fn)) return [];
-        const name = typeof fn['name'] === 'string' ? fn['name'] : undefined;
-        const args = fn['arguments'];
+        const name = typeof fn.name === 'string' ? fn.name : undefined;
+        const args = fn.arguments;
         const delta: NativeToolCallDelta = { index: i };
         if (name !== undefined) delta.name = name;
         if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
@@ -88,10 +88,10 @@ export function normalizeOllamaChatChunk(raw: unknown): NormalizerResult | null 
 export function normalizeOllamaGenerateChunk(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) return null;
-    if (typeof raw['response'] !== 'string') return null;
+    if (typeof raw.response !== 'string') return null;
 
-    const content = raw['response'];
-    const done = raw['done'] === true ? true : undefined;
+    const content = raw.response;
+    const done = raw.done === true ? true : undefined;
     const usage = done === undefined ? undefined : extractUsage(raw);
     const finishReason: FinishReason | undefined = done === undefined ? undefined : 'stop';
 

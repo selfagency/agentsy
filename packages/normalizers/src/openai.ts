@@ -58,8 +58,8 @@ function isOpenAIChatChunk(value: unknown): value is OpenAIChatChunk {
   const v = value as Record<string, unknown>;
   // Accept if object field matches, or if there's a choices array (permissive
   // for providers that use OpenAI-compatible formats without the object field).
-  if (v['object'] !== undefined && v['object'] !== 'chat.completion.chunk') return false;
-  if (!Array.isArray(v['choices'])) return false;
+  if (v.object !== undefined && v.object !== 'chat.completion.chunk') return false;
+  if (!Array.isArray(v.choices)) return false;
   return true;
 }
 
