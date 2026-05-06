@@ -1,0 +1,41 @@
+docs/getting-started.md
+  s_2b1d21c4f56fc5::t_4176dfa13cb6af 29-31,33-56
+  h_627b419bd8fa0f 32
+packages/vscode/CHANGELOG.md
+  s_2b1d21c4f56fc5::t_9423fe8073ffe3 9,11-17,19-21
+  h_627b419bd8fa0f 10,18
+packages/vscode/package.json
+  s_2b1d21c4f56fc5::t_da6e22693799a9 35-84
+docs/migration/index.md
+  h_627b419bd8fa0f 5-6
+  s_2b1d21c4f56fc5::t_9073485867c763 1-4,7
+docs/packages/vscode.md
+  s_2b1d21c4f56fc5::t_ba233c90747dbb 28,123-124,184
+  s_2b1d21c4f56fc5::t_542af72390cd24 30-36,38,40-52,54-64,66,68-77,79,81-86
+  s_2b1d21c4f56fc5::t_30a07e83478238 29,39,53,67,80
+  s_2b1d21c4f56fc5::t_321c7d05b735e9 37,65,78
+  s_2b1d21c4f56fc5::t_ceb545ae2c9cd0 125-183
+docs/examples/production-provider.md
+  s_2b1d21c4f56fc5::t_e282a379fd1b80 1-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "f70b8bc7e4a76bdc4723f808a8d3df1635bb41a8",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_2b1d21c4f56fc5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cec43470-7cbe-42d1-aa00-679b4bd0975a",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
