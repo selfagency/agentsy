@@ -84,13 +84,14 @@ function areArraysEqual(a: unknown[], b: unknown[]): boolean {
 }
 
 function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unknown>): boolean {
-  const keysA = Object.keys(aObj);
-  const keysB = Object.keys(bObj);
-  if (keysA.length !== keysB.length) return false;
-  for (const k of keysA) {
-    if (!Object.hasOwn(bObj, k) || !deepEqual(aObj[k], bObj[k])) return false;
+  try {
+    return JSON.stringify(aObj) === JSON.stringify(bObj);
+  } catch {
+    const keysA = Object.keys(aObj);
+    const keysB = Object.keys(bObj);
+    if (keysA.length !== keysB.length) return false;
+    return keysA.every(k => Object.hasOwn(bObj, k) && deepEqual(aObj[k], bObj[k]));
   }
-  return true;
 }
 
 function deepEqual(a: unknown, b: unknown): boolean {
