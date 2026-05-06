@@ -62,6 +62,68 @@ function buildCohereUsage(delta: CohereDelta | undefined): UsageInfo | undefined
   return usage;
 }
 
+function normalizeCohereContentDelta(raw: unknown, delta: CohereDelta | undefined): NormalizerResult | null {
+  const text = delta?.message?.content?.text;
+  if (typeof text !== 'string') return null;
+  return { chunk: { content: text }, rawEvent: raw };
+}
+
+function normalizeCohereToolPlanDelta(raw: unknown, delta: CohereDelta | undefined): NormalizerResult | null {
+  const toolPlan = delta?.message?.tool_plan;
+  if (typeof toolPlan !== 'string') return null;
+  return { chunk: { thinking: toolPlan }, rawEvent: raw };
+}
+
+function normalizeCohereToolCallStart(
+  raw: unknown,
+  delta: CohereDelta | undefined,
+  index: number,
+): NormalizerResult | null {
+  const tc = delta?.message?.tool_calls;
+  if (!tc || typeof tc !== 'object') return null;
+  const normalizedDelta: NativeToolCallDelta = { index };
+  if (typeof tc.id === 'string' && tc.id) normalizedDelta.id = tc.id;
+  if (typeof tc.function?.name === 'string' && tc.function.name) normalizedDelta.name = tc.function.name;
+  return { chunk: { nativeToolCallDeltas: [normalizedDelta] }, rawEvent: raw };
+}
+
+function normalizeCohereToolCallDelta(
+  raw: unknown,
+  delta: CohereDelta | undefined,
+  index: number,
+): NormalizerResult | null {
+  const args = delta?.message?.tool_calls?.function?.arguments;
+  if (typeof args !== 'string' || args === '') return null;
+  const normalizedDelta: NativeToolCallDelta = { index, argumentsDelta: args };
+  return { chunk: { nativeToolCallDeltas: [normalizedDelta] }, rawEvent: raw };
+}
+
+function normalizeCohereMessageEnd(raw: unknown, delta: CohereDelta | undefined): NormalizerResult {
+  const finishReasonStr = typeof delta?.finish_reason === 'string' ? delta.finish_reason : undefined;
+  const done = finishReasonStr === undefined ? undefined : true;
+  const finishReason = mapCohereFinishReason(finishReasonStr);
+  const usage = buildCohereUsage(delta);
+  return {
+    chunk: {
+      ...(done !== undefined && { done }),
+      ...(usage !== undefined && { usage }),
+      ...(finishReason !== undefined && { finishReason }),
+    },
+    rawEvent: raw,
+  };
+}
+
+function normalizeCohereByType(raw: unknown, event: CohereEvent): NormalizerResult | null {
+  const { type, index = 0, delta } = event;
+
+  if (type === 'content-delta') return normalizeCohereContentDelta(raw, delta);
+  if (type === 'tool-plan-delta') return normalizeCohereToolPlanDelta(raw, delta);
+  if (type === 'tool-call-start') return normalizeCohereToolCallStart(raw, delta, index);
+  if (type === 'tool-call-delta') return normalizeCohereToolCallDelta(raw, delta, index);
+  if (type === 'message-end') return normalizeCohereMessageEnd(raw, delta);
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Normalizer
 // ---------------------------------------------------------------------------
@@ -84,56 +146,7 @@ function buildCohereUsage(delta: CohereDelta | undefined): UsageInfo | undefined
 export function normalizeCohereEvent(raw: unknown): NormalizerResult | null {
   try {
     if (!isCohereEvent(raw)) return null;
-
-    const { type, index = 0, delta } = raw;
-
-    switch (type) {
-      case 'content-delta': {
-        const text = delta?.message?.content?.text;
-        if (typeof text !== 'string') return null;
-        return { chunk: { content: text }, rawEvent: raw };
-      }
-
-      case 'tool-plan-delta': {
-        const toolPlan = delta?.message?.tool_plan;
-        if (typeof toolPlan !== 'string') return null;
-        return { chunk: { thinking: toolPlan }, rawEvent: raw };
-      }
-
-      case 'tool-call-start': {
-        const tc = delta?.message?.tool_calls;
-        if (!tc || typeof tc !== 'object') return null;
-        const normalizedDelta: NativeToolCallDelta = { index };
-        if (typeof tc.id === 'string' && tc.id) normalizedDelta.id = tc.id;
-        if (typeof tc.function?.name === 'string' && tc.function.name) normalizedDelta.name = tc.function.name;
-        return { chunk: { nativeToolCallDeltas: [normalizedDelta] }, rawEvent: raw };
-      }
-
-      case 'tool-call-delta': {
-        const args = delta?.message?.tool_calls?.function?.arguments;
-        if (typeof args !== 'string' || args === '') return null;
-        const normalizedDelta: NativeToolCallDelta = { index, argumentsDelta: args };
-        return { chunk: { nativeToolCallDeltas: [normalizedDelta] }, rawEvent: raw };
-      }
-
-      case 'message-end': {
-        const finishReasonStr = typeof delta?.finish_reason === 'string' ? delta.finish_reason : undefined;
-        const done = finishReasonStr === undefined ? undefined : true;
-        const finishReason = mapCohereFinishReason(finishReasonStr);
-        const usage = buildCohereUsage(delta);
-        return {
-          chunk: {
-            ...(done !== undefined && { done }),
-            ...(usage !== undefined && { usage }),
-            ...(finishReason !== undefined && { finishReason }),
-          },
-          rawEvent: raw,
-        };
-      }
-
-      default:
-        return null;
-    }
+    return normalizeCohereByType(raw, raw);
   } catch {
     return null;
   }

@@ -202,51 +202,66 @@ export function computeStateDelta(
  * @returns State delta event
  */
 export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, threadId?: string): StateDeltaEvent {
-  const deltaBase = {
+  const deltaEvent: StateDeltaEvent = {
     type: EventType.STATE_DELTA as const,
     runId,
     timestamp: new Date().toISOString(),
     ops: patches,
+    ...(threadId !== undefined && { threadId }),
   };
 
-  return {
-    ...deltaBase,
-    ...(threadId !== undefined && { threadId }),
-  } as StateDeltaEvent;
+  return deltaEvent;
+}
+
+function resolvePatchTarget(
+  state: Record<string, unknown>,
+  parts: string[],
+  createMissing: boolean,
+  rootErrorMessage = 'Cannot operate on root',
+): { target: Record<string, unknown>; key: string } {
+  if (parts.length === 0) {
+    throw new Error(rootErrorMessage);
+  }
+
+  const key = parts.at(-1);
+  if (key === undefined) {
+    throw new Error('Invalid path');
+  }
+
+  let target: Record<string, unknown> = state;
+  for (const part of parts.slice(0, -1)) {
+    if (createMissing && !(part in target)) {
+      target[part] = {};
+    }
+    target = target[part] as Record<string, unknown>;
+  }
+
+  return { target, key };
+}
+
+function setPatchValue(
+  state: Record<string, unknown>,
+  parts: string[],
+  patch: JsonPatchOp,
+  createMissing: boolean,
+  rootErrorMessage: string,
+): void {
+  const { target, key } = resolvePatchTarget(state, parts, createMissing, rootErrorMessage);
+  target[key] = patch.value;
 }
 
 /**
  * Apply an add operation to a state object.
  */
 function applyAddPatch(state: Record<string, unknown>, parts: string[], patch: JsonPatchOp): void {
-  if (parts.length === 0) {
-    throw new Error('Cannot add to root');
-  }
-  const key = parts.pop();
-  if (!key) throw new Error('Invalid path');
-  let target = state as Record<string, unknown>;
-  for (const part of parts) {
-    if (!(part in target)) {
-      target[part] = {};
-    }
-    target = target[part] as Record<string, unknown>;
-  }
-  target[key] = patch.value;
+  setPatchValue(state, parts, patch, true, 'Cannot add to root');
 }
 
 /**
  * Apply a remove operation to a state object.
  */
 function applyRemovePatch(state: Record<string, unknown>, parts: string[]): void {
-  if (parts.length === 0) {
-    throw new Error('Cannot remove root');
-  }
-  const key = parts.pop();
-  if (!key) throw new Error('Invalid path');
-  let target: Record<string, unknown> = state;
-  for (const part of parts) {
-    target = target[part] as Record<string, unknown>;
-  }
+  const { target, key } = resolvePatchTarget(state, parts, false, 'Cannot remove root');
   delete target[key];
 }
 
@@ -254,16 +269,7 @@ function applyRemovePatch(state: Record<string, unknown>, parts: string[]): void
  * Apply a replace operation to a state object.
  */
 function applyReplacePatch(state: Record<string, unknown>, parts: string[], patch: JsonPatchOp): void {
-  if (parts.length === 0) {
-    throw new Error('Cannot replace root');
-  }
-  const key = parts.pop();
-  if (!key) throw new Error('Invalid path');
-  let target: Record<string, unknown> = state;
-  for (const part of parts) {
-    target = target[part] as Record<string, unknown>;
-  }
-  target[key] = patch.value;
+  setPatchValue(state, parts, patch, false, 'Cannot replace root');
 }
 
 /**

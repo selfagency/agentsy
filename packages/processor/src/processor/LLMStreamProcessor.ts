@@ -206,19 +206,72 @@ export class LLMStreamProcessor {
       thinking += thinkingDelta;
       content = contentDelta;
     }
+    const toolCallState = this.computeToolCallState({
+      chunk,
+      rawContent,
+      content,
+      nativeToolCallDeltas,
+      done,
+    });
+    content = toolCallState.content;
 
-    // First attempt extraction from the raw incoming content (captures the
-    // common case where tool call tags are fully contained in the chunk).
+    // Note: xmlFilter.write() was already invoked earlier to reassemble
+    // fragments before extraction.
+
+    const output = this.buildOutput({
+      thinking,
+      content,
+      toolCalls: toolCallState.completedToolCalls,
+      toolCallParts: toolCallState.toolCallParts,
+      ...(toolCallState.toolCallDeltas.length > 0 ? { toolCallDeltas: toolCallState.toolCallDeltas } : {}),
+      done,
+      ...(chunk.stepIndex === undefined ? {} : { stepIndex: chunk.stepIndex }),
+      ...(chunk.stepUsage === undefined ? {} : { stepUsage: chunk.stepUsage }),
+      ...(done && this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
+      ...this.usagePayload,
+    });
+    this.recordOutput(output);
+    this.emitOutput(output);
+
+    // Update stats after recordOutput() has accumulated content
+    this._stats.parseTimeMs += performance.now() - startTime;
+    if (hasThinkingInput) this._stats.thinkingBlocksCount++;
+    this._stats.toolCallsCount += output.toolCalls.length;
+    if (hasContentInput) this._stats.contentDeltasCount++;
+
+    // Update buffer size based on accumulated content (updated by recordOutput)
+    const bufferSize = this._accumulatedContent.length + this._accumulatedThinking.length;
+    this._stats.currentBufferSize = bufferSize;
+    if (bufferSize > this._stats.peakBufferSize) {
+      this._stats.peakBufferSize = bufferSize;
+    }
+    if (this._stats.chunksProcessed > 0) {
+      this._stats.averageChunkSize = this._stats.bytesProcessed / this._stats.chunksProcessed;
+    }
+
+    return output;
+  }
+
+  private computeToolCallState(params: {
+    chunk: StreamChunk;
+    rawContent: string;
+    content: string;
+    nativeToolCallDeltas: NativeToolCallDelta[];
+    done: boolean;
+  }): {
+    content: string;
+    completedToolCalls: XmlToolCall[];
+    toolCallParts: Array<Extract<OutputPart, { type: 'tool_call' }>>;
+    toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>>;
+  } {
+    const { chunk, rawContent, nativeToolCallDeltas, done } = params;
+    let { content } = params;
+
     const extractedFromRaw =
       this.options.knownTools && rawContent ? extractXmlToolCalls(rawContent, this.options.knownTools) : [];
 
-    // Also append raw content into a residual buffer and scan for completed
-    // top-level tags that may span multiple chunks. This allows extracting
-    // tool_call blocks even when they are split across chunks and when the
-    // XML stream filter would otherwise scrub them.
     let extractedFromRawResidual: XmlToolCall[] = [];
     if (this.options.knownTools && rawContent) {
-      // Security: Enforce maxResidualBytes limit to prevent unbounded memory growth
       const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
       const newResidualSize = this._rawResidual.length + this._filteredResidual.length + rawContent.length;
       if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
@@ -229,40 +282,26 @@ export class LLMStreamProcessor {
       } else {
         this._rawResidual += rawContent;
       }
-      // Security: Limit tag name length to 50 chars, attribute length to 100,
-      // and content length to 100k to prevent ReDoS on large payloads.
-      // Limited quantifier scopes prevent catastrophic backtracking.
+
       const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
       let mm = completeTagRe.exec(this._rawResidual);
       while (mm !== null) {
         const full = mm[0];
         try {
-          // Attempt extraction from this completed segment.
           const found = extractXmlToolCalls(full, this.options.knownTools);
           extractedFromRawResidual = extractedFromRawResidual.concat(found);
         } catch {
           break;
         }
-        // Always remove the matched segment from residual to avoid reprocessing,
-        // even if no known tools were found in it (it may not be a tool tag)
         this._rawResidual = this._rawResidual.replace(full, '');
-        // Reset lastIndex since we've mutated the residual
         completeTagRe.lastIndex = 0;
         mm = completeTagRe.exec(this._rawResidual);
       }
     }
 
-    // Pass incoming content through the XML stream filter to reassemble any
-    // fragmented XML/JSON tool_call blocks that span chunks. Then attempt
-    // extraction again on the filtered output and merge unique results.
     if (this.xmlFilter && content) {
       const delta = this.xmlFilter.write(content);
       content = delta;
-
-      // Append filtered delta to residual buffer and extract any complete
-      // top-level tags that are now complete across chunks. This lets us
-      // handle tool_call blocks that were split between writes.
-      // Security: Enforce maxResidualBytes limit to prevent unbounded memory growth
       const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
       const newResidualSize = this._rawResidual.length + this._filteredResidual.length + delta.length;
       if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
@@ -273,27 +312,17 @@ export class LLMStreamProcessor {
       } else {
         this._filteredResidual += delta;
       }
+
       const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
       let m = completeTagRe.exec(this._filteredResidual);
       while (m !== null) {
         const full = m[0];
-        // Attempt to extract tool calls from the completed tag and merge
-        // them into the filtered-extraction flow below by appending them
-        // to the content string that will be re-scanned.
         try {
-          // Remove the matched segment from the residual so it's not
-          // reprocessed on subsequent chunks.
           this._filteredResidual = this._filteredResidual.replace(full, '');
-          // Accumulate the found segment into content so it can be parsed
-          // by the existing extraction logic.
-          // Note: we intentionally do not call extractXmlToolCalls here to
-          // keep merging/uniquing logic centralized below.
           content += full;
-          // Reset exec index since we mutated the residual
           completeTagRe.lastIndex = 0;
           m = completeTagRe.exec(this._filteredResidual);
         } catch {
-          // On any error, break to avoid infinite loops
           break;
         }
       }
@@ -302,27 +331,25 @@ export class LLMStreamProcessor {
     const extractedFromFiltered =
       this.options.knownTools && content ? extractXmlToolCalls(content, this.options.knownTools) : [];
 
-    // Merge results preserving order (raw, raw-residual, then filtered) but avoid duplicates
-    // by comparing a stable key (name + JSON-stringified parameters).
     const seen = new Set<string>();
     const extractedXmlToolCalls: XmlToolCall[] = [];
-    function pushUnique(call: XmlToolCall) {
+    const pushUnique = (call: XmlToolCall): void => {
       const key = `${call.name}|${JSON.stringify(call.parameters)}`;
       if (!seen.has(key)) {
         seen.add(key);
         extractedXmlToolCalls.push(call);
       }
-    }
+    };
     for (const c of extractedFromRaw) pushUnique(c);
     for (const c of extractedFromRawResidual) pushUnique(c);
     for (const c of extractedFromFiltered) pushUnique(c);
+
     const nativeToolCalls = mapNativeToolCalls(chunk.tool_calls);
     if (chunk.finishReason !== undefined) this._lastFinishReason = chunk.finishReason;
 
     this.accumulateUsage(chunk);
     this.accumulateNativeDeltas(nativeToolCallDeltas);
 
-    // Build tool_call_delta OutputParts for each incoming delta with argumentsDelta.
     const toolCallDeltas: Array<Extract<OutputPart, { type: 'tool_call_delta' }>> = [];
     if (this.nativeAccumulator && nativeToolCallDeltas.length > 0) {
       for (const delta of nativeToolCallDeltas) {
@@ -331,18 +358,16 @@ export class LLMStreamProcessor {
         const name = delta.name ?? pending?.name;
         if (!name) continue;
         const id = delta.id ?? pending?.id;
-        const part: Extract<OutputPart, { type: 'tool_call_delta' }> = {
+        toolCallDeltas.push({
           type: 'tool_call_delta',
           index: delta.index,
           name,
           argumentsDelta: delta.argumentsDelta,
           ...(id === undefined ? {} : { id }),
-        };
-        toolCallDeltas.push(part);
+        });
       }
     }
 
-    // Emit completed native calls mid-stream — no need to wait for done: true.
     const midStreamCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> = [];
     if (this.nativeAccumulator) {
       for (const { index, call } of this.nativeAccumulator.getCompletedCallsWithIndices()) {
@@ -354,7 +379,6 @@ export class LLMStreamProcessor {
       }
     }
 
-    // On stream end, flush any remaining incomplete calls via JSON repair.
     const accumulatedNativeCalls: Array<Extract<OutputPart, { type: 'tool_call' }>> =
       done && this.nativeAccumulator
         ? this.mapAccumulatedNativeCallsWithIndices(this.nativeAccumulator.flushWithIndices(), 'input-complete')
@@ -384,41 +408,12 @@ export class LLMStreamProcessor {
         .map(call => ({ type: 'tool_call' as const, call, state: 'input-complete' as const })),
     ];
 
-    // Note: xmlFilter.write() was already invoked earlier to reassemble
-    // fragments before extraction.
-
-    const output = this.buildOutput({
-      thinking,
+    return {
       content,
-      toolCalls: completedToolCalls,
+      completedToolCalls,
       toolCallParts,
-      ...(toolCallDeltas.length > 0 ? { toolCallDeltas } : {}),
-      done,
-      ...(chunk.stepIndex === undefined ? {} : { stepIndex: chunk.stepIndex }),
-      ...(chunk.stepUsage === undefined ? {} : { stepUsage: chunk.stepUsage }),
-      ...(done && this._lastFinishReason !== undefined ? { finishReason: this._lastFinishReason } : {}),
-      ...this.usagePayload,
-    });
-    this.recordOutput(output);
-    this.emitOutput(output);
-
-    // Update stats after recordOutput() has accumulated content
-    this._stats.parseTimeMs += performance.now() - startTime;
-    if (hasThinkingInput) this._stats.thinkingBlocksCount++;
-    this._stats.toolCallsCount += output.toolCalls.length;
-    if (hasContentInput) this._stats.contentDeltasCount++;
-
-    // Update buffer size based on accumulated content (updated by recordOutput)
-    const bufferSize = this._accumulatedContent.length + this._accumulatedThinking.length;
-    this._stats.currentBufferSize = bufferSize;
-    if (bufferSize > this._stats.peakBufferSize) {
-      this._stats.peakBufferSize = bufferSize;
-    }
-    if (this._stats.chunksProcessed > 0) {
-      this._stats.averageChunkSize = this._stats.bytesProcessed / this._stats.chunksProcessed;
-    }
-
-    return output;
+      toolCallDeltas,
+    };
   }
 
   /**
@@ -922,6 +917,32 @@ export class LLMStreamProcessor {
   }
 
   private emitConversationLifecycle(output: ProcessedOutput): void {
+    this.handleConversationStepLifecycle(output);
+
+    if (this.shouldEnsureConversationMessage(output)) {
+      this.ensureConversationMessageId();
+    }
+
+    if (output.thinking) {
+      this.emitConversationEvent({
+        type: 'thinking_part_added',
+        messageId: this.ensureConversationMessageId(),
+        text: output.thinking,
+      });
+    }
+
+    if (output.content) {
+      this.emitConversationEvent({
+        type: 'text_part_added',
+        messageId: this.ensureConversationMessageId(),
+        text: output.content,
+      });
+    }
+
+    this.handleConversationDone(output);
+  }
+
+  private handleConversationStepLifecycle(output: ProcessedOutput): void {
     if (output.stepIndex !== undefined && output.stepIndex !== this._lastConversationStepIndex) {
       if (this._lastConversationStepIndex !== undefined) {
         this.emitConversationEvent({
@@ -942,32 +963,18 @@ export class LLMStreamProcessor {
     } else if (output.stepUsage !== undefined) {
       this._lastConversationStepUsage = output.stepUsage;
     }
+  }
 
-    if (
-      (output.thinking ||
-        output.content ||
-        output.parts.some(part => part.type === 'tool_call' || part.type === 'tool_call_delta')) &&
-      this._conversationMessageId === null
-    ) {
-      this.ensureConversationMessageId();
-    }
+  private shouldEnsureConversationMessage(output: ProcessedOutput): boolean {
+    const hasConversationPayload =
+      output.thinking.length > 0 ||
+      output.content.length > 0 ||
+      output.parts.some(part => part.type === 'tool_call' || part.type === 'tool_call_delta');
 
-    if (output.thinking) {
-      this.emitConversationEvent({
-        type: 'thinking_part_added',
-        messageId: this.ensureConversationMessageId(),
-        text: output.thinking,
-      });
-    }
+    return hasConversationPayload && this._conversationMessageId === null;
+  }
 
-    if (output.content) {
-      this.emitConversationEvent({
-        type: 'text_part_added',
-        messageId: this.ensureConversationMessageId(),
-        text: output.content,
-      });
-    }
-
+  private handleConversationDone(output: ProcessedOutput): void {
     if (output.done && !this.conversationDoneEmitted && this._conversationMessageId !== null) {
       this.conversationDoneEmitted = true;
       this.emitConversationEvent({
@@ -1056,25 +1063,7 @@ export class LLMStreamProcessor {
     // the per-message cap is enforced across the full stream, not just per-chunk.
     const alreadyAccumulated = this._accumulatedToolCalls.length;
 
-    let limitedCalls = toolCalls;
-    if (maxToolCalls > 0) {
-      const remaining = maxToolCalls - alreadyAccumulated;
-      if (remaining <= 0) {
-        if (toolCalls.length > 0) {
-          this.warn('Tool call count exceeded maxToolCallsPerMessage; dropping all new tool calls.', {
-            maxToolCallsPerMessage: maxToolCalls,
-            accumulated: alreadyAccumulated,
-          });
-        }
-        limitedCalls = [];
-      } else if (toolCalls.length > remaining) {
-        this.warn('Tool call count exceeded maxToolCallsPerMessage; truncating tool call list.', {
-          maxToolCallsPerMessage: maxToolCalls,
-          originalCount: toolCalls.length,
-        });
-        limitedCalls = toolCalls.slice(0, remaining);
-      }
-    }
+    const limitedCalls = this.limitToolCallCount(toolCalls, maxToolCalls, alreadyAccumulated);
 
     const keptCalls: XmlToolCall[] = [];
     for (const call of limitedCalls) {
@@ -1084,6 +1073,37 @@ export class LLMStreamProcessor {
     }
 
     return keptCalls;
+  }
+
+  private limitToolCallCount(
+    toolCalls: XmlToolCall[],
+    maxToolCalls: number,
+    alreadyAccumulated: number,
+  ): XmlToolCall[] {
+    if (maxToolCalls <= 0) {
+      return toolCalls;
+    }
+
+    const remaining = maxToolCalls - alreadyAccumulated;
+    if (remaining <= 0) {
+      if (toolCalls.length > 0) {
+        this.warn('Tool call count exceeded maxToolCallsPerMessage; dropping all new tool calls.', {
+          maxToolCallsPerMessage: maxToolCalls,
+          accumulated: alreadyAccumulated,
+        });
+      }
+      return [];
+    }
+
+    if (toolCalls.length > remaining) {
+      this.warn('Tool call count exceeded maxToolCallsPerMessage; truncating tool call list.', {
+        maxToolCallsPerMessage: maxToolCalls,
+        originalCount: toolCalls.length,
+      });
+      return toolCalls.slice(0, remaining);
+    }
+
+    return toolCalls;
   }
 
   private filterByArgumentSize(call: XmlToolCall, maxToolArgumentBytes: number): boolean {

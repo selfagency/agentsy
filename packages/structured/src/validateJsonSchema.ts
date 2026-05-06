@@ -140,7 +140,8 @@ function checkRef(
     errors.push(`${path}: circular $ref detected: ${ref}`);
     return true;
   }
-  const defSchema = context !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
+  const defSchema =
+    context?.defs !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
   if (defSchema === undefined) {
     errors.push(`${path}: $ref not found in $defs: ${ref}`);
     return true;
@@ -449,6 +450,50 @@ function walkForLimits(node: unknown, depth: number, maxDepth: number, maxKeys: 
   }
 }
 
+function parseWithLimits(
+  text: string,
+  options: ValidateJsonSchemaOptions,
+  maxJsonDepth: number,
+  maxJsonKeys: number,
+): unknown {
+  const parsedWithLimits = parseJson(text, { ...options, maxJsonDepth, maxJsonKeys });
+  if (parsedWithLimits !== null) {
+    return parsedWithLimits;
+  }
+  return parseJson(text, { ...options, maxJsonDepth: 0, maxJsonKeys: 0 });
+}
+
+function runExternalValidator<T>(
+  parsed: unknown,
+  schema: JsonObject,
+  options: ValidateJsonSchemaOptions,
+): { success: true; data: T } | { success: false; errors: string[] } | null {
+  if (!options.validator) {
+    return null;
+  }
+
+  try {
+    const validated = options.validator(parsed, schema);
+    if (typeof validated === 'boolean') {
+      if (!validated) {
+        return { success: false, errors: ['$: external validator failed'] };
+      }
+      return null;
+    }
+
+    if (!validated.valid) {
+      return {
+        success: false,
+        errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
+      };
+    }
+    return null;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { success: false, errors: [`$: external validator threw: ${message}`] };
+  }
+}
+
 /**
  * Parses JSON from text and validates it against a JSON Schema.
  *
@@ -464,8 +509,7 @@ export function validateJsonSchema<T = unknown>(
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
   const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
 
-  const parsedWithLimits = parseJson(text, { ...options, maxJsonDepth, maxJsonKeys });
-  const parsed = parsedWithLimits ?? parseJson(text, { ...options, maxJsonDepth: 0, maxJsonKeys: 0 });
+  const parsed = parseWithLimits(text, options, maxJsonDepth, maxJsonKeys);
 
   if (parsed === null) {
     return { success: false, errors: ['$: no valid JSON found in input'] };
@@ -487,23 +531,9 @@ export function validateJsonSchema<T = unknown>(
   const errors: string[] = [];
   validateNode(parsed, schema, '$', errors, context);
 
-  if (options.validator) {
-    try {
-      const validated = options.validator(parsed, schema);
-      if (typeof validated === 'boolean') {
-        if (!validated) {
-          return { success: false, errors: ['$: external validator failed'] };
-        }
-      } else if (!validated.valid) {
-        return {
-          success: false,
-          errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
-        };
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return { success: false, errors: [`$: external validator threw: ${message}`] };
-    }
+  const externalResult = runExternalValidator<T>(parsed, schema, options);
+  if (externalResult !== null) {
+    return externalResult;
   }
 
   if (errors.length > 0) {

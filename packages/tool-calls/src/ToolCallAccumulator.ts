@@ -130,7 +130,7 @@ export class ToolCallAccumulator {
    */
   public getPendingToolCallState(index: number): ToolCallState | undefined {
     const pending = this.calls.get(index);
-    if (pending === undefined || pending.name === undefined) {
+    if (pending?.name === undefined) {
       return undefined;
     }
 

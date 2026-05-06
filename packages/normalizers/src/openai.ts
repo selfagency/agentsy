@@ -77,6 +77,47 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
   return result;
 }
 
+function getContentParts(delta: OpenAIDelta | undefined): { content?: string; thinking?: string } {
+  const content = typeof delta?.content === 'string' ? delta.content : undefined;
+  const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
+  return {
+    ...(content !== undefined ? { content } : {}),
+    ...(thinking !== undefined ? { thinking } : {}),
+  };
+}
+
+function getFinishReasonParts(choice: OpenAIChoice | undefined): { done?: true; finishReason?: FinishReason } {
+  const finishReason = choice?.finish_reason;
+  const done = finishReason !== null && finishReason !== undefined ? true : undefined;
+  const mappedFinishReason = mapOpenAIFinishReason(finishReason);
+  return {
+    ...(done !== undefined && { done }),
+    ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
+  };
+}
+
+function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCallDelta[] | undefined {
+  if (!Array.isArray(delta?.tool_calls) || delta.tool_calls.length === 0) {
+    return undefined;
+  }
+
+  return delta.tool_calls
+    .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
+    .map(mapOpenAIToolCallDelta);
+}
+
+function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
+  if (!raw.usage) {
+    return {};
+  }
+
+  const usage: UsageInfo = {};
+  if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
+  if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
+  if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
+  return { usage };
+}
+
 // ---------------------------------------------------------------------------
 // Normalizer
 // ---------------------------------------------------------------------------
@@ -94,38 +135,13 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
 
     const choice = raw.choices[0];
     const delta = choice?.delta;
-
-    const content = typeof delta?.content === 'string' ? delta.content : undefined;
-    const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
-
-    const finishReason = choice?.finish_reason;
-    const done = finishReason !== null && finishReason !== undefined ? true : undefined;
-    const mappedFinishReason = mapOpenAIFinishReason(finishReason);
-
-    // Native tool call deltas
-    let nativeToolCallDeltas: NativeToolCallDelta[] | undefined;
-    if (Array.isArray(delta?.tool_calls) && delta.tool_calls.length > 0) {
-      nativeToolCallDeltas = delta.tool_calls
-        .filter((tc): tc is OpenAIToolCallDelta => !!tc && typeof tc === 'object')
-        .map(mapOpenAIToolCallDelta);
-    }
-
-    // Usage — only present on the final chunk when stream_options.include_usage=true
-    let usage: UsageInfo | undefined;
-    if (raw.usage) {
-      usage = {};
-      if (typeof raw.usage.prompt_tokens === 'number') usage.inputTokens = raw.usage.prompt_tokens;
-      if (typeof raw.usage.completion_tokens === 'number') usage.outputTokens = raw.usage.completion_tokens;
-      if (typeof raw.usage.total_tokens === 'number') usage.totalTokens = raw.usage.total_tokens;
-    }
+    const nativeToolCallDeltas = getNativeToolCallDeltas(delta);
 
     const chunk = {
-      ...(content !== undefined && { content }),
-      ...(thinking !== undefined && { thinking }),
-      ...(done !== undefined && { done }),
-      ...(nativeToolCallDeltas !== undefined && { nativeToolCallDeltas }),
-      ...(usage !== undefined && { usage }),
-      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
+      ...getContentParts(delta),
+      ...getFinishReasonParts(choice),
+      ...(nativeToolCallDeltas !== undefined ? { nativeToolCallDeltas } : {}),
+      ...getUsageParts(raw),
     };
 
     return { chunk, rawEvent: raw };

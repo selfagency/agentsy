@@ -76,7 +76,7 @@ function safeWrite(p, data) {
 const packageName = argv._[0];
 const version = argv._[1];
 const isDryRun = argv['dry-run'] || argv.dryRun;
-const isRetag = argv.retag || argv.retag;
+const isRetag = argv.retag || argv['re-tag'];
 
 if (!packageName || !version) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
@@ -279,6 +279,73 @@ function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, 
   safeWrite(changelogPath, updated);
 }
 
+function ensureCleanMainBranch() {
+  const dirty = runGit(['status', '--porcelain']).stdout.trim();
+  if (dirty) {
+    console.error('❌ Working tree is not clean. Commit or stash changes first.');
+    process.exit(1);
+  }
+
+  const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
+  if (branch !== 'main') {
+    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
+    process.exit(1);
+  }
+}
+
+function syncMainBranch() {
+  console.log('🔄 Fetching latest refs...');
+  runGit(['fetch', 'origin', 'main']);
+  runGit(['pull', '--ff-only', 'origin', 'main']);
+}
+
+function resolveOwnerRepoFromOrigin() {
+  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
+  const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
+  if (!match) {
+    console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
+    process.exit(1);
+  }
+
+  const [, owner, repo] = match;
+  return { owner, repo };
+}
+
+function ensureLocalTagAvailability() {
+  const localTag = runGit(['tag', '-l', tag]).stdout.trim();
+  if (!localTag) {
+    return;
+  }
+
+  if (isRetag) {
+    console.log(`⚠️  Local tag '${tag}' exists — deleting for retag...`);
+    runGit(['tag', '-d', tag]);
+    return;
+  }
+
+  console.error(`❌ Local tag '${tag}' already exists. Run: git tag -d '${tag}'`);
+  process.exit(1);
+}
+
+async function ensureRemoteTagAvailability(octokit, owner, repo) {
+  try {
+    await octokit.git.getRef({ owner, repo, ref: `tags/${tag}` });
+    if (!isRetag) {
+      console.error(`❌ Remote tag '${tag}' already exists.`);
+      console.error(`   If the previous CI run failed and you want to retag, rerun with --retag.`);
+      process.exit(1);
+    }
+
+    console.log(`⚠️  Remote tag '${tag}' exists — deleting for retag...`);
+    await octokit.git.deleteRef({ owner, repo, ref: `tags/${tag}` });
+    console.log(`↩️  Remote tag deleted.`);
+    const localTagExists = runGit(['tag', '-l', tag]).stdout.trim();
+    if (localTagExists) runGit(['tag', '-d', tag]);
+  } catch (err) {
+    if (err.status !== 404) throw err;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main release orchestration
 // ---------------------------------------------------------------------------
@@ -302,22 +369,8 @@ async function main() {
   const octokit = new Octokit({ auth: githubToken });
 
   // --- Precondition checks -------------------------------------------------
-
-  const dirty = runGit(['status', '--porcelain']).stdout.trim();
-  if (dirty) {
-    console.error('❌ Working tree is not clean. Commit or stash changes first.');
-    process.exit(1);
-  }
-
-  const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
-  if (branch !== 'main') {
-    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
-    process.exit(1);
-  }
-
-  console.log('🔄 Fetching latest refs...');
-  runGit(['fetch', 'origin', 'main']);
-  runGit(['pull', '--ff-only', 'origin', 'main']);
+  ensureCleanMainBranch();
+  syncMainBranch();
 
   // Re-read pkgJson and release state now that main is up to date.
   const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
@@ -332,13 +385,7 @@ async function main() {
   }
 
   // Derive owner/repo from git remote
-  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
-  const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
-  if (!match) {
-    console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
-    process.exit(1);
-  }
-  const [, owner, repo] = match;
+  const { owner, repo } = resolveOwnerRepoFromOrigin();
 
   const expectedRepo = `${owner}/${repo}`;
   const packageRepository = getRepositoryField(latestPkgJson.repository);
@@ -355,35 +402,8 @@ async function main() {
     process.exit(1);
   }
 
-  // Check for existing tags
-  const localTag = runGit(['tag', '-l', tag]).stdout.trim();
-  if (localTag) {
-    if (isRetag) {
-      console.log(`⚠️  Local tag '${tag}' exists — deleting for retag...`);
-      runGit(['tag', '-d', tag]);
-    } else {
-      console.error(`❌ Local tag '${tag}' already exists. Run: git tag -d '${tag}'`);
-      process.exit(1);
-    }
-  }
-
-  try {
-    await octokit.git.getRef({ owner, repo, ref: `tags/${tag}` });
-    if (isRetag) {
-      console.log(`⚠️  Remote tag '${tag}' exists — deleting for retag...`);
-      await octokit.git.deleteRef({ owner, repo, ref: `tags/${tag}` });
-      console.log(`↩️  Remote tag deleted.`);
-      // Delete local tag if present
-      const localTagExists = runGit(['tag', '-l', tag]).stdout.trim();
-      if (localTagExists) runGit(['tag', '-d', tag]);
-    } else {
-      console.error(`❌ Remote tag '${tag}' already exists.`);
-      console.error(`   If the previous CI run failed and you want to retag, rerun with --retag.`);
-      process.exit(1);
-    }
-  } catch (err) {
-    if (err.status !== 404) throw err;
-  }
+  ensureLocalTagAvailability();
+  await ensureRemoteTagAvailability(octokit, owner, repo);
 
   // --- Previous tag for release notes diff ---------------------------------
 
@@ -647,9 +667,11 @@ async function waitForLatestSuccessfulWorkflow(
 // Run
 // ---------------------------------------------------------------------------
 
-main().catch(async error => {
+try {
+  await main();
+} catch (error) {
   process.stdout.write('\n');
   console.error(error instanceof Error ? error.message : error);
   await rollback();
   process.exit(1);
-});
+}
