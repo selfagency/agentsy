@@ -1,0 +1,22 @@
+packages/vscode/src/api-key-manager/api-key-manager.test.ts
+  ai_agent 218
+  s_2b1d21c4f56fc5::t_c49c843c3aaad0 219-253
+packages/tool-calls/src/providerToolsContract.test.ts
+  s_2b1d21c4f56fc5::t_025ecea389a99a 5-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "c38479014d5e200dfe82c475fbec23cff08e4152",
+  "prompts": {},
+  "sessions": {
+    "s_2b1d21c4f56fc5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cec43470-7cbe-42d1-aa00-679b4bd0975a",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
