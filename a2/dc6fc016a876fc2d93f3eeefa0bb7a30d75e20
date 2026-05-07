@@ -1,0 +1,409 @@
+packages/mcp/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,31-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+  s_f6b97b7ee6caf7::t_54e53173c7653b 30
+packages/context-manager/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/observability/src/index.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-3
+packages/session/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_0e8a85854f561b 1-207
+packages/guardrails/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/connectors/package.json
+  s_f6b97b7ee6caf7::t_54e53173c7653b 30
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,31-43
+packages/orchestrator/src/types/workflow.ts
+  s_b7b36fa055cd28::t_d01d307ecfc15f 1-108
+packages/agentic-loop/src/agent/stopConditions.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-44
+packages/recovery/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_ae42eec50d30ac 1-258
+packages/connectors/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/session/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/runtime/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/acp/package.json
+  s_f6b97b7ee6caf7::t_eaf4eb89d332f6 1-36
+packages/guardrails/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/context-manager/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/orchestrator/src/core/engine.ts
+  s_b7b36fa055cd28::t_bfc530cf2fe4e5 4
+  s_b7b36fa055cd28::t_19080355065ae6 1-3,5-288
+packages/secrets/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-42
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/guardrails/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/tokens/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_a4462c30b69c74 1-227
+packages/agents/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/memory/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/memory/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/token-economy/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/context-manager/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/agentic-loop/src/agent/createAgentLoop.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-321
+packages/context-manager/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+plan/research/IDE-TOOLS-ANALYSIS.md
+  s_f3e36e60dd8b70::t_4fc0c9cb9fe240 1-960
+packages/agents/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1,3,5-28,31-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+  s_f6b97b7ee6caf7::t_54e53173c7653b 2,30
+packages/observability/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-565
+packages/testing/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/context-manager/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/scheduler/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-45
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/secrets/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/agentic-loop/package.json
+  h_627b419bd8fa0f 2
+packages/scheduler/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/agentic-loop/README.md
+  s_f6b97b7ee6caf7::t_54e53173c7653b 1-60
+packages/agents/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/orchestrator/src/types/orchestrator.ts
+  s_b7b36fa055cd28::t_a6032f3e7b18b6 1-87
+packages/guardrails/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+plan/revised-implementation-architecture.md
+  s_b7b36fa055cd28::t_9e398f7f99f16e 1-639
+packages/guardrails/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-42
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/session/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/connectors/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+plan/research/INFRASTRUCTURE-ANALYSIS.md
+  s_d3280149cdbef3::t_79bdb01bc94116 1-765
+packages/agents/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/secrets/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_076a74b4c15d16 1-163
+packages/mcp/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/secrets/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/observability/tsconfig.json
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-14
+packages/token-economy/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/retrieval/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/scheduler/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/orchestrator/src/utils/matching.ts
+  s_b7b36fa055cd28::t_cfd0aace092e71 1-103
+packages/scheduler/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/providers/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/agentic-loop/CHANGELOG.md
+  s_f6b97b7ee6caf7::t_54e53173c7653b 1-7
+packages/retrieval/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/mcp/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/agentic-loop/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_b5643f79d55f95 1-270
+packages/token-economy/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/mcp/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+plan/research/LLM-INTEGRATION-ANALYSIS.md
+  s_837275c4f834b9::t_ecaf7f05c63da9 1-785
+packages/agentic-loop/src/agent/agent.test.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-538
+packages/session/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/testing/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/orchestrator/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_88c14ca26df9be 1-538
+packages/agents/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 2-3
+  s_b7b36fa055cd28::t_3218b934df8ac4 1
+packages/universal-client/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_63ae72d1f09758 282-303,312-313
+  s_b7b36fa055cd28::t_85ba4f1937b276 1-281,304-311,314-326
+packages/observability/vitest.config.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-10
+packages/orchestrator/package.json
+  s_b7b36fa055cd28::t_5185aabba6e0ae 25
+  s_b7b36fa055cd28::t_b6d24ef5b989f2 1-24,26-41
+packages/providers/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/memory/IMPLEMENTATION-PLAN.md
+  s_2f51be6a8f3a07::t_04fa2219b24c99 137,142-150
+  s_2f51be6a8f3a07::t_d9a8424b3bfc07 230,234,246-253
+  s_2f51be6a8f3a07::t_9c8f71805fb83c 268,274-284,289,295-296,307-311
+  s_b7b36fa055cd28::t_12dc35c4c2bba8 128-136
+  s_b7b36fa055cd28::t_00e45f88978da5 74,76,80-82
+  s_b7b36fa055cd28::t_74f200c2347210 118,123-126
+  s_2f51be6a8f3a07::t_b70bbb5b9abcad 584-593
+  s_2f51be6a8f3a07::t_4e7bfe599c3993 595-604
+  s_2f51be6a8f3a07::t_35613e550cba13 154-185
+  s_2f51be6a8f3a07::t_742155b9136c75 329,335-396
+  s_2f51be6a8f3a07::t_5d8a8945b0d9c6 517-523,525-545
+  s_2f51be6a8f3a07::t_5838980820e418 402,404-452,455-489
+  s_b7b36fa055cd28::t_bf90eab96b0877 1-5,7-15,153,186-210,212,228-229,231-233,235-245,254-267,269-273,285-288,290-294,297-306,312-328,330-334,397-401,403,502-516,524,546-573,583,594,605,617,629-672,710,740,744-749,775-796
+  s_2f51be6a8f3a07::t_50c4c9bb924015 606-616
+  s_2f51be6a8f3a07::t_6e4730464cd9ff 211,213-227
+  s_b7b36fa055cd28::t_41f368f33f7e6d 6,16-18,40-73,75,77-79,83,93-94,107-117,119-122,127,138-141,151-152
+  s_2f51be6a8f3a07::t_0f55a97875feab 19-39
+  s_2f51be6a8f3a07::t_facfc571872deb 95-106
+  s_2f51be6a8f3a07::t_d6fbf82a0c2eff 618-628
+  s_2f51be6a8f3a07::t_c58251faf369e7 673-709
+  s_2f51be6a8f3a07::t_6506c5cce71e9b 711-739
+  s_2f51be6a8f3a07::t_ef199e4001e211 741-743,750-774
+  s_2f51be6a8f3a07::t_612364bfc8824e 84-92
+  s_b7b36fa055cd28::t_53faa158553217 453-454,490-501
+  s_2f51be6a8f3a07::t_0019b0fdb4e613 574-582
+packages/orchestrator/src/index.ts
+  s_b7b36fa055cd28::t_f62f150691178e 1-11
+  s_b7b36fa055cd28::t_3f04e4df8ddf25 12-15
+packages/agentic-loop/tsconfig.json
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-9
+packages/token-economy/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/CONCISE_PACKAGE_ANALYSIS.md
+  s_85c390686cb4ca::t_ffaa3d386fcc00 1-334
+plan/research/FEATURE-MATRIX-AND-APS.md
+  s_9fb3e582ffb5ad::t_a5740462752dad 1-1604
+packages/retrieval/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/memory/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,31-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+  s_f6b97b7ee6caf7::t_54e53173c7653b 30
+packages/agentic-loop/src/agent/index.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-12
+packages/runtime/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/token-economy/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/secrets/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/connectors/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/retrieval/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/orchestrator/src/utils/timing.ts
+  s_b7b36fa055cd28::t_3f8e0894124e2e 1-145
+plan/rearchelogy-RESEARCH-STATUS.md
+  s_b7b36fa055cd28::t_417fc4928107b6 1-311
+packages/retrieval/package.json
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-42
+packages/providers/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/memory/src/index.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-3
+packages/session/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/orchestrator/src/agents/registry.ts
+  s_b7b36fa055cd28::t_91539839817049 1-116
+packages/connectors/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/observability/package.json
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-42
+packages/observability/tsup.config.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-11
+packages/acp/src/index.ts
+  s_f6b97b7ee6caf7::t_eaf4eb89d332f6 1
+packages/session/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/agentic-loop/src/agent/types.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-54
+packages/runtime/package.json
+  s_f6b97b7ee6caf7::t_54e53173c7653b 30
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,31-43
+packages/runtime/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/testing/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/testing/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/processor/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_21e298635c02a5 96-99,101
+  s_b7b36fa055cd28::t_17e671c0d05ed6 164-166,170
+  s_b7b36fa055cd28::t_4099ffb769057e 191-192
+  s_b7b36fa055cd28::t_57dfca9ba51d3c 194,203-207,220-223
+  s_b7b36fa055cd28::t_38477158155f91 6
+  s_b7b36fa055cd28::t_20473966c5ae37 1-5,7-95,100,102-163,167-169,171-190,193,195-202,208-219,224-248
+plan/research/CLI-TOOLS-ANALYSIS.md
+  s_76c2f9c0d5a579::t_31bd325c724484 1-947
+packages/providers/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/orchestrator/src/types/index.ts
+  s_b7b36fa055cd28::t_35487302ccd3cc 1-2
+packages/runtime/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_3a3510abb94f2d 1-305
+packages/runtime/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+plan/research/AGENT-PLATFORMS-ANALYSIS.md
+  s_42db5d9ba11863::t_6725833e776d29 1-1378
+packages/agentic-loop/vitest.config.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-11
+packages/providers/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_c8850e108a4864 6
+  s_b7b36fa055cd28::t_f1de3fcff6add3 203,214-215,217,221-222,224,226-230,236
+  s_b7b36fa055cd28::t_7540baa0feda43 1-5,7-120,124,127-196,202,204-213,216,218-220,223,225,231-235,237-252
+  s_b7b36fa055cd28::t_c2f7f3115f9889 121-123,125-126
+  s_b7b36fa055cd28::t_8ca1422c6904f9 197-201
+packages/providers/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-28,30-43
+  s_f6b97b7ee6caf7::t_08b5bd6f8d3051 29
+packages/testing/package.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-34,36-41
+  s_f6b97b7ee6caf7::t_01a5dffba30f3b 35
+packages/agentic-loop/src/index.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1
+packages/cli/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_fc50d7d23677ac 1-307
+packages/scheduler/vitest.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-10
+packages/memory/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+packages/agentic-loop/tsup.config.ts
+  s_b7b36fa055cd28::t_3218b934df8ac4 1-11
+plan/DECISION-LOG.md
+  s_b7b36fa055cd28::t_6ab296aedc52c8 1-127
+plan/research/AI-PLATFORMS-ANALYSIS.md
+  s_6989ecab592980::t_9251a38b7ff722 1-539
+plan/MASTER-IMPLEMENTATION-PLAN.md
+  h_627b419bd8fa0f 1-212
+plan/PACKAGE-NAMING-MAP.md
+  s_b7b36fa055cd28::t_ad8fceab9b9837 1-199
+packages/mcp/tsup.config.ts
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-11
+packages/types/IMPLEMENTATION-PLAN.md
+  s_b7b36fa055cd28::t_4dfa7185cb42d9 1-113
+packages/secrets/tsconfig.json
+  s_f6b97b7ee6caf7::t_3dc47e2eb02dc3 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "a2dc6fc016a876fc2d93f3eeefa0bb7a30d75e20",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_2f51be6a8f3a07": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fc08fe09ffeii55n9BTrdJWep",
+        "model": "zai-org/GLM-4.6"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_42db5d9ba11863": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fbfb052cfferkr8rEo1eKMbuC",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_6989ecab592980": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fbfb051dffeB1yT70yq3nWCuu",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_76c2f9c0d5a579": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fba8d11dffeePeMf7D4G8y0FA",
+        "model": "zai-org/GLM-4.7-Flash"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_837275c4f834b9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fbfb0517ffeUIHZUeRuLA2ZVO",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_85c390686cb4ca": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fc76df29ffeoEFSQlUSrBvB11",
+        "model": "zai-org/GLM-4.7-Flash"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_9fb3e582ffb5ad": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fbeb30fbffeFARNTfT5Hoxe3P",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_b7b36fa055cd28": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fd584c16ffecH2yO4VTOoSX1g",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_d3280149cdbef3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fbe31ee6ffeW2mre8IZ8g17DU",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_f3e36e60dd8b70": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fbfb0512ffeOHi2xnHpCSoRn1",
+        "model": "glm-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_f6b97b7ee6caf7": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "80fd71bd-e0ac-4c3c-88bd-b7d806a5190d",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
