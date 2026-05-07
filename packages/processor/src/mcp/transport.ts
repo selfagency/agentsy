@@ -9,40 +9,69 @@ export type MCPTransport =
   | { type: 'http'; stream: ReadableStream<string> }
   | { type: 'stdio'; readable: NodeJS.ReadableStream; writable: NodeJS.WritableStream };
 
+import { Readable } from 'node:stream';
+
 /**
  * Adapts any MCPTransport to a unified ReadableStream<string> interface
  * for use with existing SSE/stream processors.
+ * Uses Readable.toWeb() for native backpressure support (Node.js 22+).
  */
 export function adaptTransportToStream(transport: MCPTransport): ReadableStream<string> {
   if (transport.type === 'http') {
     return transport.stream;
   }
 
-  // For stdio transport, we create a transform stream that bridges
-  // Node stdio streams to web ReadableStream
-  const { readable, writable } = new TransformStream<string, string>();
+  // For stdio transport, use Readable.toWeb() for native backpressure support
+  // This is available in Node.js 22+ and properly handles backpressure
+  if (typeof Readable.toWeb === 'function') {
+    return Readable.toWeb(transport.readable) as ReadableStream<string>;
+  }
 
-  transport.readable.on('data', chunk => {
-    const writer = writable.getWriter();
-    writer.write(chunk.toString()).catch(() => {
-      // Ignore write errors to maintain backpressure resilience
+  // Fallback: create backpressure-aware bridge for older Node versions
+  // We maintain a single persistent writer and await all writes to handle backpressure properly
+  const { readable: webReadable, writable } = new TransformStream<string>();
+  
+  // Single writer - maintains backpressure by awaiting each write
+  const writer = writable.getWriter();
+
+  const onData = async (chunk: unknown) => {
+    try {
+      await writer.write(String(chunk));
+    } catch (err) {
+      // Re-throw non-stream errors to maintain error propagation
+      if (err instanceof Error && !('code' in err && err.code === 'ERR_STREAM_WRITE_AFTER_END')) {
+        throw err;
+      }
+    }
+  };
+
+  const onEnd = () => {
+    writer.close().catch(() => {
+      // Suppress errors during normal closure
     });
-    writer.releaseLock();
-  });
+  };
 
-  transport.readable.on('end', () => {
-    writable.close().catch(() => {
-      // Ignore close errors
+  const onError = (err: Error) => {
+    writer.abort(err).catch(() => {
+      // Suppress errors during abort
     });
-  });
+  };
 
-  transport.readable.on('error', err => {
-    writable.abort(err).catch(() => {
-      // Ignore abort errors
-    });
-  });
+  transport.readable.on('data', onData);
+  transport.readable.on('end', onEnd);
+  transport.readable.on('error', onError);
 
-  return readable;
+  // Cleanup on stream cancellation - destroy the underlying readable and its listeners
+  webReadable.cancel = async () => {
+    const readableStream = transport.readable as Readable;
+    readableStream.destroy();
+    readableStream.off('data', onData);
+    readableStream.off('end', onEnd);
+    readableStream.off('error', onError);
+    await writer.close().catch(() => {});
+  };
+
+  return webReadable;
 }
 
 /**

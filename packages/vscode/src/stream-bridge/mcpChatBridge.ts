@@ -1,5 +1,6 @@
 import type { ChatResponseStream, CancellationToken } from 'vscode';
 import { VSCodeMCPBridgeHelper } from '../mcp/vscodeBridgeHelper.js';
+import { createVSCodeChatResponseStream } from '../vscode-overloads/chatResponseStream.js';
 import type { MCPTransport } from '@agentsy/processor';
 
 /**
@@ -8,17 +9,23 @@ import type { MCPTransport } from '@agentsy/processor';
  */
 export class MCPChatBridge {
   private readonly helper: VSCodeMCPBridgeHelper;
+  private readonly cancellationToken: CancellationToken;
 
   constructor(transport: MCPTransport, cancellationToken: CancellationToken) {
     this.helper = new VSCodeMCPBridgeHelper(transport, cancellationToken);
+    this.cancellationToken = cancellationToken;
   }
 
   /**
    * Creates a ChatResponseStream that bridges MCP transport events to VS Code's chat interface.
    * This is the canonical documented path for VS Code extensions.
+   * Creates a new stream and connects the MCP transport to it.
    */
   public createStream(): ChatResponseStream {
-    return this.helper.createChatResponseStream();
+    const targetStream = createVSCodeChatResponseStream(this.cancellationToken);
+    // Connect the transport to the target stream
+    this.helper.connectToStream(targetStream);
+    return targetStream;
   }
 
   /**

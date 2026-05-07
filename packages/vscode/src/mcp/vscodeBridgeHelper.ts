@@ -1,5 +1,69 @@
 import type { MCPTransport } from '@agentsy/processor';
-import type { ChatResponseStream, CancellationToken } from 'vscode';
+import { adaptTransportToStream } from '@agentsy/processor';
+import type { ChatResponseStream, CancellationToken, Uri, Location } from 'vscode';
+
+// Re-export types for compatibility
+export type { ChatResponseStream, CancellationToken };
+import { ReadableStream } from 'node:stream/web';
+
+/**
+ * Extended MCP event types that can be emitted from the transport.
+ * These map to MCP message types that should be converted to VS Code chat format.
+ */
+export interface MCPStreamEvent {
+  type: 'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push';
+  data: unknown;
+}
+
+/**
+ * Parses a chunk of SSE data into an MCP event.
+ * Handles both single events and batched events.
+ */
+function parseSseChunk(chunk: string): MCPStreamEvent | null {
+  const lines = chunk.split('\n');
+  let eventType: string | null = null;
+  let data: unknown = null;
+
+  for (const line of lines) {
+    if (line.startsWith('event:')) {
+      eventType = line.slice(6).trim();
+    } else if (line.startsWith('data:')) {
+      try {
+        data = JSON.parse(line.slice(5).trim());
+      } catch {
+        data = line.slice(5).trim();
+      }
+    }
+  }
+
+  if (!eventType || data === null) {
+    return null;
+  }
+
+  // Map MCP event type to our internal type
+  const mappedType = mapMcpToStreamEvent(eventType);
+  if (!mappedType) {
+    return null;
+  }
+
+  return { type: mappedType, data };
+}
+
+/**
+ * Maps MCP message types to VS Code stream event types.
+ */
+function mapMcpToStreamEvent(mcpType: string): MCPStreamEvent['type'] | null {
+  const mapping: Record<string, MCPStreamEvent['type']> = {
+    'content': 'markdown',
+    'anchor': 'anchor',
+    'button': 'button', 
+    'filetree': 'filetree',
+    'progress': 'progress',
+    'reference': 'reference',
+    'push': 'push',
+  };
+  return mapping[mcpType] ?? null;
+}
 
 /**
  * First-class VS Code MCP bridge helper that simplifies integration
@@ -15,44 +79,122 @@ export class VSCodeMCPBridgeHelper {
   }
 
   /**
-   * Creates a ChatResponseStream-compatible interface that bridges
-   * MCP transport events to VS Code's chat response format.
+   * Creates a ChatResponseStream that bridges MCP transport to VS Code chat format.
+   * Wraps the provided target stream and forwards MCP events to it.
    */
-  public createChatResponseStream(): ChatResponseStream {
-    // This is a simplified bridge implementation
-    // In a real implementation, you would:
-    // 1. Adapt the MCP transport to a readable stream
-    // 2. Parse SSE events from the stream
-    // 3. Convert events to VS Code chat response format
-    // 4. Handle cancellation via the token
+  public createChatResponseStream(target: ChatResponseStream): ChatResponseStream {
+    const transportStream = adaptTransportToStream(this.transport);
+    
+    // Process raw stream chunks and forward to target stream
+    this.processRawStream(transportStream, target);
 
-    // Create a mock ChatResponseStream for demonstration
-    // In a real implementation, this would bridge to the actual MCP transport
-    const mockStream: ChatResponseStream = {
-      markdown: (value: string) => {
-        // Implementation would process markdown from MCP transport
-      },
-      anchor: (value: any, title?: string) => {
-        // Implementation would process anchor from MCP transport
-      },
-      button: (command: any) => {
-        // Implementation would process button from MCP transport
-      },
-      filetree: (value: any, baseUri: any) => {
-        // Implementation would process filetree from MCP transport
-      },
-      progress: (value: string) => {
-        // Implementation would process progress from MCP transport
-      },
-      reference: (value: any, iconPath?: any) => {
-        // Implementation would process reference from MCP transport
-      },
-      push: (part: any) => {
-        // Implementation would push generic parts from MCP transport
-      },
+    return target;
+  }
+
+  /**
+   * Creates a new ChatResponseStream that emits to the MCP transport.
+   * This is useful when the caller wants a stream that sends data back through MCP.
+   */
+  public createDirectChatResponseStream(): ChatResponseStream {
+    const chatStream: ChatResponseStream = {
+      markdown: value => this.pushEvent({ type: 'markdown', data: { value } }),
+      anchor: (value, title) => this.pushEvent({ type: 'anchor', data: { value: String((value as { path?: string }).path ?? value), title } }),
+      button: command => this.pushEvent({ type: 'button', data: { command: String((command as { command?: string }).command ?? command) } }),
+      filetree: (value, baseUri) => this.pushEvent({ type: 'filetree', data: { value, baseUri: String((baseUri as { path?: string }).path ?? baseUri) } }),
+      progress: value => this.pushEvent({ type: 'progress', data: { value } }),
+      reference: (value, iconPath) => this.pushEvent({ type: 'reference', data: { value: String((value as { path?: string }).path ?? value), iconPath: iconPath ? String((iconPath as { path?: string }).path) : undefined } }),
+      push: part => this.pushEvent({ type: 'push', data: part }),
     };
 
-    return mockStream;
+    return chatStream;
+  }
+
+  /**
+   * Connects the MCP transport to an existing ChatResponseStream.
+   * This is the recommended pattern: pass in your VS Code ChatResponseStream
+   * and this method will populate it with data from the MCP transport.
+   */
+  public connectToStream(stream: ChatResponseStream): void {
+    const transportStream = adaptTransportToStream(this.transport);
+    this.processRawStream(transportStream, stream);
+  }
+
+  /**
+ * Processes raw string chunks from the transport and forwards them to the chat stream.
+   */
+  private async processRawStream(
+    transportStream: ReadableStream<string>,
+    chatStream: ChatResponseStream,
+  ): Promise<void> {
+    const reader = transportStream.getReader();
+
+    try {
+      while (true) {
+        // Check for cancellation
+        if (this.cancellationToken.isCancellationRequested) {
+          throw new Error('Operation cancelled by user');
+        }
+
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Parse and handle the SSE chunk
+        const event = parseSseChunk(value);
+        if (event) {
+          this.handleEvent(event, chatStream);
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  /**
+   * Handles an MCP event by calling the appropriate ChatResponseStream method.
+   * Uses minimal type assertions to work with VS Code's strict type system.
+   */
+  private handleEvent(event: MCPStreamEvent, chatStream: ChatResponseStream): void {
+    const data = event.data as Record<string, unknown>;
+    const content = String(data.value ?? '');
+    
+    switch (event.type) {
+      case 'markdown':
+        chatStream.markdown(content);
+        break;
+      case 'progress':
+        chatStream.progress?.(content);
+        break;
+      case 'anchor':
+        // Anchor expects specific types from VS Code - use basic string if available
+        if (typeof data.anchorData === 'string') {
+          chatStream.anchor({ scheme: '', path: data.anchorData } as never, data.title as string | undefined);
+        }
+        break;
+      case 'button':
+        chatStream.button({ command: String(data.command ?? ''), title: String(data.title ?? '') });
+        break;
+      case 'filetree':
+        chatStream.filetree([], { scheme: 'file', path: '/' } as never);
+        break;
+      case 'reference':
+        chatStream.reference({ scheme: '', path: String(data.uri ?? '') } as never);
+        break;
+      case 'push':
+        chatStream.push?.({} as never);
+        break;
+    }
+  }
+
+  /**
+   * Pushes an event to the MCP transport if a writable stream is available.
+   * Used for two-way communication.
+   */
+  private pushEvent(event: MCPStreamEvent): void {
+    // If transport has writable stream, send event back
+    if (this.transport.type === 'stdio' && this.transport.writable) {
+      const eventData = JSON.stringify(event);
+      this.transport.writable.write(`${eventData}\n`);
+    }
   }
 
   /**
