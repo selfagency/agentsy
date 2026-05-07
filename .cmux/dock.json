@@ -1,0 +1,10 @@
+{
+  "controls": [
+    {
+      "command": "/opt/homebrew/bin/lazygit",
+      "height": 300,
+      "id": "git",
+      "title": "Git"
+    }
+  ]
+}
