@@ -1,0 +1,44 @@
+packages/vscode/src/stream-bridge/mcpChatBridge.ts
+  s_5d4c9fbd9b8dd2::t_a823823e877301 26-28
+  s_5d4c9fbd9b8dd2::t_9e1672e0a955b1 12,16,25
+  s_5d4c9fbd9b8dd2::t_7adf8a383bb912 22
+  s_5d4c9fbd9b8dd2::t_f782c0ff5a6088 3
+packages/vscode/src/mcp/vscodeBridgeHelper.ts
+  s_5d4c9fbd9b8dd2::t_d79d33302f3621 3
+  s_5d4c9fbd9b8dd2::t_a109af49d998c3 87-89
+  s_5d4c9fbd9b8dd2::t_5e0a5882a113df 119
+  s_5d4c9fbd9b8dd2::t_faea88d8cd6bb0 123,125-126,129,141-145
+  s_5d4c9fbd9b8dd2::t_a40b9172c4ad20 4-6
+  s_5d4c9fbd9b8dd2::t_b45579ea7e0eb9 135
+  s_5d4c9fbd9b8dd2::t_b3925c71e77494 2
+  s_5d4c9fbd9b8dd2::t_c7b0ebeefed23f 7-66,90,93,109
+  s_5d4c9fbd9b8dd2::t_b7a73cb36a5b4d 177
+  s_5d4c9fbd9b8dd2::t_9ba6ff6e4a713c 82-86,91-92,94-96,98-100,104,106,110-118
+  s_5d4c9fbd9b8dd2::t_5e4845372de005 120-122,124,127-128,130-134,136-140,149-153,155-156,160,163,166,172,175,178,181,184-197
+  s_5d4c9fbd9b8dd2::t_0bb8ce8a525c80 154,157-159,161-162,164-165,167-171,173-174,176,179-180,182-183
+  s_5d4c9fbd9b8dd2::t_4f1593274f0b16 101-103,105
+  s_5d4c9fbd9b8dd2::t_d3a51270b1b071 147-148
+  s_5d4c9fbd9b8dd2::t_5ec6766af04bf2 146
+packages/processor/src/mcp/transport.ts
+  s_5d4c9fbd9b8dd2::t_cef37df07c50bc 28,30,35,38,40,43-45,59,72
+  s_5d4c9fbd9b8dd2::t_1faf8aee14b5e6 17,31-32,74
+  s_5d4c9fbd9b8dd2::t_f2db50d5a6d0ea 12-13,24-25
+  s_5d4c9fbd9b8dd2::t_631fffff2293ed 26-27,33-34,37,39,41-42,46-50,52,54-56,58,60-64,71
+  s_5d4c9fbd9b8dd2::t_1dda50746bb257 65-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "667e081562f26d7c64ea809a513858d68777ac09",
+  "prompts": {},
+  "sessions": {
+    "s_5d4c9fbd9b8dd2": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b8ecd5bf-700c-4db0-96ae-041e610ed40f",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
