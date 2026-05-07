@@ -1,0 +1,19 @@
+docs/PR63-HANDOFF.md
+  s_5d4c9fbd9b8dd2::t_c9c1b2d9056368 1-217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "6151c90e0f6cf2b99cf7d77d9239b4c00f44aa4e",
+  "prompts": {},
+  "sessions": {
+    "s_5d4c9fbd9b8dd2": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b8ecd5bf-700c-4db0-96ae-041e610ed40f",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
