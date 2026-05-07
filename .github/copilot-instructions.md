@@ -117,30 +117,22 @@ Key formatter conventions:
 
 ## Package Boundaries
 
-### `@agentsy/vscode`
+### `@agentsy/memory` and memory-adjacent modules
 
-- VS Code-specific integration layer.
-- Depends on internal workspace packages (`@agentsy/processor`, `@agentsy/normalizers`, etc.) via `workspace:*`.
-- Keep VS Code APIs and extension-specific concerns here, not in other packages.
-- Preserve ESM-only packaging and explicit externals (`vscode` and any `@agentsy/*` peers).
-
-### Internal packages (under `packages/`)
-
-- `@agentsy/processor` — event-driven LLM stream orchestrator
-- `@agentsy/normalizers` — provider-specific response normalization
-- `@agentsy/agent` — multi-step agent loop
-- `@agentsy/adapters` — provider adapters (OpenAI-compat, etc.)
-- `@agentsy/thinking` — `<think>` tag extraction
-- `@agentsy/tool-calls` — XML and native tool call parsing
-- `@agentsy/structured` — JSON parse/repair and streaming validation
-- `@agentsy/renderers` — CLI/TUI/plain-text renderers
-- `@agentsy/ag-ui` — AG-UI protocol adapter
-- `@agentsy/context`, `@agentsy/formatting`, `@agentsy/sse`, `@agentsy/markdown`, `@agentsy/recovery`, `@agentsy/xml-filter`, `@agentsy/types`, `@agentsy/ui` — utilities and primitives
-- `@agentsy/integration` (private) — cross-package integration tests
+- `@agentsy/memory` should be treated as a durable knowledge layer, not a hidden orchestration dependency.
+- It must remain pluggable so consumers can substitute their own memory backend or memory system.
+- Prefer abstract interfaces for memory providers, retrievers, lifecycle hooks, and summarization adapters.
+- When possible, expose memory both as:
+  - an Agentsy-native package
+  - a standalone MCP server / plugin surface that can be used independently of the rest of Agentsy
+- `@agentsy/token-economy` should consume memory through optional adapters and shared interfaces, not hard-coded persistence assumptions.
+- `@agentsy/subagents` should be able to work with external or substitute memory systems through the same abstractions.
 
 ### General boundary rule
 
 - If code depends on VS Code extension runtime behavior, editor integration, secret storage, status bars, chat providers, or extension settings, it belongs in `@agentsy/vscode`.
+- If code is about durable memory, retrieval, persistence, or memory lifecycle, it belongs in `@agentsy/memory` or a memory-adjacent package.
+- If code is about transient token budgets, prompt reduction, or output shaping, it belongs in `@agentsy/token-economy`.
 - Everything else belongs in the appropriate focused package.
 
 ## Architecture and Naming Conventions
