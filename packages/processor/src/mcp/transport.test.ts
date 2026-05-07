@@ -31,7 +31,7 @@ describe('MCP Transport', () => {
       });
 
       const writable = new Writable({
-        write(chunk, encoding, callback) {
+        write(_chunk: unknown, _encoding: BufferEncoding, callback: () => void) {
           callback();
         },
       });
@@ -68,7 +68,7 @@ describe('MCP Transport', () => {
       });
 
       const writable = new Writable({
-        write(chunk, encoding, callback) {
+        write(_chunk: unknown, _encoding: BufferEncoding, callback: () => void) {
           callback();
         },
       });

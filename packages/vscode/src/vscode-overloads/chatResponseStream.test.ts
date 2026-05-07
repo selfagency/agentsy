@@ -3,6 +3,13 @@ import type { CancellationToken } from 'vscode';
 import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
 describe('VSCode ChatResponseStream Overloads', () => {
+  const testUri: TestUri = {
+    uri: 'https://example.com',
+  };
+
+  const baseUri: TestUri = {
+    uri: 'file:///base',
+  };
   const mockCancellationToken: CancellationToken = {
     isCancellationRequested: false,
     onCancellationRequested: () => ({ dispose: () => {} }),

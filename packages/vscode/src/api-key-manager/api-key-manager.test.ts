@@ -3,6 +3,17 @@ import { createMockExtensionContext } from '../test/fixtures/mock-vscode.js';
 import type { ApiKeyManagerConfig } from '../types/index.js';
 import { ApiKeyManager } from './api-key-manager.js';
 
+interface TestSecrets {
+  get: (_: string) => Promise<string>;
+  store: (...rests: unknown[]) => void;
+  delete: (...rests: unknown[]) => void;
+  keys: () => Promise<string[]>;
+}
+
+interface TestContext {
+  secrets: TestSecrets;
+}
+
 describe('ApiKeyManager', () => {
   let mockContext: ReturnType<typeof createMockExtensionContext>;
   let config: ApiKeyManagerConfig;
@@ -240,7 +251,7 @@ describe('ApiKeyManager', () => {
   describe('initialization error handling', () => {
     it('should throw when initialize() fails and safeMode is not enabled', async () => {
       // Create a broken context where secrets.get always throws
-      const brokenContext: any = {
+      const brokenContext: TestContext = {
         secrets: {
           get: async (_: string) => {
             throw new Error('boom');
@@ -255,7 +266,7 @@ describe('ApiKeyManager', () => {
     });
 
     it('should not throw when initialize() fails in safe mode and allow getApiKey(true) to resolve to undefined', async () => {
-      const brokenContext: any = {
+      const brokenContext: TestContext = {
         secrets: {
           get: async (_: string) => {
             throw new Error('boom');
