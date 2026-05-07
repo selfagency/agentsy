@@ -1,0 +1,41 @@
+{
+  "name": "@agentsy/orchestrator",
+  "version": "0.0.1",
+  "description": "Advanced agent orchestration system providing intelligent task decomposition, resource allocation, and execution coordination",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "coverage": "vitest --coverage",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint",
+    "format": "oxfmt"
+  },
+  "dependencies": {
+    "@agentsy/types": "workspace:*",
+    "@agentsy/session": "workspace:*",
+    "@agentsy/runtime": "workspace:*",
+    "@agentsy/memory": "workspace:*",
+    "@agentsy/scheduler": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "oxlint": "^0.1.0",
+    "oxfmt": "^0.1.0",
+    "tsup": "^7.0.0",
+    "typescript": "^5.2.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}
