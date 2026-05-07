@@ -1,0 +1,32 @@
+packages/vscode/src/utils/retry.ts
+  s_5d4c9fbd9b8dd2::t_815428e3ac7e8f 3,10,18-19
+  s_5d4c9fbd9b8dd2::t_7561219838c25e 1-2,4-9,11-17,20-46
+packages/tool-calls/src/providerToolsContract.ts
+  s_5d4c9fbd9b8dd2::t_8ad7d3c9150513 35-73,76,81-82,84-88
+packages/retry/package.json
+  s_5d4c9fbd9b8dd2::t_4935ef6f7d2ee1 41
+packages/tool-calls/src/providerToolsContract.test.ts
+  s_5d4c9fbd9b8dd2::t_2c77180eb17e77 6,9,11,14,17,20-22,26
+packages/vscode/src/mcp/vscodeBridgeHelper.test.ts
+  s_5d4c9fbd9b8dd2::t_f3ab1943e038cb 38,40,49-62
+packages/retry/src/index.ts
+  s_5d4c9fbd9b8dd2::t_abb5fca267d845 10,13-14,16,21-25,34,39-69,85,96,106,110-115
+  s_5d4c9fbd9b8dd2::t_88a048fb3bf3af 87
+  s_5d4c9fbd9b8dd2::t_9208275904decb 11-12,15,17-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "48c178243eb846d8da178c5e162f871763107d8a",
+  "prompts": {},
+  "sessions": {
+    "s_5d4c9fbd9b8dd2": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b8ecd5bf-700c-4db0-96ae-041e610ed40f",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
