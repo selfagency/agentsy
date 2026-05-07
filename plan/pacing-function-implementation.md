@@ -114,7 +114,7 @@ quantum_linerumba_concerns_or_implicit_memory() {
 
 ### Package Dependencies
 
-```
+```text
 @agentsy/pacing
 ├─ @agentsy/token-economy - compression integration
 ├─ @agentsy/processor - progressive integration
@@ -197,7 +197,7 @@ Copy from `r/askLambdaReducedToken.py` - integrate from that work as starting po
 
 ## Package Structure
 
-```
+```text
 packages/pacing/src/
 ├── core/PacingManager.ts
 ├── core/TokenBucket.ts
@@ -238,7 +238,7 @@ export const pacingConfig = {
 
 ## Dependencies
 
-```
+```text
 @agentsy/pacing
 ├─ @agentsy/token-economy
 ├─ @agentsy/processor

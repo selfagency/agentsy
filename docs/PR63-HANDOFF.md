@@ -225,7 +225,7 @@ The critical path has been fully tested and is ready for merge once remaining do
 
 ## References
 
-- PR: https://github.com/selfagency/agentsy/pull/63
+- PR: <https://github.com/selfagency/agentsy/pull/63>
 - Codacy Review: See PR comments for full issue list
 - Migration Docs: `docs/migration/` directory
 - Related Plans: `plan/agentsy-*.md` files
