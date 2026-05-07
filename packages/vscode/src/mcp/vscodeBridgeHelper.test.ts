@@ -35,9 +35,9 @@ describe('VSCode MCP Bridge Helper', () => {
       expect(helper.getCancellationToken()).toBe(mockCancellationToken);
     });
 
-    it('should create chat response stream', () => {
+    it('should create direct chat response stream', () => {
       const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
-      const stream = helper.createChatResponseStream();
+      const stream = helper.createDirectChatResponseStream();
       expect(stream).toHaveProperty('markdown');
       expect(stream).toHaveProperty('anchor');
       expect(stream).toHaveProperty('button');
@@ -45,6 +45,21 @@ describe('VSCode MCP Bridge Helper', () => {
       expect(stream).toHaveProperty('progress');
       expect(stream).toHaveProperty('reference');
       expect(stream).toHaveProperty('push');
+    });
+
+    it('should create chat response stream with target', () => {
+      const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+      const targetStream = {
+        markdown: vi.fn(),
+        anchor: vi.fn(),
+        button: vi.fn(),
+        filetree: vi.fn(),
+        progress: vi.fn(),
+        reference: vi.fn(),
+        push: vi.fn(),
+      };
+      const stream = helper.createChatResponseStream(targetStream);
+      expect(stream).toBe(targetStream);
     });
   });
 

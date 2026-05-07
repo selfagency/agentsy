@@ -3,25 +3,27 @@ import { isProviderTool, providerToolToNative, nativeToProviderTool } from './pr
 
 describe('Provider Tools Contract', () => {
   describe('additional edge cases', () => {
-    it('should consider missing parameters as valid in isProviderTool', () => {
+    it('should require parameters in isProviderTool', () => {
       const tool: any = {
         name: 'edgeTool',
-        // parameters intentionally omitted to test default handling
+        // parameters intentionally omitted - should fail validation
       };
-      expect(isProviderTool(tool)).toBe(true);
+      expect(isProviderTool(tool)).toBe(false);
     });
 
-    it('should handle missing parameters when converting to native format', () => {
+    it('should require parameters when converting to native format', () => {
       const providerTool: any = {
         name: 'edgeTool',
-        // undefined parameters should default to empty object
+        // Missing parameters - type guard should return false
         id: 'id-123',
       };
-      const native = providerToolToNative(providerTool);
+      expect(isProviderTool(providerTool)).toBe(false);
+      // However, if passed anyway (bypassing type guard), it should default to empty object
+      const native = providerToolToNative(providerTool as never);
       expect(native).toEqual({ name: 'edgeTool', arguments: {}, id: 'id-123' });
     });
 
-    it('should convert native tool to provider format without id', () => {
+    it('should convert native tool to provider format correctly', () => {
       const nativeTool = { name: 'edgeTool', arguments: { a: 1 } } as any;
       const provider = nativeToProviderTool(nativeTool);
       expect(provider).toEqual({ name: 'edgeTool', parameters: { a: 1 }, format: 'native-json' });
