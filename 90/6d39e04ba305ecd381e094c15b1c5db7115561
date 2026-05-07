@@ -1,0 +1,39 @@
+.github/copilot-instructions.md
+  s_5d4c9fbd9b8dd2::t_69a1149d329561 120-129,134-135
+plan/agentsy-memory-integration.md
+  s_5d4c9fbd9b8dd2::t_69a1149d329561 1-226
+plan/agentsy-token-economy.md
+  s_ecd0a058dfb76e::t_75e33f0bcb6d37 1-117,119,122-194,204-279
+  s_5d4c9fbd9b8dd2::t_69a1149d329561 118,120-121,195-203
+plan/agentsy-memory.md
+  s_5d4c9fbd9b8dd2::t_69a1149d329561 1-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "906d39e04ba305ecd381e094c15b1c5db7115561",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_5d4c9fbd9b8dd2": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b8ecd5bf-700c-4db0-96ae-041e610ed40f",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_ecd0a058dfb76e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0fec69eb-cecb-46e2-9cec-23bd5ac435b3",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
