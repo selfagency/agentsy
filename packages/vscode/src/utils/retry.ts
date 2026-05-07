@@ -28,7 +28,7 @@ import type { CancellationToken } from 'vscode';
  */
 export function cancellationTokenToAbortSignal(token: CancellationToken): AbortSignal {
   const controller = new AbortController();
-  
+
   // VS Code CancellationToken uses an event emitter pattern
   // For VS Code 1.80+, we use the new API
   if (typeof token.onCancellationRequested === 'function') {
@@ -41,6 +41,6 @@ export function cancellationTokenToAbortSignal(token: CancellationToken): AbortS
     // Token is already cancelled
     controller.abort();
   }
-  
+
   return controller.signal;
 }

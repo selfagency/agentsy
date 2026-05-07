@@ -1,4 +1,13 @@
-import type { ChatResponseStream, CancellationToken, Uri, Location } from 'vscode';
+import type { CancellationToken, ChatResponseStream, Location, Uri } from 'vscode';
+
+/**
+ * Represents a single entry in a filetree.
+ */
+export interface FileTreeEntry {
+  name: string;
+  path?: string;
+  children?: FileTreeEntry[];
+}
 
 /**
  * Extended ChatResponseStream interface with additional VS Code-specific overloads
@@ -23,7 +32,7 @@ export interface VSCodeChatResponseStream extends ChatResponseStream {
   /**
    * Overload for filetree with base URI options.
    */
-  filetree(value: any[], baseUri: Uri, options?: { showRoot?: boolean }): void;
+  filetree(value: FileTreeEntry[], baseUri: Uri, options?: { showRoot?: boolean }): void;
 
   /**
    * Overload for progress with additional context.

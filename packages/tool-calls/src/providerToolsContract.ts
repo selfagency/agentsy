@@ -67,7 +67,7 @@ const VALID_FORMATS = ['bare-xml', 'json-wrapped', 'native-json'] as const;
 /**
  * Type predicate for validating format property.
  */
-function isValidFormat(value: unknown): value is typeof VALID_FORMATS[number] | undefined {
+function isValidFormat(value: unknown): value is (typeof VALID_FORMATS)[number] | undefined {
   return value === undefined || (typeof value === 'string' && VALID_FORMATS.includes(value as never));
 }
 
@@ -79,7 +79,7 @@ export function isProviderTool(obj: unknown): obj is ProviderTool {
   if (!obj || typeof obj !== 'object') return false;
 
   const tool = obj as Record<string, unknown>;
-  
+
   return (
     isNonEmptyString(tool.name) &&
     isJsonObject(tool.parameters) &&

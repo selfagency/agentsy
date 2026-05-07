@@ -39,6 +39,16 @@ describe('ApiKeyManager', () => {
       const key = await freshManager.getApiKey();
       expect(key).toBe('stored-key-value');
     });
+
+    it('should throw error in unsafe mode when secrets.get fails', async () => {
+      mockContext.secrets.get = vi.fn().mockRejectedValue(new Error('Storage error'));
+      await expect(manager.initialize(false)).rejects.toThrow('Storage error');
+    });
+
+    it('should silently fail in safe mode when secrets.get fails', async () => {
+      mockContext.secrets.get = vi.fn().mockRejectedValue(new Error('Storage error'));
+      await expect(manager.initialize(true)).resolves.not.toThrow();
+    });
   });
 
   describe('getApiKey', () => {
@@ -57,6 +67,17 @@ describe('ApiKeyManager', () => {
       await mockContext.secrets.store('TEST_API_KEY', 'auto-initialized-key');
       const key = await manager.getApiKey();
       expect(key).toBe('auto-initialized-key');
+    });
+
+    it('should throw error in unsafe mode when initialization fails', async () => {
+      mockContext.secrets.get = vi.fn().mockRejectedValue(new Error('Storage error'));
+      await expect(manager.getApiKey(false)).rejects.toThrow('Storage error');
+    });
+
+    it('should return undefined in safe mode when initialization fails', async () => {
+      mockContext.secrets.get = vi.fn().mockRejectedValue(new Error('Storage error'));
+      const key = await manager.getApiKey(true);
+      expect(key).toBeUndefined();
     });
   });
 

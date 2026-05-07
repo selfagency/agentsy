@@ -54,13 +54,13 @@ function parseSseChunk(chunk: string): MCPStreamEvent | null {
  */
 function mapMcpToStreamEvent(mcpType: string): MCPStreamEvent['type'] | null {
   const mapping: Record<string, MCPStreamEvent['type']> = {
-    'content': 'markdown',
-    'anchor': 'anchor',
-    'button': 'button', 
-    'filetree': 'filetree',
-    'progress': 'progress',
-    'reference': 'reference',
-    'push': 'push',
+    content: 'markdown',
+    anchor: 'anchor',
+    button: 'button',
+    filetree: 'filetree',
+    progress: 'progress',
+    reference: 'reference',
+    push: 'push',
   };
   return mapping[mcpType] ?? null;
 }
@@ -84,7 +84,7 @@ export class VSCodeMCPBridgeHelper {
    */
   public createChatResponseStream(target: ChatResponseStream): ChatResponseStream {
     const transportStream = adaptTransportToStream(this.transport);
-    
+
     // Process raw stream chunks and forward to target stream
     this.processRawStream(transportStream, target);
 
@@ -98,11 +98,27 @@ export class VSCodeMCPBridgeHelper {
   public createDirectChatResponseStream(): ChatResponseStream {
     const chatStream: ChatResponseStream = {
       markdown: value => this.pushEvent({ type: 'markdown', data: { value } }),
-      anchor: (value, title) => this.pushEvent({ type: 'anchor', data: { value: String((value as { path?: string }).path ?? value), title } }),
-      button: command => this.pushEvent({ type: 'button', data: { command: String((command as { command?: string }).command ?? command) } }),
-      filetree: (value, baseUri) => this.pushEvent({ type: 'filetree', data: { value, baseUri: String((baseUri as { path?: string }).path ?? baseUri) } }),
+      anchor: (value, title) =>
+        this.pushEvent({ type: 'anchor', data: { value: String((value as { path?: string }).path ?? value), title } }),
+      button: command =>
+        this.pushEvent({
+          type: 'button',
+          data: { command: String((command as { command?: string }).command ?? command) },
+        }),
+      filetree: (value, baseUri) =>
+        this.pushEvent({
+          type: 'filetree',
+          data: { value, baseUri: String((baseUri as { path?: string }).path ?? baseUri) },
+        }),
       progress: value => this.pushEvent({ type: 'progress', data: { value } }),
-      reference: (value, iconPath) => this.pushEvent({ type: 'reference', data: { value: String((value as { path?: string }).path ?? value), iconPath: iconPath ? String((iconPath as { path?: string }).path) : undefined } }),
+      reference: (value, iconPath) =>
+        this.pushEvent({
+          type: 'reference',
+          data: {
+            value: String((value as { path?: string }).path ?? value),
+            iconPath: iconPath ? String((iconPath as { path?: string }).path) : undefined,
+          },
+        }),
       push: part => this.pushEvent({ type: 'push', data: part }),
     };
 
@@ -120,7 +136,7 @@ export class VSCodeMCPBridgeHelper {
   }
 
   /**
- * Processes raw string chunks from the transport and forwards them to the chat stream.
+   * Processes raw string chunks from the transport and forwards them to the chat stream.
    */
   private async processRawStream(
     transportStream: ReadableStream<string>,
@@ -156,7 +172,7 @@ export class VSCodeMCPBridgeHelper {
   private handleEvent(event: MCPStreamEvent, chatStream: ChatResponseStream): void {
     const data = event.data as Record<string, unknown>;
     const content = String(data.value ?? '');
-    
+
     switch (event.type) {
       case 'markdown':
         chatStream.markdown(content);

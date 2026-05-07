@@ -16,15 +16,9 @@ npm install @agentsy/vscode vscode
 
 To use the `@agentsy/vscode` modular ecosystem:
 
-````bash
-1. Install the latest `@agentsy/vscode` package.
-2. Utilize the new subpath imports from `@agentsy/vscode/*`, e.g., `@agentsy/vscode/renderer`.
-3. Adopt new APIs such as `createMCPChatBridge`, `retryWithBackoff` from `@agentsy/retry`, and enhanced agent loop utilities.
-4. Integrate MCP streaming and VS Code CancellationTokens for robust chat experiences.
-
 ```bash
-yarn add @agentsy/vscode vscode
-````
+pnpm add @agentsy/vscode vscode
+```
 
 ## Requirements
 

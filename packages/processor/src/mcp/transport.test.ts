@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { adaptTransportToStream, createCompatibilityAdapter } from './transport.js';
 import { Readable, Writable } from 'node:stream';
+import { describe, expect, it, vi } from 'vitest';
+import { adaptTransportToStream, createCompatibilityAdapter } from './transport.js';
 
 describe('MCP Transport', () => {
   describe('adaptTransportToStream', () => {
@@ -23,8 +23,10 @@ describe('MCP Transport', () => {
     it('should adapt stdio transport to ReadableStream', async () => {
       const readable = new Readable({
         read() {
-          this.push('data: stdio test\n\n');
-          this.push(null);
+          // Push data synchronously when read is called
+          if (!this.push('data: stdio test\n\n')) {
+            this.push(null);
+          }
         },
       });
 

@@ -43,7 +43,7 @@ export class ApiKeyManager {
   async getApiKey(safeMode: boolean = false): Promise<string | undefined> {
     try {
       if (!this.isInitialized) {
-        await this.initialize();
+        await this.initialize(safeMode);
       }
       return this.apiKey;
     } catch (error) {

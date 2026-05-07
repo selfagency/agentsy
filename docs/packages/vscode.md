@@ -25,8 +25,6 @@
 - Key and settings management: `ApiKeyManager` and related helpers
 - Usage tracking and MCP-oriented integration utilities
 
-[newline]
-
 ## New APIs (v1.x)
 
 ### MCP Chat Bridge

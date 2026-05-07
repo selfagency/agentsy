@@ -1,4 +1,9 @@
-import { createYourMCPTransport, createYourCancellationToken, yourAgentOptions } from '../your-setup';
+# Production Provider Example
+
+This example demonstrates how to use `@agentsy/vscode` package APIs in a production VS Code extension with advanced chat provider integration.
+
+````ts
+import { createVSCodeAgentLoop, createVSCodeChatRenderer } from '@agentsy/vscode';
 
 // Setup your MCPTransport and VS Code CancellationToken externally
 const transport = createYourMCPTransport();
@@ -40,11 +45,14 @@ import { retryWithBackoff } from '@agentsy/retry';
 
 // Setup your MCPTransport and VS Code CancellationToken externally
 const transport = createYourMCPTransport();
-const cancellationToken = createYourCancellationToken();
+const cancellationToken: CancellationToken = createYourCancellationToken();
 
 // Retry utility for resilient calls
-const cancellationToken = createYourCancellationToken();
-const retry = () => retryWithBackoff(async () => {}, cancellationToken, { maxRetries: 3, baseDelayMs: 1000 });
+const retry = (fn: () => Promise<void>) =>
+  retryWithBackoff(fn, cancellationToken, {
+    maxAttempts: 3,
+    initialDelayMs: 1000,
+  });
 
 // Create MCP Chat Bridge for streaming chat interaction
 const chatBridge = createMCPChatBridge(transport, cancellationToken);
@@ -56,20 +64,16 @@ const chatRenderer = createVSCodeChatRenderer({ stream: chatBridge.createStream(
 const agentLoop = createVSCodeAgentLoop({ chatRenderer, ...yourAgentOptions });
 
 async function runChatProvider() {
-  await retryWithBackoff(
-    async () => {
-      await agentLoop.start();
-    },
-    cancellationToken,
-    { maxRetries: 3, baseDelayMs: 1000 },
-  );
+  await retry(async () => {
+    await agentLoop.start();
+  });
 }
 
 runChatProvider().catch(console.error);
-```
+````
 
 This example showcases key patterns for resilient streaming, MCP integration, and VS Code chat rendering.
 
 Replace placeholders with actual implementations for your transport, cancellation token, and agent options.
 
-See the `@agentsy/vscode` docs for detailed API references.
+See `@agentsy/vscode` docs for detailed API references.

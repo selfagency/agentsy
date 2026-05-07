@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { createVSCodeChatResponseStream } from './chatResponseStream.js';
+import { describe, expect, it } from 'vitest';
 import type { CancellationToken } from 'vscode';
+import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
 describe('VSCode ChatResponseStream Overloads', () => {
   const mockCancellationToken: CancellationToken = {
@@ -30,7 +30,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support anchor with options', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.anchor('https://example.com', { iconPath: 'icon.png' });
+      stream.anchor({ uri: 'https://example.com' as any }, 'Example');
     }).not.toThrow();
   });
 
@@ -44,7 +44,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support filetree with options', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.filetree([], 'base_uri', { showRoot: true });
+      stream.filetree([{ name: 'test' }], { uri: 'file:///base' as any }, { showRoot: true });
     }).not.toThrow();
   });
 

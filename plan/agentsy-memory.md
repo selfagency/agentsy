@@ -136,6 +136,21 @@ The memory lifecycle should follow a consistent loop:
 - Provide a standalone **plugin** surface so editor integrations, CLI tools, and other frameworks can embed memory without pulling in Agentsy orchestration.
 - Keep the Agentsy-native memory implementation as one provider, not the only valid implementation.
 
+### 3.7 Cog-Style Retention Tiers
+
+- **Hot memory**: the current task/session working set, optimized for immediate use and fast pruning.
+- **Warm memory**: synthesized wiki pages, scoped summaries, and stable working context used across nearby turns.
+- **Cold memory**: archived raw logs, historical wiki snapshots, and older retrieval indexes kept for audit, replay, and deep recall.
+- Retention tiers are an implementation model, not a required public API; external memory backends may map these concepts differently.
+
+### 3.8 Maintenance and Scheduling
+
+- Memory maintenance should be expressed as explicit jobs: compaction, synthesis, linting, pruning, and retrieval index refresh.
+- Those jobs may be triggered by `@agentsy/scheduler` or by any equivalent external scheduler; `@agentsy/memory` must not own the cron engine.
+- Scheduler-driven maintenance should move facts from hot → warm → cold according to freshness, confidence, and scope.
+- Token economy may request fresh summaries or trigger compaction when prompt budgets are under pressure.
+- Subagents and recovery may read from warm summaries while the raw event log remains the cold source of truth.
+
 ---
 
 ## 4. Proposed Package Shape
@@ -161,11 +176,19 @@ This package should be the main public entry point for durable memory.
 - `createMemoryLifecycle(...)`
 - `createMemoryRetriever(...)`
 - `createMemoryLinter(...)`
+- `createMemoryProvider(...)`
+- `createMemoryBackend(...)`
+- `createMemoryMCPServer(...)`
+- `createMemoryPlugin(...)`
+- `createMemoryMaintenanceJobs(...)`
 - `memory_search(...)`
 - `memory_capture(...)`
 - `memory_list(...)`
 - `memory_stats(...)`
 - `memory_lint(...)`
+- `memory_compact(...)`
+- `memory_synthesize(...)`
+- `memory_refresh_index(...)`
 
 ### Internal helper modules
 
@@ -196,7 +219,9 @@ This module should fit into the current framework without collapsing into orches
 - `@agentsy/subagents`
   - share scoped memory across worker tasks and promote high-confidence results
 - `@agentsy/ui` and `@agentsy/ag-ui`
-  - surface memory entries, scopes, freshness, and editability in the UI
+  - surface memory entries, scopes, freshness, editability, and maintenance status in the UI
+- `@agentsy/scheduler`
+  - run recurring memory maintenance jobs, including compaction, synthesis, linting, and retrieval index refresh
 
 ## 6. Implementation Plan
 
@@ -234,6 +259,13 @@ This module should fit into the current framework without collapsing into orches
 2. Align memory with recovery checkpoints and token economy policies.
 3. Add telemetry for retrieval latency, freshness, and quality.
 4. Add end-to-end tests for memory-guided agent flows.
+
+### Phase 6: Scheduler-driven maintenance and standalone deployment
+
+1. Define scheduler-triggered maintenance jobs for compaction, synthesis, linting, pruning, and retrieval index refresh.
+2. Expose standalone memory startup paths for MCP server and plugin consumers.
+3. Add adapter tests for custom memory backends implementing the `MemoryProvider` / `MemoryBackend` contract.
+4. Document hot / warm / cold retention mapping and how external stacks can reinterpret it.
 
 ---
 

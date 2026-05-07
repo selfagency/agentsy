@@ -13,7 +13,9 @@ export interface RetryOptions {
  */
 export function hasRetryableStatusCode(error: unknown, statusCodes: number[]): boolean {
   if (!error || typeof error !== 'object') return true; // Non-object errors are retryable
-  const statusCode = (error as { response?: { statusCode?: number }; statusCode?: number }).response?.statusCode ?? (error as { statusCode?: number }).statusCode;
+  const statusCode =
+    (error as { response?: { statusCode?: number }; statusCode?: number }).response?.statusCode ??
+    (error as { statusCode?: number }).statusCode;
   // If no status code, it's a generic error and we should retry it
   if (statusCode === undefined) return true;
   // If it has a status code, check if it's in our retryable list
@@ -31,7 +33,7 @@ export function calculateRetryDelay(
     maxDelayMs: number;
   },
 ): number {
-  let delay = options.initialDelayMs * (options.backoffMultiplier ** attemptCount);
+  let delay = options.initialDelayMs * options.backoffMultiplier ** attemptCount;
   if (delay > options.maxDelayMs) delay = options.maxDelayMs;
   return delay;
 }
@@ -42,19 +44,19 @@ export function calculateRetryDelay(
  */
 function createDelayPromise(delayMs: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(resolve, delayMs);
-    
+    // Check if already aborted immediately
     if (signal?.aborted) {
-      clearTimeout(timer);
       reject(new Error('Operation cancelled by signal'));
       return;
     }
-    
+
+    const timer = setTimeout(resolve, delayMs);
+
     const abortHandler = () => {
       clearTimeout(timer);
       reject(new Error('Operation cancelled by signal'));
     };
-    
+
     signal?.addEventListener('abort', abortHandler, { once: true });
   });
 }
@@ -63,10 +65,7 @@ function createDelayPromise(delayMs: number, signal?: AbortSignal): Promise<void
  * Executes a function with retry logic and exponential backoff.
  * Primary export name for the retry utility.
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions & { maxAttempts: number },
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions & { maxAttempts: number }): Promise<T> {
   const maxAttempts = options.maxAttempts;
   const initialDelayMs = options.initialDelayMs ?? 1000;
   const maxDelayMs = options.maxDelayMs ?? 60000;

@@ -1,4 +1,4 @@
-import type { ReadableStream } from 'node:stream/web';
+import { ReadableStream } from 'node:stream/web';
 
 /**
  * Typed union representing the two supported MCP transport modes.
@@ -24,19 +24,38 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
   // For stdio transport, use Readable.toWeb() for native backpressure support
   // This is available in Node.js 22+ and properly handles backpressure
   if (typeof Readable.toWeb === 'function') {
-    return Readable.toWeb(transport.readable) as ReadableStream<string>;
+    const webStream = Readable.toWeb(transport.readable) as ReadableStream<Uint8Array>;
+    // Decode Uint8Array to string
+    return new ReadableStream({
+      async start(controller) {
+        const reader = webStream.getReader();
+        const decoder = new TextDecoder();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(decoder.decode(value, { stream: true }));
+          }
+        } catch (err) {
+          controller.error(err);
+        }
+      },
+    });
   }
 
   // Fallback: create backpressure-aware bridge for older Node versions
   // We maintain a single persistent writer and await all writes to handle backpressure properly
   const { readable: webReadable, writable } = new TransformStream<string>();
-  
+
   // Single writer - maintains backpressure by awaiting each write
   const writer = writable.getWriter();
 
   const onData = async (chunk: unknown) => {
     try {
-      await writer.write(String(chunk));
+      // Decode chunks from Buffer/string to ensure consistent string output
+      const decoded = Buffer.isBuffer(chunk) ? chunk.toString('utf-8') : String(chunk);
+      await writer.write(decoded);
     } catch (err) {
       // Re-throw non-stream errors to maintain error propagation
       if (err instanceof Error && !('code' in err && err.code === 'ERR_STREAM_WRITE_AFTER_END')) {
