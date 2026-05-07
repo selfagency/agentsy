@@ -13,7 +13,12 @@ This guide outlines the major changes and migration steps when upgrading Agentsy
 1. Update your imports to use the new subpath exports, for example:
 
 ```ts
+
+```
+
 - import { createVSCodeChatRenderer } from '@agentsy/vscode';
+
+```
 + import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
 ```
 

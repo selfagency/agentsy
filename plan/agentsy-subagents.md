@@ -1,4 +1,4 @@
-### Subagents
+# Subagents
 
 - Subagents are best understood as **specialized workers** with narrow context and clear responsibilities.
 - The dominant patterns are:

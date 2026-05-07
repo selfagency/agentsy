@@ -66,45 +66,48 @@ function createDelayPromise(delayMs: number, signal?: AbortSignal): Promise<void
  * Primary export name for the retry utility.
  */
 export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions & { maxAttempts: number }): Promise<T> {
-  const maxAttempts = options.maxAttempts;
-  const initialDelayMs = options.initialDelayMs ?? 1000;
-  const maxDelayMs = options.maxDelayMs ?? 60000;
-  const backoffMultiplier = options.backoffMultiplier ?? 2;
-  const statusCodes = options.statusCodes ?? [429, 500, 502, 503, 504];
-  const signal = options.signal;
+  const { maxAttempts, initialDelayMs, maxDelayMs, backoffMultiplier, statusCodes, signal } = options;
+  const defaults = {
+    maxDelayMs: maxDelayMs ?? 60000,
+    backoffMultiplier: backoffMultiplier ?? 2,
+    statusCodes: statusCodes ?? [429, 500, 502, 503, 504],
+  };
 
   let attempt = 0;
 
   while (true) {
-    if (signal?.aborted) {
-      throw new Error('Operation cancelled by signal');
-    }
+    checkIfCancelled(signal);
+
     try {
       return await fn();
     } catch (error: unknown) {
       attempt++;
-      if (attempt >= maxAttempts) {
+
+      checkIfCancelled(signal);
+
+      if (!isRetryableError(error, maxAttempts, attempt, defaults.statusCodes)) {
         throw error;
       }
 
-      if (signal?.aborted) {
-        throw new Error('Operation cancelled by signal');
-      }
-
-      // Check for retryable status codes
-      if (!hasRetryableStatusCode(error, statusCodes)) {
-        throw error;
-      }
-
-      const delay = calculateRetryDelay(attempt - 1, {
-        initialDelayMs,
-        backoffMultiplier,
-        maxDelayMs,
+      const delay = calculateRetryDelay(attempt, {
+        initialDelayMs: initialDelayMs ?? 1000,
+        backoffMultiplier: defaults.backoffMultiplier,
+        maxDelayMs: defaults.maxDelayMs,
       });
 
       await createDelayPromise(delay, signal);
     }
   }
+}
+
+function checkIfCancelled(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new Error('Operation cancelled by signal');
+  }
+}
+
+function isRetryableError(error: unknown, maxAttempts: number, attempt: number, statusCodes: number[]): boolean {
+  return attempt < maxAttempts && hasRetryableStatusCode(error, statusCodes);
 }
 
 /**

@@ -15,7 +15,12 @@ This document describes notable changes and migration steps for the Agentsy modu
 1. Update your imports to use new modular subpath exports, e.g.,
 
 ```ts
- - import { createVSCodeChatRenderer } from '@agentsy/vscode';
+
+```
+
+- import { createVSCodeChatRenderer } from '@agentsy/vscode';
+
+```
  + import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
 ```
 

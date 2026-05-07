@@ -9,6 +9,10 @@ export type MCPTransport =
   | { type: 'http'; stream: ReadableStream<string> }
   | { type: 'stdio'; readable: NodeJS.ReadableStream; writable: NodeJS.WritableStream };
 
+type StdioTransport = Extract<MCPTransport, { type: 'stdio' }>;
+type StreamReader = StdioTransport['readable'];
+type StreamWriter = StdioTransport['writable'];
+
 import { Readable } from 'node:stream';
 
 /**
@@ -107,8 +111,10 @@ export function createCompatibilityAdapter(transport: MCPTransport): {
     return {
       stream,
       cleanup: () => {
-        (transport.readable as any).destroy?.();
-        (transport.writable as any).destroy?.();
+        const readable = transport.readable as NodeJS.ReadableStream;
+        const writable = transport.writable as NodeJS.WritableStream;
+        (readable as unknown as { destroy?: () => void }).destroy?.();
+        (writable as unknown as { destroy?: () => void }).destroy?.();
       },
     };
   }

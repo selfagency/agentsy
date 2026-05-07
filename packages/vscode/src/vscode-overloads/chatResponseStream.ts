@@ -67,7 +67,7 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     button: (command: string | { command: string; title: string; arguments?: unknown[] }) => {
       // Implementation would handle button with command options
     },
-    filetree: (value: any[], baseUri: Uri, options?: { showRoot?: boolean }) => {
+    filetree: (value: Array<{ name: string }>, baseUri: Uri, options?: { showRoot?: boolean }) => {
       // Implementation would handle filetree with options
     },
     progress: (value: string, context?: { step?: number; total?: number }) => {

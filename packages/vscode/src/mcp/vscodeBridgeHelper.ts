@@ -1,6 +1,6 @@
 import type { MCPTransport } from '@agentsy/processor';
 import { adaptTransportToStream } from '@agentsy/processor';
-import type { ChatResponseStream, CancellationToken, Uri, Location } from 'vscode';
+import type { ChatResponseStream, CancellationToken } from 'vscode';
 
 // Re-export types for compatibility
 export type { ChatResponseStream, CancellationToken };

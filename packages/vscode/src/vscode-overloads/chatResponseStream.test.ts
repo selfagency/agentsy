@@ -1,15 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { CancellationToken } from 'vscode';
+import type { ChatResponseParameters } from 'vscode';
 import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
 describe('VSCode ChatResponseStream Overloads', () => {
-  const testUri: TestUri = {
-    uri: 'https://example.com',
-  };
-
-  const baseUri: TestUri = {
-    uri: 'file:///base',
-  };
   const mockCancellationToken: CancellationToken = {
     isCancellationRequested: false,
     onCancellationRequested: () => ({ dispose: () => {} }),
@@ -37,7 +31,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support anchor with options', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.anchor({ uri: 'https://example.com' as any }, 'Example');
+      stream.anchor({ uri: 'https://example.com' }, 'Example');
     }).not.toThrow();
   });
 
@@ -51,7 +45,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support filetree with options', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.filetree([{ name: 'test' }], { uri: 'file:///base' as any }, { showRoot: true });
+      stream.filetree([{ name: 'test' }], { uri: 'file:///base' }, { showRoot: true });
     }).not.toThrow();
   });
 
