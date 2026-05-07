@@ -18,7 +18,7 @@ This guide outlines the major changes and migration steps when upgrading Agentsy
 
 - import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
-```
+```ts
 + import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
 ```
 

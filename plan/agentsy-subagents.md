@@ -24,7 +24,7 @@
   - tasks that need deterministic, step-by-step execution
   - workflows where the main agent must retain full shared context
 
-### A2A
+## A2A
 
 - A2A is a **real interoperability protocol**, not just an orchestration pattern.
 - The spec centers on:
@@ -189,15 +189,15 @@ That keeps the new layer consistent with your current architecture: small, focus
 
 If I were writing this in the same style as your secrets plan, I’d structure it like this:
 
-# Plan: Subagents and A2A Module for Agentsy
+## Plan: Subagents and A2A Module for Agentsy
 
-## 1. Background analysis
+### 1. Background analysis
 
 - summarize subagent patterns from VS Code, Claude Code, Codex, LangChain, and Copilot guidance
 - summarize A2A as the interoperability standard for agent-to-agent communication
 - distinguish local orchestration from cross-system protocol concerns
 
-## 2. Requirements for Agentsy
+### 2. Requirements for Agentsy
 
 - local subagent delegation
 - fan-out and chained workflows
@@ -208,15 +208,15 @@ If I were writing this in the same style as your secrets plan, I’d structure i
 - strong validation and security boundaries
 - compatibility with existing Agentsy packages
 
-## 3. Proposed architecture
+### 3. Proposed architecture
 
-### 3.1 New packages
+#### 3.1 New packages
 
 - `@agentsy/subagents`
 - `@agentsy/a2a`
 - optional `@agentsy/agent-interop`
 
-### 3.2 Shared contracts
+#### 3.2 Shared contracts
 
 - `AgentCard`
 - `SubagentDefinition`
@@ -225,21 +225,21 @@ If I were writing this in the same style as your secrets plan, I’d structure i
 - `TransportAdapter`
 - `AgentEvent`
 
-### 3.3 Runtime model
+#### 3.3 Runtime model
 
 - local coordinator
 - local worker subagents
 - remote A2A agents
 - result normalization into shared stream events
 
-### 3.4 Transport model
+#### 3.4 Transport model
 
 - JSON-RPC support first
 - HTTP/REST binding
 - streaming support
 - room for gRPC later if needed
 
-### 3.5 Security model
+#### 3.5 Security model
 
 - explicit capabilities
 - tool allowlists
@@ -247,16 +247,16 @@ If I were writing this in the same style as your secrets plan, I’d structure i
 - no implicit trust across remote boundaries
 - no silent context leakage
 
-## 4. Implementation plan
+### 4. Implementation plan
 
-### Phase 1: shared types and validation
+#### Phase 1: shared types and validation
 
 - add Agent Card and subagent contracts
 - add schema validation
 - define common event shapes
 - add tests for type narrowing and serialization
 
-### Phase 2: local subagent orchestration
+#### Phase 2: local subagent orchestration
 
 - implement coordinator/worker API
 - support sequential and parallel delegation
@@ -264,7 +264,7 @@ If I were writing this in the same style as your secrets plan, I’d structure i
 - integrate with current processor and tool-call flows
 - add tests for isolated context and permission handling
 
-### Phase 3: A2A protocol support
+#### Phase 3: A2A protocol support
 
 - implement agent discovery
 - parse and validate agent cards
@@ -272,21 +272,21 @@ If I were writing this in the same style as your secrets plan, I’d structure i
 - add streaming and async message support
 - normalize A2A errors into Agentsy error types
 
-### Phase 4: bridge local and remote agents
+#### Phase 4: bridge local and remote agents
 
 - unify local subagents and remote A2A agents behind one target interface
 - support mixed fan-out
 - allow a coordinator to route tasks by capability, policy, or cost
 - add replay/resumption support if streams are interrupted
 
-### Phase 5: integrations
+#### Phase 5: integrations
 
 - add VS Code-facing helpers if needed
 - add CLI/dev tooling for inspection
 - add examples and docs
 - add package catalog and architecture docs
 
-## 5. Risk mitigation
+### 5. Risk mitigation
 
 - keep subagents local-first
 - do not overfit to one vendor’s UX
@@ -296,18 +296,18 @@ If I were writing this in the same style as your secrets plan, I’d structure i
 - keep outputs structured and bounded
 - treat remote agents as untrusted by default
 
-## 6. Summary
+### 6. Summary
 
 - local subagents are an orchestration feature
 - A2A is a protocol feature
 - they should share contracts, not implementation assumptions
 - Agentsy should expose both through a clean, layered design
 
-## My recommendation
+### My recommendation
 
 I would start with this scope:
 
-### MVP
+#### MVP
 
 - local subagent coordinator
 - agent card parsing/validation
@@ -315,7 +315,7 @@ I would start with this scope:
 - shared result/event model
 - simple fan-out and chained delegation
 
-### Defer for later
+#### Defer for later
 
 - long-lived agent pools
 - team-of-agents coordination
@@ -325,7 +325,7 @@ I would start with this scope:
 
 That keeps the first version useful without exploding the surface area.
 
-## My preferred package naming
+### My preferred package naming
 
 If you want the cleanest monorepo shape, I’d do:
 

@@ -20,7 +20,7 @@ This document describes notable changes and migration steps for the Agentsy modu
 
 - import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
-```
+```text
  + import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
 ```
 
