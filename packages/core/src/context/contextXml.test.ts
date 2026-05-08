@@ -34,7 +34,7 @@ describe('createXmlStreamFilter', () => {
     const warnings: Array<{ message: string; context?: Record<string, unknown> }> = [];
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['environment_info']),
-      onWarning: (message, context) => {
+      onWarning: (message: string, context?: Record<string, unknown>) => {
         if (context === undefined) {
           warnings.push({ message });
           return;
@@ -63,7 +63,7 @@ describe('createXmlStreamFilter', () => {
     const warnings: string[] = [];
     const filter = createXmlStreamFilter({
       maxXmlNestingDepth: 2,
-      onWarning: message => {
+      onWarning: (message: string) => {
         warnings.push(message);
       },
     });

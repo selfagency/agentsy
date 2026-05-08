@@ -21,9 +21,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@agentsy/adapters": "workspace:*",
     "@agentsy/core": "workspace:*",
-    "@agentsy/normalizers": "workspace:*",
+    "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/types": "workspace:*"
   },

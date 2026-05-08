@@ -1,9 +1,11 @@
 {
   "name": "@agentsy/providers",
-  "version": "0.0.0",
-  "description": "Provider capability matrix and provider-specific adapters",
+  "version": "0.2.0-alpha.0",
+  "description": "Provider capability matrix, adapters (consolidated: adapters)",
   "keywords": [
+    "adapters",
     "agentsy",
+    "providers",
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
@@ -32,7 +34,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@agentsy/normalizers": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

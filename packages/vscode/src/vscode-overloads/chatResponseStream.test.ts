@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { CancellationToken } from 'vscode';
-import type { ChatResponseParameters } from 'vscode';
+import type { CancellationToken, Uri } from 'vscode';
+import type { ChatResponsePart } from 'vscode';
 import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
 describe('VSCode ChatResponseStream Overloads', () => {
@@ -8,6 +8,28 @@ describe('VSCode ChatResponseStream Overloads', () => {
     isCancellationRequested: false,
     onCancellationRequested: () => ({ dispose: () => {} }),
   };
+
+  const mockUri = {
+    scheme: 'https',
+    authority: 'example.com',
+    path: '',
+    query: '',
+    fragment: '',
+    fsPath: '',
+    with: () => mockUri,
+    toJSON: () => ({}),
+  } as Uri;
+
+  const mockFileUri = {
+    scheme: 'file',
+    authority: '',
+    path: '/base',
+    query: '',
+    fragment: '',
+    fsPath: '/base',
+    with: () => mockFileUri,
+    toJSON: () => ({}),
+  } as Uri;
 
   it('should create VSCode chat response stream', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
@@ -31,7 +53,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support anchor with options', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.anchor({ uri: 'https://example.com' }, 'Example');
+      stream.anchor(mockUri, 'Example');
     }).not.toThrow();
   });
 
@@ -45,7 +67,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support filetree with options', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.filetree([{ name: 'test' }], { uri: 'file:///base' }, { showRoot: true });
+      stream.filetree([{ name: 'test' }], mockFileUri, { showRoot: true });
     }).not.toThrow();
   });
 
@@ -59,7 +81,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   it('should support reference with metadata', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
-      stream.reference('https://example.com', { source: 'test' });
+      stream.reference(mockUri, mockUri);
     }).not.toThrow();
   });
 

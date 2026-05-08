@@ -11,7 +11,7 @@ import type {
 import { WorkflowStatus, NodeType } from '../types/index.js';
 import type { AgentRegistry } from '../agents/registry.js';
 
-// Stub interface for scheduler since @agentsy/scheduler is not yet implemented
+// Stub interface for scheduler since @agentsy/orchestrator/scheduler is not yet implemented
 interface TaskScheduler {
   schedule<T>(task: () => Promise<T>): Promise<T>;
   schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown>;

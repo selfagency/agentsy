@@ -199,7 +199,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     await safeEmitEvent(
       withThreadId(
         {
-          type: EventType.RUN_STARTED as const,
+          type: EventType.RUN_STARTED,
           runId,
           timestamp: new Date().toISOString(),
         },
@@ -230,7 +230,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         await safeEmitEvent(
           withThreadId(
             {
-              type: EventType.STEP_STARTED as const,
+              type: EventType.STEP_STARTED,
               runId,
               stepIndex: state.steps.length,
               timestamp: new Date().toISOString(),
@@ -247,7 +247,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         await safeEmitEvent(
           withThreadId(
             {
-              type: EventType.STEP_FINISHED as const,
+              type: EventType.STEP_FINISHED,
               runId,
               stepIndex: state.stepIndex,
               outputLength: result.parts.length,
@@ -279,11 +279,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       await safeEmitEvent(
         withThreadId(
           {
-            type: EventType.RUN_FINISHED as const,
+            type: EventType.RUN_FINISHED,
             runId,
             outcome: { type: abortReason },
             timestamp: new Date().toISOString(),
-          } as const,
+          },
           threadId,
         ),
         'RUN_FINISHED',
@@ -295,7 +295,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       await safeEmitEvent(
         withThreadId(
           {
-            type: EventType.RUN_ERROR as const,
+            type: EventType.RUN_ERROR,
             runId,
             error: { message: errorMessage },
             timestamp: new Date().toISOString(),

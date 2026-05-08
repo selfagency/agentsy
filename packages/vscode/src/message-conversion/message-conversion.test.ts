@@ -156,8 +156,10 @@ describe('message-adapter', () => {
       ];
       const result = convertMessages(msgs);
       expect(result).toHaveLength(2);
-      expect(result[0].role).toBe('user');
-      expect(result[1].role).toBe('assistant');
+      const first = result[0];
+      const second = result[1];
+      expect(first?.role).toBe('user');
+      expect(second?.role).toBe('assistant');
     });
 
     it('returns empty array for empty input', () => {

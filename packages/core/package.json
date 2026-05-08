@@ -24,54 +24,59 @@
       "require": "./dist/index.cjs"
     },
     "./processor": {
-      "types": "./dist/processor/index.d.ts",
-      "import": "./dist/processor/index.js",
-      "require": "./dist/processor/index.cjs"
+      "types": "./dist/processor.d.ts",
+      "import": "./dist/processor.js",
+      "require": "./dist/processor.cjs"
     },
     "./sse": {
-      "types": "./dist/sse/index.d.ts",
-      "import": "./dist/sse/index.js",
-      "require": "./dist/sse/index.cjs"
+      "types": "./dist/sse.d.ts",
+      "import": "./dist/sse.js",
+      "require": "./dist/sse.cjs"
     },
     "./structured": {
-      "types": "./dist/structured/index.d.ts",
-      "import": "./dist/structured/index.js",
-      "require": "./dist/structured/index.cjs"
+      "types": "./dist/structured.d.ts",
+      "import": "./dist/structured.js",
+      "require": "./dist/structured.cjs"
     },
     "./thinking": {
-      "types": "./dist/thinking/index.d.ts",
-      "import": "./dist/thinking/index.js",
-      "require": "./dist/thinking/index.cjs"
+      "types": "./dist/thinking.d.ts",
+      "import": "./dist/thinking.js",
+      "require": "./dist/thinking.cjs"
     },
     "./tool-calls": {
-      "types": "./dist/tool-calls/index.d.ts",
-      "import": "./dist/tool-calls/index.js",
-      "require": "./dist/tool-calls/index.cjs"
+      "types": "./dist/tool-calls.d.ts",
+      "import": "./dist/tool-calls.js",
+      "require": "./dist/tool-calls.cjs"
     },
     "./xml-filter": {
-      "types": "./dist/xml-filter/index.d.ts",
-      "import": "./dist/xml-filter/index.js",
-      "require": "./dist/xml-filter/index.cjs"
+      "types": "./dist/xml-filter.d.ts",
+      "import": "./dist/xml-filter.js",
+      "require": "./dist/xml-filter.cjs"
     },
     "./context": {
-      "types": "./dist/context/index.d.ts",
-      "import": "./dist/context/index.js",
-      "require": "./dist/context/index.cjs"
+      "types": "./dist/context.d.ts",
+      "import": "./dist/context.js",
+      "require": "./dist/context.cjs"
     },
     "./formatting": {
-      "types": "./dist/formatting/index.d.ts",
-      "import": "./dist/formatting/index.js",
-      "require": "./dist/formatting/index.cjs"
+      "types": "./dist/formatting.d.ts",
+      "import": "./dist/formatting.js",
+      "require": "./dist/formatting.cjs"
     },
     "./recovery": {
-      "types": "./dist/recovery/index.d.ts",
-      "import": "./dist/recovery/index.js",
-      "require": "./dist/recovery/index.cjs"
+      "types": "./dist/recovery.d.ts",
+      "import": "./dist/recovery.js",
+      "require": "./dist/recovery.cjs"
     },
     "./ui": {
-      "types": "./dist/ui/index.d.ts",
-      "import": "./dist/ui/index.js",
-      "require": "./dist/ui/index.cjs"
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.js",
+      "require": "./dist/ui.cjs"
+    },
+    "./normalizers": {
+      "types": "./dist/normalizers.d.ts",
+      "import": "./dist/normalizers.js",
+      "require": "./dist/normalizers.cjs"
     }
   },
   "scripts": {

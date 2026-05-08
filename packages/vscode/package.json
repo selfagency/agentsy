@@ -100,8 +100,9 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/normalizers": "workspace:*",
-    "@agentsy/renderers": "workspace:*"
+    "@agentsy/providers": "workspace:*",
+    "@agentsy/renderers": "workspace:*",
+    "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

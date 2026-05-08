@@ -132,7 +132,7 @@ describe('BaseLanguageModelChatProvider', () => {
       expect(provider.builtRequest).toBeDefined();
       if (!provider.builtRequest) throw new Error('builtRequest should be defined');
       const body = provider.builtRequest.body as { messages: ChatMessage[]; model: string };
-      expect(body.messages[0].content).toBe('Hello');
+      expect(body.messages[0]?.content).toBe('Hello');
       expect(body.model).toBe('my-model');
     });
 
@@ -169,7 +169,9 @@ describe('BaseLanguageModelChatProvider', () => {
         provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> }
       ).createErrorResponse(new Error('test'), 'Something went wrong');
       const chunks: unknown[] = [];
-      for await (const chunk of response.stream) {
+      // Need to await the Promise to get the actual response
+      const actualResponse = await response;
+      for await (const chunk of actualResponse.stream) {
         chunks.push(chunk);
       }
       expect(chunks).toHaveLength(0);
@@ -180,7 +182,8 @@ describe('BaseLanguageModelChatProvider', () => {
       const response = (
         provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> }
       ).createErrorResponse(new Error('test'), 'User-facing message');
-      const text = await response.text;
+      const actualResponse = await response;
+      const text = await actualResponse.text;
       expect(text).toBe('User-facing message');
     });
   });

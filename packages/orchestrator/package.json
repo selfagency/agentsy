@@ -1,9 +1,11 @@
 {
   "name": "@agentsy/orchestrator",
-  "version": "0.0.1",
-  "description": "Advanced agent orchestration system providing intelligent task decomposition, resource allocation, and execution coordination",
+  "version": "0.2.0-alpha.0",
+  "description": "Advanced agent orchestration system with consolidated scheduler",
   "keywords": [
     "agentsy",
+    "orchestration",
+    "scheduler",
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
@@ -31,22 +33,23 @@
     "test": "vitest",
     "coverage": "vitest --coverage",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint",
-    "format": "oxfmt"
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write ."
   },
   "dependencies": {
     "@agentsy/memory": "workspace:*",
     "@agentsy/runtime": "workspace:*",
-    "@agentsy/scheduler": "workspace:*",
     "@agentsy/session": "workspace:*",
     "@agentsy/types": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "oxfmt": "^0.1.0",
-    "oxlint": "^0.1.0",
-    "tsup": "^7.0.0",
-    "typescript": "^5.2.0",
-    "vitest": "^1.0.0"
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.5"
   }
 }

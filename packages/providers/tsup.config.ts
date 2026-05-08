@@ -8,4 +8,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   target: 'es2022',
+  external: ['@agentsy/core', '@agentsy/types'],
 });

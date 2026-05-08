@@ -11,5 +11,5 @@ export * from './types/index.js';
 export * from './utils/matching.js';
 export * from './utils/timing.js';
 
-// Import scheduling from separate package
-import '@agentsy/scheduler';
+// Scheduler exports (consolidated from @agentsy/orchestrator/scheduler)
+export * from './scheduler/index.js';

@@ -4,7 +4,7 @@ import { createConversationStoreFromProcessor } from './processorBridge.js';
 import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 import type { FinishReason, JsonObject } from '@agentsy/types';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '../processor/index.js';
 
 // Helper functions for ConversationStore tests
 function startMessage(

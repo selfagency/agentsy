@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { NormalizerResult } from '@agentsy/normalizers';
+import type { NormalizerResult } from '@agentsy/core/normalizers';
 import {
   normalizeAnthropicEvent,
   normalizeBedrockConverseEvent,
@@ -16,7 +16,7 @@ import {
   normalizeGeminiChunk,
   normalizeOpenAIChatChunk,
   normalizeOpenAIResponseEvent,
-} from '@agentsy/normalizers';
+} from '@agentsy/core/normalizers';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 // ---------------------------------------------------------------------------

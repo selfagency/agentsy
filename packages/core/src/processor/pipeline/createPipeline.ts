@@ -10,12 +10,12 @@ import {
   normalizeOllamaChatChunk,
   normalizeOpenAIChatChunk,
   normalizeZAiChunk,
-} from '@agentsy/normalizers';
+} from '../../normalizers/index.js';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
-import { parseSSEStream } from '@agentsy/core/sse';
-import { parseJson } from '@agentsy/core/structured';
+import { parseSSEStream } from '../../sse/index.js';
+import { parseJson } from '../../structured/index.js';
 import type { JsonObject } from '@agentsy/types';
 
 export type NormalizerProvider =

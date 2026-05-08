@@ -32,7 +32,9 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@agentsy/ag-ui": "workspace:*",
     "@agentsy/agent": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

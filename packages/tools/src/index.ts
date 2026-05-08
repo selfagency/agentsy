@@ -1,1 +1,2 @@
-export const name = 'tools';
+// Core exports
+export * from './repl/index.js';

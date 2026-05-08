@@ -1,5 +1,10 @@
-import { ThinkingParser } from '@agentsy/core/thinking';
-import { extractXmlToolCalls, ToolCallAccumulator, type XmlToolCall } from '@agentsy/core/tool-calls';
+import { ThinkingParser } from '../../thinking/index.js';
+import {
+  extractXmlToolCalls,
+  ToolCallAccumulator,
+  type NativeToolCall,
+  type XmlToolCall,
+} from '../../tool-calls/index.js';
 import type {
   ConversationEvent,
   FinishReason,
@@ -8,7 +13,7 @@ import type {
   ToolCallState,
   UsageInfo,
 } from '@agentsy/types';
-import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/core/xml-filter';
+import { createXmlStreamFilter, type XmlStreamFilter } from '../../xml-filter/index.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { enforceMaxLength, ensureText, estimateChunkSize, mapNativeToolCalls } from './chunkUtils.js';
 import { detectIncompleteness } from './incompleteness.js';
@@ -874,7 +879,7 @@ export class LLMStreamProcessor {
   }
 
   private mapAccumulatedNativeCallsWithIndices(
-    calls: Array<{ index: number; call: import('@agentsy/core/tool-calls').NativeToolCall }>,
+    calls: Array<{ index: number; call: NativeToolCall }>,
     state: ToolCallState,
   ): Array<Extract<OutputPart, { type: 'tool_call' }>> {
     return calls.map(({ index, call }) => {

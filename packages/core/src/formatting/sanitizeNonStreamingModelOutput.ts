@@ -1,4 +1,4 @@
-import { stripXmlContextTags } from '@agentsy/core/context';
+import { stripXmlContextTags } from '../context/index.js';
 import { formatXmlLikeResponseForDisplay } from './formatXmlLikeResponseForDisplay.js';
 
 export function sanitizeNonStreamingModelOutput(text: string): string {

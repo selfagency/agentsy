@@ -1,5 +1,5 @@
-import type { ThinkingTagPair } from '@agentsy/core/thinking';
-import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { ThinkingTagPair } from '../../thinking/index.js';
+import type { XmlToolCall } from '../../tool-calls/index.js';
 import type { ConversationEvent, FinishReason, ToolCallState, UsageInfo } from '@agentsy/types';
 import type { ToolCallParser } from './ToolCallParser.js';
 

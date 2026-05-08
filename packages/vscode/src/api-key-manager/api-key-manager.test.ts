@@ -3,17 +3,6 @@ import { createMockExtensionContext } from '../test/fixtures/mock-vscode.js';
 import type { ApiKeyManagerConfig } from '../types/index.js';
 import { ApiKeyManager } from './api-key-manager.js';
 
-interface TestSecrets {
-  get: (_: string) => Promise<string>;
-  store: (...rests: unknown[]) => void;
-  delete: (...rests: unknown[]) => void;
-  keys: () => Promise<string[]>;
-}
-
-interface TestContext {
-  secrets: TestSecrets;
-}
-
 describe('ApiKeyManager', () => {
   let mockContext: ReturnType<typeof createMockExtensionContext>;
   let config: ApiKeyManagerConfig;
@@ -26,7 +15,7 @@ describe('ApiKeyManager', () => {
       contextKey: 'test.hasApiKey',
       displayName: 'Test API Key',
     };
-    manager = new ApiKeyManager(mockContext, config);
+    manager = new ApiKeyManager(mockContext as any, config);
   });
 
   afterEach(() => {
@@ -251,32 +240,22 @@ describe('ApiKeyManager', () => {
   describe('initialization error handling', () => {
     it('should throw when initialize() fails and safeMode is not enabled', async () => {
       // Create a broken context where secrets.get always throws
-      const brokenContext: TestContext = {
-        secrets: {
-          get: async (_: string) => {
-            throw new Error('boom');
-          },
-          store: vi.fn(),
-          delete: vi.fn(),
-          keys: async () => [],
-        },
-      };
-      const brokenManager = new ApiKeyManager(brokenContext, config);
+      const brokenContext = createMockExtensionContext();
+      // Override the secrets.get method to throw an error
+      vi.spyOn(brokenContext.secrets, 'get').mockImplementation(async () => {
+        throw new Error('boom');
+      });
+      const brokenManager = new ApiKeyManager(brokenContext as any, config);
       await expect(brokenManager.initialize()).rejects.toThrow('boom');
     });
 
     it('should not throw when initialize() fails in safe mode and allow getApiKey(true) to resolve to undefined', async () => {
-      const brokenContext: TestContext = {
-        secrets: {
-          get: async (_: string) => {
-            throw new Error('boom');
-          },
-          store: vi.fn(),
-          delete: vi.fn(),
-          keys: async () => [],
-        },
-      };
-      const brokenManager = new ApiKeyManager(brokenContext, config);
+      const brokenContext = createMockExtensionContext();
+      // Override the secrets.get method to throw an error
+      vi.spyOn(brokenContext.secrets, 'get').mockImplementation(async () => {
+        throw new Error('boom');
+      });
+      const brokenManager = new ApiKeyManager(brokenContext as any, config);
       await expect(brokenManager.initialize(true)).resolves.toBeUndefined();
       // Safe retrieval should not throw and should yield undefined when no key is present
       const key = await brokenManager.getApiKey(true);
