@@ -50,7 +50,7 @@
     "ora": "9.4.0",
     "oxfmt": "0.48.0",
     "oxlint": "1.63.0",
-    "turbo": "^2.9.9",
+    "turbo": "^2.9.0",
     "vitepress": "^1.6.4",
     "zod-to-json-schema": "^3.25.2",
     "zx": "^8.8.5"
@@ -64,5 +64,15 @@
       "oxfmt --no-error-on-unmatched-pattern --write ."
     ]
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.2",
+  "pnpm": {
+    "overrides": {
+      "@ai-sdk/openai": "^3.0.0"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@ai-sdk/openai"
+      ]
+    }
+  }
 }
