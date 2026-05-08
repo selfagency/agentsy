@@ -34,8 +34,7 @@
   },
   "dependencies": {
     "@agentsy/ag-ui": "workspace:*",
-    "@agentsy/processor": "workspace:*",
-    "@agentsy/tool-calls": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

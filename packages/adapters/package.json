@@ -33,9 +33,7 @@
   },
   "dependencies": {
     "@agentsy/agent": "workspace:*",
-    "@agentsy/processor": "workspace:*",
-    "@agentsy/structured": "workspace:*",
-    "@agentsy/tool-calls": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

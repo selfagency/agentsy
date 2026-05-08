@@ -10,10 +10,7 @@ export class TimingUtils {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  static async withTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number
-  ): Promise<T> {
+  static async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs);
     });
@@ -21,20 +18,17 @@ export class TimingUtils {
     return Promise.race([promise, timeoutPromise]);
   }
 
-  static async retry<T>(
-    operation: () => Promise<T>,
-    options: TimingOptions = {}
-  ): Promise<T> {
+  static async retry<T>(operation: () => Promise<T>, options: TimingOptions = {}): Promise<T> {
     const { retries = 3, backoff = 'exponential', delay = 1000 } = options;
-    
+
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         return await operation();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt === retries) {
           throw lastError;
         }
@@ -43,15 +37,11 @@ export class TimingUtils {
         await this.delay(backoffDelay);
       }
     }
-    
+
     throw lastError!;
   }
 
-  static calculateBackoffDelay(
-    attempt: number,
-    baseDelay: number,
-    strategy: 'linear' | 'exponential'
-  ): number {
+  static calculateBackoffDelay(attempt: number, baseDelay: number, strategy: 'linear' | 'exponential'): number {
     switch (strategy) {
       case 'linear':
         return baseDelay * (attempt + 1);
@@ -66,28 +56,28 @@ export class TimingUtils {
     if (ms < 1000) {
       return `${ms}ms`;
     }
-    
+
     const seconds = Math.floor(ms / 1000);
     if (seconds < 60) {
       return `${seconds}s`;
     }
-    
+
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) {
       return `${minutes}m ${seconds % 60}s`;
     }
-    
+
     const hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
   }
 }
 
 export class Debouncer {
-  private timeoutId: number | null = null;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly delay: number,
-    private readonly fn: (...args: any[]) => void
+    private readonly fn: (...args: any[]) => void,
   ) {}
 
   debounce(...args: any[]): void {
@@ -111,23 +101,26 @@ export class Debouncer {
 
 export class Throttle {
   private lastExecution = 0;
-  private pendingExecution: number | null = null;
+  private pendingExecution: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly interval: number,
-    private readonly fn: (...args: any[]) => void
+    private readonly fn: (...args: any[]) => void,
   ) {}
 
   throttle(...args: any[]): void {
     const now = Date.now();
-    
+
     if (now - this.lastExecution >= this.interval) {
       this.execute(...args);
     } else if (this.pendingExecution === null) {
-      this.pendingExecution = setTimeout(() => {
-        this.execute(...args);
-        this.pendingExecution = null;
-      }, this.interval - (now - this.lastExecution));
+      this.pendingExecution = setTimeout(
+        () => {
+          this.execute(...args);
+          this.pendingExecution = null;
+        },
+        this.interval - (now - this.lastExecution),
+      );
     }
   }
 

@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const SkillSchema = z.object({
   id: z.string(),
   name: z.string(),
   category: z.string(),
-  proficiency: z.enum(["beginner", "intermediate", "advanced", "expert"]),
+  proficiency: z.enum(['beginner', 'intermediate', 'advanced', 'expert']),
   capabilities: z.array(z.string()),
 });
 
@@ -13,7 +13,7 @@ export type Skill = z.infer<typeof SkillSchema>;
 export const ResourceSchema = z.object({
   id: z.string(),
   name: z.string(),
-  type: z.enum(["compute", "memory", "storage", "network"]),
+  type: z.enum(['compute', 'memory', 'storage', 'network']),
   amount: z.number(),
   unit: z.string(),
 });
@@ -27,7 +27,7 @@ export const TaskSchema = z.object({
   requirements: z.array(SkillSchema),
   resources: z.array(ResourceSchema),
   input: z.record(z.unknown()),
-  priority: z.enum(["low", "medium", "high", "critical"]),
+  priority: z.enum(['low', 'medium', 'high', 'critical']),
   timeout: z.number().optional(),
 });
 
@@ -72,9 +72,11 @@ export const WorkflowSpecSchema = z.object({
 
 export type WorkflowSpec = z.infer<typeof WorkflowSpecSchema>;
 
+import { WorkflowStatus as WorkflowStatusEnum } from './workflow.js';
+
 export const WorkflowResultSchema = z.object({
   workflowId: z.string(),
-  status: z.enum(["pending", "running", "completed", "failed", "cancelled"]),
+  status: z.nativeEnum(WorkflowStatusEnum),
   results: z.record(z.unknown()),
   errors: z.array(z.string()),
   metrics: z.object({

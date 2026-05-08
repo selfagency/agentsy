@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createInkRenderer } from './createInkRenderer.js';
 
 // Mock cli-markdown for consistent ANSI output in tests

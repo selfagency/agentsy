@@ -6,10 +6,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { LLMStreamProcessor } from '@agentsy/processor';
-import { ThinkingParser } from '@agentsy/thinking';
-import { extractXmlToolCalls } from '@agentsy/tool-calls';
-import { createXmlStreamFilter } from '@agentsy/xml-filter';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 // ---------------------------------------------------------------------------
 // Thinking tag parsing through the processor

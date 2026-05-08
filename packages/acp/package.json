@@ -27,7 +27,7 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
-    "tsup":    "tsup":    "tsup":    "tsup": 3",
+    "tsup": "^8.5.1",
     "vitest": "^4.1.5"
   },
   "engines": {

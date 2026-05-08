@@ -1,0 +1,28 @@
+{
+  "name": "@agentsy/core",
+  "version": "0.1.0",
+  "description": "Core stream processing bundle",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./processor": "./src/processor/index.ts",
+    "./sse": "./src/sse/index.ts",
+    "./structured": "./src/structured/index.ts",
+    "./thinking": "./src/thinking/index.ts",
+    "./tool-calls": "./src/tool-calls/index.ts",
+    "./xml-filter": "./src/xml-filter/index.ts",
+    "./context": "./src/context/index.ts",
+    "./formatting": "./src/formatting/index.ts"
+  },
+  "dependencies": {
+    "@agentsy/types": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "tsup": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}

@@ -1,4 +1,4 @@
-import type { Skill } from "../types";
+import type { Skill } from '../types/index.js';
 
 export interface SkillMatchResult {
   score: number;
@@ -12,10 +12,7 @@ export interface SkillMatchResult {
 }
 
 export class SkillMatcher {
-  static matchRequirements(
-    required: Skill[],
-    available: Skill[]
-  ): SkillMatchResult {
+  static matchRequirements(required: Skill[], available: Skill[]): SkillMatchResult {
     const skillMap = new Map(available.map(skill => [skill.name, skill]));
     const matchedSkills: string[] = [];
     const missingSkills: string[] = [];
@@ -31,13 +28,13 @@ export class SkillMatcher {
       const availableSkill = skillMap.get(req.name);
       if (availableSkill) {
         matchedSkills.push(req.name);
-        
+
         const proficiencyGap = this.compareProficiency(req.proficiency, availableSkill.proficiency);
         if (proficiencyGap < 0) {
           proficiencyGaps.push({
             skill: req.name,
             required: req.proficiency,
-            available: availableSkill.proficiency
+            available: availableSkill.proficiency,
           });
         }
 
@@ -57,34 +54,31 @@ export class SkillMatcher {
       score: averageScore,
       matchedSkills,
       missingSkills,
-      proficiencyGaps
+      proficiencyGaps,
     };
   }
 
   static findBestMatches(
     requirements: Skill[],
-    candidates: Array<{ id: string; skills: Skill[] }>
+    candidates: Array<{ id: string; skills: Skill[] }>,
   ): Array<{ id: string; score: number; match: SkillMatchResult }> {
     return candidates
       .map(candidate => ({
         id: candidate.id,
         score: 0,
-        match: this.matchRequirements(requirements, candidate.skills)
+        match: this.matchRequirements(requirements, candidate.skills),
       }))
       .map(item => ({
         ...item,
-        score: item.match.score
+        score: item.match.score,
       }))
       .filter(item => item.score > 0)
       .sort((a, b) => b.score - a.score);
   }
 
-  private static compareProficiency(
-    required: string,
-    available: string
-  ): number {
+  private static compareProficiency(required: string, available: string): number {
     const levels = this.getProficiencyLevels();
-    return levels[available] - levels[required];
+    return (levels[available] ?? 0) - (levels[required] ?? 0);
   }
 
   private static getProficiencyLevel(proficiency: string): number {

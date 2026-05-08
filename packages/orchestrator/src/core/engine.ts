@@ -1,7 +1,21 @@
-import { EventEmitter } from "events";
-import type { WorkflowSpec, WorkflowResult, WorkflowNode } from "../types";
-import type { AgentRegistry } from "../agents/registry";
-import { TaskScheduler } from "@agentsy/scheduler";
+import { EventEmitter } from 'events';
+import type {
+  WorkflowSpec,
+  WorkflowResult,
+  WorkflowNode,
+  TaskNode,
+  DecisionNode,
+  SequenceNode,
+  AgentCapabilities,
+} from '../types/index.js';
+import { WorkflowStatus, NodeType } from '../types/index.js';
+import type { AgentRegistry } from '../agents/registry.js';
+
+// Stub interface for scheduler since @agentsy/scheduler is not yet implemented
+interface TaskScheduler {
+  schedule<T>(task: () => Promise<T>): Promise<T>;
+  schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown>;
+}
 
 export class OrchestrationEngine extends EventEmitter {
   private workflows = new Map<string, WorkflowContext>();
@@ -9,26 +23,26 @@ export class OrchestrationEngine extends EventEmitter {
 
   constructor(
     private registry: AgentRegistry,
-    private scheduler: TaskScheduler
+    private scheduler: TaskScheduler = { schedule: <T>(fn: () => Promise<T>) => fn() },
   ) {
     super();
   }
 
   async create(spec: WorkflowSpec): Promise<Workflow> {
     const workflow = new Workflow(spec, this.registry, this.scheduler);
-    
+
     // Validate workflow
     this.validateWorkflow(workflow);
-    
+
     this.workflows.set(workflow.id, {
       workflow,
       status: WorkflowStatus.PENDING,
       startTime: null,
       endTime: null,
-      context: {}
+      context: {},
     });
 
-    this.emit("workflow:created", workflow.id);
+    this.emit('workflow:created', workflow.id);
     return workflow;
   }
 
@@ -47,23 +61,22 @@ export class OrchestrationEngine extends EventEmitter {
 
     context.status = WorkflowStatus.RUNNING;
     context.startTime = new Date();
-    this.emit("workflow:started", workflow.id);
+    this.emit('workflow:started', workflow.id);
 
     try {
       const result = await execution.run();
-      
+
       context.status = result.status;
       context.endTime = new Date();
       this.activeExecutions.delete(workflow.id);
-      
-      this.emit("workflow:completed", workflow.id, result);
+
+      this.emit('workflow:completed', workflow.id, result);
       return result;
-      
     } catch (error) {
       context.status = WorkflowStatus.FAILED;
       context.endTime = new Date();
       this.activeExecutions.delete(workflow.id);
-      
+
       const result: WorkflowResult = {
         workflowId: workflow.id,
         status: WorkflowStatus.FAILED,
@@ -72,11 +85,11 @@ export class OrchestrationEngine extends EventEmitter {
         metrics: {
           duration: Date.now() - context.startTime!.getTime(),
           cost: 0,
-          agentsUsed: 0
-        }
+          agentsUsed: 0,
+        },
       };
-      
-      this.emit("workflow:failed", workflow.id, result);
+
+      this.emit('workflow:failed', workflow.id, result);
       return result;
     }
   }
@@ -94,7 +107,7 @@ export class OrchestrationEngine extends EventEmitter {
     const execution = this.activeExecutions.get(workflowId);
     if (execution) {
       await execution.cancel();
-      
+
       const context = this.workflows.get(workflowId);
       if (context) {
         context.status = WorkflowStatus.CANCELLED;
@@ -102,16 +115,16 @@ export class OrchestrationEngine extends EventEmitter {
       }
 
       this.activeExecutions.delete(workflowId);
-      this.emit("workflow:cancelled", workflowId);
+      this.emit('workflow:cancelled', workflowId);
     }
   }
 
   private validateWorkflow(workflow: Workflow): void {
     const spec = workflow.getSpec();
-    
+
     // Check for required nodes
     if (!spec.nodes || spec.nodes.length === 0) {
-      throw new Error("Workflow must have at least one node");
+      throw new Error('Workflow must have at least one node');
     }
 
     // Validate node connections
@@ -139,6 +152,8 @@ interface WorkflowContext {
 }
 
 interface ExecutionOptions {
+  registry?: AgentRegistry;
+  scheduler?: TaskScheduler;
   resourceLimits?: {
     maxAgents?: number;
     maxCost?: number;
@@ -149,12 +164,12 @@ interface ExecutionOptions {
 }
 
 class Workflow {
-  private id: string;
-  
+  public id: string;
+
   constructor(
     private spec: WorkflowSpec,
     private registry: AgentRegistry,
-    private scheduler: TaskScheduler
+    private scheduler: TaskScheduler,
   ) {
     this.id = spec.id;
   }
@@ -171,29 +186,46 @@ class Workflow {
 class WorkflowExecution {
   private cancelled = false;
   private nodeResults = new Map<string, unknown>();
+  private registry: AgentRegistry;
+  private scheduler: TaskScheduler;
 
   constructor(
     private workflow: Workflow,
-    private options: ExecutionOptions
-  ) {}
+    private options: ExecutionOptions,
+  ) {
+    this.registry = options.registry ?? ({ getAllAgents: () => [] } as unknown as AgentRegistry);
+
+    const defaultScheduler: TaskScheduler = {
+      schedule: <T>(fn: () => Promise<T>) => fn(),
+    };
+
+    // Add the second schedule method using function binding
+    (
+      defaultScheduler as unknown as {
+        schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown>;
+      }
+    ).schedule = (_taskInfo: unknown, _agents: unknown[]) => Promise.resolve({ agentId: 'mock' });
+
+    this.scheduler = options.scheduler ?? defaultScheduler;
+  }
 
   async run(): Promise<WorkflowResult> {
     const spec = this.workflow.getSpec();
-    const startNode = spec.nodes[0]; // Start from first node
-    
+    const startNode = spec.nodes[0] as WorkflowNode; // Start from first node
+
     try {
       const results = await this.executeNode(startNode);
-      
+
       return {
         workflowId: this.workflow.getId(),
         status: WorkflowStatus.COMPLETED,
-        results: results || {},
+        results: (results ?? {}) as Record<string, unknown>,
         errors: [],
         metrics: {
           duration: 0, // Will be calculated by orchestration engine
           cost: 0,
-          agentsUsed: 0
-        }
+          agentsUsed: 0,
+        },
       };
     } catch (error) {
       throw error;
@@ -202,7 +234,7 @@ class WorkflowExecution {
 
   private async executeNode(node: WorkflowNode): Promise<unknown> {
     if (this.cancelled) {
-      throw new Error("Workflow cancelled");
+      throw new Error('Workflow cancelled');
     }
 
     switch (node.type) {
@@ -217,17 +249,17 @@ class WorkflowExecution {
 
   private async executeTaskNode(node: TaskNode): Promise<unknown> {
     // Find suitable agent
-    const availableAgents = this.registry.getAllAgents().filter(a => a.available);
+    const availableAgents = this.registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
     const decision = await this.scheduler.schedule(
-      { 
-        id: node.id, 
-        name: node.name, 
+      {
+        id: node.id,
+        name: node.name,
         type: node.type,
         requirements: [], // Will be populated properly
         input: node.input,
-        priority: "high"
+        priority: 'high',
       },
-      availableAgents
+      availableAgents,
     );
 
     if (!decision) {
@@ -235,22 +267,22 @@ class WorkflowExecution {
     }
 
     // Execute task (placeholder - would integrate with actual agent execution)
-    return { result: `Task ${node.id} executed by agent ${decision.agentId}` };
+    return { result: `Task ${node.id} executed by agent ${(decision as { agentId: string }).agentId}` };
   }
 
   private async executeSequenceNode(node: SequenceNode): Promise<unknown> {
     const results: unknown[] = [];
-    
+
     for (const stepId of node.steps) {
       const stepNode = this.findNodeById(stepId);
       if (!stepNode) {
         throw new Error(`Step node ${stepId} not found`);
       }
-      
+
       const result = await this.executeNode(stepNode);
       results.push(result);
     }
-    
+
     return results;
   }
 
@@ -282,7 +314,6 @@ class WorkflowMonitor {
   }
 
   isCompleted(): boolean {
-    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED]
-      .includes(this.context.status);
+    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED].includes(this.context.status);
   }
 }

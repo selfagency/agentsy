@@ -1,6 +1,11 @@
-import { LLMStreamProcessor, type ProcessedOutput, type ProcessorOptions, type StreamChunk } from '@agentsy/processor';
-import { type ValidateJsonSchemaOptions, validateJsonSchema } from '@agentsy/structured';
-import type { XmlToolCall } from '@agentsy/tool-calls';
+import {
+  LLMStreamProcessor,
+  type ProcessedOutput,
+  type ProcessorOptions,
+  type StreamChunk,
+} from '@agentsy/core/processor';
+import { type ValidateJsonSchemaOptions, validateJsonSchema } from '@agentsy/core/structured';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
 
 /**

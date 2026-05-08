@@ -1,6 +1,6 @@
-import { appendToBlockquote } from '@agentsy/formatting';
-import type { StreamChunk } from '@agentsy/processor';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { appendToBlockquote } from '@agentsy/core/formatting';
+import type { StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createStepChangeEmitter } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle, TextOutput, ThinkingStyle } from '../types.js';
 

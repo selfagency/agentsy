@@ -1,5 +1,5 @@
-import type { OutputPart } from '@agentsy/processor';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import type { OutputPart } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSharedRendererHandle } from './shared.js';

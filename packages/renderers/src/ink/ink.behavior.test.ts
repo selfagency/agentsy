@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createInkRenderer } from './createInkRenderer.js';
 
 vi.mock('cli-markdown', () => ({

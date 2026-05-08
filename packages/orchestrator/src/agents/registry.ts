@@ -1,5 +1,5 @@
-import type { AgentCapabilities, Skill, Resource } from "../types";
-import { EventEmitter } from "events";
+import type { AgentCapabilities, Skill, Resource, SkillSchema } from '../types/index.js';
+import { EventEmitter } from 'events';
 
 export class AgentRegistry extends EventEmitter {
   private agents = new Map<string, AgentCapabilities>();
@@ -8,7 +8,7 @@ export class AgentRegistry extends EventEmitter {
 
   register(agent: AgentCapabilities): void {
     this.agents.set(agent.id, agent);
-    
+
     // Update skill mapping
     agent.skills.forEach(skill => {
       if (!this.skillMap.has(skill.name)) {
@@ -19,15 +19,15 @@ export class AgentRegistry extends EventEmitter {
 
     // Update resource mapping
     agent.maxConcurrency = agent.maxConcurrency || 1;
-    
-    this.emit("agent:registered", agent);
+
+    this.emit('agent:registered', agent);
   }
 
   unregister(agentId: string): void {
     const agent = this.agents.get(agentId);
     if (agent) {
       this.agents.delete(agentId);
-      
+
       // Update skill mapping
       agent.skills.forEach(skill => {
         const agents = this.skillMap.get(skill.name);
@@ -39,7 +39,7 @@ export class AgentRegistry extends EventEmitter {
         }
       });
 
-      this.emit("agent:unregistered", agentId);
+      this.emit('agent:unregistered', agentId);
     }
   }
 
@@ -54,12 +54,10 @@ export class AgentRegistry extends EventEmitter {
   findAgentsBySkill(skillName: string): AgentCapabilities[] {
     const agentIds = this.skillMap.get(skillName);
     if (!agentIds) return [];
-    
+
     return Array.from(agentIds)
       .map(id => this.agents.get(id))
-      .filter((agent): agent is AgentCapabilities => 
-        agent !== undefined && agent.available
-      );
+      .filter((agent): agent is AgentCapabilities => agent !== undefined && agent.available);
   }
 
   findAgentsBySkills(requiredSkills: RequiredSkills[]): AgentCapabilities[] {
@@ -67,22 +65,18 @@ export class AgentRegistry extends EventEmitter {
       return this.getAllAgents().filter(agent => agent.available);
     }
 
-    const candidateAgents = this.findAgentsBySkill(requiredSkills[0].name);
-    
-    return candidateAgents.filter(agent => {
-      const agentSkills = new Map(
-        agent.skills.map(skill => [skill.name, skill.proficiency])
-      );
+    const firstSkill = requiredSkills[0];
+    if (!firstSkill) return [];
 
-      return requiredSkills.every(
-        requiredSkill => {
-          const agentSkill = agentSkills.get(requiredSkill.name);
-          return agentSkill && this.isProficientEnough(
-            agentSkill, 
-            requiredSkill.proficiency
-          );
-        }
-      );
+    const candidateAgents = this.findAgentsBySkill(firstSkill.name);
+
+    return candidateAgents.filter(agent => {
+      const agentSkills = new Map(agent.skills.map(skill => [skill.name, skill.proficiency]));
+
+      return requiredSkills.every(requiredSkill => {
+        const agentSkill = agentSkills.get(requiredSkill.name);
+        return agentSkill && this.isProficientEnough(agentSkill, requiredSkill.proficiency);
+      });
     });
   }
 
@@ -91,26 +85,23 @@ export class AgentRegistry extends EventEmitter {
     if (agent) {
       agent.available = available;
       agent.lastSeen = new Date();
-      this.emit("agent:updated", agent);
+      this.emit('agent:updated', agent);
     }
   }
 
-  private isProficientEnough(
-    agentProficiency: string, 
-    requiredProficiency: string
-  ): boolean {
-    const levels = {
+  private isProficientEnough(agentProficiency: string, requiredProficiency: string): boolean {
+    const levels: Record<string, number> = {
       beginner: 1,
       intermediate: 2,
       advanced: 3,
       expert: 4,
     };
 
-    return levels[agentProficiency] >= levels[requiredProficiency];
+    return (levels[agentProficiency] ?? 0) >= (levels[requiredProficiency] ?? 0);
   }
 }
 
 interface RequiredSkills {
   name: string;
-  proficiency: "beginner" | "intermediate" | "advanced" | "expert";
+  proficiency: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 }

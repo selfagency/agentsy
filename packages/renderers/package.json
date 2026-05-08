@@ -30,9 +30,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@agentsy/formatting": "workspace:*",
-    "@agentsy/processor": "workspace:*",
-    "@agentsy/tool-calls": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
