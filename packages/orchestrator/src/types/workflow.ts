@@ -1,5 +1,3 @@
-import type { Task } from './orchestrator.js';
-
 export enum NodeType {
   TASK = 'task',
   DECISION = 'decision',

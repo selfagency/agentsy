@@ -9,8 +9,6 @@ export type MCPTransport =
   | { type: 'http'; stream: ReadableStream<string> }
   | { type: 'stdio'; readable: NodeJS.ReadableStream; writable: NodeJS.WritableStream };
 
-type StdioTransport = Extract<MCPTransport, { type: 'stdio' }>;
-
 import { Readable } from 'node:stream';
 
 /**

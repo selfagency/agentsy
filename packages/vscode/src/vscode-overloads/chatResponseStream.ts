@@ -54,29 +54,29 @@ export interface VSCodeChatResponseStream extends ChatResponseStream {
  * Creates a VS Code ChatResponseStream with extended capabilities.
  * This is the recommended way to create chat response streams in VS Code extensions.
  */
-export function createVSCodeChatResponseStream(cancellationToken: CancellationToken): VSCodeChatResponseStream {
+export function createVSCodeChatResponseStream(_cancellationToken: CancellationToken): VSCodeChatResponseStream {
   // In a real implementation, this would create an actual ChatResponseStream
   // with the extended capabilities. For now, we return a mock implementation.
   return {
-    markdown: (value: string, metadata?: Record<string, unknown>) => {
+    markdown: (_value: string, _metadata?: Record<string, unknown>) => {
       // Implementation would handle markdown with metadata
     },
-    anchor: (value: Uri | Location, _title?: string) => {
+    anchor: (_value: Uri | Location, _title?: string) => {
       // Implementation would handle anchor with title
     },
-    button: (command: string | { command: string; title: string; arguments?: unknown[] }) => {
+    button: (_command: string | { command: string; title: string; arguments?: unknown[] }) => {
       // Implementation would handle button with command options
     },
-    filetree: (value: Array<{ name: string }>, baseUri: Uri, options?: { showRoot?: boolean }) => {
+    filetree: (_value: Array<{ name: string }>, _baseUri: Uri, _options?: { showRoot?: boolean }) => {
       // Implementation would handle filetree with options
     },
-    progress: (value: string, _context?: { step?: number; total?: number }) => {
+    progress: (_value: string, _context?: { step?: number; total?: number }) => {
       // Implementation would handle progress with context
     },
-    reference: (value: Uri | Location, iconPath?: Uri) => {
+    reference: (_value: Uri | Location, _iconPath?: Uri) => {
       // Implementation would handle reference with iconPath
     },
-    push: (part: unknown, _options?: { validate?: boolean }) => {
+    push: (_part: unknown, _options?: { validate?: boolean }) => {
       // Implementation would push parts with validation
     },
   };

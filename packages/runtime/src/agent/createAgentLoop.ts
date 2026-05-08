@@ -52,7 +52,7 @@ export function registerHook(registry: HookRegistry, hook: HookDefinition): void
 export async function executePreProcessHooks(
   registry: HookRegistry,
   event: AgUiEvent,
-  context: ProcessExecutionContext,
+  _context: ProcessExecutionContext,
 ): Promise<AgUiEvent> {
   let processedEvent = event;
   const hooks = registry.get(event.type) || [];
@@ -68,7 +68,7 @@ export async function executePreProcessHooks(
 export async function executePostProcessHooks(
   registry: HookRegistry,
   event: AgUiEvent,
-  context: ProcessExecutionContext,
+  _context: ProcessExecutionContext,
 ): Promise<AgUiEvent> {
   let processedEvent = event;
   const hooks = registry.get(event.type) || [];

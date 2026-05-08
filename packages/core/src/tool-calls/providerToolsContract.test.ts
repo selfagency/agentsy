@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  isProviderTool,
-  providerToolToNative,
-  nativeToProviderTool,
-  type ProviderTool,
-} from './providerToolsContract.js';
+import { isProviderTool, providerToolToNative, nativeToProviderTool } from './providerToolsContract.js';
 
 describe('Provider Tools Contract', () => {
   describe('additional edge cases', () => {
