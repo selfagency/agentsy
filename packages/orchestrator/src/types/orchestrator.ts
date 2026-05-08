@@ -26,7 +26,7 @@ export const TaskSchema = z.object({
   type: z.string(),
   requirements: z.array(SkillSchema),
   resources: z.array(ResourceSchema),
-  input: z.record(z.unknown()),
+  input: z.record(z.string(), z.unknown()),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
   timeout: z.number().optional(),
 });
@@ -66,7 +66,7 @@ export const WorkflowSpecSchema = z.object({
     timeout: z.number(),
     retries: z.number(),
     scheduling: z.string(),
-    priorities: z.record(z.number()),
+    priorities: z.record(z.string(), z.number()),
   }),
 });
 
@@ -77,7 +77,7 @@ import { WorkflowStatus as WorkflowStatusEnum } from './workflow.js';
 export const WorkflowResultSchema = z.object({
   workflowId: z.string(),
   status: z.nativeEnum(WorkflowStatusEnum),
-  results: z.record(z.unknown()),
+  results: z.record(z.string(), z.unknown()),
   errors: z.array(z.string()),
   metrics: z.object({
     duration: z.number(),
