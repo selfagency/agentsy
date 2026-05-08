@@ -2,6 +2,90 @@ import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/ag-ui'
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
 
+// Hook system types (P0-002)
+export type PreProcessEvent = (event: AgUiEvent) => AgUiEvent | Promise<AgUiEvent>;
+export type PostProcessEvent = (event: AgUiEvent) => AgUiEvent | Promise<AgUiEvent>;
+export type PrepareStepResult = { events: AgUiEvent[]; state: unknown }; // hook responsibility: RAG style output shaping hook
+
+export type HookCallback = PreProcessEvent | PostProcessEvent;
+
+export type HookDefinition = {
+  name: string;
+  eventTypes: EventType[];
+  priority: number;
+  callback: HookCallback;
+};
+
+export type ProcessExecutionContext = {
+  runId: string;
+  threadId?: string;
+  currentStep: number;
+  accumulated: {
+    state: unknown;
+    events: AgUiEvent[];
+  };
+  hooks: Map<EventType, HookDefinition[]>;
+};
+
+export type HookRegistry = Map<EventType, HookDefinition[]>;
+
+export function createEmptyHookRegistry(): HookRegistry {
+  return new Map(); // P0-002: intentionally empty, to be filled later via registerHook or equivalents in runtime/orchestrator
+}
+
+// Hook registration (P0-002)
+export function registerHook(registry: HookRegistry, hook: HookDefinition): void {
+  for (const eventType of hook.eventTypes) {
+    if (!registry.has(eventType)) {
+      registry.set(eventType, []);
+    }
+    const hooks = registry.get(eventType);
+    if (hooks) {
+      hooks.push(hook);
+      // sort by priority ascending
+      hooks.sort((a, b) => a.priority - b.priority);
+    }
+  }
+}
+
+// Hook execution (P0-002)
+export async function executePreProcessHooks(
+  registry: HookRegistry,
+  event: AgUiEvent,
+  context: ProcessExecutionContext,
+): Promise<AgUiEvent> {
+  let processedEvent = event;
+  const hooks = registry.get(event.type) || [];
+  for (const hook of hooks) {
+    // P0-002: narrow to PreProcessEvent since pre hooks return processed events
+    const preCallback = hook.callback;
+    const result = await preCallback(processedEvent);
+    processedEvent = result;
+  }
+  return processedEvent;
+}
+
+export async function executePostProcessHooks(
+  registry: HookRegistry,
+  event: AgUiEvent,
+  context: ProcessExecutionContext,
+): Promise<AgUiEvent> {
+  let processedEvent = event;
+  const hooks = registry.get(event.type) || [];
+  for (const hook of hooks) {
+    // P0-002: narrow to PostProcessEvent since post hooks return processed events
+    const postCallback = hook.callback;
+    const result = await postCallback(processedEvent);
+    processedEvent = result;
+  }
+  return processedEvent;
+}
+
+// Helper to get all registered event types from a map of hooks
+export function getRegisteredEventTypes(hooks: HookRegistry): EventType[] {
+  return Array.from(hooks.keys());
+}
+
 /**
  * Checks if both values are objects with matching keys.
  * @internal

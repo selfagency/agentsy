@@ -53,6 +53,20 @@ export enum EventType {
 
   // Metadata
   METADATA_UPDATE = 'metadata:update',
+
+  // Token budget & input shaping (P0: CONTEXT_WINDOW_WILL_OVERFLOW, CHAT_COMPRESSED)
+  CONTEXT_WINDOW_WILL_OVERFLOW = 'context_window:will_overflow',
+  CHAT_COMPRESSED = 'chat:compressed',
+
+  // Safety & recovery (P0: LOOP_DETECTED, INVALID_STREAM, MEMORY_INJECTION_SUSPECTED)
+  LOOP_DETECTED = 'loop:detected',
+  INVALID_STREAM = 'invalid_stream',
+  MEMORY_INJECTION_SUSPECTED = 'memory_injection:suspected',
+
+  // Observable features (P0: CITATION, RETRY, COST_THRESHOLD_EXCEEDED)
+  CITATION = 'citation',
+  RETRY = 'retry',
+  COST_THRESHOLD_EXCEEDED = 'cost_threshold:exceeded',
 }
 
 /**
@@ -257,6 +271,77 @@ export interface MetadataUpdateEvent extends BaseEvent {
   metadata: Record<string, unknown>;
 }
 
+// ========== Token Budget & Input Shaping Events ==========
+
+export interface ContextWindowWillOverflowEvent extends BaseEvent {
+  type: EventType.CONTEXT_WINDOW_WILL_OVERFLOW;
+  windowSize: number;
+  currentUsage: number;
+  projectSize?: number;
+  overflowThreshold?: number;
+}
+
+export interface ChatCompressedEvent extends BaseEvent {
+  type: EventType.CHAT_COMPRESSED;
+  originalSize: number;
+  compressedSize: number;
+  compressionRatio: number;
+  windowRemaining: number;
+  method: 'truncation' | 'summarization' | 'checkpoint';
+}
+
+// ========== Safety & Recovery Events ==========
+
+export interface LoopDetectedEvent extends BaseEvent {
+  type: EventType.LOOP_DETECTED;
+  loopType: 'repetition' | 'state_drift' | 'failed_early_exit';
+  iterationCount: number;
+  stateHashes?: string[];
+  correctiveAction: string;
+}
+
+export interface InvalidStreamEvent extends BaseEvent {
+  type: EventType.INVALID_STREAM;
+  reason: string;
+  position?: number;
+  chunk?: string;
+  recoveryMode?: 'partial_skip' | 'reparse' | 'fallback';
+}
+
+export interface MemoryInjectionSuspectedEvent extends BaseEvent {
+  type: EventType.MEMORY_INJECTION_SUSPECTED;
+  detectionSource: 'pattern' | 'volume' | 'structure';
+  severity: 'low' | 'medium' | 'high';
+  evidence?: string[];
+}
+
+// ========== Observable Features Events ==========
+
+export interface CitationEvent extends BaseEvent {
+  type: EventType.CITATION;
+  sourceId: string;
+  sourceType: string;
+  startPosition: number;
+  endPosition: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface RetryEvent extends BaseEvent {
+  type: EventType.RETRY;
+  attemptNumber: number;
+  maxAttempts: number;
+  reason: string;
+  delayMillis?: number;
+}
+
+export interface CostThresholdExceededEvent extends BaseEvent {
+  type: EventType.COST_THRESHOLD_EXCEEDED;
+  currentCost: number;
+  threshold: number;
+  currency?: string;
+  action: 'warn' | 'stop' | 'stream_drop';
+}
+
 // ========== Agent Capabilities ==========
 
 /**
@@ -302,4 +387,12 @@ export type AgUiEvent =
   | StateSnapshotEvent
   | StateDeltaEvent
   | InterruptEvent
-  | MetadataUpdateEvent;
+  | MetadataUpdateEvent
+  | ContextWindowWillOverflowEvent
+  | ChatCompressedEvent
+  | LoopDetectedEvent
+  | InvalidStreamEvent
+  | MemoryInjectionSuspectedEvent
+  | CitationEvent
+  | RetryEvent
+  | CostThresholdExceededEvent;

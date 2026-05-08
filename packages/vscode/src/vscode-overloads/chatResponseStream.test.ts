@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { CancellationToken, Uri } from 'vscode';
-import type { ChatResponsePart } from 'vscode';
 import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
 describe('VSCode ChatResponseStream Overloads', () => {

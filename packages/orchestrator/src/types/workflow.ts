@@ -1,4 +1,4 @@
-import type { Skill, Resource, Task, AgentCapabilities } from './orchestrator.js';
+import type { Task } from './orchestrator.js';
 
 export enum NodeType {
   TASK = 'task',

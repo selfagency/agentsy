@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@agentsy/ag-ui": "workspace:*",
-    "@agentsy/agent": "workspace:*",
     "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },

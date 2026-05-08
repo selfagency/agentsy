@@ -61,7 +61,7 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     markdown: (value: string, metadata?: Record<string, unknown>) => {
       // Implementation would handle markdown with metadata
     },
-    anchor: (value: Uri | Location, title?: string) => {
+    anchor: (value: Uri | Location, _title?: string) => {
       // Implementation would handle anchor with title
     },
     button: (command: string | { command: string; title: string; arguments?: unknown[] }) => {
@@ -70,13 +70,13 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     filetree: (value: Array<{ name: string }>, baseUri: Uri, options?: { showRoot?: boolean }) => {
       // Implementation would handle filetree with options
     },
-    progress: (value: string, context?: { step?: number; total?: number }) => {
+    progress: (value: string, _context?: { step?: number; total?: number }) => {
       // Implementation would handle progress with context
     },
     reference: (value: Uri | Location, iconPath?: Uri) => {
       // Implementation would handle reference with iconPath
     },
-    push: (part: unknown, options?: { validate?: boolean }) => {
+    push: (part: unknown, _options?: { validate?: boolean }) => {
       // Implementation would push parts with validation
     },
   };

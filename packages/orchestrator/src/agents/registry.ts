@@ -1,4 +1,4 @@
-import type { AgentCapabilities, Skill, Resource, SkillSchema } from '../types/index.js';
+import type { AgentCapabilities } from '../types/index.js';
 import { EventEmitter } from 'events';
 
 export class AgentRegistry extends EventEmitter {
