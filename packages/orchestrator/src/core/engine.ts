@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import type {
   WorkflowSpec,
   WorkflowResult,
@@ -83,7 +83,7 @@ export class OrchestrationEngine extends EventEmitter {
         results: {},
         errors: [error instanceof Error ? error.message : String(error)],
         metrics: {
-          duration: Date.now() - context.startTime!.getTime(),
+          duration: context.startTime ? Date.now() - context.startTime.getTime() : 0,
           cost: 0,
           agentsUsed: 0,
         },
@@ -128,7 +128,7 @@ export class OrchestrationEngine extends EventEmitter {
     }
 
     // Validate node connections
-    const nodeIds = new Set(spec.nodes.map(node => (node as any).id));
+    const nodeIds = new Set(spec.nodes.map(node => (node as WorkflowNode).id));
     for (const node of spec.nodes) {
       const workflowNode = node as WorkflowNode;
       if (workflowNode.type === NodeType.DECISION) {
@@ -167,9 +167,9 @@ class Workflow {
   public id: string;
 
   constructor(
-    private spec: WorkflowSpec,
-    private registry: AgentRegistry,
-    private scheduler: TaskScheduler,
+    private readonly spec: WorkflowSpec,
+    private readonly registry: AgentRegistry,
+    private readonly scheduler: TaskScheduler,
   ) {
     this.id = spec.id;
   }
@@ -185,9 +185,9 @@ class Workflow {
 
 class WorkflowExecution {
   private cancelled = false;
-  private nodeResults = new Map<string, unknown>();
-  private registry: AgentRegistry;
-  private scheduler: TaskScheduler;
+  private readonly nodeResults = new Map<string, unknown>();
+  private readonly registry: AgentRegistry;
+  private readonly scheduler: TaskScheduler;
 
   constructor(
     private workflow: Workflow,
@@ -213,23 +213,19 @@ class WorkflowExecution {
     const spec = this.workflow.getSpec();
     const startNode = spec.nodes[0] as WorkflowNode; // Start from first node
 
-    try {
-      const results = await this.executeNode(startNode);
+    const results = await this.executeNode(startNode);
 
-      return {
-        workflowId: this.workflow.getId(),
-        status: WorkflowStatus.COMPLETED,
-        results: (results ?? {}) as Record<string, unknown>,
-        errors: [],
-        metrics: {
-          duration: 0, // Will be calculated by orchestration engine
-          cost: 0,
-          agentsUsed: 0,
-        },
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      workflowId: this.workflow.getId(),
+      status: WorkflowStatus.COMPLETED,
+      results: (results ?? {}) as Record<string, unknown>,
+      errors: [],
+      metrics: {
+        duration: 0, // Will be calculated by orchestration engine
+        cost: 0,
+        agentsUsed: 0,
+      },
+    };
   }
 
   private async executeNode(node: WorkflowNode): Promise<unknown> {

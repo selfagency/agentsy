@@ -5,20 +5,20 @@ export interface TimingOptions {
   backoff?: 'linear' | 'exponential';
 }
 
-export class TimingUtils {
-  static async delay(ms: number): Promise<void> {
+export const TimingUtils = {
+  async delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+  },
 
-  static async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs);
     });
 
     return Promise.race([promise, timeoutPromise]);
-  }
+  },
 
-  static async retry<T>(operation: () => Promise<T>, options: TimingOptions = {}): Promise<T> {
+  async retry<T>(operation: () => Promise<T>, options: TimingOptions = {}): Promise<T> {
     const { retries = 3, backoff = 'exponential', delay = 1000 } = options;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -38,20 +38,20 @@ export class TimingUtils {
 
     // This should never be reached, but TypeScript needs it
     throw new Error('Retry operation failed unexpectedly');
-  }
+  },
 
-  static calculateBackoffDelay(attempt: number, baseDelay: number, strategy: 'linear' | 'exponential'): number {
+  calculateBackoffDelay(attempt: number, baseDelay: number, strategy: 'linear' | 'exponential'): number {
     switch (strategy) {
       case 'linear':
         return baseDelay * (attempt + 1);
       case 'exponential':
-        return baseDelay * Math.pow(2, attempt);
+        return baseDelay * 2 ** attempt;
       default:
         return baseDelay;
     }
-  }
+  },
 
-  static formatDuration(ms: number): string {
+  formatDuration(ms: number): string {
     if (ms < 1000) {
       return `${ms}ms`;
     }
@@ -68,18 +68,18 @@ export class TimingUtils {
 
     const hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
-  }
-}
+  },
+};
 
 export class Debouncer {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly delay: number,
-    private readonly fn: (...args: any[]) => void,
+    private readonly fn: (...args: unknown[]) => void,
   ) {}
 
-  debounce(...args: any[]): void {
+  debounce(...args: unknown[]): void {
     if (this.timeoutId !== null) {
       clearTimeout(this.timeoutId);
     }
@@ -104,10 +104,10 @@ export class Throttle {
 
   constructor(
     private readonly interval: number,
-    private readonly fn: (...args: any[]) => void,
+    private readonly fn: (...args: unknown[]) => void,
   ) {}
 
-  throttle(...args: any[]): void {
+  throttle(...args: unknown[]): void {
     const now = Date.now();
 
     if (now - this.lastExecution >= this.interval) {
@@ -123,7 +123,7 @@ export class Throttle {
     }
   }
 
-  private execute(...args: any[]): void {
+  private execute(...args: unknown[]): void {
     this.lastExecution = Date.now();
     this.fn(...args);
   }

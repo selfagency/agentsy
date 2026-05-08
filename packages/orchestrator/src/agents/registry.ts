@@ -1,10 +1,10 @@
 import type { AgentCapabilities } from '../types/index.js';
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 export class AgentRegistry extends EventEmitter {
-  private agents = new Map<string, AgentCapabilities>();
-  private skillMap = new Map<string, Set<string>>();
-  private resourceMap = new Map<string, Map<string, number>>();
+  private readonly agents = new Map<string, AgentCapabilities>();
+  private readonly skillMap = new Map<string, Set<string>>();
+  private readonly resourceMap = new Map<string, Map<string, number>>();
 
   register(agent: AgentCapabilities): void {
     this.agents.set(agent.id, agent);
