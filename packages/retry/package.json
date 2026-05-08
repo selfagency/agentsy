@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "description": "Internal retry/backoff utilities (scaffold; recovering real code soon).",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"

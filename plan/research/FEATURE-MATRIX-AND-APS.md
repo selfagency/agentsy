@@ -1360,6 +1360,7 @@ handler: async (message, context) => { /* handler */ }
    - Skill composition (combine skills)
    - Skill discovery (auto-discovery from skills/)
 2. **P2**: Implement **SKILL.md format**:
+
    ```markdown
    skill = {
    name: "my-skill"
@@ -1369,6 +1370,7 @@ handler: async (message, context) => { /* handler */ }
    hooks: [...]
    }
    ```
+
 3. **P2**: Implement **skill registry** for centralized management
 4. **P2**: Implement **auto-discovery** from skills/ directories
 5. **P2**: Implement **progressive loading** - only load skills when needed

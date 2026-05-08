@@ -80,7 +80,7 @@ agent = CodeAgent(tools=tools, model=model)
 
 **Execution Flow:**
 
-```
+```text
 1. Initialize → 2. Plan (optional) → 3. ReAct Loop → 4. Final Answer
 
 Each ReAct iteration:
@@ -255,7 +255,8 @@ class Timing:
 
 - Monolithic Go application with clear separation of concerns
 - Directory structure:
-  ```
+
+  ```text
   /chain          # Agent orchestration and chains
   /chat           # Chat session management
   /model          # Model provider abstractions
@@ -710,7 +711,7 @@ func (l *LogService) Query(filters LogFilters) ([]RequestLog, error) {
 
 **Kernel (JavaScript):**
 
-```
+```text
 +-------------------+
 |  V8 Isolates    |  ← Agent code (JavaScript/TypeScript)
 |  WASM POSIX      |  ← Core utilities (coreutils, grep, sed, etc.)
@@ -940,7 +941,7 @@ const vm = await AgentOs.create({
 
 **V8 Isolation:**
 
-```
+```text
 Each agent runs in its own V8 isolate:
 - No shared global state
 - Separate memory space
@@ -1155,7 +1156,7 @@ await vm.startWorkflow('my-workflow', {
 
 **ReAct Loop (smolagents, OpenAgent):**
 
-```
+```text
 1. Observe state
 2. Think (LLM generation)
 3. Act (tool/code execution)
@@ -1164,7 +1165,7 @@ await vm.startWorkflow('my-workflow', {
 
 **Code-First Loop (smolagents only):**
 
-```
+```text
 1. Observe state
 2. Generate Python code
 3. Execute code
@@ -1174,7 +1175,7 @@ await vm.startWorkflow('my-workflow', {
 
 **Session-Based (AgentOS):**
 
-```
+```text
 1. Create session with transcript
 2. Stream events in real-time
 3. Automatic persistence

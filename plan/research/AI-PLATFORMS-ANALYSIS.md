@@ -27,7 +27,7 @@ This analysis examines four AI development platforms to inform architectural dec
 
 **Agent Runtime System**:
 
-```
+```text
 packages/agent-runtime/          # Core agent execution engine
 packages/agent-manager-runtime/  # Agent lifecycle management
 packages/agent-gateway-client/    # Agent gateway communication
@@ -37,7 +37,7 @@ packages/builtin-agents/         # Built-in agent templates
 
 **Tool Runtime**:
 
-```
+```text
 packages/tool-runtime/              # Tool execution framework
 packages/builtin-tool-*/            # 20+ built-in tools:
   - builtin-tool-memory          # Persistent memory
@@ -49,7 +49,7 @@ packages/builtin-tool-*/            # 20+ built-in tools:
 
 **Data & State Management**:
 
-```
+```text
 packages/database/              # Database schemas and access
 packages/memory-user-memory/     # User memory persistence
 packages/context-engine/         # Context management
@@ -59,7 +59,7 @@ packages/fetch-sse/             # SSE streaming utilities
 
 **Platform-Specific**:
 
-```
+```text
 packages/desktop-bridge/        # Desktop integration
 packages/electron-server-ipc/    # Electron IPC
 packages/electron-client-ipc/    # Electron client IPC
@@ -148,7 +148,7 @@ export interface AgentExecutor {
 
 **Platform Implementations**:
 
-```
+```text
 apps/
 ├── android/           # Native Android app (Kotlin/Java)
 ├── ios/              # Native iOS app (Swift)
@@ -160,7 +160,7 @@ apps/
 
 **Extension Ecosystem** (134+ extensions):
 
-```
+```text
 extensions/
 ├── anthropic/         # Claude models
 ├── amazon-bedrock/     # AWS Bedrock
@@ -189,7 +189,7 @@ extensions/
 
 **3. Multi-Channel Communication**:
 
-```
+```text
 extensions/channels/
 ├── whatsapp/         # WhatsApp integration
 ├── telegram/          # Telegram integration
@@ -257,7 +257,7 @@ export interface Channel {
 
 **Backend (Python)**:
 
-```
+```text
 pyproject.toml              # Poetry configuration (Python 3.12-3.13)
 enterprise/                  # Enterprise features
 ├── integrations/             # 18+ integrations
@@ -284,7 +284,7 @@ enterprise/                   # Enterprise deployment
 
 **2. Enterprise Integrations**:
 
-```
+```text
 enterprise/integrations/
 ├── github/                 # GitHub integration
 ├── jira/                   # Jira integration

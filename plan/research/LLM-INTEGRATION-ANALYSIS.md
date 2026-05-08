@@ -34,7 +34,7 @@ Only **Novu** could be analyzed in depth. It provides a notification platform wi
 
 Novu uses a **layered provider abstraction** with three distinct adapter layers:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │           Novu Toolkit Core                          │
 │  (packages/agent-toolkit/src/core/)                 │
@@ -427,7 +427,7 @@ const requireHumanInput = (toolsToWrap: OpenAIFunctionTool[], inputConfig: Human
 
 ### Repository Status
 
-- **URL:** https://github.com/v0-org/v0
+- **URL:** <https://github.com/v0-org/v0>
 - **Status:** ❌ Repository not found (404)
 - **Error:** `fatal: repository 'https://github.com/v0-org/v0/' not found`
 
@@ -439,7 +439,7 @@ const requireHumanInput = (toolsToWrap: OpenAIFunctionTool[], inputConfig: Human
 
 ### Repository Status
 
-- **URL:** https://github.com/continuation-ai/pi
+- **URL:** <https://github.com/continuation-ai/pi>
 - **Status:** ❌ Repository not found (404)
 - **Error:** `fatal: repository 'https://github.com/continuation-ai/pi/' not found`
 
@@ -518,7 +518,7 @@ const requireHumanInput = (toolsToWrap: OpenAIFunctionTool[], inputConfig: Human
 
 **1. Multi-Layer Abstraction**
 
-```
+```text
 ┌──────────────────────────────────────┐
 │      Framework Adapter Layer       │  (OpenAI, LangChain, etc.)
 ├──────────────────────────────────────┤

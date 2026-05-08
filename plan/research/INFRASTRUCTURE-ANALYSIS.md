@@ -577,7 +577,7 @@ func (a *AgentLoop) Execute(ctx Context) (Result, error) {
 
 **Observability Features:**
 
-```
+```text
 // Admin dashboard capabilities
 type UsageAnalytics struct {
     TokenStats      TokenMetrics

@@ -1,5 +1,5 @@
-import type { LLMStreamProcessor, ProcessorOptions } from '@agentsy/core/processor';
-import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { LLMStreamProcessor, ProcessorOptions } from './processor/processor/index';
+import type { XmlToolCall } from './tool-calls/index';
 import type { UsageInfo } from '@agentsy/types';
 
 export interface StreamSnapshot {

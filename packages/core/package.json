@@ -2,29 +2,99 @@
   "name": "@agentsy/core",
   "version": "0.1.0",
   "description": "Core stream processing bundle",
-  "main": "./dist/index.js",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "core"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./processor": "./src/processor/index.ts",
-    "./sse": "./src/sse/index.ts",
-    "./structured": "./src/structured/index.ts",
-    "./thinking": "./src/thinking/index.ts",
-    "./tool-calls": "./src/tool-calls/index.ts",
-    "./xml-filter": "./src/xml-filter/index.ts",
-    "./context": "./src/context/index.ts",
-    "./formatting": "./src/formatting/index.ts",
-    "./recovery": "./src/recovery/index.ts",
-    "./ui": "./src/ui/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./processor": {
+      "types": "./dist/processor/index.d.ts",
+      "import": "./dist/processor/index.js",
+      "require": "./dist/processor/index.cjs"
+    },
+    "./sse": {
+      "types": "./dist/sse/index.d.ts",
+      "import": "./dist/sse/index.js",
+      "require": "./dist/sse/index.cjs"
+    },
+    "./structured": {
+      "types": "./dist/structured/index.d.ts",
+      "import": "./dist/structured/index.js",
+      "require": "./dist/structured/index.cjs"
+    },
+    "./thinking": {
+      "types": "./dist/thinking/index.d.ts",
+      "import": "./dist/thinking/index.js",
+      "require": "./dist/thinking/index.cjs"
+    },
+    "./tool-calls": {
+      "types": "./dist/tool-calls/index.d.ts",
+      "import": "./dist/tool-calls/index.js",
+      "require": "./dist/tool-calls/index.cjs"
+    },
+    "./xml-filter": {
+      "types": "./dist/xml-filter/index.d.ts",
+      "import": "./dist/xml-filter/index.js",
+      "require": "./dist/xml-filter/index.cjs"
+    },
+    "./context": {
+      "types": "./dist/context/index.d.ts",
+      "import": "./dist/context/index.js",
+      "require": "./dist/context/index.cjs"
+    },
+    "./formatting": {
+      "types": "./dist/formatting/index.d.ts",
+      "import": "./dist/formatting/index.js",
+      "require": "./dist/formatting/index.cjs"
+    },
+    "./recovery": {
+      "types": "./dist/recovery/index.d.ts",
+      "import": "./dist/recovery/index.js",
+      "require": "./dist/recovery/index.cjs"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js",
+      "require": "./dist/ui/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "test": "vitest run --passWithNoTests",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "tsup": "latest",
-    "typescript": "latest",
-    "vitest": "latest"
-  }
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.33.2"
 }

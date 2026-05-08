@@ -119,7 +119,7 @@ OPENCODE_INSTALL_DIR   # Custom path
 
 ### User Experience Patterns
 
-```
+```text
 Interactive terminal UI with:
 - Agent switching (Tab key)
 - Natural language interaction
@@ -223,7 +223,7 @@ brew install --cask codex
 
 ### User Experience Patterns
 
-```
+```text
 Terminal-native AI coding assistant
 - Clean, simple interface
 - Desktop app alternative
@@ -371,7 +371,7 @@ npm run bundle  # Bundle dist/ into cli.js
 
 ### User Experience Patterns
 
-```
+```text
 4 Usage modes:
 1. Interactive mode (terminal UI)
 2. Headless mode (scripts, CI)
@@ -414,7 +414,7 @@ packages/
 
 ### LLM Streaming and Parsing
 
-```
+```text
 Uses GitHub's Copilot coding agent harness
 Power of GitHub Copilot coding agent in terminal
 ```
@@ -482,7 +482,7 @@ export GH_TOKEN=your-token
 
 ### User Experience Patterns
 
-```
+```text
 Terminal-first with:
 - Animated splash banner
 - Natural language GitHub queries
@@ -636,7 +636,7 @@ interface CLIAgentConfig {
 
 **1. IDE Integration**
 
-```
+```text
 Universal integration approach:
 - VS Code extensions (most common)
 - Language-specific integrations (Java, Python SDKs)
@@ -660,7 +660,7 @@ class MultiProtocolProvider {
 
 **3. MCP (Model Context Protocol) Support**
 
-```
+```text
 MCP usage patterns:
 1. Default MCP server (GitHub Copilot)
 2. Custom MCP servers for extension
@@ -672,7 +672,7 @@ MCP usage patterns:
 
 **1. Interactive Terminal UI**
 
-```
+```text
 Common features:
 - Agent switching
 - Model selection
@@ -693,7 +693,7 @@ tool --cmd "command description" [options]
 
 **3. Error Handling and Recovery**
 
-```
+```text
 Recovery strategies:
 - Graceful degradation for malformed output
 - Permission recovery with prompts

@@ -2,6 +2,12 @@
   "name": "@agentsy/core-manager",
   "version": "0.0.0",
   "description": "Context window management and overflow handling",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"

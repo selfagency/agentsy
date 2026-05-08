@@ -96,7 +96,7 @@
 
 ### Current Structure (Split)
 
-```
+```text
 providers/              # Provider registry, AI client
 ├── index.ts           # Main exports
 ├── _providers/        # Provider-specific subfolders
@@ -109,7 +109,7 @@ providers/              # Provider registry, AI client
 
 ### Provider-Specific Subfolders
 
-```
+```text
 providers/
 ├── _providers/
 │   ├── anthropic/
@@ -364,7 +364,7 @@ graph TD
 
 ### Both Protocols in Providers
 
-```
+```text
 providers/_providers/
 ├── anthropic/
 │   ├── acp-agent-protocol/    # Agent Communication Protocol
@@ -434,7 +434,6 @@ For each of the 4 new packages (providers, tools, testing, cli):
 3. Add `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`
 4. Create `src/index.ts` barrel
 5. Create `src/IMPLEMENTATION-PLAN.md` placeholder
-
 6. Update `pnpm-workspace.yaml` with all new packages
 7. Update `turbo.json` with build/test pipeline
 8. Verify `pnpm install --frozen-lockfile`
@@ -446,14 +445,15 @@ For each of the 4 new packages (providers, tools, testing, cli):
 **New Packages:** None (existing)
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | types | Add ADR contracts from agentsy-platform-v2.md (REQ-001…) | TBD | W2 |
-| T2 | xml-filter | Add privacy stripping rules from doc | TBD | W2 |
-| T3 | context | Implement context window events from docs | TBD | W2 |
-| T4 | formatting | Add markdown rendering from docs | TBD | W2 |
-| T5 | sse | Add batch detection + event dispatchers | TBD | W3 |
-| T6 | structured | Add schema registry + validators | TBD | W3 |
+
+| Task | Package    | Description                                              | Owner | Deadline |
+| ---- | ---------- | -------------------------------------------------------- | ----- | -------- |
+| T1   | types      | Add ADR contracts from agentsy-platform-v2.md (REQ-001…) | TBD   | W2       |
+| T2   | xml-filter | Add privacy stripping rules from doc                     | TBD   | W2       |
+| T3   | context    | Implement context window events from docs                | TBD   | W2       |
+| T4   | formatting | Add markdown rendering from docs                         | TBD   | W2       |
+| T5   | sse        | Add batch detection + event dispatchers                  | TBD   | W3       |
+| T6   | structured | Add schema registry + validators                         | TBD   | W3       |
 
 **Deliverable:** All Tier 0 packages expose stable, documented APIs
 
@@ -464,11 +464,12 @@ For each of the 4 new packages (providers, tools, testing, cli):
 **New Packages:** None (existing)
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | processor | LLMStreamProcessor (state map + backpressure) | TBD | W4 |
-| T2 | recovery | Snapshot/resume + rollback | TBD | W4 |
-| T3 | thinking | Thinking block parsing + tracking | TBD | W5 |
+
+| Task | Package   | Description                                   | Owner | Deadline |
+| ---- | --------- | --------------------------------------------- | ----- | -------- |
+| T1   | processor | LLMStreamProcessor (state map + backpressure) | TBD   | W4       |
+| T2   | recovery  | Snapshot/resume + rollback                    | TBD   | W4       |
+| T3   | thinking  | Thinking block parsing + tracking             | TBD   | W5       |
 
 **Deliverable:**
 
@@ -485,11 +486,12 @@ For each of the 4 new packages (providers, tools, testing, cli):
 - @agentsy/mcp (internal tools, not external servers)
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | agentic-loop | Agent loop orchestration + approval engine | TBD | W6 |
-| T2 | session | Branching, serialization, history | TBD | W7 |
-| T3 | mcp | Auto-install, tool discovery (internal only) | TBD | W8 |
+
+| Task | Package      | Description                                  | Owner | Deadline |
+| ---- | ------------ | -------------------------------------------- | ----- | -------- |
+| T1   | agentic-loop | Agent loop orchestration + approval engine   | TBD   | W6       |
+| T2   | session      | Branching, serialization, history            | TBD   | W7       |
+| T3   | mcp          | Auto-install, tool discovery (internal only) | TBD   | W8       |
 
 **Deliverable:**
 
@@ -506,16 +508,17 @@ For each of the 4 new packages (providers, tools, testing, cli):
 - @agentsy/retrieval (vector + RAG)
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | providers | Provider registry + provider manager | TBD | W9 |
-| T2 | providers | Universal AI client (OpenAI + Anthropic + extensions) | TBD | W10 |
-| T3 | providers | Model picker with preset definitions | TBD | W11 |
-| T4 | providers | Add provider-specific subfolders | TBD | W12 |
-| T5 | memory | Global, project, session dimensions (REQ-054) | TBD | W9 |
-| T6 | memory | Retrieval layer (M1-M3) | TBD | W10 |
-| T7 | retrieval | Vector search + libSQL document store (M4) | TBD | W11 |
-| T8 | retrieval | RAG pipeline (M5-M6) | TBD | W12 |
+
+| Task | Package   | Description                                           | Owner | Deadline |
+| ---- | --------- | ----------------------------------------------------- | ----- | -------- |
+| T1   | providers | Provider registry + provider manager                  | TBD   | W9       |
+| T2   | providers | Universal AI client (OpenAI + Anthropic + extensions) | TBD   | W10      |
+| T3   | providers | Model picker with preset definitions                  | TBD   | W11      |
+| T4   | providers | Add provider-specific subfolders                      | TBD   | W12      |
+| T5   | memory    | Global, project, session dimensions (REQ-054)         | TBD   | W9       |
+| T6   | memory    | Retrieval layer (M1-M3)                               | TBD   | W10      |
+| T7   | retrieval | Vector search + libSQL document store (M4)            | TBD   | W11      |
+| T8   | retrieval | RAG pipeline (M5-M6)                                  | TBD   | W12      |
 
 **Co-development Gate:** All Tier 3 packages must pass integration test with agentic-loop
 
@@ -529,13 +532,14 @@ For each of the 4 new packages (providers, tools, testing, cli):
 - @agentsy/testing (scenario libraries + mocks)
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | tools | Web search, web fetch, file ops, git | TBD | W13 |
-| T2 | tools | Code runner (integrated into tools) | TBD | W13 |
-| T3 | telemetry | Metrics, tracing, error tracking (P9) | TBD | W14 |
-| T4 | guardrails | OWASP moderation, PII scrubbing (REQ-076→REQ-090) | TBD | W14 |
-| T5 | testing | Scenario libraries + mock generators | TBD | W15 |
+
+| Task | Package    | Description                                       | Owner | Deadline |
+| ---- | ---------- | ------------------------------------------------- | ----- | -------- |
+| T1   | tools      | Web search, web fetch, file ops, git              | TBD   | W13      |
+| T2   | tools      | Code runner (integrated into tools)               | TBD   | W13      |
+| T3   | telemetry  | Metrics, tracing, error tracking (P9)             | TBD   | W14      |
+| T4   | guardrails | OWASP moderation, PII scrubbing (REQ-076→REQ-090) | TBD   | W14      |
+| T5   | testing    | Scenario libraries + mock generators              | TBD   | W15      |
 
 **Co-development Gate:** All tools callable from agentic-loop
 
@@ -546,11 +550,12 @@ For each of the 4 new packages (providers, tools, testing, cli):
 - @agentsy/cli
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | cli | Component installer (shadcn-like) | TBD | W16 |
-| T2 | cli | Doctor command (dependency checks) | TBD | W16 |
-| T3 | cli | Documentation MCP integration | TBD | W17 |
+
+| Task | Package | Description                        | Owner | Deadline |
+| ---- | ------- | ---------------------------------- | ----- | -------- |
+| T1   | cli     | Component installer (shadcn-like)  | TBD   | W16      |
+| T2   | cli     | Doctor command (dependency checks) | TBD   | W16      |
+| T3   | cli     | Documentation MCP integration      | TBD   | W17      |
 
 **Deliverable:** CLI doctor command shows all issues resolved
 
@@ -563,11 +568,12 @@ For each of the 4 new packages (providers, tools, testing, cli):
 - @agentsy/connectors (WhatsApp, Matrix, Telegram, Email)
 
 **Tasks:**
-| Task | Package | Description | Owner | Deadline |
-|------|---------|-------------|-------|----------|
-| T1 | slash-commands | 12 stock commands, SKILL.md parsing (F5) | TBD | W18 |
-| T2 | skills | SkillsManager, progressive loading (F5) | TBD | W18 |
-| T3 | connectors | WhatsApp/Matrix/Telegram/Email protocols (CN1-CN4, F8) | TBD | W19 |
+
+| Task | Package        | Description                                            | Owner | Deadline |
+| ---- | -------------- | ------------------------------------------------------ | ----- | -------- |
+| T1   | slash-commands | 12 stock commands, SKILL.md parsing (F5)               | TBD   | W18      |
+| T2   | skills         | SkillsManager, progressive loading (F5)                | TBD   | W18      |
+| T3   | connectors     | WhatsApp/Matrix/Telegram/Email protocols (CN1-CN4, F8) | TBD   | W19      |
 
 **Co-development Gate:** All 3 packages integrate with agentic-loop
 
@@ -577,7 +583,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 
 ### Before (4
 
-```
+```text
 packages/ [44 total including planned directories]
 ├── types, xml-filter, context, formatting, sse, structured
 ├── processor, recovery, thinking
@@ -594,7 +600,7 @@ packages/ [44 total including planned directories]
 
 ### After (22 total)
 
-```
+```text
 packages/ [22 total packages]
 ├── Tier 0 (6): types, xml-filter, context, formatting, sse, structured
 ├── Tier 1 (3): processor, recovery, thinking

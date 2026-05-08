@@ -3,6 +3,12 @@
   "version": "0.1.2",
   "private": false,
   "description": "Provider-specific LLM stream normalizers for the @agentsy platform.",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"

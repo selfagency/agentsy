@@ -3,6 +3,10 @@
   "version": "0.1.1",
   "private": false,
   "description": "Shared TypeScript types for the @agentsy/* package family.",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
   "homepage": "https://agentsy.self.agency",
   "bugs": {
     "url": "https://github.com/selfagency/agentsy/issues"

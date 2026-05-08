@@ -52,6 +52,7 @@
     "oxlint": "1.63.0",
     "turbo": "^2.9.9",
     "vitepress": "^1.6.4",
+    "zod-to-json-schema": "^3.25.2",
     "zx": "^8.8.5"
   },
   "lint-staged": {

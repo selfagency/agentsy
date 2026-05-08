@@ -2,6 +2,12 @@
   "name": "@agentsy/guardrails",
   "version": "0.0.0",
   "description": "Moderation, PII redaction, and streaming guardrails",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"

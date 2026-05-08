@@ -14,7 +14,7 @@ import {
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
-import { parseSSEStream } from '../sse/index.js';
+import { parseSSEStream } from '@agentsy/core/sse';
 import { parseJson } from '@agentsy/core/structured';
 import type { JsonObject } from '@agentsy/types';
 

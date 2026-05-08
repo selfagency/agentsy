@@ -7,6 +7,7 @@
     "integration",
     "providers"
   ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
   "license": "MIT",
   "repository": {
     "type": "git",

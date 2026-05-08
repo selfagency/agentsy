@@ -2,6 +2,12 @@
   "name": "@agentsy/connectors",
   "version": "0.0.0",
   "description": "Channel adapters for messaging platforms",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"

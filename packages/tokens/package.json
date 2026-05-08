@@ -1,10 +1,17 @@
 {
-  "name": "@agentsy/token-economy",
-  "version": "0.0.0",
+  "name": "@agentsy/tokens",
+  "version": "0.2.0-alpha.0",
   "description": "Token budgets, context reduction, and output shaping",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/selfagency/agentsy.git"
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "tokens"
   },
   "type": "module",
   "main": "./dist/index.cjs",

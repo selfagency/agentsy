@@ -134,7 +134,7 @@ Per `plan/pacing-function-implementation.md`:
 
 **Core package structure:**
 
-```
+```text
 packages/core/
 ├── src/
 │   ├── /processor/        (from packages/processor/)
@@ -162,7 +162,7 @@ packages/core/
 
 **Session package (per plan/agentsy-tech.md §4.7):**
 
-```
+```text
 packages/session/
 ├── src/
 │   ├── index.ts
@@ -179,7 +179,7 @@ packages/session/
 
 **Tokens package (per plan/agentsy-token-economy.md + pacing-function-implementation.md):**
 
-```
+```text
 packages/tokens/
 ├── src/
 │   ├── index.ts
@@ -258,7 +258,7 @@ Per `plan/agentsy-subagents.md`:
 
 **Agents package (per plan/agentsy-subagents.md):**
 
-```
+```text
 packages/agents/
 ├── src/
 │   ├── index.ts
@@ -281,7 +281,7 @@ packages/agents/
 
 **Plugins package (per plan/agentsy-agents-v1.md):**
 
-```
+```text
 packages/plugins/
 ├── src/
 │   ├── index.ts
@@ -315,7 +315,7 @@ packages/plugins/
 
 **Tools package (MCP servers exposed as internal tools):**
 
-```
+```text
 packages/tools/
 ├── src/
 │   ├── index.ts
@@ -347,7 +347,7 @@ packages/tools/
 
 **CLI package (MVP):**
 
-```
+```text
 packages/cli/
 ├── src/
 │   ├── index.ts
@@ -372,7 +372,7 @@ packages/cli/
 
 **Connectors package (per plan/agentsy-connectors-v1.md):**
 
-```
+```text
 packages/connectors/
 ├── src/
 │   ├── index.ts
@@ -415,7 +415,7 @@ packages/connectors/
 
 **Memory package (per plan/agentsy-memory.md and plan/agentsy-tech.md §4.11):**
 
-```
+```text
 packages/memory/
 ├── src/
 │   ├── index.ts
@@ -444,7 +444,7 @@ packages/memory/
 
 **Retrieval package (per plan/agentsy-tech.md §4.12):**
 
-```
+```text
 packages/retrieval/
 ├── src/
 │   ├── index.ts
@@ -479,7 +479,7 @@ packages/retrieval/
 
 ## Dependency Hierarchy
 
-```
+```text
 Tier 6 (vscode/ui/ag-ui/renderers/integration/slash-commands/skills/memory/retrieval)
     ↓
 Tier 5 (agents/subagents + a2a, plugins, acp, acp-client, connectors)
@@ -549,20 +549,20 @@ Tier 0 (core, types)
 
 ## Verification Gates
 
-### After Phase 0 (Core Consolidation):
+### After Phase 0 (Core Consolidation)
 
 - [ ] 7 separate stream packages merged to 1 core package
 - [ ] Core exports work correctly via subpath exports
 - [ ] No broken imports after consolidation
 - [ ] All files retain original functionality (backward compatibility)
 
-### After Phase 1 (Agent Runtime):
+### After Phase 1 (Agent Runtime)
 
 - [ ] session package implements SessionStore + FileSystemSessionStore
 - [ ] tokens package includes pacing (merged from pacing-function-implementation.md)
 - [ ] acp and acp-client packages implement editor/client protocol
 
-### After Phase 2 (Platform Tools):
+### After Phase 2 (Platform Tools)
 
 - [ ] tools package has web search, code runner, MCP-as-internal-tools
 - [ ] cli package has component installer, doctor, documentation MCP
@@ -570,7 +570,7 @@ Tier 0 (core, types)
 - [ ] plugins package has caveman/superpowers/garry's mode
 - [ ] connectors package has Signal/WhatsApp/Matrix/Telegram/Email adapters
 
-### Final Verification:
+### Final Verification
 
 - [ ] All ~22-25 packages have package.json and IMPLEMENTATION-PLAN.md
 - [ ] pnpm install succeeds

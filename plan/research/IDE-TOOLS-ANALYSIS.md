@@ -65,7 +65,7 @@ Kestrel is a production-ready framework for creating autonomous AI agents with c
 
 **Project Structure:**
 
-```
+```text
 kestrel-sovereign/
 ├── kestrel_sovereign/         # Core sovereign package
 │   ├── cli.py                 # CLI entry point
@@ -301,7 +301,7 @@ Cherry Studio is a desktop AI productivity client available on Windows, Mac, and
 
 **Project Structure:**
 
-```
+```text
 cherry-studio/
 ├── src/                 # Main source code
 │   ├── main/                # Main process
@@ -506,7 +506,7 @@ nanobot is an ultra-lightweight AI agent inspired by OpenAI, designed for educat
 
 **Project Structure:**
 
-```
+```text
 nanobot/
 ├── agent/          # 🧠 Core agent logic
 │   ├── loop.py     #    Agent loop (LLM ↔ tool execution)
@@ -701,7 +701,7 @@ rush is a glamorous agentic coding assistant terminal tool available in every te
 
 **Project Structure:**
 
-```
+```text
 rush/
 ├── agent/              # Agent core logic
 ├── cmd/                # Commands package
@@ -835,19 +835,19 @@ rush/
 
 | Tool              | Platform Support                                            | API Compatibility                  | UI Approach |
 | ----------------- | ----------------------------------------------------------- | ---------------------------------- | ----------- |
-| **Kestrel**       | Web console, CLI, OpenAI-compatible API                     | Web-first with alternative clients |
-| **Cherry Studio** | Desktop app (Electron), OpenAI-compatible API               | Desktop-first with CLI             |
-| **nanobot**       | Chat apps, OpenAI-compatible API, CLI, Python SDK           | Chat-first with CLI                |
-| **rush**          | Terminal-native, VS Code integration, OpenAI-compatible API | Terminal-first with CLI            |
+| **Kestrel**       | Web console, CLI, OpenAI-compatible API                     | Web-first with alternative clients |             |
+| **Cherry Studio** | Desktop app (Electron), OpenAI-compatible API               | Desktop-first with CLI             |             |
+| **nanobot**       | Chat apps, OpenAI-compatible API, CLI, Python SDK           | Chat-first with CLI                |             |
+| **rush**          | Terminal-native, VS Code integration, OpenAI-compatible API | Terminal-first with CLI            |             |
 
 ### Real-Time Collaboration
 
 | Tool              | Collaboration Features                                 | Multi-Agent Support                                              | Session Management                                    |
 | ----------------- | ------------------------------------------------------ | ---------------------------------------------------------------- | ----------------------------------------------------- |
-| **Kestrel**       | A2A protocol, Independent sessions, Economic contracts | Experimental A2A                                                 |
+| **Kestrel**       | A2A protocol, Independent sessions, Economic contracts | Experimental A2A                                                 |                                                       |
 | **Cherry Studio** | Team deployment, shared knowledge base, Access control | Session-based, multi-agent support                               | Team deployment, shared knowledge, unified management |
-| **nanobot**       | Chat apps, Social network, Research-ready              | Chat apps, Social network, Research focus                        |
-| **rush**          | Multi-session, Context sharing, IDE integration        | Multi-session, Context sharing, IDE integration, Context sharing |
+| **nanobot**       | Chat apps, Social network, Research-ready              | Chat apps, Social network, Research focus                        |                                                       |
+| **rush**          | Multi-session, Context sharing, IDE integration        | Multi-session, Context sharing, IDE integration, Context sharing |                                                       |
 
 ### File Management
 
@@ -870,20 +870,20 @@ rush/
 ### Performance
 
 | Tool              | Optimization Strategy                                                               | Scalability                                                                     | Memory Management                                                                              |
-| ----------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| ----------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | **Kestrel**       | Local-first with cloud fallback, Lazy loading, Background subagent, Multiple agents | 90% smaller codebase, Efficient caching, Persistent memory                      | 90% smaller than OpenAI, Efficient caching, Persistent memory, 2.2k lines vs OpenAI equivalent |
-| **Cherry Studio** | Progressive loading, Virtualization, Streaming responses                            | Progressive loading, Virtualization, Streaming responses, Multi-tier caching    | Progressive loading, Virtualization, Streaming responses                                       |                                                                       |
+| **Cherry Studio** | Progressive loading, Virtualization, Streaming responses                            | Progressive loading, Virtualization, Streaming responses, Multi-tier caching    | Progressive loading, Virtualization, Streaming responses                                       |
 | **nanobot**       | Ultra-lightweight core, Lazy loading, Minimal overhead, 90% smaller than OpenAI     | Ultra-lightweight core, Lazy loading, Minimal overhead, 90% smaller than OpenAI | Ultra-lightweight core, Lazy loading, Minimal overhead                                         |
-| **rush**          | Native performance, Context caching, Multi-terminal, Background tasks               | Native performance, Context caching, Multi-terminal, Background tasks           | Native performance, Context caching, Multi-terminal, Background tasks                          | Native performance, Context caching, Multi-terminal, Background tasks |
+| **rush**          | Native performance, Context caching, Multi-terminal, Background tasks               | Native performance, Context caching, Multi-terminal, Background tasks           | Native performance, Context caching, Multi-terminal, Background tasks                          |
 
 ### Plugin and Extension Architecture
 
 | Tool              | Architecture                                                                     | Integration                                                                       | Extension Points                                                                                  | Custom Providers | Skills |
 | ----------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------- | ------ |
-| **Kestrel**       | Feature-based SDK, Entry points, Hook system, OpenAI-compatible API, MCP support | Feature-based, Entry points, Hook system, OpenAI-compatible API, Full MCP support | Feature-based: Core + add-ons, Entry points, Hook system, OpenAI-compatible API, Full MCP support |
-| **Cherry Studio** | Drizzle-kit framework, Agent Skills open standard, Integrated ecosystem          | Agent Skills open standard, Integrated ecosystem                                  |
-| **nanobot**       | Simple SKILL.md format, Chat apps, Python SDK, Context file                      | Simple SKILL.md format, Chat apps, Python SDK, Context file                       |
-| **rush**          | Charm ecosystem, Industrial-grade, Multi-provider support                        | Charm ecosystem, Industrial-grade, Multi-provider support                         |
+| **Kestrel**       | Feature-based SDK, Entry points, Hook system, OpenAI-compatible API, MCP support | Feature-based, Entry points, Hook system, OpenAI-compatible API, Full MCP support | Feature-based: Core + add-ons, Entry points, Hook system, OpenAI-compatible API, Full MCP support |                  |        |
+| **Cherry Studio** | Drizzle-kit framework, Agent Skills open standard, Integrated ecosystem          | Agent Skills open standard, Integrated ecosystem                                  |                                                                                                   |                  |        |
+| **nanobot**       | Simple SKILL.md format, Chat apps, Python SDK, Context file                      | Simple SKILL.md format, Chat apps, Python SDK, Context file                       |                                                                                                   |                  |        |
+| **rush**          | Charm ecosystem, Industrial-grade, Multi-provider support                        | Charm ecosystem, Industrial-grade, Multi-provider support                         |                                                                                                   |                  |        |
 
 ---
 
