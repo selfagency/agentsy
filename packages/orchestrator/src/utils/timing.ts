@@ -21,16 +21,14 @@ export class TimingUtils {
   static async retry<T>(operation: () => Promise<T>, options: TimingOptions = {}): Promise<T> {
     const { retries = 3, backoff = 'exponential', delay = 1000 } = options;
 
-    let lastError: Error;
-
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
+        const errorObj = error instanceof Error ? error : new Error(String(error));
 
         if (attempt === retries) {
-          throw lastError;
+          throw errorObj;
         }
 
         const backoffDelay = this.calculateBackoffDelay(attempt, delay, backoff);
@@ -38,7 +36,8 @@ export class TimingUtils {
       }
     }
 
-    throw lastError!;
+    // This should never be reached, but TypeScript needs it
+    throw new Error('Retry operation failed unexpectedly');
   }
 
   static calculateBackoffDelay(attempt: number, baseDelay: number, strategy: 'linear' | 'exponential'): number {
