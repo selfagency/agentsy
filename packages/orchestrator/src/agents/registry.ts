@@ -14,7 +14,10 @@ export class AgentRegistry extends EventEmitter {
       if (!this.skillMap.has(skill.name)) {
         this.skillMap.set(skill.name, new Set());
       }
-      this.skillMap.get(skill.name)!.add(agent.id);
+      const skillAgents = this.skillMap.get(skill.name);
+      if (skillAgents) {
+        skillAgents.add(agent.id);
+      }
     });
 
     // Update resource mapping
