@@ -2,6 +2,7 @@
 
 **Date:** 2026-05-07  
 **Platforms Analyzed:**
+
 1. [HuggingFace smolagents](https://github.com/huggingface/smolagents)
 2. [OpenAgent](https://github.com/the-open-agent/openagent)
 3. [Rivet AgentOS](https://github.com/rivet-dev/agent-os)
@@ -12,11 +13,11 @@
 
 This analysis examines three leading open-source agent platforms with distinct architectural approaches:
 
-| Platform | Core Philosophy | Language | Primary Use Case | Unique Selling Point |
-|----------|-----------------|---------|------------------|-------------------|
-| **smolagents** | Code-first agents (~1,000 LOC framework) | Python | Code agents, research, rapid prototyping | Minimal abstractions, code-as-actions paradigm |
-| **OpenAgent** | Full-featured personal AI assistant platform | Go | Enterprise-grade multi-tenant RAG platform | Admin dashboard, workflow automation, 30+ model providers |
-| **AgentOS** | In-process OS for agents | Rust/TypeScript | Embedded agents, high-throughput | 6ms cold starts, 32x cheaper than sandboxes |
+| Platform       | Core Philosophy                              | Language        | Primary Use Case                           | Unique Selling Point                                      |
+| -------------- | -------------------------------------------- | --------------- | ------------------------------------------ | --------------------------------------------------------- |
+| **smolagents** | Code-first agents (~1,000 LOC framework)     | Python          | Code agents, research, rapid prototyping   | Minimal abstractions, code-as-actions paradigm            |
+| **OpenAgent**  | Full-featured personal AI assistant platform | Go              | Enterprise-grade multi-tenant RAG platform | Admin dashboard, workflow automation, 30+ model providers |
+| **AgentOS**    | In-process OS for agents                     | Rust/TypeScript | Embedded agents, high-throughput           | 6ms cold starts, 32x cheaper than sandboxes               |
 
 ---
 
@@ -25,6 +26,7 @@ This analysis examines three leading open-source agent platforms with distinct a
 ### Architecture Patterns
 
 #### Core Design Philosophy
+
 - **Minimalist Framework**: ~1,000 lines of code in `agents.py`
 - **Code-First Paradigm**: Actions are Python code snippets rather than JSON/structured formats
 - **Model-Agnostic**: Works with any LLM via multiple backends
@@ -35,7 +37,7 @@ This analysis examines three leading open-source agent platforms with distinct a
 # From src/smolagents/agents.py (simplified)
 class MultiStepAgent(ABC):
     """Base class for ReAct-style agents that execute step-by-step"""
-    
+
     def __init__(
         self,
         tools: list[Tool],           # Available tools
@@ -48,11 +50,13 @@ class MultiStepAgent(ABC):
 ```
 
 **Memory System:**
+
 - `AgentMemory` class tracks conversation history
 - Structured steps: `TaskStep`, `PlanningStep`, `ActionStep`, `FinalAnswerStep`
 - Automatic context management for planning vs. execution phases
 
 **Tool System:**
+
 ```python
 # Tools are Python functions exposed as callable objects
 tools = [
@@ -66,6 +70,7 @@ agent = CodeAgent(tools=tools, model=model)
 ```
 
 **Agent Hierarchy:**
+
 - **Managed Agents**: Sub-agents that can be called as tools
 - **Multi-StepAgent**: Base ReAct loop implementation
 - **CodeAgent**: Writes actions as Python code
@@ -74,6 +79,7 @@ agent = CodeAgent(tools=tools, model=model)
 #### Agent Lifecycle Management
 
 **Execution Flow:**
+
 ```
 1. Initialize → 2. Plan (optional) → 3. ReAct Loop → 4. Final Answer
 
@@ -86,12 +92,13 @@ Each ReAct iteration:
 ```
 
 **State Management:**
+
 ```python
 # Memory structure
 class AgentMemory:
     steps: List[MemoryStep]  # Full conversation history
     system_prompt: SystemPromptStep
-    
+
     # Each step captures:
     class MemoryStep:
         step_number: int
@@ -101,6 +108,7 @@ class AgentMemory:
 ```
 
 **Planning Integration:**
+
 - Optional planning phase at configurable intervals
 - `PlanningStep` captures plan content before execution
 - Plans are written as code comments explaining approach
@@ -108,6 +116,7 @@ class AgentMemory:
 #### Tool Execution Patterns
 
 **Code-as-Actions Paradigm:**
+
 ```python
 # Agent writes Python code as actions
 action_code = """
@@ -119,6 +128,7 @@ for topic in ["python", "rust", "go"]:
 ```
 
 **Executor Strategy:**
+
 - **Local**: `LocalPythonExecutor` (not secure, for development)
 - **Remote (Sandboxed)**:
   - `BlaxelExecutor`: Blaxel cloud
@@ -128,6 +138,7 @@ for topic in ["python", "rust", "go"]:
   - `DockerExecutor`: Container-based
 
 **Tool Registration:**
+
 ```python
 # Tools are simple Python functions
 @tool
@@ -143,14 +154,17 @@ Tool.from_hub("username/tool-name")
 #### Security and Isolation
 
 **Remote Execution Security:**
+
 - Sandboxed execution in cloud providers (Blaxel, E2B, Modal)
 - Docker isolation available for self-hosting
 - WebAssembly sandbox for browser/edge environments
 
 **⚠️ Important Security Note:**
+
 > `LocalPythonExecutor` is **NOT a security boundary**. It provides best-effort mitigations only and must not be used for untrusted code.
 
 **Security Policies:**
+
 - Explicit sandbox configuration required for production
 - Tool validation via `validate_tool_arguments()`
 - Execution timeout controls
@@ -158,6 +172,7 @@ Tool.from_hub("username/tool-name")
 #### Observability and Monitoring
 
 **Built-in Monitoring:**
+
 ```python
 class AgentLogger:
     """Rich-based logging with different levels"""
@@ -167,26 +182,29 @@ class AgentLogger:
 ```
 
 **Token Usage Tracking:**
+
 ```python
 class TokenUsage:
     input_tokens: int
     output_tokens: int
     total_tokens: int
-    
+
     # Tracked per-step and aggregated
 ```
 
 **Timing Metrics:**
+
 ```python
 class Timing:
     start_time: float
     end_time: float
     duration: float
-    
+
     # Captured for planning, action, and final steps
 ```
 
 **Visualization:**
+
 - Rich-based tree visualization of agent structure
 - Step-by-step replay with `agent.replay(detailed=True)`
 - Streamable outputs for real-time observation
@@ -225,6 +243,7 @@ class Timing:
 ### Architecture Patterns
 
 #### Core Design Philosophy
+
 - **Enterprise-Grade Platform**: Full-featured personal AI assistant
 - **Multi-Tenant Architecture**: Workspaces per user/organization
 - **RAG-First**: Knowledge base integration is core feature
@@ -233,6 +252,7 @@ class Timing:
 #### Key Architectural Components
 
 **Backend (Go):**
+
 - Monolithic Go application with clear separation of concerns
 - Directory structure:
   ```
@@ -247,11 +267,13 @@ class Timing:
   ```
 
 **Frontend:**
+
 - TypeScript/React web application
 - Gradio-based agent interfaces
 - Admin dashboard with analytics
 
 **Database Layer:**
+
 - PostgreSQL for persistent storage
 - Vector database (embeddings) for RAG
 - File storage integration (S3, local, etc.)
@@ -259,6 +281,7 @@ class Timing:
 #### Agent Lifecycle Management
 
 **Session Management:**
+
 ```go
 // Session-based execution model
 type Session struct {
@@ -274,7 +297,7 @@ type Session struct {
 func (s *Service) CreateSession(ctx context.Context, req CreateSessionRequest) (*CreateSessionResponse, error) {
     session := NewSession(req.AgentID, req.InitialMessage)
     s.DB.Create(session)
-    
+
     // Execute agent loop
     for !session.Done {
         step := s.ExecuteStep(session)
@@ -285,6 +308,7 @@ func (s *Service) CreateSession(ctx context.Context, req CreateSessionRequest) (
 ```
 
 **Agent Configuration:**
+
 ```go
 type AgentConfig struct {
     Name           string
@@ -299,32 +323,33 @@ type AgentConfig struct {
 ```
 
 **Agent Loop Execution:**
+
 ```go
 // Chain-based orchestration
 func (c *Chain) Execute(ctx context.Context, input string) (string, error) {
     // 1. Retrieve relevant context from RAG
     context := c.RAG.Search(input)
-    
+
     // 2. Build messages
     messages := c.BuildMessages(input, context)
-    
+
     // 3. Generate response
     response := c.Model.Generate(messages)
-    
+
     // 4. Parse tool calls
     toolCalls := c.ParseToolCalls(response)
-    
+
     // 5. Execute tools
     for _, call := range toolCalls {
         result := c.ToolExecutor.Execute(call)
         c.RecordToolCall(call, result)
     }
-    
+
     // 6. Continue or finalize
     if c.ShouldContinue() {
         return c.Execute(ctx, result)
     }
-    
+
     return result, nil
 }
 ```
@@ -332,6 +357,7 @@ func (c *Chain) Execute(ctx context.Context, input string) (string, error) {
 #### Tool Execution Patterns
 
 **Tool Registration:**
+
 ```go
 type Tool struct {
     ID          string
@@ -355,6 +381,7 @@ func (r *ToolRegistry) Register(tool Tool) error {
 ```
 
 **Tool Categories:**
+
 - **Browser-Use**: Real browser automation (navigation, clicking, forms, scraping)
 - **Web Search & Fetch**: Web search, page content extraction
 - **Shell Execution**: Run commands and scripts
@@ -362,6 +389,7 @@ func (r *ToolRegistry) Register(tool Tool) error {
 - **MCP (Model Context Protocol)**: Connect any MCP server
 
 **MCP Integration:**
+
 ```go
 // MCP server connection over SSE, Stdio, or StreamableHTTP
 type MCPServer struct {
@@ -379,13 +407,13 @@ func (c *MCPClient) Connect(server MCPServer) error {
     if err != nil {
         return err
     }
-    
+
     // List available tools
     tools, err := c.ListTools(conn)
     if err != nil {
         return err
     }
-    
+
     // Register as tools in local registry
     for _, tool := range tools {
         c.ToolRegistry.Register(tool)
@@ -396,6 +424,7 @@ func (c *MCPClient) Connect(server MCPServer) error {
 #### State Management
 
 **Chat State:**
+
 ```go
 type ChatMessage struct {
     ID        string
@@ -419,6 +448,7 @@ type ChatState struct {
 ```
 
 **RAG Knowledge Base:**
+
 ```go
 // Document ingestion and vectorization
 type Document struct {
@@ -444,18 +474,19 @@ type RAGStore struct {
 func (r *RAGService) Search(query string, storeID string) ([]Document, error) {
     // 1. Generate query embedding
     queryEmb := r.Embedding.Generate(query)
-    
+
     // 2. Vector search
     results := r.Index.Search(queryEmb, storeID)
-    
+
     // 3. Retrieve top-k documents
     docs := r.DB.RetrieveDocuments(results)
-    
+
     return docs, nil
 }
 ```
 
 **Workflow State:**
+
 ```go
 // Visual workflow builder (BPMN-style)
 type Workflow struct {
@@ -479,6 +510,7 @@ type WorkflowNode struct {
 #### Security and Isolation
 
 **Authentication Layer:**
+
 ```go
 // OIDC, OAuth2, LDAP, SAML integration
 type AuthProvider struct {
@@ -502,6 +534,7 @@ func (a *AuthService) Authenticate(token string) (*User, error) {
 ```
 
 **Multi-Tenant Isolation:**
+
 ```go
 type Workspace struct {
     ID          string
@@ -517,14 +550,15 @@ type Workspace struct {
 func (s *StorageService) Query(workspaceID, query string) ([]Result, error) {
     // All queries scoped to workspace
     return s.DB.Query(`
-        SELECT * FROM results 
-        WHERE workspace_id = ? 
+        SELECT * FROM results
+        WHERE workspace_id = ?
         AND content @@ ?
     `, workspaceID, query)
 }
 ```
 
 **Tool Security:**
+
 ```go
 // Tool-level permissions
 type ToolPermission struct {
@@ -540,11 +574,11 @@ func (t *ToolExecutor) Execute(call ToolCall) (*ToolResult, error) {
     if !t.CheckPermissions(call.UserID, call.ToolID) {
         return nil, ErrPermissionDenied
     }
-    
+
     // Apply timeout
     ctx, cancel := context.WithTimeout(t.GetTimeout(call.ToolID))
     result, err := t.Tool.Execute(ctx, call.Args)
-    
+
     return result, err
 }
 ```
@@ -552,6 +586,7 @@ func (t *ToolExecutor) Execute(call ToolCall) (*ToolResult, error) {
 #### Observability and Monitoring
 
 **Usage Analytics Dashboard:**
+
 ```go
 type UsageStats struct {
     Applications   []ApplicationStats
@@ -566,17 +601,18 @@ type UsageStats struct {
 // Track tokens/cost per provider, model, and user
 func (a *AnalyticsService) CalculateCost(req CostRequest) (*CostBreakdown, error) {
     breakdown := &CostBreakdown{}
-    
+
     for _, msg := range req.Messages {
         modelCost := a.GetModelCost(msg.Model, msg.Tokens)
         breakdown.Cost += modelCost
     }
-    
+
     return breakdown, nil
 }
 ```
 
 **Activity Monitoring:**
+
 ```go
 // Real-time operation tracking
 type ActivityEvent struct {
@@ -601,6 +637,7 @@ func (m *MonitorService) StreamEvents(ws *websocket.Conn, sessionID string) {
 ```
 
 **Detailed Request Logs:**
+
 ```go
 // Full request/response logging for debugging
 type RequestLog struct {
@@ -663,6 +700,7 @@ func (l *LogService) Query(filters LogFilters) ([]RequestLog, error) {
 ### Architecture Patterns
 
 #### Core Design Philosophy
+
 - **In-Process Operating System**: Agents run inside your process, not containers/VMs
 - **WebAssembly + V8 Isolates**: POSIX commands compiled to WASM, agent code in V8
 - **Embeddable**: npm package, works anywhere (laptop, cloud, edge)
@@ -671,6 +709,7 @@ func (l *LogService) Query(filters LogFilters) ([]RequestLog, error) {
 #### Key Architectural Components
 
 **Kernel (JavaScript):**
+
 ```
 +-------------------+
 |  V8 Isolates    |  ← Agent code (JavaScript/TypeScript)
@@ -684,18 +723,20 @@ func (l *LogService) Query(filters LogFilters) ([]RequestLog, error) {
 ```
 
 **Mount Points:**
+
 ```javascript
 // Kernel runtime with multiple mounts
 const kernel = await AgentOs.create({
-    software: [
-        common,  // Common WASM commands
-        pi,      // Pi integration
-        custom   // Custom software packages
-    ]
+  software: [
+    common, // Common WASM commands
+    pi, // Pi integration
+    custom, // Custom software packages
+  ],
 });
 ```
 
 **Session Management:**
+
 ```javascript
 // Session-based agent execution
 const { sessionId } = await vm.createSession("pi", {
@@ -718,6 +759,7 @@ const history = await vm.getSessionHistory(sessionId);
 #### Agent Lifecycle Management
 
 **Session Lifecycle:**
+
 ```javascript
 // Create → Execute → Resume → Close
 
@@ -741,6 +783,7 @@ await vm.closeSession(sessionId);
 ```
 
 **Agent Communication Protocol (ACP):**
+
 ```javascript
 // Universal transcript format across all agents
 interface Transcript {
@@ -763,6 +806,7 @@ await vm.createSession("pi", {
 #### Tool Execution Patterns
 
 **Host Tools:**
+
 ```javascript
 // Direct function calls from host
 async function myTool(args: any) {
@@ -780,38 +824,42 @@ await vm.exec("myTool --arg value");
 ```
 
 **Standard Tools:**
+
 ```javascript
 // Built-in tools from agent registry
-import pi from "@rivet-dev/agent-os-pi";
-import common from "@rivet-dev/agent-os-common";
+import pi from '@rivet-dev/agent-os-pi';
+import common from '@rivet-dev/agent-os-common';
 
 const vm = await AgentOs.create({
-    software: [common, pi],
+  software: [common, pi],
 });
 
 // Pi, Claude Code, Codex, OpenCode, etc.
 ```
 
 **Filesystem Operations:**
+
 ```javascript
 // Virtual filesystem access
-await vm.writeFile("/path/to/file.txt", "content");
-const content = await vm.readFile("/path/to/file.txt");
-await vm.exec("cat /path/to/file.txt");  // Shell access
+await vm.writeFile('/path/to/file.txt', 'content');
+const content = await vm.readFile('/path/to/file.txt');
+await vm.exec('cat /path/to/file.txt'); // Shell access
 ```
 
 #### State Management
 
 **Automatic Persistence:**
+
 ```javascript
 // Every conversation saved automatically
-const result = await vm.prompt(sessionId, "do something");
+const result = await vm.prompt(sessionId, 'do something');
 
 // Retrieve full transcript later
 const transcript = await vm.getSessionHistory(sessionId);
 ```
 
 **Agent-to-Agent Delegation:**
+
 ```javascript
 // Host tools can delegate to other agents
 const vm = await AgentOs.create({
@@ -828,9 +876,10 @@ await vm.prompt(sessionId, "Use the research tool to investigate...");
 ```
 
 **Multiplayer Collaboration:**
+
 ```javascript
 // Multiple clients collaborate with same agent
-const { sessionId } = await vm.createSession("pi");
+const { sessionId } = await vm.createSession('pi');
 
 // Client A
 const socketA = await vm.connectSession(sessionId);
@@ -839,55 +888,58 @@ const socketA = await vm.connectSession(sessionId);
 const socketB = await vm.connectSession(sessionId);
 
 // Both receive same events in real-time
-socketA.on('message', (msg) => console.log('A:', msg));
-socketB.on('message', (msg) => console.log('B:', msg));
+socketA.on('message', msg => console.log('A:', msg));
+socketB.on('message', msg => console.log('B:', msg));
 ```
 
 #### Security and Isolation
 
 **Deny-by-Default Permissions:**
+
 ```javascript
 // Granular permission controls
 const vm = await AgentOs.create({
-    permissions: {
-        filesystem: {
-            read: ["/home/user"],
-            write: [],
-        },
-        network: {
-            allow: ["https://api.anthropic.com"],
-            deny: ["*"],
-        },
-        process: {
-            allow: ["node", "python3"],
-            deny: ["rm", "kill"],
-        },
-        environment: {
-            allow: ["API_KEY"],
-            deny: ["*"],
-        },
+  permissions: {
+    filesystem: {
+      read: ['/home/user'],
+      write: [],
     },
+    network: {
+      allow: ['https://api.anthropic.com'],
+      deny: ['*'],
+    },
+    process: {
+      allow: ['node', 'python3'],
+      deny: ['rm', 'kill'],
+    },
+    environment: {
+      allow: ['API_KEY'],
+      deny: ['*'],
+    },
+  },
 });
 ```
 
 **Programmatic Network Control:**
+
 ```javascript
 // Proxy outbound connections
 const vm = await AgentOs.create({
-    network: {
-        proxy: {
-            host: "localhost",
-            port: 8080,
-        },
-        rules: [
-            { action: "allow", pattern: "https://api.anthropic.com/*" },
-            { action: "deny", pattern: "*" },
-        ],
+  network: {
+    proxy: {
+      host: 'localhost',
+      port: 8080,
     },
+    rules: [
+      { action: 'allow', pattern: 'https://api.anthropic.com/*' },
+      { action: 'deny', pattern: '*' },
+    ],
+  },
 });
 ```
 
 **V8 Isolation:**
+
 ```
 Each agent runs in its own V8 isolate:
 - No shared global state
@@ -897,38 +949,41 @@ Each agent runs in its own V8 isolate:
 ```
 
 **Resource Limits:**
+
 ```javascript
 const vm = await AgentOs.create({
-    limits: {
-        maxCpu: 2,
-        maxMemoryMB: 512,
-        maxExecutionTimeMs: 30000,
-    },
+  limits: {
+    maxCpu: 2,
+    maxMemoryMB: 512,
+    maxExecutionTimeMs: 30000,
+  },
 });
 ```
 
 #### Observability and Monitoring
 
 **Session Events:**
+
 ```javascript
 // Real-time event streaming
-vm.onSessionEvent(sessionId, (event) => {
-    switch (event.type) {
-        case "message":
-            console.log("Agent message:", event.content);
-            break;
-        case "toolCall":
-            console.log("Tool called:", event.tool);
-            console.log("Arguments:", event.args);
-            break;
-        case "error":
-            console.error("Error:", event.error);
-            break;
-    }
+vm.onSessionEvent(sessionId, event => {
+  switch (event.type) {
+    case 'message':
+      console.log('Agent message:', event.content);
+      break;
+    case 'toolCall':
+      console.log('Tool called:', event.tool);
+      console.log('Arguments:', event.args);
+      break;
+    case 'error':
+      console.error('Error:', event.error);
+      break;
+  }
 });
 ```
 
 **Transcript Format:**
+
 ```javascript
 // Universal format across all agents
 interface Transcript {
@@ -952,32 +1007,33 @@ const transcript = await vm.getSessionHistory(sessionId);
 ```
 
 **Durable Workflows:**
+
 ```javascript
 // Chain agent tasks with retries and branching
-await vm.startWorkflow("my-workflow", {
-    steps: [
-        {
-            id: "step1",
-            agent: "pi",
-            task: "Research topic",
-        },
-        {
-            id: "step2",
-            agent: "pi",
-            task: "Write report",
-            dependsOn: ["step1"],
-        },
-        {
-            id: "step3",
-            agent: "code-exe",
-            task: "Implement solution",
-            dependsOn: ["step2"],
-        },
-    ],
-    retryPolicy: {
-        maxAttempts: 3,
-        backoffMs: 1000,
+await vm.startWorkflow('my-workflow', {
+  steps: [
+    {
+      id: 'step1',
+      agent: 'pi',
+      task: 'Research topic',
     },
+    {
+      id: 'step2',
+      agent: 'pi',
+      task: 'Write report',
+      dependsOn: ['step1'],
+    },
+    {
+      id: 'step3',
+      agent: 'code-exe',
+      task: 'Implement solution',
+      dependsOn: ['step2'],
+    },
+  ],
+  retryPolicy: {
+    maxAttempts: 3,
+    backoffMs: 1000,
+  },
 });
 ```
 
@@ -1019,51 +1075,52 @@ await vm.startWorkflow("my-workflow", {
 
 ### Architecture Comparison
 
-| Aspect | smolagents | OpenAgent | AgentOS |
-|--------|-----------|-----------|---------|
-| **Language** | Python | Go | Rust/TypeScript/JS |
-| **LOC (Core)** | ~1,000 | 2,049 commits | 54 commits |
-| **Philosophy** | Code-first, minimal | Enterprise platform | In-process OS |
-| **Primary Use** | Research, prototyping | Production RAG platform | Embedded agents |
-| **State Mgmt** | In-memory `AgentMemory` | PostgreSQL + Redis | Automatic persistence |
-| **Execution** | Remote sandboxed | In-process with auth | In-process isolates |
-| **Cold Start** | ~5s (remote) | ~500ms | **6ms** |
-| **Memory** | ~1GB (sandbox) | Configurable | **~131MB** (8x smaller) |
-| **Cost** | Sandbox rates | Infra + compute | **32x cheaper** |
+| Aspect          | smolagents              | OpenAgent               | AgentOS                 |
+| --------------- | ----------------------- | ----------------------- | ----------------------- |
+| **Language**    | Python                  | Go                      | Rust/TypeScript/JS      |
+| **LOC (Core)**  | ~1,000                  | 2,049 commits           | 54 commits              |
+| **Philosophy**  | Code-first, minimal     | Enterprise platform     | In-process OS           |
+| **Primary Use** | Research, prototyping   | Production RAG platform | Embedded agents         |
+| **State Mgmt**  | In-memory `AgentMemory` | PostgreSQL + Redis      | Automatic persistence   |
+| **Execution**   | Remote sandboxed        | In-process with auth    | In-process isolates     |
+| **Cold Start**  | ~5s (remote)            | ~500ms                  | **6ms**                 |
+| **Memory**      | ~1GB (sandbox)          | Configurable            | **~131MB** (8x smaller) |
+| **Cost**        | Sandbox rates           | Infra + compute         | **32x cheaper**         |
 
 ### Tool Execution Patterns
 
-| Pattern | smolagents | OpenAgent | AgentOS |
-|--------|-----------|-----------|---------|
-| **Tool Def** | Python functions | Go structs with JSON config | Host functions / WASM |
-| **Calling** | Python code generation | MCP/Tool protocol | CLI-style |
-| **Sandbox** | Cloud (Blaxel/E2B/Modal) | In-process with auth | V8 isolates |
-| **Monitoring** | Rich console, replay | Dashboard + logs | Session events |
-| **Extensibility** | Hugging Face Hub | MCP servers | Host tools + WASM |
+| Pattern           | smolagents               | OpenAgent                   | AgentOS               |
+| ----------------- | ------------------------ | --------------------------- | --------------------- |
+| **Tool Def**      | Python functions         | Go structs with JSON config | Host functions / WASM |
+| **Calling**       | Python code generation   | MCP/Tool protocol           | CLI-style             |
+| **Sandbox**       | Cloud (Blaxel/E2B/Modal) | In-process with auth        | V8 isolates           |
+| **Monitoring**    | Rich console, replay     | Dashboard + logs            | Session events        |
+| **Extensibility** | Hugging Face Hub         | MCP servers                 | Host tools + WASM     |
 
 ### Security Comparison
 
-| Security | smolagents | OpenAgent | AgentOS |
-|----------|-----------|-----------|---------|
-| **Isolation** | Remote sandboxes | Multi-tenant DB | V8 isolates |
-| **Auth** | None (dev) | OIDC/OAuth2/LDAP/SAML | N/A (in-process) |
-| **Network** | Sandbox-bound | Configurable proxy | Programmatic control |
-| **FS Access** | Sandbox-bound | Per-workspace | Deny-by-default |
-| **Process** | Sandbox-bound | Role-based | Allow/deny lists |
+| Security      | smolagents       | OpenAgent             | AgentOS              |
+| ------------- | ---------------- | --------------------- | -------------------- |
+| **Isolation** | Remote sandboxes | Multi-tenant DB       | V8 isolates          |
+| **Auth**      | None (dev)       | OIDC/OAuth2/LDAP/SAML | N/A (in-process)     |
+| **Network**   | Sandbox-bound    | Configurable proxy    | Programmatic control |
+| **FS Access** | Sandbox-bound    | Per-workspace         | Deny-by-default      |
+| **Process**   | Sandbox-bound    | Role-based            | Allow/deny lists     |
 
 ### Observability Comparison
 
-| Feature | smolagents | OpenAgent | AgentOS |
-|---------|-----------|-----------|---------|
-| **Logging** | Rich console | Dashboard + logs | Session events |
-| **Metrics** | Tokens + timing | Usage + cost | Session history |
-| **Debugging** | Replay function | Detailed request logs | Universal transcripts |
-| **Real-time** | Streaming events | WebSocket dashboard | Event streaming |
-| **Visualization** | Agent tree | Charts + graphs | Transcript format |
+| Feature           | smolagents       | OpenAgent             | AgentOS               |
+| ----------------- | ---------------- | --------------------- | --------------------- |
+| **Logging**       | Rich console     | Dashboard + logs      | Session events        |
+| **Metrics**       | Tokens + timing  | Usage + cost          | Session history       |
+| **Debugging**     | Replay function  | Detailed request logs | Universal transcripts |
+| **Real-time**     | Streaming events | WebSocket dashboard   | Event streaming       |
+| **Visualization** | Agent tree       | Charts + graphs       | Transcript format     |
 
 ### Innovation Summary
 
 **smolagents Innovations:**
+
 - ✨ Code-as-actions paradigm (30% fewer steps)
 - 🤗 Hugging Face Hub integration for agents/tools
 - 🧑 Multi-modal support (text, vision, audio)
@@ -1071,6 +1128,7 @@ await vm.startWorkflow("my-workflow", {
 - 🔧 Vision Web Browser agent
 
 **OpenAgent Innovations:**
+
 - 🎨 Visual workflow builder (BPMN-style)
 - 📊 Usage analytics with cost tracking
 - 🔐 30+ model provider integration
@@ -1079,6 +1137,7 @@ await vm.startWorkflow("my-workflow", {
 - 🔄 MCP integration (SSE, Stdio, StreamableHTTP)
 
 **AgentOS Innovations:**
+
 - ⚡ In-process OS (6ms cold starts)
 - 💰 32x cheaper than sandboxes
 - 🔐 WebAssembly + V8 isolation
@@ -1095,6 +1154,7 @@ await vm.startWorkflow("my-workflow", {
 ### 1. Agent Loop Patterns
 
 **ReAct Loop (smolagents, OpenAgent):**
+
 ```
 1. Observe state
 2. Think (LLM generation)
@@ -1103,6 +1163,7 @@ await vm.startWorkflow("my-workflow", {
 ```
 
 **Code-First Loop (smolagents only):**
+
 ```
 1. Observe state
 2. Generate Python code
@@ -1112,6 +1173,7 @@ await vm.startWorkflow("my-workflow", {
 ```
 
 **Session-Based (AgentOS):**
+
 ```
 1. Create session with transcript
 2. Stream events in real-time
@@ -1122,15 +1184,17 @@ await vm.startWorkflow("my-workflow", {
 ### 2. Memory Management Patterns
 
 **Structured Memory (smolagents):**
+
 ```python
 class AgentMemory:
     steps: List[MemoryStep]
     system_prompt: SystemPromptStep
-    
+
     # Steps: Task, Planning, Action, FinalAnswer
 ```
 
 **Database-Backed (OpenAgent):**
+
 ```go
 type ChatState struct {
     ID       string
@@ -1143,17 +1207,19 @@ type ChatState struct {
 ```
 
 **Automatic Persistence (AgentOS):**
+
 ```javascript
 // Every session auto-saved
 const transcript = await vm.getSessionHistory(sessionId);
 
 // Resumable across restarts
-await vm.createSession("pi", { transcript });
+await vm.createSession('pi', { transcript });
 ```
 
 ### 3. Tool Execution Patterns
 
 **Function-Based (smolagents):**
+
 ```python
 @tool
 def my_tool(arg: str):
@@ -1161,6 +1227,7 @@ def my_tool(arg: str):
 ```
 
 **MCP-Based (OpenAgent):**
+
 ```go
 type MCPServer struct {
     ID       string
@@ -1171,27 +1238,31 @@ type MCPServer struct {
 ```
 
 **Host-Based (AgentOS):**
+
 ```javascript
 const vm = await AgentOs.create({
-    hostTools: {
-        myTool: (args) => result,
-    }
+  hostTools: {
+    myTool: args => result,
+  },
 });
 ```
 
 ### 4. Security Patterns
 
 **Sandbox Isolation (smolagents):**
+
 - Remote execution in cloud sandboxes
 - No code runs on host
 - Clear security boundary
 
 **Multi-Tenant Isolation (OpenAgent):**
+
 - Workspace-based data isolation
 - Role-based access control
 - Per-tool rate limiting
 
 **Process Isolation (AgentOS):**
+
 - V8 isolates per agent
 - Deny-by-default permissions
 - No shared global state
@@ -1203,6 +1274,7 @@ const vm = await AgentOs.create({
 ### When to Use Each Platform
 
 **Use smolagents when:**
+
 - ✅ Building research prototypes quickly
 - ✅ Need code-first agent paradigm
 - ✅ Want to share agents via Hugging Face Hub
@@ -1210,6 +1282,7 @@ const vm = await AgentOs.create({
 - ✅ Want minimal abstractions to hack on
 
 **Use OpenAgent when:**
+
 - ✅ Building enterprise-grade applications
 - ✅ Need admin dashboard and analytics
 - ✅ Require multi-tenant architecture
@@ -1218,6 +1291,7 @@ const vm = await AgentOs.create({
 - ✅ Supporting 30+ model providers
 
 **Use AgentOS when:**
+
 - ✅ Need ultra-fast cold starts (6ms)
 - ✅ Cost-sensitive high-throughput workloads
 - ✅ Embedding agents in existing backend
@@ -1228,6 +1302,7 @@ const vm = await AgentOs.create({
 ### Hybrid Approaches
 
 **smolagents + OpenAgent:**
+
 ```python
 # Use smolagents CodeAgent for rapid prototyping
 # Export to Hugging Face Hub
@@ -1238,19 +1313,21 @@ openagent.register_tool_from_hub("my-org/my-agent")
 ```
 
 **AgentOS + OpenAgent:**
+
 ```javascript
 // Use AgentOS for fast, cheap execution
 // Use OpenAgent for RAG knowledge base
 const vm = await AgentOs.create({
-    hostTools: {
-        async ragSearch(query) {
-            return await openagent.rag.search(query);
-        }
-    }
+  hostTools: {
+    async ragSearch(query) {
+      return await openagent.rag.search(query);
+    },
+  },
 });
 ```
 
 **smolagents + AgentOS:**
+
 ```python
 # Prototype in smolagents with LocalPythonExecutor
 # Deploy in production with AgentOS sandbox
@@ -1269,11 +1346,13 @@ The three platforms represent distinct architectural philosophies:
 3. **AgentOS**: Performance-focused, in-process OS for embedding and high-throughput scenarios
 
 Each excels in different dimensions:
+
 - **smolagents** in simplicity and novel paradigms
 - **OpenAgent** in enterprise features and completeness
 - **AgentOS** in performance and embedding flexibility
 
 The choice depends on your use case:
+
 - Research/prototyping → **smolagents**
 - Enterprise production → **OpenAgent**
 - Embedded/performance-critical → **AgentOS**

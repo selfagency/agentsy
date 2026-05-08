@@ -22,79 +22,80 @@
 
 ### Tier 0: Foundation (Must stabilize first)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **types** | Core type system | JsonObject, JsonValue, interfaces, ADR contracts | Live |
-| **xml-filter** | XML privacy stripping | Lexer/parser, privacy-correction | Live |
-| **context** | Context window events | auto-resize, awareness updates | Live |
-| **formatting** | Response formatting | Markdown, HTML, code highlighting | Live |
-| **sse** | SSE parsing | Chunk parser, batch detection, notifiers | Live (merged strategy) |
-| **structured** | Structured output | Schema validation, JSON/YAML via schema registry | Live |
+| Package        | Purpose               | Key Outputs                                      | Status                 |
+| -------------- | --------------------- | ------------------------------------------------ | ---------------------- |
+| **types**      | Core type system      | JsonObject, JsonValue, interfaces, ADR contracts | Live                   |
+| **xml-filter** | XML privacy stripping | Lexer/parser, privacy-correction                 | Live                   |
+| **context**    | Context window events | auto-resize, awareness updates                   | Live                   |
+| **formatting** | Response formatting   | Markdown, HTML, code highlighting                | Live                   |
+| **sse**        | SSE parsing           | Chunk parser, batch detection, notifiers         | Live (merged strategy) |
+| **structured** | Structured output     | Schema validation, JSON/YAML via schema registry | Live                   |
 
 ### Tier 1: Stream Processing (Core pipeline)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **processor** | LLMStreamProcessor | Per-message state, backpressure | Live |
-| **recovery** | Session recovery | Snapshot/resume, rollback | Live |
-| **thinking** | Reasoning extraction | Thinking block parsing, reasoning tracking | Live |
+| Package       | Purpose              | Key Outputs                                | Status |
+| ------------- | -------------------- | ------------------------------------------ | ------ |
+| **processor** | LLMStreamProcessor   | Per-message state, backpressure            | Live   |
+| **recovery**  | Session recovery     | Snapshot/resume, rollback                  | Live   |
+| **thinking**  | Reasoning extraction | Thinking block parsing, reasoning tracking | Live   |
 
 ### Tier 2: Agent Runtime (Orchestration)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **agentic-loop** | Agent loop orchestration | Approval engine, stop conditions, loop control | Agentic Loop from agent package |
-| **token-economy** | Token budgets & shaping | Budgets, reduction strategies, shaping | Live (renamed from token-economy, will include pacing) |
-| **session** | Session management | Branching, serialization, history | Planned |
+| Package           | Purpose                  | Key Outputs                                    | Status                                                 |
+| ----------------- | ------------------------ | ---------------------------------------------- | ------------------------------------------------------ |
+| **agentic-loop**  | Agent loop orchestration | Approval engine, stop conditions, loop control | Agentic Loop from agent package                        |
+| **token-economy** | Token budgets & shaping  | Budgets, reduction strategies, shaping         | Live (renamed from token-economy, will include pacing) |
+| **session**       | Session management       | Branching, serialization, history              | Planned                                                |
 
 ### Tier 3: Provider Integration (Multi-model)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **mcp** | MCP integrator | Auto-install, tool discovery, internal tools | Planned |
-| **providers** | Provider registry | Universal AI client, provider manager, model picker | **New - MVP** |
-| **memory** | Durable knowledge store | Global/project/session dimensions, retrieval | Live |
-| **retrieval** | RAG document store | Vector search + libSQL/Turbo document store | Live |
+| Package       | Purpose                 | Key Outputs                                         | Status        |
+| ------------- | ----------------------- | --------------------------------------------------- | ------------- |
+| **mcp**       | MCP integrator          | Auto-install, tool discovery, internal tools        | Planned       |
+| **providers** | Provider registry       | Universal AI client, provider manager, model picker | **New - MVP** |
+| **memory**    | Durable knowledge store | Global/project/session dimensions, retrieval        | Live          |
+| **retrieval** | RAG document store      | Vector search + libSQL/Turbo document store         | Live          |
 
 ### Tier 4: Tools & Integrations (Agent utilities)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **tools** | Built-in agent tools | Web search, web fetch, file ops, git, code runner | **New - MVP** |
-| **telemetry** | Observability | Metrics, tracing, error tracking | Live |
-| **guardrails** | Safety moderation | OWASP moderation, PII scrubbing (REQ-076→REQ-090) | Planned |
-| **testing** | Scenario + mocks | Scenario libraries, mock generators | **New - MVP** |
+| Package        | Purpose              | Key Outputs                                       | Status        |
+| -------------- | -------------------- | ------------------------------------------------- | ------------- |
+| **tools**      | Built-in agent tools | Web search, web fetch, file ops, git, code runner | **New - MVP** |
+| **telemetry**  | Observability        | Metrics, tracing, error tracking                  | Live          |
+| **guardrails** | Safety moderation    | OWASP moderation, PII scrubbing (REQ-076→REQ-090) | Planned       |
+| **testing**    | Scenario + mocks     | Scenario libraries, mock generators               | **New - MVP** |
 
 ### Tier 5: User Experience (CLI & Display)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **cli** | Agenty CLI | Component installer (shadcn-like), doctor command, docs MCP | **New - MVP** |
-| **ui** | UI layer components | shadcn/radix wrappers | Live |
-| **agents** | Plugin system | Custom plugin examples (Garry's model, etc.), plugin manifest | Live (renamed focus) |
+| Package    | Purpose             | Key Outputs                                                   | Status               |
+| ---------- | ------------------- | ------------------------------------------------------------- | -------------------- |
+| **cli**    | Agenty CLI          | Component installer (shadcn-like), doctor command, docs MCP   | **New - MVP**        |
+| **ui**     | UI layer components | shadcn/radix wrappers                                         | Live                 |
+| **agents** | Plugin system       | Custom plugin examples (Garry's model, etc.), plugin manifest | Live (renamed focus) |
 
 ### Tier 6: Protocol Bridges (Future)
 
-| Package | Purpose | Key Outputs | Status |
-|---------|---------|-------------|--------|
-| **connectors** | External bridge | WhatsApp, Matrix, Telegram, Email protocols | Planned |
-| **slash-commands** | Command system | 12 stock commands, SKILL.md parsing | Live |
-| **skills** | SkillsManager | Progressive loading, skill orchestration | Live |
+| Package            | Purpose         | Key Outputs                                 | Status  |
+| ------------------ | --------------- | ------------------------------------------- | ------- |
+| **connectors**     | External bridge | WhatsApp, Matrix, Telegram, Email protocols | Planned |
+| **slash-commands** | Command system  | 12 stock commands, SKILL.md parsing         | Live    |
+| **skills**         | SkillsManager   | Progressive loading, skill orchestration    | Live    |
 
 ### Future / Deferred
 
-| Package | Purpose | Status |
-|---------|---------|--------|
-| **extension-vscode** | VS Code extension | Merged into vscode package (stub only pending) |
-| **a2a** | Agent-to-Agent protocol | Merged into agents (after dropping agentic-loop separation) |
-| **subagents** | Coordinator workers | Merged into agents (future phase) |
-| **desktop** | Desktop application | No plans (deferred indefinitely) |
+| Package              | Purpose                 | Status                                                      |
+| -------------------- | ----------------------- | ----------------------------------------------------------- |
+| **extension-vscode** | VS Code extension       | Merged into vscode package (stub only pending)              |
+| **a2a**              | Agent-to-Agent protocol | Merged into agents (after dropping agentic-loop separation) |
+| **subagents**        | Coordinator workers     | Merged into agents (future phase)                           |
+| **desktop**          | Desktop application     | No plans (deferred indefinitely)                            |
 
 ---
 
 ## Provider Architecture
 
 ### Current Structure (Split)
+
 ```
 providers/              # Provider registry, AI client
 ├── index.ts           # Main exports
@@ -107,6 +108,7 @@ providers/              # Provider registry, AI client
 ```
 
 ### Provider-Specific Subfolders
+
 ```
 providers/
 ├── _providers/
@@ -133,6 +135,7 @@ providers/
 ```
 
 ### Default Subpath Exports (in package.json)
+
 ```json
 {
   "exports": {
@@ -150,6 +153,7 @@ providers/
 ## Universal AI Client Architecture
 
 ### Core Client
+
 ```typescript
 interface UniversalAIProvider {
   chat(): ChatProvider;
@@ -163,6 +167,7 @@ interface ChatProvider {
 ```
 
 ### Provider Manager Toolset
+
 ```typescript
 // src/providers/provider-manager.ts
 
@@ -176,11 +181,12 @@ class ProviderManager {
 
   // Model picker with preconfigured definitions
   modelsForProvider(provider: string): Model[];
-  preconfigured // creativity: low|medium|high, thinking: low|medium|high
+  preconfigured; // creativity: low|medium|high, thinking: low|medium|high
 }
 ```
 
 ### Model Picker
+
 ```typescript
 interface ModelPicker {
   // Returns models filtered by provider + creativity/thinking presets
@@ -200,6 +206,7 @@ interface ModelPicker {
 ## Tools Package
 
 ### Agent-Exposed Tools
+
 ```typescript
 // src/tools/websearch/websearch.ts
 export function websearch(query: string, options?: SearchOptions): Promise<SearchResults>;
@@ -224,6 +231,7 @@ export function runCode(code: Code, options?: RunOptions): Promise<ExecutionResu
 ## CLI Architecture (MVP)
 
 ### CLI Package
+
 ```typescript
 // src/cli/index.ts
 import { install } from './commands/install.js';
@@ -232,11 +240,13 @@ import { docs } from './commands/docs.js';
 ```
 
 ### New Packages for MVP
+
 1. **@agentsy/cli** - Main CLI app + commands
 2. **@agentsy/cli-docs** - Documentation MCP server
 3. **@agentsy/testing** - Scenario libraries + mock generators
 
 ### CLI Features
+
 ```bash
 # Component installer (shadcn-like for agenty)
 agenty add components/session
@@ -307,36 +317,42 @@ graph TD
 ## Co-Development Groups
 
 ### Group A: Provider Foundation (Same Phase)
-- **packages:** providers, providers/_providers/*, tokens (renamed from token-economy)
+
+- **packages:** providers, providers/\_providers/\*, tokens (renamed from token-economy)
 - **Rationale:** Can't ship provider ecosystem without a solid registry + universal client
 - **Trigger:** Provider manager exposed + model picker defaults
 - **Lockstep with:** tokens (pacing integration), testing (mocks)
 
 ### Group B: Stream Processing (Same Phase)
+
 - **packages:** sse, xml-filter, structured, recovery, thinking
 - **Rationale:** Stream infrastructure is shared across all providers
 - **Trigger:** Unified stream interface for all providers
 - **Lockstep with:** parser tests (scenario libraries)
 
 ### Group C: Agent Runtime (Same Phase)
+
 - **packages:** agentic-loop, session, mcp, tools
 - **Rationale:** Agent loop needs session state + tool access
 - **Trigger:** Approval engine working + tool integration completed
 - **Lockstep with:** providers (token budgets during loop), testing (scenario libraries)
 
 ### Group D: Memory & Retrieval (Same Phase)
+
 - **packages:** memory, retrieval
 - **Rationale:** Durable knowledge is core to agent capabilities
 - **Trigger:** 3 dimensions working + RAG document store operational
 - **Lockstep with:** tokens (query reduction during memory reads)
 
 ### Group E: Protocol Bridges (Same Phase)
+
 - **packages:** slash-commands, skills, connectors
 - **Rationale:** Protocol integrations are independent but share testing patterns
 - **Trigger:** All 3 packages successfully integrate with test infrastructure
 - **Lockstep with:** tools (especially fileops + git for connectors)
 
 ### Group F: UX & Publishing (Same Phase)
+
 - **packages:** ui, agents, cli
 - **Rationale:** Display + plugin system + CLI expose the platform
 - **Trigger:** Plugin example working + CLI doctor command complete
@@ -347,6 +363,7 @@ graph TD
 ## ACP Integrations
 
 ### Both Protocols in Providers
+
 ```
 providers/_providers/
 ├── anthropic/
@@ -361,43 +378,44 @@ providers/_providers/
 ```
 
 ### Polyfill Strategy
+
 ```typescript
 // providers/_providers/anthropic/acp-agent-protocol.ts
-export function anthropicACPAdapter(protocol: 'agent' | 'client'): TCPolyfill
+export function anthropicACPAdapter(protocol: 'agent' | 'client'): TCPolyfill;
 ```
 
 ---
 
 ## Source Plan Cross-Reference
 
-| Package | Plan Sources | REQ Coverage |
-|---------|--------------|--------------|
-| **types** | agentsy-tech.md, agentsy-platform-v2.md P0 | ADR-001..ADR-009 |
-| **xml-filter** | agentsy-tech.md, agentsy-platform-v2.md | XML stripping, privacy |
-| **context** | agentsy-tech.md, agentsy-platform-v2.md | Context window events |
-| **formatting** | agentsy-tech.md, agentsy-platform-v2.md | Response formatting |
-| **sse** | agentsy-tech.md | SSE parsing (merged) |
-| **structured** | agentsy-tech.md | Structured output |
-| **processor** | agentsy-tech.md, agentsy-platform-v2.md | LLMStreamProcessor, state map, backpressure |
-| **recovery** | agentsy-tech.md | Session recovery, snapshot/resume |
-| **thinking** | agentsy-tech.md, agentsy-deep-dive-v2.md | Reasoning extraction |
-| **agentic-loop** | agentsy-tech.md, agentsy-platform-v2.md P0, agentsy-deep-dive-v1.md | Agent loop, stop conditions, approval |
-| **token-economy** | agentsy-utils-extraction-plan.md, PR63 | Retry, shaping |
-| **session** | agentsy-tech.md, agentsy-platform-v2.md | Branching, serialization (P4) |
-| **mcp** | agentsy-tech.md, agentsy-platform-v2.md | MCP orchestrator, internal tools (P7) |
-| **providers** | agentsy-platform-v2.md, provider-capability-matrix.md, **NEW** universal client | P8, provider manager, model picker |
-| **memory** | agentsy-memory.md, agentsy-memory-integration.md | 3 dimensions, M1-M6 |
-| **retrieval** | agentsy-memory.md, agentsy-tech.md | Vector + libSQL (M4) |
-| **tools** | agentsy-utils-extraction-plan.md, **NEW** code runner tools | Built-in agent tools (New) |
-| **telemetry** | agentsy-tech.md | Observability (P9) |
-| **guardrails** | owasp-security-testing-1.md | SQM, PII (REQ-076→REQ-090) |
-| **testing** | agentsy-testing-plan.md | Scenario libraries, mocks (New) |
-| **cli** | agentsy-features-v1.md, agentsy-prd-task-plan.md | CLI, docs MCP (New MVP) |
-| **ui** | agentsy-tech.md | DisplayPort, shadcn wrappers |
-| **agents** | agent-capabilities.md | Plugin system, custom examples (New focus) |
-| **slash-commands** | agentsy-features-v1.md, agentsy-prd-task-plan.md | 12 stock commands, SKILL.md (F5) |
-| **skills** | agentsy-features-v1.md, agentsy-prd-task-plan.md | SkillsManager (F5) |
-| **connectors** | agentsy-connectors-v1.md, agentsy-features-v1.md | CN1-CN4, F8 |
+| Package            | Plan Sources                                                                    | REQ Coverage                                |
+| ------------------ | ------------------------------------------------------------------------------- | ------------------------------------------- |
+| **types**          | agentsy-tech.md, agentsy-platform-v2.md P0                                      | ADR-001..ADR-009                            |
+| **xml-filter**     | agentsy-tech.md, agentsy-platform-v2.md                                         | XML stripping, privacy                      |
+| **context**        | agentsy-tech.md, agentsy-platform-v2.md                                         | Context window events                       |
+| **formatting**     | agentsy-tech.md, agentsy-platform-v2.md                                         | Response formatting                         |
+| **sse**            | agentsy-tech.md                                                                 | SSE parsing (merged)                        |
+| **structured**     | agentsy-tech.md                                                                 | Structured output                           |
+| **processor**      | agentsy-tech.md, agentsy-platform-v2.md                                         | LLMStreamProcessor, state map, backpressure |
+| **recovery**       | agentsy-tech.md                                                                 | Session recovery, snapshot/resume           |
+| **thinking**       | agentsy-tech.md, agentsy-deep-dive-v2.md                                        | Reasoning extraction                        |
+| **agentic-loop**   | agentsy-tech.md, agentsy-platform-v2.md P0, agentsy-deep-dive-v1.md             | Agent loop, stop conditions, approval       |
+| **token-economy**  | agentsy-utils-extraction-plan.md, PR63                                          | Retry, shaping                              |
+| **session**        | agentsy-tech.md, agentsy-platform-v2.md                                         | Branching, serialization (P4)               |
+| **mcp**            | agentsy-tech.md, agentsy-platform-v2.md                                         | MCP orchestrator, internal tools (P7)       |
+| **providers**      | agentsy-platform-v2.md, provider-capability-matrix.md, **NEW** universal client | P8, provider manager, model picker          |
+| **memory**         | agentsy-memory.md, agentsy-memory-integration.md                                | 3 dimensions, M1-M6                         |
+| **retrieval**      | agentsy-memory.md, agentsy-tech.md                                              | Vector + libSQL (M4)                        |
+| **tools**          | agentsy-utils-extraction-plan.md, **NEW** code runner tools                     | Built-in agent tools (New)                  |
+| **telemetry**      | agentsy-tech.md                                                                 | Observability (P9)                          |
+| **guardrails**     | owasp-security-testing-1.md                                                     | SQM, PII (REQ-076→REQ-090)                  |
+| **testing**        | agentsy-testing-plan.md                                                         | Scenario libraries, mocks (New)             |
+| **cli**            | agentsy-features-v1.md, agentsy-prd-task-plan.md                                | CLI, docs MCP (New MVP)                     |
+| **ui**             | agentsy-tech.md                                                                 | DisplayPort, shadcn wrappers                |
+| **agents**         | agent-capabilities.md                                                           | Plugin system, custom examples (New focus)  |
+| **slash-commands** | agentsy-features-v1.md, agentsy-prd-task-plan.md                                | 12 stock commands, SKILL.md (F5)            |
+| **skills**         | agentsy-features-v1.md, agentsy-prd-task-plan.md                                | SkillsManager (F5)                          |
+| **connectors**     | agentsy-connectors-v1.md, agentsy-features-v1.md                                | CN1-CN4, F8                                 |
 
 ---
 
@@ -453,6 +471,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 | T3 | thinking | Thinking block parsing + tracking | TBD | W5 |
 
 **Deliverable:**
+
 - Unified stream interface for all providers
 - Session recovery with branching
 - Thinking block extraction working
@@ -460,6 +479,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 ### Phase 3: Tier 2 Agent Runtime (Weeks 6-8)
 
 **New Packages:**
+
 - @agentsy/agentic-loop (from agent package)
 - @agentsy/session (planned from plan)
 - @agentsy/mcp (internal tools, not external servers)
@@ -472,6 +492,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 | T3 | mcp | Auto-install, tool discovery (internal only) | TBD | W8 |
 
 **Deliverable:**
+
 - Approval engine working (REQs from plan)
 - Session branching operational
 - MCP as internal tools (not external servers)
@@ -479,6 +500,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 ### Phase 4: Tier 3 Provider Integration (Weeks 9-12)
 
 **New Packages:**
+
 - @agentsy/providers (provider registry, manager, client)
 - @agentsy/memory (3 dimensions)
 - @agentsy/retrieval (vector + RAG)
@@ -500,6 +522,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 ### Phase 5: Tier 4 Tools & Integration (Weeks 13-15)
 
 **New Packages:**
+
 - @agentsy/tools (websearch, webfetch, fileops, git, coderunner)
 - @agentsy/telemetry
 - @agentsy/guardrails
@@ -519,6 +542,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 ### Phase 6: Tier 5 User Experience (Weeks 16-17)
 
 **New Packages:**
+
 - @agentsy/cli
 
 **Tasks:**
@@ -533,6 +557,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 ### Phase 7: Protocol Bridging (Weeks 18-20)
 
 **New Packages:**
+
 - @agentsy/slash-commands
 - @agentsy/skills
 - @agentsy/connectors (WhatsApp, Matrix, Telegram, Email)
@@ -551,6 +576,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 ## Updated Summary
 
 ### Before (4
+
 ```
 packages/ [44 total including planned directories]
 ├── types, xml-filter, context, formatting, sse, structured
@@ -567,6 +593,7 @@ packages/ [44 total including planned directories]
 ```
 
 ### After (22 total)
+
 ```
 packages/ [22 total packages]
 ├── Tier 0 (6): types, xml-filter, context, formatting, sse, structured
@@ -589,23 +616,23 @@ packages/ [22 total packages]
 
 ### Deferred/Removed
 
-| Removed | New Home/Reason |
-|---------|-----------------|
-| **extension-vscode** | Merged into @agentsy/vscode |
-| **renderer-gui** | Merged into @agentsy/renderers |
-| **agents (arch)** | Conceptual arch removed, only plugins remain |
-| **fileops-mcp** | Tool implementations moved to @agentsy/tools |
-| **Desktop app** | No plans (deferred) |
+| Removed                   | New Home/Reason                                      |
+| ------------------------- | ---------------------------------------------------- |
+| **extension-vscode**      | Merged into @agentsy/vscode                          |
+| **renderer-gui**          | Merged into @agentsy/renderers                       |
+| **agents (arch)**         | Conceptual arch removed, only plugins remain         |
+| **fileops-mcp**           | Tool implementations moved to @agentsy/tools         |
+| **Desktop app**           | No plans (deferred)                                  |
 | **Providers subpackages** | Providers normalizers/adapters moved into subfolders |
 
 ### Added for MVP
 
-| New Package | Purpose |
-|-------------|---------|
+| New Package            | Purpose                                                                   |
+| ---------------------- | ------------------------------------------------------------------------- |
 | **@agentsy/providers** | Provider registry + universal AI client + provider manager + model picker |
-| **@agentsy/tools** | Built-in tools (websearch, webfetch, fileops, git, coderunner) |
-| **@agentsy/testing** | Scenario libraries + mock generators |
-| **@agentsy/cli** | Component installer, doctor command, docs MCP |
+| **@agentsy/tools**     | Built-in tools (websearch, webfetch, fileops, git, coderunner)            |
+| **@agentsy/testing**   | Scenario libraries + mock generators                                      |
+| **@agentsy/cli**       | Component installer, doctor command, docs MCP                             |
 
 ---
 

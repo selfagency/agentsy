@@ -14,7 +14,9 @@
     "./tool-calls": "./src/tool-calls/index.ts",
     "./xml-filter": "./src/xml-filter/index.ts",
     "./context": "./src/context/index.ts",
-    "./formatting": "./src/formatting/index.ts"
+    "./formatting": "./src/formatting/index.ts",
+    "./recovery": "./src/recovery/index.ts",
+    "./ui": "./src/ui/index.ts"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",

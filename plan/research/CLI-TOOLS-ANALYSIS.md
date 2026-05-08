@@ -16,6 +16,7 @@ The CLI-based AI code generation landscape encompasses tools ranging from open-s
 ## 1. OpenCode (anomalyco/opencode)
 
 ### Overview
+
 - **Stars**: 156K | **TypeScript** | **Architecture**: Client/Server, TUI-focused
 - **Key Feature**: Built-in LSP support, agent system with multiple subagents
 
@@ -26,11 +27,12 @@ The CLI-based AI code generation landscape encompasses tools ranging from open-s
 const AGENTS = {
   build: 'Full-access agent for development',
   plan: 'Read-only agent for analysis',
-  general: 'For complex searches and multi-step tasks'
+  general: 'For complex searches and multi-step tasks',
 };
 ```
 
 **Architecture Pattern**:
+
 - Client/server architecture allowing TUI to be just one client
 - Can run locally while driven remotely from mobile apps
 - Built for terminal-first development with focus on TUI capabilities
@@ -96,6 +98,7 @@ OPENCODE_INSTALL_DIR   # Custom path
 ```
 
 **Configuration Structure**:
+
 - Environment variables for configuration
 - Directory-based file structure
 - Multi-user support with home directory configuration
@@ -129,6 +132,7 @@ Interactive terminal UI with:
 ## 2. OpenAI Codex (openai/codex)
 
 ### Overview
+
 - **Stars**: 80.7K | **Rust** | **Architecture**: Standalone binary, OpenAI integration
 - **Key Feature**: Local execution with OpenAI models
 
@@ -146,6 +150,7 @@ codex-rs/
 ```
 
 **Packaging Strategy**:
+
 - Single binary per platform (binary name includes architecture)
 - Prebuilt binaries for installation
 - Version packaging and release management
@@ -172,6 +177,7 @@ codex app            # Desktop app experience
 ```
 
 **Integration**:
+
 - VS Code, Cursor, Windsurf integration available
 - Desktop app support with `codex app`
 - Cloud-based fallback possible
@@ -179,6 +185,7 @@ codex app            # Desktop app experience
 ### Editor/IDE Integration
 
 Multiple editor integrations:
+
 - VS Code extension
 - Cursor IDE
 - Windsurf IDE
@@ -197,6 +204,7 @@ brew install --cask codex
 ```
 
 **Authentication**:
+
 - Sign in with ChatGPT
 - API key support (additional setup required)
 - Plan-based integration through ChatGPT
@@ -227,6 +235,7 @@ Terminal-native AI coding assistant
 ## 3. Qwen Code (QwenLM/qwen-code)
 
 ### Overview
+
 - **Stars**: 24.2K | **TypeScript** | **Architecture**: Terminal-first, multi-protocol
 - **Key Feature**: Multi-protocol support, open-source model focus
 
@@ -253,6 +262,7 @@ interface ProviderConfig {
 ```
 
 **Architecture**:
+
 - Node.js-based CLI
 - Monorepo structure (TypeScript, Python, Java SDKs)
 - Exception-aware parser for model-specific adaptations
@@ -270,6 +280,7 @@ class QwenExceptionAwareParser {
 ```
 
 **Streaming Support**:
+
 - Terminal-first while IDE-friendly
 - Battle-tested in multiple environments
 
@@ -289,6 +300,7 @@ qwen -p "your question"
 ```
 
 **Agent Workflows**:
+
 - Skills system for tool usage
 - SubAgents for complex tasks
 - Approval system for safe operations
@@ -312,6 +324,7 @@ brew install qwen-code
 ```
 
 **Configuration**:
+
 ```json
 // ~/.qwen/settings.json
 {
@@ -367,6 +380,7 @@ npm run bundle  # Bundle dist/ into cli.js
 ```
 
 **Special Features**:
+
 - Thinking mode for reasoning models
 - Multiple providers (Alibaba Cloud, OpenRouter, Fireworks AI)
 - Local model setup with Ollama/vLLM
@@ -376,6 +390,7 @@ npm run bundle  # Bundle dist/ into cli.js
 ## 4. GitHub Copilot CLI (github/copilot-cli)
 
 ### Overview
+
 - **Stars**: 10.4K | **Shell** | **Architecture**: Bash-based, GitHub-integrated
 - **Key Feature**: Deep GitHub integration, default MCP server
 
@@ -392,6 +407,7 @@ packages/
 ```
 
 **Deployment**:
+
 - Single executable via shell script
 - Platform-specific downloading
 - No build process required
@@ -415,6 +431,7 @@ copilot                        # Launch with banner
 ```
 
 **Authentication**:
+
 - Fine-grained PAT with "Copilot Requests" permission
 - GitHub authentication for repo access
 - Monthly premium request quota
@@ -422,6 +439,7 @@ copilot                        # Launch with banner
 ### Editor/IDE Integration
 
 **Extensions**:
+
 - VS Code
 - Full GitHub context access
 - Repository, issue, and PR navigation
@@ -443,6 +461,7 @@ Version selection
 ```
 
 **Authentication**:
+
 ```bash
 # PAT authentication
 export GITHUB_TOKEN=your-token
@@ -472,6 +491,7 @@ Terminal-first with:
 ```
 
 **Key UX Features**:
+
 - Authenticated GitHub operations
 - Zero context switching
 - Monolith-first design
@@ -481,11 +501,14 @@ Terminal-first with:
 ## 5. OpenCrabs (adolfusier/opencrabs)
 
 ### Status
+
 - **Status**: Repository not found (404)
 - **Note**: Projects removed from public GitHub
 
 ### Analysis Note
+
 This repository has been removed from GitHub and is not accessible. This indicates the importance of:
+
 - Repository stability considerations
 - Backup strategies for niche CLI tools
 - Community longevity planning
@@ -495,11 +518,14 @@ This repository has been removed from GitHub and is not accessible. This indicat
 ## 6. Claude Code (yasusbanukaofficial/claude-code)
 
 ### Status
+
 - **Status**: Repository not found (404)
 - **Note**: Projects removed from public GitHub
 
 ### Analysis Note
+
 Similar to OpenCrabs, this repository is not publicly accessible. This highlights:
+
 - The dynamic nature of open-source communities
 - Dependency tracking challenges
 
@@ -509,35 +535,37 @@ Similar to OpenCrabs, this repository is not publicly accessible. This highlight
 
 ### Implementation Languages
 
-| Tool | Language | Stars | Focus |
-|------|----------|-------|-------|
-| OpenCode | TypeScript/JavaScript | 156K | Terminal UI, LSP, Agents |
-| Codex | Rust | 80.7K | OpenAI integration, performance |
-| Qwen Code | TypeScript/JavaScript | 24.2K | Multi-protocol, open-source models |
-| Copilot CLI | Shell/Bash | 10.4K | GitHub integration |
-| OpenCrabs | Unknown | — | Removed |
-| Claude Code | Unknown | — | Removed |
+| Tool        | Language              | Stars | Focus                              |
+| ----------- | --------------------- | ----- | ---------------------------------- |
+| OpenCode    | TypeScript/JavaScript | 156K  | Terminal UI, LSP, Agents           |
+| Codex       | Rust                  | 80.7K | OpenAI integration, performance    |
+| Qwen Code   | TypeScript/JavaScript | 24.2K | Multi-protocol, open-source models |
+| Copilot CLI | Shell/Bash            | 10.4K | GitHub integration                 |
+| OpenCrabs   | Unknown               | —     | Removed                            |
+| Claude Code | Unknown               | —     | Removed                            |
 
 ### Architecture Patterns
 
 **1. Monolith vs Modular**
+
 - **Monolith**: Copilot CLI (single binary), Codex (single binary)
 - **Modular**: OpenCode, Qwen Code (package-based architecture)
 - **Hybrid**: OpenCode (client/server), Qwen Code (SDK support)
 
 **2. Compilation Strategy**
+
 - **Compiled**: Codex (Rust binary), Copilot CLI (Shell script → executable)
 - **Interpreted**: OpenCode, Qwen Code (TypeScript runtime)
 - **Frameworks**: Qwen Code provides SDKs for additional runtimes
 
 **3. Distribution Methods**
 
-| Method | Pros | Cons |
-|--------|------|------|
-| Package managers | Easy installation, versioning | Dependency management |
-| Binary distribution | Fast startup, OS-specific optimization | Multiple binaries |
-| Shell script | Cross-platform | Requires shell |
-| Source code | Customization, transparency | Setup complexity |
+| Method              | Pros                                   | Cons                  |
+| ------------------- | -------------------------------------- | --------------------- |
+| Package managers    | Easy installation, versioning          | Dependency management |
+| Binary distribution | Fast startup, OS-specific optimization | Multiple binaries     |
+| Shell script        | Cross-platform                         | Requires shell        |
+| Source code         | Customization, transparency            | Setup complexity      |
 
 ### Core Patterns Identified
 
@@ -696,11 +724,11 @@ for await (const chunk of stream) {
 // Context and message caching
 class ContextManager {
   private cache = new Map<string, any>();
-  
+
   get(key: string): any {
     return this.cache.get(key);
   }
-  
+
   set(key: string, value: any): void {
     this.cache.set(key, value);
   }
@@ -712,9 +740,7 @@ class ContextManager {
 ```typescript
 // Concurrent file operations
 async function batchProcess(files: File[]) {
-  const results = await Promise.all(
-    files.map(file => processFile(file))
-  );
+  const results = await Promise.all(files.map(file => processFile(file)));
   return results;
 }
 ```
@@ -747,6 +773,7 @@ async function batchProcess(files: File[]) {
 ### 2. Testing Strategies
 
 **Unit Testing Pattern**:
+
 ```typescript
 // Isolated package testing
 cd packages/cli && \
@@ -754,12 +781,14 @@ npx vitest run src/path/to/file.test.ts
 ```
 
 **Integration Testing**:
+
 ```bash
 npm run test:integration:cli:sandbox:none
 npm run test:integration:interactive:sandbox:none
 ```
 
 **End-to-End Testing**:
+
 - Interactive mode with tmux
 - Headless mode validation
 - Sandbox environment checks
@@ -779,6 +808,7 @@ npm run test:integration:interactive:sandbox:none
 ```
 
 **Dependency Strategy**:
+
 - Internal package references in monorepo
 - External SDK dependencies minimal
 - Version pinning in lockfiles
@@ -786,15 +816,17 @@ npm run test:integration:interactive:sandbox:none
 ### 4. Security and Permissions
 
 **Permission Model**:
+
 ```typescript
 interface PermissionSystem {
-  default: string[];    // Default permissions
-  explicit: string[];   // Explicit permissions
-  denied: string[];     // Denied operations
+  default: string[]; // Default permissions
+  explicit: string[]; // Explicit permissions
+  denied: string[]; // Denied operations
 }
 ```
 
 **Security Patterns**:
+
 - Fine-grained environment variable access
 - API key management
 - File system operation auditing
@@ -807,16 +839,19 @@ interface PermissionSystem {
 ### 1. Tool Design Considerations
 
 **For OpenAI Integration**:
+
 - Implement provider abstraction layer
 - Support multiple model backends
 - Provide local model fallback options
 
 **For Multi-User Support**:
+
 - User-specific configuration
 - Team-based configuration
 - Organization-wide policies
 
 **For IDE Integration**:
+
 - Language-specific tooling
 - Real-time code analysis
 - Context-aware completions
@@ -824,12 +859,14 @@ interface PermissionSystem {
 ### 2. User Experience Best Practices
 
 **Interactive Features**:
+
 - Visual feedback during processing
 - Progress indicators
 - Action confirmation prompts
 - Natural language voice
 
 **Accessibility**:
+
 - Screen reader support
 - Keyboard navigation
 - Terminal color schemes
@@ -838,12 +875,14 @@ interface PermissionSystem {
 ### 3. Performance Optimization Strategies
 
 **Throughput Improvements**:
+
 - Parallel file system operations
 - Streaming response processing
 - Intelligent caching strategies
 - Background task management
 
 **Latency Reductions**:
+
 - Optimized binary startup
 - Efficient state loading
 - Zero-copy file operations
@@ -852,12 +891,14 @@ interface PermissionSystem {
 ### 4. Extensibility Patterns
 
 **Plugin Systems**:
+
 - Skills architecture (Qwen Code)
 - MCP server support (GitHub Copilot)
 - Command registration patterns
 - Event system design
 
 **Development Workflow**:
+
 - Plugin discovery mechanism
 - Lifecycle hooks (init, process, cleanup)
 - Error propagation to plugins
@@ -870,17 +911,19 @@ interface PermissionSystem {
 ### 1. Agent-Based Orchestration
 
 **Multi-Agent Systems**:
+
 ```typescript
 // Agent collaboration patterns
 const agents = {
   primary: getPrimaryAgent(),
   secondary: getSecondaryAgent(),
   tools: registry.getRegisteredTools(),
-  permits: await checkPermissions(request)
+  permits: await checkPermissions(request),
 };
 ```
 
 **Agent Coordination**:
+
 - Task decomposition
 - Parallel agent execution
 - Result aggregation
@@ -889,6 +932,7 @@ const agents = {
 ### 2. Context-Aware Operation
 
 **Smart Context Handling**:
+
 ```typescript
 class ContextAwareAgent {
   async analyzeContext() {
@@ -903,6 +947,7 @@ class ContextAwareAgent {
 ### 3. Security-First Design
 
 **Permission-Based Operations**:
+
 - Pre-execution validation
 - Post-execution verification
 - Audit trail generation

@@ -3,12 +3,15 @@
 ## Package: @agentsy/universal-client
 
 ### Overview
+
 Universal AI client abstraction layer providing a consistent interface across OpenAI, Anthropic, and other LLM providers. Shield agents from provider-specific API changes while enabling intelligent request routing, model selection, and automatic failover.
 
 ### Current Status
+
 ➕️ To be created - This is a new package concept not yet implemented
 
 ### Core Responsibilities
+
 - Provider-agnostic API interface
 - Intelligent request routing and retry logic
 - Model selection based on requirements
@@ -18,97 +21,99 @@ Universal AI client abstraction layer providing a consistent interface across Op
 - Performance optimization and caching
 
 ### Public API Design
+
 ```typescript
 // Universal client interface
 export interface UniversalClient {
   // Core operations
-  complete(request: CompletionRequest): Promise<CompletionResponse>
-  stream(request: StreamingRequest): AsyncIterable<StreamChunk>
-  embed(request: EmbeddingRequest): Promise<EmbeddingResponse>
-  chat(request: ChatRequest): Promise<ChatResponse>
-  
+  complete(request: CompletionRequest): Promise<CompletionResponse>;
+  stream(request: StreamingRequest): AsyncIterable<StreamChunk>;
+  embed(request: EmbeddingRequest): Promise<EmbeddingResponse>;
+  chat(request: ChatRequest): Promise<ChatResponse>;
+
   // Model management
-  listModels(): Promise<Model[]>
-  getModel(modelId: string): Promise<Model | null>
-  
+  listModels(): Promise<Model[]>;
+  getModel(modelId: string): Promise<Model | null>;
+
   // Provider management
-  getProvider(): Provider
-  switchProvider(providerId: string, config?: ProviderConfig): Promise<UniversalClient>
-  
+  getProvider(): Provider;
+  switchProvider(providerId: string, config?: ProviderConfig): Promise<UniversalClient>;
+
   // Error handling
-  handleError(error: Error, context?: RequestContext): Promise<ErrorResult>
-  
+  handleError(error: Error, context?: RequestContext): Promise<ErrorResult>;
+
   // Metrics and monitoring
-  getMetrics(): Promise<ClientMetrics>
-  
+  getMetrics(): Promise<ClientMetrics>;
+
   // Configuration
-  updateConfig(config: Partial<ClientConfig>): void
-  getConfig(): ClientConfig
+  updateConfig(config: Partial<ClientConfig>): void;
+  getConfig(): ClientConfig;
 }
 
 // Universal request interfaces
 export interface CompletionRequest {
-  prompt: string
-  model?: string
-  temperature?: number
-  maxTokens?: number
-  tools?: ToolCall[]
-  metadata?: Record<string, unknown>
+  prompt: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  tools?: ToolCall[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface StreamingRequest {
-  prompt: string
-  model?: string
-  temperature?: number
-  maxTokens?: number
-  tools?: ToolCall[]
-  tools_choice?: 'auto' | 'required' | 'optional'
-  stream?: boolean
-  metadata?: Record<string, unknown>
+  prompt: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  tools?: ToolCall[];
+  tools_choice?: 'auto' | 'required' | 'optional';
+  stream?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 // Universal response normalization
 export interface NormalizedResponse {
-  provider: string
-  model: string
-  content: string
-  usage: TokenUsage
-  finishReason?: string
-  metadata?: Record<string, unknown>
-  confidence: number
+  provider: string;
+  model: string;
+  content: string;
+  usage: TokenUsage;
+  finishReason?: string;
+  metadata?: Record<string, unknown>;
+  confidence: number;
 }
 
 // Client factory
 export class UniversalClientFactory {
-  createClient(providerId: string, config?: ClientConfig): Promise<UniversalClient>
-  createMultiProviderClient(configs: ProviderConfig[]): Promise<MultiProviderClient>
-  createOpportunisticClient(config?: ClientConfig): Promise<UniversalClient>
+  createClient(providerId: string, config?: ClientConfig): Promise<UniversalClient>;
+  createMultiProviderClient(configs: ProviderConfig[]): Promise<MultiProviderClient>;
+  createOpportunisticClient(config?: ClientConfig): Promise<UniversalClient>;
 }
 
 // Multi-provider client for redundancy and failover
 export class MultiProviderClient implements UniversalClient {
-  constructor(configs: ProviderConfig[])
-  
-  executeWithRouting(request: CompletionRequest): Promise<CompletionResult>
-  executeWithFallback(request: CompletionRequest): Promise<CompletionResult>
-  
+  constructor(configs: ProviderConfig[]);
+
+  executeWithRouting(request: CompletionRequest): Promise<CompletionResult>;
+  executeWithFallback(request: CompletionRequest): Promise<CompletionResult>;
+
   // Provider switching
-  switchProvider(providerId: string): Promise<void>
-  reportProviderHealth(providerId: string): Promise<ProviderHealth>
+  switchProvider(providerId: string): Promise<void>;
+  reportProviderHealth(providerId: string): Promise<ProviderHealth>;
 }
 
 // Model selection service
 export class ModelSelector {
-  selectModel(criteria: ModelSelectionCriteria): Promise<ModelRecommendation>
-  getModelCapabilities(modelId: string): Promise<ModelCapabilities>
-  estimateTokenUsage(request: CompletionRequest): Promise<TokenUsage>
-  optimizeModelPerformance(criteria: OptimizationCriteria): Promise<ModelOptimization>
+  selectModel(criteria: ModelSelectionCriteria): Promise<ModelRecommendation>;
+  getModelCapabilities(modelId: string): Promise<ModelCapabilities>;
+  estimateTokenUsage(request: CompletionRequest): Promise<TokenUsage>;
+  optimizeModelPerformance(criteria: OptimizationCriteria): Promise<ModelOptimization>;
 }
 ```
 
 ### Implementation Strategy
 
 #### Core Architecture
+
 ```
 Provider-independent layer
 ├── Request routing (smart routing based on availability)
@@ -117,7 +122,7 @@ Provider-independent layer
 └── Performance optimization (caching, batching, compression)
 
 Provider adapters
-├── OpenAI adapter (gpt-4o, gpt-5+)  
+├── OpenAI adapter (gpt-4o, gpt-5+)
 ├── Anthropic adapter (claude-3.5, claude-3.5-sonnet)
 ├── Gemini adapter (gemini-1.5, gemini-2.0-flash)
 ├── Ollama adapter (local models)
@@ -133,29 +138,31 @@ Smart routing
 ```
 
 #### Model Selection Algorithm
+
 ```typescript
 export interface ModelSelectionCriteria {
-  requirements: Capability[]
-  constraints: ModelConstraints
-  performance: PerformanceRequirements
-  costBudget: CostTarget
-  latencyTarget?: LatencyTarget
-  preferredProviders?: string[]
-  avoidProviders?: string[]
+  requirements: Capability[];
+  constraints: ModelConstraints;
+  performance: PerformanceRequirements;
+  costBudget: CostTarget;
+  latencyTarget?: LatencyTarget;
+  preferredProviders?: string[];
+  avoidProviders?: string[];
 }
 
 interface ModelRecommendation extends ModelCapabilities {
-  provider: string
-  model: string
-  score: number
-  reasoning: string
-  alternatives: ModelAlternative[]
-  estimatedCost: number
-  estimatedLatency: number
+  provider: string;
+  model: string;
+  score: number;
+  reasoning: string;
+  alternatives: ModelAlternative[];
+  estimatedCost: number;
+  estimatedLatency: number;
 }
 ```
 
 #### Error Recovery Strategies
+
 ```typescript
 // Error categorization and recovery
 const errorStrategies = {
@@ -169,12 +176,14 @@ const errorStrategies = {
 ```
 
 ### Dependencies
+
 - Internal: `@agentsy/types` - Core interfaces
 - Internal: `@agentsy/providers` - Provider configuration
 - Internal: `@agentsy/tokens` - Budget integration
 - External: Provider-specific SDKs (OpenAI, Anthropic, etc.)
 
 ### Test Strategy
+
 - Cross-provider compatibility tests
 - Error scenario simulation
 - Performance benchmarks
@@ -182,18 +191,21 @@ const errorStrategies = {
 - Model selection accuracy tests
 
 ### Co-development Dependencies
+
 - `providers` - Provider registry models and capabilities
 - `tokens` - Budget integration and cost modeling
 - `runtime` - Error handling integration
 - `telemetry` - Performance monitoring
 
 ### Integration with Other Packages
+
 - `providers` - Provider-specific client implementations
 - `runtime` - As part of runtime consolidation
 - `session` - Request context persistence
 - `processor` - Stream processing integration
 
 ### Source Plan References
+
 - `plan/agentsy-providers.md` - Comprehensive provider architecture
 - `plan/agentsy-tech.md` §4.4 - Universal client design
 - `plan/agentsy-token-economy.md` - Budget and cost management
@@ -201,6 +213,7 @@ const errorStrategies = {
 ### Implementation Milestones
 
 #### Phase 1: Core Universal Interface
+
 - [ ] UniversalClient interface definition
 - [ ] Request/Response interfaces
 - [ ] Error handling base classes
@@ -208,6 +221,7 @@ const errorStrategies = {
 - [ ] Client factory implementation
 
 #### Phase 2: OpenAI Provider Implementation
+
 - [ ] OpenAI adapter implementation
 - [ ] OpenAI client class
 - [ ] Model selector integration
@@ -215,6 +229,7 @@ const errorStrategies = {
 - [ ] Error handling for OpenAI
 
 #### Phase 3: Anthropic Provider Implementation
+
 - [ ] Anthropic adapter implementation
 - [ ] Claude client class
 - - Tool calling integration
@@ -222,6 +237,7 @@ const errorStrategies = {
 - [ ] Error handling for Anthropic
 
 #### Phase 4: Multi-Provider Support
+
 - [ ] Additional providers (Gemini, etc.)
 - [ ] Multi-provider client class
 - [ ] Provider health monitoring
@@ -229,6 +245,7 @@ const errorStrategies = {
 - [ ] Failover mechanisms
 
 #### Phase 5: Advanced Features
+
 - [ ] Model selection algorithms
 - [ ] Performance optimization
 - [ ] Quality-based routing
@@ -236,6 +253,7 @@ const errorStrategies = {
 - [ ] Analytics and monitoring
 
 ### File Structure
+
 ```
 packages/universal-client/src/
 ├── index.ts                    # Public exports
@@ -280,28 +298,30 @@ packages/universal-client/src/
 ```
 
 ### Phase 5: Code-Generation Integration
+
 ```typescript
 // Enhanced code generation with SQLite-backed prompts
 interface CodeGenerationEngine {
   // Vector-based prompt matching (inspired by sqlite-ollama-rag)
   promptLibrary: {
-    sqliteDatabase: string
-    vectorTable: 'prompt_embeddings'
-    codeExamples: 'code_snippets'
-    patterns: 'coding_patterns'
-  }
-  
+    sqliteDatabase: string;
+    vectorTable: 'prompt_embeddings';
+    codeExamples: 'code_snippets';
+    patterns: 'coding_patterns';
+  };
+
   // Context-aware generation
   contextGeneration: {
-    includeProjectStructure: boolean
-    includeImports: boolean
-    includeSimilarCode: boolean
-    includeConventions: boolean
-  }
+    includeProjectStructure: boolean;
+    includeImports: boolean;
+    includeSimilarCode: boolean;
+    includeConventions: boolean;
+  };
 }
 ```
 
 ### Verification Criteria
+
 - [ ] All supported providers work through universal interface
 - [ ] Smart routing works under failure scenarios
 - [ ] Model selection returns optimal recommendations
@@ -313,6 +333,7 @@ interface CodeGenerationEngine {
 - [ ] Context-aware generation produces better results
 
 ### Risk Register
+
 - **High**: Provider API changes requiring adapter updates
 - **Medium**: Complex provider-specific edge cases
 - **Low**: Performance overhead from abstraction layer
@@ -320,6 +341,7 @@ interface CodeGenerationEngine {
 - **Low**: Model selection algorithm accuracy
 
 ### Migration Notes
+
 - When adding a new provider, only the adapter needs implementation
 - Existing clients remain compatible
 - Provider configuration updates without client changes

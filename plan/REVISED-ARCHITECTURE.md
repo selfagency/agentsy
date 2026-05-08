@@ -14,7 +14,7 @@
 ## Architecture Principles
 
 1. **Modular by Default, Composable by Design:** Packages are independent but expose pluggable components
-2. **Subpath Exports for Granularity:** Stream processing dedicated components → core/, provider-specific code → providers/*/subfolders
+2. **Subpath Exports for Granularity:** Stream processing dedicated components → core/, provider-specific code → providers/\*/subfolders
 3. **Stream Processing Bundled:** fundamental parsing/shaping utilities consolidated into ONE core package
 4. **Core vs Platform:** Core contains stream processing; platform contains agent capabilities (agents, plugins, cli)
 5. **Validation Gates:** Each phase has clear success criteria before progressing (Tier 0→1→2→3→4)
@@ -110,14 +110,14 @@ Per `plan/pacing-function-implementation.md`:
 
 ### **Consolidation Targets:**
 
-| Category | Before | After | Count Change |
-|----------|--------|-------|--------------|
-| **Tier 0: Core** | 7 separate packages | 1 **core** package | 7 → 1 |
-| **Tier 0: Types** | types (live) | types (live) | unchanged |
-| **Tier 2: Agent Runtime** | agent + session + token-economy | agentic-loop + session + tokens | rename + new |
-| **Tier 3: Providers** | providers + normalizers + adapters + tool-calls + retry | providers w/ subfolders | 4 → 1 |
-| **Tier 4: Platform** | agents (min) + plugins (min) + connectors (min) | agents + plugins + connectors | expand |
-| **New MVPs** | — | cli + tools + testing | create |
+| Category                  | Before                                                  | After                           | Count Change |
+| ------------------------- | ------------------------------------------------------- | ------------------------------- | ------------ |
+| **Tier 0: Core**          | 7 separate packages                                     | 1 **core** package              | 7 → 1        |
+| **Tier 0: Types**         | types (live)                                            | types (live)                    | unchanged    |
+| **Tier 2: Agent Runtime** | agent + session + token-economy                         | agentic-loop + session + tokens | rename + new |
+| **Tier 3: Providers**     | providers + normalizers + adapters + tool-calls + retry | providers w/ subfolders         | 4 → 1        |
+| **Tier 4: Platform**      | agents (min) + plugins (min) + connectors (min)         | agents + plugins + connectors   | expand       |
+| **New MVPs**              | —                                                       | cli + tools + testing           | create       |
 
 **Final Count: 42 → ~22-25 packages** ✓
 
@@ -127,12 +127,13 @@ Per `plan/pacing-function-implementation.md`:
 
 ### **Tier 0: Core Stream Processing**
 
-| Package | Purpose | Source | Status |
-|---------|---------|--------|--------|
-| **core** | Stream processing bundle (LLMStreamProcessor, SSEParser, structured, thinking, tool-calls, xml-filter, context, formatting) | Merge: processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting | **NEW** |
-| **types** | Shared type contracts across ecosystem | packages/types/ | **LIVE** |
+| Package   | Purpose                                                                                                                     | Source                                                                                   | Status   |
+| --------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------- |
+| **core**  | Stream processing bundle (LLMStreamProcessor, SSEParser, structured, thinking, tool-calls, xml-filter, context, formatting) | Merge: processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting | **NEW**  |
+| **types** | Shared type contracts across ecosystem                                                                                      | packages/types/                                                                          | **LIVE** |
 
 **Core package structure:**
+
 ```
 packages/core/
 ├── src/
@@ -153,13 +154,14 @@ packages/core/
 
 ### **Tier 2: Agent Runtime**
 
-| Package | Purpose | Source | Status |
-|---------|---------|--------|--------|
-| **agentic-loop** | Agent loop orchestration (loops, stop conditions, approval engine) | packages/agent/ (rename) | **RENAME** |
-| **session** | Crash-safe session persistence, atomic writes, auto-repair | New (implement from plan) | **CREATE** |
-| **tokens** | Token budgets, shaping, pacing (renamed from token-economy) | packages/token-economy/ (rename + merge pacing) | **RENAME** |
+| Package          | Purpose                                                            | Source                                          | Status     |
+| ---------------- | ------------------------------------------------------------------ | ----------------------------------------------- | ---------- |
+| **agentic-loop** | Agent loop orchestration (loops, stop conditions, approval engine) | packages/agent/ (rename)                        | **RENAME** |
+| **session**      | Crash-safe session persistence, atomic writes, auto-repair         | New (implement from plan)                       | **CREATE** |
+| **tokens**       | Token budgets, shaping, pacing (renamed from token-economy)        | packages/token-economy/ (rename + merge pacing) | **RENAME** |
 
 **Session package (per plan/agentsy-tech.md §4.7):**
+
 ```
 packages/session/
 ├── src/
@@ -176,6 +178,7 @@ packages/session/
 ```
 
 **Tokens package (per plan/agentsy-token-economy.md + pacing-function-implementation.md):**
+
 ```
 packages/tokens/
 ├── src/
@@ -193,11 +196,12 @@ packages/tokens/
 
 ### **Tier 3: Provider Integration**
 
-| Package | Purpose | Subfolders | Status |
-|---------|---------|------------|--------|
+| Package       | Purpose                                                                              | Subfolders                                                                              | Status     |
+| ------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ---------- |
 | **providers** | Provider registry, universal AI client, normalizers, adapters, manager, model-picker | /openai/, /anthropic/, /normalizers/, /adapters/, /tools/, /queue/, /manager/, /picker/ | **EXPAND** |
 
 **Provider subfolder details:**
+
 - `/openai/`: Universal AI client (OpenAI compatible), token budgeting endpoints
 - `/anthropic/`: Universal AI client (Anthropic compatible), token budgeting endpoints
 - `/normalizers/`: 16 files from packages/normalizers/ (provider-specific transformations)
@@ -208,6 +212,7 @@ packages/tokens/
 - `/picker/`: Model picker toolset (temp/top-p/top-k tuning + creativity/thinking presets)
 
 **Provider manager (per user requirement):**
+
 ```typescript
 export class ProviderManager {
   addProvider(id: string, type: ProviderType, apiKey: string, model: string): void;
@@ -219,17 +224,18 @@ export class ProviderManager {
 ```
 
 **Model picker (per user requirement):**
+
 ```typescript
 export const CREATIVITY_PRESETS = {
-  low:    { temperature: 0.7, top_p: 0.8, top_k: 50 },
+  low: { temperature: 0.7, top_p: 0.8, top_k: 50 },
   medium: { temperature: 1.0, top_p: 0.9, top_k: 100 },
-  high:   { temperature: 1.4, top_p: 0.95, top_k: 200 },
+  high: { temperature: 1.4, top_p: 0.95, top_k: 200 },
 } as const;
 
 export const THINKING_PRESETS = {
-  low:    { temperature: 0.7, top_p: 0.8, top_k: 50 },
+  low: { temperature: 0.7, top_p: 0.8, top_k: 50 },
   medium: { temperature: 1.0, top_p: 0.9, top_k: 100 },
-  high:   { temperature: 1.4, top_p: 0.95, top_k: 200 },
+  high: { temperature: 1.4, top_p: 0.95, top_k: 200 },
 } as const;
 ```
 
@@ -237,19 +243,21 @@ export const THINKING_PRESETS = {
 
 Per `plan/agentsy-subagents.md`:
 
-| Package | Purpose | Status |
-|---------|---------|--------|
-| **agents** | Local orchestration: A2A protocol (Agent Cards, discovery, transport) + subagents (coordinator/worker) | **EXPAND** |
-| **plugins** | Plugin architecture (AgentModeFactory) + example specialized agents (caveman, superpowers, garry's mode) | **EXPAND** |
-| **acp** | Agent Client Protocol: editor/client-facing session protocol | **CREATE** |
-| **acp-client** | ACP client transport: stdio/JSON-RPC (local), HTTP/WebSocket (remote) | **CREATE** |
+| Package        | Purpose                                                                                                  | Status     |
+| -------------- | -------------------------------------------------------------------------------------------------------- | ---------- |
+| **agents**     | Local orchestration: A2A protocol (Agent Cards, discovery, transport) + subagents (coordinator/worker)   | **EXPAND** |
+| **plugins**    | Plugin architecture (AgentModeFactory) + example specialized agents (caveman, superpowers, garry's mode) | **EXPAND** |
+| **acp**        | Agent Client Protocol: editor/client-facing session protocol                                             | **CREATE** |
+| **acp-client** | ACP client transport: stdio/JSON-RPC (local), HTTP/WebSocket (remote)                                    | **CREATE** |
 
 **NOTE:** These are three distinct layers, NOT one monolithic agent package:
+
 - `@agentsy/agents` = local orchestration (subagents + A2A)
 - `@agentsy/plugins` = plugin system + example agents
 - `@agentsy/acp` + `@agentsy/acp-client` = editor/client protocol
 
 **Agents package (per plan/agentsy-subagents.md):**
+
 ```
 packages/agents/
 ├── src/
@@ -272,6 +280,7 @@ packages/agents/
 ```
 
 **Plugins package (per plan/agentsy-agents-v1.md):**
+
 ```
 packages/plugins/
 ├── src/
@@ -297,14 +306,15 @@ packages/plugins/
 
 ### **Tier 4: Platform Tools**
 
-| Package | Purpose | Status |
-|---------|---------|--------|--------|
-| **tools** | Built-in agent utilities: web search, web fetch, code runner/REPL, MCP-as-tools | **CREATE** |
-| **cli** | Component installer (shadcn-like), doctor script, documentation MCP, agent TUI (later) | **CREATE** |
-| **testing** | Scenario libraries, red team testing, chaos testing, mock generators | **CREATE** |
+| Package        | Purpose                                                                                                            | Status     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ | ---------- |
+| **tools**      | Built-in agent utilities: web search, web fetch, code runner/REPL, MCP-as-tools                                    | **CREATE** |
+| **cli**        | Component installer (shadcn-like), doctor script, documentation MCP, agent TUI (later)                             | **CREATE** |
+| **testing**    | Scenario libraries, red team testing, chaos testing, mock generators                                               | **CREATE** |
 | **connectors** | Third-party comms platform adapters: Signal, WhatsApp, Matrix, Telegram, IMAP/SMTP email, custom adapter interface | **EXPAND** |
 
 **Tools package (MCP servers exposed as internal tools):**
+
 ```
 packages/tools/
 ├── src/
@@ -336,6 +346,7 @@ packages/tools/
 ```
 
 **CLI package (MVP):**
+
 ```
 packages/cli/
 ├── src/
@@ -360,6 +371,7 @@ packages/cli/
 ```
 
 **Connectors package (per plan/agentsy-connectors-v1.md):**
+
 ```
 packages/connectors/
 ├── src/
@@ -388,20 +400,21 @@ packages/connectors/
 
 ### **Tier 6: Platform Surface (Enhance Existing)**
 
-| Package | Purpose | Enhancement | Status |
-|---------|---------|-------------|--------|
-| **memory** | 3-layer blended memory (raw log, wiki, vector retrieval) | Add global/project/session scope boundaries | **ENHANCE** |
-| **retrieval** | Vector store + document store for RAG | Add document store for file dump→vectorize→retrieval | **ENHANCE** |
-| **telemetry** | Observability (metrics, tracing, error tracking) | Keep as-is | **KEEP** |
-| **ui** | UI layer components (shadcn/radix wrappers) | Keep as-is | **KEEP** |
-| **vscode** | VS Code integration (chat participant, settings, MCP bridging) | Keep as-is (extension-vscode merged here) | **KEEP** |
-| **ag-ui** | AG-UI protocol bridge utilities | Keep as-is | **KEEP** |
-| **renderers** | Text-oriented output, DisplayPort, Ink components | Keep as-is (renderer-gui merged here) | **KEEP** |
-| **integration** | Cross-package integration test harness | Keep as-is (private) | **KEEP** |
-| **slash-commands** | 12 stock commands, SKILL.md parsing | Implement per plan | **IMPLEMENT** |
-| **skills** | SkillsManager orchestration, progressive loading | Implement per plan | **IMPLEMENT** |
+| Package            | Purpose                                                        | Enhancement                                          | Status        |
+| ------------------ | -------------------------------------------------------------- | ---------------------------------------------------- | ------------- |
+| **memory**         | 3-layer blended memory (raw log, wiki, vector retrieval)       | Add global/project/session scope boundaries          | **ENHANCE**   |
+| **retrieval**      | Vector store + document store for RAG                          | Add document store for file dump→vectorize→retrieval | **ENHANCE**   |
+| **telemetry**      | Observability (metrics, tracing, error tracking)               | Keep as-is                                           | **KEEP**      |
+| **ui**             | UI layer components (shadcn/radix wrappers)                    | Keep as-is                                           | **KEEP**      |
+| **vscode**         | VS Code integration (chat participant, settings, MCP bridging) | Keep as-is (extension-vscode merged here)            | **KEEP**      |
+| **ag-ui**          | AG-UI protocol bridge utilities                                | Keep as-is                                           | **KEEP**      |
+| **renderers**      | Text-oriented output, DisplayPort, Ink components              | Keep as-is (renderer-gui merged here)                | **KEEP**      |
+| **integration**    | Cross-package integration test harness                         | Keep as-is (private)                                 | **KEEP**      |
+| **slash-commands** | 12 stock commands, SKILL.md parsing                            | Implement per plan                                   | **IMPLEMENT** |
+| **skills**         | SkillsManager orchestration, progressive loading               | Implement per plan                                   | **IMPLEMENT** |
 
 **Memory package (per plan/agentsy-memory.md and plan/agentsy-tech.md §4.11):**
+
 ```
 packages/memory/
 ├── src/
@@ -430,6 +443,7 @@ packages/memory/
 ```
 
 **Retrieval package (per plan/agentsy-tech.md §4.12):**
+
 ```
 packages/retrieval/
 ├── src/
@@ -449,15 +463,15 @@ packages/retrieval/
 
 ## Packages to Delete/Remove
 
-| Package | Reason |
-|---------|--------|
-| `context-manager/` | Duplicate of context/ → merged into core/context/ |
-| `mcp/` | MCP servers become tools (not standalone package) → merged into tools/mcp-internal/ |
-| `repl/` | REPL functionality → merged into cli/ |
-| `plugins/` (old) | Replaced by expanded plugins/ (caveman/superpowers/garry's mode) |
-| `scheduler/` | Not needed as separate package → pacing merged into tokens/ |
-| `secrets/` | Not needed as separate package → merged into providers/manager/ |
-| `context-manager/` | Duplicate of context/ |
+| Package            | Reason                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `context-manager/` | Duplicate of context/ → merged into core/context/                                   |
+| `mcp/`             | MCP servers become tools (not standalone package) → merged into tools/mcp-internal/ |
+| `repl/`            | REPL functionality → merged into cli/                                               |
+| `plugins/` (old)   | Replaced by expanded plugins/ (caveman/superpowers/garry's mode)                    |
+| `scheduler/`       | Not needed as separate package → pacing merged into tokens/                         |
+| `secrets/`         | Not needed as separate package → merged into providers/manager/                     |
+| `context-manager/` | Duplicate of context/                                                               |
 
 **NOTE:** `acp/` (minimal scaffold) is the ACP CLIENT package, not A2A. It needs to be expanded per plan/agentsy-acp-client.md.
 
@@ -487,6 +501,7 @@ Tier 0 (core, types)
 ## Implementation Priority
 
 ### **P0 — Core Consolidation (Blocking)**
+
 1. Create core package (merge processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting)
 2. Rename agent → agentic-loop
 3. Rename token-economy → tokens
@@ -497,11 +512,13 @@ Tier 0 (core, types)
 8. Update pnpm-workspace.yaml, turbo.json, all imports
 
 ### **P1 — Agent Runtime (MVP)**
+
 9. Create session package (implement SessionStore, FileSystemSessionStore)
 10. Create tokens package (rename + merge pacing from pacing-function-implementation.md)
 11. Create acp and acp-client packages (editor/client protocol per plan/agentsy-acp-client.md)
 
 ### **P2 — Platform Tools (MVP)**
+
 12. Create tools package (web search, code runner/REPL, MCP-as-internal-tools)
 13. Create cli package (component installer, doctor, documentation MCP)
 14. Create testing package (scenario libraries, mock generators)
@@ -510,6 +527,7 @@ Tier 0 (core, types)
 17. Expand connectors package (per plan/agentsy-connectors-v1.md)
 
 ### **P3 — Platform Surface (Enhancement)**
+
 18. Enhance memory (3-layer: raw log, wiki, vector + scope boundaries)
 19. Enhance retrieval (document store for RAG + libSQL/Turso vector backend)
 20. Implement slash-commands
@@ -532,17 +550,20 @@ Tier 0 (core, types)
 ## Verification Gates
 
 ### After Phase 0 (Core Consolidation):
+
 - [ ] 7 separate stream packages merged to 1 core package
 - [ ] Core exports work correctly via subpath exports
 - [ ] No broken imports after consolidation
 - [ ] All files retain original functionality (backward compatibility)
 
 ### After Phase 1 (Agent Runtime):
+
 - [ ] session package implements SessionStore + FileSystemSessionStore
 - [ ] tokens package includes pacing (merged from pacing-function-implementation.md)
 - [ ] acp and acp-client packages implement editor/client protocol
 
 ### After Phase 2 (Platform Tools):
+
 - [ ] tools package has web search, code runner, MCP-as-internal-tools
 - [ ] cli package has component installer, doctor, documentation MCP
 - [ ] agents package has A2A + subagents
@@ -550,6 +571,7 @@ Tier 0 (core, types)
 - [ ] connectors package has Signal/WhatsApp/Matrix/Telegram/Email adapters
 
 ### Final Verification:
+
 - [ ] All ~22-25 packages have package.json and IMPLEMENTATION-PLAN.md
 - [ ] pnpm install succeeds
 - [ ] Full test suite passes

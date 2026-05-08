@@ -18,7 +18,6 @@
     "@agentsy/adapters": "workspace:*",
     "@agentsy/core": "workspace:*",
     "@agentsy/normalizers": "workspace:*",
-    "@agentsy/recovery": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
