@@ -34,7 +34,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.6.2",
     "@vitest/coverage-v8": "^4.1.5",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
