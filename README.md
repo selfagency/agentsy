@@ -31,23 +31,25 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 | Package                            | Role                                       | Status    |
 | ---------------------------------- | ------------------------------------------ | --------- |
 | [`@agentsy/types`](packages/types) | Shared type contracts across the ecosystem | Published |
-| [`@agentsy/core`](packages/core)   | 11-button core stream processing bundle    | Published |
 
 ### Tier 1: Provider Connectors
 
-| Package                                        | Role                                              | Status    |
-| ---------------------------------------------- | ------------------------------------------------- | --------- |
-| [`@agentsy/normalizers`](packages/normalizers) | Provider-specific normalization into common shape | Published |
-| [`@agentsy/connectors`](packages/connectors)   | HTTP, WebSocket, and MCP client connections       | Published |
-| [`@agentsy/adapters`](packages/adapters)       | Integration-oriented wrappers around pipelines    | Published |
+| Package                                        | Role                                               | Status    |
+| ---------------------------------------------- | -------------------------------------------------- | --------- |
+| [`@agentsy/normalizers`](packages/normalizers) | Provider-specific normalization into common shape  | Published |
+| [`@agentsy/connectors`](packages/connectors)   | HTTP, WebSocket, and MCP client connections        | Published |
+| [`@agentsy/adapters`](packages/adapters)       | Integration-oriented wrappers around pipelines     | Published |
+| [`@agentsy/mcp`](packages/mcp)                 | Model Context Protocol server and client utilities | Published |
+| [`@agentsy/providers`](packages/providers)     | LLM provider abstraction and credential management | Published |
 
 ### Tier 2: Stream Processing
 
-| Package                                | Role                                                              | Status    |
-| -------------------------------------- | ----------------------------------------------------------------- | --------- |
-| [`@agentsy/processor`](packages/core)  | Event-driven stream orchestrator and transform pipeline (subpath) | Published |
-| [`@agentsy/sse`](packages/core)        | Server-sent-event parsing utilities (subpath)                     | Published |
-| [`@agentsy/structured`](packages/core) | JSON parsing, repair, validation, and streaming (subpath)         | Published |
+| Package                                      | Role                                                    | Status    |
+| -------------------------------------------- | ------------------------------------------------------- | --------- |
+| [`@agentsy/processor`](packages/processor)   | Event-driven stream orchestrator and transform pipeline | Published |
+| [`@agentsy/sse`](packages/sse)               | Server-sent-event parsing utilities                     | Published |
+| [`@agentsy/structured`](packages/structured) | JSON parsing, repair, validation, and streaming         | Published |
+| [`@agentsy/recovery`](packages/recovery)     | Recovery snapshots and continuation helpers             | Published |
 
 ### Tier 3: Agent Runtime
 
@@ -60,11 +62,10 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 ### Tier 4: Protocol & State
 
-| Package                              | Role                                                  | Status    |
-| ------------------------------------ | ----------------------------------------------------- | --------- |
-| [`@agentsy/thinking`](packages/core) | `` content extraction (subpath)                       | Published |
-| [`@agentsy/recovery`](packages/core) | Recovery snapshots and continuation helpers (subpath) | Published |
-| [`@agentsy/ag-ui`](packages/ag-ui)   | AG-UI protocol bridge utilities                       | Published |
+| Package                                  | Role                                      | Status    |
+| ---------------------------------------- | ----------------------------------------- | --------- |
+| [`@agentsy/thinking`](packages/thinking) | Thinking content extraction and reasoning | Published |
+| [`@agentsy/ag-ui`](packages/ag-ui)       | AG-UI protocol bridge utilities           | Published |
 
 ### Tier 5: Tooling & Security
 
@@ -72,7 +73,8 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 | -------------------------------------------- | --------------------------------------------- | --------- |
 | [`@agentsy/tools`](packages/tools)           | Tool invocation orchestration and retry logic | Published |
 | [`@agentsy/guardrails`](packages/guardrails) | Safety validation and content filtering       | Published |
-| [`@agentsy/xml-filter`](packages/core)       | XML privacy filtering and scrubbing (subpath) | Published |
+| [`@agentsy/xml-filter`](packages/xml-filter) | XML privacy filtering and scrubbing           | Published |
+| [`@agentsy/tool-calls`](packages/tool-calls) | Tool call parsing and normalization           | Published |
 
 ### Tier 6: Integration & Testing
 
@@ -86,12 +88,11 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 ### Orchestration & Observability
 
-| Package                                            | Role                                               | Status    |
-| -------------------------------------------------- | -------------------------------------------------- | --------- |
-| [`@agentsy/orchestrator`](packages/orchestrator)   | Multi-agent coordination and workflow management   | Published |
-| [`@agentsy/observability`](packages/observability) | Logging, metrics, and distributed tracing          | Published |
-| [`@agentsy/mcp`](packages/mcp)                     | Model Context Protocol server and client utilities | Published |
-| [`@agentsy/providers`](packages/providers)         | LLM provider abstraction and credential management | Published |
+| Package                                            | Role                                             | Status    |
+| -------------------------------------------------- | ------------------------------------------------ | --------- |
+| [`@agentsy/orchestrator`](packages/orchestrator)   | Multi-agent coordination and workflow management | Published |
+| [`@agentsy/observability`](packages/observability) | Logging, metrics, and distributed tracing        | Published |
+| [`@agentsy/scheduler`](packages/scheduler)         | Task scheduling and execution orchestration      | Published |
 
 ### Enterprise Features
 
@@ -100,40 +101,46 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 | [`@agentsy/secrets`](packages/secrets) | Secret management and credential vault          | Published |
 | [`@agentsy/acp`](packages/acp)         | Access control policy and permission management | Published |
 
-### Agents & Clients
+### Agents & Coordination
 
-| Package                                                | Role                                               | Status    |
-| ------------------------------------------------------ | -------------------------------------------------- | --------- |
-| [`@agentsy/agent`](packages/agent)                     | Individual agent implementation and helpers        | Published |
-| [`@agentsy/agents`](packages/agents)                   | Multi-agent coordination and interaction patterns  | Published |
-| [`@agentsy/plugins`](packages/plugins)                 | Extensible plugin system for provider integrations | Published |
-| [`@agentsy/context-manager`](packages/context-manager) | Context window management and tooling              | Published |
+| Package                                          | Role                                               | Status    |
+| ------------------------------------------------ | -------------------------------------------------- | --------- |
+| [`@agentsy/agent`](packages/agent)               | Individual agent implementation and helpers        | Published |
+| [`@agentsy/agents`](packages/agents)             | Multi-agent coordination and interaction patterns  | Published |
+| [`@agentsy/plugins`](packages/plugins)           | Extensible plugin system for provider integrations | Published |
+| [`@agentsy/agentic-loop`](packages/agentic-loop) | Agentic loop orchestration and state management    | Published |
+
+### Context & Retrieval
+
+| Package                                                | Role                                         | Status    |
+| ------------------------------------------------------ | -------------------------------------------- | --------- |
+| [`@agentsy/context`](packages/context)                 | Context window management and tooling        | Published |
+| [`@agentsy/context-manager`](packages/context-manager) | Advanced context management and optimization | Published |
+| [`@agentsy/retrieval`](packages/retrieval)             | Information retrieval and RAG coordination   | Published |
 
 ### Rendering & Formatting
 
-| Package                                    | Role                                                | Status    |
-| ------------------------------------------ | --------------------------------------------------- | --------- |
-| [`@agentsy/renderers`](packages/renderers) | Plain-text rendering and shared renderer primitives | Published |
-| [`@agentsy/formatting`](packages/core)     | Display-focused text sanitization (subpath)         | Published |
+| Package                                      | Role                                                | Status    |
+| -------------------------------------------- | --------------------------------------------------- | --------- |
+| [`@agentsy/renderers`](packages/renderers)   | Plain-text rendering and shared renderer primitives | Published |
+| [`@agentsy/formatting`](packages/formatting) | Display-focused text sanitization and formatting    | Published |
 
 ### Utilities & Advanced
 
-| Package                                    | Role                                            | Status    |
-| ------------------------------------------ | ----------------------------------------------- | --------- |
-| [`@agentsy/scheduler`](packages/scheduler) | Task scheduling and execution orchestration     | Published |
-| [`@agentsy/retry`](packages/retry)         | Retry logic with exponential backoff and jitter | Published |
-| [`@agentsy/retrieval`](packages/retrieval) | Information retrieval and RAG coordination      | Published |
-| [`@agentsy/runtime`](packages/runtime)     | Event-driven stream orchestrator (unified)      | Published |
+| Package                                            | Role                                              | Status    |
+| -------------------------------------------------- | ------------------------------------------------- | --------- |
+| [`@agentsy/retry`](packages/retry)                 | Retry logic with exponential backoff and jitter   | Published |
+| [`@agentsy/token-economy`](packages/token-economy) | Advanced token budget management and optimization | Published |
 
 ## Pick your adoption path
 
-- **I need robust Node streaming pipelines** → start with [`@agentsy/normalizers`](packages/normalizers) + [`@agentsy/processor`](packages/core)
-- **I need JSON schema gates before automation** → add [`@agentsy/structured`](packages/core)
+- **I need robust Node streaming pipelines** → start with [`@agentsy/normalizers`](packages/normalizers) + [`@agentsy/processor`](packages/processor)
+- **I need JSON schema gates before automation** → add [`@agentsy/structured`](packages/structured)
 - **I need multi-step agent behavior** → add [`@agentsy/runtime`](packages/runtime) + [`@agentsy/agent`](packages/agent)
 - **I need VS Code integration utilities** → add [`@agentsy/vscode`](packages/vscode)
 - **I need memory/persistence** → add [`@agentsy/memory`](packages/memory) + [`@agentsy/session`](packages/session)
 - **I need protocol/state helpers** → add [`@agentsy/ag-ui`](packages/ag-ui)
-- **I need tool calling** → add [`@agentsy/tools`](packages/tools) + [`@agentsy/normalizers`](packages/normalizers)
+- **I need tool calling** → add [`@agentsy/tools`](packages/tools) + [`@agentsy/tool-calls`](packages/tool-calls)
 - **I need enterprise security** → add [`@agentsy/guardrails`](packages/guardrails) + [`@agentsy/secrets`](packages/secrets)
 
 ## Monorepo commands

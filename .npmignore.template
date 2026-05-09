@@ -11,9 +11,7 @@ vitest.config.ts
 .oxlintrc*
 .oxfmtrc*
 
-# Build outputs
-dist/
-build/
+# Build outputs (temporary files only)
 *.tsbuildinfo
 
 # Development
@@ -33,12 +31,10 @@ coverage/
 *~
 
 # Documentation
-README.md
-IMPLEMENTATION-PLAN.md
-ARCHITECTURE.md
-CONTRIBUTING.md
-CHANGELOG.md
 *.md
+!README.md
+
+# CI/CD
 
 # CI/CD
 .github/

@@ -65,14 +65,5 @@
     ]
   },
   "packageManager": "pnpm@10.33.2",
-  "pnpm": {
-    "overrides": {
-      "@ai-sdk/openai": "^3.0.0"
-    },
-    "peerDependencyRules": {
-      "ignoreMissing": [
-        "@ai-sdk/openai"
-      ]
-    }
-  }
+  "pnpm": {}
 }
