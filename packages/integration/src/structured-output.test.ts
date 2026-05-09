@@ -2,17 +2,17 @@
  * Integration: structured output + formatting + context utilities
  *
  * Tests parsing, validation, repair prompts, and display formatting
- * across @agentsy/structured, @agentsy/formatting, and @agentsy/context.
+ * across @agentsy/core/structured, @agentsy/core/formatting, and @agentsy/core/context.
  */
 import { describe, expect, it } from 'vitest';
 
-import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/context';
+import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/core/context';
 import {
   appendToBlockquote,
   formatXmlLikeResponseForDisplay,
   sanitizeNonStreamingModelOutput,
-} from '@agentsy/formatting';
-import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/structured';
+} from '@agentsy/core/formatting';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
 // ---------------------------------------------------------------------------
 // parseJson
@@ -184,7 +184,7 @@ describe('appendToBlockquote', () => {
 });
 
 // ---------------------------------------------------------------------------
-// stripXmlContextTags (@agentsy/context)
+// stripXmlContextTags (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
 describe('stripXmlContextTags', () => {
@@ -199,7 +199,7 @@ describe('stripXmlContextTags', () => {
 });
 
 // ---------------------------------------------------------------------------
-// splitLeadingXmlContextBlocks (@agentsy/context)
+// splitLeadingXmlContextBlocks (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
 describe('splitLeadingXmlContextBlocks', () => {
@@ -219,7 +219,7 @@ describe('splitLeadingXmlContextBlocks', () => {
 });
 
 // ---------------------------------------------------------------------------
-// dedupeXmlContextBlocksByTag (@agentsy/context)
+// dedupeXmlContextBlocksByTag (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
 describe('dedupeXmlContextBlocksByTag', () => {
