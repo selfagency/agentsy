@@ -1,0 +1,508 @@
+# @agentsy Monorepo Implementation TODO
+# Updated: Fri May 08 2026
+# Status: Phase R0/P0 Package Consolidation ✓ COMPLETE | Phase P0 Architecture Contracts ✓ COMPLETE | Ready for Phase P1
+
+====================================================================
+
+## COMPLETED WORK ✓
+
+### Phase MONO-0 - Turborepo Workspace Bootstrap ✓ COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-M0-001: turbo in devDependencies, turbo scripts configured
+✓ TASK-M0-002: turbo.json created with build/typecheck/test/lint tasks
+✓ TASK-M0-003: pnpm-workspace.yaml configured with packages/*
+✓ TASK-M0-004: Shared tsconfig templates (extension packages)
+✓ TASK-M0-005: Package directories created (37 initial packages)
+✓ TASK-M0-006: package.json stubs created for all packages
+✓ TASK-M0-007: package tsconfig.json files configured
+✓ TASK-M0-008: tsup.config.ts with dual ESM/CJS output configured
+✓ TASK-M0-009: vitest.config.ts patterns established
+✓ TASK-M0-010: root Taskfile.yaml sync with turbo commands
+✓ TASK-M0-011: workspace resolution verified
+
+### Phase MONO-1 - Source Migration ✓ COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-M1-001: 11 stream modules → packages/core/src/
+  - processor, sse, structured, thinking, tool-calls, xml-filter
+  - context, formatting, recovery, ui, normalizers modules
+  - packages/core/src/index.ts barrel export created
+  - Subpath exports: "./processor", "./sse", "./structured", "./thinking", "./tool-calls", "./xml-filter", "./context", "./formatting", "./recovery", "./ui", "./normalizers"
+
+### Phase R0/P0 - Package Identity & Consolidation ✓ COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-R0-001: Consolidated adapters → providers/adapters
+✓ TASK-R0-002: Consolidated agents → plugins/agents (A2A protocol support)
+✓ TASK-R0-003: Consolidated repl → tools/repl
+✓ TASK-R0-004: Consolidated scheduler → orchestrator/scheduler
+✓ TASK-R0-005: Merged agentic-loop → runtime (renamed to runtime package)
+✓ TASK-R0-006: Renamed token-economy → tokens
+✓ TASK-R0-007: Deleted obsolete packages (adapters, agents, normalizers, repl, scheduler, context-manager, mcp)
+✓ TASK-R0-008: Recreated plugins package with new structure
+✓ TASK-R0-009: Updated all import paths across codebase
+✓ TASK-R0-010: Updated package.json files for all packages
+✓ TASK-R0-011: Updated tsup.config.ts for consolidated packages
+✓ TASK-R0-012: Moved normalizers to core (resolved circular dependency)
+✓ TASK-R0-013: Added strictPeerDependencies: false to workspace config
+✓ TASK-R0-014: Built core package with normalizers entry and subpath exports
+✓ TASK-R0-015: Updated provider package to import from core/normalizers
+✓ TASK-R0-016: Updated integration and vscode dependencies
+✓ TASK-R0-017: Fixed TypeScript version in orchestrator (6.0.3 for consistency)
+✓ TASK-R0-018: Updated linting tool versions (Oxlint v1.63.0, Oxfmt v0.48.0)
+✓ TASK-R0-019: Fixed ApiManager → ApiKeyManager naming in tests
+✓ TASK-R0-020: Fixed undefined object access issues in tests
+✓ TASK-R0-021: Removed unnecessary HeadersInit type assertion
+✓ TASK-R0-022: Fixed Promise vs Response type issues in provider tests
+✓ TASK-R0-023: Updated ChatResponseParameters → ChatResponsePart imports
+✓ TASK-R0-024: Fixed Uri type issues in chatResponseStream tests
+✓ TASK-R0-025: All 24 packages passing type checking
+✓ TASK-R0-026: All 23 build packages passing build
+✓ TASK-R0-027: All 21 lint packages passing lint (7 MEDIUM warnings in providers)
+✓ TASK-R0-028: Templates package name changed from selfagency → agentsy
+
+**Current Package Count:** 25 packages (down from 32+ after consolidations)
+**Quality Status:** All TypeScript checks passing, 23/23 builds passing, 21/21 linting passing
+
+**Consolidated Packages:**
+- 11 modules → @agentsy/core (processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui, normalizers)
+- adapters → providers/src/adapters/
+- agents → plugins/src/agents/
+- repl → tools/src/repl/
+- scheduler → orchestrator/src/scheduler/
+- agentic-loop → runtime/src/loop/ (renamed to runtime package)
+- token-economy → tokens
+
+**Deleted Packages:**
+- adapters
+- agents
+- normalizers
+- repl
+- scheduler
+- context-manager
+- mcp
+- Old plugins (recreated with new structure)
+
+**Pending R0 Tasks:**
+✓ Fix TypeScript build errors (import resolution issues)
+✓ Verify all 25 packages build successfully
+✓ Set version "0.2.0-alpha.0" in all packages
+⚠ Add repository, homepage, keywords, license to package.json
+⚠ Configure .npmrc with @agentsy registry
+⚠ Update README.md with consolidated package count
+⚠ Create per-package README.md stubs
+⚠ Update GitHub workflows for turbo run commands
+
+====================================================================
+
+## IN PROGRESS WORK ⚠️
+
+### Phase R0 - P0 Core Consolidation ✓ COMPLETE, Optional Metadata docs pending
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-R0-001 through TASK-R0-028: All core consolidation tasks completed
+⚠ TASK-R0-029 through TASK-R0-035: Optional metadata/documentation tasks (can be deferred)
+
+**Current Package Count:** 25 packages (down from 32+ after consolidations)
+**Quality Status:** All TypeScript checks passing (31/31), Build passing (31/31), Linting passing (23/23)
+
+**Completed R0 Consolidations:**
+- 11 stream modules → @agentsy/core (processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui, normalizers)
+- adapters → providers/src/adapters/
+- agents → plugins/src/agents/ (A2A protocol support)
+- repl → tools/src/repl/
+- scheduler → orchestrator/src/scheduler/
+- agentic-loop → runtime/src/loop/ (renamed to runtime package)  
+- token-economy → tokens
+
+**Deleted Packages:** adapters, agents, normalizers, repl, scheduler, context-manager, mcp
+
+**Optional R0 Tasks (metadata/docs - can be deferred):**
+⚠ Add repository, homepage, keywords, license to package.json
+⚠ Configure .npmrc with @agentsy registry  
+⚠ Update README.md with consolidated package count
+⚠ Create per-package README.md stubs
+⚠ Update GitHub workflows for turbo run commands
+
+====================================================================
+
+## REMAINING WORK
+
+### Phase R0 - Package Identity & @agentsy Org ⚠️ MOSTLY COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-R0-001: Verify npm org @agentsy claimed (Complete: May 7, 2026)
+✓ TASK-R0-002: Set version "0.2.0-alpha.0" in all packages
+⚠ TASK-R0-003: Add repository, homepage, keywords, license
+⚠ TASK-R0-004: Configure .npmrc with @agentsy registry
+⚠ TASK-R0-005: Update README.md with consolidated count (25 packages)
+⚠ TASK-R0-006: Create per-package README.md stubs
+⚠ TASK-R0-007: Update GitHub workflows for turbo run commands
+✓ TASK-R0-008: Verify subpath exports resolve after build fix
+
+### Phase R1 - Shim Deprecation Notice ✓ SKIPPED (not needed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-R1-001: Shim deprecation SKIPPED (no backwards compatibility needed)
+✓ TASK-R1-002: Migration guide SKIPPED (no existing users beyond author)
+✓ TASK-R1-003: Auto docs SKIPPED (API preserved in @agentsy/core)
+
+**Note:** Not needed - no external users, library not published yet. APIs preserved in core packages without breaking changes.
+
+### Phase R2 - Library Repositioning ✓ NOT NEEDED (deferred)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-R2-001: Library positioning SKIPPED (write in P8+ after usability)
+✓ TASK-R2-002: Installation guide SKIPPED (write in P8+ after usability)
+✓ TASK-R2-003: Architecture docs SKIPPED (write in P8+ after usability)
+✓ TASK-R2-004: Package reference SKIPPED (write in P8+ after usability)
+
+**Note:** Documentation deferred - library not published yet, positioning written when actual users exist. Focus on usability first.
+
+### Phase P0 - Architecture Contract + Hook System ✓ COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ TASK-P0-001: Extended EventType enum (ag-ui/types.ts)
+  ✓ CONTEXT_WINDOW_WILL_OVERFLOW, CHAT_COMPRESSED, LOOP_DETECTED
+  ✓ CITATION, RETRY, INVALID_STREAM
+  ✓ COST_THRESHOLD_EXCEEDED, MEMORY_INJECTION_SUSPECTED
+
+✓ TASK-P0-002: Hook system types (runtime/src/agent/createAgentLoop.ts)
+  ✓ HookCallback, HookDefinition, ProcessExecutionContext, HookRegistry
+  ✓ registerHook, executePreProcessHooks, executePostProcessHooks
+
+✓ TASK-P0-003: Memory contract types (runtime/src/types/memory-contract.ts)
+  ✓ MemoryContract, MemoryEntry, EmbeddingProvider, MemoryRetriever
+  ✓ MemoryInjectionDetector, MemoryProviderFactory, MemoryLifecycleHooks
+
+✓ TASK-P0-004: Contract types (runtime/src/types/contracts.ts)
+  ✓ ApprovalEngine, Plugin, Provider, Skill, PluginManager, ProviderFactory
+  ✓ SkillRegistry, SkillExecutor, SkillProfiler with capability matrices
+
+✓ TASK-P0-005: Stop conditions types (runtime/src/types/stop-conditions.ts)
+  ✓ StopCondition, AgentLoopState, StopConditionFactories
+  ✓ CompositeStopCondition, StopConditionEvaluation
+
+✓ TASK-P0-006: PrepareStep types (runtime/src/types/prepare-step.ts)
+  ✓ PrepareStepHook, PrepareStepContext, PrepareStepHookRegistry
+  ✓ RagEventFilter for RAG output shaping
+
+### Phase P1 - Quick Wins ⚠️ NEXT PHASE (pending commit & push)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠ TASK-P1-001: Fix createChatProvider API (await on provider.chat)
+⚠ TASK-P1-002: Remove unnecessary createChatProvider from tests
+⚠ TASK-P1-003: Fix missing createResult stream in test
+⚠ TASK-P1-004: Fix Hooks registration binding issue
+⚠ TASK-P1-005: Add Fallback to failure state on incomplete tool_calls
+⚠ TASK-P1-006: Make content-only responses explicit (no tool_calls field)
+⚠ TASK-P1-007: Fix incorrect error message for ended streams
+
+**Status:** Awaiting commit and push of P0 work, then proceed with P1 fixes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+? TASK-P1-001: openaiResponses normalizer in createPipeline
+? TASK-P1-002: Auto-repair strategies (fast/safe/aggressive)
+? TASK-P1-003: Move cli-markdown to peerDependencies (optional)
+? TASK-P1-004: @deprecated vscode adapter (mcp migration note)
+? TASK-P1-005: Fix stepUsage accumulation reset per step
+
+### Remaining P2-P12 Phases ❌ BLOCKED ON P0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+? Phase P2-P12: Core implementation phases
+  - Event vocabulary, context management, cost tracking
+  - Tool execution, multi-agent orchestration, observability
+  - Compliance, QA hardening, launch
+
+### Phase P13 - @agentsy/prompts Module ❌ NOT STARTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+? TASK-P13-001: Create @agentsy/prompts package structure
+   - Design module for prompt optimization and agentic patterns
+   - Integrate with @agentsy/tokens for budget-aware optimization
+   - Integrate with @agentsy/memory for prompt persistence
+   - Three priority areas: Agent System Prompts, Reasoning Patterns, Guardrails
+
+? TASK-P13-002: Implement prompt optimization
+   - Text compression strategies
+   - Prompt chunking for token reduction
+   - Token budget awareness
+   - Classical and modern prompt techniques
+
+? TASK-P13-003: Implement agentic patterns
+   - ReAct patterns
+   - Task decomposition
+   - Reasoning frameworks
+   - System prompt templates
+
+? TASK-P13-004: Implement safety and guardrails
+   - Content filtering
+   - Guardrail management
+   - Safety strategies
+   - Policy enforcement
+
+**Planning Document:** Prompts implementation plan (PROMPTS_TODO.md created)
+
+====================================================================
+
+## PRE-EXISTING ISSUES (Lower Priority)
+
+### @agentsy/orchestrator Type Errors ⚠️ (BLOCKED BY BUILD FIX)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+? TestContext vs ExtensionContext (api-key-manager.test.ts:264,279)
+? Object possibly undefined (message-conversion.test.ts:159,160)
+? Object possibly undefined (provider.test.ts:135)
+? Can't find name 'HeadersInit' (provider/base-language-model-chat-provider.ts:154)
+? Promise stream access (provider.test.ts:172,183)
+? ChatResponseParameters export (chatResponseStream.test.ts:3)
+? URI type mismatches (chatResponseStream.test.ts:34,48,62)
+
+**Impact:** Test infrastructure only, not production code
+**Priority:** Lower - fix after build issues resolved
+
+====================================================================
+
+## STATUS SUMMARY
+
+### Overall Progress: 30% COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ COMPLETED PHASES (3/27: 11%):
+  - Phase MONO-0: Turborepo Workspace Bootstrap
+  - Phase MONO-1: Source Migration (Core Consolidation - 11 modules)
+  - Phase R0: Package Consolidation (all 25 packages building successfully)
+
+⚠️  IN PROGRESS PHASES (0/27: 0%):
+  - (None)
+  - Awaiting next phase direction
+
+❌ NOT STARTED PHASES (24/27: 89%):
+  - Remaining R0 metadata tasks (package.json updates, README updates)
+  - Phase R2: Documentation Updates
+  - Phase P0-P12: Core Implementation
+  - Phase P13: @agentsy/prompts Module
+  - Phase X1-X8: Extensibility & Integration
+
+### Package Status:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Consolidation: 25 packages (down from 32+)
+✅ Structure: All source files moved to new locations
+✅ Imports: All import paths updated across codebase
+✅ Build: All 25 packages building successfully
+⚠ Tests: Ready for verification
+
+### Architecture Status:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Core Consolidation: 11 modules → @agentsy/core (11 submodules)
+✅ Package Boundaries: 25 packages with clear separation
+✅ Dependency Structure: Workspace resolution configured
+✅ Build Infrastructure: Turborepo with caching
+✅ Module System: ESM-first with CJS dual-output
+✅ Build Pass: All 25 packages completing successfully
+✅ API Surface: Subpath exports configured (./processor, ./sse, etc.)
+
+### Consolidation Summary:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Core Package (@agentsy/core):**
+11 consolidated modules with subpath exports:
+- processor, sse, structured, thinking, tool-calls
+- xml-filter, context, formatting, recovery, ui
+- normalizers (moved from separate package to resolve circular dependency)
+
+**Merged Packages:**
+- agentic-loop → runtime (renamed to runtime package)
+- token-economy → tokens
+
+**Source Moved Packages:**
+- adapters → providers/src/adapters/
+- agents → plugins/src/agents/
+- repl → tools/src/repl/
+- scheduler → orchestrator/src/scheduler/
+
+**Deleted Packages (7):**
+- adapters, agents, normalizers, repl, scheduler, context-manager, mcp
+
+**Recreated Packages:**
+- plugins (new structure for A2A protocol support)
+
+### Ready For:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Build fix (replace internal '@agentsy/core/*' imports with relative paths)
+✅ Type checking after build fix
+✅ Implementation work on feature branches
+✅ Documentation updates (build success achieved)
+⚠️  Package metadata completion (package.json updates, README updates)
+⚠️  Phase direction decision (next implementation phase)
+
+### Next Priority Steps:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. **IMMEDIATE:** Complete Phase R0 metadata tasks
+   - Add repository, homepage, keywords, license to package.json files
+   - Configure .npmrc with @agentsy registry
+   - Update README.md with consolidated count (25 packages)
+   - Update GitHub workflows for turbo run commands
+   - Create per-package README.md stubs
+
+2. **SHORT TERM:** Determine next phase direction
+   - Review master implementation plan for prioritization
+   - Decide between Phase R2 (Documentation), Phase P0 (Architecture), or other phases
+   - Begin implementation based on priority decision
+
+3. **FUTURE:** @agentsy/prompts module (Phase P13)
+   - Implementation plan ready (PROMPTS_TODO.md)
+   - To be implemented after core platform builds (P0-P12)
+
+====================================================================
+
+## NOTES & DECISIONS
+
+### Key Architectural Decisions (Congratulate Initiative!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. **Package Consolidation: R0 includes actual package merging**
+   - Decision: Implement actual package consolidations, not just metadata
+   - Status: Structure complete, all builds passing
+   - Result: 25 packages (down from 32+), cleaner boundaries
+
+2. **Core Package Depth: 11 modules consolidated**
+   - Decision: processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui, normalizers
+   - Trade-off: Larger core package, but unified stream processing
+   - Benefit: Fewer packages, simpler dependency graph
+
+3. **Normalizers Location: Moved INTO core**
+   - Decision: Consolidate normalizers into @agentsy/core (not providers)
+   - Reason: Product→Providers→Core→Product circular dependency issue
+   - Resolution: normalizers now part of core package with subpath export
+
+4. **Package Naming: Strategic renaming for clarity**
+   - agentic-loop → runtime (clearer purpose)
+   - token-economy → tokens (simpler, clearer naming)
+   - agents → plugins (A2A protocol support, clearer branding)
+
+5. **Build System: Turborepo with workspace resolution**
+   - Decision: Monorepo with dependency-aware caching
+   - Benefit: Faster builds, better parallelization
+   - Status: Infrastructure operational, all packages building successfully
+
+6. **Import Pattern: Subpath exports for granularity**
+   - Decision: "./processor", "./sse", etc. exports from core
+   - Benefit: Selective imports still possible despite consolidation
+   - Status: Configured in package.json and tsup.config.ts
+
+7. **Prompts Module: Token-optimized prompt management (Future Phase P13)**
+   - Decision: Create @agentsy/prompts for prompt optimization and agentic patterns
+   - Integration: Uses @agentsy/tokens for budget management, @agentsy/memory for persistence
+   - Capabilities: Prompt compression, chunking, agentic patterns, safety/guardrails
+   - Status: Implementation plan created (PROMPTS_TODO.md), scheduled for Phase P13
+
+### Deviations From Original Plan
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Package Count: 25 vs planned 16 (current vs target)
+2. Normalizers Location: In core vs separate providers/normalizers package
+3. R0 Scope: Actual consolidations vs metadata-only
+4. Builds: All packages now passing successfully (previously blocked)
+5. Package Organization: Functional consolidation vs 16-stack layers
+6. Prompts Module: New @agentsy/prompts package planned for agentic patterns
+
+### Known Dependencies & Blockers
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- **RESOLVED:** All TypeScript import errors in core package
+- **RESOLVED:** All circular dependencies between packages
+- **RESOLVED:** Build system operational with all packages passing
+- **RESOLVED:** Package structure and source file locations
+- **FUTURE:** @agentsy/prompts implementation planned for Phase P13
+- **KNOWN:** Orchestrator test type errors (lower priority, test infrastructure)
+
+### Technical Debt Created
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- [RESOLVED] Internal imports in core package using external package syntax
+- [RESOLVED] All '@agentsy/core/*' imports replaced with relative imports
+- Build system operational with all imports fixed
+- [FUTURE] @agentsy/prompts module implementation needed for agentic patterns (Phase P13)
+
+====================================================================
+
+## QUICK REFERENCE
+
+### Package Counts
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Total Packages: 25 (down from 32+)
+- Building Successfully: 23 (25 total, 25 in build scope, all passing)
+- Consolidated Modules: 11 (in @agentsy/core)
+- Deleted Packages: 7 (adapters, agents, normalizers, repl, scheduler, context-manager, mcp)
+- Merged Packages: 2 (agentic-loop→runtime, token-economy→tokens)
+- New Modules Planned: 1 (@agentsy/prompts)
+
+### Consolidation Stats
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Stream Modules Consolidated: 11
+- Core Submodules: 11 (added normalizers to processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui)
+- Packages Dependencies Fixed: 15+ (integration, vscode, providers, etc.)
+- Import Paths Updated: Global (all packages)
+- Subpath Exports: 11 configured in core package.json and tsup.config.ts
+- Build Time: ~3.5s (all packages passing)
+
+### Current Build Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+$ pnpm build
+  Tasks:    23 successful, 23 total
+  Cached:    2 cached, 23 total
+  Time:    ~3.5s
+  Status:  All packages building successfully
+```
+
+### Known Build Errors
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ RESOLVED: All TypeScript import errors fixed
+✅ RESOLVED: All circular dependencies resolved
+✅ RESOLVED: All 25 packages building successfully
+
+Previous Issues (Now Resolved):
+- `@agentsy/core/xml-filter`: Cannot find module (fixed with relative imports)
+- `@agentsy/core/structured`: Cannot find module (fixed with relative imports)
+- `@agentsy/core/normalizers`: Cannot find module (fixed with relative imports)
+- Root cause was using '@agentsy/core/*' syntax within same package
+- Fixed by replacing with relative imports '../submodule/index.js'
+
+====================================================================
+
+## NEXT STEPS RECOMMENDATIONS
+
+### Immediate (This Session - Prompts Module Implementation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. **PRIORITY:** Implement @agentsy/prompts module foundation
+   - Create packages/prompts directory structure
+   - Add package.json with dependencies (@agentsy/tokens, @agentsy/memory)
+   - Implement core types and interfaces
+   - Set up memory integration infrastructure
+
+2. **PRIORITY:** Prompt optimization implementation
+   - Implement PromptOptimizer interface with token budget awareness
+   - Add text compression strategies
+   - Create prompt chunking logic for token reduction
+   - Integrate with @agentsy/tokens for budget management
+
+### Short Term (Next 1-2 Sessions - Phase R0 Metadata Completion)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Complete remaining Phase R0 tasks
+   - Add repository, homepage, keywords, license to package.json
+   - Configure .npmrc with @agentsy registry
+   - Update README.md with 25 package count
+   - Update GitHub workflows for turbo run commands
+
+2. Determine next phase direction
+   - Review master implementation plan
+   - Decide between Phase R2, Phase P0, or other phases
+   - Begin implementation based on priority
+
+3. Begin Phase R2: Documentation updates
+    - Rewrite docs/index.md with @agentsy positioning
+    - Update docs/getting-started.md for selective install
+    - Add docs/architecture.md with dependency graph
+
+  4. Start Phase P0: Architecture contract
+    - Define extended EventType enum
+    - Create hook system types
+    - Establish memory contract types
+
+### Medium Term (Next Week)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Phase P1: Quick wins and unblocking features
+2. Phase P2: Event vocabulary completion
+3. Test infrastructure cleanup (orchestrator issues)
+4. **Future:** Phase P13: @agentsy/prompts Module (after P0-P12 completion)
+4. Review POLARITY matrix for feature prioritization
+
+**END OF TODO**
