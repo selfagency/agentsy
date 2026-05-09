@@ -1,0 +1,105 @@
+{
+  "name": "@agentsy/core",
+  "version": "0.1.0",
+  "description": "Core stream processing bundle",
+  "keywords": [
+    "agentsy",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "core"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./processor": {
+      "types": "./dist/processor.d.ts",
+      "import": "./dist/processor.js",
+      "require": "./dist/processor.cjs"
+    },
+    "./sse": {
+      "types": "./dist/sse.d.ts",
+      "import": "./dist/sse.js",
+      "require": "./dist/sse.cjs"
+    },
+    "./structured": {
+      "types": "./dist/structured.d.ts",
+      "import": "./dist/structured.js",
+      "require": "./dist/structured.cjs"
+    },
+    "./thinking": {
+      "types": "./dist/thinking.d.ts",
+      "import": "./dist/thinking.js",
+      "require": "./dist/thinking.cjs"
+    },
+    "./tool-calls": {
+      "types": "./dist/tool-calls.d.ts",
+      "import": "./dist/tool-calls.js",
+      "require": "./dist/tool-calls.cjs"
+    },
+    "./xml-filter": {
+      "types": "./dist/xml-filter.d.ts",
+      "import": "./dist/xml-filter.js",
+      "require": "./dist/xml-filter.cjs"
+    },
+    "./context": {
+      "types": "./dist/context.d.ts",
+      "import": "./dist/context.js",
+      "require": "./dist/context.cjs"
+    },
+    "./formatting": {
+      "types": "./dist/formatting.d.ts",
+      "import": "./dist/formatting.js",
+      "require": "./dist/formatting.cjs"
+    },
+    "./recovery": {
+      "types": "./dist/recovery.d.ts",
+      "import": "./dist/recovery.js",
+      "require": "./dist/recovery.cjs"
+    },
+    "./ui": {
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.js",
+      "require": "./dist/ui.cjs"
+    },
+    "./normalizers": {
+      "types": "./dist/normalizers.d.ts",
+      "import": "./dist/normalizers.js",
+      "require": "./dist/normalizers.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "test": "vitest run --passWithNoTests",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@agentsy/types": "workspace:*",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@vitest/coverage-v8": "^4.1.5",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.33.2"
+}
