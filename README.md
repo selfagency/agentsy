@@ -55,7 +55,7 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 | Package                                | Role                                                 | Status    |
 | -------------------------------------- | ---------------------------------------------------- | --------- |
-| [`@agentsy/runtime`](packages/runtime) | Agent loop orchestration and state management        | Published |
+| [`@agentsy/runtime`](packages/runtime) | Agent loop execution and lifecycle orchestration     | Published |
 | [`@agentsy/tokens`](packages/tokens)   | Token budgets, context reduction, and output shaping | Published |
 | [`@agentsy/session`](packages/session) | Session management and continuation recovery         | Published |
 | [`@agentsy/memory`](packages/memory)   | Durable knowledge layer and retrieval systems        | Published |
@@ -108,7 +108,7 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 | [`@agentsy/agent`](packages/agent)               | Individual agent implementation and helpers        | Published |
 | [`@agentsy/agents`](packages/agents)             | Multi-agent coordination and interaction patterns  | Published |
 | [`@agentsy/plugins`](packages/plugins)           | Extensible plugin system for provider integrations | Published |
-| [`@agentsy/agentic-loop`](packages/agentic-loop) | Agentic loop orchestration and state management    | Published |
+| [`@agentsy/agentic-loop`](packages/agentic-loop) | Multi-agent loop coordination and communication    | Published |
 
 ### Context & Retrieval
 

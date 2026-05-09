@@ -6,8 +6,8 @@
 
 ## What's Changed
 
-- docs: expand platform catalog and package references by @selfagency in <https://github.com/selfagency/agentsy/pull/60>
-- Add orchestration helpers and progressive real-world examples by @selfagency in <https://github.com/selfagency/agentsy/pull/61>
+- docs: expand platform catalog and package references by @selfagency in <<https://github.com/selfagency/agentsy/pull/>>
+- Add orchestration helpers and progressive real-world examples by @selfagency in <<https://github.com/selfagency/agentsy/pull/>>
 
 **Full Changelog**: <https://github.com/selfagency/agentsy/compare/@agentsy/adapters@0.1.1...@agentsy/adapters@0.1.2>
 
