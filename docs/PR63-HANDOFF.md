@@ -96,7 +96,7 @@ This document summarizes the work completed to address the 55+ Codacy issues blo
 **Removed**:
 
 - ✅ Deleted unnecessary legacy string scan script (`scripts/scan-legacy-strings.mjs`)
-- ✅ Removed from CI (`packages/vscode/src/.github/workflows/tests.yml`)
+- ✅ Removed from CI (`.github/workflows/tests.yml`)
 
 ---
 

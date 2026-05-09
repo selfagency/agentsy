@@ -100,7 +100,7 @@ This map defines the transformation from current state to target architecture as
 
 ## Consolidated Summary
 
-### Packages to Create (5)
+### Packages to Create (6)
 
 - tokens (renamed from token-economy)
 - slash-commands

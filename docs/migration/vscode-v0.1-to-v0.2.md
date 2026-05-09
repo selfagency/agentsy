@@ -4,37 +4,32 @@ This guide outlines the major changes and migration steps when upgrading Agentsy
 
 ## Breaking Changes
 
-- The package structure has been refactored into multiple submodules with independent exports.
-- New subpath exports added for: `renderer`, `mcp`, `mcp-integration`, `retry`, `stream-bridge`, `vscode-overloads`, `api-key-manager`, `settings`, `error-handling`, `testing`.
-- API methods related to MCP streaming and VS Code chat rendering have been introduced or renamed.
+- Package structure reorganized for better modularity and package boundaries
+- Improved separation between core utilities and VS Code-specific integration
+- Enhanced streaming and retry mechanisms for better resilience
+- Updated agent loop creation methods for more flexible integration
 
 ## Migration Steps
 
-1. Update your imports to use the new subpath exports, for example:
+This version includes mainly internal improvements with minimal breaking changes for existing consumers.
 
-```ts
+1. Review your current imports and verify they work correctly:
 
+```typescript
+// Most existing imports should continue to work without changes
+import { createVSCodeChatRenderer } from '@agentsy/vscode';
 ```
 
-- import { createVSCodeChatRenderer } from '@agentsy/vscode';
+2. If you encounter any issues, consult the updated package documentation.
 
-```ts
-+ import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
-```
+3. Test your extension thoroughly after upgrading to ensure compatibility.
 
-2. Adopt new streaming bridge and retry utilities for better resilience.
+## Notes
 
-3. Adjust code to use new agent loop creation methods from `@agentsy/vscode`.
-
-4. Update your dependency version to `^0.2.0` or later.
-
-## Decision Tree
-
-- If you use chat streaming with MCPTransport, switch to `createMCPChatBridge`.
-- If you use cancellation tokens with MCP streaming, use `createVSCodeMCPBridge` helper.
-- For robust retry logic, integrate `createRetryUtility`.
-
-For more detailed API usage, please see the updated documentation at <https://agentsy.com/docs/packages/vscode>
+- Focus on stability and improved internal architecture
+- Enhanced streaming capabilities for better performance and reliability
+- Improved error handling and retry mechanisms
+- More flexible agent loop creation methods
 
 ---
 

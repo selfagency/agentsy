@@ -17,7 +17,7 @@
 ✓ TASK-M0-007: package tsconfig.json files configured
 ✓ TASK-M0-008: tsup.config.ts with dual ESM/CJS output configured
 ✓ TASK-M0-009: vitest.config.ts patterns established
-✓ TASK-M0-010: root Taskfile.yaml sync with turbo commands
+✓ TASK-M0-010: root pnpm scripts aligned with turbo commands
 ✓ TASK-M0-011: workspace resolution verified
 
 ### Phase MONO-1 - Source Migration ✓ COMPLETE
@@ -318,8 +318,8 @@
 - plugins (new structure for A2A protocol support)
 
 ### Ready For:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Build fix (replace internal '@agentsy/core/*' imports with relative paths)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Build fix (update internal imports to match current workspace package structure)
 ✅ Type checking after build fix
 ✅ Implementation work on feature branches
 ✅ Documentation updates (build success achieved)

@@ -12,23 +12,18 @@ This document describes notable changes and migration steps for the Agentsy modu
 
 ## Migration Steps
 
-1. Update your imports to use new modular subpath exports, e.g.,
+1. Update your imports to use new package structure that better separates concerns:
 
 ```ts
-
+// Update imports to use current package structure
+// Note: Maintain existing import paths where packages are unchanged
 ```
 
-- import { createVSCodeChatRenderer } from '@agentsy/vscode';
-
-```text
- + import { createVSCodeChatRenderer } from '@agentsy/vscode/renderer';
-```
-
-2. Replace retry logic imports and usage with the new `@agentsy/retry` package APIs.
+2. Review package-specific imports in the migration guide for detailed changes.
 
 3. Use the centralized `toMistralMessages` and related message transformation utilities from `@agentsy/adapters` where applicable.
 
-4. Adjust your integration code to leverage the redesigned streaming bridge utilities from `@agentsy/stream-bridge`.
+4. Review streaming bridge utilities in provider packages.
 
 5. Upgrade your package dependencies to `^0.2.0` or later to ensure compatibility with new APIs.
 

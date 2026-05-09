@@ -4,9 +4,9 @@
 
 **Goal:** Composable platform architecture consolidating the 42 scattered package directories into ~22-25 well-organized packages, with clear separation between stream processing (core), provider integration (providers), and agent-level capabilities (agents, plugins, cli).
 
-**Status:** 21 published packages, ~21-24 packages target after consolidation.
+**Status:** 1 currently published package (`@agentsy/vscode`); additional internal/pre-release packages are present in the repo, with ~21-24 packages targeted after consolidation.
 
-**Current State:** 42 package directories → need consolidation into ~22-25 packages
+**Current State:** 42 package directories/packages present in the repo → need consolidation into ~22-25 packages
 **Target Architecture:** Tiered package structure: Core → Providers → Agents/Plugins/CLI/Testing → Platform Surface
 
 ---
