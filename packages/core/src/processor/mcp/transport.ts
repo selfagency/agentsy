@@ -37,6 +37,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
             if (done) break;
             controller.enqueue(decoder.decode(value, { stream: true }));
           }
+          controller.close();
         } catch (err) {
           controller.error(err);
         }
@@ -47,6 +48,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
   // Fallback: create backpressure-aware bridge for older Node versions
   // We maintain a single persistent writer and await all writes to handle backpressure properly
   const { readable: webReadable, writable } = new TransformStream<string>();
+  const typedWebReadable = webReadable as ReadableStream<string>;
 
   // Single writer - maintains backpressure by awaiting each write
   const writer = writable.getWriter();
@@ -81,7 +83,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
   transport.readable.on('error', onError);
 
   // Cleanup on stream cancellation - destroy the underlying readable and its listeners
-  webReadable.cancel = async () => {
+  typedWebReadable.cancel = async () => {
     const readableStream = transport.readable as Readable;
     readableStream.destroy();
     readableStream.off('data', onData);
@@ -90,7 +92,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
     await writer.close().catch(() => {});
   };
 
-  return webReadable;
+  return typedWebReadable;
 }
 
 /**
@@ -107,8 +109,8 @@ export function createCompatibilityAdapter(transport: MCPTransport): {
     return {
       stream,
       cleanup: () => {
-        const readable = transport.readable as NodeJS.ReadableStream;
-        const writable = transport.writable as NodeJS.WritableStream;
+        const readable = transport.readable;
+        const writable = transport.writable;
         (readable as unknown as { destroy?: () => void }).destroy?.();
         (writable as unknown as { destroy?: () => void }).destroy?.();
       },
