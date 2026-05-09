@@ -12,18 +12,215 @@ import { WorkflowStatus, NodeType } from '../types/index.js';
 import type { AgentRegistry } from '../agents/registry.js';
 
 // Stub interface for scheduler since @agentsy/orchestrator/scheduler is not yet implemented
-interface TaskScheduler {
+export interface TaskScheduler {
   schedule<T>(task: () => Promise<T>): Promise<T>;
   schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown>;
 }
 
+// Exported interfaces for public API
+export interface WorkflowContext {
+  workflow: Workflow;
+  status: WorkflowStatus;
+  startTime: Date | null;
+  endTime: Date | null;
+  context: Record<string, unknown>;
+}
+
+export interface ExecutionOptions {
+  registry?: AgentRegistry;
+  scheduler?: TaskScheduler;
+  resourceLimits?: {
+    maxAgents?: number;
+    maxCost?: number;
+    maxDuration?: number;
+  };
+  monitoring?: boolean;
+  recovery?: boolean;
+}
+
+export class Workflow {
+  public id: string;
+
+  constructor(
+    private readonly spec: WorkflowSpec,
+    private readonly registry: AgentRegistry,
+    private readonly scheduler: TaskScheduler,
+  ) {
+    this.id = spec.id;
+  }
+
+  getSpec(): WorkflowSpec {
+    return this.spec;
+  }
+
+  getId(): string {
+    return this.id;
+  }
+}
+
+export class WorkflowMonitor {
+  constructor(private context: WorkflowContext) {}
+
+  getStatus(): WorkflowStatus {
+    return this.context.status;
+  }
+
+  getDuration(): number | null {
+    if (!this.context.startTime) return null;
+    const endTime = this.context.endTime || new Date();
+    return endTime.getTime() - this.context.startTime.getTime();
+  }
+
+  isRunning(): boolean {
+    return this.context.status === WorkflowStatus.RUNNING;
+  }
+
+  isCompleted(): boolean {
+    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED].includes(this.context.status);
+  }
+}
+
+// Internal interfaces (not exported)
+interface internalWorkflowExecution {
+  workflow: Workflow;
+  options: ExecutionOptions;
+  run(): Promise<WorkflowResult>;
+  cancel(): Promise<void>;
+}
+
+// Default scheduler implementation
+function createDefaultScheduler(): TaskScheduler {
+  return {
+    async schedule<T>(task: () => Promise<T>): Promise<T> {
+      return task();
+    },
+    async schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown> {
+      // Mock implementation for testing
+      return { agentId: 'mock', assigned: true, status: 'scheduled' as const };
+    },
+  };
+}
+
+// Workflow execution factory
+function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions): internalWorkflowExecution {
+  const registry = options.registry ?? ({ getAllAgents: () => [] } as unknown as AgentRegistry);
+  const scheduler = options.scheduler ?? createDefaultScheduler();
+
+  let cancelled = false;
+  const nodeResults = new Map<string, unknown>();
+
+  return {
+    workflow,
+    options,
+    async run(): Promise<WorkflowResult> {
+      const spec = this.workflow.getSpec();
+      const startNode = spec.nodes[0] as WorkflowNode; // Start from first node
+
+      const results = await executeNode(startNode, this.workflow, registry, scheduler, cancelled, nodeResults);
+
+      return {
+        workflowId: this.workflow.getId(),
+        status: WorkflowStatus.COMPLETED,
+        results: (results ?? {}) as Record<string, unknown>,
+        errors: [],
+        metrics: {
+          duration: 0, // Will be calculated by orchestration engine
+          cost: 0,
+          agentsUsed: 0,
+        },
+      };
+    },
+
+    async cancel(): Promise<void> {
+      cancelled = true;
+    },
+  };
+}
+
+// Helper function to execute nodes
+async function executeNode(
+  node: WorkflowNode,
+  workflow: Workflow,
+  registry: AgentRegistry,
+  scheduler: TaskScheduler,
+  cancelled: boolean,
+  nodeResults: Map<string, unknown>,
+): Promise<unknown> {
+  if (cancelled) {
+    throw new Error('Workflow cancelled');
+  }
+
+  switch (node.type) {
+    case NodeType.TASK:
+      return executeTaskNode(node as TaskNode, registry, scheduler);
+    case NodeType.SEQUENCE:
+      return executeSequenceNode(node as SequenceNode, workflow, registry, scheduler, cancelled, nodeResults);
+    default:
+      throw new Error(`Unsupported node type: ${node.type}`);
+  }
+}
+
+function executeTaskNode(node: TaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
+  // Find suitable agent
+  const availableAgents = registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
+
+  return scheduler
+    .schedule(
+      {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        requirements: [],
+        input: node.input,
+        priority: 'high',
+      },
+      availableAgents,
+    )
+    .then(decision => {
+      if (!decision) {
+        throw new Error(`No suitable agent found for task ${node.id}`);
+      }
+
+      // Execute task (placeholder - would integrate with actual agent execution)
+      return { result: `Task ${node.id} executed by agent ${(decision as { agentId: string }).agentId}` };
+    });
+}
+
+async function executeSequenceNode(
+  node: SequenceNode,
+  workflow: Workflow,
+  registry: AgentRegistry,
+  scheduler: TaskScheduler,
+  cancelled: boolean,
+  nodeResults: Map<string, unknown>,
+): Promise<unknown> {
+  const results: unknown[] = [];
+
+  for (const stepId of node.steps) {
+    const stepNode = findNodeById(stepId, workflow);
+    if (!stepNode) {
+      throw new Error(`Step node ${stepId} not found`);
+    }
+
+    const result = await executeNode(stepNode, workflow, registry, scheduler, cancelled, nodeResults);
+    results.push(result);
+  }
+
+  return results;
+}
+
+function findNodeById(id: string, workflow: Workflow): WorkflowNode | undefined {
+  const spec = workflow.getSpec();
+  return spec.nodes.find(node => (node as WorkflowNode).id === id) as WorkflowNode;
+}
+
 export class OrchestrationEngine extends EventEmitter {
   private workflows = new Map<string, WorkflowContext>();
-  private activeExecutions = new Map<string, WorkflowExecution>();
+  private activeExecutions = new Map<string, internalWorkflowExecution>();
 
   constructor(
     private registry: AgentRegistry,
-    private scheduler: TaskScheduler = { schedule: <T>(fn: () => Promise<T>) => fn() },
+    private scheduler: TaskScheduler = createDefaultScheduler(),
   ) {
     super();
   }
@@ -56,7 +253,7 @@ export class OrchestrationEngine extends EventEmitter {
       throw new Error(`Workflow ${workflow.id} already executing`);
     }
 
-    const execution = new WorkflowExecution(workflow, options);
+    const execution = createWorkflowExecution(workflow, options);
     this.activeExecutions.set(workflow.id, execution);
 
     context.status = WorkflowStatus.RUNNING;
@@ -140,176 +337,5 @@ export class OrchestrationEngine extends EventEmitter {
         }
       }
     }
-  }
-}
-
-interface WorkflowContext {
-  workflow: Workflow;
-  status: WorkflowStatus;
-  startTime: Date | null;
-  endTime: Date | null;
-  context: Record<string, unknown>;
-}
-
-interface ExecutionOptions {
-  registry?: AgentRegistry;
-  scheduler?: TaskScheduler;
-  resourceLimits?: {
-    maxAgents?: number;
-    maxCost?: number;
-    maxDuration?: number;
-  };
-  monitoring?: boolean;
-  recovery?: boolean;
-}
-
-class Workflow {
-  public id: string;
-
-  constructor(
-    private readonly spec: WorkflowSpec,
-    private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler,
-  ) {
-    this.id = spec.id;
-  }
-
-  getSpec(): WorkflowSpec {
-    return this.spec;
-  }
-
-  getId(): string {
-    return this.id;
-  }
-}
-
-class WorkflowExecution {
-  private cancelled = false;
-  private readonly nodeResults = new Map<string, unknown>();
-  private readonly registry: AgentRegistry;
-  private readonly scheduler: TaskScheduler;
-
-  constructor(
-    private workflow: Workflow,
-    private options: ExecutionOptions,
-  ) {
-    this.registry = options.registry ?? ({ getAllAgents: () => [] } as unknown as AgentRegistry);
-
-    const defaultScheduler: TaskScheduler = {
-      schedule: <T>(fn: () => Promise<T>) => fn(),
-    };
-
-    // Add the second schedule method using function binding
-    (
-      defaultScheduler as unknown as {
-        schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown>;
-      }
-    ).schedule = (_taskInfo: unknown, _agents: unknown[]) => Promise.resolve({ agentId: 'mock' });
-
-    this.scheduler = options.scheduler ?? defaultScheduler;
-  }
-
-  async run(): Promise<WorkflowResult> {
-    const spec = this.workflow.getSpec();
-    const startNode = spec.nodes[0] as WorkflowNode; // Start from first node
-
-    const results = await this.executeNode(startNode);
-
-    return {
-      workflowId: this.workflow.getId(),
-      status: WorkflowStatus.COMPLETED,
-      results: (results ?? {}) as Record<string, unknown>,
-      errors: [],
-      metrics: {
-        duration: 0, // Will be calculated by orchestration engine
-        cost: 0,
-        agentsUsed: 0,
-      },
-    };
-  }
-
-  private async executeNode(node: WorkflowNode): Promise<unknown> {
-    if (this.cancelled) {
-      throw new Error('Workflow cancelled');
-    }
-
-    switch (node.type) {
-      case NodeType.TASK:
-        return this.executeTaskNode(node as TaskNode);
-      case NodeType.SEQUENCE:
-        return this.executeSequenceNode(node as SequenceNode);
-      default:
-        throw new Error(`Unsupported node type: ${node.type}`);
-    }
-  }
-
-  private async executeTaskNode(node: TaskNode): Promise<unknown> {
-    // Find suitable agent
-    const availableAgents = this.registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
-    const decision = await this.scheduler.schedule(
-      {
-        id: node.id,
-        name: node.name,
-        type: node.type,
-        requirements: [], // Will be populated properly
-        input: node.input,
-        priority: 'high',
-      },
-      availableAgents,
-    );
-
-    if (!decision) {
-      throw new Error(`No suitable agent found for task ${node.id}`);
-    }
-
-    // Execute task (placeholder - would integrate with actual agent execution)
-    return { result: `Task ${node.id} executed by agent ${(decision as { agentId: string }).agentId}` };
-  }
-
-  private async executeSequenceNode(node: SequenceNode): Promise<unknown> {
-    const results: unknown[] = [];
-
-    for (const stepId of node.steps) {
-      const stepNode = this.findNodeById(stepId);
-      if (!stepNode) {
-        throw new Error(`Step node ${stepId} not found`);
-      }
-
-      const result = await this.executeNode(stepNode);
-      results.push(result);
-    }
-
-    return results;
-  }
-
-  private findNodeById(id: string): WorkflowNode | undefined {
-    const spec = this.workflow.getSpec();
-    return spec.nodes.find(node => (node as WorkflowNode).id === id) as WorkflowNode;
-  }
-
-  async cancel(): Promise<void> {
-    this.cancelled = true;
-  }
-}
-
-class WorkflowMonitor {
-  constructor(private context: WorkflowContext) {}
-
-  getStatus(): WorkflowStatus {
-    return this.context.status;
-  }
-
-  getDuration(): number | null {
-    if (!this.context.startTime) return null;
-    const endTime = this.context.endTime || new Date();
-    return endTime.getTime() - this.context.startTime.getTime();
-  }
-
-  isRunning(): boolean {
-    return this.context.status === WorkflowStatus.RUNNING;
-  }
-
-  isCompleted(): boolean {
-    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED].includes(this.context.status);
   }
 }

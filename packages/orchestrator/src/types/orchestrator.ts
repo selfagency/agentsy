@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { WorkflowStatus as WorkflowStatusEnum } from './workflow.js';
 
 export const SkillSchema = z.object({
   id: z.string(),
@@ -71,8 +72,6 @@ export const WorkflowSpecSchema = z.object({
 });
 
 export type WorkflowSpec = z.infer<typeof WorkflowSpecSchema>;
-
-import { WorkflowStatus as WorkflowStatusEnum } from './workflow.js';
 
 export const WorkflowResultSchema = z.object({
   workflowId: z.string(),
