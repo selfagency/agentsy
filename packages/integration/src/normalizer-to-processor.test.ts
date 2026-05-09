@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { NormalizerResult } from '@agentsy/core/normalizers';
+import type { NormalizerResult } from '@agentsy/normalizers';
 import {
   normalizeAnthropicEvent,
   normalizeBedrockConverseEvent,
@@ -16,8 +16,8 @@ import {
   normalizeGeminiChunk,
   normalizeOpenAIChatChunk,
   normalizeOpenAIResponseEvent,
-} from '@agentsy/core/normalizers';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
+} from '@agentsy/normalizers';
+import { LLMStreamProcessor } from '@agentsy/processor';
 
 // ---------------------------------------------------------------------------
 // Helper: pump a list of raw provider events through a normalizer and a fresh

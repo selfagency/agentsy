@@ -2,17 +2,17 @@
  * Integration: structured output + formatting + context utilities
  *
  * Tests parsing, validation, repair prompts, and display formatting
- * across @agentsy/core/structured, @agentsy/core/formatting, and @agentsy/core/context.
+ * across @agentsy/structured, @agentsy/formatting, and @agentsy/context.
  */
 import { describe, expect, it } from 'vitest';
 
-import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/core/context';
+import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/context';
 import {
   appendToBlockquote,
   formatXmlLikeResponseForDisplay,
   sanitizeNonStreamingModelOutput,
-} from '@agentsy/core/formatting';
-import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
+} from '@agentsy/formatting';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/structured';
 
 // ---------------------------------------------------------------------------
 // parseJson

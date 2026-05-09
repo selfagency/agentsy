@@ -2,7 +2,7 @@ import type { StreamChunk } from '@agentsy/processor';
 import type { LanguageModelChatResponseChunk } from '../provider/index.js';
 
 /**
- * Maps a canonical @agentsy/core StreamChunk to a VS Code-compatible delta.
+ * Maps a canonical @agentsy/processor StreamChunk to a VS Code-compatible delta.
  * Handles text, reasoning (as text/think tags), and native tool calls.
  */
 export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatResponseChunk[] {

@@ -1,10 +1,10 @@
-import type { MCPTransport } from '@agentsy/core/processor';
-import { adaptTransportToStream } from '@agentsy/core/processor';
+import type { MCPTransport } from '@agentsy/processor';
+import { adaptTransportToStream } from '@agentsy/processor';
 import type { ChatResponseStream, CancellationToken } from 'vscode';
 
 // Re-export types for compatibility
 export type { ChatResponseStream, CancellationToken };
-import { ReadableStream } from 'node:stream/web';
+import type { ReadableStream } from 'node:stream/web';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
@@ -86,7 +86,7 @@ export class VSCodeMCPBridgeHelper {
     const transportStream = adaptTransportToStream(this.transport);
 
     // Process raw stream chunks and forward to target stream
-    this.processRawStream(transportStream, target);
+    void this.processRawStream(transportStream, target);
 
     return target;
   }
@@ -98,25 +98,24 @@ export class VSCodeMCPBridgeHelper {
   public createDirectChatResponseStream(): ChatResponseStream {
     const chatStream: ChatResponseStream = {
       markdown: value => this.pushEvent({ type: 'markdown', data: { value } }),
-      anchor: (value, title) =>
-        this.pushEvent({ type: 'anchor', data: { value: String((value as { path?: string }).path ?? value), title } }),
+      anchor: (value, title) => this.pushEvent({ type: 'anchor', data: { value: String(value), title } }),
       button: command =>
         this.pushEvent({
           type: 'button',
-          data: { command: String((command as { command?: string }).command ?? command) },
+          data: { command: String(command) },
         }),
       filetree: (value, baseUri) =>
         this.pushEvent({
           type: 'filetree',
-          data: { value, baseUri: String((baseUri as { path?: string }).path ?? baseUri) },
+          data: { value, baseUri: String(baseUri) },
         }),
       progress: value => this.pushEvent({ type: 'progress', data: { value } }),
       reference: (value, iconPath) =>
         this.pushEvent({
           type: 'reference',
           data: {
-            value: String((value as { path?: string }).path ?? value),
-            iconPath: iconPath ? String((iconPath as { path?: string }).path) : undefined,
+            value: String(value),
+            iconPath: iconPath ? String(iconPath) : undefined,
           },
         }),
       push: part => this.pushEvent({ type: 'push', data: part }),
@@ -132,7 +131,7 @@ export class VSCodeMCPBridgeHelper {
    */
   public connectToStream(stream: ChatResponseStream): void {
     const transportStream = adaptTransportToStream(this.transport);
-    this.processRawStream(transportStream, stream);
+    void this.processRawStream(transportStream, stream);
   }
 
   /**
@@ -146,9 +145,10 @@ export class VSCodeMCPBridgeHelper {
 
     try {
       while (true) {
-        // Check for cancellation
+        // Check for cancellation - handle gracefully
         if (this.cancellationToken.isCancellationRequested) {
-          throw new Error('Operation cancelled by user');
+          await reader.cancel();
+          return;
         }
 
         const { done, value } = await reader.read();
@@ -159,6 +159,11 @@ export class VSCodeMCPBridgeHelper {
         if (event) {
           this.handleEvent(event, chatStream);
         }
+      }
+    } catch (error) {
+      // Handle stream errors gracefully - don't propagate to caller
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error processing MCP stream:', error);
       }
     } finally {
       reader.releaseLock();
@@ -171,7 +176,7 @@ export class VSCodeMCPBridgeHelper {
    */
   private handleEvent(event: MCPStreamEvent, chatStream: ChatResponseStream): void {
     const data = event.data as Record<string, unknown>;
-    const content = String(data.value ?? '');
+    const content = typeof data.value === 'string' ? data.value : '';
 
     switch (event.type) {
       case 'markdown':
@@ -187,13 +192,17 @@ export class VSCodeMCPBridgeHelper {
         }
         break;
       case 'button':
-        chatStream.button({ command: String(data.command ?? ''), title: String(data.title ?? '') });
+        const commandStr = typeof data.command === 'string' ? data.command : '';
+        const titleStr = typeof data.title === 'string' ? data.title : '';
+        chatStream.button({ command: commandStr, title: titleStr });
         break;
       case 'filetree':
-        chatStream.filetree([], { scheme: 'file', path: '/' } as never);
+        // Filetree expects specific tree structure - minimal implementation
+        chatStream.filetree?.([], { scheme: 'file', path: '/' } as never);
         break;
       case 'reference':
-        chatStream.reference({ scheme: '', path: String(data.uri ?? '') } as never);
+        const uriStr = typeof data.uri === 'string' ? data.uri : '';
+        chatStream.reference({ scheme: '', path: uriStr } as never);
         break;
       case 'push':
         chatStream.push?.({} as never);
