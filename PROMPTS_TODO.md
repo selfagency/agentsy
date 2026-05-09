@@ -31,7 +31,7 @@ Create a prompt optimization and agentic pattern management module that integrat
 
 ## Module Structure
 
-```
+```text
 packages/prompts/
 ├── src/
 │   ├── optimization/

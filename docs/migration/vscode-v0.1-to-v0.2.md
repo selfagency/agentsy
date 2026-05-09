@@ -13,16 +13,7 @@ This guide outlines the major changes and migration steps when upgrading Agentsy
 
 This version includes mainly internal improvements with minimal breaking changes for existing consumers.
 
-1. Review your current imports and verify they work correctly:
-
-```typescript
-// Most existing imports should continue to work without changes
-import { createVSCodeChatRenderer } from '@agentsy/vscode';
-```
-
-2. If you encounter any issues, consult the updated package documentation.
-
-3. Test your extension thoroughly after upgrading to ensure compatibility.
+**Note:** See the Notes section below for stability improvements and enhanced capabilities.
 
 ## Notes
 

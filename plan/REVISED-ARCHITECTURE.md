@@ -513,26 +513,26 @@ Tier 0 (core, types)
 
 ### **P1 — Agent Runtime (MVP)**
 
-9. Create session package (implement SessionStore, FileSystemSessionStore)
-10. Create tokens package (rename + merge pacing from pacing-function-implementation.md)
-11. Create acp and acp-client packages (editor/client protocol per plan/agentsy-acp-client.md)
+**Step 9:** Create session package (implement SessionStore, FileSystemSessionStore)
+**Step 10:** Create tokens package (rename + merge pacing from pacing-function-implementation.md)
+**Step 11:** Create acp and acp-client packages (editor/client protocol per plan/agentsy-acp-client.md)
 
 ### **P2 — Platform Tools (MVP)**
 
-12. Create tools package (web search, code runner/REPL, MCP-as-internal-tools)
-13. Create cli package (component installer, doctor, documentation MCP)
-14. Create testing package (scenario libraries, mock generators)
-15. Expand agents package (A2A + subagents per plan/agentsy-subagents.md)
-16. Expand plugins package (caveman/superpowers/garry's mode per plan/agentsy-agents-v1.md)
-17. Expand connectors package (per plan/agentsy-connectors-v1.md)
+**Step 12:** Create tools package (web search, code runner/REPL, MCP-as-internal-tools)
+**Step 13:** Create cli package (component installer, doctor, documentation MCP)
+**Step 14:** Create testing package (scenario libraries, mock generators)
+**Step 15:** Expand agents package (A2A + subagents per plan/agentsy-subagents.md)
+**Step 16:** Expand plugins package (caveman/superpowers/garry's mode per plan/agentsy-agents-v1.md)
+**Step 17:** Expand connectors package (per plan/agentsy-connectors-v1.md)
 
 ### **P3 — Platform Surface (Enhancement)**
 
-18. Enhance memory (3-layer: raw log, wiki, vector + scope boundaries)
-19. Enhance retrieval (document store for RAG + libSQL/Turso vector backend)
-20. Implement slash-commands
-21. Implement skills (SkillsManager, progressive loading)
-22. Implement guardrails (OWASP moderation, PII scrubbing)
+**Step 18:** Enhance memory (3-layer: raw log, wiki, vector + scope boundaries)
+**Step 19:** Enhance retrieval (document store for RAG + libSQL/Turso vector backend)
+**Step 20:** Implement slash-commands
+**Step 21:** Implement skills (SkillsManager, progressive loading)
+**Step 22:** Implement guardrails (OWASP moderation, PII scrubbing)
 
 ---
 
