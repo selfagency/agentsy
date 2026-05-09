@@ -35,8 +35,7 @@ describe('validate-workspace', () => {
   });
 
   afterEach(() => {
-    console.log = console.log; // Restore console.log
-    console.error = console.error; // Restore console.error
+    // Note: console mocks are automatically restored by vitest
   });
 
   it('should pass validation when all directories have package.json', async () => {
