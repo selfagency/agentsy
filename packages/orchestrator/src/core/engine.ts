@@ -13,9 +13,11 @@ import type { AgentRegistry } from '../agents/registry.js';
 
 // Stub interface for scheduler since @agentsy/orchestrator/scheduler is not yet implemented
 export interface TaskScheduler {
-  schedule<T>(task: () => Promise<T>): Promise<T>;
-  schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown>;
+  schedule<T>(task: TaskInput<T>): Promise<T>;
 }
+
+// Union type for scheduler input
+type TaskInput<T> = (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] };
 
 // Exported interfaces for public API
 export interface WorkflowContext {
@@ -89,16 +91,22 @@ interface internalWorkflowExecution {
 }
 
 // Default scheduler implementation
-function createDefaultScheduler(): TaskScheduler {
-  return {
-    async schedule<T>(task: () => Promise<T>): Promise<T> {
-      return task();
-    },
-    async schedule(taskInfo: unknown, agents: unknown[]): Promise<unknown> {
+class DefaultScheduler implements TaskScheduler {
+  async schedule<T>(input: TaskInput<T>): Promise<T> {
+    if (typeof input === 'function') {
+      // Function variant
+      return input();
+    } else {
+      // TaskInfo variant
+      const { taskInfo, agents } = input as { taskInfo: unknown; agents: unknown[] };
       // Mock implementation for testing
-      return { agentId: 'mock', assigned: true, status: 'scheduled' as const };
-    },
-  };
+      return { agentId: 'mock', assigned: true, status: 'scheduled' as const } as T;
+    }
+  }
+}
+
+function createDefaultScheduler(): TaskScheduler {
+  return new DefaultScheduler();
 }
 
 // Workflow execution factory
@@ -165,8 +173,8 @@ function executeTaskNode(node: TaskNode, registry: AgentRegistry, scheduler: Tas
   const availableAgents = registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
 
   return scheduler
-    .schedule(
-      {
+    .schedule({
+      taskInfo: {
         id: node.id,
         name: node.name,
         type: node.type,
@@ -174,8 +182,8 @@ function executeTaskNode(node: TaskNode, registry: AgentRegistry, scheduler: Tas
         input: node.input,
         priority: 'high',
       },
-      availableAgents,
-    )
+      agents: availableAgents,
+    })
     .then(decision => {
       if (!decision) {
         throw new Error(`No suitable agent found for task ${node.id}`);
