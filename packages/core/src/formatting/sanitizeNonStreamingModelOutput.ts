@@ -8,10 +8,12 @@ export function sanitizeNonStreamingModelOutput(text: string): string {
     stripped
       .trim()
       // Normalize newlines
-      .replace(/\r\n/g, '\n')
+      .replaceAll('\r\n', '\n')
       // Remove excessive consecutive blank lines
       .replace(/\n{3,}/g, '\n\n')
       // Optional: Add basic indentation for code-like content
       .replace(/^```(\w+)?\s*$/gm, '')
+      // Convert multiple spaces to single space for cleaner output
+      .replace(/[ \t]+/g, ' ')
   );
 }

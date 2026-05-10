@@ -58,6 +58,20 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
   const decoder = new TextDecoder();
   let finished = false;
 
+  // Helper function to convert chunk to string
+  function convertChunkToString(chunk: unknown): string {
+    if (typeof chunk === 'string') {
+      return chunk;
+    }
+    if (Buffer.isBuffer(chunk)) {
+      return chunk.toString('utf-8');
+    }
+    if (chunk instanceof Uint8Array) {
+      return decoder.decode(chunk, { stream: true });
+    }
+    return String(chunk);
+  }
+
   return new ReadableStream<string>({
     async pull(controller) {
       if (finished) {
@@ -70,15 +84,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
           controller.close();
           return;
         }
-        controller.enqueue(
-          typeof value === 'string'
-            ? value
-            : Buffer.isBuffer(value)
-              ? value.toString('utf-8')
-              : value instanceof Uint8Array
-                ? decoder.decode(value, { stream: true })
-                : String(value),
-        );
+        controller.enqueue(convertChunkToString(value));
       } catch (err) {
         finished = true;
         controller.error(err);

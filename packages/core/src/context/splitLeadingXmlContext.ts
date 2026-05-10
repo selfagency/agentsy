@@ -46,66 +46,152 @@ function findMatchingTagEnd(input: string, tagName: string): number | null {
  * Handles attribute to identify the base tag name.
  */
 function extractTagName(openingTag: string): string | null {
-  const match = openingTag.match(/^<(\w+)/);
+  const tagNameRegex = /^<(\w+)/;
+  const match = tagNameRegex.exec(openingTag);
   return match ? match[1] : null;
+}
+
+/**
+ * Extract a single leading context block from the text if it exists.
+ * Returns the previous extraction state and whether a block was found.
+ */
+function extractNextContextBlock(
+  remainingText: string,
+  previousContextBlocks: string[],
+  previousIterations: number,
+): {
+  newContextBlocks: string[];
+  newRemainingText: string;
+  hasLeadingContext: boolean;
+  shouldContinue: boolean;
+  iterations: number;
+} {
+  let contextBlocks = previousContextBlocks;
+  let text = remainingText;
+  let iterations = previousIterations;
+
+  // Guard against infinite loops
+  if (++iterations > MAX_ITERATIONS) {
+    console.warn('Max iterations exceeded while splitting XML context blocks');
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: true,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  // Safe tag parsing without regex
+  if (!text.startsWith('<')) {
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: contextBlocks.length > 0,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  // Find end of opening tag
+  const openTagEnd = text.indexOf('>');
+  if (openTagEnd === -1) {
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: contextBlocks.length > 0,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  const openingTag = text.substring(0, openTagEnd + 1);
+  const tagName = extractTagName(openingTag);
+
+  if (!tagName) {
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: contextBlocks.length > 0,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  if (!ELEVATED_CONTEXT_TAG_NAMES.has(tagName)) {
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: contextBlocks.length > 0,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  // Find matching end tag position
+  const fullBlockEnd = findMatchingTagEnd(text, tagName);
+  if (fullBlockEnd === null) {
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: contextBlocks.length > 0,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  const matchedText = text.substring(0, fullBlockEnd);
+
+  // Enforce maximum block size
+  if (matchedText.length > MAX_CONTEXT_BLOCK_LENGTH) {
+    console.warn(`Context block exceeds maximum length of ${MAX_CONTEXT_BLOCK_LENGTH} characters`);
+    return {
+      newContextBlocks: contextBlocks,
+      newRemainingText: text,
+      hasLeadingContext: contextBlocks.length > 0,
+      shouldContinue: false,
+      iterations,
+    };
+  }
+
+  contextBlocks = [...contextBlocks, matchedText.trim()];
+  text = text.slice(fullBlockEnd).trimStart();
+
+  return {
+    newContextBlocks: contextBlocks,
+    newRemainingText: text,
+    hasLeadingContext: true,
+    shouldContinue: true,
+    iterations,
+  };
 }
 
 export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string } {
   let remainingText = input;
-  let hadLeadingContext = false;
-  const contextBlocks: string[] = [];
+  let contextBlocks: string[] = [];
   let iterations = 0;
 
-  if (remainingText.trimStart().startsWith('<')) {
-    remainingText = remainingText.trimStart();
-    while (true) {
-      // Guard against infinite loops
-      if (++iterations > MAX_ITERATIONS) {
-        console.warn('Max iterations exceeded while splitting XML context blocks');
-        break;
-      }
+  if (!remainingText.trimStart().startsWith('<')) {
+    return {
+      contextBlocks,
+      remaining: input,
+    };
+  }
 
-      // Safe tag parsing without regex
-      if (!remainingText.startsWith('<')) {
-        break;
-      }
+  remainingText = remainingText.trimStart();
 
-      // Find end of opening tag
-      const openTagEnd = remainingText.indexOf('>');
-      if (openTagEnd === -1) {
-        break;
-      }
+  while (true) {
+    const result = extractNextContextBlock(remainingText, contextBlocks, iterations);
+    remainingText = result.newRemainingText;
+    contextBlocks = result.newContextBlocks;
+    iterations = result.iterations;
 
-      const openingTag = remainingText.substring(0, openTagEnd + 1);
-      const tagName = extractTagName(openingTag);
-
-      if (!tagName) {
-        break;
-      }
-
-      if (!ELEVATED_CONTEXT_TAG_NAMES.has(tagName)) {
-        break;
-      }
-
-      // Find matching end tag position
-      const fullBlockEnd = findMatchingTagEnd(remainingText, tagName);
-      if (fullBlockEnd === null) {
-        break;
-      }
-
-      const matchedText = remainingText.substring(0, fullBlockEnd);
-
-      // Enforce maximum block size
-      if (matchedText.length > MAX_CONTEXT_BLOCK_LENGTH) {
-        console.warn(`Context block exceeds maximum length of ${MAX_CONTEXT_BLOCK_LENGTH} characters`);
-        break;
-      }
-
-      contextBlocks.push(matchedText.trim());
-      remainingText = remainingText.slice(fullBlockEnd).trimStart();
-      hadLeadingContext = true;
+    if (!result.shouldContinue) {
+      break;
     }
   }
+
+  const hadLeadingContext = contextBlocks.length > 0;
 
   return {
     contextBlocks,
