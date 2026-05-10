@@ -1,6 +1,7 @@
-import type { MCPTransport } from '@agentsy/processor';
-import { adaptTransportToStream } from '@agentsy/processor';
+import type { MCPTransport } from '@agentsy/core/processor';
+import { adaptTransportToStream } from '@agentsy/core/processor';
 import type { ChatResponseStream, CancellationToken } from 'vscode';
+import { parseSSEStream } from '@agentsy/sse';
 
 // Re-export types for compatibility
 export type { ChatResponseStream, CancellationToken };
@@ -13,40 +14,6 @@ import type { ReadableStream } from 'node:stream/web';
 export interface MCPStreamEvent {
   type: 'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push';
   data: unknown;
-}
-
-/**
- * Parses a chunk of SSE data into an MCP event.
- * Handles both single events and batched events.
- */
-function parseSseChunk(chunk: string): MCPStreamEvent | null {
-  const lines = chunk.split('\n');
-  let eventType: string | null = null;
-  let data: unknown = null;
-
-  for (const line of lines) {
-    if (line.startsWith('event:')) {
-      eventType = line.slice(6).trim();
-    } else if (line.startsWith('data:')) {
-      try {
-        data = JSON.parse(line.slice(5).trim());
-      } catch {
-        data = line.slice(5).trim();
-      }
-    }
-  }
-
-  if (!eventType || data === null) {
-    return null;
-  }
-
-  // Map MCP event type to our internal type
-  const mappedType = mapMcpToStreamEvent(eventType);
-  if (!mappedType) {
-    return null;
-  }
-
-  return { type: mappedType, data };
 }
 
 /**
@@ -144,19 +111,27 @@ export class VSCodeMCPBridgeHelper {
     const reader = transportStream.getReader();
 
     try {
-      while (true) {
-        // Check for cancellation - handle gracefully
+      // Check for cancellation - handle gracefully
+      if (this.cancellationToken.isCancellationRequested) {
+        await reader.cancel();
+        return;
+      }
+
+      // Use the robust SSE parser from @agentsy/sse
+      for await (const sseEvent of parseSSEStream(transportStream)) {
+        // Check for cancellation during iteration
         if (this.cancellationToken.isCancellationRequested) {
           await reader.cancel();
           return;
         }
 
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        // Parse and handle the SSE chunk
-        const event = parseSseChunk(value);
-        if (event) {
+        // Map SSE event to MCP event type and handle
+        const mappedType = mapMcpToStreamEvent(sseEvent.event || 'content');
+        if (mappedType) {
+          const event: MCPStreamEvent = {
+            type: mappedType,
+            data: sseEvent.data ? JSON.parse(sseEvent.data) : null,
+          };
           this.handleEvent(event, chatStream);
         }
       }
@@ -192,17 +167,21 @@ export class VSCodeMCPBridgeHelper {
         }
         break;
       case 'button':
-        const commandStr = typeof data.command === 'string' ? data.command : '';
-        const titleStr = typeof data.title === 'string' ? data.title : '';
-        chatStream.button({ command: commandStr, title: titleStr });
+        {
+          const commandStr = typeof data.command === 'string' ? data.command : '';
+          const titleStr = typeof data.title === 'string' ? data.title : '';
+          chatStream.button({ command: commandStr, title: titleStr });
+        }
         break;
       case 'filetree':
         // Filetree expects specific tree structure - minimal implementation
         chatStream.filetree?.([], { scheme: 'file', path: '/' } as never);
         break;
       case 'reference':
-        const uriStr = typeof data.uri === 'string' ? data.uri : '';
-        chatStream.reference({ scheme: '', path: uriStr } as never);
+        {
+          const uriStr = typeof data.uri === 'string' ? data.uri : '';
+          chatStream.reference({ scheme: '', path: uriStr } as never);
+        }
         break;
       case 'push':
         chatStream.push?.({} as never);

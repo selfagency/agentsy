@@ -156,6 +156,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@agentsy/renderers':
+        specifier: workspace:*
+        version: link:../renderers
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -557,6 +560,9 @@ importers:
 
   packages/vscode:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/formatting':
         specifier: workspace:*
         version: link:../formatting
@@ -569,6 +575,9 @@ importers:
       '@agentsy/renderers':
         specifier: workspace:*
         version: link:../renderers
+      '@agentsy/sse':
+        specifier: workspace:*
+        version: link:../sse
       '@agentsy/structured':
         specifier: workspace:*
         version: link:../structured

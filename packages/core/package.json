@@ -42,6 +42,11 @@
       "types": "./dist/formatting.d.ts",
       "import": "./dist/formatting.js",
       "require": "./dist/formatting.cjs"
+    },
+    "./renderers": {
+      "types": "./dist/renderers.d.ts",
+      "import": "./dist/renderers.js",
+      "require": "./dist/renderers.cjs"
     }
   },
   "scripts": {
@@ -53,6 +58,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@agentsy/renderers": "workspace:*",
     "@agentsy/types": "workspace:*",
     "zod": "^3.23.8"
   },
