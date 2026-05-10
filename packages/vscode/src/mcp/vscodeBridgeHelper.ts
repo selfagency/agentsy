@@ -160,7 +160,7 @@ export class VSCodeMCPBridgeHelper {
       case 'anchor': {
         // Anchor expects specific types from VS Code - use basic string if available
         if (typeof data.anchorData === 'string') {
-          chatStream.anchor(data.anchorData as never, data.title);
+          chatStream.anchor(data.anchorData as never, data.title as string | undefined);
         }
         break;
       }
