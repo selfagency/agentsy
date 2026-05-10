@@ -156,9 +156,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@agentsy/renderers':
-        specifier: workspace:*
-        version: link:../renderers
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types

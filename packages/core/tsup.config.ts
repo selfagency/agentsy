@@ -7,7 +7,6 @@ export default defineConfig({
     context: 'src/context/index.ts',
     formatting: 'src/formatting/index.ts',
     'xml-filter': 'src/xml-filter/index.ts',
-    renderers: 'src/renderer/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,

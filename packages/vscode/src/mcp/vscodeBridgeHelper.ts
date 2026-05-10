@@ -1,11 +1,10 @@
 import type { MCPTransport } from '@agentsy/processor';
 import { adaptTransportToStream } from '@agentsy/processor';
-import type { ChatResponseStream, CancellationToken } from 'vscode';
 import { parseSSEStream } from '@agentsy/sse';
+import type { ChatResponseStream, CancellationToken } from 'vscode';
 
 // Re-export types for compatibility
 export type { ChatResponseStream, CancellationToken };
-import type { ReadableStream } from 'node:stream/web';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
@@ -108,12 +107,9 @@ export class VSCodeMCPBridgeHelper {
     transportStream: ReadableStream<string>,
     chatStream: ChatResponseStream,
   ): Promise<void> {
-    const reader = transportStream.getReader();
-
     try {
-      // Check for cancellation - handle gracefully
+      // Check for cancellation before starting
       if (this.cancellationToken.isCancellationRequested) {
-        await reader.cancel();
         return;
       }
 
@@ -121,7 +117,6 @@ export class VSCodeMCPBridgeHelper {
       for await (const sseEvent of parseSSEStream(transportStream)) {
         // Check for cancellation - handle gracefully
         if (this.cancellationToken.isCancellationRequested) {
-          await reader.cancel();
           return;
         }
 
@@ -140,8 +135,6 @@ export class VSCodeMCPBridgeHelper {
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Error processing MCP stream:', error);
       }
-    } finally {
-      reader.releaseLock();
     }
   }
 
