@@ -159,9 +159,6 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
-      '@agentsy/xml-filter':
-        specifier: workspace:*
-        version: link:../xml-filter
       zod:
         specifier: 4.4.3
         version: 4.4.3
