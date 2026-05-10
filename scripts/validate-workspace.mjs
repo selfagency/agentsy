@@ -9,8 +9,8 @@ import path from 'node:path';
  */
 const ROOT = process.cwd();
 const PACKAGES_DIR = path.join(ROOT, 'packages');
-// Allowlist: tweak as migrations proceed. `core` is ignored until fully removed from VCS.
-const IGNORE_DIRS = new Set(['core']);
+// Allowlist: tweak as migrations proceed.
+const IGNORE_DIRS = new Set([]);
 
 async function dirExists(p) {
   try {
