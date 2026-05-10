@@ -149,42 +149,65 @@ export class VSCodeMCPBridgeHelper {
    */
   private handleEvent(event: MCPStreamEvent, chatStream: ChatResponseStream): void {
     const data = event.data as Record<string, unknown>;
-    const content = typeof data.value === 'string' ? data.value : '';
 
     switch (event.type) {
       case 'markdown':
-        chatStream.markdown(content);
+        this.handleMarkdown(data, chatStream);
         break;
       case 'progress':
-        chatStream.progress?.(content);
+        this.handleProgress(data, chatStream);
         break;
-      case 'anchor': {
-        // Anchor expects specific VS Code Uri | Location types - use basic string conversion
-        if (typeof data.anchorData === 'string' && typeof data.title === 'string') {
-          chatStream.anchor(Uri.parse(data.anchorData), data.title);
-        }
+      case 'anchor':
+        this.handleAnchor(data, chatStream);
         break;
-      }
-      case 'button': {
-        const commandStr = typeof data.command === 'string' ? data.command : '';
-        const titleStr = typeof data.title === 'string' ? data.title : '';
-        chatStream.button({ command: commandStr, title: titleStr });
+      case 'button':
+        this.handleButton(data, chatStream);
         break;
-      }
-      case 'filetree': {
-        // Filetree expects specific tree structure - minimal implementation with empty tree
-        chatStream.filetree?.([], Uri.file('/'));
+      case 'filetree':
+        this.handleFiletree(chatStream);
         break;
-      }
-      case 'reference': {
-        const uriStr = typeof data.uri === 'string' ? data.uri : '';
-        chatStream.reference(Uri.parse(uriStr));
+      case 'reference':
+        this.handleReference(data, chatStream);
         break;
-      }
       case 'push':
-        chatStream.push?.(new ChatResponseProgressPart('')); // Minimal ChatResponsePart implementation
+        this.handlePush(chatStream);
         break;
     }
+  }
+
+  private handleMarkdown(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    const content = typeof data.value === 'string' ? data.value : '';
+    chatStream.markdown(content);
+  }
+
+  private handleProgress(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    const content = typeof data.value === 'string' ? data.value : '';
+    chatStream.progress?.(content);
+  }
+
+  private handleAnchor(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    if (typeof data.anchorData === 'string' && typeof data.title === 'string') {
+      chatStream.anchor(Uri.parse(data.anchorData), data.title);
+    }
+  }
+
+  private handleButton(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    const commandStr = typeof data.command === 'string' ? data.command : '';
+    const titleStr = typeof data.title === 'string' ? data.title : '';
+    chatStream.button({ command: commandStr, title: titleStr });
+  }
+
+  private handleFiletree(chatStream: ChatResponseStream): void {
+    chatStream.filetree?.([], Uri.file('/'));
+  }
+
+  private handleReference(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    const uriStr = typeof data.uri === 'string' ? data.uri : '';
+    chatStream.reference(Uri.parse(uriStr));
+  }
+
+  private handlePush(chatStream: ChatResponseStream): void {
+    chatStream.push?.(new ChatResponseProgressPart(''));
   }
 
   /**
