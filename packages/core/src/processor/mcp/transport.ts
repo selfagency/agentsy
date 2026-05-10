@@ -37,62 +37,59 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
             if (done) break;
             controller.enqueue(decoder.decode(value, { stream: true }));
           }
+          const flushed = decoder.decode();
+          if (flushed.length > 0) {
+            controller.enqueue(flushed);
+          }
           controller.close();
         } catch (err) {
           controller.error(err);
+        } finally {
+          reader.releaseLock();
         }
       },
     });
   }
 
-  // Fallback: create backpressure-aware bridge for older Node versions
-  // We maintain a single persistent writer and await all writes to handle backpressure properly
-  const { readable: webReadable, writable } = new TransformStream<string>();
-  const typedWebReadable = webReadable as ReadableStream<string>;
+  // Fallback: bridge the Node readable through async iteration so the
+  // ReadableStream pulls one chunk at a time and preserves backpressure.
+  const readableStream = transport.readable as Readable;
+  const iterator = readableStream[Symbol.asyncIterator]();
+  const decoder = new TextDecoder();
+  let finished = false;
 
-  // Single writer - maintains backpressure by awaiting each write
-  const writer = writable.getWriter();
-
-  const onData = async (chunk: unknown) => {
-    try {
-      // Decode chunks from Buffer/string to ensure consistent string output
-      const decoded = Buffer.isBuffer(chunk) ? chunk.toString('utf-8') : String(chunk);
-      await writer.write(decoded);
-    } catch (err) {
-      // Re-throw non-stream errors to maintain error propagation
-      if (err instanceof Error && !('code' in err && err.code === 'ERR_STREAM_WRITE_AFTER_END')) {
-        throw err;
+  return new ReadableStream<string>({
+    async pull(controller) {
+      if (finished) {
+        return;
       }
-    }
-  };
-
-  const onEnd = () => {
-    writer.close().catch(() => {
-      // Suppress errors during normal closure
-    });
-  };
-
-  const onError = (err: Error) => {
-    writer.abort(err).catch(() => {
-      // Suppress errors during abort
-    });
-  };
-
-  transport.readable.on('data', onData);
-  transport.readable.on('end', onEnd);
-  transport.readable.on('error', onError);
-
-  // Cleanup on stream cancellation - destroy the underlying readable and its listeners
-  typedWebReadable.cancel = async () => {
-    const readableStream = transport.readable as Readable;
-    readableStream.destroy();
-    readableStream.off('data', onData);
-    readableStream.off('end', onEnd);
-    readableStream.off('error', onError);
-    await writer.close().catch(() => {});
-  };
-
-  return typedWebReadable;
+      try {
+        const { done, value } = await iterator.next();
+        if (done) {
+          finished = true;
+          controller.close();
+          return;
+        }
+        controller.enqueue(
+          typeof value === 'string'
+            ? value
+            : Buffer.isBuffer(value)
+              ? value.toString('utf-8')
+              : value instanceof Uint8Array
+                ? decoder.decode(value, { stream: true })
+                : String(value),
+        );
+      } catch (err) {
+        finished = true;
+        controller.error(err);
+      }
+    },
+    async cancel() {
+      finished = true;
+      await iterator.return?.();
+      readableStream.destroy();
+    },
+  });
 }
 
 /**
