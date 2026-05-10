@@ -1,7 +1,7 @@
-import { appendToBlockquote } from '@agentsy/core/formatting';
-import type { OutputPart } from '@agentsy/core/processor';
-import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/core/renderers';
-import { createSharedRendererHandle } from '@agentsy/core/renderers';
+import { appendToBlockquote } from '@agentsy/formatting';
+import type { OutputPart } from '@agentsy/processor';
+import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/renderers';
+import { createSharedRendererHandle } from '@agentsy/renderers';
 import { mapUsageToVSCode } from '../usage-tracking/map-usage.js';
 import { toVSCodeToolCallPart } from './tool-call-lifecycle.js';
 

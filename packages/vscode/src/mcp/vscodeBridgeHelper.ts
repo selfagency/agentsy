@@ -1,5 +1,5 @@
-import type { MCPTransport } from '@agentsy/processor';
-import { adaptTransportToStream } from '@agentsy/processor';
+import type { MCPTransport } from '@agentsy/core/processor';
+import { adaptTransportToStream } from '@agentsy/core/processor';
 import { parseSSEStream } from '@agentsy/sse';
 import type { ChatResponseStream, CancellationToken } from 'vscode';
 
@@ -49,7 +49,7 @@ export class VSCodeMCPBridgeHelper {
    * Wraps the provided target stream and forwards MCP events to it.
    */
   public createChatResponseStream(target: ChatResponseStream): ChatResponseStream {
-    const transportStream = adaptTransportToStream(this.transport);
+    const transportStream = adaptTransportToStream(this.transport) as ReadableStream<string>;
 
     // Process raw stream chunks and forward to target stream
     void this.processRawStream(transportStream, target);
@@ -96,7 +96,7 @@ export class VSCodeMCPBridgeHelper {
    * and this method will populate it with data from the MCP transport.
    */
   public connectToStream(stream: ChatResponseStream): void {
-    const transportStream = adaptTransportToStream(this.transport);
+    const transportStream = adaptTransportToStream(this.transport) as ReadableStream<string>;
     void this.processRawStream(transportStream, stream);
   }
 
