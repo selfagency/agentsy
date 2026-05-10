@@ -13,8 +13,8 @@ function findMatchingTagEnd(input: string, tagName: string): number | null {
   const openTagPattern = `<${tagName}`;
   const closeTagPattern = `</${tagName}>`;
 
-  let searchIndex = 0;
-  let openTagIndex = input.indexOf(openTagPattern, searchIndex);
+  const searchIndex = 0;
+  const openTagIndex = input.indexOf(openTagPattern, searchIndex);
 
   if (openTagIndex !== 0) {
     return null; // First tag must start at position 0
