@@ -33,7 +33,7 @@ export interface ProviderAdapter {
 /**
  * Creates a provider adapter for the specified provider name.
  */
-export function createProviderAdapter(name: string): ProviderAdapter | null {
+export function createProviderAdapter(_name: string): ProviderAdapter | null {
   // Placeholder implementation - will be expanded as adapters are consolidated
   return null;
 }
