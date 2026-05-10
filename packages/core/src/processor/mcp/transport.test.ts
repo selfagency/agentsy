@@ -77,11 +77,9 @@ describe('MCP Transport', () => {
       expect(adapter.stream).toBeDefined();
       expect(adapter.cleanup).toBeDefined();
 
-      if (adapter.cleanup) {
-        const destroySpy = vi.spyOn(readable, 'destroy');
-        adapter.cleanup();
-        expect(destroySpy).toHaveBeenCalled();
-      }
+      const destroySpy = vi.spyOn(readable, 'destroy');
+      adapter.cleanup();
+      expect(destroySpy).toHaveBeenCalled();
     });
   });
 });
