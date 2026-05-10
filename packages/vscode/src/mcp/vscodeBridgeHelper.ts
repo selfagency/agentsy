@@ -1,5 +1,5 @@
-import type { MCPTransport } from '@agentsy/core/processor';
-import { adaptTransportToStream } from '@agentsy/core/processor';
+import type { MCPTransport } from '@agentsy/processor';
+import { adaptTransportToStream } from '@agentsy/processor';
 import type { ChatResponseStream, CancellationToken } from 'vscode';
 import { parseSSEStream } from '@agentsy/sse';
 
@@ -119,7 +119,7 @@ export class VSCodeMCPBridgeHelper {
 
       // Use the robust SSE parser from @agentsy/sse
       for await (const sseEvent of parseSSEStream(transportStream)) {
-        // Check for cancellation during iteration
+        // Check for cancellation - handle gracefully
         if (this.cancellationToken.isCancellationRequested) {
           await reader.cancel();
           return;
@@ -178,10 +178,8 @@ export class VSCodeMCPBridgeHelper {
         chatStream.filetree?.([], { scheme: 'file', path: '/' } as never);
         break;
       case 'reference':
-        {
-          const uriStr = typeof data.uri === 'string' ? data.uri : '';
-          chatStream.reference({ scheme: '', path: uriStr } as never);
-        }
+        const uriStr = typeof data.uri === 'string' ? data.uri : '';
+        chatStream.reference({ scheme: '', path: uriStr } as never);
         break;
       case 'push':
         chatStream.push?.({} as never);
