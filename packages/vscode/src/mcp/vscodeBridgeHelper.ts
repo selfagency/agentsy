@@ -160,7 +160,7 @@ export class VSCodeMCPBridgeHelper {
       case 'anchor': {
         // Anchor expects specific types from VS Code - use basic string if available
         if (typeof data.anchorData === 'string') {
-          chatStream.anchor(data.anchorData as never, data.title as string | undefined);
+          chatStream.anchor(data.anchorData as unknown, data.title as unknown);
         }
         break;
       }
@@ -172,16 +172,16 @@ export class VSCodeMCPBridgeHelper {
       }
       case 'filetree': {
         // Filetree expects specific tree structure - minimal implementation
-        chatStream.filetree?.([], { scheme: 'file', path: '/' } as never);
+        chatStream.filetree?.([], { scheme: 'file', path: '/' });
         break;
       }
       case 'reference': {
         const uriStr = typeof data.uri === 'string' ? data.uri : '';
-        chatStream.reference({ scheme: '', path: uriStr } as never);
+        chatStream.reference({ scheme: '', path: uriStr });
         break;
       }
       case 'push':
-        chatStream.push?.({} as never);
+        chatStream.push?.({});
         break;
     }
   }
