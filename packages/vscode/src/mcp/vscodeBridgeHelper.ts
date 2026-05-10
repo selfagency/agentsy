@@ -2,8 +2,8 @@ import type { ReadableStream } from 'node:stream/web';
 import { parseSSEStream } from '@agentsy/sse';
 import type { MCPTransport } from '@agentsy/core/processor';
 import { adaptTransportToStream } from '@agentsy/core/processor';
-import type { ChatResponseStream, CancellationToken } from 'vscode';
-import { Uri, ChatResponseProgressPart } from 'vscode';
+import { type ChatResponseStream, type CancellationToken, Uri } from 'vscode';
+import { ChatResponseProgressPart } from 'vscode';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
