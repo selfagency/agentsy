@@ -2,7 +2,8 @@ import type { ReadableStream } from 'node:stream/web';
 import { parseSSEStream } from '@agentsy/sse';
 import type { MCPTransport } from '@agentsy/core/processor';
 import { adaptTransportToStream } from '@agentsy/core/processor';
-import type { ChatResponseStream, CancellationToken, Uri } from 'vscode';
+import type { ChatResponseStream, CancellationToken } from 'vscode';
+import { Uri, ChatResponseProgressPart } from 'vscode';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
@@ -159,7 +160,7 @@ export class VSCodeMCPBridgeHelper {
         break;
       case 'anchor': {
         // Anchor expects specific VS Code Uri | Location types - use basic string conversion
-        if (typeof data.anchorData === 'string') {
+        if (typeof data.anchorData === 'string' && typeof data.title === 'string') {
           chatStream.anchor(Uri.parse(data.anchorData), data.title);
         }
         break;
@@ -181,7 +182,7 @@ export class VSCodeMCPBridgeHelper {
         break;
       }
       case 'push':
-        chatStream.push?.({ markdown: '' }); // Minimal ChatResponsePart implementation
+        chatStream.push?.(new ChatResponseProgressPart('')); // Minimal ChatResponsePart implementation
         break;
     }
   }
