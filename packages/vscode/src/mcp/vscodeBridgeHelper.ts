@@ -216,31 +216,31 @@ export class VSCodeMCPBridgeHelper {
    * @internal
    */
   public _testHandleMarkdown(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
-    return this.handleMarkdown(data, chatStream);
+    this.handleMarkdown(data, chatStream);
   }
 
   public _testHandleProgress(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
-    return this.handleProgress(data, chatStream);
+    this.handleProgress(data, chatStream);
   }
 
   public _testHandleAnchor(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
-    return this.handleAnchor(data, chatStream);
+    this.handleAnchor(data, chatStream);
   }
 
   public _testHandleButton(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
-    return this.handleButton(data, chatStream);
+    this.handleButton(data, chatStream);
   }
 
   public _testHandleFiletree(chatStream: ChatResponseStream): void {
-    return this.handleFiletree(chatStream);
+    this.handleFiletree(chatStream);
   }
 
   public _testHandleReference(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
-    return this.handleReference(data, chatStream);
+    this.handleReference(data, chatStream);
   }
 
   public _testHandlePush(chatStream: ChatResponseStream): void {
-    return this.handlePush(chatStream);
+    this.handlePush(chatStream);
   }
 
   /**
