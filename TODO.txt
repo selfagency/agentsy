@@ -1,6 +1,95 @@
 # @agentsy Monorepo Implementation TODO
-# Updated: Fri May 08 2026
-# Status: Phase R0/P0 Package Consolidation ✓ COMPLETE | Phase P0 Architecture Contracts ✓ COMPLETE | Ready for Phase P1
+# Updated: Mon May 11 2026
+# Status: Remediation in progress — Typecheck blocker resolved ✓ | Plan-state reconciliation in progress ⚠
+
+====================================================================
+
+## IMPLEMENTATION PROGRESS (Remediation Kickoff)
+
+### Wave 1 — Hard blocker removal (completed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ REM-001: Resolved monorepo typecheck blocker (32 TS errors in core/vscode)
+   - Fixed nullable tag-name extraction in `packages/core/src/context/splitLeadingXmlContext.ts`
+   - Removed strict-indexing failures in `packages/core/src/xml-filter/saxophone/index.test.ts`
+   - Removed strict-indexing failures in `packages/vscode/src/message-conversion/message-conversion.test.ts`
+   - Fixed fetch headers typing in `packages/vscode/src/provider/base-language-model-chat-provider.ts`
+   - Fixed response typing/await guards in `packages/vscode/src/provider/provider.test.ts`
+
+✓ REM-002: Verification complete
+   - `pnpm check-types` passes across all workspace packages
+   - Targeted tests pass for touched suites (core saxophone, vscode message conversion, vscode provider)
+
+### Wave 2 — Now in progress
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠ REM-003: Reconcile TODO/README claims with current repository reality (package counts, deletion claims, version policy)
+⚠ REM-004: Begin controlled port of approved DX deltas from `feature/dx-improvements`
+
+### Authoritative state (as-of May 11, 2026)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ DECISION-A: **Topology truth-path = B** (retain current package topology; reconcile docs/plan to actual repository state)
+   - Measured inventory: **41** package directories, **31** directories with `package.json`
+   - Prior "25 package" statements below are historical and superseded.
+
+✓ DECISION-B: **Version policy = mixed maturity tiers** (do not force all packages to `0.2.0-alpha.0`)
+   - Published/stable/internal package versions remain maturity-based.
+   - Prior "all packages set to 0.2.0-alpha.0" statements below are historical and superseded.
+
+✓ DECISION-C: **Prompts planning canonical path = `plan/PROMPTS_TODO.md`**
+   - Prior root-path references (`PROMPTS_TODO.md`) are historical and superseded.
+
+### Historical notice
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Legacy progress sections below are retained for traceability and may contain superseded counts/deletion claims.
+When conflicts appear, use **Authoritative state** above.
+
+====================================================================
+
+## BRANCH SYNC AUDIT (feature/dx-improvements → main)
+
+### Method
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Comparison is **content-based** (`git diff main..feature/dx-improvements`), not commit-hash based.
+- Commit hashes were recreated/rebased, so this section tracks **file-level state differences** only.
+
+### Completed on feature branch but NOT yet on main (to evaluate/port)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+#### A) VS Code DX improvements (high priority)
+⚠ PORT-DX-001: `packages/vscode/src/retry/*` new retry utility module and tests
+⚠ PORT-DX-002: `packages/vscode/src/vscode-overloads/*` stream overloads + tests
+⚠ PORT-DX-003: MCP bridge/helper refinements in `packages/vscode/src/mcp/vscodeBridgeHelper.ts` (+ tests)
+⚠ PORT-DX-004: stream bridge updates in `packages/vscode/src/stream-bridge/*`
+⚠ PORT-DX-005: exports/build config alignment in `packages/vscode/src/index.ts` + `tsup.config.ts`
+
+#### B) Tool-calls / provider contract hardening
+⚠ PORT-DX-006: `packages/tool-calls/src/providerToolsContract.ts` + test coverage
+⚠ PORT-DX-007: `packages/tool-calls/src/buildToolResultMessage.ts` enhancements + tests
+
+#### C) Retry package strengthening
+⚠ PORT-DX-008: `packages/retry/src/retry.test.ts` and `packages/retry/src/index.ts` improvements
+⚠ PORT-DX-009: retry package README/docs updates for usage guidance
+
+#### D) Processor MCP transport extraction and migration work
+⚠ PORT-DX-010: processor MCP transport move/refactor (`packages/processor/src/mcp/transport.ts` + tests)
+⚠ PORT-DX-011: processor barrel/export updates for MCP submodule exposure
+
+#### E) Planning/docs work products added on feature branch
+⚠ PORT-DX-012: `plan/PR63-HANDOFF.md` and additional architecture docs (`plan/agentsy-*.md`, pacing plan)
+⚠ PORT-DX-013: docs migration/content updates under `docs/migration/*`, `docs/getting-started.md`, `docs/packages/vscode.md`
+
+### Do NOT port blindly (feature branch deletions that conflict with current main quality goals)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠ REVIEW-DX-001: Feature branch deletes several orchestrator/plugins tests (`registry.test.ts`, `engine.test.ts`, `plugins/src/index.test.ts`) that were recently added on main.
+⚠ REVIEW-DX-002: Feature branch deletes scheduler/plugin scaffold exports (`orchestrator/src/scheduler/index.ts`, `plugins/src/agents/index.ts`) currently used to satisfy lint/static-analysis rules.
+⚠ REVIEW-DX-003: Feature branch deletes planning files (`TODO.txt`, `plan/PROMPTS_TODO.md`)—requires intentional migration plan, not direct deletion.
+
+### Execution order for branch sync
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Port VS Code/runtime DX changes (PORT-DX-001..005)
+2. Port tool-calls + retry enhancements (PORT-DX-006..009)
+3. Port processor MCP transport changes (PORT-DX-010..011)
+4. Reconcile docs/plans (PORT-DX-012..013)
+5. Re-run gates: `pnpm check-types`, `pnpm lint`, `pnpm test`, `pnpm test:coverage`
 
 ====================================================================
 
@@ -36,7 +125,7 @@
 ✓ TASK-R0-004: Consolidated scheduler → orchestrator/scheduler
 ✓ TASK-R0-005: Merged agentic-loop → runtime (renamed to runtime package)
 ✓ TASK-R0-006: Renamed token-economy → tokens
-✓ TASK-R0-007: Deleted obsolete packages (adapters, agents, normalizers, repl, scheduler, context-manager, mcp)
+⚠ TASK-R0-007: Historical deletion claim superseded by DECISION-A (topology retained)
 ✓ TASK-R0-008: Recreated plugins package with new structure
 ✓ TASK-R0-009: Updated all import paths across codebase
 ✓ TASK-R0-010: Updated package.json files for all packages
@@ -59,7 +148,7 @@
 ✓ TASK-R0-027: All 21 lint packages passing lint (7 MEDIUM warnings in providers)
 ✓ TASK-R0-028: Templates package name changed from selfagency → agentsy
 
-**Current Package Count:** 25 packages (down from 32+ after consolidations)
+**Current Package Count:** 31 package manifests (41 package directories total)
 **Quality Status:** All TypeScript checks passing, 23/23 builds passing, 21/21 linting passing
 
 **Consolidated Packages:**
@@ -71,20 +160,12 @@
 - agentic-loop → runtime/src/loop/ (renamed to runtime package)
 - token-economy → tokens
 
-**Deleted Packages:**
-- adapters
-- agents
-- normalizers
-- repl
-- scheduler
-- context-manager
-- mcp
-- Old plugins (recreated with new structure)
+**Deleted Packages:** historical consolidation target only (superseded by DECISION-A)
 
 **Pending R0 Tasks:**
 ✓ Fix TypeScript build errors (import resolution issues)
 ✓ Verify all 25 packages build successfully
-✓ Set version "0.2.0-alpha.0" in all packages
+⚠ Uniform alpha-version claim superseded by DECISION-B (mixed maturity versions retained)
 ⚠ Add repository, homepage, keywords, license to package.json
 ⚠ Configure .npmrc with @agentsy registry
 ⚠ Update README.md with consolidated package count
@@ -101,7 +182,7 @@
 ✓ TASK-R0-001 through TASK-R0-028: All core consolidation tasks completed
 ⚠ TASK-R0-029 through TASK-R0-035: Optional metadata/documentation tasks (can be deferred)
 
-**Current Package Count:** 25 packages (down from 32+ after consolidations)
+**Current Package Count:** 31 package manifests (41 package directories total)
 **Quality Status:** All TypeScript checks passing (31/31), Build passing (31/31), Linting passing (23/23)
 
 **Completed R0 Consolidations:**
@@ -110,14 +191,14 @@
 - agents → plugins/src/agents/ (A2A protocol support)
 - repl → tools/src/repl/
 - scheduler → orchestrator/src/scheduler/
-- agentic-loop → runtime/src/loop/ (renamed to runtime package)  
+- agentic-loop → runtime/src/loop/ (renamed to runtime package)
 - token-economy → tokens
 
-**Deleted Packages:** adapters, agents, normalizers, repl, scheduler, context-manager, mcp
+**Deleted Packages:** historical consolidation target only (superseded by DECISION-A)
 
 **Optional R0 Tasks (metadata/docs - can be deferred):**
 ⚠ Add repository, homepage, keywords, license to package.json
-⚠ Configure .npmrc with @agentsy registry  
+⚠ Configure .npmrc with @agentsy registry
 ⚠ Update README.md with consolidated package count
 ⚠ Create per-package README.md stubs
 ⚠ Update GitHub workflows for turbo run commands
@@ -129,7 +210,7 @@
 ### Phase R0 - Package Identity & @agentsy Org ⚠️ MOSTLY COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✓ TASK-R0-001: Verify npm org @agentsy claimed (Complete: May 7, 2026)
-✓ TASK-R0-002: Set version "0.2.0-alpha.0" in all packages
+⚠ TASK-R0-002: Superseded by DECISION-B (mixed maturity versions retained)
 ⚠ TASK-R0-003: Add repository, homepage, keywords, license
 ⚠ TASK-R0-004: Configure .npmrc with @agentsy registry
 ⚠ TASK-R0-005: Update README.md with consolidated count (25 packages)
@@ -232,7 +313,7 @@
    - Safety strategies
    - Policy enforcement
 
-**Planning Document:** Prompts implementation plan (PROMPTS_TODO.md created)
+**Planning Document:** Prompts implementation plan (`plan/PROMPTS_TODO.md`)
 
 ====================================================================
 
@@ -341,7 +422,7 @@
    - Begin implementation based on priority decision
 
 3. **FUTURE:** @agentsy/prompts module (Phase P13)
-   - Implementation plan ready (PROMPTS_TODO.md)
+   - Implementation plan ready (`plan/PROMPTS_TODO.md`)
    - To be implemented after core platform builds (P0-P12)
 
 ====================================================================
@@ -384,7 +465,7 @@
    - Decision: Create @agentsy/prompts for prompt optimization and agentic patterns
    - Integration: Uses @agentsy/tokens for budget management, @agentsy/memory for persistence
    - Capabilities: Prompt compression, chunking, agentic patterns, safety/guardrails
-   - Status: Implementation plan created (PROMPTS_TODO.md), scheduled for Phase P13
+   - Status: Implementation plan created (`plan/PROMPTS_TODO.md`), scheduled for Phase P13
 
 ### Deviations From Original Plan
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -151,7 +151,7 @@ export abstract class BaseLanguageModelChatProvider {
 
     const response = await fetch(url, {
       method: method ?? 'POST',
-      headers: headers as HeadersInit,
+      headers: headers as NonNullable<RequestInit['headers']>,
       body: body !== undefined ? JSON.stringify(body) : null,
       ...(signal && { signal }),
     });

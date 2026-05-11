@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
+import { describe, expect, it } from 'vitest';
 import { convertMessage, convertMessages } from './message-adapter.js';
+import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
 
 describe('role-converter', () => {
   describe('convertRole', () => {
@@ -156,8 +156,12 @@ describe('message-adapter', () => {
       ];
       const result = convertMessages(msgs);
       expect(result).toHaveLength(2);
-      expect(result[0].role).toBe('user');
-      expect(result[1].role).toBe('assistant');
+      const [firstMessage, secondMessage] = result;
+      if (!firstMessage || !secondMessage) {
+        throw new Error('Expected two messages to be converted');
+      }
+      expect(firstMessage.role).toBe('user');
+      expect(secondMessage.role).toBe('assistant');
     });
 
     it('returns empty array for empty input', () => {
