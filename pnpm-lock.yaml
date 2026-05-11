@@ -275,6 +275,31 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
 
+  packages/memory:
+    dependencies:
+      '@agentsy/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.2
+        version: 25.6.2
+      '@vitest/coverage-v8':
+        specifier: ^4.1.5
+        version: 4.1.5(vitest@4.1.5)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
+
   packages/normalizers:
     dependencies:
       '@agentsy/types':
@@ -296,6 +321,28 @@ importers:
       vitest:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
+
+  packages/observability:
+    dependencies:
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.2
+        version: 25.6.2
+      '@vitest/coverage-v8':
+        specifier: ^4.1.5
+        version: 4.1.5(vitest@4.1.5)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/processor:
     dependencies:
@@ -452,6 +499,75 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
+  packages/runtime:
+    dependencies:
+      '@agentsy/ag-ui':
+        specifier: workspace:*
+        version: link:../ag-ui
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.0
+        version: 25.6.2
+      '@vitest/coverage-v8':
+        specifier: ^4.1.5
+        version: 4.1.5(vitest@4.1.5)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
+
+  packages/secrets:
+    dependencies:
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.2
+        version: 25.6.2
+      '@vitest/coverage-v8':
+        specifier: ^4.1.5
+        version: 4.1.5(vitest@4.1.5)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
+
+  packages/session:
+    dependencies:
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.2
+        version: 25.6.2
+      '@vitest/coverage-v8':
+        specifier: ^4.1.5
+        version: 4.1.5(vitest@4.1.5)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
+
   packages/sse:
     devDependencies:
       '@types/node':
@@ -519,6 +635,28 @@ importers:
       vitest:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
+
+  packages/tokens:
+    dependencies:
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@types/node':
+        specifier: ^25.6.2
+        version: 25.6.2
+      '@vitest/coverage-v8':
+        specifier: ^4.1.5
+        version: 4.1.5(vitest@4.1.5)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/tool-calls:
     dependencies:
@@ -759,11 +897,6 @@ packages:
   '@babel/helper-validator-identifier@7.28.5':
     resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
-
-  '@babel/parser@7.29.0':
-    resolution: {integrity: sha512-IyDgFV5GeDUVX4YdF/3CPULtVGSXXMLh1xVIgdCgxApktqnQV0r7/8Nqthg+8YLGaAtdyIlo2qIdZrbCv4+7ww==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
 
   '@babel/parser@7.29.3':
     resolution: {integrity: sha512-b3ctpQwp+PROvU/cttc4OYl4MzfJUWy6FZg+PMXfzmt/+39iHVF0sDfqay8TQM3JA2EUOyKcFZt75jWriQijsA==}
@@ -3390,10 +3523,6 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.28.5': {}
 
-  '@babel/parser@7.29.0':
-    dependencies:
-      '@babel/types': 7.29.0
-
   '@babel/parser@7.29.3':
     dependencies:
       '@babel/types': 7.29.0
@@ -4902,7 +5031,7 @@ snapshots:
 
   magicast@0.5.2:
     dependencies:
-      '@babel/parser': 7.29.0
+      '@babel/parser': 7.29.3
       '@babel/types': 7.29.0
       source-map-js: 1.2.1
 
