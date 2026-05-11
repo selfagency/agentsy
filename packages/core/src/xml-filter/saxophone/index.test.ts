@@ -10,6 +10,14 @@ import {
   type SaxophoneText,
 } from './index.js';
 
+function firstEvent<T>(events: T[]): T {
+  const first = events[0];
+  if (first === undefined) {
+    throw new Error('Expected at least one event');
+  }
+  return first;
+}
+
 describe('Saxophone Parser', () => {
   // --- Basic XML parsing ---
 
@@ -25,7 +33,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe('hello world');
+    expect(firstEvent(events).contents).toBe('hello world');
   });
 
   it('emits tagopen events for opening tags', () => {
@@ -40,8 +48,8 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].name).toBe('div');
-    expect(events[0].isSelfClosing).toBe(false);
+    expect(firstEvent(events).name).toBe('div');
+    expect(firstEvent(events).isSelfClosing).toBe(false);
   });
 
   it('emits tagclose events for closing tags', () => {
@@ -56,7 +64,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].name).toBe('p');
+    expect(firstEvent(events).name).toBe('p');
   });
 
   it('emits both open and close events for complete tags', () => {
@@ -77,8 +85,8 @@ describe('Saxophone Parser', () => {
 
     expect(openEvents).toHaveLength(1);
     expect(closeEvents).toHaveLength(1);
-    expect(openEvents[0].name).toBe('span');
-    expect(closeEvents[0].name).toBe('span');
+    expect(firstEvent(openEvents).name).toBe('span');
+    expect(firstEvent(closeEvents).name).toBe('span');
   });
 
   it('handles self-closing tags correctly', () => {
@@ -93,8 +101,8 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].name).toBe('br');
-    expect(events[0].isSelfClosing).toBe(true);
+    expect(firstEvent(events).name).toBe('br');
+    expect(firstEvent(events).isSelfClosing).toBe(true);
   });
 
   it('handles multiple tags in sequence', () => {
@@ -126,9 +134,9 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].name).toBe('div');
-    expect(events[0].attrs).toContain('class="container"');
-    expect(events[0].attrs).toContain('id="main"');
+    expect(firstEvent(events).name).toBe('div');
+    expect(firstEvent(events).attrs).toContain('class="container"');
+    expect(firstEvent(events).attrs).toContain('id="main"');
   });
 
   it('handles quoted attributes containing special characters', () => {
@@ -143,7 +151,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].attrs).toContain('href=');
+    expect(firstEvent(events).attrs).toContain('href=');
   });
 
   it('handles empty attribute values', () => {
@@ -174,7 +182,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe('some content');
+    expect(firstEvent(events).contents).toBe('some content');
   });
 
   it('preserves special characters in CDATA', () => {
@@ -189,7 +197,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe('<>&"\'');
+    expect(firstEvent(events).contents).toBe('<>&"\'');
   });
 
   it('handles CDATA with trailing text', () => {
@@ -210,7 +218,7 @@ describe('Saxophone Parser', () => {
 
     expect(cdataEvents).toHaveLength(1);
     expect(textEvents).toHaveLength(1);
-    expect(textEvents[0].contents).toBe('after');
+    expect(firstEvent(textEvents).contents).toBe('after');
   });
 
   // --- Comments ---
@@ -227,7 +235,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe(' a comment ');
+    expect(firstEvent(events).contents).toBe(' a comment ');
   });
 
   it('handles comments with special characters', () => {
@@ -242,7 +250,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toContain('<>&"');
+    expect(firstEvent(events).contents).toContain('<>&"');
   });
 
   // --- Processing instructions ---
@@ -259,7 +267,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events.length).toBeGreaterThan(0);
-    expect(events[0].contents).toContain('xml version="1.0"');
+    expect(firstEvent(events).contents).toContain('xml version="1.0"');
   });
 
   // --- Streaming ---
@@ -295,7 +303,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].name).toBe('div');
+    expect(firstEvent(events).name).toBe('div');
   });
 
   // Note: Saxophone parser doesn't handle CDATA sections split across chunks
@@ -312,7 +320,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe('data');
+    expect(firstEvent(events).contents).toBe('data');
   });
 
   it('handles comments split across multiple write calls', () => {
@@ -328,7 +336,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe(' text ');
+    expect(firstEvent(events).contents).toBe(' text ');
   });
 
   // --- Error handling ---
@@ -448,9 +456,9 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0].name).toBe('img');
-    expect(events[0].isSelfClosing).toBe(true);
-    expect(events[0].attrs).toContain('src="test.jpg"');
+    expect(firstEvent(events).name).toBe('img');
+    expect(firstEvent(events).isSelfClosing).toBe(true);
+    expect(firstEvent(events).attrs).toContain('src="test.jpg"');
   });
 
   it('handles nested structures correctly', () => {
@@ -501,7 +509,7 @@ describe('Saxophone Parser', () => {
     parser.parse('<div>content</div>');
 
     expect(events).toHaveLength(1);
-    expect(events[0].contents).toBe('content');
+    expect(firstEvent(events).contents).toBe('content');
   });
 
   it('parse() calls end() internally', () => {

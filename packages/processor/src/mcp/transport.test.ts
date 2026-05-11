@@ -7,7 +7,7 @@ describe('MCP Transport', () => {
     it('should adapt HTTP transport to ReadableStream', async () => {
       const mockStream = new ReadableStream<string>({
         start(controller) {
-          controller.enqueue('data: test\n\n');
+          controller.enqueue('data: test\\n\\n');
           controller.close();
         },
       });
@@ -16,17 +16,15 @@ describe('MCP Transport', () => {
       const reader = adapted.getReader();
       const result = await reader.read();
 
-      expect(result.value).toBe('data: test\n\n');
+      expect(result.value).toBe('data: test\\n\\n');
       expect(result.done).toBe(false);
     });
 
     it('should adapt stdio transport to ReadableStream', async () => {
       const readable = new Readable({
         read() {
-          // Push data synchronously when read is called
-          if (!this.push('data: stdio test\n\n')) {
-            this.push(null);
-          }
+          void this.push('data: stdio test\\n\\n');
+          this.push(null);
         },
       });
 
@@ -40,7 +38,7 @@ describe('MCP Transport', () => {
       const reader = adapted.getReader();
       const result = await reader.read();
 
-      expect(result.value).toBe('data: stdio test\n\n');
+      expect(result.value).toBe('data: stdio test\\n\\n');
       expect(result.done).toBe(false);
     });
   });
@@ -49,7 +47,7 @@ describe('MCP Transport', () => {
     it('should create adapter for HTTP transport', () => {
       const mockStream = new ReadableStream<string>({
         start(controller) {
-          controller.enqueue('data: http\n\n');
+          controller.enqueue('data: http\\n\\n');
           controller.close();
         },
       });
@@ -62,7 +60,7 @@ describe('MCP Transport', () => {
     it('should create adapter for stdio transport with cleanup', () => {
       const readable = new Readable({
         read() {
-          this.push('data: stdio\n\n');
+          void this.push('data: stdio\\n\\n');
           this.push(null);
         },
       });
@@ -76,6 +74,7 @@ describe('MCP Transport', () => {
       const adapter = createCompatibilityAdapter({ type: 'stdio', readable, writable });
       expect(adapter.stream).toBeDefined();
       expect(adapter.cleanup).toBeDefined();
+
       const cleanup = adapter.cleanup;
       if (!cleanup) {
         throw new Error('Expected cleanup function for stdio transport');

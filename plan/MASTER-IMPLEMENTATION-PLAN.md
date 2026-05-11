@@ -1,212 +1,345 @@
-# @agentsy Master Implementation Plan
+# @agentsy Authoritative Master Implementation Plan (Canonical)
 
-## Executive Summary
-
-The `@agentsy` platform is a production-oriented TypeScript monorepo for LLM stream parsing, agent infrastructure, and multi-channel integration. This document synthesizes 27 individual plan files into a unified execution roadmap for the 44 packages that comprise the platform.
-
-Currently, 20 packages are live (in various stages of maturity), and 24 new packages are planned. The only published package is `@agentsy/vscode`. This master plan prioritizes development into five tiers and identifies nine critical co-development groups that must advance in lockstep.
+Last updated: 2026-05-11
+Scope: repository-wide implementation, package-boundary canonicalization, and doc/plan consolidation
+Branch alignment target: `feature/dx-improvements` (content-shape emulation, not blind copy)
 
 ---
 
-## Package Inventory (44 Total)
+## 1) Purpose and decision authority
 
-| Tier  | Package            | Status     | Description                                   |
-| ----- | ------------------ | ---------- | --------------------------------------------- |
-| **0** | `types`            | ✅ Live    | Shared type primitives (foundational)         |
-| **0** | `testing`          | 🔲 Planned | Scenario runner, FaultInjector, MockLLM       |
-| **0** | `session`          | 🔲 Planned | Session persistence, serialization, branching |
-| **0** | `cost-tracker`     | 🔲 Planned | Token cost tracking and budgeting             |
-| **0** | `providers`        | 🔲 Planned | Provider capability matrix and quirks         |
-| **0** | `secrets`          | 🔲 Planned | Safe secret store, varlock, .env handler      |
-| **0** | `retry`            | ✅ Live    | Retry with exponential backoff (PR63)         |
-| **0** | `xml-filter`       | ✅ Live    | XML tag filtering and extraction              |
-| **0** | `sse`              | ✅ Live    | Server-Sent Events parsing                    |
-| **0** | `recovery`         | ✅ Live    | Error recovery and graceful degradation       |
-| **1** | `processor`        | ✅ Live    | Central stream processing engine (PR63)       |
-| **1** | `context-manager`  | 🔲 Planned | Context window management and reduction       |
-| **1** | `runtime`          | 🔲 Planned | Agent runtime orchestration                   |
-| **1** | `mcp`              | 🔲 Planned | MCP orchestrator and tool registration        |
-| **1** | `telemetry`        | 🔲 Planned | Observability, metrics, and tracing           |
-| **1** | `thinking`         | ✅ Live    | Reasoning/thinking block parsing              |
-| **1** | `normalizers`      | ✅ Live    | 9 provider stream normalizers                 |
-| **1** | `structured`       | ✅ Live    | Structured output parsing (JSON)              |
-| **1** | `tool-calls`       | ✅ Live    | Tool call parsing and state (PR63)            |
-| **1** | `context`          | ✅ Live    | Context window management primitives          |
-| **1** | `formatting`       | ✅ Live    | Output formatting utilities                   |
-| **2** | `agent`            | ✅ Live    | Core agent loop implementation                |
-| **2** | `memory`           | 🔲 Planned | 3-layer memory engine (raw/wiki/vector)       |
-| **2** | `retrieval`        | 🔲 Planned | Vector retrieval and semantic search          |
-| **2** | `token-economy`    | 🔲 Planned | Token budgets, reduction, output shaping      |
-| **2** | `guardrails`       | 🔲 Planned | Moderation, PII, OWASP test coverage          |
-| **2** | `slash-commands`   | 🔲 Planned | SKILL.md parsing, 12 stock commands           |
-| **2** | `skills`           | 🔲 Planned | Skills manager, progressive loading           |
-| **2** | `agents`           | 🔲 Planned | Unified agent modes (Caveman, Superpowers)    |
-| **2** | `adapters`         | ✅ Live    | Orchestration helpers and stream adapters     |
-| **2** | `renderers`        | ✅ Live    | Subpath renderers (Plain, CLI, VSCode, Ink)   |
-| **2** | `ui`               | ✅ Live    | UI component primitives                       |
-| **2** | `ag-ui`            | ✅ Live    | AG-UI protocol types and streaming            |
-| **2** | `vscode`           | ✅ Live    | **Published** VS Code Chat Provider utils     |
-| **3** | `pacing`           | 🔲 Planned | Rate-aware query execution                    |
-| **3** | `scheduler`        | 🔲 Planned | Task scheduling and recurring jobs            |
-| **3** | `connectors`       | 🔲 Planned | Channel adapters (Telegram, Slack, etc.)      |
-| **3** | `subagents`        | 🔲 Planned | Local coordinator/worker orchestration        |
-| **3** | `a2a`              | 🔲 Planned | Agent-to-Agent protocol and interop           |
-| **3** | `fileops-mcp`      | 🔲 Planned | CLI-powered file operations MCP server        |
-| **3** | `integration`      | ✅ Live    | Private integration testing infrastructure    |
-| **4** | `extension-vscode` | ⏳ Future  | Thin VS Code extension composition            |
-| **4** | `renderer-gui`     | ⏳ Future  | DisplayPort GUI implementations               |
-| **4** | `desktop`          | ⏳ Future  | Electron/Tauri desktop application            |
+This document is the **single source of truth** for:
+
+- package boundaries
+- merge/rename/delete actions
+- migration sequencing and acceptance gates
+- branch-sync posture for `feature/dx-improvements`
+- retirement of superseded plan files
+
+If any plan/doc conflicts with this file, **this file wins**.
 
 ---
 
-## Dependency Graph
+## 2) Canonical package-boundary decisions (explicit)
 
-```mermaid
-graph TD
-  types[types] --> xml-filter
-  types --> context
-  types --> formatting
-  types --> sse
-  types --> thinking
-  types --> normalizers
-  types --> structured
-  types --> tool-calls
-  types --> recovery
-  types --> retry
+The following directives are final and must be reflected in implementation, docs, and migration guides:
 
-  normalizers --> processor
-  thinking --> processor
-  tool-calls --> processor
-  structured --> processor
-  xml-filter --> processor
-  formatting --> processor
-  sse --> processor
-  recovery --> processor
-
-  processor --> context-manager
-  processor --> ag-ui
-  processor --> renderers
-  renderers --> ui
-
-  agent[agent] --> runtime
-  agent --> mcp
-  agent --> session
-  agent --> memory
-  agent --> connectors
-  agent --> agents
-  agent --> subagents
-  agent --> slash-commands
-
-  session --> runtime
-  session --> memory
-  session --> connectors
-  session --> scheduler
-
-  token-economy --> pacing
-  token-economy --> memory
-  processor --> token-economy
-
-  memory --> retrieval
-  runtime --> subagents
-  subagents --> a2a
-
-  testing[testing devDep] -.-> all[All Packages]
-```
+1. `adapters` moves into `providers`
+2. `ag-ui` is treated as a protocol capability, not a standalone package
+3. `agentic-loop` is part of `runtime`
+4. `agent` is part of `orchestrator`
+5. `agents` is transformed into `plugins` with Claude-style plugin support and examples (former custom agents)
+6. `context` + `context-manager` become one thing under `core`
+7. `formatting` is part of `core`
+8. `normalizers` is part of `providers`
+9. `processor` is part of `core`
+10. `recovery` is part of `core`
+11. `retry` is part of `core`
+12. `scheduler` is part of `orchestrator`
+13. `sse` is part of `core`
+14. `structured` is part of `core`
+15. `thinking` is part of `core`
+16. `token-economy` is renamed to `tokens`
+17. `tool-calls` is part of `core`
+18. `universal-client` is part of `providers`
+19. `xml-filter` is part of `core`
 
 ---
 
-## Implementation Priority Tiers
+## 3) Canonical mapping matrix (keep/merge/rename/delete)
 
-### Tier 0: Foundation
-
-_Objective: Build the base substrate for persistence, security, and testing._
-
-- `testing`: Standardize TDD and scenario runners.
-- `session`: Enable persistence for all agentic flows.
-- `secrets`: Secure API keys and environment variables.
-- `cost-tracker`: Baseline for token economy.
-- `providers`: Capability matrix for provider-aware routing.
-
-### Tier 1: Core Runtime
-
-_Objective: Orchestrate agent execution and context management._
-
-- `runtime`: Lifecycle management (start/stop/pause/resume).
-- `mcp`: Tool discovery and registration.
-- `context-manager`: Active context window reduction and prioritization.
-- `telemetry`: Observability for the entire stack.
-
-### Tier 2: Agent Extensions
-
-_Objective: Enhance agents with knowledge, policy, and safety._
-
-- `memory` + `retrieval`: The durable knowledge substrate.
-- `token-economy`: Policy-driven compression and budgeting.
-- `guardrails`: Safety, moderation, and compliance.
-- `skills` + `slash-commands`: Capability management and user interaction.
-- `agents`: Unified modes (Caveman, Superpowers, Garry).
-
-### Tier 3: Infrastructure & Interop
-
-_Objective: Connect agents to the world and each other._
-
-- `connectors`: Multi-channel entry points (Telegram, Slack, etc.).
-- `pacing`: Intelligent rate-aware execution during dead-time.
-- `scheduler`: Automation and recurring tasks.
-- `subagents` + `a2a`: Multi-agent orchestration and interop.
-- `fileops-mcp`: Power-user filesystem tools for agents.
+| Source           | Canonical target                                  | Action                                           | End state                |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------ | ------------------------ |
+| adapters         | providers/adapters                                | Merge                                            | Source removed           |
+| ag-ui (package)  | protocol surfaces in runtime/orchestrator/plugins | Remove package; keep protocol contracts/adapters | Package removed          |
+| agentic-loop     | runtime                                           | Merge                                            | Source removed           |
+| agent            | orchestrator                                      | Merge                                            | Source removed           |
+| agents           | plugins                                           | Semantic rename + scope shift                    | plugins authoritative    |
+| context          | core/context                                      | Merge                                            | Source removed           |
+| context-manager  | core/context                                      | Merge                                            | Source removed           |
+| formatting       | core/formatting                                   | Merge                                            | Source removed           |
+| normalizers      | providers/normalizers                             | Merge                                            | Source removed           |
+| processor        | core/processor                                    | Merge                                            | Source removed           |
+| recovery         | core/recovery                                     | Merge                                            | Source removed           |
+| retry            | core/retry                                        | Merge                                            | Source removed           |
+| scheduler        | orchestrator/scheduler                            | Merge                                            | Source removed           |
+| sse              | core/sse                                          | Merge                                            | Source removed           |
+| structured       | core/structured                                   | Merge                                            | Source removed           |
+| thinking         | core/thinking                                     | Merge                                            | Source removed           |
+| token-economy    | tokens                                            | Rename                                           | Legacy alias then remove |
+| tool-calls       | core/tool-calls                                   | Merge                                            | Source removed           |
+| universal-client | providers/universal-client                        | Merge                                            | Source removed           |
+| xml-filter       | core/xml-filter                                   | Merge                                            | Source removed           |
 
 ---
 
-## Co-Development Groups
+## 4) Target package topology (post-consolidation)
 
-These packages have interdependent phases and must be developed in lockstep:
+### 4.1 Primary packages
 
-1. **Memory Group**: `@agentsy/memory` + `@agentsy/retrieval` (Retrieval is a layer of memory).
-2. **Runtime Group**: `@agentsy/agent` + `@agentsy/runtime` + `@agentsy/mcp` (Execution + Lifecycle + Tools).
-3. **Session Group**: `@agentsy/session` + `@agentsy/agent` (Agent loop needs session persistence).
-4. **Channel Group**: `@agentsy/connectors` + `@agentsy/session` + `@agentsy/agent` (Connectors route to specific agent sessions).
-5. **Economy Group**: `@agentsy/token-economy` + `@agentsy/memory` (Memory owns truth, Economy owns policy).
-6. **Pacing Group**: `@agentsy/pacing` + `@agentsy/token-economy` (Pacing utilizes Economy for compression).
-7. **Safety Group**: `@agentsy/testing` + `@agentsy/guardrails` (Guardrails rely on adversarial testing infrastructure).
-8. **Multi-Agent Group**: `@agentsy/subagents` + `@agentsy/a2a` (A2A is the transport for Subagents).
-9. **UI Group**: `@agentsy/renderers` + `@agentsy/agent` (The loop that powers the display).
+- `@agentsy/core`
+  - `context`, `formatting`, `processor`, `recovery`, `retry`, `sse`, `structured`, `thinking`, `tool-calls`, `xml-filter`
+- `@agentsy/providers`
+  - `adapters`, `normalizers`, `universal-client`, provider registries/capabilities
+- `@agentsy/runtime`
+  - merged loop runtime (`agentic-loop` responsibilities)
+- `@agentsy/orchestrator`
+  - merged agent orchestration + scheduler
+- `@agentsy/plugins`
+  - Claude-style plugin system + former custom agent examples
+- `@agentsy/tokens`
+  - renamed `token-economy`
 
----
+### 4.2 Independent/support packages (retain unless separately superseded)
 
-## Source Plan Cross-Reference Matrix
-
-| Plan File                  | Key Packages Defined                            |
-| -------------------------- | ----------------------------------------------- |
-| `agentsy-prd.md`           | Platform Vision, REQ-001→REQ-042                |
-| `agentsy-tech.md`          | API Surface for ALL packages                    |
-| `agentsy-platform-v2.md`   | Master Roadmap, P0→P12 Phases                   |
-| `agentsy-memory.md`        | `memory`, `retrieval`                           |
-| `agentsy-token-economy.md` | `token-economy`                                 |
-| `pacing-function...`       | `pacing`                                        |
-| `agentsy-testing-plan.md`  | `testing`                                       |
-| `owasp-security...`        | `guardrails`                                    |
-| `agentsy-secrets.md`       | `secrets`                                       |
-| `agentsy-connectors...`    | `connectors`                                    |
-| `agentsy-scheduler...`     | `scheduler`                                     |
-| `agentsy-fileops-mcp.md`   | `fileops-mcp`                                   |
-| `agentsy-subagents.md`     | `subagents`, `a2a`                              |
-| `agentsy-agents-v1.md`     | `agents`                                        |
-| `agentsy-standalone-v1.md` | `renderers`, `extension-vscode`, `renderer-gui` |
+- `memory`, `retrieval`, `session`, `secrets`, `observability`, `types`, `cli`, `vscode`, `integration`, and other non-conflicting domains.
 
 ---
 
-## Execution Roadmap
+## 5) Branch emulation contract (`feature/dx-improvements`)
 
-1. **Upgrade Existing Packages**: Apply IMPLEMENTATION-PLAN.md tasks to `types`, `processor`, `agent`, etc.
-2. **Tier 0 Foundation**: Implement `testing`, `session`, and `secrets` to establish the baseline.
-3. **Tier 1 Runtime**: Implement `runtime` and `mcp` to enable full agent lifecycle.
-4. **Tier 2 Extensions**: Implement `memory` and `token-economy` to add "intelligence" and "efficiency".
-5. **Tier 3 Infrastructure**: Implement `connectors`, `scheduler`, and `interop` to reach production scale.
+We emulate **DX sequencing and quality controls**, not stale boundary assumptions.
 
-## Verification Gates
+### 5.1 Adopt from branch workflow
 
-1. **Tier 0 Gate**: 80% coverage on Foundation packages, success in `pnpm install` across all 44 packages.
-2. **Tier 1 Gate**: Successful multi-turn agent loop with tool execution and telemetry recording.
-3. **Tier 2 Gate**: Retrieval-augmented generation (RAG) with token budgeting and safety moderation.
-4. **Tier 3 Gate**: Multi-agent coordination over an external connector (e.g., Telegram) with scheduled tasks.
+- content-based sync behavior
+- phased porting (vscode/runtime, tool-calls/retry, processor transport, docs)
+- “do not port blindly” safeguards
+
+### 5.2 Branch deep-sweep files explicitly considered
+
+From `main..feature/dx-improvements`, docs/plan deltas include:
+
+- `docs/PR63-HANDOFF.md`, `docs/api.md`, `docs/getting-started.md`, migration and package docs updates
+- `plan/DECISION-LOG.md`, `plan/PACKAGE-NAMING-MAP.md`, `plan/REVISED-ARCHITECTURE.md`, `plan/revised-implementation-architecture.md`
+- added branch planning artifacts: `plan/agentsy-acp-client.md`, `plan/agentsy-memory.md`, `plan/agentsy-memory-integration.md`, `plan/agentsy-secrets.md`, `plan/agentsy-subagents.md`, `plan/agentsy-token-economy.md`, `plan/agentsy-utils-extraction-plan.md`, `plan/pacing-function-implementation.md`, `plan/PR63-HANDOFF.md`
+- research-tree updates under `plan/research/*`
+
+These references are integrated in Section 9 and Section 10.
+
+---
+
+## 6) Migration phases (execution order)
+
+### Phase A — Canonicalization lock
+
+- Freeze this mapping across code/docs/plans.
+- Introduce temporary compatibility aliases where required (`token-economy` -> `tokens`).
+
+**Gate A**:
+
+- No unresolved boundary contradiction in `plan/*` and `docs/*`.
+
+### Phase B — Provider consolidation wave
+
+- Move `adapters`, `normalizers`, `universal-client` into `providers`.
+- Preserve provider contracts and tests.
+
+**Gate B**:
+
+- Provider package exports satisfy previous public API expectations.
+- No imports from deprecated provider-side source packages.
+
+### Phase C — Core consolidation wave
+
+- Merge stream and utility packages into `core` modules.
+
+**Gate C**:
+
+- `core` subpath exports compile and tests pass.
+- parser/stream/recovery regression suites green.
+
+### Phase D — Runtime + orchestrator reshape
+
+- Merge `agentic-loop` into `runtime`.
+- Merge `agent` and `scheduler` into `orchestrator`.
+
+**Gate D**:
+
+- Exactly one loop authority (`runtime`) and one orchestration authority (`orchestrator`).
+
+### Phase E — Plugin surface conversion
+
+- Transform `agents` responsibilities into `plugins`.
+- Port former custom agents as plugin examples.
+
+**Gate E**:
+
+- Claude-style plugin flows validated in tests/docs examples.
+
+### Phase F — Token/protocol cleanup
+
+- Complete `token-economy` rename to `tokens`.
+- Remove `ag-ui` package artifact; retain protocol support in runtime/orchestrator/plugins surfaces.
+
+**Gate F**:
+
+- No remaining runtime imports of removed packages.
+
+### Phase G — Documentation and plan retirement
+
+- Replace outdated package references across docs.
+- Mark superseded plan files for deletion per Section 10.
+
+**Gate G**:
+
+- docs and plans reflect only canonical map.
+
+---
+
+## 7) Acceptance gates and quality checks
+
+For each migration phase:
+
+1. `pnpm check-types` passes
+2. `pnpm test` passes
+3. if relevant: coverage gate for touched packages passes
+4. no net loss of critical tests
+5. no circular dependency regressions
+6. docs updated for all user-facing boundary changes
+
+Final release gate:
+
+- migration guides updated
+- package catalog reflects canonical topology
+- plan retirement completed
+
+---
+
+## 8) Contradiction resolution log (embedded)
+
+Resolved here:
+
+- `runtime` vs `agentic-loop` direction: **agentic-loop -> runtime**
+- `ag-ui` standalone package vs protocol-only: **protocol-only; package removed**
+- `normalizers` in providers/core/standalone: **providers**
+- `scheduler` in providers vs orchestrator: **orchestrator**
+- `agents` keep vs plugins conversion: **plugins conversion**
+- `token-economy` drift: **rename to tokens complete**
+
+---
+
+## 9) Integrated reference digest (prior planning material absorbed)
+
+This section embeds essential reference intent so historical plan files can be retired.
+
+### 9.1 Platform and architecture lineage
+
+- `plan/agentsy-platform-v1.md`, `plan/agentsy-platform-v2.md`, `plan/agentsy-tech.md`, `plan/REVISED-ARCHITECTURE.md`, `plan/revised-implementation-architecture.md`, `plan/DECISION-LOG.md`, `plan/PACKAGE-NAMING-MAP.md`
+- Absorbed as:
+  - layered architecture intent
+  - package split/merge rationale
+  - dependency ordering and acceptance constraints
+
+### 9.2 Feature and domain plans
+
+- `plan/agentsy-features-v1.md`, `plan/agentsy-agents-v1.md`, `plan/agentsy-connectors-v1.md`, `plan/agentsy-scheduler-v1.md`, `plan/agentsy-fileops-mcp.md`, `plan/provider-capability-matrix.md`, `plan/owasp-security-testing-1.md`, `plan/PROMPTS_TODO.md`
+- Absorbed as:
+  - plugin and connector scope
+  - scheduler placement under orchestrator
+  - provider capabilities and security testing principles
+
+### 9.3 PRD/deep-dive/research lineage
+
+- `plan/agentsy-prd.md`, `plan/agentsy-prd-notes.md`, `plan/agentsy-prd-task-plan.md`, `plan/agentsy-deep-dive-v1.md`, `plan/agentsy-deep-dive-v2.md`, and `plan/research/*`
+- Absorbed as:
+  - requirement traceability backbone
+  - comparative architecture inputs
+  - implementation risk framing
+
+### 9.4 DX branch-added planning artifacts absorbed
+
+- `plan/agentsy-acp-client.md`: ACP client/session lifecycle model and transport-neutral boundaries
+- `plan/agentsy-memory.md`: durable memory layers, scope model, lifecycle, safe injection
+- `plan/agentsy-memory-integration.md`: memory/token-economy/recovery/subagent integration contract
+- `plan/agentsy-secrets.md`: secure secret-store architecture and env hygiene model
+- `plan/agentsy-subagents.md`: explicit separation of subagents vs ACP vs A2A
+- `plan/agentsy-token-economy.md`: token policy architecture and compression controls
+- `plan/agentsy-utils-extraction-plan.md`: utility extraction and reuse strategy
+- `plan/pacing-function-implementation.md`: pacing + dead-time utilization model (rolled into `tokens` policy roadmap)
+- `plan/PR63-HANDOFF.md` and `docs/PR63-HANDOFF.md`: DX implementation and hardening status
+
+All above are now represented in this plan’s canonical boundaries and migration phases.
+
+---
+
+## 10) Supersession and deletion matrix (plans)
+
+After this master plan is accepted and corresponding docs are updated:
+
+### 10.1 Retire by deletion (superseded)
+
+- `plan/PACKAGE-NAMING-MAP.md`
+- `plan/DECISION-LOG.md`
+- `plan/REVISED-ARCHITECTURE.md`
+- `plan/revised-implementation-architecture.md`
+- `plan/prompt.md`
+- `plan/rearchelogy-RESEARCH-STATUS.md`
+
+### 10.2 Retire by archive or merge-note (optional)
+
+- `plan/agentsy-platform-v1.md`
+- `plan/agentsy-platform-v2.md`
+- `plan/agentsy-tech.md`
+- `plan/agentsy-features-v1.md`
+- `plan/agentsy-agents-v1.md`
+- `plan/agentsy-connectors-v1.md`
+- `plan/agentsy-scheduler-v1.md`
+- `plan/agentsy-fileops-mcp.md`
+- `plan/provider-capability-matrix.md`
+- `plan/PROMPTS_TODO.md`
+- `plan/agentsy-prd*.md`
+- `plan/agentsy-deep-dive-*.md`
+- `plan/research/*`
+
+### 10.3 Branch-added plan files to retire after merge
+
+- `plan/agentsy-acp-client.md`
+- `plan/agentsy-memory.md`
+- `plan/agentsy-memory-integration.md`
+- `plan/agentsy-secrets.md`
+- `plan/agentsy-subagents.md`
+- `plan/agentsy-token-economy.md`
+- `plan/agentsy-utils-extraction-plan.md`
+- `plan/pacing-function-implementation.md`
+- `plan/PR63-HANDOFF.md`
+
+Rationale: their material is captured in Section 9 and canonicalized in Sections 2–7.
+
+---
+
+## 11) Documentation reconciliation checklist (required)
+
+Update these docs to canonical topology before deleting superseded plans:
+
+- `docs/packages.md`
+- `docs/architecture/package-ecosystem.md`
+- `docs/architecture/platform-evolution.md`
+- `docs/api.md`
+- `docs/getting-started.md`
+- `docs/migration/index.md`
+- `docs/migration/v0.1-to-v0.2.md`
+- `docs/migration/vscode-v0.1-to-v0.2.md`
+- package pages under `docs/packages/*` for moved/removed domains
+- `docs/PR63-HANDOFF.md` (retain as release hardening history or archive note)
+
+---
+
+## 12) Immediate execution backlog (next commits)
+
+1. Apply canonical package moves in code with compatibility shims where required.
+2. Complete import rewrites and export map updates.
+3. Run full type/test gates.
+4. Update docs listed in Section 11.
+5. Remove superseded plan files per Section 10.
+
+---
+
+## 13) Success definition
+
+This consolidation is complete when:
+
+- repository compiles/tests with canonical boundaries
+- all docs match canonical map
+- superseded plan set is removed/archived
+- `feature/dx-improvements` sequencing constraints are satisfied without reintroducing stale boundary assumptions

@@ -8,36 +8,19 @@ describe('retry', () => {
   });
 
   it('retries after a failure and eventually resolves', async () => {
-    vi.useFakeTimers();
-    try {
-      const fn = vi
-        .fn<() => Promise<string>>()
-        .mockRejectedValueOnce(new Error('temporary'))
-        .mockResolvedValueOnce('ok');
-      const operation = retry(fn, { maxAttempts: 3, initialDelay: 10, maxDelay: 10, backoffFactor: 2 });
-      const resolution = expect(operation).resolves.toBe('ok');
+    const fn = vi.fn<() => Promise<string>>().mockRejectedValueOnce(new Error('temporary')).mockResolvedValueOnce('ok');
+    const operation = retry(fn, { maxAttempts: 3, initialDelay: 0, maxDelay: 0, backoffFactor: 2 });
 
-      await vi.advanceTimersByTimeAsync(10);
-      await resolution;
-      expect(fn).toHaveBeenCalledTimes(2);
-    } finally {
-      vi.useRealTimers();
-    }
+    await expect(operation).resolves.toBe('ok');
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 
   it('rejects after max attempts are exhausted', async () => {
-    vi.useFakeTimers();
-    try {
-      const error = new Error('failed');
-      const fn = vi.fn<() => Promise<string>>().mockRejectedValue(error);
-      const operation = retry(fn, { maxAttempts: 2, initialDelay: 5, maxDelay: 5, backoffFactor: 2 });
-      const rejection = expect(operation).rejects.toBe(error);
+    const error = new Error('failed');
+    const fn = vi.fn<() => Promise<string>>().mockRejectedValue(error);
+    const operation = retry(fn, { maxAttempts: 2, initialDelay: 0, maxDelay: 0, backoffFactor: 2 });
 
-      await vi.advanceTimersByTimeAsync(5);
-      await rejection;
-      expect(fn).toHaveBeenCalledTimes(2);
-    } finally {
-      vi.useRealTimers();
-    }
+    await expect(operation).rejects.toBe(error);
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 });

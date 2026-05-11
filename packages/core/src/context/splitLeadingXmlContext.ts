@@ -48,7 +48,7 @@ function findMatchingTagEnd(input: string, tagName: string): number | null {
 function extractTagName(openingTag: string): string | null {
   const tagNameRegex = /^<(\w+)/;
   const match = tagNameRegex.exec(openingTag);
-  return match ? match[1] : null;
+  return match?.[1] ?? null;
 }
 
 /**

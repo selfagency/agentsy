@@ -5,6 +5,7 @@ import {
   BaseLanguageModelChatProvider,
   type CancellationToken,
   type LanguageModelChatRequest,
+  type LanguageModelChatResponse,
   type LanguageModelChatResponseChunk,
 } from './base-language-model-chat-provider.js';
 
@@ -132,7 +133,11 @@ describe('BaseLanguageModelChatProvider', () => {
       expect(provider.builtRequest).toBeDefined();
       if (!provider.builtRequest) throw new Error('builtRequest should be defined');
       const body = provider.builtRequest.body as { messages: ChatMessage[]; model: string };
-      expect(body.messages[0].content).toBe('Hello');
+      const firstMessage = body.messages[0];
+      if (!firstMessage) {
+        throw new Error('Expected at least one converted message');
+      }
+      expect(firstMessage.content).toBe('Hello');
       expect(body.model).toBe('my-model');
     });
 
@@ -166,7 +171,7 @@ describe('BaseLanguageModelChatProvider', () => {
     it('produces empty stream', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
       const response = (
-        provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> }
+        provider as unknown as { createErrorResponse(e: unknown, m: string): LanguageModelChatResponse }
       ).createErrorResponse(new Error('test'), 'Something went wrong');
       const chunks: unknown[] = [];
       for await (const chunk of response.stream) {
@@ -178,7 +183,7 @@ describe('BaseLanguageModelChatProvider', () => {
     it('resolves text with provided message', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
       const response = (
-        provider as unknown as { createErrorResponse(e: unknown, m: string): ReturnType<TestProvider['makeRequest']> }
+        provider as unknown as { createErrorResponse(e: unknown, m: string): LanguageModelChatResponse }
       ).createErrorResponse(new Error('test'), 'User-facing message');
       const text = await response.text;
       expect(text).toBe('User-facing message');
