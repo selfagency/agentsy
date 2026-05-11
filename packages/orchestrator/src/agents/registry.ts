@@ -4,6 +4,12 @@ import { EventEmitter } from 'node:events';
 export class AgentRegistry extends EventEmitter {
   private readonly agents = new Map<string, AgentCapabilities>();
   private readonly skillMap = new Map<string, Set<string>>();
+  private readonly proficiencyLevels = new Map<RequiredSkills['proficiency'], number>([
+    ['beginner', 0],
+    ['intermediate', 1],
+    ['advanced', 2],
+    ['expert', 3],
+  ]);
 
   register(agent: AgentCapabilities): void {
     // Remove old skill mappings if agent was already registered
@@ -65,7 +71,7 @@ export class AgentRegistry extends EventEmitter {
 
     return Array.from(agentIds)
       .map(id => this.agents.get(id))
-      .filter((agent): agent is AgentCapabilities => agent !== undefined && agent.available);
+      .filter((agent): agent is AgentCapabilities => !!agent?.available);
   }
 
   findAgentsBySkills(requiredSkills: RequiredSkills[]): AgentCapabilities[] {
@@ -98,12 +104,10 @@ export class AgentRegistry extends EventEmitter {
   }
 
   private isProficientEnough(agentProficiency: string, requiredProficiency: string): boolean {
-    const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
+    const agentIndex = this.proficiencyLevels.get(agentProficiency as RequiredSkills['proficiency']);
+    const requiredIndex = this.proficiencyLevels.get(requiredProficiency as RequiredSkills['proficiency']);
 
-    const agentIndex = levels.indexOf(agentProficiency);
-    const requiredIndex = levels.indexOf(requiredProficiency);
-
-    return agentIndex >= 0 && requiredIndex >= 0 && agentIndex >= requiredIndex;
+    return agentIndex !== undefined && requiredIndex !== undefined && agentIndex >= requiredIndex;
   }
 }
 

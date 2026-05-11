@@ -28,8 +28,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest",
-    "coverage": "vitest --coverage",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
     "check-types": "tsc --noEmit",
     "lint": "oxlint --no-error-on-unmatched-pattern .",
     "format": "oxfmt --no-error-on-unmatched-pattern --write ."
@@ -39,15 +39,15 @@
     "@agentsy/runtime": "workspace:*",
     "@agentsy/session": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "zod": "4.4.3"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^25.6.2",
+    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
     "tsup": "^8.5.1",
-    "typescript": "6.0.3",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   }
 }

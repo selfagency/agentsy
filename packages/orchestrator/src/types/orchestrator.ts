@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { WorkflowStatus as WorkflowStatusEnum } from './workflow.js';
+import { NodeType, WorkflowStatus as WorkflowStatusEnum } from './workflow.js';
 
 export const SkillSchema = z.object({
   id: z.string(),
@@ -46,6 +46,66 @@ export const AgentCapabilitiesSchema = z.object({
 
 export type AgentCapabilities = z.infer<typeof AgentCapabilitiesSchema>;
 
+const RetryPolicySchema = z.object({
+  maxAttempts: z.number(),
+  backoffStrategy: z.enum(['linear', 'exponential', 'fixed']),
+  baseDelay: z.number(),
+  maxDelay: z.number(),
+});
+
+const TaskNodeSchema = z.object({
+  type: z.literal(NodeType.TASK),
+  id: z.string(),
+  name: z.string(),
+  agent: z.string(),
+  input: z.record(z.string(), z.unknown()),
+  output: z.record(z.string(), z.unknown()),
+  timeout: z.number().optional(),
+  retryPolicy: RetryPolicySchema.optional(),
+});
+
+const DecisionNodeSchema = z.object({
+  type: z.literal(NodeType.DECISION),
+  id: z.string(),
+  name: z.string(),
+  condition: z.string(),
+  trueBranch: z.array(z.string()),
+  falseBranch: z.array(z.string()),
+});
+
+const ParallelNodeSchema = z.object({
+  type: z.literal(NodeType.PARALLEL),
+  id: z.string(),
+  name: z.string(),
+  branches: z.array(z.string()),
+  maxConcurrency: z.number().optional(),
+  failFast: z.boolean().optional(),
+});
+
+const SequenceNodeSchema = z.object({
+  type: z.literal(NodeType.SEQUENCE),
+  id: z.string(),
+  name: z.string(),
+  steps: z.array(z.string()),
+  continueOnError: z.boolean().optional(),
+});
+
+const MergeNodeSchema = z.object({
+  type: z.literal(NodeType.MERGE),
+  id: z.string(),
+  name: z.string(),
+  inputs: z.array(z.string()),
+  strategy: z.enum(['join', 'first', 'all', 'majority']),
+});
+
+const WorkflowNodeSchema = z.discriminatedUnion('type', [
+  TaskNodeSchema,
+  DecisionNodeSchema,
+  ParallelNodeSchema,
+  SequenceNodeSchema,
+  MergeNodeSchema,
+]);
+
 export const WorkflowSpecSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -57,7 +117,7 @@ export const WorkflowSpecSchema = z.object({
     constraints: z.array(z.string()),
     dependencies: z.array(z.string()),
   }),
-  nodes: z.array(z.unknown()), // Will be refined with specific node types
+  nodes: z.array(WorkflowNodeSchema),
   events: z.object({
     triggers: z.array(z.unknown()),
     handlers: z.array(z.unknown()),

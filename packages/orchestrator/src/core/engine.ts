@@ -5,7 +5,9 @@ import type {
   WorkflowNode,
   TaskNode,
   DecisionNode,
+  ParallelNode,
   SequenceNode,
+  MergeNode,
   AgentCapabilities,
 } from '../types/index.js';
 import { WorkflowStatus, NodeType } from '../types/index.js';
@@ -58,6 +60,14 @@ export class Workflow {
   getId(): string {
     return this.id;
   }
+
+  getRegistry(): AgentRegistry {
+    return this.registry;
+  }
+
+  getScheduler(): TaskScheduler {
+    return this.scheduler;
+  }
 }
 
 export class WorkflowMonitor {
@@ -98,7 +108,7 @@ class DefaultScheduler implements TaskScheduler {
       return input();
     } else {
       // TaskInfo variant
-      const { taskInfo, agents } = input as { taskInfo: unknown; agents: unknown[] };
+      void input;
       // Mock implementation for testing
       return { agentId: 'mock', assigned: true, status: 'scheduled' as const } as T;
     }
@@ -111,8 +121,8 @@ function createDefaultScheduler(): TaskScheduler {
 
 // Workflow execution factory
 function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions): internalWorkflowExecution {
-  const registry = options.registry ?? ({ getAllAgents: () => [] } as unknown as AgentRegistry);
-  const scheduler = options.scheduler ?? createDefaultScheduler();
+  const registry = options.registry ?? workflow.getRegistry();
+  const scheduler = options.scheduler ?? workflow.getScheduler();
 
   let cancelled = false;
   const nodeResults = new Map<string, unknown>();
@@ -158,14 +168,30 @@ async function executeNode(
     throw new Error('Workflow cancelled');
   }
 
+  let result: unknown;
+
   switch (node.type) {
     case NodeType.TASK:
-      return executeTaskNode(node as TaskNode, registry, scheduler);
+      result = await executeTaskNode(node as TaskNode, registry, scheduler);
+      break;
+    case NodeType.DECISION:
+      result = await executeDecisionNode(node as DecisionNode, workflow, registry, scheduler, cancelled, nodeResults);
+      break;
+    case NodeType.PARALLEL:
+      result = await executeParallelNode(node as ParallelNode, workflow, registry, scheduler, cancelled, nodeResults);
+      break;
     case NodeType.SEQUENCE:
-      return executeSequenceNode(node as SequenceNode, workflow, registry, scheduler, cancelled, nodeResults);
+      result = await executeSequenceNode(node as SequenceNode, workflow, registry, scheduler, cancelled, nodeResults);
+      break;
+    case NodeType.MERGE:
+      result = executeMergeNode(node as MergeNode, nodeResults);
+      break;
     default:
-      throw new Error(`Unsupported node type: ${node.type}`);
+      throw new Error(`Unsupported node type: ${String(node)}`);
   }
+
+  nodeResults.set(node.id, result);
+  return result;
 }
 
 function executeTaskNode(node: TaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
@@ -215,6 +241,139 @@ async function executeSequenceNode(
   }
 
   return results;
+}
+
+async function executeDecisionNode(
+  node: DecisionNode,
+  workflow: Workflow,
+  registry: AgentRegistry,
+  scheduler: TaskScheduler,
+  cancelled: boolean,
+  nodeResults: Map<string, unknown>,
+): Promise<unknown> {
+  const condition = node.condition.trim();
+  let decision = false;
+
+  if (condition === 'true') {
+    decision = true;
+  } else if (condition === 'false') {
+    decision = false;
+  } else {
+    const referenceId = condition.startsWith('result:') ? condition.slice('result:'.length) : condition;
+    decision = Boolean(nodeResults.get(referenceId));
+  }
+
+  const selectedBranch = decision ? node.trueBranch : node.falseBranch;
+  const results: unknown[] = [];
+
+  for (const targetId of selectedBranch) {
+    const targetNode = findNodeById(targetId, workflow);
+    if (!targetNode) {
+      throw new Error(`Decision branch node ${targetId} not found`);
+    }
+    const branchResult = await executeNode(targetNode, workflow, registry, scheduler, cancelled, nodeResults);
+    results.push(branchResult);
+  }
+
+  return { decision, branch: decision ? 'true' : 'false', results };
+}
+
+async function executeParallelNode(
+  node: ParallelNode,
+  workflow: Workflow,
+  registry: AgentRegistry,
+  scheduler: TaskScheduler,
+  cancelled: boolean,
+  nodeResults: Map<string, unknown>,
+): Promise<unknown> {
+  const failFast = node.failFast ?? true;
+  const maxConcurrency = Math.max(node.maxConcurrency ?? node.branches.length, 1);
+
+  const branchNodes = node.branches.map(branchId => {
+    const branchNode = findNodeById(branchId, workflow);
+    if (!branchNode) {
+      throw new Error(`Parallel branch node ${branchId} not found`);
+    }
+    return branchNode;
+  });
+
+  const results = Array.from<unknown>({ length: branchNodes.length }).fill(undefined);
+  const errors: Error[] = [];
+  let cursor = 0;
+
+  const runNext = async (): Promise<void> => {
+    if (cursor >= branchNodes.length) {
+      return;
+    }
+
+    const currentIndex = cursor;
+    cursor += 1;
+
+    try {
+      results[currentIndex] = await executeNode(
+        branchNodes[currentIndex] as WorkflowNode,
+        workflow,
+        registry,
+        scheduler,
+        cancelled,
+        nodeResults,
+      );
+    } catch (error) {
+      const executionError = error instanceof Error ? error : new Error(String(error));
+      errors.push(executionError);
+      if (failFast) {
+        throw executionError;
+      }
+    }
+
+    await runNext();
+  };
+
+  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) }, () => runNext());
+  await Promise.all(workers);
+
+  if (errors.length > 0) {
+    throw new Error(`Parallel node ${node.id} failed: ${errors.map(error => error.message).join('; ')}`);
+  }
+
+  return results;
+}
+
+function executeMergeNode(node: MergeNode, nodeResults: Map<string, unknown>): unknown {
+  const inputs = node.inputs.map(inputId => nodeResults.get(inputId));
+
+  switch (node.strategy) {
+    case 'first':
+      return inputs.find(input => input !== undefined) ?? null;
+    case 'all':
+    case 'join':
+      return inputs;
+    case 'majority': {
+      const frequency = new Map<string, { value: unknown; count: number }>();
+      for (const input of inputs) {
+        const key = JSON.stringify(input);
+        const existing = frequency.get(key);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          frequency.set(key, { value: input, count: 1 });
+        }
+      }
+
+      let majorityValue: unknown = null;
+      let maxCount = 0;
+      for (const entry of frequency.values()) {
+        if (entry.count > maxCount) {
+          majorityValue = entry.value;
+          maxCount = entry.count;
+        }
+      }
+
+      return majorityValue;
+    }
+    default:
+      return inputs;
+  }
 }
 
 function findNodeById(id: string, workflow: Workflow): WorkflowNode | undefined {
@@ -336,11 +495,39 @@ export class OrchestrationEngine extends EventEmitter {
     const nodeIds = new Set(spec.nodes.map(node => (node as WorkflowNode).id));
     for (const node of spec.nodes) {
       const workflowNode = node as WorkflowNode;
+
       if (workflowNode.type === NodeType.DECISION) {
         const decisionNode = workflowNode as DecisionNode;
         for (const targetId of [...decisionNode.trueBranch, ...decisionNode.falseBranch]) {
           if (!nodeIds.has(targetId)) {
             throw new Error(`Decision node ${workflowNode.id} references unknown node: ${targetId}`);
+          }
+        }
+      }
+
+      if (workflowNode.type === NodeType.SEQUENCE) {
+        const sequenceNode = workflowNode as SequenceNode;
+        for (const targetId of sequenceNode.steps) {
+          if (!nodeIds.has(targetId)) {
+            throw new Error(`Sequence node ${workflowNode.id} references unknown node: ${targetId}`);
+          }
+        }
+      }
+
+      if (workflowNode.type === NodeType.PARALLEL) {
+        const parallelNode = workflowNode as ParallelNode;
+        for (const targetId of parallelNode.branches) {
+          if (!nodeIds.has(targetId)) {
+            throw new Error(`Parallel node ${workflowNode.id} references unknown node: ${targetId}`);
+          }
+        }
+      }
+
+      if (workflowNode.type === NodeType.MERGE) {
+        const mergeNode = workflowNode as MergeNode;
+        for (const targetId of mergeNode.inputs) {
+          if (!nodeIds.has(targetId)) {
+            throw new Error(`Merge node ${workflowNode.id} references unknown node: ${targetId}`);
           }
         }
       }
