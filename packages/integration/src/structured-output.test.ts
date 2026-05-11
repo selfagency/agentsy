@@ -184,7 +184,7 @@ describe('appendToBlockquote', () => {
 });
 
 // ---------------------------------------------------------------------------
-// stripXmlContextTags (@agentsy/context)
+// stripXmlContextTags (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
 describe('stripXmlContextTags', () => {
@@ -199,7 +199,7 @@ describe('stripXmlContextTags', () => {
 });
 
 // ---------------------------------------------------------------------------
-// splitLeadingXmlContextBlocks (@agentsy/context)
+// splitLeadingXmlContextBlocks (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
 describe('splitLeadingXmlContextBlocks', () => {
@@ -219,7 +219,7 @@ describe('splitLeadingXmlContextBlocks', () => {
 });
 
 // ---------------------------------------------------------------------------
-// dedupeXmlContextBlocksByTag (@agentsy/context)
+// dedupeXmlContextBlocksByTag (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
 describe('dedupeXmlContextBlocksByTag', () => {

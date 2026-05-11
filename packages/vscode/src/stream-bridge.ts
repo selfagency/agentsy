@@ -10,13 +10,13 @@ export interface VSCodeStreamBridgeOptions {
   onChunk: (chunk: LanguageModelChatResponseChunk) => void | Promise<void>;
 
   /**
-   * Optional callback for @agentsy/core raw StreamChunks.
+   * Optional callback for @agentsy/processor raw StreamChunks.
    */
   onRawChunk?: (chunk: StreamChunk) => void | Promise<void>;
 }
 
 /**
- * A bridge that converts an @agentsy/core StreamChunk sequence into a
+ * A bridge that converts an @agentsy/processor StreamChunk sequence into a
  * synchronous VS Code LanguageModelChatProvider response stream.
  */
 export class VSCodeStreamBridge {
@@ -38,7 +38,7 @@ export class VSCodeStreamBridge {
 }
 
 /**
- * Utility to convert an @agentsy/core AsyncIterable<StreamChunk> into a
+ * Utility to convert an @agentsy/processor AsyncIterable<StreamChunk> into a
  * VS Code-compatible AsyncIterable<LanguageModelChatResponseChunk>.
  */
 export async function* bridgeStream(source: AsyncIterable<StreamChunk>): AsyncIterable<LanguageModelChatResponseChunk> {
