@@ -112,6 +112,24 @@ describe('error-mapper', () => {
       const err = createProviderError(ProviderErrorCode.InternalError, 'string error');
       expect(err).toBeInstanceOf(Error);
     });
+
+    it('can preserve original message content', () => {
+      const err = createProviderError(ProviderErrorCode.Timeout, new Error('socket timed out'), {
+        preserveOriginalMessage: true,
+      });
+
+      expect(err.message).toContain('socket timed out');
+      expect(err.message).toContain('Request timed out');
+    });
+
+    it('can attach provider code metadata and message prefix', () => {
+      const err = createProviderError(ProviderErrorCode.InvalidRequest, undefined, { attachCode: true }) as Error & {
+        code?: ProviderErrorCode;
+      };
+
+      expect(err.message.startsWith(`[${ProviderErrorCode.InvalidRequest}]`)).toBe(true);
+      expect(err.code).toBe(ProviderErrorCode.InvalidRequest);
+    });
   });
 });
 
