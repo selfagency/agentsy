@@ -66,4 +66,22 @@ describe('createRuntimeExecutor', () => {
     expect(onError.mock.calls[0]?.[0].message).toBe('boom');
     expect(onError.mock.calls[0]?.[1]).toBe(task);
   });
+
+  it('converts non-Error throw values into Error instances', async () => {
+    const onError = vi.fn();
+    const executor = createRuntimeExecutor({ onError });
+    const task: RuntimeTask = {
+      id: 'a',
+      run: async () => {
+        throw 'boom';
+      },
+    };
+
+    await executor.execute([task]);
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    const [error] = onError.mock.calls[0] ?? [];
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe('Runtime task failed');
+  });
 });

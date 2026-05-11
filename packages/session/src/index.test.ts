@@ -12,8 +12,10 @@ describe('createSessionStore', () => {
   it('returns defensive copies from getState', () => {
     const store = createSessionStore({ id: 's1', values: { a: 1 } });
     const state = store.getState();
+    state.id = 'changed';
     state.values.a = 2;
 
+    expect(store.getState().id).toBe('s1');
     expect(store.getState().values.a).toBe(1);
   });
 });
