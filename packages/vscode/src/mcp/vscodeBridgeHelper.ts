@@ -211,6 +211,39 @@ export class VSCodeMCPBridgeHelper {
   }
 
   /**
+   * Test-only access to protected helper methods for unit testing.
+   * NOTE: This is intentionally public only for testing purposes.
+   * @internal
+   */
+  public _testHandleMarkdown(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    return this.handleMarkdown(data, chatStream);
+  }
+
+  public _testHandleProgress(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    return this.handleProgress(data, chatStream);
+  }
+
+  public _testHandleAnchor(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    return this.handleAnchor(data, chatStream);
+  }
+
+  public _testHandleButton(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    return this.handleButton(data, chatStream);
+  }
+
+  public _testHandleFiletree(chatStream: ChatResponseStream): void {
+    return this.handleFiletree(chatStream);
+  }
+
+  public _testHandleReference(data: Record<string, unknown>, chatStream: ChatResponseStream): void {
+    return this.handleReference(data, chatStream);
+  }
+
+  public _testHandlePush(chatStream: ChatResponseStream): void {
+    return this.handlePush(chatStream);
+  }
+
+  /**
    * Pushes an event to the MCP transport if a writable stream is available.
    * Used for two-way communication.
    */

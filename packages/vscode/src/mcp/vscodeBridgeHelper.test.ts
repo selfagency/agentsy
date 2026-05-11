@@ -71,7 +71,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'markdown' as const, data: { value: 'test markdown' } };
-        (helper as any).handleMarkdown(event.data, mockChatStream);
+        helper._testHandleMarkdown(event.data, mockChatStream);
 
         expect(mockChatStream.markdown).toHaveBeenCalledWith('test markdown');
       });
@@ -83,7 +83,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'markdown' as const, data: { value: 123 } };
-        (helper as any).handleMarkdown(event.data, mockChatStream);
+        helper._testHandleMarkdown(event.data, mockChatStream);
 
         expect(mockChatStream.markdown).toHaveBeenCalledWith('');
       });
@@ -95,7 +95,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'markdown' as const, data: {} };
-        (helper as any).handleMarkdown(event.data, mockChatStream);
+        helper._testHandleMarkdown(event.data, mockChatStream);
 
         expect(mockChatStream.markdown).toHaveBeenCalledWith('');
       });
@@ -109,7 +109,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'progress' as const, data: { value: 'loading...' } };
-        (helper as any).handleProgress(event.data, mockChatStream);
+        helper._testHandleProgress(event.data, mockChatStream);
 
         expect(mockChatStream.progress).toHaveBeenCalledWith('loading...');
       });
@@ -121,7 +121,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'progress' as const, data: { value: 123 } };
-        (helper as any).handleProgress(event.data, mockChatStream);
+        helper._testHandleProgress(event.data, mockChatStream);
 
         expect(mockChatStream.progress).toHaveBeenCalledWith('');
       });
@@ -135,7 +135,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: '#section', title: 'Section' } };
-        (helper as any).handleAnchor(event.data, mockChatStream);
+        helper._testHandleAnchor(event.data, mockChatStream);
 
         expect(mockChatStream.anchor).toHaveBeenCalledWith(Uri.parse('#section'), 'Section');
       });
@@ -147,7 +147,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { title: 'Section' } };
-        (helper as any).handleAnchor(event.data, mockChatStream);
+        helper._testHandleAnchor(event.data, mockChatStream);
 
         expect(mockChatStream.anchor).not.toHaveBeenCalled();
       });
@@ -159,7 +159,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: '#section' } };
-        (helper as any).handleAnchor(event.data, mockChatStream);
+        helper._testHandleAnchor(event.data, mockChatStream);
 
         expect(mockChatStream.anchor).not.toHaveBeenCalled();
       });
@@ -171,7 +171,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: 123, title: 'Section' } };
-        (helper as any).handleAnchor(event.data, mockChatStream);
+        helper._testHandleAnchor(event.data, mockChatStream);
 
         expect(mockChatStream.anchor).not.toHaveBeenCalled();
       });
@@ -183,7 +183,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: '#section', title: 123 } };
-        (helper as any).handleAnchor(event.data, mockChatStream);
+        helper._testHandleAnchor(event.data, mockChatStream);
 
         expect(mockChatStream.anchor).not.toHaveBeenCalled();
       });
@@ -197,7 +197,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 'test.command', title: 'Test Button' } };
-        (helper as any).handleButton(event.data, mockChatStream);
+        helper._testHandleButton(event.data, mockChatStream);
 
         expect(mockChatStream.button).toHaveBeenCalledWith({ command: 'test.command', title: 'Test Button' });
       });
@@ -209,7 +209,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { title: 'Test Button' } };
-        (helper as any).handleButton(event.data, mockChatStream);
+        helper._testHandleButton(event.data, mockChatStream);
 
         expect(mockChatStream.button).toHaveBeenCalledWith({ command: '', title: 'Test Button' });
       });
@@ -221,7 +221,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 'test.command' } };
-        (helper as any).handleButton(event.data, mockChatStream);
+        helper._testHandleButton(event.data, mockChatStream);
 
         expect(mockChatStream.button).toHaveBeenCalledWith({ command: 'test.command', title: '' });
       });
@@ -233,7 +233,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 123, title: 'Test Button' } };
-        (helper as any).handleButton(event.data, mockChatStream);
+        helper._testHandleButton(event.data, mockChatStream);
 
         expect(mockChatStream.button).toHaveBeenCalledWith({ command: '', title: 'Test Button' });
       });
@@ -245,7 +245,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 'test.command', title: 123 } };
-        (helper as any).handleButton(event.data, mockChatStream);
+        helper._testHandleButton(event.data, mockChatStream);
 
         expect(mockChatStream.button).toHaveBeenCalledWith({ command: 'test.command', title: '' });
       });
@@ -258,7 +258,7 @@ describe('VSCode MCP Bridge Helper', () => {
           filetree: vi.fn(),
         } as unknown as ChatResponseStream;
 
-        (helper as any).handleFiletree(mockChatStream);
+        helper._testHandleFiletree(mockChatStream);
 
         expect(mockChatStream.filetree).toHaveBeenCalledWith([], Uri.file('/'));
       });
@@ -268,7 +268,7 @@ describe('VSCode MCP Bridge Helper', () => {
         const mockChatStream = {} as unknown as ChatResponseStream;
 
         expect(() => {
-          (helper as any).handleFiletree(mockChatStream);
+          helper._testHandleFiletree(mockChatStream);
         }).not.toThrow();
       });
     });
@@ -281,7 +281,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'reference' as const, data: { uri: 'file:///path/to/file' } };
-        (helper as any).handleReference(event.data, mockChatStream);
+        helper._testHandleReference(event.data, mockChatStream);
 
         expect(mockChatStream.reference).toHaveBeenCalledWith(Uri.parse('file:///path/to/file'));
       });
@@ -293,7 +293,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'reference' as const, data: {} };
-        (helper as any).handleReference(event.data, mockChatStream);
+        helper._testHandleReference(event.data, mockChatStream);
 
         expect(mockChatStream.reference).toHaveBeenCalledWith(Uri.parse(''));
       });
@@ -305,7 +305,7 @@ describe('VSCode MCP Bridge Helper', () => {
         } as unknown as ChatResponseStream;
 
         const event = { type: 'reference' as const, data: { uri: 123 } };
-        (helper as any).handleReference(event.data, mockChatStream);
+        helper._testHandleReference(event.data, mockChatStream);
 
         expect(mockChatStream.reference).toHaveBeenCalledWith(Uri.parse(''));
       });
@@ -318,7 +318,7 @@ describe('VSCode MCP Bridge Helper', () => {
           push: vi.fn(),
         } as unknown as ChatResponseStream;
 
-        (helper as any).handlePush(mockChatStream);
+        helper._testHandlePush(mockChatStream);
 
         expect(mockChatStream.push).toHaveBeenCalled();
       });
@@ -328,7 +328,7 @@ describe('VSCode MCP Bridge Helper', () => {
         const mockChatStream = {} as unknown as ChatResponseStream;
 
         expect(() => {
-          (helper as any).handlePush(mockChatStream);
+          helper._testHandlePush(mockChatStream);
         }).not.toThrow();
       });
     });
