@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { AgentRegistry } from './registry.js';
 import type { AgentCapabilities } from '../types/index.js';
+import { AgentRegistry } from './registry.js';
 
 function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilities {
   return {

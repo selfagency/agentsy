@@ -1,17 +1,14 @@
 import { EventEmitter } from 'node:events';
-import type {
-  WorkflowSpec,
-  WorkflowResult,
-  WorkflowNode,
-  TaskNode,
-  DecisionNode,
-  ParallelNode,
-  SequenceNode,
-  MergeNode,
-  AgentCapabilities,
-} from '../types/index.js';
-import { WorkflowStatus, NodeType } from '../types/index.js';
 import type { AgentRegistry } from '../agents/registry.js';
+import type { AgentCapabilities, WorkflowResult, WorkflowSpec } from '../types/index.js';
+import { NodeType, WorkflowStatus } from '../types/index.js';
+
+type RuntimeWorkflowNode = WorkflowSpec['nodes'][number];
+type RuntimeTaskNode = Extract<RuntimeWorkflowNode, { type: NodeType.TASK }>;
+type RuntimeDecisionNode = Extract<RuntimeWorkflowNode, { type: NodeType.DECISION }>;
+type RuntimeParallelNode = Extract<RuntimeWorkflowNode, { type: NodeType.PARALLEL }>;
+type RuntimeSequenceNode = Extract<RuntimeWorkflowNode, { type: NodeType.SEQUENCE }>;
+type RuntimeMergeNode = Extract<RuntimeWorkflowNode, { type: NodeType.MERGE }>;
 
 // Stub interface for scheduler since @agentsy/orchestrator/scheduler is not yet implemented
 export interface TaskScheduler {
@@ -71,7 +68,7 @@ export class Workflow {
 }
 
 export class WorkflowMonitor {
-  constructor(private context: WorkflowContext) {}
+  constructor(private readonly context: WorkflowContext) {}
 
   getStatus(): WorkflowStatus {
     return this.context.status;
@@ -93,7 +90,7 @@ export class WorkflowMonitor {
 }
 
 // Internal interfaces (not exported)
-interface internalWorkflowExecution {
+interface WorkflowExecution {
   workflow: Workflow;
   options: ExecutionOptions;
   run(): Promise<WorkflowResult>;
@@ -102,16 +99,14 @@ interface internalWorkflowExecution {
 
 // Default scheduler implementation
 class DefaultScheduler implements TaskScheduler {
-  async schedule<T>(input: TaskInput<T>): Promise<T> {
-    if (typeof input === 'function') {
+  async schedule<T>(task: TaskInput<T>): Promise<T> {
+    if (typeof task === 'function') {
       // Function variant
-      return input();
-    } else {
-      // TaskInfo variant
-      void input;
-      // Mock implementation for testing
-      return { agentId: 'mock', assigned: true, status: 'scheduled' as const } as T;
+      return task();
     }
+
+    // TaskInfo variant - placeholder scheduler behavior
+    return { agentId: 'mock', assigned: true, status: 'scheduled' as const } as T;
   }
 }
 
@@ -120,7 +115,7 @@ function createDefaultScheduler(): TaskScheduler {
 }
 
 // Workflow execution factory
-function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions): internalWorkflowExecution {
+function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions): WorkflowExecution {
   const registry = options.registry ?? workflow.getRegistry();
   const scheduler = options.scheduler ?? workflow.getScheduler();
 
@@ -132,7 +127,10 @@ function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions):
     options,
     async run(): Promise<WorkflowResult> {
       const spec = this.workflow.getSpec();
-      const startNode = spec.nodes[0] as WorkflowNode; // Start from first node
+      const startNode = spec.nodes[0]; // Start from first node
+      if (!startNode) {
+        throw new Error('Workflow must have at least one node');
+      }
 
       const results = await executeNode(startNode, this.workflow, registry, scheduler, cancelled, nodeResults);
 
@@ -157,7 +155,7 @@ function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions):
 
 // Helper function to execute nodes
 async function executeNode(
-  node: WorkflowNode,
+  node: RuntimeWorkflowNode,
   workflow: Workflow,
   registry: AgentRegistry,
   scheduler: TaskScheduler,
@@ -172,19 +170,19 @@ async function executeNode(
 
   switch (node.type) {
     case NodeType.TASK:
-      result = await executeTaskNode(node as TaskNode, registry, scheduler);
+      result = await executeTaskNode(node, registry, scheduler);
       break;
     case NodeType.DECISION:
-      result = await executeDecisionNode(node as DecisionNode, workflow, registry, scheduler, cancelled, nodeResults);
+      result = await executeDecisionNode(node, workflow, registry, scheduler, cancelled, nodeResults);
       break;
     case NodeType.PARALLEL:
-      result = await executeParallelNode(node as ParallelNode, workflow, registry, scheduler, cancelled, nodeResults);
+      result = await executeParallelNode(node, workflow, registry, scheduler, cancelled, nodeResults);
       break;
     case NodeType.SEQUENCE:
-      result = await executeSequenceNode(node as SequenceNode, workflow, registry, scheduler, cancelled, nodeResults);
+      result = await executeSequenceNode(node, workflow, registry, scheduler, cancelled, nodeResults);
       break;
     case NodeType.MERGE:
-      result = executeMergeNode(node as MergeNode, nodeResults);
+      result = executeMergeNode(node, nodeResults);
       break;
     default:
       throw new Error(`Unsupported node type: ${String(node)}`);
@@ -194,7 +192,7 @@ async function executeNode(
   return result;
 }
 
-function executeTaskNode(node: TaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
+function executeTaskNode(node: RuntimeTaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
   // Find suitable agent
   const availableAgents = registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
 
@@ -221,7 +219,7 @@ function executeTaskNode(node: TaskNode, registry: AgentRegistry, scheduler: Tas
 }
 
 async function executeSequenceNode(
-  node: SequenceNode,
+  node: RuntimeSequenceNode,
   workflow: Workflow,
   registry: AgentRegistry,
   scheduler: TaskScheduler,
@@ -244,7 +242,7 @@ async function executeSequenceNode(
 }
 
 async function executeDecisionNode(
-  node: DecisionNode,
+  node: RuntimeDecisionNode,
   workflow: Workflow,
   registry: AgentRegistry,
   scheduler: TaskScheduler,
@@ -252,16 +250,12 @@ async function executeDecisionNode(
   nodeResults: Map<string, unknown>,
 ): Promise<unknown> {
   const condition = node.condition.trim();
-  let decision = false;
-
-  if (condition === 'true') {
-    decision = true;
-  } else if (condition === 'false') {
-    decision = false;
-  } else {
-    const referenceId = condition.startsWith('result:') ? condition.slice('result:'.length) : condition;
-    decision = Boolean(nodeResults.get(referenceId));
-  }
+  const decision =
+    condition === 'true'
+      ? true
+      : condition === 'false'
+        ? false
+        : Boolean(nodeResults.get(condition.startsWith('result:') ? condition.slice('result:'.length) : condition));
 
   const selectedBranch = decision ? node.trueBranch : node.falseBranch;
   const results: unknown[] = [];
@@ -279,7 +273,7 @@ async function executeDecisionNode(
 }
 
 async function executeParallelNode(
-  node: ParallelNode,
+  node: RuntimeParallelNode,
   workflow: Workflow,
   registry: AgentRegistry,
   scheduler: TaskScheduler,
@@ -308,16 +302,14 @@ async function executeParallelNode(
 
     const currentIndex = cursor;
     cursor += 1;
+    const branchNode = branchNodes[currentIndex];
+
+    if (!branchNode) {
+      return;
+    }
 
     try {
-      results[currentIndex] = await executeNode(
-        branchNodes[currentIndex] as WorkflowNode,
-        workflow,
-        registry,
-        scheduler,
-        cancelled,
-        nodeResults,
-      );
+      results[currentIndex] = await executeNode(branchNode, workflow, registry, scheduler, cancelled, nodeResults);
     } catch (error) {
       const executionError = error instanceof Error ? error : new Error(String(error));
       errors.push(executionError);
@@ -339,7 +331,7 @@ async function executeParallelNode(
   return results;
 }
 
-function executeMergeNode(node: MergeNode, nodeResults: Map<string, unknown>): unknown {
+function executeMergeNode(node: RuntimeMergeNode, nodeResults: Map<string, unknown>): unknown {
   const inputs = node.inputs.map(inputId => nodeResults.get(inputId));
 
   switch (node.strategy) {
@@ -376,18 +368,65 @@ function executeMergeNode(node: MergeNode, nodeResults: Map<string, unknown>): u
   }
 }
 
-function findNodeById(id: string, workflow: Workflow): WorkflowNode | undefined {
+function findNodeById(id: string, workflow: Workflow): RuntimeWorkflowNode | undefined {
   const spec = workflow.getSpec();
-  return spec.nodes.find(node => (node as WorkflowNode).id === id) as WorkflowNode;
+  return spec.nodes.find(node => node.id === id);
+}
+
+function getNodeReferences(node: RuntimeWorkflowNode): string[] {
+  switch (node.type) {
+    case NodeType.DECISION:
+      return [...node.trueBranch, ...node.falseBranch];
+    case NodeType.SEQUENCE:
+      return node.steps;
+    case NodeType.PARALLEL:
+      return node.branches;
+    case NodeType.MERGE:
+      return node.inputs;
+    case NodeType.TASK:
+      return [];
+    default:
+      return [];
+  }
+}
+
+function getNodeTypeLabel(node: RuntimeWorkflowNode): string {
+  switch (node.type) {
+    case NodeType.DECISION:
+      return 'Decision';
+    case NodeType.SEQUENCE:
+      return 'Sequence';
+    case NodeType.PARALLEL:
+      return 'Parallel';
+    case NodeType.MERGE:
+      return 'Merge';
+    case NodeType.TASK:
+      return 'Task';
+    default:
+      return 'Node';
+  }
+}
+
+function validateNodeReferences(node: RuntimeWorkflowNode, nodeIds: Set<string>): void {
+  const references = getNodeReferences(node);
+  if (references.length === 0) {
+    return;
+  }
+
+  for (const targetId of references) {
+    if (!nodeIds.has(targetId)) {
+      throw new Error(`${getNodeTypeLabel(node)} node ${node.id} references unknown node: ${targetId}`);
+    }
+  }
 }
 
 export class OrchestrationEngine extends EventEmitter {
-  private workflows = new Map<string, WorkflowContext>();
-  private activeExecutions = new Map<string, internalWorkflowExecution>();
+  private readonly workflows = new Map<string, WorkflowContext>();
+  private readonly activeExecutions = new Map<string, WorkflowExecution>();
 
   constructor(
-    private registry: AgentRegistry,
-    private scheduler: TaskScheduler = createDefaultScheduler(),
+    private readonly registry: AgentRegistry,
+    private readonly scheduler: TaskScheduler = createDefaultScheduler(),
   ) {
     super();
   }
@@ -492,45 +531,9 @@ export class OrchestrationEngine extends EventEmitter {
     }
 
     // Validate node connections
-    const nodeIds = new Set(spec.nodes.map(node => (node as WorkflowNode).id));
+    const nodeIds = new Set(spec.nodes.map(node => node.id));
     for (const node of spec.nodes) {
-      const workflowNode = node as WorkflowNode;
-
-      if (workflowNode.type === NodeType.DECISION) {
-        const decisionNode = workflowNode as DecisionNode;
-        for (const targetId of [...decisionNode.trueBranch, ...decisionNode.falseBranch]) {
-          if (!nodeIds.has(targetId)) {
-            throw new Error(`Decision node ${workflowNode.id} references unknown node: ${targetId}`);
-          }
-        }
-      }
-
-      if (workflowNode.type === NodeType.SEQUENCE) {
-        const sequenceNode = workflowNode as SequenceNode;
-        for (const targetId of sequenceNode.steps) {
-          if (!nodeIds.has(targetId)) {
-            throw new Error(`Sequence node ${workflowNode.id} references unknown node: ${targetId}`);
-          }
-        }
-      }
-
-      if (workflowNode.type === NodeType.PARALLEL) {
-        const parallelNode = workflowNode as ParallelNode;
-        for (const targetId of parallelNode.branches) {
-          if (!nodeIds.has(targetId)) {
-            throw new Error(`Parallel node ${workflowNode.id} references unknown node: ${targetId}`);
-          }
-        }
-      }
-
-      if (workflowNode.type === NodeType.MERGE) {
-        const mergeNode = workflowNode as MergeNode;
-        for (const targetId of mergeNode.inputs) {
-          if (!nodeIds.has(targetId)) {
-            throw new Error(`Merge node ${workflowNode.id} references unknown node: ${targetId}`);
-          }
-        }
-      }
+      validateNodeReferences(node, nodeIds);
     }
   }
 }

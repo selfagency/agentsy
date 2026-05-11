@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { AgentRegistry } from '../agents/registry.js';
-import { OrchestrationEngine, type TaskScheduler } from './engine.js';
 import type { AgentCapabilities, WorkflowSpec } from '../types/index.js';
 import { NodeType, WorkflowStatus } from '../types/index.js';
+import { OrchestrationEngine, type TaskScheduler } from './engine.js';
 
 function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilities {
   return {
@@ -54,8 +54,8 @@ function createBaseSpec(overrides: Partial<WorkflowSpec>): WorkflowSpec {
 
 function createScheduler(agentId: string): TaskScheduler {
   return {
-    schedule: async <T>(_task: unknown) => ({ agentId }) as T,
-  } as TaskScheduler;
+    schedule: async <T>(_task: (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] }) => ({ agentId }) as T,
+  };
 }
 
 describe('OrchestrationEngine', () => {
@@ -141,10 +141,15 @@ describe('OrchestrationEngine', () => {
     );
 
     const result = await engine.execute(workflow);
-    const sequenceResult = result.results as unknown as unknown[];
+    const sequenceCandidate: unknown = result.results;
 
     expect(result.status).toBe(WorkflowStatus.COMPLETED);
-    expect(Array.isArray(sequenceResult)).toBe(true);
+    expect(Array.isArray(sequenceCandidate)).toBe(true);
+    if (!Array.isArray(sequenceCandidate)) {
+      throw new Error('Expected sequence result to be an array');
+    }
+
+    const sequenceResult = sequenceCandidate;
     expect(sequenceResult).toHaveLength(2);
 
     const mergeResult = sequenceResult[1] as Array<{ result: string }>;

@@ -1,5 +1,5 @@
-import type { AgentCapabilities } from '../types/index.js';
 import { EventEmitter } from 'node:events';
+import type { AgentCapabilities } from '../types/index.js';
 
 export class AgentRegistry extends EventEmitter {
   private readonly agents = new Map<string, AgentCapabilities>();
