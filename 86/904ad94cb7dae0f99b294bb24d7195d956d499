@@ -1,0 +1,40 @@
+packages/plugins/src/index.test.ts
+  h_627b419bd8fa0f 4
+packages/plugins/src/agents/index.ts
+  s_df2762c1ca0fcc::t_5da4e51bf2b92c 4
+packages/orchestrator/src/core/engine.test.ts
+  h_627b419bd8fa0f 6
+  s_df2762c1ca0fcc::t_70c9d9310d6124 57-58,144,147-152
+packages/orchestrator/src/scheduler/index.ts
+  s_df2762c1ca0fcc::t_753c7347c0418f 3
+packages/orchestrator/src/agents/registry.ts
+  h_627b419bd8fa0f 2
+packages/orchestrator/src/core/engine.ts
+  h_627b419bd8fa0f 3-4,312
+  s_df2762c1ca0fcc::t_4a68d02497d6d6 305-309
+  s_df2762c1ca0fcc::t_b33f6e3557f430 71,93,102-103,105,107-109,118,173,176,179,182,185,253-258,373-375,377-392,394-409,411-420,424-425,428-429,534,536
+  s_df2762c1ca0fcc::t_606ef3c8ad18b6 6-11,130-133,158,195,222,245,276,334,371,376,393,410
+packages/orchestrator/src/agents/registry.test.ts
+  h_627b419bd8fa0f 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "86904ad94cb7dae0f99b294bb24d7195d956d499",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_df2762c1ca0fcc": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5b7878ed-581e-4c3a-9738-f92195d35e99",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
