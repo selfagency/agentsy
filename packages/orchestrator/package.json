@@ -1,0 +1,53 @@
+{
+  "name": "@agentsy/orchestrator",
+  "version": "0.2.0-alpha.0",
+  "description": "Advanced agent orchestration system with consolidated scheduler",
+  "keywords": [
+    "agentsy",
+    "orchestration",
+    "scheduler",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "packages/orchestrator"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write ."
+  },
+  "dependencies": {
+    "@agentsy/memory": "workspace:*",
+    "@agentsy/runtime": "workspace:*",
+    "@agentsy/session": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
+}
