@@ -1,2 +1,2 @@
 // Core exports
-export * from './repl/index.js';
+export * from './tools/repl/index.js';
