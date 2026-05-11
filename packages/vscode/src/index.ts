@@ -45,6 +45,10 @@ export type { ChatMessage, ChatToolCall } from './message-conversion/role-conver
 export { bridgeStream, VSCodeStreamBridge } from './stream-bridge.js';
 export type { VSCodeStreamBridgeOptions } from './stream-bridge.js';
 
+// MCP stream bridge
+export { MCPChatBridge, createMCPChatBridge } from './stream-bridge/mcpChatBridge.js';
+export { VSCodeMCPBridgeHelper, createVSCodeMCPBridge } from './mcp/vscodeBridgeHelper.js';
+
 // Base provider
 export { BaseLanguageModelChatProvider } from './provider/index.js';
 export type {

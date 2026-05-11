@@ -1,0 +1,48 @@
+{
+  "name": "@agentsy/tools",
+  "version": "0.2.0-alpha.0",
+  "description": "Tool implementations including REPL (consolidated: repl)",
+  "keywords": [
+    "agentsy",
+    "repl",
+    "tools",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "test": "vitest run --passWithNoTests",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@agentsy/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@vitest/coverage-v8": "^4.1.5",
+    "tsup": "^8.5.1",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

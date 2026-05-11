@@ -81,13 +81,32 @@ export function errorCodeToMessage(code: ProviderErrorCode): string {
   return ErrorCodeToMessage[code] ?? ErrorCodeToMessage[ProviderErrorCode.InternalError];
 }
 
+export interface CreateProviderErrorOptions {
+  /** Include details from the original runtime error message in the returned message. */
+  preserveOriginalMessage?: boolean;
+  /** Attach provider error code metadata to the error object and message prefix. */
+  attachCode?: boolean;
+}
+
 /**
  * Build a standardized Error from a provider error code and optional original error.
  */
-export function createProviderError(code: ProviderErrorCode, originalError?: unknown): Error {
-  const message = errorCodeToMessage(code);
+export function createProviderError(
+  code: ProviderErrorCode,
+  originalError?: unknown,
+  options: CreateProviderErrorOptions = {},
+): Error {
+  const baseMessage = errorCodeToMessage(code);
+  const originalMessage =
+    options.preserveOriginalMessage && originalError != null ? extractErrorString(originalError) : null;
+  const messageWithOriginal =
+    originalMessage && originalMessage.length > 0 ? `${baseMessage} (original: ${originalMessage})` : baseMessage;
+  const message = options.attachCode ? `[${code}] ${messageWithOriginal}` : messageWithOriginal;
   const error = new Error(message);
   error.name = `ProviderError[${code}]`;
+  if (options.attachCode) {
+    (error as Error & { code?: ProviderErrorCode }).code = code;
+  }
   if (originalError instanceof Error) {
     error.cause = originalError;
   }

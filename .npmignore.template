@@ -1,0 +1,49 @@
+# Workspace files (exclude from npm publication)
+package-lock.json
+pnpm-lock.yaml
+turbo.json
+tsconfig.json
+vitest.config.ts
+.prettierrc*
+.prettierrc.json*
+.eslintrc*
+.eslintrc.json*
+.oxlintrc*
+.oxfmtrc*
+
+# Build outputs (temporary files only)
+*.tsbuildinfo
+
+# Development
+*.test.ts
+*.spec.ts
+__tests__/
+test/
+tests/
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Misc
+.DS_Store
+.env
+.env.*
+!.env.example
