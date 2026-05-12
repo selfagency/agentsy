@@ -1,7 +1,7 @@
 import type { Instance, RenderOptions } from 'ink';
 import { randomUUID } from 'node:crypto';
 import type { JsonObject } from '@agentsy/types';
-import type { XmlToolCall } from '@agentsy/tool-calls';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';
 import { resolveTheme } from './themes/index.js';
 

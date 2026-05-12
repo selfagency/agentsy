@@ -47,15 +47,12 @@ importers:
       '@agentsy/agent':
         specifier: workspace:*
         version: link:../agent
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/processor':
         specifier: workspace:*
         version: link:../processor
-      '@agentsy/structured':
-        specifier: workspace:*
-        version: link:../structured
-      '@agentsy/tool-calls':
-        specifier: workspace:*
-        version: link:../tool-calls
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -106,12 +103,12 @@ importers:
       '@agentsy/ag-ui':
         specifier: workspace:*
         version: link:../ag-ui
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/processor':
         specifier: workspace:*
         version: link:../processor
-      '@agentsy/tool-calls':
-        specifier: workspace:*
-        version: link:../tool-calls
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -228,6 +225,9 @@ importers:
       '@agentsy/context':
         specifier: workspace:*
         version: link:../context
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/formatting':
         specifier: workspace:*
         version: link:../formatting
@@ -243,18 +243,6 @@ importers:
       '@agentsy/renderers':
         specifier: workspace:*
         version: link:../renderers
-      '@agentsy/sse':
-        specifier: workspace:*
-        version: link:../sse
-      '@agentsy/structured':
-        specifier: workspace:*
-        version: link:../structured
-      '@agentsy/thinking':
-        specifier: workspace:*
-        version: link:../thinking
-      '@agentsy/tool-calls':
-        specifier: workspace:*
-        version: link:../tool-calls
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -408,18 +396,12 @@ importers:
 
   packages/processor:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/normalizers':
         specifier: workspace:*
         version: link:../normalizers
-      '@agentsy/structured':
-        specifier: workspace:*
-        version: link:../structured
-      '@agentsy/thinking':
-        specifier: workspace:*
-        version: link:../thinking
-      '@agentsy/tool-calls':
-        specifier: workspace:*
-        version: link:../tool-calls
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -467,12 +449,12 @@ importers:
 
   packages/recovery:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/processor':
         specifier: workspace:*
         version: link:../processor
-      '@agentsy/tool-calls':
-        specifier: workspace:*
-        version: link:../tool-calls
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -495,15 +477,15 @@ importers:
 
   packages/renderers:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/formatting':
         specifier: workspace:*
         version: link:../formatting
       '@agentsy/processor':
         specifier: workspace:*
         version: link:../processor
-      '@agentsy/tool-calls':
-        specifier: workspace:*
-        version: link:../tool-calls
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -542,24 +524,6 @@ importers:
       cli-markdown:
         specifier: ^3.5.1
         version: 3.5.1
-
-  packages/retry:
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.2
-        version: 25.6.2
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/runtime:
     dependencies:
@@ -630,74 +594,6 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
-  packages/sse:
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
-  packages/structured:
-    dependencies:
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-      zod:
-        specifier: '>=3'
-        version: 3.25.76
-      zod-to-json-schema:
-        specifier: '>=3'
-        version: 3.25.2(zod@3.25.76)
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
-  packages/thinking:
-    dependencies:
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
   packages/tokens:
     dependencies:
       '@agentsy/types':
@@ -719,31 +615,6 @@ importers:
       vitest:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
-
-  packages/tool-calls:
-    dependencies:
-      '@agentsy/structured':
-        specifier: workspace:*
-        version: link:../structured
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/tools:
     dependencies:
@@ -828,12 +699,6 @@ importers:
       '@agentsy/renderers':
         specifier: workspace:*
         version: link:../renderers
-      '@agentsy/sse':
-        specifier: workspace:*
-        version: link:../sse
-      '@agentsy/structured':
-        specifier: workspace:*
-        version: link:../structured
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
@@ -5913,10 +5778,6 @@ snapshots:
   yoctocolors@2.1.2: {}
 
   yoga-layout@3.2.1: {}
-
-  zod-to-json-schema@3.25.2(zod@3.25.76):
-    dependencies:
-      zod: 3.25.76
 
   zod-to-json-schema@3.25.2(zod@4.4.3):
     dependencies:

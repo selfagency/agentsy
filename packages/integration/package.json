@@ -17,15 +17,12 @@
   "dependencies": {
     "@agentsy/adapters": "workspace:*",
     "@agentsy/context": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/formatting": "workspace:*",
     "@agentsy/normalizers": "workspace:*",
     "@agentsy/processor": "workspace:*",
     "@agentsy/recovery": "workspace:*",
     "@agentsy/renderers": "workspace:*",
-    "@agentsy/sse": "workspace:*",
-    "@agentsy/structured": "workspace:*",
-    "@agentsy/thinking": "workspace:*",
-    "@agentsy/tool-calls": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@agentsy/xml-filter": "workspace:*"
   },

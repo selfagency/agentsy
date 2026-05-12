@@ -1,5 +1,5 @@
 import type { ProcessedOutput } from '@agentsy/processor';
-import type { XmlToolCall } from '@agentsy/tool-calls';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import { describe, expect, it, vi } from 'vitest';
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';
 import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';

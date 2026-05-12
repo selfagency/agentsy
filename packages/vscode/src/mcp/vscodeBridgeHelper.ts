@@ -1,5 +1,5 @@
 import type { ReadableStream } from 'node:stream/web';
-import { parseSSEStream } from '@agentsy/sse';
+import { parseSSEStream } from '@agentsy/core/sse';
 import type { MCPTransport } from '@agentsy/core/processor';
 import { adaptTransportToStream } from '@agentsy/core/processor';
 import { type ChatResponseStream, type CancellationToken, Uri } from 'vscode';
