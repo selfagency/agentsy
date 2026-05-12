@@ -1,7 +1,7 @@
 /* eslint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
 import { describe, expect, it, vi } from 'vitest';
 
-import type { XmlToolCall } from '@agentsy/tool-calls';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';
@@ -584,7 +584,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
 
 describe('Phase 1 — type exports', () => {
   it('FinishReason and ToolCallState are valid type-level exports from tool-calls', async () => {
-    const mod = await import('@agentsy/tool-calls');
+    const mod = await import('@agentsy/core/tool-calls');
     // Types-only check: the module should export without error
     expect(mod).toBeDefined();
   });

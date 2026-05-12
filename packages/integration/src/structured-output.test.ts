@@ -12,7 +12,7 @@ import {
   formatXmlLikeResponseForDisplay,
   sanitizeNonStreamingModelOutput,
 } from '@agentsy/formatting';
-import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/structured';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
 // ---------------------------------------------------------------------------
 // parseJson

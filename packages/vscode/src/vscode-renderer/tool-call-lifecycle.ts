@@ -1,5 +1,5 @@
 import type { OutputPart } from '@agentsy/processor';
-import { parseJson } from '@agentsy/structured';
+import { parseJson } from '@agentsy/core/structured';
 
 export interface VSCodeToolCallPartLike {
   callId: string;

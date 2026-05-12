@@ -51,9 +51,7 @@
     "@agentsy/formatting": "workspace:*",
     "@agentsy/normalizers": "workspace:*",
     "@agentsy/processor": "workspace:*",
-    "@agentsy/renderers": "workspace:*",
-    "@agentsy/sse": "workspace:*",
-    "@agentsy/structured": "workspace:*"
+    "@agentsy/renderers": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

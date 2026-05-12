@@ -15,7 +15,7 @@ import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
 import type { ProcessorOptions } from '../processor/index.js';
 import { parseSSEStream } from '../sse/index.js';
-import { parseJson } from '@agentsy/structured';
+import { parseJson } from '@agentsy/core/structured';
 import type { JsonObject } from '@agentsy/types';
 
 export type NormalizerProvider =

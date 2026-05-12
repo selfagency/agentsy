@@ -1,5 +1,5 @@
-import { ThinkingParser } from '@agentsy/thinking';
-import { extractXmlToolCalls, ToolCallAccumulator, type XmlToolCall } from '@agentsy/tool-calls';
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { extractXmlToolCalls, ToolCallAccumulator, type NativeToolCall, type XmlToolCall } from '@agentsy/core/tool-calls';
 import type {
   ConversationEvent,
   FinishReason,
@@ -874,7 +874,7 @@ export class LLMStreamProcessor {
   }
 
   private mapAccumulatedNativeCallsWithIndices(
-    calls: Array<{ index: number; call: import('@agentsy/tool-calls').NativeToolCall }>,
+    calls: Array<{ index: number; call: NativeToolCall }>,
     state: ToolCallState,
   ): Array<Extract<OutputPart, { type: 'tool_call' }>> {
     return calls.map(({ index, call }) => {

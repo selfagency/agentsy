@@ -35,10 +35,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@agentsy/core": "workspace:*",
     "@agentsy/normalizers": "workspace:*",
-    "@agentsy/structured": "workspace:*",
-    "@agentsy/thinking": "workspace:*",
-    "@agentsy/tool-calls": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@agentsy/xml-filter": "workspace:*"
   },
