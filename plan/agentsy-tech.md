@@ -1315,7 +1315,7 @@ export * from '@agentsy/normalizers';
 export * from '@agentsy/processor';
 export * from '@agentsy/agent';
 export * from '@agentsy/adapters';
-export * from '@agentsy/ag-ui';
+export * from '@agentsy/runtime/ag-ui';
 
 // All subpath exports (e.g., @agentsy/core/thinking)
 // are mapped in packages/shim/package.json exports field to corresponding

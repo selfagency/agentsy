@@ -22,14 +22,14 @@ npm install @agentsy/adapters @agentsy/agent @agentsy/ag-ui @agentsy/normalizers
 
 ```ts
 import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
-import { createAgentLoop, hasNoToolCalls, isStepCount } from '@agentsy/agent';
-import { toAgUiStream } from '@agentsy/ag-ui';
-import { normalizeOpenAIResponseEvent } from '@agentsy/normalizers';
-import { LLMStreamProcessor, createProcessorEventAdapter } from '@agentsy/processor';
-import { buildContinuationPrompt, captureStreamState } from '@agentsy/recovery';
+import { createAgentLoop, hasNoToolCalls, isStepCount } from '@agentsy/orchestrator/agent';
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
+import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor, createProcessorEventAdapter } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
 import { createPlainTextRenderer } from '@agentsy/renderers';
-import { parseSSEStream } from '@agentsy/sse';
-import { validateJsonSchema } from '@agentsy/structured';
+import { parseSSEStream } from '@agentsy/core/sse';
+import { validateJsonSchema } from '@agentsy/core/structured';
 import { buildToolResultMessage } from '@agentsy/tool-calls';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
