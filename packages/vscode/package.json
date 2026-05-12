@@ -48,9 +48,7 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/formatting": "workspace:*",
     "@agentsy/normalizers": "workspace:*",
-    "@agentsy/processor": "workspace:*",
     "@agentsy/renderers": "workspace:*"
   },
   "devDependencies": {

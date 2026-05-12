@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from './index.js';
-import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
+import { createXmlStreamFilter } from '../xml-filter/index.js';
 
 describe('createXmlStreamFilter', () => {
   it('strips context tags across chunk boundaries', () => {
@@ -34,7 +34,7 @@ describe('createXmlStreamFilter', () => {
     const warnings: Array<{ message: string; context?: Record<string, unknown> }> = [];
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['environment_info']),
-      onWarning: (message: string, context?: Record<string, unknown>) => {
+      onWarning: (message, context) => {
         if (context === undefined) {
           warnings.push({ message });
           return;
@@ -63,7 +63,7 @@ describe('createXmlStreamFilter', () => {
     const warnings: string[] = [];
     const filter = createXmlStreamFilter({
       maxXmlNestingDepth: 2,
-      onWarning: (message: string) => {
+      onWarning: message => {
         warnings.push(message);
       },
     });

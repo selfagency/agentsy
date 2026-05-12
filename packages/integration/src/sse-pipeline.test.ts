@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { createPipeline, type PipelineEvent } from '@agentsy/processor';
+import { createPipeline, type PipelineEvent } from '@agentsy/core/processor';
 
 // ---------------------------------------------------------------------------
 // Helper: turn a multi-line SSE string into an async iterable of chunks so we

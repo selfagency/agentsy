@@ -7,7 +7,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createPlainTextRenderer, createSharedRendererHandle, type BaseRendererOptions } from '@agentsy/renderers';
 
 // ---------------------------------------------------------------------------

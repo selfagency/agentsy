@@ -1,4 +1,4 @@
-import type { ProcessedOutput } from '@agentsy/processor';
+import type { ProcessedOutput } from '@agentsy/core/processor';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import { describe, expect, it, vi } from 'vitest';
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';

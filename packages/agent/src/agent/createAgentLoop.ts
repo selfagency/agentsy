@@ -1,5 +1,5 @@
 import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/ag-ui';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
 
 /**

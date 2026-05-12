@@ -35,7 +35,6 @@
   "dependencies": {
     "@agentsy/ag-ui": "workspace:*",
     "@agentsy/core": "workspace:*",
-    "@agentsy/processor": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
