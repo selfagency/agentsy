@@ -154,7 +154,7 @@ console.log('Tool calls:', message.toolCalls);
 ### Run a multi-step agent loop
 
 ```typescript
-import { createAgentLoop } from '@agentsy/agent';
+import { createAgentLoop } from '@agentsy/orchestrator/agent';
 
 const agent = createAgentLoop({
   // Your LLM invocation function

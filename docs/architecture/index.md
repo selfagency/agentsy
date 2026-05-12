@@ -44,7 +44,7 @@ The easiest way to understand the system is to follow the flow of a model respon
 
 ### Runtime and integration layer
 
-- `@agentsy/agent`
+- `@agentsy/orchestrator/agent`
 - `@agentsy/vscode`
 
 ## Guiding dependency rule

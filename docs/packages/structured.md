@@ -30,7 +30,7 @@ This package handles the part where model output almost looks like structured da
 
 - `@agentsy/processor`
 - `@agentsy/tool-calls`
-- `@agentsy/agent`
+- `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 

@@ -205,7 +205,7 @@ packages/memory/src/__scenarios__/
 
 | Task      | Description                                                                                                                                          | Completed | Date |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-T010 | `@agentsy/agent`: unit tests for `createAgentLoop()`, tool dispatch, validation retry (REQ-049), RSI ledger (REQ-064), stop conditions               |           |      |
+| TASK-T010 | `@agentsy/orchestrator/agent`: unit tests for `createAgentLoop()`, tool dispatch, validation retry (REQ-049), RSI ledger (REQ-064), stop conditions  |           |      |
 | TASK-T011 | `@agentsy/memory`: unit tests for `store()`, `retrieve()`, deduplication, `listEntries()`, `editEntry()`, `deleteEntry()` (REQ-054)                  |           |      |
 | TASK-T012 | `@agentsy/session`: unit tests for `create()`, `serialize()`, `resume()`, branching fork (REQ-055)                                                   |           |      |
 | TASK-T013 | `@agentsy/tools`: unit tests for tool registration, schema validation (`typia`/`zod`), progressive loading from TOML (REQ-045, REQ-048)              |           |      |
@@ -291,7 +291,7 @@ packages/memory/src/__scenarios__/
 
 - **DEP-001**: `@langwatch/scenario@^0.7` (npm, Apache 2.0) — scenario runner, UserSimulatorAgent, JudgeAgent, RedTeamAgent
 - **DEP-002**: `@vitest/coverage-v8@^3` — coverage provider (already in workspace vitest.config.ts)
-- **DEP-003**: `openai@^5` — LLM backend for test agents (already in `@agentsy/agent` deps)
+- **DEP-003**: `openai@^5` — LLM backend for test agents (already in `@agentsy/orchestrator/agent` deps)
 - **DEP-004**: `LANGWATCH_API_KEY` CI secret — optional, for LangWatch scenario visualization
 - **DEP-005**: `OPENAI_API_KEY` CI secret — required for scenario test LLM calls (gpt-4.1-mini)
 

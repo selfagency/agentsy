@@ -49,7 +49,7 @@ Once the stream is processed, you can send it into one or more projections:
 
 ## Step 6: wrap with an agent loop if needed
 
-`@agentsy/agent` sits above the processing pipeline when you need multi-step tool use, stop conditions, or loop management.
+`@agentsy/orchestrator/agent` sits above the processing pipeline when you need multi-step tool use, stop conditions, or loop management.
 
 ## Why this shape matters
 

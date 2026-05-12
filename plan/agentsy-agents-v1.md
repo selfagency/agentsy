@@ -1,5 +1,5 @@
 ---
-goal: "@agentsy/agents — one package: caveman mode, superpowers mode, garry's mode + custom agent docs"
+goal: "@agentsy/orchestrator/agents — one package: caveman mode, superpowers mode, garry's mode + custom agent docs"
 version: '1.0'
 date_created: '2026-05-02'
 last_updated: '2026-05-02'
@@ -12,7 +12,7 @@ tags: ['feature', 'agents', 'caveman', 'superpowers', 'garrys-mode', 'custom-age
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
-Introduces `@agentsy/agents` — a single self-contained package bundling three agent modes directly (no peer packages, no composition layer):
+Introduces `@agentsy/orchestrator/agents` — a single self-contained package bundling three agent modes directly (no peer packages, no composition layer):
 
 1. **Caveman mode** — token-compression SKILL.md set (JuliusBrussee/caveman v1.7.0) + `caveman-shrink` MCP proxy
 2. **Superpowers mode** — context-activated methodology skills (obra/superpowers v5.0.7)
@@ -26,22 +26,22 @@ Existing REQ/SEC/CON/ADR identifiers are preserved.
 
 ## 1. Requirements & Constraints
 
-- **REQ-071**: `@agentsy/agents` MUST export three agent mode factories: `createCavemanManager`, `createSuperpowersActivator`, `createGarrysAgent`. Each MUST implement the `AgentModeFactory<TOptions, TActivator>` interface defined in `packages/agents/src/types.ts`.
+- **REQ-071**: `@agentsy/orchestrator/agents` MUST export three agent mode factories: `createCavemanManager`, `createSuperpowersActivator`, `createGarrysAgent`. Each MUST implement the `AgentModeFactory<TOptions, TActivator>` interface defined in `packages/agents/src/types.ts`.
 - **REQ-072**: All SKILL.md files for all three modes MUST be bundled directly inside `packages/agents/src/skills/`. No external `@agentsy/caveman` or `@agentsy/superpowers` packages.
 - **REQ-073**: Garry's mode MUST bundle nine sprint SKILL.md files: `office-hours`, `plan-ceo-review`, `plan-eng-review`, `review`, `ship`, `qa`, `cso`, `investigate`, `autoplan`. Each file MUST include `source_url`, `version`, `license: "MIT"` frontmatter (GUD-008).
 - **REQ-074**: `GarrysActivator.detectPhase(context)` MUST infer the current sprint phase (`think | plan | build | review | test | ship | reflect`) from context signals: PR diff present → `review`, test failures → `test`, open-ended product question → `think`.
 - **REQ-075**: `GarrysActivator.selectSkills(phase)` MUST return the relevant `GarrysSkillManifest[]` subset for the given phase with no more than three active skills at once.
-- **REQ-076**: Garry's mode checkpoint MUST integrate with `@agentsy/agent` session to emit a `WIP:` prefixed commit message after every tool-call turn when `checkpointMode: true`. Commit body MUST include a `[gstack-context]` block: decisions, remaining work, failed approaches.
+- **REQ-076**: Garry's mode checkpoint MUST integrate with `@agentsy/orchestrator/agent` session to emit a `WIP:` prefixed commit message after every tool-call turn when `checkpointMode: true`. Commit body MUST include a `[gstack-context]` block: decisions, remaining work, failed approaches.
 - **REQ-077**: Garry's mode safety guardrails MUST register a pre-execution hook with `@agentsy/runtime` approval engine that fires a `SafetyGuardrailTriggered` event before any tool call matching the destructive pattern list: `rm -rf`, `DROP TABLE`, `force-push`, `git reset --hard`, `git push --force`.
 - **REQ-078**: Garry's mode design taste memory MUST persist per-project decisions to `~/.agentsy/taste/<projectId>.json` via `@agentsy/memory` with `retentionTag: 'design-preference'`. Taste scores MUST decay 5% per week.
 - **REQ-079**: `docs/developers/custom-agents.md` MUST document the custom agent pattern with three worked examples (caveman, superpowers, garry's mode), each showing: (a) SKILL.md bundling, (b) context-signal activation, (c) factory pattern, (d) agent loop integration.
-- **REQ-080**: `@agentsy/agents` MUST have zero runtime dependencies beyond `@agentsy/core`. `@agentsy/memory` is a peer dependency used only when garry's mode `tasteMemory` option is enabled.
+- **REQ-080**: `@agentsy/orchestrator/agents` MUST have zero runtime dependencies beyond `@agentsy/core`. `@agentsy/memory` is a peer dependency used only when garry's mode `tasteMemory` option is enabled.
 - **REQ-103**: Garry's `investigate` sprint phase MUST implement a LATS-style multi-path exploration: the agent proposes up to 3 alternative investigation strategies, evaluates each via a lightweight scoring prompt, then commits to the highest-scoring path. Max tree depth: 2.
 - **REQ-104**: Garry's `review` sprint phase MUST implement an Evaluator-Optimizer loop: a generator sub-turn produces the review, an evaluator sub-turn critiques it against the rubric (correctness, security, style), and up to 2 refinement passes are made before the final review is emitted.
 - **REQ-109**: Garry's mode sprint phases MUST implement the Gate-Driven pattern (ADR-056): each phase defines explicit success gates (verification criteria) before executing tool calls. Gates are declared in the SKILL.md frontmatter as `success_gates: [...]` and verified by deterministic checks (tests, lints, compilation) — not agent self-assessment.
 - **SEC-017**: Garry's mode safety guardrails MUST NOT be bypassable at runtime. The `safetyGuardrails: false` option MUST emit a `SafetyDisabledWarning` event and require `{ override: 'I understand the risks' }` confirmation string.
 - **SEC-018**: Garry's mode design taste memory MUST NOT store LLM outputs verbatim — only structured `{ approved: boolean, dimensionKey: string, score: number, timestamp: number }` entries.
-- **CON-013**: `@agentsy/agents` MUST NOT vendor any gstack source code. SKILL.md files are adapted content under MIT license with attribution; the gstack binary/runtime is NOT imported or bundled.
+- **CON-013**: `@agentsy/orchestrator/agents` MUST NOT vendor any gstack source code. SKILL.md files are adapted content under MIT license with attribution; the gstack binary/runtime is NOT imported or bundled.
 - **CON-014**: Garry's mode MUST NOT depend on a running gstack installation. All sprint skills are self-contained SKILL.md prompts adapted from gstack's methodology.
 - **CON-015**: There are no separate `@agentsy/caveman` or `@agentsy/superpowers` packages. `agentsy-features-v1.md` Phase 6 is superseded by this plan.
 - **GUD-011**: All `AgentModeFactory` implementations MUST include a `README.md` showing a minimal usage example.
@@ -53,17 +53,17 @@ Existing REQ/SEC/CON/ADR identifiers are preserved.
 
 ## 2. Implementation Steps
 
-### Phase AG1 — `@agentsy/agents` Package Scaffolding
+### Phase AG1 — `@agentsy/orchestrator/agents` Package Scaffolding
 
 - **GOAL-AG1**: Create `packages/agents/` as a single self-contained package with `AgentModeFactory` interface and skill directory layout.
 
 | Task         | Description                                                                                                                                                                                                                                                                  | Completed | Date |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-AG1-001 | Create `packages/agents/`. Add `package.json` (`@agentsy/agents`, peerDeps: `@agentsy/core@workspace:*`, `@agentsy/memory@workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`. No `@agentsy/caveman` or `@agentsy/superpowers` dependencies.                |           |      |
+| TASK-AG1-001 | Create `packages/agents/`. Add `package.json` (`@agentsy/orchestrator/agents`, peerDeps: `@agentsy/core@workspace:*`, `@agentsy/memory@workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`. No `@agentsy/caveman` or `@agentsy/superpowers` dependencies.   |           |      |
 | TASK-AG1-002 | Define `AgentModeFactory<TOptions, TActivator>` interface in `packages/agents/src/types.ts`: `{ create(options?: TOptions): TActivator; name: string; description: string; skillCount(): number }`. Export `AgentMode` type union: `'caveman' \| 'superpowers' \| 'garrys'`. |           |      |
 | TASK-AG1-003 | Create skill directory tree: `packages/agents/src/skills/caveman/`, `packages/agents/src/skills/superpowers/`, `packages/agents/src/skills/garrys/`. Each directory will hold bundled SKILL.md files (populated in AG2).                                                     |           |      |
 | TASK-AG1-004 | Export stub barrel from `packages/agents/src/index.ts`: `createCavemanManager`, `createSuperpowersActivator`, `createGarrysAgent`, `AgentMode`, `AgentModeFactory`. Stubs filled in AG2/AG3.                                                                                 |           |      |
-| TASK-AG1-005 | Add `@agentsy/agents -> @agentsy/core` to turbo dependency graph in `turbo.json` and `pnpm-workspace.yaml`.                                                                                                                                                                  |           |      |
+| TASK-AG1-005 | Add `@agentsy/orchestrator/agents -> @agentsy/core` to turbo dependency graph in `turbo.json` and `pnpm-workspace.yaml`.                                                                                                                                                     |           |      |
 
 ### Phase AG2 — SKILL.md Files: All Three Modes
 
@@ -136,7 +136,7 @@ Existing REQ/SEC/CON/ADR identifiers are preserved.
 
 ## 3. Alternatives
 
-- **ALT-012**: Keep `@agentsy/caveman` and `@agentsy/superpowers` as separate packages that `@agentsy/agents` composes. Rejected — one package is simpler, avoids version drift between the packages, and consumers shouldn't need to install three packages to get the pre-built modes.
+- **ALT-012**: Keep `@agentsy/caveman` and `@agentsy/superpowers` as separate packages that `@agentsy/orchestrator/agents` composes. Rejected — one package is simpler, avoids version drift between the packages, and consumers shouldn't need to install three packages to get the pre-built modes.
 - **ALT-013**: Wrap the actual gstack CLI as a child process rather than adapting SKILL.md files. Rejected: violates CON-014 (no gstack binary dependency); requires gstack to be installed; couples version to external release cadence.
 - **ALT-014**: Skip garry's mode; ship only caveman and superpowers. Rejected — garry's mode is the most sophisticated example and the docs benefit from showing increasing complexity across the three modes.
 - **ALT-015**: Put garry's mode in a separate `@agentsy/garrys` package. Rejected — same reasoning as ALT-012; one package.
@@ -155,7 +155,7 @@ Existing REQ/SEC/CON/ADR identifiers are preserved.
 
 ## 5. Files
 
-- **FILE-015**: `packages/agents/` — new package (`@agentsy/agents`)
+- **FILE-015**: `packages/agents/` — new package (`@agentsy/orchestrator/agents`)
 - **FILE-016**: `packages/agents/src/types.ts` — `AgentModeFactory`, `AgentMode`
 - **FILE-017**: `packages/agents/src/caveman/types.ts` — `CavemanMode`, `CavemanSkillManifest`
 - **FILE-018**: `packages/agents/src/caveman/manager.ts` — `CavemanManager`, `createCavemanManager`

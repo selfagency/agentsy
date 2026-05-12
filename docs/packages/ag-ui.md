@@ -22,7 +22,7 @@ Use `@agentsy/ag-ui` when your application needs to adapt the event model into A
 
 - `@agentsy/ui`
 - `@agentsy/processor`
-- `@agentsy/agent`
+- `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 

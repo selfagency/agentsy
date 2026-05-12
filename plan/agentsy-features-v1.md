@@ -47,8 +47,8 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 - **REQ-040**: `@agentsy/connectors` `AgentSessionManager` must integrate with `@agentsy/session` for per-conversation session persistence and crash-safe resume across channel disconnects.
 - **REQ-041**: `@agentsy/connectors` inbound messages must pass through the `@agentsy/runtime` approval engine before invoking destructive tools, using `'auto'` approval mode by default.
 - **REQ-042**: `@agentsy/connectors` must support OpenClaw-compatible chat commands as built-in slash commands: `/status`, `/new`, `/reset`, `/compact`, `/think`, `/verbose`, `/usage`.
-- **REQ-101**: `@agentsy/agent` `createAgentLoop` MUST support a `planAndExecute` mode option. When enabled, the agent produces an explicit plan artifact before any tool calls; the plan is subject to a configurable `planApproval` hook before execution begins (Plan-Then-Execute pattern, ADR-055).
-- **REQ-102**: `@agentsy/agent` MUST emit `ActionTrace` events for every tool call: `{ toolName, args, result, durationMs, turnIndex }`. Consumers register `onActionTrace` handlers to implement kill-switch logic.
+- **REQ-101**: `@agentsy/orchestrator/agent` `createAgentLoop` MUST support a `planAndExecute` mode option. When enabled, the agent produces an explicit plan artifact before any tool calls; the plan is subject to a configurable `planApproval` hook before execution begins (Plan-Then-Execute pattern, ADR-055).
+- **REQ-102**: `@agentsy/orchestrator/agent` MUST emit `ActionTrace` events for every tool call: `{ toolName, args, result, durationMs, turnIndex }`. Consumers register `onActionTrace` handlers to implement kill-switch logic.
 - **REQ-108**: `createAgentLoop` MUST support a `humanInTheLoop` approval hook that fires before any destructive tool call (HITL pattern). When set, the agent pauses execution and emits `AwaitingHumanApproval` event with the pending tool call details.
 
 ### New Security Requirements
@@ -72,7 +72,7 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 
 - **GUD-008**: All bundled SKILL.md files must include `source_url`, `version`, and `license` frontmatter fields pointing to the upstream repository.
 - **GUD-009**: All slash commands in the stock set must have a corresponding unit test in `packages/slash-commands/src/*.test.ts`.
-- **GUD-010**: Connector adapters must implement the `ChannelAdapter` interface and never directly reference `@agentsy/agent` internals. All agent communication goes through the `AgentSessionManager` contract.
+- **GUD-010**: Connector adapters must implement the `ChannelAdapter` interface and never directly reference `@agentsy/orchestrator/agent` internals. All agent communication goes through the `AgentSessionManager` contract.
 - **GUD-013**: Before building multi-agent systems, validate that a single optimized LLM call with retrieval and in-context examples is insufficient (Anthropic simplicity principle). Add agents only when specialization improves quality or throughput in a measurable way.
 - **GUD-014**: Every MCP/local tool definition MUST receive the same engineering effort as system prompts (ACI principle). Tool descriptions must include purpose, parameters, example usage, edge cases, and clear boundaries from similar tools (poka-yoke). Tools are the largest failure surface in agentic systems (SRC-35).
 - **GUD-015**: Each `@agentsy` package that invokes an agent loop MUST define an `AGENTS.md` (or equivalent `agentsy.config.md`) at the workspace root describing: how to run tests, lint rules, forbidden mutations, and what counts as "done". Keep under 200 lines; project-specific override section required (SRC-32).
@@ -153,7 +153,7 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 
 | Task        | Description                                                                                                                                                                                                                                                                                                                                 | Completed | Date |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-F8-001 | Create `packages/connectors/`. Add `package.json` (`@agentsy/connectors`, peerDeps: `@agentsy/core`, `@agentsy/agent`, `@agentsy/session`, `@agentsy/runtime` all `workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`.                                                                                                    |           |      |
+| TASK-F8-001 | Create `packages/connectors/`. Add `package.json` (`@agentsy/connectors`, peerDeps: `@agentsy/core`, `@agentsy/orchestrator/agent`, `@agentsy/session`, `@agentsy/runtime` all `workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`.                                                                                       |           |      |
 | TASK-F8-002 | Define core types in `packages/connectors/src/types.ts`: `InboundMessage { channelId, userId, threadId?, text, attachments?, rawPayload }`, `OutboundMessage { channelId, userId, threadId?, text, attachments? }`, `ChannelAdapter<TConfig>` interface with `connect`, `disconnect`, `send`, `onMessage`.                                  |           |      |
 | TASK-F8-003 | Implement `MessageRouter` in `packages/connectors/src/router.ts`. Routes inbound messages to correct `AgentSessionManager` instance by `channelId+userId`. Inbound message text passes through `stripXmlContextTags` before forwarding (SEC-013).                                                                                           |           |      |
 | TASK-F8-004 | Implement `AgentSessionManager` in `packages/connectors/src/session-manager.ts`. Per `channelId+userId` key: creates or resumes `createAgentLoop` instance backed by `FileSystemSessionStore`. On disconnect: snapshots and persists. On reconnect: resumes from checkpoint (REQ-040). Implements `maxIdleTime` eviction (default: 1 hour). |           |      |
@@ -165,11 +165,11 @@ All changes are additive. Existing REQ/SEC/CON/ADR identifiers in `agentsy-platf
 | TASK-F8-010 | Export from `packages/connectors/src/index.ts`: `createConnectorGateway`, `TelegramAdapter`, `DiscordAdapter`, `SlackAdapter`, `ConnectorGatewayOptions`, `InboundMessage`, `OutboundMessage`, `ChannelAdapter`.                                                                                                                            |           |      |
 | TASK-F8-011 | Write unit tests in `packages/connectors/src/gateway.test.ts`. Mock `ChannelAdapter`. Test: message routing to correct session, `/new` resets session, `/status` returns session info, inbound text is sanitized (SEC-013 — verify `<script>` tags are stripped).                                                                           |           |      |
 | TASK-F8-012 | Write unit tests in `packages/connectors/src/router.test.ts`. Test: two users on same channel get separate sessions, same user on two channels gets separate sessions, XML injection in message text is stripped.                                                                                                                           |           |      |
-| TASK-F8-013 | Append `@agentsy/connectors -> @agentsy/core, @agentsy/agent, @agentsy/session, @agentsy/runtime` to dependency graph in `plan/agentsy-platform-v2.md` §8.                                                                                                                                                                                  |           |      |
+| TASK-F8-013 | Append `@agentsy/connectors -> @agentsy/core, @agentsy/orchestrator/agent, @agentsy/session, @agentsy/runtime` to dependency graph in `plan/agentsy-platform-v2.md` §8.                                                                                                                                                                     |           |      |
 
 ### Phase 9 — Cross-Package Slash Command Integration
 
-- **GOAL-009**: Wire all stock slash commands from Phases 5/6/7 into `@agentsy/slash-commands`. Integrate `SlashCommandRegistry` as an optional `@agentsy/agent` plugin. Verify end-to-end.
+- **GOAL-009**: Wire all stock slash commands from Phases 5/6/7 into `@agentsy/slash-commands`. Integrate `SlashCommandRegistry` as an optional `@agentsy/orchestrator/agent` plugin. Verify end-to-end.
 
 | Task        | Description                                                                                                                                                                                                                                                                                              | Completed | Date |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
@@ -311,7 +311,7 @@ Append to §2 of `plan/agentsy-prd-notes.md` (additive to ADR-001 through ADR-01
 
 ### ADR-023: Slash Commands Intercept Before Model, Not After
 
-**Decision**: `SlashCommandRegistry` in `@agentsy/agent` intercepts `/`-prefixed user messages _before_ any model call. Matched commands execute directly, returning a synthetic assistant message. Unrecognized `/`-prefixed messages pass through unmodified.
+**Decision**: `SlashCommandRegistry` in `@agentsy/orchestrator/agent` intercepts `/`-prefixed user messages _before_ any model call. Matched commands execute directly, returning a synthetic assistant message. Unrecognized `/`-prefixed messages pass through unmodified.
 
 **Evidence**: Claude Code SDK: custom commands in `.claude/commands/<name>.md` are resolved before the message is sent to the model. OpenClaw chat commands are intercepted by the gateway layer. Slash command semantics are fully deterministic — no LLM interpretation needed.
 
@@ -348,7 +348,7 @@ Append to `plan/agentsy-platform-v2.md` §8:
 @agentsy/skills          ->  @agentsy/core
 @agentsy/caveman         ->  @agentsy/core
 @agentsy/superpowers     ->  @agentsy/core
-@agentsy/connectors      ->  @agentsy/core, @agentsy/agent,
+@agentsy/connectors      ->  @agentsy/core, @agentsy/orchestrator/agent,
                               @agentsy/session, @agentsy/runtime
 # @agentsy/mcp (existing) also spawns @mcpmarket/mcp-auto-install
 #   as child process (not a package dependency)

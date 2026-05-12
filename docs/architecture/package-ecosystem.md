@@ -34,7 +34,7 @@ These packages solve narrow parsing or shaping problems and can be used independ
 
 ### 5. Runtime and integration surfaces
 
-- `@agentsy/agent` builds higher-level loops.
+- `@agentsy/orchestrator/agent` builds higher-level loops.
 - `@agentsy/adapters` packages common integration logic.
 - `@agentsy/vscode` provides the current published editor-focused integration layer.
 
@@ -50,7 +50,7 @@ Add `@agentsy/structured` and `@agentsy/tool-calls` when your application needs 
 
 ### Agent application
 
-Add `@agentsy/agent`, then choose one or more projection layers:
+Add `@agentsy/orchestrator/agent`, then choose one or more projection layers:
 
 - `@agentsy/renderers` for textual output
 - `@agentsy/ui` for app state

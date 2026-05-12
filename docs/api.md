@@ -14,7 +14,7 @@ Detailed API breakdowns, examples, and composition guidance live on the individu
 
 - [`@agentsy/processor`](./packages/processor.md) — `LLMStreamProcessor`, `createProcessorEventAdapter`, `ToolCallParser`, `ZAiInlineToolCallParser`, `createPipeline`, `createSmoothStream`, `createThinkingFilter`, `createToolCallFilter`
 - [`@agentsy/normalizers`](./packages/normalizers.md) — `normalizeOpenAIChatChunk`, `normalizeOpenAIResponseEvent`, `normalizeAnthropicEvent`, `normalizeGeminiChunk`, `normalizeMistralChunk`, `normalizeOllamaChatChunk`, `normalizeOpenAICompatibleChunk`, more provider helpers
-- [`@agentsy/agent`](./packages/agent.md) — `createAgentLoop`, `detectDoomLoop`, `finishReasonIs`, `hasNoToolCalls`, `isStepCount`
+- [`@agentsy/orchestrator/agent`](./packages/agent.md) — `createAgentLoop`, `detectDoomLoop`, `finishReasonIs`, `hasNoToolCalls`, `isStepCount`
 - [`@agentsy/adapters`](./packages/adapters.md) — `createGenericAdapter`, `processStream`, `processRawStream`, `runStructuredDecisionFromRawStream`, `applyDecisionAction`, provider adapter helpers
 - [`@agentsy/renderers`](./packages/renderers.md) — `createPlainTextRenderer`, shared renderer types and utilities
 

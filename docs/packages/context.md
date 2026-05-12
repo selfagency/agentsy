@@ -22,7 +22,7 @@ Use `@agentsy/context` when you need lightweight utilities for shaping prompt or
 ## Common neighbors
 
 - `@agentsy/structured`
-- `@agentsy/agent`
+- `@agentsy/orchestrator/agent`
 - `@agentsy/vscode`
 
 ## Implementation example with neighbors

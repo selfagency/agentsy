@@ -1,11 +1,11 @@
-# `@agentsy/agent`
+# `@agentsy/orchestrator/agent`
 
 - **Status:** Published
 - **Role:** Multi-step agent loop orchestration
 
 ## Where it fits
 
-`@agentsy/agent` sits above the stream-processing stack when a single generation is not enough and you need iterative steps, stop conditions, or tool-use loops.
+`@agentsy/orchestrator/agent` sits above the stream-processing stack when a single generation is not enough and you need iterative steps, stop conditions, or tool-use loops.
 
 ## Key exports
 
@@ -34,7 +34,7 @@
 ## Example
 
 ```ts
-import { createAgentLoop, isStepCount } from '@agentsy/agent';
+import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
 
 const loop = createAgentLoop({
   execute,
@@ -46,7 +46,7 @@ const loop = createAgentLoop({
 ## Implementation example with neighbors
 
 ```ts
-import { createAgentLoop, isStepCount } from '@agentsy/agent';
+import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
 import { buildToolResultMessage } from '@agentsy/tool-calls';
 
 const loop = createAgentLoop({
