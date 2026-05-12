@@ -20,10 +20,18 @@ const mockTheme: Theme = {
     color: 'blue',
   },
   thinking: {
+    borderColor: 'cyan',
     spinnerColor: 'cyan',
     textColor: 'yellow',
     spinnerIntervalMs: 80,
   },
+  toolCall: {
+    pendingColor: 'yellow',
+    doneColor: 'green',
+    pendingSymbol: '⠋',
+    doneSymbol: '✓',
+  },
+  highlight: {},
 };
 
 describe('StreamingText', () => {
@@ -110,7 +118,7 @@ describe('StreamingText', () => {
   it('converts markdown when not for screen readers', async () => {
     const { markdownToAnsi } = await import('../utils/markdownToAnsi.js');
 
-    const { _lastFrame, unmount } = render(
+    const { unmount } = render(
       <StreamingText text="*italic*" markdown={true} isStreaming={false} theme={mockTheme} screenReader={false} />,
     );
 

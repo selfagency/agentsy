@@ -1,4 +1,4 @@
-# Copilot Instructions — @agentsy Monorepo
+# Agent Instructions — @agentsy Monorepo
 
 Production-oriented TypeScript monorepo for LLM stream parsing, agent infrastructure, and VS Code integration. The `plan/` directory defines the broader `@agentsy/*` package roadmap.
 

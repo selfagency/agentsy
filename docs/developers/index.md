@@ -240,7 +240,7 @@ pnpm vitest src <path-to-test>
 Debug specific tests:
 
 ```bash
-node --inspect-brk ./node_modules/vitest/vitest.mjs run src/path/to/test.ts
+node --inspect-brk ./node_modules/vitest/vitest.js run src/path/to/test.ts
 ```
 
 ## Documentation

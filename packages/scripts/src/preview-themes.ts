@@ -19,7 +19,7 @@ try {
 } catch {
   // Fallback to local source so contributors can run the script before building
   // fallow-ignore-next-line unresolved-import
-  themesModule = await import('../packages/renderers/src/ink/themes/index.js');
+  themesModule = await import('../../renderers/src/ink/themes/index.ts');
 }
 
 const entries = Object.entries(themesModule).map(([name, value]) => ({ name, value }));

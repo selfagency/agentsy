@@ -8,11 +8,11 @@
   "scripts": {
     "release": "tsx src/release-per-package.ts",
     "bootstrap-release": "tsx src/bootstrap-release.ts",
-    "release-test": "node --test src/release-state.test.ts src/trusted-publish-readiness.test.ts",
+    "release-test": "vitest run src/release-state.test.ts src/trusted-publish-readiness.test.ts",
     "validate-workspace": "tsx src/validate-workspace.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test src/**/*.test.ts",
+    "test": "vitest run",
     "lint": "oxlint src",
     "format": "oxfmt src"
   }

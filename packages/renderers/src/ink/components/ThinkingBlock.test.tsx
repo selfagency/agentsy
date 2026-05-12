@@ -16,10 +16,18 @@ const mockTheme: Theme = {
     color: 'blue',
   },
   thinking: {
+    borderColor: 'cyan',
     spinnerColor: 'cyan',
     textColor: 'yellow',
     spinnerIntervalMs: 80,
   },
+  toolCall: {
+    pendingColor: 'yellow',
+    doneColor: 'green',
+    pendingSymbol: '⠋',
+    doneSymbol: '✓',
+  },
+  highlight: {},
 };
 
 describe('ThinkingBlock', () => {
