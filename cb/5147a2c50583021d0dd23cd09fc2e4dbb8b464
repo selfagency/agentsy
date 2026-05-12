@@ -1,0 +1,156 @@
+docs/packages/providers.md
+  ai_agent 42
+  s_095d159945d78b::t_c5f23a4311fcf3 1-41
+docs/packages/structured.md
+  h_627b419bd8fa0f 1,3,31-32,38-40
+docs/packages/context.md
+  h_627b419bd8fa0f 1,3,8,24,31
+packages/providers/src/pipeline/createPipeline.ts
+  h_627b419bd8fa0f 6
+  s_095d159945d78b::t_2d4c7cfa9a9410 3,8,19
+  s_095d159945d78b::t_c82430aa60e385 4-5
+docs/packages/processor.md
+  s_095d159945d78b::t_cdbce5c1f53019 1,3-4,8,24,35-36,42-44,47-48,55-56,72
+docs/getting-started.md
+  s_095d159945d78b::t_2feddeaa2df3ab 5
+  h_627b419bd8fa0f 235,347-348
+docs/packages.md
+  h_627b419bd8fa0f 23-27,29,35-43
+docs/packages/sse.md
+  h_627b419bd8fa0f 1,3,17-18,23-24
+packages/plugins/package.json
+  s_095d159945d78b::t_d293d2768a6bfc 28-32
+docs/packages/xml-filter.md
+  h_627b419bd8fa0f 1,3,18-20,25-26
+packages/plugins/README.md
+  s_095d159945d78b::t_d293d2768a6bfc 5-6,10-14
+packages/integration/src/renderers.test.ts
+  s_095d159945d78b::t_448972f4debd9d 197,202
+docs/packages/renderers.md
+  s_095d159945d78b::t_2feddeaa2df3ab 57
+  h_627b419bd8fa0f 31,37-38
+docs/packages/ui.md
+  h_627b419bd8fa0f 26,33-34
+docs/examples/cli-log-summarizer.md
+  s_095d159945d78b::t_d367c2a1fe819c 13,19-20,22
+docs/examples/dns-blocklist.md
+  s_095d159945d78b::t_d367c2a1fe819c 15,24-26,149-150
+packages/vscode/src/usage-tracking/map-usage.ts
+  s_095d159945d78b::t_448972f4debd9d 1
+pnpm-lock.yaml
+  ai_agent 94-96,226-250,457-459
+docs/examples/all-tooling-end-to-end.md
+  s_095d159945d78b::t_d367c2a1fe819c 18,24,26,33,221-222,224,226
+packages/providers/tsconfig.json
+  ai_agent 7-9
+  s_095d159945d78b::t_448972f4debd9d 1,3-4,6
+  s_095d159945d78b::t_e43ddde4165193 2,5
+docs/packages/recovery.md
+  h_627b419bd8fa0f 1,3,8,22,28-29
+packages/providers/src/index.ts
+  s_095d159945d78b::t_448972f4debd9d 1-2,4-29
+  s_095d159945d78b::t_2d4c7cfa9a9410 3
+docs/migration/llm-stream-parser.md
+  h_627b419bd8fa0f 32,85
+  s_095d159945d78b::t_d367c2a1fe819c 34-44,65,71,77,205,283-286
+  s_095d159945d78b::t_cdbce5c1f53019 86-103,143
+packages/providers/src/pipeline/pipeline.test.ts
+  s_095d159945d78b::t_2d4c7cfa9a9410 2
+packages/providers/package.json
+  ai_agent 6,9,73
+  s_095d159945d78b::t_20229b8d0b752b 12-38,44-72
+  s_095d159945d78b::t_2d4c7cfa9a9410 39-43
+  s_095d159945d78b::t_448972f4debd9d 1-5,7-8,10-11
+docs/examples/multi-provider-policy-gate.md
+  s_095d159945d78b::t_d367c2a1fe819c 13,19-20
+docs/api.md
+  h_627b419bd8fa0f 15-18,20,25-32
+  s_095d159945d78b::t_2feddeaa2df3ab 49
+docs/why-agentsy.md
+  s_095d159945d78b::t_8a89b1269790b0 150
+packages/integration/package.json
+  s_095d159945d78b::t_448972f4debd9d 19
+docs/developers/index.md
+  s_095d159945d78b::t_8a89b1269790b0 113
+docs/migration/v0.1-to-v0.2.md
+  s_095d159945d78b::t_cdbce5c1f53019 23-32,90-92
+  h_627b419bd8fa0f 22
+docs/architecture/package-ecosystem.md
+  h_627b419bd8fa0f 12-18,23,27,38-39,46,50
+  s_095d159945d78b::t_8a89b1269790b0 11
+docs/packages/tool-calls.md
+  h_627b419bd8fa0f 1,3,26-27,33-34
+packages/providers/src/adapters/generic.ts
+  s_095d159945d78b::t_c47d9d4d5c96d7 7-9
+packages/providers/tsup.config.ts
+  s_095d159945d78b::t_2d4c7cfa9a9410 8
+  s_095d159945d78b::t_448972f4debd9d 1-7,9-20,22-27
+  h_627b419bd8fa0f 21
+docs/packages/normalizers.md
+  h_627b419bd8fa0f 1,3,8,39,45,53-54
+packages/providers/src/universal-client/index.ts
+  s_095d159945d78b::t_448972f4debd9d 2,4,7
+docs/packages/vscode.md
+  h_627b419bd8fa0f 35,48-49
+docs/migration/index.md
+  h_627b419bd8fa0f 9,24,35
+docs/packages/agent.md
+  h_627b419bd8fa0f 31,50
+docs/examples/tool-loop-retries-continuation.md
+  s_095d159945d78b::t_d367c2a1fe819c 13,20-23,96-97
+docs/examples/stateful-ops-copilot.md
+  s_095d159945d78b::t_d367c2a1fe819c 13,19
+packages/plugins/tsup.config.ts
+  s_095d159945d78b::t_d293d2768a6bfc 4-7
+docs/packages/thinking.md
+  h_627b419bd8fa0f 1,3,20,22,27-28
+docs/architecture/index.md
+  h_627b419bd8fa0f 20,24-25,29-35,43-44
+README.md
+  ai_agent 45-49,62-64,91-93,109-111
+  s_095d159945d78b::t_b360be855d5fa3 115,117,120
+packages/vscode/package.json
+  s_095d159945d78b::t_448972f4debd9d 51
+packages/providers/src/pipeline/index.ts
+  s_095d159945d78b::t_2d4c7cfa9a9410 1
+docs/packages/formatting.md
+  h_627b419bd8fa0f 1,3,31
+packages/integration/src/normalizer-to-processor.test.ts
+  s_095d159945d78b::t_448972f4debd9d 12,20
+  h_627b419bd8fa0f 11
+docs/developers/releasing.md
+  s_095d159945d78b::t_430465675780a1 15,92
+docs/packages/ag-ui.md
+  s_095d159945d78b::t_d367c2a1fe819c 24,30
+docs/developers/integration-copilot.md
+  s_095d159945d78b::t_430465675780a1 55-56,90,112,227,245,256
+docs/architecture/stream-processing.md
+  h_627b419bd8fa0f 9-10,14,20,28-29,34-40
+docs/packages/adapters.md
+  h_627b419bd8fa0f 1,3-4,8,35,41,54-56
+packages/integration/src/sse-pipeline.test.ts
+  s_095d159945d78b::t_2d4c7cfa9a9410 4,9
+docs/index.md
+  s_095d159945d78b::t_2feddeaa2df3ab 95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "cb5147a2c50583021d0dd23cd09fc2e4dbb8b464",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}

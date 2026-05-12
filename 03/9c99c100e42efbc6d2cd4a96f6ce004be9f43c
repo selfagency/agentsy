@@ -1,0 +1,42 @@
+packages/orchestrator/src/agent/agent/createAgentLoop.ts
+  s_095d159945d78b::t_607ba8123731d3 3-10,12-13,83,88-89,127-132,134-135,142-147,149-152,217-229,231-233,277-278,282,308-313,315,349-351,373-376
+  s_095d159945d78b::t_c50ff5a97a749a 90,96-105,192,194,198-199,208
+  s_095d159945d78b::t_18eaa6971e556c 133,352-353
+  s_095d159945d78b::t_a3a8e5a182548e 354-355,362
+  h_627b419bd8fa0f 2,314
+  s_095d159945d78b::t_fe0988b33d69cb 11
+  s_095d159945d78b::t_a9cc140bad69af 230,273
+packages/orchestrator/src/agent/agent/index.ts
+  s_095d159945d78b::t_d203b1ef9309db 4-5,9-10
+packages/orchestrator/src/agent/agent/types.ts
+  h_627b419bd8fa0f 3
+  s_095d159945d78b::t_d203b1ef9309db 26-45,51-52,55-64
+packages/orchestrator/src/agent/agent/agent.test.ts
+  s_095d159945d78b::t_b4e75cdda03a6b 494-505
+  s_095d159945d78b::t_07e20fb0a14f83 556
+  s_095d159945d78b::t_06cb1796fd7214 469,474-477
+  s_095d159945d78b::t_a3a8e5a182548e 424-467,478-493,506-508,528-555,557-572
+  s_095d159945d78b::t_aa4742130cc08b 468,470-473
+  s_095d159945d78b::t_18eaa6971e556c 573-574
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "039c99c100e42efbc6d2cd4a96f6ce004be9f43c",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}

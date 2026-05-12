@@ -1,0 +1,39 @@
+packages/runtime/src/index.test.ts
+  s_095d159945d78b::t_2f6770e0e1efeb 6-7,11,150-196
+  s_095d159945d78b::t_0dcbb1fa35bcc4 2-5,8-10,96-149,197-230
+packages/session/src/index.test.ts
+  s_095d159945d78b::t_2f6770e0e1efeb 12-19
+packages/session/src/index.ts
+  s_095d159945d78b::t_2f6770e0e1efeb 11,25-26
+packages/runtime/package.json
+  s_095d159945d78b::t_2f6770e0e1efeb 40
+packages/runtime/src/index.ts
+  s_095d159945d78b::t_4c9a402d982b6a 134,142
+  s_095d159945d78b::t_0dcbb1fa35bcc4 8-26,29-30,35-40,43-64,95-103,112-113,122-133,135-141,143-156,161-166,172-174,177-184,186,188-196,199-200,203-205,212-234,239-258
+  ai_agent 211
+  s_095d159945d78b::t_2f6770e0e1efeb 1-2,41-42,65-94,104-111,114-121,206-210,235-238
+packages/orchestrator/src/scheduler/index.ts
+  ai_agent 4-8,12-13,17-20,24-69
+  s_095d159945d78b::t_0dcbb1fa35bcc4 1-3,9-11,14-16,21-23,70
+pnpm-lock.yaml
+  ai_agent 328-330
+packages/orchestrator/src/scheduler/index.test.ts
+  ai_agent 9-14,45
+  s_095d159945d78b::t_0dcbb1fa35bcc4 1-8,15-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "2be8c46a985ce2cfa52be7e69503db104e29b54e",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
