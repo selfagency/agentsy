@@ -421,6 +421,30 @@ describe('createAgentLoop', () => {
     expect(onStepSpy).toHaveBeenCalled();
   });
 
+  it('should call beforeInit and afterInit hooks around run startup', async () => {
+    const beforeInit = vi.fn();
+    const afterInit = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: 'result', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      beforeInit,
+      afterInit,
+      buildToolResultMessages: async () => [],
+    });
+
+    for await (const _part of loop.run([{ role: 'user', content: 'hello' }])) {
+      // consume loop
+    }
+
+    expect(beforeInit).toHaveBeenCalledTimes(1);
+    expect(afterInit).toHaveBeenCalledTimes(1);
+    expect(beforeInit.mock.calls[0]?.[0].messages).toEqual([{ role: 'user', content: 'hello' }]);
+    expect(afterInit.mock.calls[0]?.[0].messages).toEqual([{ role: 'user', content: 'hello' }]);
+  });
+
   it('should call beforeStep and afterStep hooks with loop context', async () => {
     const beforeStep = vi.fn();
     const afterStep = vi.fn();
@@ -570,6 +594,31 @@ describe('createAgentLoop', () => {
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
     expect(onError.mock.calls[0]?.[0].message).toBe('step failed');
+  });
+
+  it('should call beforeFinal and afterFinal with terminal outcome', async () => {
+    const beforeFinal = vi.fn();
+    const afterFinal = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: 'done', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      beforeFinal,
+      afterFinal,
+      buildToolResultMessages: async () => [],
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(beforeFinal).toHaveBeenCalledTimes(1);
+    expect(afterFinal).toHaveBeenCalledTimes(1);
+    expect(beforeFinal.mock.calls[0]?.[0].outcome).toBe('success');
+    expect(beforeFinal.mock.calls[0]?.[0].finalOutput.content).toBe('done');
+    expect(afterFinal.mock.calls[0]?.[0].outcome).toBe('success');
   });
 
   it('should process and emit output parts from execute function', async () => {

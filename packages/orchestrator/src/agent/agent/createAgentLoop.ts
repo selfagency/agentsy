@@ -2,6 +2,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/runtime/ag-ui';
 import type {
   AgentLoopContext,
+  AgentLoopFinalContext,
   AgentLoopHandle,
   AgentLoopOptions,
   AgentLoopState,
@@ -255,6 +256,9 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     const stopConditions = Array.isArray(options.stopWhen) ? options.stopWhen : [options.stopWhen];
 
     let currentMessages = initialMessages;
+    const initialContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
+
+    await options.beforeInit?.(initialContext);
 
     // Emit RUN_STARTED
     await safeEmitEvent(
@@ -269,6 +273,8 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       'RUN_STARTED',
       onAgUiEvent,
     );
+
+    await options.afterInit?.(initialContext);
 
     let abortReason: 'success' | 'interrupt' | 'error' | 'abort' = 'success';
 
@@ -351,6 +357,14 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         await options.onAbort?.('abort', createContext(runId, threadId, state.steps.length, currentMessages, state));
       }
 
+      const finalContext: AgentLoopFinalContext = {
+        ...createContext(runId, threadId, state.steps.length, currentMessages, state),
+        outcome: abortReason,
+        finalOutput: state.lastOutput,
+      };
+
+      await options.beforeFinal?.(finalContext);
+
       const finishedOutcomeType = abortReason === 'abort' ? 'interrupt' : abortReason;
 
       // Emit RUN_FINISHED with appropriate outcome
@@ -367,6 +381,8 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         'RUN_FINISHED',
         onAgUiEvent,
       );
+
+      await options.afterFinal?.(finalContext);
     } catch (error) {
       // Emit RUN_ERROR on failure
       const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
@@ -387,6 +403,15 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         'RUN_ERROR',
         onAgUiEvent,
       );
+
+      const finalContext: AgentLoopFinalContext = {
+        ...createContext(runId, threadId, state.steps.length, currentMessages, state),
+        outcome: 'error',
+        finalOutput: state.lastOutput,
+      };
+
+      await options.beforeFinal?.(finalContext);
+      await options.afterFinal?.(finalContext);
       throw error;
     }
   }
