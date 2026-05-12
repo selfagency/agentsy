@@ -38,10 +38,26 @@ export interface AgentLoopStepContext extends AgentLoopContext {
 
 export interface AgentLoopToolContext extends AgentLoopStepContext {
   toolCalls: XmlToolCall[];
+  approvedToolCalls?: XmlToolCall[];
+  deniedToolCalls?: XmlToolCall[];
+  toolApprovalMode?: ToolApprovalMode;
   toolResultMessages?: unknown[];
 }
 
 export type AgentLoopAbortReason = 'abort' | 'interrupt';
+export type ToolApprovalMode = 'allow' | 'ask' | 'deny' | 'auto';
+export type ToolApprovalDecision = 'allow' | 'deny';
+
+export interface ToolApprovalContext extends AgentLoopToolContext {
+  mode: ToolApprovalMode;
+}
+
+export interface ToolApprovalResult {
+  decision?: ToolApprovalDecision;
+  approvedToolCalls?: XmlToolCall[];
+  deniedToolCalls?: XmlToolCall[];
+  reason?: string;
+}
 
 export type AgentLoopOutcome = 'success' | 'interrupt' | 'error' | 'abort';
 
@@ -69,6 +85,16 @@ export interface AgentLoopOptions {
   beforeToolCall?: (context: AgentLoopToolContext) => void | Promise<void>;
   /** Optional hook fired after tool result messages have been built. */
   afterToolCall?: (context: AgentLoopToolContext) => void | Promise<void>;
+  /** Tool approval mode. Defaults to `allow`. `ask` requires `approveToolCalls` to continue. */
+  toolApprovalMode?: ToolApprovalMode;
+  /** Optional tool approval callback used by `ask` and `auto` modes. */
+  approveToolCalls?: (
+    context: ToolApprovalContext,
+  ) =>
+    | boolean
+    | ToolApprovalDecision
+    | ToolApprovalResult
+    | Promise<boolean | ToolApprovalDecision | ToolApprovalResult>;
   /** Optional callback fired when the loop aborts via explicit abort() or interrupt controller. */
   onAbort?: (reason: AgentLoopAbortReason, context: AgentLoopContext) => void | Promise<void>;
   /** Optional callback fired when execute/process logic throws. */

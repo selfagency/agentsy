@@ -530,6 +530,121 @@ describe('createAgentLoop', () => {
     expect(afterToolCall.mock.calls[0]?.[0].toolResultMessages).toEqual(toolResultMessages);
   });
 
+  it('should deny tool calls without building tool results when approval mode is deny', async () => {
+    const buildToolResultMessages = vi.fn(async () => [{ role: 'tool', content: 'should not happen' }]);
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield {
+          tool_calls: [
+            {
+              function: {
+                name: 'search',
+                arguments: { query: 'docs' },
+              },
+            },
+          ],
+        };
+        yield { done: true, finishReason: 'tool-calls' as const };
+      },
+      stopWhen: isStepCount(3),
+      toolApprovalMode: 'deny',
+      buildToolResultMessages,
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(buildToolResultMessages).not.toHaveBeenCalled();
+  });
+
+  it('should use ask mode approval callback before building tool results', async () => {
+    const approveToolCalls = vi.fn(async () => 'allow' as const);
+    const buildToolResultMessages = vi.fn(async () => [{ role: 'tool', content: 'approved' }]);
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield {
+          tool_calls: [
+            {
+              function: {
+                name: 'search',
+                arguments: { query: 'docs' },
+              },
+            },
+          ],
+        };
+        yield { done: true, finishReason: 'tool-calls' as const };
+      },
+      stopWhen: isStepCount(2),
+      toolApprovalMode: 'ask',
+      approveToolCalls,
+      buildToolResultMessages,
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(approveToolCalls).toHaveBeenCalledTimes(1);
+    const approvalCalls = approveToolCalls.mock.calls as unknown as Array<[{ mode?: string }]>;
+    expect(approvalCalls[0]?.[0]?.mode).toBe('ask');
+    expect(buildToolResultMessages).toHaveBeenCalledTimes(1);
+    const buildToolResultCalls = buildToolResultMessages.mock.calls as unknown as Array<[unknown[]]>;
+    expect(buildToolResultCalls[0]?.[0]).toMatchObject([
+      {
+        name: 'search',
+        parameters: { query: 'docs' },
+      },
+    ]);
+  });
+
+  it('should pass approved and denied tool calls to afterToolCall when approval filters them', async () => {
+    const afterToolCall = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield {
+          tool_calls: [
+            {
+              function: {
+                name: 'search',
+                arguments: { query: 'docs' },
+              },
+            },
+            {
+              function: {
+                name: 'fetch',
+                arguments: { url: 'https://example.com' },
+              },
+            },
+          ],
+        };
+        yield { done: true, finishReason: 'tool-calls' as const };
+      },
+      stopWhen: isStepCount(2),
+      toolApprovalMode: 'ask',
+      approveToolCalls: async context => ({
+        approvedToolCalls: context.toolCalls.filter(toolCall => toolCall.name === 'search'),
+      }),
+      afterToolCall,
+      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }],
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(afterToolCall).toHaveBeenCalledTimes(1);
+    expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toMatchObject([
+      { name: 'search', parameters: { query: 'docs' } },
+    ]);
+    expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toMatchObject([
+      { name: 'fetch', parameters: { url: 'https://example.com' } },
+    ]);
+  });
+
   it('should abort the loop', async () => {
     const loop = createAgentLoop({
       execute: async function* () {

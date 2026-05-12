@@ -15,4 +15,8 @@ export type {
   StepResult,
   StopCondition,
   StreamChunk,
+  ToolApprovalContext,
+  ToolApprovalDecision,
+  ToolApprovalMode,
+  ToolApprovalResult,
 } from './types.js';
