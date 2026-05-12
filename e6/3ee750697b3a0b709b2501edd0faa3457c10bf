@@ -1,0 +1,141 @@
+packages/core/src/tool-calls/extractXmlToolCalls.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-208
+packages/core/src/tool-calls/providerToolsContract.test.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-125
+packages/adapters/package.json
+  s_095d159945d78b::t_e834b20696a47d 36
+packages/processor/src/processor/chunkUtils.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 1
+packages/core/src/tool-calls/buildXmlToolSystemPrompt.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-196
+packages/recovery/package.json
+  s_095d159945d78b::t_be590860ddbf32 33
+packages/core/src/structured/streamJson.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-307
+packages/processor/src/processor/incompleteness.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 1
+packages/core/src/structured/autoRepair.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-71
+packages/processor/src/processor/AccumulatedMessage.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 1
+packages/renderers/src/ink/createInkConversationRenderer.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 4
+packages/core/src/tool-calls/buildNativeToolsPayload.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-131
+packages/core/src/sse/parseSSEStream.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-85
+pnpm-lock.yaml
+  ai_agent 50-52,106-108,228-230,399-401,452-454,480-482
+packages/core/src/structured/validateJsonSchema.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-559
+packages/processor/src/processor/LLMStreamProcessor.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 1
+  s_095d159945d78b::t_682564ae486b91 2
+  s_095d159945d78b::t_996d3f472085e9 877
+packages/processor/tsup.config.ts
+  s_095d159945d78b::t_7b427f0cdaa513 6-8
+  s_095d159945d78b::t_a0625f7fba8a18 13
+packages/core/package.json
+  s_095d159945d78b::t_2ba50342b43fdb 45-69
+packages/renderers/package.json
+  s_095d159945d78b::t_e834b20696a47d 33
+packages/processor/tsconfig.json
+  s_095d159945d78b::t_e7ac22ef552d82 5-6
+packages/core/src/retry/index.test.ts
+  s_095d159945d78b::t_ba3aa2435efd8f 1-26
+packages/core/src/structured/parseJson.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-284
+packages/core/src/structured/zodAdapter.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-54
+packages/core/src/sse/SSEParser.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-165
+packages/core/src/structured/pipe.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-7
+packages/core/src/structured/buildRepairPrompt.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-27
+packages/core/src/tool-calls/types.ts
+  s_095d159945d78b::t_98ee74c61a588f 1
+packages/core/src/index.ts
+  s_095d159945d78b::t_a6205582b240c5 6-10
+  s_095d159945d78b::t_f542c68ca707f4 11-12
+packages/core/src/structured/repairStateMachine.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-138
+packages/core/src/structured/types.test.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-46
+packages/core/src/tool-calls/buildToolResultMessage.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-148
+packages/processor/src/processor/LLMStreamProcessor.types.ts
+  s_095d159945d78b::t_72460cabd12f1b 1-2
+packages/adapters/src/adapters/generic.ts
+  s_095d159945d78b::t_8c479e4773c316 2-3
+packages/core/src/structured/providerFormats.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-70
+packages/renderers/src/types.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 2
+packages/core/tsup.config.ts
+  s_095d159945d78b::t_a6205582b240c5 10-14,26-30
+packages/renderers/src/ink/createInkRenderer.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 5
+packages/integration/src/structured-output.test.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 15
+packages/vscode/src/mcp/vscodeBridgeHelper.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 2
+packages/integration/src/thinking-and-tool-calls.test.ts
+  s_095d159945d78b::t_93d71c48b68c00 10-11
+packages/processor/src/pipeline/createPipeline.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 18
+packages/core/src/structured/types.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-45
+packages/integration/package.json
+  s_095d159945d78b::t_e834b20696a47d 20
+packages/vscode/package.json
+  s_095d159945d78b::t_5378efdb8d6601 54
+packages/vscode/src/vscode-renderer/tool-call-lifecycle.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 2
+packages/recovery/tsup.config.ts
+  s_095d159945d78b::t_513d44f9392229 6-8
+  s_095d159945d78b::t_d7834ec9613593 13
+packages/core/src/tool-calls/ToolCallAccumulator.ts
+  s_095d159945d78b::t_9d47128e4a79c5 1
+packages/core/src/thinking/ThinkingParser.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-239
+packages/core/src/tool-calls/providerToolsContract.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-65
+packages/core/src/thinking/ThinkingParser.test.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-185
+packages/core/src/structured/buildFormatInstructions.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-9
+packages/processor/package.json
+  s_095d159945d78b::t_7df85d089c85ce 38
+packages/agent/src/agent/agent.test.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 2
+packages/agent/package.json
+  s_095d159945d78b::t_e834b20696a47d 37
+packages/processor/src/processor/LLMStreamProcessor.test.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 4
+  s_095d159945d78b::t_400f6e62885019 587
+packages/core/src/structured/fieldValidator.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-262
+packages/core/src/sse/sse.test.ts
+  s_095d159945d78b::t_98ee74c61a588f 1-327
+packages/recovery/src/index.ts
+  s_095d159945d78b::t_69e05f49c1730b 2
+packages/agent/src/agent/types.ts
+  s_095d159945d78b::t_c50c4d6ac48b5c 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "e63ee750697b3a0b709b2501edd0faa3457c10bf",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
