@@ -1,0 +1,30 @@
+pnpm-lock.yaml
+  ai_agent 17-19,919-958,2111-2115,3447-3470,4529-4540
+packages/orchestrator/src/agent/agent/createAgentLoop.ts
+  h_627b419bd8fa0f 3
+package.json
+  s_095d159945d78b::t_33f15d7d25e87c 48,68-75
+packages/runtime/src/index.ts
+  h_627b419bd8fa0f 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "06cfc0c3db26de6e27fc1999ee150fdebabf59cd",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
