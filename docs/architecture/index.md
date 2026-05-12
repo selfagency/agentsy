@@ -39,12 +39,13 @@ The easiest way to understand the system is to follow the flow of a model respon
 
 - `@agentsy/renderers`
 - `@agentsy/ui`
-- `@agentsy/ag-ui`
+- `@agentsy/runtime/ag-ui`
 - `@agentsy/providers/adapters`
 - `@agentsy/providers/pipeline`
 
 ### Runtime and integration layer
 
+- `@agentsy/runtime`
 - `@agentsy/orchestrator/agent`
 - `@agentsy/vscode`
 

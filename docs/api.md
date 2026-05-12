@@ -31,11 +31,12 @@ Detailed API breakdowns, examples, and composition guidance live on the individu
 - [`@agentsy/core/xml-filter`](./packages/xml-filter.md) — `createXmlStreamFilter`, `tagLists`, `XmlStreamFilter`
 - [`@agentsy/core/sse`](./packages/sse.md) — `SSEParser`, `parseSSEStream`
 - [`@agentsy/types`](./packages/types.md) — shared conversation, stream, tool-call, and usage types
+- [`@agentsy/tokens`](./packages/tokens.md) — `createTokenLedger`, `createInMemoryTokenManager`, `compressConversation`, `PacingController`
 
 ## State and integration surfaces
 
 - [`@agentsy/ui`](./packages/ui.md) — `createConversationStore`, `createConversationStoreFromProcessor`, `bindProcessorToConversationStore`, `applyConversationEvent`
-- [`@agentsy/ag-ui`](./packages/ag-ui.md) — `toAgUiStream`, `convertEventStream`, `createEventConverter`, `toCopilotKitEvent`, `toCustomUIEvent`, `StateManager`, `InterruptController`, `toObservable`
+- [`@agentsy/runtime/ag-ui`](./packages/ag-ui.md) — `toAgUiStream`, `convertEventStream`, `createEventConverter`, `toCopilotKitEvent`, `toCustomUIEvent`, `StateManager`, `InterruptController`, `toObservable`
 - [`@agentsy/vscode`](./packages/vscode.md) — `createVSCodeAgentLoop`, `createVSCodeChatRenderer`, `BaseLanguageModelChatProvider`, `ApiKeyManager`, settings, usage, and MCP helpers
 
 ## Private verification package

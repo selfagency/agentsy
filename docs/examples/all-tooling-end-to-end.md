@@ -15,7 +15,7 @@ This example demonstrates a single end-to-end architecture that combines the ful
 ## Packages used
 
 ```bash
-npm install @agentsy/core @agentsy/providers @agentsy/orchestrator/agent @agentsy/ag-ui @agentsy/renderers @agentsy/ui
+npm install @agentsy/core @agentsy/providers @agentsy/orchestrator @agentsy/runtime @agentsy/renderers @agentsy/ui
 ```
 
 ## Illustrative implementation
@@ -23,7 +23,7 @@ npm install @agentsy/core @agentsy/providers @agentsy/orchestrator/agent @agents
 ```ts
 import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
 import { createAgentLoop, hasNoToolCalls, isStepCount } from '@agentsy/orchestrator/agent';
-import { toAgUiStream } from '@agentsy/ag-ui';
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
 import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
 import { LLMStreamProcessor, createProcessorEventAdapter } from '@agentsy/core/processor';
 import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';

@@ -289,16 +289,14 @@ Future-facing changes should be grounded in the relevant file under `plan/` rath
 ```text
 agentsy/
 ├── packages/
-│   ├── vscode/            # Published package
-│   ├── processor/         # Stream orchestrator
-│   ├── normalizers/       # Provider normalizers
-│   ├── agent/             # Agent loop
-│   ├── adapters/          # Provider adapters
-│   ├── thinking/          # <think> parser
-│   ├── tool-calls/        # Tool call parsing
-│   ├── structured/        # JSON parse/repair/validation
+│   ├── core/              # Consolidated stream processing + utilities
+│   ├── providers/         # Provider adapters, normalizers, pipeline
+│   ├── runtime/           # Runtime loops + AG-UI subpath
+│   ├── orchestrator/      # Agent loop + scheduler orchestration
+│   ├── tokens/            # Token budgets and pacing
 │   ├── renderers/         # CLI/TUI/plain renderers
-│   ├── ag-ui/             # AG-UI protocol bridge
+│   ├── ui/                # Conversation-state projection
+│   ├── vscode/            # VS Code integration package
 │   └── ...other internal packages
 ├── docs/
 ├── .vitepress/

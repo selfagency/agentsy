@@ -1,11 +1,11 @@
-# `@agentsy/ag-ui`
+# `@agentsy/runtime/ag-ui`
 
-- **Status:** Published
+- **Status:** Published as a subpath export of `@agentsy/runtime`
 - **Role:** AG-UI protocol bridge utilities
 
 ## Where it fits
 
-Use `@agentsy/ag-ui` when your application needs to adapt the event model into AG-UI oriented workflows or protocol expectations.
+Use `@agentsy/runtime/ag-ui` when your application needs to adapt runtime or processor events into AG-UI oriented workflows or protocol expectations.
 
 ## Available APIs
 
@@ -23,11 +23,12 @@ Use `@agentsy/ag-ui` when your application needs to adapt the event model into A
 - `@agentsy/ui`
 - `@agentsy/core/processor`
 - `@agentsy/orchestrator/agent`
+- `@agentsy/runtime`
 
 ## Implementation example with neighbors
 
 ```ts
-import { toAgUiStream } from '@agentsy/ag-ui';
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
 
 const agUiEvents = toAgUiStream(processedEventStream, { runId: 'run-1', threadId: 'thread-1' });
 

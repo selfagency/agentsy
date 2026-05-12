@@ -25,7 +25,10 @@ For the high-level architecture behind these packages, start with the [Architect
 | `@agentsy/providers`             | Provider package root for adapters, normalizers, and SSE pipelines  | Published | [Package page](./packages/providers.md)   |
 | `@agentsy/providers/normalizers` | Provider-specific response normalization into a common stream shape | Published | [Package page](./packages/normalizers.md) |
 | `@agentsy/providers/pipeline`    | Provider-coupled SSE pipeline composition                           | Published | [Package page](./packages/providers.md)   |
+| `@agentsy/runtime`               | Runtime loops, workflow checkpoints, and spawned task execution     | Published | [Package page](./packages/runtime.md)     |
+| `@agentsy/runtime/ag-ui`         | AG-UI protocol adapters and event projection helpers                | Published | [Package page](./packages/ag-ui.md)       |
 | `@agentsy/orchestrator/agent`    | Multi-step agent loop and stop-condition helpers                    | Published | [Package page](./packages/agent.md)       |
+| `@agentsy/tokens`                | Token budgets, pacing, and conversation compression                 | Published | [Package page](./packages/tokens.md)      |
 | `@agentsy/providers/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
 | `@agentsy/renderers`             | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
 
@@ -45,10 +48,9 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## State and protocol packages
 
-| Package          | Role                                                   | Status    | Docs                                |
-| ---------------- | ------------------------------------------------------ | --------- | ----------------------------------- |
-| `@agentsy/ui`    | Conversation-state store and processor binding helpers | Published | [Package page](./packages/ui.md)    |
-| `@agentsy/ag-ui` | AG-UI protocol bridge utilities                        | Published | [Package page](./packages/ag-ui.md) |
+| Package       | Role                                                   | Status    | Docs                             |
+| ------------- | ------------------------------------------------------ | --------- | -------------------------------- |
+| `@agentsy/ui` | Conversation-state store and processor binding helpers | Published | [Package page](./packages/ui.md) |
 
 ## Private package
 
@@ -64,4 +66,4 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Planned packages
 
-Planned packages such as runtime/session/memory/provider-management layers are documented in [Platform evolution](./architecture/platform-evolution.md) and [Roadmap](./roadmap.md). They are not listed in the tables above unless real package code exists in `packages/`.
+Planned packages beyond the current runtime/session/memory/tokens stack are documented in [Platform evolution](./architecture/platform-evolution.md) and [Roadmap](./roadmap.md). They are not listed in the tables above unless real package code exists in `packages/`.
