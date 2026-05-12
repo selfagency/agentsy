@@ -746,6 +746,97 @@ describe('createAgentLoop', () => {
     ]);
   });
 
+  it('should treat approved tool calls without ids as matches when name and parameters match', async () => {
+    const afterToolCall = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield {
+          tool_calls: [
+            {
+              id: 'tool-1',
+              function: {
+                name: 'search',
+                arguments: { query: 'docs' },
+              },
+            },
+          ],
+        };
+        yield { done: true, finishReason: 'tool-calls' as const };
+      },
+      stopWhen: isStepCount(2),
+      toolApprovalMode: 'ask',
+      approveToolCalls: async () => ({
+        approvedToolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' }],
+      }),
+      afterToolCall,
+      buildToolResultMessages: async toolCalls => toolCalls.map(toolCall => ({ role: 'tool', content: toolCall.name })),
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(afterToolCall).toHaveBeenCalledTimes(1);
+    expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toHaveLength(1);
+    expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toHaveLength(0);
+  });
+
+  it('should merge step override hooks and approval callbacks with base options', async () => {
+    const callOrder: string[] = [];
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield {
+          tool_calls: [
+            {
+              function: {
+                name: 'search',
+                arguments: { query: 'docs' },
+              },
+            },
+          ],
+        };
+        yield { done: true, finishReason: 'tool-calls' as const };
+      },
+      stopWhen: isStepCount(2),
+      toolApprovalMode: 'deny',
+      beforeStep: async () => {
+        callOrder.push('base-beforeStep');
+      },
+      afterToolCall: async () => {
+        callOrder.push('base-afterToolCall');
+      },
+      prepareStep: () => ({
+        toolApprovalMode: 'ask',
+        beforeStep: async () => {
+          callOrder.push('override-beforeStep');
+        },
+        approveToolCalls: async (context): Promise<'allow'> => {
+          callOrder.push(`override-approve:${context.mode}`);
+          return 'allow';
+        },
+        afterToolCall: async () => {
+          callOrder.push('override-afterToolCall');
+        },
+      }),
+      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }],
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(callOrder).toContain('base-beforeStep');
+    expect(callOrder).toContain('override-beforeStep');
+    expect(callOrder).toContain('override-approve:ask');
+    expect(callOrder).toContain('base-afterToolCall');
+    expect(callOrder).toContain('override-afterToolCall');
+    expect(callOrder.indexOf('base-beforeStep')).toBeLessThan(callOrder.indexOf('override-beforeStep'));
+    expect(callOrder.indexOf('override-beforeStep')).toBeLessThan(callOrder.indexOf('override-approve:ask'));
+    expect(callOrder.indexOf('override-approve:ask')).toBeLessThan(callOrder.indexOf('base-afterToolCall'));
+    expect(callOrder.indexOf('base-afterToolCall')).toBeLessThan(callOrder.indexOf('override-afterToolCall'));
+  });
+
   it('should abort the loop', async () => {
     const loop = createAgentLoop({
       execute: async function* () {

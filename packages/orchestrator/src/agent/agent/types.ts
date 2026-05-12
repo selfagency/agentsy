@@ -96,7 +96,9 @@ export interface AgentLoopOptions {
   /** Optional hook fired immediately before each loop step executes. */
   beforeStep?: (context: AgentLoopContext) => void | Promise<void>;
   /** Optional hook for per-step message/callback/tool configuration overrides. */
-  prepareStep?: (context: AgentLoopContext) => AgentLoopStepOverrides | Promise<AgentLoopStepOverrides | void> | void;
+  prepareStep?: (
+    context: AgentLoopContext,
+  ) => AgentLoopStepOverrides | undefined | Promise<AgentLoopStepOverrides | undefined>;
   /** Optional callback fired after each completed step. */
   onStep?: (result: StepResult) => void | Promise<void>;
   /** Optional hook fired after state has been updated for a completed step. */

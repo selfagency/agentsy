@@ -6,6 +6,7 @@ import {
   createRuntimeWorkflowExecutor,
   loadRuntimeSnapshotFromSession,
   saveRuntimeSnapshotToSession,
+  type RuntimeExecutor,
   type RuntimeTask,
   type RuntimeWorkflowTask,
 } from './index.js';
@@ -116,6 +117,38 @@ describe('createRuntimeExecutor', () => {
     expect(results[1]?.status).toBe('failed');
     expect(results[1]?.error?.message).toBe('boom');
   });
+
+  it('keeps execute working when destructured from the executor', async () => {
+    const calls: string[] = [];
+    const execute = Reflect.get(createRuntimeExecutor(), 'execute') as RuntimeExecutor['execute'];
+
+    await execute([
+      {
+        id: 'a',
+        run: async () => {
+          calls.push('a');
+        },
+      },
+    ]);
+
+    expect(calls).toEqual(['a']);
+  });
+
+  it('uses a detached task context when none is provided', async () => {
+    const executor = createRuntimeExecutor();
+
+    const results = await executor.executeWithResults([
+      {
+        id: 'spawn-attempt',
+        run: async (_signal, context) => {
+          await context.spawn([]);
+        },
+      },
+    ]);
+
+    expect(results[0]?.status).toBe('failed');
+    expect(results[0]?.error?.message).toContain('Runtime spawning is unavailable');
+  });
 });
 
 describe('createRuntimeLoop', () => {
@@ -159,7 +192,12 @@ describe('createRuntimeLoop', () => {
     ];
 
     const firstLoop = createRuntimeLoop({ sessionId: 'session-1', sessionStore });
-    const firstSnapshot = await firstLoop.execute([tasks[0]!]);
+    const firstTask = tasks[0];
+    if (!firstTask) {
+      throw new Error('Expected first task');
+    }
+
+    const firstSnapshot = await firstLoop.execute([firstTask]);
     expect(firstSnapshot.completedTaskIds).toEqual(['a']);
 
     const resumedLoop = createRuntimeLoop({ sessionId: 'session-1', sessionStore });

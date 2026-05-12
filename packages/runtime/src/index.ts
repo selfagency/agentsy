@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { SessionStore } from '@agentsy/session';
 
 export interface RuntimeTask {
@@ -40,8 +41,8 @@ export interface RuntimeOptions {
 }
 
 export interface RuntimeExecutor {
-  execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<void>;
-  executeWithResults(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeTaskResult[]>;
+  execute(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<void>;
+  executeWithResults(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeTaskResult[]>;
 }
 
 export interface RuntimeLoopOptions extends RuntimeOptions {
@@ -77,6 +78,10 @@ function createEmptySnapshot(sessionId: string, depth: number): RuntimeSnapshot 
     childSnapshots: [],
     updatedAt: Date.now(),
   };
+}
+
+function createRuntimeId(prefix: string): string {
+  return `${prefix}_${randomUUID()}`;
 }
 
 function isRuntimeTaskResult(value: unknown): value is RuntimeTaskResult {
@@ -176,12 +181,11 @@ function getExecutionOrder(tasks: RuntimeWorkflowTask[]): RuntimeWorkflowTask[] 
   return ordered;
 }
 
-export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExecutor => ({
-  async execute(tasks, signal = new AbortController().signal) {
-    await this.executeWithResults(tasks, signal);
-  },
-
-  async executeWithResults(tasks, signal = new AbortController().signal) {
+export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExecutor => {
+  const executeWithResults = async (
+    tasks: RuntimeTask[],
+    signal: AbortSignal = new AbortController().signal,
+  ): Promise<RuntimeTaskResult[]> => {
     const results: RuntimeTaskResult[] = [];
 
     for (const task of tasks) {
@@ -218,8 +222,17 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
     }
 
     return results;
-  },
-});
+  };
+
+  const execute = async (tasks: RuntimeTask[], signal: AbortSignal = new AbortController().signal): Promise<void> => {
+    await executeWithResults(tasks, signal);
+  };
+
+  return {
+    execute,
+    executeWithResults,
+  };
+};
 
 function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
   return {
@@ -232,7 +245,7 @@ function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
 }
 
 export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop {
-  const sessionId = options.sessionId ?? `runtime_${Math.random().toString(36).slice(2, 10)}`;
+  const sessionId = options.sessionId ?? createRuntimeId('runtime');
   const depth = options.depth ?? 0;
   const maxDepth = options.maxDepth ?? 3;
   const persistedSnapshot = options.sessionStore

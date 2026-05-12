@@ -1,9 +1,19 @@
-export function mergeCallbacks<T extends (...args: any[]) => void | Promise<void>>(a?: T, b?: T): T | undefined {
-  if (!a) return b;
-  if (!b) return a;
+export type MergeableCallback<TArgs extends unknown[]> = (...args: TArgs) => void | Promise<void>;
 
-  return (async (...args: Parameters<T>) => {
+export function mergeCallbacks<TArgs extends unknown[]>(
+  a?: MergeableCallback<TArgs>,
+  b?: MergeableCallback<TArgs>,
+): MergeableCallback<TArgs> | undefined {
+  if (!a) {
+    return b;
+  }
+
+  if (!b) {
+    return a;
+  }
+
+  return async (...args: TArgs) => {
     await a(...args);
     await b(...args);
-  }) as T;
+  };
 }

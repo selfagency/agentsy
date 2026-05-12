@@ -1,5 +1,7 @@
 // @agentsy/tokens — Token budgets, context reduction, and output shaping.
 
+import { randomUUID } from 'node:crypto';
+
 export interface TokenLedgerBudget {
   limit: number;
 }
@@ -153,11 +155,16 @@ interface AllocationRecord {
   createdAt: number;
 }
 
-const PRIORITY_ORDER: Record<BudgetPriority, number> = {
-  low: 0,
-  medium: 1,
-  high: 2,
-};
+function getBudgetPriorityRank(priority: BudgetPriority): number {
+  switch (priority) {
+    case 'high':
+      return 2;
+    case 'medium':
+      return 1;
+    case 'low':
+      return 0;
+  }
+}
 
 const DEFAULT_ESTIMATE_TOKENS = <TMessage>(message: TMessage): number => {
   if (typeof message === 'string') {
@@ -168,7 +175,7 @@ const DEFAULT_ESTIMATE_TOKENS = <TMessage>(message: TMessage): number => {
 };
 
 function createId(prefix: string): string {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+  return `${prefix}_${randomUUID()}`;
 }
 
 function cloneBudget(budget: TokenBudget): TokenBudget {
@@ -231,8 +238,32 @@ function selectBudget(budgets: TokenBudget[], request: TokenRequest): TokenBudge
   }
 
   return (
-    [...candidates].sort((left, right) => PRIORITY_ORDER[right.priority] - PRIORITY_ORDER[left.priority])[0] ?? null
+    [...candidates].sort(
+      (left, right) => getBudgetPriorityRank(right.priority) - getBudgetPriorityRank(left.priority),
+    )[0] ?? null
   );
+}
+
+function pruneTimestampsForWindow(timestamps: readonly number[], now: number, windowMs: number): number[] {
+  return timestamps.filter(timestamp => now - timestamp < windowMs);
+}
+
+function getRetryAfterMs(
+  recentTimestamps: readonly number[],
+  now: number,
+  windowMs: number,
+  maxRequests: number,
+): number {
+  if (recentTimestamps.length < maxRequests) {
+    return 0;
+  }
+
+  const oldestTimestamp = recentTimestamps[0];
+  if (oldestTimestamp === undefined) {
+    return 0;
+  }
+
+  return Math.max(1, windowMs - (now - oldestTimestamp));
 }
 
 function sumUsageForBudget(budget: TokenBudget, usage: TokenUsage[], now: number): { tokens: number; cost: number } {
@@ -564,6 +595,7 @@ export class PacingController {
 
     const now = Date.now();
     const timestamps = this.#requestTimestamps.get(provider) ?? [];
+    const maxWindowMs = limits.reduce((maxWindow, limit) => Math.max(maxWindow, limit.windowMs), 0);
     let strictest: RateLimitStatus = {
       allowed: true,
       limit: 0,
@@ -573,10 +605,9 @@ export class PacingController {
     };
 
     for (const limit of limits) {
-      const recent = timestamps.filter(timestamp => now - timestamp < limit.windowMs);
-      this.#requestTimestamps.set(provider, recent);
+      const recent = pruneTimestampsForWindow(timestamps, now, limit.windowMs);
       const remaining = Math.max(0, limit.maxRequests - recent.length);
-      const retryAfterMs = recent.length >= limit.maxRequests ? Math.max(1, limit.windowMs - (now - recent[0]!)) : 0;
+      const retryAfterMs = getRetryAfterMs(recent, now, limit.windowMs, limit.maxRequests);
       const candidate: RateLimitStatus = {
         allowed: retryAfterMs === 0,
         limit: limit.maxRequests,
@@ -593,6 +624,8 @@ export class PacingController {
         strictest = candidate;
       }
     }
+
+    this.#requestTimestamps.set(provider, pruneTimestampsForWindow(timestamps, now, maxWindowMs));
 
     return strictest;
   }

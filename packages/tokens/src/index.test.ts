@@ -142,6 +142,88 @@ describe('createInMemoryTokenManager', () => {
     expect(analysis.totalCost).toBe(8.5);
     expect(suggestions.length).toBeGreaterThan(0);
   });
+
+  it('supports budget CRUD, filtering, and wildcard model selection', async () => {
+    const manager = createInMemoryTokenManager();
+    const budget = await manager.createBudget({
+      name: 'wildcard',
+      provider: 'anthropic',
+      model: '*',
+      maxTokens: 200,
+      maxCost: 4,
+      periodMs: 60_000,
+      resetStrategy: 'manual',
+      priority: 'medium',
+      metadata: { team: 'agents' },
+    });
+
+    const updated = await manager.updateBudget(budget.id, {
+      name: 'wildcard-updated',
+      metadata: { team: 'runtime' },
+    });
+    const fetched = await manager.getBudget(budget.id);
+    const filtered = await manager.listBudgets({ provider: 'anthropic' });
+    const allocation = await manager.requestTokens({
+      provider: 'anthropic',
+      model: 'claude-3-7-sonnet',
+      estimatedTokens: 20,
+      estimatedCost: 0.5,
+      requestType: 'completion',
+    });
+
+    expect(updated.name).toBe('wildcard-updated');
+    expect(fetched?.metadata).toEqual({ team: 'runtime' });
+    expect(filtered).toHaveLength(1);
+    expect(allocation.budgetId).toBe(budget.id);
+
+    await manager.deleteBudget(budget.id);
+
+    expect(await manager.getBudget(budget.id)).toBeNull();
+    await expect(manager.releaseTokens(allocation.id, 10, 0.25)).rejects.toThrow('Unknown token allocation');
+  });
+
+  it('counts manual-reset usage across older timestamps and rejects unmatched requests', async () => {
+    const manager = createInMemoryTokenManager();
+    const budget = await manager.createBudget({
+      name: 'manual',
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      maxTokens: 100,
+      maxCost: 10,
+      periodMs: 1,
+      resetStrategy: 'manual',
+      priority: 'medium',
+    });
+
+    await manager.recordUsage({
+      budgetId: budget.id,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      tokensUsed: 95,
+      cost: 1,
+      timestamp: new Date(Date.now() - 10_000),
+      requestType: 'completion',
+    });
+
+    await expect(
+      manager.requestTokens({
+        budgetId: budget.id,
+        provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
+        requestType: 'completion',
+      }),
+    ).rejects.toThrow('exceeds the remaining token budget');
+
+    await expect(
+      manager.requestTokens({
+        provider: 'missing',
+        model: 'missing',
+        estimatedTokens: 1,
+        requestType: 'completion',
+      }),
+    ).rejects.toThrow('No matching token budget found');
+  });
 });
 
 describe('compressConversation', () => {
@@ -199,5 +281,51 @@ describe('PacingController', () => {
     });
 
     expect(wait).toBeGreaterThan(0);
+  });
+
+  it('evaluates each rate-limit window against the original timestamp history', async () => {
+    const controller = new PacingController(createInMemoryTokenManager());
+    await controller.updateRateLimits('openai', [
+      { windowMs: 1_000, maxRequests: 10 },
+      { windowMs: 10_000, maxRequests: 2 },
+    ]);
+
+    expect(
+      await controller.throttleRequest({
+        provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
+        requestType: 'completion',
+      }),
+    ).toBe(true);
+    expect(
+      await controller.throttleRequest({
+        provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
+        requestType: 'completion',
+      }),
+    ).toBe(true);
+
+    const status = await controller.checkRateLimit('openai');
+
+    expect(status.allowed).toBe(false);
+    expect(status.limit).toBe(2);
+    expect(status.retryAfterMs).toBeGreaterThan(0);
+  });
+
+  it('clears cooldowns when overload feedback is resolved', async () => {
+    const controller = new PacingController(createInMemoryTokenManager());
+    await controller.adjustPacing({ provider: 'openai', overloaded: true, retryAfterMs: 250 });
+    await controller.adjustPacing({ provider: 'openai', overloaded: false, retryAfterMs: 0 });
+
+    const wait = await controller.getWaitTime({
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      estimatedTokens: 10,
+      requestType: 'completion',
+    });
+
+    expect(wait).toBe(0);
   });
 });

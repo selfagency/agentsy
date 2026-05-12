@@ -208,7 +208,7 @@ When renaming from `token-economy`:
 
 ### File Structure
 
-```
+```text
 packages/tokens/src/
 ├── index.ts                   # Public exports
 ├── core/

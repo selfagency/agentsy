@@ -92,10 +92,6 @@ interface WorkflowExecution {
   cancel(): Promise<void>;
 }
 
-function createDefaultScheduler(): TaskScheduler {
-  return createTaskScheduler();
-}
-
 // Workflow execution factory
 function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions): WorkflowExecution {
   const registry = options.registry ?? workflow.getRegistry();
@@ -408,7 +404,7 @@ export class OrchestrationEngine extends EventEmitter {
 
   constructor(
     private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler = createDefaultScheduler(),
+    private readonly scheduler: TaskScheduler = createTaskScheduler(),
   ) {
     super();
   }

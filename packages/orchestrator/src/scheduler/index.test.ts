@@ -59,4 +59,21 @@ describe('createSchedulerRegistry', () => {
     });
     expect(registry.get('task-1')?.metadata).toMatchObject({ assignedAgentId: 'agent-1' });
   });
+
+  it('returns null when no eligible agent is available', async () => {
+    const scheduler = createTaskScheduler();
+
+    await expect(
+      scheduler.schedule({
+        taskInfo: { id: 'task-2', name: 'Task 2' },
+        agents: [{ nope: true }],
+      }),
+    ).resolves.toBeNull();
+  });
+
+  it('passes through function scheduling tasks unchanged', async () => {
+    const scheduler = createTaskScheduler();
+
+    await expect(scheduler.schedule(async () => 'done')).resolves.toBe('done');
+  });
 });

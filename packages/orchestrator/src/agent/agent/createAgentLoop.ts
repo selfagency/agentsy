@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/runtime/ag-ui';
 import type {
@@ -57,7 +58,52 @@ function toolCallsEqual(
   a: { name: string; parameters: unknown; id?: string },
   b: { name: string; parameters: unknown; id?: string },
 ) {
-  return a.name === b.name && a.id === b.id && parametersEqual(a.parameters, b.parameters);
+  const idsMatch = a.id !== undefined && b.id !== undefined ? a.id === b.id : true;
+  return a.name === b.name && idsMatch && parametersEqual(a.parameters, b.parameters);
+}
+
+function mergeLifecycleCallbacks(
+  base: AgentLoopOptions,
+  overrides: AgentLoopStepOverrides,
+  merged: AgentLoopOptions,
+): void {
+  const beforeStep = mergeCallbacks(base.beforeStep, overrides.beforeStep);
+  const onStep = mergeCallbacks(base.onStep, overrides.onStep);
+  const afterStep = mergeCallbacks(base.afterStep, overrides.afterStep);
+  const beforeToolCall = mergeCallbacks(base.beforeToolCall, overrides.beforeToolCall);
+  const afterToolCall = mergeCallbacks(base.afterToolCall, overrides.afterToolCall);
+  const onAbort = mergeCallbacks(base.onAbort, overrides.onAbort);
+  const onError = mergeCallbacks(base.onError, overrides.onError);
+  const beforeFinal = mergeCallbacks(base.beforeFinal, overrides.beforeFinal);
+  const afterFinal = mergeCallbacks(base.afterFinal, overrides.afterFinal);
+
+  if (beforeStep) merged.beforeStep = beforeStep;
+  if (onStep) merged.onStep = onStep;
+  if (afterStep) merged.afterStep = afterStep;
+  if (beforeToolCall) merged.beforeToolCall = beforeToolCall;
+  if (afterToolCall) merged.afterToolCall = afterToolCall;
+  if (onAbort) merged.onAbort = onAbort;
+  if (onError) merged.onError = onError;
+  if (beforeFinal) merged.beforeFinal = beforeFinal;
+  if (afterFinal) merged.afterFinal = afterFinal;
+}
+
+function resolveBuildToolResultMessages(
+  base: AgentLoopOptions,
+  overrides: AgentLoopStepOverrides,
+): AgentLoopOptions['buildToolResultMessages'] {
+  return overrides.buildToolResultMessages ?? base.buildToolResultMessages;
+}
+
+function resolveApproveToolCalls(
+  baseApproveToolCalls: AgentLoopOptions['approveToolCalls'],
+  overrideApproveToolCalls: AgentLoopStepOverrides['approveToolCalls'],
+): AgentLoopOptions['approveToolCalls'] {
+  return overrideApproveToolCalls ?? baseApproveToolCalls;
+}
+
+function createRunId(): string {
+  return `run_${randomUUID()}`;
 }
 
 function mapApprovalDecision(
@@ -151,30 +197,12 @@ function mergeStepOptions(base: AgentLoopOptions, overrides?: AgentLoopStepOverr
     ...baseWithoutApprove,
     ...overrideWithoutApprove,
     stopWhen: overrides.stopWhen ?? base.stopWhen,
-    buildToolResultMessages: overrides.buildToolResultMessages ?? base.buildToolResultMessages,
+    buildToolResultMessages: resolveBuildToolResultMessages(base, overrides),
   } as AgentLoopOptions;
 
-  const beforeStep = mergeCallbacks(base.beforeStep, overrides.beforeStep);
-  const onStep = mergeCallbacks(base.onStep, overrides.onStep);
-  const afterStep = mergeCallbacks(base.afterStep, overrides.afterStep);
-  const beforeToolCall = mergeCallbacks(base.beforeToolCall, overrides.beforeToolCall);
-  const afterToolCall = mergeCallbacks(base.afterToolCall, overrides.afterToolCall);
-  const onAbort = mergeCallbacks(base.onAbort, overrides.onAbort);
-  const onError = mergeCallbacks(base.onError, overrides.onError);
-  const beforeFinal = mergeCallbacks(base.beforeFinal, overrides.beforeFinal);
-  const afterFinal = mergeCallbacks(base.afterFinal, overrides.afterFinal);
+  mergeLifecycleCallbacks(base, overrides, merged);
 
-  if (beforeStep) merged.beforeStep = beforeStep;
-  if (onStep) merged.onStep = onStep;
-  if (afterStep) merged.afterStep = afterStep;
-  if (beforeToolCall) merged.beforeToolCall = beforeToolCall;
-  if (afterToolCall) merged.afterToolCall = afterToolCall;
-  if (onAbort) merged.onAbort = onAbort;
-  if (onError) merged.onError = onError;
-  if (beforeFinal) merged.beforeFinal = beforeFinal;
-  if (afterFinal) merged.afterFinal = afterFinal;
-
-  const resolvedApproveToolCalls = overrideApproveToolCalls ?? baseApproveToolCalls;
+  const resolvedApproveToolCalls = resolveApproveToolCalls(baseApproveToolCalls, overrideApproveToolCalls);
   if (resolvedApproveToolCalls) {
     merged.approveToolCalls = resolvedApproveToolCalls;
   }
@@ -383,7 +411,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
-    const runId = options.runId || `run_${Math.random().toString(36).slice(2, 11)}`;
+    const runId = options.runId || createRunId();
     const { threadId, onAgUiEvent, interruptController } = options;
 
     const state: AgentLoopState = {

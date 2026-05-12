@@ -1,9 +1,17 @@
+import { randomUUID } from 'node:crypto';
+
 export type SchedulerTaskStatus = 'pending' | 'scheduled' | 'cancelled';
 
-export type SchedulerExecutionInput<T> = (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] };
+export interface SchedulerTaskRequest {
+  taskInfo: unknown;
+  agents: unknown[];
+}
+
+export type SchedulerExecutionInput<T> = (() => Promise<T>) | SchedulerTaskRequest;
 
 export interface TaskScheduler {
-  schedule<T>(task: SchedulerExecutionInput<T>): Promise<T>;
+  schedule<T>(task: () => Promise<T>): Promise<T>;
+  schedule(task: SchedulerTaskRequest): Promise<SchedulerAssignment | null>;
 }
 
 export interface SchedulerAssignment {
@@ -25,11 +33,27 @@ export interface SchedulerTaskRecord extends SchedulerTaskDefinition {
   status: SchedulerTaskStatus;
 }
 
+interface SchedulerTaskInfo {
+  id?: string;
+  name?: string;
+  input?: unknown;
+  runAt?: number;
+}
+
+interface SchedulableAgent {
+  id: string;
+  available?: boolean;
+}
+
 export interface SchedulerRegistry {
   register(task: SchedulerTaskDefinition): SchedulerTaskRecord;
   cancel(taskId: string): SchedulerTaskRecord | null;
   get(taskId: string): SchedulerTaskRecord | null;
   list(options?: { lane?: string; status?: SchedulerTaskStatus }): SchedulerTaskRecord[];
+}
+
+function createScheduledTaskId(): string {
+  return `scheduled-${randomUUID()}`;
 }
 
 export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] = []): SchedulerRegistry {
@@ -82,29 +106,40 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
 }
 
 export function createTaskScheduler(registry: SchedulerRegistry = createSchedulerRegistry()): TaskScheduler {
+  const isSchedulableAgent = (agent: unknown): agent is SchedulableAgent => {
+    return typeof agent === 'object' && agent !== null && 'id' in agent && typeof agent.id === 'string';
+  };
+
+  const toSchedulerTaskInfo = (taskInfo: unknown): SchedulerTaskInfo => {
+    if (typeof taskInfo !== 'object' || taskInfo === null) {
+      return {};
+    }
+
+    const candidate = taskInfo as Record<string, unknown>;
+    return {
+      ...(typeof candidate.id === 'string' ? { id: candidate.id } : {}),
+      ...(typeof candidate.name === 'string' ? { name: candidate.name } : {}),
+      ...(candidate.input === undefined ? {} : { input: candidate.input }),
+      ...(typeof candidate.runAt === 'number' ? { runAt: candidate.runAt } : {}),
+    };
+  };
+
   return {
-    async schedule<T>(task: SchedulerExecutionInput<T>): Promise<T> {
+    async schedule<T>(task: SchedulerExecutionInput<T>): Promise<SchedulerAssignment | T | null> {
       if (typeof task === 'function') {
         return task();
       }
 
-      const schedulerTask = task.taskInfo as {
-        id?: string;
-        name?: string;
-        input?: unknown;
-        runAt?: number;
-      };
-      const availableAgents = task.agents.filter(agent => {
-        return typeof agent === 'object' && agent !== null && 'id' in agent;
-      }) as Array<{ id: string; available?: boolean }>;
+      const schedulerTask = toSchedulerTaskInfo(task.taskInfo);
+      const availableAgents = task.agents.filter(isSchedulableAgent);
       const selectedAgent = availableAgents.find(agent => agent.available !== false) ?? availableAgents[0];
 
       if (!selectedAgent) {
-        return null as T;
+        return null;
       }
 
       registry.register({
-        id: schedulerTask.id ?? `scheduled-${Math.random().toString(36).slice(2, 10)}`,
+        id: schedulerTask.id ?? createScheduledTaskId(),
         prompt: schedulerTask.name ?? schedulerTask.id ?? 'scheduled task',
         ...(typeof schedulerTask.runAt === 'number' ? { runAt: schedulerTask.runAt } : {}),
         metadata: {
@@ -117,7 +152,7 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
         agentId: selectedAgent.id,
         assigned: true,
         status: 'scheduled',
-      } as T;
+      };
     },
   };
 }

@@ -275,7 +275,7 @@ export class RuntimeManager {
 
 ### File Structure (final runtime package)
 
-```
+```text
 packages/runtime/src/
 ├── index.ts                    # Public exports
 ├── core/
