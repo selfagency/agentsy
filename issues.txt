@@ -1,0 +1,649 @@
+ ❯ pnpm exec fallow                                                                                                                                                                                                03:13:15 PM
+ WARN  Issue while reading "/Users/daniel/Developer/agentsy/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
+ WARN  Issue while reading "/Users/daniel/Developer/agentsy/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
+
+■ Metrics: dead files 4.7% (15 of 321) · dead exports 1.4% (13 of 942) · MI 91.1 (good)
+  321 files analyzed
+  147 entry points detected (121 plugin, 26 package.json)
+  7 refactoring targets — start with testHelpers.ts (dead code)
+Tip: run `fallow explain <issue-type>` for any finding below.
+
+
+── Dead Code ──────────────────────────────────────
+
+── Unused Code ─────────────────────────────────────
+
+● Unused files (15)
+  packages/providers/src/normalizers/testHelpers.ts
+  packages/renderers/scripts/preview-themes.js
+  packages/renderers/src/cli/index.ts
+  packages/renderers/src/ink/components/StreamingText.test.tsx
+  packages/renderers/src/ink/components/ThinkingBlock.test.tsx
+  packages/renderers/src/ink/index.ts
+  packages/renderers/src/streaming-md/index.ts
+  packages/vscode/src/api-key-manager/index.ts
+  packages/vscode/src/stream-bridge/index.ts
+  packages/vscode/src/test/mocks/vscode.ts
+  ... and 5 more (--format json for full list)
+  Files not reachable from any entry point — https://docs.fallow.tools/explanations/dead-code#unused-files
+  To suppress: // fallow-ignore-next-line unused-files
+
+● Unused exports (7)
+  packages/orchestrator/src/core/engine.ts (2)
+    :37 Workflow
+    :65 WorkflowMonitor
+  packages/core/src/processor/processor/incompleteness.ts
+    :12 hasUnclosedXmlTags
+  packages/renderers/src/ink/InkStreamRenderer.tsx
+    :170 default
+  packages/renderers/src/ink/createInkConversationRenderer.ts
+    :27 createInkConversationRenderer
+  packages/renderers/src/ink/themes/index.ts
+    :127 THEME_MAP
+  packages/renderers/src/ink/utils/codeHighlight.ts
+    :3 highlightCode
+  Exported symbols with no known consumers — https://docs.fallow.tools/explanations/dead-code#unused-exports
+  To auto-fix: fallow fix --dry-run
+  To suppress: // fallow-ignore-next-line unused-exports
+
+● Unused type exports (6)
+  packages/core/src/processor/sse/index.ts (2)
+    :1 SSEEvent (re-export)
+    :1 SSEParserOptions (re-export)
+  packages/orchestrator/src/agent/agent/createAgentLoop.ts
+    :659 AgentLoop
+  packages/runtime/src/ag-ui/http-server.ts
+    :44 SSEStream
+  packages/vscode/src/mcp/vscodeBridgeHelper.ts
+    :12 MCPStreamEvent
+  packages/vscode/src/message-conversion/message-adapter.ts
+    :93 ChatToolCall (re-export)
+  Type exports with no known consumers — https://docs.fallow.tools/explanations/dead-code#unused-types
+  To auto-fix: fallow fix --dry-run
+  To suppress: // fallow-ignore-next-line unused-types
+
+● Unused enum members (4)
+  packages/orchestrator/src/types/workflow.ts (4)
+    :18 AgentStatus.IDLE
+    :19 AgentStatus.BUSY
+    :20 AgentStatus.OFFLINE
+    :21 AgentStatus.ERROR
+  Enum members never referenced outside their declaration — https://docs.fallow.tools/explanations/dead-code#unused-enum-members
+  To auto-fix: fallow fix --dry-run
+  To suppress: // fallow-ignore-next-line unused-enum-members
+
+● Unused class members (19)
+  packages/vscode/src/provider/base-language-model-chat-provider.ts (7)
+    :63 BaseLanguageModelChatProvider.id
+    :67 BaseLanguageModelChatProvider.vendor
+    :71 BaseLanguageModelChatProvider.family
+    :75 BaseLanguageModelChatProvider.name
+    :79 BaseLanguageModelChatProvider.maxInputTokens
+    ... and 2 more (--format json for full list)
+  packages/orchestrator/src/utils/timing.ts (4)
+    :90 Debouncer.debounce
+    :101 Debouncer.cancel
+    :118 Throttle.throttle
+    :139 Throttle.cancel
+  packages/core/src/processor/processor/ZAiInlineToolCallParser.ts (2)
+    :47 ZAiInlineToolCallParser.parse
+    :70 ZAiInlineToolCallParser.reset
+  packages/core/src/tool-calls/ToolCallAccumulator.ts (2)
+    :62 ToolCallAccumulator.getCompletedCalls
+    :189 ToolCallAccumulator.flush
+  packages/orchestrator/src/core/engine.ts (2)
+    :478 OrchestrationEngine.monitor
+    :487 OrchestrationEngine.cancel
+  packages/vscode/src/mcp/vscodeBridgeHelper.ts
+    :97 VSCodeMCPBridgeHelper.connectToStream
+  packages/vscode/src/vscode-renderer/tool-call-lifecycle.ts
+    :80 ToolCallDeltaAccumulator.reset
+  Class methods or properties never referenced outside their class — https://docs.fallow.tools/explanations/dead-code#unused-class-members
+  To suppress: // fallow-ignore-next-line unused-class-members
+
+── Dependencies ─────────────────────────────────────
+
+● Unused dependencies (28)
+  @agentsy/types (packages/cli/package.json)
+  @agentsy/types (packages/core/package.json)
+  @agentsy/core (packages/integration/package.json)
+  @agentsy/renderers (packages/integration/package.json)
+  @agentsy/types (packages/integration/package.json)
+  @agentsy/runtime (packages/memory/package.json)
+  @agentsy/types (packages/memory/package.json)
+  @agentsy/types (packages/observability/package.json)
+  @agentsy/core (packages/orchestrator/package.json)
+  @agentsy/memory (packages/orchestrator/package.json)
+  ... and 18 more (--format json for full list)
+  Listed in dependencies but never imported — https://docs.fallow.tools/explanations/dead-code#unused-dependencies
+  To suppress: // fallow-ignore-next-line unused-dependencies
+
+● Unresolved imports (15)
+  scripts/preview-themes.js (14)
+    :11 ../dist/renderers/ink/themes/index.js
+    :12 ../dist/renderers/ink/themes/index.js
+    :13 ../dist/renderers/ink/themes/index.js
+    :14 ../dist/renderers/ink/themes/index.js
+    :15 ../dist/renderers/ink/themes/index.js
+    ... and 9 more (--format json for full list)
+  scripts/validate-workspace.test.mjs
+    :2 ../validate-workspace.mjs
+  Import paths that could not be resolved — check for missing packages or broken paths. Framework-specific imports may need a plugin: https://docs.fallow.tools/plugins — https://docs.fallow.tools/explanations/dead-code#unresolved-imports
+  To suppress: // fallow-ignore-next-line unresolved-imports
+
+● Unlisted dependencies (3)
+  cli-highlight
+  dompurify
+  streaming-markdown
+  Packages imported in code but missing from package.json — https://docs.fallow.tools/explanations/dead-code#unlisted-dependencies
+  To suppress: // fallow-ignore-next-line unlisted-dependencies
+
+✗ 15 files · 7 exports · 6 types · 28 unused dependencies · 4 enum members · 19 class members · 15 unresolved imports · 3 unlisted dependencies (0.09s)
+
+── Duplication ────────────────────────────────────
+
+● Duplicates (96 clone groups)
+
+    327 lines  2 instances
+    packages/core/src/processor/sse/sse.test.ts:1-327
+    packages/core/src/sse/sse.test.ts:1-327
+
+    157 lines  2 instances
+    packages/core/src/processor/sse/SSEParser.ts:6-162
+    packages/core/src/sse/SSEParser.ts:6-162
+
+     84 lines  2 instances
+    packages/core/src/processor/sse/parseSSEStream.ts:1-84
+    packages/core/src/sse/parseSSEStream.ts:1-84
+
+     69 lines  2 instances
+    packages/renderers/scripts/preview-themes.js:27-95
+    scripts/preview-themes.js:27-95
+
+     49 lines  2 instances
+    packages/renderers/src/ink/createInkConversationRenderer.ts:51-95
+    packages/renderers/src/ink/createInkRenderer.ts:45-93
+
+     41 lines  2 instances
+    scripts/release-per-package.js:240-280
+    scripts/release.js:167-190
+
+     39 lines  2 instances
+    scripts/release-per-package.js:130-162
+    scripts/release.js:49-87
+
+     36 lines  2 instances
+    packages/renderers/src/cli/createCliRenderer.ts:111-146
+    packages/renderers/src/streaming-md/createStreamingMarkdownRenderer.ts:176-211
+
+     33 lines  2 instances
+    scripts/release-per-package.js:272-304
+    scripts/release.js:210-242
+
+     31 lines  2 instances
+    packages/vscode/src/retry/retryUtility.test.ts:5-35
+    packages/vscode/src/vscode-overloads/chatResponseStream.test.ts:5-35
+
+  ... and 86 more clone groups
+  Identical code blocks detected via suffix-array analysis — https://docs.fallow.tools/explanations/duplication#clone-groups
+
+● Mirrored: packages/core/src/processor/sse/ ↔ packages/core/src/sse/ (3 files, 568 lines)
+  SSEParser.ts
+  parseSSEStream.ts
+  sse.test.ts
+
+  Directories containing identical file copies — https://docs.fallow.tools/explanations/duplication#clone-families
+
+● Clone families (19 with multiple groups)
+
+  4 groups, 29 lines across packages/core/src/processor/processor/LLMStreamProcessor.test.ts
+    → Extract shared function (6 lines) from LLMStreamProcessor.test.ts, LLMStreamProcessor.test.ts
+    → Extract shared function (7 lines) from LLMStreamProcessor.test.ts, LLMStreamProcessor.test.ts
+    → Extract shared function (7 lines) from LLMStreamProcessor.test.ts, LLMStreamProcessor.test.ts, LLMStreamProcessor.test.ts
+    → Extract shared function (9 lines) from LLMStreamProcessor.test.ts, LLMStreamProcessor.test.ts
+
+  2 groups, 11 lines across packages/core/src/tool-calls/ToolCallAccumulator.ts
+    → Extract shared function (6 lines) from ToolCallAccumulator.ts, ToolCallAccumulator.ts
+    → Extract shared function (5 lines) from ToolCallAccumulator.ts, ToolCallAccumulator.ts, ToolCallAccumulator.ts
+
+  2 groups, 26 lines across packages/orchestrator/src/core/engine.test.ts
+    → Extract shared function (11 lines) from engine.test.ts, engine.test.ts
+    → Extract shared function (15 lines) from engine.test.ts, engine.test.ts, engine.test.ts
+
+  7 groups, 98 lines across packages/providers/src/normalizers/normalizers.test.ts
+    → Extract 7 shared clone groups (98 lines) from normalizers.test.ts into packages/providers/src/normalizers
+
+  2 groups, 21 lines across packages/renderers/src/cli/cli.test.ts
+    → Extract shared function (7 lines) from cli.test.ts, cli.test.ts
+    → Extract shared function (14 lines) from cli.test.ts, cli.test.ts
+
+  4 groups, 76 lines across packages/renderers/src/cli/cli.test.ts, packages/renderers/src/plain/plain.test.ts
+    → Extract 4 shared clone groups (76 lines) from cli.test.ts, plain.test.ts into a shared directory
+
+  3 groups, 51 lines across packages/renderers/src/cli/cli.test.ts, packages/renderers/src/plain/plain.test.ts, packages/renderers/src/streaming-md/streaming-md.test.ts
+    → Extract 3 shared clone groups (51 lines) from cli.test.ts, plain.test.ts, streaming-md.test.ts into a shared directory
+
+  3 groups, 47 lines across packages/renderers/src/cli/cli.test.ts, packages/renderers/src/streaming-md/streaming-md.test.ts
+    → Extract shared function (13 lines) from cli.test.ts, streaming-md.test.ts
+    → Extract shared function (19 lines) from cli.test.ts, streaming-md.test.ts
+    → Extract shared function (15 lines) from cli.test.ts, streaming-md.test.ts
+
+  3 groups, 67 lines across packages/renderers/src/cli/createCliRenderer.ts, packages/renderers/src/streaming-md/createStreamingMarkdownRenderer.ts
+    → Extract 3 shared clone groups (67 lines) from createCliRenderer.ts, createStreamingMarkdownRenderer.ts into a shared directory
+
+  2 groups, 20 lines across packages/renderers/src/ink/components/ConversationHistory.edge.test.ts, packages/renderers/src/ink/components/ConversationHistory.test.ts
+    → Extract shared function (10 lines) from ConversationHistory.edge.test.ts, ConversationHistory.edge.test.ts, ConversationHistory.test.ts
+    → Extract shared function (10 lines) from ConversationHistory.edge.test.ts, ConversationHistory.test.ts
+
+  ... and 9 more families
+
+  Groups of related clones across the same files — https://docs.fallow.tools/explanations/duplication#clone-families
+
+✗ 3,615 lines (8.5%) duplicated across 54 files (0.06s)
+
+── Complexity ─────────────────────────────────────
+
+■ Metrics: 43,451 LOC · dead files 4.7% · dead exports 1.4% · avg cyclomatic 2.0 · p90 cyclomatic 4 · maintainability 91.1 (good) · 0 churn hotspots · 28 unused deps
+
+  Function size: 74% low · 15% medium · 6% high · 4% very high  (1-15 / 16-30 / 31-60 / >60 LOC)
+  Parameters:    96% low · 3% medium · 1% high · 0% very high  (0-2 / 3-4 / 5-6 / >=7 params)
+
+● Large functions (10 shown, 147 total)
+  packages/orchestrator/src/agent/agent/agent.test.ts
+    :413 <arrow>  614 lines
+  packages/core/src/xml-filter/saxophone/index.test.ts
+    :21 <arrow>  539 lines
+  packages/ui/src/ui.test.ts
+    :49 <arrow>  501 lines
+  packages/core/src/processor/processor/LLMStreamProcessor.test.ts
+    :9 <arrow>  499 lines
+  packages/vscode/src/vscode-renderer/vscode-renderer.test.ts
+    :35 <arrow>  484 lines
+  packages/renderers/src/ink/components/ConversationHistory.test.ts
+    :7 <arrow>  459 lines
+  packages/renderers/src/ink/components/StreamingText.test.ts
+    :11 <arrow>  429 lines
+  packages/renderers/src/ink/components/ToolCallBlock.test.ts
+    :6 <arrow>  404 lines
+  packages/renderers/src/ink/ink.test.ts
+    :30 <arrow>  392 lines
+  packages/orchestrator/src/agent/agent/agent.test.ts
+    :48 <arrow>  364 lines
+  Functions exceeding 60 lines of code (very high risk): https://docs.fallow.tools/explanations/health#unit-size
+  use --top 147 to see all
+
+● High complexity functions (36)
+  packages/ui/src/eventSourcing.ts
+    :79 applyConversationEvent
+          21 cyclomatic   16 cognitive   85 lines
+  packages/providers/src/normalizers/zai.ts
+    :125 normalizeZAiChunk
+          19 cyclomatic   16 cognitive   33 lines
+  packages/orchestrator/src/agent/agent/createAgentLoop.ts
+    :551 run
+          18 cyclomatic   16 cognitive   98 lines
+  packages/core/src/processor/processor/LLMStreamProcessor.ts
+    :807 emitOutput HIGH
+          17 cyclomatic   29 cognitive   43 lines
+  packages/providers/src/normalizers/gemini.ts
+    :104 normalizeGeminiChunk
+          17 cyclomatic   16 cognitive   31 lines
+  packages/core/src/tool-calls/extractXmlToolCalls.ts
+    :153 extractBareJsonToolCalls
+          16 cyclomatic   17 cognitive   44 lines
+  scripts/release.js
+    :275 main CRITICAL
+          16 cyclomatic   15 cognitive  189 lines
+         272.0 CRAP
+  scripts/release-per-package.js
+    :353 main CRITICAL
+          15 cyclomatic   15 cognitive  214 lines
+         240.0 CRAP
+  packages/core/src/structured/repairStateMachine.ts
+    :48 feedCharToStateMachine
+          14 cyclomatic   17 cognitive   52 lines
+  scripts/release-state.js
+    :9 readReleaseState CRITICAL
+          11 cyclomatic    6 cognitive   20 lines
+         132.0 CRAP
+  scripts/preview-themes.js
+    :52 displayThemePreview CRITICAL
+          11 cyclomatic   13 cognitive   42 lines
+         132.0 CRAP
+  packages/renderers/scripts/preview-themes.js
+    :52 displayThemePreview CRITICAL
+          11 cyclomatic   13 cognitive   42 lines
+         132.0 CRAP
+  scripts/release.js
+    :469 waitForWorkflow CRITICAL
+          10 cyclomatic   15 cognitive   68 lines
+         110.0 CRAP
+  packages/vscode/src/provider/base-language-model-chat-provider.ts
+    :164 <anonymous>
+           9 cyclomatic   16 cognitive   30 lines
+  scripts/validate-workspace.mjs
+    :33 main HIGH
+           9 cyclomatic   14 cognitive   32 lines
+          90.0 CRAP
+  scripts/release.js
+    :104 rollback HIGH
+           9 cyclomatic   11 cognitive   40 lines
+          90.0 CRAP
+  packages/vscode/src/test/mocks/vscode.ts
+    :14 constructor HIGH
+           9 cyclomatic    7 cognitive   13 lines
+          90.0 CRAP
+  scripts/release-per-package.js
+    :177 rollback HIGH
+           9 cyclomatic   11 cognitive   40 lines
+          90.0 CRAP
+  scripts/trusted-publish-readiness.js
+    :67 checkTrustedPublishReadiness HIGH
+           8 cyclomatic    7 cognitive   36 lines
+          72.0 CRAP
+  scripts/release-per-package.js
+    :572 waitForWorkflow HIGH
+           8 cyclomatic   10 cognitive   53 lines
+          72.0 CRAP
+  scripts/release.js
+    :65 runGit
+           6 cyclomatic    4 cognitive   17 lines
+          42.0 CRAP
+  scripts/write-dist-package.js
+    :8 main
+           6 cyclomatic    8 cognitive   65 lines
+          42.0 CRAP
+  scripts/release-per-package.js
+    :142 runGit
+           6 cyclomatic    4 cognitive   17 lines
+          42.0 CRAP
+  packages/orchestrator/src/utils/timing.ts
+    :29 retry
+           5 cyclomatic    9 cognitive   21 lines
+          30.0 CRAP
+  scripts/trusted-publish-readiness.js
+    :12 getRepositoryField
+           5 cyclomatic    3 cognitive   11 lines
+          30.0 CRAP
+  scripts/release.js
+    :83 resolveGitExecutable
+           5 cyclomatic    5 cognitive   20 lines
+          30.0 CRAP
+    :172 resolveGithubToken
+           5 cyclomatic    4 cognitive   12 lines
+          30.0 CRAP
+    :192 updateChangelogFile
+           5 cyclomatic    4 cognitive   27 lines
+          30.0 CRAP
+  scripts/preview-themes.js
+    :44 applyColor
+           5 cyclomatic    3 cognitive    7 lines
+          30.0 CRAP
+  scripts/release-per-package.js
+    :160 resolveGitExecutable
+           5 cyclomatic    5 cognitive   16 lines
+          30.0 CRAP
+    :245 resolveGithubToken
+           5 cyclomatic    4 cognitive   12 lines
+          30.0 CRAP
+    :258 updateChangelogFile
+           5 cyclomatic    4 cognitive   23 lines
+          30.0 CRAP
+    :330 ensureRemoteTagAvailability
+           5 cyclomatic    5 cognitive   18 lines
+          30.0 CRAP
+  packages/orchestrator/src/utils/matching.ts
+    :34 matchRequirements
+           5 cyclomatic    8 cognitive   45 lines
+          30.0 CRAP
+  packages/renderers/scripts/preview-themes.js
+    :44 applyColor
+           5 cyclomatic    3 cognitive    7 lines
+          30.0 CRAP
+  scripts/bootstrap-release.js
+    :110 main
+           5 cyclomatic    4 cognitive   60 lines
+          30.0 CRAP
+  Functions exceeding cyclomatic, cognitive, or CRAP thresholds (https://docs.fallow.tools/explanations/health#complexity-metrics)
+  To suppress: // fallow-ignore-next-line complexity
+
+● File health scores (225 files)
+
+   68.9    packages/renderers/src/ink/InkStreamRenderer.tsx
+            200 LOC    2 fan-in    5 fan-out  100% dead  0.13 density  7.0 risk
+
+   70.3    packages/renderers/src/ink/createInkConversationRenderer.ts
+            178 LOC    4 fan-in    4 fan-out  100% dead  0.11 density  3.0 risk
+
+   72.1    packages/renderers/scripts/preview-themes.js
+             96 LOC    0 fan-in    1 fan-out  100% dead  0.17 density  132.0 risk
+
+   72.4    packages/renderers/src/ink/components/StreamingText.test.tsx
+            264 LOC    0 fan-in    3 fan-out  100% dead  0.07 density  2.0 risk
+
+   72.9    packages/renderers/src/ink/components/ThinkingBlock.test.tsx
+            167 LOC    0 fan-in    2 fan-out  100% dead  0.09 density  2.0 risk
+
+   74.0    scripts/validate-workspace.mjs
+             70 LOC    0 fan-in    0 fan-out  100% dead  0.20 density  90.0 risk
+
+   74.0    scripts/validate-workspace.test.mjs
+            158 LOC    0 fan-in    0 fan-out  100% dead  0.20 density  2.0 risk
+
+   74.7    packages/providers/src/normalizers/testHelpers.ts
+             47 LOC    0 fan-in    1 fan-out  100% dead  0.09 density  6.0 risk
+
+   74.9    scripts/preview-themes.js
+             96 LOC    0 fan-in    0 fan-out  100% dead  0.17 density  132.0 risk
+
+   75.1    packages/orchestrator/src/core/engine.ts
+            518 LOC    2 fan-in    3 fan-out   67% dead  0.20 density  10.0 risk
+
+  ... and 215 more files (--format json for full list)
+
+  Composite file quality scores based on complexity, coupling, and dead code. Risk: low <15, moderate 15-30, high >=30. CRAP from Istanbul coverage data (0/3533 functions matched). https://docs.fallow.tools/explanations/health#file-health-scores
+
+● Hotspots (56 files, since 6 months)
+
+   22.7 ▲  scripts/release.js
+          15 commits    877 churn  0.16 density   0 fan-in  ▲ accelerating
+
+   22.2 ─  scripts/release-per-package.js
+          15 commits    933 churn  0.14 density   0 fan-in  ─ stable
+
+   20.3 ▼  packages/core/src/structured/pipe.ts
+           3 commits     21 churn  0.63 density   1 fan-in  ▼ cooling
+
+   17.8 ▼  scripts/preview-themes.js
+          10 commits    169 churn  0.17 density   0 fan-in  ▼ cooling
+
+   14.8 ─  packages/core/src/formatting/formatXmlLikeResponseForDisplay.ts
+           5 commits    139 churn  0.27 density   3 fan-in  ─ stable
+
+   13.7 ─  packages/core/src/tool-calls/ToolCallAccumulator.ts
+           5 commits    669 churn  0.25 density   1 fan-in  ─ stable
+
+   12.6 ─  packages/core/src/tool-calls/extractXmlToolCalls.ts
+           5 commits    761 churn  0.23 density   2 fan-in  ─ stable
+
+   12.5 ▲  packages/core/src/context/splitLeadingXmlContext.ts
+           6 commits    494 churn  0.19 density   1 fan-in  ▲ accelerating
+
+   12.3 ▲  scripts/write-dist-package.js
+          13 commits    283 churn  0.10 density   0 fan-in  ▲ accelerating
+
+   11.1 ▲  packages/integration/src/recovery.test.ts [test]
+           5 commits    182 churn  0.20 density   0 fan-in  ▲ accelerating
+
+   10.8 ─  packages/core/src/context/dedupeXmlContext.ts
+           4 commits    319 churn  0.25 density   2 fan-in  ─ stable
+
+   10.3 ▼  packages/core/src/structured/validateJsonSchema.ts
+           3 commits   1585 churn  0.32 density   3 fan-in  ▼ cooling
+
+   10.0 ▲  packages/core/src/recovery/index.ts
+           7 commits    363 churn  0.13 density   1 fan-in  ▲ accelerating
+
+    9.4 ▼  packages/core/src/structured/parseJson.ts
+           3 commits    834 churn  0.29 density   3 fan-in  ▼ cooling
+
+    9.3 ▼  packages/core/src/xml-filter/XmlStreamFilter.ts
+           3 commits    441 churn  0.29 density   2 fan-in  ▼ cooling
+
+    9.3 ─  packages/core/src/recovery/recovery.test.ts [test]
+           5 commits    481 churn  0.17 density   0 fan-in  ─ stable
+
+    9.1 ─  packages/core/src/formatting/formatting.test.ts [test]
+           4 commits     74 churn  0.21 density   0 fan-in  ─ stable
+
+    9.1 ▲  packages/vscode/src/vscode-overloads/chatResponseStream.ts
+           3 commits    105 churn  0.27 density   2 fan-in  ▲ accelerating
+
+    8.4 ▼  packages/core/src/structured/fieldValidator.ts
+           3 commits    786 churn  0.26 density   1 fan-in  ▼ cooling
+
+    8.2 ─  packages/core/src/context/contextXml.test.ts [test]
+           5 commits    506 churn  0.15 density   0 fan-in  ─ stable
+
+    7.7 ▲  packages/vscode/src/vscode-overloads/chatResponseStream.test.ts [test]
+           3 commits    128 churn  0.23 density   0 fan-in  ▲ accelerating
+
+    7.6 ▲  packages/vscode/src/vscode-renderer/tool-call-lifecycle.ts
+           3 commits    145 churn  0.23 density   3 fan-in  ▲ accelerating
+
+    7.4 ▼  packages/vscode/src/error-handling/error-handling.test.ts [test]
+           3 commits    252 churn  0.23 density   0 fan-in  ▼ cooling
+
+    7.4 ─  packages/core/src/tool-calls/buildXmlToolSystemPrompt.ts
+           4 commits    598 churn  0.17 density   2 fan-in  ─ stable
+
+    7.1 ▼  packages/core/src/sse/SSEParser.ts
+           3 commits    507 churn  0.22 density   2 fan-in  ▼ cooling
+
+    7.1 ▲  packages/integration/src/structured-output.test.ts [test]
+           4 commits    252 churn  0.16 density   0 fan-in  ▲ accelerating
+
+    6.9 ▲  packages/integration/src/sse-pipeline.test.ts [test]
+           3 commits    206 churn  0.21 density   0 fan-in  ▲ accelerating
+
+    6.8 ▼  packages/core/src/sse/parseSSEStream.ts
+           3 commits    245 churn  0.21 density   1 fan-in  ▼ cooling
+
+    6.5 ▼  packages/core/src/thinking/ThinkingParser.ts
+           3 commits    717 churn  0.20 density   2 fan-in  ▼ cooling
+
+    6.1 ▼  packages/core/src/structured/streamJson.ts
+           3 commits    793 churn  0.19 density   1 fan-in  ▼ cooling
+
+    6.1 ─  packages/core/src/formatting/sanitizeNonStreamingModelOutput.ts
+           4 commits     50 churn  0.14 density   2 fan-in  ─ stable
+
+    5.7 ▲  packages/integration/src/thinking-and-tool-calls.test.ts [test]
+           4 commits    290 churn  0.13 density   0 fan-in  ▲ accelerating
+
+    5.5 ▼  packages/core/src/context/stripXmlContextTags.ts
+           3 commits     33 churn  0.17 density   1 fan-in  ▼ cooling
+
+    5.3 ▲  packages/integration/src/renderers.test.ts [test]
+           3 commits    223 churn  0.16 density   0 fan-in  ▲ accelerating
+
+    4.8 ▼  packages/core/src/sse/sse.test.ts [test]
+           3 commits    911 churn  0.15 density   0 fan-in  ▼ cooling
+
+    4.7 ▲  packages/vscode/src/retry/retryUtility.test.ts [test]
+           3 commits    156 churn  0.14 density   0 fan-in  ▲ accelerating
+
+    4.6 ▲  packages/integration/src/normalizer-to-processor.test.ts [test]
+           3 commits    300 churn  0.14 density   0 fan-in  ▲ accelerating
+
+    4.5 ▼  packages/core/src/tool-calls/buildNativeToolsPayload.ts
+           3 commits    393 churn  0.14 density   1 fan-in  ▼ cooling
+
+    4.5 ▼  packages/core/src/structured/repairStateMachine.ts
+           3 commits    414 churn  0.14 density   1 fan-in  ▼ cooling
+
+    4.3 ▲  packages/vscode/src/stream-bridge.ts
+           3 commits     59 churn  0.13 density   2 fan-in  ▲ accelerating
+
+    4.2 ▼  packages/vscode/src/vscode-renderer/createVSCodeChatRenderer.ts
+           3 commits    269 churn  0.13 density   3 fan-in  ▼ cooling
+
+    4.2 ▼  packages/core/src/context/dedupeXmlContext.test.ts [test]
+           3 commits    198 churn  0.13 density   0 fan-in  ▼ cooling
+
+    4.2 ▼  packages/core/src/tool-calls/buildToolResultMessage.ts
+           3 commits    444 churn  0.13 density   1 fan-in  ▼ cooling
+
+    3.9 ▼  packages/ui/src/ui.test.ts [test]
+           3 commits    567 churn  0.12 density   0 fan-in  ▼ cooling
+
+    3.6 ▲  packages/renderers/src/ink/createInkRenderer.ts
+           3 commits    139 churn  0.11 density   5 fan-in  ▲ accelerating
+
+    3.5 ▼  packages/core/src/thinking/ThinkingParser.test.ts [test]
+           3 commits    567 churn  0.11 density   0 fan-in  ▼ cooling
+
+    3.5 ▼  packages/core/src/structured/buildRepairPrompt.ts
+           3 commits     77 churn  0.11 density   2 fan-in  ▼ cooling
+
+    3.3 ▲  packages/vscode/src/message-conversion/helpers.ts
+           3 commits     52 churn  0.10 density   3 fan-in  ▲ accelerating
+
+    3.2 ▼  packages/core/src/xml-filter/XmlStreamFilter.test.ts [test]
+           3 commits    864 churn  0.10 density   0 fan-in  ▼ cooling
+
+    3.2 ▲  scripts/bootstrap-release.js
+           3 commits    179 churn  0.10 density   0 fan-in  ▲ accelerating
+
+    3.2 ▼  packages/core/src/structured/providerFormats.ts
+           3 commits    210 churn  0.10 density   1 fan-in  ▼ cooling
+
+    3.2 ▼  packages/core/src/structured/buildFormatInstructions.ts
+           3 commits     27 churn  0.10 density   1 fan-in  ▼ cooling
+
+    2.9 ▼  packages/vscode/src/vscode-renderer/vscode-renderer.test.ts [test]
+           3 commits    766 churn  0.09 density   0 fan-in  ▼ cooling
+
+    2.6 ▼  packages/core/src/structured/autoRepair.ts
+           3 commits    211 churn  0.08 density   1 fan-in  ▼ cooling
+
+    2.3 ▼  packages/core/src/structured/zodAdapter.ts
+           3 commits    162 churn  0.07 density   1 fan-in  ▼ cooling
+
+    2.3 ▼  packages/core/src/structured/types.ts
+           3 commits    149 churn  0.07 density   3 fan-in  ▼ cooling
+
+  169 files excluded (< 3 commits)
+
+  Files with high churn and high complexity — https://docs.fallow.tools/explanations/health#hotspot-metrics
+
+● Refactoring targets (7)
+  1 low effort · 4 medium · 2 high
+    score = quick-win ROI (higher = better) · pri = absolute priority
+
+   24.0  pri:24.0    packages/providers/src/normalizers/testHelpers.ts
+         dead code · effort:low · confidence:high  Remove 3 unused exports to reduce surface area (100% dead)
+
+   12.1  pri:24.2    packages/vscode/src/test/mocks/vscode.ts
+         dead code · effort:medium · confidence:high  Remove 3 unused exports to reduce surface area (100% dead)
+
+   11.3  pri:22.6    packages/providers/src/normalizers/openai.ts
+         high impact · effort:medium · confidence:medium  Split high-impact file (156 LOC) — 4 dependents amplify every change
+
+   10.0  pri:19.9    packages/renderers/src/ink/components/ToolCallBlock.tsx
+         high impact · effort:medium · confidence:medium  Split high-impact file (57 LOC) — 3 dependents amplify every change
+
+   10.0  pri:19.9    packages/vscode/src/settings/schema-validator.ts
+         high impact · effort:medium · confidence:medium  Split high-impact file (107 LOC) — 3 dependents amplify every change
+
+    9.7  pri:29.2    packages/orchestrator/src/core/engine.ts
+         dead code · effort:high · confidence:high  Remove 2 unused exports to reduce surface area (67% dead)
+
+    7.5  pri:22.4    packages/core/src/structured/validateJsonSchema.ts
+         high impact · effort:high · confidence:medium  Split high-impact file (560 LOC) — 3 dependents amplify every change
+
+  Prioritized refactoring recommendations based on complexity, churn, and coupling signals — https://docs.fallow.tools/explanations/health#refactoring-targets
+
+✗ 36 above threshold · 3533 analyzed · maintainability 91.1 (good) (0.03s)
+
+Failed: dead-code (97 issues), dupes (96 clone groups), health (36 above threshold) — start with testHelpers.ts

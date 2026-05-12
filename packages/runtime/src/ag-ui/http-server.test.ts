@@ -70,17 +70,11 @@ describe('createSSEStream', () => {
   it('should handle stream errors gracefully', async () => {
     const stream = createSSEStream(errorGeneratorWithYield());
 
-    try {
+    await expect(async () => {
       for await (const _chunk of stream) {
         // chunks received
       }
-    } catch (err) {
-      expect(err).toBeInstanceOf(Error);
-      if (!(err instanceof Error)) {
-        throw err;
-      }
-      expect(err.message).toContain('Generator error');
-    }
+    }).rejects.toThrow('Generator error');
   });
 
   it('should support async iteration directly', async () => {

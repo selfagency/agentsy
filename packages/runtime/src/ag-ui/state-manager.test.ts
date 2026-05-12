@@ -398,8 +398,10 @@ describe('StateManager', () => {
 
     // Manager's state should not be affected
     const current = manager.getCurrentState() as unknown as Record<string, Record<string, unknown>>;
-    if (current.nested) {
-      expect(current.nested.value).toBe(1);
+    expect(current.nested).toBeDefined();
+    if (!current.nested) {
+      throw new Error('Expected nested state to remain defined');
     }
+    expect(current.nested.value).toBe(1);
   });
 });

@@ -32,7 +32,7 @@ Run these from the repository root:
 ```bash
 pnpm build           # turbo run build
 pnpm test            # turbo run test
-pnpm test:coverage   # turbo run test:coverage
+pnpm test:coverage   # turbo run coverage
 pnpm check-types     # turbo run check-types
 pnpm lint            # turbo run lint
 pnpm lint:fix        # turbo run lint:fix

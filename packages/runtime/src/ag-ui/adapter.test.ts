@@ -161,12 +161,13 @@ describe('toAgUiStream', () => {
     expect(reasoningEnd).toBeDefined();
     expect(toolStart).toBeDefined();
 
-    // Tool call should come after reasoning ends
-    if (reasoningEnd && toolStart) {
-      const reasoningEndIdx = events.indexOf(reasoningEnd);
-      const toolStartIdx = events.indexOf(toolStart);
-      expect(toolStartIdx).toBeGreaterThan(reasoningEndIdx);
+    if (!reasoningEnd || !toolStart) {
+      throw new Error('Expected reasoning end and tool start events');
     }
+
+    const reasoningEndIdx = events.indexOf(reasoningEnd);
+    const toolStartIdx = events.indexOf(toolStart);
+    expect(toolStartIdx).toBeGreaterThan(reasoningEndIdx);
   });
 
   it('should emit RUN_ERROR on error event', async () => {
@@ -183,11 +184,13 @@ describe('toAgUiStream', () => {
 
     const errorEvent = events.find(e => e.type === EventType.RUN_ERROR);
     expect(errorEvent).toBeDefined();
-    if (errorEvent && 'error' in errorEvent) {
-      expect((errorEvent as Record<string, unknown>).error).toEqual(
-        expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' }),
-      );
+    if (!errorEvent || !('error' in errorEvent)) {
+      throw new Error('Expected RUN_ERROR event with error payload');
     }
+
+    expect(errorEvent.error).toEqual(
+      expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' }),
+    );
   });
 
   it('should include usage info in RUN_FINISHED', async () => {
@@ -280,9 +283,11 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId, encryptReasoning: true }));
 
     const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
-    if (contentEvent) {
-      expect((contentEvent as Record<string, unknown>).encryptedValue).toBe('encrypted');
+    expect(contentEvent).toBeDefined();
+    if (!contentEvent) {
+      throw new Error('Expected reasoning content event');
     }
+    expect((contentEvent as Record<string, unknown>).encryptedValue).toBe('encrypted');
   });
 
   it('should include timestamps on all events', async () => {

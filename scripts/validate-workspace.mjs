@@ -63,7 +63,13 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error('validate-workspace failed:', err);
-  process.exitCode = 1;
-});
+// Export `main` for tests to import and call directly while preserving CLI behavior.
+export { main };
+
+// CLI entrypoint when run directly.
+if (process.argv[1] && process.argv[1].endsWith('validate-workspace.mjs')) {
+  main().catch(err => {
+    console.error('validate-workspace failed:', err);
+    process.exitCode = 1;
+  });
+}

@@ -7,40 +7,30 @@
  */
 
 import chalk from 'chalk';
-import {
-  ayuMirageTheme,
-  catppuccinFrappeTheme,
-  catppuccinLatteTheme,
-  catppuccinMacchiatoTheme,
-  catppuccinMochaTheme,
-  darkTheme,
-  defaultTheme,
-  draculaTheme,
-  githubDarkTheme,
-  houstonTheme,
-  lightTheme,
-  minimalTheme,
-  oneCandyTheme,
-  oneDarkTheme,
-} from '../dist/renderers/ink/themes/index.js';
+// Attempt to load built output first (when running from installed package),
+// otherwise fall back to local workspace source so this script works during dev
+// without requiring a build step. This reduces duplicate source files and
+// allows CI and local tooling to run the preview command in either state.
+let themesModule;
+try {
+  themesModule = await import('../dist/renderers/ink/themes/index.js');
+} catch {
+  // Fallback to local source so contributors can run the script before building
+  themesModule = await import('../packages/renderers/src/ink/themes/index.js');
+}
 
-const THEMES = [
-  { name: 'default', theme: defaultTheme },
-  { name: 'dark', theme: darkTheme },
-  { name: 'light', theme: lightTheme },
-  { name: 'minimal', theme: minimalTheme },
-  { name: 'dracula', theme: draculaTheme },
-  { name: 'catppuccin-mocha', theme: catppuccinMochaTheme },
-  { name: 'catppuccin-latte', theme: catppuccinLatteTheme },
-  { name: 'catppuccin-macchiato', theme: catppuccinMacchiatoTheme },
-  { name: 'catppuccin-frappe', theme: catppuccinFrappeTheme },
-  { name: 'ayu-mirage', theme: ayuMirageTheme },
-  { name: 'houston', theme: houstonTheme },
-  { name: 'one-dark', theme: oneDarkTheme },
-  { name: 'one-candy', theme: oneCandyTheme },
-  { name: 'github-dark', theme: githubDarkTheme },
-];
+const entries = Object.entries(themesModule).map(([name, value]) => ({ name, value }));
 
+console.log('Available themes:');
+for (const e of entries) console.log('-', e.name);
+
+const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, theme }));
+
+/**
+ * Apply color to text using chalk. JSDoc types avoid implicit any in strict typechecks.
+ * @param {string} text
+ * @param {string | undefined} color
+ */
 function applyColor(text, color) {
   if (!color) return text;
   if (color.startsWith('#')) {
