@@ -1,0 +1,58 @@
+packages/runtime/src/ag-ui/state-manager.test.ts
+  s_095d159945d78b::t_5790e593ac2555 401-403,405
+.github/copilot-instructions.md
+  s_69be868cc3b14b::t_67cda503469cb8 35
+packages/vscode/package.json
+  s_69be868cc3b14b::t_b4cf76dad39ab3 34-58
+packages/runtime/src/ag-ui/http-server.test.ts
+  s_095d159945d78b::t_5790e593ac2555 73,77
+packages/renderers/package.json
+  s_69be868cc3b14b::t_f7c9ce93ee0786 19-37
+pnpm-lock.yaml
+  ai_agent 3943
+issues.txt
+  h_627b419bd8fa0f 1-649
+packages/runtime/src/ag-ui/adapter.test.ts
+  ai_agent 191-193
+  s_095d159945d78b::t_5790e593ac2555 164-165,167-170,187-188,190,286-288,290
+scripts/validate-workspace.mjs
+  s_69be868cc3b14b::t_8fd667c16d225f 66-75
+scripts/preview-themes.js
+  s_69be868cc3b14b::t_c5e86057bce8e6 10-16,18-25,27
+  s_69be868cc3b14b::t_000e7b2f73cab4 29-33
+  s_69be868cc3b14b::t_ef6643c5ef7eb7 17
+.fallowrc.jsonc
+  s_69be868cc3b14b::t_3856fdc1da9104 1-11,13-15,17-19
+  ai_agent 12,16,20-22
+AGENTS.md
+  s_69be868cc3b14b::t_409fa5a2b47963 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "a294e92c0fe0437d8bb47ae069fa33b304a10481",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_69be868cc3b14b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1a6a902-c937-4241-b759-cea480205883",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
