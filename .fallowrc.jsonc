@@ -19,8 +19,7 @@
   // Prevent gating on current baseline during remediation; switch to stronger gate after cleanup.
   "audit": {
     "gate": "new-only"
-  }
-  ,
+  },
   // Common workspace aliases and packages we intentionally keep as dev/build
   // references across packages (monorepo layout). These are safe to ignore in
   // fallow's unused-dependencies check.
