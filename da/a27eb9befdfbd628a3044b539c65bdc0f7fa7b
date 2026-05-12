@@ -1,0 +1,49 @@
+plan/MASTER-IMPLEMENTATION-PLAN.md
+  h_627b419bd8fa0f 195
+  s_095d159945d78b::t_58b3f6631b16ca 204
+  s_095d159945d78b::t_de8b41dfc6c1e9 190-194,196-203,205-251
+plan/alignment-report-5-11-26.md
+  h_627b419bd8fa0f 1-135
+docs/migration/v0.1-to-v0.2.md
+  s_095d159945d78b::t_fefb0510c509d7 3,7,9,11-20,29,33-37,42-47,51,55-59,62-78,80-111,113,115,117,119-122
+  h_627b419bd8fa0f 60-61,79
+  s_095d159945d78b::t_060037a7f57b77 21-28,30-32,38-41,48-50
+docs/migration/llm-stream-parser.md
+  h_627b419bd8fa0f 172
+  s_095d159945d78b::t_78bf073c504965 86-95,97
+  s_095d159945d78b::t_b43e886f07b5f9 227-228
+  s_095d159945d78b::t_b94f9a1a985b7f 123
+  s_095d159945d78b::t_060037a7f57b77 98
+  s_095d159945d78b::t_e4a9dbf6f18094 142
+  s_095d159945d78b::t_c219e7e342be7a 194-195
+docs/getting-started.md
+  s_095d159945d78b::t_83339ae4513c50 37,55,70,92,108,125
+  s_095d159945d78b::t_c2fe6d966b02a9 5
+plan/RECONCILIATION-REPORT.md
+  s_095d159945d78b::t_072eb45744127d 1-2,5-13,15-28,51-52,54-58,60-73,83-87,93-97,104-108,112-121,124-127,130-133,135-138,140-147,150-153,156-159,161-164,166-173,176-179,182-185,187-191,193-200,203-206,208-212,214-224,235-237,243-249,257-313,315-321,323-329,331-342,348-369
+  s_095d159945d78b::t_5f32dc7318d8cb 3-4,14,29-50,53,59,74-82,88-92,98-103,109-111,122-123,128-129,134,139,148-149,154-155,160,165,174-175,180-181,186,192,201-202,207,213,225-234,238-242,250-256,314,322,330,343-347
+plan/PACKAGE-NAMING-MAP.md
+  h_627b419bd8fa0f 94
+  s_095d159945d78b::t_060037a7f57b77 17-29,33-41,45-52,91-93,95-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "daa27eb9befdfbd628a3044b539c65bdc0f7fa7b",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
