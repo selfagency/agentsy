@@ -421,6 +421,91 @@ describe('createAgentLoop', () => {
     expect(onStepSpy).toHaveBeenCalled();
   });
 
+  it('should call beforeStep and afterStep hooks with loop context', async () => {
+    const beforeStep = vi.fn();
+    const afterStep = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: 'result', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      beforeStep,
+      afterStep,
+      buildToolResultMessages: async () => [],
+    });
+
+    for await (const _part of loop.run([{ role: 'user', content: 'hello' }])) {
+      // consume loop
+    }
+
+    expect(beforeStep).toHaveBeenCalledTimes(1);
+    expect(afterStep).toHaveBeenCalledTimes(1);
+
+    const beforeContext = beforeStep.mock.calls[0]?.[0];
+    const afterContext = afterStep.mock.calls[0]?.[0];
+
+    expect(beforeContext?.stepIndex).toBe(0);
+    expect(beforeContext?.messages).toEqual([{ role: 'user', content: 'hello' }]);
+    expect(afterContext?.stepIndex).toBe(0);
+    expect(afterContext?.stepResult.output.content).toBe('result');
+  });
+
+  it('should call beforeToolCall and afterToolCall hooks around tool results', async () => {
+    const toolCall: XmlToolCall = {
+      name: 'search',
+      parameters: { query: 'docs' },
+      format: 'bare-xml',
+      id: 'tool-1',
+    };
+    const beforeToolCall = vi.fn();
+    const afterToolCall = vi.fn();
+    const toolResultMessages = [{ role: 'tool', content: 'found docs' }];
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield {
+          tool_calls: [
+            {
+              function: {
+                name: toolCall.name,
+                arguments: toolCall.parameters,
+              },
+            },
+          ],
+        };
+        yield {
+          done: true,
+          finishReason: 'tool-calls' as const,
+        };
+      },
+      stopWhen: isStepCount(2),
+      beforeToolCall,
+      afterToolCall,
+      buildToolResultMessages: async () => toolResultMessages,
+    });
+
+    for await (const _part of loop.run([])) {
+      // consume loop
+    }
+
+    expect(beforeToolCall).toHaveBeenCalledTimes(1);
+    expect(afterToolCall).toHaveBeenCalledTimes(1);
+    expect(beforeToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
+      {
+        name: toolCall.name,
+        parameters: toolCall.parameters,
+      },
+    ]);
+    expect(afterToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
+      {
+        name: toolCall.name,
+        parameters: toolCall.parameters,
+      },
+    ]);
+    expect(afterToolCall.mock.calls[0]?.[0].toolResultMessages).toEqual(toolResultMessages);
+  });
+
   it('should abort the loop', async () => {
     const loop = createAgentLoop({
       execute: async function* () {
@@ -438,6 +523,53 @@ describe('createAgentLoop', () => {
 
     const result = await gen.next();
     expect(result.done).toBe(true);
+  });
+
+  it('should call onAbort when abort() is invoked', async () => {
+    const onAbort = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield { content: 'chunk', done: false };
+        yield { done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: [],
+      maxSteps: 10,
+      onAbort,
+      buildToolResultMessages: async () => [],
+    });
+
+    const gen = loop.run([]);
+    await gen.next();
+    loop.abort();
+    await gen.next();
+
+    expect(onAbort).toHaveBeenCalledTimes(1);
+    expect(onAbort.mock.calls[0]?.[0]).toBe('abort');
+  });
+
+  it('should call onError when execute throws', async () => {
+    const onError = vi.fn();
+
+    const loop = createAgentLoop({
+      execute: async function* () {
+        yield* [];
+        throw new Error('step failed');
+      },
+      stopWhen: isStepCount(1),
+      onError,
+      buildToolResultMessages: async () => [],
+    });
+
+    await expect(async () => {
+      for await (const _part of loop.run([])) {
+        // consume loop
+      }
+    }).rejects.toThrow('step failed');
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+    expect(onError.mock.calls[0]?.[0].message).toBe('step failed');
   });
 
   it('should process and emit output parts from execute function', async () => {
