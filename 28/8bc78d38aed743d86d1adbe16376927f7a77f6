@@ -1,0 +1,25 @@
+plan/handoff-phase-c-scripts-migration.md
+  ai_agent 3-4,10-11,14-15,23-24,30,33-34,46-47,53-54,61-62,80-81,87-88,91-92,97
+  s_69be868cc3b14b::t_36005c4405d42d 1-2,5-9,12-13,16-22,25-29,31-32,35-45,48-52,55-60,63-79,82-86,89-90,93-96,98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "288bc78d38aed743d86d1adbe16376927f7a77f6",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_69be868cc3b14b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1a6a902-c937-4241-b759-cea480205883",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
