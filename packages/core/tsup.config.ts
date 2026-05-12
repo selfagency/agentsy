@@ -7,6 +7,7 @@ export default defineConfig({
     context: 'src/context/index.ts',
     formatting: 'src/formatting/index.ts',
     'xml-filter': 'src/xml-filter/index.ts',
+    recovery: 'src/recovery/index.ts',
     retry: 'src/retry/index.ts',
     sse: 'src/sse/index.ts',
     structured: 'src/structured/index.ts',
