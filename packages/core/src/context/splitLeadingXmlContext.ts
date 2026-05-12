@@ -1,8 +1,16 @@
 import { ELEVATED_CONTEXT_TAG_NAMES } from '../xml-filter/index.js';
 
-const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]*)[^>]*>[\s\S]*?<\/\1>/gi;
+const XML_CONTEXT_MAX_PART_LENGTH = 1_000_000;
+const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]{0,63})[^>]*>[\s\S]*?<\/\1>/gi;
 
 export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string } {
+  if (input.length > XML_CONTEXT_MAX_PART_LENGTH) {
+    return {
+      contextBlocks: [],
+      remaining: input,
+    };
+  }
+
   let remainingText = input;
   let hadLeadingContext = false;
   const contextBlocks: string[] = [];

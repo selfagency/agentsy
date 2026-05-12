@@ -5,14 +5,14 @@ import type { ToolCallState } from './types.js';
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */
 export interface NativeToolCall {
   /** Provider-assigned call ID, present when supplied by the provider (e.g. OpenAI `id` field). */
-  id?: string | undefined;
+  id?: string;
   name: string;
   arguments: JsonObject;
 }
 
 interface PendingCall {
-  id?: string | undefined;
-  name?: string | undefined;
+  id?: string;
+  name?: string;
   argumentsBuffer: string;
 }
 

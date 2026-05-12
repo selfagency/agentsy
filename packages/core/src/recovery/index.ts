@@ -34,6 +34,26 @@ export interface ContinuationMessage {
   content: string;
 }
 
+function formatToolCallParameters(parameters: XmlToolCall['parameters']): string {
+  try {
+    return JSON.stringify(parameters);
+  } catch {
+    return '{}';
+  }
+}
+
+function buildCompletedToolCallsContext(toolCalls: readonly XmlToolCall[]): string | null {
+  if (toolCalls.length === 0) {
+    return null;
+  }
+
+  const serializedCalls = toolCalls.map(toolCall => {
+    return `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`;
+  });
+
+  return ['The following tool calls already completed before the interruption:', ...serializedCalls].join('\n');
+}
+
 /**
  * Capture the current accumulated state of a `LLMStreamProcessor` for later
  * stream resumption or retry.
@@ -64,22 +84,37 @@ export function buildContinuationPrompt(
   const provider = options?.provider ?? 'openai';
 
   const partialContent = snapshot.content.trim();
+  const completedToolCallsContext = buildCompletedToolCallsContext(snapshot.toolCalls);
 
-  // If nothing was accumulated, there is nothing to continue from.
-  if (partialContent) {
-    if (provider === 'anthropic') {
-      // Anthropic supports prefilling: end the exchange with a partial assistant
-      // message and the model continues from where it left off.
+  if (!partialContent) {
+    const userContent = completedToolCallsContext
+      ? `${completedToolCallsContext}\n\nPlease continue without repeating the completed tool calls.`
+      : 'Please continue.';
+    return [{ role: 'user', content: userContent }];
+  }
+
+  if (provider === 'anthropic') {
+    // Anthropic supports prefilling: end the exchange with a partial assistant
+    // message and the model continues from where it left off.
+    if (completedToolCallsContext === null) {
       return [{ role: 'assistant', content: partialContent }];
     }
 
-    // OpenAI / Ollama: include the partial assistant turn then add a user message
-    // asking the model to continue.
     return [
+      {
+        role: 'user',
+        content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
+      },
       { role: 'assistant', content: partialContent },
-      { role: 'user', content: 'Please continue from exactly where you left off.' },
     ];
   }
 
-  return [{ role: 'user', content: 'Please continue.' }];
+  const userContent = completedToolCallsContext
+    ? `${completedToolCallsContext}\n\nPlease continue from exactly where you left off without repeating the completed tool calls.`
+    : 'Please continue from exactly where you left off.';
+
+  return [
+    { role: 'assistant', content: partialContent },
+    { role: 'user', content: userContent },
+  ];
 }

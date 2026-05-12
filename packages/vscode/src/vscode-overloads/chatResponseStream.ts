@@ -19,18 +19,54 @@ export interface VSCodeChatResponseStream extends ChatResponseStream {
   push(part: unknown, options?: { validate?: boolean }): void;
 }
 
+type StubbedVSCodeChatResponseStream = Pick<
+  VSCodeChatResponseStream,
+  'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push'
+>;
+
 /**
  * Creates a VS Code ChatResponseStream with extended overload capabilities.
  */
-export function createVSCodeChatResponseStream(_cancellationToken: CancellationToken): VSCodeChatResponseStream {
-  // Placeholder adapter surface; runtime wiring happens in consumer extension integration.
-  return {
-    markdown: (_value: string, _metadata?: Record<string, unknown>) => {},
-    anchor: (_value: Uri | Location, _title?: string) => {},
-    button: (_command: string | { command: string; title: string; arguments?: unknown[] }) => {},
-    filetree: (_value: FileTreeEntry[], _baseUri: Uri, _options?: { showRoot?: boolean }) => {},
-    progress: (_value: string, _context?: { step?: number; total?: number }) => {},
-    reference: (_value: Uri | Location, _iconPath?: Uri) => {},
-    push: (_part: unknown, _options?: { validate?: boolean }) => {},
-  } as unknown as VSCodeChatResponseStream;
+export function createVSCodeChatResponseStream(cancellationToken: CancellationToken): VSCodeChatResponseStream {
+  let cancelled = cancellationToken.isCancellationRequested;
+  const subscription = cancellationToken.onCancellationRequested(() => {
+    cancelled = true;
+    subscription.dispose();
+  });
+
+  const runIfActive = (callback: () => void): void => {
+    if (cancelled) {
+      return;
+    }
+
+    callback();
+  };
+
+  const stream: StubbedVSCodeChatResponseStream = {
+    markdown: (_value: string, _metadata?: Record<string, unknown>) => {
+      runIfActive(() => {});
+    },
+    anchor: (_value: Uri | Location, _title?: string) => {
+      runIfActive(() => {});
+    },
+    button: (_command: string | { command: string; title: string; arguments?: unknown[] }) => {
+      runIfActive(() => {});
+    },
+    filetree: (_value: FileTreeEntry[], _baseUri: Uri, _options?: { showRoot?: boolean }) => {
+      runIfActive(() => {});
+    },
+    progress: (_value: string, _context?: { step?: number; total?: number }) => {
+      runIfActive(() => {});
+    },
+    reference: (_value: Uri | Location, _iconPath?: Uri) => {
+      runIfActive(() => {});
+    },
+    push: (_part: unknown, _options?: { validate?: boolean }) => {
+      runIfActive(() => {});
+    },
+  };
+
+  // TODO: Replace this stub with a fully-wired VS Code ChatResponseStream adapter once
+  // the extension integration layer provides the base ChatResponseStream members.
+  return stream as VSCodeChatResponseStream;
 }

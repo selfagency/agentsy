@@ -8,11 +8,13 @@ export class RetryUtility {
   private readonly maxRetries: number;
   private readonly delayMs: number;
   private readonly cancellationToken: CancellationToken;
+  private readonly backoffFactor: number;
 
-  constructor(maxRetries: number, delayMs: number, cancellationToken: CancellationToken) {
+  constructor(maxRetries: number, delayMs: number, cancellationToken: CancellationToken, backoffFactor = 1) {
     this.maxRetries = maxRetries;
     this.delayMs = delayMs;
     this.cancellationToken = cancellationToken;
+    this.backoffFactor = backoffFactor;
   }
 
   public async executeWithRetry<T>(
@@ -50,6 +52,48 @@ export class RetryUtility {
     }
   }
 
+  private getDelayForAttempt(attempt: number): number {
+    return Math.max(0, this.delayMs * this.backoffFactor ** Math.max(0, attempt - 1));
+  }
+
+  private async waitForDelay(delayMs: number): Promise<void> {
+    if (delayMs <= 0) {
+      return;
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      if (this.cancellationToken.isCancellationRequested) {
+        reject(new Error('Operation cancelled'));
+        return;
+      }
+
+      let settled = false;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const subscription = this.cancellationToken.onCancellationRequested(() => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
+        subscription.dispose();
+        reject(new Error('Operation cancelled'));
+      });
+
+      timeoutId = setTimeout(() => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        subscription.dispose();
+        resolve();
+      }, delayMs);
+    });
+  }
+
   private async handleRetry(
     attempt: number,
     error: unknown,
@@ -61,9 +105,7 @@ export class RetryUtility {
 
     onRetry?.(attempt, error);
 
-    if (this.delayMs > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.delayMs));
-    }
+    await this.waitForDelay(this.getDelayForAttempt(attempt));
   }
 
   public getMaxRetries(): number {
@@ -83,6 +125,7 @@ export function createRetryUtility(
   maxRetries: number,
   delayMs: number,
   cancellationToken: CancellationToken,
+  backoffFactor = 1,
 ): RetryUtility {
-  return new RetryUtility(maxRetries, delayMs, cancellationToken);
+  return new RetryUtility(maxRetries, delayMs, cancellationToken, backoffFactor);
 }

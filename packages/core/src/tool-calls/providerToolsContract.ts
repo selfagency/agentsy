@@ -50,7 +50,7 @@ export function isProviderTool(obj: unknown): obj is ProviderTool {
 export function providerToolToNative(tool: ProviderTool): { name: string; arguments: JsonObject; id?: string } {
   return {
     name: tool.name,
-    arguments: tool.parameters ?? {},
+    arguments: tool.parameters,
     ...(tool.id !== undefined && { id: tool.id }),
   };
 }
@@ -58,7 +58,7 @@ export function providerToolToNative(tool: ProviderTool): { name: string; argume
 export function nativeToProviderTool(nativeTool: { name: string; arguments: JsonObject; id?: string }): ProviderTool {
   return {
     name: nativeTool.name,
-    parameters: nativeTool.arguments ?? {},
+    parameters: nativeTool.arguments,
     ...(nativeTool.id !== undefined && { id: nativeTool.id }),
     format: 'native-json',
   };

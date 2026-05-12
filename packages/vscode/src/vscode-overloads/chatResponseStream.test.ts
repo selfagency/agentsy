@@ -2,13 +2,38 @@ import { describe, expect, it } from 'vitest';
 import type { CancellationToken, Event, Location, Uri } from 'vscode';
 import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
-describe('VSCode ChatResponseStream Overloads', () => {
-  const mockCancellationToken: CancellationToken = {
-    isCancellationRequested: false,
-    onCancellationRequested: ((_listener: (e: unknown) => unknown) => ({
-      dispose: () => {},
-    })) as unknown as Event<unknown>,
+function createMockCancellationToken(initiallyCancelled = false): {
+  token: CancellationToken;
+  cancel(): void;
+} {
+  const listeners = new Set<(e: unknown) => unknown>();
+  let cancelled = initiallyCancelled;
+
+  return {
+    token: {
+      get isCancellationRequested() {
+        return cancelled;
+      },
+      onCancellationRequested: ((listener: (e: unknown) => unknown) => {
+        listeners.add(listener);
+        return {
+          dispose: () => {
+            listeners.delete(listener);
+          },
+        };
+      }) as unknown as Event<unknown>,
+    },
+    cancel() {
+      cancelled = true;
+      for (const listener of [...listeners]) {
+        listener(undefined);
+      }
+    },
   };
+}
+
+describe('VSCode ChatResponseStream Overloads', () => {
+  const mockCancellationToken = createMockCancellationToken().token;
 
   it('should create VSCode chat response stream', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
@@ -71,6 +96,19 @@ describe('VSCode ChatResponseStream Overloads', () => {
     const stream = createVSCodeChatResponseStream(mockCancellationToken);
     expect(() => {
       stream.push({}, { validate: true });
+    }).not.toThrow();
+  });
+
+  it('treats the cancellation token as a no-op guard for the stubbed stream', () => {
+    const cancellation = createMockCancellationToken();
+    const stream = createVSCodeChatResponseStream(cancellation.token);
+
+    cancellation.cancel();
+
+    expect(() => {
+      stream.markdown('ignored');
+      stream.progress('ignored');
+      stream.push({ ignored: true });
     }).not.toThrow();
   });
 });

@@ -99,10 +99,10 @@ export function buildXmlToolSystemPrompt(
     }
   }
 
-  // We know `tools` is non-empty here because of the guard above. Use a
-  // type assertion at this call-site to avoid `!` occurrences inside helpers
-  // while keeping callers downstream simple and free of indexing.
-  const exampleTool = tools[0] as XmlToolInfo;
+  const exampleTool = tools[0];
+  if (exampleTool === undefined) {
+    return '';
+  }
 
   if (format === 'hermes') {
     return buildHermesPrompt(tools, exampleTool);
@@ -119,7 +119,7 @@ function buildXmlPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolInfo)
     const paramLines = Object.entries(props).map(([name, s]) => {
       const hint = s.description ?? s.type ?? 'value';
       const optionalNote = required.has(name) ? '' : ' (optional)';
-      return `  <${name}>${hint}${optionalNote}</${name}>`;
+      return `  <${name}>${String(hint)}${optionalNote}</${name}>`;
     });
 
     return [`// ${tool.name}: ${tool.description ?? ''}`, `<${tool.name}>`, ...paramLines, `</${tool.name}>`].join(

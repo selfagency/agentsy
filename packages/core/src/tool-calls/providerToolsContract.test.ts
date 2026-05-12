@@ -17,9 +17,6 @@ describe('Provider Tools Contract', () => {
         id: 'id-123',
       };
       expect(isProviderTool(providerTool)).toBe(false);
-
-      const native = providerToolToNative(providerTool as never);
-      expect(native).toEqual({ name: 'edgeTool', arguments: {}, id: 'id-123' });
     });
 
     it('should convert native tool to provider format correctly', () => {
