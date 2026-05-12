@@ -1,0 +1,50 @@
+packages/tokens/src/index.test.ts
+  s_095d159945d78b::t_58071dbea49af1 145-226,285-329
+packages/orchestrator/src/agent/agent/createAgentLoop.ts
+  s_095d159945d78b::t_58071dbea49af1 61-90,203
+  s_095d159945d78b::t_fef67ab4291d45 1,91-106,200,205,414
+packages/orchestrator/src/core/engine.ts
+  s_095d159945d78b::t_58071dbea49af1 407
+packages/runtime/src/index.test.ts
+  s_095d159945d78b::t_58071dbea49af1 9,120-151,195-200
+packages/orchestrator/src/scheduler/index.ts
+  s_095d159945d78b::t_fef67ab4291d45 1-2,55-56,142
+  s_095d159945d78b::t_58071dbea49af1 5-10,13-14,36-45,109-126,128,133-134,138,155
+packages/runtime/src/index.ts
+  s_095d159945d78b::t_58071dbea49af1 44-45,184-188,225-235
+  s_095d159945d78b::t_fef67ab4291d45 1,83-86,248
+packages/tokens/src/index.ts
+  s_095d159945d78b::t_58071dbea49af1 158-167,241-243,247-268,598,608,610,628
+  s_095d159945d78b::t_fef67ab4291d45 3-4,178
+packages/tokens/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_58071dbea49af1 211
+packages/orchestrator/src/agent/agent/types.ts
+  s_095d159945d78b::t_58071dbea49af1 99-101
+packages/orchestrator/src/agent/agent/utils.ts
+  s_095d159945d78b::t_fef67ab4291d45 7-13
+  s_095d159945d78b::t_58071dbea49af1 1,3-6,15,18
+packages/orchestrator/src/core/engine.test.ts
+  s_095d159945d78b::t_58071dbea49af1 57-67,101-126
+packages/runtime/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_58071dbea49af1 278
+packages/orchestrator/src/scheduler/index.test.ts
+  s_095d159945d78b::t_58071dbea49af1 62-78
+packages/orchestrator/src/agent/agent/agent.test.ts
+  s_095d159945d78b::t_58071dbea49af1 749-839
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "bd27f31059c1878250bb48ad301eac8a8c1bb449",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
