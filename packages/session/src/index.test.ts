@@ -9,6 +9,14 @@ describe('createSessionStore', () => {
     expect(store.getState()).toEqual({ id: 's1', values: { topic: 'agents' } });
   });
 
+  it('returns typed values when requested', () => {
+    const store = createSessionStore({ id: 's1', values: { retries: 2, enabled: true } });
+
+    expect(store.getValue<number>('retries')).toBe(2);
+    expect(store.getValue<boolean>('enabled')).toBe(true);
+    expect(store.getValue('missing')).toBeUndefined();
+  });
+
   it('returns defensive copies from getState', () => {
     const store = createSessionStore({ id: 's1', values: { a: 1 } });
     const state = store.getState();

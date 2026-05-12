@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createRuntimeExecutor, type RuntimeTask } from './index.js';
+import {
+  createRuntimeExecutor,
+  createRuntimeLoop,
+  createRuntimeWorkflowExecutor,
+  loadRuntimeSnapshotFromSession,
+  saveRuntimeSnapshotToSession,
+  type RuntimeTask,
+  type RuntimeWorkflowTask,
+} from './index.js';
+import { createSessionStore } from '@agentsy/session';
 
 describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {
@@ -83,5 +92,141 @@ describe('createRuntimeExecutor', () => {
     const [error] = onError.mock.calls[0] ?? [];
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe('Runtime task failed');
+  });
+
+  it('returns execution results when requested', async () => {
+    const executor = createRuntimeExecutor();
+    const tasks: RuntimeTask[] = [
+      {
+        id: 'a',
+        run: async () => {},
+      },
+      {
+        id: 'b',
+        run: async () => {
+          throw new Error('boom');
+        },
+      },
+    ];
+
+    const results = await executor.executeWithResults(tasks);
+
+    expect(results).toHaveLength(2);
+    expect(results[0]?.status).toBe('completed');
+    expect(results[1]?.status).toBe('failed');
+    expect(results[1]?.error?.message).toBe('boom');
+  });
+});
+
+describe('createRuntimeLoop', () => {
+  it('captures completed tasks in a resumable snapshot', async () => {
+    const calls: string[] = [];
+    const loop = createRuntimeLoop({ sessionId: 'session-1' });
+    const tasks: RuntimeTask[] = [
+      { id: 'a', run: async () => void calls.push('a') },
+      { id: 'b', run: async () => void calls.push('b') },
+    ];
+
+    const firstSnapshot = await loop.execute(tasks);
+    const secondSnapshot = await loop.execute(tasks);
+
+    expect(calls).toEqual(['a', 'b']);
+    expect(firstSnapshot.sessionId).toBe('session-1');
+    expect(firstSnapshot.completedTaskIds).toEqual(['a', 'b']);
+    expect(secondSnapshot.completedTaskIds).toEqual(['a', 'b']);
+    expect(secondSnapshot.results).toHaveLength(2);
+  });
+
+  it('fires task lifecycle callbacks', async () => {
+    const onTaskStart = vi.fn();
+    const onTaskComplete = vi.fn();
+    const loop = createRuntimeLoop({ onTaskStart, onTaskComplete });
+
+    await loop.execute([{ id: 'task-1', run: async () => {} }]);
+
+    expect(onTaskStart).toHaveBeenCalledTimes(1);
+    expect(onTaskComplete).toHaveBeenCalledTimes(1);
+    expect(onTaskComplete.mock.calls[0]?.[0]?.status).toBe('completed');
+  });
+
+  it('persists snapshots into the session store and resumes from them', async () => {
+    const calls: string[] = [];
+    const sessionStore = createSessionStore({ id: 'session-1', values: {} });
+    const tasks: RuntimeTask[] = [
+      { id: 'a', run: async () => void calls.push('a') },
+      { id: 'b', run: async () => void calls.push('b') },
+    ];
+
+    const firstLoop = createRuntimeLoop({ sessionId: 'session-1', sessionStore });
+    const firstSnapshot = await firstLoop.execute([tasks[0]!]);
+    expect(firstSnapshot.completedTaskIds).toEqual(['a']);
+
+    const resumedLoop = createRuntimeLoop({ sessionId: 'session-1', sessionStore });
+    const secondSnapshot = await resumedLoop.execute(tasks);
+
+    expect(calls).toEqual(['a', 'b']);
+    expect(secondSnapshot.completedTaskIds).toEqual(['a', 'b']);
+  });
+});
+
+describe('runtime snapshot session helpers', () => {
+  it('saves and loads snapshots via session storage', () => {
+    const sessionStore = createSessionStore({ id: 'session-1', values: {} });
+    const snapshot = {
+      sessionId: 'session-1',
+      completedTaskIds: ['task-1'],
+      results: [
+        {
+          taskId: 'task-1',
+          status: 'completed' as const,
+          startedAt: 1,
+          finishedAt: 2,
+        },
+      ],
+      updatedAt: 3,
+    };
+
+    saveRuntimeSnapshotToSession(sessionStore, snapshot);
+    expect(loadRuntimeSnapshotFromSession(sessionStore)).toEqual(snapshot);
+  });
+
+  it('returns null for invalid stored snapshot values', () => {
+    const sessionStore = createSessionStore({ id: 'session-1', values: { runtimeSnapshot: { nope: true } } });
+
+    expect(loadRuntimeSnapshotFromSession(sessionStore)).toBeNull();
+  });
+});
+
+describe('createRuntimeWorkflowExecutor', () => {
+  it('executes workflow tasks in dependency order', async () => {
+    const calls: string[] = [];
+    const workflow = createRuntimeWorkflowExecutor({ sessionId: 'workflow-1' });
+    const tasks: RuntimeWorkflowTask[] = [
+      { id: 'deploy', dependsOn: ['build'], run: async () => void calls.push('deploy') },
+      { id: 'build', run: async () => void calls.push('build') },
+      { id: 'test', dependsOn: ['build'], run: async () => void calls.push('test') },
+    ];
+
+    const snapshot = await workflow.execute(tasks);
+
+    expect(calls[0]).toBe('build');
+    expect(snapshot.completedTaskIds).toEqual(['build', 'deploy', 'test']);
+  });
+
+  it('rejects workflows with missing dependencies', async () => {
+    const workflow = createRuntimeWorkflowExecutor();
+    const tasks: RuntimeWorkflowTask[] = [{ id: 'deploy', dependsOn: ['build'], run: async () => {} }];
+
+    await expect(workflow.execute(tasks)).rejects.toThrow('depends on missing task');
+  });
+
+  it('rejects workflows with cycles', async () => {
+    const workflow = createRuntimeWorkflowExecutor();
+    const tasks: RuntimeWorkflowTask[] = [
+      { id: 'a', dependsOn: ['b'], run: async () => {} },
+      { id: 'b', dependsOn: ['a'], run: async () => {} },
+    ];
+
+    await expect(workflow.execute(tasks)).rejects.toThrow('contains a cycle');
   });
 });
