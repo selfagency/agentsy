@@ -14,42 +14,42 @@ This map defines the transformation from current state to target architecture as
 
 ## Core Stream Layer (Layer 1)
 
-| Current Name    | Target Name | Action   | Status     | Notes                      |
-| --------------- | ----------- | -------- | ---------- | -------------------------- |
-| types           | types       | Keep     | ✅ Live    | Core type system           |
-| xml-filter      | xml-filter  | Keep     | ✅ Live    | XML privacy stripping      |
-| context         | context     | Keep     | ✅ Live    | Context window events      |
-| context-manager | context     | 🔄 Merge | ⚠️ Planned | Merge into context         |
-| formatting      | formatting  | Keep     | ✅ Live    | Response formatting        |
-| sse             | sse         | Keep     | ✅ Live    | SSE parsing                |
-| thinking        | thinking    | Keep     | ✅ Live    | Thinking block parsing     |
-| structured      | structured  | Keep     | ✅ Live    | Structured output          |
-| tool-calls      | -           | 🔄 Split | ⚠️ Planned | Split to tools + providers |
-| processor       | processor   | Keep     | ✅ Live    | LLMStreamProcessor         |
-| recovery        | recovery    | Keep     | ✅ Live    | Session recovery           |
+| Current Name    | Target Name          | Action         | Status  | Notes                            |
+| --------------- | -------------------- | -------------- | ------- | -------------------------------- |
+| types           | types                | Keep           | ✅ Live | Core type system                 |
+| xml-filter      | xml-filter           | Keep           | ✅ Live | XML privacy stripping            |
+| context         | context              | Keep           | ✅ Live | Context window events            |
+| context-manager | context              | 🔄 Merge       | ✅ Live | Merged into context (Phase C-1)  |
+| formatting      | formatting           | Keep           | ✅ Live | Response formatting              |
+| sse             | sse                  | Keep           | ✅ Live | SSE parsing                      |
+| thinking        | thinking             | Keep           | ✅ Live | Thinking block parsing           |
+| structured      | structured           | Keep           | ✅ Live | Structured output                |
+| tool-calls      | core/src/tool-calls/ | 🔄 Consolidate | ✅ Live | Consolidated in core (Phase C-1) |
+| processor       | processor            | Keep           | ✅ Live | LLMStreamProcessor               |
+| recovery        | recovery             | Keep           | ✅ Live | Session recovery                 |
 
 ## Runtime / Loop Layer (Layer 2)
 
-| Current Name  | Target Name  | Action     | Status     | Notes                             |
-| ------------- | ------------ | ---------- | ---------- | --------------------------------- |
-| agent         | agentic-loop | ✅ Renamed | ⚠️ Planned | Clearer boundary for loop engine  |
-| runtime       | agentic-loop | 🔄 Merge   | ⚠️ Planned | Runtime into loop engine          |
-| agentic-loop  | agentic-loop | Keep       | ✅ Live    | Primary loop orchestration        |
-| session       | session      | Keep       | ✅ Live    | Session management                |
-| token-economy | tokens       | ✅ Renamed | ⚠️ Planned | Migration alias during transition |
-| tokens        | tokens       | ➕ Created | ⚠️ Planned | New token budgeting package       |
-| pacing        | tokens       | 🔄 Merge   | ⚠️ Planned | Merge pacing into tokens          |
+| Current Name  | Target Name             | Action          | Status     | Notes                                            |
+| ------------- | ----------------------- | --------------- | ---------- | ------------------------------------------------ |
+| agent         | orchestrator/src/agent/ | 🔄 Consolidated | ✅ DONE    | Agent consolidated into orchestrator (Phase C-4) |
+| runtime       | runtime                 | Keep            | ⏳ PENDING | Awaits Phase D merge with orchestrator           |
+| agentic-loop  | agentic-loop            | Keep            | ✅ Live    | Primary loop orchestration                       |
+| session       | session                 | Keep            | ✅ Live    | Session management                               |
+| token-economy | tokens                  | ✅ Renamed      | ⚠️ Planned | Migration alias during transition                |
+| tokens        | tokens                  | ➕ Created      | ⚠️ Planned | New token budgeting package                      |
+| pacing        | tokens                  | 🔄 Merge        | ⚠️ Planned | Merge pacing into tokens                         |
 
 ## Provider / Model Layer (Layer 3)
 
-| Current Name | Target Name | Action        | Status     | Notes                             |
-| ------------ | ----------- | ------------- | ---------- | --------------------------------- |
-| providers    | providers   | Keep          | ✅ Live    | Provider registry                 |
-| normalizers  | providers   | 🔄 Reorganize | ⚠️ Planned | Move to providers/\_Providers/\*/ |
-| adapters     | providers   | 🔄 Merge      | ⚠️ Planned | Merge into providers              |
-| secrets      | secrets     | Keep          | ✅ Live    | Cross-cutting infrastructure      |
-| scheduler    | providers   | 🔄 Merge      | ❌ Stale   | Scheduling is provider-specific   |
-| retry        | context     | 🔄 Merge      | ❌ Stale   | Retry mechanism in context        |
+| Current Name | Target Name                 | Action         | Status         | Notes                                |
+| ------------ | --------------------------- | -------------- | -------------- | ------------------------------------ |
+| providers    | providers                   | Keep           | ✅ Live        | Provider registry                    |
+| normalizers  | providers                   | 🔄 Reorganize  | ✅ Live        | Reorganized to providers (Phase C-2) |
+| adapters     | providers                   | 🔄 Merge       | ✅ Live        | Merged into providers (Phase C-2)    |
+| secrets      | secrets                     | Keep           | ✅ Live        | Cross-cutting infrastructure         |
+| scheduler    | orchestrator/src/scheduler/ | 🔄 Move        | ⏳ IN-PROGRESS | Scheduler in orchestrator (Phase D)  |
+| retry        | core/src/retry/             | 🔄 Consolidate | ✅ Live        | Consolidated in core (Phase C-1)     |
 
 ## Knowledge Layer (Layer 4)
 
@@ -88,15 +88,15 @@ This map defines the transformation from current state to target architecture as
 
 ## Presentation Layer (Layer 7)
 
-| Current Name     | Target Name | Action     | Status     | Notes                    |
-| ---------------- | ----------- | ---------- | ---------- | ------------------------ |
-| ui               | ui          | Keep       | ✅ Live    | UI layer components      |
-| ag-ui            | ui          | 🔄 Merge   | ⚠️ Planned | Merge components         |
-| renderers        | renderers   | Keep       | ✅ Live    | Component library        |
-| renderer-gui     | renderers   | 🔄 Merge   | ⚠️ Planned | GUI hooks into renderers |
-| vscode           | vscode      | Keep       | ✅ Live    | VS Code integration      |
-| extension-vscode | vscode      | 🔄 Merge   | ⚠️ Planned | Clean composition        |
-| desktop          | -           | ❌ Deleted | ❌ Stale   | No desktop app plan      |
+| Current Name     | Target Name | Action     | Status     | Notes                      |
+| ---------------- | ----------- | ---------- | ---------- | -------------------------- |
+| ui               | ui          | Keep       | ✅ Live    | UI layer components        |
+| ag-ui            | ui          | 🔄 Merge   | ✅ Live    | Merged into ui (Phase C-3) |
+| renderers        | renderers   | Keep       | ✅ Live    | Component library          |
+| renderer-gui     | renderers   | 🔄 Merge   | ⚠️ Planned | GUI hooks into renderers   |
+| vscode           | vscode      | Keep       | ✅ Live    | VS Code integration        |
+| extension-vscode | vscode      | 🔄 Merge   | ⚠️ Planned | Clean composition          |
+| desktop          | -           | ❌ Deleted | ❌ Stale   | No desktop app plan        |
 
 ## Consolidated Summary
 

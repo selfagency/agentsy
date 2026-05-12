@@ -2,7 +2,7 @@
 
 Get up and running with the published VS Code package and internal package usage patterns.
 
-Migrating from the old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](./migrating-from-llm-stream-parser.md).
+Migrating from the old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](./migration/llm-stream-parser.md).
 
 ## Installation
 
@@ -34,7 +34,7 @@ yarn add @agentsy/vscode vscode
 ### Extract thinking from streaming response
 
 ```typescript
-import { ThinkingParser } from '@agentsy/thinking';
+import { ThinkingParser } from '@agentsy/core/thinking';
 
 const parser = new ThinkingParser();
 
@@ -52,7 +52,7 @@ const [finalThinking, finalContent] = parser.flush();
 ### Parse JSON from response
 
 ```typescript
-import { parseJson } from '@agentsy/structured';
+import { parseJson } from '@agentsy/core/structured';
 
 const response = await llm.complete('Return JSON: {key: "value"}');
 const data = parseJson(response);
@@ -67,7 +67,7 @@ if (data !== null) {
 ### Validate JSON against schema
 
 ```typescript
-import { validateJsonSchema } from '@agentsy/structured';
+import { validateJsonSchema } from '@agentsy/core/structured';
 
 const schema = {
   type: 'object',
@@ -89,7 +89,7 @@ if (result.success) {
 ### Extract tool calls
 
 ```typescript
-import { extractXmlToolCalls } from '@agentsy/tool-calls';
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
 
 const response = await llm.complete('Use tools to search the codebase');
 
@@ -105,7 +105,7 @@ for (const call of toolCalls) {
 ### Filter context blocks
 
 ```typescript
-import { createXmlStreamFilter } from '@agentsy/xml-filter';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const filter = createXmlStreamFilter({
   enforcePrivacyTags: true,
@@ -122,7 +122,7 @@ output.write(filter.end());
 ### Process complete stream response
 
 ```typescript
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
