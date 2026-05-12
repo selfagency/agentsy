@@ -9,7 +9,7 @@ import type { IncompletenessDetail } from './LLMStreamProcessor.js';
  *
  * Cyclomatic complexity reduced from 9 to 8 by extracting early return.
  */
-export function hasUnclosedXmlTags(content: string): boolean {
+function hasUnclosedXmlTags(content: string): boolean {
   if (!content.includes('<')) return false;
 
   let depth = 0;

@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-file
+
 import { expect } from 'vitest';
 import type { NormalizerResult } from './types.js';
 

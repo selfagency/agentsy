@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// fallow-ignore-file unused-file
 /**
  * Theme Preview Utility
  * Displays all available Ink renderer themes with sample output
@@ -13,9 +14,11 @@ import chalk from 'chalk';
 // allows CI and local tooling to run the preview command in either state.
 let themesModule;
 try {
+  // fallow-ignore-next-line unresolved-import
   themesModule = await import('../dist/renderers/ink/themes/index.js');
 } catch {
   // Fallback to local source so contributors can run the script before building
+  // fallow-ignore-next-line unresolved-import
   themesModule = await import('../packages/renderers/src/ink/themes/index.js');
 }
 

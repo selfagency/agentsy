@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-file
+
 import { render } from 'ink-testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Theme } from '../themes/types.js';

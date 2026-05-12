@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+// fallow-ignore-file unused-file
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// fallow-ignore-next-line unresolved-import
 import { main } from '../validate-workspace.mjs';
 
 // Mock the fs modules

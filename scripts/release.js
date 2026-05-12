@@ -1,4 +1,5 @@
 #!/usr/bin/env zx
+// fallow-ignore-file unused-file
 import { Octokit } from '@octokit/rest';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';

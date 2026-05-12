@@ -1,0 +1,857 @@
+{
+  "schema_version": 6,
+  "version": "2.71.1",
+  "elapsed_ms": 119,
+  "total_issues": 36,
+  "entry_points": {
+    "total": 147,
+    "sources": {
+      "plugin": 121,
+      "package.json": 26
+    }
+  },
+  "summary": {
+    "total_issues": 36,
+    "unused_files": 0,
+    "unused_exports": 0,
+    "unused_types": 6,
+    "private_type_leaks": 0,
+    "unused_dependencies": 3,
+    "unused_enum_members": 4,
+    "unused_class_members": 19,
+    "unresolved_imports": 0,
+    "unlisted_dependencies": 3,
+    "duplicate_exports": 0,
+    "type_only_dependencies": 0,
+    "test_only_dependencies": 0,
+    "circular_dependencies": 0,
+    "boundary_violations": 0,
+    "stale_suppressions": 1,
+    "unused_catalog_entries": 0,
+    "unresolved_catalog_references": 0
+  },
+  "unused_files": [],
+  "unused_exports": [],
+  "unused_types": [
+    {
+      "path": "packages/core/src/processor/sse/index.ts",
+      "export_name": "SSEEvent",
+      "is_type_only": true,
+      "line": 1,
+      "col": 20,
+      "span_start": 20,
+      "is_re_export": true,
+      "actions": [
+        {
+          "type": "remove-export",
+          "auto_fixable": true,
+          "description": "Remove the `export` (or `export type`) keyword from the type declaration",
+          "note": "This finding originates from a re-export; verify it is not part of your public API before removing"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-type"
+        }
+      ]
+    },
+    {
+      "path": "packages/core/src/processor/sse/index.ts",
+      "export_name": "SSEParserOptions",
+      "is_type_only": true,
+      "line": 1,
+      "col": 35,
+      "span_start": 35,
+      "is_re_export": true,
+      "actions": [
+        {
+          "type": "remove-export",
+          "auto_fixable": true,
+          "description": "Remove the `export` (or `export type`) keyword from the type declaration",
+          "note": "This finding originates from a re-export; verify it is not part of your public API before removing"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-type"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/agent/agent/createAgentLoop.ts",
+      "export_name": "AgentLoop",
+      "is_type_only": true,
+      "line": 659,
+      "col": 12,
+      "span_start": 20273,
+      "is_re_export": false,
+      "actions": [
+        {
+          "type": "remove-export",
+          "auto_fixable": true,
+          "description": "Remove the `export` (or `export type`) keyword from the type declaration"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-type"
+        }
+      ]
+    },
+    {
+      "path": "packages/runtime/src/ag-ui/http-server.ts",
+      "export_name": "SSEStream",
+      "is_type_only": true,
+      "line": 44,
+      "col": 17,
+      "span_start": 1169,
+      "is_re_export": false,
+      "actions": [
+        {
+          "type": "remove-export",
+          "auto_fixable": true,
+          "description": "Remove the `export` (or `export type`) keyword from the type declaration"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-type"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/mcp/vscodeBridgeHelper.ts",
+      "export_name": "MCPStreamEvent",
+      "is_type_only": true,
+      "line": 12,
+      "col": 17,
+      "span_start": 541,
+      "is_re_export": false,
+      "actions": [
+        {
+          "type": "remove-export",
+          "auto_fixable": true,
+          "description": "Remove the `export` (or `export type`) keyword from the type declaration"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-type"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/message-conversion/message-adapter.ts",
+      "export_name": "ChatToolCall",
+      "is_type_only": true,
+      "line": 93,
+      "col": 27,
+      "span_start": 2557,
+      "is_re_export": true,
+      "actions": [
+        {
+          "type": "remove-export",
+          "auto_fixable": true,
+          "description": "Remove the `export` (or `export type`) keyword from the type declaration",
+          "note": "This finding originates from a re-export; verify it is not part of your public API before removing"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-type"
+        }
+      ]
+    }
+  ],
+  "private_type_leaks": [],
+  "unused_dependencies": [
+    {
+      "package_name": "@agentsy/session",
+      "location": "dependencies",
+      "path": "packages/orchestrator/package.json",
+      "line": 48,
+      "actions": [
+        {
+          "type": "remove-dependency",
+          "auto_fixable": true,
+          "description": "Remove from dependencies in package.json"
+        },
+        {
+          "type": "add-to-config",
+          "auto_fixable": false,
+          "description": "Add \"@agentsy/session\" to ignoreDependencies in fallow config",
+          "config_key": "ignoreDependencies",
+          "value": "@agentsy/session",
+          "value_schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json#/properties/ignoreDependencies/items"
+        }
+      ]
+    },
+    {
+      "package_name": "@agentsy/session",
+      "location": "dependencies",
+      "path": "packages/runtime/package.json",
+      "line": 40,
+      "actions": [
+        {
+          "type": "remove-dependency",
+          "auto_fixable": true,
+          "description": "Remove from dependencies in package.json"
+        },
+        {
+          "type": "add-to-config",
+          "auto_fixable": false,
+          "description": "Add \"@agentsy/session\" to ignoreDependencies in fallow config",
+          "config_key": "ignoreDependencies",
+          "value": "@agentsy/session",
+          "value_schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json#/properties/ignoreDependencies/items"
+        }
+      ]
+    }
+  ],
+  "unused_dev_dependencies": [
+    {
+      "package_name": "chalk",
+      "location": "devDependencies",
+      "path": "packages/renderers/package.json",
+      "line": 60,
+      "actions": [
+        {
+          "type": "remove-dependency",
+          "auto_fixable": true,
+          "description": "Remove from devDependencies in package.json"
+        },
+        {
+          "type": "add-to-config",
+          "auto_fixable": false,
+          "description": "Add \"chalk\" to ignoreDependencies in fallow config",
+          "config_key": "ignoreDependencies",
+          "value": "chalk",
+          "value_schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json#/properties/ignoreDependencies/items"
+        }
+      ]
+    }
+  ],
+  "unused_optional_dependencies": [],
+  "unused_enum_members": [
+    {
+      "path": "packages/orchestrator/src/types/workflow.ts",
+      "parent_name": "AgentStatus",
+      "member_name": "IDLE",
+      "kind": "enum_member",
+      "line": 18,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-enum-member",
+          "auto_fixable": true,
+          "description": "Remove this enum member"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-enum-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/types/workflow.ts",
+      "parent_name": "AgentStatus",
+      "member_name": "BUSY",
+      "kind": "enum_member",
+      "line": 19,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-enum-member",
+          "auto_fixable": true,
+          "description": "Remove this enum member"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-enum-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/types/workflow.ts",
+      "parent_name": "AgentStatus",
+      "member_name": "OFFLINE",
+      "kind": "enum_member",
+      "line": 20,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-enum-member",
+          "auto_fixable": true,
+          "description": "Remove this enum member"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-enum-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/types/workflow.ts",
+      "parent_name": "AgentStatus",
+      "member_name": "ERROR",
+      "kind": "enum_member",
+      "line": 21,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-enum-member",
+          "auto_fixable": true,
+          "description": "Remove this enum member"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-enum-member"
+        }
+      ]
+    }
+  ],
+  "unused_class_members": [
+    {
+      "path": "packages/core/src/processor/processor/ZAiInlineToolCallParser.ts",
+      "parent_name": "ZAiInlineToolCallParser",
+      "member_name": "parse",
+      "kind": "class_method",
+      "line": 47,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/core/src/processor/processor/ZAiInlineToolCallParser.ts",
+      "parent_name": "ZAiInlineToolCallParser",
+      "member_name": "reset",
+      "kind": "class_method",
+      "line": 70,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/core/src/tool-calls/ToolCallAccumulator.ts",
+      "parent_name": "ToolCallAccumulator",
+      "member_name": "getCompletedCalls",
+      "kind": "class_method",
+      "line": 62,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/core/src/tool-calls/ToolCallAccumulator.ts",
+      "parent_name": "ToolCallAccumulator",
+      "member_name": "flush",
+      "kind": "class_method",
+      "line": 189,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/core/engine.ts",
+      "parent_name": "OrchestrationEngine",
+      "member_name": "monitor",
+      "kind": "class_method",
+      "line": 480,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/core/engine.ts",
+      "parent_name": "OrchestrationEngine",
+      "member_name": "cancel",
+      "kind": "class_method",
+      "line": 489,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/utils/timing.ts",
+      "parent_name": "Debouncer",
+      "member_name": "debounce",
+      "kind": "class_method",
+      "line": 90,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/utils/timing.ts",
+      "parent_name": "Debouncer",
+      "member_name": "cancel",
+      "kind": "class_method",
+      "line": 101,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/utils/timing.ts",
+      "parent_name": "Throttle",
+      "member_name": "throttle",
+      "kind": "class_method",
+      "line": 118,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/orchestrator/src/utils/timing.ts",
+      "parent_name": "Throttle",
+      "member_name": "cancel",
+      "kind": "class_method",
+      "line": 139,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/mcp/vscodeBridgeHelper.ts",
+      "parent_name": "VSCodeMCPBridgeHelper",
+      "member_name": "connectToStream",
+      "kind": "class_method",
+      "line": 97,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "id",
+      "kind": "class_method",
+      "line": 63,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "vendor",
+      "kind": "class_method",
+      "line": 67,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "family",
+      "kind": "class_method",
+      "line": 71,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "name",
+      "kind": "class_method",
+      "line": 75,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "maxInputTokens",
+      "kind": "class_method",
+      "line": 79,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "countTokens",
+      "kind": "class_method",
+      "line": 83,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/provider/base-language-model-chat-provider.ts",
+      "parent_name": "BaseLanguageModelChatProvider",
+      "member_name": "makeRequest",
+      "kind": "class_method",
+      "line": 88,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    },
+    {
+      "path": "packages/vscode/src/vscode-renderer/tool-call-lifecycle.ts",
+      "parent_name": "ToolCallDeltaAccumulator",
+      "member_name": "reset",
+      "kind": "class_method",
+      "line": 80,
+      "col": 2,
+      "actions": [
+        {
+          "type": "remove-class-member",
+          "auto_fixable": false,
+          "description": "Remove this class member",
+          "note": "Class member may be used via dependency injection or decorators"
+        },
+        {
+          "type": "suppress-line",
+          "auto_fixable": false,
+          "description": "Suppress with an inline comment above the line",
+          "comment": "// fallow-ignore-next-line unused-class-member"
+        }
+      ]
+    }
+  ],
+  "unresolved_imports": [],
+  "unlisted_dependencies": [
+    {
+      "package_name": "cli-highlight",
+      "imported_from": [
+        {
+          "path": "packages/renderers/src/ink/utils/codeHighlight.ts",
+          "line": 5,
+          "col": 50
+        }
+      ],
+      "actions": [
+        {
+          "type": "install-dependency",
+          "auto_fixable": false,
+          "description": "Add this package to dependencies in package.json",
+          "note": "Verify this package should be a direct dependency before adding"
+        },
+        {
+          "type": "add-to-config",
+          "auto_fixable": false,
+          "description": "Add \"cli-highlight\" to ignoreDependencies in fallow config",
+          "config_key": "ignoreDependencies",
+          "value": "cli-highlight",
+          "value_schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json#/properties/ignoreDependencies/items"
+        }
+      ]
+    },
+    {
+      "package_name": "dompurify",
+      "imported_from": [
+        {
+          "path": "packages/renderers/src/streaming-md/createStreamingMarkdownRenderer.ts",
+          "line": 82,
+          "col": 36
+        },
+        {
+          "path": "packages/renderers/src/streaming-md/streaming-md.test.ts",
+          "line": 13,
+          "col": 0
+        }
+      ],
+      "actions": [
+        {
+          "type": "install-dependency",
+          "auto_fixable": false,
+          "description": "Add this package to dependencies in package.json",
+          "note": "Verify this package should be a direct dependency before adding"
+        },
+        {
+          "type": "add-to-config",
+          "auto_fixable": false,
+          "description": "Add \"dompurify\" to ignoreDependencies in fallow config",
+          "config_key": "ignoreDependencies",
+          "value": "dompurify",
+          "value_schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json#/properties/ignoreDependencies/items"
+        }
+      ]
+    },
+    {
+      "package_name": "streaming-markdown",
+      "imported_from": [
+        {
+          "path": "packages/renderers/src/streaming-md/createStreamingMarkdownRenderer.ts",
+          "line": 80,
+          "col": 30
+        },
+        {
+          "path": "packages/renderers/src/streaming-md/streaming-md.test.ts",
+          "line": 5,
+          "col": 0
+        }
+      ],
+      "actions": [
+        {
+          "type": "install-dependency",
+          "auto_fixable": false,
+          "description": "Add this package to dependencies in package.json",
+          "note": "Verify this package should be a direct dependency before adding"
+        },
+        {
+          "type": "add-to-config",
+          "auto_fixable": false,
+          "description": "Add \"streaming-markdown\" to ignoreDependencies in fallow config",
+          "config_key": "ignoreDependencies",
+          "value": "streaming-markdown",
+          "value_schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json#/properties/ignoreDependencies/items"
+        }
+      ]
+    }
+  ],
+  "duplicate_exports": [],
+  "type_only_dependencies": [],
+  "test_only_dependencies": [],
+  "circular_dependencies": [],
+  "boundary_violations": [],
+  "stale_suppressions": [
+    {
+      "path": "scripts/preview-themes.js",
+      "line": 21,
+      "col": 0,
+      "origin": {
+        "type": "comment",
+        "issue_kind": "unresolved-import",
+        "is_file_level": false
+      }
+    }
+  ],
+  "unused_catalog_entries": [],
+  "unresolved_catalog_references": []
+}

@@ -34,6 +34,7 @@ export interface ExecutionOptions {
   recovery?: boolean;
 }
 
+// fallow-ignore-next-line unused-export
 export class Workflow {
   public id: string;
 
@@ -62,6 +63,7 @@ export class Workflow {
   }
 }
 
+// fallow-ignore-next-line unused-export
 export class WorkflowMonitor {
   constructor(private readonly context: WorkflowContext) {}
 
