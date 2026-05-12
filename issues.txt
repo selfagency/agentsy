@@ -1,8 +1,5 @@
- ❯ pnpm exec fallow                                                                                                                                                                                                03:13:15 PM
- WARN  Issue while reading "/Users/daniel/Developer/agentsy/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
- WARN  Issue while reading "/Users/daniel/Developer/agentsy/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
 
-■ Metrics: dead files 4.7% (15 of 321) · dead exports 1.4% (13 of 942) · MI 91.1 (good)
+■ Metrics: dead files 4.7% (15 of 321) · dead exports 1.4% (13 of 943) · MI 91.1 (good)
   321 files analyzed
   147 entry points detected (121 plugin, 26 package.json)
   7 refactoring targets — start with testHelpers.ts (dead code)
@@ -118,18 +115,12 @@ Tip: run `fallow explain <issue-type>` for any finding below.
   Listed in dependencies but never imported — https://docs.fallow.tools/explanations/dead-code#unused-dependencies
   To suppress: // fallow-ignore-next-line unused-dependencies
 
-● Unresolved imports (15)
-  scripts/preview-themes.js (14)
-    :11 ../dist/renderers/ink/themes/index.js
-    :12 ../dist/renderers/ink/themes/index.js
-    :13 ../dist/renderers/ink/themes/index.js
-    :14 ../dist/renderers/ink/themes/index.js
-    :15 ../dist/renderers/ink/themes/index.js
-    ... and 9 more (--format json for full list)
+● Unresolved imports (2)
+  scripts/preview-themes.js
+    :16 ../dist/renderers/ink/themes/index.js
   scripts/validate-workspace.test.mjs
     :2 ../validate-workspace.mjs
   Import paths that could not be resolved — check for missing packages or broken paths. Framework-specific imports may need a plugin: https://docs.fallow.tools/plugins — https://docs.fallow.tools/explanations/dead-code#unresolved-imports
-  To suppress: // fallow-ignore-next-line unresolved-imports
 
 ● Unlisted dependencies (3)
   cli-highlight
@@ -138,7 +129,7 @@ Tip: run `fallow explain <issue-type>` for any finding below.
   Packages imported in code but missing from package.json — https://docs.fallow.tools/explanations/dead-code#unlisted-dependencies
   To suppress: // fallow-ignore-next-line unlisted-dependencies
 
-✗ 15 files · 7 exports · 6 types · 28 unused dependencies · 4 enum members · 19 class members · 15 unresolved imports · 3 unlisted dependencies (0.09s)
+✗ 15 files · 7 exports · 6 types · 28 unused dependencies · 4 enum members · 19 class members · 2 unresolved imports · 3 unlisted dependencies (0.10s)
 
 ── Duplication ────────────────────────────────────
 
@@ -158,7 +149,7 @@ Tip: run `fallow explain <issue-type>` for any finding below.
 
      69 lines  2 instances
     packages/renderers/scripts/preview-themes.js:27-95
-    scripts/preview-themes.js:27-95
+    scripts/preview-themes.js:27-85
 
      49 lines  2 instances
     packages/renderers/src/ink/createInkConversationRenderer.ts:51-95
@@ -239,11 +230,12 @@ Tip: run `fallow explain <issue-type>` for any finding below.
 
   Groups of related clones across the same files — https://docs.fallow.tools/explanations/duplication#clone-families
 
-✗ 3,615 lines (8.5%) duplicated across 54 files (0.06s)
+✗ 3,605 lines (8.5%) duplicated across 54 files (0.07s)
+Duplication (8.5%) exceeds threshold (3.0%)
 
 ── Complexity ─────────────────────────────────────
 
-■ Metrics: 43,451 LOC · dead files 4.7% · dead exports 1.4% · avg cyclomatic 2.0 · p90 cyclomatic 4 · maintainability 91.1 (good) · 0 churn hotspots · 28 unused deps
+■ Metrics: 43,449 LOC · dead files 4.7% · dead exports 1.4% · avg cyclomatic 2.0 · p90 cyclomatic 4 · maintainability 91.1 (good) · 0 churn hotspots · 28 unused deps
 
   Function size: 74% low · 15% medium · 6% high · 4% very high  (1-15 / 16-30 / 31-60 / >60 LOC)
   Parameters:    96% low · 3% medium · 1% high · 0% very high  (0-2 / 3-4 / 5-6 / >=7 params)
@@ -307,7 +299,7 @@ Tip: run `fallow explain <issue-type>` for any finding below.
           11 cyclomatic    6 cognitive   20 lines
          132.0 CRAP
   scripts/preview-themes.js
-    :52 displayThemePreview CRITICAL
+    :42 displayThemePreview CRITICAL
           11 cyclomatic   13 cognitive   42 lines
          132.0 CRAP
   packages/renderers/scripts/preview-themes.js
@@ -376,7 +368,7 @@ Tip: run `fallow explain <issue-type>` for any finding below.
            5 cyclomatic    4 cognitive   27 lines
           30.0 CRAP
   scripts/preview-themes.js
-    :44 applyColor
+    :34 applyColor
            5 cyclomatic    3 cognitive    7 lines
           30.0 CRAP
   scripts/release-per-package.js
@@ -415,6 +407,9 @@ Tip: run `fallow explain <issue-type>` for any finding below.
    70.3    packages/renderers/src/ink/createInkConversationRenderer.ts
             178 LOC    4 fan-in    4 fan-out  100% dead  0.11 density  3.0 risk
 
+   70.9    scripts/preview-themes.js
+             86 LOC    0 fan-in    1 fan-out  100% dead  0.21 density  132.0 risk
+
    72.1    packages/renderers/scripts/preview-themes.js
              96 LOC    0 fan-in    1 fan-out  100% dead  0.17 density  132.0 risk
 
@@ -424,26 +419,26 @@ Tip: run `fallow explain <issue-type>` for any finding below.
    72.9    packages/renderers/src/ink/components/ThinkingBlock.test.tsx
             167 LOC    0 fan-in    2 fan-out  100% dead  0.09 density  2.0 risk
 
-   74.0    scripts/validate-workspace.mjs
-             70 LOC    0 fan-in    0 fan-out  100% dead  0.20 density  90.0 risk
-
    74.0    scripts/validate-workspace.test.mjs
             158 LOC    0 fan-in    0 fan-out  100% dead  0.20 density  2.0 risk
 
+   74.6    scripts/validate-workspace.mjs
+             76 LOC    0 fan-in    0 fan-out  100% dead  0.18 density  90.0 risk
+
    74.7    packages/providers/src/normalizers/testHelpers.ts
              47 LOC    0 fan-in    1 fan-out  100% dead  0.09 density  6.0 risk
-
-   74.9    scripts/preview-themes.js
-             96 LOC    0 fan-in    0 fan-out  100% dead  0.17 density  132.0 risk
 
    75.1    packages/orchestrator/src/core/engine.ts
             518 LOC    2 fan-in    3 fan-out   67% dead  0.20 density  10.0 risk
 
   ... and 215 more files (--format json for full list)
 
-  Composite file quality scores based on complexity, coupling, and dead code. Risk: low <15, moderate 15-30, high >=30. CRAP from Istanbul coverage data (0/3533 functions matched). https://docs.fallow.tools/explanations/health#file-health-scores
+  Composite file quality scores based on complexity, coupling, and dead code. Risk: low <15, moderate 15-30, high >=30. CRAP from Istanbul coverage data (0/3535 functions matched). https://docs.fallow.tools/explanations/health#file-health-scores
 
-● Hotspots (56 files, since 6 months)
+● Hotspots (57 files, since 6 months)
+
+   24.3 ▼  scripts/preview-themes.js
+          11 commits    223 churn  0.21 density   0 fan-in  ▼ cooling
 
    22.7 ▲  scripts/release.js
           15 commits    877 churn  0.16 density   0 fan-in  ▲ accelerating
@@ -453,9 +448,6 @@ Tip: run `fallow explain <issue-type>` for any finding below.
 
    20.3 ▼  packages/core/src/structured/pipe.ts
            3 commits     21 churn  0.63 density   1 fan-in  ▼ cooling
-
-   17.8 ▼  scripts/preview-themes.js
-          10 commits    169 churn  0.17 density   0 fan-in  ▼ cooling
 
    14.8 ─  packages/core/src/formatting/formatXmlLikeResponseForDisplay.ts
            5 commits    139 churn  0.27 density   3 fan-in  ─ stable
@@ -538,6 +530,9 @@ Tip: run `fallow explain <issue-type>` for any finding below.
     6.1 ─  packages/core/src/formatting/sanitizeNonStreamingModelOutput.ts
            4 commits     50 churn  0.14 density   2 fan-in  ─ stable
 
+    6.0 ▼  scripts/validate-workspace.mjs
+           3 commits     87 churn  0.18 density   0 fan-in  ▼ cooling
+
     5.7 ▲  packages/integration/src/thinking-and-tool-calls.test.ts [test]
            4 commits    290 churn  0.13 density   0 fan-in  ▲ accelerating
 
@@ -613,7 +608,7 @@ Tip: run `fallow explain <issue-type>` for any finding below.
     2.3 ▼  packages/core/src/structured/types.ts
            3 commits    149 churn  0.07 density   3 fan-in  ▼ cooling
 
-  169 files excluded (< 3 commits)
+  168 files excluded (< 3 commits)
 
   Files with high churn and high complexity — https://docs.fallow.tools/explanations/health#hotspot-metrics
 
@@ -643,7 +638,3 @@ Tip: run `fallow explain <issue-type>` for any finding below.
          high impact · effort:high · confidence:medium  Split high-impact file (560 LOC) — 3 dependents amplify every change
 
   Prioritized refactoring recommendations based on complexity, churn, and coupling signals — https://docs.fallow.tools/explanations/health#refactoring-targets
-
-✗ 36 above threshold · 3533 analyzed · maintainability 91.1 (good) (0.03s)
-
-Failed: dead-code (97 issues), dupes (96 clone groups), health (36 above threshold) — start with testHelpers.ts
