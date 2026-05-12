@@ -1,7 +1,7 @@
 /* eslint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
 import { describe, expect, it, vi } from 'vitest';
 
-import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { XmlToolCall } from '../../tool-calls/index.js';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';

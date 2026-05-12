@@ -1,5 +1,10 @@
-import { ThinkingParser } from '@agentsy/core/thinking';
-import { extractXmlToolCalls, ToolCallAccumulator, type NativeToolCall, type XmlToolCall } from '@agentsy/core/tool-calls';
+import { ThinkingParser } from '../../thinking/index.js';
+import {
+  extractXmlToolCalls,
+  ToolCallAccumulator,
+  type NativeToolCall,
+  type XmlToolCall,
+} from '../../tool-calls/index.js';
 import type {
   ConversationEvent,
   FinishReason,
@@ -8,7 +13,7 @@ import type {
   ToolCallState,
   UsageInfo,
 } from '@agentsy/types';
-import { createXmlStreamFilter, type XmlStreamFilter } from '@agentsy/xml-filter';
+import { createXmlStreamFilter, type XmlStreamFilter } from '../../xml-filter/index.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { enforceMaxLength, ensureText, estimateChunkSize, mapNativeToolCalls } from './chunkUtils.js';
 import { detectIncompleteness } from './incompleteness.js';

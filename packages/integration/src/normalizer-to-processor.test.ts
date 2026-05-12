@@ -17,7 +17,7 @@ import {
   normalizeOpenAIChatChunk,
   normalizeOpenAIResponseEvent,
 } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 // ---------------------------------------------------------------------------
 // Helper: pump a list of raw provider events through a normalizer and a fresh

@@ -16,15 +16,11 @@
   },
   "dependencies": {
     "@agentsy/adapters": "workspace:*",
-    "@agentsy/context": "workspace:*",
     "@agentsy/core": "workspace:*",
-    "@agentsy/formatting": "workspace:*",
     "@agentsy/normalizers": "workspace:*",
-    "@agentsy/processor": "workspace:*",
     "@agentsy/recovery": "workspace:*",
     "@agentsy/renderers": "workspace:*",
-    "@agentsy/types": "workspace:*",
-    "@agentsy/xml-filter": "workspace:*"
+    "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

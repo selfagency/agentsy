@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { StreamChunk } from '@agentsy/processor';
+import type { StreamChunk } from '@agentsy/core/processor';
 import { VSCodeStreamBridge, bridgeStream } from './stream-bridge.js';
 
 async function* sourceChunks(): AsyncIterable<StreamChunk> {

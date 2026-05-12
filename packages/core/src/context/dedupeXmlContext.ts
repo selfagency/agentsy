@@ -97,13 +97,12 @@ function findMatchingCloseTag(part: string, tagName: string, searchStart: number
 
 function collectTagMatches(part: string): TagMatch[] {
   if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
+  OPEN_TAG_RE.lastIndex = 0;
   const results: TagMatch[] = [];
-
-  // Use matchAll() instead of exec() to avoid stateful global regex issues
-  for (const match of part.matchAll(OPEN_TAG_RE)) {
-    const tagName = match[1];
+  for (let m = OPEN_TAG_RE.exec(part); m !== null; m = OPEN_TAG_RE.exec(part)) {
+    const tagName = m[1];
     if (!tagName) continue;
-    const openEnd = match.index + match[0].length;
+    const openEnd = OPEN_TAG_RE.lastIndex;
 
     // Security: Validate tagName against whitelist before using in RegExp.
     // This prevents ReDoS attacks by ensuring only safe characters are used.
@@ -111,7 +110,7 @@ function collectTagMatches(part: string): TagMatch[] {
 
     const matchEnd = findMatchingCloseTag(part, tagName, openEnd);
     if (matchEnd === null) continue;
-    results.push({ tagName, fullMatch: part.slice(match.index, matchEnd) });
+    results.push({ tagName, fullMatch: part.slice(m.index, matchEnd) });
   }
   return results;
 }
