@@ -1,11 +1,11 @@
-# `@agentsy/normalizers`
+# `@agentsy/providers/normalizers`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/providers`
 - **Role:** Provider-specific normalization into a shared stream vocabulary
 
 ## Where it fits
 
-`@agentsy/normalizers` is the compatibility layer between raw provider payloads and the rest of the Agentsy processing stack.
+`@agentsy/providers/normalizers` is the compatibility layer between raw provider payloads and the rest of the Agentsy processing stack.
 
 ## Key exports
 
@@ -36,13 +36,13 @@
 
 ## Common neighbors
 
-- Downstream: `@agentsy/processor`
+- Downstream: `@agentsy/core/processor`, `@agentsy/providers/pipeline`
 - Adjacent docs: [Stream processing flow](../architecture/stream-processing.md)
 
 ## Example
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
 const normalized = normalizeOpenAIChatChunk(chunk);
 ```
@@ -50,8 +50,8 @@ const normalized = normalizeOpenAIChatChunk(chunk);
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 

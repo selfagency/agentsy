@@ -12,7 +12,7 @@ This example shows a workflow you could build with Agentsy:
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/normalizers @agentsy/sse
+npm install @agentsy/core @agentsy/providers
 ```
 
 ## Illustrative implementation
@@ -21,9 +21,9 @@ npm install @agentsy/adapters @agentsy/normalizers @agentsy/sse
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { parseSSEStream } from '@agentsy/sse';
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { parseSSEStream } from '@agentsy/core/sse';
 
 type DnsBlockDecision = {
   shouldBlock: boolean;
@@ -146,8 +146,8 @@ void runLogTriage();
 
 ## Why this pattern is useful
 
-- `@agentsy/normalizers` gives downstream code one common event shape.
-- `@agentsy/adapters` now orchestrates normalization + processing + schema validation in one helper.
+- `@agentsy/providers/normalizers` gives downstream code one common event shape.
+- `@agentsy/providers/adapters` now orchestrates normalization + processing + schema validation in one helper.
 - `applyDecisionAction` gives you a reusable side-effect gate for any validated decision payload.
 
 For additional package context, see the [package catalog](../packages.md).

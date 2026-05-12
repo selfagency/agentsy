@@ -1,12 +1,12 @@
 {
-  "name": "@agentsy/plugins",
+  "name": "@agentsy/providers",
   "version": "0.2.0-alpha.0",
-  "description": "Plugin system with A2A protocol support (consolidated: agents)",
+  "description": "Provider abstraction layer for adapters, normalizers, universal clients, and provider capabilities",
   "keywords": [
-    "a2a",
-    "agents",
+    "adapters",
     "agentsy",
-    "plugins",
+    "normalizers",
+    "providers",
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
@@ -14,22 +14,37 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git",
-    "directory": "packages/plugins"
+    "directory": "packages/providers"
   },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./agents": {
-      "types": "./dist/agents.d.ts",
-      "import": "./dist/agents.js",
-      "require": "./dist/agents.cjs"
+    "./adapters": {
+      "types": "./src/adapters/index.ts",
+      "import": "./dist/adapters.js",
+      "require": "./dist/adapters.cjs"
+    },
+    "./normalizers": {
+      "types": "./src/normalizers/index.ts",
+      "import": "./dist/normalizers.js",
+      "require": "./dist/normalizers.cjs"
+    },
+    "./pipeline": {
+      "types": "./src/pipeline/index.ts",
+      "import": "./dist/pipeline.js",
+      "require": "./dist/pipeline.cjs"
+    },
+    "./universal-client": {
+      "types": "./src/universal-client/index.ts",
+      "import": "./dist/universal-client.js",
+      "require": "./dist/universal-client.cjs"
     }
   },
   "scripts": {
@@ -41,6 +56,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

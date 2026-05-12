@@ -92,7 +92,7 @@ Agentsy is meant for developers building agentic tools that need dependable runt
 
 - Follow [Getting started](/getting-started)
 - Use the [API index](/api)
-- If you came from the old monolith, use [Migrating from `@selfagency/llm-stream-parser`](/migrating-from-llm-stream-parser)
+- If you came from the old monolith, use [Migrating from `@selfagency/llm-stream-parser`](/migration/llm-stream-parser)
 
 ### Contribute to the monorepo
 

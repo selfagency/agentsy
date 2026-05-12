@@ -1,6 +1,6 @@
-# `@agentsy/formatting`
+# `@agentsy/core/formatting`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** Safe display-oriented formatting helpers
 
 ## Key exports
@@ -28,7 +28,7 @@ This package is for presentation-safe string shaping after parsing but before re
 ## Implementation example with neighbors
 
 ```ts
-import { appendToBlockquote, sanitizeNonStreamingModelOutput } from '@agentsy/formatting';
+import { appendToBlockquote, sanitizeNonStreamingModelOutput } from '@agentsy/core/formatting';
 import { createPlainTextRenderer } from '@agentsy/renderers';
 
 const renderer = createPlainTextRenderer({

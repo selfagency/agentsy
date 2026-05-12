@@ -1,12 +1,12 @@
 /**
  * Integration: SSE text → createPipeline → PipelineEvents
  *
- * Tests the high-level `createPipeline` helper from @agentsy/processor which
+ * Tests the high-level `createPipeline` helper from @agentsy/providers which
  * wires SSE parsing, JSON parsing, normalisation, and the processor together.
  */
 import { describe, expect, it } from 'vitest';
 
-import { createPipeline, type PipelineEvent } from '@agentsy/core/processor';
+import { createPipeline, type PipelineEvent } from '@agentsy/providers/pipeline';
 
 // ---------------------------------------------------------------------------
 // Helper: turn a multi-line SSE string into an async iterable of chunks so we

@@ -28,20 +28,20 @@ If you depended on deeper monolith surfaces like agent loops, UI state, pipeline
 
 ## Choose the smallest modern package set
 
-| If you used `@selfagency/llm-stream-parser` for… | Start with…                   | Notes                                                                                                               |
-| ------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| VS Code chat providers and renderers             | `@agentsy/vscode`             | Best-supported migration path today.                                                                                |
-| Thinking extraction                              | `@agentsy/thinking`           | Direct focused replacement.                                                                                         |
-| XML/privacy scrubbing                            | `@agentsy/xml-filter`         | Direct focused replacement.                                                                                         |
-| Context block splitting and dedupe               | `@agentsy/context`            | Direct focused replacement.                                                                                         |
-| XML/native tool-call extraction                  | `@agentsy/tool-calls`         | Direct focused replacement.                                                                                         |
-| JSON parsing / validation / repair               | `@agentsy/structured`         | Direct focused replacement.                                                                                         |
-| Provider event normalization                     | `@agentsy/normalizers`        | Pair with `@agentsy/processor`.                                                                                     |
-| Stream orchestration / transforms                | `@agentsy/processor`          | Includes processor, pipeline helpers, and SSE helpers.                                                              |
-| Generic integration adapters                     | `@agentsy/adapters`           | High-level utilities including `processRawStream`, `runStructuredDecisionFromRawStream`, and `applyDecisionAction`. |
-| Event-sourced UI state                           | `@agentsy/ui`                 | Store + reducer + processor bridge.                                                                                 |
-| Agent loops                                      | `@agentsy/orchestrator/agent` | Equivalent capability, now separated from parsing primitives.                                                       |
-| Formatting / markdown helper utilities           | `@agentsy/formatting`         | `appendToBlockquote` moved here.                                                                                    |
+| If you used `@selfagency/llm-stream-parser` for… | Start with…                                               | Notes                                                                                                               |
+| ------------------------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| VS Code chat providers and renderers             | `@agentsy/vscode`                                         | Best-supported migration path today.                                                                                |
+| Thinking extraction                              | `@agentsy/core/thinking`                                  | Direct focused replacement.                                                                                         |
+| XML/privacy scrubbing                            | `@agentsy/core/xml-filter`                                | Direct focused replacement.                                                                                         |
+| Context block splitting and dedupe               | `@agentsy/core/context`                                   | Direct focused replacement.                                                                                         |
+| XML/native tool-call extraction                  | `@agentsy/core/tool-calls`                                | Direct focused replacement.                                                                                         |
+| JSON parsing / validation / repair               | `@agentsy/core/structured`                                | Direct focused replacement.                                                                                         |
+| Provider event normalization                     | `@agentsy/providers/normalizers`                          | Pair with `@agentsy/core/processor`.                                                                                |
+| Stream orchestration / transforms                | `@agentsy/core/processor` / `@agentsy/providers/pipeline` | Processor primitives live in core; `createPipeline` lives in providers.                                             |
+| Generic integration adapters                     | `@agentsy/providers/adapters`                             | High-level utilities including `processRawStream`, `runStructuredDecisionFromRawStream`, and `applyDecisionAction`. |
+| Event-sourced UI state                           | `@agentsy/ui`                                             | Store + reducer + processor bridge.                                                                                 |
+| Agent loops                                      | `@agentsy/orchestrator/agent`                             | Equivalent capability, now separated from parsing primitives.                                                       |
+| Formatting / markdown helper utilities           | `@agentsy/core/formatting`                                | `appendToBlockquote` moved here.                                                                                    |
 
 ## Install migration
 
@@ -62,45 +62,45 @@ npm install @agentsy/vscode vscode
 #### Stream parsing pipeline users
 
 ```bash
-npm install @agentsy/normalizers @agentsy/processor @agentsy/thinking @agentsy/tool-calls @agentsy/structured @agentsy/xml-filter
+npm install @agentsy/providers @agentsy/core
 ```
 
 #### Agent-loop users
 
 ```bash
-npm install @agentsy/orchestrator/agent @agentsy/processor @agentsy/tool-calls @agentsy/structured
+npm install @agentsy/orchestrator/agent @agentsy/core @agentsy/providers
 ```
 
 #### UI-state consumers
 
 ```bash
-npm install @agentsy/ui @agentsy/processor
+npm install @agentsy/ui @agentsy/core
 ```
 
 ## Import mapping
 
 The table below maps the main `v0.3.1` subpaths to their modern homes.
 
-| Old import                                             | Current import                              | Migration note                                                                                                     |
-| ------------------------------------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `@selfagency/llm-stream-parser/processor`              | `@agentsy/core/processor`                   | `LLMStreamProcessor` and processor helpers consolidated in core.                                                   |
-| `@selfagency/llm-stream-parser/pipeline`               | `@agentsy/core/processor`                   | Pipeline helpers like `createSmoothStream` now come from `@agentsy/core/processor`.                                |
-| `@selfagency/llm-stream-parser/thinking`               | `@agentsy/core/thinking`                    | Consolidated in core stream processing layer.                                                                      |
-| `@selfagency/llm-stream-parser/xml-filter`             | `@agentsy/core/xml-filter`                  | Consolidated in core stream processing layer.                                                                      |
-| `@selfagency/llm-stream-parser/context`                | `@agentsy/core/context`                     | Consolidated in core stream processing layer.                                                                      |
-| `@selfagency/llm-stream-parser/tool-calls`             | `@agentsy/core/tool-calls`                  | Consolidated in core stream processing layer.                                                                      |
-| `@selfagency/llm-stream-parser/structured`             | `@agentsy/core/structured`                  | Consolidated in core stream processing layer.                                                                      |
-| `@selfagency/llm-stream-parser/normalizers`            | `@agentsy/providers/normalizers`            | Provider integration layer.                                                                                        |
-| `@selfagency/llm-stream-parser/adapters`               | `@agentsy/providers/adapters`               | Provider integration layer.                                                                                        |
-| `@selfagency/llm-stream-parser/agent`                  | `@agentsy/orchestrator/agent`               | Agent orchestration consolidated into orchestrator package.                                                        |
-| `@selfagency/llm-stream-parser/ui`                     | `@agentsy/ui`                               | Event-sourced conversation state now lives here.                                                                   |
-| `@selfagency/llm-stream-parser/formatting`             | `@agentsy/core/formatting`                  | Formatting helpers consolidated in core.                                                                           |
-| `@selfagency/llm-stream-parser/markdown`               | `@agentsy/core/formatting`                  | `appendToBlockquote` was consolidated into `@agentsy/core/formatting`.                                             |
-| `@selfagency/llm-stream-parser/renderers/plain`        | `@agentsy/renderers`                        | Use `createPlainTextRenderer` from the renderers package root.                                                     |
-| `@selfagency/llm-stream-parser/renderers/vscode`       | `@agentsy/vscode`                           | VS Code renderer APIs moved into the published VS Code package.                                                    |
-| `@selfagency/llm-stream-parser/renderers/cli`          | No stable one-to-one public replacement yet | The repo contains renderer work, but this old public subpath does not currently map to a documented stable export. |
-| `@selfagency/llm-stream-parser/renderers/streaming-md` | No stable one-to-one public replacement yet | Treat as roadmap / internal until publicly documented and exported.                                                |
-| `@selfagency/llm-stream-parser/renderers/ink`          | No stable one-to-one public replacement yet | Ink renderer work exists in-repo, but not as a documented stable public import path today.                         |
+| Old import                                             | Current import                                            | Migration note                                                                                                     |
+| ------------------------------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `@selfagency/llm-stream-parser/processor`              | `@agentsy/core/processor`                                 | `LLMStreamProcessor` and processor primitives consolidated in core.                                                |
+| `@selfagency/llm-stream-parser/pipeline`               | `@agentsy/providers/pipeline` / `@agentsy/core/processor` | `createPipeline` now lives in providers; provider-agnostic transforms like `createSmoothStream` remain in core.    |
+| `@selfagency/llm-stream-parser/thinking`               | `@agentsy/core/thinking`                                  | Consolidated in core stream processing layer.                                                                      |
+| `@selfagency/llm-stream-parser/xml-filter`             | `@agentsy/core/xml-filter`                                | Consolidated in core stream processing layer.                                                                      |
+| `@selfagency/llm-stream-parser/context`                | `@agentsy/core/context`                                   | Consolidated in core stream processing layer.                                                                      |
+| `@selfagency/llm-stream-parser/tool-calls`             | `@agentsy/core/tool-calls`                                | Consolidated in core stream processing layer.                                                                      |
+| `@selfagency/llm-stream-parser/structured`             | `@agentsy/core/structured`                                | Consolidated in core stream processing layer.                                                                      |
+| `@selfagency/llm-stream-parser/normalizers`            | `@agentsy/providers/normalizers`                          | Provider integration layer.                                                                                        |
+| `@selfagency/llm-stream-parser/adapters`               | `@agentsy/providers/adapters`                             | Provider integration layer.                                                                                        |
+| `@selfagency/llm-stream-parser/agent`                  | `@agentsy/orchestrator/agent`                             | Agent orchestration consolidated into orchestrator package.                                                        |
+| `@selfagency/llm-stream-parser/ui`                     | `@agentsy/ui`                                             | Event-sourced conversation state now lives here.                                                                   |
+| `@selfagency/llm-stream-parser/formatting`             | `@agentsy/core/formatting`                                | Formatting helpers consolidated in core.                                                                           |
+| `@selfagency/llm-stream-parser/markdown`               | `@agentsy/core/formatting`                                | `appendToBlockquote` was consolidated into `@agentsy/core/formatting`.                                             |
+| `@selfagency/llm-stream-parser/renderers/plain`        | `@agentsy/renderers`                                      | Use `createPlainTextRenderer` from the renderers package root.                                                     |
+| `@selfagency/llm-stream-parser/renderers/vscode`       | `@agentsy/vscode`                                         | VS Code renderer APIs moved into the published VS Code package.                                                    |
+| `@selfagency/llm-stream-parser/renderers/cli`          | No stable one-to-one public replacement yet               | The repo contains renderer work, but this old public subpath does not currently map to a documented stable export. |
+| `@selfagency/llm-stream-parser/renderers/streaming-md` | No stable one-to-one public replacement yet               | Treat as roadmap / internal until publicly documented and exported.                                                |
+| `@selfagency/llm-stream-parser/renderers/ink`          | No stable one-to-one public replacement yet               | Ink renderer work exists in-repo, but not as a documented stable public import path today.                         |
 
 ## Before-and-after examples
 
@@ -140,6 +140,7 @@ import { createSmoothStream, createThinkingFilter } from '@selfagency/llm-stream
 
 ```ts
 import { createSmoothStream, createThinkingFilter } from '@agentsy/core/processor';
+import { createPipeline } from '@agentsy/providers/pipeline';
 ```
 
 ### Tool calls plus structured output
@@ -201,7 +202,7 @@ for await (const output of processRawStream(providerStream, normalizeOpenAIChatC
 
 ### Manual parse + validate + conditional action → `runStructuredDecisionFromRawStream` + `applyDecisionAction`
 
-If your monolith migration path still has repetitive "extract final content → validate schema → conditionally run side effect" code, move that orchestration to `@agentsy/adapters` helpers.
+If your monolith migration path still has repetitive "extract final content → validate schema → conditionally run side effect" code, move that orchestration to `@agentsy/providers/adapters` helpers.
 
 #### Before
 
@@ -279,10 +280,10 @@ In `v0.3.1`, one package carried most of the framework surface.
 
 Today the same capabilities are split across focused layers:
 
-- **Parsing primitives:** `@agentsy/thinking`, `@agentsy/xml-filter`, `@agentsy/context`, `@agentsy/tool-calls`, `@agentsy/structured`
-- **Provider normalization:** `@agentsy/normalizers`
-- **Stream orchestration:** `@agentsy/processor`
-- **High-level orchestration:** `@agentsy/orchestrator/agent`, `@agentsy/adapters`, `@agentsy/ui`
+- **Parsing primitives:** `@agentsy/core/thinking`, `@agentsy/core/xml-filter`, `@agentsy/core/context`, `@agentsy/core/tool-calls`, `@agentsy/core/structured`
+- **Provider normalization:** `@agentsy/providers/normalizers`
+- **Stream orchestration:** `@agentsy/core/processor`, `@agentsy/providers/pipeline`
+- **High-level orchestration:** `@agentsy/orchestrator/agent`, `@agentsy/providers/adapters`, `@agentsy/ui`
 - **Targeted integration layer:** `@agentsy/vscode`
 
 ### Not every old public subpath has a modern stable twin yet

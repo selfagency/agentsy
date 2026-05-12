@@ -1,6 +1,6 @@
-# `@agentsy/sse`
+# `@agentsy/core/sse`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** Server-sent-event parsing utilities
 
 ## Where it fits
@@ -14,14 +14,14 @@ This package handles low-level SSE parsing concerns before provider normalizatio
 
 ## Common neighbors
 
-- `@agentsy/normalizers`
-- `@agentsy/processor`
+- `@agentsy/providers/normalizers`
+- `@agentsy/core/processor`
 
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIResponseEvent } from '@agentsy/normalizers';
-import { parseSSEStream } from '@agentsy/sse';
+import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
+import { parseSSEStream } from '@agentsy/core/sse';
 
 for await (const event of parseSSEStream(response.body)) {
   const normalized = normalizeOpenAIResponseEvent(event);

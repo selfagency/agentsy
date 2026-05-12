@@ -1,6 +1,6 @@
-# `@agentsy/xml-filter`
+# `@agentsy/core/xml-filter`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** XML tag filtering and privacy-oriented scrubbing helpers
 
 ## Key exports
@@ -15,15 +15,15 @@ Use this package when you need to suppress or route XML-like tagged content, esp
 
 ## Common neighbors
 
-- `@agentsy/processor`
-- `@agentsy/thinking`
-- `@agentsy/formatting`
+- `@agentsy/core/processor`
+- `@agentsy/core/thinking`
+- `@agentsy/core/formatting`
 
 ## Implementation example with neighbors
 
 ```ts
-import { formatXmlLikeResponseForDisplay } from '@agentsy/formatting';
-import { createXmlStreamFilter } from '@agentsy/xml-filter';
+import { formatXmlLikeResponseForDisplay } from '@agentsy/core/formatting';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const filter = createXmlStreamFilter({ extraScrubTags: new Set(['think', 'context']) });
 
