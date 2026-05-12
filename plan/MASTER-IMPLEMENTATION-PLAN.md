@@ -187,6 +187,68 @@ These references are integrated in Section 9 and Section 10.
 
 ---
 
+## 7.1) Implementation Status & Completion Tracking (May 2026)
+
+### Phases A-C: ✅ COMPLETE
+
+| Phase | Scope                           | Status  | Gate      | Evidence                                                                                                                        |
+| ----- | ------------------------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| A     | Canonicalization Lock           | ✅ DONE | ✅ PASSED | All 20 canonical boundary decisions locked in DECISION-LOG                                                                      |
+| B     | Provider Consolidation          | ✅ DONE | ✅ PASSED | normalizers, adapters, universal-client → @agentsy/providers                                                                    |
+| C-1   | Core Consolidation              | ✅ DONE | ✅ PASSED | 10 submodules consolidated (sse, processor, structured, recovery, thinking, tool-calls, context, formatting, xml-filter, retry) |
+| C-2   | Providers (Parallel)            | ✅ DONE | ✅ PASSED | Providers wave completed, no circular deps                                                                                      |
+| C-3   | AG-UI Removal (Parallel)        | ✅ DONE | ✅ PASSED | Protocol retained in orchestrator; package deleted                                                                              |
+| C-4   | Agent → Orchestrator (Parallel) | ✅ DONE | ✅ PASSED | Agent code consolidated to @agentsy/orchestrator/agent; consumer packages audited clean                                         |
+
+**Verification Status (All Phases A-C):**
+
+- `pnpm check-types`: 26–31 tasks passing ✅
+- `pnpm build`: 17–20 tasks passing ✅
+- `pnpm test`: 35–41 tasks passing, 84 tests ✅
+- Documentation updated: 34 files across docs/, plan/, examples/ ✅
+- Branch: `feature/Phase-C1-consolidation` clean and pushed to remote ✅
+
+### Phase D: ⏳ LOCKED REQUIREMENTS (Blocked - Awaiting Implementation)
+
+**Scope:** Runtime + Orchestrator reshape
+**Blocker:** C-4 gate closure (NOW REMOVED — Phase D may proceed)
+**Current State:** Structure in place, stub implementations present
+
+**Locked Requirements Per Section 6:**
+
+1. **Runtime Package Full Implementation** (currently stub)
+   - Merge agentic-loop→runtime source code
+   - Implement: SessionStore, StreamSnapshot, multi-agent spawning with depth cap
+   - Add: DAG workflow execution engine
+   - Export public API: createRuntimeLoop, RuntimeConfig, SessionSnapshot, DAG workflow types
+
+2. **Orchestrator Package Expansion** (agent/ag-ui in place; need scheduler merge)
+   - Current structure: src/agent/, src/ag-ui/ present
+   - Merge scheduler→orchestrator/src/scheduler
+   - Implement: 6 orchestrator lifecycle hooks (before-init, after-init, before-step, after-step, before-final, after-final)
+   - Add: tool approval mechanism, stop conditions, resumable loops
+   - Export public API: createOrchestratorLoop, OrchestratorConfig, hooks, tool approval
+
+3. **Acceptance Gate D Criteria**
+   - Exactly one loop authority: `runtime` (agentic-loop merged)
+   - Exactly one orchestration authority: `orchestrator` (agent, ag-ui, scheduler merged)
+   - `pnpm check-types` passes (no new violations)
+   - `pnpm test` passes (all 84+ tests passing)
+   - No circular dependencies introduced
+   - docs updated for runtime/orchestrator boundary changes
+
+**Unblocked:** Consumer packages already verified clean (no migration needed)
+
+### Phases E-G: ⏳ BLOCKED (Awaiting Phase D)
+
+- **E:** Plugin surface conversion — blocked until orchestrator implementation complete
+- **F:** Token/protocol cleanup — blocked until orchestrator protocol boundaries clear
+- **G:** Documentation retirement — blocked until F complete
+
+**Recommended Phase D Timeline:** 2–4 hours (scaffold + integration + testing)
+
+---
+
 ## 7) Acceptance gates and quality checks
 
 For each migration phase:
