@@ -70,39 +70,14 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
 
-  packages/ag-ui:
-    dependencies:
-      '@agentsy/core':
-        specifier: workspace:*
-        version: link:../core
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
   packages/agent:
     dependencies:
-      '@agentsy/ag-ui':
-        specifier: workspace:*
-        version: link:../ag-ui
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
+      '@agentsy/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -225,28 +200,6 @@ importers:
       vitest:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
-
-  packages/normalizers:
-    dependencies:
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/observability:
     dependencies:
@@ -400,9 +353,6 @@ importers:
 
   packages/runtime:
     dependencies:
-      '@agentsy/ag-ui':
-        specifier: workspace:*
-        version: link:../ag-ui
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types

@@ -33,8 +33,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@agentsy/ag-ui": "workspace:*",
     "@agentsy/core": "workspace:*",
+    "@agentsy/runtime": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

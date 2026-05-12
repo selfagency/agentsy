@@ -1,4 +1,4 @@
-import type { AgUiEvent, InterruptController } from '@agentsy/ag-ui';
+import type { AgUiEvent, InterruptController } from '@agentsy/runtime/ag-ui';
 import type { OutputPart, ProcessedOutput, StreamChunk } from '@agentsy/core/processor';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
