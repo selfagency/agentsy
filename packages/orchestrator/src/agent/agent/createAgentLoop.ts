@@ -11,6 +11,9 @@ import type {
   OutputPart,
   ProcessedOutput,
   StepResult,
+  ToolApprovalDecision,
+  ToolApprovalMode,
+  ToolApprovalResult,
 } from './types.js';
 
 /**
@@ -46,6 +49,92 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   const aObj = a as Record<string, unknown>;
   const bObj = b as Record<string, unknown>;
   return aKeys.every(k => parametersEqual(aObj[k], bObj[k]));
+}
+
+function toolCallsEqual(
+  a: { name: string; parameters: unknown; id?: string },
+  b: { name: string; parameters: unknown; id?: string },
+) {
+  return a.name === b.name && a.id === b.id && parametersEqual(a.parameters, b.parameters);
+}
+
+function mapApprovalDecision(
+  toolCalls: AgentLoopToolContext['toolCalls'],
+  decision: ToolApprovalDecision,
+): { approvedToolCalls: AgentLoopToolContext['toolCalls']; deniedToolCalls: AgentLoopToolContext['toolCalls'] } {
+  return decision === 'allow'
+    ? { approvedToolCalls: [...toolCalls], deniedToolCalls: [] }
+    : { approvedToolCalls: [], deniedToolCalls: [...toolCalls] };
+}
+
+function deriveDeniedToolCalls(
+  toolCalls: AgentLoopToolContext['toolCalls'],
+  approvedToolCalls: AgentLoopToolContext['toolCalls'],
+): AgentLoopToolContext['toolCalls'] {
+  return toolCalls.filter(toolCall => !approvedToolCalls.some(candidate => toolCallsEqual(candidate, toolCall)));
+}
+
+function normalizeApprovalResult(
+  toolCalls: AgentLoopToolContext['toolCalls'],
+  result: ToolApprovalResult,
+  fallbackDecision: ToolApprovalDecision,
+): { approvedToolCalls: AgentLoopToolContext['toolCalls']; deniedToolCalls: AgentLoopToolContext['toolCalls'] } {
+  if (result.approvedToolCalls) {
+    return {
+      approvedToolCalls: [...result.approvedToolCalls],
+      deniedToolCalls: result.deniedToolCalls
+        ? [...result.deniedToolCalls]
+        : deriveDeniedToolCalls(toolCalls, result.approvedToolCalls),
+    };
+  }
+
+  if (result.deniedToolCalls && result.decision !== 'allow') {
+    return {
+      approvedToolCalls: deriveDeniedToolCalls(toolCalls, result.deniedToolCalls),
+      deniedToolCalls: [...result.deniedToolCalls],
+    };
+  }
+
+  return mapApprovalDecision(toolCalls, result.decision ?? fallbackDecision);
+}
+
+async function resolveToolApproval(
+  options: AgentLoopOptions,
+  toolContext: AgentLoopToolContext,
+): Promise<{
+  approvedToolCalls: AgentLoopToolContext['toolCalls'];
+  deniedToolCalls: AgentLoopToolContext['toolCalls'];
+}> {
+  const mode: ToolApprovalMode = options.toolApprovalMode ?? 'allow';
+
+  if (mode === 'allow') {
+    return mapApprovalDecision(toolContext.toolCalls, 'allow');
+  }
+
+  if (mode === 'deny') {
+    return mapApprovalDecision(toolContext.toolCalls, 'deny');
+  }
+
+  if (!options.approveToolCalls) {
+    return mode === 'ask'
+      ? mapApprovalDecision(toolContext.toolCalls, 'deny')
+      : mapApprovalDecision(toolContext.toolCalls, 'allow');
+  }
+
+  const result = await options.approveToolCalls({
+    ...toolContext,
+    mode,
+  });
+
+  if (typeof result === 'boolean') {
+    return mapApprovalDecision(toolContext.toolCalls, result ? 'allow' : 'deny');
+  }
+
+  if (result === 'allow' || result === 'deny') {
+    return mapApprovalDecision(toolContext.toolCalls, result);
+  }
+
+  return normalizeApprovalResult(toolContext.toolCalls, result, mode === 'ask' ? 'deny' : 'allow');
 }
 
 /**
@@ -143,12 +232,28 @@ async function processSingleStep(
   const toolContext: AgentLoopToolContext = {
     ...stepContext,
     toolCalls: stepResult.toolCalls,
+    toolApprovalMode: options.toolApprovalMode ?? 'allow',
   };
 
   await options.beforeToolCall?.(toolContext);
-  const toolResultMessages = await options.buildToolResultMessages(stepResult.toolCalls);
+  const { approvedToolCalls, deniedToolCalls } = await resolveToolApproval(options, toolContext);
+
+  if (approvedToolCalls.length === 0) {
+    await options.afterToolCall?.({
+      ...toolContext,
+      approvedToolCalls,
+      deniedToolCalls,
+      toolResultMessages: [],
+    });
+    return { parts, continueLoop: false };
+  }
+
+  const toolResultMessages = await options.buildToolResultMessages(approvedToolCalls);
   await options.afterToolCall?.({
     ...toolContext,
+    toolCalls: approvedToolCalls,
+    approvedToolCalls,
+    deniedToolCalls,
     toolResultMessages,
   });
   const newMessages = [...currentMessages, { role: 'assistant', content: finalOutput.content }, ...toolResultMessages];
