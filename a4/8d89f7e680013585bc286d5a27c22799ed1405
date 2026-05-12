@@ -1,0 +1,36 @@
+packages/orchestrator/src/agent/agent/stopConditions.ts
+  s_095d159945d78b::t_18eaa6971e556c 1-44
+packages/orchestrator/src/agent/index.ts
+  s_095d159945d78b::t_18eaa6971e556c 1
+packages/orchestrator/tsup.config.ts
+  s_095d159945d78b::t_9e7bb8613f4c18 4
+packages/orchestrator/src/agent/agent/createAgentLoop.ts
+  s_095d159945d78b::t_18eaa6971e556c 1-321
+pnpm-lock.yaml
+  ai_agent 225-227
+packages/orchestrator/src/agent/agent/types.ts
+  s_095d159945d78b::t_18eaa6971e556c 1-54
+packages/orchestrator/package.json
+  s_095d159945d78b::t_a40f258e4e10cd 45
+  s_095d159945d78b::t_7fbe44b4ac5d38 25-32
+packages/orchestrator/src/agent/agent/index.ts
+  s_095d159945d78b::t_18eaa6971e556c 1-12
+packages/orchestrator/src/agent/agent/agent.test.ts
+  s_095d159945d78b::t_18eaa6971e556c 1-538
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "a48d89f7e680013585bc286d5a27c22799ed1405",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
