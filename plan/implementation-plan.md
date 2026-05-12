@@ -33,13 +33,13 @@
 
 ### FULLY IMPLEMENTED on `main`
 
-| Package               | Status                                                                                                                                             |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@agentsy/vscode`     | Full — all DX work ported (retry/, mcp/vscodeBridgeHelper, stream-bridge, vscode-overloads, api-key-manager, etc.)                                 |
-| `@agentsy/tool-calls` | Full — DX changes done (providerToolsContract ✓, buildToolResultMessage ✓). **NOT yet in core**                                                    |
-| `@agentsy/agent`      | Full — createAgentLoop, types, tests. **NOT yet in orchestrator**                                                                                  |
-| `@agentsy/retry`      | Full — withRetry+retryWithBackoff. Has open AbortSignal bug                                                                                        |
-| `@agentsy/core`       | Partial — processor/mcp/transport ✓, context/formatting/xml-filter have content; sse/thinking/structured/tool-calls/normalizers dirs are **EMPTY** |
+| Package                       | Status                                                                                                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@agentsy/vscode`             | Full — all DX work ported (retry/, mcp/vscodeBridgeHelper, stream-bridge, vscode-overloads, api-key-manager, etc.)                                 |
+| `@agentsy/tool-calls`         | Full — DX changes done (providerToolsContract ✓, buildToolResultMessage ✓). **NOT yet in core**                                                    |
+| `@agentsy/orchestrator/agent` | Full — createAgentLoop, types, tests. **NOT yet in orchestrator**                                                                                  |
+| `@agentsy/retry`              | Full — withRetry+retryWithBackoff. Has open AbortSignal bug                                                                                        |
+| `@agentsy/core`               | Partial — processor/mcp/transport ✓, context/formatting/xml-filter have content; sse/thinking/structured/tool-calls/normalizers dirs are **EMPTY** |
 
 ### STUBS ONLY on `main`
 

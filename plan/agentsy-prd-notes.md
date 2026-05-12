@@ -359,7 +359,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-023: Slash Commands Intercept Before Model, Not After
 
-**Decision**: `SlashCommandRegistry` in `@agentsy/agent` intercepts `/`-prefixed user messages _before_ any model call. Matched commands execute directly, returning a synthetic assistant message. Unrecognized `/`-prefixed messages pass through unmodified.
+**Decision**: `SlashCommandRegistry` in `@agentsy/orchestrator/agent` intercepts `/`-prefixed user messages _before_ any model call. Matched commands execute directly, returning a synthetic assistant message. Unrecognized `/`-prefixed messages pass through unmodified.
 
 **Evidence**: Claude Code SDK: custom commands in `.claude/commands/<name>.md` are resolved before the message is sent to the model. OpenClaw chat commands are intercepted by the gateway layer. Slash command semantics are fully deterministic — no LLM interpretation needed.
 
@@ -389,7 +389,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-026: Code-as-Actions Execution Mode (CodeAgent Pattern)
 
-**Decision**: `@agentsy/agent` SHOULD support a `mode: "code"` option where the LLM generates executable JS/TS code blocks instead of JSON tool call structures. A sandboxed executor runs the code and returns results as the next iteration's observation.
+**Decision**: `@agentsy/orchestrator/agent` SHOULD support a `mode: "code"` option where the LLM generates executable JS/TS code blocks instead of JSON tool call structures. A sandboxed executor runs the code and returns results as the next iteration's observation.
 
 **Evidence**: SRC-11 (smolagents CodeAgent): code-as-actions reduces API calls by ~30% because multiple tool calls can be batched in a single code block and arithmetic/string operations happen in the executor without tool overhead. Executor backends: `local`, `e2b`, `docker`, `modal`, `blaxel`, `wasm`. The calling code is backend-agnostic.
 
@@ -409,7 +409,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-028: Tool Card Metadata Schema
 
-**Decision**: All tool registrations in `@agentsy/agent` MUST include a structured Tool Card with: `name`, `description`, `inputSchema`, `outputSchema`, `version`, `tags[]`, and optional `example_inputs[]`.
+**Decision**: All tool registrations in `@agentsy/orchestrator/agent` MUST include a structured Tool Card with: `name`, `description`, `inputSchema`, `outputSchema`, `version`, `tags[]`, and optional `example_inputs[]`.
 
 **Evidence**: SRC-16 (OctoTools): Tool Cards drive both planning (global planner reads descriptions) and execution (local executor reads schemas). Standardized metadata enables the selector to make principled inclusion/exclusion decisions.
 
@@ -419,7 +419,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-029: Dual-Level Planning
 
-**Decision**: For complex multi-step tasks, `@agentsy/agent` SHOULD support dual-level planning: a _global_ task plan produced once at task start (listing all major steps), plus a _per-step_ sub-plan produced before each tool invocation (detailing the immediate action).
+**Decision**: For complex multi-step tasks, `@agentsy/orchestrator/agent` SHOULD support dual-level planning: a _global_ task plan produced once at task start (listing all major steps), plus a _per-step_ sub-plan produced before each tool invocation (detailing the immediate action).
 
 **Evidence**: SRC-16 (OctoTools): global planner + local planner pattern. SRC-12 (DeerFlow): graph-level plan + node-level execution. The dual-level structure reduces hallucination on multi-step tasks by maintaining task-level context at each step without bloating a single prompt.
 
@@ -429,7 +429,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-030: Compiler-Driven Function Schema
 
-**Decision**: All function/tool schemas used by `@agentsy/agent` MUST be generated at compile time from TypeScript types, not authored by hand as JSON objects.
+**Decision**: All function/tool schemas used by `@agentsy/orchestrator/agent` MUST be generated at compile time from TypeScript types, not authored by hand as JSON objects.
 
 **Evidence**: SRC-17 (Agentica): `typia.llm.application<IMyFunctions>()` generates the entire JSON schema from TypeScript types at compile time. Schema drift (code changes but schema not updated) is structurally impossible.
 
@@ -439,7 +439,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-031: Validation Feedback Loop for Tool Arguments
 
-**Decision**: When an LLM-generated tool call fails schema validation, `@agentsy/agent` MUST inject the structured validation errors as a tool response + system correction prompt and retry, up to `config.retry` attempts, before throwing.
+**Decision**: When an LLM-generated tool call fails schema validation, `@agentsy/orchestrator/agent` MUST inject the structured validation errors as a tool response + system correction prompt and retry, up to `config.retry` attempts, before throwing.
 
 **Evidence**: SRC-17 (Agentica `select.ts`): `emendMessages(failures)` produces: (1) an assistant message repeating the bad tool call, (2) a tool response containing the `typia` validation errors as JSON, (3) a system prompt "Correct it at the next function calling." The retry counter increments; `tool_choice` switches from `"auto"` to `"required"` on retry.
 
@@ -449,7 +449,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-032: Parallel Divided Selection with Eliticism
 
-**Decision**: When the tool registry exceeds 50 entries, `@agentsy/agent` MUST partition tools into domain groups and run one LLM selector per group in parallel (`Promise.all`), then run a final _eliticism pass_ — one more LLM selector call over the union of all selected tools from all groups — to produce the final selection.
+**Decision**: When the tool registry exceeds 50 entries, `@agentsy/orchestrator/agent` MUST partition tools into domain groups and run one LLM selector per group in parallel (`Promise.all`), then run a final _eliticism pass_ — one more LLM selector call over the union of all selected tools from all groups — to produce the final selection.
 
 **Evidence**: SRC-17 (Agentica `select.ts`): `ctx.operations.divided` triggers `Promise.all` across groups, each with an isolated `stack`. Eliticism guard: `if ELITICISM && stacks.some(s => s.length !== 0) → step(ctx, stacks.flat().map(...))`. See verbatim code in `agentsy-deep-dive-v2.md` §2.2.
 
@@ -459,7 +459,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-033: DAG-Based Parallel Workflow Execution with Snapshot Recovery
 
-**Decision**: Multi-step workflows in `@agentsy/agent` SHOULD be represented as a directed acyclic graph (DAG). Nodes without pending upstream dependencies execute in parallel. A `task_snapshot` POJO captures running state for pause/resume.
+**Decision**: Multi-step workflows in `@agentsy/orchestrator/agent` SHOULD be represented as a directed acyclic graph (DAG). Nodes without pending upstream dependencies execute in parallel. A `task_snapshot` POJO captures running state for pause/resume.
 
 **Evidence**: SRC-15 (Eko v3.0+): `plan.ts` `Planner` generates XML workflow streamed to callback (`streamDone: false` for incremental UI). `chain.ts` `Chain` / `AgentChain` / `ToolChain` hierarchy is the audit trail. README: `task_snapshot` captures pending/running/completed nodes + tool results. `a2a.ts` + `replan.ts` for mid-workflow adjustments.
 
@@ -509,7 +509,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-038: Continuous Checkpoint Mode with WIP Commits
 
-**Decision**: `@agentsy/agent` SHOULD support a `checkpoint_mode: "continuous"` option that auto-commits after each significant action with a `WIP:` prefix and a structured `[agentsy-context]` body capturing `decisions`, `remaining`, and `failed_approaches`. A `/context-restore` command reconstructs session state from these commits.
+**Decision**: `@agentsy/orchestrator/agent` SHOULD support a `checkpoint_mode: "continuous"` option that auto-commits after each significant action with a `WIP:` prefix and a structured `[agentsy-context]` body capturing `decisions`, `remaining`, and `failed_approaches`. A `/context-restore` command reconstructs session state from these commits.
 
 **Evidence**: SRC-26 (gstack): `checkpoint_mode` auto-commits with `[gstack-context]` structured body. `/context-restore` reads WIP commits to reconstruct prior context after crash. `/ship` filter-squashes WIP commits before PR creation.
 
@@ -519,7 +519,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-039: Simulation-Based Agent Testing with User Simulator and Judge
 
-**Decision**: `@agentsy/agent` test infrastructure MUST support simulation-based scenario testing with three roles: (1) `UserSimulatorAgent` generating realistic user messages guided by scenario description, (2) `JudgeAgent(criteria=[...])` evaluating conversation quality at each turn, (3) optional `RedTeamAgent` for adversarial testing.
+**Decision**: `@agentsy/orchestrator/agent` test infrastructure MUST support simulation-based scenario testing with three roles: (1) `UserSimulatorAgent` generating realistic user messages guided by scenario description, (2) `JudgeAgent(criteria=[...])` evaluating conversation quality at each turn, (3) optional `RedTeamAgent` for adversarial testing.
 
 **Evidence**: SRC-27 (langwatch/scenario): `scenario.run(name, description, agents=[...], script=[...], max_turns=N)`. Hybrid script/autopilot: fixed messages at critical checkpoints, auto-generated turns between. `JudgeAgent` can trigger early termination on clear success/failure. `cache_key` for deterministic replay.
 
@@ -529,7 +529,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-040: pass^k Consistency Metric for Agent Test Suites
 
-**Decision**: All agent scenario tests in `@agentsy/agent` MUST be run k ≥ 3 times. Test suites MUST report both average task completion rate and `pass^k = P(all k runs succeed)`. A regression where `pass^k` drops while average rate holds stable MUST surface as a CI failure.
+**Decision**: All agent scenario tests in `@agentsy/orchestrator/agent` MUST be run k ≥ 3 times. Test suites MUST report both average task completion rate and `pass^k = P(all k runs succeed)`. A regression where `pass^k` drops while average rate holds stable MUST surface as a CI failure.
 
 **Evidence**: SRC-28 (awesome-ai-agent-testing): `pass^k` metric from tau-bench and Berkeley Function Calling Leaderboard. Agents with high average completion rate but low `pass^k` are unpredictable and unsuitable for production. The metric is the industry standard for evaluating agent reliability.
 
@@ -539,7 +539,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-041: Crescendo Multi-Turn Red Team Testing
 
-**Decision**: `@agentsy/agent` security test suite MUST include Crescendo-style adversarial testing: a `RedTeamAgent` starts with benign requests and incrementally escalates across up to 50 turns toward a specified attack target, scoring each turn and backtracking on refusals.
+**Decision**: `@agentsy/orchestrator/agent` security test suite MUST include Crescendo-style adversarial testing: a `RedTeamAgent` starts with benign requests and incrementally escalates across up to 50 turns toward a specified attack target, scoring each turn and backtracking on refusals.
 
 **Evidence**: SRC-27 (langwatch/scenario): `RedTeamAgent.crescendo(target=..., model=..., total_turns=50)`. Per-turn scoring, refusal detection (agent refused, reduce escalation), backtracking (try alternative path). Industry standard for LLM safety evaluation.
 
@@ -549,7 +549,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-042: RSI Feedback Ledger
 
-**Decision**: `@agentsy/agent` SHOULD maintain a per-session RSI (Reinforcement Signal Index) feedback ledger: every tool execution outcome (success, failure, partial) is appended with structured context. The ledger is read by the selector to de-prioritize failing tools and avoid repeating known-bad approaches.
+**Decision**: `@agentsy/orchestrator/agent` SHOULD maintain a per-session RSI (Reinforcement Signal Index) feedback ledger: every tool execution outcome (success, failure, partial) is appended with structured context. The ledger is read by the selector to de-prioritize failing tools and avoid repeating known-bad approaches.
 
 **Evidence**: SRC-21 (OpenCrabs): RSI feedback ledger with tool execution outcomes. Outcomes feed back into tool selection weight. Self-healing engine uses the ledger to identify and replace tools that have failed multiple times.
 
@@ -559,7 +559,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-043: Multi-Agent Debate with Confidence-Weighted Consensus
 
-**Decision**: For high-stakes decisions (architecture reviews, security analysis), `@agentsy/agent` SHOULD support spawning N debate agents with different role prompts (advocate, critic, neutral), collecting their outputs, and aggregating via confidence-weighted consensus.
+**Decision**: For high-stakes decisions (architecture reviews, security analysis), `@agentsy/orchestrator/agent` SHOULD support spawning N debate agents with different role prompts (advocate, critic, neutral), collecting their outputs, and aggregating via confidence-weighted consensus.
 
 **Evidence**: SRC-21 (OpenCrabs): Bee Colony debate — multiple agents with different roles debate hypotheses. Confidence-weighted aggregation similar to ensemble ML methods. SRC-23 (Anthropic): parallelization workflow with voting/aggregation.
 
@@ -579,7 +579,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-045: Evaluator-Optimizer Workflow Pattern
 
-**Decision**: For quality-sensitive generative tasks, `@agentsy/agent` SHOULD expose an evaluator-optimizer sub-pattern: generate candidate → evaluate against rubric → provide structured feedback → regenerate, up to `config.optimizerMaxIterations` cycles.
+**Decision**: For quality-sensitive generative tasks, `@agentsy/orchestrator/agent` SHOULD expose an evaluator-optimizer sub-pattern: generate candidate → evaluate against rubric → provide structured feedback → regenerate, up to `config.optimizerMaxIterations` cycles.
 
 **Evidence**: SRC-23 (Anthropic "Building Effective Agents"): evaluator-optimizer as one of the five canonical agentic workflows. Demonstrated value in tasks like translation (evaluate naturalness), code generation (evaluate test pass rate), and content writing (evaluate against style guide).
 
@@ -589,7 +589,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-046: State Dict Pattern for Cross-Step Large Object Passing
 
-**Decision**: `@agentsy/agent` MUST implement a per-session `state` dictionary. Tool return values that are binary or large objects (images, DataFrames, audio, embeddings) are stored in `state` under a string key. Subsequent tool calls receive the string key as an argument and the framework resolves it to the actual object at call time, never serializing to JSON.
+**Decision**: `@agentsy/orchestrator/agent` MUST implement a per-session `state` dictionary. Tool return values that are binary or large objects (images, DataFrames, audio, embeddings) are stored in `state` under a string key. Subsequent tool calls receive the string key as an argument and the framework resolves it to the actual object at call time, never serializing to JSON.
 
 **Evidence**: SRC-11 (smolagents `_substitute_state_variables`): `self.state["image_1"] = AgentImage(bytes)`. Later: `tool_call(input="image_1")` → framework substitutes `self.state["image_1"]` before invoking the tool. ThreadPoolExecutor workers receive `copy_context()` so the state dict is accessible.
 
@@ -609,7 +609,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-048: 12-Factor Agent Design Principles
 
-**Decision**: `@agentsy/agent` architecture MUST conform to the 12-factor agent design principles: (1) stateless execution, (2) externalized configuration, (3) declared dependencies, (4) environment parity, (5) structured telemetry, (6) explicit session boundaries, (7) idempotent tool calls, (8) graceful degradation, (9) fail-fast validation, (10) observable context, (11) versioned schemas, (12) reproducible runs.
+**Decision**: `@agentsy/orchestrator/agent` architecture MUST conform to the 12-factor agent design principles: (1) stateless execution, (2) externalized configuration, (3) declared dependencies, (4) environment parity, (5) structured telemetry, (6) explicit session boundaries, (7) idempotent tool calls, (8) graceful degradation, (9) fail-fast validation, (10) observable context, (11) versioned schemas, (12) reproducible runs.
 
 **Evidence**: SRC-25 (agenticloops-ai/agentic-ai-engineering): 6-module curriculum covering foundations to production; 12-factor agents chapter. Analogy to 12-factor app (Heroku) applied to agent systems.
 
@@ -629,7 +629,7 @@ Consolidated research from nine reference codebases, mapped to `@agentsy` requir
 
 ### ADR-050: LLM-as-Judge Evaluation at Every Turn
 
-**Decision**: `@agentsy/agent` SHOULD support a `JudgeAgent(criteria: string[])` that evaluates agent responses against a rubric at each conversation turn, emitting a `JudgeEvent` with score and verdict. Enable early termination on clear success or failure.
+**Decision**: `@agentsy/orchestrator/agent` SHOULD support a `JudgeAgent(criteria: string[])` that evaluates agent responses against a rubric at each conversation turn, emitting a `JudgeEvent` with score and verdict. Enable early termination on clear success or failure.
 
 **Evidence**: SRC-27 (langwatch/scenario): `JudgeAgent(criteria=["answered correctly", "used the tool", "did not hallucinate"])` evaluates each turn. Early termination reduces token cost 40-60% on test runs. Used in both production quality monitoring and test scenarios.
 

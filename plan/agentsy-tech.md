@@ -42,7 +42,7 @@ Complete technical specification for all 15 `@agentsy/*` packages. Includes Type
     │               └── @agentsy/renderers/browser  (peer: streaming-markdown, dompurify)
     ├── @agentsy/session      (→ core)
     ├── @agentsy/cost-tracker (→ core)
-    └── @agentsy/agent        (→ core, processor, session, cost-tracker, context-manager)
+    └── @agentsy/orchestrator/agent        (→ core, processor, session, cost-tracker, context-manager)
             ├── @agentsy/runtime  (→ core, agent)
             ├── @agentsy/context-manager (→ core, processor)
             ├── @agentsy/adapters (→ core, agent)
@@ -106,7 +106,7 @@ ProcessorEvent stream
 User messages (UIMessage[])
     │
     ▼
-@agentsy/agent — createAgentLoop()
+@agentsy/orchestrator/agent — createAgentLoop()
     │
     ├─ prepareStep() hook fires before each LLM call
     │   └─ can swap model, tools, instructions per step (SRC-7 vercel/ai)
@@ -454,7 +454,7 @@ export interface Pipeline {
 
 ---
 
-### 4.4 `@agentsy/agent`
+### 4.4 `@agentsy/orchestrator/agent`
 
 **The agent loop. Stop conditions. prepareStep. mergeCallbacks. Subagent spawning.**
 
@@ -1313,7 +1313,7 @@ export function createVSCodeAdapter(options: VSCodeAdapterOptions): {
 export * from '@agentsy/core';
 export * from '@agentsy/normalizers';
 export * from '@agentsy/processor';
-export * from '@agentsy/agent';
+export * from '@agentsy/orchestrator/agent';
 export * from '@agentsy/adapters';
 export * from '@agentsy/runtime/ag-ui';
 
@@ -1436,7 +1436,7 @@ async repairOrphanFiles(directory: string): Promise<void> {
 ### 5.5 mergeCallbacks Utility
 
 ```typescript
-// In @agentsy/agent/utils.ts (SRC-7 vercel/ai pattern)
+// In @agentsy/orchestrator/agent/utils.ts (SRC-7 vercel/ai pattern)
 export function mergeCallbacks<T extends (...args: unknown[]) => Promise<void> | void>(a?: T, b?: T): T | undefined {
   if (!a && !b) return undefined;
   if (!a) return b;
@@ -1496,7 +1496,7 @@ finalizeStream(): void {
 | `@agentsy/core/adapters`    | `@agentsy/adapters`              |
 | `@agentsy/core/ag-ui`       | `@agentsy/ag-ui`                 |
 | `@agentsy/core/normalizers` | `@agentsy/normalizers`           |
-| `@agentsy/core/agent`       | `@agentsy/agent`                 |
+| `@agentsy/core/agent`       | `@agentsy/orchestrator/agent`    |
 | `@agentsy/core/sse`         | `@agentsy/core/sse`              |
 | `@agentsy/core/recovery`    | `@agentsy/core/recovery`         |
 | `@agentsy/core/pipeline`    | `@agentsy/processor/pipeline`    |
@@ -1510,7 +1510,7 @@ find . -name "*.ts" -not -path "*/node_modules/*" | xargs sed -i \
   "s|@agentsy/core/adapters|@agentsy/adapters|g" \
   "s|@agentsy/core/ag-ui|@agentsy/ag-ui|g" \
   "s|@agentsy/core/normalizers|@agentsy/normalizers|g" \
-  "s|@agentsy/core/agent|@agentsy/agent|g" \
+  "s|@agentsy/core/agent|@agentsy/orchestrator/agent|g" \
   "s|@agentsy/core|@agentsy/core|g"
 ```
 

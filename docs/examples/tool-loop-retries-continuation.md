@@ -10,13 +10,13 @@ This example shows a workflow you could build when you need more than one-shot g
 ## Packages used
 
 ```bash
-npm install @agentsy/agent @agentsy/processor @agentsy/recovery @agentsy/tool-calls
+npm install @agentsy/orchestrator/agent @agentsy/processor @agentsy/recovery @agentsy/tool-calls
 ```
 
 ## Illustrative implementation
 
 ```ts
-import { createAgentLoop, isStepCount } from '@agentsy/agent';
+import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
 import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
 import { LLMStreamProcessor } from '@agentsy/processor';
 import { buildContinuationPrompt, captureStreamState } from '@agentsy/recovery';
@@ -92,7 +92,7 @@ for await (const part of loop.run([{ role: 'user', content: 'Investigate elevate
 
 ## Why this pattern is useful
 
-- `@agentsy/agent` gives you a reusable multi-step loop rather than bespoke loop control.
+- `@agentsy/orchestrator/agent` gives you a reusable multi-step loop rather than bespoke loop control.
 - `@agentsy/recovery` lets you resume after interrupted stream execution.
 - `@agentsy/tool-calls` standardizes tool-result message shaping.
 

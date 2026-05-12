@@ -185,9 +185,9 @@ import { TokenBudget } from '@agentsy/tokens';
 
 ```typescript
 // Old
-import { AgentLoop } from '@agentsy/agent';
+import { AgentLoop } from '@agentsy/orchestrator/agent';
 // New
-import { AgentLoop } from '@agentsy/agentic-loop';
+import { AgentLoop } from '@agentsy/orchestrator/agentic-loop';
 ```
 
 ### tool-calls split

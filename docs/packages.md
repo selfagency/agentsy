@@ -19,13 +19,13 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Runtime and orchestration packages
 
-| Package                | Role                                                                | Status    | Docs                                      |
-| ---------------------- | ------------------------------------------------------------------- | --------- | ----------------------------------------- |
-| `@agentsy/processor`   | Event-driven stream orchestrator and transform pipeline             | Published | [Package page](./packages/processor.md)   |
-| `@agentsy/normalizers` | Provider-specific response normalization into a common stream shape | Published | [Package page](./packages/normalizers.md) |
-| `@agentsy/agent`       | Multi-step agent loop and stop-condition helpers                    | Published | [Package page](./packages/agent.md)       |
-| `@agentsy/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
-| `@agentsy/renderers`   | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
+| Package                       | Role                                                                | Status    | Docs                                      |
+| ----------------------------- | ------------------------------------------------------------------- | --------- | ----------------------------------------- |
+| `@agentsy/processor`          | Event-driven stream orchestrator and transform pipeline             | Published | [Package page](./packages/processor.md)   |
+| `@agentsy/normalizers`        | Provider-specific response normalization into a common stream shape | Published | [Package page](./packages/normalizers.md) |
+| `@agentsy/orchestrator/agent` | Multi-step agent loop and stop-condition helpers                    | Published | [Package page](./packages/agent.md)       |
+| `@agentsy/adapters`           | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
+| `@agentsy/renderers`          | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
 
 ## Core parsing and shaping utilities
 

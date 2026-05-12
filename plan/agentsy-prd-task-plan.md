@@ -55,7 +55,7 @@ Tracks the creation of the four-file PRD documentation set for the `@agentsy` pl
 | TASK-F5-001 | Create `packages/slash-commands/` workspace package scaffold: `package.json`, `tsconfig.json`, `src/index.ts`                                           |           |            |
 | TASK-F5-002 | Implement `SlashCommandRegistry`: discover SKILL.md files, parse frontmatter, register commands, `execute(name, args)`                                  |           |            |
 | TASK-F5-003 | Implement 12 stock slash commands in `packages/slash-commands/src/commands/`                                                                            |           |            |
-| TASK-F5-004 | Integrate `SlashCommandRegistry` into `@agentsy/agent` pre-model interception hook                                                                      |           |            |
+| TASK-F5-004 | Integrate `SlashCommandRegistry` into `@agentsy/orchestrator/agent` pre-model interception hook                                                         |           |            |
 | TASK-F5-005 | Add skills CLI subprocess wrapper (`@agentsy/skills`): `SkillsManager` with `find/add/list/remove/update/init`                                          |           |            |
 | TASK-F5-006 | Unit tests for all 12 stock slash commands and `SkillsManager` argument validation                                                                      |           |            |
 | TASK-F6-001 | Create `packages/caveman/` workspace package: bundle SKILL.md files from JuliusBrussee/caveman v1.7.0                                                   |           |            |

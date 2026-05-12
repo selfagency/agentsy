@@ -25,7 +25,7 @@ Use this package when your application needs reliable tool-call handling across 
 
 - `@agentsy/processor`
 - `@agentsy/structured`
-- `@agentsy/agent`
+- `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 

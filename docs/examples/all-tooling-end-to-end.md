@@ -15,7 +15,7 @@ This example demonstrates a single end-to-end architecture that combines the ful
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/agent @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/renderers @agentsy/sse @agentsy/structured @agentsy/tool-calls @agentsy/ui
+npm install @agentsy/adapters @agentsy/orchestrator/agent @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/renderers @agentsy/sse @agentsy/structured @agentsy/tool-calls @agentsy/ui
 ```
 
 ## Illustrative implementation
@@ -220,7 +220,7 @@ async function runSimplePath(rawSource: AsyncIterable<unknown>) {
 
 - `@agentsy/sse` + `@agentsy/normalizers` standardize ingestion from provider streams.
 - `@agentsy/processor` centralizes streaming orchestration and event emission.
-- `@agentsy/agent` handles iterative tool loops with explicit stop conditions.
+- `@agentsy/orchestrator/agent` handles iterative tool loops with explicit stop conditions.
 - `@agentsy/recovery` gives continuity when streams fail or disconnect.
 - `@agentsy/ui` and `@agentsy/ag-ui` let the same backend flow power UI/state consumers.
 - `@agentsy/adapters` + `@agentsy/structured` reduce boilerplate in decision-gated automations.

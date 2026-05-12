@@ -20,7 +20,7 @@ Use `@agentsy/recovery` when your workflow needs to resume, continue, or stabili
 ## Common neighbors
 
 - `@agentsy/processor`
-- `@agentsy/agent`
+- `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 

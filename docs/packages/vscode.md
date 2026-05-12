@@ -32,7 +32,7 @@
 
 ## Common neighbors
 
-- Lower layers: `@agentsy/processor`, `@agentsy/agent`, `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/normalizers`
+- Lower layers: `@agentsy/processor`, `@agentsy/orchestrator/agent`, `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/normalizers`
 
 ## Example
 

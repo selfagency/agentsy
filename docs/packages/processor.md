@@ -35,7 +35,7 @@
 
 - Upstream: `@agentsy/normalizers`
 - Side utilities: `@agentsy/thinking`, `@agentsy/tool-calls`, `@agentsy/structured`
-- Downstream: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/agent`, `@agentsy/vscode`
+- Downstream: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/orchestrator/agent`, `@agentsy/vscode`
 
 ## Example
 
