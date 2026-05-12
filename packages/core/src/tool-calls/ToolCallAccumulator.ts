@@ -1,5 +1,5 @@
-import { parseJson } from '../structured/index.js';
 import type { JsonObject, NativeToolCallDelta } from '@agentsy/types';
+import { parseJson } from '../structured/index.js';
 import type { ToolCallState } from './types.js';
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */

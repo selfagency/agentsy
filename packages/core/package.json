@@ -43,6 +43,11 @@
       "import": "./dist/formatting.js",
       "require": "./dist/formatting.cjs"
     },
+    "./recovery": {
+      "types": "./dist/recovery.d.ts",
+      "import": "./dist/recovery.js",
+      "require": "./dist/recovery.cjs"
+    },
     "./retry": {
       "types": "./dist/retry.d.ts",
       "import": "./dist/retry.js",
