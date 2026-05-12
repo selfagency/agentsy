@@ -22,8 +22,8 @@ export const createSessionStore = (state: SessionState): SessionStore => {
         values: { ...values },
       };
     },
-    getValue(key) {
-      return values[key] as never;
+    getValue<T = unknown>(key: string) {
+      return values[key] as T | undefined;
     },
     setValue(key, value) {
       values[key] = value;

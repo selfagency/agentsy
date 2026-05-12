@@ -2,15 +2,38 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CancellationToken, Event } from 'vscode';
 import { createRetryUtility, RetryUtility } from './retryUtility.js';
 
-describe('Retry Utility', () => {
-  const mockOnCancellationRequested = vi.fn<(listener: (e: unknown) => unknown) => { dispose(): void }>(() => ({
-    dispose: () => {},
-  }));
+function createMockCancellationToken(initiallyCancelled = false): {
+  token: CancellationToken;
+  cancel(): void;
+} {
+  const listeners = new Set<(e: unknown) => unknown>();
+  let cancelled = initiallyCancelled;
 
-  const mockCancellationToken: CancellationToken = {
-    isCancellationRequested: false,
-    onCancellationRequested: mockOnCancellationRequested as unknown as Event<unknown>,
+  return {
+    token: {
+      get isCancellationRequested() {
+        return cancelled;
+      },
+      onCancellationRequested: ((listener: (e: unknown) => unknown) => {
+        listeners.add(listener);
+        return {
+          dispose: () => {
+            listeners.delete(listener);
+          },
+        };
+      }) as unknown as Event<unknown>,
+    },
+    cancel() {
+      cancelled = true;
+      for (const listener of [...listeners]) {
+        listener(undefined);
+      }
+    },
   };
+}
+
+describe('Retry Utility', () => {
+  const mockCancellationToken = createMockCancellationToken().token;
 
   describe('RetryUtility', () => {
     it('should create retry utility instance', () => {
@@ -65,16 +88,35 @@ describe('Retry Utility', () => {
     });
 
     it('should throw error when cancelled', async () => {
-      const cancellingToken: CancellationToken = {
-        isCancellationRequested: true,
-        onCancellationRequested: mockOnCancellationRequested as unknown as Event<unknown>,
-      };
+      const cancellingToken = createMockCancellationToken(true).token;
 
       const utility = new RetryUtility(3, 100, cancellingToken);
       const operation = vi.fn().mockResolvedValue('success');
 
       await expect(utility.executeWithRetry(operation)).rejects.toThrow('Operation cancelled');
       expect(operation).not.toHaveBeenCalled();
+    });
+
+    it('should stop the delay early when cancellation is requested during backoff', async () => {
+      vi.useFakeTimers();
+
+      try {
+        const cancellingToken = createMockCancellationToken();
+        const utility = new RetryUtility(3, 1_000, cancellingToken.token, 2);
+        const operation = vi.fn().mockRejectedValue(new Error('first failure'));
+
+        const result = utility.executeWithRetry(operation);
+        await Promise.resolve();
+        expect(operation).toHaveBeenCalledTimes(1);
+
+        cancellingToken.cancel();
+
+        await expect(result).rejects.toThrow('Operation cancelled');
+        vi.advanceTimersByTime(1_000);
+        expect(operation).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

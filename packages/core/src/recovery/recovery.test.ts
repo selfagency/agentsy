@@ -145,4 +145,39 @@ describe('buildContinuationPrompt', () => {
 
     expect(messages[0]?.content).toBe('lots of whitespace');
   });
+
+  it('includes completed tool calls in continuation context for openai-style prompts', () => {
+    const snap = {
+      content: 'Working on it',
+      thinking: '',
+      toolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' as const }],
+      options: {},
+      timestamp: Date.now(),
+    };
+
+    const messages = buildContinuationPrompt(snap, { provider: 'openai' });
+
+    expect(messages).toHaveLength(2);
+    expect(messages[1]?.role).toBe('user');
+    expect(messages[1]?.content).toContain('search({"query":"docs"})');
+    expect(messages[1]?.content).toContain('without repeating the completed tool calls');
+  });
+
+  it('includes completed tool calls before anthropic prefills when available', () => {
+    const snap = {
+      content: 'The answer is',
+      thinking: '',
+      toolCalls: [{ name: 'lookup', parameters: { id: '123' }, format: 'native-json' as const }],
+      options: {},
+      timestamp: Date.now(),
+    };
+
+    const messages = buildContinuationPrompt(snap, { provider: 'anthropic' });
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0]?.role).toBe('user');
+    expect(messages[0]?.content).toContain('lookup({"id":"123"})');
+    expect(messages[1]?.role).toBe('assistant');
+    expect(messages[1]?.content).toBe('The answer is');
+  });
 });

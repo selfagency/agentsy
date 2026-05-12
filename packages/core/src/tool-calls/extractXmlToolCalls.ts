@@ -9,9 +9,141 @@ export interface XmlToolCall {
   id?: string;
 }
 
+const MAX_XML_TOOL_CALL_INPUT_LENGTH = 1_000_000;
+
+interface ParsedXmlElement {
+  name: string;
+  inner: string;
+  endIndex: number;
+}
+
+function isAsciiLetter(char: string): boolean {
+  return /[A-Za-z]/.test(char);
+}
+
+function isValidTagStartCharacter(char: string): boolean {
+  return isAsciiLetter(char) || char === '_' || /[0-9]/.test(char);
+}
+
+function isValidTagCharacter(char: string): boolean {
+  return /[A-Za-z0-9_:-]/.test(char);
+}
+
+function stripMarkdownCodeFence(text: string): string {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith('```')) {
+    return trimmed;
+  }
+
+  const firstLineEnd = trimmed.indexOf('\n');
+  if (firstLineEnd === -1) {
+    return trimmed.replaceAll('```', '').trim();
+  }
+
+  const openingFence = trimmed.slice(0, firstLineEnd).trim().toLowerCase();
+  if (openingFence !== '```' && openingFence !== '```json' && openingFence !== '```xml') {
+    return trimmed;
+  }
+
+  const closingFenceIndex = trimmed.lastIndexOf('```');
+  if (closingFenceIndex <= firstLineEnd) {
+    return trimmed.slice(firstLineEnd + 1).trim();
+  }
+
+  return trimmed.slice(firstLineEnd + 1, closingFenceIndex).trim();
+}
+
+function parseXmlElement(text: string, startIndex: number): ParsedXmlElement | null {
+  if (text[startIndex] !== '<') {
+    return null;
+  }
+
+  const firstTagChar = text[startIndex + 1];
+  if (firstTagChar === undefined || !isValidTagStartCharacter(firstTagChar)) {
+    return null;
+  }
+
+  let tagEnd = startIndex + 2;
+  while (tagEnd < text.length && isValidTagCharacter(text[tagEnd] ?? '')) {
+    tagEnd += 1;
+  }
+
+  const tagName = text.slice(startIndex + 1, tagEnd);
+  if (tagName.length === 0) {
+    return null;
+  }
+
+  const openEnd = text.indexOf('>', tagEnd);
+  if (openEnd === -1) {
+    return null;
+  }
+
+  const closingPrefix = `</${tagName}`;
+  const closeStart = text.indexOf(closingPrefix, openEnd + 1);
+  if (closeStart === -1) {
+    return null;
+  }
+
+  const closeEnd = text.indexOf('>', closeStart + closingPrefix.length);
+  if (closeEnd === -1) {
+    return null;
+  }
+
+  const closeSuffix = text.slice(closeStart + closingPrefix.length, closeEnd).trim();
+  if (closeSuffix.length > 0) {
+    return null;
+  }
+
+  return {
+    name: tagName,
+    inner: text.slice(openEnd + 1, closeStart),
+    endIndex: closeEnd + 1,
+  };
+}
+
+function extractBareXmlParams(inner: string): JsonObject {
+  const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
+  const params = Object.create(null) as JsonObject;
+  let cursor = 0;
+
+  while (cursor < inner.length) {
+    const nextOpen = inner.indexOf('<', cursor);
+    if (nextOpen === -1) {
+      break;
+    }
+
+    const element = parseXmlElement(inner, nextOpen);
+    if (element === null) {
+      cursor = nextOpen + 1;
+      continue;
+    }
+
+    if (VALID_PARAM_NAME.test(element.name)) {
+      params[element.name] = element.inner.trim();
+    }
+
+    cursor = element.endIndex;
+  }
+
+  return params;
+}
+
 function cleanXml(text: string): string {
-  let cleaned = text.replaceAll(/```xml\s*/gi, '').replaceAll(/```\s*/g, '');
-  cleaned = cleaned.replace(/^[^<]*/, '').replace(/[^>]*$/, '');
+  if (text.length > MAX_XML_TOOL_CALL_INPUT_LENGTH) {
+    return text;
+  }
+
+  let cleaned = text.replaceAll('```xml', '').replaceAll('```XML', '').replaceAll('```', '');
+  const firstTagIndex = cleaned.indexOf('<');
+  if (firstTagIndex > 0) {
+    cleaned = cleaned.slice(firstTagIndex);
+  }
+
+  const lastTagIndex = cleaned.lastIndexOf('>');
+  if (lastTagIndex >= 0 && lastTagIndex < cleaned.length - 1) {
+    cleaned = cleaned.slice(0, lastTagIndex + 1);
+  }
+
   return cleaned;
 }
 
@@ -23,10 +155,14 @@ function cleanXml(text: string): string {
  *   [{"name": "fn_name", "arguments": {...}}]
  */
 function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
+  if (text.length > MAX_XML_TOOL_CALL_INPUT_LENGTH) {
+    return [];
+  }
+
   // Try to be permissive: models sometimes emit prose or markdown fences
   // before the raw JSON. Strip common fences and then find the first JSON
   // object/array opening and attempt to parse from there.
-  const normalized = text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+  const normalized = stripMarkdownCodeFence(text);
   const firstBracket = normalized.search(/[{[]/);
   if (firstBracket === -1) return [];
 
@@ -138,37 +274,34 @@ function pickFirstObjectValue(...values: unknown[]): Record<string, unknown> | n
  * @returns An array of successfully parsed tool calls. Malformed or unrecognised
  *          tool calls are silently skipped — the function never throws.
  */
-function extractBareXmlParams(inner: string, paramPattern: RegExp): JsonObject {
-  // Use a null-prototype object to avoid prototype pollution when assigning
-  // properties from untrusted XML input (e.g., <__proto__> tags).
-  // Validate paramName to prevent injection attacks.
-  const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
-  const params = Object.create(null) as JsonObject;
-  for (const paramMatch of inner.matchAll(paramPattern)) {
-    const paramName = paramMatch[1];
-    if (!paramName || !VALID_PARAM_NAME.test(paramName)) continue;
-    const raw = paramMatch[2];
-    params[paramName] = (typeof raw === 'string' ? raw : '').trim();
-  }
-  return params;
-}
 
 export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
-  if (knownTools.size === 0) {
+  if (knownTools.size === 0 || text.length > MAX_XML_TOOL_CALL_INPUT_LENGTH) {
     return [];
   }
 
   const cleaned = cleanXml(text);
   const results: XmlToolCall[] = [];
 
-  const toolPattern = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
-  const paramPattern = /<([^/\s>]+)>([\s\S]*?)<\/\1>/g;
+  let cursor = 0;
+  while (cursor < cleaned.length) {
+    const nextOpen = cleaned.indexOf('<', cursor);
+    if (nextOpen === -1) {
+      break;
+    }
 
-  for (const toolMatch of cleaned.matchAll(toolPattern)) {
-    const parsed = parseXmlToolCallMatch(toolMatch, knownTools, paramPattern);
+    const element = parseXmlElement(cleaned, nextOpen);
+    if (element === null) {
+      cursor = nextOpen + 1;
+      continue;
+    }
+
+    const parsed = parseXmlToolCallMatch(element.name, element.inner, knownTools);
     if (parsed !== null) {
       results.push(parsed);
     }
+
+    cursor = element.endIndex;
   }
 
   // Fallback: models like Qwen2.5Coder that ignore the XML system prompt and
@@ -180,14 +313,8 @@ export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlT
   return results;
 }
 
-function parseXmlToolCallMatch(
-  toolMatch: RegExpMatchArray,
-  knownTools: Set<string>,
-  paramPattern: RegExp,
-): XmlToolCall | null {
-  const toolName = toolMatch[1];
-  const inner = toolMatch[2] ?? '';
-  if (!toolName || toolName.toLowerCase() === 'think') {
+function parseXmlToolCallMatch(toolName: string, inner: string, knownTools: Set<string>): XmlToolCall | null {
+  if (toolName.toLowerCase() === 'think') {
     return null;
   }
 
@@ -202,7 +329,7 @@ function parseXmlToolCallMatch(
 
   return {
     name: toolName,
-    parameters: extractBareXmlParams(inner, paramPattern),
+    parameters: extractBareXmlParams(inner),
     format: 'bare-xml',
   };
 }

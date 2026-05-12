@@ -202,6 +202,28 @@ describe('ToolCallAccumulator (standalone)', () => {
     expect(result[0]?.name).toBe('find');
     expect(result[0]?.parameters).toEqual({ pattern: '*.ts' });
   });
+
+  it('skips parsing oversized tool-call payloads', () => {
+    const oversized = `<find><pattern>${'x'.repeat(1_000_001)}</pattern></find>`;
+    const result = extractXmlToolCalls(oversized, new Set(['find']));
+
+    expect(result).toEqual([]);
+  });
+
+  it('extracts bare JSON tool calls wrapped in markdown fences', () => {
+    const result = extractXmlToolCalls(
+      '```json\n{"name":"find","arguments":{"pattern":"*.ts"}}\n```',
+      new Set(['find']),
+    );
+
+    expect(result).toEqual([
+      {
+        name: 'find',
+        parameters: { pattern: '*.ts' },
+        format: 'json-wrapped',
+      },
+    ]);
+  });
 });
 
 // ---------------------------------------------------------------------------
