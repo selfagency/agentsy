@@ -36,11 +36,11 @@
     "lint:fix": "turbo run lint:fix",
     "format": "turbo run format",
     "test": "turbo run test",
-    "test:release": "pnpm exec tsx node --test scripts/release-state.test.ts scripts/trusted-publish-readiness.test.ts",
+    "test:release": "pnpm -C packages/scripts run release-test",
     "test:coverage": "turbo run coverage",
     "precommit": "turbo run precommit",
-    "release": "pnpm exec tsx scripts/release-per-package.ts",
-    "bootstrap-release": "pnpm exec tsx scripts/bootstrap-release.ts",
+    "release": "pnpm -C packages/scripts run release",
+    "bootstrap-release": "pnpm -C packages/scripts run bootstrap-release",
     "prepare": "husky"
   },
   "devDependencies": {
