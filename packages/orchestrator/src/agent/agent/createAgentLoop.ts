@@ -7,6 +7,7 @@ import type {
   AgentLoopOptions,
   AgentLoopState,
   AgentLoopStepContext,
+  AgentLoopStepOverrides,
   AgentLoopToolContext,
   OutputPart,
   ProcessedOutput,
@@ -15,6 +16,7 @@ import type {
   ToolApprovalMode,
   ToolApprovalResult,
 } from './types.js';
+import { mergeCallbacks } from './utils.js';
 
 /**
  * Checks if both values are objects with matching keys.
@@ -135,6 +137,49 @@ async function resolveToolApproval(
   }
 
   return normalizeApprovalResult(toolContext.toolCalls, result, mode === 'ask' ? 'deny' : 'allow');
+}
+
+function mergeStepOptions(base: AgentLoopOptions, overrides?: AgentLoopStepOverrides): AgentLoopOptions {
+  if (!overrides) {
+    return base;
+  }
+
+  const { approveToolCalls: baseApproveToolCalls, ...baseWithoutApprove } = base;
+  const { approveToolCalls: overrideApproveToolCalls, ...overrideWithoutApprove } = overrides;
+
+  const merged = {
+    ...baseWithoutApprove,
+    ...overrideWithoutApprove,
+    stopWhen: overrides.stopWhen ?? base.stopWhen,
+    buildToolResultMessages: overrides.buildToolResultMessages ?? base.buildToolResultMessages,
+  } as AgentLoopOptions;
+
+  const beforeStep = mergeCallbacks(base.beforeStep, overrides.beforeStep);
+  const onStep = mergeCallbacks(base.onStep, overrides.onStep);
+  const afterStep = mergeCallbacks(base.afterStep, overrides.afterStep);
+  const beforeToolCall = mergeCallbacks(base.beforeToolCall, overrides.beforeToolCall);
+  const afterToolCall = mergeCallbacks(base.afterToolCall, overrides.afterToolCall);
+  const onAbort = mergeCallbacks(base.onAbort, overrides.onAbort);
+  const onError = mergeCallbacks(base.onError, overrides.onError);
+  const beforeFinal = mergeCallbacks(base.beforeFinal, overrides.beforeFinal);
+  const afterFinal = mergeCallbacks(base.afterFinal, overrides.afterFinal);
+
+  if (beforeStep) merged.beforeStep = beforeStep;
+  if (onStep) merged.onStep = onStep;
+  if (afterStep) merged.afterStep = afterStep;
+  if (beforeToolCall) merged.beforeToolCall = beforeToolCall;
+  if (afterToolCall) merged.afterToolCall = afterToolCall;
+  if (onAbort) merged.onAbort = onAbort;
+  if (onError) merged.onError = onError;
+  if (beforeFinal) merged.beforeFinal = beforeFinal;
+  if (afterFinal) merged.afterFinal = afterFinal;
+
+  const resolvedApproveToolCalls = overrideApproveToolCalls ?? baseApproveToolCalls;
+  if (resolvedApproveToolCalls) {
+    merged.approveToolCalls = resolvedApproveToolCalls;
+  }
+
+  return merged;
 }
 
 /**
@@ -358,7 +403,6 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     };
 
     const maxSteps = options.maxSteps ?? 20;
-    const stopConditions = Array.isArray(options.stopWhen) ? options.stopWhen : [options.stopWhen];
 
     let currentMessages = initialMessages;
     const initialContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
@@ -386,11 +430,15 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     try {
       while (!aborted && state.steps.length < maxSteps) {
         const loopContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
+        const stepOverrides = (await options.prepareStep?.(loopContext)) ?? undefined;
+        const stepOptions = mergeStepOptions(options, stepOverrides);
+        const stepMessages = stepOverrides?.messages ?? currentMessages;
+        const stepStopConditions = Array.isArray(stepOptions.stopWhen) ? stepOptions.stopWhen : [stepOptions.stopWhen];
 
         // Check for interrupts
         if (interruptController?.isInterrupted()) {
           abortReason = 'interrupt';
-          await options.onAbort?.('interrupt', loopContext);
+          await stepOptions.onAbort?.('interrupt', loopContext);
           const interruptEvent = createInterruptEvent(
             runId,
             interruptController.getReason(),
@@ -418,11 +466,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
         const result = await processSingleStep(
           state,
-          options,
+          stepOptions,
           loopContext,
-          currentMessages,
+          stepMessages,
           abortController,
-          stopConditions,
+          stepStopConditions,
         );
 
         // Emit STEP_FINISHED (always, regardless of parts)
@@ -454,6 +502,8 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         // Update for next iteration
         if (result.nextMessages) {
           currentMessages = result.nextMessages;
+        } else if (stepOverrides?.messages) {
+          currentMessages = stepMessages;
         }
       }
 

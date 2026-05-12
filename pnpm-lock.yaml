@@ -42,31 +42,6 @@ importers:
         specifier: ^8.8.5
         version: 8.8.5
 
-  packages/adapters:
-    dependencies:
-      '@agentsy/core':
-        specifier: workspace:*
-        version: link:../core
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
   packages/cli:
     dependencies:
       '@agentsy/types':
@@ -88,9 +63,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@agentsy/providers':
-        specifier: workspace:*
-        version: link:../providers
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -116,15 +88,9 @@ importers:
 
   packages/integration:
     dependencies:
-      '@agentsy/adapters':
-        specifier: workspace:*
-        version: link:../adapters
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
-      '@agentsy/providers':
-        specifier: workspace:*
-        version: link:../providers
       '@agentsy/renderers':
         specifier: workspace:*
         version: link:../renderers
@@ -132,9 +98,6 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
       '@vitest/coverage-v8':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
@@ -143,7 +106,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/memory:
     dependencies:
@@ -243,28 +206,6 @@ importers:
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
-        version: 25.6.2
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
-
-  packages/providers:
-    dependencies:
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.2
         version: 25.6.2
       '@vitest/coverage-v8':
         specifier: ^4.1.5
@@ -485,9 +426,6 @@ importers:
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
-      '@agentsy/providers':
-        specifier: workspace:*
-        version: link:../providers
       '@agentsy/renderers':
         specifier: workspace:*
         version: link:../renderers
@@ -3899,7 +3837,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
+      vitest: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   '@vitest/expect@4.1.5':
     dependencies:

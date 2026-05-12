@@ -2,7 +2,7 @@ import type { SessionStore } from '@agentsy/session';
 
 export interface RuntimeTask {
   id: string;
-  run(signal: AbortSignal): Promise<void>;
+  run(signal: AbortSignal, context: RuntimeTaskContext): Promise<void>;
 }
 
 export interface RuntimeWorkflowTask extends RuntimeTask {
@@ -19,15 +19,24 @@ export interface RuntimeTaskResult {
 
 export interface RuntimeSnapshot {
   sessionId: string;
+  depth: number;
   completedTaskIds: string[];
   results: RuntimeTaskResult[];
+  childSnapshots: RuntimeSnapshot[];
   updatedAt: number;
+}
+
+export interface RuntimeTaskContext {
+  sessionId: string;
+  depth: number;
+  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
 }
 
 export interface RuntimeOptions {
   onError?: (error: Error, task: RuntimeTask) => void;
   onTaskStart?: (task: RuntimeTask) => void;
   onTaskComplete?: (result: RuntimeTaskResult, task: RuntimeTask) => void;
+  taskContext?: RuntimeTaskContext;
 }
 
 export interface RuntimeExecutor {
@@ -40,11 +49,15 @@ export interface RuntimeLoopOptions extends RuntimeOptions {
   snapshot?: RuntimeSnapshot;
   sessionStore?: SessionStore;
   snapshotKey?: string;
+  depth?: number;
+  maxDepth?: number;
 }
 
 export interface RuntimeLoop {
   execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
+  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
   getSnapshot(): RuntimeSnapshot;
+  getDepth(): number;
 }
 
 export interface RuntimeWorkflowExecutor {
@@ -55,11 +68,13 @@ function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error('Runtime task failed');
 }
 
-function createEmptySnapshot(sessionId: string): RuntimeSnapshot {
+function createEmptySnapshot(sessionId: string, depth: number): RuntimeSnapshot {
   return {
     sessionId,
+    depth,
     completedTaskIds: [],
     results: [],
+    childSnapshots: [],
     updatedAt: Date.now(),
   };
 }
@@ -86,10 +101,13 @@ function isRuntimeSnapshot(value: unknown): value is RuntimeSnapshot {
   const candidate = value as Record<string, unknown>;
   return (
     typeof candidate.sessionId === 'string' &&
+    typeof candidate.depth === 'number' &&
     Array.isArray(candidate.completedTaskIds) &&
     candidate.completedTaskIds.every(taskId => typeof taskId === 'string') &&
     Array.isArray(candidate.results) &&
     candidate.results.every(isRuntimeTaskResult) &&
+    Array.isArray(candidate.childSnapshots) &&
+    candidate.childSnapshots.every(isRuntimeSnapshot) &&
     typeof candidate.updatedAt === 'number'
   );
 }
@@ -97,8 +115,10 @@ function isRuntimeSnapshot(value: unknown): value is RuntimeSnapshot {
 function cloneSnapshot(snapshot: RuntimeSnapshot): RuntimeSnapshot {
   return {
     sessionId: snapshot.sessionId,
+    depth: snapshot.depth,
     completedTaskIds: [...snapshot.completedTaskIds],
     results: snapshot.results.map(result => ({ ...result })),
+    childSnapshots: snapshot.childSnapshots.map(cloneSnapshot),
     updatedAt: snapshot.updatedAt,
   };
 }
@@ -173,7 +193,7 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
       options.onTaskStart?.(task);
 
       try {
-        await task.run(signal);
+        await task.run(signal, options.taskContext ?? createDetachedRuntimeTaskContext());
         const result: RuntimeTaskResult = {
           taskId: task.id,
           status: 'completed',
@@ -201,16 +221,61 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
   },
 });
 
+function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
+  return {
+    sessionId: 'runtime-detached',
+    depth: 0,
+    async spawn() {
+      throw new Error('Runtime spawning is unavailable without an attached runtime loop context');
+    },
+  };
+}
+
 export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop {
   const sessionId = options.sessionId ?? `runtime_${Math.random().toString(36).slice(2, 10)}`;
+  const depth = options.depth ?? 0;
+  const maxDepth = options.maxDepth ?? 3;
   const persistedSnapshot = options.sessionStore
     ? loadRuntimeSnapshotFromSession(options.sessionStore, options.snapshotKey)
     : null;
   let snapshot = options.snapshot
     ? cloneSnapshot(options.snapshot)
-    : (persistedSnapshot ?? createEmptySnapshot(sessionId));
+    : (persistedSnapshot ?? createEmptySnapshot(sessionId, depth));
 
-  const executor = createRuntimeExecutor(options);
+  const spawn = async (tasks: RuntimeTask[], signal = new AbortController().signal, childSessionId?: string) => {
+    if (depth + 1 > maxDepth) {
+      throw new Error(`Runtime spawn depth exceeded maxDepth (${maxDepth})`);
+    }
+
+    const nextChildSessionId = childSessionId ?? `${sessionId}:child:${snapshot.childSnapshots.length + 1}`;
+    const childLoop = createRuntimeLoop({
+      ...options,
+      sessionId: nextChildSessionId,
+      depth: depth + 1,
+      maxDepth,
+    });
+    const childSnapshot = await childLoop.execute(tasks, signal);
+    snapshot = {
+      ...snapshot,
+      childSnapshots: [...snapshot.childSnapshots, childSnapshot],
+      updatedAt: Date.now(),
+    };
+
+    if (options.sessionStore) {
+      saveRuntimeSnapshotToSession(options.sessionStore, snapshot, options.snapshotKey);
+    }
+
+    return cloneSnapshot(childSnapshot);
+  };
+
+  const executor = createRuntimeExecutor({
+    ...options,
+    taskContext: {
+      sessionId,
+      depth,
+      spawn,
+    },
+  });
 
   return {
     async execute(tasks, signal = new AbortController().signal) {
@@ -228,8 +293,10 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
 
       snapshot = {
         sessionId,
+        depth,
         completedTaskIds: nextCompletedTaskIds,
         results: [...snapshot.results, ...results],
+        childSnapshots: snapshot.childSnapshots,
         updatedAt: Date.now(),
       };
 
@@ -240,8 +307,14 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
       return cloneSnapshot(snapshot);
     },
 
+    spawn,
+
     getSnapshot() {
       return cloneSnapshot(snapshot);
+    },
+
+    getDepth() {
+      return depth;
     },
   };
 }

@@ -1,3 +1,4 @@
+import { createSessionStore } from '@agentsy/session';
 import { describe, expect, it, vi } from 'vitest';
 import {
   createRuntimeExecutor,
@@ -8,7 +9,6 @@ import {
   type RuntimeTask,
   type RuntimeWorkflowTask,
 } from './index.js';
-import { createSessionStore } from '@agentsy/session';
 
 describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {
@@ -135,6 +135,7 @@ describe('createRuntimeLoop', () => {
     expect(firstSnapshot.completedTaskIds).toEqual(['a', 'b']);
     expect(secondSnapshot.completedTaskIds).toEqual(['a', 'b']);
     expect(secondSnapshot.results).toHaveLength(2);
+    expect(secondSnapshot.depth).toBe(0);
   });
 
   it('fires task lifecycle callbacks', async () => {
@@ -167,6 +168,50 @@ describe('createRuntimeLoop', () => {
     expect(calls).toEqual(['a', 'b']);
     expect(secondSnapshot.completedTaskIds).toEqual(['a', 'b']);
   });
+
+  it('spawns child runtime work with a depth cap', async () => {
+    const calls: string[] = [];
+    const loop = createRuntimeLoop({ sessionId: 'root', maxDepth: 1 });
+
+    const parentTasks: RuntimeTask[] = [
+      {
+        id: 'parent',
+        run: async (_signal, context) => {
+          calls.push(`parent:${context.depth}`);
+          const childSnapshot = await context.spawn([
+            {
+              id: 'child',
+              run: async () => {
+                calls.push('child');
+              },
+            },
+          ]);
+
+          expect(childSnapshot.depth).toBe(1);
+          expect(childSnapshot.sessionId).toContain('root:child:1');
+        },
+      },
+    ];
+
+    const snapshot = await loop.execute(parentTasks);
+
+    expect(calls).toEqual(['parent:0', 'child']);
+    expect(snapshot.childSnapshots).toHaveLength(1);
+    expect(loop.getDepth()).toBe(0);
+  });
+
+  it('rejects spawns that exceed the configured depth cap', async () => {
+    const loop = createRuntimeLoop({ sessionId: 'root', maxDepth: 0 });
+
+    await expect(
+      loop.spawn([
+        {
+          id: 'child',
+          run: async () => {},
+        },
+      ]),
+    ).rejects.toThrow('Runtime spawn depth exceeded maxDepth');
+  });
 });
 
 describe('runtime snapshot session helpers', () => {
@@ -174,6 +219,7 @@ describe('runtime snapshot session helpers', () => {
     const sessionStore = createSessionStore({ id: 'session-1', values: {} });
     const snapshot = {
       sessionId: 'session-1',
+      depth: 0,
       completedTaskIds: ['task-1'],
       results: [
         {
@@ -183,6 +229,7 @@ describe('runtime snapshot session helpers', () => {
           finishedAt: 2,
         },
       ],
+      childSnapshots: [],
       updatedAt: 3,
     };
 

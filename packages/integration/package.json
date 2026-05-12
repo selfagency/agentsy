@@ -15,14 +15,11 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@agentsy/adapters": "workspace:*",
     "@agentsy/core": "workspace:*",
-    "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

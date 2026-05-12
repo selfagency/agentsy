@@ -2,7 +2,16 @@ import type { ProcessedOutput } from '@agentsy/core/processor';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import { describe, expect, it, vi } from 'vitest';
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';
-import { createAgentLoop, detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './index.js';
+import {
+  createAgentLoop,
+  detectDoomLoop,
+  finishReasonIs,
+  hasNoToolCalls,
+  hasToolCall,
+  isLoopFinished,
+  isStepCount,
+  mergeCallbacks,
+} from './index.js';
 
 // Helper functions for doom loop tests
 function createMockOutput(toolCalls: XmlToolCall[]): ProcessedOutput {
@@ -205,6 +214,22 @@ describe('Stop Conditions', () => {
     });
   });
 
+  describe('hasToolCall', () => {
+    it('should stop when the last step contains any tool call', () => {
+      const condition = hasToolCall();
+      const toolCall: XmlToolCall = { name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' };
+
+      expect(condition(createMockState([createMockStep(toolCall)], [toolCall], 0))).toBe(true);
+    });
+
+    it('should only stop for a matching tool name when one is provided', () => {
+      const condition = hasToolCall('fetch');
+      const toolCall: XmlToolCall = { name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' };
+
+      expect(condition(createMockState([createMockStep(toolCall)], [toolCall], 0))).toBe(false);
+    });
+  });
+
   describe('finishReasonIs', () => {
     it('should stop when finishReason matches', () => {
       const condition = finishReasonIs('stop', 'length');
@@ -283,6 +308,46 @@ describe('Stop Conditions', () => {
     });
   });
 
+  describe('isLoopFinished', () => {
+    it('should stop when the last step has a finish reason and no tool calls', () => {
+      const condition = isLoopFinished();
+      const state: AgentLoopState = {
+        steps: [
+          {
+            output: {
+              thinking: '',
+              content: 'done',
+              toolCalls: [],
+              done: true,
+              parts: [],
+              incomplete: false,
+              incompleteness: [],
+              finishReason: 'stop',
+            },
+            toolCalls: [],
+            finishReason: 'stop',
+            usage: undefined,
+          },
+        ],
+        stepIndex: 0,
+        lastOutput: {
+          thinking: '',
+          content: 'done',
+          toolCalls: [],
+          done: true,
+          parts: [],
+          incomplete: false,
+          incompleteness: [],
+          finishReason: 'stop',
+        },
+        toolCallCount: 0,
+        consecutiveIdenticalCalls: 0,
+      };
+
+      expect(condition(state)).toBe(true);
+    });
+  });
+
   describe('detectDoomLoop', () => {
     it('should detect identical tool calls repeated n times', () => {
       const condition = detectDoomLoop(2);
@@ -346,6 +411,22 @@ describe('Stop Conditions', () => {
 });
 
 describe('createAgentLoop', () => {
+  it('mergeCallbacks should invoke both callbacks in order', async () => {
+    const calls: string[] = [];
+    const merged = mergeCallbacks(
+      async () => {
+        calls.push('a');
+      },
+      async () => {
+        calls.push('b');
+      },
+    );
+
+    await merged?.();
+
+    expect(calls).toEqual(['a', 'b']);
+  });
+
   it('should call execute and accumulate steps', async () => {
     let executeCount = 0;
     const loop = createAgentLoop({
@@ -473,6 +554,26 @@ describe('createAgentLoop', () => {
     expect(beforeContext?.messages).toEqual([{ role: 'user', content: 'hello' }]);
     expect(afterContext?.stepIndex).toBe(0);
     expect(afterContext?.stepResult.output.content).toBe('result');
+  });
+
+  it('should allow prepareStep to override messages for a specific step', async () => {
+    const seenMessages: unknown[][] = [];
+
+    const loop = createAgentLoop({
+      execute: async function* (messages) {
+        seenMessages.push(messages);
+        yield { content: 'prepared', done: true, finishReason: 'stop' as const };
+      },
+      stopWhen: isStepCount(1),
+      prepareStep: () => ({ messages: [{ role: 'system', content: 'prepared message' }] }),
+      buildToolResultMessages: async () => [],
+    });
+
+    for await (const _part of loop.run([{ role: 'user', content: 'original' }])) {
+      // consume loop
+    }
+
+    expect(seenMessages).toEqual([[{ role: 'system', content: 'prepared message' }]]);
   });
 
   it('should call beforeToolCall and afterToolCall hooks around tool results', async () => {

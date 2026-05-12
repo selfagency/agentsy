@@ -1,5 +1,6 @@
 import type { ReadableStream } from 'node:stream/web';
 
+import type { JsonObject } from '@agentsy/types';
 import {
   normalizeAnthropicEvent,
   normalizeBedrockConverseEvent,
@@ -10,8 +11,7 @@ import {
   normalizeOllamaChatChunk,
   normalizeOpenAIChatChunk,
   normalizeZAiChunk,
-} from '@agentsy/providers/normalizers';
-import type { JsonObject } from '@agentsy/types';
+} from '../../normalizers/index.js';
 import { parseJson } from '../../structured/index.js';
 import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
 import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
