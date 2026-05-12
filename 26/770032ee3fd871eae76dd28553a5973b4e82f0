@@ -1,0 +1,36 @@
+packages/vscode/src/retry/retryUtility.test.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 28
+packages/orchestrator/src/agent/agent/createAgentLoop.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 31-44,60-63,67-70,82-84,98-103
+packages/core/src/recovery/index.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 46-49,51-52,54,89-93,95-101,104-107,110,115-116,118
+packages/vscode/src/vscode-overloads/chatResponseStream.test.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 28
+packages/vscode/src/vscode-overloads/chatResponseStream.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 40,64
+packages/tools/src/tools/repl/index.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 1-2
+packages/core/src/formatting/formatXmlLikeResponseForDisplay.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 76
+packages/core/src/tool-calls/extractXmlToolCalls.ts
+  s_095d159945d78b::t_fe9f4a2811ae01 21,25
+config/release-state.json
+  s_095d159945d78b::t_235270860efb28 4,21-22
+  s_095d159945d78b::t_fe9f4a2811ae01 5-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "26770032ee3fd871eae76dd28553a5973b4e82f0",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
