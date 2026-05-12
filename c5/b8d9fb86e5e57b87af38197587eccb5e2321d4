@@ -1,0 +1,121 @@
+packages/orchestrator/src/scheduler/index.ts
+  s_095d159945d78b::t_790aa0f1b28e0a 3-8,11-12,34-45,103-120,122,127-128,132,149
+packages/tools/package.json
+  s_095d159945d78b::t_084a5a865c2ec7 43
+packages/core/src/retry/index.ts
+  s_095d159945d78b::t_31209731d9d077 15-24,31-32,37-48,50-53,59,63-66,72,74-77,80
+packages/core/src/retry/index.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 67-102
+  s_095d159945d78b::t_006230ae83f896 26-66
+packages/orchestrator/src/agent/agent/createAgentLoop.ts
+  s_095d159945d78b::t_790aa0f1b28e0a 60-66,68-87,184
+  h_627b419bd8fa0f 67
+packages/core/src/formatting/formatting.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 19-24
+  s_095d159945d78b::t_006230ae83f896 14-18
+packages/orchestrator/src/agent/agent/agent.test.ts
+  s_095d159945d78b::t_0cf8fbe3b033e5 814
+  s_095d159945d78b::t_eb0ecf01c3a9da 829-837
+  s_095d159945d78b::t_e2ebd1923b416a 749-813,815-828,838-839
+packages/core/src/tool-calls/buildXmlToolSystemPrompt.ts
+  s_095d159945d78b::t_31209731d9d077 102-105
+  s_095d159945d78b::t_006230ae83f896 122
+packages/orchestrator/src/agent/agent/utils.ts
+  s_095d159945d78b::t_790aa0f1b28e0a 1-6,10,13
+packages/session/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_4802f387791104 188
+packages/core/src/tool-calls/extractXmlToolCalls.ts
+  s_095d159945d78b::t_709f3cabb78ecc 14-130,165,286-291,293-299,303-304,316-317,332
+  s_095d159945d78b::t_31209731d9d077 12-13,132-146,158-161,279
+packages/vscode/src/retry/retryUtility.ts
+  s_095d159945d78b::t_31209731d9d077 11,13,17,55-96,108,128,130
+packages/core/src/recovery/recovery.test.ts
+  s_095d159945d78b::t_006230ae83f896 148-182
+packages/session/src/index.ts
+  s_095d159945d78b::t_6c9718c8b97597 25-26
+packages/tokens/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_4802f387791104 211
+packages/vscode/src/vscode-overloads/chatResponseStream.test.ts
+  s_095d159945d78b::t_006230ae83f896 5-31,33-36,101-111
+packages/vscode/src/vscode-overloads/chatResponseStream.ts
+  s_095d159945d78b::t_31209731d9d077 22-26,30-71
+packages/core/src/context/splitLeadingXmlContext.ts
+  s_095d159945d78b::t_31209731d9d077 3-4,7-13
+packages/tokens/src/index.ts
+  h_627b419bd8fa0f 253
+  s_095d159945d78b::t_790aa0f1b28e0a 156-165,239-241,245-252,254-266,596,606,608,626
+packages/core/src/recovery/index.ts
+  s_095d159945d78b::t_31209731d9d077 37-56,87,89-99,104-107,112-119
+packages/core/src/tool-calls/providerToolsContract.ts
+  s_095d159945d78b::t_31209731d9d077 53,61
+packages/memory/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_4802f387791104 217,223,229,235,682
+packages/orchestrator/src/scheduler/index.test.ts
+  s_095d159945d78b::t_e2ebd1923b416a 62-78
+packages/orchestrator/src/core/engine.test.ts
+  s_095d159945d78b::t_e2ebd1923b416a 57-67,101-126
+packages/cli/package.json
+  s_095d159945d78b::t_084a5a865c2ec7 41
+packages/core/src/context/contextXml.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 148-163
+  s_095d159945d78b::t_006230ae83f896 140-147
+  h_627b419bd8fa0f 4
+packages/tools/src/tools/repl/index.ts
+  s_095d159945d78b::t_31209731d9d077 1-2
+packages/providers/tsup.config.ts
+  s_095d159945d78b::t_790aa0f1b28e0a 18
+packages/providers/package.json
+  s_095d159945d78b::t_790aa0f1b28e0a 22,25,30,35,40,45
+packages/core/src/tool-calls/ToolCallAccumulator.ts
+  s_095d159945d78b::t_31209731d9d077 8,14-15
+packages/cli/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_4802f387791104 286,294,302,310
+  s_095d159945d78b::t_5301093042de1f 230,236,242,248,254,260,266,272,278
+packages/orchestrator/src/agent/agent/types.ts
+  s_095d159945d78b::t_790aa0f1b28e0a 99-101
+packages/tokens/src/index.test.ts
+  s_095d159945d78b::t_e2ebd1923b416a 145-226,285-329
+packages/core/src/formatting/formatXmlLikeResponseForDisplay.ts
+  s_095d159945d78b::t_31209731d9d077 1-2,51
+  s_095d159945d78b::t_63f5cc12afdd69 3-49,57-75,77,79-80
+packages/runtime/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_4802f387791104 278
+packages/secrets/IMPLEMENTATION-PLAN.md
+  s_095d159945d78b::t_4802f387791104 157
+packages/runtime/src/index.ts
+  s_095d159945d78b::t_790aa0f1b28e0a 179-183,220-230
+  s_095d159945d78b::t_0cf8fbe3b033e5 43-44
+packages/vscode/src/retry/retryUtility.test.ts
+  s_095d159945d78b::t_006230ae83f896 5-31,33-36,91,99-119
+packages/providers/src/universal-client/index.ts
+  s_095d159945d78b::t_31209731d9d077 7-8
+packages/integration/src/thinking-and-tool-calls.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 212-226
+  s_095d159945d78b::t_006230ae83f896 205-211
+packages/runtime/src/index.test.ts
+  s_095d159945d78b::t_e2ebd1923b416a 120-122,124-151,195-200
+  s_095d159945d78b::t_cbbe20e77c886a 9,123
+packages/orchestrator/src/core/engine.ts
+  s_095d159945d78b::t_6c9718c8b97597 407
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "c5b8d9fb86e5e57b87af38197587eccb5e2321d4",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
