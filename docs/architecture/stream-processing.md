@@ -45,7 +45,7 @@ Once the stream is processed, you can send it into one or more projections:
 
 - `@agentsy/renderers` for plain-text rendering
 - `@agentsy/ui` for conversation-state updates
-- `@agentsy/ag-ui` for AG-UI protocol scenarios
+- `@agentsy/runtime/ag-ui` for AG-UI protocol scenarios
 - `@agentsy/vscode` for editor-native experiences
 
 ## Step 6: wrap with an agent loop if needed

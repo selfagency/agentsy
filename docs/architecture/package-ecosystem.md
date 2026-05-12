@@ -30,7 +30,7 @@ These packages solve narrow parsing or shaping problems and can be used independ
 
 - `@agentsy/renderers` turns events into text-oriented output.
 - `@agentsy/ui` projects events into conversation state.
-- `@agentsy/ag-ui` adapts the model to AG-UI protocol expectations.
+- `@agentsy/runtime/ag-ui` adapts runtime and processor events to AG-UI protocol expectations.
 
 ### 5. Runtime and integration surfaces
 
@@ -55,6 +55,7 @@ Add `@agentsy/orchestrator/agent`, then choose one or more projection layers:
 
 - `@agentsy/renderers` for textual output
 - `@agentsy/ui` for app state
+- `@agentsy/runtime/ag-ui` for AG-UI protocol streams
 - `@agentsy/vscode` for VS Code integration
 
 ## Package boundaries to preserve

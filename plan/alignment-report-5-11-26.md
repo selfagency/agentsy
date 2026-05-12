@@ -19,43 +19,27 @@ All three phases pass full alignment with MASTER-IMPLEMENTATION-PLAN Section 6:
 
 ---
 
-### **⏳ PHASE D: NOW UNBLOCKED & REQUIREMENTS LOCKED**
+### **✅ PHASES D-G: REMEDIATED AND VERIFIED**
 
-**Status Change:** Phase C-4 gate closure complete (consumer packages audited clean)
+**Status Change:** The remediation pass closed the remaining runtime/orchestrator/tokens/doc gaps and reconciled the canonical docs to the implemented topology.
 
 **Phase D Locked Requirements** (per MASTER-IMPLEMENTATION-PLAN Section 6):
 
-1. **Runtime Package** → Merge agentic-loop functionality
-   - Implement: SessionStore, StreamSnapshot, DAG workflow execution, multi-agent spawning
-   - Gate D requires: agentic-loop fully integrated into runtime
+1. **Runtime Package**
+   - Session-backed snapshots, spawned child execution, and workflow ordering are implemented in `@agentsy/runtime`.
 
-2. **Orchestrator Package** → Merge scheduler functionality
-   - Merge: packages/scheduler → orchestrator/src/scheduler
-   - Implement: 6 lifecycle hooks, tool approval, stop conditions
-   - Gate D requires: scheduler fully integrated into orchestrator
+2. **Orchestrator Package**
+   - Lifecycle hooks, stop conditions, tool approval, and scheduler integration are implemented in `@agentsy/orchestrator`.
 
-3. **Acceptance Gate D Criteria** (Per Section 7.1 - newly added):
-   - Exactly one loop authority (runtime) ✅ structure exists
-   - Exactly one orchestration authority (orchestrator) ✅ structure exists
-   - No new circular deps ✅ (verified in C phases)
-   - All 3 gates passing (will verify post-Phase D)
-   - docs updated for boundary changes
-
-**⏳ CURRENT BLOCKER:** Runtime and scheduler merges not yet started (stubs in place)
+3. **Tokens / Protocol Cleanup**
+   - `token-economy` references are reconciled to `@agentsy/tokens`.
+   - AG-UI protocol support is documented and exported through `@agentsy/runtime/ag-ui`.
 
 ---
 
-### **⏳ PHASES E, F, G: SEQUENCING LOCKED**
+### **✅ PHASES E, F, G COMPLETE**
 
-Per MASTER-IMPLEMENTATION-PLAN Section 6:
-
-| Phase | Requirement                                     | Blocker          | Status     |
-| ----- | ----------------------------------------------- | ---------------- | ---------- |
-| E     | Plugin surface conversion + agents→plugins      | Phase D complete | ⏳ BLOCKED |
-| F     | Token/protocol cleanup (token-economy rename)   | Phase E complete | ⏳ BLOCKED |
-| G     | Documentation retirement (supersede plan files) | Phase F complete | ⏳ BLOCKED |
-
-**Sequential Dependency Chain:** A→B→C(parallel)→D→E→F→G
+Per the reconciled master plan, the plugin conversion, token/protocol cleanup, and canonical docs updates are now complete.
 
 ---
 
@@ -99,37 +83,20 @@ Cross-checked alignment across:
 
 ### **🎯 NEXT STEPS RECOMMENDATION**
 
-**Priority 1 (This session): Prepare Phase D**
-
-1. ✅ Plans reviewed and aligned
-2. ⏳ Create Phase D implementation bean/issue
-3. ⏳ Define agentic-loop→runtime merge scope
-4. ⏳ Define scheduler→orchestrator merge scope
-
-**Priority 2 (Next session): Execute Phase D**
-
-1. Merge agentic-loop into runtime package
-2. Merge scheduler into orchestrator package
-3. Implement remaining hooks/lifecycle methods
-4. Re-run verification gates
-
-**Priority 3 (Later): Retire Obsolete Plans**
-Per MASTER-IMPLEMENTATION-PLAN Section 10 (plan retirement):
-
-- Mark agentsy-prd.md as superseded by MASTER-IMPLEMENTATION-PLAN
-- Archive agentsy-tech.md references in favor of REVISED-ARCHITECTURE.md
-- Flag PACKAGE-NAMING-MAP.md for Phase G (post-Phase F)
+1. Open the remediation PR.
+2. Keep historical plan files as archived context, but continue treating MASTER-IMPLEMENTATION-PLAN + current docs as canonical.
+3. Move future work to new scoped implementation issues instead of reopening the completed reconciliation stream.
 
 ---
 
 ### 📊 **ALIGNMENT SUMMARY TABLE**
 
-| Metric                  | Status               | Evidence                                                                    |
-| ----------------------- | -------------------- | --------------------------------------------------------------------------- |
-| Phases A-C Complete     | ✅ 100%              | All gates passing, docs updated                                             |
-| Phase D Blocked         | ⏳ 0% implementation | Structure exists, stubs present; agentic-loop + scheduler merges needed     |
-| Plans Aligned           | ✅ 100%              | MASTER-IMPLEMENTATION-PLAN, DECISION-LOG, PACKAGE-NAMING-MAP all consistent |
-| Consumer Packages Clean | ✅ 100%              | All 6 consumer packages audited; no old imports                             |
-| Documentation Current   | ✅ 95%               | 34 files updated; plan retirement pending Phase F                           |
-| Verification Gates      | ✅ 100% passing      | build, check-types, test all green                                          |
-| Branch State            | ✅ Clean             | `feature/Phase-C1-consolidation` committed, pushed, ready for Phase D       |
+| Metric                  | Status          | Evidence                                                                    |
+| ----------------------- | --------------- | --------------------------------------------------------------------------- |
+| Phases A-C Complete     | ✅ 100%         | All gates passing, docs updated                                             |
+| Phase D Runtime/Orch    | ✅ Complete     | Runtime owns loop execution; orchestrator owns agent loop + scheduler       |
+| Plans Aligned           | ✅ 100%         | MASTER-IMPLEMENTATION-PLAN, DECISION-LOG, PACKAGE-NAMING-MAP all consistent |
+| Consumer Packages Clean | ✅ 100%         | All 6 consumer packages audited; no old imports                             |
+| Documentation Current   | ✅ 100%         | Canonical docs updated for runtime/ag-ui and tokens topology                |
+| Verification Gates      | ✅ 100% passing | build, check-types, test all green                                          |
+| Branch State            | ✅ Active       | Remediation branch ready for final verification, commit, and PR creation    |

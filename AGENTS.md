@@ -7,7 +7,7 @@ Production-oriented TypeScript monorepo for LLM stream parsing, agent infrastruc
 - This repository is a **pnpm workspace monorepo** orchestrated with **Turborepo**.
 - Packages live under `packages/`. The only currently **published** package is:
   - `packages/vscode` → `@agentsy/vscode`: VS Code Language Model Chat Provider utilities.
-- Additional packages exist under `packages/` as internal/pre-release packages: `processor`, `normalizers`, `agent`, `adapters`, `thinking`, `tool-calls`, `structured`, `renderers`, `ag-ui`, `ui`, `context`, `formatting`, `sse`, `markdown`, `recovery`, `xml-filter`, `types`, `integration` (private).
+- Additional packages exist under `packages/` as internal/pre-release packages such as `core`, `providers`, `runtime`, `orchestrator`, `tokens`, `renderers`, `ui`, `types`, and `integration` (private).
 - The `plan/` directory is not throwaway notes. It contains the product and technical direction for future package extraction and platform evolution. When implementing planned packages or major architectural work, consult:
   - `plan/agentsy-prd.md`
   - `plan/agentsy-tech.md`
@@ -125,14 +125,14 @@ Key formatter conventions:
 - When possible, expose memory both as:
   - an Agentsy-native package
   - a standalone MCP server / plugin surface that can be used independently of the rest of Agentsy
-- `@agentsy/token-economy` should consume memory through optional adapters and shared interfaces, not hard-coded persistence assumptions.
+- `@agentsy/tokens` should consume memory through optional adapters and shared interfaces, not hard-coded persistence assumptions.
 - `@agentsy/subagents` should be able to work with external or substitute memory systems through the same abstractions.
 
 ### General boundary rule
 
 - If code depends on VS Code extension runtime behavior, editor integration, secret storage, status bars, chat providers, or extension settings, it belongs in `@agentsy/vscode`.
 - If code is about durable memory, retrieval, persistence, or memory lifecycle, it belongs in `@agentsy/memory` or a memory-adjacent package.
-- If code is about transient token budgets, prompt reduction, or output shaping, it belongs in `@agentsy/token-economy`.
+- If code is about transient token budgets, prompt reduction, or output shaping, it belongs in `@agentsy/tokens`.
 - Everything else belongs in the appropriate focused package.
 
 ## Architecture and Naming Conventions
