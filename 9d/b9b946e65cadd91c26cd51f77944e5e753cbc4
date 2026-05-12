@@ -1,0 +1,104 @@
+packages/renderers/src/ink/index.ts
+  s_69be868cc3b14b::t_a9c4389c46f486 1-2
+packages/orchestrator/src/core/engine.ts
+  s_69be868cc3b14b::t_2a3b675f33aea1 37,66
+scripts/release-state.ts
+  s_69be868cc3b14b::t_122d50e5bf7903 1-2
+packages/renderers/src/ink/components/ThinkingBlock.test.tsx
+  s_69be868cc3b14b::t_2fda88ecabfd2c 1-2
+.fallow-report.current.json
+  s_69be868cc3b14b::t_153f56e9337d8f 4-57,59-80,82-100,102-169,171-193,195-261,263-282,284-626,628-851,854-856
+  s_69be868cc3b14b::t_28f867216c34f8 1-3,58,81,101,170,194,262,283,627,852-853,857
+scripts/fix-changelog-urls.ts
+  s_69be868cc3b14b::t_f3ea25f49b6fb1 1-2
+packages/vscode/src/test/mocks/vscode.ts
+  s_69be868cc3b14b::t_e44c1b9be5870e 1-2
+scripts/preview-themes.js
+  s_69be868cc3b14b::t_74007ffb972fec 2
+  s_69be868cc3b14b::t_d9147854d3c441 17,21
+packages/vscode/src/stream-bridge/index.ts
+  s_69be868cc3b14b::t_fc8d39df2816af 1-2
+packages/core/src/processor/processor/incompleteness.ts
+  s_69be868cc3b14b::t_24f9f00401a405 12
+scripts/release.js
+  s_69be868cc3b14b::t_f492a48c84e87a 2
+scripts/trusted-publish-readiness.ts
+  s_69be868cc3b14b::t_cb7e54eaf2bc1d 1-2
+scripts/release-per-package.ts
+  s_69be868cc3b14b::t_a0672e2a14cc18 1-3
+scripts/write-dist-package.ts
+  s_69be868cc3b14b::t_31c6de17b85af4 1-2
+packages/renderers/src/ink/utils/codeHighlight.ts
+  s_69be868cc3b14b::t_31f5147ef1a3e6 3
+pnpm-lock.yaml
+  ai_agent 15-16,18-19,30-31,33-37,43,65,68,87,93,118,137,143,159,165,202,208,224,230,249,255,289,295,318,324,340,346,362,368,384,390,406,409,425,431,450,456,481,487,922-923,927-928,932-933,937-938,942-943,947-948,952-953,957-958,1056-1061,1068-1073,1080-1085,1092-1097,1104-1109,1116-1121,1128-1133,1141-1147,1155-1161,1169-1175,1183-1189,1197-1203,1211-1217,1225-1231,1239-1245,1252-1257,1264-1269,1276-1281,1288-1293,1300-1305,1312-1317,1324-1329,1336-1341,1348-1353,1360-1365,1372-1377,1385-1391,1399-1405,1413-1419,1427-1433,1441-1447,1455-1461,1469-1475,1483-1489,1496-1501,1508-1513,1520-1525,1532-1537,1868-1870,2361-2362,2397-2399,2765-2774,2785-2794,2902-2904,3125-3129,3162-3164,3731,3734,3737,3740,3743,3746,3749,3752,3857-3859,3863-3865,3869-3871,3875-3877,3881-3883,3887-3889,3893-3895,3899-3901,3905-3907,3911-3913,3917-3919,3923-3925,3929-3931,3935-3937,3941-3943,3947-3949,3953-3955,3959-3961,3965-3967,3971-3973,3977-3979,3983-3985,3989-3991,3995-3997,4001-4003,4007-4009,4013-4015,4019-4021,4025-4027,4031-4033,4037-4039,4043-4045,4049-4051,4055-4057,4061-4063,4067-4069,4073-4075,4079-4081,4312-4315,4328,4330,4345,4356-4364,4370,4372,4378,4939,4943-4950,4976-4979,5374-5397,5420-5441,5476,5481,5531-5532,5770,5781,5798-5804,5835-5836,5875,5881,5885,5896,5899,5910,5913-5927,5936,5945,5976,5979,5996,6004,6007,6024,6032-6055
+packages/renderers/src/cli/index.ts
+  s_69be868cc3b14b::t_3b03e23112f619 1-2
+packages/renderers/src/ink/themes/index.ts
+  s_69be868cc3b14b::t_c18f47574267d0 1-2
+scripts/trusted-publish-readiness.test.ts
+  s_69be868cc3b14b::t_00235543a64fff 1-2
+package.json
+  s_69be868cc3b14b::t_19acb1251491dc 39,42-43
+  h_627b419bd8fa0f 48,53-54
+  s_69be868cc3b14b::t_6b5e678f42f66a 49
+scripts/validate-workspace.test.mjs
+  s_69be868cc3b14b::t_0aad87bb225e60 1
+  s_69be868cc3b14b::t_5c5ae33d9939dc 3
+  h_627b419bd8fa0f 2
+packages/vscode/src/api-key-manager/index.ts
+  s_69be868cc3b14b::t_228a0a829c2fa0 1-2
+packages/providers/src/normalizers/testHelpers.ts
+  s_69be868cc3b14b::t_a1c36cb338bf05 1-2
+scripts/fix-changelog-urls.mjs
+  s_69be868cc3b14b::t_75260833bd6d83 2
+scripts/validate-workspace.mjs
+  s_69be868cc3b14b::t_ad06f9b0067b00 76-77
+scripts/validate-workspace.ts
+  s_69be868cc3b14b::t_d0e11feb667ffe 1-2
+packages/renderers/src/ink/InkStreamRenderer.tsx
+  s_69be868cc3b14b::t_60271958876c5a 170
+  h_627b419bd8fa0f 1
+scripts/bootstrap-release.ts
+  s_69be868cc3b14b::t_ae5e792a1a0376 1-3
+packages/renderers/src/ink/createInkConversationRenderer.ts
+  h_627b419bd8fa0f 1-2
+  s_69be868cc3b14b::t_6ef70bf4d6ae98 27
+scripts/validate-workspace.test.ts
+  s_69be868cc3b14b::t_cf4a88f7301b0b 1-2
+turbo.json
+  s_69be868cc3b14b::t_72864e50ec9dae 23
+packages/renderers/src/ink/components/StreamingText.test.tsx
+  s_69be868cc3b14b::t_c9a8305f00ed5d 1-2
+packages/renderers/src/streaming-md/index.ts
+  s_69be868cc3b14b::t_7a18c6190a2f33 1-2
+.agents/instructions/fallow.md
+  s_69be868cc3b14b::t_bc76d952ae73d5 1-319
+scripts/release.ts
+  s_69be868cc3b14b::t_f58bc423846ba9 1-3
+scripts/preview-themes.ts
+  s_69be868cc3b14b::t_9d8778c14d5996 1-2
+scripts/release-state.test.ts
+  s_69be868cc3b14b::t_00911d465ba7df 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "9db9b946e65cadd91c26cd51f77944e5e753cbc4",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_69be868cc3b14b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1a6a902-c937-4241-b759-cea480205883",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
