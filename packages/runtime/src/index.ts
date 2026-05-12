@@ -244,16 +244,18 @@ function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
   };
 }
 
+function initializeLoopSnapshot(options: RuntimeLoopOptions, sessionId: string, depth: number): RuntimeSnapshot {
+  const persisted = options.sessionStore
+    ? loadRuntimeSnapshotFromSession(options.sessionStore, options.snapshotKey)
+    : null;
+  return options.snapshot ? cloneSnapshot(options.snapshot) : (persisted ?? createEmptySnapshot(sessionId, depth));
+}
+
 export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop {
   const sessionId = options.sessionId ?? createRuntimeId('runtime');
   const depth = options.depth ?? 0;
   const maxDepth = options.maxDepth ?? 3;
-  const persistedSnapshot = options.sessionStore
-    ? loadRuntimeSnapshotFromSession(options.sessionStore, options.snapshotKey)
-    : null;
-  let snapshot = options.snapshot
-    ? cloneSnapshot(options.snapshot)
-    : (persistedSnapshot ?? createEmptySnapshot(sessionId, depth));
+  let snapshot = initializeLoopSnapshot(options, sessionId, depth);
 
   const spawn = async (tasks: RuntimeTask[], signal = new AbortController().signal, childSessionId?: string) => {
     if (depth + 1 > maxDepth) {

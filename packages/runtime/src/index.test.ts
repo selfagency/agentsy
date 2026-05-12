@@ -156,8 +156,18 @@ describe('createRuntimeLoop', () => {
     const calls: string[] = [];
     const loop = createRuntimeLoop({ sessionId: 'session-1' });
     const tasks: RuntimeTask[] = [
-      { id: 'a', run: async () => void calls.push('a') },
-      { id: 'b', run: async () => void calls.push('b') },
+      {
+        id: 'a',
+        run: async () => {
+          calls.push('a');
+        },
+      },
+      {
+        id: 'b',
+        run: async () => {
+          calls.push('b');
+        },
+      },
     ];
 
     const firstSnapshot = await loop.execute(tasks);
@@ -187,8 +197,18 @@ describe('createRuntimeLoop', () => {
     const calls: string[] = [];
     const sessionStore = createSessionStore({ id: 'session-1', values: {} });
     const tasks: RuntimeTask[] = [
-      { id: 'a', run: async () => void calls.push('a') },
-      { id: 'b', run: async () => void calls.push('b') },
+      {
+        id: 'a',
+        run: async () => {
+          calls.push('a');
+        },
+      },
+      {
+        id: 'b',
+        run: async () => {
+          calls.push('b');
+        },
+      },
     ];
 
     const firstLoop = createRuntimeLoop({ sessionId: 'session-1', sessionStore });
@@ -287,9 +307,26 @@ describe('createRuntimeWorkflowExecutor', () => {
     const calls: string[] = [];
     const workflow = createRuntimeWorkflowExecutor({ sessionId: 'workflow-1' });
     const tasks: RuntimeWorkflowTask[] = [
-      { id: 'deploy', dependsOn: ['build'], run: async () => void calls.push('deploy') },
-      { id: 'build', run: async () => void calls.push('build') },
-      { id: 'test', dependsOn: ['build'], run: async () => void calls.push('test') },
+      {
+        id: 'deploy',
+        dependsOn: ['build'],
+        run: async () => {
+          calls.push('deploy');
+        },
+      },
+      {
+        id: 'build',
+        run: async () => {
+          calls.push('build');
+        },
+      },
+      {
+        id: 'test',
+        dependsOn: ['build'],
+        run: async () => {
+          calls.push('test');
+        },
+      },
     ];
 
     const snapshot = await workflow.execute(tasks);

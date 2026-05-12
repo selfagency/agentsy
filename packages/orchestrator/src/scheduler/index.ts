@@ -63,7 +63,7 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
     const record: SchedulerTaskRecord = {
       ...task,
       createdAt: Date.now(),
-      status: task.runAt !== undefined ? 'scheduled' : 'pending',
+      status: task.runAt === undefined ? 'pending' : 'scheduled',
     };
     tasks.set(task.id, record);
     return { ...record };

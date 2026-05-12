@@ -1,7 +1,6 @@
 import type { ReadableStream } from 'node:stream/web';
 
-import type { StreamChunk } from '@agentsy/core/processor';
-import { LLMStreamProcessor, type ProcessorOptions } from '@agentsy/core/processor';
+import { LLMStreamProcessor, type ProcessorOptions, type StreamChunk } from '@agentsy/core/processor';
 import { parseSSEStream } from '@agentsy/core/sse';
 import { parseJson } from '@agentsy/core/structured';
 import type { JsonObject } from '@agentsy/types';

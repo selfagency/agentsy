@@ -222,7 +222,7 @@ async function runSimplePath(rawSource: AsyncIterable<unknown>) {
 - `@agentsy/core/processor` centralizes streaming orchestration and event emission.
 - `@agentsy/orchestrator/agent` handles iterative tool loops with explicit stop conditions.
 - `@agentsy/core/recovery` gives continuity when streams fail or disconnect.
-- `@agentsy/ui` and `@agentsy/ag-ui` let the same backend flow power UI/state consumers.
+- `@agentsy/ui` and `@agentsy/runtime/ag-ui` let the same backend flow power UI/state consumers.
 - `@agentsy/providers/adapters` + `@agentsy/core/structured` reduce boilerplate in decision-gated automations.
 
 For package-level details, see the [API index](../api.md) and [package catalog](../packages.md).

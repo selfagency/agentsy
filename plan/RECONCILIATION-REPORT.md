@@ -283,7 +283,7 @@ Decision 20: markdown → core/src/markdown/
 
 ### Follow-Up Actions (MEDIUM PRIORITY)
 
-4. **Create Cross-Reference Section**
+1. **Create Cross-Reference Section**
    - Add "See Also" section to both DECISION-LOG.md and PACKAGE-NAMING-MAP.md linking to authoritative sources
    - Rationale: Prevents future drift between plan documents
    - Effort: 20 minutes
@@ -291,14 +291,14 @@ Decision 20: markdown → core/src/markdown/
      - "See MASTER-IMPLEMENTATION-PLAN.md Section 6 for Phase gate details"
      - "See PACKAGE-NAMING-MAP.md for transformation timeline"
 
-5. **Document Decision-to-Implementation Traceability**
+2. **Document Decision-to-Implementation Traceability**
    - Add trace markers in each decision showing: Decision # → Which Phase → Current Status
    - Rationale: Makes it obvious which decisions are complete vs. pending
    - Effort: 30 minutes
 
 ### Strategic Actions (LOW PRIORITY)
 
-6. **Plan Document Retirement Strategy (Post-Phase D)**
+1. **Plan Document Retirement Strategy (Post-Phase D)**
    - Per MASTER-IMPLEMENTATION-PLAN Section 10, both DECISION-LOG and PACKAGE-NAMING-MAP should eventually be retired or consolidated into MASTER-IMPLEMENTATION-PLAN
    - Recommended timeline: After Phase D completion, consolidate into MASTER-IMPLEMENTATION-PLAN as appendices
    - Rationale: Single source of truth easier to maintain than 3 documents

@@ -62,30 +62,41 @@ function toolCallsEqual(
   return a.name === b.name && idsMatch && parametersEqual(a.parameters, b.parameters);
 }
 
-function mergeLifecycleCallbacks(
+function mergeStepCallbacks(base: AgentLoopOptions, overrides: AgentLoopStepOverrides, merged: AgentLoopOptions): void {
+  const beforeStep = mergeCallbacks(base.beforeStep, overrides.beforeStep);
+  const onStep = mergeCallbacks(base.onStep, overrides.onStep);
+  const afterStep = mergeCallbacks(base.afterStep, overrides.afterStep);
+  if (beforeStep) merged.beforeStep = beforeStep;
+  if (onStep) merged.onStep = onStep;
+  if (afterStep) merged.afterStep = afterStep;
+}
+
+function mergeToolAndFinalCallbacks(
   base: AgentLoopOptions,
   overrides: AgentLoopStepOverrides,
   merged: AgentLoopOptions,
 ): void {
-  const beforeStep = mergeCallbacks(base.beforeStep, overrides.beforeStep);
-  const onStep = mergeCallbacks(base.onStep, overrides.onStep);
-  const afterStep = mergeCallbacks(base.afterStep, overrides.afterStep);
   const beforeToolCall = mergeCallbacks(base.beforeToolCall, overrides.beforeToolCall);
   const afterToolCall = mergeCallbacks(base.afterToolCall, overrides.afterToolCall);
   const onAbort = mergeCallbacks(base.onAbort, overrides.onAbort);
   const onError = mergeCallbacks(base.onError, overrides.onError);
   const beforeFinal = mergeCallbacks(base.beforeFinal, overrides.beforeFinal);
   const afterFinal = mergeCallbacks(base.afterFinal, overrides.afterFinal);
-
-  if (beforeStep) merged.beforeStep = beforeStep;
-  if (onStep) merged.onStep = onStep;
-  if (afterStep) merged.afterStep = afterStep;
   if (beforeToolCall) merged.beforeToolCall = beforeToolCall;
   if (afterToolCall) merged.afterToolCall = afterToolCall;
   if (onAbort) merged.onAbort = onAbort;
   if (onError) merged.onError = onError;
   if (beforeFinal) merged.beforeFinal = beforeFinal;
   if (afterFinal) merged.afterFinal = afterFinal;
+}
+
+function mergeLifecycleCallbacks(
+  base: AgentLoopOptions,
+  overrides: AgentLoopStepOverrides,
+  merged: AgentLoopOptions,
+): void {
+  mergeStepCallbacks(base, overrides, merged);
+  mergeToolAndFinalCallbacks(base, overrides, merged);
 }
 
 function resolveBuildToolResultMessages(
@@ -406,13 +417,127 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       messages,
       state,
       signal: abortController.signal,
-      ...(threadId !== undefined ? { threadId } : {}),
+      ...(threadId === undefined ? {} : { threadId }),
     };
+  }
+
+  type LoopIterationResult =
+    | { interrupted: true }
+    | { interrupted: false; parts: OutputPart[]; continueLoop: boolean; nextMessages: unknown[] | undefined };
+
+  async function executeLoopIteration(
+    runId: string,
+    threadId: string | undefined,
+    state: AgentLoopState,
+    currentMessages: unknown[],
+  ): Promise<LoopIterationResult> {
+    const { onAgUiEvent, interruptController } = options;
+    const loopContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
+    const stepOverrides = (await options.prepareStep?.(loopContext)) ?? undefined;
+    const stepOptions = mergeStepOptions(options, stepOverrides);
+    const stepMessages = stepOverrides?.messages ?? currentMessages;
+    const stopWhen = stepOptions.stopWhen;
+    const stepStopConditions = Array.isArray(stopWhen) ? stopWhen : [stopWhen];
+
+    if (interruptController?.isInterrupted()) {
+      await stepOptions.onAbort?.('interrupt', loopContext);
+      const interruptEvent = createInterruptEvent(
+        runId,
+        interruptController.getReason(),
+        interruptController.getMessage(),
+        threadId,
+      );
+      await safeEmitEvent(interruptEvent, 'interrupt', onAgUiEvent);
+      return { interrupted: true };
+    }
+
+    await safeEmitEvent(
+      withThreadId(
+        {
+          type: EventType.STEP_STARTED as const,
+          runId,
+          stepIndex: state.steps.length,
+          timestamp: new Date().toISOString(),
+        },
+        threadId,
+      ),
+      'STEP_STARTED',
+      onAgUiEvent,
+    );
+
+    const result = await processSingleStep(
+      state,
+      stepOptions,
+      loopContext,
+      stepMessages,
+      abortController,
+      stepStopConditions,
+    );
+
+    await safeEmitEvent(
+      withThreadId(
+        {
+          type: EventType.STEP_FINISHED as const,
+          runId,
+          stepIndex: state.stepIndex,
+          outputLength: result.parts.length,
+          timestamp: new Date().toISOString(),
+        },
+        threadId,
+      ),
+      'STEP_FINISHED',
+      onAgUiEvent,
+    );
+
+    let nextMessages: unknown[] | undefined;
+    if (result.nextMessages) {
+      nextMessages = result.nextMessages;
+    } else if (stepOverrides?.messages) {
+      nextMessages = stepMessages;
+    }
+
+    return { interrupted: false, parts: result.parts, continueLoop: result.continueLoop, nextMessages };
+  }
+
+  async function handleRunError(
+    error: unknown,
+    runId: string,
+    threadId: string | undefined,
+    state: AgentLoopState,
+    currentMessages: unknown[],
+  ): Promise<never> {
+    const { onAgUiEvent } = options;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
+    const errorObj = error instanceof Error ? error : new Error(errorMessage);
+    await options.onError?.(errorObj, createContext(runId, threadId, state.steps.length, currentMessages, state));
+    await safeEmitEvent(
+      withThreadId(
+        {
+          type: EventType.RUN_ERROR as const,
+          runId,
+          error: { message: errorMessage },
+          timestamp: new Date().toISOString(),
+        },
+        threadId,
+      ),
+      'RUN_ERROR',
+      onAgUiEvent,
+    );
+
+    const finalContext: AgentLoopFinalContext = {
+      ...createContext(runId, threadId, state.steps.length, currentMessages, state),
+      outcome: 'error',
+      finalOutput: state.lastOutput,
+    };
+
+    await options.beforeFinal?.(finalContext);
+    await options.afterFinal?.(finalContext);
+    throw error;
   }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
     const runId = options.runId || createRunId();
-    const { threadId, onAgUiEvent, interruptController } = options;
+    const { threadId, onAgUiEvent } = options;
 
     const state: AgentLoopState = {
       steps: [],
@@ -457,81 +582,19 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
     try {
       while (!aborted && state.steps.length < maxSteps) {
-        const loopContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
-        const stepOverrides = (await options.prepareStep?.(loopContext)) ?? undefined;
-        const stepOptions = mergeStepOptions(options, stepOverrides);
-        const stepMessages = stepOverrides?.messages ?? currentMessages;
-        const stepStopConditions = Array.isArray(stepOptions.stopWhen) ? stepOptions.stopWhen : [stepOptions.stopWhen];
-
-        // Check for interrupts
-        if (interruptController?.isInterrupted()) {
+        const iteration = await executeLoopIteration(runId, threadId, state, currentMessages);
+        if (iteration.interrupted) {
           abortReason = 'interrupt';
-          await stepOptions.onAbort?.('interrupt', loopContext);
-          const interruptEvent = createInterruptEvent(
-            runId,
-            interruptController.getReason(),
-            interruptController.getMessage(),
-            threadId,
-          );
-          await safeEmitEvent(interruptEvent, 'interrupt', onAgUiEvent);
           break;
         }
-
-        // Emit STEP_STARTED
-        await safeEmitEvent(
-          withThreadId(
-            {
-              type: EventType.STEP_STARTED as const,
-              runId,
-              stepIndex: state.steps.length,
-              timestamp: new Date().toISOString(),
-            },
-            threadId,
-          ),
-          'STEP_STARTED',
-          onAgUiEvent,
-        );
-
-        const result = await processSingleStep(
-          state,
-          stepOptions,
-          loopContext,
-          stepMessages,
-          abortController,
-          stepStopConditions,
-        );
-
-        // Emit STEP_FINISHED (always, regardless of parts)
-        await safeEmitEvent(
-          withThreadId(
-            {
-              type: EventType.STEP_FINISHED as const,
-              runId,
-              stepIndex: state.stepIndex,
-              outputLength: result.parts.length,
-              timestamp: new Date().toISOString(),
-            },
-            threadId,
-          ),
-          'STEP_FINISHED',
-          onAgUiEvent,
-        );
-
-        // Yield all parts from this step
-        for (const part of result.parts) {
+        for (const part of iteration.parts) {
           yield part;
         }
-
-        // Check if we should continue
-        if (!result.continueLoop) {
+        if (!iteration.continueLoop) {
           break;
         }
-
-        // Update for next iteration
-        if (result.nextMessages) {
-          currentMessages = result.nextMessages;
-        } else if (stepOverrides?.messages) {
-          currentMessages = stepMessages;
+        if (iteration.nextMessages) {
+          currentMessages = iteration.nextMessages;
         }
       }
 
@@ -567,35 +630,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
       await options.afterFinal?.(finalContext);
     } catch (error) {
-      // Emit RUN_ERROR on failure
-      const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
-      await options.onError?.(
-        error instanceof Error ? error : new Error(errorMessage),
-        createContext(runId, threadId, state.steps.length, currentMessages, state),
-      );
-      await safeEmitEvent(
-        withThreadId(
-          {
-            type: EventType.RUN_ERROR as const,
-            runId,
-            error: { message: errorMessage },
-            timestamp: new Date().toISOString(),
-          },
-          threadId,
-        ),
-        'RUN_ERROR',
-        onAgUiEvent,
-      );
-
-      const finalContext: AgentLoopFinalContext = {
-        ...createContext(runId, threadId, state.steps.length, currentMessages, state),
-        outcome: 'error',
-        finalOutput: state.lastOutput,
-      };
-
-      await options.beforeFinal?.(finalContext);
-      await options.afterFinal?.(finalContext);
-      throw error;
+      await handleRunError(error, runId, threadId, state, currentMessages);
     }
   }
 
