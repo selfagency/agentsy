@@ -28,6 +28,11 @@
       "import": "./dist/processor.js",
       "require": "./dist/processor.cjs"
     },
+    "./adapters": {
+      "types": "./src/adapters/index.ts",
+      "import": "./dist/adapters.js",
+      "require": "./dist/adapters.cjs"
+    },
     "./xml-filter": {
       "types": "./dist/xml-filter.d.ts",
       "import": "./dist/xml-filter.js",
@@ -58,6 +63,11 @@
       "import": "./dist/sse.js",
       "require": "./dist/sse.cjs"
     },
+    "./normalizers": {
+      "types": "./src/normalizers/index.ts",
+      "import": "./dist/normalizers.js",
+      "require": "./dist/normalizers.cjs"
+    },
     "./structured": {
       "types": "./dist/structured.d.ts",
       "import": "./dist/structured.js",
@@ -72,6 +82,11 @@
       "types": "./dist/tool-calls.d.ts",
       "import": "./dist/tool-calls.js",
       "require": "./dist/tool-calls.cjs"
+    },
+    "./universal-client": {
+      "types": "./src/universal-client/index.ts",
+      "import": "./dist/universal-client.js",
+      "require": "./dist/universal-client.cjs"
     }
   },
   "scripts": {
@@ -83,7 +98,6 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@agentsy/providers": "workspace:*",
     "@agentsy/types": "workspace:*",
     "zod": "^3.23.8"
   },

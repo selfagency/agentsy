@@ -20,6 +20,18 @@ export function hasNoToolCalls(): StopCondition {
 }
 
 /**
+ * Stop when the most recent step contains at least one tool call, optionally matching a specific name.
+ */
+export function hasToolCall(name?: string): StopCondition {
+  return (state: AgentLoopState): boolean => {
+    const lastStep = state.steps.at(-1);
+    if (!lastStep) return false;
+    if (name === undefined) return lastStep.toolCalls.length > 0;
+    return lastStep.toolCalls.some(toolCall => toolCall.name === name);
+  };
+}
+
+/**
  * Stop when finishReason matches one of the provided reasons.
  */
 export function finishReasonIs(...reasons: FinishReason[]): StopCondition {
@@ -27,6 +39,17 @@ export function finishReasonIs(...reasons: FinishReason[]): StopCondition {
     if (state.steps.length === 0) return false;
     const lastStep = state.steps.at(-1);
     return lastStep?.finishReason !== undefined && reasons.includes(lastStep.finishReason);
+  };
+}
+
+/**
+ * Stop when the last step finished without further tool calls, indicating the loop reached a terminal model response.
+ */
+export function isLoopFinished(): StopCondition {
+  return (state: AgentLoopState): boolean => {
+    const lastStep = state.steps.at(-1);
+    if (!lastStep) return false;
+    return lastStep.toolCalls.length === 0 && lastStep.finishReason !== undefined;
   };
 }
 

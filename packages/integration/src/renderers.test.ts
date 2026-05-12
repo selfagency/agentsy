@@ -194,12 +194,12 @@ describe('createSharedRendererHandle', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Generic adapter (from @agentsy/adapters)
+// Generic adapter (from @agentsy/core/adapters)
 // ---------------------------------------------------------------------------
 
 describe('processStream generic adapter', () => {
   it('yields ProcessedOutput for each StreamChunk via processStream', async () => {
-    const { processStream } = await import('@agentsy/adapters');
+    const { processStream } = await import('@agentsy/core/adapters');
 
     const chunks = [{ content: 'Hello' }, { content: ' world' }, { content: '', done: true }];
 

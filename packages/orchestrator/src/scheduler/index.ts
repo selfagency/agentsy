@@ -1,5 +1,17 @@
 export type SchedulerTaskStatus = 'pending' | 'scheduled' | 'cancelled';
 
+export type SchedulerExecutionInput<T> = (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] };
+
+export interface TaskScheduler {
+  schedule<T>(task: SchedulerExecutionInput<T>): Promise<T>;
+}
+
+export interface SchedulerAssignment {
+  agentId: string;
+  assigned: true;
+  status: 'scheduled';
+}
+
 export interface SchedulerTaskDefinition {
   id: string;
   prompt: string;
@@ -65,6 +77,47 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
         .filter(task => (options.status ? task.status === options.status : true))
         .sort((left, right) => left.createdAt - right.createdAt)
         .map(task => ({ ...task }));
+    },
+  };
+}
+
+export function createTaskScheduler(registry: SchedulerRegistry = createSchedulerRegistry()): TaskScheduler {
+  return {
+    async schedule<T>(task: SchedulerExecutionInput<T>): Promise<T> {
+      if (typeof task === 'function') {
+        return task();
+      }
+
+      const schedulerTask = task.taskInfo as {
+        id?: string;
+        name?: string;
+        input?: unknown;
+        runAt?: number;
+      };
+      const availableAgents = task.agents.filter(agent => {
+        return typeof agent === 'object' && agent !== null && 'id' in agent;
+      }) as Array<{ id: string; available?: boolean }>;
+      const selectedAgent = availableAgents.find(agent => agent.available !== false) ?? availableAgents[0];
+
+      if (!selectedAgent) {
+        return null as T;
+      }
+
+      registry.register({
+        id: schedulerTask.id ?? `scheduled-${Math.random().toString(36).slice(2, 10)}`,
+        prompt: schedulerTask.name ?? schedulerTask.id ?? 'scheduled task',
+        ...(typeof schedulerTask.runAt === 'number' ? { runAt: schedulerTask.runAt } : {}),
+        metadata: {
+          input: schedulerTask.input,
+          assignedAgentId: selectedAgent.id,
+        },
+      });
+
+      return {
+        agentId: selectedAgent.id,
+        assigned: true,
+        status: 'scheduled',
+      } as T;
     },
   };
 }

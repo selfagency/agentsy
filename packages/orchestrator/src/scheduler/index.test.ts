@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSchedulerRegistry } from './index.js';
+import { createSchedulerRegistry, createTaskScheduler } from './index.js';
 
 describe('createSchedulerRegistry', () => {
   it('registers pending and scheduled tasks', () => {
@@ -41,5 +41,22 @@ describe('createSchedulerRegistry', () => {
     const registry = createSchedulerRegistry();
 
     expect(registry.cancel('missing')).toBeNull();
+  });
+
+  it('creates scheduling decisions via createTaskScheduler', async () => {
+    const registry = createSchedulerRegistry();
+    const scheduler = createTaskScheduler(registry);
+
+    const decision = await scheduler.schedule({
+      taskInfo: { id: 'task-1', name: 'Task 1', input: { value: 1 } },
+      agents: [{ id: 'agent-1', available: true }],
+    });
+
+    expect(decision).toEqual({
+      agentId: 'agent-1',
+      assigned: true,
+      status: 'scheduled',
+    });
+    expect(registry.get('task-1')?.metadata).toMatchObject({ assignedAgentId: 'agent-1' });
   });
 });
