@@ -1,0 +1,91 @@
+packages/integration/src/normalizer-to-processor.test.ts
+  s_095d159945d78b::t_515553ebc96b70 12,20
+packages/providers/src/normalizers/testHelpers.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-46
+packages/core/tsup.config.ts
+  s_095d159945d78b::t_6ef94ac651b736 21
+packages/providers/src/universal-client/index.ts
+  s_095d159945d78b::t_a8e825acdb7f7e 1-8
+packages/providers/src/normalizers/normalizers.test.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-1304
+packages/vscode/src/usage-tracking/map-usage.ts
+  s_095d159945d78b::t_0a06c4f146a930 1
+packages/providers/src/normalizers/gemini.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-134
+packages/core/package.json
+  s_095d159945d78b::t_024c593f839084 86
+packages/providers/src/normalizers/zai.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-157
+packages/providers/tsup.config.ts
+  s_095d159945d78b::t_cc289e0bb45f37 4,9
+packages/providers/src/normalizers/bedrock.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-155
+packages/providers/src/normalizers/hfTgi.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-102
+packages/providers/src/normalizers/openai.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-155
+packages/providers/src/normalizers/mistral.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-103
+pnpm-lock.yaml
+  ai_agent 147,149,181,183,563,565
+packages/core/src/processor/pipeline/createPipeline.ts
+  s_095d159945d78b::t_11260edc6c91a0 13
+packages/providers/src/normalizers/openai-compatible.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-20
+packages/providers/src/normalizers/ollama.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-109
+packages/providers/src/normalizers/openaiResponses.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-105
+packages/providers/src/normalizers/types.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-9
+packages/providers/src/index.ts
+  s_095d159945d78b::t_ce3eb3816e0834 4
+  h_627b419bd8fa0f 7
+  s_095d159945d78b::t_8223bd7502d27b 8
+packages/providers/tsconfig.json
+  s_095d159945d78b::t_5abe864b65ec52 5-6,9
+  ai_agent 7-8
+packages/core/src/recovery/recovery.test.ts
+  s_095d159945d78b::t_9c3c6208ee6bd0 3
+packages/providers/src/normalizers/index.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-18
+packages/providers/src/normalizers/cohere.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-153
+packages/integration/package.json
+  s_095d159945d78b::t_26a4a84a5e1c23 20
+packages/providers/package.json
+  s_095d159945d78b::t_43d8e7a419cd3a 4,7
+  s_095d159945d78b::t_6e01f8b3c7af02 26-35
+packages/providers/src/normalizers/anthropic.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-134
+packages/providers/src/normalizers/deepseek.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-91
+packages/vscode/package.json
+  s_095d159945d78b::t_968703a75b26ea 51
+packages/providers/src/normalizers/utils.ts
+  s_095d159945d78b::t_86f0bfafa17f6e 1-16
+packages/integration/src/recovery.test.ts
+  s_095d159945d78b::t_8e181a92ebcbe0 10
+  s_095d159945d78b::t_a4c755432b257c 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "741aa58d6d309d418c5298d1aa9d176578e3b910",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
