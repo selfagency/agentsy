@@ -25,7 +25,7 @@ function createMockCancellationToken(initiallyCancelled = false): {
     },
     cancel() {
       cancelled = true;
-      for (const listener of [...listeners]) {
+      for (const listener of listeners) {
         listener(undefined);
       }
     },

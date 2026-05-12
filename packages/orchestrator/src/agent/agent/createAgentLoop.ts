@@ -28,6 +28,20 @@ function objectKeysMatch(aKeys: string[], bKeys: string[]): boolean {
   return aKeys.every((k, i) => k === bKeys[i]);
 }
 
+function getSortedEntries(value: object): Array<[string, unknown]> {
+  return Object.entries(value).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
+}
+
+function assignCallbackIfDefined<K extends keyof AgentLoopOptions>(
+  target: AgentLoopOptions,
+  key: K,
+  callback: AgentLoopOptions[K] | undefined,
+): void {
+  if (callback !== undefined) {
+    target[key] = callback;
+  }
+}
+
 /**
  * Deep equality comparison for tool parameters.
  * Compares objects structurally rather than by reference.
@@ -43,15 +57,17 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   }
 
   // Compare sorted keys
-  const aKeys = Object.keys(a).sort((x, y) => x.localeCompare(y));
-  const bKeys = Object.keys(b).sort((x, y) => x.localeCompare(y));
+  const aEntries = getSortedEntries(a);
+  const bEntries = getSortedEntries(b);
+  const aKeys = aEntries.map(([key]) => key);
+  const bKeys = bEntries.map(([key]) => key);
 
   if (!objectKeysMatch(aKeys, bKeys)) return false;
 
-  // Recursively compare values for each key
-  const aObj = a as Record<string, unknown>;
-  const bObj = b as Record<string, unknown>;
-  return aKeys.every(k => parametersEqual(aObj[k], bObj[k]));
+  return aEntries.every(([, aValue], index) => {
+    const bEntry = bEntries[index];
+    return bEntry !== undefined && parametersEqual(aValue, bEntry[1]);
+  });
 }
 
 function toolCallsEqual(
@@ -63,12 +79,9 @@ function toolCallsEqual(
 }
 
 function mergeStepCallbacks(base: AgentLoopOptions, overrides: AgentLoopStepOverrides, merged: AgentLoopOptions): void {
-  const beforeStep = mergeCallbacks(base.beforeStep, overrides.beforeStep);
-  const onStep = mergeCallbacks(base.onStep, overrides.onStep);
-  const afterStep = mergeCallbacks(base.afterStep, overrides.afterStep);
-  if (beforeStep) merged.beforeStep = beforeStep;
-  if (onStep) merged.onStep = onStep;
-  if (afterStep) merged.afterStep = afterStep;
+  assignCallbackIfDefined(merged, 'beforeStep', mergeCallbacks(base.beforeStep, overrides.beforeStep));
+  assignCallbackIfDefined(merged, 'onStep', mergeCallbacks(base.onStep, overrides.onStep));
+  assignCallbackIfDefined(merged, 'afterStep', mergeCallbacks(base.afterStep, overrides.afterStep));
 }
 
 function mergeToolAndFinalCallbacks(
@@ -82,12 +95,12 @@ function mergeToolAndFinalCallbacks(
   const onError = mergeCallbacks(base.onError, overrides.onError);
   const beforeFinal = mergeCallbacks(base.beforeFinal, overrides.beforeFinal);
   const afterFinal = mergeCallbacks(base.afterFinal, overrides.afterFinal);
-  if (beforeToolCall) merged.beforeToolCall = beforeToolCall;
-  if (afterToolCall) merged.afterToolCall = afterToolCall;
-  if (onAbort) merged.onAbort = onAbort;
-  if (onError) merged.onError = onError;
-  if (beforeFinal) merged.beforeFinal = beforeFinal;
-  if (afterFinal) merged.afterFinal = afterFinal;
+  assignCallbackIfDefined(merged, 'beforeToolCall', beforeToolCall);
+  assignCallbackIfDefined(merged, 'afterToolCall', afterToolCall);
+  assignCallbackIfDefined(merged, 'onAbort', onAbort);
+  assignCallbackIfDefined(merged, 'onError', onError);
+  assignCallbackIfDefined(merged, 'beforeFinal', beforeFinal);
+  assignCallbackIfDefined(merged, 'afterFinal', afterFinal);
 }
 
 function mergeLifecycleCallbacks(
