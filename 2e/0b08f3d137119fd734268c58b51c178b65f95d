@@ -1,0 +1,14 @@
+packages/integration/src/recovery.test.ts
+  h_627b419bd8fa0f 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "2e0b08f3d137119fd734268c58b51c178b65f95d",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
