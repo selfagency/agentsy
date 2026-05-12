@@ -1,0 +1,93 @@
+docs/packages.md
+  ai_agent 22-28
+docs/architecture/package-ecosystem.md
+  s_095d159945d78b::t_a997244b8a639b 37,53
+plan/agentsy-prd.md
+  ai_agent 160-161,303-320
+  s_095d159945d78b::t_a997244b8a639b 68,70,92,94,233,253
+plan/agentsy-scheduler-v1.md
+  s_095d159945d78b::t_a997244b8a639b 150
+plan/agentsy-tech.md
+  ai_agent 1499
+  s_095d159945d78b::t_a997244b8a639b 45,109,457,1316,1439,1513
+docs/packages/agent.md
+  s_095d159945d78b::t_a997244b8a639b 1,8,37,49
+docs/getting-started.md
+  s_095d159945d78b::t_a997244b8a639b 157
+plan/agentsy-standalone-v1.md
+  ai_agent 148-149,153-154,164
+  s_095d159945d78b::t_a997244b8a639b 15,27,35,37-38,66,75,83,150-152,237-238,314,323,354,357
+plan/PACKAGE-NAMING-MAP.md
+  s_095d159945d78b::t_a997244b8a639b 188,190
+docs/architecture/stream-processing.md
+  s_095d159945d78b::t_a997244b8a639b 52
+docs/architecture/index.md
+  s_095d159945d78b::t_a997244b8a639b 47
+docs/packages/recovery.md
+  s_095d159945d78b::t_a997244b8a639b 23
+plan/agentsy-agents-v1.md
+  s_095d159945d78b::t_a997244b8a639b 2,15,29,34,38,44,56,139,158
+  ai_agent 62,66
+plan/prompt.md
+  ai_agent 26-45
+plan/research/FEATURE-MATRIX-AND-APS.md
+  s_095d159945d78b::t_a997244b8a639b 198,969
+plan/owasp-security-testing-1.md
+  s_095d159945d78b::t_a997244b8a639b 43,138
+plan/REVISED-ARCHITECTURE.md
+  s_095d159945d78b::t_a997244b8a639b 255
+docs/examples/tool-loop-retries-continuation.md
+  s_095d159945d78b::t_a997244b8a639b 13,19,95
+docs/packages/processor.md
+  s_095d159945d78b::t_a997244b8a639b 38
+plan/agentsy-testing-plan.md
+  ai_agent 208
+  s_095d159945d78b::t_a997244b8a639b 294
+docs/migration/llm-stream-parser.md
+  s_095d159945d78b::t_a997244b8a639b 71,285
+  ai_agent 31-44,95
+plan/revised-implementation-architecture.md
+  s_095d159945d78b::t_a997244b8a639b 484,608
+docs/packages/tool-calls.md
+  s_095d159945d78b::t_a997244b8a639b 28
+plan/implementation-plan.md
+  ai_agent 36-42
+docs/packages/structured.md
+  s_095d159945d78b::t_a997244b8a639b 33
+docs/packages/context.md
+  s_095d159945d78b::t_a997244b8a639b 25
+docs/examples/all-tooling-end-to-end.md
+  s_095d159945d78b::t_a997244b8a639b 18,223
+docs/api.md
+  s_095d159945d78b::t_a997244b8a639b 17
+plan/agentsy-features-v1.md
+  ai_agent 156,168
+  s_095d159945d78b::t_a997244b8a639b 50-51,75,172,314,351
+plan/agentsy-prd-notes.md
+  s_095d159945d78b::t_a997244b8a639b 362,392,412,422,432,442,452,462,512,522,532,542,552,562,582,592,612,632
+plan/agentsy-platform-v2.md
+  ai_agent 202-209,217,219,264,285,356-357,359-363,517-521,523-524,583-584,586-587
+  s_095d159945d78b::t_a997244b8a639b 30,49-50,72,76,78,80,82,86,89,92-93,146,150-151,153,157,159,272,358,499,522,585,637,681,817-818,820,830,838
+plan/agentsy-prd-task-plan.md
+  ai_agent 58
+docs/packages/ag-ui.md
+  s_095d159945d78b::t_a997244b8a639b 25
+docs/packages/vscode.md
+  s_095d159945d78b::t_a997244b8a639b 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "af429eb6f5287654f84d5f1b507bb5a31b44d164",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}

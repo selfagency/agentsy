@@ -1,0 +1,177 @@
+packages/integration/src/thinking-and-tool-calls.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 9,12
+packages/renderers/src/shared.ts
+  s_095d159945d78b::t_756648cd8e7e02 1-2
+packages/core/src/xml-filter/XmlStreamFilter.test.ts
+  s_095d159945d78b::t_604ba9101ce1e0 1,3-8,11-13,15,18,20-23,26,28-32,34-38,41,43-49,52-59,61-66,69,71-75,78-83,86-106,108-109,112,114-116,119-121,123-125,128,130,132,135-140,143-154,158-177,180-194,197-286
+packages/core/src/processor/pipeline/index.ts
+  s_095d159945d78b::t_a7747400b79796 1-2
+packages/vscode/src/message-conversion/helpers.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/vscode/src/testing/mock-builders.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/core/src/processor/pipeline/transform.ts
+  s_095d159945d78b::t_a7747400b79796 1-79
+packages/renderers/src/shared.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 1-2
+packages/renderers/src/types.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/core/src/formatting/formatXmlLikeResponseForDisplay.ts
+  s_095d159945d78b::t_604ba9101ce1e0 1-19
+packages/renderers/src/ink/ink.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 2
+packages/vscode/src/vscode-renderer/vscode-renderer.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/vscode/src/vscode-renderer/createVSCodeChatRenderer.ts
+  s_095d159945d78b::t_756648cd8e7e02 1-2
+packages/core/src/processor/mcp/index.ts
+  s_095d159945d78b::t_cc558905f7ada0 1-2
+packages/core/src/processor/processor/LLMStreamProcessor.types.ts
+  s_095d159945d78b::t_15aeccf8a3e6d1 2
+  s_095d159945d78b::t_9d627dfeed3216 1
+packages/integration/src/renderers.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 10
+packages/core/src/formatting/formatting.test.ts
+  s_095d159945d78b::t_604ba9101ce1e0 1-2,4-14,16-21
+packages/core/src/processor/processor/ProcessorStats.test.ts
+  s_095d159945d78b::t_a7747400b79796 1-159
+packages/vscode/src/message-conversion/helpers.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 2
+packages/core/src/context/splitLeadingXmlContext.ts
+  s_095d159945d78b::t_604ba9101ce1e0 3,7-30
+packages/core/src/processor/sse/sse.test.ts
+  s_095d159945d78b::t_a7747400b79796 1-11,14-16,18-19,21-23,25-26,28-30,32-34,36-37,39-41,43-45,47-48,50-52,54-56,58-59,61-65,67-74,76-77,79-81,83-85,87-88,90-91,93-95,97-98,100-101,103-105,107-108,110-111,113-116,118-119,121-122,124-126,128-129,131-132,134-136,138-139,141-142,144-148,150-151,153-156,158-234,237-246,249-258,261-268,271-278,280-281,283-285,287-304,306-327
+packages/agent/src/agent/agent.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/core/src/processor/processor/ZAiInlineToolCallParser.ts
+  s_095d159945d78b::t_a7747400b79796 1-2,4-6,8-17,20-28,31-49,52-53,55,57-61,64-67,70-77,79-85,87-93,95-97,100-101,104,107-116,118-124,127-139,142-149,151-159,162-173,175-184,186,188-190
+packages/core/src/processor/pipeline/transform.test.ts
+  s_095d159945d78b::t_a7747400b79796 1-195
+packages/core/src/processor/processor/createProcessorEventAdapter.ts
+  s_095d159945d78b::t_a7747400b79796 1-10,12,15-23,26-27,30-32,34-36,38-40,42-43,45-46,50-51,53,55-60,63-69
+packages/core/src/formatting/sanitizeNonStreamingModelOutput.ts
+  s_095d159945d78b::t_604ba9101ce1e0 2,5
+  s_095d159945d78b::t_c15737c63aad21 1
+packages/core/package.json
+  s_095d159945d78b::t_f235ab13a99148 81
+packages/core/src/processor/processor/AccumulatedMessage.ts
+  s_095d159945d78b::t_15aeccf8a3e6d1 1
+packages/ui/src/ui.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 7
+packages/core/src/context/contextXml.test.ts
+  s_095d159945d78b::t_c15737c63aad21 4
+  s_095d159945d78b::t_604ba9101ce1e0 37,66
+packages/renderers/src/ink/ink.features.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 2
+packages/integration/package.json
+  s_095d159945d78b::t_b9b454e527a808 23
+packages/agent/src/agent/types.ts
+  s_095d159945d78b::t_756648cd8e7e02 2,6
+packages/core/src/context/index.ts
+  s_095d159945d78b::t_604ba9101ce1e0 3
+packages/core/src/processor/processor/chunkUtils.test.ts
+  s_095d159945d78b::t_a7747400b79796 1,3-143
+packages/recovery/src/index.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/core/src/context/dedupeXmlContext.test.ts
+  s_095d159945d78b::t_604ba9101ce1e0 1-66
+pnpm-lock.yaml
+  ai_agent 75,77,147-149,563,565
+packages/core/src/context/dedupeXmlContext.ts
+  s_095d159945d78b::t_604ba9101ce1e0 100,102-103,105,113
+packages/renderers/src/cli/createCliRenderer.ts
+  s_095d159945d78b::t_756648cd8e7e02 1-3
+packages/adapters/src/adapters/generic.ts
+  ai_agent 1-6
+packages/core/src/processor/processor/ProcessorStats.ts
+  s_095d159945d78b::t_a7747400b79796 1-5,7-9,11-12,14-15,17-18,20-21,23-24,26-27,29-30,32-33,35-36,38-39,41-42,44-45,47-48,51-71
+packages/core/src/processor/index.ts
+  s_095d159945d78b::t_91f4e82e730cd4 1-3
+packages/agent/src/agent/createAgentLoop.ts
+  s_095d159945d78b::t_756648cd8e7e02 2
+packages/integration/src/structured-output.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 9,14
+packages/core/src/processor/pipeline/createPipeline.ts
+  s_095d159945d78b::t_1ac0d1ec56dfcd 18
+packages/renderers/src/streaming-md/createStreamingMarkdownRenderer.ts
+  s_095d159945d78b::t_756648cd8e7e02 1-2
+packages/core/src/processor/sse/index.ts
+  s_095d159945d78b::t_a7747400b79796 1-2
+packages/ui/src/processorBridge.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/renderers/src/ink/ink.behavior.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 2
+packages/core/src/processor/processor/index.ts
+  s_095d159945d78b::t_a7747400b79796 1-6
+packages/core/src/processor/processor/chunkUtils.ts
+  s_095d159945d78b::t_15aeccf8a3e6d1 1
+packages/core/src/processor/sse/SSEParser.ts
+  s_095d159945d78b::t_a7747400b79796 1-4,6-11,13-17,19-69,71-73,75-93,95-122,124-127,129-152,156-164
+packages/core/tsup.config.ts
+  ai_agent 20
+packages/renderers/src/ink/createInkRenderer.ts
+  s_095d159945d78b::t_756648cd8e7e02 3
+packages/core/src/processor/processor/incompleteness.ts
+  s_095d159945d78b::t_15aeccf8a3e6d1 1
+packages/core/src/processor/processor/LLMStreamProcessor.ts
+  s_095d159945d78b::t_fd282e85f65a70 16
+  s_095d159945d78b::t_9d627dfeed3216 1
+  ai_agent 2-7
+packages/core/src/formatting/index.ts
+  s_095d159945d78b::t_604ba9101ce1e0 1-3
+plan/implementation-plan.md
+  h_627b419bd8fa0f 1-288
+packages/ui/package.json
+  s_095d159945d78b::t_cddb7be3599d80 33
+packages/vscode/src/stream-bridge.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 2
+packages/ag-ui/package.json
+  s_095d159945d78b::t_cddb7be3599d80 36
+packages/vscode/src/stream-bridge.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/core/src/processor/processor/LLMStreamProcessor.test.ts
+  s_095d159945d78b::t_15aeccf8a3e6d1 4
+packages/recovery/src/recovery.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 3
+packages/recovery/tsup.config.ts
+  s_095d159945d78b::t_69d31083a1926f 13
+packages/core/src/processor/processor/ToolCallParser.ts
+  s_095d159945d78b::t_a7747400b79796 1-33
+packages/integration/src/normalizer-to-processor.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 20
+packages/vscode/src/vscode-renderer/tool-call-lifecycle.ts
+  s_095d159945d78b::t_756648cd8e7e02 1
+packages/core/src/processor/pipeline/pipeline.test.ts
+  s_095d159945d78b::t_a7747400b79796 1-105
+packages/integration/src/recovery.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 8
+packages/core/src/processor/processor/createProcessorEventAdapter.test.ts
+  s_095d159945d78b::t_a7747400b79796 2-15,18-21,23-25,28-31,33-34,36
+packages/core/src/processor/sse/parseSSEStream.ts
+  s_095d159945d78b::t_a7747400b79796 1,4-17,19-22,24-28,30-33,35-36,39-44,46-47,49,51-53,55-59,61-62,64-68,70-75,77-78,80-83
+packages/core/src/formatting/appendToBlockquote.ts
+  s_095d159945d78b::t_604ba9101ce1e0 1-3,6
+packages/integration/src/sse-pipeline.test.ts
+  s_095d159945d78b::t_756648cd8e7e02 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "486f0fb4f1519a36e89bc65baacba40738d8e431",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}

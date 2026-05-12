@@ -1,0 +1,37 @@
+packages/integration/src/recovery.test.ts
+  s_095d159945d78b::t_16457521a1cfa5 9
+packages/core/tsup.config.ts
+  s_095d159945d78b::t_c46c3f96da1997 10
+plan/implementation-plan.md
+  s_095d159945d78b::t_985446386ef194 93-94,99-110,112-115,117-122
+  h_627b419bd8fa0f 111,116
+packages/core/src/tool-calls/ToolCallAccumulator.ts
+  h_627b419bd8fa0f 2
+packages/core/src/recovery/index.ts
+  s_095d159945d78b::t_c583c381669529 2-3
+packages/core/src/recovery/recovery.test.ts
+  s_095d159945d78b::t_d3e692cfe06d0c 1-148
+packages/core/package.json
+  s_095d159945d78b::t_c46c3f96da1997 46-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "b37f2eb3c71f292543838d73c8eee7f1a76d0ecb",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}

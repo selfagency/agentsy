@@ -1,0 +1,25 @@
+plan/agentsy-tech.md
+  s_095d159945d78b::t_54bb04373a6847 1318
+docs/packages/ag-ui.md
+  s_095d159945d78b::t_eb20dd9649342e 30
+docs/examples/stateful-ops-copilot.md
+  s_095d159945d78b::t_f0c04dbf3221cc 19-23
+docs/examples/all-tooling-end-to-end.md
+  s_095d159945d78b::t_087f68edf9504b 25-29,31-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "c6eb4847d0d17fb4e1abefe1a7a411fdf104e9ad",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
