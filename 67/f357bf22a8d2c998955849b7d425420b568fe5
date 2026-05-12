@@ -1,0 +1,68 @@
+packages/core/src/formatting/formatting.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 19-24
+  s_095d159945d78b::t_006230ae83f896 14-18
+packages/core/src/recovery/index.ts
+  s_095d159945d78b::t_31209731d9d077 37-56,87,89-99,104-107,112-119
+packages/providers/src/universal-client/index.ts
+  s_095d159945d78b::t_31209731d9d077 8
+  s_095d159945d78b::t_0577ea88fb7adb 7
+packages/vscode/src/retry/retryUtility.test.ts
+  s_095d159945d78b::t_219649c25994f7 120
+  s_095d159945d78b::t_006230ae83f896 5-31,33-36,91,99-119
+packages/core/src/retry/index.ts
+  s_095d159945d78b::t_31209731d9d077 15-24,31-32,37-48,50-53,59,63-66,72,74-77,80
+packages/core/src/formatting/formatXmlLikeResponseForDisplay.ts
+  s_095d159945d78b::t_63f5cc12afdd69 3-49,57-75,77,79-80
+  s_095d159945d78b::t_31209731d9d077 1-2,51
+packages/core/src/retry/index.test.ts
+  s_095d159945d78b::t_219649c25994f7 26-102
+packages/vscode/src/retry/retryUtility.ts
+  s_095d159945d78b::t_31209731d9d077 11,13,17,55-96,108,128,130
+packages/core/src/tool-calls/providerToolsContract.ts
+  s_095d159945d78b::t_31209731d9d077 53,61
+packages/integration/src/thinking-and-tool-calls.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 212-226
+  s_095d159945d78b::t_006230ae83f896 205-211
+packages/core/src/context/splitLeadingXmlContext.ts
+  s_095d159945d78b::t_31209731d9d077 3-4,7-13
+packages/vscode/src/vscode-overloads/chatResponseStream.test.ts
+  s_095d159945d78b::t_219649c25994f7 112-113
+  s_095d159945d78b::t_006230ae83f896 5-31,33-36,101-111
+packages/vscode/src/vscode-overloads/chatResponseStream.ts
+  s_095d159945d78b::t_31209731d9d077 22-26,30-71
+packages/core/src/recovery/recovery.test.ts
+  s_095d159945d78b::t_006230ae83f896 148-182
+packages/core/src/tool-calls/extractXmlToolCalls.ts
+  s_095d159945d78b::t_219649c25994f7 12-130,132-146,158-161,165,279,286-291,293-297,299,303-304,316-317,332
+  s_095d159945d78b::t_709f3cabb78ecc 298
+packages/core/src/tool-calls/buildXmlToolSystemPrompt.ts
+  s_095d159945d78b::t_31209731d9d077 102-105
+  s_095d159945d78b::t_006230ae83f896 122
+packages/core/src/tool-calls/ToolCallAccumulator.ts
+  s_095d159945d78b::t_31209731d9d077 8,14-15
+packages/core/src/context/contextXml.test.ts
+  s_095d159945d78b::t_55d4cbd8d589be 148-163
+  h_627b419bd8fa0f 4
+  s_095d159945d78b::t_006230ae83f896 140-147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "67f357bf22a8d2c998955849b7d425420b568fe5",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
