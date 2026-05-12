@@ -10,14 +10,14 @@ This example shows a policy workflow that can switch providers while keeping one
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/normalizers
+npm install @agentsy/providers
 ```
 
 ## Illustrative implementation
 
 ```ts
-import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
-import { normalizeAnthropicEvent, normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
+import { normalizeAnthropicEvent, normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
 type PolicyDecision = {
   shouldEscalate: boolean;

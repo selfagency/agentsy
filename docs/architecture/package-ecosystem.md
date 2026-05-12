@@ -8,23 +8,23 @@ This page explains how the current packages relate to each other.
 
 These packages solve narrow parsing or shaping problems and can be used independently:
 
-- `@agentsy/sse`
-- `@agentsy/thinking`
-- `@agentsy/tool-calls`
-- `@agentsy/structured`
-- `@agentsy/context`
-- `@agentsy/xml-filter`
-- `@agentsy/formatting`
-- `@agentsy/recovery`
+- `@agentsy/core/sse`
+- `@agentsy/core/thinking`
+- `@agentsy/core/tool-calls`
+- `@agentsy/core/structured`
+- `@agentsy/core/context`
+- `@agentsy/core/xml-filter`
+- `@agentsy/core/formatting`
+- `@agentsy/core/recovery`
 - `@agentsy/types`
 
 ### 2. Shared stream language
 
-`@agentsy/normalizers` converts provider-specific formats into the common event vocabulary expected by the rest of the stack.
+`@agentsy/providers/normalizers` converts provider-specific formats into the common event vocabulary expected by the rest of the stack.
 
 ### 3. Processing engine
 
-`@agentsy/processor` orchestrates the incremental flow and exposes transforms for smoothing, thinking filtering, and tool-call filtering.
+`@agentsy/core/processor` orchestrates the incremental flow and exposes transforms for smoothing, thinking filtering, and tool-call filtering.
 
 ### 4. State and presentation
 
@@ -35,18 +35,19 @@ These packages solve narrow parsing or shaping problems and can be used independ
 ### 5. Runtime and integration surfaces
 
 - `@agentsy/orchestrator/agent` builds higher-level loops.
-- `@agentsy/adapters` packages common integration logic.
+- `@agentsy/providers/adapters` packages common integration logic.
+- `@agentsy/providers/pipeline` packages provider-coupled SSE pipeline assembly.
 - `@agentsy/vscode` provides the current published editor-focused integration layer.
 
 ## Example composition patterns
 
 ### Minimal streaming pipeline
 
-Use `@agentsy/normalizers` plus `@agentsy/processor` when you only need to normalize and process provider output.
+Use `@agentsy/providers/normalizers` plus `@agentsy/core/processor` when you only need to normalize and process provider output.
 
 ### Structured-output workflow
 
-Add `@agentsy/structured` and `@agentsy/tool-calls` when your application needs schema handling or tool invocation.
+Add `@agentsy/core/structured` and `@agentsy/core/tool-calls` when your application needs schema handling or tool invocation.
 
 ### Agent application
 

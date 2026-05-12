@@ -1,6 +1,6 @@
-# `@agentsy/thinking`
+# `@agentsy/core/thinking`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** Incremental reasoning-tag extraction
 
 ## Key export
@@ -17,15 +17,15 @@ Use this package when you need focused handling of model-specific `<think>` or r
 
 ## Common neighbors
 
-- `@agentsy/processor`
+- `@agentsy/core/processor`
 - `@agentsy/renderers`
-- `@agentsy/formatting`
+- `@agentsy/core/formatting`
 
 ## Implementation example with neighbors
 
 ```ts
-import { sanitizeNonStreamingModelOutput } from '@agentsy/formatting';
-import { ThinkingParser } from '@agentsy/thinking';
+import { sanitizeNonStreamingModelOutput } from '@agentsy/core/formatting';
+import { ThinkingParser } from '@agentsy/core/thinking';
 
 const parser = new ThinkingParser();
 

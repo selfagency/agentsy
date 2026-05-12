@@ -52,8 +52,8 @@ const final = processor.accumulatedMessage;
 Process chunks immediately without buffering:
 
 ```typescript
-import { ThinkingParser } from '@agentsy/thinking';
-import { createXmlStreamFilter } from '@agentsy/xml-filter';
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const thinking = new ThinkingParser({ openingTag: '<think>', closingTag: '</think>' });
 const filter = createXmlStreamFilter({ enforcePrivacyTags: true });
@@ -87,7 +87,7 @@ updateChatDisplay(finalFiltered);
 Extract and execute structured tool calls:
 
 ```typescript
-import { extractXmlToolCalls } from '@agentsy/tool-calls';
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
 
 const response = await chatCompletion(messages);
 
@@ -109,7 +109,7 @@ for (const call of toolCalls) {
 Validate structured outputs and prompt for repairs:
 
 ```typescript
-import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/structured';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
 const schema = {
   type: 'object',
@@ -224,7 +224,7 @@ For safe integration into existing Copilot Chat hosts:
 
 ```typescript
 // Feature flag for gradual rollout
-const useLLMStreamParser = features.isEnabled('@agentsy/processor');
+const useLLMStreamParser = features.isEnabled('@agentsy/core/processor');
 
 const processor = useLLMStreamParser ? new LLMStreamProcessor(config) : legacyParsingPath(config);
 
@@ -242,7 +242,7 @@ if (process.env.VERIFY_PARITY) {
 ## Performance Tips
 
 - **Stream processing** - Process chunks immediately instead of buffering entire responses
-- **Package-scoped imports** - Only import what you need: `import { ThinkingParser } from '@agentsy/thinking'`
+- **Package-scoped imports** - Only import what you need: `import { ThinkingParser } from '@agentsy/core/thinking'`
 - **Limit tuning** - Adjust `maxJsonDepth` and `maxJsonKeys` based on expected response types
 - **Caching** - Cache parsed schemas and processors across multiple chat turns
 
@@ -253,7 +253,7 @@ Enable diagnostics for stream processing using the `onWarning` hook:
 ```typescript
 const processor = new LLMStreamProcessor({
   onWarning: (message, context) => {
-    console.log(`[@agentsy/processor] ${message}`, context);
+    console.log(`[@agentsy/core/processor] ${message}`, context);
   },
   ...config,
 });

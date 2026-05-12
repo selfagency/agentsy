@@ -1,11 +1,11 @@
-# `@agentsy/context`
+# `@agentsy/core/context`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** Context splitting, stripping, and dedupe helpers
 
 ## Where it fits
 
-Use `@agentsy/context` when you need lightweight utilities for shaping prompt or conversation context before it flows into a processor or runtime.
+Use `@agentsy/core/context` when you need lightweight utilities for shaping prompt or conversation context before it flows into a processor or runtime.
 
 ## Current surface
 
@@ -21,14 +21,14 @@ Use `@agentsy/context` when you need lightweight utilities for shaping prompt or
 
 ## Common neighbors
 
-- `@agentsy/structured`
+- `@agentsy/core/structured`
 - `@agentsy/orchestrator/agent`
 - `@agentsy/vscode`
 
 ## Implementation example with neighbors
 
 ```ts
-import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/context';
+import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/core/context';
 
 const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(modelOutput);
 const mergedContext = dedupeXmlContextBlocksByTag([existingContext, ...contextBlocks].filter(Boolean));

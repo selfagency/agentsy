@@ -4,9 +4,9 @@ import {
   type ProcessedOutput,
   type ProcessorOptions,
   type StreamChunk,
-} from '../processor/index.js';
-import { type ValidateJsonSchemaOptions, validateJsonSchema } from '../structured/index.js';
-import type { XmlToolCall } from '../tool-calls/index.js';
+} from '@agentsy/core/processor';
+import { type ValidateJsonSchemaOptions, validateJsonSchema } from '@agentsy/core/structured';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
 
 /**
  * Async generator that processes every chunk from a normalised LLM stream

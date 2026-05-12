@@ -21,13 +21,13 @@ Use `@agentsy/ag-ui` when your application needs to adapt the event model into A
 ## Common neighbors
 
 - `@agentsy/ui`
-- `@agentsy/processor`
+- `@agentsy/core/processor`
 - `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 
 ```ts
-import { toAgUiStream } from '@agentsy/runtime/ag-ui';
+import { toAgUiStream } from '@agentsy/ag-ui';
 
 const agUiEvents = toAgUiStream(processedEventStream, { runId: 'run-1', threadId: 'thread-1' });
 

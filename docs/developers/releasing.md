@@ -12,7 +12,7 @@ Releases remain merge-approved via `main` and triggered by package tags.
 ```bash
 # Release any package in the workspace
 pnpm release @agentsy/vscode 0.1.5
-pnpm release @agentsy/processor 0.2.0
+pnpm release @agentsy/core 0.2.0
 ```
 
 ## First Publish (Bootstrap, one-time)
@@ -89,7 +89,7 @@ You can release multiple packages without waiting:
 
 ```bash
 pnpm release @agentsy/vscode 0.1.5 &
-pnpm release @agentsy/processor 0.2.0 &
+pnpm release @agentsy/core 0.2.0 &
 wait
 ```
 

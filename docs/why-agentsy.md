@@ -147,7 +147,7 @@ Legend:
 There are stronger ecosystems than Agentsy today for app-level AI features, but Agentsy already has a few differentiators that matter if you care about infrastructure boundaries:
 
 - **Normalization as a first-class package boundary.** We separate provider normalization from stream processing instead of collapsing both into one giant runtime surface.
-- **Parsing utilities you can adopt independently.** `@agentsy/thinking`, `@agentsy/tool-calls`, `@agentsy/structured`, `@agentsy/context`, `@agentsy/recovery`, and `@agentsy/xml-filter` are useful even when you do not want the rest of an agent framework.
+- **Parsing utilities you can adopt independently.** `@agentsy/core/thinking`, `@agentsy/core/tool-calls`, `@agentsy/core/structured`, `@agentsy/core/context`, `@agentsy/core/recovery`, and `@agentsy/core/xml-filter` are useful even when you do not want the rest of an agent framework.
 - **Editor-facing integration as a real package.** `@agentsy/vscode` makes the ecosystem useful for toolsmithing and editor-native experiences, not only chat apps.
 - **Protocol-aware projection layers.** `@agentsy/ag-ui` and `@agentsy/ui` make state and protocol projection explicit rather than burying them inside one client abstraction.
 - **An explicitly open-stack direction.** The roadmap leans toward MCP, AG-UI, skills, connectors, and interoperable runtime pieces instead of inventing a sealed world where every useful workflow has to stay inside one vendor-shaped box.

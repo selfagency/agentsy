@@ -1,11 +1,11 @@
-# `@agentsy/processor`
+# `@agentsy/core/processor`
 
-- **Status:** Published
-- **Role:** Event-driven stream orchestration and transform pipeline
+- **Status:** Published subpath export from `@agentsy/core`
+- **Role:** Core stream processing primitives and provider-agnostic transforms
 
 ## Where it fits
 
-`@agentsy/processor` is the center of the current streaming stack. It consumes normalized events and produces a stable flow that downstream renderers, stores, and agent loops can use.
+`@agentsy/core/processor` is the center of the current streaming stack. It consumes normalized events and produces a stable flow that downstream renderers, stores, and agent loops can use.
 
 ## Key exports
 
@@ -13,7 +13,6 @@
 - `createProcessorEventAdapter`
 - `ToolCallParser`
 - `ZAiInlineToolCallParser`
-- `createPipeline`
 - `createSmoothStream`
 - `createThinkingFilter`
 - `createToolCallFilter`
@@ -22,7 +21,7 @@
 
 - Processor runtime: `LLMStreamProcessor`, `createProcessorEventAdapter`
 - Tool-call parsing helpers: `ToolCallParser`, `ZAiInlineToolCallParser`
-- Pipeline helpers: `createPipeline`, `createSmoothStream`, `createThinkingFilter`, `createToolCallFilter`
+- Processor transforms: `createSmoothStream`, `createThinkingFilter`, `createToolCallFilter`
 - SSE helpers re-exported from the processor package surface
 
 ## Use it when
@@ -33,31 +32,28 @@
 
 ## Common neighbors
 
-- Upstream: `@agentsy/normalizers`
-- Side utilities: `@agentsy/thinking`, `@agentsy/tool-calls`, `@agentsy/structured`
+- Upstream: `@agentsy/providers/normalizers`, `@agentsy/providers/pipeline`
+- Side utilities: `@agentsy/core/thinking`, `@agentsy/core/tool-calls`, `@agentsy/core/structured`
 - Downstream: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/orchestrator/agent`, `@agentsy/vscode`
 
 ## Example
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { createPipeline, LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { createPipeline } from '@agentsy/providers/pipeline';
 
 const processor = new LLMStreamProcessor();
-const pipeline = createPipeline();
-
-pipeline.use(processor);
-
-for await (const rawChunk of openAiStream) {
-  pipeline.write(normalizeOpenAIChatChunk(rawChunk));
+for await (const event of createPipeline(openAiSseStream, { provider: 'openai' })) {
+  console.log(event);
 }
 ```
 
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeAnthropicEvent } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { normalizeAnthropicEvent } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
@@ -73,4 +69,4 @@ bridge.dispose();
 
 ## Notes
 
-This package is the best starting point when you are building on top of the current low-level ecosystem rather than the published VS Code integration.
+Use `@agentsy/core/processor` for the processor itself, and pair it with `@agentsy/providers/*` when you need provider-specific normalizers, adapters, or SSE pipelines.

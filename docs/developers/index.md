@@ -110,7 +110,7 @@ pnpm test
 pnpm test:coverage
 
 # Run specific test file
-pnpm --filter @agentsy/thinking test -- src/ThinkingParser.test.ts
+pnpm --filter @agentsy/core test -- src/thinking/ThinkingParser.test.ts
 
 # Watch mode
 pnpm vitest src

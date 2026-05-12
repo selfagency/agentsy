@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
+    "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/types": "workspace:*"
   },

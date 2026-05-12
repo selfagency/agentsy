@@ -1,6 +1,6 @@
-# `@agentsy/structured`
+# `@agentsy/core/structured`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** JSON parsing, repair, validation, and schema-oriented streaming helpers
 
 ## Key exports
@@ -28,16 +28,16 @@ This package handles the part where model output almost looks like structured da
 
 ## Common neighbors
 
-- `@agentsy/processor`
-- `@agentsy/tool-calls`
+- `@agentsy/core/processor`
+- `@agentsy/core/tool-calls`
 - `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
-import { parseJson, validateJsonSchema } from '@agentsy/structured';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
 const processor = new LLMStreamProcessor();
 
