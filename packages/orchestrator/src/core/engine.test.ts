@@ -54,7 +54,17 @@ function createBaseSpec(overrides: Partial<WorkflowSpec>): WorkflowSpec {
 
 function createScheduler(agentId: string): TaskScheduler {
   return {
-    schedule: async <T>(_task: (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] }) => ({ agentId }) as T,
+    async schedule<T>(task: (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] }) {
+      if (typeof task === 'function') {
+        return task();
+      }
+
+      return {
+        agentId,
+        assigned: true as const,
+        status: 'scheduled' as const,
+      };
+    },
   };
 }
 
@@ -86,6 +96,34 @@ describe('OrchestrationEngine', () => {
 
     expect(result.status).toBe(WorkflowStatus.COMPLETED);
     expect(result.results).toEqual({ result: 'Task task-1 executed by agent agent-available' });
+  });
+
+  it('creates workflows with the default scheduler when one is not provided', async () => {
+    const registry = new AgentRegistry();
+    registry.register(createAgent({ id: 'agent-default' }));
+
+    const engine = new OrchestrationEngine(registry);
+
+    const workflow = await engine.create(
+      createBaseSpec({
+        id: 'wf-default-scheduler',
+        nodes: [
+          {
+            type: NodeType.TASK,
+            id: 'task-default',
+            name: 'Task default',
+            agent: 'agent-default',
+            input: {},
+            output: {},
+          },
+        ],
+      }),
+    );
+
+    const result = await engine.execute(workflow);
+
+    expect(result.status).toBe(WorkflowStatus.COMPLETED);
+    expect(result.results).toEqual({ result: 'Task task-default executed by agent agent-default' });
   });
 
   it('executes parallel and merge nodes inside a sequence', async () => {

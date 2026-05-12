@@ -14,6 +14,9 @@ importers:
       '@types/node':
         specifier: ^25.6.2
         version: 25.6.2
+      fallow:
+        specifier: ^2.71.1
+        version: 2.71.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -42,59 +45,6 @@ importers:
         specifier: ^8.8.5
         version: 8.8.5
 
-  packages/adapters:
-    dependencies:
-      '@agentsy/core':
-        specifier: workspace:*
-        version: link:../core
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
-  packages/agent:
-    dependencies:
-      '@agentsy/core':
-        specifier: workspace:*
-        version: link:../core
-      '@agentsy/runtime':
-        specifier: workspace:*
-        version: link:../runtime
-      '@agentsy/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
-      '@vitest/coverage-v8':
-        specifier: ^4.1.5
-        version: 4.1.5(vitest@4.1.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.13)(typescript@6.0.3)(yaml@2.8.2)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
-
   packages/cli:
     dependencies:
       '@agentsy/types':
@@ -116,9 +66,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@agentsy/providers':
-        specifier: workspace:*
-        version: link:../providers
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -144,9 +91,6 @@ importers:
 
   packages/integration:
     dependencies:
-      '@agentsy/adapters':
-        specifier: workspace:*
-        version: link:../adapters
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
@@ -160,9 +104,6 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
-      '@types/node':
-        specifier: ^25.6.0
-        version: 25.6.0
       '@vitest/coverage-v8':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.5)
@@ -171,7 +112,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.5
-        version: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
+        version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   packages/memory:
     dependencies:
@@ -287,12 +228,15 @@ importers:
 
   packages/providers:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
       '@types/node':
-        specifier: ^25.6.2
+        specifier: ^25.6.0
         version: 25.6.2
       '@vitest/coverage-v8':
         specifier: ^4.1.5
@@ -353,6 +297,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@agentsy/session':
+        specifier: workspace:*
+        version: link:../session
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -966,6 +913,46 @@ packages:
   '@esbuild/win32-x64@0.27.3':
     resolution: {integrity: sha512-4uJGhsxuptu3OcpVAzli+/gWusVGwZZHTlS63hh++ehExkVT8SgiEf7/uC/PclrPPkLhZqGgCTjd0VWLo6xMqA==}
     engines: {node: '>=18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@fallow-cli/darwin-arm64@2.71.1':
+    resolution: {integrity: sha512-PlwaoXI/dQkkyV79Uo49HNBh7Bjpe22v1X4wSqeGM0FLvBnXpr928JJobKebQWRr9p3lJAfnZnZXwveFWoBieg==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@fallow-cli/darwin-x64@2.71.1':
+    resolution: {integrity: sha512-KicIQGYfV6Bajtd8SVUwBOUdEOxkJ83qCY5WV9WJABfE3m1gDL/d0DvtkiheRZfLn9rhjxrKml4QAhHUgokufw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@fallow-cli/linux-arm64-gnu@2.71.1':
+    resolution: {integrity: sha512-7Vh6ZXuucB58ZJjFv5CsZ2JKR1gIGfUyEf4J8kRAWVh6tEsSS1+3my1oSrDiglQBSf8qQtF9VpjBXwqeLCsYVw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@fallow-cli/linux-arm64-musl@2.71.1':
+    resolution: {integrity: sha512-YrpUZz8fSD66lsaiEk2vYm5gus8sRhkdkN/y1McDUlsaEWfRy7yzdc+MGDPe+qF69yg/0u59BHx8lxawXV1Pnw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@fallow-cli/linux-x64-gnu@2.71.1':
+    resolution: {integrity: sha512-w1mJ1AuRppn6Sfyb26xYCRlncyFaTwQ6Z1PrCYQfKS4Wrp2NqRJuXzWbQmr+O95lrNybG21uax+oHqgZwGuimw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@fallow-cli/linux-x64-musl@2.71.1':
+    resolution: {integrity: sha512-GdXmpq1PUIMMPg30xeVWWtPJlmU8jWBcEheYy+Vzzbyui/hLNTXn8lTgHP36ByMgddJjgI3PYXMMNCd+o1MMUQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@fallow-cli/win32-arm64-msvc@2.71.1':
+    resolution: {integrity: sha512-xa2ssaW1IqT4caQ9Xmh2Nl4GNozfHvLsjuMw6makaBRK5rNHTUjAe+vZNAnarFhK1zDEaWcvPYHvE+o410bsvg==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@fallow-cli/win32-x64-msvc@2.71.1':
+    resolution: {integrity: sha512-wIaeufBcu3tGTgckGQn2h7HSup28SFoQRwyimAVJ/GEZqx/e5aRRRAr+yyEQ2j82R69blkb9QoKYYDB8ylHwZw==}
     cpu: [x64]
     os: [win32]
 
@@ -2120,6 +2107,11 @@ packages:
 
   ext@1.7.0:
     resolution: {integrity: sha512-6hxeJYaL110a9b5TEJSj0gojyHQAmA2ch5Os+ySCiA1QGdS697XWY1pzsrSjqA9LDEEgdB/KypIlR59RcLuHYw==}
+
+  fallow@2.71.1:
+    resolution: {integrity: sha512-3eAxt8m/f/HHWlPwTliXc32nhjr0YTOO53+FDshExIl7JuMvVlnXIHEDa6YsNfhh2lu+x/Od2QCs8rMG8MhbpA==}
+    engines: {node: '>=16'}
+    hasBin: true
 
   fast-content-type-parse@3.0.0:
     resolution: {integrity: sha512-ZvLdcY8P+N8mGQJahJV5G4U88CSvT1rP8ApL6uETe88MBXrBHAkZlSEySdUlyztF7ccb+Znos3TFqaepHxdhBg==}
@@ -3452,6 +3444,30 @@ snapshots:
   '@esbuild/win32-x64@0.27.3':
     optional: true
 
+  '@fallow-cli/darwin-arm64@2.71.1':
+    optional: true
+
+  '@fallow-cli/darwin-x64@2.71.1':
+    optional: true
+
+  '@fallow-cli/linux-arm64-gnu@2.71.1':
+    optional: true
+
+  '@fallow-cli/linux-arm64-musl@2.71.1':
+    optional: true
+
+  '@fallow-cli/linux-x64-gnu@2.71.1':
+    optional: true
+
+  '@fallow-cli/linux-x64-musl@2.71.1':
+    optional: true
+
+  '@fallow-cli/win32-arm64-msvc@2.71.1':
+    optional: true
+
+  '@fallow-cli/win32-x64-msvc@2.71.1':
+    optional: true
+
   '@iconify-json/simple-icons@1.2.80':
     dependencies:
       '@iconify/types': 2.0.0
@@ -3924,7 +3940,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(yaml@2.8.2))
+      vitest: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@25.6.2)(esbuild@0.27.3)(yaml@2.8.2))
 
   '@vitest/expect@4.1.5':
     dependencies:
@@ -4509,6 +4525,19 @@ snapshots:
     dependencies:
       type: 2.7.3
     optional: true
+
+  fallow@2.71.1:
+    dependencies:
+      detect-libc: 2.1.2
+    optionalDependencies:
+      '@fallow-cli/darwin-arm64': 2.71.1
+      '@fallow-cli/darwin-x64': 2.71.1
+      '@fallow-cli/linux-arm64-gnu': 2.71.1
+      '@fallow-cli/linux-arm64-musl': 2.71.1
+      '@fallow-cli/linux-x64-gnu': 2.71.1
+      '@fallow-cli/linux-x64-musl': 2.71.1
+      '@fallow-cli/win32-arm64-msvc': 2.71.1
+      '@fallow-cli/win32-x64-msvc': 2.71.1
 
   fast-content-type-parse@3.0.0: {}
 

@@ -10,7 +10,7 @@ This example shows a backend architecture for an operations copilot experience:
 ## Packages used
 
 ```bash
-npm install @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/sse @agentsy/ui
+npm install @agentsy/runtime @agentsy/core @agentsy/providers @agentsy/ui
 ```
 
 ## Illustrative implementation

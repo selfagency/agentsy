@@ -28,14 +28,14 @@ The package source also contains CLI, Ink, and streaming Markdown implementation
 
 ## Common neighbors
 
-- Upstream: `@agentsy/processor`
+- Upstream: `@agentsy/core/processor`, `@agentsy/providers/normalizers`
 - Adjacent: `@agentsy/ui`, `@agentsy/vscode`
 
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createPlainTextRenderer } from '@agentsy/renderers';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
@@ -54,4 +54,4 @@ await renderer.end();
 
 ## Migration note
 
-If you previously used historical renderer subpaths from `@selfagency/llm-stream-parser`, see the dedicated [migration guide](../migrating-from-llm-stream-parser.md) for what maps cleanly and what does not.
+If you previously used historical renderer subpaths from `@selfagency/llm-stream-parser`, see the dedicated [migration guide](/migration/llm-stream-parser) for what maps cleanly and what does not.

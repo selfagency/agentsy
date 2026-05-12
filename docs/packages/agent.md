@@ -28,7 +28,7 @@
 
 ## Common neighbors
 
-- Upstream: `@agentsy/processor`, `@agentsy/tool-calls`, `@agentsy/structured`
+- Upstream: `@agentsy/core/processor`, `@agentsy/core/tool-calls`, `@agentsy/core/structured`
 - Downstream: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`
 
 ## Example
@@ -47,7 +47,7 @@ const loop = createAgentLoop({
 
 ```ts
 import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
-import { buildToolResultMessage } from '@agentsy/tool-calls';
+import { buildToolResultMessage } from '@agentsy/core/tool-calls';
 
 const loop = createAgentLoop({
   stopWhen: [isStepCount(6)],

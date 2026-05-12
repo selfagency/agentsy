@@ -15,13 +15,13 @@ This example demonstrates a single end-to-end architecture that combines the ful
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/orchestrator/agent @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/renderers @agentsy/sse @agentsy/structured @agentsy/tool-calls @agentsy/ui
+npm install @agentsy/core @agentsy/providers @agentsy/orchestrator @agentsy/runtime @agentsy/renderers @agentsy/ui
 ```
 
 ## Illustrative implementation
 
 ```ts
-import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
 import { createAgentLoop, hasNoToolCalls, isStepCount } from '@agentsy/orchestrator/agent';
 import { toAgUiStream } from '@agentsy/runtime/ag-ui';
 import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
@@ -30,7 +30,7 @@ import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recov
 import { createPlainTextRenderer } from '@agentsy/renderers';
 import { parseSSEStream } from '@agentsy/core/sse';
 import { validateJsonSchema } from '@agentsy/core/structured';
-import { buildToolResultMessage } from '@agentsy/tool-calls';
+import { buildToolResultMessage } from '@agentsy/core/tool-calls';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 type SecurityDecision = {
@@ -218,11 +218,11 @@ async function runSimplePath(rawSource: AsyncIterable<unknown>) {
 
 ## Why this pattern is useful
 
-- `@agentsy/sse` + `@agentsy/normalizers` standardize ingestion from provider streams.
-- `@agentsy/processor` centralizes streaming orchestration and event emission.
+- `@agentsy/core/sse` + `@agentsy/providers/normalizers` standardize ingestion from provider streams.
+- `@agentsy/core/processor` centralizes streaming orchestration and event emission.
 - `@agentsy/orchestrator/agent` handles iterative tool loops with explicit stop conditions.
-- `@agentsy/recovery` gives continuity when streams fail or disconnect.
+- `@agentsy/core/recovery` gives continuity when streams fail or disconnect.
 - `@agentsy/ui` and `@agentsy/ag-ui` let the same backend flow power UI/state consumers.
-- `@agentsy/adapters` + `@agentsy/structured` reduce boilerplate in decision-gated automations.
+- `@agentsy/providers/adapters` + `@agentsy/core/structured` reduce boilerplate in decision-gated automations.
 
 For package-level details, see the [API index](../api.md) and [package catalog](../packages.md).

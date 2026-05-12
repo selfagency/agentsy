@@ -208,44 +208,41 @@ These references are integrated in Section 9 and Section 10.
 - Documentation updated: 34 files across docs/, plan/, examples/ ✅
 - Branch: `feature/Phase-C1-consolidation` clean and pushed to remote ✅
 
-### Phase D: ⏳ LOCKED REQUIREMENTS (Blocked - Awaiting Implementation)
+### Phase D: ✅ COMPLETE
 
 **Scope:** Runtime + Orchestrator reshape
-**Blocker:** C-4 gate closure (NOW REMOVED — Phase D may proceed)
-**Current State:** Structure in place, stub implementations present
 
-**Locked Requirements Per Section 6:**
+**Completion evidence:**
 
-1. **Runtime Package Full Implementation** (currently stub)
-   - Merge agentic-loop→runtime source code
-   - Implement: SessionStore, StreamSnapshot, multi-agent spawning with depth cap
-   - Add: DAG workflow execution engine
-   - Export public API: createRuntimeLoop, RuntimeConfig, SessionSnapshot, DAG workflow types
+1. **Runtime loop authority lives in `@agentsy/runtime`**
+   - `createRuntimeLoop`, resumable snapshots, session-store persistence, spawned child execution with depth caps, and DAG-style workflow ordering are implemented in `packages/runtime/src/index.ts`.
+   - AG-UI protocol support lives at the runtime subpath `@agentsy/runtime/ag-ui`.
 
-2. **Orchestrator Package Expansion** (agent/ag-ui in place; need scheduler merge)
-   - Current structure: src/agent/, src/ag-ui/ present
-   - Merge scheduler→orchestrator/src/scheduler
-   - Implement: 6 orchestrator lifecycle hooks (before-init, after-init, before-step, after-step, before-final, after-final)
-   - Add: tool approval mechanism, stop conditions, resumable loops
-   - Export public API: createOrchestratorLoop, OrchestratorConfig, hooks, tool approval
+2. **Orchestration authority lives in `@agentsy/orchestrator`**
+   - `createAgentLoop` exposes lifecycle hooks, stop conditions, tool approval modes, and AG-UI event callbacks.
+   - Scheduler functionality is consolidated under `packages/orchestrator/src/scheduler/` and surfaced through `createOrchestratorLoop`.
 
-3. **Acceptance Gate D Criteria**
-   - Exactly one loop authority: `runtime` (agentic-loop merged)
-   - Exactly one orchestration authority: `orchestrator` (agent, ag-ui, scheduler merged)
-   - `pnpm check-types` passes (no new violations)
-   - `pnpm test` passes (all 84+ tests passing)
-   - No circular dependencies introduced
-   - docs updated for runtime/orchestrator boundary changes
+3. **Acceptance Gate D passed**
+   - Exactly one loop authority: `runtime`
+   - Exactly one orchestration authority: `orchestrator`
+   - No legacy `agentic-loop`, `scheduler`, or standalone `ag-ui` packages remain in `packages/`
+   - Verification gates pass after the consolidation and remediation updates
 
-**Unblocked:** Consumer packages already verified clean (no migration needed)
+### Phase E: ✅ COMPLETE
 
-### Phases E-G: ⏳ BLOCKED (Awaiting Phase D)
+- Plugin conversion is complete under `@agentsy/plugins`.
+- Legacy `agents` package artifact is retired; plugin-facing docs and exports point at `@agentsy/plugins`.
 
-- **E:** Plugin surface conversion — blocked until orchestrator implementation complete
-- **F:** Token/protocol cleanup — blocked until orchestrator protocol boundaries clear
-- **G:** Documentation retirement — blocked until F complete
+### Phase F: ✅ COMPLETE
 
-**Recommended Phase D Timeline:** 2–4 hours (scaffold + integration + testing)
+- `token-economy` has been fully reconciled to `@agentsy/tokens`.
+- `@agentsy/tokens` now ships token ledgers, an in-memory token manager, conversation compression helpers, and pacing controls.
+- The standalone `ag-ui` package artifact remains retired; protocol support is documented and exported through `@agentsy/runtime/ag-ui`.
+
+### Phase G: ✅ COMPLETE
+
+- Canonical docs, examples, package catalog pages, and repository instructions now reflect the consolidated package map.
+- Historical plan files remain as archived context, but the canonical topology is documented through this master plan and the current docs set.
 
 ---
 

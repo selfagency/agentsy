@@ -2,7 +2,7 @@
 
 Get up and running with the published VS Code package and internal package usage patterns.
 
-Migrating from the old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](./migration/llm-stream-parser.md).
+Migrating from the old monolith package? See [Migrating from `@selfagency/llm-stream-parser`](/migration/llm-stream-parser).
 
 ## Installation
 
@@ -232,7 +232,7 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
 ### Use generic adapter for simpler integration
 
 ```typescript
-import { processStream } from '@agentsy/adapters';
+import { processStream } from '@agentsy/providers/adapters';
 
 for await (const output of processStream(apiStream, {
   parseThinkTags: true,
@@ -344,8 +344,8 @@ const processor = new LLMStreamProcessor({
   Prefer focused package imports that match the capability you need:
 
   ```typescript
-  import { ThinkingParser } from '@agentsy/thinking';
-  import { parseJson } from '@agentsy/structured';
+  import { ThinkingParser } from '@agentsy/core/thinking';
+  import { parseJson } from '@agentsy/core/structured';
   ```
 
 - **Stream processing** instead of buffering:

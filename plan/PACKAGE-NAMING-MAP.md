@@ -30,26 +30,26 @@ This map defines the transformation from current state to target architecture as
 
 ## Runtime / Loop Layer (Layer 2)
 
-| Current Name  | Target Name             | Action          | Status     | Notes                                            |
-| ------------- | ----------------------- | --------------- | ---------- | ------------------------------------------------ |
-| agent         | orchestrator/src/agent/ | 🔄 Consolidated | ✅ DONE    | Agent consolidated into orchestrator (Phase C-4) |
-| runtime       | runtime                 | Keep            | ⏳ PENDING | Awaits Phase D merge with orchestrator           |
-| agentic-loop  | agentic-loop            | Keep            | ✅ Live    | Primary loop orchestration                       |
-| session       | session                 | Keep            | ✅ Live    | Session management                               |
-| token-economy | tokens                  | ✅ Renamed      | ⚠️ Planned | Migration alias during transition                |
-| tokens        | tokens                  | ➕ Created      | ⚠️ Planned | New token budgeting package                      |
-| pacing        | tokens                  | 🔄 Merge        | ⚠️ Planned | Merge pacing into tokens                         |
+| Current Name  | Target Name             | Action          | Status  | Notes                                            |
+| ------------- | ----------------------- | --------------- | ------- | ------------------------------------------------ |
+| agent         | orchestrator/src/agent/ | 🔄 Consolidated | ✅ DONE | Agent consolidated into orchestrator (Phase C-4) |
+| runtime       | runtime                 | Keep            | ✅ Live | Canonical runtime loop authority after Phase D   |
+| agentic-loop  | runtime                 | 🔄 Merge        | ✅ DONE | Consolidated into runtime (Phase D)              |
+| session       | session                 | Keep            | ✅ Live | Session management                               |
+| token-economy | tokens                  | ✅ Renamed      | ✅ DONE | Rename complete; legacy package removed          |
+| tokens        | tokens                  | ➕ Created      | ✅ Live | Token budgeting, pacing, and compression helpers |
+| pacing        | tokens                  | 🔄 Merge        | ✅ DONE | Pacing responsibilities consolidated into tokens |
 
 ## Provider / Model Layer (Layer 3)
 
-| Current Name | Target Name                 | Action         | Status         | Notes                                |
-| ------------ | --------------------------- | -------------- | -------------- | ------------------------------------ |
-| providers    | providers                   | Keep           | ✅ Live        | Provider registry                    |
-| normalizers  | providers                   | 🔄 Reorganize  | ✅ Live        | Reorganized to providers (Phase C-2) |
-| adapters     | providers                   | 🔄 Merge       | ✅ Live        | Merged into providers (Phase C-2)    |
-| secrets      | secrets                     | Keep           | ✅ Live        | Cross-cutting infrastructure         |
-| scheduler    | orchestrator/src/scheduler/ | 🔄 Move        | ⏳ IN-PROGRESS | Scheduler in orchestrator (Phase D)  |
-| retry        | core/src/retry/             | 🔄 Consolidate | ✅ Live        | Consolidated in core (Phase C-1)     |
+| Current Name | Target Name                 | Action         | Status  | Notes                                    |
+| ------------ | --------------------------- | -------------- | ------- | ---------------------------------------- |
+| providers    | providers                   | Keep           | ✅ Live | Provider registry                        |
+| normalizers  | providers                   | 🔄 Reorganize  | ✅ Live | Reorganized to providers (Phase C-2)     |
+| adapters     | providers                   | 🔄 Merge       | ✅ Live | Merged into providers (Phase C-2)        |
+| secrets      | secrets                     | Keep           | ✅ Live | Cross-cutting infrastructure             |
+| scheduler    | orchestrator/src/scheduler/ | 🔄 Move        | ✅ DONE | Scheduler consolidated into orchestrator |
+| retry        | core/src/retry/             | 🔄 Consolidate | ✅ Live | Consolidated in core (Phase C-1)         |
 
 ## Knowledge Layer (Layer 4)
 
@@ -88,15 +88,15 @@ This map defines the transformation from current state to target architecture as
 
 ## Presentation Layer (Layer 7)
 
-| Current Name     | Target Name | Action     | Status     | Notes                      |
-| ---------------- | ----------- | ---------- | ---------- | -------------------------- |
-| ui               | ui          | Keep       | ✅ Live    | UI layer components        |
-| ag-ui            | ui          | 🔄 Merge   | ✅ Live    | Merged into ui (Phase C-3) |
-| renderers        | renderers   | Keep       | ✅ Live    | Component library          |
-| renderer-gui     | renderers   | 🔄 Merge   | ⚠️ Planned | GUI hooks into renderers   |
-| vscode           | vscode      | Keep       | ✅ Live    | VS Code integration        |
-| extension-vscode | vscode      | 🔄 Merge   | ⚠️ Planned | Clean composition          |
-| desktop          | -           | ❌ Deleted | ❌ Stale   | No desktop app plan        |
+| Current Name     | Target Name   | Action     | Status     | Notes                                                            |
+| ---------------- | ------------- | ---------- | ---------- | ---------------------------------------------------------------- |
+| ui               | ui            | Keep       | ✅ Live    | UI layer components                                              |
+| ag-ui            | runtime/ag-ui | 🔄 Move    | ✅ DONE    | Standalone package removed; runtime subpath owns protocol bridge |
+| renderers        | renderers     | Keep       | ✅ Live    | Component library                                                |
+| renderer-gui     | renderers     | 🔄 Merge   | ⚠️ Planned | GUI hooks into renderers                                         |
+| vscode           | vscode        | Keep       | ✅ Live    | VS Code integration                                              |
+| extension-vscode | vscode        | 🔄 Merge   | ⚠️ Planned | Clean composition                                                |
+| desktop          | -             | ❌ Deleted | ❌ Stale   | No desktop app plan                                              |
 
 ## Consolidated Summary
 
@@ -122,9 +122,9 @@ This map defines the transformation from current state to target architecture as
 ### Major Merges (6)
 
 - context-manager → context
-- runtime → agentic-loop
+- agentic-loop → runtime
 - pacing → tokens
-- ag-ui → ui
+- ag-ui → runtime/ag-ui
 - renderer-gui → renderers
 - extension-vscode → vscode
 
@@ -181,13 +181,13 @@ import { TokenBudget } from '@agentsy/token-economy';
 import { TokenBudget } from '@agentsy/tokens';
 ```
 
-### agent → agentic-loop
+### agentic-loop → runtime
 
 ```typescript
 // Old
-import { AgentLoop } from '@agentsy/orchestrator/agent';
+import { createAgentLoop } from '@agentsy/agentic-loop';
 // New
-import { AgentLoop } from '@agentsy/orchestrator/agentic-loop';
+import { createRuntimeLoop } from '@agentsy/runtime';
 ```
 
 ### tool-calls split

@@ -1,5 +1,11 @@
 import type { ReadableStream } from 'node:stream/web';
 
+import type { StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor, type ProcessorOptions } from '@agentsy/core/processor';
+import { parseSSEStream } from '@agentsy/core/sse';
+import { parseJson } from '@agentsy/core/structured';
+import type { JsonObject } from '@agentsy/types';
+
 import {
   normalizeAnthropicEvent,
   normalizeBedrockConverseEvent,
@@ -10,13 +16,7 @@ import {
   normalizeOllamaChatChunk,
   normalizeOpenAIChatChunk,
   normalizeZAiChunk,
-} from '@agentsy/providers/normalizers';
-import type { JsonObject } from '@agentsy/types';
-import { parseJson } from '../../structured/index.js';
-import type { StreamChunk } from '../processor/LLMStreamProcessor.js';
-import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
-import type { ProcessorOptions } from '../processor/index.js';
-import { parseSSEStream } from '../sse/index.js';
+} from '../normalizers/index.js';
 
 export type NormalizerProvider =
   | 'openai'
@@ -60,10 +60,6 @@ const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   zai: normalizeZAiChunk,
 };
 
-/**
- * Processes an SSE event and yields pipeline events.
- */
-// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by createPipeline
 async function* processSSEEvent(
   sseEvent: { data?: string },
   normalizer: Normalizer,
@@ -77,7 +73,6 @@ async function* processSSEEvent(
 
   const parsed = parseJson(sseEvent.data, jsonParseOptions);
   if (parsed === null) {
-    // parseJson returns null if no valid JSON is found
     yield {
       type: 'error',
       message: `Failed to parse JSON from SSE data: ${sseEvent.data.substring(0, 50)}...`,
@@ -92,7 +87,6 @@ async function* processSSEEvent(
     return;
   }
 
-  // TypeScript knows 'chunk' is in normalized from the guard above
   const chunk = normalized.chunk;
   const output = processor.process(chunk);
 
@@ -121,7 +115,6 @@ async function* processSSEEvent(
 }
 
 function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
-  // #lizard forgives
   const processorOpts: ProcessorOptions = {
     scrubContextTags: options.scrubContextTags ?? false,
   };

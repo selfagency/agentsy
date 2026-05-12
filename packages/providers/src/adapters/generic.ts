@@ -1,3 +1,4 @@
+import type { JsonObject } from '@agentsy/types';
 import {
   LLMStreamProcessor,
   type ProcessedOutput,
@@ -6,18 +7,10 @@ import {
 } from '@agentsy/core/processor';
 import { type ValidateJsonSchemaOptions, validateJsonSchema } from '@agentsy/core/structured';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
-import type { JsonObject } from '@agentsy/types';
 
 /**
  * Async generator that processes every chunk from a normalised LLM stream
  * and yields a `ProcessedOutput` for each chunk, finishing with a final flush output.
- *
- * @example
- * ```ts
- * for await (const output of processStream(normalizedStream)) {
- *   if (output.content) process.stdout.write(output.content);
- * }
- * ```
  */
 export async function* processStream(
   source: AsyncIterable<StreamChunk>,
@@ -33,10 +26,7 @@ export async function* processStream(
 }
 
 /**
- * Async generator that normalises provider events (already parsed from transport)
- * and processes them through `LLMStreamProcessor`.
- *
- * This removes the common boilerplate of manually normalising each chunk before calling `processor.process(...)`.
+ * Async generator that normalises provider events and processes them through `LLMStreamProcessor`.
  */
 export async function* processRawStream<TRawChunk>(
   source: AsyncIterable<TRawChunk>,
@@ -64,14 +54,7 @@ export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk> {
   schema: JsonObject;
   processorOptions?: ProcessorOptions;
   validationOptions?: ValidateJsonSchemaOptions;
-  /**
-   * Hook for streaming-side effects (rendering/logging/etc.) while chunks are being processed.
-   */
   onOutput?: (_output: ProcessedOutput) => void | Promise<void>;
-  /**
-   * Optional custom selector for the final text to validate.
-   * Defaults to `processor.accumulatedMessage.content`.
-   */
   selectValidationText?: (_context: { processor: LLMStreamProcessor; finalOutput: ProcessedOutput }) => string;
 }
 
@@ -89,11 +72,6 @@ export type StructuredDecisionResult<TDecision> =
       validationText: string;
     };
 
-/**
- * Runs a full raw-stream -> normalise -> process -> schema-validation flow and returns
- * a typed structured decision. Useful for policy/automation gates that would otherwise
- * repeat this orchestration in each app.
- */
 export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = unknown>(
   options: RunStructuredDecisionFromRawStreamOptions<TRawChunk>,
 ): Promise<StructuredDecisionResult<TDecision>> {
@@ -153,10 +131,6 @@ export type ApplyDecisionActionResult<TResult> =
       acted: false;
     };
 
-/**
- * Generic decision gate for side effects. Evaluates `shouldAct` and executes `action` only
- * when allowed, returning whether an action was executed.
- */
 export async function applyDecisionAction<TDecision, TResult>(
   decision: TDecision,
   options: ApplyDecisionActionOptions<TDecision, TResult>,
@@ -173,40 +147,16 @@ export async function applyDecisionAction<TDecision, TResult>(
 }
 
 export interface GenericAdapterCallbacks {
-  /** Called with thinking/reasoning text (if enabled). */
   onThinking?: (_text: string) => void | Promise<void>;
-  /** Called with content text. */
   onContent?: (_text: string) => void | Promise<void>;
-  /** Called for each extracted tool call. */
   onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
-  /** Called when the stream is complete. */
   onDone?: () => void | Promise<void>;
-  /** Called when any callback throws an error. */
   onError?: (_error: Error, _context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
-  /** Whether to forward thinking text. Defaults to true. */
   showThinking?: boolean;
 }
-
-/**
- * Creates a callback-based adapter for processing LLM streams in any environment.
- * Similar to `createVSCodeCopilotAdapter` but environment-agnostic.
- *
- * @example
- * ```ts
- * const adapter = createGenericAdapter({
- *   onContent: (text) => process.stdout.write(text),
- *   onToolCall: (call) => handleTool(call),
- * });
- *
- * for await (const chunk of llmStream) {
- *   await adapter.write(chunk);
- * }
- * await adapter.end();
- * ```
- */
 
 async function safeCall<T>(
   callback: (() => Promise<T>) | undefined,
