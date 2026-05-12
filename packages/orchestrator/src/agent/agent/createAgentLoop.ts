@@ -1,6 +1,16 @@
-import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/runtime/ag-ui';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-import type { AgentLoopHandle, AgentLoopOptions, AgentLoopState, OutputPart, StepResult } from './types.js';
+import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/runtime/ag-ui';
+import type {
+  AgentLoopContext,
+  AgentLoopHandle,
+  AgentLoopOptions,
+  AgentLoopState,
+  AgentLoopStepContext,
+  AgentLoopToolContext,
+  OutputPart,
+  ProcessedOutput,
+  StepResult,
+} from './types.js';
 
 /**
  * Checks if both values are objects with matching keys.
@@ -70,17 +80,29 @@ function withThreadId(event: AgUiEvent, threadId?: string): AgUiEvent {
 async function processSingleStep(
   state: AgentLoopState,
   options: AgentLoopOptions,
+  context: AgentLoopContext,
   currentMessages: unknown[],
   abortController: AbortController,
   stopConditions: Array<(state: AgentLoopState) => boolean>,
 ): Promise<{ parts: OutputPart[]; continueLoop: boolean; nextMessages?: unknown[] }> {
-  const { processor, isAborted } = await executeStep(options, currentMessages, abortController);
+  await options.beforeStep?.(context);
+
+  const { processor, parts: streamedParts, isAborted } = await executeStep(options, currentMessages, abortController);
 
   if (isAborted) {
     return { parts: [], continueLoop: false };
   }
 
-  const finalOutput = processor.flush();
+  const flushedOutput = processor.flush();
+  const accumulatedMessage = processor.accumulatedMessage;
+  const finalOutput: ProcessedOutput = {
+    ...flushedOutput,
+    thinking: accumulatedMessage.thinking,
+    content: accumulatedMessage.content,
+    toolCalls: accumulatedMessage.toolCalls,
+    parts: [...streamedParts, ...flushedOutput.parts],
+    ...(accumulatedMessage.usage === undefined ? {} : { usage: accumulatedMessage.usage }),
+  };
   const parts = finalOutput.parts;
 
   state.lastOutput = finalOutput;
@@ -102,13 +124,32 @@ async function processSingleStep(
     await options.onStep(stepResult);
   }
 
+  const stepContext: AgentLoopStepContext = {
+    ...context,
+    stepIndex: state.stepIndex,
+    state,
+    stepResult,
+  };
+
+  await options.afterStep?.(stepContext);
+
   // Check stop conditions
   if (stopConditions.some(condition => condition(state)) || stepResult.toolCalls.length === 0) {
     return { parts, continueLoop: false };
   }
 
   // Build next messages with conversation trimming
+  const toolContext: AgentLoopToolContext = {
+    ...stepContext,
+    toolCalls: stepResult.toolCalls,
+  };
+
+  await options.beforeToolCall?.(toolContext);
   const toolResultMessages = await options.buildToolResultMessages(stepResult.toolCalls);
+  await options.afterToolCall?.({
+    ...toolContext,
+    toolResultMessages,
+  });
   const newMessages = [...currentMessages, { role: 'assistant', content: finalOutput.content }, ...toolResultMessages];
 
   const nextMessages =
@@ -148,12 +189,14 @@ async function executeStep(
   options: AgentLoopOptions,
   currentMessages: unknown[],
   abortController: AbortController,
-): Promise<{ processor: LLMStreamProcessor; isAborted: boolean }> {
+): Promise<{ processor: LLMStreamProcessor; parts: OutputPart[]; isAborted: boolean }> {
   const processor = new LLMStreamProcessor();
+  const parts: OutputPart[] = [];
 
   try {
     for await (const chunk of options.execute(currentMessages)) {
-      processor.process(chunk);
+      const output = processor.process(chunk);
+      parts.push(...output.parts);
     }
   } catch (error) {
     processor.flush();
@@ -162,6 +205,7 @@ async function executeStep(
 
   return {
     processor,
+    parts,
     isAborted: abortController.signal.aborted,
   };
 }
@@ -169,6 +213,23 @@ async function executeStep(
 export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   let aborted = false;
   const abortController = new AbortController();
+
+  function createContext(
+    runId: string,
+    threadId: string | undefined,
+    stepIndex: number,
+    messages: unknown[],
+    state: AgentLoopState,
+  ): AgentLoopContext {
+    return {
+      runId,
+      stepIndex,
+      messages,
+      state,
+      signal: abortController.signal,
+      ...(threadId !== undefined ? { threadId } : {}),
+    };
+  }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
     const runId = options.runId || `run_${Math.random().toString(36).slice(2, 11)}`;
@@ -209,13 +270,16 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       onAgUiEvent,
     );
 
-    let abortReason: 'success' | 'interrupt' | 'error' = 'success';
+    let abortReason: 'success' | 'interrupt' | 'error' | 'abort' = 'success';
 
     try {
       while (!aborted && state.steps.length < maxSteps) {
+        const loopContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
+
         // Check for interrupts
         if (interruptController?.isInterrupted()) {
           abortReason = 'interrupt';
+          await options.onAbort?.('interrupt', loopContext);
           const interruptEvent = createInterruptEvent(
             runId,
             interruptController.getReason(),
@@ -241,7 +305,14 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           onAgUiEvent,
         );
 
-        const result = await processSingleStep(state, options, currentMessages, abortController, stopConditions);
+        const result = await processSingleStep(
+          state,
+          options,
+          loopContext,
+          currentMessages,
+          abortController,
+          stopConditions,
+        );
 
         // Emit STEP_FINISHED (always, regardless of parts)
         await safeEmitEvent(
@@ -275,13 +346,20 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         }
       }
 
+      if (aborted && abortReason === 'success') {
+        abortReason = 'abort';
+        await options.onAbort?.('abort', createContext(runId, threadId, state.steps.length, currentMessages, state));
+      }
+
+      const finishedOutcomeType = abortReason === 'abort' ? 'interrupt' : abortReason;
+
       // Emit RUN_FINISHED with appropriate outcome
       await safeEmitEvent(
         withThreadId(
           {
             type: EventType.RUN_FINISHED as const,
             runId,
-            outcome: { type: abortReason },
+            outcome: { type: finishedOutcomeType },
             timestamp: new Date().toISOString(),
           } as const,
           threadId,
@@ -292,6 +370,10 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     } catch (error) {
       // Emit RUN_ERROR on failure
       const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
+      await options.onError?.(
+        error instanceof Error ? error : new Error(errorMessage),
+        createContext(runId, threadId, state.steps.length, currentMessages, state),
+      );
       await safeEmitEvent(
         withThreadId(
           {
