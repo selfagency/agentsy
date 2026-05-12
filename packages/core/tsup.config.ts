@@ -18,7 +18,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['@agentsy/types', '@agentsy/normalizers', 'zod'],
+  external: ['@agentsy/types', '@agentsy/providers', 'zod'],
   splitting: false,
   treeshake: true,
   minify: false,

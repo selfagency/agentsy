@@ -1,10 +1,10 @@
 {
   "name": "@agentsy/providers",
   "version": "0.2.0-alpha.0",
-  "description": "Provider capability matrix, adapters (consolidated: adapters)",
+  "description": "Provider capability matrix and normalizers (consolidated: normalizers, universal-client)",
   "keywords": [
-    "adapters",
     "agentsy",
+    "normalizers",
     "providers",
     "typescript"
   ],
@@ -23,6 +23,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./normalizers": {
+      "types": "./dist/normalizers/index.d.ts",
+      "import": "./dist/normalizers/index.js",
+      "require": "./dist/normalizers/index.cjs"
+    },
+    "./universal-client": {
+      "types": "./dist/universal-client/index.d.ts",
+      "import": "./dist/universal-client/index.js",
+      "require": "./dist/universal-client/index.cjs"
     }
   },
   "scripts": {

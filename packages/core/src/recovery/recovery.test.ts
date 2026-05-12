@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '../processor/processor/LLMStreamProcessor.js';
 import { buildContinuationPrompt, captureStreamState } from './index.js';
 
 describe('captureStreamState', () => {
