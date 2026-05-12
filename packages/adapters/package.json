@@ -32,7 +32,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@agentsy/agent": "workspace:*",
     "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },

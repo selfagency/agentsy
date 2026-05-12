@@ -44,9 +44,6 @@ importers:
 
   packages/adapters:
     dependencies:
-      '@agentsy/agent':
-        specifier: workspace:*
-        version: link:../agent
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
@@ -225,6 +222,9 @@ importers:
 
   packages/orchestrator:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
