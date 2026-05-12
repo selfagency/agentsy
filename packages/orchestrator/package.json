@@ -22,7 +22,14 @@
   "main": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js",
+      "require": "./dist/agent/index.cjs"
     }
   },
   "scripts": {
@@ -35,6 +42,7 @@
     "format": "oxfmt --no-error-on-unmatched-pattern --write ."
   },
   "dependencies": {
+    "@agentsy/core": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/runtime": "workspace:*",
     "@agentsy/session": "workspace:*",
