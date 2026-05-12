@@ -19,11 +19,6 @@ export interface VSCodeChatResponseStream extends ChatResponseStream {
   push(part: unknown, options?: { validate?: boolean }): void;
 }
 
-type StubbedVSCodeChatResponseStream = Pick<
-  VSCodeChatResponseStream,
-  'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push'
->;
-
 /**
  * Creates a VS Code ChatResponseStream with extended overload capabilities.
  */
@@ -42,7 +37,7 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     callback();
   };
 
-  const stream: StubbedVSCodeChatResponseStream = {
+  const stream: VSCodeChatResponseStream = {
     markdown: (_value: string, _metadata?: Record<string, unknown>) => {
       runIfActive(() => {});
     },
@@ -66,7 +61,5 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     },
   };
 
-  // TODO: Replace this stub with a fully-wired VS Code ChatResponseStream adapter once
-  // the extension integration layer provides the base ChatResponseStream members.
-  return stream as VSCodeChatResponseStream;
+  return stream;
 }

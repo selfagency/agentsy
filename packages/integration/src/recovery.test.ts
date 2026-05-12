@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { StreamSnapshot } from '@agentsy/core/recovery';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { StreamSnapshot } from '@agentsy/core/recovery';
 import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
 
 function makeSnapshot(content: string): StreamSnapshot {

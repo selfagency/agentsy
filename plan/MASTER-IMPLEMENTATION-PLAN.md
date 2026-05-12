@@ -187,6 +187,65 @@ These references are integrated in Section 9 and Section 10.
 
 ---
 
+## 7.1) Implementation Status & Completion Tracking (May 2026)
+
+### Phases A-C: ✅ COMPLETE
+
+| Phase | Scope                           | Status  | Gate      | Evidence                                                                                                                        |
+| ----- | ------------------------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| A     | Canonicalization Lock           | ✅ DONE | ✅ PASSED | All 20 canonical boundary decisions locked in DECISION-LOG                                                                      |
+| B     | Provider Consolidation          | ✅ DONE | ✅ PASSED | normalizers, adapters, universal-client → @agentsy/providers                                                                    |
+| C-1   | Core Consolidation              | ✅ DONE | ✅ PASSED | 10 submodules consolidated (sse, processor, structured, recovery, thinking, tool-calls, context, formatting, xml-filter, retry) |
+| C-2   | Providers (Parallel)            | ✅ DONE | ✅ PASSED | Providers wave completed, no circular deps                                                                                      |
+| C-3   | AG-UI Removal (Parallel)        | ✅ DONE | ✅ PASSED | Protocol retained in orchestrator; package deleted                                                                              |
+| C-4   | Agent → Orchestrator (Parallel) | ✅ DONE | ✅ PASSED | Agent code consolidated to @agentsy/orchestrator/agent; consumer packages audited clean                                         |
+
+**Verification Status (All Phases A-C):**
+
+- `pnpm check-types`: 26–31 tasks passing ✅
+- `pnpm build`: 17–20 tasks passing ✅
+- `pnpm test`: 35–41 tasks passing, 84 tests ✅
+- Documentation updated: 34 files across docs/, plan/, examples/ ✅
+- Branch: `feature/Phase-C1-consolidation` clean and pushed to remote ✅
+
+### Phase D: ✅ COMPLETE
+
+**Scope:** Runtime + Orchestrator reshape
+
+**Completion evidence:**
+
+1. **Runtime loop authority lives in `@agentsy/runtime`**
+   - `createRuntimeLoop`, resumable snapshots, session-store persistence, spawned child execution with depth caps, and DAG-style workflow ordering are implemented in `packages/runtime/src/index.ts`.
+   - AG-UI protocol support lives at the runtime subpath `@agentsy/runtime/ag-ui`.
+
+2. **Orchestration authority lives in `@agentsy/orchestrator`**
+   - `createAgentLoop` exposes lifecycle hooks, stop conditions, tool approval modes, and AG-UI event callbacks.
+   - Scheduler functionality is consolidated under `packages/orchestrator/src/scheduler/` and surfaced through `createOrchestratorLoop`.
+
+3. **Acceptance Gate D passed**
+   - Exactly one loop authority: `runtime`
+   - Exactly one orchestration authority: `orchestrator`
+   - No legacy `agentic-loop`, `scheduler`, or standalone `ag-ui` packages remain in `packages/`
+   - Verification gates pass after the consolidation and remediation updates
+
+### Phase E: ✅ COMPLETE
+
+- Plugin conversion is complete under `@agentsy/plugins`.
+- Legacy `agents` package artifact is retired; plugin-facing docs and exports point at `@agentsy/plugins`.
+
+### Phase F: ✅ COMPLETE
+
+- `token-economy` has been fully reconciled to `@agentsy/tokens`.
+- `@agentsy/tokens` now ships token ledgers, an in-memory token manager, conversation compression helpers, and pacing controls.
+- The standalone `ag-ui` package artifact remains retired; protocol support is documented and exported through `@agentsy/runtime/ag-ui`.
+
+### Phase G: ✅ COMPLETE
+
+- Canonical docs, examples, package catalog pages, and repository instructions now reflect the consolidated package map.
+- Historical plan files remain as archived context, but the canonical topology is documented through this master plan and the current docs set.
+
+---
+
 ## 7) Acceptance gates and quality checks
 
 For each migration phase:

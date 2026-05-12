@@ -27,7 +27,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **REQ-001**: All packages must publish under the `@agentsy` npm org. Package names follow the pattern `@agentsy/<domain>`.
 - **REQ-002**: Old package `@agentsy/core` must remain installable as a compatibility shim re-exporting all existing public APIs unchanged.
 - **REQ-003**: All existing subpath exports from `@agentsy/core` must be available on the shim package without modification to consumer import paths.
-- **REQ-004**: Agent loop (`createAgentLoop`) in `@agentsy/agent` must support hook injection points: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort`.
+- **REQ-004**: Agent loop (`createAgentLoop`) in `@agentsy/orchestrator/agent` must support hook injection points: `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort`.
 - **REQ-005**: Agent loop must call `memoryEngine.startTask()` at loop start and `memoryEngine.endTask()` at loop end when a memory engine is provided.
 - **REQ-006**: `LLMStreamProcessor` in `@agentsy/processor` must emit new events: `ContextWindowWillOverflow`, `ChatCompressed`, `LoopDetected`, `Citation`, `Retry`, `InvalidStream`.
 - **REQ-007**: Context window manager (`@agentsy/context-manager`) must monitor token budget, trigger `compressConversation()` when threshold is reached, and emit `ContextWindowWillOverflow` before compression.
@@ -46,8 +46,8 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **REQ-020**: `openaiResponses` provider must be routable through `@agentsy/normalizers` and `@agentsy/processor` pipeline.
 - **REQ-021**: Each package must be independently installable; consumers who only use stream parsing primitives should not transitively pull in `@agentsy/memory` or `@agentsy/mcp`.
 - **REQ-022**: Turborepo must orchestrate all build, test, typecheck, and lint tasks with proper dependency-aware caching.
-- **REQ-023**: `StopCondition` predicates (`isStepCount`, `hasToolCall`, `isLoopFinished`) must be exported from `@agentsy/agent` (vercel/ai pattern).
-- **REQ-024**: `prepareStep` callback and `mergeCallbacks` utility must be available in `@agentsy/agent` for per-step dynamic reconfiguration (vercel/ai pattern).
+- **REQ-023**: `StopCondition` predicates (`isStepCount`, `hasToolCall`, `isLoopFinished`) must be exported from `@agentsy/orchestrator/agent` (vercel/ai pattern).
+- **REQ-024**: `prepareStep` callback and `mergeCallbacks` utility must be available in `@agentsy/orchestrator/agent` for per-step dynamic reconfiguration (vercel/ai pattern).
 - **REQ-025**: `@agentsy/caveman` must ship the `caveman` SKILL.md (JuliusBrussee/caveman v1.7.0) as a bundled default skill, activatable by consumer agents without a separate `npx skills add` step.
 - **REQ-026**: `@agentsy/caveman` must include `caveman-shrink` — an MCP stdio proxy that wraps any downstream MCP server and compresses tool description tokens while preserving code literals, URLs, and identifiers byte-for-byte.
 - **REQ-027**: `@agentsy/caveman` must expose `cavecrew` subagent variant SKILL.md files (investigator, builder, reviewer) that emit ~60% fewer output tokens than vanilla equivalents.
@@ -69,28 +69,28 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 ### Extended Requirements (SRC-11..SRC-28 Research Corpus)
 
-- **REQ-043**: `@agentsy/agent` MUST support code-as-actions execution mode: the LLM generates sandboxed JS/TS instead of JSON tool calls; the executor runs the code and returns results. (ADR-026, SRC-11)
+- **REQ-043**: `@agentsy/orchestrator/agent` MUST support code-as-actions execution mode: the LLM generates sandboxed JS/TS instead of JSON tool calls; the executor runs the code and returns results. (ADR-026, SRC-11)
 - **REQ-044**: Agent executor backends MUST be pluggable: `local` (Node `vm`), `docker`, `e2b`, `modal`, `wasm`. The `createAgentLoop()` factory accepts an `executor` option. (ADR-026, SRC-11)
 - **REQ-045**: Tool definitions SHOULD support progressive loading from TOML or markdown skill files at runtime without restarting the agent loop. (ADR-027, SRC-12)
 - **REQ-046**: Tool metadata MUST include `capability` description, `inputSchema`, `outputSchema`, and `version` fields following an OctoTools-compatible Tool Card schema. (ADR-028, SRC-16)
-- **REQ-047**: `@agentsy/agent` SHOULD support dual-level planning: a global task plan generated once, plus a per-step sub-plan generated before each tool invocation for complex multi-step tasks. (ADR-029, SRC-16)
+- **REQ-047**: `@agentsy/orchestrator/agent` SHOULD support dual-level planning: a global task plan generated once, plus a per-step sub-plan generated before each tool invocation for complex multi-step tasks. (ADR-029, SRC-16)
 - **REQ-048**: Function schemas used in tool registration MUST be compiler-generated from TypeScript types using `typia` or `zod`. Hand-authored JSON schemas are disallowed for typed tool inputs. (ADR-030, SRC-17)
-- **REQ-049**: When tool argument validation fails, `@agentsy/agent` MUST inject the structured validation errors as a tool response and system correction prompt, then retry up to `config.retry` times before throwing. (ADR-031, SRC-17)
+- **REQ-049**: When tool argument validation fails, `@agentsy/orchestrator/agent` MUST inject the structured validation errors as a tool response and system correction prompt, then retry up to `config.retry` times before throwing. (ADR-031, SRC-17)
 - **REQ-050**: When the tool registry exceeds 50 entries, the selector MUST support parallel divided selection across domain groups, followed by an eliticism pass over the union of selections. (ADR-032, SRC-17)
-- **REQ-051**: `@agentsy/agent` MUST support DAG-based parallel workflow execution: workflow nodes without upstream dependencies execute concurrently; downstream nodes await all prerequisites. (ADR-033, SRC-15)
+- **REQ-051**: `@agentsy/orchestrator/agent` MUST support DAG-based parallel workflow execution: workflow nodes without upstream dependencies execute concurrently; downstream nodes await all prerequisites. (ADR-033, SRC-15)
 - **REQ-052**: Multi-step workflows MUST support pause/resume via snapshot serialization. `task_snapshot` captures completed nodes, pending nodes, and accumulated tool results as a serializable POJO. (ADR-033, SRC-15)
-- **REQ-053**: `@agentsy/agent` SHOULD implement Agent-to-Agent (A2A) protocol for peer-to-peer inter-agent communication, with scoped session tokens and isolated context boundaries. (ADR-034, SRC-15, SRC-21)
+- **REQ-053**: `@agentsy/orchestrator/agent` SHOULD implement Agent-to-Agent (A2A) protocol for peer-to-peer inter-agent communication, with scoped session tokens and isolated context boundaries. (ADR-034, SRC-15, SRC-21)
 - **REQ-054**: `@agentsy/memory` MUST expose a white-box editing API: users can read, create, update, and delete individual memory entries at runtime without restarting the agent loop. (ADR-035, SRC-20)
 - **REQ-055**: Conversation history in `@agentsy/session` SHOULD support branching: a conversation can be forked at any point, the fork explored independently, and results optionally merged back. (ADR-036, SRC-20)
 - **REQ-056**: The `createAgentLoop()` executor API MUST match the Agentica `IAgenticaExecutor` pattern: each orchestration step (`initialize`, `select`, `call`, `describe`) is independently replaceable via the executor option. Default steps are pure functions. (ADR-047, SRC-17)
-- **REQ-057**: The `@agentsy/agent` test harness MUST support simulation-based scenario testing with three roles: `UserSimulatorAgent`, `JudgeAgent(criteria=[...])`, and optional `RedTeamAgent`. (ADR-039, SRC-27)
+- **REQ-057**: The `@agentsy/orchestrator/agent` test harness MUST support simulation-based scenario testing with three roles: `UserSimulatorAgent`, `JudgeAgent(criteria=[...])`, and optional `RedTeamAgent`. (ADR-039, SRC-27)
 - **REQ-058**: Agent scenario test suites MUST report `pass^k` consistency score alongside average task completion rate, where k ≥ 3. Test regressions where `pass^k` drops while average rate is stable MUST surface as failures. (ADR-040, SRC-28)
 - **REQ-059**: The test harness MUST support Crescendo-style multi-turn adversarial red team testing: incrementally escalating requests, per-turn scoring, refusal detection, and automatic backtracking. (ADR-041, SRC-27)
-- **REQ-060**: `@agentsy/agent` architecture MUST follow the 12-factor agent design principles: stateless execution, externalized configuration, declared dependencies, environment parity, and structured telemetry. (ADR-048, SRC-25)
+- **REQ-060**: `@agentsy/orchestrator/agent` architecture MUST follow the 12-factor agent design principles: stateless execution, externalized configuration, declared dependencies, environment parity, and structured telemetry. (ADR-048, SRC-25)
 - **REQ-061**: Cross-step binary or large-object data passing MUST use the state dict key reference pattern: tools store blobs in a shared `state` map under a string key; subsequent tool invocations receive the key as a string argument and the framework resolves it at call time, never serializing the payload to JSON. (ADR-046, SRC-11)
 - **REQ-062**: Multi-agent context sharing MUST use compression and delta update semantics: shared context is stored once by ID, agents receive diffs rather than full snapshots, achieving ≥ 3x token efficiency versus naive full-context broadcast. (ADR-044, SRC-24)
-- **REQ-063**: For quality-sensitive tasks, `@agentsy/agent` SHOULD support the evaluator-optimizer sub-pattern: generate response → evaluate against rubric → provide feedback → regenerate, up to `config.optimizerMaxIterations`. (ADR-045, SRC-23)
-- **REQ-064**: `@agentsy/agent` SHOULD implement an RSI feedback ledger: every tool execution outcome (success, failure, partial) is appended to a per-session ledger used to de-prioritize failing tools and avoid retrying known-bad approaches. (ADR-042, SRC-21)
+- **REQ-063**: For quality-sensitive tasks, `@agentsy/orchestrator/agent` SHOULD support the evaluator-optimizer sub-pattern: generate response → evaluate against rubric → provide feedback → regenerate, up to `config.optimizerMaxIterations`. (ADR-045, SRC-23)
+- **REQ-064**: `@agentsy/orchestrator/agent` SHOULD implement an RSI feedback ledger: every tool execution outcome (success, failure, partial) is appended to a per-session ledger used to de-prioritize failing tools and avoid retrying known-bad approaches. (ADR-042, SRC-21)
 - **REQ-065**: `@agentsy/skills` MUST support expressing sprint lifecycle actions as named skill files: a skills directory can contain `plan.md`, `review.md`, `ship.md`, etc., each with structured context-passing metadata. (ADR-037, SRC-26)
 - **REQ-066**: `@agentsy/memory` MUST support a team-scoped memory bank as a distinct scope tier alongside session, project, and global scopes, with explicit cross-scope permission gates. (ADR-051, SRC-29)
 - **REQ-067**: Memory bank boundary MUST be configurable via a `MemoryScope` enum (`session | user | project | team | global`); agents MAY retain into multiple banks simultaneously per the hybrid pattern. (ADR-051, SRC-29)
@@ -143,20 +143,20 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **GUD-007**: Each package's `package.json` includes `"publishConfig": { "access": "public" }` for `@agentsy` scoped publishing.
 - **GUD-008**: All bundled SKILL.md files must include `source_url`, `version`, and `license` frontmatter fields pointing to the upstream repository.
 - **GUD-009**: All slash commands in the stock set must have a corresponding unit test in `packages/slash-commands/src/*.test.ts`.
-- **GUD-010**: Connector adapters must implement the `ChannelAdapter` interface and never directly reference `@agentsy/agent` internals. All agent communication goes through the `AgentSessionManager` contract.
+- **GUD-010**: Connector adapters must implement the `ChannelAdapter` interface and never directly reference `@agentsy/orchestrator/agent` internals. All agent communication goes through the `AgentSessionManager` contract.
 
 ### Patterns to Follow
 
-- **PAT-001**: Claude Code `QueryEngine` pattern: `@agentsy/processor` + `@agentsy/agent` compose the streaming tool-call loop with retry logic and token counting.
-- **PAT-002**: OpenCode client/server architecture: `@agentsy/agent` is the server-side runtime; UI surfaces are downstream consumers.
+- **PAT-001**: Claude Code `QueryEngine` pattern: `@agentsy/processor` + `@agentsy/orchestrator/agent` compose the streaming tool-call loop with retry logic and token counting.
+- **PAT-002**: OpenCode client/server architecture: `@agentsy/orchestrator/agent` is the server-side runtime; UI surfaces are downstream consumers.
 - **PAT-003**: Hermes Agent closed learning loop: `startTask → report → endTask → synthesize` lifecycle in `@agentsy/memory`.
-- **PAT-004**: nanobot lightweight core: memory and skills are context injections, not orchestration layers; `@agentsy/agent` stays readable.
+- **PAT-004**: nanobot lightweight core: memory and skills are context injections, not orchestration layers; `@agentsy/orchestrator/agent` stays readable.
 - **PAT-005**: Gemini CLI conversation checkpointing: `StreamSnapshot` + `@agentsy/session` enables deterministic crash-safe resume.
 - **PAT-006**: Codex `codex-rs` safety model: `@agentsy/runtime` enforces `allow/ask/deny` per tool.
 - **PAT-007**: Karpathy wiki: compiled wiki is a maintained artifact in `@agentsy/memory`; vector-indexed by `@agentsy/retrieval`.
-- **PAT-008**: vercel/ai `StopCondition` predicates: async predicates in `@agentsy/agent` control loop termination declaratively, not imperatively.
+- **PAT-008**: vercel/ai `StopCondition` predicates: async predicates in `@agentsy/orchestrator/agent` control loop termination declaratively, not imperatively.
 - **PAT-009**: tanstack/ai `StreamProcessor` per-message state: `@agentsy/processor` tracks each message's streaming state independently in a `Map`.
-- **PAT-010**: tanstack/ai `AgentLoopStrategy` combinators: `maxIterations(n)`, `untilFinishReason([...])`, `combineStrategies([...])` exported from `@agentsy/agent`.
+- **PAT-010**: tanstack/ai `AgentLoopStrategy` combinators: `maxIterations(n)`, `untilFinishReason([...])`, `combineStrategies([...])` exported from `@agentsy/orchestrator/agent`.
 - **PAT-011**: Orchestrator-Workers (Anthropic/SRC-31): `MCPOrchestrator` dynamically delegates subtasks to worker agents when subtask scope cannot be predicted upfront. Each worker has narrowly scoped tools and reports results to the orchestrator.
 - **PAT-012**: Swarm Migration (SRC-30): large-scale automated refactors enumerate work items, chunk into atomic units, spawn subagents per chunk, then merge with strict checks (tests + lint + compile). Cap parallelism to what CI can handle.
 - **PAT-013**: Budget-Aware Model Routing (SRC-30): cheap/fast model for planning, classification, and routing decisions; expensive model only for execution steps requiring high reasoning quality. Configured via `ProviderStrategy.routingPolicy`.
@@ -199,14 +199,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 **Migration mapping (source → destination package):**
 
-| Source directory                                                                                                                                                                                        | Destination package    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/types/` (new), `src/vendor/`, `src/ui/` | `@agentsy/core`        |
-| `src/normalizers/`                                                                                                                                                                                      | `@agentsy/normalizers` |
-| `src/processor/`, `src/pipeline/`                                                                                                                                                                       | `@agentsy/processor`   |
-| `src/agent/`                                                                                                                                                                                            | `@agentsy/agent`       |
-| `src/adapters/`                                                                                                                                                                                         | `@agentsy/adapters`    |
-| `src/ag-ui/`                                                                                                                                                                                            | `@agentsy/ag-ui`       |
+| Source directory                                                                                                                                                                                        | Destination package           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `src/xml-filter/`, `src/sse/`, `src/thinking/`, `src/tool-calls/`, `src/context/`, `src/formatting/`, `src/markdown/`, `src/structured/`, `src/recovery/`, `src/types/` (new), `src/vendor/`, `src/ui/` | `@agentsy/core`               |
+| `src/normalizers/`                                                                                                                                                                                      | `@agentsy/normalizers`        |
+| `src/processor/`, `src/pipeline/`                                                                                                                                                                       | `@agentsy/processor`          |
+| `src/agent/`                                                                                                                                                                                            | `@agentsy/orchestrator/agent` |
+| `src/adapters/`                                                                                                                                                                                         | `@agentsy/adapters`           |
+| `src/ag-ui/`                                                                                                                                                                                            | `@agentsy/ag-ui`              |
 
 | Task        | Description                                                                                                                                                                                                                                                                              | Completed | Date |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
@@ -214,9 +214,9 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | TASK-M1-002 | Copy `src/normalizers/` into `packages/normalizers/src/`. Add `"@agentsy/core": "workspace:*"` to `packages/normalizers/package.json` dependencies. Update all internal imports.                                                                                                         |           |      |
 | TASK-M1-003 | Copy `src/processor/` and `src/pipeline/` into `packages/processor/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/normalizers": "workspace:*"` as dependencies. Update imports.                                                                                              |           |      |
 | TASK-M1-004 | Copy `src/agent/` into `packages/agent/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as dependencies. Update imports.                                                                                                                            |           |      |
-| TASK-M1-005 | Copy `src/adapters/` into `packages/adapters/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/agent": "workspace:*"` as dependencies.                                                                                                                                          |           |      |
+| TASK-M1-005 | Copy `src/adapters/` into `packages/adapters/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/orchestrator/agent": "workspace:*"` as dependencies.                                                                                                                             |           |      |
 | TASK-M1-006 | Copy `src/ag-ui/` into `packages/ag-ui/src/`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/processor": "workspace:*"` as dependencies.                                                                                                                                            |           |      |
-| TASK-M1-007 | Create `packages/shim/src/index.ts` that re-exports `* from '@agentsy/core'`, `* from '@agentsy/processor'`, `* from '@agentsy/agent'`, `* from '@agentsy/adapters'`, `* from '@agentsy/ag-ui'`. Add all five as peer dependencies.                                                      |           |      |
+| TASK-M1-007 | Create `packages/shim/src/index.ts` that re-exports `* from '@agentsy/core'`, `* from '@agentsy/processor'`, `* from '@agentsy/orchestrator/agent'`, `* from '@agentsy/adapters'`, `* from '@agentsy/ag-ui'`. Add all five as peer dependencies.                                         |           |      |
 | TASK-M1-008 | Update all internal cross-module imports across all packages to use workspace package names (`@agentsy/core`, etc.) instead of relative `../` paths.                                                                                                                                     |           |      |
 | TASK-M1-009 | Remove old `src/` directories from repo root (archive to `src/_legacy/` temporarily if needed during migration). Update root `src/index.ts` and `src/index.test.ts` to import from `@agentsy/*` packages.                                                                                |           |      |
 | TASK-M1-010 | Run `pnpm install && turbo run build` from repo root. All 16 packages must build successfully. Fix any import resolution or circular dependency issues.                                                                                                                                  |           |      |
@@ -261,7 +261,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | Task        | Description                                                                                                                                                           | Completed | Date |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-R2-001 | Rewrite `docs/index.md` to reflect `@agentsy` positioning: "composable agent infrastructure — one org, many packages, bring your own app."                            |           |      |
-| TASK-R2-002 | Update `docs/getting-started.md` to lead with selective package installation and `createAgentLoop` usage; show the minimal install (`@agentsy/agent`).                |           |      |
+| TASK-R2-002 | Update `docs/getting-started.md` to lead with selective package installation and `createAgentLoop` usage; show the minimal install (`@agentsy/orchestrator/agent`).   |           |      |
 | TASK-R2-003 | Add `docs/architecture.md` describing: the package dependency graph (as Mermaid diagram), the layer separation (core → normalizers → processor → agent → extensions). |           |      |
 | TASK-R2-004 | Add `docs/packages.md` with a reference table of all 15 `@agentsy/*` packages: name, description, key exports, install size, peer deps.                               |           |      |
 
@@ -269,7 +269,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 ### Phase P0 — Architecture Contract + Security Baseline (blocking, after R0)
 
-- **GOAL-P0**: Freeze the public API contracts, event model, and security invariants before any new module is built. All contracts live in `@agentsy/core`; agent-specific contracts live in `@agentsy/agent`.
+- **GOAL-P0**: Freeze the public API contracts, event model, and security invariants before any new module is built. All contracts live in `@agentsy/core`; agent-specific contracts live in `@agentsy/orchestrator/agent`.
 
 | Task        | Description                                                                                                                                                                                                                                                                            | Completed | Date |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
@@ -282,7 +282,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 | TASK-P0-007 | In `packages/core/src/types/approval.ts`: define `ApprovalMode` union (`'allow' \| 'ask' \| 'deny' \| 'auto' \| 'plan'`), `ApprovalRequest`, `ApprovalResponse`, `ApprovalEngine` interface. Include `'plan'` as 4th production mode (tool-call dry-run).                              |           |      |
 | TASK-P0-008 | In `packages/agent/src/types.ts`: add `StopCondition` async predicate type `(state: AgentLoopState) => Promise<boolean>` and update `AgentLoopOptions` to accept `stopConditions?: StopCondition[]`. Export `isStepCount(n)`, `hasToolCall()`, `isLoopFinished()` built-in predicates. |           |      |
 | TASK-P0-009 | In `packages/agent/src/types.ts`: add `prepareStep?: (step: StepContext) => Promise<Partial<AgentLoopOptions>>` hook to `AgentLoopOptions`. Add `mergeCallbacks(base, override)` utility to merge settings-level and call-level hooks without override.                                |           |      |
-| TASK-P0-010 | Export all new `@agentsy/core` types through `packages/core/src/types/index.ts`. Export all new `@agentsy/agent` types through `packages/agent/src/index.ts`.                                                                                                                          |           |      |
+| TASK-P0-010 | Export all new `@agentsy/core` types through `packages/core/src/types/index.ts`. Export all new `@agentsy/orchestrator/agent` types through `packages/agent/src/index.ts`.                                                                                                             |           |      |
 | TASK-P0-011 | Write unit tests in `packages/core/src/types/types.test.ts` for all new type narrowing helpers and discriminated unions.                                                                                                                                                               |           |      |
 
 ---
@@ -353,14 +353,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P5**: Safe concurrent tool execution with bounded parallelism and `areAllToolsComplete()` auto-continuation guard (tanstack/ai pattern).
 
-| Task        | Description                                                                                                                                                                                                           | Completed | Date |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P5-001 | Create `packages/runtime/src/tool-executor/` with `index.ts`, `ToolExecutor.ts`, `concurrencyPool.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/agent": "workspace:*"` to `packages/runtime/package.json`. |           |      |
-| TASK-P5-002 | Implement `ConcurrencyPool(maxConcurrent: number)`: token-bucket style pool; `acquire()` / `release()` with `AbortSignal` support; rejects immediately on abort.                                                      |           |      |
-| TASK-P5-003 | Implement `ToolExecutor`: accepts an array of `ToolCall` + an `ApprovalEngine` + a `ConcurrencyPool`; fans out execution; collects results in deterministic submission order; re-throws first error after all settle. |           |      |
-| TASK-P5-004 | Add `areAllToolsComplete(toolCalls, results): boolean` predicate to `ToolExecutor`; used as auto-continuation guard in `createAgentLoop.ts` before deciding whether to do another loop iteration.                     |           |      |
-| TASK-P5-005 | Add `toolExecutor?: ToolExecutor` optional param to `AgentLoopOptions`; when present, replace sequential tool-call loop in `createAgentLoop.ts` with `toolExecutor.executeAll(toolCalls)`.                            |           |      |
-| TASK-P5-006 | Write tests: sequential ordering guarantee, concurrency cap enforcement, abort cancels pending calls, first-error semantics, `areAllToolsComplete` guard.                                                             |           |      |
+| Task        | Description                                                                                                                                                                                                                        | Completed | Date |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-P5-001 | Create `packages/runtime/src/tool-executor/` with `index.ts`, `ToolExecutor.ts`, `concurrencyPool.ts`. Add `"@agentsy/core": "workspace:*"` and `"@agentsy/orchestrator/agent": "workspace:*"` to `packages/runtime/package.json`. |           |      |
+| TASK-P5-002 | Implement `ConcurrencyPool(maxConcurrent: number)`: token-bucket style pool; `acquire()` / `release()` with `AbortSignal` support; rejects immediately on abort.                                                                   |           |      |
+| TASK-P5-003 | Implement `ToolExecutor`: accepts an array of `ToolCall` + an `ApprovalEngine` + a `ConcurrencyPool`; fans out execution; collects results in deterministic submission order; re-throws first error after all settle.              |           |      |
+| TASK-P5-004 | Add `areAllToolsComplete(toolCalls, results): boolean` predicate to `ToolExecutor`; used as auto-continuation guard in `createAgentLoop.ts` before deciding whether to do another loop iteration.                                  |           |      |
+| TASK-P5-005 | Add `toolExecutor?: ToolExecutor` optional param to `AgentLoopOptions`; when present, replace sequential tool-call loop in `createAgentLoop.ts` with `toolExecutor.executeAll(toolCalls)`.                                         |           |      |
+| TASK-P5-006 | Write tests: sequential ordering guarantee, concurrency cap enforcement, abort cancels pending calls, first-error semantics, `areAllToolsComplete` guard.                                                                          |           |      |
 
 ---
 
@@ -496,7 +496,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 ---
 
-### Phase P10 — Multi-Agent Orchestration (in `@agentsy/agent`)
+### Phase P10 — Multi-Agent Orchestration (in `@agentsy/orchestrator/agent`)
 
 - **GOAL-P10**: Parent→child subagent spawning with depth caps.
 
@@ -514,14 +514,14 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-P11**: Structured logging, OpenTelemetry spans, audit trail, health checks. Load OTel lazily (Gemini CLI + Claude Code pattern).
 
-| Task         | Description                                                                                                                                                                                                                         | Completed | Date |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-P11-001 | Create `packages/telemetry/src/` with `index.ts`, `spans.ts`, `structuredLogger.ts`, `healthCheck.ts`. Add `"@agentsy/core": "workspace:*"` as dep. Add `@opentelemetry/api` as optional peer dep.                                  |           |      |
-| TASK-P11-002 | Implement `structuredLogger.ts`: JSON-structured emitter (`info`, `warn`, `error`, `debug`); redacts secrets via regex patterns from SEC-003; writes to stderr; accepts optional `WritableStream`.                                  |           |      |
-| TASK-P11-003 | Implement `spans.ts`: wraps `@opentelemetry/api` behind dynamic `import()` guard; no-ops when OTel not installed. Exposes `startSpan(name, attrs)`, `endSpan(span, status)`, `recordException(span, error)`.                        |           |      |
-| TASK-P11-004 | Add OTel span instrumentation (via dynamic import) to: `createAgentLoop` (loop span in `@agentsy/agent`), `ToolExecutor.executeAll` (per-tool span in `@agentsy/runtime`), `MCPOrchestrator.callTool` (MCP span in `@agentsy/mcp`). |           |      |
-| TASK-P11-005 | Implement `healthCheck.ts`: `checkHealth(options): Promise<HealthStatus>` — verifies provider connectivity, MCP server reachability, session store writability, vector store connectivity.                                          |           |      |
-| TASK-P11-006 | Write tests for structured log redaction and health check status aggregation. Verify OTel no-ops when package not installed.                                                                                                        |           |      |
+| Task         | Description                                                                                                                                                                                                                                      | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-P11-001 | Create `packages/telemetry/src/` with `index.ts`, `spans.ts`, `structuredLogger.ts`, `healthCheck.ts`. Add `"@agentsy/core": "workspace:*"` as dep. Add `@opentelemetry/api` as optional peer dep.                                               |           |      |
+| TASK-P11-002 | Implement `structuredLogger.ts`: JSON-structured emitter (`info`, `warn`, `error`, `debug`); redacts secrets via regex patterns from SEC-003; writes to stderr; accepts optional `WritableStream`.                                               |           |      |
+| TASK-P11-003 | Implement `spans.ts`: wraps `@opentelemetry/api` behind dynamic `import()` guard; no-ops when OTel not installed. Exposes `startSpan(name, attrs)`, `endSpan(span, status)`, `recordException(span, error)`.                                     |           |      |
+| TASK-P11-004 | Add OTel span instrumentation (via dynamic import) to: `createAgentLoop` (loop span in `@agentsy/orchestrator/agent`), `ToolExecutor.executeAll` (per-tool span in `@agentsy/runtime`), `MCPOrchestrator.callTool` (MCP span in `@agentsy/mcp`). |           |      |
+| TASK-P11-005 | Implement `healthCheck.ts`: `checkHealth(options): Promise<HealthStatus>` — verifies provider connectivity, MCP server reachability, session store writability, vector store connectivity.                                                       |           |      |
+| TASK-P11-006 | Write tests for structured log redaction and health check status aggregation. Verify OTel no-ops when package not installed.                                                                                                                     |           |      |
 
 ---
 
@@ -580,11 +580,11 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 - **GOAL-R4**: Produce a starter spec and integration guide for downstream consumer projects.
 
-| Task        | Description                                                                                                                                                                                                       | Completed | Date |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-R4-001 | Create `docs/downstream-app-starter.md`: describes building a CLI app on top of `@agentsy/agent` + other packages; `createAgentLoop` setup, provider config, tool registration, memory engine wiring, MCP config. |           |      |
-| TASK-R4-002 | Create `examples/minimal-agent/` with a 50-line `index.ts`: minimal agent, one tool, console streaming output. Show selective `@agentsy/*` imports.                                                               |           |      |
-| TASK-R4-003 | Ensure all `@public` API surface has TSDoc comments consumable by downstream projects.                                                                                                                            |           |      |
+| Task        | Description                                                                                                                                                                                                                    | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-R4-001 | Create `docs/downstream-app-starter.md`: describes building a CLI app on top of `@agentsy/orchestrator/agent` + other packages; `createAgentLoop` setup, provider config, tool registration, memory engine wiring, MCP config. |           |      |
+| TASK-R4-002 | Create `examples/minimal-agent/` with a 50-line `index.ts`: minimal agent, one tool, console streaming output. Show selective `@agentsy/*` imports.                                                                            |           |      |
+| TASK-R4-003 | Ensure all `@public` API surface has TSDoc comments consumable by downstream projects.                                                                                                                                         |           |      |
 
 ---
 
@@ -634,7 +634,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 
 ## 3. Alternatives
 
-- **ALT-001**: Single package `@agentsy/agentsy` instead of monorepo. Rejected: violates REQ-021 (independent installability); consumers who only use stream parsing must not pull in memory, MCP, etc.
+- **ALT-001**: Single package `@agentsy/orchestrator/agentsy` instead of monorepo. Rejected: violates REQ-021 (independent installability); consumers who only use stream parsing must not pull in memory, MCP, etc.
 - **ALT-002**: Use Nx instead of Turborepo. Rejected: Turbo is simpler for this repo size; Nx adds generator and executor complexity not needed here; Turbo's pnpm workspace integration is lighter.
 - **ALT-003**: Use npm workspaces instead of pnpm workspaces. Rejected: pnpm workspaces are already in use; pnpm's strict `node_modules` isolation prevents accidental cross-package imports; `workspace:*` protocol is idiomatic pnpm.
 - **ALT-004**: Use a flat `packages/` layout without a `@agentsy/tsconfig` shared config. Rejected: shared tsconfig prevents tsconfig drift across 16 packages; single source of truth for strict settings.
@@ -678,7 +678,7 @@ The plan integrates architectural insights from Claude Code, OpenCode, Hermes Ag
 - **FILE-PKG-002**: `packages/core/` — `@agentsy/core`: xml-filter, sse, thinking, tool-calls, context, formatting, markdown, structured, recovery, types, vendor, ui.
 - **FILE-PKG-003**: `packages/normalizers/` — `@agentsy/normalizers`: all 9 LLM provider normalizers.
 - **FILE-PKG-004**: `packages/processor/` — `@agentsy/processor`: `LLMStreamProcessor`, `AccumulatedMessage`, `ProcessorStats`, `pipeline/`.
-- **FILE-PKG-005**: `packages/agent/` — `@agentsy/agent`: `createAgentLoop`, `stopConditions`, `SubagentRunner`, `SubagentCoordinator`, agent types.
+- **FILE-PKG-005**: `packages/agent/` — `@agentsy/orchestrator/agent`: `createAgentLoop`, `stopConditions`, `SubagentRunner`, `SubagentCoordinator`, agent types.
 - **FILE-PKG-006**: `packages/adapters/` — `@agentsy/adapters`: `generic.ts`, `vscode.ts`.
 - **FILE-PKG-007**: `packages/ag-ui/` — `@agentsy/ag-ui`: full existing `src/ag-ui/` module.
 - **FILE-PKG-008**: `packages/runtime/` — `@agentsy/runtime`: `tool-executor/`, `approvals/`, `policy/`, `sandbox/`, `hooks/`, `skills/`, `plugins/`.
@@ -814,10 +814,10 @@ Each package in `packages/<domain>/` contains:
 @agentsy/core             (no @agentsy deps — zero transitive weight)
 @agentsy/normalizers   →  @agentsy/core
 @agentsy/processor     →  @agentsy/core, @agentsy/normalizers
-@agentsy/agent         →  @agentsy/core, @agentsy/processor
-@agentsy/adapters      →  @agentsy/core, @agentsy/agent
+@agentsy/orchestrator/agent         →  @agentsy/core, @agentsy/processor
+@agentsy/adapters      →  @agentsy/core, @agentsy/orchestrator/agent
 @agentsy/ag-ui         →  @agentsy/core, @agentsy/processor
-@agentsy/runtime       →  @agentsy/core, @agentsy/agent
+@agentsy/runtime       →  @agentsy/core, @agentsy/orchestrator/agent
 @agentsy/context-manager → @agentsy/core, @agentsy/processor
 @agentsy/cost-tracker  →  @agentsy/core
 @agentsy/session       →  @agentsy/core, @agentsy/processor
@@ -827,7 +827,7 @@ Each package in `packages/<domain>/` contains:
 @agentsy/memory        →  @agentsy/core, @agentsy/retrieval
 @agentsy/telemetry     →  @agentsy/core
 @agentsy/core (shim) →
-  @agentsy/core, @agentsy/processor, @agentsy/agent,
+  @agentsy/core, @agentsy/processor, @agentsy/orchestrator/agent,
   @agentsy/adapters, @agentsy/ag-ui  (all as peerDependencies)
 
 # Feature Extensions (agentsy-features-v1.md)
@@ -835,7 +835,7 @@ Each package in `packages/<domain>/` contains:
 @agentsy/skills          →  @agentsy/core
 @agentsy/caveman         →  @agentsy/core
 @agentsy/superpowers     →  @agentsy/core
-@agentsy/connectors      →  @agentsy/core, @agentsy/agent,
+@agentsy/connectors      →  @agentsy/core, @agentsy/orchestrator/agent,
                              @agentsy/session, @agentsy/runtime
 # @agentsy/mcp (existing) also spawns @mcpmarket/mcp-auto-install
 #   as child process (not a package dependency)

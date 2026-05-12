@@ -23,26 +23,26 @@ Default working branch: `main`
 
 **Current package surface in repo:** 18 packages are live in `packages/`.
 
-| Package                | Status                   |
-| ---------------------- | ------------------------ |
-| `@agentsy/types`       | ✅ live                  |
-| `@agentsy/xml-filter`  | ✅ live                  |
-| `@agentsy/context`     | ✅ live                  |
-| `@agentsy/formatting`  | ✅ live                  |
-| `@agentsy/sse`         | ✅ live                  |
-| `@agentsy/thinking`    | ✅ live — 20 tests added |
-| `@agentsy/normalizers` | ✅ live                  |
-| `@agentsy/structured`  | ✅ live                  |
-| `@agentsy/tool-calls`  | ✅ live                  |
-| `@agentsy/processor`   | ✅ live                  |
-| `@agentsy/recovery`    | ✅ live                  |
-| `@agentsy/ag-ui`       | ✅ live                  |
-| `@agentsy/agent`       | ✅ live                  |
-| `@agentsy/adapters`    | ✅ live                  |
-| `@agentsy/renderers`   | ✅ live                  |
-| `@agentsy/ui`          | ✅ live                  |
-| `@agentsy/vscode`      | ✅ live                  |
-| `@agentsy/integration` | ✅ live (private)        |
+| Package                       | Status                   |
+| ----------------------------- | ------------------------ |
+| `@agentsy/types`              | ✅ live                  |
+| `@agentsy/xml-filter`         | ✅ live                  |
+| `@agentsy/context`            | ✅ live                  |
+| `@agentsy/formatting`         | ✅ live                  |
+| `@agentsy/sse`                | ✅ live                  |
+| `@agentsy/thinking`           | ✅ live — 20 tests added |
+| `@agentsy/normalizers`        | ✅ live                  |
+| `@agentsy/structured`         | ✅ live                  |
+| `@agentsy/tool-calls`         | ✅ live                  |
+| `@agentsy/processor`          | ✅ live                  |
+| `@agentsy/recovery`           | ✅ live                  |
+| `@agentsy/ag-ui`              | ✅ live                  |
+| `@agentsy/orchestrator/agent` | ✅ live                  |
+| `@agentsy/adapters`           | ✅ live                  |
+| `@agentsy/renderers`          | ✅ live                  |
+| `@agentsy/ui`                 | ✅ live                  |
+| `@agentsy/vscode`             | ✅ live                  |
+| `@agentsy/integration`        | ✅ live (private)        |
 
 ### Completed slices (verified)
 

@@ -195,7 +195,7 @@ This document presents a comprehensive feature matrix comparing the **@agentsy f
 
 ---
 
-#### @agentsy/agentic-loop
+#### @agentsy/orchestrator/agentic-loop
 
 **Status:** ✅ Live  
 **Purpose:** Agent loop orchestration (being merged into runtime)
@@ -966,7 +966,7 @@ hooks: [...]
 
 ---
 
-### @agentsy/agentic-loop
+### @agentsy/orchestrator/agentic-loop
 
 **Priority:** P1 - Being merged into runtime
 

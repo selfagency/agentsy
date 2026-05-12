@@ -1,11 +1,11 @@
-# `@agentsy/adapters`
+# `@agentsy/providers/adapters`
 
-- **Status:** Published
-- **Role:** Integration-oriented wrappers around the processing pipeline
+- **Status:** Published subpath export from `@agentsy/providers`
+- **Role:** Integration-oriented wrappers around provider normalization and the processing pipeline
 
 ## Where it fits
 
-`@agentsy/adapters` helps package the lower-level stream-processing stack for integration surfaces that want less wiring and more convention.
+`@agentsy/providers/adapters` helps package the lower-level provider and stream-processing stack for integration surfaces that want less wiring and more convention.
 
 ## Key exports
 
@@ -32,13 +32,13 @@
 
 ## Common neighbors
 
-- Upstream: `@agentsy/normalizers`, `@agentsy/processor`
+- Upstream: `@agentsy/providers/normalizers`, `@agentsy/core/processor`
 - Downstream: `@agentsy/vscode` and other product-specific integrations
 
 ## Example
 
 ```ts
-import { createGenericAdapter } from '@agentsy/adapters';
+import { createGenericAdapter } from '@agentsy/providers/adapters';
 
 const adapter = createGenericAdapter({
   onContent: text => process.stdout.write(text),
@@ -48,8 +48,12 @@ const adapter = createGenericAdapter({
 ## Implementation example with neighbors
 
 ```ts
-import { applyDecisionAction, createGenericAdapter, runStructuredDecisionFromRawStream } from '@agentsy/adapters';
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import {
+  applyDecisionAction,
+  createGenericAdapter,
+  runStructuredDecisionFromRawStream,
+} from '@agentsy/providers/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
 const schema = {
   type: 'object',

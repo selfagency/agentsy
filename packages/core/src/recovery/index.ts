@@ -43,15 +43,15 @@ function formatToolCallParameters(parameters: XmlToolCall['parameters']): string
 }
 
 function buildCompletedToolCallsContext(toolCalls: readonly XmlToolCall[]): string | null {
-  if (toolCalls.length === 0) {
-    return null;
+  if (toolCalls.length > 0) {
+    const serializedCalls = toolCalls.map(toolCall => {
+      return `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`;
+    });
+
+    return ['The following tool calls already completed before the interruption:', ...serializedCalls].join('\n');
   }
 
-  const serializedCalls = toolCalls.map(toolCall => {
-    return `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`;
-  });
-
-  return ['The following tool calls already completed before the interruption:', ...serializedCalls].join('\n');
+  return null;
 }
 
 /**
@@ -86,35 +86,34 @@ export function buildContinuationPrompt(
   const partialContent = snapshot.content.trim();
   const completedToolCallsContext = buildCompletedToolCallsContext(snapshot.toolCalls);
 
-  if (!partialContent) {
-    const userContent = completedToolCallsContext
-      ? `${completedToolCallsContext}\n\nPlease continue without repeating the completed tool calls.`
-      : 'Please continue.';
-    return [{ role: 'user', content: userContent }];
-  }
+  if (partialContent.length > 0) {
+    if (provider === 'anthropic') {
+      if (completedToolCallsContext === null) {
+        return [{ role: 'assistant', content: partialContent }];
+      }
 
-  if (provider === 'anthropic') {
-    // Anthropic supports prefilling: end the exchange with a partial assistant
-    // message and the model continues from where it left off.
-    if (completedToolCallsContext === null) {
-      return [{ role: 'assistant', content: partialContent }];
+      return [
+        {
+          role: 'user',
+          content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
+        },
+        { role: 'assistant', content: partialContent },
+      ];
     }
 
+    const userContent = completedToolCallsContext
+      ? `${completedToolCallsContext}\n\nPlease continue from exactly where you left off without repeating the completed tool calls.`
+      : 'Please continue from exactly where you left off.';
+
     return [
-      {
-        role: 'user',
-        content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
-      },
       { role: 'assistant', content: partialContent },
+      { role: 'user', content: userContent },
     ];
   }
 
   const userContent = completedToolCallsContext
-    ? `${completedToolCallsContext}\n\nPlease continue from exactly where you left off without repeating the completed tool calls.`
-    : 'Please continue from exactly where you left off.';
+    ? `${completedToolCallsContext}\n\nPlease continue without repeating the completed tool calls.`
+    : 'Please continue.';
 
-  return [
-    { role: 'assistant', content: partialContent },
-    { role: 'user', content: userContent },
-  ];
+  return [{ role: 'user', content: userContent }];
 }

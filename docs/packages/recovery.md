@@ -1,11 +1,11 @@
-# `@agentsy/recovery`
+# `@agentsy/core/recovery`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** Recovery snapshots and continuation helpers
 
 ## Where it fits
 
-Use `@agentsy/recovery` when your workflow needs to resume, continue, or stabilize interrupted generation paths.
+Use `@agentsy/core/recovery` when your workflow needs to resume, continue, or stabilize interrupted generation paths.
 
 ## Current surface
 
@@ -19,14 +19,14 @@ Use `@agentsy/recovery` when your workflow needs to resume, continue, or stabili
 
 ## Common neighbors
 
-- `@agentsy/processor`
-- `@agentsy/agent`
+- `@agentsy/core/processor`
+- `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 
 ```ts
-import { LLMStreamProcessor } from '@agentsy/processor';
-import { buildContinuationPrompt, captureStreamState } from '@agentsy/recovery';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 

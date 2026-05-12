@@ -1,6 +1,6 @@
-# `@agentsy/tool-calls`
+# `@agentsy/core/tool-calls`
 
-- **Status:** Published
+- **Status:** Published subpath export from `@agentsy/core`
 - **Role:** Tool-call extraction, accumulation, and payload helpers
 
 ## Key exports
@@ -23,15 +23,15 @@ Use this package when your application needs reliable tool-call handling across 
 
 ## Common neighbors
 
-- `@agentsy/processor`
-- `@agentsy/structured`
-- `@agentsy/agent`
+- `@agentsy/core/processor`
+- `@agentsy/core/structured`
+- `@agentsy/orchestrator/agent`
 
 ## Implementation example with neighbors
 
 ```ts
-import { parseJson } from '@agentsy/structured';
-import { buildToolResultMessage, extractXmlToolCalls } from '@agentsy/tool-calls';
+import { parseJson } from '@agentsy/core/structured';
+import { buildToolResultMessage, extractXmlToolCalls } from '@agentsy/core/tool-calls';
 
 const calls = extractXmlToolCalls(responseText, new Set(['search']));
 

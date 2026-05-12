@@ -42,13 +42,11 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 ### Tier 1: Provider Connectors
 
-| Package                                        | Role                                               | Status    |
-| ---------------------------------------------- | -------------------------------------------------- | --------- |
-| [`@agentsy/normalizers`](packages/normalizers) | Provider-specific normalization into common shape  | Published |
-| [`@agentsy/connectors`](packages/connectors)   | HTTP, WebSocket, and MCP client connections        | Published |
-| [`@agentsy/adapters`](packages/adapters)       | Integration-oriented wrappers around pipelines     | Published |
-| [`@agentsy/mcp`](packages/mcp)                 | Model Context Protocol server and client utilities | Published |
-| [`@agentsy/providers`](packages/providers)     | LLM provider abstraction and credential management | Published |
+| Package                                      | Role                                                                       | Status    |
+| -------------------------------------------- | -------------------------------------------------------------------------- | --------- |
+| [`@agentsy/connectors`](packages/connectors) | HTTP, WebSocket, and MCP client connections                                | Published |
+| [`@agentsy/mcp`](packages/mcp)               | Model Context Protocol server and client utilities                         | Published |
+| [`@agentsy/providers`](packages/providers)   | LLM provider abstraction plus normalizers, adapters, and pipeline subpaths | Published |
 
 ### Tier 3: Agent Runtime
 
@@ -61,9 +59,9 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 ### Tier 4: Protocol & State
 
-| Package                            | Role                            | Status    |
-| ---------------------------------- | ------------------------------- | --------- |
-| [`@agentsy/ag-ui`](packages/ag-ui) | AG-UI protocol bridge utilities | Published |
+| Package                      | Role                                         | Status    |
+| ---------------------------- | -------------------------------------------- | --------- |
+| [`@agentsy/ui`](packages/ui) | Conversation state and UI projection helpers | Published |
 
 ### Tier 5: Tooling & Security
 
@@ -87,16 +85,12 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 | -------------------------------------------------- | ------------------------------------------------ | --------- |
 | [`@agentsy/orchestrator`](packages/orchestrator)   | Multi-agent coordination and workflow management | Published |
 | [`@agentsy/observability`](packages/observability) | Logging, metrics, and distributed tracing        | Published |
-| [`@agentsy/scheduler`](packages/scheduler)         | Task scheduling and execution orchestration      | Published |
 
 ### Agents & Coordination
 
-| Package                                          | Role                                               | Status    |
-| ------------------------------------------------ | -------------------------------------------------- | --------- |
-| [`@agentsy/agent`](packages/agent)               | Individual agent implementation and helpers        | Published |
-| [`@agentsy/agents`](packages/agents)             | Multi-agent coordination and interaction patterns  | Published |
-| [`@agentsy/plugins`](packages/plugins)           | Extensible plugin system for provider integrations | Published |
-| [`@agentsy/agentic-loop`](packages/agentic-loop) | Multi-agent loop coordination and communication    | Published |
+| Package                                | Role                                                       | Status    |
+| -------------------------------------- | ---------------------------------------------------------- | --------- |
+| [`@agentsy/plugins`](packages/plugins) | Extensible plugin system plus A2A coordination scaffolding | Published |
 
 ### Context & Retrieval
 
@@ -112,18 +106,18 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 ### Utilities & Advanced
 
-| Package                                            | Role                                              | Status    |
-| -------------------------------------------------- | ------------------------------------------------- | --------- |
-| [`@agentsy/token-economy`](packages/token-economy) | Advanced token budget management and optimization | Published |
+| Package                              | Role                                              | Status    |
+| ------------------------------------ | ------------------------------------------------- | --------- |
+| [`@agentsy/tokens`](packages/tokens) | Advanced token budget management and optimization | Published |
 
 ## Pick your adoption path
 
-- **I need robust Node streaming pipelines** → start with [`@agentsy/normalizers`](packages/normalizers) + [`@agentsy/core`](packages/core) (processor subpath)
+- **I need robust Node streaming pipelines** → start with [`@agentsy/providers`](packages/providers) + [`@agentsy/core`](packages/core)
 - **I need JSON schema gates before automation** → add [`@agentsy/core`](packages/core) (structured subpath)
-- **I need multi-step agent behavior** → add [`@agentsy/runtime`](packages/runtime) + [`@agentsy/agent`](packages/agent)
+- **I need multi-step agent behavior** → add [`@agentsy/runtime`](packages/runtime) + [`@agentsy/orchestrator`](packages/orchestrator)
 - **I need VS Code integration utilities** → add [`@agentsy/vscode`](packages/vscode)
 - **I need memory/persistence** → add [`@agentsy/memory`](packages/memory) + [`@agentsy/session`](packages/session)
-- **I need protocol/state helpers** → add [`@agentsy/ag-ui`](packages/ag-ui)
+- **I need protocol/state helpers** → add [`@agentsy/ui`](packages/ui)
 - **I need tool calling** → add [`@agentsy/tools`](packages/tools) + [`@agentsy/core`](packages/core) (tool-calls subpath)
 - **I need enterprise security** → add [`@agentsy/guardrails`](packages/guardrails)
 

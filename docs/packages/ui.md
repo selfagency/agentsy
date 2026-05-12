@@ -23,15 +23,15 @@ This package projects processed events into application state. Use it when you n
 
 ## Common neighbors
 
-- `@agentsy/processor`
+- `@agentsy/core/processor`
 - `@agentsy/renderers`
 - `@agentsy/vscode`
 
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });

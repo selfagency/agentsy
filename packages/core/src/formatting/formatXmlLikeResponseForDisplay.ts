@@ -73,7 +73,7 @@ export function formatXmlLikeResponseForDisplay(text: string): string {
     }
 
     const tag = block.tag.replaceAll(/[._-]+/g, ' ').trim();
-    const title = tag.charAt(0).toUpperCase() + tag.slice(1);
+    const title = `${tag[0]?.toUpperCase() ?? ''}${tag.slice(1)}`;
     transformed += `\n\n**${title}**\n${block.content.trim()}\n\n`;
     replaced = true;
     cursor = block.endIndex;

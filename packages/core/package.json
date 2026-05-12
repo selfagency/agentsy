@@ -83,7 +83,6 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@agentsy/providers": "workspace:*",
     "@agentsy/types": "workspace:*",
     "zod": "^3.23.8"
   },

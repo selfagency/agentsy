@@ -17,16 +17,12 @@ interface ParsedXmlElement {
   endIndex: number;
 }
 
-function isAsciiLetter(char: string): boolean {
-  return /[A-Za-z]/.test(char);
-}
-
 function isValidTagStartCharacter(char: string): boolean {
-  return isAsciiLetter(char) || char === '_' || /[0-9]/.test(char);
+  return /[A-Za-z_\d]/.test(char);
 }
 
 function isValidTagCharacter(char: string): boolean {
-  return /[A-Za-z0-9_:-]/.test(char);
+  return /[A-Za-z\d_:-]/.test(char);
 }
 
 function stripMarkdownCodeFence(text: string): string {

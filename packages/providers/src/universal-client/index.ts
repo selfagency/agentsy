@@ -1,7 +1,7 @@
 /**
  * @agentsy/providers/universal-client
  *
- * Universal client for provider integration (consolidated from @agentsy/universal-client)
+ * Universal client abstractions for provider integration.
  */
 
 /** Placeholder export until universal client abstractions are implemented. */

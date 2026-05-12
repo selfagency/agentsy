@@ -32,7 +32,7 @@
 
 ## Common neighbors
 
-- Lower layers: `@agentsy/processor`, `@agentsy/agent`, `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/normalizers`
+- Lower layers: `@agentsy/core/processor`, `@agentsy/orchestrator/agent`, `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/providers/normalizers`
 
 ## Example
 
@@ -45,8 +45,8 @@ const renderer = createVSCodeChatRenderer({ stream: responseStream });
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });

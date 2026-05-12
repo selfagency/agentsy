@@ -40,7 +40,7 @@ The security framework draws on OWASP LLM Top 10:2025 (LLM01–LLM10), the new O
 
 ### Constraints
 
-- **CON-014**: `@agentsy/guardrails` MUST be a standalone package — not bundled into `@agentsy/agent`; always an optional dependency for consumers.
+- **CON-014**: `@agentsy/guardrails` MUST be a standalone package — not bundled into `@agentsy/orchestrator/agent`; always an optional dependency for consumers.
 - **CON-015**: Guardrail provider integrations MUST be optional peer dependencies — no new required runtime dependencies added to core packages.
 - **CON-016**: Streaming guardrail filters MUST add < 50 ms p99 latency overhead per chunk.
 - **CON-017**: False positive rate for content filtering MUST remain < 1% based on a validated test dataset.
@@ -135,7 +135,7 @@ The security framework draws on OWASP LLM Top 10:2025 (LLM01–LLM10), the new O
 
 ## 3. Alternatives
 
-- **ALT-001**: Inline guardrails into `@agentsy/agent` rather than a standalone package. _Rejected_ — increases bundle size for all consumers, violates single-responsibility, prevents independent versioning of guardrail policies.
+- **ALT-001**: Inline guardrails into `@agentsy/orchestrator/agent` rather than a standalone package. _Rejected_ — increases bundle size for all consumers, violates single-responsibility, prevents independent versioning of guardrail policies.
 - **ALT-002**: Use only NeMo Guardrails (single vendor). _Rejected_ — NeMo requires NVIDIA SDK; creates a hard runtime dependency; pluggable interface (REQ-077) allows any provider including zero-dependency regex.
 - **ALT-003**: Cover only OWASP LLM Top 10:2025 (skip Agentic Top 10:2026). _Rejected_ — ASI01–ASI10 introduces agentic-specific risks (tool misuse, memory poisoning, rogue agents) not addressed by the LLM-only taxonomy.
 - **ALT-004**: Full-buffering guardrails on output streams. _Rejected_ — adds latency proportional to response length; streaming window approach meets CON-016 (< 50 ms p99 per chunk).
