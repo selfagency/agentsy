@@ -3,8 +3,10 @@ export { detectDoomLoop, finishReasonIs, hasNoToolCalls, isStepCount } from './s
 export type {
   AgentLoopAbortReason,
   AgentLoopContext,
+  AgentLoopFinalContext,
   AgentLoopHandle,
   AgentLoopOptions,
+  AgentLoopOutcome,
   AgentLoopState,
   AgentLoopStepContext,
   AgentLoopToolContext,

@@ -43,11 +43,22 @@ export interface AgentLoopToolContext extends AgentLoopStepContext {
 
 export type AgentLoopAbortReason = 'abort' | 'interrupt';
 
+export type AgentLoopOutcome = 'success' | 'interrupt' | 'error' | 'abort';
+
+export interface AgentLoopFinalContext extends AgentLoopContext {
+  outcome: AgentLoopOutcome;
+  finalOutput: ProcessedOutput;
+}
+
 export interface AgentLoopOptions {
   /** Caller-supplied LLM invocation. Receives current message history, returns a stream of chunks. */
   execute: (messages: unknown[]) => AsyncIterable<StreamChunk>;
   /** Stop condition(s) evaluated after every step. Loop continues only when ALL conditions return false. */
   stopWhen: StopCondition | StopCondition[];
+  /** Optional hook fired after loop state is initialized but before RUN_STARTED is emitted. */
+  beforeInit?: (context: AgentLoopContext) => void | Promise<void>;
+  /** Optional hook fired after RUN_STARTED is emitted. */
+  afterInit?: (context: AgentLoopContext) => void | Promise<void>;
   /** Optional hook fired immediately before each loop step executes. */
   beforeStep?: (context: AgentLoopContext) => void | Promise<void>;
   /** Optional callback fired after each completed step. */
@@ -62,6 +73,10 @@ export interface AgentLoopOptions {
   onAbort?: (reason: AgentLoopAbortReason, context: AgentLoopContext) => void | Promise<void>;
   /** Optional callback fired when execute/process logic throws. */
   onError?: (error: Error, context: AgentLoopContext) => void | Promise<void>;
+  /** Optional hook fired before terminal run events are emitted/returned. */
+  beforeFinal?: (context: AgentLoopFinalContext) => void | Promise<void>;
+  /** Optional hook fired after terminal run events are emitted. */
+  afterFinal?: (context: AgentLoopFinalContext) => void | Promise<void>;
   /** Optional callback fired for AG-UI protocol events (RUN_STARTED, STEP_STARTED, etc). */
   onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>;
   /** Unique identifier for this run (e.g., UUID). Used for AG-UI events. */
