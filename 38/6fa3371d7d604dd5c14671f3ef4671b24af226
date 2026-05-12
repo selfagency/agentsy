@@ -1,0 +1,61 @@
+packages/runtime/src/ag-ui/types.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-305
+packages/runtime/src/ag-ui/event-converters.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-328
+packages/runtime/src/ag-ui/event-converters.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-190
+packages/runtime/src/ag-ui/adapter.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-358
+packages/runtime/src/ag-ui/reasoning-mapper.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-187
+packages/agent/src/agent/createAgentLoop.ts
+  s_095d159945d78b::t_d02f22a470c000 1
+packages/runtime/src/ag-ui/interrupt-handler.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-304
+packages/runtime/src/ag-ui/http-server.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-247
+packages/runtime/src/ag-ui/state-manager.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-405
+packages/runtime/package.json
+  s_095d159945d78b::t_745ca4fb1dd4fd 24-28
+packages/runtime/src/ag-ui/observable.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-255
+packages/runtime/src/ag-ui/reasoning-mapper.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-110
+packages/agent/package.json
+  s_095d159945d78b::t_8a4e205939d6a4 37
+packages/runtime/src/ag-ui/index.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-25
+packages/runtime/src/ag-ui/state-manager.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-368
+packages/agent/src/agent/types.ts
+  s_095d159945d78b::t_7a2764873fc5b2 1
+packages/runtime/src/ag-ui/http-server.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-269
+packages/runtime/src/ag-ui/interrupt-handler.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-182
+packages/runtime/tsup.config.ts
+  s_095d159945d78b::t_8b9b5a3e6d68ce 4
+packages/runtime/src/ag-ui/adapter.test.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-354
+packages/runtime/src/ag-ui/observable.ts
+  s_095d159945d78b::t_f23ca1a5b036ec 1-106
+pnpm-lock.yaml
+  ai_agent 78-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "386fa3371d7d604dd5c14671f3ef4671b24af226",
+  "prompts": {},
+  "sessions": {
+    "s_095d159945d78b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "64b74bd9-cfa7-42f0-a664-0a89c110b635",
+        "model": "unknown"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
