@@ -1,3 +1,70 @@
-// @agentsy/orchestrator/scheduler — Agent-invokable task scheduling with natural language parsing
-// Scaffolded; implementation pending. See IMPLEMENTATION-PLAN.md for details.
-export type SchedulerScaffoldStatus = 'pending-implementation';
+export type SchedulerTaskStatus = 'pending' | 'scheduled' | 'cancelled';
+
+export interface SchedulerTaskDefinition {
+  id: string;
+  prompt: string;
+  runAt?: number;
+  lane?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SchedulerTaskRecord extends SchedulerTaskDefinition {
+  createdAt: number;
+  status: SchedulerTaskStatus;
+}
+
+export interface SchedulerRegistry {
+  register(task: SchedulerTaskDefinition): SchedulerTaskRecord;
+  cancel(taskId: string): SchedulerTaskRecord | null;
+  get(taskId: string): SchedulerTaskRecord | null;
+  list(options?: { lane?: string; status?: SchedulerTaskStatus }): SchedulerTaskRecord[];
+}
+
+export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] = []): SchedulerRegistry {
+  const tasks = new Map<string, SchedulerTaskRecord>();
+
+  const register = (task: SchedulerTaskDefinition): SchedulerTaskRecord => {
+    const record: SchedulerTaskRecord = {
+      ...task,
+      createdAt: Date.now(),
+      status: task.runAt !== undefined ? 'scheduled' : 'pending',
+    };
+    tasks.set(task.id, record);
+    return { ...record };
+  };
+
+  for (const task of initialTasks) {
+    register(task);
+  }
+
+  return {
+    register,
+
+    cancel(taskId) {
+      const record = tasks.get(taskId);
+      if (!record) {
+        return null;
+      }
+
+      const cancelled: SchedulerTaskRecord = {
+        ...record,
+        status: 'cancelled',
+      };
+      tasks.set(taskId, cancelled);
+      return { ...cancelled };
+    },
+
+    get(taskId) {
+      const record = tasks.get(taskId);
+      return record ? { ...record } : null;
+    },
+
+    list(options = {}) {
+      return [...tasks.values()]
+        .filter(task => (options.lane ? task.lane === options.lane : true))
+        .filter(task => (options.status ? task.status === options.status : true))
+        .sort((left, right) => left.createdAt - right.createdAt)
+        .map(task => ({ ...task }));
+    },
+  };
+}

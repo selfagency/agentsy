@@ -8,6 +8,7 @@ export interface SessionState {
 
 export interface SessionStore {
   getState(): SessionState;
+  getValue<T = unknown>(key: string): T | undefined;
   setValue(key: string, value: unknown): void;
 }
 
@@ -20,6 +21,9 @@ export const createSessionStore = (state: SessionState): SessionStore => {
         id: state.id,
         values: { ...values },
       };
+    },
+    getValue(key) {
+      return values[key] as never;
     },
     setValue(key, value) {
       values[key] = value;
