@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/normalizers": "workspace:*",
+    "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*"
   },
   "devDependencies": {
