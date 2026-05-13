@@ -1,0 +1,29 @@
+packages/testing/package.json
+  s_69be868cc3b14b::t_e4628b5cd3c19b 31
+packages/testing/tsconfig.json
+  s_69be868cc3b14b::t_75a21af1c0ee5a 8-16,20-22,25-26
+  s_69be868cc3b14b::t_87f89038a1db90 17-19
+.fallowrc.jsonc
+  s_69be868cc3b14b::t_8eabba80fe86a3 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "542c609601ed3aa1b3233ae4970641d4d7a1079b",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_69be868cc3b14b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1a6a902-c937-4241-b759-cea480205883",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
