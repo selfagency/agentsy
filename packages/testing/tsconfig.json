@@ -5,54 +5,22 @@
     "rootDir": "../..",
     "outDir": "dist",
     "paths": {
-      "@agentsy/core": [
-        "packages/core/src/index.ts"
-      ],
-      "@agentsy/core/processor": [
-        "packages/core/src/processor/index.ts"
-      ],
-      "@agentsy/core/recovery": [
-        "packages/core/src/recovery/index.ts"
-      ],
-      "@agentsy/core/sse": [
-        "packages/core/src/sse/index.ts"
-      ],
-      "@agentsy/core/context": [
-        "packages/core/src/context/index.ts"
-      ],
-      "@agentsy/core/formatting": [
-        "packages/core/src/formatting/index.ts"
-      ],
-      "@agentsy/core/structured": [
-        "packages/core/src/structured/index.ts"
-      ],
-      "@agentsy/core/thinking": [
-        "packages/core/src/thinking/index.ts"
-      ],
-      "@agentsy/core/tool-calls": [
-        "packages/core/src/tool-calls/index.ts"
-      ],
-      "@agentsy/core/xml-filter": [
-        "packages/core/src/xml-filter/index.ts"
-      ],
-      "@agentsy/providers": [
-        "packages/providers/src/index.ts"
-      ],
-      "@agentsy/providers/adapters": [
-        "packages/providers/src/adapters/index.ts"
-      ],
-      "@agentsy/providers/normalizers": [
-        "packages/providers/src/normalizers/index.ts"
-      ],
-      "@agentsy/providers/pipeline": [
-        "packages/providers/src/pipeline/index.ts"
-      ],
-      "@agentsy/renderers": [
-        "packages/renderers/src/index.ts"
-      ]
+      "@agentsy/core": ["packages/core/src/index.ts"],
+      "@agentsy/core/processor": ["packages/core/src/processor/index.ts"],
+      "@agentsy/core/recovery": ["packages/core/src/recovery/index.ts"],
+      "@agentsy/core/sse": ["packages/core/src/sse/index.ts"],
+      "@agentsy/core/context": ["packages/core/src/context/index.ts"],
+      "@agentsy/core/formatting": ["packages/core/src/formatting/index.ts"],
+      "@agentsy/core/structured": ["packages/core/src/structured/index.ts"],
+      "@agentsy/core/thinking": ["packages/core/src/thinking/index.ts"],
+      "@agentsy/core/tool-calls": ["packages/core/src/tool-calls/index.ts"],
+      "@agentsy/core/xml-filter": ["packages/core/src/xml-filter/index.ts"],
+      "@agentsy/providers": ["packages/providers/src/index.ts"],
+      "@agentsy/providers/adapters": ["packages/providers/src/adapters/index.ts"],
+      "@agentsy/providers/normalizers": ["packages/providers/src/normalizers/index.ts"],
+      "@agentsy/providers/pipeline": ["packages/providers/src/pipeline/index.ts"],
+      "@agentsy/renderers": ["packages/renderers/src/index.ts"]
     }
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
