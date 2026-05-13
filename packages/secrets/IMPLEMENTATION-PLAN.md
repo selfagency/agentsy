@@ -1,103 +1,114 @@
-# IMPLEMENTATION-PLAN.md
+# @agentsy/secrets — Implementation Plan
 
-## Package: @agentsy/secrets
+## Role in Framework Ecosystem
 
-### Overview
+`@agentsy/secrets` is the **security vault** of the framework. It provides a unified, secure interface for managing sensitive information like LLM API keys and provider tokens. It ensures that credentials are never stored in plaintext and that they are only accessible to authorized components.
 
-Cross-cutting secret management infrastructure providing secure storage and retrieval of API keys, tokens, and other sensitive configuration. This package serves as the foundation for all provider authentication across the ecosystem.
+It is consumed by `@agentsy/core/universal-client` (for authentication) and `@agentsy/cli` (for credential management commands).
 
-### Current Status
+### Ecosystem Sketch
 
-🔄 **Stub** - Package exists but needs full implementation
+```text
+[ @agentsy/cli ]       [ @agentsy/core ]
+      |                        |
+      v                        v
+[ @agentsy/secrets ] <--- Secure Retrieval
+      |
+      +-----------------------+-----------------------+
+      |                       |                       |
+      v                       v                       v
+ [ OS Keychain ]        [ Env Variables ]       [ Encrypted File ]
+ (Mac/Win/Linux)        (Docker / CI)           (Dev Fallback)
+```
 
-### Core Responsibilities
+## Fulfillment of Role
 
-- Secure storage of API keys and tokens
-- Provider credential management
-- Environment variable handling
-- Key rotation and lifecycle management
-- Cross-platform secret store abstraction
+The package fulfills its role by implementing a tiered storage strategy:
 
-### Public API Design
+1. **SecretStore Abstraction**: A common interface for all storage backends.
+2. **Platform-Native Keychain**: Integrating with macOS Keychain, Windows DPAPI, and Linux libsecret.
+3. **Secure Encryption**: AES-256 encryption for local file-based storage.
+4. **Source Precedence**: Explicitly defined priority (`Keychain` > `Env` > `File`).
+5. **Redaction**: Integrated tools to scrub secrets from logs and traces.
+
+## Detailed Functionality
+
+### 1. Storage Backends (`src/store/`)
+
+- **Mechanism**: `SecretStore` implementations for each platform.
+- **Keychain**: Uses `keytar` or native bindings for production-grade security.
+- **File**: Atomic, encrypted writes with restricted file permissions.
+- **Environment**: Read-only wrapper for `process.env`.
+
+### 2. Validation & Redaction (`src/security/`)
+
+- **SecretValidator**: Ensures that API keys match the expected format for their provider.
+- **SecretRedactor**: Provides a global utility to replace known secrets with `[REDACTED]` in strings.
+
+### 3. Provider Integration (`src/providers/`)
+
+- **Mechanism**: Automatic loading of credentials based on provider name (e.g., `openai` looks for `OPENAI_API_KEY`).
+- **Endpoint Support**: Handles custom endpoints and organization IDs for enterprise deployments.
+
+## Logic & Data Flow
+
+### 1. Retrieval Flow
+
+1. `@agentsy/core/universal-client` requests credentials for a provider.
+2. `SecretManager.getCredentials(provider)` is called.
+3. The manager iterates through the stores in order of precedence.
+4. Once found, the secret is returned as a `ProviderCredentials` object.
+5. If not found, a descriptive `MissingSecretError` is thrown.
+
+### 2. Management Flow
+
+1. User runs `agentsy config set openai.apiKey ...`.
+2. CLI calls `SecretManager.setCredentials()`.
+3. The manager identifies the most secure available store (usually Keychain).
+4. The secret is validated and then persisted to the store.
+
+## Key Interfaces
+
+### SecretStore
 
 ```typescript
-// Secret store abstraction
 export interface SecretStore {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
   delete(key: string): Promise<void>;
   list(): Promise<string[]>;
-  exists(key: string): Promise<boolean>;
-}
-
-// Provider-specific credential handling
-export interface ProviderCredentials {
-  provider: string;
-  apiKey?: string;
-  endpoint?: string;
-  organization?: string;
-  customConfig?: Record<string, unknown>;
-}
-
-// Secret management utilities
-export class SecretManager {
-  createStore(type: 'keychain' | 'file' | 'env'): SecretStore;
-  getCredentials(provider: string): Promise<ProviderCredentials>;
-  setCredentials(provider: string, creds: ProviderCredentials): Promise<void>;
-  migrateStore(from: SecretStore, to: SecretStore): Promise<void>;
-}
-
-// Secret validation
-export interface SecretValidator {
-  validate(secret: string, type: string): boolean;
-  sanitize(secret: string): string;
-  redact(secret: string): string;
 }
 ```
 
-### Implementation Strategy
+### ProviderCredentials
 
-#### Store Backends
+```typescript
+export interface ProviderCredentials {
+  provider: string;
+  apiKey: string;
+  organizationId?: string;
+  endpoint?: string;
+}
+```
 
-1. **Keychain Store** (macOS/Linux/Windows)
-   - Use system keychain APIs
-   - Default for production use
-   - Most secure option
+## Implementation Details
 
-2. **File Store** (Development/CI)
-   - Encrypted local file
-   - Fallback when keychain unavailable
-   - Uses file system permissions
+### Source Precedence
 
-3. **Environment Store** (Docker/Production)
-   - Environment variables
-   - For containerized deployments
-   - No persistent storage
+The default precedence must be:
 
-#### Provider Integration
+1. **Keychain**: Highest priority, most secure.
+2. **Environment Variables**: For CI/CD and containerized environments.
+3. **Encrypted File**: Lowest priority, for local development fallback.
 
-- Direct integration with `providers` package
-- Automatic credential loading
-- Validation against provider requirements
-- Error handling for missing/invalid credentials
+### Memory Safety
 
-### Dependencies
+Sensitive data should be cleared from memory as soon as it is no longer needed. The `SecretStore` should handle buffers carefully to avoid leaving traces in garbage-collected memory.
 
-- Internal: `@agentsy/types` - Core interfaces
-- External: Platform-specific keychain libraries
-- External: Encryption libraries for file store
+## Sources Synthesized
 
-### Test Strategy
+`DECISION-LOG.md`, `owasp-security-testing-1.md`, `agentsy-prd.md`, `agentsy-testing-plan.md`, `packages/secrets/IMPLEMENTATION-PLAN.md`.
 
-- Mock secret stores for testing
-- Encryption/decryption validation
-- Cross-platform store compatibility
-- Provider integration tests
-
-### Co-development Dependencies
-
-- `providers` - Provider credential requirements
-- `runtime` - Security context and permissions
 - `cli` - Secret management commands
 
 ### Security Requirements
@@ -154,7 +165,7 @@ export interface SecretValidator {
 
 ### File Structure
 
-```
+```text
 packages/secrets/src/
 ├── index.ts                 # Public exports
 ├── stores/
@@ -179,3 +190,11 @@ packages/secrets/src/
 - **Medium**: Encryption algorithm selection and maintenance
 - **Low**: File permission security edge cases
 - **Low**: Memory cleanup timing issues
+
+---
+
+## Architecture Decision Snapshot (migrated from `plan/DECISION-LOG.md`)
+
+- `secrets` remains a standalone cross-cutting package and must not be merged into provider packages.
+- Secret handling boundaries remain independent from provider/runtime feature work.
+- Security-critical package boundaries are locked and validated in architecture verification gates.

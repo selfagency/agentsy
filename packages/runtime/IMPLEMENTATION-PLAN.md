@@ -1,125 +1,176 @@
-# IMPLEMENTATION-PLAN.md
+# @agentsy/runtime — Implementation Plan
 
-## Package: @agentsy/runtime
+## Role in Framework Ecosystem
 
-### Overview
+`@agentsy/runtime` is the **execution environment** of the framework. It provides the secure "container" where a single agent's reasoning loop resides. It manages the agent's state, enforces security policies, executes tool calls in a sandbox, and synchronizes state with UI surfaces via the AG-UI protocol.
 
-Runtime execution engine providing sandboxing, approval workflows, hook execution, agent loop orchestration, and tool execution policies. Manages the secure execution environment for agents with fine-grained control and monitoring.
+It sits between `@agentsy/orchestrator` (which coordinates multiple runtimes) and `@agentsy/core` (which provides the stream processing primitives).
 
-### Note
+### Ecosystem Sketch
 
-**AGENTIC-LOOP WILL BE MERGED INTO RUNTIME** - this runtime package becomes the primary execution engine. The agentic-loop package will be deleted and its functionality moved here, since "runtime" better describes the comprehensive execution engine we're building.
+```text
+[ @agentsy/orchestrator ]
+         |
+         v
+[ @agentsy/runtime ] <--- Agent Loop & Sandbox
+         |
+         +-----------------------+-----------------------+
+         |                       |                       |
+         v                       v                       v
+ [ Hook Registry ]       [ Approval Engine ]     [ AG-UI Bridge ]
+ (Lifecycle Events)      (HITL Gates)            (State Sync)
+         |                       |                       |
+         +-----------+-----------+-----------+-----------+
+                     |
+                     v
+             [ @agentsy/core ]
+```
 
-### Core Responsibilities
+## Fulfillment of Role
 
-- Agent loop orchestration and execution
-- Secure execution sandboxing
-- Approval workflow management
-- Hook system for lifecycle events
-- Tool execution policies and permissions
-- Runtime monitoring and diagnostics
+The package fulfills its role by implementing a stateful agent loop with the following capabilities:
 
-### Public API Design
+1. **AgentLoop Authority**: The primary loop that drives the `think -> act -> observe` cycle.
+2. **Security Sandboxing**: Ensuring tool execution is restricted to safe boundaries.
+3. **Approval Workflows**: Implementing Human-in-the-loop (HITL) gates for destructive actions.
+4. **AG-UI Protocol**: A dedicated subpath (`@agentsy/runtime/ag-ui`) for real-time UI synchronization.
+5. **Hook System**: Allowing extensions to tap into lifecycle events (e.g., `before_tool`, `after_turn`).
+
+## Detailed Functionality
+
+### 1. Agent Loop (`src/loop/`)
+
+- **Mechanism**: `AgentLoop` interface with `executeStep` and `configure` methods.
+- **Responsibility**: Orchestrating the calls to `@agentsy/core` and managing the message history.
+- **Loop Logic**:
+  - Select model and tools.
+  - Call `@agentsy/core/universal-client`.
+  - Process output events (text, tool calls).
+  - Execute tools via the sandbox.
+  - Check for `StopCondition` predicates (e.g., max turns reached).
+
+### 2. Sandbox & Policy (`src/sandbox/`)
+
+- **Responsibility**: Secure execution.
+- **Mechanism**: `ExecutionPolicy` and `Sandbox` interfaces.
+- **Functionality**:
+  - **Pluggable Backends**: `local` (Node `vm`), `docker`, `e2b`, `modal`, `wasm`.
+  - **Allow/Deny Lists**: Restricting which tools an agent can use.
+  - **Resource Limits**: Enforcing timeouts and memory caps on tool calls.
+  - **Path Confinement**: Restricting file-system tools to the project root; `../` sequences rejected (SEC-002).
+  - **Tool Validation**: Native argument validation.
+  - **MCP Filtering**: Filtering server connections by trust level (trusted/untrusted/readonly) (SEC-007).
+  - **SSRF Prevention**: Validating destination URLs against an egress allowlist (SEC-008).
+
+### 3. Approval Engine (`src/approval/`)
+
+- **Mechanism**: `ApprovalRequest` and `recordDecision` flow.
+- **Deferred Execution**: Support for tool calls that are deferred for human input.
+- **Enforcement**: All destructive tool calls (file overwrite, shell exec, network egress) MUST pass through approval engine (SEC-001).
+- **Modes**:
+  - `allow`: Execute without asking.
+  - `ask`: Pause and wait for human confirmation.
+  - `deny`: Block execution automatically.
+  - `auto`: Automatic approval based on trust-tier or previously approved patterns.
+  - `plan`: Dry-run mode for previewing tool effects.
+
+### 4. AG-UI Bridge (`src/ag-ui/`)
+
+- **Responsibility**: Real-time state synchronization.
+- **Protocol**: Emits events for step start, tool selection, thought block updates, and incremental text deltas, allowing UIs to show exactly what the agent is "thinking."
+
+## Logic & Data Flow
+
+### 1. The Execution Turn
+
+1. `AgentLoop.executeStep()` is triggered.
+2. `HookRegistry.trigger('before_step')` runs.
+3. Runtime assembles the current context (History + Memory).
+4. Request is sent to `@agentsy/core`.
+5. As chunks arrive, `AG-UI Bridge` emits synchronization events.
+6. If a tool call is detected:
+   - `ApprovalEngine.requiresApproval()` is checked.
+   - If approved, `Sandbox.execute()` runs the tool.
+7. Results are appended to history, and `HookRegistry.trigger('after_step')` runs.
+
+## Key Interfaces
+
+### AgentLoop
 
 ```typescript
-// Runtime execution context
-export interface RuntimeContext {
-  sessionId: string;
-  agentId: string;
-  loopId: string;
-  permissions: PermissionSet;
-  policies: ExecutionPolicy[];
-  hooks: HookRegistry;
-  sandbox: SandboxConfig;
-  telemetry: TelemetryConfig;
-}
-
-// Agent loop (merged from agentic-loop)
 export interface AgentLoop {
-  id: string;
-  config: LoopConfig;
-
-  // Core loop execution
-  execute(): Promise<LoopResult>;
+  execute(task: string): Promise<RunResult>;
   executeStep(): Promise<StepResult>;
-
-  // State management
-  getState(): LoopState;
-  configure(config: LoopConfig): void;
-
-  // Lifecycle
-  start(): Promise<void>;
+  getState(): AgentLoopState;
   pause(): Promise<void>;
   resume(): Promise<void>;
-  stop(): Promise<void>;
 }
+```
 
-// Execution sandbox
-export interface Sandbox {
-  execute(request: ExecutionRequest): Promise<ExecutionResult>;
-  validate(request: ExecutionRequest): Promise<ValidationResult>;
-  cleanup(): Promise<void>;
+### RuntimeContext
 
-  // Resource management
-  setLimit(resource: string, limit: ResourceLimit): void;
-  getUsage(resource: string): ResourceUsage;
-  resetUsage(): void;
+```typescript
+export interface RuntimeContext {
+  agentId: AgentId;
+  sessionId: SessionId;
+  config: AgentConfig;
+  sandbox: Sandbox;
+  hooks: HookRegistry;
+  policy: ExecutionPolicy;
 }
+```
 
-// Approval workflow
-export interface ApprovalWorkflow {
-  requiresApproval(operation: Operation): boolean;
-  requestApproval(request: ApprovalRequest): Promise<ApprovalDecision>;
-  recordDecision(decision: ApprovalDecision): Promise<void>;
+### AgentExecutor (LobeHub pattern)
 
-  // Workflow configuration
-  addStep(step: ApprovalStep): void;
-  removeStep(stepId: string): void;
-  configureConditions(conditions: ApprovalCondition[]): void;
+```typescript
+export interface AgentExecutor {
+  execute(agent: Agent, input: AgentInput): Promise<AgentOutput>;
+  stream(agent: Agent, input: AgentInput): AsyncIterator<AgentChunk>;
 }
+```
 
-// Hook system
-export interface HookRegistry {
-  registerHook(event: LifecycleEvent, hook: Hook): string;
-  unregisterHook(hookId: string): void;
-  triggerHooks(event: LifecycleEvent, context: HookContext): Promise<HookResult[]>;
+### Signal System
 
-  // Hook management
-  listHooks(event?: LifecycleEvent): Hook[];
-  getHook(hookId: string): Hook | null;
-}
+- **Responsibility**: Inter-agent communication.
+- **Mechanism**: `AgentSignal` package concern (LobeHub pattern).
+- **Functionality**: Dedicated communication layer for coordinating multiple runtimes.
 
-// Execution policies
-export interface ExecutionPolicy {
-  id: string;
-  name: string;
-  conditions: PolicyCondition[];
-  actions: PolicyAction[];
-  priority: number;
-  enabled: boolean;
-}
+## Implementation Details
+
+### Boundary Enforcement
+
+Strictly prevent cross-imports between `@agentsy/runtime` and `@agentsy/orchestrator`. The runtime should be oblivious to the fact that it might be part of a larger workflow; it only knows its current agent configuration and session state.
+
+### Integration with Core
+
+The runtime consumes `@agentsy/core/processor` and `@agentsy/core/universal-client` as its primary dependencies for interacting with LLMs.
+
+## Sources Synthesized
+
+`agentsy-agents-v1.md`, `agentsy-tech.md`, `agentsy-testing-plan.md`, `RECONCILIATION-REPORT.md`, `DECISION-LOG.md`, `research/AGENT-PLATFORMS-ANALYSIS.md`, `packages/runtime/IMPLEMENTATION-PLAN.md`.
 
 // Main runtime manager
 export class RuntimeManager {
-  constructor(config: RuntimeConfig);
+constructor(config: RuntimeConfig);
 
-  // Agent loop management (merged from agentic-loop)
-  createLoop(config: LoopConfig): Promise<AgentLoop>;
-  getLoop(loopId: string): Promise<AgentLoop | null>;
+// Agent loop management (merged from agentic-loop)
+createLoop(config: LoopConfig): Promise<AgentLoop>;
+getLoop(loopId: string): Promise<AgentLoop | null>;
 
-  // Execution lifecycle
-  executeOperation(operation: Operation, context: RuntimeContext): Promise<ExecutionResult>;
+// Execution lifecycle
+executeOperation(operation: Operation, context: RuntimeContext): Promise<ExecutionResult>;
 
-  // Policy enforcement
-  evaluatePolicies(operation: Operation, context: RuntimeContext): Promise<PolicyResult[]>;
-  enforcePolicies(results: PolicyResult[]): Promise<void>;
+// Policy enforcement
+evaluatePolicies(operation: Operation, context: RuntimeContext): Promise<PolicyResult[]>;
+enforcePolicies(results: PolicyResult[]): Promise<void>;
 
-  // Monitoring
-  getMetrics(): RuntimeMetrics;
-  getDiagnostics(): RuntimeDiagnostics;
-  healthCheck(): Promise<HealthStatus>;
+// Monitoring
+getMetrics(): RuntimeMetrics;
+getDiagnostics(): RuntimeDiagnostics;
+healthCheck(): Promise<HealthStatus>;
 }
-```
+
+````text
 
 ### Integration Strategy
 
@@ -312,7 +363,7 @@ packages/runtime/src/
     ├── metrics.ts             # Runtime metrics
     ├── diagnostics.ts         # Diagnostic tools
     └── health.ts              # Health monitoring
-```
+````
 
 ### Verification Criteria
 
@@ -329,3 +380,42 @@ packages/runtime/src/
 - **Medium**: Migration complexity from agentic-loop
 - **Low**: Performance overhead from added runtime features
 - **Low**: Hook execution order and timing issues
+
+---
+
+## Alignment Snapshot (migrated from `plan/alignment-report-5-11-26.md`)
+
+- Runtime ownership boundary is confirmed complete: session-backed snapshots, spawned child execution, and workflow ordering live in `@agentsy/runtime`.
+- Runtime/docs consistency status: aligned with `MASTER-IMPLEMENTATION-PLAN`, `DECISION-LOG`, and `PACKAGE-NAMING-MAP`.
+- Verification signal in source report: all major gates were green when snapshot was taken (build/check-types/test).
+
+---
+
+## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
+
+### Approval + sandbox contracts
+
+```typescript
+type ApprovalMode = 'allow' | 'ask' | 'deny' | 'auto' | 'plan';
+type SandboxMode = 'read-only' | 'process' | 'full-access';
+
+interface ApprovalEngine {
+  evaluate(call: ToolCall): Promise<ApprovalResult>;
+}
+
+interface ToolExecutor {
+  executeAll(calls: ToolCall[], options: { signal: AbortSignal; sessionId?: string }): Promise<ToolResult[]>;
+}
+```
+
+### Runtime obligations carried forward
+
+- Pre-tool-use hooks execute before rule evaluation.
+- Rule evaluation order remains deny/allow/ask with explicit specificity behavior preserved by shared policy semantics.
+- Tool repair hook (`repairToolCall`) remains optional executor extension.
+- Skill/plugin loading remains checksum-verified where remote manifests are permitted.
+
+### AG-UI alignment
+
+- Runtime remains the canonical home for AG-UI protocol support via `@agentsy/runtime/ag-ui`.
+- Standalone `@agentsy/ag-ui` package references in `agentsy-tech.md` are treated as historical and mapped to runtime subpath exports.

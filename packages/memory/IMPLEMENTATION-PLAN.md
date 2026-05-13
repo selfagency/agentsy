@@ -1,103 +1,128 @@
-# IMPLEMENTATION-PLAN.md
+# @agentsy/memory — Implementation Plan
 
-## Package: @agentsy/memory
+## Role in Framework Ecosystem
 
-### Overview
+`@agentsy/memory` is the **long-term brain** of the framework. It manages the transition of information from ephemeral stream chunks into structured, persistent knowledge. It provides the storage and retrieval mechanisms that allow agents to "remember" facts, past interactions, and learned procedures across sessions.
 
-Advanced multi-modal memory system combining the best ideas from Memelord, OB1, Karpathy's memory concepts, CoG, Context Sync, SwarmVault, and RemindB. Provides hierarchical memory storage, semantic search, memory compression, continuous learning, and sophisticated retrieval mechanisms.
+It integrates deeply with `@agentsy/runtime` for active context management and `@agentsy/session` for cross-session continuity.
 
-### Vision
+### Ecosystem Sketch
 
-Memory isn't just storage - it's an intelligent, learning system that:
+```text
+[ @agentsy/runtime ] <--- Context Injection
+         |
+         v
+[ @agentsy/memory ] <--- Storage & Retrieval
+         |
+         +-----------------------+-----------------------+
+         |                       |                       |
+         v                       v                       v
+ [ Semantic Store ]      [ Episodic Store ]      [ Procedural Store ]
+ (Facts/Wiki)            (Events/Logs)           (Skills/Routines)
+         |                       |                       |
+         +-----------+-----------+-----------+-----------+
+                     |
+                     v
+             [ SQLite / Vector DB ]
+```
 
-- **Organizes information hierarchically** like human memory (sensory → working → short-term → long-term)
-- **Auto-summarizes and compresses** to prevent infinite growth
-- **Maintains semantic relationships** between memories
-- **Learns from interactions** to improve retrieval
-- **Supports multi-modal inputs** (text, images, audio, code, structured data)
-- **Provides context-aware retrieval** based on current conversation
-- **Integrated with development workflows** (like SwarmVault's provider awareness)
-- **Persists across sessions** (Agent memory persistence)
+## Fulfillment of Role
 
-### Context Engineering First
+The package fulfills its role by implementing a hierarchical memory model:
 
-Following the insights from the research, we understand that **context engineering** is the fundamental discipline - memory is essentially a sophisticated context management system. The key principle from Tobi Lutke and others: context engineering is "the art of providing all the context for the task to be plausibly solvable by the LLM."
+1. **Sensory Memory**: Raw, unfiltered stream buffer (last N tokens).
+2. **Working Memory**: The active context window (managed via `@agentsy/runtime`).
+3. **Semantic Memory**: Long-term facts and concepts (Karpathy-style wiki pages).
+4. **Episodic Memory**: Timestamped events and session histories.
+5. **Procedural Memory**: Learned skills and executable patterns.
 
-Memory is therefore not just storage but **dynamic context composition** - assembling the right information, tools, and structure at the right time. Most agent failures are context failures, not model failures.
+## Detailed Functionality
 
-### Memory Type Architecture (Enhanced from Research)
+### 1. Memory Store (`src/store/`)
 
-Building on the cognitive science foundation from Gokcer Belgusen's breakdown and Letta's agent memory research:
+- **Wiki Invariant**: Vector RAG MUST index synthesized wiki pages, NOT raw session events (REQ-017).
+- **CRUD API**: White-box editing for reading, creating, updating, and deleting individual entries.
 
-#### **Short-Term Memory (Sensory → Working)**
+### 2. Retrieval & Injection (`src/retrieval/`)
 
-- **Sensory Memory**: Raw, unfiltered input buffer (seconds to minutes)
-- **Working Memory**: Active context window - immediate task focus (hours)
-- **Characteristics**: Limited capacity, temporary, context-bound
-- **Implementation**: In-memory with automatic eviction policies
+- **Context Injection**: Retrieved memory context injected via `<memory_context>` tags using existing `splitLeadingXmlContext`/`dedupeXmlContext` pipeline (REQ-019).
+- **Tools**: Expose `memory_search()`, `memory_capture()`, `memory_list()`, `memory_stats()`, `memory_lint()` to agent loop (REQ-018).
 
-#### **Long-Term Memory (Structured Storage)**
+### 3. Memory Scopes (`src/scope/`)
 
-- **Semantic Memory**: General facts, concepts, relationships (knowledge base)
-- **Episodic Memory**: Specific events, experiences, conversations with timestamps
-- **Procedural Memory**: Skills, routines, learned processes (executable patterns)
-- **Characteristics**: Persistent, indexed, cross-session accessible
-- **Implementation**: SQLite + Vector RAG with tiered storage
+- **Responsibility**: Isolation and access control.
+- **Scopes**:
+  - `session`: Only available to the current agent session.
+  - `user`: Global to the user across all projects.
+  - `project`: Shared across agents within a single codebase.
+  - `team`: Shared across a declared group of agents (requires trust model).
+  - `global`: Universally available.
 
-### Combined Libraries Integration
+### 4. Synthesis & Compression (`src/synthesis/`)
 
-#### From Memelord
+- **Mechanism**: Periodic review of episodic logs to generate or update semantic wiki pages.
+- **Goal**: 75-99% token reduction in long-running sessions via tree-based navigation and delta versioning (RemindB pattern).
 
-- **Hierarchical memory organization** - Sensory → working → short-term → long-term
-- **Semantic auto-tagging** - Domain concepts extracted during analysis
-- **Memory clustering** - Connected concepts grouped together
+## Logic & Data Flow
 
-#### From OB1
+### 1. Memory Injection Flow
 
-- **Advanced relationship graph management** - Context-aware relationship detection
-- **Context-aware retrieval** - Memory relationships enhance search results
-- **Memory relationship graph traversal** - Navigate connections between related memories
+1. At turn start, `@agentsy/runtime` requests context from `@agentsy/memory`.
+2. Memory performs a `search` based on the current goal and message history.
+3. Relevant entries are formatted as XML (e.g., `<memory_context>`) and injected into the system prompt.
+4. The LLM processes the turn with the injected context.
 
-#### From Karpathy's Memory Concepts
+### 2. Learning Flow (Consolidation)
 
-- **Attention-based memory ranking** - Hot vs cold memory distinction
-- **Forgetting curve implementation** - Memory decay and compression principles
-- **Retrieval-augmented generation** - Memory enhances response generation
+1. After a session ends or reaches a milestone, `MemoryManager.consolidate()` is triggered.
+2. The system reviews the `Episodic` event logs for that session.
+3. New facts are extracted and added to `Semantic` memory.
+4. Redundant or contradictory entries are resolved or merged (SwarmVault pattern).
 
-#### From CoG
+## Key Interfaces
 
-- **Continuous learning feedback loops** - Interaction-based memory improvement
-- **Adaptive chunking strategies** - Memory compression and organization
-- **Memory consolidation timelines** - Periodic memory review and organization
+### MemoryStore
 
-#### From Context Sync
+```typescript
+export interface MemoryStore {
+  write(entry: MemoryEntry): Promise<MemoryId>;
+  read(id: MemoryId): Promise<MemoryEntry | undefined>;
+  search(query: MemoryQuery): Promise<RetrievalResult[]>;
+  delete(id: MemoryId): Promise<void>;
+  compact(): Promise<void>;
+}
+```
 
-- **Local-first project memory** - Codebase identity and tech stack awareness
-- **Git-aware context** - Versioned file relationships and change tracking
-- **Active work memory** - Current session focus and progress tracking
+### MemoryEntry
 
-#### From SwarmVault
+```typescript
+export interface MemoryEntry {
+  id: MemoryId;
+  type: 'semantic' | 'episodic' | 'procedural';
+  scope: MemoryScope;
+  content: string;
+  embedding?: number[];
+  metadata: Record<string, unknown>;
+  importance: number; // 0.0 to 1.0 (attention ranking)
+  createdAt: Date;
+  expiresAt?: Date;
+}
+```
 
-- **Knowledge graph construction** - Provenance tracking for every connection
-- **Multi-modal content types** - Comprehensive input support (30+ formats)
-- **Contradiction detection** - Automatic conflict resolution
-- **Shareable knowledge kits** - Artifacts for posting or handing off
-- **Agent-ready integrations** - Built-in agent skill bundles
+## Implementation Details
 
-#### From RemindB + SQLite RAG Patterns
+### Injection Safety
 
-- **SQLite-based token efficiency** - 75-99% token reduction in agent sessions
-- **Tree-based memory navigation** - Hierarchical memory organization
-- **Temperature-based prioritization** - Hot vs cold memory tracking
-- **Portable memory files** - Single file portability across agents
-- **Git-style versioning** - Delta-based change tracking
-- **Vector-backed memory retrieval** - Semantic similarity for memory access
-- **Hybrid SQL + Vector search** - Precise filtering + semantic similarity
-- **RAG-aware memory organization** - Retrieval-augmented generation patterns
+All content retrieved from memory must be treated as untrusted input. The system must sanitize entries for prompt injection patterns before splicing them into the system prompt.
 
-#### From Letta Agent Memory Research
+### Karpathy Wiki
 
-- **Context Window as Working Memory** - Memory = context management
+The "wiki" is the primary source of semantic knowledge. Instead of indexing raw chat messages, we index synthesized summaries (wiki pages) that group related facts.
+
+## Sources Synthesized
+
+`agentsy-prd.md`, `agentsy-deep-dive-v2.md`, `agentsy-tech.md`, `agentsy-testing-plan.md`, `owasp-security-testing-1.md`, `packages/memory/IMPLEMENTATION-PLAN.md`.
+
 - **Message Buffer Architecture** - Perpetual thread for conversation continuity
 - **Memory Blocks System** - Editable, pinned context units with APIs
 - **Recall vs Archival Separation** - Raw history vs processed knowledge
@@ -214,25 +239,25 @@ Following cognitive science research and Letta's agent memory insights:
 
 ### Architecture Inspired By
 
-#### Memelord (https://github.com/glommer/memelord)
+#### Memelord (<https://github.com/glommer/memelord>)
 
 - Hierarchical memory organization
 - Semantic search capabilities
 - Memory compression concepts
 
-#### OB1 (https://github.com/NateBJones-Projects/OB1)
+#### OB1 (<https://github.com/NateBJones-Projects/OB1>)
 
 - Advanced relationship graph management
 - Context-aware retrieval
 - Memory clustering organization
 
-#### Karpathy's Concepts (https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+#### Karpathy's Concepts (<https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f>)
 
 - Memory as attention mechanism
 - Forgetting and compression principles
 - Retrieval-augmented generation patterns
 
-#### CoG (https://github.com/marciopuga/cog)
+#### CoG (<https://github.com/marciopuga/cog>)
 
 - Continuous learning mechanisms
 - Memory consolidation strategies
@@ -679,7 +704,7 @@ const gitIntegration = {
 
 ### File Structure
 
-```
+```text
 packages/memory/src/
 ├── index.ts                    # Public exports
 ├── core/
@@ -863,3 +888,27 @@ packages/memory/src/
 - Continuous learning feedback loops
 - Adaptive chunking strategies
 - Memory consolidation workflows
+
+---
+
+## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
+
+### Three-layer architecture alignment
+
+Layering extracted and preserved from technical design:
+
+1. **Raw event log (Layer 0)** — append-only JSONL with independent cursors.
+2. **Wiki store (Layer 1)** — synthesized pages across `entities`, `concepts`, `synthesis`, `sources`.
+3. **Vector index (Layer 2)** — semantic retrieval over synthesized pages.
+
+### Lifecycle contracts
+
+- `startTask(sessionId)` at loop entry.
+- `endTask(sessionId)` at loop end with synthesis trigger.
+- Context injection path remains XML-based via `buildContextXml(...)` for downstream prompt assembly.
+
+### Security constraints carried forward
+
+- Retrieved memory is treated as untrusted content.
+- Sanitization before prompt injection remains required.
+- Scope isolation (`project`, `user`, `team`, `global`) remains explicit in storage and retrieval paths.

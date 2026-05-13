@@ -1,128 +1,148 @@
-# IMPLEMENTATION-PLAN.md
+# @agentsy/observability — Implementation Plan
 
-## Package: @agentsy/observability
+## Role in Framework Ecosystem
 
-### Overview
+`@agentsy/observability` is the **diagnostic backbone** of the framework. It provides a unified engine for monitoring agent behavior, cost, and performance across all packages. It allows developers to visualize complex multi-agent workflows, debug non-deterministic LLM failures, and track project-level budgets.
 
-Production-grade AI Agent Observability Platform providing comprehensive monitoring, tracing, metrics, and analysis for multi-agent workflows. Based on OpenTelemetry standards and AI-specific observability patterns from Microsoft Azure Foundry, Tapes, and Clawtrace.
+It is a cross-cutting concern, consumed by nearly every other package via tracing spans and event emission.
 
-### Vision
+### Ecosystem Sketch
 
-Observability isn't just logging—it's:
+```text
+[ VS Code / CLI Dashboards ]
+         |
+         v
+[ @agentsy/observability ] <--- Aggregation & Redaction
+         ^
+         |      +-----------------------+-----------------------+
+         +------|                       |                       |
+                |                       |                       |
+      [ @agentsy/runtime ]    [ @agentsy/core ]    [ @agentsy/memory ]
+      (Execution Spans)      (Model Call Metrics)   (Retrieval Events)
+```
 
-- **Complete lifecycle tracking** - From request inception to final response
-- **Distributed tracing across agents** - Understand agent-to-agent communication
-- **Real-time performance metrics** - Latency, cost, success rates, resource usage
-- **AI-specific insights** - Token usage, model performance, prompt effectiveness
-- **Business context preservation** - Track conversational flow and user intent
-- **Root cause analysis** - Quickly identify issues across complex workflows
+## Fulfillment of Role
 
-### Core Architecture Patterns
+The package fulfills its role by implementing an OpenTelemetry-compatible observability stack:
 
-#### From OpenTelemetry Agent & Collector
+1. **Standardized Tracing**: Captures the full lifecycle of an agent task, including subagent spawns and tool calls.
+2. **AI-specific Metrics**: Tracks `token.input`, `token.output`, `cost.usd`, and `latency.ms` as first-class attributes.
+3. **Privacy-safe Redaction**: Automatically scrubs PII and secrets before data hits any external sink.
+4. **Recording & Playback**: Integrates with "Tapes" pattern for deterministic debugging of non-deterministic interactions.
 
-- **Standardized tracing** - OpenTelemetry trace context propagation
-- **Instrumented libraries** - Auto-instrumentation for common frameworks
-- **Flexible collectors** - Multiple backend support (Prometheus, Jaeger, etc.)
-- **Context propagation** - Seamless cross-service and cross-agent context
+## Detailed Functionality
 
-#### From Microsoft Azure Foundry Agent Observability
+### 1. Tracing & Metrics (`src/tracing/`)
 
-- **Agent lifecycle tracking** - Creation, execution, completion states
-- **Model performance metrics** - Token usage, latency, cost tracking
-- **Conversation flow analysis** - Multi-turn interaction pathways
-- **Resource utilization monitoring** - Memory, CPU, network usage
+- **Agent Spans**: Specialized spans for `task`, `step`, `plan`, `action`, `synthesis`.
+- **Graph Tracing**: Distributed tracing across supersteps in a workflow graph (LangGraph pattern).
+- **Token Usage**: Tracking `inputTokens`, `outputTokens`, and `totalTokens` per step and aggregated per session.
+- **Timing**: capturing `duration` for planning, action execution, and response generation phases.
 
-#### From Tapes (Paper Computer)
+### 2. Visualization & Replay (`src/visualization/`)
 
-- **Conversation recording and playback** - Capture interactions for debugging
-- **State management tracking** - Agent state changes over time
-- **Performance regression detection** - Automated performance monitoring
-- **A/B testing support** - Compare agent behaviors
+- **State Transition Visualization**: Tools to visualize the execution path through a `StateGraph`.
+- **Branch Point Analysis**: identifying where workflows diverged or failed.
+- **Agent Tree**: Tools to visualize the structure of managed agents and their relationships.
+- **Step Replay**: Ability to replay agent execution from any checkpoint/snapshot.
+- **Rich Logging**: structured, level-based logging (INFO, DEBUG, WARN, ERROR) with console/file sinks.
 
-#### From Clawtrace (Epsilla)
+### 3. Metrics Engine (`src/metrics/`)
 
-- **AI-specific event tracking** - Model calls, prompt engineering results
-- **Knowledge base access tracking** - RAG system performance
-- **Agent decision paths** - Full reasoning chain visibility
-- **Self-correction monitoring** - Track agent self-monitoring
+- **Responsibility**: Aggregating usage and performance data.
+- **Functionality**:
+  - `recordLatency`: Millisecond resolution of every operation.
+  - `recordTokens`: Breakdown of input/output tokens per provider.
+  - `recordCost`: Real-time USD estimates based on `@agentsy/tokens`.
 
-### Core Components
+### 4. Redaction & Safety (`src/privacy/`)
 
-#### 1. Observability Engine
+- **Responsibility**: Preventing credential leakage.
+- **Mechanism**: Global regex-based scrubbers and provider-specific redaction rules (e.g., hiding message content in certain log levels).
+
+## Logic & Data Flow
+
+### 1. Span Lifecycle
+
+1. When `@agentsy/runtime` starts a step, it creates a new `AgentSpan`.
+2. As the step progresses, sub-spans are created for model calls or tool executions.
+3. Each span carries attributes like `agent.id`, `session.id`, and `workflow.node.id`.
+4. Upon completion, the span is processed by the `Redactor` and dispatched to the active `Sink` (e.g., OTLP, Console).
+
+### 2. Metric Aggregation
+
+1. Every time `@agentsy/tokens` records usage, it also emits a metric event.
+2. `@agentsy/observability` aggregates these into histograms and counters.
+3. These metrics are exposed via a `Meter` for consumption by Prometheus or Grafana.
+
+## Key Interfaces
+
+### ObservabilityEngine
 
 ```typescript
-interface ObservabilityEngine {
-  tracing: {
-    tracer: Tracer;
-    spanProcessor: SpanProcessor;
-    contextManager: ContextManager;
-    propagator: TextMapPropagator;
-  };
-
-  metrics: {
-    meter: Meter;
-    instruments: MetricInstruments;
-    aggregator: MetricAggregator;
-    exporter: MetricExporter;
-  };
-
-  logging: {
-    logger: Logger;
-    appender: LogAppender;
-    formatter: LogFormatter;
-    exporter: LogExporter;
-  };
-
-  profiling: {
-    profiler: AgentProfiler;
-    sampler: Sampler;
-    collector: ProfileCollector;
-  };
+export interface ObservabilityEngine {
+  tracer: Tracer;
+  meter: Meter;
+  logger: Logger;
+  setSink(sink: ObservabilitySink): void;
+  setRedactionPolicy(policy: RedactionPolicy): void;
 }
 ```
 
-#### 2. AI Agent Tracing System
+### AgentSpan
 
 ```typescript
-interface AgentTraceSystem {
-  // Agent lifecycle spans
-  agentSpans: {
-    agentCreation: Span;
-    taskExecution: Span;
-    toolInvocation: Span;
-    modelCall: Span;
-    responseGeneration: Span;
-  };
+export interface AgentSpan {
+  traceId: TraceId;
+  spanId: string;
+  parentId?: string;
+  type: 'agent' | 'tool' | 'model' | 'internal';
+  attributes: Record<string, string | number | boolean>;
+  status: 'ok' | 'error';
+}
+```
 
-  // AI-specific attributes
-  aiAttributes: {
-    modelName: string;
+## Implementation Details
+
+### OpenTelemetry Compatibility
+
+The system should use `@opentelemetry/api` internally. This allows Agentsy traces to be seamlessly integrated into existing enterprise observability pipelines.
+
+### Redaction Strategy
+
+Redaction must happen at the `SpanProcessor` level, ensuring that sensitive data never leaves the local process in plaintext, even if a user incorrectly includes an API key in a prompt.
+
+## Sources Synthesized
+
+`agentsy-testing-plan.md`, `agentsy-prd.md`, `alignment-report-5-11-26.md`, `research/INFRASTRUCTURE-ANALYSIS.md`, `packages/observability/IMPLEMENTATION-PLAN.md`.
+
     promptTokens: number;
     completionTokens: number;
     responseTime: number;
     cost: number;
     effectiveness: number;
-  };
 
-  // Workflow tracing
-  workflowTraces: {
-    orchestration: Span;
-    subagentCalls: Span[];
-    contextSwitches: Span;
-    resultAggregation: Span;
-  };
+};
 
-  // Conversation tracking
-  conversationTraces: {
-    conversationId: string;
-    turnNumber: number;
-    userIntent: string;
-    agentResponse: string;
-    satisfaction: number;
-  };
+// Workflow tracing
+workflowTraces: {
+orchestration: Span;
+subagentCalls: Span[];
+contextSwitches: Span;
+resultAggregation: Span;
+};
+
+// Conversation tracking
+conversationTraces: {
+conversationId: string;
+turnNumber: number;
+userIntent: string;
+agentResponse: string;
+satisfaction: number;
+};
 }
-```
+
+````text
 
 #### 3. Metrics Collection System
 
@@ -163,9 +183,9 @@ interface MetricsCollection {
     costPerInteraction: Histogram;
   };
 }
-```
+````
 
-#### 4. Event Recording System (Inspired by Tapes)
+### 4. Event Recording System (Inspired by Tapes)
 
 ```typescript
 interface EventRecordingSystem {
@@ -590,3 +610,26 @@ console.log('Cost per query:', insights.averageCost);
 Telemetry → Observability to better reflect the comprehensive monitoring, tracing, and analysis capabilities we're implementing, following industry standards from OpenTelemetry and enterprise observability platforms.
 
 This observability platform provides enterprise-grade AI agent monitoring with the visibility needed to understand, debug, and optimize complex multi-agent workflows.
+
+---
+
+## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
+
+### Telemetry-to-observability mapping
+
+`agentsy-tech.md` described a standalone `@agentsy/telemetry` package. In current topology, this concern is consolidated into `@agentsy/observability`.
+
+### Required API compatibility
+
+```typescript
+interface TelemetryAdapter {
+  startSpan(name: string, attributes?: Record<string, string | number>): Span;
+  recordMetric(name: string, value: number, attributes?: Record<string, string>): void;
+  shutdown(): Promise<void>;
+}
+```
+
+### Runtime expectation
+
+- Lazy/no-op mode remains available for zero-cost instrumentation when disabled.
+- AI-specific metrics (token usage, cost, latency) remain first-class observability attributes.

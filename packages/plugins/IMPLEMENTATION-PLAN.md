@@ -1,0 +1,240 @@
+# @agentsy/plugins — Implementation Plan
+
+## Role in Framework Ecosystem
+
+`@agentsy/plugins` is the **capability marketplace** of the framework. It provides a standardized integration point for tools, agent templates, and specialized execution modes (like Caveman or Superpowers). It allows the framework to grow its feature set without bloating the core packages.
+
+It is consumed by `@agentsy/runtime` (for tool discovery) and `@agentsy/orchestrator` (for workflow node templates).
+
+### Ecosystem Sketch
+
+```text
+[ @agentsy/orchestrator ]    [ @agentsy/runtime ]
+         |                         |
+         +------------+------------+
+                      |
+                      v
+             [ @agentsy/plugins ]
+             /        |         \
+            v         v          v
+   [ Tool Libs ] [ Agent Temp ] [ Custom Modes ]
+   (Slack, GitHub) (Researcher) (Caveman, etc.)
+```
+
+## Fulfillment of Role
+
+The package fulfills its role by providing:
+
+1. **Standardized Tool Registry**: A common interface for registering and discovering tools. Each tool exports `./client`, `./executor`, and `./ExecutionRuntime` (LobeHub pattern).
+2. **Plugin Lifecycle Management**: Hooks for loading, initializing, and unloading extensions.
+3. **Agent Templates**: Reusable agent configurations (instructions, model settings, tool sets).
+4. **Feature Discovery**: Mechanisms for agents to discover available capabilities based on context signals.
+5. **Extension Provider Architecture**: Self-contained modules with `AGENTS.md` and standardized interfaces (OpenClaw pattern).
+
+## Detailed Functionality
+
+### 1. Plugin System (`src/system/`)
+
+- **Hooks**: `load`, `initialize`, `activate`, `deactivate`, and `unload`.
+- **Registry**: `PluginHost` manages the collection of active plugins and their permissions.
+
+### 2. Tool Registry (`src/registry/`)
+
+- **Responsibility**: Centralized management of available tools.
+- **Mechanism**: `ToolRegistry` class.
+- **Functionality**:
+  - Registering tools with JSON schemas (compiler-generated from TypeScript types).
+  - Standardized tool exports: `./client` (client-side metadata), `./executor` (server-side logic), `./ExecutionRuntime` (environment requirements).
+  - Discovering tools by name or capability description.
+  - Managing tool versions and deprecations.
+
+### 3. Specialized Modes (`src/caveman/`, `src/superpowers/`)
+
+- **Caveman Mode**: A bundled plugin that implements token-efficient communication patterns.
+- **Superpowers**: Methodology-driven skills like TDD, Plan-First Development, and Code Review.
+
+### 4. Feature-Based Architecture
+
+- **Core Package Plus Installable Features**: The base package plus additional installable feature packages (Kestrel Sovereign pattern).
+- **Feature Registry**: A runtime registry (TOML/JSON) for feature discovery and state management (`packages/plugins/src/registry/feature_registry.toml`).
+- **Scaffolding**: CLI tools for generating new feature skeletons (`agentsy feature scaffold <name>`).
+
+### 5. Tool Categories
+
+- **Tool Categories**: Tools organized by category (search, knowledge, filesystem, etc.) for easier discovery.
+
+### 6. Capability Extensions
+
+- **Skills Support**: Full support for `SKILL.md` files as defined in the Agent Skills open standard.
+- **Entry Points**: Features register themselves via package entry points or explicit manifests.
+
+## Logic & Data Flow
+
+### 1. Tool Discovery Flow
+
+1. At startup, `@agentsy/runtime` queries the `PluginHost` for available tools.
+2. The host filters tools based on the agent's configuration and security policy.
+3. The resulting tool definitions are injected into the agent's system prompt.
+
+### 2. Mode Activation Flow
+
+1. An agent is initialized with a specific `mode` (e.g., `caveman`).
+2. The `PluginHost` looks up the corresponding `AgentModeFactory`.
+3. The factory wraps the standard agent loop with specialized instructions, filters, and event handlers.
+
+## Key Interfaces
+
+### ToolRegistry
+
+```typescript
+export interface ToolRegistry {
+  register(name: string, definition: ToolDefinition, handler: ToolHandler): void;
+  unregister(name: string): void;
+  list(): ToolDefinition[];
+  get(name: string): { definition: ToolDefinition; handler: ToolHandler } | undefined;
+}
+```
+
+### Plugin
+
+```typescript
+export interface Plugin {
+  name: string;
+  version: string;
+  capabilities: string[];
+  onActivate(context: PluginContext): Promise<void>;
+  onDeactivate(): Promise<void>;
+}
+```
+
+### Extension
+
+```typescript
+export interface Extension {
+  id: string;
+  name: string;
+  initialize(): Promise<void>;
+  execute(params: unknown): Promise<ExtensionResult>;
+}
+```
+
+## Implementation Details
+
+### Bundled Skills
+
+Specialized modes like `caveman` should ship their `SKILL.md` files as static assets within the package. The `PluginHost` must be able to parse these files and convert them into active tool/prompt context.
+
+### Coverage CI
+
+Every plugin or scaffold must have at least one minimal test (`src/index.test.ts`) to ensure the Turbo coverage pipeline remains green.
+
+## Sources Synthesized
+
+`agentsy-agents-v1.md`, `agentsy-features-v1.md`, `DECISION-LOG.md`, `REVISED-ARCHITECTURE.md`, `packages/plugins/IMPLEMENTATION-PLAN.md`.
+
+---
+
+## @agentsy/caveman — Token Compression Skill Bundle
+
+### Requirements
+
+- **REQ-025**: Ship `@agentsy/caveman` as a zero-dep static skill bundle with modes: `lite`, `full`, `ultra`, `wenyan-lite`, `wenyan-full`, `wenyan-ultra`.
+- **REQ-026**: Bundle cavecrew subagent SKILL.md files targeting ~60% fewer output tokens.
+- **REQ-027**: Ship `caveman-shrink` as a standalone stdio MCP proxy binary that compresses tool descriptions without altering `inputSchema`.
+- **CON-011**: `caveman-shrink` must not require any `@agentsy/*` packages at runtime.
+- **SEC-010**: `inputSchema` must never be altered by `caveman-shrink`; enforce with startup validation assertion.
+- **ADR-019**: Caveman as bundled SKILL.md, not runtime filter. Post-processing token compression is fragile and destructive; prompt-side compression leverages the model's own language capabilities at zero inference-time overhead.
+- **ASSUMPTION-009**: JuliusBrussee/caveman v1.7.0 SKILL.md files are MIT licensed and redistributable. Verify before TASK-F6-003.
+- **DEP-011**: JuliusBrussee/caveman v1.7.0 SKILL.md files — bundled as static assets. MIT license. No runtime import.
+
+### Types (`src/types.ts`)
+
+```ts
+type CavemanMode = 'lite' | 'full' | 'ultra' | 'wenyan-lite' | 'wenyan-full' | 'wenyan-ultra';
+const DEFAULT_CAVEMAN_MODE: CavemanMode = 'full';
+```
+
+### Implementation Tasks
+
+| Task        | Description                                                                                                                                                                                                                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TASK-F6-001 | Create `packages/caveman/`. Add `package.json` (`@agentsy/caveman`, peerDep: `@agentsy/core@workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`.                                                                                                                                   |
+| TASK-F6-002 | Define `CavemanMode` in `packages/caveman/src/types.ts`. Export `DEFAULT_CAVEMAN_MODE: CavemanMode = 'full'`.                                                                                                                                                                                       |
+| TASK-F6-003 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files under `packages/caveman/src/skills/`: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`. Each must include `source_url`, `version: "1.7.0"`, `license: "MIT"` frontmatter (GUD-008).                                              |
+| TASK-F6-004 | Bundle cavecrew subagent SKILL.md files under `packages/caveman/src/skills/cavecrew/`: `investigator.md`, `builder.md`, `reviewer.md`. Each targets ~60% fewer output tokens than vanilla equivalents.                                                                                              |
+| TASK-F6-005 | Create slash command SKILL.md files under `packages/caveman/src/skills/commands/`: `/caveman.md`, `/caveman-lite.md`, `/caveman-ultra.md`.                                                                                                                                                          |
+| TASK-F6-006 | Implement `CavemanManager` in `packages/caveman/src/manager.ts`. Methods: `activate(mode: CavemanMode): SkillContent`, `deactivate(): void`, `getActiveMode(): CavemanMode \| null`, `listSkills(): CavemanSkillManifest[]`. Export `createCavemanManager()` factory.                               |
+| TASK-F6-007 | Create `packages/caveman/src/shrink/`. Implement `caveman-shrink` as standalone Node.js stdio script (`bin/caveman-shrink.js`). Proxy: (1) spawns downstream MCP server, (2) compresses `description` fields in `tools/list` responses, (3) validates no `inputSchema` altered — startup assertion. |
+| TASK-F6-008 | Implement `compressDescription(text: string): string` in `packages/caveman/src/shrink/compress.ts`. Never alter content in backtick blocks, URLs, JSON schema keywords.                                                                                                                             |
+| TASK-F6-009 | Write tests in `packages/caveman/src/shrink/compress.test.ts`. Test: code literals preserved, URLs preserved, `inputSchema` never mutated, compressed description shorter than original on typical inputs.                                                                                          |
+| TASK-F6-010 | Add `"bin": { "caveman-shrink": "./bin/caveman-shrink.js" }` to `packages/caveman/package.json`.                                                                                                                                                                                                    |
+| TASK-F6-011 | Export from `packages/caveman/src/index.ts`: `CavemanMode`, `DEFAULT_CAVEMAN_MODE`, `createCavemanManager`, `compressDescription`, `CAVEMAN_SKILLS_PATH`, `CAVECREW_SKILLS_PATH`.                                                                                                                   |
+| TASK-F6-012 | Tests in `packages/caveman/src/manager.test.ts`: `activate('full')` returns non-empty SKILL.md string, `activate('ultra')` shorter than `activate('lite')`, `listSkills()` returns all 3 cavecrew variants.                                                                                         |
+
+### Risks
+
+- **RISK-014**: `caveman-shrink` proxy may introduce latency. Mitigation: proxy is stateless; description compression is one-time on `tools/list` response. Hot path (tool call forwarding) is byte-identical passthrough.
+
+---
+
+## @agentsy/skills — Skills Manager
+
+### Requirements
+
+- **REQ-029**: `SkillsManager` provides `find`, `add`, `list`, `remove`, `update`, `init` operations by spawning `npx skills` as subprocess.
+- **REQ-030**: All `ref` arguments validated against `/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/` before subprocess call.
+- **CON-012**: CLI subprocess calls must use argument arrays (never shell string interpolation).
+- **SEC-011**: Validate `ref` against regex before any subprocess call to prevent injection.
+- **ADR-020**: Skills CLI as subprocess, not library import. `vercel-labs/skills` has no published programmatic API; subprocess treats CLI as a stable versioned interface. Input validation on `ref` prevents injection.
+- **DEP-005**: `npx skills` (vercel-labs/skills) — spawned as child process. Not bundled.
+- **ASSUMPTION-010**: `npx skills` CLI is available on demand via npx. `@agentsy/skills` does not bundle the CLI.
+- **RISK-011**: `npx skills` CLI output format may change. Mitigation: pin version in spawn command; add integration test against live CLI output.
+
+### Types (`src/types.ts`)
+
+```ts
+interface SkillSearchResult {
+  name: string;
+  description: string;
+  author: string;
+  stars: number;
+  installCommand: string;
+  url: string;
+}
+interface SkillListEntry {
+  name: string;
+  path: string;
+  version: string;
+}
+interface SkillsManagerOptions {
+  skillsRoot?: string;
+  registry?: string;
+}
+```
+
+### Implementation Tasks
+
+| Task        | Description                                                                                                                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TASK-F5-008 | Create `packages/skills/`. Add `package.json` (`@agentsy/skills`, peerDep: `@agentsy/core@workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`.                                                    |
+| TASK-F5-009 | Define types in `packages/skills/src/types.ts`: `SkillSearchResult`, `SkillListEntry`, `SkillsManagerOptions`.                                                                                                     |
+| TASK-F5-010 | Implement `SkillsManager` in `packages/skills/src/manager.ts`. Spawn `npx skills <subcommand>` via argument array. Validate `ref` against `/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/` before subprocess call (SEC-011). |
+| TASK-F5-011 | Implement `parseSkillsOutput(stdout: string): SkillSearchResult[]` in `packages/skills/src/parser.ts`. Parse table output from `npx skills find`.                                                                  |
+| TASK-F5-012 | Export `createSkillsManager(options?: SkillsManagerOptions)` factory from `packages/skills/src/index.ts`.                                                                                                          |
+| TASK-F5-013 | Unit tests in `packages/skills/src/manager.test.ts`. Mock subprocess via `vi.mock`. Test: valid query, valid ref `add`, invalid ref rejection (SEC-011), `list`, `remove`.                                         |
+| TASK-F5-014 | Create stock SKILL.md files in `packages/skills/src/skills/`: `/skills-find.md`, `/skills-add.md`, `/skills-list.md`.                                                                                              |
+
+---
+
+## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
+
+### Ownership mapping from legacy standalone sections
+
+The technical design sections previously describing standalone packages (`@agentsy/caveman`, `@agentsy/skills`, `@agentsy/superpowers`, `@agentsy/slash-commands`) are now mapped to plugin-owned extension domains.
+
+### Plugin extension responsibilities
+
+- Skill-bundle loading and manifest validation.
+- Context-activated mode selection (caveman/superpowers-style behavior).
+- Slash-command pre-model interception strategy as plugin-registered command manifests.
+- Extension safety guarantees: schema-preserving transforms and explicit execution gating for mutating operations.
