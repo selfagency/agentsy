@@ -12,6 +12,9 @@ tags: ['architecture', 'standalone', 'renderers', 'vscode', 'gui', 'desktop', 'e
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
+> **Historical plan note (2026-05-13):** Any references in this document to `@agentsy/core` compatibility shims are obsolete.
+> The active policy is direct package migration without shim/wrapper packages.
+
 This plan ensures that all stream-parsing and rendering components of the current `@agentsy/core` package remain available as independently installable, framework-agnostic packages that third parties can use without pulling in any of the `@agentsy` orchestration layer (`@agentsy/orchestrator/agent`, `@agentsy/memory`, `@agentsy/mcp`, etc.).
 
 It also extends the `@agentsy` architecture to support graphical UI targets — not just terminal UIs — and defines the package foundation for future product-layer applications: a VS Code Copilot chat participant extension and a Claude Desktop-style desktop application.

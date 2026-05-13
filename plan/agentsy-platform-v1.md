@@ -12,6 +12,9 @@ tags: ['architecture', 'migration', 'feature', 'memory', 'mcp', 'tui']
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
+> **Historical plan note (2026-05-13):** This document contains legacy compatibility-shim requirements that are no longer current.
+> Use `plan/DECISION-LOG.md` and `plan/MASTER-IMPLEMENTATION-PLAN.md` as the authoritative source for the no-shims direct-cutover policy.
+
 This plan covers the full transformation of `@agentsy/core` into `@selfagency/agentsy`: a composable, extensible TypeScript agent-infrastructure library. It integrates deep architectural insights from the Claude Code source leak, OpenCode (anomalyco fork), Hermes Agent (NousResearch), nanobot (HKUDS), Gemini CLI (Google), and OpenAI Codex. The plan is organized into three tracks executed in an optimized interleaved sequence: **Track R** (rebrand), **Track P** (core infrastructure), and **Track X** (extensibility + blended memory).
 
 **Library identity:** `@selfagency/agentsy` — a Node.js 22 ESM-first library consumed by downstream application projects. It is not an end-user CLI or app; it provides the building blocks for building agents.

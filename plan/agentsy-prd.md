@@ -12,6 +12,9 @@ tags: ['prd', 'agentsy', 'requirements', 'product']
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
+> **Historical plan note (2026-05-13):** Portions of this PRD describe a compatibility-shim strategy that is no longer used.
+> Current implementation policy is direct cutover with no shim/wrapper packages (see `plan/DECISION-LOG.md`).
+
 ---
 
 ## 1. Problem Statement

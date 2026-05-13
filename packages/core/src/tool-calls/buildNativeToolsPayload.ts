@@ -1,11 +1,5 @@
 import type { JsonSchemaProperty, XmlToolInfo } from './buildXmlToolSystemPrompt.js';
 
-/**
- * @deprecated Use {@link JsonSchemaProperty} instead.
- * Kept for source compatibility; will be removed in a future minor version.
- */
-export type NativeToolParameter = JsonSchemaProperty;
-
 /** Options for {@link buildNativeToolsArray}. */
 export interface BuildNativeToolsOptions {
   /**

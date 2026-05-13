@@ -97,28 +97,3 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
     },
   });
 }
-
-/**
- * Creates a compatibility adapter that ensures backward compatibility
- * with existing code expecting ReadableStream<string>.
- */
-export function createCompatibilityAdapter(transport: MCPTransport): {
-  stream: ReadableStream<string>;
-  cleanup?: () => void;
-} {
-  const stream = adaptTransportToStream(transport);
-
-  if (transport.type === 'stdio') {
-    return {
-      stream,
-      cleanup: () => {
-        const readable = transport.readable;
-        const writable = transport.writable;
-        (readable as unknown as { destroy?: () => void }).destroy?.();
-        (writable as unknown as { destroy?: () => void }).destroy?.();
-      },
-    };
-  }
-
-  return { stream };
-}

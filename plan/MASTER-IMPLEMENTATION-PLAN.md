@@ -386,7 +386,7 @@ Update these docs to canonical topology before deleting superseded plans:
 
 ## 12) Immediate execution backlog (next commits)
 
-1. Apply canonical package moves in code with compatibility shims where required.
+1. Apply canonical package moves in code without compatibility shims or wrapper packages.
 2. Complete import rewrites and export map updates.
 3. Run full type/test gates.
 4. Update docs listed in Section 11.

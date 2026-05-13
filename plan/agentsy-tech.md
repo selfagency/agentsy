@@ -52,7 +52,7 @@ Complete technical specification for all 15 `@agentsy/*` packages. Includes Type
                     └── @agentsy/retrieval (→ core, memory)
 
 @agentsy/telemetry (→ core, optional peer dep for all)
-@agentsy/core (shim → core, normalizers, processor, renderers, agent, adapters, ag-ui)
+@agentsy/core (canonical core package; no compatibility shim)
 
 Future product-layer packages (see agentsy-standalone-v1.md):
     @agentsy/renderer-gui    (→ renderers — DisplayPort over Electron IPC / Tauri commands / WebView)
@@ -1304,23 +1304,10 @@ export function createVSCodeAdapter(options: VSCodeAdapterOptions): {
 
 ---
 
-### 4.16 `@agentsy/core` (shim)
+### 4.16 `@agentsy/core`
 
-**100% backward-compatible re-export shim. All existing consumers continue to work.**
-
-```typescript
-// packages/shim/src/index.ts
-export * from '@agentsy/core';
-export * from '@agentsy/normalizers';
-export * from '@agentsy/processor';
-export * from '@agentsy/orchestrator/agent';
-export * from '@agentsy/adapters';
-export * from '@agentsy/runtime/ag-ui';
-
-// All subpath exports (e.g., @agentsy/core/thinking)
-// are mapped in packages/shim/package.json exports field to corresponding
-// @agentsy/* package subpath exports.
-```
+`@agentsy/core` is the canonical package surface. The repository does not maintain
+a compatibility shim package or wrapper re-export layer.
 
 ---
 

@@ -12,6 +12,9 @@ tags: ['architecture', 'monorepo', 'turbo', 'migration', 'feature', 'memory', 'm
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
+> **Historical plan note (2026-05-13):** This file includes legacy compatibility-shim requirements that do not match the current repository policy.
+> Treat `plan/DECISION-LOG.md` and `plan/MASTER-IMPLEMENTATION-PLAN.md` as authoritative (direct cutover, no wrapper/shim packages).
+
 This plan covers the full transformation of `@agentsy/core` into the **`@agentsy` npm org monorepo**: a collection of composable, independently installable TypeScript packages that together form a complete agent-infrastructure platform. It supersedes v1 which targeted a single `@selfagency/agentsy` package. The `@agentsy` npm org is now available and all packages will publish under it.
 
 The plan integrates architectural insights from Claude Code, OpenCode, Hermes Agent, nanobot, Gemini CLI, OpenAI Codex, vercel/ai, and tanstack/ai. It is organized into four tracks executed in an optimized interleaved sequence: **Track MONO** (monorepo infrastructure), **Track R** (package identity + repositioning), **Track P** (core agent infrastructure), and **Track X** (extensibility + blended memory).

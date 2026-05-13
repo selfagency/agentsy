@@ -8,23 +8,23 @@ This document captures key architectural decisions made during the architecture 
 
 ### 1. Layer Structure Decision
 
-**Date:** 2025-05-07  
-**Decision:** Adopt 7 distinct layers instead of monolithic "agent" abstraction  
-**Rationale:** Clear separation of concerns, better maintainability, aligned with existing codebase  
+**Date:** 2025-05-07
+**Decision:** Adopt 7 distinct layers instead of monolithic "agent" abstraction
+**Rationale:** Clear separation of concerns, better maintainability, aligned with existing codebase
 **Layers:** Core → Runtime → Provider → Knowledge → Tooling → Interop/Plugin → Presentation
 
 ### 2. Package Consolidation Strategy
 
-**Date:** 2025-05-07  
-**Decision:** Focus on boundary clarity over drastic count reduction  
-**Rationale:** Avoid high migration cost while achieving architectural improvements  
+**Date:** 2025-05-07
+**Decision:** Focus on boundary clarity over drastic count reduction
+**Rationale:** Avoid high migration cost while achieving architectural improvements
 **Approach:** Aggressive consolidation of provider/tool/presentation layers only
 
 ### 3. Core Package Cluster Decision
 
-**Date:** 2025-05-07  
-**Decision:** Keep 10 core packages separate for now, plan future `core` umbrella with subpaths  
-**Rationale:** Lower migration risk while preserving future consolidation option  
+**Date:** 2025-05-07
+**Decision:** Keep 10 core packages separate for now, plan future `core` umbrella with subpaths
+**Rationale:** Lower migration risk while preserving future consolidation option
 **Packages:** types, xml-filter, context, formatting, sse, thinking, structured, tool-calls, processor, recovery
 
 ## Package-Specific Decisions
@@ -73,9 +73,9 @@ This document captures key architectural decisions made during the architecture 
 
 ## MCP Strategy Decision
 
-**Date:** 2025-05-07  
-**Decision:** MCP servers become internal tools first, standalone MCP only as thin optional bridge  
-**Rationale:** Keep implementation simple while preserving external compatibility  
+**Date:** 2025-05-07
+**Decision:** MCP servers become internal tools first, standalone MCP only as thin optional bridge
+**Rationale:** Keep implementation simple while preserving external compatibility
 **Implementation:** Internal MCP tools in `tools/mcp-internal`, optional bridge package later
 
 ## Rejected Proposals
@@ -87,17 +87,17 @@ This document captures key architectural decisions made during the architecture 
 | Drop agents entirely         | 2025-05-07     | Plugins and orchestration are different layers  |
 | Make MCP central abstraction | 2025-05-07     | Tools are primary, MCP is implementation detail |
 
-## Compatibility Strategies
+## Migration Strategy
 
-### Migration Aliases
+### Direct Cutover (No Aliases)
 
-- `token-economy` → `tokens` (temporary alias during transition)
-- `agent` → `agentic-loop` (temporary alias during transition)
+- Package renames and consolidations are applied directly.
+- No compatibility aliases are retained in code.
 
-### Wrapper Packages
+### No Wrapper Packages
 
-- Minimal compatibility wrappers for renamed packages during transition
-- Clear deprecation path with migration guides
+- No compatibility wrapper packages are maintained.
+- Migration is handled through import rewrites and migration docs only.
 
 ## Dependencies Between Decisions
 

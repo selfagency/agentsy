@@ -1,5 +1,5 @@
 /**
- * Observable Compatibility Shim
+ * Observable Adapter
  *
  * Converts AsyncGenerator<T> to RxJS Observable<T> for direct interoperability
  * with AG-UI's AbstractAgent and other Observable-based consumers.
@@ -19,9 +19,9 @@
 export interface Observable<T> {
   subscribe(observer: Partial<Observer<T>>): Subscription;
   subscribe(
-    next: ((value: T) => void) | null | undefined,
-    error?: ((error: unknown) => void) | null | undefined,
-    complete?: (() => void) | null | undefined,
+    next: ((value: T) => void) | null,
+    error?: ((error: unknown) => void) | null,
+    complete?: (() => void) | null,
   ): Subscription;
 }
 
@@ -54,9 +54,9 @@ export interface Subscription {
 export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
   return {
     subscribe(
-      observerOrNext: Partial<Observer<T>> | ((value: T) => void) | null | undefined,
-      error?: ((error: unknown) => void) | null | undefined,
-      complete?: (() => void) | null | undefined,
+      observerOrNext: Partial<Observer<T>> | ((value: T) => void) | null,
+      error?: ((error: unknown) => void) | null,
+      complete?: (() => void) | null,
     ) {
       // Normalize observer
       let observer: Partial<Observer<T>>;
@@ -74,7 +74,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
       let isCancelled = false;
 
       // Start consuming the generator
-      (async () => {
+      void (async () => {
         try {
           for await (const value of generator) {
             if (isCancelled) break;
