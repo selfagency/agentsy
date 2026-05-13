@@ -52,11 +52,56 @@ For the high-level architecture behind these packages, start with the [Architect
 | ------------- | ------------------------------------------------------ | --------- | -------------------------------- |
 | `@agentsy/ui` | Conversation-state store and processor binding helpers | Published | [Package page](./packages/ui.md) |
 
-## Private package
+## Private packages
 
 | Package            | Role                                                    | Status  | Docs                                  |
 | ------------------ | ------------------------------------------------------- | ------- | ------------------------------------- |
 | `@agentsy/testing` | Cross-package integration tests and shared test harness | Private | [Package page](./packages/testing.md) |
+| `@agentsy/scripts` | Build scripts and monorepo automation utilities         | Private | [Package page](./packages/scripts.md) |
+
+## Extensibility packages
+
+| Package            | Role                                                     | Status    | Docs                                  |
+| ------------------ | -------------------------------------------------------- | --------- | ------------------------------------- |
+| `@agentsy/plugins` | Extensibility framework and protocol adapters            | Published | [Package page](./packages/plugins.md) |
+| `@agentsy/tools`   | Tool execution framework and common tool implementations | Published | [Package page](./packages/tools.md)   |
+
+## Integration surfaces
+
+| Package           | Role                                           | Status    | Docs                                 |
+| ----------------- | ---------------------------------------------- | --------- | ------------------------------------ |
+| `@agentsy/cli`    | Command-line interface for local development   | Published | [Package page](./packages/cli.md)    |
+| `@agentsy/vscode` | VS Code Language Model Chat Provider utilities | Published | [Package page](./packages/vscode.md) |
+
+## State and persistence packages
+
+| Package            | Role                                                   | Status    | Docs                                  |
+| ------------------ | ------------------------------------------------------ | --------- | ------------------------------------- |
+| `@agentsy/ui`      | Conversation-state store and processor binding helpers | Published | [Package page](./packages/ui.md)      |
+| `@agentsy/types`   | Shared type contracts across the ecosystem             | Published | [Package page](./packages/types.md)   |
+| `@agentsy/memory`  | Long-term memory and persistent state management       | Published | [Package page](./packages/memory.md)  |
+| `@agentsy/session` | Session management and conversation lifecycle          | Published | [Package page](./packages/session.md) |
+| `@agentsy/secrets` | Secret management and credential handling              | Published | [Package page](./packages/secrets.md) |
+
+## Observability and lifecycle packages
+
+| Package                  | Role                                                | Status    | Docs                                        |
+| ------------------------ | --------------------------------------------------- | --------- | ------------------------------------------- |
+| `@agentsy/observability` | Telemetry, logging, and monitoring infrastructure   | Published | [Package page](./packages/observability.md) |
+| `@agentsy/prompts`       | Prompt templates and prompt orchestration utilities | Published | [Package page](./packages/prompts.md)       |
+
+## Plan-only domains
+
+| Package path          | Role                                                  | Status    | Docs                                                       |
+| --------------------- | ----------------------------------------------------- | --------- | ---------------------------------------------------------- |
+| `packages/connectors` | External system connectors and integration blueprints | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
+| `packages/guardrails` | Safety guardrails and policy enforcement frameworks   | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
+| `packages/mcp`        | Model Context Protocol server implementations         | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
+| `packages/retrieval`  | Retrieval systems and RAG integration frameworks      | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
+
+---
+
+> **Note:** Plan-only domains are architectural work-in-progress. They have implementation plans but are not yet manifest-backed packages. See [Platform evolution](./architecture/platform-evolution.md) and [Roadmap](./roadmap.md) for details.
 
 ## How to use this catalog
 

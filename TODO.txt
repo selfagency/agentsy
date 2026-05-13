@@ -162,6 +162,8 @@ DX items that ALREADY EXIST on main (verified 2026-05-13):
 **Current Package Count:** 19 package manifests (23 package directories total)
 **Quality Status:** All TypeScript checks passing, 19/19 builds passing, 23/23 linting passing
 
+**Note:** Packages.md docs misleading: Shows core subpaths as separate packages (e.g., @agentsy/core/processor, @agentsy/core/thinking) but these are SUBPATH exports from @agentsy/core, not separate packages.
+
 **Consolidated Packages:**
 - 11 modules → @agentsy/core (processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui, normalizers)
 - adapters → providers/src/adapters/
@@ -376,40 +378,40 @@ DX items that ALREADY EXIST on main (verified 2026-05-13):
 
 ### Architecture Status:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Core Consolidation: 11 modules → @agentsy/core (11 submodules)
-✅ Package Boundaries: 25 packages with clear separation
+✅ Core Consolidation: 13 modules → @agentsy/core (13 submodules)
+✅ Package Boundaries: 19 packages with clear separation
 ✅ Dependency Structure: Workspace resolution configured
 ✅ Build Infrastructure: Turborepo with caching
 ✅ Module System: ESM-first with CJS dual-output
-✅ Build Pass: All 25 packages completing successfully
+✅ Build Pass: All 19 packages completing successfully
 ✅ API Surface: Subpath exports configured (./processor, ./sse, etc.)
 
 ### Consolidation Summary:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Core Package (@agentsy/core):**
-11 consolidated modules with subpath exports:
+13 consolidated modules with subpath exports:
 - processor, sse, structured, thinking, tool-calls
-- xml-filter, context, formatting, recovery, ui
-- normalizers (moved from separate package to resolve circular dependency)
+- xml-filter, context, formatting, recovery, retry
+
+**Provider Package (@agentsy/providers):**
+4 subpath exports with clear boundaries:
+- main, ./adapters, ./normalizers, ./pipeline
 
 **Package Organization History:**
 - agents → plugins/src/agents/ (reorganized, not deleted)
 - adapters → providers/src/adapters/ (reorganized, not deleted)
-- agentic-loop → runtime/%SOURCE_LOOP%/ (renamed, package structure preserved)
+- agentic-loop → runtime/context (renamed, preserved as runtime submodule)
 - token-economy → tokens (renamed, package structure preserved)
-- context-manager → core/context + integration (reorganized, not deleted)
+- context-manager → core/context (reorganized, not deleted)
 
 **Current State:**
 - No packages were deleted under DECISION-A; all are retained or reorganized
-- Consolidated modules moved INTO core/submodules, not package deletions
-- repl → tools/src/repl/
-- scheduler → orchestrator/src/scheduler/
-
-**Deleted Packages (7):**
-- adapters, agents, normalizers, repl, scheduler, context-manager, mcp
-
-**Recreated Packages:**
+- Consolidated modules moved INTO core as subpath exports, not package deletions
+- normalizers remains a subpath of @agentsy/providers, never was separate package
+- ui is a separate package @agentsy/ui, not a core submodule
+- repl moved into tools package as tools/src/repl/
+- scheduler integrated into orchestrator as orchestrator/src/scheduler/
 - plugins (new structure for A2A protocol support)
 
 ### Ready For:
@@ -424,11 +426,11 @@ DX items that ALREADY EXIST on main (verified 2026-05-13):
 ### Next Priority Steps:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. **IMMEDIATE:** Complete Phase R0 metadata tasks
-   - Add repository, homepage, keywords, license to package.json files
-   - Configure .npmrc with @agentsy registry
-   - Update README.md with consolidated count (25 packages)
-   - Update GitHub workflows for turbo run commands
-   - Create per-package README.md stubs
+    - Add repository, homepage, keywords, license to package.json files
+    - Configure .npmrc with @agentsy registry
+    - Update README.md with consolidated count (19 packages)
+    - Update GitHub workflows for turbo run commands
+    - Create per-package README.md stubs
 
 2. **SHORT TERM:** Determine next phase direction
    - Review master implementation plan for prioritization
