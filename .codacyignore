@@ -1,3 +1,13 @@
 # Exclude CI configuration files that contain non-secret status strings
 # which may trigger false-positive secret-detection heuristics.
 config/release-state.json
+.agents/
+.fallow/
+.vscode/
+.gh-pages/
+.rumdl_cache/
+.turbo/
+coverage/
+dist/
+node_modules/
+plan/
