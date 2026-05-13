@@ -1,109 +1,135 @@
-# IMPLEMENTATION-PLAN.md
+# @agentsy/session — Implementation Plan
 
-## Package: @agentsy/session
+## Role in Framework Ecosystem
 
-### Overview
+`@agentsy/session` is the **durability layer** of the framework. It ensures that agent interactions are not lost when a process exits, a network fails, or a crash occurs. It provides the mechanisms to serialize the full state of an agent loop, including message history, tool results, and working memory, and restore it with byte-perfect fidelity.
 
-Crash-safe session persistence and resumption for @agentsy agents. Provides atomic state management, recovery mechanisms, and session lifecycle handling across agent executions.
+It sits alongside `@agentsy/memory`, providing the short-term, task-specific durable state, whereas memory provides long-term, cross-session knowledge.
 
-### Current Status
+### Ecosystem Sketch
 
-🔄 **Stub** - Package exists but needs full implementation
+```text
+[ @agentsy/runtime ] <--- Snapshot / Resume
+         |
+         v
+[ @agentsy/session ] <--- Persistence Logic
+         |
+         +-----------------------+-----------------------+
+         |                       |                       |
+         v                       v                       v
+ [ Local File Store ]    [ SQLite Store ]        [ Remote Store ]
+ (Atomic .tmp -> rename) (Structured Query)      (Future)
+```
 
-### Core Responsibilities
+## Fulfillment of Role
 
-- Atomic session state persistence
-- Crash recovery and session resumption
-- Session lifecycle management
-- State serialization/deserialization
-- Multi-level session scoping
+The package fulfills its role by implementing a robust session lifecycle:
 
-### Public API Design
+1. **Atomic Writes**: Uses the `.tmp` → verify → rename pattern to prevent partial state corruption.
+2. **Integrity Verification**: SHA-256 checksums on all snapshots to detect disk corruption or tampering.
+3. **Versioned Serialization**: Schema versions in snapshots to allow for safe migrations when package versions change.
+4. **Crash Detection**: Heuristics to detect "stale active" sessions and flag them for recovery.
+
+## Detailed Functionality
+
+### 1. Session State (`src/state/`)
+
+- **Responsibility**: Representation of the agent's current progress.
+- **Components**:
+  - `id`: Unique `SessionId`.
+  - `agentId`: Link to the agent configuration.
+  - `history`: Full conversation history.
+  - `toolState`: Current status of pending or executed tools.
+  - `memory`: Working memory snapshot.
+  - `status`: `active | paused | completed | crashed`.
+
+### 2. Session Store (`src/store/`)
+
+- **Mechanism**: Pluggable storage backends (File, SQLite, Memory).
+- **Functionality**:
+  - `save`: Atomic persistence of a `SessionSnapshot`.
+  - `load`: Retrieval and checksum verification.
+  - `list`: Querying sessions by scope or agent ID.
+
+### 3. Manager (`src/manager/`)
+
+- **Responsibility**: Lifecycle orchestration.
+- **Key Logic**:
+  - `autoSnapshot`: Periodic snapshots during long runs.
+  - `detectCrash`: Finding sessions with an `active` status but a stale heartbeat timestamp.
+  - `resume`: Reconstituting an `@agentsy/runtime` loop from a snapshot.
+
+## Logic & Data Flow
+
+### 1. Persistence Flow (Snapshot)
+
+1. At a milestone (e.g., turn complete), `@agentsy/runtime` calls `SessionManager.snapshot()`.
+2. The manager creates a `SessionSnapshot` containing the current state, timestamp, and schema version.
+3. The snapshot is serialized to JSON and a SHA-256 checksum is calculated.
+4. The snapshot is written to a `.tmp` file, verified, and then renamed to the canonical path.
+
+### 2. Recovery Flow (Resume)
+
+1. Application calls `SessionManager.resume(sessionId)`.
+2. The manager loads the latest snapshot from the store.
+3. Checksum is verified; if invalid, it falls back to the previous snapshot or throws.
+4. Schema version is checked; if older, migration logic is applied.
+5. The reconstituted state is returned to the runtime to re-initialize the agent loop.
+
+## Key Interfaces
+
+### SessionStore
 
 ```typescript
-// Session state representation
-export interface SessionState {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  agentId: string;
-  scope: 'user' | 'project' | 'team' | 'global';
-  metadata: Record<string, unknown>;
-  data: Record<string, unknown>;
-  snapshots: SessionSnapshot[];
-  status: 'active' | 'paused' | 'completed' | 'crashed';
-}
-
-// Session snapshot for recovery
-export interface SessionSnapshot {
-  id: string;
-  timestamp: Date;
-  state: Record<string, unknown>;
-  checksum: string;
-  compressed: boolean;
-}
-
-// Session store abstraction
 export interface SessionStore {
-  create(session: Omit<SessionState, 'id' | 'createdAt' | 'updatedAt'>): Promise<SessionState>;
-  get(id: string): Promise<SessionState | null>;
-  update(id: string, updates: Partial<SessionState>): Promise<SessionState>;
-  delete(id: string): Promise<void>;
-  list(agentId?: string, scope?: SessionScope): Promise<SessionState[]>;
-  createSnapshot(sessionId: string, state: Record<string, unknown>): Promise<SessionSnapshot>;
-  restoreFromSnapshot(snapshotId: string): Promise<SessionSnapshot>;
-}
-
-// Session management
-export class SessionManager {
-  constructor(store: SessionStore, options?: SessionManagerOptions);
-
-  // Session lifecycle
-  createSession(config: SessionConfig): Promise<SessionState>;
-  resumeSession(id: string): Promise<SessionState | null>;
-  pauseSession(id: string): Promise<SessionState>;
-  completeSession(id: string): Promise<SessionState>;
-
-  // State management
-  updateState(id: string, updates: Record<string, unknown>): Promise<void>;
-  getState(id: string): Promise<Record<string, unknown>>;
-
-  // Crash recovery
-  detectCrashedSessions(): Promise<SessionState[]>;
-  recoverSession(sessionId: string, snapshotId?: string): Promise<SessionState>;
-
-  // Cleanup
-  cleanupOldSessions(maxAge?: Duration): Promise<void>;
-}
-
-// Session configuration
-export interface SessionConfig {
-  agentId: string;
-  scope: SessionScope;
-  metadata?: Record<string, unknown>;
-  autoSnapshot?: boolean;
-  snapshotInterval?: Duration;
-  maxSnapshots?: number;
+  save(snapshot: SessionSnapshot): Promise<void>;
+  load(id: SessionId): Promise<SessionSnapshot | undefined>;
+  list(filter: SessionFilter): Promise<SessionState[]>;
+  delete(id: SessionId): Promise<void>;
+  checkExists(id: SessionId): Promise<boolean>;
 }
 ```
 
-### Implementation Strategy
+### SessionSnapshot
 
-#### Atomic State Persistence
+```typescript
+export interface SessionSnapshot {
+  sessionId: SessionId;
+  timestamp: Date;
+  checksum: string;
+  state: SessionState;
+  schemaVersion: number;
+}
+```
 
-- Use `.tmp` → rename pattern for atomic writes
-- SHA-256 checksums for data integrity
-- Compressed snapshots for space efficiency
-- Journal-like append-only log for changes
+## Implementation Details
 
-#### Crash Detection
+### Atomic Write Pattern
+
+```typescript
+async function atomicWrite(path: string, content: string) {
+  const tmpPath = `${path}.tmp`;
+  await fs.writeFile(tmpPath, content);
+  const verify = await fs.readFile(tmpPath, 'utf-8');
+  if (verify !== content) throw new Error('Write verification failed');
+  await fs.rename(tmpPath, path);
+}
+```
+
+### Heartbeat Mechanism
+
+Active sessions must update a `heartbeat` timestamp in the snapshot. The `detectCrash` logic uses a configurable `CRASH_THRESHOLD` (e.g., 2x the heartbeat interval) to identify dead processes.
+
+## Sources Synthesized
+
+`agentsy-prd.md`, `agentsy-deep-dive-v2.md`, `implementation-plan.md`, `agentsy-testing-plan.md`, `packages/session/IMPLEMENTATION-PLAN.md`.
 
 - Heartbeat timestamps in session state
 - Lock files to detect active sessions
 - State validation on load
 - Automatic recovery from last known good state
 
-#### Multi-level Scoping
+### Multi-level Scoping
 
 - **user**: Personal user sessions
 - **project**: Project-specific sessions
@@ -185,7 +211,7 @@ export interface SessionConfig {
 
 ### File Structure
 
-```
+```text
 packages/session/src/
 ├── index.ts                    # Public exports
 ├── core/
@@ -223,3 +249,54 @@ packages/session/src/
 - **Medium**: Lock file contention in concurrent scenarios
 - **Low**: Database migration complexity
 - **Low**: Performance degradation with large sessions
+
+## Priorities
+
+1. Stabilize snapshot/resume contracts with @agentsy/runtime.
+2. **Checkpointing System**: Implement a `BaseCheckpointStore` abstraction for explicit state graphs with versioning (LangGraph pattern).
+3. **Incremental Persistence**: Support for saving only the diffs between snapshots to optimize storage and performance.
+4. **Rollback & Recovery**: Ability to rollback to any previous checkpoint in a session's history.
+5. **Pluggable Backends**: SQLite (default), Redis, and PostgreSQl for distributed session management.
+
+---
+
+## Scheduled Task Persistence (migrated from `plan/agentsy-scheduler-v1.md`)
+
+Session storage will also host scheduler persistence concerns so we do not introduce a standalone scheduler package.
+
+### Planned additions
+
+- `TaskStore` abstraction alongside existing session persistence.
+- `InMemoryTaskStore` for tests/ephemeral runs.
+- `FileTaskStore` default path: `~/.agentsy/tasks/<taskId>.json` (or `AGENTSY_TASK_STORE_PATH`).
+- Atomic writes (`temp + rename`) with file locking for concurrent writer safety.
+- Restore support: load pending/running tasks on process boot and hand back to orchestrator scheduler module.
+
+### Security constraints
+
+- Path sanitization with `path.resolve` and root-prefix validation.
+- Reject traversal attempts (`../`, symlink escape).
+- Task payloads treated as untrusted at execution boundary (sanitized in orchestrator runner).
+
+---
+
+## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
+
+### Session store contract highlights
+
+```typescript
+interface SessionStore {
+  saveUser(sessionId: string, message: ModelMessage): Promise<void>;
+  saveAssistant(sessionId: string, message: ModelMessage): void;
+  save(sessionId: string, snapshot: StreamSnapshot): Promise<void>;
+  load(sessionId: string): Promise<StreamSnapshot | null>;
+  loadAsSnapshot(sessionId: string): Promise<{ messages: ModelMessage[] } | null>;
+}
+```
+
+### Durability invariants
+
+- User-turn writes are blocking.
+- Assistant-turn writes are queued/fire-and-forget but ordered.
+- Atomic write pattern remains mandatory (`.tmp` -> verify -> rename).
+- Startup orphan-temp repair remains part of store boot responsibilities.

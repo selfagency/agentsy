@@ -1,78 +1,75 @@
 # Roadmap
 
-This page summarizes where the broader Agentsy platform is heading.
+This roadmap tracks implementation direction against the canonical plan in `plan/MASTER-IMPLEMENTATION-PLAN.md`.
 
-## Read this page carefully
+## Snapshot (May 2026)
 
-Everything below is roadmap context unless it is explicitly called out as already implemented in `packages/`.
+### Established package foundations
 
-## What is already real
+The monorepo has active manifest-backed packages for:
 
-The current repo already implements the lower layers of the platform:
+- core processing (`@agentsy/core`)
+- providers (`@agentsy/providers`)
+- orchestration/runtime (`@agentsy/orchestrator`, `@agentsy/runtime`)
+- session/memory/tokens (`@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`)
+- integrations/surfaces (`@agentsy/vscode`, `@agentsy/cli`, `@agentsy/ui`, `@agentsy/renderers`)
+- platform support packages (`@agentsy/types`, `@agentsy/tools`, `@agentsy/plugins`, `@agentsy/observability`, `@agentsy/prompts`, `@agentsy/secrets`)
 
-- provider normalization
-- stream processing and transforms
-- structured-output parsing and repair
-- tool-call parsing
-- conversation-state helpers
-- renderer primitives
-- a VS Code integration package
+### Plan-only domains to promote
 
-Those layers are documented in the [Architecture overview](./architecture/index.md) and [Package catalog](./packages.md).
+The following domains exist as implementation plans but are not yet manifest-backed packages:
 
-## Major planned tracks
+- connectors
+- guardrails
+- mcp
+- retrieval
 
-### Runtime expansion
+## Execution priorities
 
-Planning documents point toward additional runtime-oriented packages and capabilities, including:
+### Priority 1 — boundary consistency and hardening
 
-- richer agent runtime/session concepts
-- memory and retrieval primitives
-- provider-management and MCP-oriented layers
-- more explicit lifecycle and telemetry surfaces
+- Keep core/providers boundaries explicit and consistent in code/docs.
+- Continue package-level implementation plan execution on manifest-backed packages.
+- Preserve runtime/orchestrator split and session durability invariants.
 
-Primary sources:
+### Priority 2 — domain promotion
 
-- `plan/agentsy-tech.md`
-- `plan/agentsy-platform-v2.md`
+Promote plan-only domains into full package units:
 
-### Feature platform expansion
+1. `packages/connectors`
+2. `packages/guardrails`
+3. `packages/mcp`
+4. `packages/retrieval`
 
-The planning set also sketches a larger feature ecosystem around agent applications, including:
+Each promotion includes:
 
-- slash commands
-- skills
-- caveman-mode style productivity layers
-- superpowers and workflow automation concepts
-- connector ecosystems and product-specific integrations
+- package manifest and exports
+- build/typecheck/test integration
+- migration and package docs updates
 
-Primary sources:
+### Priority 3 — cross-domain integration quality
 
-- `plan/agentsy-features-v1.md`
-- `plan/agentsy-connectors-v1.md`
-- `plan/agentsy-agents-v1.md`
+- tighten provider fallback/routing behavior
+- strengthen runtime approval/policy controls
+- deepen memory/retrieval integration surfaces
+- maintain observability and token-governance feedback loops
 
-### Product surfaces
+## Quality gates
 
-Several plan documents explore how these packages support product-facing experiences beyond low-level infrastructure, such as standalone apps and integration-first developer tooling.
+All roadmap work is gated by:
 
-Primary sources:
+- `pnpm build`
+- `pnpm check-types`
+- `pnpm test`
 
-- `plan/agentsy-standalone-v1.md`
-- `plan/agentsy-prd.md`
+And by architecture governance:
 
-## Documentation policy for planned work
+- no circular dependency regressions
+- no stale package-boundary claims in docs
+- package-level plans and master plan kept in sync for boundary-impacting changes
 
-This docs site follows three guardrails:
+## What changed recently
 
-1. **Current APIs are documented from code that exists now.**
-2. **Planned packages are described as architecture or roadmap only.**
-3. **Future-facing pages link back to the plan docs instead of inventing stable API references early.**
-
-That keeps the platform story useful without turning into vaporware fan fiction. The silicon deserves better.
-
-## Best next reads
-
-- [Architecture overview](./architecture/index.md)
-- [Platform evolution](./architecture/platform-evolution.md)
-- [Package catalog](./packages.md)
+- `plan/agentsy-platform-v2.md` was retired after consolidation.
+- Master planning authority moved to `plan/MASTER-IMPLEMENTATION-PLAN.md`.
+- Roadmap now reflects repository reality (manifest-backed vs plan-only domains) rather than historical package assumptions.

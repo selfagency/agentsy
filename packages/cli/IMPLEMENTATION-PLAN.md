@@ -1,103 +1,123 @@
-# CLI Implementation Plan
+# @agentsy/cli — Implementation Plan
 
-## Overview
+## Role in Framework Ecosystem
 
-Production-ready CLI offering TUI, REPL, local dev server, VS Code integration, and built-in loops. Will incorporate advanced document retrieval and code indexing for agent-aware conversations. Integrates with universal-client for provider abstraction and runtime for execution.
+`@agentsy/cli` is the **human interface** for the terminal. It provides a user-friendly entry point for indexing codebases, managing agents, and engaging in interactive chat sessions. It orchestrates the capabilities of `@agentsy/retrieval`, `@agentsy/core`, and `@agentsy/runtime` into a cohesive command-line experience.
 
-## Advanced Document Retrieval & Code Indexing
+It consumes `@agentsy/renderers` for real-time, ANSI-colored feedback and integrates with `@agentsy/memory` for local-first knowledge persistence.
 
-### Core Architecture (SQLite + Vector Search)
+### Ecosystem Sketch
 
-Adopt production patterns from sqlite-ollama-rag, turso.tech, and SQLite.ai blog:
+```text
+[ User ]
+   |
+   v
+[ @agentsy/cli ] <--- Command Routing & TUI
+   |
+   +-----------------------+-----------------------+
+   |                       |                       |
+   v                       v                       v
+[ @agentsy/retrieval ]  [ @agentsy/runtime ]    [ @agentsy/memory ]
+(Indexing & Search)     (Agent Execution)       (Local Knowledge)
+```
+
+## Fulfillment of Role
+
+The package fulfills its role by providing:
+
+1. **Command Architecture**: A robust routing system (e.g., using `commander`) for various agentic tasks.
+2. **Indexing Pipelines**: Multi-modal indexing for files (TS/JS/PY), web content, and conversation history.
+3. **Hybrid Search**: A user interface for combining SQL precision with vector similarity.
+4. **Rich Rendering**: Support for spinners, progress bars, and streaming markdown via `@agentsy/renderers`.
+
+## Detailed Functionality
+
+### 1. Command Architecture (`src/commands/`)
+
+- **Interactive Mode**: A TUI-focused interactive shell (OpenCode pattern) supporting:
+  - **Agent Switching**: Using Tab key to cycle between agent types (build, plan, general).
+  - **Natural Language Interaction**: Streaming chat interface.
+  - **Permission Prompts**: Explicit user approval for file edits or shell commands.
+- **Headless Mode**: Support for single-command execution (e.g., `agentsy -p "your question"`).
+- **Sub-commands**:
+  - `/help`: List available commands.
+  - `/auth`: Manage provider authentication.
+  - `/model`: Switch between configured models.
+  - `/status`: Show current agent and session state.
+
+### 2. Indexing Strategy (`src/indexing/`)
+
+- **Mechanism**: Pluggable indexers (File, Structure, Web, Conversation).
+- **Key Logic**: Uses AST parsing for code files to extract functions, types, and dependencies (Syntactic Chunking).
+
+### 3. TUI & REPL (`src/ui/`)
+
+- **Mechanism**: Consumes `@agentsy/renderers` subpaths.
+- **Functionality**:
+  - Real-time chunk-by-chunk display of LLM responses.
+  - Specialized rendering for tool calls and thinking blocks.
+  - Interactive prompts for human-in-the-loop approvals.
+
+## Logic & Data Flow
+
+### 1. The "Chat" Workflow
+
+1. User runs `agentsy chat`.
+2. CLI initializes `@agentsy/runtime` with the requested agent config.
+3. CLI enters a loop:
+   - Read user input.
+   - Assemble context via `@agentsy/retrieval` and `@agentsy/memory`.
+   - Dispatch to runtime.
+   - Stream response to terminal via `@agentsy/renderers`.
+   - Save interaction to `@agentsy/session` for persistence.
+
+### 2. The "Index" Workflow
+
+1. User runs `agentsy index .`.
+2. CLI identifies the project type and selects the appropriate indexers.
+3. Indexers parse files, generate embeddings via `@agentsy/core/universal-client`, and store them in the local SQLite/Vector DB managed by `@agentsy/retrieval`.
+
+## Key Interfaces
+
+### CLIContext
 
 ```typescript
-// Unified document store combining SQL + Vector search
-interface DocumentStore {
-  // Database schema
-  documents: {
-    id: string;
-    content: string;
-    type: 'file' | 'directory' | 'project' | 'web' | 'conversation';
-    path: string;
-    language: string;
-    metadata: Record<string, unknown>;
-    embedding: Float32Array;
-    created_at: datetime;
-    updated_at: datetime;
-    access_count: number;
-    last_accessed: datetime;
-    tags: string[];
+export interface CLIContext {
+  config: AgentsyConfig;
+  stores: {
+    memory: MemoryStore;
+    session: SessionStore;
+    retrieval: RetrievalStore;
   };
-
-  // Relational connections
-  relationships: {
-    parent_id: string;
-    child_id: string;
-    relationship_type: 'contains' | 'imports' | 'references' | 'similar';
-    strength: number;
-  };
-
-  // Project structure awareness
-  project_structure: {
-    project_root: string;
-    relative_path: string;
-    file_type: string;
-    dependencies: string[];
-    package_info?: {
-      name: string;
-      version: string;
-      exports: string[];
-    };
-  };
+  observability: ObservabilityEngine;
+  tokenManager: TokenManager;
 }
 ```
 
-### Multi-Modal Indexing Strategy
-
-Inspired by RAG-SQLITE-VEC-MODULE and inferable SQLite RAG:
+### CommandHandler
 
 ```typescript
-interface IndexingPipeline {
-  // File-based indexing (like sourcebot)
-  fileIndexer: {
-    supportedTypes: ['ts', 'js', 'py', 'java', 'go', 'rs', 'vue', 'svelte', 'jsx', 'tsx'];
-    chunkStrategy: 'semantic' | 'syntactic' | 'hybrid';
-    extractFunctions: boolean;
-    extractTypes: boolean;
-    extractComments: boolean;
-    includeDependencies: boolean;
-  };
-
-  // Directory and project structure (like superset)
-  structureIndexer: {
-    trackFileMoves: boolean;
-    trackDependencies: boolean;
-    trackImports: boolean;
-    trackPackageStructure: boolean;
-    buildDependencyGraph: boolean;
-  };
-
-  // Web content indexing (like RAGlite)
-  webIndexer: {
-    supportedFormats: ['html', 'md', 'api-docs', 'wiki'];
-    extractCodeBlocks: boolean;
-    extractMetadata: boolean;
-    respectRobotsTxt: boolean;
-  };
-
-  // Conversation indexing (like agentic RAG checkpointer)
-  conversationIndexer: {
-    trackContext: boolean;
-    trackToolCalls: boolean;
-    trackDecisions: boolean;
-    trackSummaries: boolean;
-  };
+export interface CommandHandler {
+  name: string;
+  description: string;
+  options: CommandOption[];
+  execute(args: string[], context: CLIContext): Promise<void>;
 }
 ```
 
-### Hybrid Search Strategy
+## Implementation Details
 
-Combine SQL precision with Vector similarity:
+### Local-first Philosophy
+
+All CLI operations should work offline by default, using local SQLite and Vector stores. Remote sync should be an opt-in feature.
+
+### Streaming Correctness
+
+The CLI must handle ANSI sequences correctly, ensuring that streaming output doesn't break the terminal's scrollback or overwrite previous lines unexpectedly.
+
+## Sources Synthesized
+
+`agentsy-features-v1.md`, `agentsy-platform-v2.md`, `research/CLI-TOOLS-ANALYSIS.md`, `docs/examples/cli-log-summarizer.md`, `packages/cli/IMPLEMENTATION-PLAN.md`.
 
 ```typescript
 interface HybridSearchEngine {
@@ -227,55 +247,55 @@ commands/chat.ts
 
 ## Key Features from References
 
-### From SQLite.ai Blog:
+### From SQLite.ai Blog
 
 - RAG on SQLite with vector extensions
 - Efficient hybrid search combining SQL + vectors
 - Real-time indexing with FTS5
 
-### From turso.tech:
+### From turso.tech
 
 - Edge SQLite for vector search
 - Scalable document retrieval
 - Production-ready vector operations
 
-### From sqlite-ollama-rag:
+### From sqlite-ollama-rag
 
 - Local embedding generation
 - Efficient chunking strategies
 - Context-aware retrieval
 
-### From RAG-SQLITE-VEC-MODULE:
+### From RAG-SQLITE-VEC-MODULE
 
 - SQLite vector extensions
 - High-performance similarity search
 - Optimized storage format
 
-### From sourcebot:
+### From sourcebot
 
 - Code-aware indexing
 - Dependency graph tracking
 - Semantic code understanding
 
-### From inferable SQLite RAG:
+### From inferable SQLite RAG
 
 - RAG checkpointer for conversations
 - Context persistence
 - Multi-turn conversation support
 
-### From superset-sh/superset:
+### From superset-sh/superset
 
 - Large-scale document handling
 - Efficient metadata management
 - Advanced filtering capabilities
 
-### From spiceai:
+### From spiceai
 
 - Time-series document tracking
 - Change detection
 - Historical context preservation
 
-### From agentic RAG with SQLite checkpointer:
+### From agentic RAG with SQLite checkpointer
 
 - Agent-specific context tracking
 - Decision persistence
@@ -283,7 +303,7 @@ commands/chat.ts
 
 ## Usage Examples
 
-### Initialize indexing for a project:
+### Initialize indexing for a project
 
 ```bash
 agentsy index --project ./my-project --deep
@@ -291,7 +311,7 @@ agentsy index --web https://docs.example.com --recursive
 agentsy index --conversation --history 50
 ```
 
-### Smart context-aware chat:
+### Smart context-aware chat
 
 ```bash
 agentsy chat --context-aware --max-tokens 4096
@@ -299,7 +319,7 @@ agentsy chat --context ./src/utils.ts --include-dependencies
 agentsy chat --context recent --limit 10
 ```
 
-### Search and retrieve:
+### Search and retrieve
 
 ```bash
 agentsy search "authentication patterns" --type code --limit 5
@@ -307,7 +327,7 @@ agentsy search --similar ./src/auth.ts --threshold 0.8
 agentsy search --web --api-docs --query "react hooks"
 ```
 
-### Interactive development:
+### Interactive development
 
 ```bash
 agentsy dev --server --index-watch

@@ -1,404 +1,252 @@
-# @agentsy Authoritative Master Implementation Plan (Canonical)
+# @agentsy Master Implementation Plan (Canonical)
 
-Last updated: 2026-05-11
-Scope: repository-wide implementation, package-boundary canonicalization, and doc/plan consolidation
-Branch alignment target: `feature/dx-improvements` (content-shape emulation, not blind copy)
+Last updated: 2026-05-13
+Repository: `selfagency/agentsy` (`main`)
+Scope: architecture authority, implementation sequencing, and documentation governance
 
 ---
 
-## 1) Purpose and decision authority
+## 1) Decision authority
 
 This document is the **single source of truth** for:
 
-- package boundaries
-- merge/rename/delete actions
-- migration sequencing and acceptance gates
-- branch-sync posture for `feature/dx-improvements`
-- retirement of superseded plan files
+- canonical package boundaries
+- implementation sequencing and gates
+- current-state vs planned-state package maturity
+- retirement of superseded planning files
+- documentation alignment policy
 
-If any plan/doc conflicts with this file, **this file wins**.
-
----
-
-## 2) Canonical package-boundary decisions (explicit)
-
-The following directives are final and must be reflected in implementation, docs, and migration guides:
-
-1. `adapters` moves into `providers`
-2. `ag-ui` is treated as a protocol capability, not a standalone package
-3. `agentic-loop` is part of `runtime`
-4. `agent` is part of `orchestrator`
-5. `agents` is transformed into `plugins` with Claude-style plugin support and examples (former custom agents)
-6. `context` + `context-manager` become one thing under `core`
-7. `formatting` is part of `core`
-8. `normalizers` is part of `providers`
-9. `processor` is part of `core`
-10. `recovery` is part of `core`
-11. `retry` is part of `core`
-12. `scheduler` is part of `orchestrator`
-13. `sse` is part of `core`
-14. `structured` is part of `core`
-15. `thinking` is part of `core`
-16. `token-economy` is renamed to `tokens`
-17. `tool-calls` is part of `core`
-18. `universal-client` is part of `providers`
-19. `xml-filter` is part of `core`
+If any other planning document conflicts with this one, this one is authoritative.
 
 ---
 
-## 3) Canonical mapping matrix (keep/merge/rename/delete)
+## 2) Current repository reality snapshot
 
-| Source           | Canonical target                                  | Action                                           | End state                |
-| ---------------- | ------------------------------------------------- | ------------------------------------------------ | ------------------------ |
-| adapters         | providers/adapters                                | Merge                                            | Source removed           |
-| ag-ui (package)  | protocol surfaces in runtime/orchestrator/plugins | Remove package; keep protocol contracts/adapters | Package removed          |
-| agentic-loop     | runtime                                           | Merge                                            | Source removed           |
-| agent            | orchestrator                                      | Merge                                            | Source removed           |
-| agents           | plugins                                           | Semantic rename + scope shift                    | plugins authoritative    |
-| context          | core/context                                      | Merge                                            | Source removed           |
-| context-manager  | core/context                                      | Merge                                            | Source removed           |
-| formatting       | core/formatting                                   | Merge                                            | Source removed           |
-| normalizers      | providers/normalizers                             | Merge                                            | Source removed           |
-| processor        | core/processor                                    | Merge                                            | Source removed           |
-| recovery         | core/recovery                                     | Merge                                            | Source removed           |
-| retry            | core/retry                                        | Merge                                            | Source removed           |
-| scheduler        | orchestrator/scheduler                            | Merge                                            | Source removed           |
-| sse              | core/sse                                          | Merge                                            | Source removed           |
-| structured       | core/structured                                   | Merge                                            | Source removed           |
-| thinking         | core/thinking                                     | Merge                                            | Source removed           |
-| token-economy    | tokens                                            | Rename                                           | Legacy alias then remove |
-| tool-calls       | core/tool-calls                                   | Merge                                            | Source removed           |
-| universal-client | providers/universal-client                        | Merge                                            | Source removed           |
-| xml-filter       | core/xml-filter                                   | Merge                                            | Source removed           |
+### 2.1 Package maturity map
 
----
+The workspace currently has two package maturity classes:
 
-## 4) Target package topology (post-consolidation)
+#### A) Workspace packages with `package.json` manifests (active package units)
 
-### 4.1 Primary packages
-
+- `@agentsy/cli`
 - `@agentsy/core`
-  - `context`, `formatting`, `processor`, `recovery`, `retry`, `sse`, `structured`, `thinking`, `tool-calls`, `xml-filter`
-- `@agentsy/providers`
-  - `adapters`, `normalizers`, `universal-client`, provider registries/capabilities
-- `@agentsy/runtime`
-  - merged loop runtime (`agentic-loop` responsibilities)
+- `@agentsy/memory`
+- `@agentsy/observability`
 - `@agentsy/orchestrator`
-  - merged agent orchestration + scheduler
 - `@agentsy/plugins`
-  - Claude-style plugin system + former custom agent examples
+- `@agentsy/prompts`
+- `@agentsy/providers`
+- `@agentsy/renderers`
+- `@agentsy/runtime`
+- `@agentsy/scripts` (private)
+- `@agentsy/secrets`
+- `@agentsy/session`
+- `@agentsy/testing` (private)
 - `@agentsy/tokens`
-  - renamed `token-economy`
+- `@agentsy/tools`
+- `@agentsy/types`
+- `@agentsy/ui`
+- `@agentsy/vscode`
 
-### 4.2 Independent/support packages (retain unless separately superseded)
+#### B) Plan-only package domains (directory + implementation plan, no manifest yet)
 
-- `memory`, `retrieval`, `session`, `secrets`, `observability`, `types`, `cli`, `vscode`, `integration`, and other non-conflicting domains.
+- `packages/connectors`
+- `packages/guardrails`
+- `packages/mcp`
+- `packages/retrieval`
 
----
+### 2.2 Critical boundary clarification
 
-## 5) Branch emulation contract (`feature/dx-improvements`)
+`@agentsy/providers` is an active package and is **not deleted**.
 
-We emulate **DX sequencing and quality controls**, not stale boundary assumptions.
+Current exports from providers include:
 
-### 5.1 Adopt from branch workflow
+- `@agentsy/providers/adapters`
+- `@agentsy/providers/normalizers`
+- `@agentsy/providers/pipeline`
+- `@agentsy/providers/universal-client`
 
-- content-based sync behavior
-- phased porting (vscode/runtime, tool-calls/retry, processor transport, docs)
-- “do not port blindly” safeguards
-
-### 5.2 Branch deep-sweep files explicitly considered
-
-From `main..feature/dx-improvements`, docs/plan deltas include:
-
-- `docs/PR63-HANDOFF.md`, `docs/api.md`, `docs/getting-started.md`, migration and package docs updates
-- `plan/DECISION-LOG.md`, `plan/PACKAGE-NAMING-MAP.md`, `plan/REVISED-ARCHITECTURE.md`, `plan/revised-implementation-architecture.md`
-- added branch planning artifacts: `plan/agentsy-acp-client.md`, `plan/agentsy-memory.md`, `plan/agentsy-memory-integration.md`, `plan/agentsy-secrets.md`, `plan/agentsy-subagents.md`, `plan/agentsy-token-economy.md`, `plan/agentsy-utils-extraction-plan.md`, `plan/pacing-function-implementation.md`, `plan/PR63-HANDOFF.md`
-- research-tree updates under `plan/research/*`
-
-These references are integrated in Section 9 and Section 10.
+`@agentsy/core` does not currently replace these provider exports.
 
 ---
 
-## 6) Migration phases (execution order)
+## 3) Canonical architecture (synthesized)
 
-### Phase A — Canonicalization lock
+### 3.1 Layer model
 
-- Freeze this mapping across code/docs/plans.
-- Introduce temporary compatibility aliases where required (`token-economy` -> `tokens`).
+1. **Core stream and transformation primitives** — `@agentsy/core`
+2. **Provider integration boundary** — `@agentsy/providers`
+3. **Execution and orchestration** — `@agentsy/runtime`, `@agentsy/orchestrator`
+4. **Session, memory, and token governance** — `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`
+5. **Rendering and interaction surfaces** — `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`
+6. **Extensibility and policy** — `@agentsy/plugins`, plus planned domains (`connectors`, `guardrails`, `mcp`, `retrieval`)
 
-**Gate A**:
+### 3.2 Data flow (canonical)
 
-- No unresolved boundary contradiction in `plan/*` and `docs/*`.
-
-### Phase B — Provider consolidation wave
-
-- Move `adapters`, `normalizers`, `universal-client` into `providers`.
-- Preserve provider contracts and tests.
-
-**Gate B**:
-
-- Provider package exports satisfy previous public API expectations.
-- No imports from deprecated provider-side source packages.
-
-### Phase C — Core consolidation wave
-
-- Merge stream and utility packages into `core` modules.
-
-**Gate C**:
-
-- `core` subpath exports compile and tests pass.
-- parser/stream/recovery regression suites green.
-
-### Phase D — Runtime + orchestrator reshape
-
-- Merge `agentic-loop` into `runtime`.
-- Merge `agent` and `scheduler` into `orchestrator`.
-
-**Gate D**:
-
-- Exactly one loop authority (`runtime`) and one orchestration authority (`orchestrator`).
-
-### Phase E — Plugin surface conversion
-
-- Transform `agents` responsibilities into `plugins`.
-- Port former custom agents as plugin examples.
-
-**Gate E**:
-
-- Claude-style plugin flows validated in tests/docs examples.
-
-### Phase F — Token/protocol cleanup
-
-- Complete `token-economy` rename to `tokens`.
-- Remove `ag-ui` package artifact; retain protocol support in runtime/orchestrator/plugins surfaces.
-
-**Gate F**:
-
-- No remaining runtime imports of removed packages.
-
-### Phase G — Documentation and plan retirement
-
-- Replace outdated package references across docs.
-- Mark superseded plan files for deletion per Section 10.
-
-**Gate G**:
-
-- docs and plans reflect only canonical map.
+1. Provider outputs normalize via `@agentsy/providers/*`
+2. Stream events/process transforms run in `@agentsy/core`
+3. Multi-step policy and loop behavior run in `@agentsy/orchestrator`
+4. Tool execution/approval runtime concerns run in `@agentsy/runtime`
+5. Session durability and resume semantics run in `@agentsy/session`
+6. Long-horizon memory and token policy feed optimization and continuity (`@agentsy/memory`, `@agentsy/tokens`)
+7. Surface adapters and presentation layers consume event/state outputs (`renderers`, `ui`, `vscode`, `cli`)
 
 ---
 
-## 7.1) Implementation Status & Completion Tracking (May 2026)
+## 4) Boundary decisions (normalized from all prior plans)
 
-### Phases A-C: ✅ COMPLETE
+### 4.1 Finalized decisions
 
-| Phase | Scope                           | Status  | Gate      | Evidence                                                                                                                        |
-| ----- | ------------------------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A     | Canonicalization Lock           | ✅ DONE | ✅ PASSED | All 20 canonical boundary decisions locked in DECISION-LOG                                                                      |
-| B     | Provider Consolidation          | ✅ DONE | ✅ PASSED | normalizers, adapters, universal-client → @agentsy/providers                                                                    |
-| C-1   | Core Consolidation              | ✅ DONE | ✅ PASSED | 10 submodules consolidated (sse, processor, structured, recovery, thinking, tool-calls, context, formatting, xml-filter, retry) |
-| C-2   | Providers (Parallel)            | ✅ DONE | ✅ PASSED | Providers wave completed, no circular deps                                                                                      |
-| C-3   | AG-UI Removal (Parallel)        | ✅ DONE | ✅ PASSED | Protocol retained in orchestrator; package deleted                                                                              |
-| C-4   | Agent → Orchestrator (Parallel) | ✅ DONE | ✅ PASSED | Agent code consolidated to @agentsy/orchestrator/agent; consumer packages audited clean                                         |
+- `context`, `formatting`, `processor`, `recovery`, `retry`, `sse`, `structured`, `thinking`, `tool-calls`, `xml-filter` live under `@agentsy/core`.
+- Provider abstractions and provider-facing adaptation/normalization remain under `@agentsy/providers`.
+- Orchestration logic belongs in `@agentsy/orchestrator`; runtime execution controls belong in `@agentsy/runtime`.
+- `ag-ui` exists as runtime capability (`@agentsy/runtime/ag-ui`), not a standalone package.
+- `token-economy` naming is reconciled to `@agentsy/tokens`.
+- Extension concepts formerly spread across standalone plan artifacts map into `@agentsy/plugins` plus package-level implementation plans.
 
-**Verification Status (All Phases A-C):**
+### 4.2 Legacy-name reconciliation
 
-- `pnpm check-types`: 26–31 tasks passing ✅
-- `pnpm build`: 17–20 tasks passing ✅
-- `pnpm test`: 35–41 tasks passing, 84 tests ✅
-- Documentation updated: 34 files across docs/, plan/, examples/ ✅
-- Branch: `feature/Phase-C1-consolidation` clean and pushed to remote ✅
-
-### Phase D: ✅ COMPLETE
-
-**Scope:** Runtime + Orchestrator reshape
-
-**Completion evidence:**
-
-1. **Runtime loop authority lives in `@agentsy/runtime`**
-   - `createRuntimeLoop`, resumable snapshots, session-store persistence, spawned child execution with depth caps, and DAG-style workflow ordering are implemented in `packages/runtime/src/index.ts`.
-   - AG-UI protocol support lives at the runtime subpath `@agentsy/runtime/ag-ui`.
-
-2. **Orchestration authority lives in `@agentsy/orchestrator`**
-   - `createAgentLoop` exposes lifecycle hooks, stop conditions, tool approval modes, and AG-UI event callbacks.
-   - Scheduler functionality is consolidated under `packages/orchestrator/src/scheduler/` and surfaced through `createOrchestratorLoop`.
-
-3. **Acceptance Gate D passed**
-   - Exactly one loop authority: `runtime`
-   - Exactly one orchestration authority: `orchestrator`
-   - No legacy `agentic-loop`, `scheduler`, or standalone `ag-ui` packages remain in `packages/`
-   - Verification gates pass after the consolidation and remediation updates
-
-### Phase E: ✅ COMPLETE
-
-- Plugin conversion is complete under `@agentsy/plugins`.
-- Legacy `agents` package artifact is retired; plugin-facing docs and exports point at `@agentsy/plugins`.
-
-### Phase F: ✅ COMPLETE
-
-- `token-economy` has been fully reconciled to `@agentsy/tokens`.
-- `@agentsy/tokens` now ships token ledgers, an in-memory token manager, conversation compression helpers, and pacing controls.
-- The standalone `ag-ui` package artifact remains retired; protocol support is documented and exported through `@agentsy/runtime/ag-ui`.
-
-### Phase G: ✅ COMPLETE
-
-- Canonical docs, examples, package catalog pages, and repository instructions now reflect the consolidated package map.
-- Historical plan files remain as archived context, but the canonical topology is documented through this master plan and the current docs set.
+- `context-manager` -> core context + orchestration/runtime integration policy
+- `cost-tracker` -> `@agentsy/tokens`
+- `telemetry` -> `@agentsy/observability`
+- standalone `ag-ui` -> `@agentsy/runtime/ag-ui`
+- legacy standalone extension package ideas (skills/superpowers/caveman/slash-commands) -> plugin extension domains
 
 ---
 
-## 7) Acceptance gates and quality checks
+## 5) Implementation status (project-wide)
 
-For each migration phase:
+### 5.1 Completed consolidation outcomes
 
-1. `pnpm check-types` passes
-2. `pnpm test` passes
-3. if relevant: coverage gate for touched packages passes
-4. no net loss of critical tests
+- Core consolidation achieved around `@agentsy/core` subpath modules.
+- Runtime/orchestrator split established as the loop + execution separation model.
+- Provider package remains active and integrated in docs/tests/examples.
+- Token naming and AG-UI package retirement direction are reflected in docs and package boundaries.
+
+### 5.2 Active implementation streams
+
+1. **Manifest-backed package hardening**
+   - continue implementation in package-level `IMPLEMENTATION-PLAN.md` files
+2. **Plan-only domain promotion to manifest packages**
+   - connectors, guardrails, mcp, retrieval
+3. **Cross-domain architecture hardening**
+   - session durability, policy enforcement, memory/retrieval integration, provider fallback behavior
+4. **Docs and migration coherence**
+   - remove stale references to superseded plans and stale package assumptions
+
+### 5.3 Source of execution truth
+
+Detailed implementation work is tracked in:
+
+- `packages/*/IMPLEMENTATION-PLAN.md` (package-specific)
+- this master plan (cross-domain policy, sequencing, and governance)
+
+---
+
+## 6) Sequenced execution roadmap
+
+### 6.1 Immediate (Now)
+
+1. Keep package boundaries consistent with Section 4.
+2. Complete docs consolidation and superseded file retirement.
+3. Continue implementation on manifest-backed packages by package plan priority.
+
+### 6.2 Near-term (Next)
+
+1. Promote plan-only domains (`connectors`, `guardrails`, `mcp`, `retrieval`) from plan-only to manifest-backed packages.
+2. Add/validate tests and export contracts for each promoted package.
+3. Ensure integration points with runtime/orchestrator/providers/session remain acyclic and explicit.
+
+### 6.3 Mid-term (Later)
+
+1. Expand cross-domain resilience and security controls.
+2. Strengthen advanced routing/retrieval/policy layers.
+3. Maintain additive complexity discipline: introduce capabilities in response to concrete needs and validation data.
+
+---
+
+## 7) Quality, security, and performance gates
+
+For every implementation slice:
+
+1. `pnpm build` passes
+2. `pnpm check-types` passes
+3. `pnpm test` passes
+4. touched package-level plans/docs are updated for boundary-impacting changes
 5. no circular dependency regressions
-6. docs updated for all user-facing boundary changes
 
-Final release gate:
+Security and safety invariants:
 
-- migration guides updated
-- package catalog reflects canonical topology
-- plan retirement completed
+- destructive operations remain approval-gated
+- untrusted inbound/retrieved content is treated as hostile by default
+- trust-level filtering and confinement controls remain explicit at runtime boundaries
 
----
+Performance/reliability guardrails:
 
-## 8) Contradiction resolution log (embedded)
-
-Resolved here:
-
-- `runtime` vs `agentic-loop` direction: **agentic-loop -> runtime**
-- `ag-ui` standalone package vs protocol-only: **protocol-only; package removed**
-- `normalizers` in providers/core/standalone: **providers**
-- `scheduler` in providers vs orchestrator: **orchestrator**
-- `agents` keep vs plugins conversion: **plugins conversion**
-- `token-economy` drift: **rename to tokens complete**
+- preserve low-latency streaming behavior
+- preserve deterministic resume semantics for session continuity
+- preserve bounded memory/token behavior over long-running sessions
 
 ---
 
-## 9) Integrated reference digest (prior planning material absorbed)
+## 8) Documentation governance
 
-This section embeds essential reference intent so historical plan files can be retired.
+### 8.1 Required alignment files
 
-### 9.1 Platform and architecture lineage
-
-- `plan/agentsy-platform-v1.md`, `plan/agentsy-platform-v2.md`, `plan/agentsy-tech.md`, `plan/REVISED-ARCHITECTURE.md`, `plan/revised-implementation-architecture.md`, `plan/DECISION-LOG.md`, `plan/PACKAGE-NAMING-MAP.md`
-- Absorbed as:
-  - layered architecture intent
-  - package split/merge rationale
-  - dependency ordering and acceptance constraints
-
-### 9.2 Feature and domain plans
-
-- `plan/agentsy-features-v1.md`, `plan/agentsy-agents-v1.md`, `plan/agentsy-connectors-v1.md`, `plan/agentsy-scheduler-v1.md`, `plan/agentsy-fileops-mcp.md`, `plan/provider-capability-matrix.md`, `plan/owasp-security-testing-1.md`, `plan/PROMPTS_TODO.md`
-- Absorbed as:
-  - plugin and connector scope
-  - scheduler placement under orchestrator
-  - provider capabilities and security testing principles
-
-### 9.3 PRD/deep-dive/research lineage
-
-- `plan/agentsy-prd.md`, `plan/agentsy-prd-notes.md`, `plan/agentsy-prd-task-plan.md`, `plan/agentsy-deep-dive-v1.md`, `plan/agentsy-deep-dive-v2.md`, and `plan/research/*`
-- Absorbed as:
-  - requirement traceability backbone
-  - comparative architecture inputs
-  - implementation risk framing
-
-### 9.4 DX branch-added planning artifacts absorbed
-
-- `plan/agentsy-acp-client.md`: ACP client/session lifecycle model and transport-neutral boundaries
-- `plan/agentsy-memory.md`: durable memory layers, scope model, lifecycle, safe injection
-- `plan/agentsy-memory-integration.md`: memory/token-economy/recovery/subagent integration contract
-- `plan/agentsy-secrets.md`: secure secret-store architecture and env hygiene model
-- `plan/agentsy-subagents.md`: explicit separation of subagents vs ACP vs A2A
-- `plan/agentsy-token-economy.md`: token policy architecture and compression controls
-- `plan/agentsy-utils-extraction-plan.md`: utility extraction and reuse strategy
-- `plan/pacing-function-implementation.md`: pacing + dead-time utilization model (rolled into `tokens` policy roadmap)
-- `plan/PR63-HANDOFF.md` and `docs/PR63-HANDOFF.md`: DX implementation and hardening status
-
-All above are now represented in this plan’s canonical boundaries and migration phases.
-
----
-
-## 10) Supersession and deletion matrix (plans)
-
-After this master plan is accepted and corresponding docs are updated:
-
-### 10.1 Retire by deletion (superseded)
-
-- `plan/PACKAGE-NAMING-MAP.md`
-- `plan/DECISION-LOG.md`
-- `plan/REVISED-ARCHITECTURE.md`
-- `plan/revised-implementation-architecture.md`
-- `plan/prompt.md`
-- `plan/rearchelogy-RESEARCH-STATUS.md`
-
-### 10.2 Retire by archive or merge-note (optional)
-
-- `plan/agentsy-platform-v1.md`
-- `plan/agentsy-platform-v2.md`
-- `plan/agentsy-tech.md`
-- `plan/agentsy-features-v1.md`
-- `plan/agentsy-agents-v1.md`
-- `plan/agentsy-connectors-v1.md`
-- `plan/agentsy-scheduler-v1.md`
-- `plan/agentsy-fileops-mcp.md`
-- `plan/provider-capability-matrix.md`
-- `plan/PROMPTS_TODO.md`
-- `plan/agentsy-prd*.md`
-- `plan/agentsy-deep-dive-*.md`
-- `plan/research/*`
-
-### 10.3 Branch-added plan files to retire after merge
-
-- `plan/agentsy-acp-client.md`
-- `plan/agentsy-memory.md`
-- `plan/agentsy-memory-integration.md`
-- `plan/agentsy-secrets.md`
-- `plan/agentsy-subagents.md`
-- `plan/agentsy-token-economy.md`
-- `plan/agentsy-utils-extraction-plan.md`
-- `plan/pacing-function-implementation.md`
-- `plan/PR63-HANDOFF.md`
-
-Rationale: their material is captured in Section 9 and canonicalized in Sections 2–7.
-
----
-
-## 11) Documentation reconciliation checklist (required)
-
-Update these docs to canonical topology before deleting superseded plans:
-
+- `README.md`
+- `docs/roadmap.md`
 - `docs/packages.md`
-- `docs/architecture/package-ecosystem.md`
-- `docs/architecture/platform-evolution.md`
-- `docs/api.md`
-- `docs/getting-started.md`
-- `docs/migration/index.md`
-- `docs/migration/v0.1-to-v0.2.md`
-- `docs/migration/vscode-v0.1-to-v0.2.md`
-- package pages under `docs/packages/*` for moved/removed domains
-- `docs/PR63-HANDOFF.md` (retain as release hardening history or archive note)
+- `docs/architecture/*`
+- `docs/migration/*`
+
+### 8.2 Governance rules
+
+- Do not describe plan-only domains as shipped package artifacts.
+- Do not claim providers are merged into core unless code and exports prove it.
+- Keep package names and boundaries consistent with actual `packages/*/package.json` manifests.
+- When architecture changes, update package plans + master + docs in the same change window.
 
 ---
 
-## 12) Immediate execution backlog (next commits)
+## 9) Supersession and retirement policy
 
-1. Apply canonical package moves in code without compatibility shims or wrapper packages.
-2. Complete import rewrites and export map updates.
-3. Run full type/test gates.
-4. Update docs listed in Section 11.
-5. Remove superseded plan files per Section 10.
+### 9.1 Superseded planning artifacts
+
+Planning artifacts are superseded when their actionable content has been absorbed into:
+
+- this master plan, and/or
+- package-level implementation plans.
+
+### 9.2 Current retirement state
+
+- `plan/agentsy-platform-v2.md` — retired/deleted after consolidation into this master plan.
+
+Historical references may still exist in narrative lineage sections, but must not be used as active execution authority.
 
 ---
 
-## 13) Success definition
+## 10) Resumable implementation guide
 
-This consolidation is complete when:
+1. Confirm package reality (`packages/*`, manifest presence, current exports).
+2. Use this master plan for cross-domain authority.
+3. Execute from package `IMPLEMENTATION-PLAN.md` files for concrete tasks.
+4. Validate each slice with build/typecheck/test gates.
+5. Keep docs synchronized for any boundary or ownership change.
 
-- repository compiles/tests with canonical boundaries
-- all docs match canonical map
-- superseded plan set is removed/archived
-- `feature/dx-improvements` sequencing constraints are satisfied without reintroducing stale boundary assumptions
+---
+
+## 11) Success definition
+
+This plan is being executed successfully when:
+
+- package boundaries in Section 4 match code/export reality
+- docs no longer depend on superseded planning artifacts
+- plan-only domains are either clearly marked or promoted with manifests and tests
+- package-level implementation plans are the active execution engine
+- cross-domain governance and gates in Sections 6–8 remain enforced
+
+---
+
+## 12) Change log
+
+- **2026-05-13**: Comprehensive synthesis rewrite; resolved providers/core ambiguity; normalized package maturity model; retired `agentsy-platform-v2.md`; aligned execution authority around package plans + canonical master.
