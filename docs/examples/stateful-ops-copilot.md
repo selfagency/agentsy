@@ -10,17 +10,17 @@ This example shows a backend architecture for an operations copilot experience:
 ## Packages used
 
 ```bash
-npm install @agentsy/ag-ui @agentsy/normalizers @agentsy/processor @agentsy/recovery @agentsy/sse @agentsy/ui
+npm install @agentsy/runtime @agentsy/core @agentsy/providers @agentsy/ui
 ```
 
 ## Illustrative implementation
 
 ```ts
-import { toAgUiStream } from '@agentsy/ag-ui';
-import { normalizeOpenAIResponseEvent } from '@agentsy/normalizers';
-import { createProcessorEventAdapter, LLMStreamProcessor } from '@agentsy/processor';
-import { buildContinuationPrompt, captureStreamState } from '@agentsy/recovery';
-import { parseSSEStream } from '@agentsy/sse';
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
+import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
+import { createProcessorEventAdapter, LLMStreamProcessor } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
+import { parseSSEStream } from '@agentsy/core/sse';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 async function* providerStream(messages: Array<{ role: string; content: string }>) {

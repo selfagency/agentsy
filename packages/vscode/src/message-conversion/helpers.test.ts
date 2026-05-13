@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { StreamChunk } from '@agentsy/processor';
+import type { StreamChunk } from '@agentsy/core/processor';
 import { mapStreamChunkToVsCode } from './helpers.js';
 
 describe('mapStreamChunkToVsCode', () => {

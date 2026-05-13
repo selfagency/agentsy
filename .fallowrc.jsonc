@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  // Root Fallow configuration: start narrow and document modeling decisions.
+  // This file should be iteratively refined as we wire package exports and rebuild coverage.
+  // Mark packages that are intentionally public (leave empty initially; populate per-package).
+  "publicPackages": [],
+  // Explicit entry points for packages when package.json exports are insufficient.
+  "entry": [],
+  // Preserve class members that are used via runtime reflection or host integrations.
+  "usedClassMembers": [],
+  // Duplicate detection tuning (reduce noise for trivial/script duplication during cleanup).
+  "duplicates": {
+    "threshold": 3,
+  },
+  // Health threshold tuning (will be refined after regenerating coverage).
+  "health": {
+    "threshold": 15,
+  },
+  // Prevent gating on current baseline during remediation; switch to stronger gate after cleanup.
+  "audit": {
+    "gate": "new-only",
+  },
+  // Common workspace aliases and packages we intentionally keep as dev/build
+  // references across packages (monorepo layout). These are safe to ignore in
+  // fallow's unused-dependencies check.
+  "ignoreDependencies": [
+    "@agentsy/types",
+    "@agentsy/core",
+    "@agentsy/renderers",
+    "@agentsy/runtime",
+    "@agentsy/memory",
+    "@agentsy/providers",
+    "@agentsy/session",
+  ],
+}

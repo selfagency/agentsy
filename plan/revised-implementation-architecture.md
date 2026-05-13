@@ -481,7 +481,7 @@ For each of the 4 new packages (providers, tools, testing, cli):
 
 **New Packages:**
 
-- @agentsy/agentic-loop (from agent package)
+- @agentsy/orchestrator/agentic-loop (from agent package)
 - @agentsy/session (planned from plan)
 - @agentsy/mcp (internal tools, not external servers)
 
@@ -605,7 +605,7 @@ packages/ [22 total packages]
 ├── Tier 0 (6): types, xml-filter, context, formatting, sse, structured
 ├── Tier 1 (3): processor, recovery, thinking
 ├── Tier 2 (3): agentic-loop, token-economy, session
-│   └── agentic-loop = logic from @agentsy/agents (no agent arch)
+│   └── agentic-loop = logic from @agentsy/orchestrator/agents (no agent arch)
 ├── Tier 3 (4): mcp, providers, memory, retrieval
 │   └── providers = registry + universal client + manager + model picker
 │   └── tools NOT created yet (deferred to Tier 4)

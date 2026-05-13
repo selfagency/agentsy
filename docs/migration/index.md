@@ -6,7 +6,7 @@ This document describes notable changes and migration steps for the Agentsy modu
 
 - Package structure refactored into multiple submodules with independent exports
 - New subpath exports added for core modules, streaming bridges, retry utilities, integrations, and helpers
-- Stable tool call ID mapping and validation centralized into `@agentsy/adapters`
+- Stable tool call ID mapping and validation centralized into `@agentsy/providers/adapters`
 - Robust retry logic implemented and exposed in a new `@agentsy/retry` package
 - Redesigned streaming bridge utilities to improve resilience and flexibility
 
@@ -21,7 +21,7 @@ This document describes notable changes and migration steps for the Agentsy modu
 
 ### 2. Review package-specific imports in the migration guide for detailed changes
 
-### 3. Use the centralized `toMistralMessages` and related message transformation utilities from `@agentsy/adapters` where applicable
+### 3. Use the centralized `toMistralMessages` and related message transformation utilities from `@agentsy/providers/adapters` where applicable
 
 ### 4. Review streaming bridge utilities in provider packages
 
@@ -32,7 +32,7 @@ This document describes notable changes and migration steps for the Agentsy modu
 ## Decision Tree
 
 - If your integration involves chat streaming, use the new streaming bridge utilities.
-- If you require stable tool call ID mapping and validation, adopt utilities from `@agentsy/adapters`.
+- If you require stable tool call ID mapping and validation, adopt utilities from `@agentsy/providers/adapters`.
 - For retry and resilience patterns, use the APIs provided by `@agentsy/retry`.
 
 ## Additional Resources

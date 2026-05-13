@@ -1,0 +1,31 @@
+{
+  "name": "@agentsy/testing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cross-package integration tests and shared test harness for the @agentsy/* family",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agentsy/core": "workspace:*",
+    "@agentsy/providers": "workspace:*",
+    "@agentsy/renderers": "workspace:*",
+    "@agentsy/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.6",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "engines": {
+    "node": ">=20.19.6"
+  }
+}

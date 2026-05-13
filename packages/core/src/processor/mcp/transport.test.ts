@@ -76,12 +76,14 @@ describe('MCP Transport', () => {
       const adapter = createCompatibilityAdapter({ type: 'stdio', readable, writable });
       expect(adapter.stream).toBeDefined();
       expect(adapter.cleanup).toBeDefined();
-
-      if (adapter.cleanup) {
-        const destroySpy = vi.spyOn(readable, 'destroy');
-        adapter.cleanup();
-        expect(destroySpy).toHaveBeenCalled();
+      const cleanup = adapter.cleanup;
+      if (!cleanup) {
+        throw new Error('Expected cleanup function for stdio transport');
       }
+
+      const destroySpy = vi.spyOn(readable, 'destroy');
+      cleanup();
+      expect(destroySpy).toHaveBeenCalled();
     });
   });
 });

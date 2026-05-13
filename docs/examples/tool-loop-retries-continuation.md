@@ -10,17 +10,17 @@ This example shows a workflow you could build when you need more than one-shot g
 ## Packages used
 
 ```bash
-npm install @agentsy/agent @agentsy/processor @agentsy/recovery @agentsy/tool-calls
+npm install @agentsy/orchestrator/agent @agentsy/core @agentsy/providers
 ```
 
 ## Illustrative implementation
 
 ```ts
-import { createAgentLoop, isStepCount } from '@agentsy/agent';
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
-import { LLMStreamProcessor } from '@agentsy/processor';
-import { buildContinuationPrompt, captureStreamState } from '@agentsy/recovery';
-import { buildToolResultMessage } from '@agentsy/tool-calls';
+import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
+import { buildToolResultMessage } from '@agentsy/core/tool-calls';
 
 const MAX_STREAM_RETRIES = 2;
 
@@ -92,8 +92,8 @@ for await (const part of loop.run([{ role: 'user', content: 'Investigate elevate
 
 ## Why this pattern is useful
 
-- `@agentsy/agent` gives you a reusable multi-step loop rather than bespoke loop control.
-- `@agentsy/recovery` lets you resume after interrupted stream execution.
-- `@agentsy/tool-calls` standardizes tool-result message shaping.
+- `@agentsy/orchestrator/agent` gives you a reusable multi-step loop rather than bespoke loop control.
+- `@agentsy/core/recovery` lets you resume after interrupted stream execution.
+- `@agentsy/core/tool-calls` standardizes tool-result message shaping.
 
 For additional package context, see the [package catalog](../packages.md).

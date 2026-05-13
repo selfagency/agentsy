@@ -42,6 +42,36 @@
       "types": "./dist/formatting.d.ts",
       "import": "./dist/formatting.js",
       "require": "./dist/formatting.cjs"
+    },
+    "./recovery": {
+      "types": "./dist/recovery.d.ts",
+      "import": "./dist/recovery.js",
+      "require": "./dist/recovery.cjs"
+    },
+    "./retry": {
+      "types": "./dist/retry.d.ts",
+      "import": "./dist/retry.js",
+      "require": "./dist/retry.cjs"
+    },
+    "./sse": {
+      "types": "./dist/sse.d.ts",
+      "import": "./dist/sse.js",
+      "require": "./dist/sse.cjs"
+    },
+    "./structured": {
+      "types": "./dist/structured.d.ts",
+      "import": "./dist/structured.js",
+      "require": "./dist/structured.cjs"
+    },
+    "./thinking": {
+      "types": "./dist/thinking.d.ts",
+      "import": "./dist/thinking.js",
+      "require": "./dist/thinking.cjs"
+    },
+    "./tool-calls": {
+      "types": "./dist/tool-calls.d.ts",
+      "import": "./dist/tool-calls.js",
+      "require": "./dist/tool-calls.cjs"
     }
   },
   "scripts": {
@@ -57,11 +87,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@types/node": "^25.7.0",
+    "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   },
   "engines": {
     "node": ">=18"

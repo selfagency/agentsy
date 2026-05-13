@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import type { AgentRegistry } from '../agents/registry.js';
+import { createTaskScheduler, type TaskScheduler } from '../scheduler/index.js';
 import type { AgentCapabilities, WorkflowResult, WorkflowSpec } from '../types/index.js';
 import { NodeType, WorkflowStatus } from '../types/index.js';
 
@@ -10,13 +11,7 @@ type RuntimeParallelNode = Extract<RuntimeWorkflowNode, { type: NodeType.PARALLE
 type RuntimeSequenceNode = Extract<RuntimeWorkflowNode, { type: NodeType.SEQUENCE }>;
 type RuntimeMergeNode = Extract<RuntimeWorkflowNode, { type: NodeType.MERGE }>;
 
-// Stub interface for scheduler since @agentsy/orchestrator/scheduler is not yet implemented
-export interface TaskScheduler {
-  schedule<T>(task: TaskInput<T>): Promise<T>;
-}
-
-// Union type for scheduler input
-type TaskInput<T> = (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] };
+export type { TaskScheduler } from '../scheduler/index.js';
 
 // Exported interfaces for public API
 export interface WorkflowContext {
@@ -39,6 +34,7 @@ export interface ExecutionOptions {
   recovery?: boolean;
 }
 
+// fallow-ignore-next-line unused-export
 export class Workflow {
   public id: string;
 
@@ -67,6 +63,7 @@ export class Workflow {
   }
 }
 
+// fallow-ignore-next-line unused-export
 export class WorkflowMonitor {
   constructor(private readonly context: WorkflowContext) {}
 
@@ -95,23 +92,6 @@ interface WorkflowExecution {
   options: ExecutionOptions;
   run(): Promise<WorkflowResult>;
   cancel(): Promise<void>;
-}
-
-// Default scheduler implementation
-class DefaultScheduler implements TaskScheduler {
-  async schedule<T>(task: TaskInput<T>): Promise<T> {
-    if (typeof task === 'function') {
-      // Function variant
-      return task();
-    }
-
-    // TaskInfo variant - placeholder scheduler behavior
-    return { agentId: 'mock', assigned: true, status: 'scheduled' as const } as T;
-  }
-}
-
-function createDefaultScheduler(): TaskScheduler {
-  return new DefaultScheduler();
 }
 
 // Workflow execution factory
@@ -426,7 +406,7 @@ export class OrchestrationEngine extends EventEmitter {
 
   constructor(
     private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler = createDefaultScheduler(),
+    private readonly scheduler: TaskScheduler = createTaskScheduler(),
   ) {
     super();
   }
@@ -497,6 +477,7 @@ export class OrchestrationEngine extends EventEmitter {
     }
   }
 
+  // fallow-ignore-next-line unused-class-member
   monitor(workflowId: string): WorkflowMonitor {
     const context = this.workflows.get(workflowId);
     if (!context) {
@@ -506,6 +487,7 @@ export class OrchestrationEngine extends EventEmitter {
     return new WorkflowMonitor(context);
   }
 
+  // fallow-ignore-next-line unused-class-member
   async cancel(workflowId: string): Promise<void> {
     const execution = this.activeExecutions.get(workflowId);
     if (execution) {

@@ -1,5 +1,5 @@
-import type { OutputPart, StreamChunk } from '@agentsy/processor';
-import { LLMStreamProcessor } from '@agentsy/processor';
+import type { OutputPart, StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 export function createStepChangeEmitter(

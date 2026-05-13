@@ -19,40 +19,44 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Runtime and orchestration packages
 
-| Package                | Role                                                                | Status    | Docs                                      |
-| ---------------------- | ------------------------------------------------------------------- | --------- | ----------------------------------------- |
-| `@agentsy/processor`   | Event-driven stream orchestrator and transform pipeline             | Published | [Package page](./packages/processor.md)   |
-| `@agentsy/normalizers` | Provider-specific response normalization into a common stream shape | Published | [Package page](./packages/normalizers.md) |
-| `@agentsy/agent`       | Multi-step agent loop and stop-condition helpers                    | Published | [Package page](./packages/agent.md)       |
-| `@agentsy/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
-| `@agentsy/renderers`   | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
+| Package                          | Role                                                                | Status    | Docs                                      |
+| -------------------------------- | ------------------------------------------------------------------- | --------- | ----------------------------------------- |
+| `@agentsy/core/processor`        | Event-driven stream processor and provider-agnostic transforms      | Published | [Package page](./packages/processor.md)   |
+| `@agentsy/providers`             | Provider package root for adapters, normalizers, and SSE pipelines  | Published | [Package page](./packages/providers.md)   |
+| `@agentsy/providers/normalizers` | Provider-specific response normalization into a common stream shape | Published | [Package page](./packages/normalizers.md) |
+| `@agentsy/providers/pipeline`    | Provider-coupled SSE pipeline composition                           | Published | [Package page](./packages/providers.md)   |
+| `@agentsy/runtime`               | Runtime loops, workflow checkpoints, and spawned task execution     | Published | [Package page](./packages/runtime.md)     |
+| `@agentsy/runtime/ag-ui`         | AG-UI protocol adapters and event projection helpers                | Published | [Package page](./packages/ag-ui.md)       |
+| `@agentsy/orchestrator/agent`    | Multi-step agent loop and stop-condition helpers                    | Published | [Package page](./packages/agent.md)       |
+| `@agentsy/tokens`                | Token budgets, pacing, and conversation compression                 | Published | [Package page](./packages/tokens.md)      |
+| `@agentsy/providers/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
+| `@agentsy/renderers`             | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
 
 ## Core parsing and shaping utilities
 
-| Package               | Role                                                       | Status    | Docs                                     |
-| --------------------- | ---------------------------------------------------------- | --------- | ---------------------------------------- |
-| `@agentsy/thinking`   | Incremental `<think>` content extraction                   | Published | [Package page](./packages/thinking.md)   |
-| `@agentsy/tool-calls` | XML and native tool-call helpers                           | Published | [Package page](./packages/tool-calls.md) |
-| `@agentsy/structured` | JSON parsing, repair, validation, and streaming helpers    | Published | [Package page](./packages/structured.md) |
-| `@agentsy/context`    | Context extraction, dedupe, and normalization helpers      | Published | [Package page](./packages/context.md)    |
-| `@agentsy/formatting` | Display-focused text sanitization and formatting utilities | Published | [Package page](./packages/formatting.md) |
-| `@agentsy/recovery`   | Recovery snapshots and continuation prompt helpers         | Published | [Package page](./packages/recovery.md)   |
-| `@agentsy/xml-filter` | XML tag filtering and privacy-oriented scrubbing utilities | Published | [Package page](./packages/xml-filter.md) |
-| `@agentsy/sse`        | Server-sent-event parsing utilities                        | Published | [Package page](./packages/sse.md)        |
-| `@agentsy/types`      | Shared type contracts across the ecosystem                 | Published | [Package page](./packages/types.md)      |
+| Package                    | Role                                                       | Status    | Docs                                     |
+| -------------------------- | ---------------------------------------------------------- | --------- | ---------------------------------------- |
+| `@agentsy/core/thinking`   | Incremental `<think>` content extraction                   | Published | [Package page](./packages/thinking.md)   |
+| `@agentsy/core/tool-calls` | XML and native tool-call helpers                           | Published | [Package page](./packages/tool-calls.md) |
+| `@agentsy/core/structured` | JSON parsing, repair, validation, and streaming helpers    | Published | [Package page](./packages/structured.md) |
+| `@agentsy/core/context`    | Context extraction, dedupe, and normalization helpers      | Published | [Package page](./packages/context.md)    |
+| `@agentsy/core/formatting` | Display-focused text sanitization and formatting utilities | Published | [Package page](./packages/formatting.md) |
+| `@agentsy/core/recovery`   | Recovery snapshots and continuation prompt helpers         | Published | [Package page](./packages/recovery.md)   |
+| `@agentsy/core/xml-filter` | XML tag filtering and privacy-oriented scrubbing utilities | Published | [Package page](./packages/xml-filter.md) |
+| `@agentsy/core/sse`        | Server-sent-event parsing utilities                        | Published | [Package page](./packages/sse.md)        |
+| `@agentsy/types`           | Shared type contracts across the ecosystem                 | Published | [Package page](./packages/types.md)      |
 
 ## State and protocol packages
 
-| Package          | Role                                                   | Status    | Docs                                |
-| ---------------- | ------------------------------------------------------ | --------- | ----------------------------------- |
-| `@agentsy/ui`    | Conversation-state store and processor binding helpers | Published | [Package page](./packages/ui.md)    |
-| `@agentsy/ag-ui` | AG-UI protocol bridge utilities                        | Published | [Package page](./packages/ag-ui.md) |
+| Package       | Role                                                   | Status    | Docs                             |
+| ------------- | ------------------------------------------------------ | --------- | -------------------------------- |
+| `@agentsy/ui` | Conversation-state store and processor binding helpers | Published | [Package page](./packages/ui.md) |
 
 ## Private package
 
-| Package                | Role                                   | Status  | Docs                                      |
-| ---------------------- | -------------------------------------- | ------- | ----------------------------------------- |
-| `@agentsy/integration` | Cross-package integration test harness | Private | [Package page](./packages/integration.md) |
+| Package            | Role                                                    | Status  | Docs                                  |
+| ------------------ | ------------------------------------------------------- | ------- | ------------------------------------- |
+| `@agentsy/testing` | Cross-package integration tests and shared test harness | Private | [Package page](./packages/testing.md) |
 
 ## How to use this catalog
 
@@ -62,4 +66,4 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Planned packages
 
-Planned packages such as runtime/session/memory/provider-management layers are documented in [Platform evolution](./architecture/platform-evolution.md) and [Roadmap](./roadmap.md). They are not listed in the tables above unless real package code exists in `packages/`.
+Planned packages beyond the current runtime/session/memory/tokens stack are documented in [Platform evolution](./architecture/platform-evolution.md) and [Roadmap](./roadmap.md). They are not listed in the tables above unless real package code exists in `packages/`.

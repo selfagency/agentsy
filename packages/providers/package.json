@@ -1,10 +1,11 @@
 {
   "name": "@agentsy/providers",
   "version": "0.2.0-alpha.0",
-  "description": "Provider capability matrix, adapters (consolidated: adapters)",
+  "description": "Provider abstraction layer for adapters, normalizers, universal clients, and provider capabilities",
   "keywords": [
     "adapters",
     "agentsy",
+    "normalizers",
     "providers",
     "typescript"
   ],
@@ -12,17 +13,38 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/selfagency/agentsy.git"
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "packages/providers"
   },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./adapters": {
+      "types": "./src/adapters/index.ts",
+      "import": "./dist/adapters.js",
+      "require": "./dist/adapters.cjs"
+    },
+    "./normalizers": {
+      "types": "./src/normalizers/index.ts",
+      "import": "./dist/normalizers.js",
+      "require": "./dist/normalizers.cjs"
+    },
+    "./pipeline": {
+      "types": "./src/pipeline/index.ts",
+      "import": "./dist/pipeline.js",
+      "require": "./dist/pipeline.cjs"
+    },
+    "./universal-client": {
+      "types": "./src/universal-client/index.ts",
+      "import": "./dist/universal-client.js",
+      "require": "./dist/universal-client.cjs"
     }
   },
   "scripts": {
@@ -31,17 +53,18 @@
     "lint": "oxlint --no-error-on-unmatched-pattern .",
     "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest run --passWithNoTests",
-    "coverage": "vitest run --passWithNoTests --coverage"
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.6.2",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@types/node": "^25.7.0",
+    "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   },
   "engines": {
     "node": ">=18"

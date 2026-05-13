@@ -147,7 +147,7 @@ Cross-references: `agentsy-features-v1.md` (Phase 5 slash commands, Phase 8 conn
 - **DEP-025**: `zod@^3` — `ParsedScheduleSchema` validation (already used elsewhere in monorepo). `peerDependency`.
 - **DEP-026**: `uuid@^9` — UUID v5 for deterministic task ID generation (CON-021). `peerDependency`.
 - **DEP-027**: `@agentsy/core@workspace:*` — `ModelClient` interface + `stripXmlContextTags`/`dedupeXmlContext` utilities.
-- **DEP-028**: `@agentsy/agent@workspace:*` — `createAgentLoop` (injected via `AgentTaskRunner` constructor, not hard-imported).
+- **DEP-028**: `@agentsy/orchestrator/agent@workspace:*` — `createAgentLoop` (injected via `AgentTaskRunner` constructor, not hard-imported).
 
 ---
 

@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-file
+
 /**
  * Ink renderer module - streaming React/Ink renderer for terminal output
  */

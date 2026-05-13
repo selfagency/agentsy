@@ -10,16 +10,16 @@ This example shows a minimal, practical workflow for local operations:
 ## Packages used
 
 ```bash
-npm install @agentsy/adapters @agentsy/normalizers @agentsy/renderers @agentsy/sse
+npm install @agentsy/core @agentsy/providers @agentsy/renderers
 ```
 
 ## Illustrative implementation
 
 ```ts
-import { processRawStream } from '@agentsy/adapters';
-import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { processRawStream } from '@agentsy/providers/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 import { createPlainTextRenderer } from '@agentsy/renderers';
-import { parseSSEStream } from '@agentsy/sse';
+import { parseSSEStream } from '@agentsy/core/sse';
 
 async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
   const response = await fetch('https://api.example.com/v1/chat/completions', {

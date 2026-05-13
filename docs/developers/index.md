@@ -110,7 +110,7 @@ pnpm test
 pnpm test:coverage
 
 # Run specific test file
-pnpm --filter @agentsy/thinking test -- src/ThinkingParser.test.ts
+pnpm --filter @agentsy/core test -- src/thinking/ThinkingParser.test.ts
 
 # Watch mode
 pnpm vitest src
@@ -240,7 +240,7 @@ pnpm vitest src <path-to-test>
 Debug specific tests:
 
 ```bash
-node --inspect-brk ./node_modules/vitest/vitest.mjs run src/path/to/test.ts
+node --inspect-brk ./node_modules/vitest/vitest.js run src/path/to/test.ts
 ```
 
 ## Documentation
@@ -289,16 +289,14 @@ Future-facing changes should be grounded in the relevant file under `plan/` rath
 ```text
 agentsy/
 ├── packages/
-│   ├── vscode/            # Published package
-│   ├── processor/         # Stream orchestrator
-│   ├── normalizers/       # Provider normalizers
-│   ├── agent/             # Agent loop
-│   ├── adapters/          # Provider adapters
-│   ├── thinking/          # <think> parser
-│   ├── tool-calls/        # Tool call parsing
-│   ├── structured/        # JSON parse/repair/validation
+│   ├── core/              # Consolidated stream processing + utilities
+│   ├── providers/         # Provider adapters, normalizers, pipeline
+│   ├── runtime/           # Runtime loops + AG-UI subpath
+│   ├── orchestrator/      # Agent loop + scheduler orchestration
+│   ├── tokens/            # Token budgets and pacing
 │   ├── renderers/         # CLI/TUI/plain renderers
-│   ├── ag-ui/             # AG-UI protocol bridge
+│   ├── ui/                # Conversation-state projection
+│   ├── vscode/            # VS Code integration package
 │   └── ...other internal packages
 ├── docs/
 ├── .vitepress/

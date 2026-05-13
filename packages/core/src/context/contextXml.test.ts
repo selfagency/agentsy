@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { createXmlStreamFilter } from '../xml-filter/index.js';
 import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from './index.js';
-import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 describe('createXmlStreamFilter', () => {
   it('strips context tags across chunk boundaries', () => {
@@ -34,7 +34,7 @@ describe('createXmlStreamFilter', () => {
     const warnings: Array<{ message: string; context?: Record<string, unknown> }> = [];
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['environment_info']),
-      onWarning: (message: string, context?: Record<string, unknown>) => {
+      onWarning: (message, context) => {
         if (context === undefined) {
           warnings.push({ message });
           return;
@@ -63,7 +63,7 @@ describe('createXmlStreamFilter', () => {
     const warnings: string[] = [];
     const filter = createXmlStreamFilter({
       maxXmlNestingDepth: 2,
-      onWarning: (message: string) => {
+      onWarning: message => {
         warnings.push(message);
       },
     });
@@ -136,6 +136,30 @@ describe('splitLeadingXmlContextBlocks', () => {
     const result = splitLeadingXmlContextBlocks(input);
     expect(result.contextBlocks).toEqual([]);
     expect(result.remaining).toBe('hello <user_info>not-context</user_info>');
+  });
+
+  it('returns the original input unchanged when the context prelude is too large to scan safely', () => {
+    const oversized = `<user_info>${'x'.repeat(1_000_001)}</user_info>`;
+    const result = splitLeadingXmlContextBlocks(oversized);
+
+    expect(result.contextBlocks).toEqual([]);
+    expect(result.remaining).toBe(oversized);
+  });
+
+  it('tolerates leading whitespace before valid context blocks', () => {
+    const input = '  \n\t<user_info>u1</user_info><workspace_info>w1</workspace_info>hello';
+    const result = splitLeadingXmlContextBlocks(input);
+
+    expect(result.contextBlocks).toEqual(['<user_info>u1</user_info>', '<workspace_info>w1</workspace_info>']);
+    expect(result.remaining).toBe('hello');
+  });
+
+  it('stops extraction when the leading tag is not an elevated context tag', () => {
+    const input = '<note>not-context</note><user_info>u1</user_info>hello';
+    const result = splitLeadingXmlContextBlocks(input);
+
+    expect(result.contextBlocks).toEqual([]);
+    expect(result.remaining).toBe(input);
   });
 });
 

@@ -16,6 +16,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./ink": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./cli": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./streaming-md": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./plain": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "publishConfig": {
@@ -30,30 +50,39 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@agentsy/formatting": "workspace:*",
-    "@agentsy/processor": "workspace:*",
-    "@agentsy/tool-calls": "workspace:*",
+    "@agentsy/core": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.7.0",
     "@types/react": "^19.2.14",
-    "@vitest/coverage-v8": "^4.1.5",
-    "chalk": "^5.6.2",
+    "@vitest/coverage-v8": "^4.1.6",
     "ink-testing-library": "^4.0.0",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   },
   "peerDependencies": {
+    "cli-highlight": "*",
+    "dompurify": "*",
     "ink": ">=4.0.0",
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "streaming-markdown": "*"
   },
   "peerDependenciesMeta": {
     "ink": {
       "optional": true
     },
     "react": {
+      "optional": true
+    },
+    "cli-highlight": {
+      "optional": true
+    },
+    "streaming-markdown": {
+      "optional": true
+    },
+    "dompurify": {
       "optional": true
     }
   },

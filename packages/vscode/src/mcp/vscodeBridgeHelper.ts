@@ -1,14 +1,14 @@
-import type { ReadableStream } from 'node:stream/web';
-import { parseSSEStream } from '@agentsy/sse';
 import type { MCPTransport } from '@agentsy/core/processor';
 import { adaptTransportToStream } from '@agentsy/core/processor';
-import { type ChatResponseStream, type CancellationToken, Uri } from 'vscode';
-import { ChatResponseProgressPart } from 'vscode';
+import { parseSSEStream } from '@agentsy/core/sse';
+import type { ReadableStream } from 'node:stream/web';
+import { type CancellationToken, ChatResponseProgressPart, type ChatResponseStream, Uri } from 'vscode';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
  * These map to MCP message types that should be converted to VS Code chat format.
  */
+// fallow-ignore-next-line unused-type
 export interface MCPStreamEvent {
   type: 'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push';
   data: unknown;
@@ -94,6 +94,7 @@ export class VSCodeMCPBridgeHelper {
    * This is the recommended pattern: pass in your VS Code ChatResponseStream
    * and this method will populate it with data from the MCP transport.
    */
+  // fallow-ignore-next-line unused-class-member
   public connectToStream(stream: ChatResponseStream): void {
     const transportStream = adaptTransportToStream(this.transport);
     void this.processRawStream(transportStream, stream);

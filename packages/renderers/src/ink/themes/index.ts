@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-export
 import type { Theme, ThemeName } from './types.js';
 
 export type { ThemeName } from './types.js';

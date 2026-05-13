@@ -1,5 +1,5 @@
-import type { OutputPart } from '@agentsy/processor';
-import { parseJson } from '@agentsy/structured';
+import type { OutputPart } from '@agentsy/core/processor';
+import { parseJson } from '@agentsy/core/structured';
 
 export interface VSCodeToolCallPartLike {
   callId: string;
@@ -77,6 +77,7 @@ export class ToolCallDeltaAccumulator {
     return parts;
   }
 
+  // fallow-ignore-next-line unused-class-member
   reset(): void {
     this.calls.clear();
   }

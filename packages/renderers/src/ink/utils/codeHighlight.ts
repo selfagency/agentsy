@@ -1,6 +1,6 @@
 import { getCachedAnsi } from './tokenCache.js';
 
-export async function highlightCode(code: string, lang?: string): Promise<string> {
+async function highlightCode(code: string, lang?: string): Promise<string> {
   try {
     const { highlight, supportsLanguage } = await import('cli-highlight');
     const options = lang && supportsLanguage(lang) ? { language: lang } : {};

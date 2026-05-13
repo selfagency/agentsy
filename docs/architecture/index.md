@@ -17,34 +17,36 @@ The easiest way to understand the system is to follow the flow of a model respon
 
 ### Provider normalization
 
-- `@agentsy/normalizers`
+- `@agentsy/providers/normalizers`
 
 ### Stream processing and transforms
 
-- `@agentsy/processor`
-- `@agentsy/sse`
+- `@agentsy/core/processor`
+- `@agentsy/core/sse`
 
 ### Focused parsing utilities
 
-- `@agentsy/thinking`
-- `@agentsy/tool-calls`
-- `@agentsy/structured`
-- `@agentsy/context`
-- `@agentsy/xml-filter`
-- `@agentsy/formatting`
-- `@agentsy/recovery`
+- `@agentsy/core/thinking`
+- `@agentsy/core/tool-calls`
+- `@agentsy/core/structured`
+- `@agentsy/core/context`
+- `@agentsy/core/xml-filter`
+- `@agentsy/core/formatting`
+- `@agentsy/core/recovery`
 - `@agentsy/types`
 
 ### Projection and state layers
 
 - `@agentsy/renderers`
 - `@agentsy/ui`
-- `@agentsy/ag-ui`
-- `@agentsy/adapters`
+- `@agentsy/runtime/ag-ui`
+- `@agentsy/providers/adapters`
+- `@agentsy/providers/pipeline`
 
 ### Runtime and integration layer
 
-- `@agentsy/agent`
+- `@agentsy/runtime`
+- `@agentsy/orchestrator/agent`
 - `@agentsy/vscode`
 
 ## Guiding dependency rule

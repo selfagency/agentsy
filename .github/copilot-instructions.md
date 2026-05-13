@@ -7,7 +7,7 @@ Production-oriented TypeScript monorepo for LLM stream parsing, agent infrastruc
 - This repository is a **pnpm workspace monorepo** orchestrated with **Turborepo**.
 - Packages live under `packages/`. The only currently **published** package is:
   - `packages/vscode` → `@agentsy/vscode`: VS Code Language Model Chat Provider utilities.
-- Additional packages exist under `packages/` as internal/pre-release packages: `processor`, `normalizers`, `agent`, `adapters`, `thinking`, `tool-calls`, `structured`, `renderers`, `ag-ui`, `ui`, `context`, `formatting`, `sse`, `markdown`, `recovery`, `xml-filter`, `types`, `integration` (private).
+- Additional packages exist under `packages/` as internal/pre-release packages such as `core`, `providers`, `runtime`, `orchestrator`, `tokens`, `renderers`, `ui`, `types`, and `integration` (private).
 - The `plan/` directory is not throwaway notes. It contains the product and technical direction for future package extraction and platform evolution. When implementing planned packages or major architectural work, consult:
   - `plan/agentsy-prd.md`
   - `plan/agentsy-tech.md`
@@ -32,7 +32,7 @@ Run these from the repository root:
 ```bash
 pnpm build           # turbo run build
 pnpm test            # turbo run test
-pnpm test:coverage   # turbo run test:coverage
+pnpm test:coverage   # turbo run coverage
 pnpm check-types     # turbo run check-types
 pnpm lint            # turbo run lint
 pnpm lint:fix        # turbo run lint:fix
@@ -134,9 +134,9 @@ Key formatter conventions:
 - `@agentsy/tool-calls` — XML and native tool call parsing
 - `@agentsy/structured` — JSON parse/repair and streaming validation
 - `@agentsy/renderers` — CLI/TUI/plain-text renderers
-- `@agentsy/ag-ui` — AG-UI protocol adapter
+- `@agentsy/runtime/ag-ui` — AG-UI protocol adapter subpath
 - `@agentsy/context`, `@agentsy/formatting`, `@agentsy/sse`, `@agentsy/markdown`, `@agentsy/recovery`, `@agentsy/xml-filter`, `@agentsy/types`, `@agentsy/ui` — utilities and primitives
-- `@agentsy/integration` (private) — cross-package integration tests
+- `@agentsy/testing` (private) — cross-package integration tests
 
 ### General boundary rule
 

@@ -252,7 +252,7 @@ Per `plan/agentsy-subagents.md`:
 
 **NOTE:** These are three distinct layers, NOT one monolithic agent package:
 
-- `@agentsy/agents` = local orchestration (subagents + A2A)
+- `@agentsy/orchestrator/agents` = local orchestration (subagents + A2A)
 - `@agentsy/plugins` = plugin system + example agents
 - `@agentsy/acp` + `@agentsy/acp-client` = editor/client protocol
 

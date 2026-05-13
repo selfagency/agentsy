@@ -31,6 +31,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./api-key-manager": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./stream-bridge": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./vscode-renderer": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./mcp": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./message-conversion": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "publishConfig": {
@@ -48,20 +73,16 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/formatting": "workspace:*",
-    "@agentsy/normalizers": "workspace:*",
-    "@agentsy/processor": "workspace:*",
-    "@agentsy/renderers": "workspace:*",
-    "@agentsy/sse": "workspace:*",
-    "@agentsy/structured": "workspace:*"
+    "@agentsy/providers": "workspace:*",
+    "@agentsy/renderers": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.7.0",
     "@types/vscode": "^1.118.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   },
   "engines": {
     "node": ">=18.0.0"

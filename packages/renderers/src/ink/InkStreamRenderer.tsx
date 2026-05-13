@@ -1,6 +1,6 @@
+import type { JsonObject } from '@agentsy/types';
 import { Box } from 'ink';
 import { useEffect, useState } from 'react';
-import type { JsonObject } from '@agentsy/types';
 import type { KeyboardOptions } from './components/KeyboardHandler.js';
 import { KeyboardHandler } from './components/KeyboardHandler.js';
 import { StreamingText } from './components/StreamingText.js';
@@ -167,6 +167,7 @@ function buildRenderOptions(options: InkStreamRendererProps['options']): RenderO
   };
 }
 
+// fallow-ignore-next-line unused-export
 export default function InkStreamRenderer({
   stateRef,
   forceUpdateRef: _forceUpdateRef,

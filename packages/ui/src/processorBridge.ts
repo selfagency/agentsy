@@ -1,4 +1,4 @@
-import type { LLMStreamProcessor, StreamEventMap } from '@agentsy/processor';
+import type { LLMStreamProcessor, StreamEventMap } from '@agentsy/core/processor';
 import { createConversationStore, type ConversationStore } from './store.js';
 import type { ConversationEvent } from './types.js';
 
