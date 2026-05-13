@@ -1,0 +1,48 @@
+plan/agentsy-tech.md
+  s_1554d7a5a81fa9::t_a8b666d4e60bde 55,1307,1309-1310
+packages/core/src/processor/mcp/index.ts
+  s_1554d7a5a81fa9::t_250922e361f55b 1
+plan/agentsy-platform-v2.md
+  s_1554d7a5a81fa9::t_042d0d8e0572aa 15-17
+packages/orchestrator/src/agent/index.ts
+  ai_agent 1-31
+plan/agentsy-platform-v1.md
+  s_1554d7a5a81fa9::t_88d0e0c82bb4a5 15-17
+packages/runtime/src/ag-ui/observable.ts
+  s_1554d7a5a81fa9::t_07b40c10e395d8 22-24,57-59,77
+  s_1554d7a5a81fa9::t_6f0a46799f61e8 2
+docs/migration/v0.1-to-v0.2.md
+  s_1554d7a5a81fa9::t_bf3abf1d8c843b 111,113-114
+plan/agentsy-prd.md
+  s_1554d7a5a81fa9::t_f5f9d0b3995f96 15-17
+plan/MASTER-IMPLEMENTATION-PLAN.md
+  s_1554d7a5a81fa9::t_0a2ca64afa7242 389
+plan/DECISION-LOG.md
+  s_1554d7a5a81fa9::t_d02d10923c7e52 90,92,94-95,97,99-100
+  ai_agent 11-13,18-20,25-27,76-78
+packages/core/src/processor/mcp/transport.test.ts
+  s_1554d7a5a81fa9::t_8d81f321e02e85 2-3
+plan/agentsy-standalone-v1.md
+  s_1554d7a5a81fa9::t_ef7e79f555562a 15-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "43a794de1d12b2158702c640cf0df416b22001a5",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_1554d7a5a81fa9": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "795ba0ed-f2f3-49cd-bee9-23380c1af83b",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
