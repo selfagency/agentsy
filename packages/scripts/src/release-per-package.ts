@@ -160,6 +160,11 @@ let commitPushed = false;
 let tagPushed = false;
 let releaseDone = false;
 let gitCmd = 'git';
+const SAFE_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(':');
+
+function withSafePathEnv(): NodeJS.ProcessEnv {
+  return { ...process.env, PATH: SAFE_PATH };
+}
 
 function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnSyncReturns<string> {
   const result = spawnSync(gitCmd, args, {
@@ -180,11 +185,11 @@ function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnS
 }
 
 function resolveGitExecutable() {
-  const direct = spawnSync('git', ['--version'], { stdio: 'ignore', shell: false });
+  const direct = spawnSync('git', ['--version'], { stdio: 'ignore', shell: false, env: withSafePathEnv() });
   if (direct.status === 0) return 'git';
 
   const locatorCommand = process.platform === 'win32' ? 'where' : 'which';
-  const located = spawnSync(locatorCommand, ['git'], { encoding: 'utf8', shell: false });
+  const located = spawnSync(locatorCommand, ['git'], { encoding: 'utf8', shell: false, env: withSafePathEnv() });
   if (located.status === 0) {
     const candidate = located.stdout
       .split(/\r?\n/)
@@ -327,16 +332,46 @@ function syncMainBranch(): void {
   runGit(['pull', '--ff-only', 'origin', 'main']);
 }
 
-function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
-  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
-  const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
-  if (!match) {
-    console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
-    process.exit(1);
+function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: string } {
+  const normalized = remoteUrl.trim().replace(/\.git$/, '');
+
+  if (normalized.startsWith('git@')) {
+    const colonIndex = normalized.indexOf(':');
+    if (colonIndex === -1) {
+      return { owner: '', repo: '' };
+    }
+
+    const path = normalized.slice(colonIndex + 1);
+    const slashIndex = path.indexOf('/');
+    if (slashIndex === -1) {
+      return { owner: '', repo: '' };
+    }
+
+    return {
+      owner: path.slice(0, slashIndex),
+      repo: path.slice(slashIndex + 1),
+    };
   }
 
-  const owner = match[1];
-  const repo = match[2];
+  try {
+    const parsed = new URL(normalized);
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (parts.length < 2) {
+      return { owner: '', repo: '' };
+    }
+
+    return {
+      owner: parts[0] ?? '',
+      repo: parts[1] ?? '',
+    };
+  } catch {
+    return { owner: '', repo: '' };
+  }
+}
+
+function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
+  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
+  const { owner, repo } = parseOwnerRepoFromRemoteUrl(remoteUrl);
   if (!owner || !repo) {
     console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
     process.exit(1);
