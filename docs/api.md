@@ -41,7 +41,7 @@ Detailed API breakdowns, examples, and composition guidance live on the individu
 
 ## Private verification package
 
-- [`@agentsy/integration`](./packages/integration.md) — repo-only integration verification coverage
+- [`@agentsy/testing`](./packages/testing.md) — repo-only cross-package integration verification coverage
 
 ## Related docs
 

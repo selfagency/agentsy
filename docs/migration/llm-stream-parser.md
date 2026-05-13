@@ -20,7 +20,7 @@ That means migration usually happens on **three levels**:
 ## Before you migrate
 
 - **Published today:** the current `@agentsy/*` package family in this repository
-- **Private:** `@agentsy/integration`
+- **Private:** `@agentsy/testing`
 
 If you only used the old VS Code chat renderer or provider utilities, migration is straightforward and production-oriented today.
 

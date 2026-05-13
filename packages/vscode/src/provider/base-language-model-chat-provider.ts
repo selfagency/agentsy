@@ -60,31 +60,38 @@ export abstract class BaseLanguageModelChatProvider {
     protected readonly config: ProviderConfig,
   ) {}
 
+  // fallow-ignore-next-line unused-class-member
   get id(): string {
     return this.config.providerId;
   }
 
+  // fallow-ignore-next-line unused-class-member
   get vendor(): string {
     return this.config.vendor;
   }
 
+  // fallow-ignore-next-line unused-class-member
   get family(): string {
     return this.config.family;
   }
 
+  // fallow-ignore-next-line unused-class-member
   get name(): string {
     return this.config.displayName;
   }
 
+  // fallow-ignore-next-line unused-class-member
   get maxInputTokens(): number {
     return this.config.maxInputTokens;
   }
 
+  // fallow-ignore-next-line unused-class-member
   async countTokens(text: string, _model: string): Promise<number> {
     // Simple approximation: 1 token ≈ 4 characters
     return Math.ceil(text.length / 4);
   }
 
+  // fallow-ignore-next-line unused-class-member
   async makeRequest(request: LanguageModelChatRequest, token: CancellationToken): Promise<LanguageModelChatResponse> {
     if (token.isCancellationRequested) {
       return this.createErrorResponse(new Error('Cancelled'), 'Request was cancelled.');

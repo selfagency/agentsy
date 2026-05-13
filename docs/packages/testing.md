@@ -1,10 +1,10 @@
-# @agentsy/integration
+# `@agentsy/testing`
 
 Cross-package integration test suite for the Agentsy monorepo.
 
 ## Purpose
 
-`@agentsy/integration` validates behavior across package boundaries (normalizers → processor → renderers → recovery, etc.).
+`@agentsy/testing` validates behavior across package boundaries (normalizers → processor → renderers → recovery, etc.).
 
 ## Role in Agentsy
 
@@ -17,14 +17,14 @@ This package is the monorepo-level confidence layer. It is not intended as a run
 
 ## Notes
 
-This is the one current package in the repo that is intentionally not part of the public published package family.
+This package currently hosts the repository's cross-package integration coverage and shared test harness entrypoint.
 
 ## Usage
 
 Run integration tests from this package or from repo root.
 
 ```bash
-cd packages/integration
+cd packages/testing
 pnpm test
 pnpm coverage
 ```

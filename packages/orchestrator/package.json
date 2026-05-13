@@ -45,17 +45,16 @@
     "@agentsy/core": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/runtime": "workspace:*",
-    "@agentsy/session": "workspace:*",
     "@agentsy/types": "workspace:*",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@types/node": "^25.7.0",
+    "@vitest/coverage-v8": "^4.1.6",
     "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0",
+    "oxlint": "^1.64.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   }
 }

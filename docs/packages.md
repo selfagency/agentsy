@@ -54,9 +54,9 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Private package
 
-| Package                | Role                                   | Status  | Docs                                      |
-| ---------------------- | -------------------------------------- | ------- | ----------------------------------------- |
-| `@agentsy/integration` | Cross-package integration test harness | Private | [Package page](./packages/integration.md) |
+| Package            | Role                                                    | Status  | Docs                                  |
+| ------------------ | ------------------------------------------------------- | ------- | ------------------------------------- |
+| `@agentsy/testing` | Cross-package integration tests and shared test harness | Private | [Package page](./packages/testing.md) |
 
 ## How to use this catalog
 

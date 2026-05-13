@@ -11,6 +11,10 @@ export interface XmlToolCall {
 
 const MAX_XML_TOOL_CALL_INPUT_LENGTH = 1_000_000;
 
+const VALID_TAG_START_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
+
+const VALID_TAG_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_:-';
+
 interface ParsedXmlElement {
   name: string;
   inner: string;
@@ -18,11 +22,11 @@ interface ParsedXmlElement {
 }
 
 function isValidTagStartCharacter(char: string): boolean {
-  return /[A-Za-z_\d]/.test(char);
+  return VALID_TAG_START_CHARACTERS.includes(char);
 }
 
 function isValidTagCharacter(char: string): boolean {
-  return /[A-Za-z\d_:-]/.test(char);
+  return VALID_TAG_CHARACTERS.includes(char);
 }
 
 function stripMarkdownCodeFence(text: string): string {

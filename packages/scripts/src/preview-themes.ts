@@ -19,13 +19,11 @@ type ThemeConfig = {
 
 let themesModule: Record<string, unknown>;
 try {
-  // fallow-ignore-next-line unresolved-import
-  const distThemesPath = '../dist/renderers/ink/themes/index.js' as string;
-  themesModule = (await import(distThemesPath)) as Record<string, unknown>;
+  const distThemesPath = '../dist/renderers/ink/themes/index.js';
+  themesModule = await import(distThemesPath);
 } catch {
   // Fallback to local source so contributors can run the script before building
-  // fallow-ignore-next-line unresolved-import
-  themesModule = (await import('../../renderers/src/ink/themes/index.ts')) as Record<string, unknown>;
+  themesModule = await import('../../renderers/src/ink/themes/index.ts');
 }
 
 const entries = Object.entries(themesModule).map(([name, value]) => ({ name, value }));
@@ -100,7 +98,8 @@ function displayThemePreview() {
   console.log(`${ANSI.dim}═══════════════════════════════════${ANSI.reset}`);
   console.log(`${ANSI.dim}\nUsage:${ANSI.reset}`);
   console.log(`${ANSI.dim}  createInkRenderer({ theme: "theme-name" })${ANSI.reset}`);
-  console.log(`${ANSI.dim}${String.raw`  import { draculaTheme } from "../src/ink/themes/index.js"\n`}${ANSI.reset}`);
+  const usageExample = String.raw`  import { draculaTheme } from "../src/ink/themes/index.js"\n`;
+  console.log(`${ANSI.dim}${usageExample}${ANSI.reset}`);
 }
 
 displayThemePreview();

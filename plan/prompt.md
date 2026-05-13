@@ -42,7 +42,7 @@ Default working branch: `main`
 | `@agentsy/renderers`          | ✅ live                  |
 | `@agentsy/ui`                 | ✅ live                  |
 | `@agentsy/vscode`             | ✅ live                  |
-| `@agentsy/integration`        | ✅ live (private)        |
+| `@agentsy/testing`            | ✅ live (private)        |
 
 ### Completed slices (verified)
 

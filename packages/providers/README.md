@@ -181,7 +181,7 @@ All normalizers are exported from `/normalizers` subpath.
 
 ## Architecture
 
-```
+```text
 @agentsy/providers
 ├── /adapters          # Provider-specific stream transformations
 │   ├── generic.ts     # Generic adapter utilities
@@ -207,7 +207,7 @@ All normalizers are exported from `/normalizers` subpath.
 ## Relationships with Other Packages
 
 - **@agentsy/core**: Exports `ProcessorOptions`, `StreamChunk`, and processor utilities
-- **@agentsy/integration**: Integration tests validate cross-package functionality
+- **@agentsy/testing**: Integration tests validate cross-package functionality
 - **@agentsy/runtime**: Uses pipelines in runtime orchestrations
 
 ## Error Handling
@@ -273,7 +273,7 @@ pnpm test              # Run all tests
 pnpm test:coverage     # Run tests with coverage
 ```
 
-Integration tests in `@agentsy/integration` validate cross-package pipelines.
+Integration tests in `@agentsy/testing` validate cross-package pipelines.
 
 ## Contributing
 
@@ -283,7 +283,7 @@ When adding new provider support:
 2. Add adapter to `/adapters/your-provider.ts`
 3. Add tests for both normalizer and adapter
 4. Update provider list in documentation
-5. Add integration test in `@agentsy/integration`
+5. Add integration test in `@agentsy/testing`
 
 ## License
 

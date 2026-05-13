@@ -656,4 +656,5 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   };
 }
 
+// fallow-ignore-next-line unused-type
 export type AgentLoop = ReturnType<typeof createAgentLoop>;

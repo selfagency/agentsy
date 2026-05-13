@@ -136,7 +136,7 @@ Key formatter conventions:
 - `@agentsy/renderers` — CLI/TUI/plain-text renderers
 - `@agentsy/runtime/ag-ui` — AG-UI protocol adapter subpath
 - `@agentsy/context`, `@agentsy/formatting`, `@agentsy/sse`, `@agentsy/markdown`, `@agentsy/recovery`, `@agentsy/xml-filter`, `@agentsy/types`, `@agentsy/ui` — utilities and primitives
-- `@agentsy/integration` (private) — cross-package integration tests
+- `@agentsy/testing` (private) — cross-package integration tests
 
 ### General boundary rule
 

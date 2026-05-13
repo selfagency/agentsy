@@ -1,10 +1,3 @@
-import { ThinkingParser } from '../../thinking/index.js';
-import {
-  extractXmlToolCalls,
-  ToolCallAccumulator,
-  type NativeToolCall,
-  type XmlToolCall,
-} from '../../tool-calls/index.js';
 import type {
   ConversationEvent,
   FinishReason,
@@ -13,10 +6,18 @@ import type {
   ToolCallState,
   UsageInfo,
 } from '@agentsy/types';
+import { ThinkingParser } from '../../thinking/index.js';
+import {
+  extractXmlToolCalls,
+  ToolCallAccumulator,
+  type NativeToolCall,
+  type XmlToolCall,
+} from '../../tool-calls/index.js';
 import { createXmlStreamFilter, type XmlStreamFilter } from '../../xml-filter/index.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
-import { enforceMaxLength, ensureText, estimateChunkSize, mapNativeToolCalls } from './chunkUtils.js';
+import { enforceMaxLength, ensureText, mapNativeToolCalls } from './chunkUtils.js';
 import { detectIncompleteness } from './incompleteness.js';
+import { getChunkInputFlags, recordChunkStats, updatePostProcessStats } from './LLMStreamProcessor.stats.js';
 import type {
   IncompletenessDetail,
   OutputPart,
@@ -180,8 +181,8 @@ export class LLMStreamProcessor {
    */
   public process(chunk: StreamChunk): ProcessedOutput {
     const startTime = performance.now();
-    this.recordChunkStats(chunk);
-    const { hasContentInput, hasThinkingInput } = this.getChunkInputFlags(chunk);
+    recordChunkStats(this._stats, chunk, SHARED_TEXT_ENCODER);
+    const { hasContentInput, hasThinkingInput } = getChunkInputFlags(chunk);
     const done = chunk.done === true;
 
     const preparedInput = this.prepareChunkInput(chunk, done);
@@ -215,24 +216,17 @@ export class LLMStreamProcessor {
     });
     this.recordOutput(output);
     this.emitOutput(output);
-    this.updatePostProcessStats(startTime, hasThinkingInput, hasContentInput, output);
+    const bufferSize = this._accumulatedContent.length + this._accumulatedThinking.length;
+    updatePostProcessStats({
+      stats: this._stats,
+      startTime,
+      hasThinkingInput,
+      hasContentInput,
+      bufferSize,
+      output,
+    });
 
     return output;
-  }
-
-  private recordChunkStats(chunk: StreamChunk): void {
-    const chunkSize = estimateChunkSize(chunk, SHARED_TEXT_ENCODER);
-    this._stats.chunksProcessed++;
-    this._stats.bytesProcessed += chunkSize;
-    this._stats.firstChunkAt ??= new Date();
-    this._stats.lastChunkAt = new Date();
-  }
-
-  private getChunkInputFlags(chunk: StreamChunk): { hasContentInput: boolean; hasThinkingInput: boolean } {
-    return {
-      hasContentInput: typeof chunk.content === 'string' && chunk.content.length > 0,
-      hasThinkingInput: typeof chunk.thinking === 'string' && chunk.thinking.length > 0,
-    };
   }
 
   private prepareChunkInput(
@@ -264,27 +258,6 @@ export class LLMStreamProcessor {
       thinking: rawThinking + thinkingDelta,
       content: contentDelta,
     };
-  }
-
-  private updatePostProcessStats(
-    startTime: number,
-    hasThinkingInput: boolean,
-    hasContentInput: boolean,
-    output: ProcessedOutput,
-  ): void {
-    this._stats.parseTimeMs += performance.now() - startTime;
-    if (hasThinkingInput) this._stats.thinkingBlocksCount++;
-    if (hasContentInput) this._stats.contentDeltasCount++;
-    this._stats.toolCallsCount += output.toolCalls.length;
-
-    const bufferSize = this._accumulatedContent.length + this._accumulatedThinking.length;
-    this._stats.currentBufferSize = bufferSize;
-    if (bufferSize > this._stats.peakBufferSize) {
-      this._stats.peakBufferSize = bufferSize;
-    }
-    if (this._stats.chunksProcessed > 0) {
-      this._stats.averageChunkSize = this._stats.bytesProcessed / this._stats.chunksProcessed;
-    }
   }
 
   private computeToolCallState(params: {

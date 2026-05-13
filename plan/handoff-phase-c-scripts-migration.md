@@ -10,7 +10,7 @@ next engineer can pick up where this work left off.
 ## Branch and PR
 
 - Branch: feature/phase-c-consolidation-review
-- Active PR: feat: Phase C core and providers consolidation (https://github.com/selfagency/agentsy/pull/74)
+- Active PR: feat: Phase C core and providers consolidation (<https://github.com/selfagency/agentsy/pull/74>)
 
 ## What I changed
 

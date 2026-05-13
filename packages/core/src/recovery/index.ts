@@ -88,17 +88,17 @@ export function buildContinuationPrompt(
 
   if (partialContent.length > 0) {
     if (provider === 'anthropic') {
-      if (completedToolCallsContext === null) {
-        return [{ role: 'assistant', content: partialContent }];
+      if (completedToolCallsContext !== null) {
+        return [
+          {
+            role: 'user',
+            content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
+          },
+          { role: 'assistant', content: partialContent },
+        ];
       }
 
-      return [
-        {
-          role: 'user',
-          content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
-        },
-        { role: 'assistant', content: partialContent },
-      ];
+      return [{ role: 'assistant', content: partialContent }];
     }
 
     const userContent = completedToolCallsContext

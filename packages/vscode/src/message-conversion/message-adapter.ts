@@ -90,4 +90,5 @@ export function convertMessages(vsMessages: unknown[]): ChatMessage[] {
   return vsMessages.map(convertMessage);
 }
 
+// fallow-ignore-next-line unused-type
 export type { ChatMessage, ChatToolCall } from './role-converter.js';

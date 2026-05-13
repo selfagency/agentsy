@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file
 import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

@@ -90,7 +90,7 @@ export default defineConfig({
             { text: '@agentsy/types', link: '/packages/types' },
             { text: '@agentsy/ui', link: '/packages/ui' },
             { text: '@agentsy/runtime/ag-ui', link: '/packages/ag-ui' },
-            { text: '@agentsy/integration', link: '/packages/integration' },
+            { text: '@agentsy/testing', link: '/packages/testing' },
           ],
         },
       ],

@@ -64,13 +64,7 @@ export interface SSEStream {
  * @param options - Configuration
  * @returns SSE stream (supports both Node.js and Web Streams APIs)
  */
-export function createSSEStream(
-  events: AsyncGenerator<AgUiEvent>,
-  options: SSEStreamOptions = {},
-): {
-  readable: ReadableStream<Uint8Array>;
-  [Symbol.asyncIterator](): AsyncIterator<Uint8Array>;
-} {
+export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSEStreamOptions = {}): SSEStream {
   const {
     formatEvent = defaultFormatEvent,
     includeComments: _includeComments = false,

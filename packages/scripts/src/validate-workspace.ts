@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import type { Dirent } from 'node:fs';
 import { constants as fsConstants } from 'node:fs';
 import { access, readdir, stat } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -118,5 +118,3 @@ if (process.argv[1]?.endsWith('validate-workspace.js')) {
     process.exitCode = 1;
   }
 }
-
-// fallow-ignore-file unused-file

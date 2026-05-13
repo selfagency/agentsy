@@ -72,12 +72,11 @@ This repository is a **pnpm workspace monorepo** organized as focused `@agentsy/
 
 ### Tier 6: Integration & Testing
 
-| Package                                        | Role                                              | Status    |
-| ---------------------------------------------- | ------------------------------------------------- | --------- |
-| [`@agentsy/cli`](packages/cli)                 | CLI tooling and development utilities             | Published |
-| [`@agentsy/testing`](packages/testing)         | Test utilities and integration test harness       | Published |
-| [`@agentsy/vscode`](packages/vscode)           | VS Code chat-provider, rendering, and integration | Published |
-| [`@agentsy/integration`](packages/integration) | Cross-package integration monitoring              | Private   |
+| Package                                | Role                                              | Status    |
+| -------------------------------------- | ------------------------------------------------- | --------- |
+| [`@agentsy/cli`](packages/cli)         | CLI tooling and development utilities             | Published |
+| [`@agentsy/testing`](packages/testing) | Cross-package integration tests and test harness  | Private   |
+| [`@agentsy/vscode`](packages/vscode)   | VS Code chat-provider, rendering, and integration | Published |
 
 ### Orchestration & Observability
 
