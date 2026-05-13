@@ -28,9 +28,8 @@ async function main() {
 
   // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
   /** @type {Record<string, Record<string, string>>} */
-  const rootExports = pkg.exports;
-  /** @type {Record<string, Record<string, string>>} */
-  const distExports = {};
+  const rootExports = pkg.exports as Record<string, { types?: string; import?: string; require?: string }>;
+  const distExports: Record<string, { types?: string; import?: string; require?: string }> = {};
   for (const [key, value] of Object.entries(rootExports)) {
     distExports[key] = {};
     if (value.types) distExports[key].types = value.types.replace('./dist/', './');

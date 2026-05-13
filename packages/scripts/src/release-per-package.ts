@@ -30,7 +30,7 @@
 process.env.HUSKY = '0';
 
 import { Octokit } from '@octokit/rest';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, type SpawnSyncOptions, type SpawnSyncReturns } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, relative, resolve } from 'node:path';
@@ -42,6 +42,24 @@ import { getRepositoryField, validateRepositoryMatch } from './trusted-publish-r
 
 $.verbose = false;
 
+type ReleaseNotesOptions = Parameters<Octokit['repos']['generateReleaseNotes']>[0] & {
+  previous_tag_name?: string;
+};
+
+type GitHubWorkflow = Awaited<ReturnType<Octokit['actions']['listRepoWorkflows']>>['data']['workflows'][number];
+type GitHubWorkflowRun = Awaited<ReturnType<Octokit['actions']['listWorkflowRuns']>>['data']['workflow_runs'][number];
+type WorkflowSpinner = ReturnType<typeof ora>;
+type WaitForWorkflowOptions = {
+  timeoutMs?: number;
+  pollMs?: number;
+  branch?: string | undefined;
+};
+type WaitForLatestWorkflowOptions = {
+  timeoutMs?: number;
+  pollMs?: number;
+  branch?: string;
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
@@ -49,7 +67,7 @@ const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
 // Defensive filesystem helpers
-function isPathInsideRoot(p) {
+function isPathInsideRoot(p: string): boolean {
   try {
     const resolved = resolve(p);
     const rel = relative(ROOT, resolved);
@@ -59,12 +77,12 @@ function isPathInsideRoot(p) {
   }
 }
 
-function safeRead(p, enc = 'utf8') {
+function safeRead(p: string, enc: BufferEncoding = 'utf8'): string {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
   return readFileSync(resolve(p), enc);
 }
 
-function safeWrite(p, data) {
+function safeWrite(p: string, data: string): void {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
   return writeFileSync(resolve(p), data);
 }
@@ -73,22 +91,26 @@ function safeWrite(p, data) {
 // Argument parsing
 // ---------------------------------------------------------------------------
 
-const packageName = argv._[0];
-const version = argv._[1];
-const isDryRun = argv['dry-run'] || argv.dryRun;
-const isRetag = argv.retag || argv['re-tag'];
+function parseVersionArg(versionArg: string | undefined): string {
+  if (!versionArg || !/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(versionArg)) {
+    console.error(`❌ Invalid version: "${versionArg}". Expected semver (e.g. 1.2.3 or 1.2.3-beta.1)`);
+    process.exit(1);
+  }
 
-if (!packageName || !version) {
+  return versionArg;
+}
+
+const packageName = argv._[0];
+const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
+const isDryRun = Boolean(argv['dry-run'] || argv.dryRun);
+const isRetag = Boolean(argv.retag || argv['re-tag']);
+
+if (!packageName) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
   console.error('');
   console.error('Examples:');
   console.error('  pnpm release @agentsy/vscode 0.2.0');
   console.error('  pnpm release @agentsy/vscode 0.1.5 --dry-run');
-  process.exit(1);
-}
-
-if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
-  console.error(`❌ Invalid version: "${version}". Expected semver (e.g. 1.2.3 or 1.2.3-beta.1)`);
   process.exit(1);
 }
 
@@ -139,13 +161,13 @@ let tagPushed = false;
 let releaseDone = false;
 let gitCmd = 'git';
 
-function runGit(args, options = {}) {
+function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnSyncReturns<string> {
   const result = spawnSync(gitCmd, args, {
     cwd: ROOT,
     encoding: 'utf8',
     shell: false,
     ...options,
-  });
+  }) as SpawnSyncReturns<string>;
 
   if (result.status !== 0) {
     const stderr = (result.stderr || '').trim();
@@ -229,7 +251,7 @@ process.on('SIGTERM', async () => {
 // Prerequisite helpers
 // ---------------------------------------------------------------------------
 
-async function checkNpmCredentials(npmRegistry) {
+async function checkNpmCredentials(npmRegistry: string): Promise<void> {
   try {
     const registry = String(npmRegistry).trim();
     await $`npm whoami --registry=${registry}`;
@@ -255,7 +277,13 @@ async function resolveGithubToken() {
   return token;
 }
 
-function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag) {
+function updateChangelogFile(
+  changelogPath: string,
+  heading: string,
+  releaseNotes: string,
+  previousTag: string,
+  tag: string,
+): void {
   let original;
   try {
     original = safeRead(changelogPath, 'utf8');
@@ -279,7 +307,7 @@ function updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, 
   safeWrite(changelogPath, updated);
 }
 
-function ensureCleanMainBranch() {
+function ensureCleanMainBranch(): void {
   const dirty = runGit(['status', '--porcelain']).stdout.trim();
   if (dirty) {
     console.error('❌ Working tree is not clean. Commit or stash changes first.');
@@ -293,13 +321,13 @@ function ensureCleanMainBranch() {
   }
 }
 
-function syncMainBranch() {
+function syncMainBranch(): void {
   console.log('🔄 Fetching latest refs...');
   runGit(['fetch', 'origin', 'main']);
   runGit(['pull', '--ff-only', 'origin', 'main']);
 }
 
-function resolveOwnerRepoFromOrigin() {
+function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const match = remoteUrl.match(/[:/]([^/:]+)\/([^/.]+?)(?:\.git)?$/);
   if (!match) {
@@ -307,11 +335,17 @@ function resolveOwnerRepoFromOrigin() {
     process.exit(1);
   }
 
-  const [, owner, repo] = match;
+  const owner = match[1];
+  const repo = match[2];
+  if (!owner || !repo) {
+    console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
+    process.exit(1);
+  }
+
   return { owner, repo };
 }
 
-function ensureLocalTagAvailability() {
+function ensureLocalTagAvailability(): void {
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
   if (!localTag) {
     return;
@@ -327,7 +361,7 @@ function ensureLocalTagAvailability() {
   process.exit(1);
 }
 
-async function ensureRemoteTagAvailability(octokit, owner, repo) {
+async function ensureRemoteTagAvailability(octokit: Octokit, owner: string, repo: string): Promise<void> {
   try {
     await octokit.git.getRef({ owner, repo, ref: `tags/${tag}` });
     if (!isRetag) {
@@ -341,8 +375,10 @@ async function ensureRemoteTagAvailability(octokit, owner, repo) {
     console.log(`↩️  Remote tag deleted.`);
     const localTagExists = runGit(['tag', '-l', tag]).stdout.trim();
     if (localTagExists) runGit(['tag', '-d', tag]);
-  } catch (err) {
-    if (err.status !== 404) throw err;
+  } catch (err: unknown) {
+    if (typeof err !== 'object' || err === null || !('status' in err) || (err as { status?: unknown }).status !== 404) {
+      throw err;
+    }
   }
 }
 
@@ -415,7 +451,7 @@ async function main() {
   });
 
   // Filter tags for this package, sort by semver
-  const parseVer = v => {
+  const parseVer = (v: string): number[] => {
     const version = v.slice(v.lastIndexOf('@') + 1);
     return version.split('.').map(Number);
   };
@@ -435,7 +471,7 @@ async function main() {
 
   console.log(`📝 Generating release notes for ${tag}...`);
 
-  const releaseNotesOpts = {
+  const releaseNotesOpts: ReleaseNotesOptions = {
     owner,
     repo,
     tag_name: tag,
@@ -556,10 +592,7 @@ async function main() {
   // --- Monitor Release workflow --------------------------------------------
 
   const releaseSpinner = ora('Release: waiting for workflow to trigger...').start();
-  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, releaseSpinner, {
-    autoDispatch: false,
-    branch: null,
-  });
+  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, releaseSpinner, {});
 
   console.log(`✅ Release workflow complete: ${tag}`);
   releaseDone = true;
@@ -570,23 +603,23 @@ async function main() {
 // ---------------------------------------------------------------------------
 
 async function waitForWorkflow(
-  octokit,
-  name,
-  owner,
-  repo,
-  headSha,
-  spinner,
-  { timeoutMs = 3_600_000, pollMs = 15_000, branch = 'main' } = {},
+  octokit: Octokit,
+  name: string,
+  owner: string,
+  repo: string,
+  headSha: string,
+  spinner: WorkflowSpinner,
+  { timeoutMs = 3_600_000, pollMs = 15_000, branch }: WaitForWorkflowOptions = {},
 ) {
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
-  const workflow = workflowsResp.data.workflows.find(w => w.name === name);
+  const workflow = workflowsResp.data.workflows.find((w: GitHubWorkflow) => w.name === name);
   if (!workflow) {
     spinner.fail(`${name}: workflow not found`);
     throw new Error(`[${name}] workflow not found in ${owner}/${repo}`);
   }
 
   const deadline = Date.now() + timeoutMs;
-  const cancelledRunIds = new Set();
+  const cancelledRunIds = new Set<number>();
 
   while (Date.now() < deadline) {
     const runsResp = await octokit.actions.listWorkflowRuns({
@@ -598,7 +631,7 @@ async function waitForWorkflow(
       per_page: 10,
     });
 
-    const run = runsResp.data.workflow_runs.find(r => !cancelledRunIds.has(r.id));
+    const run = runsResp.data.workflow_runs.find((r: GitHubWorkflowRun) => !cancelledRunIds.has(r.id));
 
     if (!run) {
       spinner.text = `${name}: waiting for workflow run...`;
@@ -624,15 +657,15 @@ async function waitForWorkflow(
 }
 
 async function waitForLatestSuccessfulWorkflow(
-  octokit,
-  name,
-  owner,
-  repo,
-  spinner,
-  { timeoutMs = 600_000, pollMs = 10_000, branch = 'main' } = {},
+  octokit: Octokit,
+  name: string,
+  owner: string,
+  repo: string,
+  spinner: WorkflowSpinner,
+  { timeoutMs = 600_000, pollMs = 10_000, branch = 'main' }: WaitForLatestWorkflowOptions = {},
 ) {
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
-  const workflow = workflowsResp.data.workflows.find(w => w.name === name);
+  const workflow = workflowsResp.data.workflows.find((w: GitHubWorkflow) => w.name === name);
   if (!workflow) {
     spinner.fail(`${name}: workflow not found`);
     throw new Error(`[${name}] workflow not found in ${owner}/${repo}`);
@@ -649,7 +682,7 @@ async function waitForLatestSuccessfulWorkflow(
       per_page: 20,
     });
 
-    const successRun = runsResp.data.workflow_runs.find(r => r.conclusion === 'success');
+    const successRun = runsResp.data.workflow_runs.find((r: GitHubWorkflowRun) => r.conclusion === 'success');
     if (successRun) {
       spinner.text = `${name}: latest success on ${successRun.head_sha.slice(0, 7)}`;
       return;

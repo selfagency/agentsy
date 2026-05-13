@@ -18,7 +18,7 @@ cd(ROOT);
 const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 const PACKAGES_DIR = resolve(ROOT, 'packages');
 
-function isPathInsideRoot(p) {
+function isPathInsideRoot(p: string): boolean {
   try {
     const resolved = resolve(p);
     const rel = relative(ROOT, resolved);
@@ -28,18 +28,27 @@ function isPathInsideRoot(p) {
   }
 }
 
-function safeRead(p, enc = 'utf8') {
+function safeRead(p: string, enc: BufferEncoding = 'utf8'): string {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
   return readFileSync(resolve(p), enc);
 }
 
-function safeWrite(p, data) {
+function safeWrite(p: string, data: string): void {
   if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
   return writeFileSync(resolve(p), data);
 }
 
+function parseVersionArg(versionArg: string | undefined): string {
+  if (!versionArg || !/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(versionArg)) {
+    console.error(`❌ Invalid version: "${versionArg}". Expected semver (e.g. 1.2.3 or 1.2.3-beta.1)`);
+    process.exit(1);
+  }
+
+  return versionArg;
+}
+
 const packageArg = argv._[0];
-const version = argv._[1];
+const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
 const isDryRun = Boolean(argv['dry-run'] || argv.dryRun);
 const confirm = Boolean(argv['yes-i-know-this-is-first-publish']);
 const force = Boolean(argv.force);
@@ -57,11 +66,6 @@ if (!confirm) {
   console.error(
     '❌ Refusing to bootstrap publish without explicit confirmation flag: --yes-i-know-this-is-first-publish',
   );
-  process.exit(1);
-}
-
-if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
-  console.error(`❌ Invalid version: "${version}". Expected semver (e.g. 1.2.3 or 1.2.3-beta.1)`);
   process.exit(1);
 }
 

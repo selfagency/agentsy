@@ -9,12 +9,12 @@ const __dirname = resolve(__filename, '..');
 const ROOT = resolve(__dirname, '..');
 
 /** @param {unknown} repository */
-export function getRepositoryField(repository) {
+export function getRepositoryField(repository: unknown): string {
   if (typeof repository === 'string') {
     return repository;
   }
 
-  if (repository && typeof repository === 'object' && typeof repository.url === 'string') {
+  if (repository && typeof repository === 'object' && 'url' in repository && typeof repository.url === 'string') {
     return repository.url;
   }
 
@@ -22,7 +22,7 @@ export function getRepositoryField(repository) {
 }
 
 /** @param {string} value */
-export function normalizeRepositoryValue(value) {
+export function normalizeRepositoryValue(value: string): string {
   return String(value)
     .replace(/^git\+/, '')
     .replace(/^https?:\/\/github\.com\//i, '')
@@ -36,7 +36,10 @@ export function normalizeRepositoryValue(value) {
  * @param {string} expectedRepo
  * @returns {{ok: true} | {ok: false, error: string}}
  */
-export function validateRepositoryMatch(pkgRepoValue, expectedRepo) {
+export function validateRepositoryMatch(
+  pkgRepoValue: string,
+  expectedRepo: string,
+): { ok: true } | { ok: false; error: string } {
   const normalizedPkgRepo = normalizeRepositoryValue(pkgRepoValue);
   const normalizedExpectedRepo = normalizeRepositoryValue(expectedRepo);
 
@@ -64,7 +67,15 @@ export function validateRepositoryMatch(pkgRepoValue, expectedRepo) {
  * }} input
  * @returns {{ok: true} | {ok: false, error: string}}
  */
-export function checkTrustedPublishReadiness(input) {
+export function checkTrustedPublishReadiness(input: {
+  packageName: string;
+  packageDir: string;
+  expectedRepo: string;
+  releaseStatePath: string;
+  expectedState?: string;
+  workflowFilename?: string;
+  rootDir?: string;
+}): { ok: true } | { ok: false; error: string } {
   const expectedState = input.expectedState ?? 'oidc-ready';
   const workflowFilename = input.workflowFilename ?? 'release.yml';
 
@@ -84,7 +95,7 @@ export function checkTrustedPublishReadiness(input) {
     return { ok: false, error: `Release blocked: package.json not found at ${pkgJsonPath}` };
   }
 
-  const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
+  const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as { repository?: unknown };
   const repoCheck = validateRepositoryMatch(getRepositoryField(pkg.repository), input.expectedRepo);
   if (!repoCheck.ok) {
     return repoCheck;

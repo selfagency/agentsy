@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { constants as fsConstants } from 'node:fs';
 import { access, readdir, stat } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -12,7 +13,7 @@ import path from 'node:path';
 // Allowlist: tweak as migrations proceed. Keep 'core' as a common non-packaged dir.
 const IGNORE_DIRS = new Set(['core']);
 
-async function dirExists(p: string) {
+async function dirExists(p: string): Promise<boolean> {
   try {
     const s = await stat(p);
     return s.isDirectory();
@@ -21,7 +22,7 @@ async function dirExists(p: string) {
   }
 }
 
-async function hasFile(p: string) {
+async function hasFile(p: string): Promise<boolean> {
   try {
     await access(p, fsConstants.F_OK);
     return true;
@@ -30,57 +31,74 @@ async function hasFile(p: string) {
   }
 }
 
-async function main(packagesDir?: string) {
+function shouldIgnorePackageDir(name: string): boolean {
+  return name.startsWith('.') || IGNORE_DIRS.has(name);
+}
+
+function formatOffenders(offenders: string[]): void {
+  if (offenders.length === 0) {
+    console.log('Workspace validation passed: all packages/* are real packages.');
+    return;
+  }
+
+  console.error('Workspace contains non-packages under packages/*:');
+  for (const offender of offenders) {
+    console.error(` - ${offender} (missing package.json)`);
+  }
+}
+
+async function collectOffenders(root: string, packagesDir: string, entries: Dirent[]): Promise<string[]> {
+  const offenders: string[] = [];
+
+  for (const ent of entries) {
+    if (!ent.isDirectory()) continue;
+
+    const name = ent.name;
+    if (shouldIgnorePackageDir(name)) continue;
+
+    const full = path.join(packagesDir, name);
+    const pkgJson = path.join(full, 'package.json');
+
+    if (!(await hasFile(pkgJson))) {
+      offenders.push(path.relative(root, full));
+    }
+  }
+
+  return offenders;
+}
+
+async function main(packagesDir?: string): Promise<void> {
   const ROOT = process.cwd();
   const PACKAGES_DIR = packagesDir ?? path.join(ROOT, 'packages');
 
   try {
-    // Distinguish three cases:
-    // - packages directory does not exist -> skip
-    // - packages path exists but is not a directory -> error
-    // - packages directory exists -> continue
-    try {
-      const s = await stat(PACKAGES_DIR);
-      if (!s.isDirectory()) {
-        console.error('packages path exists but is not a directory');
-        process.exitCode = 1;
-        return;
+    const packagesDirExists = await dirExists(PACKAGES_DIR);
+    if (!packagesDirExists) {
+      try {
+        await stat(PACKAGES_DIR);
+      } catch (err: unknown) {
+        if (
+          typeof err === 'object' &&
+          err !== null &&
+          'code' in err &&
+          typeof err.code === 'string' &&
+          err.code === 'ENOENT'
+        ) {
+          console.log('No packages/ directory found. Skipping workspace validation.');
+          process.exitCode = 0;
+          return;
+        }
       }
-    } catch (err: any) {
-      if (err && err.code === 'ENOENT') {
-        console.log('No packages/ directory found. Skipping workspace validation.');
-        process.exitCode = 0;
-        return;
-      }
-      throw err;
+
+      console.error('packages path exists but is not a directory');
+      process.exitCode = 1;
+      return;
     }
 
     const entries = await readdir(PACKAGES_DIR, { withFileTypes: true });
-    const offenders = [];
-
-    for (const ent of entries) {
-      if (!ent.isDirectory()) continue;
-      const name = ent.name;
-      if (name.startsWith('.')) continue; // ignore dotdirs
-      if (IGNORE_DIRS.has(name)) continue;
-
-      const full = path.join(PACKAGES_DIR, name);
-      const pkgJson = path.join(full, 'package.json');
-
-      const hasPkgJson = await hasFile(pkgJson);
-      if (!hasPkgJson) {
-        offenders.push(path.relative(ROOT, full));
-      }
-    }
-
-    if (offenders.length > 0) {
-      console.error('Workspace contains non-packages under packages/*:');
-      for (const o of offenders) console.error(` - ${o} (missing package.json)`);
-      process.exitCode = 1;
-    } else {
-      console.log('Workspace validation passed: all packages/* are real packages.');
-      process.exitCode = 0;
-    }
+    const offenders = await collectOffenders(ROOT, PACKAGES_DIR, entries);
+    formatOffenders(offenders);
+    process.exitCode = offenders.length > 0 ? 1 : 0;
   } catch (err) {
     console.error('validate-workspace failed:', err);
     process.exitCode = 1;
@@ -92,11 +110,13 @@ async function main(packagesDir?: string) {
 export { main };
 
 // CLI entrypoint when run directly.
-if (process.argv[1] && process.argv[1].endsWith('validate-workspace.js')) {
-  main().catch(err => {
+if (process.argv[1]?.endsWith('validate-workspace.js')) {
+  try {
+    await main();
+  } catch (err) {
     console.error('validate-workspace failed:', err);
     process.exitCode = 1;
-  });
+  }
 }
 
 // fallow-ignore-file unused-file

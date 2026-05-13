@@ -7,48 +7,66 @@
  * Usage: node scripts/preview-themes.js
  */
 
-import chalk from 'chalk';
 // Attempt to load built output first (when running from installed package),
 // otherwise fall back to local workspace source so this script works during dev
 // without requiring a build step. This reduces duplicate source files and
 // allows CI and local tooling to run the preview command in either state.
-let themesModule;
+type ThemeConfig = {
+  thinking?: { textColor?: string; spinnerColor?: string };
+  toolCall?: { pendingColor?: string; doneColor?: string; pendingSymbol?: string; doneSymbol?: string };
+  border?: { style?: string };
+};
+
+let themesModule: Record<string, unknown>;
 try {
   // fallow-ignore-next-line unresolved-import
-  themesModule = await import('../dist/renderers/ink/themes/index.js');
+  const distThemesPath = '../dist/renderers/ink/themes/index.js' as string;
+  themesModule = (await import(distThemesPath)) as Record<string, unknown>;
 } catch {
   // Fallback to local source so contributors can run the script before building
   // fallow-ignore-next-line unresolved-import
-  themesModule = await import('../../renderers/src/ink/themes/index.ts');
+  themesModule = (await import('../../renderers/src/ink/themes/index.ts')) as Record<string, unknown>;
 }
 
 const entries = Object.entries(themesModule).map(([name, value]) => ({ name, value }));
 
+const ANSI = {
+  reset: '\u001B[0m',
+  bold: '\u001B[1m',
+  cyan: '\u001B[36m',
+  green: '\u001B[32m',
+  white: '\u001B[37m',
+  yellow: '\u001B[33m',
+  dim: '\u001B[2m',
+} as const;
+
 console.log('Available themes:');
 for (const e of entries) console.log('-', e.name);
 
-const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, theme }));
+const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, theme: theme as ThemeConfig }));
 
 /**
  * Apply color to text using chalk. JSDoc types avoid implicit any in strict typechecks.
  * @param {string} text
  * @param {string | undefined} color
  */
-function applyColor(text, color) {
+function applyColor(text: string, color: string | undefined): string {
   if (!color) return text;
   if (color.startsWith('#')) {
-    return chalk.hex(color)(text);
+    return text;
   }
-  return chalk[color]?.(text) ?? text;
+
+  const ansi = (ANSI as Record<string, string | undefined>)[color];
+  return ansi ? `${ansi}${text}${ANSI.reset}` : text;
 }
 
 function displayThemePreview() {
-  console.log(`\n${chalk.bold.cyan('═══════════════════════════════════')}`);
-  console.log(chalk.bold.cyan('  Available Ink Renderer Themes'));
-  console.log(`${chalk.bold.cyan('═══════════════════════════════════')}\n`);
+  console.log(`\n${ANSI.bold}${ANSI.cyan}═══════════════════════════════════${ANSI.reset}`);
+  console.log(`${ANSI.bold}${ANSI.cyan}  Available Ink Renderer Themes${ANSI.reset}`);
+  console.log(`${ANSI.bold}${ANSI.cyan}═══════════════════════════════════${ANSI.reset}\n`);
 
   for (const { name, theme } of THEMES) {
-    console.log(chalk.bold.white(name.padEnd(25)));
+    console.log(`${ANSI.bold}${ANSI.white}${name.padEnd(25)}${ANSI.reset}`);
 
     if (theme.thinking) {
       const textColor = theme.thinking.textColor || 'cyan';
@@ -72,17 +90,17 @@ function displayThemePreview() {
 
     if (theme.border) {
       const borderText = `Border: ${theme.border.style}`;
-      const borderLine = `  ${chalk.dim(borderText)}`;
+      const borderLine = `  ${ANSI.dim}${borderText}${ANSI.reset}`;
       console.log(borderLine);
     }
 
     console.log();
   }
 
-  console.log(chalk.dim('═══════════════════════════════════'));
-  console.log(chalk.dim('\nUsage:'));
-  console.log(chalk.dim('  createInkRenderer({ theme: "theme-name" })'));
-  console.log(chalk.dim(String.raw`  import { draculaTheme } from "../src/ink/themes/index.js"\n`));
+  console.log(`${ANSI.dim}═══════════════════════════════════${ANSI.reset}`);
+  console.log(`${ANSI.dim}\nUsage:${ANSI.reset}`);
+  console.log(`${ANSI.dim}  createInkRenderer({ theme: "theme-name" })${ANSI.reset}`);
+  console.log(`${ANSI.dim}${String.raw`  import { draculaTheme } from "../src/ink/themes/index.js"\n`}${ANSI.reset}`);
 }
 
 displayThemePreview();
