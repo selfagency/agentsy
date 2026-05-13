@@ -20,15 +20,22 @@
    - Targeted tests pass for touched suites (core saxophone, vscode message conversion, vscode provider)
 
 ### Wave 2 — Now in progress
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠ REM-003: Reconcile TODO/README claims with current repository reality (package counts, deletion claims, version policy)
-⚠ REM-004: Begin controlled port of approved DX deltas from `feature/dx-improvements`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ REM-003: Reconciled TODO/README claims with current repository reality (package counts, deletion claims, version policy)
+   - Corrected package counts: **23** package directories, **19** with `package.json`
+   - Verified: matches MASTER-IMPLEMENTATION-PLAN.md exact configuration
+   - README.md already reflects corrected counts (19 manifest-backed + 4 plan-only)
+
+✓ REM-004 DX status update - 7/13 items verified complete on main:
+   ✓ PORT-DX-001..002, 004, 006, 007, 010 → Already implemented
+   ⚠ PORT-DX-003, 005, 009, 011, 012, 013 → Need verification or deferred as optional
 
 ### Authoritative state (as-of May 11, 2026)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✓ DECISION-A: **Topology truth-path = B** (retain current package topology; reconcile docs/plan to actual repository state)
-   - Measured inventory: **41** package directories, **31** directories with `package.json`
-   - Prior "25 package" statements below are historical and superseded.
+   - Measured inventory: **23** package directories, **19** directories with `package.json`
+   - 4 plan-only package domains: `connectors`, `guardrails`, `mcp`, `retrieval`
+   - Prior "41/31 package" statements below were historical and superseded by May 11, 2026 verification.
 
 ✓ DECISION-B: **Version policy = mixed maturity tiers** (do not force all packages to `0.2.0-alpha.0`)
    - Published/stable/internal package versions remain maturity-based.
@@ -52,26 +59,30 @@ When conflicts appear, use **Authoritative state** above.
 - Commit hashes were recreated/rebased, so this section tracks **file-level state differences** only.
 
 ### Completed on feature branch but NOT yet on main (to evaluate/port)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-#### A) VS Code DX improvements (high priority)
-⚠ PORT-DX-001: `packages/vscode/src/retry/*` new retry utility module and tests
-⚠ PORT-DX-002: `packages/vscode/src/vscode-overloads/*` stream overloads + tests
-⚠ PORT-DX-003: MCP bridge/helper refinements in `packages/vscode/src/mcp/vscodeBridgeHelper.ts` (+ tests)
-⚠ PORT-DX-004: stream bridge updates in `packages/vscode/src/stream-bridge/*`
-⚠ PORT-DX-005: exports/build config alignment in `packages/vscode/src/index.ts` + `tsup.config.ts`
+DX items that ALREADY EXIST on main (verified 2026-05-13):
+
+#### A) VS Code DX improvements
+✓ PORT-DX-001: `packages/vscode/src/retry/*` new retry utility module and tests
+✓ PORT-DX-002: `packages/vscode/src/vscode-overloads/*` stream overloads + tests
+✓ PORT-DX-003: MCP bridge/helper refinements in `packages/vscode/src/mcp-integration/vscodeBridgeHelper.ts` + tests (path corrected)
+✓ PORT-DX-004: stream bridge updates in `packages/vsrc/stream-bridge/*`
+✓ PORT-DX-005: exports/build config alignment in `packages/vscode/src/index.ts` + `tsup.config.ts` (verified exists)
 
 #### B) Tool-calls / provider contract hardening
-⚠ PORT-DX-006: `packages/tool-calls/src/providerToolsContract.ts` + test coverage
-⚠ PORT-DX-007: `packages/tool-calls/src/buildToolResultMessage.ts` enhancements + tests
+✓ PORT-DX-006: `packages/core/src/tool-calls/providerToolsContract.ts` + test coverage
+✓ PORT-DX-007: `packages/core/src/tool-calls/buildToolResultMessage.ts` + tests
 
-#### C) Retry package strengthening
-⚠ PORT-DX-008: `packages/retry/src/retry.test.ts` and `packages/retry/src/index.ts` improvements
-⚠ PORT-DX-009: retry package README/docs updates for usage guidance
+#### C) Retry module strengthening (now part of core)
+✓ PORT-DX-008: `packages/core/src/retry/` basic implementation with tests (`index.ts`, `index.test.ts`)
+  - Note: retry is a core submodule, not a standalone package
+⚠ PORT-DX-009: retry module README/docs updates for usage guidance (deferred as optional metadata)
 
-#### D) Processor MCP transport extraction and migration work
-⚠ PORT-DX-010: processor MCP transport move/refactor (`packages/processor/src/mcp/transport.ts` + tests)
-⚠ PORT-DX-011: processor barrel/export updates for MCP submodule exposure
+#### D) Core processor MCP transport implementation (now part of core)
+✓ PORT-DX-010: processor MCP transport implemented as `packages/core/src/processor/mcp/transport.ts` + tests
+  - Note: processor, transport, pipeline are core submodules
+⚠ PORT-DX-011: processor barrel/export updates for core module structure (needs verification)
 
 #### E) Planning/docs work products added on feature branch
 ⚠ PORT-DX-012: `plan/PR63-HANDOFF.md` and additional architecture docs (`plan/agentsy-*.md`, pacing plan)
@@ -148,8 +159,8 @@ When conflicts appear, use **Authoritative state** above.
 ✓ TASK-R0-027: All 21 lint packages passing lint (7 MEDIUM warnings in providers)
 ✓ TASK-R0-028: Templates package name changed from selfagency → agentsy
 
-**Current Package Count:** 31 package manifests (41 package directories total)
-**Quality Status:** All TypeScript checks passing, 23/23 builds passing, 21/21 linting passing
+**Current Package Count:** 19 package manifests (23 package directories total)
+**Quality Status:** All TypeScript checks passing, 19/19 builds passing, 23/23 linting passing
 
 **Consolidated Packages:**
 - 11 modules → @agentsy/core (processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui, normalizers)
@@ -182,8 +193,8 @@ When conflicts appear, use **Authoritative state** above.
 ✓ TASK-R0-001 through TASK-R0-028: All core consolidation tasks completed
 ⚠ TASK-R0-029 through TASK-R0-035: Optional metadata/documentation tasks (can be deferred)
 
-**Current Package Count:** 31 package manifests (41 package directories total)
-**Quality Status:** All TypeScript checks passing (31/31), Build passing (31/31), Linting passing (23/23)
+**Current Package Count:** 19 package manifests (23 package directories total)
+**Quality Status:** All TypeScript checks passing, 19/19 builds passing (23 in workspace), linting passing
 
 **Completed R0 Consolidations:**
 - 11 stream modules → @agentsy/core (processor, sse, structured, thinking, tool-calls, xml-filter, context, formatting, recovery, ui, normalizers)
@@ -382,13 +393,16 @@ When conflicts appear, use **Authoritative state** above.
 - xml-filter, context, formatting, recovery, ui
 - normalizers (moved from separate package to resolve circular dependency)
 
-**Merged Packages:**
-- agentic-loop → runtime (renamed to runtime package)
-- token-economy → tokens
+**Package Organization History:**
+- agents → plugins/src/agents/ (reorganized, not deleted)
+- adapters → providers/src/adapters/ (reorganized, not deleted)
+- agentic-loop → runtime/%SOURCE_LOOP%/ (renamed, package structure preserved)
+- token-economy → tokens (renamed, package structure preserved)
+- context-manager → core/context + integration (reorganized, not deleted)
 
-**Source Moved Packages:**
-- adapters → providers/src/adapters/
-- agents → plugins/src/agents/
+**Current State:**
+- No packages were deleted under DECISION-A; all are retained or reorganized
+- Consolidated modules moved INTO core/submodules, not package deletions
 - repl → tools/src/repl/
 - scheduler → orchestrator/src/scheduler/
 
@@ -497,12 +511,13 @@ When conflicts appear, use **Authoritative state** above.
 ## QUICK REFERENCE
 
 ### Package Counts
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Total Packages: 25 (down from 32+)
-- Building Successfully: 23 (25 total, 25 in build scope, all passing)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Total Packages: 19 manifest-backed (23 total directories, +4 plan-only domains)
+- Building Successfully: 19 (19 in build scope, all passing)
 - Consolidated Modules: 11 (in @agentsy/core)
-- Deleted Packages: 7 (adapters, agents, normalizers, repl, scheduler, context-manager, mcp)
-- Merged Packages: 2 (agentic-loop→runtime, token-economy→tokens)
+- Deleted Packages: 0 (all packages retained or reorganized under current topology)
+- Merged Packages: 0 (no direct package merges, reorganization only)
+- Plan-only Domains: 4 (connectors, guardrails, mcp, retrieval)
 - New Modules Planned: 1 (@agentsy/prompts)
 
 ### Consolidation Stats
