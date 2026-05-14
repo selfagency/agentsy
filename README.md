@@ -10,8 +10,8 @@ Agentsy is a pnpm/turborepo monorepo of focused `@agentsy/*` packages for stream
 
 This workspace currently contains:
 
-- **19 manifest-backed packages** (have `package.json` and build/test surfaces)
-- **4 plan-only package domains** (directory + implementation plan, not yet manifest-backed packages)
+- **21 manifest-backed packages** (have `package.json` and build/test surfaces)
+- **2 plan-only package domains** (directory + implementation plan, not yet manifest-backed packages)
 
 ### Manifest-backed packages
 
@@ -37,9 +37,6 @@ This workspace currently contains:
 
 ### Plan-only domains (not package manifests yet)
 
-- `packages/connectors`
-- `packages/guardrails`
-- `packages/mcp`
 - `packages/retrieval`
 
 ## Canonical architecture boundaries
