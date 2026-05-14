@@ -1,0 +1,394 @@
+/**
+ * Core Observability Types
+ * 
+ * Defines the fundamental interfaces for the observability engine including
+ * ObservabilityEngine, AgentSpan, and supporting types.
+ */
+
+import type { TraceId, SpanId } from '@agentsy/types';
+
+/**
+ * Core observability engine that provides tracing, metrics, and logging capabilities.
+ * The main entry point for all observability operations in Agentsy.
+ */
+export interface ObservabilityEngine {
+  /** The OpenTelemetry tracer for distributed tracing */
+  readonly tracer: Tracer;
+  /** The OpenTelemetry meter for metrics collection */
+  readonly meter: Meter;
+  /** The structured logger for application logging */
+  readonly logger: Logger;
+  /**
+   * Sets the active span exporter/sink where telemetry data is sent.
+   * Supports multiple sinks: console, OTLP, Jaeger, Prometheus, etc.
+   */
+  setSink(sink: ObservabilitySink): void;
+  /**
+   * Sets the redaction policy for scrubbing sensitive data.
+   * Ensures PII, secrets, and credentials never leave the process in plaintext.
+   */
+  setRedactionPolicy(policy: RedactionPolicy): void;
+  /**
+   * Shuts down the observability engine and flush all pending data.
+   * Must be called before process exit to ensure all telemetry is exported.
+   */
+  shutdown(): Promise<void>;
+}
+
+/**
+ * OpenTelemetry-compatible tracer wrapper.
+ * Provides methods for creating and managing spans.
+ */
+export interface Tracer {
+  /**
+   * Creates a new span with the given name and options.
+   * The span should be ended when the operation completes.
+   */
+  startSpan(name: string, options?: SpanOptions): Span;
+  /**
+   * Gets the current active span from the context.
+   * Useful for adding attributes within nested operations.
+   */
+  getCurrentSpan(): Span | null;
+}
+
+/**
+ * OpenTelemetry-compatible span representing a unit of work.
+ * Spans form a tree structure through parent-child relationships.
+ */
+export interface Span {
+  /** The unique trace ID that groups all related spans together */
+  readonly traceId: TraceId;
+  /** The unique span ID */
+  readonly spanId: SpanId;
+  /** The parent span ID if this is a child span */
+  readonly parentId?: SpanId;
+  /** The span name */
+  readonly name: string;
+  /**
+   * Sets an attribute on the span with the given key and value.
+   * Attributes are indexed key-value pairs exported with the span.
+   */
+  setAttribute(key: string, value: string | number | boolean | string[]): void;
+  /**
+   * Sets multiple attributes on the span at once.
+   * More efficient than calling setAttribute multiple times.
+   */
+  setAttributes(attributes: Record<string, string | number | boolean | string[]>): void;
+  /**
+   * Records an exception that occurred during the span's operation.
+   * Automatically sets status to error and adds error details.
+   */
+  recordException(exception: unknown, attributes?: Record<string, string | number | boolean | string[]>): void;
+  /**
+   * Adds a single event to the span timeline.
+   * Events are ordered in time and can carry arbitrary data.
+   */
+  addEvent(name: string, attributes?: Record<string, string | number | boolean | string[]>): void;
+  /**
+   * Ends the span and flushes its data to the configured exporters.
+   * After end(), no further operations can be performed on the span.
+   */
+  end(endTime?: number): void;
+  /**
+   * Creates a new child span of this span.
+   * The child span automatically inherits parent context and trace ID.
+   */
+  startChild(name: string, options?: SpanOptions): Span;
+}
+
+/**
+ * Options for creating spans
+ */
+export interface SpanOptions {
+  /** Initial attributes for the span */
+  attributes?: Record<string, string | number | boolean | string[]>;
+  /** Links to related spans from other traces */
+  links?: SpanLink[];
+  /** Start time in milliseconds since epoch */
+  startTime?: number;
+  /** Whether this span is a remote parent in a distributed trace */
+  isRemoteParent?: boolean;
+}
+
+/**
+ * Link to a span in another trace for distributed tracing
+ */
+export interface SpanLink {
+  readonly traceId: TraceId;
+  readonly spanId: SpanId;
+  readonly attributes?: Record<string, string | number | boolean | string[]>;
+}
+
+/**
+ * OpenTelemetry-compatible meter wrapper.
+ * Provides methods for creating different metric instruments.
+ */
+export interface Meter {
+  /**
+   * Creates a counter metric that can be incremented.
+   * Counters are non-decreasing values that only go up.
+   */
+  createCounter(name: string, options?: MetricOptions): Counter;
+  /**
+   * Creates a histogram metric that records distributions.
+   * Histograms can record min, max, mean, percentiles, etc.
+   */
+  createHistogram(name: string, options?: MetricOptions): Histogram;
+  /**
+   * Creates a gauge metric that can go up and down over time.
+   * Gauges represent point-in-time values.
+   */
+  createGauge(name: string, options?: MetricOptions): Gauge;
+  /**
+   * Creates an observable gauge that yields values from a callback.
+   * Useful for metrics that must be actively measured.
+   */
+  createObservableGauge(name: string, options?: MetricOptions, callback: (observable: ObservableGauge) => void): ObservableGauge;
+}
+
+/**
+ * Options for creating metric instruments
+ */
+export interface MetricOptions {
+  /** Human-readable description of the metric */
+  description?: string;
+  /** Unit of measurement (e.g., 'ms', 'bytes', '1') */
+  unit?: string;
+  /** Set of allowed attribute keys for the metric */
+  advice?: {
+    /** Explicit attribute keys that must be present */
+    attributeKeys?: string[];
+    /** Allowed attribute keys (restricts others if set) */
+    allowedAttributeKeys?: string[];
+  };
+}
+
+/**
+ * Counter metric for non-decreasing values
+ */
+export interface Counter {
+  /**
+   * Increments the counter by the specified amount (default 1)
+   * @param amount - The amount to increment by (must be positive)
+   * @param attributes - Additional attributes to associate with this recording
+   */
+  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  /**
+   * Records a value to this counter (alternative interface for increment)
+   * @param amount - The value to record (must be positive)
+   * @param attributes - Additional attributes to associate with this recording
+   */
+  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+}
+
+/**
+ * Histogram metric for recording distributions
+ */
+export interface Histogram {
+  /**
+   * Records a value in this histogram
+   * @param amount - The value to record
+   * @param attributes - Additional attributes to associate with this recording
+   */
+  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+}
+
+/**
+ * Gauge metric for point-in-time values
+ * 可以上下变化的值
+ */
+export interface Gauge {
+  /**
+   * Records a value to this gauge
+   * @param amount - The value to record
+   * * 额外属性关联数据
+   * 
+   * In English: Additional attributes to associate with this recording
+   */
+  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  /**
+   * Increments the gauge by the specified amount
+   * @param amount - Optional amount to increment by
+   * @param attributes - Optional attributes to add
+   */
+  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void);
+  /**
+   * Decrements the gauge by the specified amount
+   * @param amount - Optional amount to decrement by
+   * @param attributes - 额外属性
+   */
+  decrement(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void);
+}
+
+/**
+ * Observable gauge that yields values from a callback
+ */
+export interface ObservableGauge {
+  /**
+   * Records a single observation for this observable gauge
+   * @param amount - 值
+   * * 额外属性
+   * 
+   * In English: Additional attributes to associate with this recording
+   */
+  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+}
+
+/**
+ * Structured logging interface with multiple severity levels.
+ * Provides consistent formatting and output to configured sinks.
+ */
+export interface Logger {
+  /**
+   * Logs an informational message
+   */
+  info(message: string, attributes?: Record<string, unknown>): void;
+  /**
+   * Logs a debug message (typically filtered out in production)
+   */
+  debug(message: string, attributes?: Record<string, unknown>): void;
+  /**
+   * Logs a warning message about an unexpected condition
+   */
+  warn(message: string, attributes?: Record<string, unknown>): void;
+  /**
+   * Logs an error message about a failure or critical condition
+   */
+  error(message: string, attributes?: Record<string, unknown>, error?: unknown): void;
+}
+
+/**
+ * Sink/Exporter where observability data is sent.
+ * Can be a file, network endpoint, or in-memory collector.
+ */
+export interface ObservabilitySink {
+  /** Unique identifier for this sink */
+  readonly type: string;
+  /** Whether this sink is currently active/enabled */
+  readonly enabled: boolean;
+  /**
+   * Exports a span with its associated data
+   */
+  export(span: SpanData): Promise<void> | void;
+  /**
+   * Exports a metric with its associated data
+   */
+  exportMetric(metric: MetricData): Promise<void> | void;
+  /**
+   * Flushes any pending data and returns when complete
+   */
+  flush(): Promise<void>;
+  /**
+   * Shuts down the sink and releases any resources
+   */
+  shutdown(): Promise<void>;
+}
+
+/**
+ * Data associated with a span
+ */
+export interface SpanData {
+  /** Unique trace identifier */
+  readonly traceId: TraceId;
+  /** Unique span identifier */
+  readonly spanId: SpanId;
+  /** Parent span identifier if exists */
+  readonly parentId?: SpanId;
+  /** Span name */
+  readonly name: string;
+  /** Span type (agent, tool, model, internal) */
+  readonly type?: 'agent' | 'tool' | 'model' | 'internal';
+  /** Span attributes */
+  readonly attributes: Record<string, string | number | boolean | string[]>;
+  /** Span status */
+  readonly status: 'ok' | 'error';
+  /** Events recorded on the span */
+  readonly events: SpanEvent[];
+  /** Links to other spans */
+  readonly links?: SpanLink[];
+  /** Start time in milliseconds since epoch */
+  readonly startTime: number;
+  /** End time in milliseconds since epoch (if ended) */
+  readonly endTime?: number;
+  /** Duration in milliseconds (if ended) */
+  readonly duration?: number;
+}
+
+/**
+ * Event recorded on a span's timeline
+ */
+export interface SpanEvent {
+  /** Event name/type */
+  readonly name: string;
+  /** Event timestamp in milliseconds */
+  readonly timestamp: number;
+  /** Event attributes */
+  readonly attributes: Record<string, string | number | boolean | string[]>;
+}
+
+/**
+ * Data associated with a metric recording
+ */
+export interface MetricData {
+  /** Metric name */
+  readonly name: string;
+  /** Metric instrument type */
+  readonly type: 'counter' | 'histogram' | 'gauge';
+  /** Metric value */
+  readonly value: number;
+  /** Metric unit (e.g., 'ms', 'bytes', '1') */
+  readonly unit?: string;
+  /** Associated attributes */
+  readonly attributes: Record<string, string | number | boolean | string[]>;
+  /** Recording timestamp in milliseconds */
+  readonly timestamp: number;
+}
+
+/**
+ * Redaction policy for scrubbing sensitive data.
+ * Ensures PII, secrets, and credentials are removed before export.
+ */
+export interface RedactionPolicy {
+  /** Unique policy identifier */
+  readonly name: string;
+  /**
+   * Global regex patterns to match sensitive data
+   * Applied to all spans and metrics regardless of source
+   */
+  readonly globalPatterns: readonly RedactionRule[];
+  /**
+   * Provider-specific redaction rules
+   * Allows different handling per provider (e.g., Anthropic vs OpenAI)
+   */
+  readonly providerRules: ReadonlyMap<string, readonly RedactionRule[]>;
+  /**
+   * Redacts a value according to this policy
+   * @param value - 原始值
+   * @returns 红化后的值
+   */
+  redact(value: string): string;
+}
+
+/**
+ * Rule for redacting sensitive data
+ */
+export interface RedactionRule {
+  /** Unique rule identifier */
+  readonly id: string;
+  /** Regex pattern to match sensitive content */
+  readonly pattern: RegExp;
+  /** Replacement pattern (supports groups from pattern) */
+  readonly replacement: string;
+  /** Human-readable description of what this redacts */
+  readonly description: string;
+  /**
+   * Indicates severity/match confidence
+   * Values: "high", "medium", "low"
+   */
+  readonly severity: 'high' | 'medium' | 'low';
+  /**
+   * Whether this rule is currently enabled
+   */
+  readonly enabled: boolean;
+}
