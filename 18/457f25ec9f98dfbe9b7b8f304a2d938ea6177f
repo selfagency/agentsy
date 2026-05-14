@@ -1,0 +1,38 @@
+packages/tools/package.json
+  s_95732680127d18::t_a456b9774e0479 43
+packages/models/tsup.config.ts
+  s_95732680127d18::t_0165574cae928a 7-15
+packages/models/package.json
+  s_95732680127d18::t_dd15c7e3e90683 5
+packages/models/src/index.ts
+  s_95732680127d18::t_5f377fa231eec6 4-10,30,72,93-97,99-154,156-190,196-247,252-285
+  ai_agent 191-195,248-251,286
+packages/mcp/src/types.ts
+  s_95732680127d18::t_f816e26878b996 7-8,57,66
+packages/models/src/model-selector.test.ts
+  s_95732680127d18::t_808873ce9840ae 2
+  s_95732680127d18::t_a57a9b3352681b 36,46
+pnpm-lock.yaml
+  ai_agent 583-586
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "18457f25ec9f98dfbe9b7b8f304a2d938ea6177f",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_95732680127d18": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1d83334d4ffe9w2flyVQ9RSj91",
+        "model": "zai-org/GLM-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
