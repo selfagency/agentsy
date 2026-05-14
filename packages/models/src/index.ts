@@ -1,13 +1,21 @@
 import os from 'node:os';
 import path from 'node:path';
 
-export type {
+import type {
   ModelsDevAPI,
   ModelsDevProvider,
   ModelsDevModel,
   TaskRequirements,
   ModelSelectionResult,
 } from './types.js';
+
+// Cache structure
+interface CacheData {
+  timestamp: number;
+  data: ModelsDevAPI;
+}
+
+export type { ModelsDevAPI, ModelsDevProvider, ModelsDevModel, TaskRequirements, ModelSelectionResult };
 
 // Simple models.dev client with caching
 export class ModelsDevClient {
@@ -26,7 +34,7 @@ export class ModelsDevClient {
     try {
       const fs = await import('node:fs/promises');
       const cacheData = await fs.readFile(this.CACHE_FILE, 'utf-8');
-      const cached = JSON.parse(cacheData) as ModelsDevAPI;
+      const cached = JSON.parse(cacheData) as CacheData;
       if (cached.timestamp && Date.now() - cached.timestamp < this.CACHE_TTL) {
         this.cache = cached.data;
         this.lastFetched = new Date(cached.timestamp);
@@ -65,7 +73,7 @@ export class ModelsDevClient {
 
     if (parts[0]) {
       const provider = this.getProvider(parts[0]);
-      return provider?.models[parts[1]];
+      return provider?.models[parts[1] ?? ''];
     }
 
     // Search for model ID across all providers
@@ -124,14 +132,14 @@ export class ModelSelector {
       provider: this.findProviderForModel(model.id),
       confidence: this.calculateConfidence(model, requirements),
       estimatedCost: this.estimateModelCost(model),
-      capabilities: requirements.capabilities,
+      capabilities: requirements.capabilities ?? {},
       reasoning: this.generateReasoning(model, requirements),
     }));
 
     // Sort by confidence score
     scoredModels.sort((a, b) => b.confidence - a.confidence);
 
-    return scoredModels[0];
+    return scoredModels[0]!;
   }
 
   /**
