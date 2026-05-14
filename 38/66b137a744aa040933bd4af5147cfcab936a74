@@ -1,0 +1,139 @@
+packages/models/src/types.ts
+  s_ddb4c99b743039::t_51593756597a48 1-73
+packages/runtime/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_6eea118e012944 402-419,425-428,433-436,440-476,480-483,487-490,494-530,534-537,541-544,548-584,588-591,595-598,602-670
+packages/types/src/tokens.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 62
+packages/mcp/vitest.config.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 6-8
+packages/types/src/session.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 38
+packages/observability/package.json
+  s_6ae8f04e139c01::t_a77b20b93252bf 38-40
+packages/secrets/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_cfddfc6bcb69a3 196-213,217-220,224-227,231-234,238-246,248-270,274-277,281-284,288-291,295-298,303-316,319-368
+packages/types/src/runtime.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 155
+TODO.txt
+  s_ddb4c99b743039::t_7a735d253b65ae 25,27,29-31,34,36-102
+  s_ddb4c99b743039::t_ee0aca6fda43bb 26,28,32-33,35,103-238
+packages/models/src/model-selector.test.ts
+  s_ddb4c99b743039::t_7a36764ccb95e6 1-60,62-76,78-105,107-118,120-134,137-142,144-154,156-161
+packages/core/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_2ad5a6a041acfe 202-222,226-229,233-236,240-276,280-283,287-290,294-312,316-319,323-326,330-332
+packages/models/package.json
+  s_ddb4c99b743039::t_cc0499a785c1e0 1-29
+packages/retrieval/__tests__/types.test.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 9,29-30,48,63,75,87,101,117-118,124,136,148,154,162
+packages/types/src/errors.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 28
+packages/mcp/src/index.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 9-10
+packages/types/src/agents.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 88
+packages/guardrails/README.md
+  s_6ae8f04e139c01::t_a77b20b93252bf 84
+packages/mcp/README.md
+  s_6ae8f04e139c01::t_a77b20b93252bf 28-31,37-38,46-48,54-55,184
+packages/retrieval/package.json
+  s_6ae8f04e139c01::t_a77b20b93252bf 7-8,10,13,22-24,57
+packages/tokens/IMPLEMENTATION-PLAN.md
+  s_95732680127d18::t_e2372aaeec12f0 1,3,5,7,9,11-67,69-95,97-116,119-165,167-353,356-390,393-459,479,500-501,526,551,591,619,628-631,639-640,739-740,748-749,756-759,764-772,775-784,788,790-800,802,804-808,810,812-815,817,819,821-826,829-835,837-844,846,848-856,858-874,876-880,882,884-887,889,891,893-901,903-908,910-912,914-954,956-962,964-980,983,985-989,991,993-994,996,998,1000-1007,1009-1011,1013-1020,1022,1024-1087,1089,1091-1095,1097,1099-1103,1105,1107,1110-1114,1116-1165,1167-1270,1272-1893,1895-1911
+  s_95732680127d18::t_6011e33573f684 460-476,480-481,483-486,488-492,494-499,503,505-513,515-525,527-544,546-550,553-564,566,568-570,572-575,577-580,582-583,592-609,611-617,621-627,633-638,642-646,648,650,652,654-657,659-695,697,700-717,721-738,742-747,751-755,760-763
+packages/observability/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_4296a16a3ecee1 40
+  s_ddb4c99b743039::t_08bfb198f7c90b 633-650,655-658,662-665,669-701,706-709,714-717,721-724,728-768
+plan/MASTER-IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_e7e37375d1711a 184,188,190-193,195-202,206-211,215-218,222-225
+  s_ddb4c99b743039::t_07c5e1711bc342 94,98-183,186-187,189,194,203-204,212-213,219-220,226-257
+.sisyphus/run-continuation/ses_1dbcb4077ffeluv7YRE4xVDJeJ.json
+  s_6ae8f04e139c01::t_a77b20b93252bf 10
+packages/mcp/tsup.config.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 9-10
+packages/models/src/index.ts
+  s_ddb4c99b743039::t_25d7d230faf378 154-159,161-172,174
+  s_ddb4c99b743039::t_feb87c4477095e 1-102,105-153,173
+docs/models-dev-integration.md
+  s_ddb4c99b743039::t_a5cf0043dd6683 1-71,75-194,196-247,249-257,259-282,284-330,332-480,482-489,491-516,518-522,524-548,550-554,556-563,565-651,653,655-658,660,662,664-667,669,671-674,676,678,680-683,685,687-690,692,694,696-706,708,710-713,715,717,719-720,722,724-729,731,733-734,736,738-739,741,743-744,746,748,750-752,754-757,759-761,763-764,766-767,769-770,772-773,775,777-793,795-797,799,801-802,805-810,812,814,816-823,825-828,830-831,833,835,837,839,841-843,845,847,849,851,853-854,856,858,860,862,864-866,868,870,872,874-876,878-880,882-884,886-888,890-892,894,896,898-899,901,903-904,906,908-909,911,913-914,916,918-919,921,923,925,927-931,933-937,939,941-946,948-951,953-957,959-964,966,968,970-972,974-975,977-979,981,983,985-987,989,991-993,995,997-999,1003,1005-1010,1012
+packages/mcp/tsconfig.json
+  s_6ae8f04e139c01::t_a77b20b93252bf 7-9
+packages/types/src/providers.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 100
+packages/types/src/response.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 46
+packages/memory/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_ad9fc4b55e22fe 896,904,910-1068,1070-1108
+packages/guardrails/tsconfig.json
+  s_6ae8f04e139c01::t_a77b20b93252bf 7-9
+packages/guardrails/vitest.config.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 6-8
+packages/types/src/guardrails.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 55
+packages/memory/MEMORY-REVIEW.md
+  s_6ae8f04e139c01::t_a77b20b93252bf 14,21,28,41,47,100,118,141,153,164,183,203,226,230,254,278,300,320,334,378,400,409,422,439,457,475,494,515,523,536,549,569,588,611,701-716
+packages/retrieval/src/types.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 26-27,34,44,55,67,80,94,108-109
+packages/models/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_cf2932c9901177 1-41,45-48,52-55,58-61,65-121,123-353
+packages/memory/UPDATED-IMPLEMENTATION-PLAN.md
+  s_95732680127d18::t_9012c41eaf5bb7 1-578
+packages/retrieval/tsup.config.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 16
+packages/tokens/TOON-INSIGHTS.md
+  s_95732680127d18::t_e8fd032bda8c98 1-124,126-129,133-134,136-140,142-147,149,151-153,155-193,195-202,204-210,212-243,245-366
+packages/observability/IMPLEMENTATION-REVIEW.md
+  s_6ae8f04e139c01::t_a77b20b93252bf 16,66,80,87,103,115,165-176,182-191,197-205,211-217,223-232,238-244,253,286,293,304,310,328,338,348,356,364,378,445-451,455-459,465-471,473-476,484-496,505,515,522
+packages/memory/MEMORY-ARCHITECTURE.md
+  s_95732680127d18::t_825290e12027a6 1-413
+packages/mcp/src/types.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 76
+packages/types/src/vscode.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 61
+.sisyphus/run-continuation/ses_1dca18fc3ffe0Gxqi5p4rtksXO.json
+  s_6ae8f04e139c01::t_a77b20b93252bf 11
+packages/guardrails/tsup.config.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 5,10-12
+packages/models/tsup.config.ts
+  s_ddb4c99b743039::t_f90aac1c46cbd5 1-9
+packages/tools/IMPLEMENTATION-PLAN.md
+  s_ddb4c99b743039::t_d3a8a5201e2011 240-354
+packages/types/src/memory.ts
+  s_6ae8f04e139c01::t_a77b20b93252bf 45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "3866b137a744aa040933bd4af5147cfcab936a74",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_6ae8f04e139c01": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "54906540-1395-4fe7-bcc9-cb329cb8bdbf",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_95732680127d18": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1d83334d4ffe9w2flyVQ9RSj91",
+        "model": "zai-org/GLM-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    },
+    "s_ddb4c99b743039": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1d8951228ffeQmtjq5vMSUpILs",
+        "model": "zai-org/GLM-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
