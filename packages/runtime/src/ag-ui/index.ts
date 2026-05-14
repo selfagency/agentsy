@@ -5,6 +5,8 @@
  * This module allows llm-stream-parser to emit AG-UI-compatible events for any frontend.
  */
 
+import { EventType } from '@agentsy/types';
+
 export { toAgUiStream } from './adapter.js';
 export type { AdapterOptions } from './adapter.js';
 export { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
@@ -22,4 +24,5 @@ export {
   createStateSnapshotEvent,
 } from './state-manager.js';
 export type { JsonPatchOp } from './state-manager.js';
-export * from './types.js';
+
+export { EventType };
