@@ -1,0 +1,33 @@
+tsconfig.json
+  s_95732680127d18::t_b9e99e71dbbed9 3
+packages/models/src/index.ts
+  s_95732680127d18::t_c40dcc6a0e04d0 4
+  s_95732680127d18::t_09b788f29333c5 12-17
+  s_95732680127d18::t_ab34730f23d9db 37
+  s_95732680127d18::t_c040e86eab1ed0 135,142
+  s_95732680127d18::t_7bfb76fc2c22bb 76
+packages/models/tsconfig.json
+  s_95732680127d18::t_cb688199be3d41 1-4,7-10
+  s_95732680127d18::t_b61dd54f78ed7e 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "2b00f536b9456d71bbaa9a9097de1b3070b6204f",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_95732680127d18": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1d83334d4ffe9w2flyVQ9RSj91",
+        "model": "zai-org/GLM-4.7"
+      },
+      "human_author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
