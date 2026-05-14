@@ -37,6 +37,7 @@ Observability should stay composable rather than monolithic. The best-fit refere
 - **OpenTelemetry** as the baseline tracing and metrics substrate.
 - **Tapes** for content-addressable session recording, replay, and deterministic debugging of agent interactions.
 - **Opik** for higher-level LLM trace review, experiment tracking, and judge-style evaluation workflows.
+- **Codeburn** for unique cost-yield analysis and deterministic optimization suggestions.
 
 The package should expose a redaction-first span processor and sink boundary so those integrations can be used without leaking secrets or raw user content.
 
@@ -626,6 +627,142 @@ console.log('Cost per query:', insights.averageCost);
 Telemetry → Observability to better reflect the comprehensive monitoring, tracing, and analysis capabilities we're implementing, following industry standards from OpenTelemetry and enterprise observability platforms.
 
 This observability platform provides enterprise-grade AI agent monitoring with the visibility needed to understand, debug, and optimize complex multi-agent workflows.
+
+---
+
+## Ecosystem Integration Analysis (2026-05-14)
+
+### HIGH VALUE: Codeburn Analytics Integration
+
+**Agentseal Codeburn for Cost-Yield Analysis**
+
+- **Rationale:** Unique capabilities NOT found in standard observability: cost breakdown by task/model/tool/project, one-shot success rate analysis, yield analysis correlating agent sessions with git history, deterministic optimization suggestions without LLM calls
+- **Expected Benefits:** Understanding cost patterns, identifying high-yield interventions, deterministic optimization recommendations
+- **Implementation Strategy:** Complement existing OpenTelemetry with Codeburn-style analytics
+- **ROI:** 3-6 months of building similar analytics engine
+
+**Codeburn Capabilities:**
+
+```typescript
+// Codeburn integration for advanced analytics
+interface CodeburnIntegration {
+  // Unique analytics capabilities
+  analytics: {
+    costBreakdown: 'Cost breakdown by task/model/tool/project';
+    successRate: 'One-shot success rate analysis';
+    yieldAnalysis: 'Correlate sessions with git history';
+    optimization: 'Deterministic suggestions without LLM calls';
+  };
+
+  // Event-driven integration
+  integration: {
+    events: 'Event-driven integration with @agentsy/runtime traces';
+    complements: 'Complement existing OpenTelemetry baselines';
+    pattern: 'Cost-yield analysis + deterministic optimization';
+  };
+
+  // Strategic insights
+  insights: {
+    patterns: 'Understand cost patterns across agents and tools';
+    interventions: 'Identify high-yield interventions';
+    recommendations: 'Actionable optimization suggestions';
+  };
+}
+```
+
+**Implementation Priorities:**
+
+1. **Cost Breakdown Integration (Weeks 1-4):**
+   - Cost breakdown by task, model, tool, project
+   - Integration with @agentsy/runtime traces
+   - Historical cost pattern analysis
+
+2. **Success Rate Analysis (Weeks 5-8):**
+   - One-shot success rate tracking
+   - Agent performance comparison
+   - Failure pattern identification
+
+3. **Yield Analysis Integration (Weeks 9-12):**
+   - Session-to-git-history correlation
+   - Impact measurement of agent operations
+   - Long-term value assessment
+
+4. **Deterministic Optimization (Weeks 13-16):**
+   - Optimization suggestions without LLM calls
+   - Pattern-based recommendations
+   - Cost-effectiveness validation
+
+### Enhanced Observability Architecture
+
+```typescript
+// Enhanced observability with Codeburn integration
+interface EnhancedObservability {
+  // Baseline OpenTelemetry integration
+  baseline: {
+    tracing: 'OpenTelemetry standard tracing';
+    metrics: 'Standard metrics collection';
+    logging: 'Structured logging framework';
+    privacy: 'Redaction policies and safety';
+  };
+
+  // Enhanced Codeburn analytics
+  enhanced: {
+    costAnalysis: 'Cost breakdown by task/model/tool/project';
+    successRate: 'One-shot success rate analysis';
+    yieldAnalysis: 'Session-git history correlation';
+    optimization: 'Deterministic optimization suggestions';
+  };
+
+  // Integration strategy
+  integration: {
+    pattern: 'Baseline OpenTelemetry + enhanced Codeburn';
+    events: 'Event-driven with @agentsy/runtime traces';
+    storage: 'Complementary storage and analysis';
+  };
+
+  // Expected combined benefits
+  benefits: {
+    visibility: 'Complete observability across all dimensions';
+    optimization: 'Deterministic optimization without LLM overhead';
+    analysis: 'Deep insights into cost patterns and agent effectiveness';
+  };
+}
+```
+
+### Combined Benefits
+
+**Enhanced Visibility:**
+
+- **Complete observability:** Standard tracing + enhanced analytics
+- **Deep insights:** Cost patterns, success rates, yield analysis
+- **Actionable:** Deterministic optimization recommendations
+
+**Cost Optimization:**
+
+- **Breakdown analysis:** Understanding where costs are incurred
+- **Pattern identification:** High-yield intervention opportunities
+- **Optimization:** Deterministic suggestions without LLM costs
+
+**Agent Performance:**
+
+- **Success rates:** One-shot success rate tracking across agents
+- **Yield analysis:** Understanding long-term agent value
+- **Pattern recognition:** Identifying effective agent patterns
+
+### Implementation Timeline
+
+**Phase 1: Codeburn Integration (Weeks 1-16)**
+
+- Cost breakdown integration (Weeks 1-4)
+- Success rate analysis (Weeks 5-8)
+- Yield analysis integration (Weeks 9-12)
+- Deterministic optimization (Weeks 13-16)
+
+**Integration Strategy:**
+
+- **Baselines:** Keep OpenTelemetry for standard observability
+- **Enhancements:** Add Codeburn for advanced analytics
+- **Integration:** Event-driven with @agentsy/runtime traces
 
 ---
 

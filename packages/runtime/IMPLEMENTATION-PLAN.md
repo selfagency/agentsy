@@ -399,6 +399,275 @@ packages/runtime/src/
 
 ---
 
+## Token Optimization & Efficiency Patterns (2026-05-14)
+
+### CRITICAL: Virtual Sandbox Implementation
+
+**Flue Virtual Sandbox Pattern Adoption**
+
+- **Rationale:** Default to virtual sandbox (just-bash) for simple operations, containers only for coding/git/browser
+- **Expected Benefits:** 10x faster startup, ~90% infrastructure cost reduction for simple tasks
+- **Implementation Pattern:** Default to virtual, containers trigger only for coding/git/browser operations
+- **ROI:** Dramatically faster, cheaper, more scalable for high-traffic agents
+
+**Hybrid Sandbox Architecture:**
+
+```typescript
+// Hybrid virtual + container sandbox pattern
+interface HybridSandboxArchitecture {
+  // Default: virtual sandbox for simple operations
+  virtual: {
+    default: 'true';
+    operations: ['file', 'read', 'write', 'search', 'simple tasks'];
+    performance: '10x faster startup';
+    cost: '90% infrastructure savings';
+    implementation: 'just-bash command execution';
+  };
+
+  // Container: full environments when needed
+  container: {
+    triggers: ['git', 'browser', 'full coding environments'];
+    fallback: 'Virtual if container unavailable';
+    performance: 'Full git/browsers/environments';
+    cost: 'Higher but necessary for complex tasks';
+  };
+
+  // Trigger logic
+  triggers: {
+    git: 'Git operations need full git repository';
+    browser: 'Browser automation needs headless browser';
+    coding: 'Full coding environments need container isolation';
+  };
+}
+```
+
+**Implementation Priorities:**
+
+1. **Virtual Sandbox Default (Weeks 1-4):**
+   - Implement just-bash virtual sandbox as default
+   - Add container trigger logic for git/browser/coding
+   - Test performance improvements and cost savings
+
+2. **Container Detection Logic (Weeks 5-6):**
+   - Automatic detection of when container needed
+   - Fallback to virtual if container unavailable
+   - Performance monitoring and optimization
+
+3. **Startup Optimization (Weeks 7-8):**
+   - 10x faster virtual sandbox startup
+   - Lazy container initialization
+   - Resource optimization strategies
+
+### Task Delegation with Isolated History
+
+**Flue Task Pattern Adoption**
+
+- **Rationale:** Detached session spawning with isolated message history for parallel execution
+- **Expected Benefits:** Parallel execution, clean semantics, no history pollution
+- **Implementation Pattern:** Create detached sessions for delegated tasks, shared sandbox/filesystem
+- **ROI:** Performance improvement, efficient parallelism
+
+**Task Delegation Architecture:**
+
+```typescript
+// Task delegation with isolated history
+interface TaskDelegationArchitecture {
+  // Create detached sessions for delegated tasks
+  delegation: {
+    createDetachedSession: 'Spawn isolated agent session';
+    isolatedHistory: 'Separate message history for each task';
+    sharedResources: 'Common sandbox and filesystem access';
+  };
+
+  // Clean separation semantics
+  separation: {
+    precedence: 'call > session > harness (Flue pattern)';
+    isolation: 'No cross-task pollution';
+    coordination: 'honker pub/sub for synchronization';
+  };
+
+  // Performance benefits
+  performance: {
+    parallel: 'True parallel execution without conflict';
+    speed: '3x faster multi-agent workflows';
+    reliability: 'Clean semantics prevent state conflicts';
+  };
+}
+```
+
+**Implementation Priorities:**
+
+1. **Detached Session Spawning (Weeks 9-10):**
+   - Implement session spawning with isolated history
+   - Add shared sandbox and filesystem management
+   - Test parallel execution capabilities
+
+2. **Precedence Rules (Weeks 11-12):**
+   - Implement call > session > harness precedence
+   - Add context isolation mechanisms
+   - Test semantic clarity and separation
+
+3. **Parallel Execution (Weeks 13-14):**
+   - Enable true parallel task execution
+   - Add coordination via honker pub/sub
+   - Performance optimization and monitoring
+
+### Runtime Coordination with Honker
+
+**Cross-Process Runtime Integration**
+
+- **Rationale:** honker pub/sub for runtime events and coordination across processes
+- **Expected Benefits:** 1-5ms coordination latency vs polling, atomic queue operations
+- **Integration Pattern:** honker for cross-process events, task queues for background workflows
+- **ROI:** 90% infrastructure savings vs custom broker, near-instant coordination
+
+**Runtime Coordination Architecture:**
+
+```typescript
+// Runtime coordination via honker
+interface RuntimeCoordinationArchitecture {
+  // honker pub/sub for cross-process events
+  pubSub: {
+    channels: ['agent-lifecycle', 'runtime-updates', 'coordination-events'];
+    latency: '1-5ms vs current polling';
+    reliability: 'Atomic commits prevent lost events';
+  };
+
+  // Task queues for background workflows
+  taskQueue: {
+    background: 'Orchestration workflows cleanup and optimization';
+    scheduling: 'Time-triggered background tasks';
+    reliability: 'Exponential backoff, dead-letter handling';
+  };
+
+  // Integration with runtime
+  integration: {
+    lifecycle: 'Agent startup/shutdown events via pub/sub';
+    updates: 'Real-time runtime state synchronization';
+    workflows: 'Background task orchestration';
+  };
+}
+```
+
+**Implementation Priorities:**
+
+1. **Pub/Sub Integration (Weeks 15-16):**
+   - honker pub/sub for agent lifecycle events
+   - Real-time runtime state synchronization
+   - Cross-process coordination
+
+2. **Task Queue Integration (Weeks 17-18):**
+   - honker task queues for background workflows
+   - Time-triggered scheduling
+   - Job cancellation and heartbeat support
+
+3. **Atomic Workflow Patterns (Weeks 19-20):**
+   - Atomic commits with runtime operations
+   - Rollback safety for failed workflows
+   - Reliability and performance optimization
+
+### Role-Based Orchestration
+
+**Flue Role Pattern Adoption**
+
+- **Rationale:** Call-scoped system prompt overlays with clean precedence
+- **Expected Benefits:** Cleaner context, no history pollution, better agent coordination
+- **Implementation Pattern:** Role system with precedence rules, call-scoped overlays
+- **ROI:** Architectural improvement, better agent coordination
+
+**Role Orchestration Architecture:**
+
+```typescript
+// Role-based orchestration with precedence
+interface RoleOrchestrationArchitecture {
+  // Role system with precedence
+  roles: {
+    precedence: 'call > session > harness (Flue pattern)';
+    callScoped: 'System prompt overrides for specific calls';
+    overlays: 'Context without polluting base system prompt';
+  };
+
+  // Clean separation semantics
+  separation: {
+    context: 'No history pollution across role changes';
+    coordination: 'Clear agent context boundaries';
+    flexibility: 'Dynamic role switching without state conflicts';
+  };
+
+  // Coordination benefits
+  benefits: {
+    coordination: 'Better multi-agent workflow management';
+    clarity: 'Clean semantical role boundaries';
+    performance: 'Faster context management';
+  };
+}
+```
+
+**Implementation Priorities:**
+
+1. **Role System Foundation (Weeks 21-22):**
+   - Implement precedence rules (call > session > harness)
+   - Add call-scoped system prompt overlays
+   - Test context separation
+
+2. **Dynamic Role Switching (Weeks 23-24):**
+   - Enable dynamic role changes without state conflicts
+   - Add context management for role transitions
+   - Test flexibility and reliability
+
+### Combined Expected Benefits
+
+**Cost Efficiency:**
+
+- **Infrastructure:** 90% cost reduction for simple tasks with virtual sandbox
+- **Coordination:** 90% infrastructure savings via honker vs custom broker
+- **Parallelism:** 3x faster multi-agent workflows with task delegation
+
+**Performance:**
+
+- **Startup:** 10x faster virtual sandbox startup vs containers
+- **Coordination:** 1-5ms runtime events vs current polling
+- **Speed:** 3x faster parallel execution with isolated history
+
+**Developer Experience:**
+
+- **Simplicity:** Cleaner semantics with role-based orchestration
+- **Flexibility:** Dynamic role switching without state conflicts
+- **Reliability:** Atomic workflow patterns prevent lost operations
+
+**Agent Capabilities:**
+
+- **Scale:** 10x more agents with same infrastructure budget (virtual sandbox)
+- **Parallelism:** True parallel execution without context conflicts
+- **Coordination:** Near-instant cross-process runtime events
+
+### Integration Timeline Summary
+
+**Phase 0: Token Optimization Foundation (Weeks 1-8)**
+
+- Virtual sandbox implementation ( Weeks 1-4)
+- Container detection logic (Weeks 5-6)
+- Startup optimization (Weeks 7-8)
+
+**Phase 1: Task Delegation (Weeks 9-14)**
+
+- Detached session spawning (Weeks 9-10)
+- Precedence rules (Weeks 11-12)
+- Parallel execution (Weeks 13-14)
+
+**Phase 2: Runtime Coordination (Weeks 15-20)**
+
+- Pub/Sub integration (Weeks 15-16)
+- Task queue integration (Weeks 17-18)
+- Atomic workflow patterns (Weeks 19-20)
+
+**Phase 3: Role Orchestration (Weeks 21-24)**
+
+- Role system foundation (Weeks 21-22)
+- Dynamic role switching (Weeks 23-24)
+
+---
+
 ## Alignment Snapshot (migrated from `plan/alignment-report-5-11-26.md`)
 
 - Runtime ownership boundary is confirmed complete: session-backed snapshots, spawned child execution, and workflow ordering live in `@agentsy/runtime`.

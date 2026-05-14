@@ -34,10 +34,10 @@
   "dependencies": {
     "@agentsy/types": "workspace:*",
     "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/sdk-trace-node": "^2.7.1",
-    "@opentelemetry/sdk-metrics": "^2.7.1",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.218.0",
     "@opentelemetry/exporter-prometheus": "^0.218.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.218.0",
+    "@opentelemetry/sdk-metrics": "^2.7.1",
+    "@opentelemetry/sdk-trace-node": "^2.7.1",
     "@opentelemetry/semantic-conventions": "^1.41.1"
   },
   "devDependencies": {

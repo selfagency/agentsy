@@ -4,13 +4,13 @@
   "description": "Information specialist for RAG - multi-modal indexing, hybrid search, and context retrieval",
   "keywords": [
     "agentsy",
-    "retrieval",
-    "rag",
-    "vector",
-    "search",
+    "embedding",
     "indexing",
+    "rag",
+    "retrieval",
+    "search",
     "sql",
-    "embedding"
+    "vector"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
   "license": "MIT",
@@ -19,6 +19,9 @@
     "url": "https://github.com/selfagency/agentsy.git",
     "directory": "packages/retrieval"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,9 +33,6 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",

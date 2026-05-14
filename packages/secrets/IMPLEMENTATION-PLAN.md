@@ -193,6 +193,179 @@ packages/secrets/src/
 
 ---
 
+## Ecosystem Integration Analysis (2026-05-14)
+
+### CRITICAL: Varlock Schema-First Secrets Integration
+
+**Schema-First Secrets Management**
+
+- **Rationale:** Agents receive type-safe schema, not raw secrets, with runtime leak prevention and plugin architecture
+- **Expected Benefits:** Design-time type safety, automatic leak prevention, multi-environment loading, framework integrations
+- **Implementation Strategy:** Integrate Varlock patterns for schema-driven secrets validation and runtime leak scanning
+- **ROI:** 3-5 months of building schema-driven security infrastructure
+
+**Varlock Capabilities:**
+
+```typescript
+// Varlock schema-first integration
+interface VarlockIntegration {
+  // Schema-first approach
+  schemaFirst: {
+    design: 'Agents receive schema, never secrets';
+    typesafety: 'Type-safe secret access patterns';
+    runtime: 'Runtime validation and leak prevention';
+  };
+
+  // Plugin architecture
+  plugins: {
+    backends: 'Plugin architecture for secret backends';
+    frameworks: 'Framework integrations (Next.js, Vite, Astro)';
+    multiEnv: 'Multi-environment .env.* loading';
+  };
+
+  // Security features
+  security: {
+    leakScanning: 'Runtime leak scanning and prevention';
+    validation: 'Schema-driven secret validation';
+    runtime: 'Runtime leak prevention enhanced';
+  };
+
+  // Integration strategy
+  integration: {
+    complement: 'Complement existing @agentsy/secrets';
+    enhance: 'Schema-driven validation and leak prevention';
+    backwardsCompatible: 'Compatibility layer with current system';
+  };
+}
+```
+
+**Integration Priorities:**
+
+1. **Schema Definition (Weeks 1-4):**
+   - Define type-safe secret schemas for agents
+   - Plugin architecture for secret backends
+   - Multi-environment .env.\* loading
+
+2. **Runtime Validation (Weeks 5-6):**
+   - Schema-driven secret validation
+   - Runtime leak scanning and prevention
+   - Plugin architecture for backend extensibility
+
+3. **Framework Integration (Weeks 7-8):**
+   - Vite, Next.js, Astro integrations patterns
+   - Development environment enhancements
+   - Production deployment configuration
+
+4. **Enhanced Security (Weeks 9-10):**
+   - Runtime leak prevention enhanced
+   - Schema-based permission management
+   - Audit trail and compliance features
+
+### Enhanced Security Architecture
+
+```typescript
+// Enhanced secrets with Varlock patterns
+interface EnhancedSecretsArchitecture {
+  // Schema-driven design
+  schemaFirst: {
+    definition: 'Type-safe secret schemas';
+    access: 'Agents receive schema, not raw secrets';
+    validation: 'Design-time and runtime validation';
+  };
+
+  // Multi-environment support
+  environments: {
+    loading: '.env.* multi-environment loading';
+    validation: 'Per-environment schema validation';
+    isolation: 'Environment-specific secret separation';
+  };
+
+  // Runtime protection
+  runtime: {
+    leakScanning: 'Runtime leak scanning and prevention';
+    validation: 'Schema-driven validation';
+    enforcement: 'Runtime leak prevention enhanced';
+  };
+
+  // Plugin extensibility
+  plugins: {
+    backends: 'Plugin architecture for secret backends';
+    integrations: 'Framework and platform integrations';
+    customization: 'Custom secret handling logic';
+  };
+
+  // Expected combined benefits
+  benefits: {
+    typesafety: 'Design-time type safety for all secrets';
+    prevention: 'Automatic leak prevention via scanning';
+    flexibility: 'Multi-environment and plugin support';
+    integration: 'Comprehensive framework integrations';
+  };
+}
+```
+
+### Combined Benefits
+
+**Security Enhancement:**
+
+- **Typesafety:** Design-time type safety for all secret access
+- **Leak prevention:** Automatic leak scanning and prevention
+- **Validation:** Schema-driven validation at design and runtime
+- **Runtime:** Enhanced runtime leak protection and prevention
+
+**Operational Benefits:**
+
+- **Multi-environment:** Flexible .env.\* loading and management
+- **Extensibility:** Plugin architecture for custom backends
+- **Integrations:** Ready-made framework integrations
+- **Automation:** Automated secret validation and management
+
+**Developer Experience:**
+
+- **Type safety:** Type-safe secret access patterns
+- **Debugging:** Clear schema constraints and validation
+- **Flexibility:** Custom plugins and backend support
+- **Compliance:** Built-in audit trail and compliance features
+
+### Risk Mitigation
+
+**Complexity:**
+
+- **Risk:** Schema-first pattern adds complexity
+- **Mitigation:** Compatibility layer with existing system, gradual migration
+
+**Performance:**
+
+- **Risk:** Runtime validation and scanning overhead
+- **Mitigation:** Caching strategies, optimized scanning algorithms
+
+**Integration:**
+
+- **Risk:** Framework integration complexity
+- **Mitigation:** Plugin architecture, pre-built integrations
+
+### Integration Timeline
+
+**Phase 1: Schema Foundation (Weeks 1-4)**
+
+- Schema definition language implementation
+- Plugin architecture foundation
+- Multi-environment loading
+
+**Phase 2: Runtime Protection (Weeks 5-8)**
+
+- Runtime leak scanning and prevention
+- Schema-driven validation
+- Plugin implementation
+
+**Phase 3: Integration & Polishing (Weeks 9-10)**
+
+- Framework integrations
+- Enhanced security features
+- Compatibility layer and migration
+
+---
+
 ## Architecture Decision Snapshot (migrated from `plan/DECISION-LOG.md`)
 
 - `secrets` remains a standalone cross-cutting package and must not be merged into provider packages.

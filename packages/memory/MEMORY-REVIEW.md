@@ -11,18 +11,21 @@ The `packages/memory` package show a **severe misalignment** between the ambitio
 ### Current Implementation (Actual Code)
 
 **Files Implemented:**
+
 - `src/index.ts` (30 lines)
 - `src/index.test.ts` (21 lines)
 - `package.json`
 - `README.md` (7 lines)
 
 **Features Implemented:**
+
 - Basic `MemoryRecord` interface (minimal)
 - `MemoryStore` interface with `put`, `get`, `list` methods
 - In-memory Map-based storage implementation
 - Basic unit tests for CRUD operations
 
 **Code Quality:**
+
 - TypeScript with type definitions
 - Simple, clean API surface
 - Basic test coverage (2 tests)
@@ -35,11 +38,13 @@ The `packages/memory` package show a **severe misalignment** between the ambitio
 ### 1. Memory Architecture - **0% Implemented**
 
 **Plan Requirements:**
+
 - Three-layer architecture: Raw event log → Synthesized wiki → Vector index (Lines 900-903)
 - Hierarchical memory tiers: SENSORY, WORKING, SHORT_TERM, LONG_TERM, PERMANENT, ARCHIVAL (Lines 270-277)
 - Memory types: SEMANTIC, EPISODIC, PROCEDURAL, WORKING, SENSORY (Lines 280-286)
 
 **Actual Implementation:**
+
 - No tier system
 - No memory type classification
 - No three-layer architecture
@@ -92,6 +97,7 @@ interface MemoryStore {
 ```
 
 **Gaps:**
+
 - No memory type classification
 - No scope support (session, user, project, team, global)
 - No embedding support
@@ -109,6 +115,7 @@ interface MemoryStore {
 **Plan Requirements (Lines 289-312):**
 
 Rich `MemoryEntry` interface with:
+
 - `tier`: MemoryTier
 - `type`: MemoryType
 - `content`: MultiModalContent
@@ -131,6 +138,7 @@ Rich `MemoryEntry` interface with:
 - `associatedBlocks`: string[]
 
 **Actual Implementation:**
+
 - Minimal `MemoryRecord` with only `id`, `content`, `metadata`
 
 **Gap:** Missing 20+ planned fields and rich metadata
@@ -142,6 +150,7 @@ Rich `MemoryEntry` interface with:
 **Plan Core Methods (Lines 327-370):**
 
 Should include:
+
 - Storage: `store()`, `retrieve()`
 - Context Engineering: `buildContext()`, `manageContextWindow()`, `optimizeContext()`
 - Memory Block Management: `createMemoryBlock()`, `updateMemoryBlock()`, `pinToContext()`, `rewriteContext()`
@@ -152,6 +161,7 @@ Should include:
 - Sleep-Time Compute: `scheduleSleepProcessing()`, `optimizeMemoryDuringSleep()`, `consolidateDuringSleep()`
 
 **Actual Implementation:**
+
 - Only basic `put()`, `get()`, `list()` in simple store
 
 **Gap:** Missing entire MemoryManager class and 22+ planned methods
@@ -170,6 +180,7 @@ Should include:
 - ContextConstraints, BuildContextResult, TokenBudget, EvictionPolicy
 
 **Actual Implementation:**
+
 - No context engineering components
 - No context building functionality
 - No context window management
@@ -189,6 +200,7 @@ Should include:
 - MemoryBlock interface with id, label, description, value, characterLimit, isEditable, isPinned, priority
 
 **Actual Implementation:**
+
 - No memory block system
 - No block management APIs
 
@@ -211,9 +223,11 @@ Should include:
 - Git integration with autoCommit
 
 **Actual Implementation:**
+
 - Single in-memory Map structure
 
 **Gaps:**
+
 - No multi-tier storage
 - No SQLite integration
 - No vector database support
@@ -237,6 +251,7 @@ Should include:
 - Multi-signal fusion (semantic + BM25 + entity + temporal)
 
 **Actual Implementation:**
+
 - No search functionality
 - No vector support
 - No similarity search
@@ -260,6 +275,7 @@ Should include:
 - Memory consolidation engine
 
 **Actual Implementation:**
+
 - No compression
 - No summarization
 - No consolidation
@@ -281,6 +297,7 @@ Should include:
 - LearningEngine interface
 
 **Actual Implementation:**
+
 - No learning system
 - No feedback processing
 - No adaptation mechanisms
@@ -300,6 +317,7 @@ Should include:
 - Asynchronous memory refinement
 
 **Actual Implementation:**
+
 - No sleep-time compute system
 - No idle detection
 - No background optimization
@@ -313,6 +331,7 @@ Should include:
 **Plan Requirements (Lines 706-747):**
 
 Expected comprehensive structure:
+
 ```
 src/
 ├── index.ts
@@ -356,6 +375,7 @@ src/
 ```
 
 **Actual Structure:**
+
 ```
 src/
 ├── index.ts (30 lines)
@@ -377,6 +397,7 @@ src/
 - External: Graph databases (Neo4j/ArangoDB) (✗ missing)
 
 **Actual Dependencies:**
+
 ```json
 {
   "@agentsy/runtime": "workspace:*",
@@ -385,6 +406,7 @@ src/
 ```
 
 **Gaps:**
+
 - Missing `@agentsy/retrieval` dependency
 - No vector database library
 - No embedding model integration
@@ -397,6 +419,7 @@ src/
 ### Phase 1: Core Memory System + Context Engineering Foundation - **0% Complete**
 
 **Planned Features (Lines 644-653):**
+
 - [x] ~ Enhanced MemoryEntry with MemoryType and research-based fields ❌
 - [ ] Multi-tier storage implementation ❌
 - [ ] CRUD operations for all memory types ❌
@@ -413,6 +436,7 @@ src/
 ### Phase 2: Semantic Search & Context Engineering Optimization - **0% Complete**
 
 **Planned Features (Lines 655-665):**
+
 - [ ] Vector embedding integration ❌
 - [ ] Enhanced semantic search ❌
 - [ ] Relationship graph foundation ❌
@@ -430,6 +454,7 @@ src/
 ### Phase 3: Memory Lifecycle + Sleep-Time Compute - **0% Complete**
 
 **Planned Features (Lines 667-677):**
+
 - [ ] Automatic promotion/demotion system ❌
 - [ ] Memory decay implementation ❌
 - [ ] Consolidation processes ❌
@@ -447,6 +472,7 @@ src/
 ### Phase 4: Advanced Intelligence & Production Features - **0% Complete**
 
 **Planned Features (Lines 679-689):**
+
 - [ ] Context-aware retrieval ❌
 - [ ] Automatic summarization ❌
 - [ ] Relationship detection ❌
@@ -465,6 +491,7 @@ src/
 ### Phase 5: Scaling & Production Readiness - **0% Complete**
 
 **Planned Features (Lines 691-703):**
+
 - [ ] Advanced database optimization ❌
 - [ ] Multi-tier caching ❌
 - [ ] Query optimization ❌
@@ -485,6 +512,7 @@ src/
 ### 1. Massive Scope Mismatch
 
 The implementation plan describes a production-grade memory system with:
+
 - 6 memory tiers
 - 5 memory types
 - 20+ interface definitions
@@ -492,6 +520,7 @@ The implementation plan describes a production-grade memory system with:
 - Multiple complex subsystems (search, learning, compression, context engineering, sleep-time compute)
 
 The actual implementation has:
+
 - 1 simple interface
 - 1 basic store implementation
 - 30 lines of code
@@ -504,6 +533,7 @@ This represents approximately **less than 1% of the planned scope**.
 ### 2. Missing Core Architecture
 
 The most foundational requirements are absent:
+
 - No three-layer architecture (event log → wiki → vector index)
 - No memory type classification
 - No memory tier system
@@ -516,6 +546,7 @@ Without these, the package cannot fulfill its basic role.
 ### 3. No Context Engineering Capabilities
 
 The entire context engineering system is missing:
+
 - No ContextBuilder
 - No ContextWindowManager
 - No ContextQualityAssurance
@@ -535,6 +566,7 @@ The plan explicitly requires `@agentsy/retrieval` for vector search, but this de
 ### 5. No Search or Retrieval
 
 Despite being a "memory engine," there is no search or retrieval capability:
+
 - No semantic search
 - No similarity search
 - No context-aware retrieval
@@ -553,6 +585,7 @@ The plan requires SQLite + Vector hybrid storage, but the implementation uses on
 ### 7. No Learning or Adaptation
 
 The planned learning system is completely absent:
+
 - No feedback loops
 - No pattern detection
 - No preference learning
@@ -575,6 +608,7 @@ Tests cover only basic CRUD operations and don't validate any of the planned beh
    - Update README to accurately describe current state vs. planned state
 
 2. **Implement Minimal Viable Memory System (MVP)**
+
    ```typescript
    - Add memory type classification (semantic, episodic, procedural)
    - Add scope support (session, user, project)
@@ -664,19 +698,19 @@ The current implementation is closer to a proof-of-concept placeholder than a pr
 
 ## Alignment Scorecard
 
-| Component | Planned | Implemented | Gap |
-|-----------|---------|-------------|-----|
-| interfaces | 6 enums, 25+ interfaces | 2 basic interfaces | 96% |
-| files/modules | 30+ organized files | 2 minimal files | 93% |
-| memory tiers | 6 tiers (sensory→archival) | 0 tiers | 100% |
-| memory types | 5 types (semantic, etc.) | 0 types | 100% |
-| context engineering | 8+ components | 0 | 100% |
-| search/retrieval | 6+ search methods | 0 | 100% |
-| storage system | SQLite + Vector hybrid | In-memory Map | 95% |
-| learning system | 10+ methods | 0 | 100% |
-| sleep-time compute | 9+ components | 0 | 100% |
-| compression | 4 components | 0 | 100% |
-| relationships | 4 components | 0 | 100% |
-| test coverage | Multi-disciplinary validation | 2 basic tests | 80% |
-| dependencies | 6 required deps | 2 present | 67% |
-| **Overall** | **Comprehensive System** | **Minimal Scaffold** | **~99%** |
+| Component           | Planned                       | Implemented          | Gap      |
+| ------------------- | ----------------------------- | -------------------- | -------- |
+| interfaces          | 6 enums, 25+ interfaces       | 2 basic interfaces   | 96%      |
+| files/modules       | 30+ organized files           | 2 minimal files      | 93%      |
+| memory tiers        | 6 tiers (sensory→archival)    | 0 tiers              | 100%     |
+| memory types        | 5 types (semantic, etc.)      | 0 types              | 100%     |
+| context engineering | 8+ components                 | 0                    | 100%     |
+| search/retrieval    | 6+ search methods             | 0                    | 100%     |
+| storage system      | SQLite + Vector hybrid        | In-memory Map        | 95%      |
+| learning system     | 10+ methods                   | 0                    | 100%     |
+| sleep-time compute  | 9+ components                 | 0                    | 100%     |
+| compression         | 4 components                  | 0                    | 100%     |
+| relationships       | 4 components                  | 0                    | 100%     |
+| test coverage       | Multi-disciplinary validation | 2 basic tests        | 80%      |
+| dependencies        | 6 required deps               | 2 present            | 67%      |
+| **Overall**         | **Comprehensive System**      | **Minimal Scaffold** | **~99%** |

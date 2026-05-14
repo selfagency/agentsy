@@ -23,15 +23,15 @@ export const _Chunk: Chunk = {
     source: '',
     startLine: 1,
     endLine: 1,
-    strategy: 'semantic'
-  }
+    strategy: 'semantic',
+  },
 };
 
 export const _ChunkMetadata: ChunkMetadata = {
   source: '',
   startLine: 1,
   endLine: 1,
-  strategy: 'semantic'
+  strategy: 'semantic',
 };
 
 export interface DataSource {
@@ -41,7 +41,7 @@ export interface DataSource {
 }
 
 export const _DataSource: DataSource = {
-  type: 'file'
+  type: 'file',
 };
 
 export interface RetrievalQuery {
@@ -52,7 +52,7 @@ export interface RetrievalQuery {
 }
 
 export const _RetrievalQuery: RetrievalQuery = {
-  query: ''
+  query: '',
 };
 
 export interface SearchResult {
@@ -64,7 +64,7 @@ export interface SearchResult {
 export const _SearchResult: SearchResult = {
   documents: [],
   total: 0,
-  queryTime: 0
+  queryTime: 0,
 };
 
 export interface SearchDocument {
@@ -77,7 +77,7 @@ export interface SearchDocument {
 
 export const _SearchDocument: SearchDocument = {
   id: '',
-  content: ''
+  content: '',
 };
 
 export interface Document {
@@ -91,7 +91,7 @@ export interface Document {
 export const _Document: Document = {
   id: '',
   content: '',
-  chunks: []
+  chunks: [],
 };
 
 export interface DocumentMetadata {
@@ -105,5 +105,5 @@ export const _DocumentMetadata: DocumentMetadata = {};
 export const ChunkingStrategy = {
   SEMANTIC: 'semantic',
   FIXED: 'fixed',
-  AST: 'ast'
+  AST: 'ast',
 } as const;

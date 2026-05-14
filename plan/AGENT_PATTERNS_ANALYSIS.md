@@ -827,11 +827,11 @@ Analysis of 30 leading agent frameworks to extract core patterns, architecture, 
 
 - **What**: Stateful agents with advanced memory
 - **Unique Features**:
-  - Layered memory architecture (short-term, long-term)
+- Layered memory architecture (short-term, long-term)
   - Vector store integration
-- **Agentsy Inspiration**:
+  - **Agentsy Inspiration**:
   - V3+: Implement agent memory abstraction
-  - Support short-term (session) and long-term (跨session) memory
+  - Support short-term (session) and long-term (cross-session) memory
 
 ---
 

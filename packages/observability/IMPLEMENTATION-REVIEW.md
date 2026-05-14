@@ -13,6 +13,7 @@
 ### 1. Directory Structure Comparison
 
 #### IMPLEMENTATION PLAN Requires:
+
 ```
 src/
 ├── core/
@@ -62,6 +63,7 @@ src/
 ```
 
 #### ACTUAL IMPLEMENTATION:
+
 ```
 src/
 ├── index.ts           (26 lines - basic metrics collector only)
@@ -75,12 +77,14 @@ src/
 ### 2. Dependencies Analysis
 
 #### IMPLEMENTATION PLAN Requires:
+
 - `@opentelemetry/api` (for OpenTelemetry compatibility)
 - `@opentelemetry/sdk-trace-base`
 - `@opentelemetry/sdk-metrics`
 - Additional exporters (Jaeger, Prometheus, OTLP)
 
 #### ACTUAL DEPENDENCIES:
+
 ```json
 "dependencies": {
   "@agentsy/types": "workspace:*"
@@ -96,6 +100,7 @@ src/
 #### IMPLEMENTATION PLAN Defines:
 
 **ObservabilityEngine**:
+
 ```typescript
 export interface ObservabilityEngine {
   tracer: Tracer;
@@ -107,6 +112,7 @@ export interface ObservabilityEngine {
 ```
 
 **AgentSpan**:
+
 ```typescript
 export interface AgentSpan {
   traceId: TraceId;
@@ -156,86 +162,86 @@ export const createMetricsCollector = (): MetricsCollector => { ... }
 
 **Required**: ❌ NOT IMPLEMENTED
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Core ObservabilityEngine | ❌ Missing | HIGH |
-| Tracer setup | ❌ Missing | HIGH |
-| Meter setup | ❌ Missing | HIGH |
-| Logger setup | ❌ Missing | MED |
-| HTTP instrumentation | ❌ Missing | MED |
-| Database instrumentation | ❌ Missing | MED |
-| Runtime instrumentation | ❌ Missing | HIGH |
-| Prometheus exporter | ❌ Missing | MED |
-| Jaeger exporter | ❌ Missing | MED |
-| Console exporter | ❌ Missing | LOW |
+| Feature                  | Status     | Priority |
+| ------------------------ | ---------- | -------- |
+| Core ObservabilityEngine | ❌ Missing | HIGH     |
+| Tracer setup             | ❌ Missing | HIGH     |
+| Meter setup              | ❌ Missing | HIGH     |
+| Logger setup             | ❌ Missing | MED      |
+| HTTP instrumentation     | ❌ Missing | MED      |
+| Database instrumentation | ❌ Missing | MED      |
+| Runtime instrumentation  | ❌ Missing | HIGH     |
+| Prometheus exporter      | ❌ Missing | MED      |
+| Jaeger exporter          | ❌ Missing | MED      |
+| Console exporter         | ❌ Missing | LOW      |
 
 ### 2.2 AI Agent-Specific Tracing (Planned Phase 2)
 
 **Required**: ❌ NOT IMPLEMENTED
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Agent lifecycle tracing | ❌ Missing | HIGH |
-| Model call tracing | ❌ Missing | HIGH |
-| Conversation tracking | ❌ Missing | HIGH |
-| Workflow tracing | ❌ Missing | HIGH |
-| AI-specific attributes | ❌ Missing | HIGH |
-| Token usage tracking | ❌ Missing | HIGH |
-| Cost tracking | ❌ Missing | HIGH |
-| Latency tracking | ❌ Missing | HIGH |
+| Feature                 | Status     | Priority |
+| ----------------------- | ---------- | -------- |
+| Agent lifecycle tracing | ❌ Missing | HIGH     |
+| Model call tracing      | ❌ Missing | HIGH     |
+| Conversation tracking   | ❌ Missing | HIGH     |
+| Workflow tracing        | ❌ Missing | HIGH     |
+| AI-specific attributes  | ❌ Missing | HIGH     |
+| Token usage tracking    | ❌ Missing | HIGH     |
+| Cost tracking           | ❌ Missing | HIGH     |
+| Latency tracking        | ❌ Missing | HIGH     |
 
 ### 2.3 Event Recording System (Planned Phase 3)
 
 **Required**: ❌ NOT IMPLEMENTED
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Conversation recording | ❌ Missing | HIGH |
-| State change tracking | ❌ Missing | HIGH |
-| Replay engine | ❌ Missing | HIGH |
-| Event timeline | ❌ Missing | MED |
-| Event persistence | ❌ Missing | HIGH |
-| Cache management | ❌ Missing | MED |
-| Compression | ❌ Missing | LOW |
+| Feature                | Status     | Priority |
+| ---------------------- | ---------- | -------- |
+| Conversation recording | ❌ Missing | HIGH     |
+| State change tracking  | ❌ Missing | HIGH     |
+| Replay engine          | ❌ Missing | HIGH     |
+| Event timeline         | ❌ Missing | MED      |
+| Event persistence      | ❌ Missing | HIGH     |
+| Cache management       | ❌ Missing | MED      |
+| Compression            | ❌ Missing | LOW      |
 
 ### 2.4 Knowledge Base Monitoring (Planned Phase 4)
 
 **Required**: ❌ NOT IMPLEMENTED
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| RAG system monitoring | ❌ Missing | HIGH |
-| Document access tracking | ❌ Missing | MED |
-| Reasoning chain tracking | ❌ Missing | HIGH |
-| Retrieval performance metrics | ❌ Missing | HIGH |
-| Reasoning quality metrics | ❌ Missing | MED |
+| Feature                       | Status     | Priority |
+| ----------------------------- | ---------- | -------- |
+| RAG system monitoring         | ❌ Missing | HIGH     |
+| Document access tracking      | ❌ Missing | MED      |
+| Reasoning chain tracking      | ❌ Missing | HIGH     |
+| Retrieval performance metrics | ❌ Missing | HIGH     |
+| Reasoning quality metrics     | ❌ Missing | MED      |
 
 ### 2.5 Advanced Analytics (Planned Phase 5)
 
 **Required**: ❌ NOT IMPLEMENTED
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Performance analyzer | ❌ Missing | MED |
-| Usage analyzer | ❌ Missing | LOW |
-| Cost analyzer | ❌ Missing | HIGH |
-| Quality analyzer | ❌ Missing | MED |
-| Anomaly detection | ❌ Missing | LOW |
-| Alert routing | ❌ Missing | LOW |
-| Escalation management | ❌ Missing | LOW |
-| Dashboard query API | ❌ Missing | LOW |
+| Feature               | Status     | Priority |
+| --------------------- | ---------- | -------- |
+| Performance analyzer  | ❌ Missing | MED      |
+| Usage analyzer        | ❌ Missing | LOW      |
+| Cost analyzer         | ❌ Missing | HIGH     |
+| Quality analyzer      | ❌ Missing | MED      |
+| Anomaly detection     | ❌ Missing | LOW      |
+| Alert routing         | ❌ Missing | LOW      |
+| Escalation management | ❌ Missing | LOW      |
+| Dashboard query API   | ❌ Missing | LOW      |
 
 ### 2.6 Privacy & Security Features
 
 **Required**: ❌ NOT IMPLEMENTED
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| Redaction policy (regex-based scrubbers) | ❌ Missing | HIGH |
-| Provider-specific redaction | ❌ Missing | HIGH |
-| PII protection | ❌ Missing | HIGH |
-| Secret protection | ❌ Missing | HIGH |
-| SpanProcessor-level redaction | ❌ Missing | HIGH |
+| Feature                                  | Status     | Priority |
+| ---------------------------------------- | ---------- | -------- |
+| Redaction policy (regex-based scrubbers) | ❌ Missing | HIGH     |
+| Provider-specific redaction              | ❌ Missing | HIGH     |
+| PII protection                           | ❌ Missing | HIGH     |
+| Secret protection                        | ❌ Missing | HIGH     |
+| SpanProcessor-level redaction            | ❌ Missing | HIGH     |
 
 ---
 
@@ -244,6 +250,7 @@ export const createMetricsCollector = (): MetricsCollector => { ... }
 ### 3.1 Runtime Integration
 
 **Planned API**:
+
 ```typescript
 const tracer = observability.getTracer();
 const span = tracer.startSpan('agent.task-execution', {
@@ -276,12 +283,14 @@ const span = tracer.startSpan('agent.task-execution', {
 ## IV. TESTING COVERAGE GAPS
 
 ### Planned Test Requirements:
+
 - Unit tests for all core components
 - Integration tests for OpenTelemetry exporters
 - Performance tests for metrics collection
 - End-to-end tests for complete observability stack
 
 ### Actual Test Implementation:
+
 - 18 lines of basic tests for `createMetricsCollector`
 - Coverage: Single basic functionality (increment & snapshot)
 
@@ -292,11 +301,13 @@ const span = tracer.startSpan('agent.task-execution', {
 ## V. DOCUMENTATION GAPS
 
 ### IMPLEMENTATION PLAN Specifies:
+
 - Detailed usage examples (lines 442-575)
 - Complete API surface documentation
 - Integration guides for dependent packages
 
 ### ACTUAL README.md:
+
 ```markdown
 # @agentsy/observability
 
@@ -314,6 +325,7 @@ Internal package; surface area is intentionally minimal for now.
 ## VI. CRITICAL PATH FOR COMPLETION
 
 ### Phase 1: OpenTelemetry Foundation (HIGH PRIORITY)
+
 1. ❌ Install OpenTelemetry dependencies
 2. ❌ Implement `ObservabilityEngine` interface
 3. ❌ Implement `Tracer` with OpenTelemetry API
@@ -323,6 +335,7 @@ Internal package; surface area is intentionally minimal for now.
 7. ❌ Implement exporters (Console, Jaeger, Prometheus)
 
 ### Phase 2: AI Agent Tracing (HIGH PRIORITY)
+
 8. ❌ Implement `AgentSpan` type
 9. ❌ Create AI-specific span attributes
 10. ❌ Implement token usage tracking
@@ -332,6 +345,7 @@ Internal package; surface area is intentionally minimal for now.
 14. ❌ Add model call instrumentation
 
 ### Phase 3: Recording & Replay (HIGH PRIORITY)
+
 15. ❌ Implement conversation recorder
 16. ❌ Implement state tracker
 17. ❌ Implement replay engine
@@ -339,6 +353,7 @@ Internal package; surface area is intentionally minimal for now.
 19. ❌ Implement compression for recordings
 
 ### Phase 4: Privacy & Security (HIGH PRIORITY)
+
 20. ❌ Implement redaction policy
 21. ❌ Add regex-based scrubbers
 22. ❌ Implement provider-specific rules
@@ -346,6 +361,7 @@ Internal package; surface area is intentionally minimal for now.
 24. ❌ Add secret detection
 
 ### Phase 5: Advanced Features (MEDIUM PRIORITY)
+
 25. ❌ Implement knowledge base monitoring
 26. ❌ Add RAG system tracking
 27. ❌ Implement reasoning chain tracking
@@ -359,6 +375,7 @@ Internal package; surface area is intentionally minimal for now.
 ### Immediate Actions (Critical):
 
 1. **Add OpenTelemetry Dependencies**
+
    ```bash
    pnpm add @opentelemetry/api @opentelemetry/sdk-trace-base @opentelemetry/sdk-metrics
    ```
@@ -425,38 +442,38 @@ Internal package; surface area is intentionally minimal for now.
 
 ### Implementation Risks:
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Performance overhead from comprehensive instrumentation | High | High | Implement no-op mode, sampling strategies |
-| OpenTelemetry implementation complexity | Medium | High | Use established patterns, extensive testing |
-| Storage requirements for recordings | Medium | Medium | Implement compression, retention policies |
-| Distributed tracing complexity in async workflows | Medium | High | Leverage OpenTelemetry context propagation |
-| Integration with packages (runtime, memory, etc.) | High | High | Early integration testing, clear contracts |
+| Risk                                                    | Likelihood | Impact | Mitigation                                  |
+| ------------------------------------------------------- | ---------- | ------ | ------------------------------------------- |
+| Performance overhead from comprehensive instrumentation | High       | High   | Implement no-op mode, sampling strategies   |
+| OpenTelemetry implementation complexity                 | Medium     | High   | Use established patterns, extensive testing |
+| Storage requirements for recordings                     | Medium     | Medium | Implement compression, retention policies   |
+| Distributed tracing complexity in async workflows       | Medium     | High   | Leverage OpenTelemetry context propagation  |
+| Integration with packages (runtime, memory, etc.)       | High       | High   | Early integration testing, clear contracts  |
 
 ### Dependencies Risks:
 
-| Dependency | Risk Level | Mitigation |
-|------------|------------|------------|
-| @opentelemetry/* packages | Low | Well-maintained, industry standard |
-| No @agentsy/tokens package yet | Medium | Create abstraction layer |
-| No integration packages yet | Medium | Design clear contracts upfront |
+| Dependency                     | Risk Level | Mitigation                         |
+| ------------------------------ | ---------- | ---------------------------------- |
+| @opentelemetry/\* packages     | Low        | Well-maintained, industry standard |
+| No @agentsy/tokens package yet | Medium     | Create abstraction layer           |
+| No integration packages yet    | Medium     | Design clear contracts upfront     |
 
 ---
 
 ## IX. COMPLIANCE WITH VERIFICATION CRITERIA
 
-| Criterion | Status |
-|-----------|--------|
-| OpenTelemetry standards compliance | ❌ NOT MET |
-| Complete agent lifecycle tracing | ❌ NOT MET |
-| AI-specific metrics collection | ❌ NOT MET |
-| Real-time performance monitoring | ❌ NOT MET |
-| Conversation recording and replay | ❌ NOT MET |
+| Criterion                             | Status     |
+| ------------------------------------- | ---------- |
+| OpenTelemetry standards compliance    | ❌ NOT MET |
+| Complete agent lifecycle tracing      | ❌ NOT MET |
+| AI-specific metrics collection        | ❌ NOT MET |
+| Real-time performance monitoring      | ❌ NOT MET |
+| Conversation recording and replay     | ❌ NOT MET |
 | Knowledge base effectiveness tracking | ❌ NOT MET |
-| Distributed tracing across agents | ❌ NOT MET |
-| Alerting and anomaly detection | ❌ NOT MET |
-| Analytics dashboard integration | ❌ NOT MET |
-| Production-ready performance | ❌ NOT MET |
+| Distributed tracing across agents     | ❌ NOT MET |
+| Alerting and anomaly detection        | ❌ NOT MET |
+| Analytics dashboard integration       | ❌ NOT MET |
+| Production-ready performance          | ❌ NOT MET |
 
 **Overall Compliance**: 0/10 (0%)
 
@@ -464,19 +481,19 @@ Internal package; surface area is intentionally minimal for now.
 
 ## X. SUMMARY BY CATEGORY
 
-| Category | Planned Features | Implemented | Gap |
-|----------|-----------------|-------------|-----|
-| Core Infrastructure | 10 | 0 | 100% |
-| AI/LLM Tracing | 15 | 0 | 100% |
-| Metrics & Monitoring | 12 | 1 | 92% |
-| Recording & Replay | 8 | 0 | 100% |
-| Privacy & Security | 6 | 0 | 100% |
-| Knowledge Base Monitoring | 8 | 0 | 100% |
-| Analytics | 12 | 0 | 100% |
-| Alerting | 5 | 0 | 100% |
-| Documentation | 10 | 0 | 100% |
-| Testing | 15 | 1 | 93% |
-| **TOTAL** | **91** | **2** | **98%** |
+| Category                  | Planned Features | Implemented | Gap     |
+| ------------------------- | ---------------- | ----------- | ------- |
+| Core Infrastructure       | 10               | 0           | 100%    |
+| AI/LLM Tracing            | 15               | 0           | 100%    |
+| Metrics & Monitoring      | 12               | 1           | 92%     |
+| Recording & Replay        | 8                | 0           | 100%    |
+| Privacy & Security        | 6                | 0           | 100%    |
+| Knowledge Base Monitoring | 8                | 0           | 100%    |
+| Analytics                 | 12               | 0           | 100%    |
+| Alerting                  | 5                | 0           | 100%    |
+| Documentation             | 10               | 0           | 100%    |
+| Testing                   | 15               | 1           | 93%     |
+| **TOTAL**                 | **91**           | **2**       | **98%** |
 
 ---
 
@@ -485,6 +502,7 @@ Internal package; surface area is intentionally minimal for now.
 The `@agentsy/observability` package is currently in a scaffold-only state, providing only a basic metrics collector. The comprehensive implementation plan from IMPLEMENTATION-PLAN.md has not been executed, with ~98% of planned features missing.
 
 **Critical Path Forward**:
+
 1. Prioritize Phase 1 (OpenTelemetry foundation) - essential for all other features
 2. Implement Phase 2 (AI Agent Tracing) - critical for runtime integration
 3. Add Phase 3 (Recording & Replay) - important for debugging
@@ -494,6 +512,7 @@ The `@agentsy/observability` package is currently in a scaffold-only state, prov
 **Estimated Effort**: Based on the comprehensive plan, this represents a significant multi-week or even multi-person-quarter implementation effort if all features are required.
 
 **Recommendation**: Consider implementing in stages, starting with minimal viable observability (MVO) that includes:
+
 - Basic OpenTelemetry integration
 - AgentSpan with essential attributes
 - Token usage and cost tracking

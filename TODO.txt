@@ -22,13 +22,220 @@
 2. @agentsy/core/universal-client (blocking providers) - placeholder only
 3. @agentsy/runtime (blocking orchestrator integration) - misimplemented purpose
 
-**Recommended Ecosystem Anchors**:
-- Observability: OpenTelemetry baseline with Tapes/Opik-style replay and evaluation hooks
-- Durable execution: Hatchet/Agentspan/Chidori patterns for checkpoints, resume, and distributed work
-- Retrieval and memory: local-first search with optional R2R/Mem0-shaped adapters
-- Interoperability: MCP, ACP, A2A, A2UI, Skills Protocol, and Ratify as explicit bridge targets
-- Prompt efficiency: CacheLLM-style prompt caching middleware at the provider boundary
-- Scheduling/orchestration: Bernstein-style deterministic planning plus Rivet/Yao-inspired event hooks
+**ECOSYSTEM ANALYSIS FINDINGS (2026-05-14):**
+
+## A) Package Integration Strategy:
+
+### PRIMARY Packages (Bundle and Integrate):
+1. **models.dev** - Model selection engine with 100+ providers, capability/cost matching, intelligent selection
+2. **Honker** - SQLite extension for local pub/sub + task queues (1-5ms latency)  
+3. **AgentFS** - Agent-specific filesystem with tool call tracking and audit trails (Turso-native)
+4. **mcp-rag-server** - Zero-ceremony RAG with local LLM support (MCP-native)
+5. **Maki** - Token-efficient tooling (tree-sitter, 59 token cost vs 224 token reads)
+
+### CONDITIONAL Packages (Use Only if Critical Need):
+6. **tldw_server** - Media analysis capabilities (video/audio transcription)
+7. **mirage** - Multi-resource unification (S3, GitHub, Notion, Linear, Slack, etc.)
+8. **Codeburn** - Observability analytics (cost-yield analysis)
+9. **Stagehand** - Browser automation (hybrid AI+code approach)
+10. **Varlock** - Schema-first secrets (schema validation, leak prevention)
+11. **Crit** - Code review UI (browser-based, round-diff tracking)
+
+## B) Critical Architectural Decisions:
+
+### Turso + Honker Hybrid Strategy:
+- **CRITICAL CONSTRAINT:** Turso does NOT support honk extension
+- **SOLUTION:** Local-first coordination with Turso remote sync
+- **Local Layer (1-5ms latency):** Local SQLite with honk extension for coordination/events/queues/scheduling
+- **Remote Layer (Sync & Backup):** Turso for cloud persistence and backup
+- **Integration Pattern:** Use honker for coordination, Turso for persistence/analytics/backup
+
+### Filesystem Strategy:
+- **PRIMARY:** AgentFS for agent operations (SQLite-based, KV store, toolcall audit trails)
+- **CONDITIONAL:** mirage for external resources (multi-resource unification)
+- **Fallback:** AgentFS + Turso when multi-resource access isn't needed
+
+### RAG Strategy:
+- **PRIMARY:** mcp-rag-server (MCP-native, zero-ceremony, local-only processing)
+- **CONDITIONAL:** tldw_server (media analysis only if critically needed)
+
+## C) Token Optimization Priorities:
+
+### IMMEDIATE (Weeks 1-4):
+- **Caveman Output Compression** - 75% output token reduction
+- **Memory File Compression** - 46% memory token reduction  
+- **Virtual Sandbox Mode** - Virtual-first execution for 90% infrastructure savings
+
+### HIGH IMPACT (Weeks 5-12):
+- **BLAKE3 Content Addressing** - Automatic deduplication
+- **Role-Based Orchestration** - Clean precedence (call > session > harness)
+- **Task Delegation** - Isolated history for parallel execution
+
+## D) Expected Benefits:
+- **60% total cost reduction** (75% output + 46% memory + infrastructure)
+- **3x faster responses** via compressed outputs
+- **90% infrastructure savings** for simple tasks with virtual sandbox
+- **100% technical accuracy maintained** (verified by benchmarks)
+- **1-5ms coordination** vs current polling approach
+
+## E) Implementation Phases:
+
+### Phase 0 (Weeks 1-16): Token Optimization Foundation
+- Output compression (75% savings) in @agentsy/tokens
+- Memory compression (46% savings) in @agentsy/core/context  
+- Virtual sandbox (90% savings) in @agentsy/runtime
+- BLAKE3 content addressing in @agentsy/memory
+
+### Phase 1 (Weeks 1-8): Memory & Coordination
+- Local honker integration in @agentsy/memory
+- Turso sync integration for cloud backup
+- mcp-rag-server integration for retrieval
+
+### Phase 2 (Weeks 9-26): Tool & Resource Integration
+- AgentFS SDK for agent operations
+- Conditional mirage for external resources
+- Maki tree-sitter tool efficiency
+
+### Phase 3 (Weeks 1-24): Model Selection & Analytics  
+- models.dev integration in new @agentsy/models
+- Codeburn analytics in @agentsy/observability
+- Varlock secrets in @agentsy/secrets
+
+## Hybrid Turso + Honker Strategy:
+
+**CRITICAL CONSTRAINT:** Turso does NOT support honk extension
+**SOLUTION:** Local-first coordination with Turso remote sync
+
+**Architecture:**
+```
+Local Layer (1-5ms latency):
+- Local SQLite with honk extension loaded
+- honker pub/sub for cross-process events  
+- honker task queues for orchestration
+- honker time-triggered scheduling
+
+Remote Layer (Sync & Backup):
+- Turso for cloud sync and backup
+- Local Turso-to-remote replication
+- Conflict resolution with merge strategies
+
+Integration Pattern:
+- Use honker for: coordination, events, queues, scheduling
+- Use Turso for: persistence, analytics, backup, sharing
+- Read/write operations: Can use local with Turso shadow, but coordination requires honker
+```
+
+## NEW Agent Filesystem Strategy:
+
+**PRIMARY: AgentFS for Agent Operations**
+- AgentFcompatible with Turso (SQLite-based)
+- Three interfaces: Filesystem (POSIX-like), Key-Value, Toolcall audit trails
+- Agent-specific features: snapshotting, time-travel, state reproduction
+- Installation: TypeScript SDK, Python SDK, Rust SDK available
+
+**CONDITIONAL: Mirage for External Resources**
+- Multi-resource unification (S3, GitHub, Notion, Linear, Slack, etc.)
+- Pipeline composition across services
+- Use ONLY if external resource access becomes critical
+
+## RAG Enhancement Strategy:
+
+**PRIMARY: mcp-rag-server (MCP-native)**
+- Zero-ceremony auto-ingest on startup
+- Three tools: knowledge base search, web search, document ingest
+- Local-only processing (documents never leave machine)
+- Works with local LLMs (Ollama + Continue.dev)
+
+**CONDITIONAL: tldw_server**
+- Media analysis (video, audio, PDF transcription)
+- 16+ LLM provider support
+- CLI/WebUI interfaces
+- Consider hybrid: mcp-rag-server for base RAG + tldw_server for media
+
+## Token Optimization Patterns to Adopt (HIGH PRIORITY):
+
+### IMMEDIATE ACTIONS (Weeks 1-4):
+1. **Caveman Output Compression** - 75% output token reduction
+2. **Memory File Compression** - 46% memory token reduction  
+3. **Virtual Sandbox Mode** - Virtual-first execution, containers only for coding/git/browser
+
+### HIGH-IMPACT ACTIONS (Weeks 5-12):
+4. **BLAKE3 Content Addressing** - Automatic deduplication from abstract commit tracking
+5. **Role-Based Orchestration** - Clean precedence (call > session > harness)
+
+### EXPECTED BENEFITS:
+- **60% total cost reduction** (75% output + 46% memory + infrastructure)
+- **3x faster responses** via compressed outputs
+- **90% infrastructure savings** for simple tasks with virtual sandbox
+- **100% technical accuracy maintained** (verified by benchmarks)
+
+## Recommended External Integration Targets (UPDATED):
+
+**Observability:**
+- Baseline on OpenTelemetry
+- Codeburn for cost-yield analysis when optimization tracking needed
+
+**Memory & Coordination (REVISED):**
+- **Local-first with Turso sync:**
+  - Local honker for coordination (1-5ms latency, atomic operations)
+  - Turso remote sync for persistence, analytics, backup
+- **AgentFS for agent operations:**
+  - Filesystem + KV store + toolcall audit trails
+  - SQLite-based snapshotting and time-travel
+
+**Retrieval:**
+- **PRIMARY:** mcp-rag-server (MCP-native, zero-ceremony)
+- Local-only processing with Nomic v1.5 embeddings (documents never leave machine)
+- Live web search via included Firecrawl integration
+
+**Tooling:**
+- **Browser automation:** Stagehand (hybrid AI+code, self-healing)
+- **Code review:** Crit (browser UI, round-diff tracking)
+- **Security:** Varlock (schema-first, leak prevention, runtime validation)
+
+**Orchestration Patterns:**
+- Bernstein-style deterministic planning and event hooks
+- Rivet/Yao scheduling patterns (borrow concepts, not direct replacement)
+- Flux event loop concepts for reactive workflows
+
+## UPDATED Decision Points:
+
+### A) File System Architecture (REVISED):
+**NEW Recommendation:** Primary AgentFS, conditional mirage
+- **PRIMARY:** Use AgentFS for all agent file operations
+- **CONDITIONAL:** mirage only for external resource integration
+- **Backup/Strategy:** Turso sync for remote persistence
+- **Coordination:** Local honker for real-time coordination
+
+### B) Data Persistence Strategy (REVISED):
+**NEW:** Local-first with Turso sync hybrid
+- **Coordination layer:** Local SQLite with honk extension (1-5ms latency)
+- **Persistence layer:** Turso for cloud sync and remote backup
+- **Conflict resolution:** Time-triggered merge strategies
+
+### C) Model Selection Strategy (NEW):
+**NEW:** Intelligent model selection with models.dev API
+- 100+ provider support instead of 11 hardcoded providers
+- Cost estimation per task/model with input/output, caching costs
+- Capability matching (tool_call, reasoning, attachment, temperature)
+- Compute-aided selection engine for optimal provider/model pairing
+- CLI commands for model discovery and cost estimation
+
+### D) External Integration Architecture:
+**NEW:** Hybrid AgentFS + conditional mirage:
+- **Agent operations:** AgentFS SDK (TypeScript/Python/Rust)
+- **External resources:** mirage (multi-resource abstraction) if needed
+- **Tool mapping:** AgentFS tools + conditional mirage backends
+- **Fallback strategy:** Use AgentFS + Turso when multi-resource access isn't needed
+- **Risk mitigation:** Test mirage in non-critical workflows first
+
+### E) Legacy Standards vs New Frameworks:
+**Clarification:** Keep adapter-first but with explicit bridge documentation
+- **NEW:** Document Adapter boundaries for Codeburn, Stagehand, Varlock, Crit, Maki
+- **Legacy:** OpenTelemetry, Tapes/Opik playback, Opik trace/eval workflows
+- **NEW:** Add specs bridges for ACP (editor integration) + Skills Protocol (modular skills)
+- **NEW:** Add Ratify identity protocol + AP2 payments (domain-specific use only)
+- **NEW:** Enhance AG-UI alignment with A2UI spec where beneficial
 
 **Packages Needing Manifests** (currently plan-only directories but should be implemented):
 - @agentsy/connectors (10% complete, needs gateway coordination, Discord/Slack/Telegram adapters)
