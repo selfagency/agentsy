@@ -42,29 +42,3 @@ export * from './core/meter.js';
 export * from './core/observability.js';
 export * from './core/tracer.js';
 export * from './core/types.js';
-
-// Legacy exports for backward compatibility
-/** @deprecated Use getDefaultEngine().meter instead */
-export const createMetricsCollector = () => {
-  const counters = new Map<string, number>();
-  return {
-    increment(name: string, amount = 1) {
-      const current = counters.get(name) ?? 0;
-      counters.set(name, current + amount);
-    },
-    snapshot() {
-      return Array.from(counters.entries()).map(([name, value]) => ({ name, value }));
-    },
-  };
-};
-
-/** @deprecated Use Counter instead */
-export type CounterMetric = {
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
-};
-
-/** @deprecated Use Meter instead */
-export type MetricsCollector = {
-  increment(name: string, amount?: number): void;
-  snapshot(): Array<{ name: string; value: number }>;
-};

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ModelSelector, modelsDevClient } from '../src/index.js';
+import { ModelSelector, modelsDevClient } from './index.js';
 
 describe('models.dev integration', () => {
   describe('ModelsDevClient', () => {
@@ -33,7 +33,7 @@ describe('models.dev integration', () => {
     });
 
     it('should list models from a provider', async () => {
-      await modelsDevClient.fetchModelsData();
+      await modelsDevClient.fetchModelsDevData();
 
       const anthropicModels = modelsDevClient.listModels('anthropic');
       expect(anthropicModels.length).toBeGreaterThan(0);
@@ -43,7 +43,7 @@ describe('models.dev integration', () => {
     });
 
     it('should list all models', async () => {
-      await modelsDevClient.fetchModelsData();
+      await modelsDevClient.fetchModelsDevData();
 
       const allModels = modelsDevClient.listModels();
       expect(allModels.length).toBeGreaterThan(100);

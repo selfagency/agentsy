@@ -4,8 +4,8 @@
 export interface McpTool {
   name: string;
   description: string;
-  inputSchema?: object;
-  handler: (input: any) => Promise<any>;
+  inputSchema?: Record<string, unknown>;
+  handler: (input: unknown) => Promise<unknown>;
 }
 
 /**
@@ -54,7 +54,7 @@ export interface McpCapabilities {
  */
 export interface McpToolInvocation {
   toolName: string;
-  arguments?: Record<string, any>;
+  arguments?: Record<string, unknown>;
 }
 
 /**
@@ -63,7 +63,7 @@ export interface McpToolInvocation {
 export interface McpToolResult {
   content: string;
   isError?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

@@ -1,78 +1,13 @@
 import os from 'node:os';
 import path from 'node:path';
 
-// Core types matching models.dev API structure
-export interface ModelsDevAPI {
-  [providerId: string]: ModelsDevProvider;
-}
-
-export interface ModelsDevProvider {
-  id: string;
-  env: string[];
-  npm?: string;
-  api: string;
-  name: string;
-  doc: string;
-  models: Record<string, ModelsDevModel>;
-}
-
-export interface ModelsDevModel {
-  id: string;
-  name: string;
-  family: string;
-  attachment: boolean;
-  reasoning: boolean;
-  tool_call: boolean;
-  temperature: boolean;
-  knowledge: string;
-  release_date: string;
-  last_updated: string;
-  modalities: {
-    input: string[];
-    output: string[];
-  };
-  open_weights: boolean;
-  limit: {
-    context: number;
-    output: number;
-  };
-  cost: {
-    input: number;
-    output: number;
-    cache_read?: number;
-    cache_write?: number;
-  };
-}
-
-// Task requirements for model selection
-export interface TaskRequirements {
-  modality?: 'text' | 'multimodal' | 'code' | 'reasoning';
-  capabilities?: {
-    tool_calling?: boolean;
-    streaming?: boolean;
-    image_input?: boolean;
-    audio_input?: boolean;
-    audio_output?: boolean;
-  };
-  constraints?: {
-    max_cost?: number;
-    max_context?: number;
-    min_speed?: 'fast' | 'medium' | 'slow';
-    preferred_family?: string;
-    exclude_family?: string[];
-  };
-  specialization?: string;
-}
-
-// Model selection results
-export interface ModelSelectionResult {
-  model: string;
-  provider: string;
-  confidence: number;
-  estimatedCost: number;
-  capabilities: TaskRequirements['capabilities'];
-  reasoning: string;
-}
+export type {
+  ModelsDevAPI,
+  ModelsDevProvider,
+  ModelsDevModel,
+  TaskRequirements,
+  ModelSelectionResult,
+} from './types.js';
 
 // Simple models.dev client with caching
 export class ModelsDevClient {
@@ -92,7 +27,7 @@ export class ModelsDevClient {
       const fs = await import('node:fs/promises');
       const cacheData = await fs.readFile(this.CACHE_FILE, 'utf-8');
       const cached = JSON.parse(cacheData) as ModelsDevAPI;
-      if (Date.now() - cached.timestamp < this.CACHE_TTL) {
+      if (cached.timestamp && Date.now() - cached.timestamp < this.CACHE_TTL) {
         this.cache = cached.data;
         this.lastFetched = new Date(cached.timestamp);
         return this.cache;
@@ -134,7 +69,7 @@ export class ModelsDevClient {
     }
 
     // Search for model ID across all providers
-    for (const provider of Object.values(this.cache || {})) {
+    for (const provider of Object.values(this.cache ?? {})) {
       if (provider.models[modelId]) {
         return provider.models[modelId];
       }
@@ -155,24 +90,197 @@ export class ModelsDevClient {
   }
 }
 
-// Export model selector
-export type {
-  ModelsDevAPI,
-  ModelsDevProvider,
-  ModelsDevModel,
-  TaskRequirements,
-  ModelSelectionResult,
-} from './types.js';
-export { ModelSelector, modelsDevClient } from './model-selector.js';
+/**
+ * Model selector for intelligent model selection based on task requirements
+ */
+export class ModelSelector {
+  private readonly client: ModelsDevClient;
 
-// Re-export for convenience
-export type {
-  ModelsDevAPI,
-  ModelsDevProvider,
-  ModelsDevModel,
-  TaskRequirements,
-  ModelSelectionResult,
-} from './index.js';
+  static readonly modelsDevClient = new ModelsDevClient();
 
-// Singleton instance
-export const modelsDevClient = ModelSelector.modelsDevClient;
+  constructor() {
+    this.client = ModelSelector.modelsDevClient;
+  }
+
+  /**
+   * Select the best model for a given set of task requirements
+   */
+  async selectModel(requirements: TaskRequirements): Promise<ModelSelectionResult> {
+    await this.client.fetchModelsDevData();
+
+    const providers = this.client.listProviders();
+    const allModels = this.client.listModels();
+
+    // Filter models based on requirements
+    const suitableModels = allModels.filter(model => this.meetsRequirements(model, requirements));
+
+    if (suitableModels.length === 0) {
+      throw new Error('No models found that meet the requirements');
+    }
+
+    // Score and rank models
+    const scoredModels = suitableModels.map(model => ({
+      model: model.id,
+      provider: this.findProviderForModel(model.id),
+      confidence: this.calculateConfidence(model, requirements),
+      estimatedCost: this.estimateModelCost(model),
+      capabilities: requirements.capabilities,
+      reasoning: this.generateReasoning(model, requirements),
+    }));
+
+    // Sort by confidence score
+    scoredModels.sort((a, b) => b.confidence - a.confidence);
+
+    return scoredModels[0];
+  }
+
+  /**
+   * Estimate task cost for a given model
+   */
+  async estimateTask(
+    prompt: string,
+    modelId: string,
+    options?: { estimatedInputTokens?: number; estimatedOutputTokens?: number },
+  ): Promise<ModelSelectionResult> {
+    await this.client.fetchModelsDevData();
+
+    const model = this.client.getModel(modelId);
+    if (!model) {
+      throw new Error(`Model not found: ${modelId}`);
+    }
+
+    // Simple estimation: assume 2 tokens per word for input, 1 per word for output
+    const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
+    const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/).length * 0.5);
+
+    const inputCost = (inputTokens / 1000) * model.cost.input;
+    const outputCost = (outputTokens / 1000) * model.cost.output;
+
+    return {
+      model: modelId,
+      provider: this.findProviderForModel(model.id),
+      confidence: 0.8,
+      estimatedCost: inputCost + outputCost,
+      capabilities: {},
+      reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`,
+    };
+  }
+
+  /**
+   * Find the provider for a given model
+   */
+  private findProviderForModel(modelId: string): string {
+    for (const [providerId, provider] of Object.entries(this.client.listProviders())) {
+      if (provider.models[modelId]) {
+        return providerId;
+      }
+    }
+    return 'unknown';
+  }
+
+  /**
+   * Check if a model meets the given requirements
+   */
+  private meetsRequirements(model: ModelsDevModel, requirements: TaskRequirements): boolean {
+    // Check modality
+    if (requirements.modality) {
+      const inputModalities = model.modalities.input;
+      const outputModalities = model.modalities.output;
+
+      if (requirements.modality === 'multimodal') {
+        if (
+          !inputModalities.includes('image') &&
+          !inputModalities.includes('audio') &&
+          !inputModalities.includes('video')
+        ) {
+          return false;
+        }
+      } else if (requirements.modality === 'code') {
+        if (!inputModalities.includes('text') || !outputModalities.includes('text')) {
+          return false;
+        }
+      }
+    }
+
+    // Check capabilities
+    if (requirements.capabilities?.tool_calling && !model.tool_call) {
+      return false;
+    }
+
+    // Check constraints
+    if (requirements.constraints?.max_cost) {
+      const estimatedCost = model.cost.input + model.cost.output * 10; // rough estimate
+      if (estimatedCost > requirements.constraints.max_cost) {
+        return false;
+      }
+    }
+
+    if (requirements.constraints?.max_context) {
+      if (model.limit.context < requirements.constraints.max_context) {
+        return false;
+      }
+    }
+
+    if (requirements.constraints?.exclude_family?.includes(model.family)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Calculate confidence score for a model
+   */
+  private calculateConfidence(model: ModelsDevModel, requirements: TaskRequirements): number {
+    let confidence = 0.5;
+
+    // Boost confidence for models with requested features
+    if (requirements.capabilities?.tool_calling && model.tool_call) {
+      confidence += 0.2;
+    }
+
+    if (requirements.capabilities?.streaming) {
+      // Most modern models support streaming, give slight boost
+      confidence += 0.1;
+    }
+
+    // Consider specialization
+    if (
+      requirements.specialization &&
+      model.knowledge.toLowerCase().includes(requirements.specialization.toLowerCase())
+    ) {
+      confidence += 0.2;
+    }
+
+    return Math.min(confidence, 1);
+  }
+
+  /**
+   * Estimate model cost based on cost per thousand tokens
+   */
+  private estimateModelCost(model: ModelsDevModel): number {
+    // Rough estimate assuming 1000 input and 1000 output tokens
+    return model.cost.input + model.cost.output * 10;
+  }
+
+  /**
+   * Generate reasoning for model selection
+   */
+  private generateReasoning(model: ModelsDevModel, requirements: TaskRequirements): string {
+    const reasons: string[] = [];
+
+    if (model.tool_call && requirements.capabilities?.tool_calling) {
+      reasons.push('Supports tool calling');
+    }
+
+    if (model.limit.context > 200000) {
+      reasons.push('Large context window');
+    }
+
+    if (model.cost.input + model.cost.output < 0.01) {
+      reasons.push('Cost-effective');
+    }
+
+    return reasons.join(', ') || 'Selected based on requirements';
+  }
+}
