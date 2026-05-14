@@ -1,3 +1,6 @@
+import os from 'node:os';
+import path from 'node:path';
+
 // Core types matching models.dev API structure
 export interface ModelsDevAPI {
   [providerId: string]: ModelsDevProvider;
@@ -76,7 +79,7 @@ export class ModelsDevClient {
   private cache?: ModelsDevAPI;
   private lastFetched?: Date;
   private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-  private readonly CACHE_FILE = '/tmp/models.dev-cache.json';
+  private readonly CACHE_FILE = path.join(os.tmpdir(), 'models.dev-cache.json');
 
   async fetchModelsDevData(force = false): Promise<ModelsDevAPI> {
     // Check cache first
@@ -105,8 +108,9 @@ export class ModelsDevClient {
     // Save to cache
     try {
       const fs = await import('node:fs/promises');
-      await fs.mkdir('/tmp', { recursive: true });
-      await fs.writeFile('/tmp/models.dev-cache.json', JSON.stringify({ timestamp: Date.now(), data }), 'utf-8');
+      const cacheDir = os.tmpdir();
+      await fs.mkdir(cacheDir, { recursive: true });
+      await fs.writeFile(this.CACHE_FILE, JSON.stringify({ timestamp: Date.now(), data }), 'utf-8');
     } catch {
       // Failed to save cache, ignore
     }

@@ -154,56 +154,61 @@ function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown
   };
 }
 
+function parseUsageInfo(usageData: Record<string, unknown>): UsageInfo | undefined {
+  const usage: UsageInfo = {};
+  if (typeof usageData.inputTokens === 'number') {
+    usage.inputTokens = usageData.inputTokens;
+  }
+  if (typeof usageData.outputTokens === 'number') {
+    usage.outputTokens = usageData.outputTokens;
+  }
+  if (typeof usageData.totalTokens === 'number') {
+    usage.totalTokens = usageData.totalTokens;
+  }
+  return Object.keys(usage).length > 0 ? usage : undefined;
+}
+
+function parseContentFromChoice(
+  content: { content: string } | { content?: { parts?: Array<{ text?: string }> } },
+): string {
+  if (typeof content.content === 'string') {
+    return content.content;
+  }
+  return content.content?.parts?.map(p => p.text).join('') ?? '';
+}
+
 function parseProviderResponse(response: unknown, _provider: NormalizerProvider): CompletionResponse {
   const data = response as Record<string, unknown>;
 
-  if ('choices' in data && Array.isArray(data.choices) && data.choices.length > 0) {
-    const choice = data.choices[0] as Record<string, unknown>;
-    const content = choice.message as { content: string } | { content?: { parts?: Array<{ text?: string }> } };
-
-    const usage: UsageInfo | undefined =
-      data.usage && typeof data.usage === 'object'
-        ? (() => {
-            const usageData = data.usage as Record<string, unknown>;
-            const usage: UsageInfo = {};
-            if (typeof usageData.inputTokens === 'number') {
-              usage.inputTokens = usageData.inputTokens as number;
-            }
-            if (typeof usageData.outputTokens === 'number') {
-              usage.outputTokens = usageData.outputTokens as number;
-            }
-            if (typeof usageData.totalTokens === 'number') {
-              usage.totalTokens = usageData.totalTokens as number;
-            }
-            return Object.keys(usage).length > 0 ? usage : undefined;
-          })()
-        : undefined;
-
-    const result: CompletionResponse = {
-      content:
-        typeof content.content === 'string'
-          ? content.content
-          : (content.content?.parts?.map(p => p.text).join('') ?? ''),
+  if (!('choices' in data) || !Array.isArray(data.choices) || data.choices.length === 0) {
+    return {
+      content: typeof data.content === 'string' ? data.content : JSON.stringify(data),
     };
-
-    if (usage) {
-      result.usage = usage;
-    }
-
-    if (data.model && typeof data.model === 'string') {
-      result.model = data.model;
-    }
-
-    if (data.id && typeof data.id === 'string') {
-      result.id = data.id;
-    }
-
-    return result;
   }
 
-  return {
-    content: typeof data.content === 'string' ? data.content : JSON.stringify(data),
+  const choice = data.choices[0] as Record<string, unknown>;
+  const content = choice.message as { content: string } | { content?: { parts?: Array<{ text?: string }> } };
+
+  const usage: UsageInfo | undefined =
+    data.usage && typeof data.usage === 'object' ? parseUsageInfo(data.usage as Record<string, unknown>) : undefined;
+
+  const result: CompletionResponse = {
+    content: parseContentFromChoice(content),
   };
+
+  if (usage) {
+    result.usage = usage;
+  }
+
+  if (data.model && typeof data.model === 'string') {
+    result.model = data.model;
+  }
+
+  if (data.id && typeof data.id === 'string') {
+    result.id = data.id;
+  }
+
+  return result;
 }
 
 /**

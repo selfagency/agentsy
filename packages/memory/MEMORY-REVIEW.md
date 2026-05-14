@@ -332,7 +332,7 @@ Should include:
 
 Expected comprehensive structure:
 
-```
+```text
 src/
 ├── index.ts
 ├── core/
@@ -376,7 +376,7 @@ src/
 
 **Actual Structure:**
 
-```
+```text
 src/
 ├── index.ts (30 lines)
 └── index.test.ts (21 lines)

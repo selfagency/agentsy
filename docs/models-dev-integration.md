@@ -694,15 +694,19 @@ class DynamicProviderRegistry {
 **Week 9:**
 
 1. Add CLI commands for model discovery:
-   ```
+
+   ```text
    agentsy models list [--provider <id>]
    agentsy models info <model-id>
    agentsy models search <query>
    ```
+
 2. Add CLI commands for cost estimation:
-   ```
+
+   ```text
    agentsy estimate <task-description> [--provider <id>] [--model <id>]
    ```
+
 3. Add interactive model selection wizard
 
 **Week 10:**

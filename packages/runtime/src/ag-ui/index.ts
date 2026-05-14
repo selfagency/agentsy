@@ -5,23 +5,6 @@
  * This module allows llm-stream-parser to emit AG-UI-compatible events for any frontend.
  */
 
-import type {
-  AgUiEvent,
-  ReasoningEndEvent,
-  ReasoningMessageContentEvent,
-  ReasoningMessageEndEvent,
-  ReasoningMessageStartEvent,
-  ReasoningStartEvent,
-  RunErrorEvent,
-  RunFinishedEvent,
-  RunStartedEvent,
-  TextMessageContentEvent,
-  ToolCallArgsEvent,
-  ToolCallEndEvent,
-  ToolCallStartEvent,
-} from '@agentsy/types';
-import { EventType } from '@agentsy/types';
-
 export { toAgUiStream } from './adapter.js';
 export type { AdapterOptions } from './adapter.js';
 export { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
@@ -40,19 +23,19 @@ export {
 } from './state-manager.js';
 export type { JsonPatchOp } from './state-manager.js';
 
-export { EventType };
-export type {
-  AgUiEvent,
-  ReasoningEndEvent,
-  ReasoningMessageContentEvent,
-  ReasoningMessageEndEvent,
-  ReasoningMessageStartEvent,
-  ReasoningStartEvent,
-  RunErrorEvent,
-  RunFinishedEvent,
-  RunStartedEvent,
-  TextMessageContentEvent,
-  ToolCallArgsEvent,
-  ToolCallEndEvent,
-  ToolCallStartEvent,
-};
+export {
+  type AgUiEvent,
+  type ReasoningEndEvent,
+  type ReasoningMessageContentEvent,
+  type ReasoningMessageEndEvent,
+  type ReasoningMessageStartEvent,
+  type ReasoningStartEvent,
+  type RunErrorEvent,
+  type RunFinishedEvent,
+  type RunStartedEvent,
+  type TextMessageContentEvent,
+  type ToolCallArgsEvent,
+  type ToolCallEndEvent,
+  type ToolCallStartEvent,
+  EventType,
+} from '@agentsy/types';

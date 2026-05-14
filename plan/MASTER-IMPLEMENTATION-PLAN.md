@@ -97,7 +97,7 @@ Agentsy should stay adapter-first: use proven external projects as interoperabil
 
 **NEW Ecosystem Analysis Findings (2026-05-14):**
 
-#### A) Packages to Use Instead of Building (Bundle Strategy):
+#### A) Packages to Use Instead of Building (Bundle Strategy)
 
 1. **models.dev** - Model selection engine with 100+ providers and complete capability/cost data
 2. **Honker** - SQLite extension for pub/sub and task queues (local-first with Turso sync)
@@ -106,7 +106,7 @@ Agentsy should stay adapter-first: use proven external projects as interoperabil
 5. **mcp-rag-server** - Zero-ceremony RAG with local LLM support (PRIMARY)
 6. **Mirage** (CONDITIONAL) - Multi-resource unification only if external resource access needed
 
-#### B) Patterns to Adopt:
+#### B) Patterns to Adopt
 
 **Critical Patterns:**
 
@@ -124,7 +124,7 @@ Agentsy should stay adapter-first: use proven external projects as interoperabil
 - **Preview-first execution** (Stagehand): Show tool effects before execution
 - **Tree-sitter tools** (Maki): Efficient code analysis (59 token cost vs 224 token reads)
 
-#### C) Standards/Frameworks to Embrace:
+#### C) Standards/Frameworks to Embrace
 
 **Tier 1 (Industry Standards):**
 
@@ -145,7 +145,7 @@ Agentsy should stay adapter-first: use proven external projects as interoperabil
 - **Prompt caching** - CacheLLM-middleware patterns
 - **Retrieval/memory backends** - Local-first with R2R/Mem0 adapter documentation
 
-#### D) UPDATED Integration Architecture:
+#### D) UPDATED Integration Architecture
 
 ```typescript
 // Unified external integration layer
@@ -179,7 +179,7 @@ interface ExternalIntegrationLayer {
 }
 ```
 
-#### E) Implementation Priority Phases:
+#### E) Implementation Priority Phases
 
 **Phase 0 (Weeks 1-16): Token Optimization Foundation (CRITICAL)**
 
@@ -224,7 +224,7 @@ interface ExternalIntegrationLayer {
 - **Skills Protocol:** Modular capability framework (NEW)
 - **Other standards:** Ratify identity, AP2 payments (domain-specific)
 
-#### F) Expected Combined Benefits:
+#### F) Expected Combined Benefits
 
 **Efficiency:**
 

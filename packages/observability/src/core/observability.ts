@@ -14,6 +14,7 @@ import type {
   RedactionPolicy,
   Span,
 } from '../core/types.js';
+import type { AttributeValue } from '../core/types.js';
 import { LoggerImpl, type LogLevel, type LoggerConfig } from './logger.js';
 import { MeterImpl } from './meter.js';
 import { TracerImpl } from './tracer.js';
@@ -66,7 +67,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   readonly meter: MeterImpl;
   readonly logger: LoggerImpl;
   private readonly config: ObservabilityEngineConfig;
-  private _sinks: ObservabilitySink[] = [];
+  private readonly _sinks: ObservabilitySink[] = [];
   private _redactionPolicy: RedactionPolicy | null = null;
   private _isShutdown = false;
 
@@ -75,7 +76,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     this.tracer = new TracerImpl();
     this.meter = new MeterImpl();
 
-    const minLevel = config.logging?.minLevel ? LOG_LEVEL_MAP[config.logging.minLevel.toUpperCase()] : undefined;
+    const minLevel = LOG_LEVEL_MAP[config.logging?.minLevel?.toUpperCase() ?? ''];
     const loggerConfig: LoggerConfig = {
       includeTimestamp: config.logging?.includeTimestamp ?? true,
     };
@@ -123,7 +124,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     return this.tracer.getCurrentSpan();
   }
 
-  startSpan(name: string, attributes?: Record<string, string | number | boolean | string[]>): Span {
+  startSpan(name: string, attributes?: Record<string, AttributeValue>): Span {
     const span = this.tracer.startSpan(name);
     if (attributes) {
       span.setAttributes(attributes);
@@ -131,16 +132,12 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     return span;
   }
 
-  recordCounter(name: string, value: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  recordCounter(name: string, value: number, attributes?: Record<string, AttributeValue>): void {
     const counter = this.meter.createCounter(name);
     counter.record(value, attributes);
   }
 
-  recordHistogram(
-    name: string,
-    value: number,
-    attributes?: Record<string, string | number | boolean | string[]>,
-  ): void {
+  recordHistogram(name: string, value: number, attributes?: Record<string, AttributeValue>): void {
     const histogram = this.meter.createHistogram(name);
     histogram.record(value, attributes);
   }

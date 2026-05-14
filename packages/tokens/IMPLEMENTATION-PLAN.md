@@ -17,7 +17,7 @@
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        @agentsy/tokens                               │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -115,7 +115,7 @@ export function compressOutput(response: string, options: CompressionOptions): C
 
 **Preserve Exactly (byte-level):**
 
-- Code blocks: `language ... `
+- Code blocks: `language ...`
 - Inline code: `backtick content`
 - URLs: full URLs, markdown links
 - File paths: /src/components/..., ./config.yaml
@@ -1206,7 +1206,7 @@ export async function computeBLAKE3(content: string): Promise<string> {
 
 **漫冷 (Cold Memory) - 具象完整度 100%:**
 
-```
+```text
 保存完整的上下文和步骤，可随时恢复工作状态
 保留详细的文件路径和精确的步骤
 特定位置引用
@@ -1214,7 +1214,7 @@ export async function computeBLAKE3(content: string): Promise<string> {
 
 **恰到好处 (Precise Warm Memory) - 具象完整度 70%:**
 
-```
+```text
 关键路径和必要技术细节
 提供技术细节的概括性总结
 综合性的片段
@@ -1222,7 +1222,7 @@ export async function computeBLAKE3(content: string): Promise<string> {
 
 **温热 (Warm Memory) - 具象完整度 50%:**
 
-```
+```text
 高层策略和关键技术术语
 提供技术细节的总结，但无需详细定位信息
 使用关键词和概念
@@ -1230,7 +1230,7 @@ export async function computeBLAKE3(content: string): Promise<string> {
 
 **分阶段记忆精简 (Multi-stage liveness):**
 
-```
+```text
 → 当前正在进行的任务: 漫冷 (Cold - 100%)
 → 最近的上下文: 恰到好处 (Precise - 70%)
 → 历史记录: 温热 (Warm - 50%)
@@ -1294,7 +1294,7 @@ export interface CompactMemory {
 
 **Compaction rules (具象完整度 targets):**
 
-```
+```text
 COLD (漫冷): 1.0   - 100% 具象完整度 (保留完整上下文和步骤)
 PRECISE (恰到好处): 0.7 - 70% 具象完整度 (关键路径，技术细节概括)
 WARM (温热): 0.5   - 50% 具象完整度 (高层策略，关键术语)
@@ -1453,7 +1453,7 @@ export class MemoryLivenessPubSub {
 
 **Pub/sub channels:**
 
-```
+```text
 memory-liveness-cold     - Active task updates
 memory-liveness-precise   - Recent context updates
 memory-liveness-warm      - Historical context updates
@@ -1657,7 +1657,7 @@ const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 
 **Integration guides:**
 
-```
+```text
 - Integration guide for Claude Code / Codex / Cursor / Windsurf
 - Example patterns for output middleware
 - Budget monitoring patterns for production

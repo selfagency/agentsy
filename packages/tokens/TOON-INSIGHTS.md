@@ -241,7 +241,7 @@ const safe = encode(user, {
    - Counting should use same tokenizer as model for accurate tokenization
 
 4. **TOON for LLM markdown code blocks:**
-   - Wrap TOON output in `toon ... ` language spec
+   - Wrap TOON output in `toon ...` language spec
    - Show format examples instead of describing structure
    - Use tab delimiters for maximum efficiency
 
@@ -364,4 +364,4 @@ This approach gives us the best of both worlds: proven 76.4% accuracy with ~40% 
 3. **Fallback to JSON-compact** for nested/non-uniform structures
 4. **Streaming support** - critical for large datasets
 5. **Measurement** - use o200k_base tokenizer for accurate counting
-6. **LLM integration** - wrap in `toon ` code blocks, show examples not descriptions
+6. **LLM integration** - wrap in `toon` code blocks, show examples not descriptions

@@ -893,7 +893,7 @@ packages/memory/src/
 
 ## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
 
-### Three-layer architecture alignment (updated with ecosystem findings):
+### Three-layer architecture alignment (updated with ecosystem findings)
 
 Layering extracted and preserved from technical design:
 
@@ -901,21 +901,21 @@ Layering extracted and preserved from technical design:
 2. **Wiki store (Layer 1)** — synthesized pages across `entities`, `concepts`, `synthesis`, `sources`.
 3. **Vector index (Layer 2)** — semantic retrieval over synthesized pages.
 
-### Lifecycle contracts (updated with ecosystem integration):
+### Lifecycle contracts (updated with ecosystem integration)
 
 - `startTask(sessionId)` at loop entry.
 - `endTask(sessionId)` at loop end with synthesis trigger.
 - Context injection path remains XML-based via `buildContextXml(...)` for downstream prompt assembly.
 
-### Security constraints carried forward:
+### Security constraints carried forward
 
 - Retrieved memory is treated as untrusted content.
 - Sanitization before prompt injection remains required.
 - Scope isolation (`project`, `user`, `team`, `global`) remains explicit in storage and retrieval paths.
 
-### NEW Ecosystem Integration Additions (from 2026-05-14 ecosystem analysis):
+### NEW Ecosystem Integration Additions (from 2026-05-14 ecosystem analysis)
 
-#### A. Honker Coordination Layer (NEW - HIGH PRIORITY):
+#### A. Honker Coordination Layer (NEW - HIGH PRIORITY)
 
 **Purpose:** Local-low-latency coordination with remote Turso sync support
 
@@ -963,7 +963,7 @@ interface HonkerCoordination {
 }
 ```
 
-#### B. AgentFS Integration (NEW - PRIMARY FILESYSTEM):
+#### B. AgentFS Integration (NEW - PRIMARY FILESYSTEM)
 
 **Purpose:** Agent-specific filesystem with audit trails and Turso-native design
 
@@ -1017,7 +1017,7 @@ interface AgentFSIntegration {
 };
 ```
 
-#### C. RAG Enhancement with mcp-rag-server (PRIMARY):
+#### C. RAG Enhancement with mcp-rag-server (PRIMARY)
 
 **Purpose:** Zero-ceremony RAG with local LLM support, MCP-native design
 
@@ -1048,7 +1048,7 @@ interface MCRAGServerIntegration {
 }
 ```
 
-#### D. Content Addressing (re_gent pattern):
+#### D. Content Addressing (re_gent pattern)
 
 **Purpose:** Automatic deduplication + sub-10ms lookups
 
@@ -1072,7 +1072,7 @@ interface ContentAddressing {
 }
 ```
 
-#### E. Learning Systems Adaptation (Marmot patterns):
+#### E. Learning Systems Adaptation (Marmot patterns)
 
 **Purpose:** Adaptive behavior from interactions
 
@@ -1099,13 +1099,13 @@ interface LearningEnhancements {
 }
 ```
 
-### Lifecycle contracts (updated with integration):
+### Lifecycle contracts (updated with integration)
 
 - `startTask(sessionId)` at loop entry.
 - `endTask(sessionId)` at loop end with synthesis trigger.
 - Context injection path remains XML-based via `buildContextXml(...)` for downstream prompt assembly.
 
-### Security constraints carried forward:
+### Security constraints carried forward
 
 - Retrieved memory is treated as untrusted content.
 - Sanitization before prompt injection remains required.

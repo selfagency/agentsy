@@ -8,6 +8,11 @@
 import type { SpanId, TraceId } from '@agentsy/types';
 
 /**
+ * Attribute value type for span attributes
+ */
+export type AttributeValue = string | number | boolean | string[];
+
+/**
  * Core observability engine that provides tracing, metrics, and logging capabilities.
  * The main entry point for all observability operations in Agentsy.
  */
@@ -69,12 +74,12 @@ export interface Span {
    * Sets an attribute on the span with the given key and value.
    * Attributes are indexed key-value pairs exported with the span.
    */
-  setAttribute(key: string, value: string | number | boolean | string[]): void;
+  setAttribute(key: string, value: AttributeValue): void;
   /**
    * Sets multiple attributes on the span at once.
    * More efficient than calling setAttribute multiple times.
    */
-  setAttributes(attributes: Record<string, string | number | boolean | string[]>): void;
+  setAttributes(attributes: Record<string, AttributeValue>): void;
   /**
    * Records an exception that occurred during the span's operation.
    * Automatically sets status to error and adds error details.

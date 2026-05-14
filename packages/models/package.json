@@ -17,7 +17,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@agentsy/types": "^0.0.1",
+    "@agentsy/types": "workspace:*",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

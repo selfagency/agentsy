@@ -12,9 +12,9 @@
 
 ### 1. Directory Structure Comparison
 
-#### IMPLEMENTATION PLAN Requires:
+#### IMPLEMENTATION PLAN Requires
 
-```
+```text
 src/
 ├── core/
 │   ├── observability.ts       # ObservabilityEngine
@@ -62,9 +62,9 @@ src/
     └── escalation-manager.ts
 ```
 
-#### ACTUAL IMPLEMENTATION:
+#### ACTUAL IMPLEMENTATION
 
-```
+```text
 src/
 ├── index.ts           (26 lines - basic metrics collector only)
 └── index.test.ts      (18 lines - basic tests)
@@ -76,14 +76,14 @@ src/
 
 ### 2. Dependencies Analysis
 
-#### IMPLEMENTATION PLAN Requires:
+#### IMPLEMENTATION PLAN Requires
 
 - `@opentelemetry/api` (for OpenTelemetry compatibility)
 - `@opentelemetry/sdk-trace-base`
 - `@opentelemetry/sdk-metrics`
 - Additional exporters (Jaeger, Prometheus, OTLP)
 
-#### ACTUAL DEPENDENCIES:
+#### ACTUAL DEPENDENCIES
 
 ```json
 "dependencies": {
@@ -97,7 +97,7 @@ src/
 
 ### 3. Core Interface Comparison
 
-#### IMPLEMENTATION PLAN Defines:
+#### IMPLEMENTATION PLAN Defines
 
 **ObservabilityEngine**:
 
@@ -136,7 +136,7 @@ export interface AgentSpan {
 
 **AnalyticsSystem** with comprehensive analytics
 
-#### ACTUAL IMPLEMENTATION Defines:
+#### ACTUAL IMPLEMENTATION Defines
 
 ```typescript
 export interface CounterMetric {
@@ -282,14 +282,14 @@ const span = tracer.startSpan('agent.task-execution', {
 
 ## IV. TESTING COVERAGE GAPS
 
-### Planned Test Requirements:
+### Planned Test Requirements
 
 - Unit tests for all core components
 - Integration tests for OpenTelemetry exporters
 - Performance tests for metrics collection
 - End-to-end tests for complete observability stack
 
-### Actual Test Implementation:
+### Actual Test Implementation
 
 - 18 lines of basic tests for `createMetricsCollector`
 - Coverage: Single basic functionality (increment & snapshot)
@@ -300,13 +300,13 @@ const span = tracer.startSpan('agent.task-execution', {
 
 ## V. DOCUMENTATION GAPS
 
-### IMPLEMENTATION PLAN Specifies:
+### IMPLEMENTATION PLAN Specifies
 
 - Detailed usage examples (lines 442-575)
 - Complete API surface documentation
 - Integration guides for dependent packages
 
-### ACTUAL README.md:
+### ACTUAL README.md
 
 ```markdown
 # @agentsy/observability
@@ -372,7 +372,7 @@ Internal package; surface area is intentionally minimal for now.
 
 ## VII. RECOMMENDATIONS
 
-### Immediate Actions (Critical):
+### Immediate Actions (Critical)
 
 1. **Add OpenTelemetry Dependencies**
 
@@ -400,7 +400,7 @@ Internal package; surface area is intentionally minimal for now.
    - Integration tests for span lifecycle
    - Performance tests for metrics collection
 
-### Short-term (Next Sprint):
+### Short-term (Next Sprint)
 
 6. **Complete Phase 1 Implementation**
    - All basic OpenTelemetry exporters
@@ -417,7 +417,7 @@ Internal package; surface area is intentionally minimal for now.
    - Include basic usage examples
    - Document API surface
 
-### Medium-term (Next Quarter):
+### Medium-term (Next Quarter)
 
 9. **Complete Phase 2 Implementation**
    - All AI-specific instrumentation
@@ -429,7 +429,7 @@ Internal package; surface area is intentionally minimal for now.
     - State tracking
     - Basic replay functionality
 
-### Long-term (Future):
+### Long-term (Future)
 
 11. **Implement Advanced Features**
     - Knowledge base monitoring
@@ -440,7 +440,7 @@ Internal package; surface area is intentionally minimal for now.
 
 ## VIII. RISK ASSESSMENT
 
-### Implementation Risks:
+### Implementation Risks
 
 | Risk                                                    | Likelihood | Impact | Mitigation                                  |
 | ------------------------------------------------------- | ---------- | ------ | ------------------------------------------- |
@@ -450,7 +450,7 @@ Internal package; surface area is intentionally minimal for now.
 | Distributed tracing complexity in async workflows       | Medium     | High   | Leverage OpenTelemetry context propagation  |
 | Integration with packages (runtime, memory, etc.)       | High       | High   | Early integration testing, clear contracts  |
 
-### Dependencies Risks:
+### Dependencies Risks
 
 | Dependency                     | Risk Level | Mitigation                         |
 | ------------------------------ | ---------- | ---------------------------------- |

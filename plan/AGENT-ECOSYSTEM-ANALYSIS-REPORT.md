@@ -16,7 +16,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 2. **Pattern adoption** (15 patterns): Architectural patterns implementable in existing packages
 3. **Standards embrace** (6 protocols): Protocol stack upgrades and ecosystem integration
 
-### Key Findings:
+### Key Findings
 
 - **MCP is dominant** (50% adoption) — already implemented, should be enhanced
 - **Observability is the next frontier** — Agentseal's codeburn offers unique insights
@@ -32,7 +32,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 1. **Agentseal Codeburn** (Observability & Analytics)
 
-- **Repository:** https://github.com/getagentseal/codeburn
+- **Repository:** <https://github.com/getagentseal/codeburn>
 - **Why use instead of build:** Unique capabilities in this agent framework
 - **Key features Agentsy lacks:**
   - Cost breakdown by task/model/tool/project
@@ -49,7 +49,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 2. **Stagehand Browser Automation** (Tool Execution)
 
-- **Repository:** https://github.com/browserbase/stagehand
+- **Repository:** <https://github.com/browserbase/stagehand>
 - **Why use instead of build:** Production hybrid AI+code automation
 - **Key features:**
   - Self-healing automation that remembers previous actions
@@ -66,7 +66,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 3. **Agentspan Skill System** (Skill Management)
 
-- **Repository:** https://github.com/agentspan-ai/agentspan
+- **Repository:** <https://github.com/agentspan-ai/agentspan>
 - **Why use instead of build:** Mature skill management and retrieval system with flexible on-demand loading
 - **Key features:**
   - Skill discovery and management
@@ -82,7 +82,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 4. **Crit Review System** (Developer Experience)
 
-- **Repository:** https://github.com/tomasz-tomczyk/crit
+- **Repository:** <https://github.com/tomasz-tomczyk/crit>
 - **Why use instead of build:** Dedicated browser-based code review
 - **Key features:**
   - Browser-based review UI with persistent tabs
@@ -100,7 +100,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 5. **Varlock Config Security** (Secrets Management)
 
-- **Repository:** https://github.com/dmno-dev/varlock
+- **Repository:** <https://github.com/dmno-dev/varlock>
 - **Why use instead of build:** Schema-first secrets for AI safety
 - **Key features:**
   - **Agents read schema, never secrets**
@@ -120,7 +120,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 6. **Models.dev Model Database** (Model Selection - CRITICAL)
 
-- **Repository:** https://models.dev (API at https://models.dev/api.json)
+- **Repository:** <https://models.dev> (API at <https://models.dev/api.json>)
 - **Why use instead of build:** Comprehensive open-source database with 100+ providers and model specifications
 - **Currently missing:** No model metadata, no cost data, no capability matching
 - **Key features:**
@@ -143,7 +143,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 7. **Honker SQLite Extension** (Memory Pub/Sub - CRITICAL)
 
-- **Repository:** https://github.com/russellromney/honker
+- **Repository:** <https://github.com/russellromney/honker>
 - **Why use instead of build:** SQLite extension with pub/sub, task queues, event streams
 - **Current Agentsy gap:** SQLite memory used but no pub/sub or task queue
 - **Key features:**
@@ -172,7 +172,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 8. **mcp-rag-server** (Knowledge Base Enhancement - PRIMARY RAG CHOICE)
 
-- **Repository:** https://github.com/agarwalvishal/mcp-rag-server
+- **Repository:** <https://github.com/agarwalvishal/mcp-rag-server>
 - **Why use instead of build:** Zero-ceremony RAG setup with auto-ingestion, MCP-native design
 - **Current Agentsy gap:** Complex RAG setup, manual indexing required
 - **Key features:**
@@ -197,7 +197,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 9. **tldw_server RAG Server** (Retrieval Enhancement - SECONDARY CHOICE IF NEEDED)
 
-- **Repository:** https://github.com/rmusser01/tldw_server
+- **Repository:** <https://github.com/rmusser01/tldw_server>
 - **Why consider only if needed:** Multi-provider RAG with media analysis capabilities
 - **Current Agentsy gap:** Limited retrieval, no media analysis
 - **Key features:**
@@ -222,7 +222,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 10. **Unified Tools via mirage** (Tool Unification)
 
-- **Repository:** https://github.com/strukto-ai/mirage
+- **Repository:** <https://github.com/strukto-ai/mirage>
 - **Why use instead of build:** Unified filesystem abstraction for tool access
 - **Current Agentsy gap:** Tool access scattered across providers; context switching complex
 - **Key features:**
@@ -244,7 +244,7 @@ After comprehensive analysis of 80+ repositories and standards, Agentsy's curren
 
 #### 10. **mcp-rag-server** (Knowledge Base Enhancement)
 
-- **Repository:** https://github.com/agarwalvishal/mcp-rag-server
+- **Repository:** <https://github.com/agarwalvishal/mcp-rag-server>
 - **Why use instead of build:** Zero-ceremony RAG setup with auto-ingestion
 - **Current Agentsy gap:** Complex RAG setup, manual indexing required
 - **Key features:**
@@ -675,7 +675,7 @@ By integrating honker, tldw_server, mcp-rag-server, and mirage, Agentsy gains:
 
 This positions Agentsy as a **comprehensive agent platform** with superior coordination, retrieval, and tooling capabilities, differentiated by privacy-first design and efficiency across all dimensions.
 
-- **Repository:** https://models.dev (API at https://models.dev/api.json)
+- **Repository:** <https://models.dev> (API at <https://models.dev/api.json>)
 - **Why use instead of build:** Comprehensive open-source database with 100+ providers and model specifications
 - **Currently missing:** No model metadata, no cost data, no capability matching
 - **Key features:**
@@ -698,7 +698,7 @@ This positions Agentsy as a **comprehensive agent platform** with superior coord
 
 #### 7. **Flue Agent Framework Architecture** (Framework Design)
 
-- **Repository:** https://github.com/withastro/flue
+- **Repository:** <https://github.com/withastro/flue>
 - **Why use patterns instead of build:** Mature agent framework patterns we can adopt
 - **Key innovations:**
   - Virtual sandbox (just-bash) by default, containers only when needed
@@ -719,7 +719,7 @@ This positions Agentsy as a **comprehensive agent platform** with superior coord
 
 #### 8. **Maki Tooling Framework** (Tool Architecture)
 
-- **Repository:** https://github.com/tontinton/maki
+- **Repository:** <https://github.com/tontinton/maki>
 - **Why use instead of build:** Token-efficient tool design
 - **Key innovations:**
   - Tree-sitter `index` tool (59 tok cost, saves 224 tok on reads)
@@ -736,7 +736,7 @@ This positions Agentsy as a **comprehensive agent platform** with superior coord
 
 #### 7. **Marmot Learning System** (Adaptive Behavior)
 
-- **Repository:** https://github.com/marmotdata/marmot
+- **Repository:** <https://github.com/marmotdata/marmot>
 - **Why use instead of build:** Continual learning optimization
 - **Key features:**
   - Interaction-based learning system

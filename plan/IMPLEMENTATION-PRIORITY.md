@@ -635,37 +635,42 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 ### Week-by-Week Breakdown
 
 **Phase 0: Token Reduction (Weeks 1-4)**
-| Week | Focus | Target | Success Metric |
-|------|-------|--------|----------------|
-| 1-2 | Output compression | 75% savings | Benchmark validation passed |
-| 3-4 | Memory compression | 46% savings | 5-file benchmark passed |
 
-**Phase 1: Core Memory (Weeks 1-8)**  
-| Week | Focus | Target | Success Metric |
-|------|-------|--------|----------------|
-| 1-2 | Honker integration | 1-5ms latency | Cross-process coordination verified |
-| 3-4 | Foundation storage | 6-tier foundation | Basic memory system functional |
-| 5-6 | Vector search | Basic vector DB | Vector search functional |
-| 7-8 | Foundation completion | Production ready | Ready for external use |
+| Week | Focus              | Target      | Success Metric              |
+| ---- | ------------------ | ----------- | --------------------------- |
+| 1-2  | Output compression | 75% savings | Benchmark validation passed |
+| 3-4  | Memory compression | 46% savings | 5-file benchmark passed     |
+
+**Phase 1: Core Memory (Weeks 1-8)**
+
+| Week | Focus                 | Target            | Success Metric                      |
+| ---- | --------------------- | ----------------- | ----------------------------------- |
+| 1-2  | Honker integration    | 1-5ms latency     | Cross-process coordination verified |
+| 3-4  | Foundation storage    | 6-tier foundation | Basic memory system functional      |
+| 5-6  | Vector search         | Basic vector DB   | Vector search functional            |
+| 7-8  | Foundation completion | Production ready  | Ready for external use              |
 
 **Phase 2: Turso Sync (Weeks 5-12)**
-| Week | Focus | Target | Success Metric |
-|------|-------|--------|----------------|
-| 5-6 | Turso integration | Cloud sync | Local-remote sync works |
-| 7-8 | Production features | Production ready | Security and monitoring |
 
-**Phase 3: RAG Enhancement (Weeks 9-18)**  
-| Week | Focus | Target | Success Metric |
-|------|-------|--------|----------------|
-| 9-12 | mcp-rag-server | Knowledge base | RAG integration functional |
-| 13-16 | Advanced retrieval | Enhanced search | Advanced features work |
+| Week | Focus               | Target           | Success Metric          |
+| ---- | ------------------- | ---------------- | ----------------------- |
+| 5-6  | Turso integration   | Cloud sync       | Local-remote sync works |
+| 7-8  | Production features | Production ready | Security and monitoring |
+
+**Phase 3: RAG Enhancement (Weeks 9-18)**
+
+| Week  | Focus              | Target          | Success Metric             |
+| ----- | ------------------ | --------------- | -------------------------- |
+| 9-12  | mcp-rag-server     | Knowledge base  | RAG integration functional |
+| 13-16 | Advanced retrieval | Enhanced search | Advanced features work     |
 
 **Phase 4: Advanced Features (Weeks 13-20)**
-| Week | Focus | Target | Success Metric |
-|------|-------|--------|----------------|
-| 13-14 | AgentFS integration | Filesystem | AgentFS functional |
-| 15-16 | Content addressing | Deduplication | Sub-10ms lookups |
-| 17-18 | Virtual sandbox | 90% savings | 10x faster startup |
+
+| Week  | Focus               | Target        | Success Metric     |
+| ----- | ------------------- | ------------- | ------------------ |
+| 13-14 | AgentFS integration | Filesystem    | AgentFS functional |
+| 15-16 | Content addressing  | Deduplication | Sub-10ms lookups   |
+| 17-18 | Virtual sandbox     | 90% savings   | 10x faster startup |
 
 ---
 
@@ -873,7 +878,7 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 **Accuracy Concerns:**
 
 - **Risk:** Compression could lose technical details
-- ** mitigation:** 100% of technical accuracy validated, preservation rules
+- **mitigation:** 100% of technical accuracy validated, preservation rules
 
 ### Phase 1 Risks
 

@@ -36,6 +36,7 @@ fallow dead-code --format json --quiet
 ```
 
 Only create a config when you need to:
+
 - Change rule severity levels for incremental adoption
 - Add custom ignore patterns or ignore dependencies
 - Specify additional entry points not auto-detected
@@ -582,7 +583,7 @@ Both require a `GITLAB_TOKEN` CI/CD variable (project access token with `api` sc
 
 `fallow license refresh` and `fallow license activate --trial` can fail with a backend error. The CLI always appends the raw HTTP status and the backend error code after the human hint, so scripts can grep for the code without parsing prose:
 
-```
+```text
 fallow license refresh: your stored license is too stale to refresh. Reactivate with: fallow license activate --trial --email <addr> (HTTP 401, code token_stale)
 ```
 

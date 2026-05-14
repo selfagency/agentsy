@@ -249,7 +249,7 @@ export class RetrievalEngine {
     const wordMatches = queryLower.split(/\s+/).filter(word => contentLower.includes(word)).length;
 
     if (exactMatch) {
-      return 1.0;
+      return 1;
     }
 
     return wordMatches / Math.max(queryLower.split(/\s+/).length, 1);

@@ -8,7 +8,7 @@ This document provides the complete architecture for the 5-tier memory system th
 
 ## System Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Agent Environment                          │
 │  (Events, User Input, Tool Output, System Messages)            │
@@ -272,7 +272,7 @@ interface LongTermMemory {
 
 ### Bridge Architecture
 
-```
+```text
           ┌─────────────────────────────────────────┐
           │            Bridge System                │
           │                                         │
@@ -305,19 +305,19 @@ Each bridge contains:
 
 ### Compression Pipeline
 
-```
+```text
 Raw Events → Chunking → Compression → Working Memory
 ```
 
 ### Synthesis Pipeline
 
-```
+```text
 Working Memory → Synthesis → Short-Term Memory
 ```
 
 ### Summarization Pipeline
 
-```
+```text
 Short-Term Memory → Summarization → Long-Term Memory
 ```
 
@@ -360,7 +360,7 @@ interface AgentLifecycle {
 
 ## Performance Flow Diagram
 
-```
+```text
 Event Input → Sensory Buffer (1ms) → Sensory Register (2ms) →
 Working Memory (5ms) → Short-Term (10ms) → Long-Term (50ms) →
 Complete Consolidation (200ms max)
@@ -372,7 +372,7 @@ Complete Consolidation (200ms max)
 
 ### Write Pattern
 
-```
+```text
 1. Sensory: fast, single-pass
 2. Sensory Register: concurrent, multi-modal
 3. Working: chunk-based, compressed
@@ -382,7 +382,7 @@ Complete Consolidation (200ms max)
 
 ### Read Pattern
 
-```
+```text
 1. Query generation
 2. Multi-filter application
 3. Tier-specific retrieval

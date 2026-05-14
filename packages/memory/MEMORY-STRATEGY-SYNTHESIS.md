@@ -112,7 +112,7 @@ This document synthesizes the best strategies from 12 source materials into a un
 
 ### Data Structures
 
-```
+```text
 Event: { timestamp, type, content, source, metadata }
 Chunk: { id, content, tokens, importance, expiration }
 Memory: { id, content, type, tier importance, timestamps, references }

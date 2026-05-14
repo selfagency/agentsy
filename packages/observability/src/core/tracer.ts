@@ -7,6 +7,7 @@
 import type { SpanId, TraceId } from '@agentsy/types';
 import * as api from '@opentelemetry/api';
 import type { Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
+import type { AttributeValue } from '../core/types.js';
 
 /**
  * Internal span implementation
@@ -17,7 +18,7 @@ export class InternalSpan implements Span {
   readonly parentId?: SpanId;
   readonly name: string;
 
-  private readonly _attributes: Record<string, string | number | boolean | string[]> = {};
+  private readonly _attributes: Record<string, AttributeValue> = {};
   private _status: 'ok' | 'error' = 'ok';
   private readonly _events: SpanEvent[] = [];
   private readonly _startTime: number;

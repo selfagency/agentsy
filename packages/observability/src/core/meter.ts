@@ -6,14 +6,13 @@
 
 import * as api from '@opentelemetry/api';
 import type { Counter, Gauge, Histogram, Meter, MetricOptions, ObservableGauge } from '../core/types.js';
+import type { AttributeValue } from '../core/types.js';
 
 /**
  * Base implementation for shared utility methods
  */
 abstract class BaseMetric {
-  protected _otelAttributesToAttributes(
-    attributes: Record<string, string | number | boolean | string[]>,
-  ): api.Attributes {
+  protected _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): api.Attributes {
     return attributes;
   }
 }
