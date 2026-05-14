@@ -1,0 +1,28 @@
+{
+  "name": "@agentsy/mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol integration for LLM tool invocation and resource审判",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@agentsy/types": "workspace:^"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^3.0.0"
+  }
+}
