@@ -1,11 +1,11 @@
 /**
  * Core Observability Types
- * 
+ *
  * Defines the fundamental interfaces for the observability engine including
  * ObservabilityEngine, AgentSpan, and supporting types.
  */
 
-import type { TraceId, SpanId } from '@agentsy/types';
+import type { SpanId, TraceId } from '@agentsy/types';
 
 /**
  * Core observability engine that provides tracing, metrics, and logging capabilities.
@@ -144,7 +144,11 @@ export interface Meter {
    * Creates an observable gauge that yields values from a callback.
    * Useful for metrics that must be actively measured.
    */
-  createObservableGauge(name: string, options?: MetricOptions, callback: (observable: ObservableGauge) => void): ObservableGauge;
+  createObservableGauge(
+    name: string,
+    callback: (observable: ObservableGauge) => void,
+    options?: MetricOptions,
+  ): ObservableGauge;
 }
 
 /**
@@ -203,7 +207,7 @@ export interface Gauge {
    * Records a value to this gauge
    * @param amount - The value to record
    * * 额外属性关联数据
-   * 
+   *
    * In English: Additional attributes to associate with this recording
    */
   record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
@@ -212,13 +216,13 @@ export interface Gauge {
    * @param amount - Optional amount to increment by
    * @param attributes - Optional attributes to add
    */
-  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void);
+  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
   /**
    * Decrements the gauge by the specified amount
    * @param amount - Optional amount to decrement by
    * @param attributes - 额外属性
    */
-  decrement(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void);
+  decrement(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
 }
 
 /**
@@ -229,7 +233,7 @@ export interface ObservableGauge {
    * Records a single observation for this observable gauge
    * @param amount - 值
    * * 额外属性
-   * 
+   *
    * In English: Additional attributes to associate with this recording
    */
   record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;

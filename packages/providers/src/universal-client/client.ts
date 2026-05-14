@@ -4,25 +4,9 @@
  * Unified client abstractions for provider integration.
  */
 
-import type {
-  CompletionRequest,
-  CompletionResponse,
-  NormalizedChunk,
-} from '@agentsy/types';
-import type { UsageInfo } from '@agentsy/types';
+import type { CompletionRequest, CompletionResponse, NormalizedChunk, UsageInfo } from '@agentsy/types';
 import { ReadableStream } from 'node:stream/web';
-import {
-  normalizeAnthropicEvent,
-  normalizeBedrockConverseEvent,
-  normalizeCohereEvent,
-  normalizeGeminiChunk,
-  normalizeHuggingFaceTGIChunk,
-  normalizeMistralChunk,
-  normalizeOllamaChatChunk,
-  normalizeOpenAIChatChunk,
-  normalizeZAiChunk,
-} from '../normalizers/index.js';
-import { createPipeline, type PipelineOptions, type NormalizerProvider } from '../pipeline/index.js';
+import { createPipeline, type NormalizerProvider } from '../pipeline/index.js';
 
 /**
  * Configuration options for a UniversalClient instance.
@@ -50,24 +34,21 @@ export interface UniversalClientConfig {
  * Provider endpoint URLs.
  */
 const PROVIDER_ENDPOINTS: Record<NormalizerProvider, string> = {
-  'openai': 'https://api.openai.com/v1/chat/completions',
-  'anthropic': 'https://api.anthropic.com/v1/messages',
-  'gemini': 'https://generativelanguage.googleapis.com/v1beta/models',
-  'bedrock': 'https://bedrock-runtime.amazonaws.com',
-  'mistral': 'https://api.mistral.ai/v1/chat/completions',
-  'ollama': 'http://localhost:11434/api/chat',
-  'cohere': 'https://api.cohere.com/v1/chat',
+  openai: 'https://api.openai.com/v1/chat/completions',
+  anthropic: 'https://api.anthropic.com/v1/messages',
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/models',
+  bedrock: 'https://bedrock-runtime.amazonaws.com',
+  mistral: 'https://api.mistral.ai/v1/chat/completions',
+  ollama: 'http://localhost:11434/api/chat',
+  cohere: 'https://api.cohere.com/v1/chat',
   'hugging-face': 'https://api-inference.huggingface.co/models',
-  'zai': 'https://api.zai.com/v1/chat',
+  zai: 'https://api.zai.com/v1/chat',
 };
 
 /**
  * Convert CompletionRequest to provider-specific request format.
  */
-function toProviderRequest(
-  request: CompletionRequest,
-  provider: NormalizerProvider,
-): Record<string, unknown> {
+function toProviderRequest(request: CompletionRequest, provider: NormalizerProvider): Record<string, unknown> {
   switch (provider) {
     case 'openai':
     case 'anthropic':
@@ -173,17 +154,12 @@ function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown
   };
 }
 
-function parseProviderResponse(
-  response: unknown,
-  provider: NormalizerProvider,
-): CompletionResponse {
+function parseProviderResponse(response: unknown, _provider: NormalizerProvider): CompletionResponse {
   const data = response as Record<string, unknown>;
 
   if ('choices' in data && Array.isArray(data.choices) && data.choices.length > 0) {
     const choice = data.choices[0] as Record<string, unknown>;
-    const content = choice.message as
-      | { content: string }
-      | { content?: { parts?: Array<{ text?: string }> } };
+    const content = choice.message as { content: string } | { content?: { parts?: Array<{ text?: string }> } };
 
     const usage: UsageInfo | undefined =
       data.usage && typeof data.usage === 'object'
@@ -204,9 +180,10 @@ function parseProviderResponse(
         : undefined;
 
     const result: CompletionResponse = {
-      content: typeof content.content === 'string'
-        ? content.content
-        : content.content?.parts?.map(p => p.text).join('') ?? '',
+      content:
+        typeof content.content === 'string'
+          ? content.content
+          : (content.content?.parts?.map(p => p.text).join('') ?? ''),
     };
 
     if (usage) {
@@ -226,7 +203,7 @@ function parseProviderResponse(
 
   return {
     content: typeof data.content === 'string' ? data.content : JSON.stringify(data),
-};
+  };
 }
 
 /**
@@ -286,9 +263,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Provider request failed: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Provider request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -305,23 +280,18 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Provider stream request failed: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Provider stream request failed: ${response.status} ${response.statusText}`);
       }
 
-const pipeline = createPipeline(
-        response.body!,
-        {
-          provider,
-          maxJsonDepth: 64,
-          maxJsonKeys: 10000,
-          knownTools: new Set(),
-          parseThinkTags: false,
-          modelId: request.model,
-          scrubContextTags: false,
-        }
-      );
+      const pipeline = createPipeline(response.body!, {
+        provider,
+        maxJsonDepth: 64,
+        maxJsonKeys: 10000,
+        knownTools: new Set(),
+        parseThinkTags: false,
+        modelId: request.model,
+        scrubContextTags: false,
+      });
 
       const chunks: NormalizedChunk[] = [];
       for await (const event of pipeline) {
@@ -338,7 +308,7 @@ const pipeline = createPipeline(
 
       const stream = new ReadableStream<NormalizedChunk>({
         async start(controller) {
-          for await (const chunk of chunks) {
+          for (const chunk of chunks) {
             controller.enqueue(chunk);
           }
           controller.close();
@@ -351,7 +321,7 @@ const pipeline = createPipeline(
 }
 
 function buildHeaders(
-  provider: NormalizerProvider,
+  _provider: NormalizerProvider,
   apiKey?: string,
   organizationId?: string,
   stream?: boolean,
@@ -361,11 +331,10 @@ function buildHeaders(
   };
 
   if (apiKey) {
-    switch (provider) {
+    switch (_provider) {
       case 'openai':
         headers['Authorization'] = `Bearer ${apiKey}`;
-        if (organizationId)
-          headers['OpenAI-Organization'] = organizationId;
+        if (organizationId) headers['OpenAI-Organization'] = organizationId;
         break;
       case 'anthropic':
         headers['x-api-key'] = apiKey;
@@ -381,24 +350,4 @@ function buildHeaders(
   }
 
   return headers;
-}
-
-function executableStream(
-  stream: ReadableStream<NormalizedChunk>
-): ReadableStream<NormalizedChunk> {
-  return stream;
-}
-
-/**
- * Extracts ProcessorOptions from a CompletionRequest for use in createPipeline.
- */
-function extractProcessorOptions(request: CompletionRequest): Partial<PipelineOptions> {
-  return {
-    knownTools: new Set(),
-    parseThinkTags: false,
-    modelId: request.model,
-    scrubContextTags: false,
-    maxJsonDepth: 64,
-    maxJsonKeys: 10000,
-  };
 }

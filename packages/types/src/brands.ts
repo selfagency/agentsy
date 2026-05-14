@@ -21,6 +21,11 @@ export type SessionId = string & { readonly __brand: unique symbol };
 export type TraceId = string & { readonly __brand: unique symbol };
 
 /**
+ * Unique identifier for a span within a trace.
+ */
+export type SpanId = string & { readonly __brand: unique symbol };
+
+/**
  * Unique identifier for a tool or function.
  */
 export type ToolId = string & { readonly __brand: unique symbol };
@@ -52,6 +57,13 @@ export function createTraceId(): TraceId {
 }
 
 /**
+ * Creates a branded SpanId.
+ */
+export function createSpanId(): SpanId {
+  return `span_${crypto.randomUUID()}` as SpanId;
+}
+
+/**
  * Creates a branded ToolId.
  */
 export function createToolId(): ToolId {
@@ -78,6 +90,10 @@ export function isSessionId(value: unknown): value is SessionId {
 
 export function isTraceId(value: unknown): value is TraceId {
   return typeof value === 'string' && value.startsWith('trace_');
+}
+
+export function isSpanId(value: unknown): value is SpanId {
+  return typeof value === 'string' && value.startsWith('span_');
 }
 
 export function isToolId(value: unknown): value is ToolId {

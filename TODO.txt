@@ -1,5 +1,5 @@
 # @agentsy Monorepo TODO
-# Revised: Wed May 13 2026
+# Revised: Thu May 14 2026
 # Status: Plan-state completely reconciled | Foundation work prioritization in progress
 #
 # Based on: plan/REVIEW.md (Complete package-by-package analysis)
@@ -22,6 +22,14 @@
 2. @agentsy/core/universal-client (blocking providers) - placeholder only
 3. @agentsy/runtime (blocking orchestrator integration) - misimplemented purpose
 
+**Recommended Ecosystem Anchors**:
+- Observability: OpenTelemetry baseline with Tapes/Opik-style replay and evaluation hooks
+- Durable execution: Hatchet/Agentspan/Chidori patterns for checkpoints, resume, and distributed work
+- Retrieval and memory: local-first search with optional R2R/Mem0-shaped adapters
+- Interoperability: MCP, ACP, A2A, A2UI, Skills Protocol, and Ratify as explicit bridge targets
+- Prompt efficiency: CacheLLM-style prompt caching middleware at the provider boundary
+- Scheduling/orchestration: Bernstein-style deterministic planning plus Rivet/Yao-inspired event hooks
+
 **Packages Needing Manifests** (currently plan-only directories but should be implemented):
 - @agentsy/connectors (10% complete, needs gateway coordination, Discord/Slack/Telegram adapters)
 - @agentsy/guardrails (23% complete, types only, needs runtime implementations)
@@ -31,6 +39,8 @@
 **Implementation Philosophy**:
 - All 23 packages are equally important and should be fully implemented
 - Priority is based on critical gaps and dependency blocking, not plan vs implementation status
+- Prefer thin adapters over bespoke reimplementation when a mature external protocol or library already covers the need
+- Keep package plans explicit about which external standards are being targeted and which behaviors remain Agentsy-specific
 
 ====================================================================
 

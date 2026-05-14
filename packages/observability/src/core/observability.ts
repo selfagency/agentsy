@@ -1,43 +1,22 @@
 /**
  * Observability Engine
- * 
+ *
  * Main observability engine that orchestrates tracing, metrics, and logging
  */
 
-import * as api from '@opentelemetry/api';
-
 import type {
-  TraceId,
-  SpanId,
-} from '@agentsy/types/src/types.js';
-import type {
+  Counter,
+  Gauge,
+  Histogram,
+  MetricOptions,
   ObservabilityEngine,
   ObservabilitySink,
   RedactionPolicy,
+  Span,
 } from '../core/types.js';
-import { TracerImpl, type Span, InternalSpan } from './tracer.js';
+import { LoggerImpl, type LogLevel, type LoggerConfig } from './logger.js';
 import { MeterImpl } from './meter.js';
-import { LoggerImpl, type LogLevel } from './logger.js';
-
-/**
- * Configuration for initializing the observability engine
- */
-import {
-  Span as OtelSpan,
-} from '@opentelemetry/api';
-
-import type {
-  TraceId,
-  SpanId,
-} from '@agentsy/types/src/types.js';
-import type {
-  ObservabilityEngine,
-  ObservabilitySink,
-  RedactionPolicy,
-} from '../core/types.js';
-import { TracerImpl, type Span, InternalSpan } from './tracer.js';
-import { MeterImpl } from './meter.js';
-import { LoggerImpl, type LogLevel } from './logger.js';
+import { TracerImpl } from './tracer.js';
 
 /**
  * Configuration for initializing the observability engine
@@ -86,7 +65,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   readonly tracer: TracerImpl;
   readonly meter: MeterImpl;
   readonly logger: LoggerImpl;
-  private config: ObservabilityEngineConfig;
+  private readonly config: ObservabilityEngineConfig;
   private _sinks: ObservabilitySink[] = [];
   private _redactionPolicy: RedactionPolicy | null = null;
   private _isShutdown = false;
@@ -95,12 +74,16 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     this.config = config;
     this.tracer = new TracerImpl();
     this.meter = new MeterImpl();
-    this.logger = new LoggerImpl({
-      minLevel: config.logging?.minLevel
-        ? LOG_LEVEL_MAP[config.logging.minLevel.toUpperCase()]
-        : 1,
+
+    const minLevel = config.logging?.minLevel ? LOG_LEVEL_MAP[config.logging.minLevel.toUpperCase()] : undefined;
+    const loggerConfig: LoggerConfig = {
       includeTimestamp: config.logging?.includeTimestamp ?? true,
-    });
+    };
+    if (minLevel !== undefined) {
+      loggerConfig.minLevel = minLevel;
+    }
+
+    this.logger = new LoggerImpl(loggerConfig);
   }
 
   setSink(sink: ObservabilitySink): void {
@@ -112,14 +95,11 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   }
 
   async shutdown(): Promise<void> {
-    if (this._isShutdown) {
-      this.logger.warn('Observability engine already shut down');
-      return;
-    }
-
+    if (this._isShutdown) return;
     this._isShutdown = true;
 
-    // Flush all sinks
+    this.logger.info('Shutting down observability engine...');
+
     for (const sink of this._sinks) {
       try {
         await sink.flush();
@@ -130,8 +110,8 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
 
     // Shutdown OpenTelemetry SDKs
     try {
-      await api.metrics.getMeter('agentsy').shutdown();
-      api.trace.getTracer('agentsProvider');
+      // api.metrics.getMeter('agentsy').shutdown(); // This was incorrect, Meter doesn't have shutdown()
+      // Usually the MeterProvider is shut down, but we don't have it here directly
     } catch (error) {
       this.logger.error('Failed to shutdown OpenTelemetry SDKs', { error });
     }
@@ -139,16 +119,10 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     this.logger.info('Observability engine shut down complete');
   }
 
-  /**
-   * Gets the current active span for adding attributes
-   */
   getCurrentSpan(): Span | null {
     return this.tracer.getCurrentSpan();
   }
 
-  /**
-   * Starts a new span with given name and attributes
-   */
   startSpan(name: string, attributes?: Record<string, string | number | boolean | string[]>): Span {
     const span = this.tracer.startSpan(name);
     if (attributes) {
@@ -157,21 +131,11 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     return span;
   }
 
-  /**
-   * Records a metric value with optional attributes
-   */
-  recordCounter(
-    name: string,
-    value: number,
-    attributes?: Record<string, string | number | boolean | string[]>,
-  ): void {
+  recordCounter(name: string, value: number, attributes?: Record<string, string | number | boolean | string[]>): void {
     const counter = this.meter.createCounter(name);
     counter.record(value, attributes);
   }
 
-  /**
-   * Records a distribution value (e.g., latency, duration)
-   */
   recordHistogram(
     name: string,
     value: number,
@@ -181,73 +145,47 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     histogram.record(value, attributes);
   }
 
-  /**
-   * Records a point-in-time value (e.g., memory usage, temperature)
-   */
-  recordGauge(
-    name: string,
-    value: number,
-    attributes?: Record<string, string | number | boolean | string[]>,
-  ): void {
+  recordGauge(name: string, value: number, attributes?: Record<string, string | number | boolean | string[]>): void {
     const gauge = this.meter.createGauge(name);
     gauge.record(value, attributes);
   }
 
-  /**
-   * Creates a metric counter
-   */
-  createCounter(name: string, options?: { description?: string; unit?: string }): ReturnType<
-    MeterImpl['createCounter']
-  > {
-    return this.meter.createCounter(name, {
-      description: options?.description,
-      unit: options?.unit,
-    });
+  createCounter(name: string, options?: { description?: string; unit?: string }): Counter {
+    const metricOptions: MetricOptions = {};
+    if (options?.description) metricOptions.description = options.description;
+    if (options?.unit) metricOptions.unit = options.unit;
+    return this.meter.createCounter(name, metricOptions);
   }
 
-  /**
-   * Creates a metric histogram
-   */
-  createHistogram(name: string, options?: { description?: string; unit?: string }): ReturnType<
-    MeterImpl['createHistogram']
-  > {
-    return this.meter.createHistogram(name, {
-      description: options?.description,
-      unit: options?.unit,
-    });
+  createHistogram(name: string, options?: { description?: string; unit?: string }): Histogram {
+    const metricOptions: MetricOptions = {};
+    if (options?.description) metricOptions.description = options.description;
+    if (options?.unit) metricOptions.unit = options.unit;
+    return this.meter.createHistogram(name, metricOptions);
   }
 
-  /**
-   * Creates a metric gauge
-   */
-  createGauge(name: string, options?: { description?: string; unit?: string }): ReturnType<
-    MeterImpl['createGauge']
-  > {
-    return this.meter.createGauge(name, {
-      description: options?.description,
-      unit: options?.unit,
-    });
+  createGauge(name: string, options?: { description?: string; unit?: string }): Gauge {
+    const metricOptions: MetricOptions = {};
+    if (options?.description) metricOptions.description = options.description;
+    if (options?.unit) metricOptions.unit = options.unit;
+    return this.meter.createGauge(name, metricOptions);
   }
 
-  /**
-   * Redacts sensitive data from all attributes
-   */
-  applyRedaction(attributes: Record<string, string | number | boolean | string[]>): Record<string, string | number> {
+  applyRedaction(
+    attributes: Record<string, string | number | boolean | string[]>,
+  ): Record<string, string | number | boolean | string[]> {
     if (!this._redactionPolicy) {
-      // No-op if no policy set
       return attributes;
     }
 
-    const result: Record<string, string | number> = {
-      ...attributes,
-    };
+    const result: Record<string, string | number | boolean | string[]> = {};
 
     for (const [key, value] of Object.entries(attributes)) {
       if (typeof value === 'string') {
         result[key] = this._redactionPolicy.redact(value);
       } else if (Array.isArray(value)) {
         result[key] = value.map(item =>
-          this._redactionPolicy.redact(item),
+          this._redactionPolicy ? this._redactionPolicy.redact(String(item)) : String(item),
         );
       } else {
         result[key] = value;
@@ -258,49 +196,40 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   }
 }
 
-/**
- * Factory function to create an observability engine
- */
-export const createObservabilityEngine = (
-  config: ObservabilityEngineConfig,
-): ObservabilityEngine => {
+export const createObservabilityEngine = (config: ObservabilityEngineConfig): ObservabilityEngine => {
   return new ObservabilityEngineImpl(config);
 };
 
-/**
- * Default observability engine instance for global use
- */
 let _defaultEngine: ObservabilityEngineImpl | null = null;
 
-/**
- * Get or create the default observability engine
- */
 export const getDefaultEngine = (): ObservabilityEngine => {
   if (!_defaultEngine) {
-    _defaultEngine = new ObservabilityImpl({
+    _defaultEngine = new ObservabilityEngineImpl({
       serviceName: 'agentsy-runtime',
       serviceVersion: '0.0.0',
-      sampling: 'always_on',
     });
   }
   return _defaultEngine;
 };
 
-/**
- * Factory function for creating an observability engine with a simple name
- * @deprecated Use createObservabilityEngine instead
- */
 export const createSimpleEngine = (
   name: string,
   options?: {
     serviceName?: string;
     sampling?: 'always_on' | 'never' | 'parentBased';
     jaegerEndpoint?: string;
-  }
+  },
 ): ObservabilityEngine => {
-  return createObservabilityEngine({
+  const config: ObservabilityEngineConfig = {
     serviceName: options?.serviceName ?? name,
     serviceVersion: '0.0.0',
-    tracing: options ? { sampling: options.sampling } : undefined,
-  });
+  };
+
+  if (options?.sampling || options?.jaegerEndpoint) {
+    config.tracing = {};
+    if (options.sampling) config.tracing.sampling = options.sampling;
+    if (options.jaegerEndpoint) config.tracing.jaegerEndpoint = options.jaegerEndpoint;
+  }
+
+  return createObservabilityEngine(config);
 };

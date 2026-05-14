@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { IndexingPipeline } from '../src/indexing';
-import type { DataSource, ChunkingStrategy } from '../src/types';
+import type { DataSource } from '../src/types';
 
 describe('IndexingPipeline', () => {
   let pipeline: IndexingPipeline;
@@ -9,13 +9,14 @@ describe('IndexingPipeline', () => {
   beforeEach(() => {
     pipeline = new IndexingPipeline({
       chunkSize: 100,
-      chunkOverlap: 20
+      chunkOverlap: 20,
     });
 
     testDataSource = {
       type: 'file',
       path: '/test/file.ts',
-      content: 'This is a test file with multiple sentences. It has enough content to be split into multiple chunks for testing purposes. We want to ensure that the chunking logic works correctly with different strategies.'
+      content:
+        'This is a test file with multiple sentences. It has enough content to be split into multiple chunks for testing purposes. We want to ensure that the chunking logic works correctly with different strategies.',
     };
   });
 
@@ -29,7 +30,7 @@ describe('IndexingPipeline', () => {
       const customPipeline = new IndexingPipeline({
         chunkSize: 200,
         chunkOverlap: 50,
-        semanticThreshold: 0.85
+        semanticThreshold: 0.85,
       });
 
       expect(customPipeline).toBeInstanceOf(IndexingPipeline);
@@ -113,26 +114,24 @@ describe('IndexingPipeline', () => {
       const content = 'One two three four five six seven eight nine ten eleven twelve thirteen';
       const pipelineWithOverlap = new IndexingPipeline({
         chunkSize: 5,
-        chunkOverlap: 2
+        chunkOverlap: 2,
       });
 
       const chunks = await pipelineWithOverlap.fixedSizeChunk(content, testDataSource.path);
 
-      if (chunks.length > 1) {
-        const firstChunkWords = chunks[0].content.split(/\s+/);
-        const secondChunkWords = chunks[1].content.split(/\s+/);
-        // With chunkSize=5 and overlap=2, consecutive chunks share 2 words
-        // Chunk 1: words 0-4, Chunk 2: words 3-7
-        // Overlap: words 3-4 should appear in both
-        const expectedOverlapWords = ['four', 'five'];
-        // Check only the overlap region words
-        const overlapIndex = chunkSize - chunkOverlap - 1; // Position in first chunk where overlap starts
-        const overlapRegionFirst = firstChunkWords.slice(overlapIndex);
+      expect(chunks.length).toBeGreaterThan(1);
+      const firstChunkWords = chunks[0]!.content.split(/\s+/);
+      const secondChunkWords = chunks[1]!.content.split(/\s+/);
+      // With chunkSize=5 and overlap=2, consecutive chunks share 2 words
+      // Chunk 1: words 0-4, Chunk 2: words 3-7
+      // Overlap: words 3-4 should appear in both
+      // Check only the overlap region words
+      const overlapIndex = 5 - 2 - 1; // chunkSize - chunkOverlap - 1
+      const overlapRegionFirst = firstChunkWords.slice(overlapIndex);
 
-        overlapRegionFirst.forEach(word => {
-          expect(secondChunkWords).toContain(word);
-        });
-      }
+      overlapRegionFirst.forEach(word => {
+        expect(secondChunkWords).toContain(word);
+      });
     });
   });
 
@@ -171,7 +170,6 @@ function second() {
       expect(chunks.length).toBeGreaterThan(0);
     });
   });
-  });
 
   // Note: fixed-size chunking has implicit overlap of 2-3 words based on word boundaries
   describe('index', () => {
@@ -191,8 +189,7 @@ function second() {
       const doc1 = pipeline.index(chunks1);
       const doc2 = pipeline.index(chunks2);
 
-expect(doc1.id).toBe(doc2.id);
+      expect(doc1.id).toBe(doc2.id);
     });
   });
-});
 });

@@ -45,6 +45,17 @@ The package fulfills its role by implementing a high-performance RAG engine:
 - **Fusion Logic**: Implements RRF (Reciprocal Rank Fusion) to combine results from BM25 (keyword) and Dense Vector (semantic) searches.
 - **Filtering**: Allows agents to restrict search to specific file patterns or time ranges.
 
+### 2.1 Backend strategy and external adapters
+
+Retrieval should stay local-first by default, with small adapter points for managed backends.
+
+- **Primary backend**: SQLite/libSQL + local vector store for deterministic offline workflows.
+- **Managed retrieval adapter**: an R2R-style backend for teams that want hosted ingestion, search, and ranking.
+- **Memory adjacency**: keep cross-session memory semantics in `@agentsy/memory`; retrieval should surface search results and provenance, not become the memory store itself.
+- **Optional replay metadata**: retain source IDs, chunk IDs, and index versioning so replay/debug tools can reconstruct what the engine saw.
+
+If the managed adapter is enabled, it should still expose the same `RetrievalEngine` contract so runtime callers do not need to know which backend is active.
+
 ### 3. Re-ranking (`src/ranking/`)
 
 - **Responsibility**: Precision improvement.
@@ -104,6 +115,12 @@ The `DocumentStore` should support local-first backends like libSQL or SQLite-VE
 ## Sources Synthesized
 
 `agentsy-prd.md`, `agentsy-deep-dive-v2.md`, `agentsy-testing-plan.md`, `research/AGENT-PLATFORMS-ANALYSIS.md`, `packages/retrieval/IMPLEMENTATION-PLAN.md`.
+
+### Planned backend tasks
+
+- Define a `RetrievalBackend` interface that can wrap local SQLite and remote R2R implementations.
+- Preserve RRF and reranking at the engine layer so backend swaps do not change ranking semantics.
+- Add provenance-preserving fixtures that verify backend parity for path, tag, and time-range filters.
 
 ---
 

@@ -1,6 +1,6 @@
 /**
  * Logger Implementation
- * 
+ *
  * Structured logger with multiple severity levels
  */
 
@@ -41,7 +41,7 @@ export interface LogEntry {
  * Logger implementation
  */
 export class LoggerImpl implements Logger {
-  private config: Required<LoggerConfig>;
+  private readonly config: Required<LoggerConfig>;
   private _buffer: LogEntry[] = [];
   private readonly DEFAULT_LEVEL_NAMES: Record<LogLevel, string> = {
     [LogLevel.DEBUG]: 'DEBUG',
@@ -52,10 +52,9 @@ export class LoggerImpl implements Logger {
 
   constructor(config?: LoggerConfig) {
     this.config = {
-      minLevel: LogLevel.INFO,
-      includeTimestamp: true,
-      levelNames: {},
-      ...config,
+      minLevel: config?.minLevel ?? LogLevel.INFO,
+      includeTimestamp: config?.includeTimestamp ?? true,
+      levelNames: { ...this.DEFAULT_LEVEL_NAMES, ...config?.levelNames },
     };
   }
 
@@ -72,20 +71,15 @@ export class LoggerImpl implements Logger {
   }
 
   error(message: string, attributes?: Record<string, unknown>, error?: unknown): void {
-    this.log(LogLevel.ERROR, message, { ...attributes, error } as Record<string, unknown>);
+    this.log(LogLevel.ERROR, message, attributes, error);
   }
 
-  private log(
-    level: LogLevel,
-    message: string,
-    attributes?: Record<string, unknown>,
-  ): void {
+  private log(level: LogLevel, message: string, attributes?: Record<string, unknown>, error?: unknown): void {
     if (level < this.config.minLevel) {
       return; // Below minimum level, skip
     }
 
-    const levelName =
-      this.config.levelNames[level] ?? this.DEFAULT_LEVEL_NAMES[level];
+    const levelName = this.config.levelNames[level] ?? this.DEFAULT_LEVEL_NAMES[level];
     const timestamp = this.config.includeTimestamp ? Date.now() : 0;
 
     const entry: LogEntry = {
@@ -93,21 +87,17 @@ export class LoggerImpl implements Logger {
       levelName,
       message,
       timestamp,
-      attributes,
     };
+
+    if (attributes) entry.attributes = attributes;
+    if (error) entry.error = error;
 
     this._buffer.push(entry);
 
     // For now, just output to console
-    const timestampStr = this.config.includeTimestamp
-      ? new Date(timestamp).toISOString()
-      : '';
+    const timestampStr = this.config.includeTimestamp ? new Date(timestamp).toISOString() : '';
     const prefix = levelName.padEnd(5);
-    console.log(
-      `[${prefix}${timestampStr ? ' ' + timestampStr : ''}] ${message}`,
-      attributes ?? '',
-      entry.error ?? '',
-    );
+    console.log(`[${prefix}${timestampStr ? ' ' + timestampStr : ''}] ${message}`, attributes ?? '', entry.error ?? '');
   }
 
   /**

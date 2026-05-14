@@ -2,8 +2,15 @@
  * Core interfaces for retrieval operations
  */
 
-import type { ChunkingStrategy } from './types.d.ts';
-import type { Chunk, ChunkMetadata, DataSource, SearchResult, Document, RetrievalQuery } from '../types';
+import type {
+  Chunk,
+  ChunkingStrategy,
+  ChunkMetadata,
+  DataSource,
+  Document,
+  RetrievalQuery,
+  SearchResult,
+} from './types.js';
 
 export interface IndexingPipeline {
   /**
@@ -80,8 +87,8 @@ export interface RetrievalResult {
 
 export interface RetrievalEngineCustom {
   /**
-    * Search for relevant chunks based on a query
-    */
+   * Search for relevant chunks based on a query
+   */
   search(query: RetrievalQuery): Promise<SearchResult>;
 
   /**
@@ -132,19 +139,10 @@ export interface RetrievalEngine {
    */
   removePage(id: string): Promise<void>;
 
-/**
+  /**
    * 遗产接口 (保留向后兼容)
    */
   legacyIndexPage?(page: Document): Promise<void>;
-}
-
-export interface RetrievalQuery {
-  query: string;
-  topK?: number;
-  minSimilarity?: number;
-  sourcePath?: string;
-  dateRange?: { from?: string; to?: string };
-  tags?: string[];
 }
 
 export interface RetrievalResult {

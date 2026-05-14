@@ -79,6 +79,15 @@ The package fulfills its role by implementing a stateful agent loop with the fol
 - **Responsibility**: Real-time state synchronization.
 - **Protocol**: Emits events for step start, tool selection, thought block updates, and incremental text deltas, allowing UIs to show exactly what the agent is "thinking."
 
+### 5. Durable execution and replay references
+
+Runtime durability should be designed around checkpoint-and-replay semantics rather than ad hoc state mutation. The useful patterns to mirror are Chidori-style deterministic replay and Agentspan-style durable pause/resume.
+
+- Persist enough loop state to resume after a crash without re-running side effects.
+- Keep tool-call boundaries explicit so a failed turn can be replayed or resumed from the last safe checkpoint.
+- Treat the runtime instance as the owner of its state, which keeps the implementation actor-like without turning the package into a general-purpose workflow engine.
+- If the host application adopts cryptographic approval receipts, expose a compatibility layer rather than baking trust proof mechanics directly into the core loop.
+
 ## Logic & Data Flow
 
 ### 1. The Execution Turn
@@ -144,6 +153,13 @@ Strictly prevent cross-imports between `@agentsy/runtime` and `@agentsy/orchestr
 ### Integration with Core
 
 The runtime consumes `@agentsy/core/processor` and `@agentsy/core/universal-client` as its primary dependencies for interacting with LLMs.
+
+### External patterns to preserve
+
+- **Bernstein-style determinism**: scheduling and coordination decisions should be reproducible, not hidden inside model calls.
+- **Rivet-style ownership**: each runtime instance should own a clear state boundary and communicate through explicit events.
+- **Yao-style hooks**: lifecycle hooks should be able to intercept requests, approvals, and policy decisions without breaking the main loop.
+- **AG-UI compatibility**: runtime event emission should remain transport-agnostic so UI surfaces can subscribe without knowing the execution backend.
 
 ## Sources Synthesized
 

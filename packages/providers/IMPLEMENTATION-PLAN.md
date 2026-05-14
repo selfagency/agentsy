@@ -30,6 +30,21 @@ Use `@agentsy/core/*` subpaths for low-level stream adaptation and normalization
 2. **`@agentsy/core/normalizers`**: standardizing LLM response streams.
 3. **`@agentsy/core/universal-client`**: provider-agnostic completion interface.
 
+### Caching and Request Shaping
+
+Prompt caching belongs at the provider boundary. Keep the provider strategy layer responsible for deciding when a request is stable enough to cache and which cache provider to use.
+
+- Prefer CacheLLM-style middleware for stable system prompts, tool schemas, and long conversation prefixes.
+- Defer to provider-native cache features when they are a better fit, but keep the policy selection centralized here.
+- Never let caching leak into stream normalization or runtime orchestration; those layers should only see normal provider requests and responses.
+
+Recommended cacheable segments:
+
+1. system prompt and policy preamble
+2. stable tool definitions and schemas
+3. repeated conversation prefixes
+4. provider metadata and static routing hints
+
 ## Detailed Functionality (Moved to Core)
 
 The following capabilities have been successfully migrated to `@agentsy/core`:
@@ -73,6 +88,7 @@ interface ProviderStrategy {
 - Capability matrix and fallback-chain policy belong in `@agentsy/providers`.
 - Stream wire adaptation and delta normalization remain exposed from `@agentsy/core` integration subpaths.
 - Keep provider dependency graph acyclic and avoid importing orchestration/runtime concerns into provider strategy code.
+- Prompt caching strategy selection belongs here as well, so provider-specific cache controls remain consistent across adapters.
 
 ---
 

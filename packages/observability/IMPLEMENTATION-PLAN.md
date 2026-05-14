@@ -30,6 +30,16 @@ The package fulfills its role by implementing an OpenTelemetry-compatible observ
 3. **Privacy-safe Redaction**: Automatically scrubs PII and secrets before data hits any external sink.
 4. **Recording & Playback**: Integrates with "Tapes" pattern for deterministic debugging of non-deterministic interactions.
 
+### Recommended external integrations
+
+Observability should stay composable rather than monolithic. The best-fit references are:
+
+- **OpenTelemetry** as the baseline tracing and metrics substrate.
+- **Tapes** for content-addressable session recording, replay, and deterministic debugging of agent interactions.
+- **Opik** for higher-level LLM trace review, experiment tracking, and judge-style evaluation workflows.
+
+The package should expose a redaction-first span processor and sink boundary so those integrations can be used without leaking secrets or raw user content.
+
 ## Detailed Functionality
 
 ### 1. Tracing & Metrics (`src/tracing/`)
@@ -59,6 +69,12 @@ The package fulfills its role by implementing an OpenTelemetry-compatible observ
 
 - **Responsibility**: Preventing credential leakage.
 - **Mechanism**: Global regex-based scrubbers and provider-specific redaction rules (e.g., hiding message content in certain log levels).
+
+### 4.1 Replay and audit notes
+
+- Record enough metadata to reproduce a run without storing raw secrets in the event stream.
+- Keep replay artifacts content-addressable so multiple tools can point at the same execution record.
+- Preserve token and cost attribution at the span level so downstream dashboards can slice by model, session, or tool turn.
 
 ## Logic & Data Flow
 

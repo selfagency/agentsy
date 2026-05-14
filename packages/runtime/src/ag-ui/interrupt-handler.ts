@@ -5,8 +5,8 @@
  * Emits INTERRUPT events to notify frontends of interruption requests.
  */
 
-import type { RunInterruptedEvent } from './types.js';
-import { EventType } from './types.js';
+import type { RunInterruptedEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 
 /**
  * Interrupt reason codes.
@@ -96,23 +96,26 @@ export function createInterruptEvent(
   message?: string,
   threadId?: string,
 ): RunInterruptedEvent {
-  const interrupt = {
+  const interrupt: { id: string; reason: string; options?: { message: string } } = {
     id: `interrupt_${Math.random().toString(36).slice(2, 11)}`,
     reason: String(reason),
-    ...(message !== undefined && { options: { message } }),
   };
+  if (message !== undefined) {
+    interrupt.options = { message };
+  }
 
-  const eventBase = {
-    type: EventType.RUN_INTERRUPTED as const,
+  const event: RunInterruptedEvent = {
+    type: EventType.RUN_INTERRUPTED,
     runId,
     timestamp: new Date().toISOString(),
     interrupts: [interrupt],
   };
 
-  return {
-    ...eventBase,
-    ...(threadId !== undefined && { threadId }),
-  } as RunInterruptedEvent;
+  if (threadId !== undefined) {
+    event.threadId = threadId;
+  }
+
+  return event;
 }
 
 /**

@@ -1,6 +1,32 @@
 {
   "name": "@agentsy/guardrails",
   "version": "0.1.0",
+  "keywords": [
+    "agentsy",
+    "compliance",
+    "content-filtering",
+    "guardrails",
+    "moderation",
+    "pii",
+    "redaction",
+    "safety",
+    "security"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "bugs": {
+    "url": "https://github.com/selfagency/agentsy/issues"
+  },
+  "license": "MIT",
+  "author": "Agentsy contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "packages/guardrails"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -11,10 +37,6 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -24,14 +46,6 @@
   "dependencies": {
     "@agentsy/types": "workspace:*"
   },
-  "peerDependencies": {
-    "openai": "^4"
-  },
-  "peerDependenciesMeta": {
-    "openai": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@types/node": "^25.7.0",
     "@vitest/coverage-v8": "^4.1.6",
@@ -39,26 +53,12 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/selfagencyy/agentsy.git",
-    "directory": "packages/guardrails"
+  "peerDependencies": {
+    "openai": "^6.37.0"
   },
-  "bugs": {
-    "url": "https://github.com/selfagency/agentsy/issues"
-  },
-  "homepage": "https://github.com/selfagency/agentsy#readme",
-  "author": "Agentsy contributors",
-  "license": "MIT",
-  "keywords": [
-    "agentsy",
-    "security",
-    "guardrails",
-    "content-filtering",
-    "moderation",
-    "compliance",
-    "safety",
-    "pii",
-    "redaction"
-  ]
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    }
+  }
 }

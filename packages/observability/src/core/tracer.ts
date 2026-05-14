@@ -1,74 +1,64 @@
 /**
  * Tracer Implementation
- * 
+ *
  * OpenTelemetry-based tracer implementation for distributed tracing
  */
 
+import type { SpanId, TraceId } from '@agentsy/types';
 import * as api from '@opentelemetry/api';
-import {
-  Tracer as OtelTracer,
-} from '@opentelemetry/api';
-
-import type { TraceId, SpanId } from '@agentsy/types';
-import type {
-  Tracer,
-  Span,
-  SpanOptions,
-  SpanLink,
-} from '../core/types.js';
+import type { Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
 
 /**
  * Internal span implementation
  */
-class InternalSpan implements Span {
+export class InternalSpan implements Span {
   readonly traceId: TraceId;
   readonly spanId: SpanId;
   readonly parentId?: SpanId;
   readonly name: string;
-  
-  private _attributes: Record<string, string | number | boolean | string[]> = {};
+
+  private readonly _attributes: Record<string, string | number | boolean | string[]> = {};
   private _status: 'ok' | 'error' = 'ok';
-  private _events: SpanEvent[] = [];
-  private _startTime: number;
+  private readonly _events: SpanEvent[] = [];
+  private readonly _startTime: number;
   private _endTime?: number;
-  private _otelSpan: api.Span;
-  private _context: api.Context;
-  private _children: InternalSpan[] = [];
+  private readonly _otelSpan: api.Span;
+  private readonly _context: api.Context;
+  private readonly _children: InternalSpan[] = [];
   readonly _isRoot: boolean;
   readonly _contextKey: string;
 
-  constructor(
-    name: string,
-    options?: SpanOptions,
-    parent?: InternalSpan,
-    contextKey?: string,
-  ) {
+  constructor(name: string, options?: SpanOptions, parent?: InternalSpan, contextKey?: string) {
     this.name = name;
     this._startTime = options?.startTime ?? Date.now();
-    parent?._children.push(this);
+    if (parent) {
+      parent._children.push(this);
+    }
     this._isRoot = !parent;
-    this._contextKey = contextKey ?? Math.random().toString(36);
-    
+    this._contextKey = contextKey ?? crypto.randomUUID();
+
     const parentContext = parent?._context;
     const otelTracer = api.trace.getTracer('agentsy');
-    this._otelSpan = otelTracer.startSpan(
-      name,
-      options?. attributes
-        ? { attributes: this._otelAttributesToAttributes(options.attributes) }
-        : {},
-      parentContext,
-      options?.startTime ? options.startTime / 1000 : undefined,
-    );
-    
-    this._context = api.trace.setActiveSpan(this._otelSpan, parentContext);
-    
-    // Extract trace/span IDs from the OpenTelemetry span
+
+    const startSpanOptions: api.SpanOptions = {};
+    if (options?.attributes) {
+      startSpanOptions.attributes = this._otelAttributesToAttributes(options.attributes);
+    }
+    if (options?.startTime) {
+      startSpanOptions.startTime = options.startTime;
+    }
+
+    this._otelSpan = otelTracer.startSpan(name, startSpanOptions, parentContext);
+
+    this._context = api.trace.setSpan(parentContext ?? api.ROOT_CONTEXT, this._otelSpan);
+
     const otelSpanContext = this._otelSpan.spanContext();
     this.traceId = otelSpanContext.traceId as TraceId;
     this.spanId = otelSpanContext.spanId as SpanId;
-    this.parentId = parent?.spanId;
-    
-    // Copy initial attributes
+    if (parent?.spanId) {
+      this.parentId = parent.spanId;
+    }
+
     if (options?.attributes) {
       this._attributes = { ...options.attributes };
     }
@@ -100,30 +90,31 @@ class InternalSpan implements Span {
 
   setAttribute(key: string, value: string | number | boolean | string[]): void {
     this._attributes[key] = value;
-    this._otelSpan?.setAttribute(key, this._valueToOtelValue(value));
-    
-    // Store error status
+    this._otelSpan.setAttribute(key, value);
+
     if (key === 'error.type' || key === 'error.message') {
       this._status = 'error';
     }
   }
 
   setAttributes(attributes: Record<string, string | number | boolean | string[]>): void {
-    const entries = Object.entries(attributes);
-    for (const [key, value] of entries) {
-      this._attributes[key] = value;
-      this._otelSpan?.setAttribute(key, this._valueToOtelValue(value));
+    for (const [key, value] of Object.entries(attributes)) {
+      this.setAttribute(key, value);
     }
   }
 
   recordException(exception: unknown, attributes?: Record<string, string | number | boolean | string[]>): void {
     this._status = 'error';
-    
+
     const errorInfo = this._extractErrorInfo(exception);
     const timestamp = Date.now();
-    
-    this._otelSpan?.recordException(exception);
-    
+
+    if (exception instanceof Error || typeof exception === 'string') {
+      this._otelSpan.recordException(exception);
+    } else {
+      this._otelSpan.recordException(new Error(String(exception)));
+    }
+
     this._events.push({
       name: 'exception',
       timestamp,
@@ -135,11 +126,12 @@ class InternalSpan implements Span {
   }
 
   addEvent(name: string, attributes?: Record<string, string | number | boolean | string[]>): void {
-    const otelAttributes = attributes
-      ? this._otelAttributesToAttributes(attributes)
-      : {};
-    this._otelSpan?.addEvent(name, otelAttributes);
-    
+    if (attributes) {
+      this._otelSpan.addEvent(name, attributes);
+    } else {
+      this._otelSpan.addEvent(name);
+    }
+
     this._events.push({
       name,
       timestamp: Date.now(),
@@ -149,19 +141,12 @@ class InternalSpan implements Span {
 
   end(endTime?: number): void {
     if (this._endTime !== undefined) {
-      return; // Already ended
+      return;
     }
-    
+
     this._endTime = endTime ?? Date.now();
-    this._otelSpan?.end(this._endTime / 1000);
-    
-    // Restore parent context
-    const parentContext = api.trace.setActiveSpan(
-      this._otelSpan,
-      this._context,
-    );
-    
-    // End all children
+    this._otelSpan.end(this._endTime);
+
     for (const child of this._children) {
       if (child._endTime === undefined) {
         child.end(this._endTime);
@@ -170,27 +155,13 @@ class InternalSpan implements Span {
   }
 
   startChild(name: string, options?: SpanOptions): Span {
-    const child = new InternalSpan(name, options, this);
-    return child;
+    return new InternalSpan(name, options, this);
   }
 
   private _otelAttributesToAttributes(
     attributes: Record<string, string | number | boolean | string[]>,
-  ): api.SpanAttributes {
-    const result: api.SpanAttributes = {};
-    for (const [key, value] of Object.entries(attributes)) {
-      result[key] = this._valueToOtelValue(value);
-    }
-    return result;
-  }
-
-  private _valueToOtelValue(
-    value: string | number | boolean | string[],
-  ): api.SemanticAttribute {
-    if (Array.isArray(value)) {
-      return value;
-    }
-    return value;
+  ): api.Attributes {
+    return attributes;
   }
 
   private _extractErrorInfo(exception: unknown): Record<string, string> {
@@ -219,7 +190,7 @@ class InternalSpan implements Span {
         return info;
       }
     }
-    
+
     return {
       'error.type': 'unknown',
       'error.message': String(exception),
@@ -231,25 +202,20 @@ class InternalSpan implements Span {
  * Tracer implementation wrapping OpenTelemetry tracer
  */
 export class TracerImpl implements Tracer {
-  private _currentTimeContextId: string = 'default';
-  
-  constructor() {
-    // Initialize tracer via OpenTelemetry API
-  }
+  private readonly _currentTimeContextId: string = 'default';
 
   startSpan(name: string, options?: SpanOptions): Span {
-    // Get current context's parent span
-    const currentContext = api.context.active();
-    const parentSpan = api.trace.getSpan(currentContext);
-    const parentImpl = parentSpan ? (parentSpan as unknown as InternalSpan) : undefined;
-    
+    const currentSpan = api.trace.getSpan(api.context.active());
+    const parentImpl = currentSpan instanceof InternalSpan ? currentSpan : undefined;
+
     return new InternalSpan(name, options, parentImpl, this._currentTimeContextId);
   }
 
   getCurrentSpan(): Span | null {
     const currentSpan = api.trace.getSpan(api.context.active());
-    return currentSpan
-      ? (currentSpan as unknown as Span)
-      : null;
+    if (currentSpan instanceof InternalSpan) {
+      return currentSpan;
+    }
+    return null;
   }
 }

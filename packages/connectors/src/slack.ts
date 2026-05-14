@@ -1,12 +1,16 @@
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+
 export function isSlackAdapterAvailable(): boolean {
   const DISCOVERED = Symbol.for('@agentsy/connectors/slack/discovered');
-  if (Reflect.has(DISCOVERED)) {
+  if (Reflect.has(globalThis, DISCOVERED)) {
     return true;
   }
 
   try {
     require.resolve('@slack/bolt');
-    Reflect.set(DISCOVERED, true);
+    Reflect.set(globalThis, DISCOVERED, true);
     return true;
   } catch {
     return false;

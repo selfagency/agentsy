@@ -4,6 +4,8 @@
  * Verifies conversion to CopilotKit and custom UI event formats
  */
 
+import type { RunStartedEvent, TextMessageContentEvent, ToolCallStartEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
 import {
   convertEventStream,
@@ -13,7 +15,6 @@ import {
   type CopilotKitEvent,
   type CustomUIEvent,
 } from './event-converters.js';
-import { EventType, type RunStartedEvent, type TextMessageContentEvent, type ToolCallStartEvent } from './types.js';
 
 // Test fixtures
 async function createMockStream() {

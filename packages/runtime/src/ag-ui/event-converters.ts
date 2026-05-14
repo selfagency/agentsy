@@ -5,8 +5,8 @@
  * Allows the same event stream to be consumed by different UI frameworks.
  */
 
-import type { AgUiEvent } from './types.js';
-import { EventType } from './types.js';
+import type { AgUiEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 
 /**
  * CopilotKit event format (simplified).
@@ -168,7 +168,7 @@ export function createEventConverter(
   } else if (format === 'custom') {
     return toCustomUIEvent;
   } else {
-    throw new Error(`Unknown format: ${format}`);
+    throw new Error(`Unknown format: ${String(format)}`);
   }
 }
 

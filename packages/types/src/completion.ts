@@ -2,9 +2,6 @@
  * LLM request types.
  */
 
-import type { ToolId } from './brands.js';
-import type { ProviderTool } from './providers.js';
-
 /**
  * Standardized input for any LLM request.
  * This is a generic interface that can be adapted to any provider (OpenAI, Anthropic, Gemini, etc.).
@@ -73,11 +70,7 @@ export interface CompletionMessage {
  * Content part in a message.
  * Supports text, images, and tool calls.
  */
-export type ContentPart =
-  | TextPart
-  | ImagePart
-  | ToolCallPart
-  | ToolResultPart;
+export type ContentPart = TextPart | ImagePart | ToolCallPart | ToolResultPart;
 
 /** Plain text content. */
 export interface TextPart {

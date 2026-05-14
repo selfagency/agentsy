@@ -4,6 +4,8 @@
  * Verifies state snapshots, deltas, and RFC 6902 JSON Patch operations
  */
 
+import type { StateSnapshotEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
 import {
   applyJsonPatches,
@@ -13,7 +15,6 @@ import {
   StateManager,
   type JsonPatchOp,
 } from './state-manager.js';
-import { EventType, type StateSnapshotEvent } from './types.js';
 
 describe('createStateSnapshotEvent', () => {
   it('should create snapshot with state copy and timestamp', () => {
@@ -153,7 +154,7 @@ describe('createStateDeltaEvent', () => {
 
     expect(event.type).toBe(EventType.STATE_DELTA);
     expect(event.runId).toBe(runId);
-    expect(event.ops).toEqual(patches);
+    expect(event.delta).toEqual(patches);
   });
 
   it('should include timestamp', () => {
@@ -294,15 +295,13 @@ describe('StateManager', () => {
     expect(event.state).toEqual({ a: 1 });
   });
 
-  it('should compute deltas on updateState()', () => {
-    const manager = new StateManager({ a: 1 });
+  it('should compute delta between two states', () => {
+    const manager = new StateManager({ a: 1, b: 2 });
 
     const deltaEvent = manager.updateState({ a: 2, b: 3 }, 'run_123');
 
-    expect(deltaEvent).toBeDefined();
-    if (!deltaEvent) return;
     expect(deltaEvent.type).toBe(EventType.STATE_DELTA);
-    expect(deltaEvent.ops.length).toBeGreaterThan(0);
+    expect(deltaEvent.delta.length).toBeGreaterThan(0);
   });
 
   it('should return undefined if no changes', () => {

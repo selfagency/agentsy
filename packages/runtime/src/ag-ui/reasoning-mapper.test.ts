@@ -4,9 +4,10 @@
  * Verifies mapping of reasoning content to AG-UI reasoning events
  */
 
+import type { ReasoningMessageContentEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
 import { mapReasoningToEvents } from './reasoning-mapper.js';
-import { EventType } from './types.js';
 
 describe('mapReasoningToEvents', () => {
   it('should create 5-event sequence for reasoning', () => {
@@ -90,11 +91,11 @@ describe('mapReasoningToEvents', () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2];
+    const contentEvent = events.find(
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+    ) as ReasoningMessageContentEvent;
     expect(contentEvent).toBeDefined();
-    expect(contentEvent?.type).toBe(EventType.REASONING_MESSAGE_CONTENT);
-    // Content may have encryptedValue instead of plain content
-    expect((contentEvent as Record<string, unknown>)?.encryptedValue).toBe('encrypted');
+    expect(contentEvent?.encryptedValue).toBe('encrypted');
   });
 
   it('should use plain content when encryption disabled', () => {
@@ -105,7 +106,9 @@ describe('mapReasoningToEvents', () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2];
+    const contentEvent = events.find(
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+    ) as ReasoningMessageContentEvent;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.content).toBe(reasoning);
   });
@@ -115,7 +118,9 @@ describe('mapReasoningToEvents', () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2];
+    const contentEvent = events.find(
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+    ) as ReasoningMessageContentEvent;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.content).toBe(reasoning);
   });
@@ -161,8 +166,9 @@ describe('mapReasoningToEvents', () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events[2];
-    expect(contentEvent).toBeDefined();
+    const contentEvent = events.find(
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+    ) as ReasoningMessageContentEvent;
     expect(contentEvent?.content).toContain('line 1');
     expect(contentEvent?.content).toContain('line 2');
     expect(contentEvent?.content).toContain('line 3');

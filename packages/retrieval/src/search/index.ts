@@ -1,4 +1,4 @@
-import type { RetrievalQuery, Document, SearchResult, Chunk } from '../types.d.ts';
+import type { Document, RetrievalQuery, SearchResult } from '../types.js';
 
 export interface RetrievalEngineOptions {
   topK?: number;
@@ -6,16 +6,16 @@ export interface RetrievalEngineOptions {
 }
 
 export class RetrievalEngine {
-  private documents: Map<string, Document>;
-  private embeddings: Map<string, number[]>;
-  private options: RetrievalEngineOptions;
+  private readonly documents: Map<string, Document>;
+  private readonly embeddings: Map<string, number[]>;
+  private readonly options: RetrievalEngineOptions;
 
   constructor(options: RetrievalEngineOptions = {}) {
     this.documents = new Map();
     this.embeddings = new Map();
     this.options = {
       topK: options.topK ?? 10,
-      minSimilarity: options.minSimilarity ?? 0.7
+      minSimilarity: options.minSimilarity ?? 0.7,
     };
   }
 
@@ -49,7 +49,7 @@ export class RetrievalEngine {
     return {
       documents: topResults.map(r => this.toSearchResultDocument(r.document, r.score)),
       total: topResults.length,
-      queryTime
+      queryTime,
     };
   }
 
@@ -75,7 +75,7 @@ export class RetrievalEngine {
           if (similarity >= threshold) {
             results.push({
               document: doc,
-              similarity
+              similarity,
             });
           }
         }
@@ -91,7 +91,7 @@ export class RetrievalEngine {
     return {
       documents: topResults.map(r => this.toSearchResultDocument(r.document, r.similarity)),
       total: topResults.length,
-      queryTime
+      queryTime,
     };
   }
 
@@ -104,7 +104,7 @@ export class RetrievalEngine {
       return {
         documents: keywordResult.documents,
         total: keywordResult.total,
-        queryTime: totalTime
+        queryTime: totalTime,
       };
     }
 
@@ -116,7 +116,7 @@ export class RetrievalEngine {
       results.set(doc.id, {
         document: this.documents.get(doc.id)!,
         keywordScore: doc.score || 0,
-        vectorScore: 0
+        vectorScore: 0,
       });
     }
 
@@ -125,14 +125,14 @@ export class RetrievalEngine {
       results.set(doc.id, {
         document: this.documents.get(doc.id)!,
         keywordScore: existing?.keywordScore || 0,
-        vectorScore: doc.similarity || 0
+        vectorScore: doc.similarity || 0,
       });
     }
 
     const combinedResults = Array.from(results.values())
       .map(r => ({
         document: r.document,
-        score: r.keywordScore * 0.3 + r.vectorScore * 0.7
+        score: r.keywordScore * 0.3 + r.vectorScore * 0.7,
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, query.topK ?? 10);
@@ -142,7 +142,7 @@ export class RetrievalEngine {
     return {
       documents: combinedResults.map(r => this.toSearchResultDocument(r.document, r.score)),
       total: combinedResults.length,
-      queryTime
+      queryTime,
     };
   }
 
@@ -171,11 +171,12 @@ export class RetrievalEngine {
 
   private async generateEmbedding(text: string): Promise<number[]> {
     const words = text.toLowerCase().split(/\s+/);
-    const embedding = new Array(32).fill(0);
+    const embedding = Array.from({ length: 32 }).fill(0) as number[];
 
-    for (let i = 0; i < words.length; i++) {
-      const wordHash = this.hashWord(words[i]!);
-      embedding[wordHash % embedding.length] += 1;
+    for (const word of words) {
+      const wordHash = this.hashWord(word);
+      const index = wordHash % embedding.length;
+      embedding[index] = (embedding[index] ?? 0) + 1;
     }
 
     const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
@@ -189,8 +190,8 @@ export class RetrievalEngine {
 
   private hashWord(word: string): number {
     let hash = 0;
-    for (let i = 0; i < word.length; i++) {
-      hash = ((hash << 5) - hash) + word.charCodeAt(i);
+    for (const char of word) {
+      hash = (hash << 5) - hash + (char.codePointAt(0) || 0);
       hash = hash & hash;
     }
     return Math.abs(hash);
@@ -233,7 +234,7 @@ export class RetrievalEngine {
       if (score > 0) {
         results.push({
           document,
-          score
+          score,
         });
       }
     }
@@ -254,7 +255,9 @@ export class RetrievalEngine {
     return wordMatches / Math.max(queryLower.split(/\s+/).length, 1);
   }
 
-  private deduplicateResults(results: Array<{ document: Document; similarity: number }>): Array<{ document: Document; similarity: number }> {
+  private deduplicateResults(
+    results: Array<{ document: Document; similarity: number }>,
+  ): Array<{ document: Document; similarity: number }> {
     const seen = new Set<string>();
     const unique: Array<{ document: Document; similarity: number }> = [];
 
@@ -274,7 +277,7 @@ export class RetrievalEngine {
       id: document.id,
       content: document.content,
       score,
-      similarity: score
+      similarity: score,
     };
 
     if (firstChunk?.id) {

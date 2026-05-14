@@ -5,9 +5,19 @@
  * including proper event sequencing, lifecycle wrapping, and state tracking.
  */
 
+import type {
+  ReasoningMessageContentEvent,
+  RunErrorEvent,
+  RunFinishedEvent,
+  RunStartedEvent,
+  TextMessageContentEvent,
+  ToolCallArgsEvent,
+  ToolCallEndEvent,
+  ToolCallStartEvent,
+} from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
 import { toAgUiStream, type PipelineEvent } from './adapter.js';
-import { EventType } from './types.js';
 
 /**
  * Helper to consume an async generator into an array
@@ -49,9 +59,9 @@ describe('toAgUiStream', () => {
     expect(startEvent?.threadId).toBe(threadId);
 
     // Last event should be RUN_FINISHED
-    const lastEvent = events.at(-1) as Record<string, unknown>;
+    const lastEvent = events.at(-1) as RunFinishedEvent;
     expect(lastEvent?.type).toBe(EventType.RUN_FINISHED);
-    expect((lastEvent?.outcome as Record<string, unknown>)?.type).toBe('success');
+    expect(lastEvent?.outcome?.type).toBe('success');
   });
 
   it('should convert delta events to TEXT_MESSAGE_CONTENT', async () => {
@@ -64,7 +74,7 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
     // Filter for text message events (skip RUN_STARTED/RUN_FINISHED)
-    const textEvents = events.filter(e => e.type.includes('text_message'));
+    const textEvents = events.filter((e): e is TextMessageContentEvent => e.type === EventType.TEXT_MESSAGE_CONTENT);
 
     expect(textEvents).toHaveLength(2);
     const firstText = textEvents[0];
@@ -98,7 +108,9 @@ describe('toAgUiStream', () => {
     expect(reasoningMsgStart?.type).toBe(EventType.REASONING_MESSAGE_START);
 
     // Content events should be consecutive
-    const contentEvents = reasoningEvents.filter(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
+    const contentEvents = reasoningEvents.filter(
+      (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT,
+    );
     expect(contentEvents.length).toBe(2);
     const firstContent = contentEvents[0];
     const secondContent = contentEvents[1];
@@ -127,8 +139,8 @@ describe('toAgUiStream', () => {
     const toolEvents = events.filter(e => e.type.includes('tool_call'));
 
     expect(toolEvents.length).toBeGreaterThanOrEqual(3);
-    const toolStart = toolEvents[0];
-    const toolArgs = toolEvents[1];
+    const toolStart = toolEvents[0] as ToolCallStartEvent;
+    const toolArgs = toolEvents[1] as ToolCallArgsEvent;
     const toolEnd = toolEvents[2];
     expect(toolStart?.type).toBe(EventType.TOOL_CALL_START);
     expect(toolStart?.toolName).toBe('search');
@@ -182,10 +194,10 @@ describe('toAgUiStream', () => {
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
-    const errorEvent = events.find(e => e.type === EventType.RUN_ERROR);
+    const errorEvent = events.find((e): e is RunErrorEvent => e.type === EventType.RUN_ERROR);
     expect(errorEvent).toBeDefined();
-    if (!errorEvent || !('error' in errorEvent)) {
-      throw new Error('Expected RUN_ERROR event with error payload');
+    if (!errorEvent) {
+      throw new Error('Expected RUN_ERROR event');
     }
 
     expect(errorEvent.error).toEqual(
@@ -204,7 +216,7 @@ describe('toAgUiStream', () => {
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
-    const finished = events.find(e => e.type === EventType.RUN_FINISHED);
+    const finished = events.find((e): e is RunFinishedEvent => e.type === EventType.RUN_FINISHED);
     expect(finished?.usage).toEqual({
       inputTokens: 100,
       outputTokens: 50,
@@ -217,7 +229,7 @@ describe('toAgUiStream', () => {
     const parentRunId = 'parent_run_789';
     const events = await collectEvents(toAgUiStream(pipeline, { runId, parentRunId }));
 
-    const started = events.find(e => e.type === EventType.RUN_STARTED);
+    const started = events.find((e): e is RunStartedEvent => e.type === EventType.RUN_STARTED);
     expect(started?.parentRunId).toBe(parentRunId);
   });
 
@@ -230,7 +242,7 @@ describe('toAgUiStream', () => {
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
-    const textEvents = events.filter(e => e.type.includes('text_message'));
+    const textEvents = events.filter((e): e is TextMessageContentEvent => e.type === EventType.TEXT_MESSAGE_CONTENT);
 
     // All text events should share the same messageId
     const firstMessageId = textEvents[0]?.messageId;
@@ -249,7 +261,7 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
     // Should still emit a text event for the real content
-    const textEvents = events.filter(e => e.type.includes('text_message'));
+    const textEvents = events.filter((e): e is TextMessageContentEvent => e.type === EventType.TEXT_MESSAGE_CONTENT);
     expect(textEvents.some(e => e.content === 'Real content')).toBe(true);
   });
 
@@ -282,12 +294,14 @@ describe('toAgUiStream', () => {
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId, encryptReasoning: true }));
 
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
+    const contentEvent = events.find(
+      (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT,
+    );
     expect(contentEvent).toBeDefined();
     if (!contentEvent) {
       throw new Error('Expected reasoning content event');
     }
-    expect((contentEvent as Record<string, unknown>).encryptedValue).toBe('encrypted');
+    expect(contentEvent.encryptedValue).toBe('encrypted');
   });
 
   it('should include timestamps on all events', async () => {
@@ -345,7 +359,8 @@ describe('toAgUiStream', () => {
 
     // Filter tool call events
     const toolCallEvents = events.filter(
-      e => e.type === EventType.TOOL_CALL_START || e.type === EventType.TOOL_CALL_END,
+      (e): e is ToolCallStartEvent | ToolCallEndEvent =>
+        e.type === EventType.TOOL_CALL_START || e.type === EventType.TOOL_CALL_END,
     );
 
     // Should have tool call events
@@ -353,7 +368,7 @@ describe('toAgUiStream', () => {
 
     // All should reference the same tool call ID
     toolCallEvents.forEach(event => {
-      expect((event as Record<string, unknown>).toolCallId).toBe('call_1');
+      expect(event.toolCallId).toBe('call_1');
     });
   });
 });

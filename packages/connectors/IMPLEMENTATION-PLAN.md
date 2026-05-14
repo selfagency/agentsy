@@ -58,6 +58,25 @@ export interface Channel {
 
 - **Mechanism**: Inbound messages are treated as untrusted input and passed through the runtime's approval engine before triggering destructive tool calls.
 
+### 4. Interop envelope and handoff targets
+
+`@agentsy/connectors` should normalize every channel payload into a small internal envelope before anything reaches runtime/session code. That keeps transport-specific quirks isolated and makes future bridges easier to add.
+
+Recommended envelope fields:
+
+- `channelId`, `userId`, `threadId` — stable routing keys
+- `trustLevel` — whether the source should be treated as trusted, readonly, or untrusted
+- `capabilities` — whether the channel can render buttons, forms, images, or streaming text
+- `metadata` — provider-specific fields that never leak directly into prompts
+
+Preferred external bridge targets:
+
+- **ACP** for typed editor/client handoff
+- **A2A** for agent-to-agent continuation or escalation
+- **A2UI** for declarative rich response payloads and approval surfaces
+- **Skills Protocol** for compact, on-demand skill loading instead of dumping long instructions into chat text
+- **Ratify-compatible metadata** when a host application wants verifiable delegation or approval receipts
+
 ## Logic & Data Flow
 
 ### 1. The Inbound Flow

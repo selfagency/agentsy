@@ -1,12 +1,16 @@
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+
 export function isDiscordAdapterAvailable(): boolean {
   const DISCOVERED = Symbol.for('@agentsy/connectors/discord/discovered');
-  if (Reflect.has(DISCOVERED)) {
+  if (Reflect.has(globalThis, DISCOVERED)) {
     return true;
   }
 
   try {
     require.resolve('discord.js');
-    Reflect.set(DISCOVERED, true);
+    Reflect.set(globalThis, DISCOVERED, true);
     return true;
   } catch {
     return false;

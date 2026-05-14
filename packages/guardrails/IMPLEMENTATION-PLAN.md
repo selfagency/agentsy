@@ -51,6 +51,15 @@ Input message
 
 Each stage emits typed `guardrail:*` events for observability (`@agentsy/observability`).
 
+### Reference integrations
+
+Guardrails should remain the policy layer, not the telemetry or replay layer, but they should still publish outputs that other systems can consume cleanly.
+
+- **OpenEvals-style safety scoring** can be used by consumers to measure pass/fail behavior over adversarial suites.
+- **Tapes-style recordings** can store blocked/redacted safety events for deterministic debugging without keeping raw secrets in logs.
+- **Ratify-compatible receipts** can be used by hosts that need cryptographic evidence for approvals or policy decisions.
+- **MCP trust levels** should remain aligned with the same trust vocabulary used by the runtime and connector packages.
+
 ---
 
 ## Source Layout
@@ -115,6 +124,12 @@ interface GuardrailResult {
   confidence?: number;
 }
 ```
+
+### Output contract notes
+
+- Redaction events should include field names and policy reason codes, but never raw sensitive values.
+- Blocked requests should return a stable machine-readable category so dashboards and tests can trend regressions.
+- Streaming filters must preserve partial-output state across chunks so split PII and split jailbreak patterns are still caught.
 
 ---
 

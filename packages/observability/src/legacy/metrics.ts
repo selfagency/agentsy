@@ -1,11 +1,11 @@
 /**
  * Legacy Metrics API
- * 
+ *
  * Kept for backward compatibility with existing code.
  * Use ObservabilityEngine for new development.
  */
 
-import type { CounterMetric, MetricsCollector } from '../index.js';
+import type { MetricsCollector } from '../index.js';
 
 /**
  * Creates a simple metrics collector

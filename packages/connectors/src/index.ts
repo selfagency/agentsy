@@ -1,20 +1,17 @@
 export type {
+  AgentSessionManagerOptions,
+  Attachment,
+  BuiltInCommand,
+  BuiltInCommandType,
+  ChannelAdapter,
+  ConnectorGatewayOptions,
   InboundMessage,
   OutboundMessage,
-  Attachment,
-  ChannelAdapter,
   SessionStore,
-  AgentSessionManagerOptions,
-  ConnectorGatewayOptions,
-  BuiltInCommand,
-  BUILT_IN_COMMANDS,
-  BuiltInCommandType,
 } from './types.js';
 
-export { isBuiltInCommand, stripXmlContextTags } from './types.js';
+export { BUILT_IN_COMMANDS, isBuiltInCommand, stripXmlContextTags } from './types.js';
 
-const MessageRouter = null;
-const AgentSessionManager = null;
-const ConnectorGateway = null;
-
-export { MessageRouter, AgentSessionManager, ConnectorGateway };
+export { isDiscordAdapterAvailable } from './discord.js';
+export { isSlackAdapterAvailable } from './slack.js';
+export { isTelegramAdapterAvailable } from './telegram.js';

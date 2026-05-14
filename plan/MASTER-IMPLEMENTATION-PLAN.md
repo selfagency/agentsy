@@ -1,6 +1,6 @@
 # @agentsy Master Implementation Plan (Canonical)
 
-Last updated: 2026-05-13
+Last updated: 2026-05-14
 Repository: `selfagency/agentsy` (`main`)
 Scope: architecture authority, implementation sequencing, and documentation governance
 
@@ -91,6 +91,17 @@ Current exports from providers include:
 6. Long-horizon memory and token policy feed optimization and continuity (`@agentsy/memory`, `@agentsy/tokens`)
 7. Surface adapters and presentation layers consume event/state outputs (`renderers`, `ui`, `vscode`, `cli`)
 
+### 3.3 Recommended external integration targets
+
+Agentsy should stay adapter-first: use proven external projects as interoperability and durability references, but keep the core package boundaries internal and explicit.
+
+- **Observability**: baseline on OpenTelemetry, with optional Tapes-style content-addressable replay and Opik-style trace/eval workflows.
+- **Durable execution**: model runtime checkpointing and resume behavior after Hatchet, Agentspan, and Chidori rather than inventing a bespoke persistence story.
+- **Prompt efficiency**: treat CacheLLM-like prompt caching as a provider-bound middleware concern, not a core streaming concern.
+- **Retrieval and memory**: keep local-first search and memory primitives, but document adapters for R2R- and Mem0-shaped backends when the managed path is needed.
+- **Interoperability**: treat MCP, ACP, A2A, A2UI, the Skills Protocol, and Ratify as companion standards for transports, handoffs, UI payloads, skills, and trust boundaries.
+- **Orchestration patterns**: borrow deterministic scheduling and event-hook ideas from Bernstein, Rivet, and Yao while keeping Agentsy's runtime/orchestrator split intact.
+
 ---
 
 ## 4) Boundary decisions (normalized from all prior plans)
@@ -156,6 +167,7 @@ Detailed implementation work is tracked in:
 1. Promote plan-only domains (`connectors`, `guardrails`, `mcp`, `retrieval`) from plan-only to manifest-backed packages.
 2. Add/validate tests and export contracts for each promoted package.
 3. Ensure integration points with runtime/orchestrator/providers/session remain acyclic and explicit.
+4. For each promoted package, record the chosen external integration targets or standards bridge in that package's implementation plan before implementation starts.
 
 ### 6.3 Mid-term (Later)
 
@@ -205,6 +217,7 @@ Performance/reliability guardrails:
 - Do not claim providers are merged into core unless code and exports prove it.
 - Keep package names and boundaries consistent with actual `packages/*/package.json` manifests.
 - When architecture changes, update package plans + master + docs in the same change window.
+- When a package plan adopts an external standard or mature library, document the adapter boundary, fallback behavior, and ownership in both the package plan and this master plan.
 
 ---
 
@@ -250,3 +263,4 @@ This plan is being executed successfully when:
 ## 12) Change log
 
 - **2026-05-13**: Comprehensive synthesis rewrite; resolved providers/core ambiguity; normalized package maturity model; retired `agentsy-platform-v2.md`; aligned execution authority around package plans + canonical master.
+- **2026-05-14**: Added external ecosystem recommendations and explicit adapter guidance for observability, durable execution, retrieval/memory, interoperability, prompt caching, and orchestration patterns.

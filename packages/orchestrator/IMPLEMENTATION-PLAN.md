@@ -169,6 +169,15 @@ The package fulfills its role by implementing a graph-based workflow engine that
 - **Hook Points**: Injection points for `beforeStep`, `afterStep`, `beforeToolCall`, `afterToolCall`, `onError`, `onAbort` (REQ-004).
 - **Memory Lifecycle**: Automatic triggers for `memoryEngine.startTask()` and `memoryEngine.endTask()` (REQ-005).
 
+### 2.1 Coordination patterns worth preserving
+
+The orchestrator should remain deterministic and code-first. The best external references are Bernstein for repeatable scheduling, Rivet for actor-like graph execution, and Yao for lifecycle interception.
+
+- **Bernstein-style scheduler**: do not let the model decide every coordination step; keep decomposition and retry logic observable and replayable.
+- **Rivet-style graph execution**: model work as explicit nodes, edges, and state transitions so concurrent paths stay inspectable.
+- **Yao-style hooks**: keep pre/post interception points narrow and predictable so policies, memory lifecycle, and analytics can attach cleanly.
+- **Progressive disclosure for skills**: keep role-specific instructions compact at startup and load the full body only when a phase actually needs it.
+
 ### 3. Scheduler (`src/scheduler/`)
 
 - **Mechanism**: Timing-wheel scheduler (Orloj pattern).
@@ -181,6 +190,15 @@ The package fulfills its role by implementing a graph-based workflow engine that
 - **Multi-Step Coordination**: Managing `maxSteps` and `planningInterval` to maintain task focus.
 - **StopCondition**: Async predicates for loop termination (`isStepCount(n)`, `hasToolCall()`, `isLoopFinished()`, `untilFinishReason`, `combineStrategies`) (REQ-023).
 - **Dynamic Reconfiguration**: `prepareStep` callback and `mergeCallbacks` utility for per-step adjustments (REQ-024).
+
+### 4.1 External interoperability targets
+
+Where possible, orchestration outputs should stay compatible with the broader agent ecosystem:
+
+- **MCP** for tool execution and resource access.
+- **A2A** for cross-agent task handoff when another system needs to take over a sub-goal.
+- **ACP** for editor/client integrations that only need a typed remote-agent surface.
+- **A2UI** for structured, declarative UI payloads produced during approval or review flows.
 
 ## Logic & Data Flow
 

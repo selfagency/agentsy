@@ -1,24 +1,25 @@
-import type { Chunk, ChunkingStrategy, DataSource, Document } from '../types.d.ts';
+import type { Chunk, ChunkingStrategy, DataSource, Document } from '../types.js';
 
 export interface IndexingPipelineOptions {
   chunkSize?: number;
+  chunkOverlap?: number;
   semanticThreshold?: number;
 }
 
 function hashString(str: string): string {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+  for (const char of str) {
+    const charCode = char.codePointAt(0) || 0;
+    hash = (hash << 5) - hash + charCode;
     hash = hash & hash;
   }
   return Math.abs(hash).toString(16);
 }
 
 export class IndexingPipeline {
-  private chunkSize: number;
-  private chunkOverlap: number;
-  private semanticThreshold: number;
+  private readonly chunkSize: number;
+  private readonly chunkOverlap: number;
+  private readonly semanticThreshold: number;
   private currentStrategy: ChunkingStrategy;
 
   constructor(options: IndexingPipelineOptions = {}) {
@@ -39,66 +40,54 @@ export class IndexingPipeline {
       case 'ast':
         return this.astChunk(content, sourcePath);
       default:
-        throw new Error(`Unknown chunking strategy: ${strategy}`);
+        throw new Error(`Unknown chunking strategy: ${String(strategy)}`);
     }
   }
 
   async semanticChunk(content: string, sourcePath: string): Promise<Chunk[]> {
     this.currentStrategy = 'semantic';
-
     const chunks: Chunk[] = [];
     const sentences = content.split(/(?<=[.!?])\s+/);
-
     let currentChunk = '';
     let currentPosition = 0;
 
-    for (let i = 0; i < sentences.length; i++) {
-      const sentence = sentences[i]!;
+    for (const sentence of sentences) {
       const testChunk = currentChunk ? `${currentChunk} ${sentence}` : sentence;
-
       if (testChunk.length <= this.chunkSize) {
         currentChunk = testChunk;
       } else {
         if (currentChunk) {
-          chunks.push(this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
-            const contentText = content.slice(0, pos);
-            if (contentText.split) {
-              return contentText.split('\n').length;
-            }
-            return 1;
-          }));
+          chunks.push(
+            this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
+              return content.slice(0, pos).split('\n').length;
+            }),
+          );
           currentPosition += currentChunk.length;
         }
-        currentChunk = sentence!;
+        currentChunk = sentence;
       }
     }
 
     if (currentChunk) {
-      chunks.push(this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
-        const contentText = content.slice(0, pos);
-        if (contentText.split) {
-          return contentText.split('\n').length;
-        }
-        return 1;
-      }));
+      chunks.push(
+        this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
+          return content.slice(0, pos).split('\n').length;
+        }),
+      );
     }
-
     return chunks;
   }
 
-async fixedSizeChunk(content: string, sourcePath: string): Promise<Chunk[]> {
+  async fixedSizeChunk(content: string, sourcePath: string): Promise<Chunk[]> {
     this.currentStrategy = 'fixed';
-
     const chunks: Chunk[] = [];
     const words = content.split(/\s+/);
-
     let currentChunk = '';
     let currentWordCount = 0;
 
     for (let i = 0; i < words.length; i++) {
       const word = words[i]!;
       const testChunk = currentChunk ? `${currentChunk} ${word}` : word;
-
       if (currentWordCount < this.chunkSize) {
         currentChunk = testChunk;
         currentWordCount++;
@@ -114,151 +103,142 @@ async fixedSizeChunk(content: string, sourcePath: string): Promise<Chunk[]> {
     if (currentChunk) {
       chunks.push(this.createChunk(currentChunk, sourcePath, words.length - currentWordCount + 1));
     }
-
     return chunks;
-  }
-
-  private calculateLineNumber(wordIndex: number, wordOffset: number, lineStartIndices: number[]): number {
-    const index = wordOffset + lineStartIndices[wordIndex]!;
-    return index > 0 ? index : 1;
   }
 
   async astChunk(content: string, sourcePath: string): Promise<Chunk[]> {
     this.currentStrategy = 'ast';
-
     const chunks: Chunk[] = [];
-
-    function splitByBlock(code: string): string[] {
-      const blocks: string[] = [];
-      let currentBlock = '';
-      let braceDepth = 0;
-      let parenDepth = 0;
-      let inFunction = false;
-
-      for (let i = 0; i < code.length; i++) {
-        const char = code[i];
-        const nextChar = code[i + 1];
-
-        if (char === '{') {
-          braceDepth++;
-        } else if (char === '}') {
-          braceDepth--;
-        } else if (char === '(') {
-          parenDepth++;
-        } else if (char === ')') {
-          parenDepth--;
-        }
-
-        currentBlock += char;
-
-        const isFunctionKeyword = /function\b/.test(code.slice(i - 8, i + 1));
-        const isAsyncFunction = code.slice(i - 5, i + 1).includes('async') && nextChar === ' ';
-        const isClassKeyword = code.slice(i - 5, i + 1).includes('class');
-        const isArrowFunction = parenDepth === 1 && nextChar === '=>';
-        const isExport = code.slice(i - 6, i + 1).includes('export');
-
-        if ((isFunctionKeyword || isAsyncFunction || isClassKeyword) && !inFunction) {
-          inFunction = true;
-        }
-
-        if (inFunction && braceDepth === 0 && parenDepth === 0 && (char === '\n' || char === ';')) {
-          if (isExport || currentBlock.trim().length > 50) {
-            blocks.push(currentBlock.trim());
-            currentBlock = '';
-            inFunction = false;
-          }
-        }
-      }
-
-      if (currentBlock.trim()) {
-        blocks.push(currentBlock.trim());
-      }
-
-      return blocks.length > 0 ? blocks : [code];
-    }
-
-    const blocks = splitByBlock(content);
+    const blocks = this.splitByBlock(content);
     let position = 0;
 
     for (const block of blocks) {
       if (block.trim()) {
-chunks.push(this.createChunk(block, sourcePath, position, (pos: number) => {
-          return this.getCodePosition(content, pos);
-        }));
+        chunks.push(
+          this.createChunk(block, sourcePath, position, (pos: number) => {
+            return this.getCodePosition(content, pos);
+          }),
+        );
         position += block.length;
       }
     }
-
     return chunks;
   }
 
-  private createChunk(content: string, sourcePath: string, startIdxOrPosition: number, calculateLine?: (pos: number) => number): Chunk {
-    const contentHash = hashString(content);
-    const lines = content.split('\n');
-    const lineCount = lines.length;
+  private splitByBlock(code: string): string[] {
+    const blocks: string[] = [];
+    let currentBlock = '';
+    let braceDepth = 0;
+    let parenDepth = 0;
+    let inFunction = false;
 
-    const startLine = typeof startIdxOrPosition === 'number'
-      ? startIdxOrPosition
-      : calculateLine
-        ? calculateLine(startIdxOrPosition)
-        : 1;
+    for (let i = 0; i < code.length; i++) {
+      const char = code[i]!;
+      const nextChar = code[i + 1] ?? '';
+
+      if (char === '{') braceDepth++;
+      else if (char === '}') braceDepth--;
+      else if (char === '(') parenDepth++;
+      else if (char === ')') parenDepth--;
+
+      currentBlock += char;
+
+      const splitDecision = this.evaluateSplit(code, i, nextChar, braceDepth, parenDepth, inFunction, currentBlock);
+      inFunction = splitDecision.newInFunction;
+
+      if (splitDecision.shouldSplit) {
+        blocks.push(currentBlock.trim());
+        currentBlock = '';
+        inFunction = false;
+      }
+    }
+
+    if (currentBlock.trim()) blocks.push(currentBlock.trim());
+    return blocks.length > 0 ? blocks : [code];
+  }
+
+  private evaluateSplit(
+    code: string,
+    i: number,
+    nextChar: string,
+    braceDepth: number,
+    parenDepth: number,
+    inFunction: boolean,
+    currentBlock: string,
+  ): { shouldSplit: boolean; newInFunction: boolean } {
+    const isFunction = /function\b/.test(code.slice(i - 8, i + 1));
+    const isAsync = code.slice(i - 5, i + 1).includes('async') && nextChar === ' ';
+    const isClass = code.slice(i - 5, i + 1).includes('class');
+    const isExport = code.slice(i - 6, i + 1).includes('export');
+
+    let newInFunction = inFunction;
+    if ((isFunction || isAsync || isClass) && !inFunction) {
+      newInFunction = true;
+    }
+
+    const char = code[i]!;
+    const shouldSplit =
+      newInFunction &&
+      braceDepth === 0 &&
+      parenDepth === 0 &&
+      (char === '\n' || char === ';') &&
+      (isExport || currentBlock.trim().length > 50);
+
+    return { shouldSplit, newInFunction };
+  }
+
+  private createChunk(
+    content: string,
+    sourcePath: string,
+    startIdxOrPosition: number,
+    calculateLine?: (pos: number) => number,
+  ): Chunk {
+    const contentHash = hashString(content);
+    const startLine = calculateLine ? calculateLine(startIdxOrPosition) : Math.max(1, startIdxOrPosition);
 
     return {
       id: `chunk-${contentHash}`,
       content,
       metadata: {
-        source: sourcePath || 'unknown',
+        source: sourcePath,
         startLine,
-        endLine: lineCount + 1,
+        endLine: startLine + content.split('\n').length - 1,
         strategy: this.currentStrategy,
-        language: this.detectLanguage(sourcePath || 'unknown')
-      }
+        language: this.detectLanguage(sourcePath),
+      },
     };
   }
 
   private detectLanguage(filePath: string): string {
-    if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
-      return 'typescript';
+    const ext = filePath.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'ts':
+      case 'tsx':
+        return 'typescript';
+      case 'js':
+      case 'jsx':
+        return 'javascript';
+      case 'py':
+        return 'python';
+      default:
+        return 'text';
     }
-    if (filePath.endsWith('.js') || filePath.endsWith('.jsx')) {
-      return 'javascript';
-    }
-    if (filePath.endsWith('.py')) {
-      return 'python';
-    }
-    return 'text';
-  }
-
-  private countNewlines(text: string, position: number): number {
-    let count = 0;
-    for (let i = 0; i < position && i < text.length; i++) {
-      if (text[i] === '\n') {
-        count++;
-      }
-    }
-    return count + 1;
   }
 
   private getCodePosition(text: string, position: number): number {
-    if (position <= 0) {
-      return 1;
-    }
-    return text.slice(0, position).split('\n').length;
+    return position <= 0 ? 1 : text.slice(0, position).split('\n').length;
   }
 
   public index(chunks: Chunk[]): Document {
-    const content = chunks.map(chunk => chunk.content).join(' ');
-    const docId = hashString(content);
-    const result: Document = {
-      id: `doc-${docId}`,
+    const content = chunks.map(c => c.content).join(' ');
+    return {
+      id: `doc-${hashString(content)}`,
       content,
       chunks,
       metadata: {
         chunkCount: chunks.length,
-        indexedAt: new Date().toISOString()
-      }
+        indexedAt: new Date().toISOString(),
+      },
     };
-
-    return result;
   }
 }
