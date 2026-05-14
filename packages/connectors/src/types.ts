@@ -1,0 +1,119 @@
+/**
+ * Inbound message from a platform adapter
+ */
+export interface InboundMessage {
+  channelId: string;
+  userId: string;
+  threadId?: string;
+  text: string;
+  attachments?: Attachment[];
+  rawPayload: unknown;
+}
+
+/**
+ * Outbound message to send to a platform adapter
+ */
+export interface OutboundMessage {
+  channelId: string;
+  userId: string;
+  threadId?: string;
+  text: string;
+  attachments?: Attachment[];
+}
+
+/**
+ * Attachment metadata
+ */
+export interface Attachment {
+  id: string;
+  type: 'image' | 'video' | 'audio' | 'document' | 'other';
+  url?: string;
+  filename?: string;
+  mimeType?: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Channel adapter configuration and interface
+ */
+export interface ChannelAdapter<TConfig = unknown> {
+  id: string;
+  type: string;
+
+  connect(config: TConfig): Promise<void>;
+  disconnect(): Promise<void>;
+  send(msg: OutboundMessage): Promise<void>;
+  onMessage(handler: (msg: InboundMessage) => Promise<void>): void;
+}
+
+/**
+ * Session storage interface
+ */
+export interface SessionStore {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  delete(key: string): Promise<void>;
+  has(key: string): Promise<boolean>;
+}
+
+/**
+ * Agent session manager options
+ */
+export interface AgentSessionManagerOptions {
+  maxIdleTime?: number;
+  sessionStore?: SessionStore;
+}
+
+/**
+ * Connector gateway options
+ */
+export interface ConnectorGatewayOptions {
+  adapters: ChannelAdapter<unknown>[];
+  sessionManager?: AgentSessionManagerOptions;
+}
+
+/**
+ * Built-in command handler
+ */
+export interface BuiltInCommand {
+  command: string;
+  description: string;
+}
+
+/**
+ * Built-in commands available via connector gateway
+ */
+export const BUILT_IN_COMMANDS: readonly BuiltInCommand[] = [
+  { command: '/status', description: 'Show current session status' },
+  { command: '/new', description: 'Start a new conversation' },
+  { command: '/reset', description: 'Reset the current conversation' },
+  { command: '/compact', description: 'Compact conversation history' },
+  { command: '/think', description: 'Toggle verbose thinking' },
+  { command: '/verbose', description: 'Add verbose output' },
+  { command: '/usage', description: 'Show usage statistics' },
+] as const;
+
+/**
+ * Built-in command type
+ */
+export type BuiltInCommandType = (typeof BUILT_IN_COMMANDS)[number]['command'];
+
+/**
+ * Check if a message is a built-in command
+ */
+export function isBuiltInCommand(text: string): text is BuiltInCommandType {
+  return BUILT_IN_COMMANDS.some(cmd => text.startsWith(cmd.command));
+}
+
+/**
+ * Strip XML context injection patterns (SEC-013)
+ */
+export function stripXmlContextTags(text: string): string {
+  return text
+    .replace(/<SYSTEM>[\s\S]*?<\/SYSTEM>/gi, '')
+    .replace(/<system>[\s\S]*?<\/system>/gi, '')
+    .replace(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/gi, '')
+    .replace(/<instruction>[\s\S]*?<\/instruction>/gi, '')
+    .replace(/<THOUGHT>[\s\S]*?<\/THOUGHT>/gi, '')
+    .replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+}

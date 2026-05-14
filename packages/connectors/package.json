@@ -1,0 +1,86 @@
+{
+  "name": "@agentsy/connectors",
+  "version": "0.1.0",
+  "keywords": [
+    "agents",
+    "agentsy",
+    "ai",
+    "chat",
+    "connectors",
+    "discord",
+    "matrix",
+    "slack",
+    "telegram"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "bugs": {
+    "url": "https://github.com/selfagency/agentsy/issues"
+  },
+  "license": "MIT",
+  "author": "Agentsy contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "packages/connectors"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./telegram": {
+      "types": "./dist/telegram.d.ts",
+      "import": "./dist/telegram.js"
+    },
+    "./discord": {
+      "types": "./dist/discord.d.ts",
+      "import": "./dist/discord.js"
+    },
+    "./slack": {
+      "types": "./dist/slack.d.ts",
+      "import": "./dist/slack.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agentsy/core": "workspace:*",
+    "@agentsy/session": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.6",
+    "oxfmt": "^0.49.0",
+    "oxlint": "^1.64.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "peerDependencies": {
+    "@slack/bolt": "^4",
+    "discord.js": "^14",
+    "grammy": "^1"
+  },
+  "peerDependenciesMeta": {
+    "grammy": {
+      "optional": true
+    },
+    "discord.js": {
+      "optional": true
+    },
+    "@slack/bolt": {
+      "optional": true
+    }
+  }
+}
