@@ -70,22 +70,34 @@
 **Estimated Effort**: 2-3 days
 
 ### PRIORITY 3: @agentsy/providers - Complete Provider Strategy & UniversalClient Integration ✅
-**Status**: UniversalClient complete as of Wed May 13 2026
+**Status**: UniversalClient complete with HTTP layer as of Thu May 14 2026
 **Completed Work**:
 - ✅ Created universal-client/client.ts with UniversalClientConfig, UniversalClient, createUniversalClient
 - ✅ Implementation matches actual API (SSE→Normalizer→Processor pipeline architecture)
 - ✅ Uses NormalizerProvider type from pipeline/createPipeline.ts (9 providers)
-- ✅ complete() and stream() throw helpful errors for unimplemented HTTP layer
-- ✅ Removed duplicate exports causing DTS build conflicts
+- ✅ Complete HTTP fetch/response layer:
+  - PROVIDER_ENDPOINTS with 9 provider API URLs
+  - toProviderRequest() routes to provider-specific request formats
+  - toOpenAIFormat(), toBedrockFormat(), toHuggingFaceFormat() converters
+  - parseProviderResponse() extracts CompletionResponse from provider responses
+  - buildHeaders() handles Bearer tokens, x-api-key, OpenAI-Organization headers
+  - complete() makes non-streaming POST, parses response to CompletionResponse
+  - stream() makes streaming POST with SSE via createPipeline, returns ReadableStream<NormalizedChunk>
+- ✅ Removed duplicate NormalizerProvider export to resolve DTS build conflicts
+- ✅ Fixed DTS type errors:
+  - tool_calls structure uses function wrapper: `{ function: { name, arguments } }`
+  - Record<string, string> instead of HeadersInit for headers
+  - UsageInfo construction with exactOptionalPropertyTypes compliance
+  - CompletionResponse optional properties properly conditional
 - ✅ Package builds successfully (ESM, CJS, DTS all passing)
 - ✅ Excellent: Normalizers for 9 providers with test coverage
 - ✅ Excellent: Adapter infrastructure and streaming pipeline
 **Remaining Work**:
-- Implement HTTP fetch/response layer for complete() and stream() methods
+- Test HTTP connectivity with actual API keys for 3 implemented providers
 - Add context window management (future work)
 - Add observability event emission (future work)
 - Update README documentation to match actual exports (mismatched with actual code)
-**Estimated Remaining Effort**: 1-2 days for HTTP layer implementation
+**Estimated Remaining Effort**: < 1 day for testing and polish
 
 ### PRIORITY 4: @agentsy/observability - Add Production Monitoring ❌
 **Status**: 5% complete
