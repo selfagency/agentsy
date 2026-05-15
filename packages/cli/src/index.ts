@@ -45,15 +45,18 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
   if (command === 'compress') {
     const filePath = getFlagValue(rest, '--file');
-    if (filePath === null) {
-      io.stderr('Missing required flag: --file');
+    const text = getFlagValue(rest, '--text');
+
+    if (filePath === null && text === null) {
+      io.stderr('Missing input. Provide --text or --file.');
       return 1;
     }
 
     const level = toCompressionLevel(getFlagValue(rest, '--level'));
-    const original = await readFile(filePath, 'utf8');
-    const compressed = compressOutput(original, { level });
-    io.stdout(compressed);
+    const source = text ?? (await readFile(filePath as string, 'utf8'));
+    const result = compressOutput(source, { level });
+    io.stdout(result.compressed);
+    io.stdout(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
     return 0;
   }
 
