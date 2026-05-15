@@ -10,7 +10,7 @@ export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
   WARN = 2,
-  ERROR = 3,
+  ERROR = 3
 }
 
 /**
@@ -47,14 +47,14 @@ export class LoggerImpl implements Logger {
     [LogLevel.DEBUG]: 'DEBUG',
     [LogLevel.INFO]: 'INFO',
     [LogLevel.WARN]: 'WARN',
-    [LogLevel.ERROR]: 'ERROR',
+    [LogLevel.ERROR]: 'ERROR'
   };
 
   constructor(config?: LoggerConfig) {
     this.config = {
       minLevel: config?.minLevel ?? LogLevel.INFO,
       includeTimestamp: config?.includeTimestamp ?? true,
-      levelNames: { ...this.DEFAULT_LEVEL_NAMES, ...config?.levelNames },
+      levelNames: { ...this.DEFAULT_LEVEL_NAMES, ...config?.levelNames }
     };
   }
 
@@ -86,7 +86,7 @@ export class LoggerImpl implements Logger {
       level,
       levelName,
       message,
-      timestamp,
+      timestamp
     };
 
     if (attributes) entry.attributes = attributes;

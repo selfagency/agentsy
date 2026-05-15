@@ -3,7 +3,7 @@ import Saxophone, {
   type SaxophoneComment,
   type SaxophoneTag,
   type SaxophoneTagClose,
-  type SaxophoneText,
+  type SaxophoneText
 } from './saxophone/index.js';
 
 import { DEFAULT_SCRUB_TAG_NAMES, PRIVACY_TAG_NAMES } from './tagLists.js';
@@ -34,7 +34,7 @@ function resolveScrubTagSet(options: CreateXmlStreamFilterOptions): Set<string> 
         override.add(tag);
       }
       options.onWarning?.('Privacy-sensitive tags omitted from scrub override; enforcing defaults.', {
-        missingPrivacyTags,
+        missingPrivacyTags
       });
     }
 
@@ -65,7 +65,7 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
         overflowStartDepth = parseDepth;
         options.onWarning?.('XML nesting depth exceeded maxXmlNestingDepth; suppressing nested segment.', {
           maxXmlNestingDepth,
-          depth: parseDepth,
+          depth: parseDepth
         });
       }
     }
@@ -142,6 +142,6 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
     end(): string {
       parser.end();
       return buffer;
-    },
+    }
   };
 }

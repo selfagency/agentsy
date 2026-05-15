@@ -46,7 +46,7 @@
     "check-types": "tsc --noEmit",
     "lint": "oxlint --no-error-on-unmatched-pattern .",
     "format": "oxfmt --no-error-on-unmatched-pattern --write .",
-    "test": "vitest --run",
+    "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },
   "dependencies": {
@@ -54,7 +54,7 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
     "@types/react": "^19.2.14",
     "@vitest/coverage-v8": "^4.1.6",
     "ink-testing-library": "^4.0.0",

@@ -76,7 +76,7 @@ export const TimingUtils = {
 
     const hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
-  },
+  }
 };
 
 export class Debouncer {
@@ -84,7 +84,7 @@ export class Debouncer {
 
   constructor(
     private readonly delay: number,
-    private readonly fn: (...args: unknown[]) => void,
+    private readonly fn: (...args: unknown[]) => void
   ) {}
 
   debounce(...args: unknown[]): void {
@@ -112,7 +112,7 @@ export class Throttle {
 
   constructor(
     private readonly interval: number,
-    private readonly fn: (...args: unknown[]) => void,
+    private readonly fn: (...args: unknown[]) => void
   ) {}
 
   throttle(...args: unknown[]): void {
@@ -126,7 +126,7 @@ export class Throttle {
           this.execute(...args);
           this.pendingExecution = null;
         },
-        this.interval - (now - this.lastExecution),
+        this.interval - (now - this.lastExecution)
       );
     }
   }

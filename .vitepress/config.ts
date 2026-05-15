@@ -4,7 +4,7 @@ const architectureItems = [
   { text: 'Overview', link: '/architecture/' },
   { text: 'Package ecosystem', link: '/architecture/package-ecosystem' },
   { text: 'Stream processing flow', link: '/architecture/stream-processing' },
-  { text: 'Platform evolution', link: '/architecture/platform-evolution' },
+  { text: 'Platform evolution', link: '/architecture/platform-evolution' }
 ];
 
 export default defineConfig({
@@ -22,9 +22,9 @@ export default defineConfig({
       {
         property: 'og:description',
         content:
-          'Learn how the @agentsy package ecosystem fits together, from provider normalizers and stream processors to agent loops and VS Code integrations.',
-      },
-    ],
+          'Learn how the @agentsy package ecosystem fits together, from provider normalizers and stream processors to agent loops and VS Code integrations.'
+      }
+    ]
   ],
   themeConfig: {
     logo: '🤖',
@@ -37,12 +37,12 @@ export default defineConfig({
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Why Agentsy', link: '/why-agentsy' },
           { text: 'Examples', link: '/examples/' },
-          { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' },
-        ],
+          { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' }
+        ]
       },
       {
         text: 'Architecture',
-        items: architectureItems,
+        items: architectureItems
       },
       { text: 'Packages', link: '/packages' },
       {
@@ -50,17 +50,17 @@ export default defineConfig({
         items: [
           { text: 'API index', link: '/api' },
           { text: 'Package catalog', link: '/packages' },
-          { text: 'Roadmap', link: '/roadmap' },
-        ],
+          { text: 'Roadmap', link: '/roadmap' }
+        ]
       },
-      { text: 'Developers', link: '/developers/' },
+      { text: 'Developers', link: '/developers/' }
     ],
     sidebar: {
       '/architecture/': [
         {
           text: 'Architecture',
-          items: architectureItems,
-        },
+          items: architectureItems
+        }
       ],
       '/packages/': [
         {
@@ -73,8 +73,8 @@ export default defineConfig({
             { text: '@agentsy/providers', link: '/packages/providers' },
             { text: '@agentsy/renderers', link: '/packages/renderers' },
             { text: '@agentsy/tokens', link: '/packages/tokens' },
-            { text: '@agentsy/vscode', link: '/packages/vscode' },
-          ],
+            { text: '@agentsy/vscode', link: '/packages/vscode' }
+          ]
         },
         {
           text: 'Core utilities',
@@ -90,15 +90,15 @@ export default defineConfig({
             { text: '@agentsy/types', link: '/packages/types' },
             { text: '@agentsy/ui', link: '/packages/ui' },
             { text: '@agentsy/runtime/ag-ui', link: '/packages/ag-ui' },
-            { text: '@agentsy/testing', link: '/packages/testing' },
-          ],
-        },
+            { text: '@agentsy/testing', link: '/packages/testing' }
+          ]
+        }
       ],
       '/developers/': [
         { text: 'Developer guide', link: '/developers/' },
         { text: 'Contributing', link: '/developers/contributing' },
         { text: 'Copilot integration', link: '/developers/integration-copilot' },
-        { text: 'Releasing', link: '/developers/releasing' },
+        { text: 'Releasing', link: '/developers/releasing' }
       ],
       '/examples/': [
         {
@@ -110,9 +110,9 @@ export default defineConfig({
             { text: 'Multi-provider policy gate', link: '/examples/multi-provider-policy-gate' },
             { text: 'Agent tool loop with retries + continuation', link: '/examples/tool-loop-retries-continuation' },
             { text: 'Stateful ops copilot backend', link: '/examples/stateful-ops-copilot' },
-            { text: 'All-tooling end-to-end workflow', link: '/examples/all-tooling-end-to-end' },
-          ],
-        },
+            { text: 'All-tooling end-to-end workflow', link: '/examples/all-tooling-end-to-end' }
+          ]
+        }
       ],
       '/': [
         {
@@ -123,8 +123,8 @@ export default defineConfig({
             { text: 'Why Agentsy', link: '/why-agentsy' },
             { text: 'Examples', link: '/examples/' },
             { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' },
-            { text: 'Roadmap', link: '/roadmap' },
-          ],
+            { text: 'Roadmap', link: '/roadmap' }
+          ]
         },
         {
           text: 'Reference',
@@ -132,28 +132,28 @@ export default defineConfig({
             { text: 'Architecture', link: '/architecture/' },
             { text: 'Packages', link: '/packages' },
             { text: 'API index', link: '/api' },
-            { text: 'Developers', link: '/developers/' },
-          ],
-        },
-      ],
+            { text: 'Developers', link: '/developers/' }
+          ]
+        }
+      ]
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/selfagency/agentsy' },
-      { icon: 'npm', link: 'https://www.npmjs.com/org/agentsy' },
+      { icon: 'npm', link: 'https://www.npmjs.com/org/agentsy' }
     ],
     search: {
-      provider: 'local',
+      provider: 'local'
     },
     outline: {
-      level: [2, 3],
+      level: [2, 3]
     },
     docFooter: {
       prev: 'Previous page',
-      next: 'Next page',
+      next: 'Next page'
     },
     footer: {
       message: 'Open source under MIT License',
-      copyright: 'Copyright © 2026 Agentsy Contributors',
-    },
-  },
+      copyright: 'Copyright © 2026 Agentsy Contributors'
+    }
+  }
 });

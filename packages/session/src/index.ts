@@ -19,7 +19,7 @@ export const createSessionStore = (state: SessionState): SessionStore => {
     getState() {
       return {
         id: state.id,
-        values: { ...values },
+        values: { ...values }
       };
     },
     getValue<T = unknown>(key: string) {
@@ -27,6 +27,6 @@ export const createSessionStore = (state: SessionState): SessionStore => {
     },
     setValue(key, value) {
       values[key] = value;
-    },
+    }
   };
 };

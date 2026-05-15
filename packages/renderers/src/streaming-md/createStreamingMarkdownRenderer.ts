@@ -85,7 +85,7 @@ async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModul
     return { smd: smdModule as StreamingMarkdownModule, DOMPurify: dompurifyModule as DOMPurifyModule };
   } catch {
     throw new Error(
-      'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify',
+      'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify'
     );
   }
 }
@@ -243,6 +243,6 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         finished = true;
         await onFinish(result.finishReason, result.usage);
       }
-    },
+    }
   };
 }

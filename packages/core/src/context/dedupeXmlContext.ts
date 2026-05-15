@@ -31,7 +31,7 @@ function isTagBoundary(character: string): boolean {
 function findNextTagOccurrence(
   part: string,
   tagName: string,
-  searchStart: number,
+  searchStart: number
 ): { index: number; isClose: boolean; end: number } | null {
   const openNeedle = `<${tagName}`;
   const closeNeedle = `</${tagName}`;

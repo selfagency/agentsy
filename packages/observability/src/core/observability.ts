@@ -13,7 +13,7 @@ import type {
   ObservabilityEngine,
   ObservabilitySink,
   RedactionPolicy,
-  Span,
+  Span
 } from '../core/types.js';
 import { LoggerImpl, type LogLevel, type LoggerConfig } from './logger.js';
 import { MeterImpl } from './meter.js';
@@ -54,7 +54,7 @@ const LOG_LEVEL_MAP: Record<string, LogLevel> = {
   DEBUG: 0,
   INFO: 1,
   WARN: 2,
-  ERROR: 3,
+  ERROR: 3
 };
 export { LOG_LEVEL_MAP };
 
@@ -76,7 +76,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
 
     const minLevel = LOG_LEVEL_MAP[config.logging?.minLevel?.toUpperCase() ?? ''];
     const loggerConfig: LoggerConfig = {
-      includeTimestamp: config.logging?.includeTimestamp ?? true,
+      includeTimestamp: config.logging?.includeTimestamp ?? true
     };
     if (minLevel !== undefined) {
       loggerConfig.minLevel = minLevel;
@@ -170,7 +170,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
         result[key] = this._redactionPolicy.redact(value);
       } else if (Array.isArray(value)) {
         result[key] = value.map(item =>
-          this._redactionPolicy ? this._redactionPolicy.redact(String(item)) : String(item),
+          this._redactionPolicy ? this._redactionPolicy.redact(String(item)) : String(item)
         );
       } else {
         result[key] = value;
@@ -190,7 +190,7 @@ let _defaultEngine: ObservabilityEngineImpl | null = null;
 export const getDefaultEngine = (): ObservabilityEngine => {
   _defaultEngine ??= new ObservabilityEngineImpl({
     serviceName: 'agentsy-runtime',
-    serviceVersion: '0.0.0',
+    serviceVersion: '0.0.0'
   });
   return _defaultEngine;
 };
@@ -201,11 +201,11 @@ export const createSimpleEngine = (
     serviceName?: string;
     sampling?: 'always_on' | 'never' | 'parentBased';
     jaegerEndpoint?: string;
-  },
+  }
 ): ObservabilityEngine => {
   const config: ObservabilityEngineConfig = {
     serviceName: options?.serviceName ?? name,
-    serviceVersion: '0.0.0',
+    serviceVersion: '0.0.0'
   };
 
   if (options?.sampling || options?.jaegerEndpoint) {

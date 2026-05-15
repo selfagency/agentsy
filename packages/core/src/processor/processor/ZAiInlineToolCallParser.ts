@@ -64,7 +64,7 @@ export class ZAiInlineToolCallParser implements ToolCallParser {
 
     return {
       content: visibleContent,
-      ...(deltas.length > 0 ? { nativeToolCallDeltas: deltas } : {}),
+      ...(deltas.length > 0 ? { nativeToolCallDeltas: deltas } : {})
     };
   }
 

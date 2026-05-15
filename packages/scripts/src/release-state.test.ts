@@ -18,8 +18,8 @@ describe('release-state', () => {
     const state = {
       defaultState: 'bootstrap-required',
       packages: {
-        '@agentsy/vscode': 'oidc-ready',
-      },
+        '@agentsy/vscode': 'oidc-ready'
+      }
     };
 
     expect(getPackageReleaseState(state, '@agentsy/vscode')).toEqual('oidc-ready');
@@ -34,8 +34,8 @@ describe('release-state', () => {
       defaultState: 'bootstrap-required',
       packages: {
         '@agentsy/z': 'oidc-ready',
-        '@agentsy/a': 'bootstrap-required',
-      },
+        '@agentsy/a': 'bootstrap-required'
+      }
     });
 
     const written = JSON.parse(readFileSync(p, 'utf8'));

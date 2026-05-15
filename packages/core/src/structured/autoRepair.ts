@@ -39,7 +39,7 @@ export async function repairWithLLM<T = unknown>(
   initialOutput: string,
   schema: JsonObject,
   callLLM: (repairPrompt: string) => Promise<string>,
-  options: AutoRepairOptions = {},
+  options: AutoRepairOptions = {}
 ): Promise<AutoRepairResult<T>> {
   const maxAttempts = options.maxAttempts ?? 3;
   let currentOutput = initialOutput;
@@ -60,7 +60,7 @@ export async function repairWithLLM<T = unknown>(
       failedOutput: currentOutput,
       error: result.errors.join('\n'),
       schema,
-      ...(options.originalPrompt === undefined ? {} : { originalPrompt: options.originalPrompt }),
+      ...(options.originalPrompt === undefined ? {} : { originalPrompt: options.originalPrompt })
     });
 
     currentOutput = await callLLM(repairPrompt);

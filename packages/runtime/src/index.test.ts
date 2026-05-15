@@ -8,7 +8,7 @@ import {
   saveRuntimeSnapshotToSession,
   type RuntimeExecutor,
   type RuntimeTask,
-  type RuntimeWorkflowTask,
+  type RuntimeWorkflowTask
 } from './index.js';
 
 describe('createRuntimeExecutor', () => {
@@ -20,14 +20,14 @@ describe('createRuntimeExecutor', () => {
         id: 'a',
         run: async () => {
           calls.push('a');
-        },
+        }
       },
       {
         id: 'b',
         run: async () => {
           calls.push('b');
-        },
-      },
+        }
+      }
     ];
 
     await executor.execute(tasks);
@@ -45,14 +45,14 @@ describe('createRuntimeExecutor', () => {
         run: async () => {
           calls.push('a');
           abortController.abort();
-        },
+        }
       },
       {
         id: 'b',
         run: async () => {
           calls.push('b');
-        },
-      },
+        }
+      }
     ];
 
     await executor.execute(tasks, abortController.signal);
@@ -67,7 +67,7 @@ describe('createRuntimeExecutor', () => {
       id: 'a',
       run: async () => {
         throw new Error('boom');
-      },
+      }
     };
 
     await executor.execute([task]);
@@ -84,7 +84,7 @@ describe('createRuntimeExecutor', () => {
       id: 'a',
       run: async () => {
         throw 'boom';
-      },
+      }
     };
 
     await executor.execute([task]);
@@ -100,14 +100,14 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
-        run: async () => {},
+        run: async () => {}
       },
       {
         id: 'b',
         run: async () => {
           throw new Error('boom');
-        },
-      },
+        }
+      }
     ];
 
     const results = await executor.executeWithResults(tasks);
@@ -127,8 +127,8 @@ describe('createRuntimeExecutor', () => {
         id: 'a',
         run: async () => {
           calls.push('a');
-        },
-      },
+        }
+      }
     ]);
 
     expect(calls).toEqual(['a']);
@@ -142,8 +142,8 @@ describe('createRuntimeExecutor', () => {
         id: 'spawn-attempt',
         run: async (_signal, context) => {
           await context.spawn([]);
-        },
-      },
+        }
+      }
     ]);
 
     expect(results[0]?.status).toBe('failed');
@@ -160,14 +160,14 @@ describe('createRuntimeLoop', () => {
         id: 'a',
         run: async () => {
           calls.push('a');
-        },
+        }
       },
       {
         id: 'b',
         run: async () => {
           calls.push('b');
-        },
-      },
+        }
+      }
     ];
 
     const firstSnapshot = await loop.execute(tasks);
@@ -201,14 +201,14 @@ describe('createRuntimeLoop', () => {
         id: 'a',
         run: async () => {
           calls.push('a');
-        },
+        }
       },
       {
         id: 'b',
         run: async () => {
           calls.push('b');
-        },
-      },
+        }
+      }
     ];
 
     const firstLoop = createRuntimeLoop({ sessionId: 'session-1', sessionStore });
@@ -241,14 +241,14 @@ describe('createRuntimeLoop', () => {
               id: 'child',
               run: async () => {
                 calls.push('child');
-              },
-            },
+              }
+            }
           ]);
 
           expect(childSnapshot.depth).toBe(1);
           expect(childSnapshot.sessionId).toContain('root:child:1');
-        },
-      },
+        }
+      }
     ];
 
     const snapshot = await loop.execute(parentTasks);
@@ -265,9 +265,9 @@ describe('createRuntimeLoop', () => {
       loop.spawn([
         {
           id: 'child',
-          run: async () => {},
-        },
-      ]),
+          run: async () => {}
+        }
+      ])
     ).rejects.toThrow('Runtime spawn depth exceeded maxDepth');
   });
 });
@@ -284,11 +284,11 @@ describe('runtime snapshot session helpers', () => {
           taskId: 'task-1',
           status: 'completed' as const,
           startedAt: 1,
-          finishedAt: 2,
-        },
+          finishedAt: 2
+        }
       ],
       childSnapshots: [],
-      updatedAt: 3,
+      updatedAt: 3
     };
 
     saveRuntimeSnapshotToSession(sessionStore, snapshot);
@@ -312,21 +312,21 @@ describe('createRuntimeWorkflowExecutor', () => {
         dependsOn: ['build'],
         run: async () => {
           calls.push('deploy');
-        },
+        }
       },
       {
         id: 'build',
         run: async () => {
           calls.push('build');
-        },
+        }
       },
       {
         id: 'test',
         dependsOn: ['build'],
         run: async () => {
           calls.push('test');
-        },
-      },
+        }
+      }
     ];
 
     const snapshot = await workflow.execute(tasks);
@@ -346,7 +346,7 @@ describe('createRuntimeWorkflowExecutor', () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
       { id: 'a', dependsOn: ['b'], run: async () => {} },
-      { id: 'b', dependsOn: ['a'], run: async () => {} },
+      { id: 'b', dependsOn: ['a'], run: async () => {} }
     ];
 
     await expect(workflow.execute(tasks)).rejects.toThrow('contains a cycle');

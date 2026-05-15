@@ -4,7 +4,7 @@ import {
   extractToolCall,
   extractToolResult,
   type ChatMessage,
-  type ChatToolCall,
+  type ChatToolCall
 } from './role-converter.js';
 
 /**
@@ -14,7 +14,7 @@ function processPart(
   part: unknown,
   textParts: string[],
   toolCalls: ChatToolCall[],
-  state: { toolCallId?: string },
+  state: { toolCallId?: string }
 ): void {
   if (!part || typeof part !== 'object') return;
   const p = part as Record<string, unknown>;
@@ -77,7 +77,7 @@ export function convertMessage(vsMessage: unknown): ChatMessage {
     content,
     ...(name ? { name } : {}),
     ...(state.toolCallId ? { toolCallId: state.toolCallId } : {}),
-    ...(toolCalls.length > 0 ? { toolCalls } : {}),
+    ...(toolCalls.length > 0 ? { toolCalls } : {})
   };
 
   return result;

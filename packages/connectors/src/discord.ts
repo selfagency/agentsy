@@ -22,11 +22,11 @@ export class DiscordAdapterNotAvailableError extends Error {
     super('DiscordAdapter requires the discord.js peer dependency. Install it with pnpm add discord.js@^14.');
     Object.defineProperty(this, 'name', {
       value: 'DiscordAdapterNotAvailableError',
-      configurable: true,
+      configurable: true
     });
     Object.defineProperty(this, 'message', {
       value: 'DiscordAdapter requires the discord.js peer dependency. Install it with pnpm add discord.js@^14.',
-      configurable: true,
+      configurable: true
     });
   }
 }
@@ -43,5 +43,5 @@ export const DiscordAdapter = {
   },
   onMessage: () => {
     throw new DiscordAdapterNotAvailableError();
-  },
+  }
 };

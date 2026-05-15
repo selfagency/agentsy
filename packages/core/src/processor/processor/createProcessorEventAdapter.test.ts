@@ -12,7 +12,7 @@ describe('createProcessorEventAdapter', () => {
     createProcessorEventAdapter(processor, {
       onToolCallDelta,
       onStep,
-      onFinish,
+      onFinish
     });
 
     processor.process({ stepIndex: 0, content: 'hello' });

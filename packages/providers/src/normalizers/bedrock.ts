@@ -56,7 +56,7 @@ const BEDROCK_EVENT_KEYS = new Set([
   'contentBlockStop',
   'messageStart',
   'messageStop',
-  'metadata',
+  'metadata'
 ]);
 
 function isBedrockConverseEvent(value: unknown): value is BedrockConverseEvent {
@@ -78,7 +78,7 @@ function handleBedrockContentBlockDelta(raw: BedrockConverseEvent): NormalizerRe
   if (delta?.toolUse && typeof delta.toolUse.input === 'string') {
     const tc: NativeToolCallDelta = {
       index: contentBlockIndex,
-      argumentsDelta: delta.toolUse.input,
+      argumentsDelta: delta.toolUse.input
     };
     return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
   }

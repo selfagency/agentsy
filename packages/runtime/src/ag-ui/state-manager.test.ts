@@ -13,7 +13,7 @@ import {
   createStateDeltaEvent,
   createStateSnapshotEvent,
   StateManager,
-  type JsonPatchOp,
+  type JsonPatchOp
 } from './state-manager.js';
 
 describe('createStateSnapshotEvent', () => {
@@ -114,7 +114,7 @@ describe('computeStateDelta', () => {
     expect(patches).toContainEqual({
       op: 'replace',
       path: '/items',
-      value: [1, 2, 3, 4],
+      value: [1, 2, 3, 4]
     });
   });
 

@@ -36,7 +36,7 @@ export function createSmoothStream(options?: { chunkSize?: number; delayMs?: num
         controller.enqueue({ type: 'text', text: text.slice(offset, offset + chunkSize) });
         offset += chunkSize;
       }
-    },
+    }
   });
 }
 
@@ -52,7 +52,7 @@ export function createThinkingFilter(): PipelineTransform {
       if (part.type !== 'thinking') {
         controller.enqueue(part);
       }
-    },
+    }
   });
 }
 
@@ -74,6 +74,6 @@ export function createToolCallFilter(toolNames: string[]): PipelineTransform {
         return;
       }
       controller.enqueue(part);
-    },
+    }
   });
 }

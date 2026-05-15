@@ -22,7 +22,7 @@ describe('Plain Text Renderer', () => {
     const output = vi.fn();
     const renderer = createPlainTextRenderer({
       output,
-      onError,
+      onError
     });
 
     // Process normal data first
@@ -37,11 +37,11 @@ describe('Plain Text Renderer', () => {
   it('handles writable stream output', async () => {
     const mockStream = {
       write: vi.fn(),
-      end: vi.fn(),
+      end: vi.fn()
     };
 
     const renderer = createPlainTextRenderer({
-      output: mockStream as unknown as NodeJS.WritableStream,
+      output: mockStream as unknown as NodeJS.WritableStream
     });
 
     await renderer.write('Test ');
@@ -86,7 +86,7 @@ describe('Plain Text Renderer', () => {
     const output = vi.fn();
     const renderer = createPlainTextRenderer({
       output,
-      showThinking: true,
+      showThinking: true
     });
 
     await renderer.write('Some text');
@@ -101,7 +101,7 @@ describe('Plain Text Renderer', () => {
     const renderer = createPlainTextRenderer({
       output,
       showThinking: true,
-      thinkingPrefix: '💭 Custom: ',
+      thinkingPrefix: '💭 Custom: '
     });
 
     await renderer.write('Text content');
@@ -117,13 +117,13 @@ describe('Plain Text Renderer', () => {
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       expect(onFinish).toHaveBeenCalledWith('stop', undefined);
@@ -134,14 +134,14 @@ describe('Plain Text Renderer', () => {
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
         finishReason: 'length',
-        usage: { inputTokens: 10, outputTokens: 20 },
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
       expect(onFinish).toHaveBeenCalledWith('length', { inputTokens: 10, outputTokens: 20 });
@@ -152,7 +152,7 @@ describe('Plain Text Renderer', () => {
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       await renderer.write('Content');
@@ -169,7 +169,7 @@ describe('Plain Text Renderer', () => {
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         output,
-        onToolCall,
+        onToolCall
       });
 
       await renderer.write('Content');
@@ -183,7 +183,7 @@ describe('Plain Text Renderer', () => {
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         output,
-        onToolCallDelta,
+        onToolCallDelta
       });
 
       await renderer.write('Content');

@@ -6,8 +6,8 @@ vi.mock('streaming-markdown', () => ({
   default: {
     parser_create: vi.fn(opts => ({ target: opts.target })),
     parser_write: vi.fn(),
-    parser_end: vi.fn(),
-  },
+    parser_end: vi.fn()
+  }
 }));
 
 vi.mock('dompurify', () => {
@@ -15,10 +15,10 @@ vi.mock('dompurify', () => {
   return {
     default: {
       sanitize: mockSanitize,
-      removed: [],
+      removed: []
     },
     sanitize: mockSanitize,
-    removed: [],
+    removed: []
   };
 });
 
@@ -31,14 +31,14 @@ describe('Streaming Markdown Renderer', () => {
     mockTarget = {
       id: 'content',
       appendChild: vi.fn(),
-      innerHTML: '',
+      innerHTML: ''
     };
   });
 
   it('requires target element', () => {
     expect(() => {
       createStreamingMarkdownRenderer({
-        target: null as unknown as Record<string, unknown>,
+        target: null as unknown as Record<string, unknown>
       });
     }).toThrow('Target element is required');
   });
@@ -65,7 +65,7 @@ describe('Streaming Markdown Renderer', () => {
   it('handles thinking blocks when showThinking is true', async () => {
     const renderer = createStreamingMarkdownRenderer({
       target: mockTarget,
-      showThinking: true,
+      showThinking: true
     });
 
     await renderer.write('Content');
@@ -79,7 +79,7 @@ describe('Streaming Markdown Renderer', () => {
     const renderer = createStreamingMarkdownRenderer({
       target: mockTarget,
       showThinking: true,
-      thinkingContainer,
+      thinkingContainer
     });
 
     await renderer.write('Content');
@@ -92,7 +92,7 @@ describe('Streaming Markdown Renderer', () => {
     const onSecurityViolation = vi.fn();
     const renderer = createStreamingMarkdownRenderer({
       target: mockTarget,
-      onSecurityViolation,
+      onSecurityViolation
     });
 
     await renderer.write('Content');
@@ -106,7 +106,7 @@ describe('Streaming Markdown Renderer', () => {
     const onError = vi.fn();
     const renderer = createStreamingMarkdownRenderer({
       target: mockTarget,
-      onError,
+      onError
     });
 
     await renderer.write('test');
@@ -141,13 +141,13 @@ describe('Streaming Markdown Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       expect(onFinish).toHaveBeenCalledWith('stop', undefined);
@@ -157,14 +157,14 @@ describe('Streaming Markdown Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
         finishReason: 'length',
-        usage: { inputTokens: 10, outputTokens: 20 },
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
       expect(onFinish).toHaveBeenCalledWith('length', { inputTokens: 10, outputTokens: 20 });
@@ -174,14 +174,14 @@ describe('Streaming Markdown Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onFinish,
+        onFinish
       });
 
       // First call with done=true
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       // Then call end()
@@ -195,7 +195,7 @@ describe('Streaming Markdown Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onFinish,
+        onFinish
       });
 
       await renderer.write('Content');
@@ -211,7 +211,7 @@ describe('Streaming Markdown Renderer', () => {
       const onToolCall = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onToolCall,
+        onToolCall
       });
 
       await renderer.write('Content');
@@ -224,7 +224,7 @@ describe('Streaming Markdown Renderer', () => {
       const onToolCallDelta = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onToolCallDelta,
+        onToolCallDelta
       });
 
       await renderer.write('Content');
@@ -237,7 +237,7 @@ describe('Streaming Markdown Renderer', () => {
       const onStep = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         target: mockTarget,
-        onStep,
+        onStep
       });
 
       await renderer.writeChunk({ content: 'step 0', stepIndex: 0, stepUsage: { outputTokens: 2 } });

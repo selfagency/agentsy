@@ -3,7 +3,7 @@ import {
   LLMStreamProcessor,
   type ProcessedOutput,
   type ProcessorOptions,
-  type StreamChunk,
+  type StreamChunk
 } from '@agentsy/core/processor';
 import { type ValidateJsonSchemaOptions, validateJsonSchema } from '@agentsy/core/structured';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
@@ -14,7 +14,7 @@ import type { XmlToolCall } from '@agentsy/core/tool-calls';
  */
 export async function* processStream(
   source: AsyncIterable<StreamChunk>,
-  options: ProcessorOptions = {},
+  options: ProcessorOptions = {}
 ): AsyncGenerator<ProcessedOutput> {
   const processor = new LLMStreamProcessor(options);
 
@@ -31,7 +31,7 @@ export async function* processStream(
 export async function* processRawStream<TRawChunk>(
   source: AsyncIterable<TRawChunk>,
   normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined,
-  options: ProcessorOptions = {},
+  options: ProcessorOptions = {}
 ): AsyncGenerator<ProcessedOutput> {
   const processor = new LLMStreamProcessor(options);
 
@@ -73,7 +73,7 @@ export type StructuredDecisionResult<TDecision> =
     };
 
 export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = unknown>(
-  options: RunStructuredDecisionFromRawStreamOptions<TRawChunk>,
+  options: RunStructuredDecisionFromRawStreamOptions<TRawChunk>
 ): Promise<StructuredDecisionResult<TDecision>> {
   const processor = new LLMStreamProcessor(options.processorOptions);
 
@@ -104,7 +104,7 @@ export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = 
       success: false,
       errors: validated.errors,
       finalOutput,
-      validationText,
+      validationText
     };
   }
 
@@ -112,7 +112,7 @@ export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = 
     success: true,
     decision: validated.data,
     finalOutput,
-    validationText,
+    validationText
   };
 }
 
@@ -133,7 +133,7 @@ export type ApplyDecisionActionResult<TResult> =
 
 export async function applyDecisionAction<TDecision, TResult>(
   decision: TDecision,
-  options: ApplyDecisionActionOptions<TDecision, TResult>,
+  options: ApplyDecisionActionOptions<TDecision, TResult>
 ): Promise<ApplyDecisionActionResult<TResult>> {
   if (!options.shouldAct(decision)) {
     if (options.onSkip !== undefined) {
@@ -161,7 +161,7 @@ export interface GenericAdapterOptions extends ProcessorOptions {
 async function safeCall<T>(
   callback: (() => Promise<T>) | undefined,
   fallback: T,
-  onError?: (_error: Error) => void,
+  onError?: (_error: Error) => void
 ): Promise<T> {
   if (!callback) return fallback;
   try {
@@ -175,7 +175,7 @@ async function safeCall<T>(
 
 export function createGenericAdapter(
   callbacks: GenericAdapterCallbacks,
-  options: GenericAdapterOptions = {},
+  options: GenericAdapterOptions = {}
 ): {
   write(chunk: StreamChunk): Promise<void>;
   end(): Promise<void>;
@@ -190,7 +190,7 @@ export function createGenericAdapter(
         undefined,
         error => {
           void callbacks.onError?.(error, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
-        },
+        }
       );
     }
 
@@ -200,7 +200,7 @@ export function createGenericAdapter(
         undefined,
         error => {
           void callbacks.onError?.(error, { type: 'content', ...(chunk !== undefined && { chunk }) });
-        },
+        }
       );
     }
 
@@ -210,7 +210,7 @@ export function createGenericAdapter(
         undefined,
         error => {
           void callbacks.onError?.(error, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
-        },
+        }
       );
     }
   }
@@ -226,8 +226,8 @@ export function createGenericAdapter(
         undefined,
         error => {
           void callbacks.onError?.(error, { type: 'done' });
-        },
+        }
       );
-    },
+    }
   };
 }

@@ -41,7 +41,7 @@ await runtime.execute([
     id: 'collect-telemetry',
     async run() {
       // perform work
-    },
-  },
+    }
+  }
 ]);
 ```

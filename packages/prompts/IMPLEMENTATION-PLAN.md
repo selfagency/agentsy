@@ -87,7 +87,7 @@ interface OptimizedPrompt {
 class PromptOptimizer {
   constructor(
     private tokenCounter: TokenCounter,
-    private budget: TokenBudget,
+    private budget: TokenBudget
   ) {}
 
   optimize(prompt: string, constraints: OptimizationConstraints): OptimizedPrompt {
@@ -105,7 +105,7 @@ import { MemoryStore, MemoryRetrieval } from '@agentsy/memory';
 class PromptStorage {
   constructor(
     private memoryStore: MemoryStore,
-    private retrieval: MemoryRetrieval,
+    private retrieval: MemoryRetrieval
   ) {}
 
   async storeSystemPrompt(prompt: SystemPrompt): Promise<void> {

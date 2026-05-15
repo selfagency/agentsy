@@ -19,7 +19,7 @@ describe('formatXmlLikeResponseForDisplay', () => {
 
   it('formats multiple xml-like blocks while preserving surrounding text', () => {
     expect(formatXmlLikeResponseForDisplay('Intro <note>important</note> outro <status>ok</status>')).toBe(
-      'Intro \n\n**Note**\nimportant\n\n outro \n\n**Status**\nok',
+      'Intro \n\n**Note**\nimportant\n\n outro \n\n**Status**\nok'
     );
   });
 });

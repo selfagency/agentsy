@@ -46,7 +46,7 @@ export interface FieldValidatorOptions {
 export function validateField(
   _path: string,
   value: unknown,
-  validator: FieldValidator,
+  validator: FieldValidator
 ): { valid: boolean; error?: string } {
   try {
     const result = validator(value);
@@ -78,7 +78,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
           path: _path,
           value,
           valid: true,
-          timestamp: Date.now() - startTime,
+          timestamp: Date.now() - startTime
         };
       }
 
@@ -88,7 +88,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
         value,
         valid,
         ...(error !== undefined && { error }),
-        timestamp: Date.now() - startTime,
+        timestamp: Date.now() - startTime
       };
 
       if (onFieldValidation) {
@@ -110,7 +110,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
       }
 
       return events;
-    },
+    }
   };
 }
 
@@ -202,7 +202,7 @@ export const validators = {
     (allowedValues: unknown[]) =>
     (value: unknown): boolean | string => {
       return allowedValues.includes(value) || `must be one of: ${allowedValues.join(', ')}`;
-    },
+    }
 };
 
 /**
@@ -245,7 +245,7 @@ export function oneOf(...validators_: FieldValidator[]): FieldValidator {
  */
 export function validateObject(
   obj: Record<string, unknown>,
-  schema: FieldValidationSchema,
+  schema: FieldValidationSchema
 ): {
   valid: boolean;
   events: FieldValidationEvent[];
@@ -257,6 +257,6 @@ export function validateObject(
   return {
     valid: errors.length === 0,
     events,
-    errors,
+    errors
   };
 }

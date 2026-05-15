@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['@agentsy/types'],
+  external: ['@agentsy/types']
 });

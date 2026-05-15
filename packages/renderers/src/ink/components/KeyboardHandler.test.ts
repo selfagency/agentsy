@@ -10,14 +10,14 @@ describe('KeyboardHandler Component Props', () => {
   describe('keyboard options', () => {
     it('accepts enabled option', () => {
       const options = {
-        enabled: true,
+        enabled: true
       };
       expect(options.enabled).toBe(true);
     });
 
     it('accepts disabled option', () => {
       const options = {
-        enabled: false,
+        enabled: false
       };
       expect(options.enabled).toBe(false);
     });
@@ -26,7 +26,7 @@ describe('KeyboardHandler Component Props', () => {
       const onInterrupt = vi.fn();
       const options = {
         enabled: true,
-        onInterrupt,
+        onInterrupt
       };
       expect(typeof options.onInterrupt).toBe('function');
     });
@@ -37,7 +37,7 @@ describe('KeyboardHandler Component Props', () => {
         { enabled: true },
         { enabled: false },
         { enabled: true, onInterrupt },
-        { enabled: false, onInterrupt },
+        { enabled: false, onInterrupt }
       ];
 
       expect(configs).toHaveLength(4);
@@ -51,14 +51,14 @@ describe('KeyboardHandler Component Props', () => {
     it('treats Ctrl+C as interrupt signal', () => {
       const signals = {
         ctrlC: 'interrupt',
-        ctrlD: 'exit',
+        ctrlD: 'exit'
       };
       expect(signals.ctrlC).toBe('interrupt');
     });
 
     it('handles interrupt without callback', () => {
       const options = {
-        enabled: true,
+        enabled: true
       };
       // Should not throw even without callback
       expect(options.enabled).toBe(true);
@@ -68,7 +68,7 @@ describe('KeyboardHandler Component Props', () => {
       const onInterrupt = vi.fn();
       const options = {
         enabled: true,
-        onInterrupt,
+        onInterrupt
       };
 
       // Simulate interrupt
@@ -100,7 +100,7 @@ describe('KeyboardHandler Component Props', () => {
   describe('streaming interaction', () => {
     it('allows interrupt during streaming', () => {
       const options = {
-        enabled: true,
+        enabled: true
       };
 
       // Simulate streaming
@@ -117,7 +117,7 @@ describe('KeyboardHandler Component Props', () => {
       const onInterrupt = vi.fn();
       const options = {
         enabled: true,
-        onInterrupt,
+        onInterrupt
       };
 
       if (options.onInterrupt) {
@@ -139,7 +139,7 @@ describe('KeyboardHandler Component Props', () => {
     it('handles null interrupt callback gracefully', () => {
       const options = {
         enabled: true,
-        onInterrupt: undefined as unknown as () => void,
+        onInterrupt: undefined as unknown as () => void
       };
 
       expect(options.onInterrupt).toBeUndefined();
@@ -153,22 +153,22 @@ describe('KeyboardHandler Component Props', () => {
           toggle: () => {
             enabled = !enabled;
           },
-          after: !enabled,
+          after: !enabled
         },
         {
           before: enabled,
           toggle: () => {
             enabled = !enabled;
           },
-          after: !enabled,
+          after: !enabled
         },
         {
           before: enabled,
           toggle: () => {
             enabled = !enabled;
           },
-          after: !enabled,
-        },
+          after: !enabled
+        }
       ];
 
       expect(toggles).toHaveLength(3);
@@ -179,7 +179,7 @@ describe('KeyboardHandler Component Props', () => {
       const options = [
         { enabled: true, onInterrupt },
         { enabled: true, onInterrupt },
-        { enabled: true, onInterrupt },
+        { enabled: true, onInterrupt }
       ];
 
       // Simulate concurrent calls
@@ -194,7 +194,7 @@ describe('KeyboardHandler Component Props', () => {
   describe('accessibility', () => {
     it('keyboard support aids accessibility', () => {
       const options = {
-        enabled: true,
+        enabled: true
       };
       expect(options.enabled).toBe(true);
     });

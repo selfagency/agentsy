@@ -66,6 +66,6 @@ export function createEmptyStats(): ProcessorStats {
     contentDeltasCount: 0,
     errorsCount: 0,
     warningsCount: 0,
-    resetAt: now,
+    resetAt: now
   };
 }

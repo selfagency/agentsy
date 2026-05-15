@@ -28,7 +28,7 @@ function sseLine(data: unknown): string {
 // Collect all events from a pipeline into an array
 async function collectPipelineEvents(
   source: AsyncIterable<string>,
-  provider: Parameters<typeof createPipeline>[1]['provider'],
+  provider: Parameters<typeof createPipeline>[1]['provider']
 ): Promise<PipelineEvent[]> {
   const events: PipelineEvent[] = [];
   for await (const event of createPipeline(source, { provider })) {
@@ -77,7 +77,7 @@ describe('createPipeline (openai)', () => {
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
       provider: 'openai',
-      knownTools: new Set(['search_files']),
+      knownTools: new Set(['search_files'])
     })) {
       events.push(event);
     }
@@ -96,7 +96,7 @@ describe('createPipeline (openai)', () => {
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
       provider: 'openai',
-      parseThinkTags: true,
+      parseThinkTags: true
     })) {
       events.push(event);
     }
@@ -172,7 +172,7 @@ describe('createPipeline (gemini)', () => {
       sseLine({ candidates: [{ content: { parts: [{ text: 'Gemini' }], role: 'model' }, finishReason: null }] }) +
       sseLine({
         candidates: [{ content: { parts: [{ text: ' here' }], role: 'model' }, finishReason: 'STOP' }],
-        usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 2, totalTokenCount: 7 },
+        usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 2, totalTokenCount: 7 }
       });
 
     const events = await collectPipelineEvents(sseSource(sse), 'gemini');
@@ -192,7 +192,7 @@ describe('createPipeline (gemini)', () => {
 describe('createPipeline (unknown provider)', () => {
   it('throws synchronously for unknown provider', () => {
     const gen = createPipeline(sseSource('data: {}\n\n'), {
-      provider: 'unknown-provider' as Parameters<typeof createPipeline>[1]['provider'],
+      provider: 'unknown-provider' as Parameters<typeof createPipeline>[1]['provider']
     });
     // The error is thrown when the generator function body begins executing
     return expect(gen.next()).rejects.toThrow('Unknown provider');

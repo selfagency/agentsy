@@ -24,7 +24,7 @@ async function main() {
     license,
     author,
     private: isPrivate,
-    publishConfig,
+    publishConfig
   } = pkg;
 
   // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
@@ -54,7 +54,7 @@ async function main() {
     main: './index.cjs',
     module: './index.js',
     types: './index.d.ts',
-    exports: distExports,
+    exports: distExports
   };
 
   await mkdir(outDir, { recursive: true });

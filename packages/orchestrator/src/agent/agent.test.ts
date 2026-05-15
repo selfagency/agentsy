@@ -10,7 +10,7 @@ import {
   hasToolCall,
   isLoopFinished,
   isStepCount,
-  mergeCallbacks,
+  mergeCallbacks
 } from './index.js';
 
 // Helper functions for doom loop tests
@@ -22,7 +22,7 @@ function createMockOutput(toolCalls: XmlToolCall[]): ProcessedOutput {
     done: false,
     parts: [],
     incomplete: false,
-    incompleteness: [],
+    incompleteness: []
   };
 }
 
@@ -31,7 +31,7 @@ function createMockStep(toolCall: XmlToolCall): StepResult {
     output: createMockOutput([toolCall]),
     toolCalls: [toolCall],
     finishReason: undefined,
-    usage: undefined,
+    usage: undefined
   };
 }
 
@@ -41,7 +41,7 @@ function createMockState(steps: StepResult[], lastToolCalls: XmlToolCall[], cons
     stepIndex: steps.length - 1,
     lastOutput: createMockOutput(lastToolCalls),
     toolCallCount: steps.length,
-    consecutiveIdenticalCalls: consecutiveCount,
+    consecutiveIdenticalCalls: consecutiveCount
   };
 }
 
@@ -59,11 +59,11 @@ describe('Stop Conditions', () => {
               done: false,
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [],
             finishReason: undefined,
-            usage: undefined,
+            usage: undefined
           },
           {
             output: {
@@ -73,12 +73,12 @@ describe('Stop Conditions', () => {
               done: true,
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [],
             finishReason: undefined,
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 1,
         lastOutput: {
@@ -88,10 +88,10 @@ describe('Stop Conditions', () => {
           done: true,
           parts: [],
           incomplete: false,
-          incompleteness: [],
+          incompleteness: []
         },
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(true);
@@ -109,12 +109,12 @@ describe('Stop Conditions', () => {
               done: false,
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [],
             finishReason: undefined,
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 0,
         lastOutput: {
@@ -124,10 +124,10 @@ describe('Stop Conditions', () => {
           done: false,
           parts: [],
           incomplete: false,
-          incompleteness: [],
+          incompleteness: []
         },
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(false);
@@ -147,12 +147,12 @@ describe('Stop Conditions', () => {
               done: true,
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [],
             finishReason: undefined,
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 0,
         lastOutput: {
@@ -162,10 +162,10 @@ describe('Stop Conditions', () => {
           done: true,
           parts: [],
           incomplete: false,
-          incompleteness: [],
+          incompleteness: []
         },
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(true);
@@ -177,7 +177,7 @@ describe('Stop Conditions', () => {
         name: 'test_fn',
         parameters: {},
         format: 'bare-xml',
-        id: '1',
+        id: '1'
       };
       const state: AgentLoopState = {
         steps: [
@@ -189,12 +189,12 @@ describe('Stop Conditions', () => {
               done: true,
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [toolCall],
             finishReason: undefined,
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 0,
         lastOutput: {
@@ -204,10 +204,10 @@ describe('Stop Conditions', () => {
           done: true,
           parts: [],
           incomplete: false,
-          incompleteness: [],
+          incompleteness: []
         },
         toolCallCount: 1,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(false);
@@ -244,12 +244,12 @@ describe('Stop Conditions', () => {
               finishReason: 'stop',
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [],
             finishReason: 'stop',
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 0,
         lastOutput: {
@@ -260,10 +260,10 @@ describe('Stop Conditions', () => {
           finishReason: 'stop',
           parts: [],
           incomplete: false,
-          incompleteness: [],
+          incompleteness: []
         },
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(true);
@@ -282,12 +282,12 @@ describe('Stop Conditions', () => {
               finishReason: 'length',
               parts: [],
               incomplete: false,
-              incompleteness: [],
+              incompleteness: []
             },
             toolCalls: [],
             finishReason: 'length',
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 0,
         lastOutput: {
@@ -298,10 +298,10 @@ describe('Stop Conditions', () => {
           finishReason: 'length',
           parts: [],
           incomplete: false,
-          incompleteness: [],
+          incompleteness: []
         },
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(false);
@@ -322,12 +322,12 @@ describe('Stop Conditions', () => {
               parts: [],
               incomplete: false,
               incompleteness: [],
-              finishReason: 'stop',
+              finishReason: 'stop'
             },
             toolCalls: [],
             finishReason: 'stop',
-            usage: undefined,
-          },
+            usage: undefined
+          }
         ],
         stepIndex: 0,
         lastOutput: {
@@ -338,10 +338,10 @@ describe('Stop Conditions', () => {
           parts: [],
           incomplete: false,
           incompleteness: [],
-          finishReason: 'stop',
+          finishReason: 'stop'
         },
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0,
+        consecutiveIdenticalCalls: 0
       };
 
       expect(condition(state)).toBe(true);
@@ -355,7 +355,7 @@ describe('Stop Conditions', () => {
         name: 'search',
         parameters: { query: 'test' },
         format: 'bare-xml',
-        id: '1',
+        id: '1'
       };
       const step1 = createMockStep(toolCall);
       const step2 = createMockStep(toolCall);
@@ -370,13 +370,13 @@ describe('Stop Conditions', () => {
         name: 'search',
         parameters: { query: 'first' },
         format: 'bare-xml',
-        id: '1',
+        id: '1'
       };
       const call2: XmlToolCall = {
         name: 'search',
         parameters: { query: 'second' },
         format: 'bare-xml',
-        id: '2',
+        id: '2'
       };
       const step1 = createMockStep(call1);
       const step2 = createMockStep(call2);
@@ -392,13 +392,13 @@ describe('Stop Conditions', () => {
         name: 'search',
         parameters: { query: 'test', limit: 10 },
         format: 'bare-xml',
-        id: '1',
+        id: '1'
       };
       const call2: XmlToolCall = {
         name: 'search',
         parameters: { limit: 10, query: 'test' }, // Same params, different order
         format: 'bare-xml',
-        id: '2',
+        id: '2'
       };
       const step1 = createMockStep(call1);
       const step2 = createMockStep(call2);
@@ -419,7 +419,7 @@ describe('createAgentLoop', () => {
       },
       async () => {
         calls.push('b');
-      },
+      }
     );
 
     await merged?.();
@@ -435,7 +435,7 @@ describe('createAgentLoop', () => {
         yield { content: 'Response', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
@@ -454,7 +454,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: isStepCount(1),
       maxSteps: 10,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
@@ -473,7 +473,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: [],
       maxSteps: 1,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
@@ -492,7 +492,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: isStepCount(1),
       onStep: onStepSpy,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
@@ -513,7 +513,7 @@ describe('createAgentLoop', () => {
       stopWhen: isStepCount(1),
       beforeInit,
       afterInit,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([{ role: 'user', content: 'hello' }])) {
@@ -537,7 +537,7 @@ describe('createAgentLoop', () => {
       stopWhen: isStepCount(1),
       beforeStep,
       afterStep,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([{ role: 'user', content: 'hello' }])) {
@@ -566,7 +566,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: isStepCount(1),
       prepareStep: () => ({ messages: [{ role: 'system', content: 'prepared message' }] }),
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([{ role: 'user', content: 'original' }])) {
@@ -581,7 +581,7 @@ describe('createAgentLoop', () => {
       name: 'search',
       parameters: { query: 'docs' },
       format: 'bare-xml',
-      id: 'tool-1',
+      id: 'tool-1'
     };
     const beforeToolCall = vi.fn();
     const afterToolCall = vi.fn();
@@ -594,20 +594,20 @@ describe('createAgentLoop', () => {
             {
               function: {
                 name: toolCall.name,
-                arguments: toolCall.parameters,
-              },
-            },
-          ],
+                arguments: toolCall.parameters
+              }
+            }
+          ]
         };
         yield {
           done: true,
-          finishReason: 'tool-calls' as const,
+          finishReason: 'tool-calls' as const
         };
       },
       stopWhen: isStepCount(2),
       beforeToolCall,
       afterToolCall,
-      buildToolResultMessages: async () => toolResultMessages,
+      buildToolResultMessages: async () => toolResultMessages
     });
 
     for await (const _part of loop.run([])) {
@@ -619,14 +619,14 @@ describe('createAgentLoop', () => {
     expect(beforeToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
       {
         name: toolCall.name,
-        parameters: toolCall.parameters,
-      },
+        parameters: toolCall.parameters
+      }
     ]);
     expect(afterToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
       {
         name: toolCall.name,
-        parameters: toolCall.parameters,
-      },
+        parameters: toolCall.parameters
+      }
     ]);
     expect(afterToolCall.mock.calls[0]?.[0].toolResultMessages).toEqual(toolResultMessages);
   });
@@ -641,16 +641,16 @@ describe('createAgentLoop', () => {
             {
               function: {
                 name: 'search',
-                arguments: { query: 'docs' },
-              },
-            },
-          ],
+                arguments: { query: 'docs' }
+              }
+            }
+          ]
         };
         yield { done: true, finishReason: 'tool-calls' as const };
       },
       stopWhen: isStepCount(3),
       toolApprovalMode: 'deny',
-      buildToolResultMessages,
+      buildToolResultMessages
     });
 
     for await (const _part of loop.run([])) {
@@ -671,17 +671,17 @@ describe('createAgentLoop', () => {
             {
               function: {
                 name: 'search',
-                arguments: { query: 'docs' },
-              },
-            },
-          ],
+                arguments: { query: 'docs' }
+              }
+            }
+          ]
         };
         yield { done: true, finishReason: 'tool-calls' as const };
       },
       stopWhen: isStepCount(2),
       toolApprovalMode: 'ask',
       approveToolCalls,
-      buildToolResultMessages,
+      buildToolResultMessages
     });
 
     for await (const _part of loop.run([])) {
@@ -696,8 +696,8 @@ describe('createAgentLoop', () => {
     expect(buildToolResultCalls[0]?.[0]).toMatchObject([
       {
         name: 'search',
-        parameters: { query: 'docs' },
-      },
+        parameters: { query: 'docs' }
+      }
     ]);
   });
 
@@ -711,26 +711,26 @@ describe('createAgentLoop', () => {
             {
               function: {
                 name: 'search',
-                arguments: { query: 'docs' },
-              },
+                arguments: { query: 'docs' }
+              }
             },
             {
               function: {
                 name: 'fetch',
-                arguments: { url: 'https://example.com' },
-              },
-            },
-          ],
+                arguments: { url: 'https://example.com' }
+              }
+            }
+          ]
         };
         yield { done: true, finishReason: 'tool-calls' as const };
       },
       stopWhen: isStepCount(2),
       toolApprovalMode: 'ask',
       approveToolCalls: async context => ({
-        approvedToolCalls: context.toolCalls.filter(toolCall => toolCall.name === 'search'),
+        approvedToolCalls: context.toolCalls.filter(toolCall => toolCall.name === 'search')
       }),
       afterToolCall,
-      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }],
+      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }]
     });
 
     for await (const _part of loop.run([])) {
@@ -739,10 +739,10 @@ describe('createAgentLoop', () => {
 
     expect(afterToolCall).toHaveBeenCalledTimes(1);
     expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toMatchObject([
-      { name: 'search', parameters: { query: 'docs' } },
+      { name: 'search', parameters: { query: 'docs' } }
     ]);
     expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toMatchObject([
-      { name: 'fetch', parameters: { url: 'https://example.com' } },
+      { name: 'fetch', parameters: { url: 'https://example.com' } }
     ]);
   });
 
@@ -757,20 +757,20 @@ describe('createAgentLoop', () => {
               id: 'tool-1',
               function: {
                 name: 'search',
-                arguments: { query: 'docs' },
-              },
-            },
-          ],
+                arguments: { query: 'docs' }
+              }
+            }
+          ]
         };
         yield { done: true, finishReason: 'tool-calls' as const };
       },
       stopWhen: isStepCount(2),
       toolApprovalMode: 'ask',
       approveToolCalls: async () => ({
-        approvedToolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' }],
+        approvedToolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' }]
       }),
       afterToolCall,
-      buildToolResultMessages: async toolCalls => toolCalls.map(toolCall => ({ role: 'tool', content: toolCall.name })),
+      buildToolResultMessages: async toolCalls => toolCalls.map(toolCall => ({ role: 'tool', content: toolCall.name }))
     });
 
     for await (const _part of loop.run([])) {
@@ -791,10 +791,10 @@ describe('createAgentLoop', () => {
             {
               function: {
                 name: 'search',
-                arguments: { query: 'docs' },
-              },
-            },
-          ],
+                arguments: { query: 'docs' }
+              }
+            }
+          ]
         };
         yield { done: true, finishReason: 'tool-calls' as const };
       },
@@ -817,9 +817,9 @@ describe('createAgentLoop', () => {
         },
         afterToolCall: async () => {
           callOrder.push('override-afterToolCall');
-        },
+        }
       }),
-      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }],
+      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }]
     });
 
     for await (const _part of loop.run([])) {
@@ -845,7 +845,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: [],
       maxSteps: 10,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     const gen = loop.run([]);
@@ -867,7 +867,7 @@ describe('createAgentLoop', () => {
       stopWhen: [],
       maxSteps: 10,
       onAbort,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     const gen = loop.run([]);
@@ -889,7 +889,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: isStepCount(1),
       onError,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     await expect(async () => {
@@ -914,7 +914,7 @@ describe('createAgentLoop', () => {
       stopWhen: isStepCount(1),
       beforeFinal,
       afterFinal,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
@@ -937,7 +937,7 @@ describe('createAgentLoop', () => {
         yield { content: ' Part 2', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const part of loop.run([])) {
@@ -965,12 +965,12 @@ describe('createAgentLoop', () => {
       },
       stopWhen: isStepCount(1),
       maxConversationMessages: 4,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     const initialMessages = Array.from({ length: 5 }, (_, i) => ({
       role: 'user' as const,
-      content: `Message ${i}`,
+      content: `Message ${i}`
     }));
 
     for await (const _part of loop.run(initialMessages)) {
@@ -991,7 +991,7 @@ describe('createAgentLoop', () => {
         yield { content: 'chunk2', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     for await (const part of loop.run([])) {
@@ -1012,7 +1012,7 @@ describe('createAgentLoop', () => {
       },
       stopWhen: isStepCount(2),
       maxSteps: 5,
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     let partCount = 0;

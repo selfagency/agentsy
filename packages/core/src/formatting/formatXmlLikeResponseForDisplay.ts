@@ -43,7 +43,7 @@ function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | 
   return {
     tag,
     content: text.slice(openEnd + 1, closeStart),
-    endIndex: closeStart + tag.length + 3,
+    endIndex: closeStart + tag.length + 3
   };
 }
 

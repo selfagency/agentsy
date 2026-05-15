@@ -38,7 +38,7 @@ export function normalizeRepositoryValue(value: string): string {
  */
 export function validateRepositoryMatch(
   pkgRepoValue: string,
-  expectedRepo: string,
+  expectedRepo: string
 ): { ok: true } | { ok: false; error: string } {
   const normalizedPkgRepo = normalizeRepositoryValue(pkgRepoValue);
   const normalizedExpectedRepo = normalizeRepositoryValue(expectedRepo);
@@ -48,7 +48,7 @@ export function validateRepositoryMatch(
       ok: false,
       error:
         `Release blocked: package repository.url must match '${normalizedExpectedRepo}' for npm trusted publishing. ` +
-        `Current value resolves to '${normalizedPkgRepo || '(empty)'}'.`,
+        `Current value resolves to '${normalizedPkgRepo || '(empty)'}'.`
     };
   }
 
@@ -86,7 +86,7 @@ export function checkTrustedPublishReadiness(input: {
       ok: false,
       error:
         `Release blocked: ${input.packageName} is '${packageState}', not '${expectedState}'. ` +
-        `Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.`,
+        `Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.`
     };
   }
 
@@ -105,7 +105,7 @@ export function checkTrustedPublishReadiness(input: {
   if (!existsSync(workflowPath)) {
     return {
       ok: false,
-      error: `Release blocked: workflow file '.github/workflows/${workflowFilename}' does not exist.`,
+      error: `Release blocked: workflow file '.github/workflows/${workflowFilename}' does not exist.`
     };
   }
 
@@ -121,9 +121,9 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
       'release-state-path': { type: 'string' },
       'workflow-filename': { type: 'string' },
       'expected-state': { type: 'string' },
-      'root-dir': { type: 'string' },
+      'root-dir': { type: 'string' }
     },
-    allowPositionals: false,
+    allowPositionals: false
   });
 
   const packageName = args['package-name'];
@@ -135,7 +135,7 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
 
   if (!packageName || !packageDir || !expectedRepo) {
     console.error(
-      'Usage: node scripts/trusted-publish-readiness.js --package-name <name> --package-dir <dir> --expected-repo <owner/repo> [--release-state-path <path>] [--workflow-filename release.yml] [--expected-state oidc-ready]',
+      'Usage: node scripts/trusted-publish-readiness.js --package-name <name> --package-dir <dir> --expected-repo <owner/repo> [--release-state-path <path>] [--workflow-filename release.yml] [--expected-state oidc-ready]'
     );
     process.exit(1);
   }
@@ -147,7 +147,7 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
     releaseStatePath: resolve(releaseStatePath),
     workflowFilename,
     expectedState,
-    ...(args['root-dir'] === undefined ? {} : { rootDir: resolve(args['root-dir']) }),
+    ...(args['root-dir'] === undefined ? {} : { rootDir: resolve(args['root-dir']) })
   });
 
   if (!result.ok) {

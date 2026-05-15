@@ -50,7 +50,7 @@ function getCachedRegex(pattern: string): RegExp {
 
 export type JsonSchemaValidator = (
   data: unknown,
-  schema: JsonObject,
+  schema: JsonObject
 ) =>
   | boolean
   | {
@@ -131,7 +131,7 @@ const FORMAT_PATTERNS: Record<string, string> = {
     `|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$` +
     `|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$` +
     `|^:(:[0-9a-fA-F]{1,4}){1,7}$` +
-    `|^::$`,
+    `|^::$`
 };
 
 function checkRef(
@@ -139,7 +139,7 @@ function checkRef(
   schema: JsonSchema,
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): boolean {
   if (typeof schema.$ref !== 'string') return false;
 
@@ -182,7 +182,7 @@ function checkTypeConstraint(
   schemaType: string,
   valueType: string,
   path: string,
-  errors: string[],
+  errors: string[]
 ): boolean {
   if (!isValueTypeMatch(value, schemaType)) {
     errors.push(`${path}: expected ${schemaType}, got ${valueType}`);
@@ -196,7 +196,7 @@ function checkAnyOf(
   subSchemas: unknown[],
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   const matched = subSchemas.some(subSchema => {
     if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return false;
@@ -214,7 +214,7 @@ function checkOneOf(
   subSchemas: unknown[],
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   const matchCount = subSchemas.reduce((count: number, subSchema) => {
     if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) return count;
@@ -233,7 +233,7 @@ function checkAllOf(
   subSchemas: unknown[],
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   for (const subSchema of subSchemas) {
     if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) continue;
@@ -246,7 +246,7 @@ function checkCompositeKeywords(
   schema: JsonSchema,
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   if (Array.isArray(schema.enum) && !schema.enum.some(item => deepEqual(item, value))) {
     errors.push(`${path}: value is not in enum`);
@@ -328,7 +328,7 @@ function checkArrayConstraints(
   schema: JsonSchema,
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   if (typeof schema.minItems === 'number' && value.length < schema.minItems) {
     errors.push(`${path}: array has fewer than ${schema.minItems} items`);
@@ -350,7 +350,7 @@ function checkAdditionalProperties(
   properties: Record<string, unknown>,
   additionalProperties: unknown,
   path: string,
-  errors: string[],
+  errors: string[]
 ): void {
   if (additionalProperties !== false) return;
   for (const key of Object.keys(value)) {
@@ -365,7 +365,7 @@ function checkObjectConstraints(
   schema: JsonSchema,
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
   for (const key of required) {
@@ -394,7 +394,7 @@ function checkValueTypeConstraints(
   schema: JsonSchema,
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   if (typeof value === 'string') checkStringConstraints(value, schema, path, errors);
   if (typeof value === 'number') checkNumberConstraints(value, schema, path, errors);
@@ -409,7 +409,7 @@ function validateNode(
   schema: JsonSchema,
   path: string,
   errors: string[],
-  context?: ResolveContext,
+  context?: ResolveContext
 ): void {
   if (checkRef(value, schema, path, errors, context)) return;
 
@@ -432,7 +432,7 @@ function walkObjectNode(
   depth: number,
   maxDepth: number,
   maxKeys: number,
-  state: WalkLimitsState,
+  state: WalkLimitsState
 ): void {
   const entries = Object.entries(node);
   state.keyCount += entries.length;
@@ -469,7 +469,7 @@ function parseWithLimits(
   text: string,
   options: ValidateJsonSchemaOptions,
   maxJsonDepth: number,
-  maxJsonKeys: number,
+  maxJsonKeys: number
 ): unknown {
   const parsedWithLimits = parseJson(text, { ...options, maxJsonDepth, maxJsonKeys });
   if (parsedWithLimits !== null) {
@@ -481,7 +481,7 @@ function parseWithLimits(
 function runExternalValidator(
   parsed: unknown,
   schema: JsonObject,
-  options: ValidateJsonSchemaOptions,
+  options: ValidateJsonSchemaOptions
 ): { success: false; errors: string[] } | null {
   if (!options.validator) {
     return null;
@@ -499,7 +499,7 @@ function runExternalValidator(
     if (!validated.valid) {
       return {
         success: false,
-        errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
+        errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed']
       };
     }
     return null;
@@ -519,7 +519,7 @@ function runExternalValidator(
 export function validateJsonSchema<T = unknown>(
   text: string,
   schema: JsonObject,
-  options: ValidateJsonSchemaOptions = {},
+  options: ValidateJsonSchemaOptions = {}
 ): { success: true; data: T } | { success: false; errors: string[] } {
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
   const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;

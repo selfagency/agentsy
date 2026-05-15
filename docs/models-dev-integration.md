@@ -245,7 +245,7 @@ class ModelSelector {
    */
   async selectModel(
     requirements: TaskRequirements,
-    availableModels?: string[], // User's available models
+    availableModels?: string[] // User's available models
   ): Promise<ModelSelectionResult> {
     const allModels = this.modelsDev.listModels();
     const filteredModels = availableModels
@@ -255,7 +255,7 @@ class ModelSelector {
     const scoredModels = filteredModels.map(model => ({
       model,
       score: this.calculateMatchScore(model, requirements),
-      cost: this.estimateCost(model, requirements),
+      cost: this.estimateCost(model, requirements)
     }));
 
     const sortedModels = scoredModels
@@ -280,7 +280,7 @@ class ModelSelector {
       confidence: best.score,
       estimated_cost: best.cost,
       capabilities: this.extractCapabilities(best.model),
-      reasoning: this.buildReasoning(best.model, requirements),
+      reasoning: this.buildReasoning(best.model, requirements)
     };
   }
 
@@ -372,7 +372,7 @@ class ModelSelector {
       image_input: model.modalities.input.includes('image'),
       image_output: model.modalities.output.includes('image'),
       audio_input: model.modalities.input.includes('audio'),
-      audio_output: model.modalities.output.includes('audio'),
+      audio_output: model.modalities.output.includes('audio')
     };
   }
 
@@ -478,7 +478,7 @@ class ModelAwareAgentRegistry extends AgentRegistry {
    */
   async findAgentsWithModelMatch(
     taskRequirements: TaskRequirements,
-    requiredSkills: RequiredSkills[],
+    requiredSkills: RequiredSkills[]
   ): Promise<{ agent: AgentCapabilities; model: ModelSelectionResult }[]> {
     const skillAgents = this.findAgentsBySkills(requiredSkills);
 
@@ -487,7 +487,7 @@ class ModelAwareAgentRegistry extends AgentRegistry {
       if (agent.modelPreferences?.requiredCapabilities) {
         const modelResult = await this.modelSelector.selectModel(
           agent.modelPreferences.requiredCapabilities,
-          this.availableModelsManager.getAvailableModels(),
+          this.availableModelsManager.getAvailableModels()
         );
         if (modelResult.confidence > 0.5) {
           // Only include good matches
@@ -514,13 +514,13 @@ class ModelAwareAgentRegistry extends AgentRegistry {
 class ModelAwareOrchestrationEngine {
   constructor(
     private agentRegistry: ModelAwareAgentRegistry,
-    private tokenBudget: TokenBudgetManager,
+    private tokenBudget: TokenBudgetManager
   ) {}
 
   async orchestrateTask(
     taskDescription: string,
     requiredSkills: RequiredSkills[],
-    availableBudget?: number,
+    availableBudget?: number
   ): Promise<{
     agent: AgentCapabilities;
     model: ModelSelectionResult;
@@ -546,13 +546,13 @@ class ModelAwareOrchestrationEngine {
     return {
       agent: selected.agent,
       model: selected.model,
-      executionPlan: this.buildExecutionPlan(selected),
+      executionPlan: this.buildExecutionPlan(selected)
     };
   }
 
   private selectBestMatch(
     matches: { agent: AgentCapabilities; model: ModelSelectionResult }[],
-    availableBudget?: number,
+    availableBudget?: number
   ): { agent: AgentCapabilities; model: ModelSelectionResult } {
     // Score based on: model confidence * agent proficiency * cost factor
     return matches
@@ -561,7 +561,7 @@ class ModelAwareOrchestrationEngine {
         score:
           match.model.confidence *
           this.getAgentProficiency(match.agent) *
-          this.getCostFactor(match.model.estimated_cost, availableBudget),
+          this.getCostFactor(match.model.estimated_cost, availableBudget)
       }))
       .sort((a, b) => b.score - a.score)[0];
   }
@@ -592,7 +592,7 @@ class DynamicProviderRegistry {
     return {
       provider: providerId as NormalizerProvider,
       apiKey,
-      baseUrl: provider.api,
+      baseUrl: provider.api
     };
   }
 
@@ -606,8 +606,8 @@ class DynamicProviderRegistry {
         streaming: true,
         toolCalling: this.getProviderCapability(p, 'tool_calling'),
         batching: false,
-        reasoning: this.getProviderCapability(p, 'reasoning'),
-      },
+        reasoning: this.getProviderCapability(p, 'reasoning')
+      }
     }));
   }
 
@@ -812,9 +812,9 @@ const analysis = await modelSelector.selectModel(
     modality: 'text',
     capabilities: { tool_calling: true },
     specialization: 'coding',
-    constraints: { max_cost: 0.05 },
+    constraints: { max_cost: 0.05 }
   },
-  ['anthropic:claude-3.7-sonnet*', 'openai:gpt-4*'],
+  ['anthropic:claude-3.7-sonnet*', 'openai:gpt-4*']
 );
 
 // Result:
@@ -830,7 +830,7 @@ const analysis = await modelSelector.selectModel(
 const result = await orchestrationEngine.orchestrateTask(
   task,
   [{ name: 'security-analysis', proficiency: 'advanced' }],
-  analysis.estimated_cost,
+  analysis.estimated_cost
 );
 ```
 

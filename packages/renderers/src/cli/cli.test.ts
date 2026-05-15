@@ -3,7 +3,7 @@ import { createCliRenderer } from './createCliRenderer.js';
 
 // Mock cli-markdown module
 vi.mock('cli-markdown', () => ({
-  default: vi.fn((markdown: string) => `[FORMATTED]\n${markdown}\n[/FORMATTED]`),
+  default: vi.fn((markdown: string) => `[FORMATTED]\n${markdown}\n[/FORMATTED]`)
 }));
 
 describe('CLI Renderer', () => {
@@ -31,7 +31,7 @@ describe('CLI Renderer', () => {
     const renderer = createCliRenderer({
       output,
       showThinking: true,
-      thinkingStyle: 'blockquote',
+      thinkingStyle: 'blockquote'
     });
 
     await renderer.write('Content');
@@ -45,7 +45,7 @@ describe('CLI Renderer', () => {
     const renderer = createCliRenderer({
       output,
       showThinking: true,
-      thinkingStyle: 'suppress',
+      thinkingStyle: 'suppress'
     });
 
     await renderer.write('Content');
@@ -57,11 +57,11 @@ describe('CLI Renderer', () => {
   it('handles writable stream output', async () => {
     const mockStream = {
       write: vi.fn(),
-      end: vi.fn(),
+      end: vi.fn()
     };
 
     const renderer = createCliRenderer({
-      output: mockStream as unknown as NodeJS.WritableStream,
+      output: mockStream as unknown as NodeJS.WritableStream
     });
 
     await renderer.write('# Test\n\nContent');
@@ -76,7 +76,7 @@ describe('CLI Renderer', () => {
     const output = vi.fn();
     const renderer = createCliRenderer({
       output,
-      onError,
+      onError
     });
 
     await renderer.write('test');
@@ -119,13 +119,13 @@ describe('CLI Renderer', () => {
       const output = vi.fn();
       const renderer = createCliRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       expect(onFinish).toHaveBeenCalledWith('stop', undefined);
@@ -136,14 +136,14 @@ describe('CLI Renderer', () => {
       const output = vi.fn();
       const renderer = createCliRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
         finishReason: 'length',
-        usage: { inputTokens: 10, outputTokens: 20 },
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
       expect(onFinish).toHaveBeenCalledWith('length', { inputTokens: 10, outputTokens: 20 });
@@ -154,14 +154,14 @@ describe('CLI Renderer', () => {
       const output = vi.fn();
       const renderer = createCliRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       // First call with done=true
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       // Then call end()
@@ -176,7 +176,7 @@ describe('CLI Renderer', () => {
       const output = vi.fn();
       const renderer = createCliRenderer({
         output,
-        onFinish,
+        onFinish
       });
 
       await renderer.write('Content');
@@ -193,7 +193,7 @@ describe('CLI Renderer', () => {
       const output = vi.fn();
       const renderer = createCliRenderer({
         output,
-        onToolCall,
+        onToolCall
       });
 
       await renderer.write('Content');
@@ -207,7 +207,7 @@ describe('CLI Renderer', () => {
       const output = vi.fn();
       const renderer = createCliRenderer({
         output,
-        onToolCallDelta,
+        onToolCallDelta
       });
 
       await renderer.write('Content');
@@ -221,7 +221,7 @@ describe('CLI Renderer', () => {
       const output = vi.fn<(text: string) => void>();
       const renderer = createCliRenderer({
         output,
-        onStep,
+        onStep
       });
 
       await renderer.writeChunk({ content: 'step 0', stepIndex: 0, stepUsage: { outputTokens: 2 } });

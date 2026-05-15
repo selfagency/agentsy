@@ -38,8 +38,8 @@ describe('models.dev integration', () => {
       const result = await selector.selectModel({
         modality: 'text',
         capabilities: {
-          tool_calling: true,
-        },
+          tool_calling: true
+        }
       });
 
       expect(result.model).toBeDefined();
@@ -54,8 +54,8 @@ describe('models.dev integration', () => {
         modality: 'multimodal',
         capabilities: {
           image_input: true,
-          tool_calling: true,
-        },
+          tool_calling: true
+        }
       });
 
       expect(result.model).toBeDefined();
@@ -68,9 +68,9 @@ describe('models.dev integration', () => {
       const result = await selector.selectModel({
         modality: 'text',
         capabilities: {
-          tool_calling: true,
+          tool_calling: true
         },
-        specialization: 'reasoning',
+        specialization: 'reasoning'
       });
 
       expect(result.model).toBeDefined();
@@ -83,8 +83,8 @@ describe('models.dev integration', () => {
       const result = await selector.selectModel({
         modality: 'text',
         constraints: {
-          max_cost: 0.02, // Very low budget
-        },
+          max_cost: 0.02 // Very low budget
+        }
       });
 
       expect(result.estimatedCost).toBeLessThanOrEqual(0.02);
@@ -96,8 +96,8 @@ describe('models.dev integration', () => {
       const result = await selector.selectModel({
         modality: 'text',
         constraints: {
-          max_context: 256000, // Large context window
-        },
+          max_context: 256000 // Large context window
+        }
       });
 
       expect(result.confidence).toBeGreaterThan(0);
@@ -107,7 +107,7 @@ describe('models.dev integration', () => {
       const selector = new ModelSelector();
 
       const result = await selector.selectModel({
-        modality: 'multimodal',
+        modality: 'multimodal'
       });
 
       expect(result.provider).toBeDefined();
@@ -134,7 +134,7 @@ describe('models.dev integration', () => {
 
       const result = await selector.estimateTask('Analyze code', 'anthropic:claude-sonnet-4-6', {
         estimatedInputTokens: 25000,
-        estimatedOutputTokens: 5000,
+        estimatedOutputTokens: 5000
       });
 
       expect(result.estimatedCost).toBeGreaterThan(0);

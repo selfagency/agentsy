@@ -73,8 +73,8 @@ const schema = {
   type: 'object',
   properties: {
     name: { type: 'string' },
-    items: { type: 'array', items: { type: 'string' } },
-  },
+    items: { type: 'array', items: { type: 'string' } }
+  }
 };
 
 const result = validateJsonSchema(response, schema);
@@ -108,7 +108,7 @@ for (const call of toolCalls) {
 import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const filter = createXmlStreamFilter({
-  enforcePrivacyTags: true,
+  enforcePrivacyTags: true
 });
 
 for await (const chunk of llmStream) {
@@ -127,7 +127,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
   knownTools: new Set(['search', 'edit']),
-  modelId: 'claude-opus',
+  modelId: 'claude-opus'
 });
 
 // Subscribe to events
@@ -140,7 +140,7 @@ for await (const chunk of apiStream) {
   processor.process({
     content: chunk.content,
     thinking: chunk.thinking,
-    done: chunk.done,
+    done: chunk.done
   });
 }
 
@@ -161,7 +161,7 @@ const agent = createAgentLoop({
   execute: async function* (messages) {
     const response = await fetch('https://api.example.com/chat', {
       method: 'POST',
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages })
     });
 
     for await (const chunk of response.body) {
@@ -172,16 +172,16 @@ const agent = createAgentLoop({
   // Stop when we have a final answer or after 5 steps
   stopWhen: [
     state => state.lastOutput.toolCalls.length === 0, // No more tool calls
-    state => state.steps.length >= 5, // Max steps reached
+    state => state.steps.length >= 5 // Max steps reached
   ],
 
   // Convert tool results back to messages
   buildToolResultMessages: async toolCalls => {
     return toolCalls.map(call => ({
       role: 'user',
-      content: `Tool "${call.name}" executed successfully`,
+      content: `Tool "${call.name}" executed successfully`
     }));
-  },
+  }
 });
 
 // Execute the agent
@@ -211,7 +211,7 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
     },
     onFinish: (finishReason, usage) => {
       console.log('Chat finished. Reason:', finishReason, 'Usage:', usage);
-    },
+    }
   });
 
   // Stream LLM response
@@ -236,7 +236,7 @@ import { processStream } from '@agentsy/providers/adapters';
 
 for await (const output of processStream(apiStream, {
   parseThinkTags: true,
-  knownTools: new Set(['search']),
+  knownTools: new Set(['search'])
 })) {
   console.log('Thinking:', output.thinking);
   console.log('Content:', output.content);
@@ -252,7 +252,7 @@ for await (const output of processStream(apiStream, {
 ```typescript
 const processor = new LLMStreamProcessor({
   modelId: 'claude-opus', // Auto-detects thinking tags
-  parseThinkTags: true,
+  parseThinkTags: true
 });
 ```
 
@@ -261,7 +261,7 @@ const processor = new LLMStreamProcessor({
 ```typescript
 const processor = new LLMStreamProcessor({
   modelId: 'deepseek', // Uses <think></think>
-  parseThinkTags: true,
+  parseThinkTags: true
 });
 ```
 
@@ -270,7 +270,7 @@ const processor = new LLMStreamProcessor({
 ```typescript
 const processor = new LLMStreamProcessor({
   modelId: 'granite', // Uses <|thinking|></|thinking|>
-  parseThinkTags: true,
+  parseThinkTags: true
 });
 ```
 
@@ -280,7 +280,7 @@ const processor = new LLMStreamProcessor({
 const processor = new LLMStreamProcessor({
   thinkingOpenTag: '<reasoning>',
   thinkingCloseTag: '</reasoning>',
-  parseThinkTags: true,
+  parseThinkTags: true
 });
 ```
 
@@ -294,7 +294,7 @@ if (data === null) {
   // Retry or use default
   const schema = {
     type: 'object',
-    properties: { key: { type: 'string' } },
+    properties: { key: { type: 'string' } }
   };
   const validated = validateJsonSchema(response, schema);
 
@@ -304,7 +304,7 @@ if (data === null) {
     const repairPrompt = buildRepairPrompt({
       failedOutput: response,
       error: validated.errors[0],
-      schema,
+      schema
     });
     // Ask model to fix...
   }
@@ -333,7 +333,7 @@ for (const call of toolCalls) {
 const processor = new LLMStreamProcessor({
   onWarning: (message, context) => {
     console.warn('[warning]', message, context);
-  },
+  }
 });
 ```
 
@@ -366,7 +366,7 @@ const processor = new LLMStreamProcessor({
   ```typescript
   parseJson(response, {
     maxJsonDepth: 10,
-    maxJsonKeys: 100,
+    maxJsonKeys: 100
   });
   ```
 
@@ -375,7 +375,7 @@ const processor = new LLMStreamProcessor({
   ```typescript
   const processor = new LLMStreamProcessor({
     scrubContextTags: true,
-    enforcePrivacyTags: true,
+    enforcePrivacyTags: true
   });
   ```
 

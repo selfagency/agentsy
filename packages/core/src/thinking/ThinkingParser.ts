@@ -11,7 +11,7 @@ const BUILTIN_THINKING_TAG_MAP = new Map<string, ThinkingTagPair>([
   ['qwen', ['<think>', '</think>']],
   ['llama', ['<think>', '</think>']],
   ['mistral', ['<think>', '</think>']],
-  ['granite', ['<|thinking|>', '</|thinking|>']],
+  ['granite', ['<|thinking|>', '</|thinking|>']]
 ]);
 
 type ThinkingState =

@@ -19,14 +19,14 @@ export class RetryUtility {
 
   public async executeWithRetry<T>(
     operation: () => Promise<T>,
-    onRetry?: (attempt: number, error: unknown) => void,
+    onRetry?: (attempt: number, error: unknown) => void
   ): Promise<T> {
     return this.performRetryWithBackoff(operation, onRetry);
   }
 
   private async performRetryWithBackoff<T>(
     operation: () => Promise<T>,
-    onRetry?: (attempt: number, error: unknown) => void,
+    onRetry?: (attempt: number, error: unknown) => void
   ): Promise<T> {
     let lastError: unknown;
     let attempt = 0;
@@ -97,7 +97,7 @@ export class RetryUtility {
   private async handleRetry(
     attempt: number,
     error: unknown,
-    onRetry?: (attempt: number, error: unknown) => void,
+    onRetry?: (attempt: number, error: unknown) => void
   ): Promise<void> {
     if (attempt >= this.maxRetries) {
       return;
@@ -125,7 +125,7 @@ export function createRetryUtility(
   maxRetries: number,
   delayMs: number,
   cancellationToken: CancellationToken,
-  backoffFactor = 1,
+  backoffFactor = 1
 ): RetryUtility {
   return new RetryUtility(maxRetries, delayMs, cancellationToken, backoffFactor);
 }

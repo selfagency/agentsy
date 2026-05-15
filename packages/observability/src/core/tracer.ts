@@ -120,8 +120,8 @@ export class InternalSpan implements Span {
       timestamp,
       attributes: {
         ...errorInfo,
-        ...attributes,
-      },
+        ...attributes
+      }
     });
   }
 
@@ -135,7 +135,7 @@ export class InternalSpan implements Span {
     this._events.push({
       name,
       timestamp: Date.now(),
-      attributes: attributes ?? {},
+      attributes: attributes ?? {}
     });
   }
 
@@ -167,17 +167,17 @@ export class InternalSpan implements Span {
       return {
         'error.type': exception.constructor.name,
         'error.message': exception.message,
-        'error.stack': exception.stack ?? '(no stack trace)',
+        'error.stack': exception.stack ?? '(no stack trace)'
       };
     } else if (typeof exception === 'string') {
       return {
         'error.type': 'stringError',
-        'error.message': exception,
+        'error.message': exception
       };
     } else if (exception !== null && typeof exception === 'object') {
       if ('name' in exception && typeof exception.name === 'string') {
         const info: Record<string, string> = {
-          'error.type': exception.name,
+          'error.type': exception.name
         };
         if ('message' in exception && typeof exception.message === 'string') {
           info['error.message'] = exception.message;
@@ -191,7 +191,7 @@ export class InternalSpan implements Span {
 
     return {
       'error.type': 'unknown',
-      'error.message': String(exception),
+      'error.message': String(exception)
     };
   }
 }

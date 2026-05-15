@@ -137,7 +137,7 @@ describe('Markdown to ANSI Conversion', () => {
 
     it('converts mixed content', async () => {
       const result = await markdownToAnsi(
-        '# Title\n\nParagraph with **bold** and *italic*.\n\n- List item\n- Another item',
+        '# Title\n\nParagraph with **bold** and *italic*.\n\n- List item\n- Another item'
       );
       expect(result).toBeDefined();
       expect(typeof result).toBe('string');

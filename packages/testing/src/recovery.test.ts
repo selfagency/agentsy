@@ -71,7 +71,7 @@ describe('captureStreamState', () => {
 
     processor.processComplete({
       content: '<search><query>test</query></search>',
-      done: true,
+      done: true
     });
 
     const snapshot = captureStreamState(processor);
@@ -105,7 +105,7 @@ describe('buildContinuationPrompt', () => {
 
   it('returns [assistant, user] for openai provider', () => {
     const messages = buildContinuationPrompt(makeSnapshot('Partial answer so far'), {
-      provider: 'openai',
+      provider: 'openai'
     });
 
     expect(messages).toHaveLength(2);
@@ -124,7 +124,7 @@ describe('buildContinuationPrompt', () => {
 
   it('returns [assistant] prefill for anthropic provider', () => {
     const messages = buildContinuationPrompt(makeSnapshot('Partial for anthropic'), {
-      provider: 'anthropic',
+      provider: 'anthropic'
     });
 
     expect(messages).toHaveLength(1);
@@ -134,7 +134,7 @@ describe('buildContinuationPrompt', () => {
 
   it('uses openai format for ollama provider', () => {
     const messages = buildContinuationPrompt(makeSnapshot('Ollama partial'), {
-      provider: 'ollama',
+      provider: 'ollama'
     });
 
     expect(messages).toHaveLength(2);

@@ -63,7 +63,7 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
     const record: SchedulerTaskRecord = {
       ...task,
       createdAt: Date.now(),
-      status: task.runAt === undefined ? 'pending' : 'scheduled',
+      status: task.runAt === undefined ? 'pending' : 'scheduled'
     };
     tasks.set(task.id, record);
     return { ...record };
@@ -84,7 +84,7 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
 
       const cancelled: SchedulerTaskRecord = {
         ...record,
-        status: 'cancelled',
+        status: 'cancelled'
       };
       tasks.set(taskId, cancelled);
       return { ...cancelled };
@@ -101,7 +101,7 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
         .filter(task => (options.status ? task.status === options.status : true))
         .sort((left, right) => left.createdAt - right.createdAt)
         .map(task => ({ ...task }));
-    },
+    }
   };
 }
 
@@ -120,7 +120,7 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
       ...(typeof candidate.id === 'string' ? { id: candidate.id } : {}),
       ...(typeof candidate.name === 'string' ? { name: candidate.name } : {}),
       ...(candidate.input === undefined ? {} : { input: candidate.input }),
-      ...(typeof candidate.runAt === 'number' ? { runAt: candidate.runAt } : {}),
+      ...(typeof candidate.runAt === 'number' ? { runAt: candidate.runAt } : {})
     };
   };
 
@@ -144,15 +144,15 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
         ...(typeof schedulerTask.runAt === 'number' ? { runAt: schedulerTask.runAt } : {}),
         metadata: {
           input: schedulerTask.input,
-          assignedAgentId: selectedAgent.id,
-        },
+          assignedAgentId: selectedAgent.id
+        }
       });
 
       return {
         agentId: selectedAgent.id,
         assigned: true,
-        status: 'scheduled',
+        status: 'scheduled'
       };
-    },
+    }
   };
 }

@@ -42,7 +42,7 @@ const PROVIDER_ENDPOINTS: Record<NormalizerProvider, string> = {
   ollama: 'http://localhost:11434/api/chat',
   cohere: 'https://api.cohere.com/v1/chat',
   'hugging-face': 'https://api-inference.huggingface.co/models',
-  zai: 'https://api.zai.com/v1/chat',
+  zai: 'https://api.zai.com/v1/chat'
 };
 
 /**
@@ -83,8 +83,8 @@ function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
                 type: 'image_url',
                 image_url: {
                   url: part.imageUrl,
-                  detail: part.detail ?? 'auto',
-                },
+                  detail: part.detail ?? 'auto'
+                }
               };
             if (part.type === 'tool_call')
               return {
@@ -95,22 +95,22 @@ function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
                     type: 'function' as const,
                     function: {
                       name: part.name,
-                      arguments: JSON.stringify(part.input),
-                    },
-                  },
-                ],
+                      arguments: JSON.stringify(part.input)
+                    }
+                  }
+                ]
               };
             if (part.type === 'tool_result')
               return {
                 type: 'tool_result' as const,
                 tool_call_id: part.toolCallId,
-                content: part.content,
+                content: part.content
               };
             return part;
           })
         : msg.content,
-      ...(msg.toolCallId && { tool_call_id: msg.toolCallId }),
-    })),
+      ...(msg.toolCallId && { tool_call_id: msg.toolCallId })
+    }))
   };
 
   if (request.temperature !== undefined) req.temperature = request.temperature;
@@ -133,7 +133,7 @@ function toBedrockFormat(request: CompletionRequest): Record<string, unknown> {
     modelId: request.model,
     messages: request.messages,
     maxTokens: request.maxTokens ?? 2048,
-    temperature: request.temperature ?? 0.7,
+    temperature: request.temperature ?? 0.7
   };
 }
 
@@ -149,8 +149,8 @@ function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown
       temperature: request.temperature,
       do_sample: request.temperature !== undefined,
       top_p: request.topP,
-      top_k: request.topK,
-    },
+      top_k: request.topK
+    }
   };
 }
 
@@ -169,7 +169,7 @@ function parseUsageInfo(usageData: Record<string, unknown>): UsageInfo | undefin
 }
 
 function parseContentFromChoice(
-  content: { content: string } | { content?: { parts?: Array<{ text?: string }> } },
+  content: { content: string } | { content?: { parts?: Array<{ text?: string }> } }
 ): string {
   if (typeof content.content === 'string') {
     return content.content;
@@ -182,7 +182,7 @@ function parseProviderResponse(response: unknown, _provider: NormalizerProvider)
 
   if (!('choices' in data) || !Array.isArray(data.choices) || data.choices.length === 0) {
     return {
-      content: typeof data.content === 'string' ? data.content : JSON.stringify(data),
+      content: typeof data.content === 'string' ? data.content : JSON.stringify(data)
     };
   }
 
@@ -193,7 +193,7 @@ function parseProviderResponse(response: unknown, _provider: NormalizerProvider)
     data.usage && typeof data.usage === 'object' ? parseUsageInfo(data.usage as Record<string, unknown>) : undefined;
 
   const result: CompletionResponse = {
-    content: parseContentFromChoice(content),
+    content: parseContentFromChoice(content)
   };
 
   if (usage) {
@@ -264,7 +264,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
         method: 'POST',
         headers: buildHeaders(provider, apiKey, config.organizationId),
         body: JSON.stringify(providerRequest),
-        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null,
+        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null
       });
 
       if (!response.ok) {
@@ -281,7 +281,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
         method: 'POST',
         headers: buildHeaders(provider, apiKey, config.organizationId, true),
         body: JSON.stringify(providerRequest),
-        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null,
+        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null
       });
 
       if (!response.ok) {
@@ -295,7 +295,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       const pipeline = createPipeline(response.body, {
         provider,
         maxJsonDepth: 64,
-        maxJsonKeys: 10000,
+        maxJsonKeys: 10000
       });
 
       const chunks: NormalizedChunk[] = [];
@@ -304,7 +304,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
           chunks.push({ content: event.content });
         } else if (event.type === 'tool_call' && event.tool_call) {
           chunks.push({
-            tool_calls: [{ function: { name: event.tool_call.name, arguments: event.tool_call.parameters } }],
+            tool_calls: [{ function: { name: event.tool_call.name, arguments: event.tool_call.parameters } }]
           });
         } else if (event.type === 'thinking' && event.thinking) {
           chunks.push({ thinking: event.thinking });
@@ -317,11 +317,11 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
             controller.enqueue(chunk);
           }
           controller.close();
-        },
+        }
       });
 
       return stream;
-    },
+    }
   };
 }
 
@@ -329,10 +329,10 @@ function buildHeaders(
   _provider: NormalizerProvider,
   apiKey?: string,
   organizationId?: string,
-  stream?: boolean,
+  stream?: boolean
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   };
 
   if (apiKey) {

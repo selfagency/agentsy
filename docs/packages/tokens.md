@@ -36,7 +36,7 @@ await manager.createBudget({
   maxCost: 5,
   periodMs: 60_000,
   resetStrategy: 'rolling',
-  priority: 'high',
+  priority: 'high'
 });
 
 const pacing = new PacingController(manager);
@@ -48,7 +48,7 @@ console.log(
     provider: 'openai',
     model: 'gpt-4.1-mini',
     estimatedTokens: 250,
-    requestType: 'completion',
-  }),
+    requestType: 'completion'
+  })
 );
 ```

@@ -39,10 +39,10 @@
     "coverage": "vitest --typecheck run --coverage"
   },
   "dependencies": {
-    "type-fest": "4.26.1"
+    "type-fest": "5.6.0"
   },
   "devDependencies": {
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

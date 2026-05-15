@@ -35,7 +35,7 @@ const ANSI = {
   green: '\u001B[32m',
   white: '\u001B[37m',
   yellow: '\u001B[33m',
-  dim: '\u001B[2m',
+  dim: '\u001B[2m'
 } as const;
 
 console.log('Available themes:');

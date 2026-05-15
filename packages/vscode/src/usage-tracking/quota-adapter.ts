@@ -24,7 +24,7 @@ const EMPTY_QUOTA_WINDOW: QuotaWindowValue = {
   used: 0,
   total: 1,
   unit: 'requests',
-  window: 'daily',
+  window: 'daily'
 };
 
 function percentUsed(windowValue: QuotaWindowValue): number {
@@ -36,7 +36,7 @@ function percentUsed(windowValue: QuotaWindowValue): number {
 export function pickActiveQuotaWindow(
   windows: QuotaWindowValue[],
   strategy: ActiveQuotaWindowStrategy = 'most-constrained',
-  preferredOrder: QuotaWindow[] = DEFAULT_WINDOW_ORDER,
+  preferredOrder: QuotaWindow[] = DEFAULT_WINDOW_ORDER
 ): QuotaWindowValue {
   if (windows.length === 0) {
     return { ...EMPTY_QUOTA_WINDOW };
@@ -108,7 +108,7 @@ export function createQuotaDataSourceAdapter<TPayload>(options: QuotaAdapterOpti
       unit: active.unit,
       window: active.window,
       percentUsed: percent,
-      ...(active.expiresAt === undefined ? {} : { expiresAt: active.expiresAt }),
+      ...(active.expiresAt === undefined ? {} : { expiresAt: active.expiresAt })
     };
   }
 
@@ -120,6 +120,6 @@ export function createQuotaDataSourceAdapter<TPayload>(options: QuotaAdapterOpti
     async refreshQuota(): Promise<UsageQuota> {
       const payload = await options.fetch();
       return normalize(payload);
-    },
+    }
   };
 }

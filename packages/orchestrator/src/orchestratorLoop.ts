@@ -4,7 +4,7 @@ import {
   type SchedulerRegistry,
   type SchedulerTaskDefinition,
   type SchedulerTaskRecord,
-  type SchedulerTaskStatus,
+  type SchedulerTaskStatus
 } from './scheduler/index.js';
 
 export interface OrchestratorConfig extends AgentLoopOptions {
@@ -36,6 +36,6 @@ export function createOrchestratorLoop(config: OrchestratorConfig): Orchestrator
     },
     listScheduledTasks(options) {
       return scheduler.list(options);
-    },
+    }
   };
 }

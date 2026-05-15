@@ -3,5 +3,5 @@ export {
   createMockApiKeyManager,
   createMockRendererHandle,
   type MockApiKeyManager,
-  type MockRendererHandle,
+  type MockRendererHandle
 } from './mock-builders.js';

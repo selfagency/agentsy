@@ -6,6 +6,6 @@ export {
   type ActiveQuotaWindowStrategy,
   type QuotaAdapterOptions,
   type QuotaWindow,
-  type QuotaWindowValue,
+  type QuotaWindowValue
 } from './quota-adapter.js';
 export { formatQuotaText, getQuotaStatus, UsageStatusBar } from './usage-status-bar.js';

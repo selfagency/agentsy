@@ -94,7 +94,7 @@ function validateValue(path: string, value: unknown, schema: SchemaProperty, err
  */
 export function applyDefaults(
   settings: Record<string, unknown>,
-  defaults: Record<string, unknown>,
+  defaults: Record<string, unknown>
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { ...defaults };
   for (const [key, value] of Object.entries(settings)) {

@@ -6,7 +6,7 @@ import {
   checkTrustedPublishReadiness,
   getRepositoryField,
   normalizeRepositoryValue,
-  validateRepositoryMatch,
+  validateRepositoryMatch
 } from './trusted-publish-readiness.ts';
 
 function setupBase() {
@@ -33,10 +33,10 @@ describe('trusted-publish-readiness', () => {
 
   it('getRepositoryField supports string and object forms', () => {
     expect(getRepositoryField('https://github.com/selfagency/agentsy.git')).toEqual(
-      'https://github.com/selfagency/agentsy.git',
+      'https://github.com/selfagency/agentsy.git'
     );
     expect(getRepositoryField({ url: 'git@github.com:selfagency/agentsy.git' })).toEqual(
-      'git@github.com:selfagency/agentsy.git',
+      'git@github.com:selfagency/agentsy.git'
     );
     expect(getRepositoryField({})).toEqual('');
   });
@@ -51,12 +51,12 @@ describe('trusted-publish-readiness', () => {
 
     writeFileSync(
       join(pkgDir, 'package.json'),
-      JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } }),
+      JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } })
     );
 
     writeFileSync(
       releaseStatePath,
-      JSON.stringify({ defaultState: 'bootstrap-required', packages: { '@agentsy/testpkg': 'oidc-ready' } }),
+      JSON.stringify({ defaultState: 'bootstrap-required', packages: { '@agentsy/testpkg': 'oidc-ready' } })
     );
 
     const result = checkTrustedPublishReadiness({
@@ -65,7 +65,7 @@ describe('trusted-publish-readiness', () => {
       expectedRepo: 'selfagency/agentsy',
       releaseStatePath,
       workflowFilename: 'release.yml',
-      rootDir: base,
+      rootDir: base
     });
 
     expect(result).toEqual({ ok: true });
@@ -76,7 +76,7 @@ describe('trusted-publish-readiness', () => {
 
     writeFileSync(
       join(pkgDir, 'package.json'),
-      JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } }),
+      JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } })
     );
 
     writeFileSync(releaseStatePath, JSON.stringify({ defaultState: 'bootstrap-required', packages: {} }));
@@ -87,7 +87,7 @@ describe('trusted-publish-readiness', () => {
       expectedRepo: 'selfagency/agentsy',
       releaseStatePath,
       workflowFilename: 'release.yml',
-      rootDir: base,
+      rootDir: base
     });
 
     expect(result.ok).toEqual(false);
@@ -98,12 +98,12 @@ describe('trusted-publish-readiness', () => {
 
     writeFileSync(
       join(pkgDir, 'package.json'),
-      JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } }),
+      JSON.stringify({ name: '@agentsy/testpkg', repository: { url: 'https://github.com/selfagency/agentsy.git' } })
     );
 
     writeFileSync(
       releaseStatePath,
-      JSON.stringify({ defaultState: 'bootstrap-required', packages: { '@agentsy/testpkg': 'oidc-ready' } }),
+      JSON.stringify({ defaultState: 'bootstrap-required', packages: { '@agentsy/testpkg': 'oidc-ready' } })
     );
 
     const result = checkTrustedPublishReadiness({
@@ -112,7 +112,7 @@ describe('trusted-publish-readiness', () => {
       expectedRepo: 'selfagency/agentsy',
       releaseStatePath,
       workflowFilename: 'missing.yml',
-      rootDir: base,
+      rootDir: base
     });
 
     expect(result.ok).toEqual(false);

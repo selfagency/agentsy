@@ -10,14 +10,14 @@ describe('toVSCodeToolCallPart', () => {
         id: 'call_abc',
         name: 'lookup',
         parameters: { q: 'weather' },
-        format: 'native-json',
-      },
+        format: 'native-json'
+      }
     });
 
     expect(part).toEqual({
       callId: 'call_abc',
       name: 'lookup',
-      input: { q: 'weather' },
+      input: { q: 'weather' }
     });
   });
 });
@@ -30,21 +30,21 @@ describe('ToolCallDeltaAccumulator', () => {
       index: 0,
       id: 'call_1',
       name: 'lookup',
-      argumentsDelta: '{"q":',
+      argumentsDelta: '{"q":'
     });
     accumulateToolCallDeltas(accumulator, {
       type: 'tool_call_delta',
       index: 0,
       name: 'lookup',
-      argumentsDelta: '"x"}',
+      argumentsDelta: '"x"}'
     });
 
     expect(accumulator.finalize()).toEqual([
       {
         callId: 'call_1',
         name: 'lookup',
-        input: { q: 'x' },
-      },
+        input: { q: 'x' }
+      }
     ]);
   });
 
@@ -56,7 +56,7 @@ describe('ToolCallDeltaAccumulator', () => {
       type: 'tool_call_delta',
       index: 0,
       name: 'lookup',
-      argumentsDelta: '{"q":"abc"',
+      argumentsDelta: '{"q":"abc"'
     });
 
     const finalized = accumulator.finalize({ onWarning });

@@ -12,7 +12,7 @@ import type {
   Histogram,
   Meter,
   MetricOptions,
-  ObservableGauge,
+  ObservableGauge
 } from '../core/types.js';
 
 /**
@@ -153,7 +153,7 @@ export class MeterImpl implements Meter {
   createObservableGauge(
     name: string,
     callback: (observable: ObservableGauge) => void,
-    options?: MetricOptions,
+    options?: MetricOptions
   ): ObservableGauge {
     const otelOptions: api.MetricOptions = {};
     if (options?.description) otelOptions.description = options.description;
@@ -171,7 +171,7 @@ export class MeterImpl implements Meter {
     // We need to return a dummy ObservableGauge that doesn't actually do anything
     // since the real recording happens in the callback.
     return {
-      record: (_amount: number, _attributes?: Record<string, AttributeValue>) => {},
+      record: (_amount: number, _attributes?: Record<string, AttributeValue>) => {}
     };
   }
 }

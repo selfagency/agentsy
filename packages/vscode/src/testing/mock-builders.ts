@@ -44,12 +44,12 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
       return {
         dispose(): void {
           listeners.delete(listener);
-        },
+        }
       };
     },
     async hasApiKey(): Promise<boolean> {
       return key !== undefined && key.length > 0;
-    },
+    }
   };
 }
 
@@ -81,7 +81,7 @@ export function createMockRendererHandle(): MockRendererHandle {
     },
     async end(): Promise<void> {
       ended = true;
-    },
+    }
   };
 }
 
@@ -89,7 +89,7 @@ export function createMockRendererHandle(): MockRendererHandle {
  * Build a normalizer stub that maps arbitrary source events into stream chunks.
  */
 export function createChunkNormalizerStub<TEvent>(
-  mapper: (event: TEvent) => StreamChunk | null,
+  mapper: (event: TEvent) => StreamChunk | null
 ): (source: AsyncIterable<TEvent>) => AsyncIterable<StreamChunk> {
   return async function* normalize(source: AsyncIterable<TEvent>): AsyncIterable<StreamChunk> {
     for await (const event of source) {

@@ -46,7 +46,7 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     text: '',
     thinking: '',
     toolCalls: [] as Array<{ id: string; name: string; arguments: JsonObject; done: boolean }>,
-    isStreaming: true,
+    isStreaming: true
   };
 
   const forceUpdateRef = { current: () => {} };
@@ -68,7 +68,7 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
         id: part.id || randomUUID(),
         name: part.name,
         arguments: part.parameters,
-        done: true,
+        done: true
       });
       forceUpdateRef.current();
     },
@@ -79,7 +79,7 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     },
     warning: (error: string) => {
       options.onWarning?.(error);
-    },
+    }
   };
 
   processor.on('text', listeners.text);
@@ -107,10 +107,10 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
         theme: resolvedTheme,
         screenReader: options.screenReader,
         syntaxHighlight: options.syntaxHighlight,
-        keyboard: options.keyboard,
-      },
+        keyboard: options.keyboard
+      }
     }),
-    options.inkOptions,
+    options.inkOptions
   );
 
   return {
@@ -130,6 +130,6 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
       processor.off('done', listeners.done);
       processor.off('warning', listeners.warning);
       instance.unmount();
-    },
+    }
   };
 }

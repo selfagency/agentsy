@@ -56,7 +56,7 @@ export class SettingsLoader {
   onDidChange(listener: SettingsChangeListener): { dispose(): void } {
     this.listeners.add(listener);
     return {
-      dispose: () => this.listeners.delete(listener),
+      dispose: () => this.listeners.delete(listener)
     };
   }
 

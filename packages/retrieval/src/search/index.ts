@@ -15,7 +15,7 @@ export class RetrievalEngine {
     this.embeddings = new Map();
     this.options = {
       topK: options.topK ?? 10,
-      minSimilarity: options.minSimilarity ?? 0.7,
+      minSimilarity: options.minSimilarity ?? 0.7
     };
   }
 
@@ -49,7 +49,7 @@ export class RetrievalEngine {
     return {
       documents: topResults.map(r => this.toSearchResultDocument(r.document, r.score)),
       total: topResults.length,
-      queryTime,
+      queryTime
     };
   }
 
@@ -75,7 +75,7 @@ export class RetrievalEngine {
           if (similarity >= threshold) {
             results.push({
               document: doc,
-              similarity,
+              similarity
             });
           }
         }
@@ -91,7 +91,7 @@ export class RetrievalEngine {
     return {
       documents: topResults.map(r => this.toSearchResultDocument(r.document, r.similarity)),
       total: topResults.length,
-      queryTime,
+      queryTime
     };
   }
 
@@ -104,7 +104,7 @@ export class RetrievalEngine {
       return {
         documents: keywordResult.documents,
         total: keywordResult.total,
-        queryTime: totalTime,
+        queryTime: totalTime
       };
     }
 
@@ -121,7 +121,7 @@ export class RetrievalEngine {
       results.set(doc.id, {
         document: storedDocument,
         keywordScore: doc.score || 0,
-        vectorScore: 0,
+        vectorScore: 0
       });
     }
 
@@ -135,14 +135,14 @@ export class RetrievalEngine {
       results.set(doc.id, {
         document: storedDocument,
         keywordScore: existing?.keywordScore || 0,
-        vectorScore: doc.similarity || 0,
+        vectorScore: doc.similarity || 0
       });
     }
 
     const combinedResults = Array.from(results.values())
       .map(r => ({
         document: r.document,
-        score: r.keywordScore * 0.3 + r.vectorScore * 0.7,
+        score: r.keywordScore * 0.3 + r.vectorScore * 0.7
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, query.topK ?? 10);
@@ -152,7 +152,7 @@ export class RetrievalEngine {
     return {
       documents: combinedResults.map(r => this.toSearchResultDocument(r.document, r.score)),
       total: combinedResults.length,
-      queryTime,
+      queryTime
     };
   }
 
@@ -246,7 +246,7 @@ export class RetrievalEngine {
       if (score > 0) {
         results.push({
           document,
-          score,
+          score
         });
       }
     }
@@ -268,7 +268,7 @@ export class RetrievalEngine {
   }
 
   private deduplicateResults(
-    results: Array<{ document: Document; similarity: number }>,
+    results: Array<{ document: Document; similarity: number }>
   ): Array<{ document: Document; similarity: number }> {
     const seen = new Set<string>();
     const unique: Array<{ document: Document; similarity: number }> = [];
@@ -289,7 +289,7 @@ export class RetrievalEngine {
       id: document.id,
       content: document.content,
       score,
-      similarity: score,
+      similarity: score
     };
 
     if (firstChunk?.id) {

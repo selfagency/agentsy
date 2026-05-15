@@ -5,7 +5,7 @@ import {
   createQuotaDataSourceAdapter,
   formatStandardQuotaTooltip,
   pickActiveQuotaWindow,
-  type QuotaWindowValue,
+  type QuotaWindowValue
 } from './quota-adapter.js';
 import { UsageStatusBar, formatQuotaText, getQuotaStatus } from './usage-status-bar.js';
 
@@ -16,7 +16,7 @@ function makeQuota(overrides: Partial<UsageQuota> = {}): UsageQuota {
     unit: 'tokens',
     window: 'daily',
     percentUsed: 0.5,
-    ...overrides,
+    ...overrides
   };
 }
 
@@ -25,7 +25,7 @@ function makeDataSource(quota: UsageQuota = makeQuota()): IQuotaDataSource & { q
     quota,
     getQuota: vi.fn().mockResolvedValue(quota),
     refreshQuota: vi.fn().mockResolvedValue(quota),
-    dispose: vi.fn(),
+    dispose: vi.fn()
   };
 }
 
@@ -83,7 +83,7 @@ describe('UsageStatusBar', () => {
     const ds = makeDataSource();
     const bar = new UsageStatusBar({
       displayName: 'Test Usage',
-      quotaDataSource: ds,
+      quotaDataSource: ds
     });
     await expect(bar.show()).resolves.not.toThrow();
     bar.dispose();
@@ -94,7 +94,7 @@ describe('UsageStatusBar', () => {
     const ds = makeDataSource(quota);
     const bar = new UsageStatusBar({
       displayName: 'Test Usage',
-      quotaDataSource: ds,
+      quotaDataSource: ds
     });
     const result = await bar.refresh();
     expect(ds.refreshQuota).toHaveBeenCalledOnce();
@@ -105,11 +105,11 @@ describe('UsageStatusBar', () => {
   it('refresh returns undefined on data source error', async () => {
     const ds: IQuotaDataSource = {
       getQuota: vi.fn().mockRejectedValue(new Error('API down')),
-      refreshQuota: vi.fn().mockRejectedValue(new Error('API down')),
+      refreshQuota: vi.fn().mockRejectedValue(new Error('API down'))
     };
     const bar = new UsageStatusBar({
       displayName: 'Test Usage',
-      quotaDataSource: ds,
+      quotaDataSource: ds
     });
     const result = await bar.refresh();
     expect(result).toBeUndefined();
@@ -133,7 +133,7 @@ describe('UsageStatusBar', () => {
   it('dispose without quotaDataSource.dispose does not throw', () => {
     const ds: IQuotaDataSource = {
       getQuota: vi.fn().mockResolvedValue(makeQuota()),
-      refreshQuota: vi.fn().mockResolvedValue(makeQuota()),
+      refreshQuota: vi.fn().mockResolvedValue(makeQuota())
     };
     const bar = new UsageStatusBar({ displayName: 'Test Usage', quotaDataSource: ds });
     expect(() => bar.dispose()).not.toThrow();
@@ -151,7 +151,7 @@ describe('Quota adapter utilities', () => {
   it('pickActiveQuotaWindow prefers most constrained window by default', () => {
     const windows: QuotaWindowValue[] = [
       { used: 50, total: 100, unit: 'tokens', window: 'hourly' },
-      { used: 900, total: 1000, unit: 'tokens', window: 'daily' },
+      { used: 900, total: 1000, unit: 'tokens', window: 'daily' }
     ];
 
     const active = pickActiveQuotaWindow(windows);
@@ -163,11 +163,11 @@ describe('Quota adapter utilities', () => {
       fetch: async () => ({
         windows: [
           { used: 20, total: 100, unit: 'tokens' as const, window: 'hourly' as const },
-          { used: 850, total: 1000, unit: 'tokens' as const, window: 'monthly' as const },
-        ],
+          { used: 850, total: 1000, unit: 'tokens' as const, window: 'monthly' as const }
+        ]
       }),
       mapWindows: payload => payload.windows,
-      strategy: 'highest-percent',
+      strategy: 'highest-percent'
     });
 
     const quota = await source.getQuota();
@@ -181,7 +181,7 @@ describe('Quota adapter utilities', () => {
       total: 1000,
       unit: 'tokens',
       window: 'weekly',
-      percentUsed: 0.8,
+      percentUsed: 0.8
     });
 
     expect(tooltip).toContain('Z.ai Usage: 800 / 1,000 tokens (80%)');
@@ -191,7 +191,7 @@ describe('Quota adapter utilities', () => {
   it('pickActiveQuotaWindow honors preferred-order strategy', () => {
     const windows: QuotaWindowValue[] = [
       { used: 50, total: 100, unit: 'tokens', window: 'monthly' },
-      { used: 10, total: 100, unit: 'tokens', window: 'hourly' },
+      { used: 10, total: 100, unit: 'tokens', window: 'hourly' }
     ];
 
     const active = pickActiveQuotaWindow(windows, 'preferred-order', ['hourly', 'monthly']);
@@ -201,7 +201,7 @@ describe('Quota adapter utilities', () => {
   it('pickActiveQuotaWindow tie-breaks most-constrained by smaller remaining budget', () => {
     const windows: QuotaWindowValue[] = [
       { used: 80, total: 100, unit: 'tokens', window: 'hourly' }, // 80%, remaining 20
-      { used: 8, total: 10, unit: 'tokens', window: 'daily' }, // 80%, remaining 2
+      { used: 8, total: 10, unit: 'tokens', window: 'daily' } // 80%, remaining 2
     ];
 
     const active = pickActiveQuotaWindow(windows, 'most-constrained');

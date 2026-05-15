@@ -2,7 +2,7 @@ export type MergeableCallback<TArgs extends unknown[]> = (...args: TArgs) => voi
 
 export function mergeCallbacks<TArgs extends unknown[]>(
   a?: MergeableCallback<TArgs>,
-  b?: MergeableCallback<TArgs>,
+  b?: MergeableCallback<TArgs>
 ): MergeableCallback<TArgs> | undefined {
   if (!a) {
     return b;

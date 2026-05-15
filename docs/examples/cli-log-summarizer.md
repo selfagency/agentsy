@@ -28,8 +28,8 @@ async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
     body: JSON.stringify({
       model: 'gpt-4.1-mini',
       stream: true,
-      messages: [{ role: 'user', content: prompt }],
-    }),
+      messages: [{ role: 'user', content: prompt }]
+    })
   });
 
   const textStream = response.body?.pipeThrough(new TextDecoderStream());

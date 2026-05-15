@@ -14,7 +14,7 @@ export enum ProviderErrorCode {
   InvalidRequest = 'invalid_request',
   InternalError = 'internal_error',
   NotImplemented = 'not_implemented',
-  Cancelled = 'cancelled',
+  Cancelled = 'cancelled'
 }
 
 /**
@@ -31,7 +31,7 @@ export const ErrorCodeToMessage: Record<ProviderErrorCode, string> = {
   [ProviderErrorCode.InvalidRequest]: 'Invalid request. Please check your input format.',
   [ProviderErrorCode.InternalError]: 'Internal server error. Please try again.',
   [ProviderErrorCode.NotImplemented]: 'Feature not implemented by this provider.',
-  [ProviderErrorCode.Cancelled]: 'Request was cancelled.',
+  [ProviderErrorCode.Cancelled]: 'Request was cancelled.'
 };
 
 /**

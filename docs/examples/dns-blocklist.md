@@ -44,9 +44,9 @@ const dnsBlockSchema = {
     evidence: {
       type: 'array',
       items: { type: 'string', minLength: 1 },
-      minItems: 1,
-    },
-  },
+      minItems: 1
+    }
+  }
 } as const;
 
 async function loadLogFile(fileName: string): Promise<string> {
@@ -66,11 +66,11 @@ async function* streamModelDecision(prompt: string): AsyncGenerator<unknown> {
         {
           role: 'system',
           content:
-            'You are a production SRE assistant. Return only JSON matching the requested schema. Do not include markdown fences.',
+            'You are a production SRE assistant. Return only JSON matching the requested schema. Do not include markdown fences.'
         },
-        { role: 'user', content: prompt },
-      ],
-    }),
+        { role: 'user', content: prompt }
+      ]
+    })
   });
 
   const textStream = response.body?.pipeThrough(new TextDecoderStream());
@@ -101,8 +101,8 @@ async function maybeBlockIpInDns(decision: DnsBlockDecision): Promise<void> {
       ttlSeconds: decision.ttlSeconds,
       reason: decision.reason,
       evidence: decision.evidence,
-      source: 'agentsy-log-triage',
-    }),
+      source: 'agentsy-log-triage'
+    })
   });
 }
 
@@ -124,8 +124,8 @@ ${files.map((name, i) => `### ${name}\n${logs[i]}`).join('\n\n')}
     schema: dnsBlockSchema,
     processorOptions: {
       parseThinkTags: true,
-      onWarning: (message, context) => console.warn('[processor-warning]', message, context),
-    },
+      onWarning: (message, context) => console.warn('[processor-warning]', message, context)
+    }
   });
 
   if (!decision.success) {
@@ -137,7 +137,7 @@ ${files.map((name, i) => `### ${name}\n${logs[i]}`).join('\n\n')}
     onSkip: value => {
       console.log('No DNS block required:', value.reason);
     },
-    action: maybeBlockIpInDns,
+    action: maybeBlockIpInDns
   });
 }
 

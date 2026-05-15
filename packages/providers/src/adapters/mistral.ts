@@ -77,7 +77,7 @@ function collectMessageParts(
   message: MistralOutboundMessage,
   normalizeToolCallId: (originalId: string) => string,
   toolNameById: Map<string, string>,
-  onWarning?: (message: string, context?: Record<string, unknown>) => void,
+  onWarning?: (message: string, context?: Record<string, unknown>) => void
 ): CollectedMessageParts {
   const textParts: string[] = [];
   const imageParts: MistralContentPart[] = [];
@@ -94,14 +94,14 @@ function collectMessageParts(
       if (message.role === 'system') {
         onWarning?.('Dropping non-text system image part for Mistral message.', {
           role: message.role,
-          mimeType: part.mimeType,
+          mimeType: part.mimeType
         });
         continue;
       }
 
       imageParts.push({
         type: 'image_url',
-        imageUrl: toImageDataUri(part.mimeType, part.data),
+        imageUrl: toImageDataUri(part.mimeType, part.data)
       });
       continue;
     }
@@ -114,8 +114,8 @@ function collectMessageParts(
         type: 'function',
         function: {
           name: part.name,
-          arguments: JSON.stringify(part.input ?? {}),
-        },
+          arguments: JSON.stringify(part.input ?? {})
+        }
       });
       continue;
     }
@@ -123,7 +123,7 @@ function collectMessageParts(
     const normalizedCallId = normalizeToolCallId(part.callId);
     toolResults.push({
       callId: normalizedCallId,
-      content: part.content,
+      content: part.content
     });
   }
 
@@ -131,7 +131,7 @@ function collectMessageParts(
     text: textParts.join(''),
     imageParts,
     toolCalls,
-    toolResults,
+    toolResults
   };
 }
 
@@ -139,7 +139,7 @@ function buildContentForMistralMessage(
   role: MistralOutboundMessage['role'],
   text: string,
   imageParts: MistralContentPart[],
-  hasToolCalls: boolean,
+  hasToolCalls: boolean
 ): string | MistralContentPart[] | null | undefined {
   const hasText = text.length > 0;
   const hasImages = imageParts.length > 0;
@@ -170,7 +170,7 @@ function emitSystemMessage(
   imageCount: number,
   toolCallCount: number,
   toolResultCount: number,
-  onWarning?: (message: string, context?: Record<string, unknown>) => void,
+  onWarning?: (message: string, context?: Record<string, unknown>) => void
 ): void {
   if (text.length > 0) {
     out.push({ role: 'system', content: text });
@@ -180,7 +180,7 @@ function emitSystemMessage(
     onWarning?.('Dropped unsupported non-text/non-user system parts for Mistral message.', {
       hasImages: imageCount > 0,
       hasToolCalls: toolCallCount > 0,
-      toolResults: toolResultCount,
+      toolResults: toolResultCount
     });
   }
 }
@@ -189,14 +189,14 @@ function emitNonSystemMessage(
   out: MistralMessage[],
   role: Extract<MistralOutboundMessage['role'], 'assistant' | 'user'>,
   content: string | MistralContentPart[] | null | undefined,
-  toolCalls: MistralToolCall[],
+  toolCalls: MistralToolCall[]
 ): void {
   if (role === 'assistant') {
     if (content !== undefined || toolCalls.length > 0) {
       out.push({
         role: 'assistant',
         content: content ?? null,
-        ...(toolCalls.length > 0 ? { toolCalls } : {}),
+        ...(toolCalls.length > 0 ? { toolCalls } : {})
       });
     }
     return;
@@ -210,7 +210,7 @@ function emitNonSystemMessage(
 function emitToolResults(
   out: MistralMessage[],
   toolResults: Array<{ callId: string; content: string }>,
-  toolNameById: Map<string, string>,
+  toolNameById: Map<string, string>
 ): void {
   for (const result of toolResults) {
     const toolName = toolNameById.get(result.callId);
@@ -218,7 +218,7 @@ function emitToolResults(
       role: 'tool',
       content: result.content,
       toolCallId: result.callId,
-      ...(typeof toolName === 'string' ? { name: toolName } : {}),
+      ...(typeof toolName === 'string' ? { name: toolName } : {})
     });
   }
 }
@@ -228,7 +228,7 @@ function emitToolResults(
  */
 export function toMistralMessages(
   messages: readonly MistralOutboundMessage[],
-  options: MistralOutboundAdapterOptions = {},
+  options: MistralOutboundAdapterOptions = {}
 ): MistralMessage[] {
   const normalizeToolCallId = options.normalizeToolCallId ?? defaultNormalizeToolCallIdFactory();
   const out: MistralMessage[] = [];
@@ -239,7 +239,7 @@ export function toMistralMessages(
       message,
       normalizeToolCallId,
       toolNameById,
-      options.onWarning,
+      options.onWarning
     );
     const hasToolCalls = toolCalls.length > 0;
 

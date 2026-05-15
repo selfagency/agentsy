@@ -30,7 +30,7 @@ describe('retry', () => {
 
     await expect(retry(async () => 'ok', { signal: controller.signal })).rejects.toMatchObject({
       name: 'AbortError',
-      message: 'Retry aborted',
+      message: 'Retry aborted'
     });
   });
 
@@ -45,7 +45,7 @@ describe('retry', () => {
         initialDelay: 1_000,
         maxDelay: 1_000,
         backoffFactor: 2,
-        signal: controller.signal,
+        signal: controller.signal
       });
 
       await Promise.resolve();
@@ -55,7 +55,7 @@ describe('retry', () => {
 
       await expect(operation).rejects.toMatchObject({
         name: 'AbortError',
-        message: 'Retry aborted',
+        message: 'Retry aborted'
       });
 
       vi.advanceTimersByTime(1_000);
@@ -79,7 +79,7 @@ describe('retry', () => {
         maxAttempts: 4,
         initialDelay: 100,
         maxDelay: 150,
-        backoffFactor: 3,
+        backoffFactor: 3
       });
 
       await Promise.resolve();

@@ -5,7 +5,7 @@ import { StreamingText } from './StreamingText.js';
 
 // Mock cli-markdown
 vi.mock('cli-markdown', () => ({
-  default: vi.fn((text: string) => `[formatted:${text}]`),
+  default: vi.fn((text: string) => `[formatted:${text}]`)
 }));
 
 describe('StreamingText Component', () => {
@@ -21,7 +21,7 @@ describe('StreamingText Component', () => {
         markdown: true,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.markdown).toBe(true);
@@ -33,7 +33,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.markdown).toBe(false);
@@ -46,7 +46,7 @@ describe('StreamingText Component', () => {
         markdown: true,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('javascript');
     });
@@ -58,7 +58,7 @@ describe('StreamingText Component', () => {
         markdown: true,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('Item 1');
     });
@@ -70,7 +70,7 @@ describe('StreamingText Component', () => {
         markdown: true,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('Col1');
     });
@@ -84,7 +84,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.isStreaming).toBe(true);
     });
@@ -95,7 +95,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.isStreaming).toBe(false);
     });
@@ -106,7 +106,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.isStreaming).toBe(true);
       expect(element.props.theme.text.cursorSymbol).toBeDefined();
@@ -121,7 +121,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toBe('');
     });
@@ -133,7 +133,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text.length).toBeGreaterThan(1000);
     });
@@ -145,7 +145,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       const lines = element.props.text.split('\n');
       expect(lines.length).toBe(3);
@@ -158,7 +158,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('<brackets>');
       expect(element.props.text).toContain('©');
@@ -171,7 +171,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toBe(textWithSpaces);
     });
@@ -183,7 +183,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('Red');
     });
@@ -198,7 +198,7 @@ describe('StreamingText Component', () => {
         isStreaming: false,
         theme: darkTheme,
         screenReader: false,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
       expect(element.props.syntaxHighlight).toBe(true);
     });
@@ -210,7 +210,7 @@ describe('StreamingText Component', () => {
         isStreaming: false,
         theme: darkTheme,
         screenReader: false,
-        syntaxHighlight: false,
+        syntaxHighlight: false
       });
       expect(element.props.syntaxHighlight).toBe(false);
     });
@@ -224,7 +224,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element.props.screenReader).toBe(true);
     });
@@ -235,7 +235,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.screenReader).toBe(false);
     });
@@ -247,7 +247,7 @@ describe('StreamingText Component', () => {
         markdown: true,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element.props.text).toContain('Title');
     });
@@ -261,7 +261,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme).toBe(darkTheme);
       expect(element.props.theme.text.cursorSymbol).toBeDefined();
@@ -273,7 +273,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: defaultTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme).toBe(defaultTheme);
     });
@@ -284,7 +284,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.text.cursorSymbol).toBeDefined();
       expect(typeof element.props.theme.text.cursorSymbol).toBe('string');
@@ -296,7 +296,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.text.dimColor).toBeDefined();
       expect(typeof element.props.theme.text.dimColor).toBe('boolean');
@@ -312,7 +312,7 @@ describe('StreamingText Component', () => {
         isStreaming: true,
         theme: darkTheme,
         screenReader: false,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
       expect(element.props.markdown).toBe(true);
       expect(element.props.isStreaming).toBe(true);
@@ -326,7 +326,7 @@ describe('StreamingText Component', () => {
         isStreaming: false,
         theme: defaultTheme,
         screenReader: true,
-        syntaxHighlight: false,
+        syntaxHighlight: false
       });
       expect(element.props.markdown).toBe(false);
       expect(element.props.isStreaming).toBe(false);
@@ -342,7 +342,7 @@ describe('StreamingText Component', () => {
         markdown: true,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
     });
@@ -357,7 +357,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('First block');
       expect(element.props.text).toContain('Second block');
@@ -370,7 +370,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toBe(singleBlock);
     });
@@ -382,7 +382,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('Text');
     });
@@ -398,7 +398,7 @@ describe('StreamingText Component', () => {
         isStreaming: true,
         theme: darkTheme,
         screenReader: false,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
       expect(element.props.markdown).toBe(true);
       expect(element.props.syntaxHighlight).toBe(true);
@@ -412,7 +412,7 @@ describe('StreamingText Component', () => {
         markdown: false,
         isStreaming: false,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element.props.screenReader).toBe(true);
       expect(element.props.markdown).toBe(false);
@@ -427,7 +427,7 @@ describe('StreamingText Component', () => {
         isStreaming: true,
         theme: darkTheme,
         screenReader: true,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
       expect(element.props.text).toContain('Header');
       expect(element.props.markdown).toBe(true);

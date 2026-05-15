@@ -4,7 +4,7 @@ import {
   ensureText,
   estimateChunkSize,
   mapNativeToolCalls,
-  normalizeToolArguments,
+  normalizeToolArguments
 } from './chunkUtils.js';
 
 describe('chunkUtils', () => {
@@ -39,15 +39,15 @@ describe('chunkUtils', () => {
       const calls = [
         { function: { name: 'read_file', arguments: { path: './fixtures/a.ts' } } },
         { function: { name: '', arguments: {} } },
-        { function: { arguments: {} } },
+        { function: { arguments: {} } }
       ];
 
       expect(mapNativeToolCalls(calls as never)).toEqual([
         {
           name: 'read_file',
           parameters: { path: './fixtures/a.ts' },
-          format: 'native-json',
-        },
+          format: 'native-json'
+        }
       ]);
     });
 
@@ -57,8 +57,8 @@ describe('chunkUtils', () => {
         {
           name: 'tool',
           parameters: { x: 1 },
-          format: 'native-json',
-        },
+          format: 'native-json'
+        }
       ]);
     });
 
@@ -79,9 +79,9 @@ describe('chunkUtils', () => {
           content: 'abc',
           thinking: 'def',
           tool_calls: [{ function: { name: 'ok', arguments: { a: 1 } } }, circular as never],
-          nativeToolCallDeltas: [{ index: 0, name: 'tool', argumentsDelta: '{"a":1}' }],
+          nativeToolCallDeltas: [{ index: 0, name: 'tool', argumentsDelta: '{"a":1}' }]
         },
-        encoder,
+        encoder
       );
 
       expect(size).toBeGreaterThan(0);

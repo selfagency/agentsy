@@ -47,7 +47,7 @@ export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
     [EventType.REASONING_MESSAGE_CONTENT]: 'reasoningMessageContent',
     [EventType.TOOL_CALL_START]: 'toolCallStart',
     [EventType.TOOL_CALL_ARGS]: 'toolCallArgs',
-    [EventType.TOOL_CALL_END]: 'toolCallEnd',
+    [EventType.TOOL_CALL_END]: 'toolCallEnd'
   };
 
   const eventRec = event as unknown as Record<string, unknown>;
@@ -56,7 +56,7 @@ export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
 
   return {
     type: copilotKitType,
-    ...eventRec,
+    ...eventRec
   };
 }
 
@@ -100,14 +100,14 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
         stepIndex: agEvent.stepIndex,
         stepId: agEvent.stepId,
         outputLength: agEvent.outputLength,
-        duration: agEvent.duration,
+        duration: agEvent.duration
       };
       break;
 
     case EventType.TEXT_MESSAGE_CONTENT:
       payload = {
         messageId: agEvent.messageId,
-        content: agEvent.content,
+        content: agEvent.content
       };
       break;
 
@@ -115,27 +115,27 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
       payload = {
         messageId: agEvent.messageId,
         content: agEvent.content,
-        encrypted: !!agEvent.encryptedValue,
+        encrypted: !!agEvent.encryptedValue
       };
       break;
 
     case EventType.TOOL_CALL_START:
       payload = {
         toolCallId: agEvent.toolCallId,
-        toolName: agEvent.toolName,
+        toolName: agEvent.toolName
       };
       break;
 
     case EventType.TOOL_CALL_ARGS:
       payload = {
         toolCallId: agEvent.toolCallId,
-        args: agEvent.args,
+        args: agEvent.args
       };
       break;
 
     case EventType.TOOL_CALL_END:
       payload = {
-        toolCallId: agEvent.toolCallId,
+        toolCallId: agEvent.toolCallId
       };
       break;
 
@@ -150,7 +150,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
     runId,
     ...(threadId !== undefined && { threadId }),
     timestamp,
-    payload,
+    payload
   };
 }
 
@@ -161,7 +161,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
  * @returns Converter function
  */
 export function createEventConverter(
-  format: 'copilot-kit' | 'custom',
+  format: 'copilot-kit' | 'custom'
 ): (event: AgUiEvent) => CopilotKitEvent | CustomUIEvent {
   if (format === 'copilot-kit') {
     return toCopilotKitEvent;
@@ -181,7 +181,7 @@ export function createEventConverter(
  */
 export async function* convertEventStream(
   source: AsyncGenerator<AgUiEvent>,
-  format: 'copilot-kit' | 'custom',
+  format: 'copilot-kit' | 'custom'
 ): AsyncGenerator<CopilotKitEvent | CustomUIEvent> {
   const converter = createEventConverter(format);
   for await (const event of source) {
