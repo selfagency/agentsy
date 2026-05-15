@@ -1,6 +1,13 @@
 import type { SessionStore } from '@agentsy/session';
 import { randomUUID } from 'node:crypto';
 
+export {
+  buildRuntimeContext,
+  type BuildRuntimeContextInput,
+  type RuntimeContextReuse,
+  type RuntimeReusableSegment
+} from './cache-aware-context.js';
+
 export interface RuntimeTask {
   id: string;
   run(signal: AbortSignal, context: RuntimeTaskContext): Promise<void>;

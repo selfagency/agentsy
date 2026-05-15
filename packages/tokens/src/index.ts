@@ -2,8 +2,6 @@
 
 import { randomUUID } from 'node:crypto';
 
-export * from './compression/index.js';
-
 export interface TokenLedgerBudget {
   limit: number;
 }
@@ -130,6 +128,22 @@ export interface CompressionResult<TMessage> {
   droppedCount: number;
   estimatedTokens: number;
   compressed: boolean;
+}
+
+export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
+
+export interface OutputCompressionOptions {
+  level: OutputCompressionLevel;
+  preserve?: Array<'code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors'>;
+  intensity?: number;
+}
+
+export interface OutputCompressionResult {
+  original: string;
+  compressed: string;
+  originalTokens: number;
+  compressedTokens: number;
+  savingsRatio: number;
 }
 
 export interface RateLimit {
@@ -350,6 +364,345 @@ export function compressConversation<TMessage>(
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
     compressed: droppedCount > 0
+  };
+}
+
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
+const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths', 'markdown', 'errors']);
+const FILLER_WORDS = new Set([
+  'really',
+  'very',
+  'just',
+  'actually',
+  'basically',
+  'simply',
+  'quite',
+  'definitely',
+  'certainly',
+  'absolutely',
+  'clearly',
+  'obviously',
+  'perhaps',
+  'maybe',
+  'apparently',
+  'evidently',
+  'fortunately',
+  'unfortunately',
+  'however',
+  'thus',
+  'therefore',
+  'moreover',
+  'furthermore',
+  'additionally',
+  'also',
+  'indeed',
+  'otherwise',
+  'meanwhile',
+  'primarily',
+  'largely',
+  'mostly',
+  'thoroughly',
+  'remarkably',
+  'practically',
+  'exceptionally',
+  'notably',
+  'particularly',
+  'significantly',
+  'essentially',
+  'fundamentally',
+  'well',
+  'rather',
+  'somewhat',
+  'fairly',
+  'pretty',
+  'awfully',
+  'terribly',
+  'super',
+  'extremely'
+]);
+
+const REDUNDANT_PHRASES: ReadonlyArray<[RegExp, string]> = [
+  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
+  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
+  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
+  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
+  [/\bas\s+mentioned\b/gi, ''],
+  [/\bas\s+you\s+may\s+know\b/gi, ''],
+  [/\bin\s+conclusion/gi, 'Finally'],
+  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
+  [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now']
+];
+
+const ABBREVIATIONS: ReadonlyArray<[RegExp, string]> = [
+  [/\bapproximately\b/gi, 'approx'],
+  [/\bconfiguration\b/gi, 'config'],
+  [/\binformation\b/gi, 'info'],
+  [/\badministration\b/gi, 'admin'],
+  [/\bdocumentation\b/gi, 'docs'],
+  [/\bdirectory\b/gi, 'dir'],
+  [/\bnumber\b/gi, '#'],
+  [/\btechnology\b/gi, 'tech'],
+  [/\bimplementation\b/gi, 'impl'],
+  [/\boperation\b/gi, 'op'],
+  [/\bgeneral\b/gi, 'gen']
+];
+
+function estimateTextTokens(text: string): number {
+  return Math.max(1, Math.ceil(text.length / 4));
+}
+
+function applyReplacements(source: string, replacements: ReadonlyArray<[RegExp, string]>): string {
+  let result = source;
+  for (const [pattern, replacement] of replacements) {
+    result = result.replace(pattern, replacement);
+  }
+
+  return result;
+}
+
+function normalizeAndDedupeLines(segment: string): string {
+  const lines = segment.split('\n');
+  const dedupedLines: string[] = [];
+  let lastComparable = '';
+  let previousWasBlank = false;
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+/g, ' ').trimEnd();
+    const isBlank = line.trim().length === 0;
+
+    if (isBlank) {
+      if (!previousWasBlank) {
+        dedupedLines.push('');
+      }
+      previousWasBlank = true;
+      continue;
+    }
+
+    previousWasBlank = false;
+
+    const comparable = line.trim().toLowerCase();
+    if (comparable === lastComparable) {
+      continue;
+    }
+
+    lastComparable = comparable;
+    dedupedLines.push(line);
+  }
+
+  return dedupedLines.join('\n').trim();
+}
+
+function protectPreservedContent(
+  source: string,
+  preserve: ReadonlySet<string>
+): { masked: string; restore: (value: string) => string } {
+  const preserved: string[] = [];
+  const stash = (value: string): string => {
+    const index = preserved.push(value) - 1;
+    return `__AGENTSY_PRESERVE_${index}__`;
+  };
+
+  let masked = source;
+
+  if (preserve.has('urls')) {
+    masked = masked.replace(/https?:\/\/[^\s)]+/g, stash);
+  }
+
+  if (preserve.has('paths')) {
+    masked = masked.replace(/(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/g, (_, prefix: string, path: string) => {
+      return `${prefix}${stash(path)}`;
+    });
+  }
+
+  if (preserve.has('markdown')) {
+    masked = masked.replace(/`[^`]+`/g, stash);
+    masked = protectMarkdownLinks(masked, stash);
+  }
+
+  if (preserve.has('errors')) {
+    masked = masked.replace(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi, stash);
+  }
+
+  if (preserve.has('technical')) {
+    masked = masked.replace(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/g, stash);
+  }
+
+  const restore = (value: string): string =>
+    value.replace(/__AGENTSY_PRESERVE_(\d+)__/g, (_, indexRaw: string) => {
+      const index = Number(indexRaw);
+      return preserved[index] ?? '';
+    });
+
+  return { masked, restore };
+}
+
+function protectMarkdownLinks(source: string, stash: (value: string) => string): string {
+  let result = '';
+  let index = 0;
+
+  while (index < source.length) {
+    const start = source.indexOf('[', index);
+    if (start === -1) {
+      return result + source.slice(index);
+    }
+
+    const closeBracket = source.indexOf(']', start + 1);
+    const openParen = closeBracket === -1 ? -1 : source.indexOf('(', closeBracket + 1);
+    const closeParen = openParen === -1 ? -1 : source.indexOf(')', openParen + 1);
+
+    if (closeBracket === -1 || openParen !== closeBracket + 1 || closeParen === -1) {
+      result += source.slice(index, start + 1);
+      index = start + 1;
+      continue;
+    }
+
+    result += source.slice(index, start);
+    result += stash(source.slice(start, closeParen + 1));
+    index = closeParen + 1;
+  }
+
+  return result;
+}
+
+function stripFillerWords(source: string, strongOnly: boolean): string {
+  const strongWords = new Set(['really', 'very', 'just', 'basically', 'simply']);
+  return source.replace(/\b[a-z]+\b/gi, (word: string) => {
+    const normalized = word.toLowerCase();
+    const shouldRemove = strongOnly ? strongWords.has(normalized) : FILLER_WORDS.has(normalized);
+    return shouldRemove ? '' : word;
+  });
+}
+
+function finalizeWhitespace(source: string): string {
+  return source.replace(/\s{2,}/g, ' ').trim();
+}
+
+function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, preserve: ReadonlySet<string>): string {
+  const joined = normalizeAndDedupeLines(segment);
+  if (joined.length === 0) {
+    return '';
+  }
+
+  const { masked, restore } = protectPreservedContent(joined, preserve);
+
+  switch (level) {
+    case 'lite': {
+      const result = finalizeWhitespace(stripFillerWords(masked, true));
+      return restore(result);
+    }
+
+    case 'full': {
+      const withoutFiller = stripFillerWords(masked, false);
+      const reduced = applyReplacements(withoutFiller, REDUNDANT_PHRASES);
+      return restore(finalizeWhitespace(reduced));
+    }
+
+    case 'ultra': {
+      const withoutFiller = stripFillerWords(masked, false);
+      const reduced = normalizeUltraText(applyReplacements(withoutFiller, REDUNDANT_PHRASES));
+      const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replace(
+        /\b(?:the|a|an)\s+([a-z]+)\b/gi,
+        (_, adjective: string) => `${adjective} `
+      );
+
+      return restore(
+        abbreviated
+          .replace(/\s{2,}/g, ' ')
+          .replace(/ ([,.])/g, '$1')
+          .trim()
+      );
+    }
+  }
+}
+
+function normalizeUltraText(source: string): string {
+  let output = source.replace(/\b(and|or)\s+\1\s+/gi, '$1 ').replace(/\b(is|are|was|were)\s+quite\s+/gi, '');
+
+  output = removeWhichClauses(output);
+  return output.replace(/ ([,.?!])/g, '$1');
+}
+
+function removeWhichClauses(source: string): string {
+  const needle = ', which ';
+  let index = 0;
+  let output = '';
+
+  while (index < source.length) {
+    const matchIndex = source.toLowerCase().indexOf(needle, index);
+    if (matchIndex === -1) {
+      return output + source.slice(index);
+    }
+
+    output += source.slice(index, matchIndex);
+
+    let clauseEnd = matchIndex + needle.length;
+    while (clauseEnd < source.length && !',.?!'.includes(source[clauseEnd] ?? '')) {
+      clauseEnd += 1;
+    }
+
+    if (clauseEnd < source.length) {
+      output += source[clauseEnd];
+      index = clauseEnd + 1;
+    } else {
+      index = clauseEnd;
+    }
+  }
+
+  return output;
+}
+
+export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {
+  const preserve = new Set(options.preserve ?? [...DEFAULT_PRESERVATION_SET]);
+  const level = options.level;
+
+  if (!preserve.has('code')) {
+    const originalTokens = estimateTextTokens(response);
+    const compressed = compressNonCodeSegment(response, level, preserve);
+    const compressedTokens = estimateTextTokens(compressed);
+    return {
+      original: response,
+      compressed,
+      originalTokens,
+      compressedTokens,
+      savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
+    };
+  }
+
+  const segments: Array<{ kind: 'code' | 'text'; value: string }> = [];
+  let lastIndex = 0;
+
+  for (const match of response.matchAll(CODE_FENCE_PATTERN)) {
+    const full = match[0];
+    const start = match.index ?? lastIndex;
+    const end = start + full.length;
+
+    if (start > lastIndex) {
+      segments.push({ kind: 'text', value: response.slice(lastIndex, start) });
+    }
+
+    segments.push({ kind: 'code', value: full });
+    lastIndex = end;
+  }
+
+  if (lastIndex < response.length) {
+    segments.push({ kind: 'text', value: response.slice(lastIndex) });
+  }
+
+  const compressed = segments
+    .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level, preserve)))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const originalTokens = estimateTextTokens(response);
+  const compressedTokens = estimateTextTokens(compressed);
+
+  return {
+    original: response,
+    compressed,
+    originalTokens,
+    compressedTokens,
+    savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
   };
 }
 

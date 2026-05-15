@@ -120,3 +120,174 @@ interface ProviderStrategy {
 ## Sources Synthesized
 
 `agentsy-connectors-v1.md`, `provider-capability-matrix.md`, `agentsy-tech.md`, `DECISION-LOG.md`, `research/AI-PLATFORMS-ANALYSIS.md`, `research/LLM-INTEGRATION-ANALYSIS.md`, `packages/providers/IMPLEMENTATION-PLAN.md`.
+
+---
+
+## Local LLM Provider Expansion Plan (2026-05-15)
+
+### Why this is in `@agentsy/providers`
+
+Per canonical boundaries:
+
+- `@agentsy/models` owns model/provider metadata, scoring, and route recommendation.
+- `@agentsy/providers` owns concrete protocol adapters and runtime transport behavior.
+
+Therefore, all local LLM protocol implementations live here.
+
+Additionally, `@agentsy/providers` owns **model source adapters** used by the runner to search/fetch open model artifacts from registries (while `@agentsy/models` owns scoring/recommendation).
+
+### Model source adapters for Agentsy runner (NEW)
+
+1. **Hugging Face source adapter**
+   - search models compatible with local apps (especially llama.cpp/GGUF workflows)
+   - resolve artifact metadata (format, quantization, size, license)
+   - emit executable fetch plans for runtime download flow
+
+2. **Ollama source adapter**
+   - search/pull models from Ollama registry and inspect local manifests
+   - map Ollama model references to local artifact metadata
+   - optional conversion path planning via `OllamaToGGUF` when direct GGUF export is needed
+
+3. **Open provider source adapter (pluggable)**
+   - adapter interface for additional open registries/providers
+   - normalized source contract for search, inspect, and fetch execution
+
+### llama-swap integration guidance (NEW)
+
+Treat `llama-swap` as the **local hot-swap proxy** for multi-backend execution, not as a model source.
+
+Use it when a selected local model can be served by multiple interchangeable backends or when the runtime wants to hot-swap the upstream server behind a single OpenAI/Anthropic-compatible endpoint.
+
+Core facts to preserve in the provider boundary:
+
+- one config file controls model → command/runtime mapping
+- supports OpenAI-compatible endpoints (`/v1/chat/completions`, `/v1/responses`, `/v1/models`, embeddings, audio, images)
+- supports Anthropic-compatible endpoints (`/v1/messages`, token counting)
+- exposes operational endpoints for running models, logs, health, and metrics
+- can apply request filters (`stripParams`, `setParams`, `setParamsByID`) before forwarding
+
+Implementation guidance:
+
+1. Add a `llama-swap` runtime adapter that renders a config entry from a local recommendation plan.
+2. Treat the upstream server command as opaque process metadata owned by runtime, not the provider layer.
+3. Expose compatibility checks so the runtime can decide whether to route through llama-swap or talk directly to Ollama/vLLM/LM Studio/etc.
+4. Preserve streaming behavior by disabling buffering in proxy integrations and by marking SSE responses as non-buffered.
+5. Keep log/metrics passthrough available for observability and debugging.
+
+### Required local provider adapters
+
+1. **Ollama adapter**
+   - Native Ollama API support (`/api/*`)
+   - Optional OpenAI-compatible bridge mode if configured
+
+2. **vLLM adapter**
+   - OpenAI-compatible server support (`/v1/*`)
+   - Extra body parameter pass-through support for vLLM-specific options
+
+3. **LM Studio adapter**
+   - OpenAI-compatible mode (`/v1/*`)
+   - Optional native LM Studio API support (`/api/v1/*`) for model lifecycle ops
+
+4. **Lemonade adapter**
+   - OpenAI-compatible APIs including chat/completions/embeddings/responses where available
+
+5. **Docker Model Runner adapter**
+   - OpenAI-compatible engine endpoints
+   - Optional explicit engine targeting (`llama.cpp`, `vllm`) when configured
+
+6. **Jan adapter**
+   - OpenAI-compatible server with required bearer token support
+
+7. **Apfel adapter**
+   - OpenAI-compatible local server (`/v1/*`) on macOS/Apple Silicon
+   - Capability-aware constraints (single model profile, no embeddings support)
+
+8. **Agentsy Local Llama adapter (NEW)**
+   - Native local provider powered by `node-llama-cpp`
+
+### New provider: Agentsy Local Llama (`node-llama-cpp`)
+
+#### Scope
+
+Implement a first-party provider adapter for fully local inference and embedding generation without HTTP dependency.
+
+#### Core runtime primitives
+
+- `getLlama(...)` for runtime/bootstrap
+- `LlamaChatSession` for chat session execution
+- `LlamaEmbeddingContext` for embeddings generation
+
+#### Contract expectations
+
+- streaming response chunk conversion into normalized provider chunks
+- cancellation/abort signal support
+- deterministic error taxonomy and retry classification
+- capability advertisement: `supportsStreaming`, `supportsEmbeddings`, `supportsToolCalling` (model-dependent)
+- GGUF compatibility checks before load (arch, quantization, context constraints)
+- model provenance metadata capture (source, checksum, license)
+
+#### Local model intake paths (fleshed out)
+
+1. **Hugging Face GGUF direct path**
+   - acquire GGUF artifact (or llama.cpp `-hf` shorthand execution plan)
+   - validate file + metadata
+   - register model in local runner catalog
+
+2. **Ollama registry path**
+   - acquire via `ollama pull` or use existing local model
+   - for native llama runtime usage, optionally convert split blobs to GGUF via `OllamaToGGUF`
+   - persist provenance marker indicating conversion source
+
+3. **Local file path**
+   - user-provided GGUF path
+   - compatibility and trust checks prior to activation
+
+### Delivery phases
+
+**P1 — Adapter scaffolding + conformance tests**
+
+- define local adapter interface shared by all local providers
+- add fixture-backed protocol tests for OpenAI-compatible and Ollama-native paths
+
+**P2 — External local adapters**
+
+- implement adapters for Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel
+- include health checks and model discovery contracts
+
+**P2.5 — Runner source adapters**
+
+- implement Hugging Face/Ollama/open-provider source adapters
+- define retry, checksum validation, and partial-download resume semantics
+- add adapter contracts shared with runtime acquisition service
+
+**P2.6 — llama-swap runtime adapter**
+
+- add config rendering for model-to-backend swap rules
+- add request/response compatibility checks for OpenAI and Anthropic endpoints
+- add log and health endpoint wiring for runtime diagnostics
+
+**P3 — node-llama-cpp first-party adapter**
+
+- implement chat/streaming completion path
+- add embeddings support
+- add lifecycle management (`load`, `ready`, `dispose`)
+
+**P4 — Fallback and policy integration**
+
+- integrate local adapter chain fallback policies
+- expose latency/error/capability metrics to `@agentsy/observability`
+
+### Testing and quality gates
+
+1. Contract tests for each local adapter against frozen API fixtures.
+2. Live smoke tests behind optional env flags (`LOCAL_PROVIDER_SMOKE=1`).
+3. No-network deterministic test suite by default in CI.
+4. Cross-package compatibility tests with `@agentsy/models` provider profile contracts.
+
+### Documentation updates required with implementation
+
+- `docs/packages/providers.md`: local provider matrix + config examples
+- `docs/migration/*`: provider migration guide for local-first setups
+- examples: one end-to-end local-only workflow (Jan/Ollama/vLLM) + one native node-llama-cpp workflow
+- examples: one end-to-end model acquisition workflow (Hugging Face -> GGUF -> agentsy-local-llama)
+- examples: one local hot-swap workflow (llama-swap behind a single OpenAI-compatible endpoint)

@@ -59,6 +59,21 @@ The package fulfills its role by implementing a robust session lifecycle:
   - `detectCrash`: Finding sessions with an `active` status but a stale heartbeat timestamp.
   - `resume`: Reconstituting an `@agentsy/runtime` loop from a snapshot.
 
+### 4. Cache checkpointing for reusable context (LMCache-inspired)
+
+Sessions should carry enough metadata for the runtime to reuse stable context segments across resumes.
+
+#### What to capture
+
+- the active model family / provider family used when the snapshot was taken
+- stable prompt fingerprints for system prompts, policy blocks, and tool schemas
+- the set of reusable context segments that were already assembled
+- invalidation keys that would force a fresh assembly on resume
+
+#### Why it matters
+
+This lets the runtime decide whether a resumed session can reuse previously assembled context blocks or should rebuild them from memory. The goal is not raw cache internals; it is to preserve reuse opportunities across snapshot/resume boundaries.
+
 ## Logic & Data Flow
 
 ### 1. Persistence Flow (Snapshot)
@@ -208,6 +223,13 @@ Active sessions must update a `heartbeat` timestamp in the snapshot. The `detect
 - [ ] Memory store integration
 - [ ] Monitoring and diagnostics
 - [ ] Migration tools from old session formats
+
+#### Phase 5: Cache-aware resume metadata
+
+- [ ] Persist reusable context fingerprints in session snapshots
+- [ ] Record model-family and prompt-template invalidation keys
+- [ ] Restore cache-eligible context segments on resume when safe
+- [ ] Add telemetry for session-resume context reuse
 
 ### File Structure
 

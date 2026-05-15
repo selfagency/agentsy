@@ -8,8 +8,14 @@ Command-line interface for local development and agent execution.
 
 ## Status
 
-- Published package.
+- Internal/pre-release workspace package.
 - See the [roadmap](../roadmap.md) for planned capabilities.
+
+Current implementation includes Phase 0 compression commands:
+
+- `compress --level <lite|full|ultra> --text <content>`
+- `compress --level <lite|full|ultra> --file <path>`
+- `compress-memory --file <path>`
 
 ## Notes
 

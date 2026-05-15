@@ -61,9 +61,57 @@ The package fulfills its role by providing three main layers of abstraction:
 ### 4. Shared Primitives
 
 - **`UniversalClient`**: A unified fetch wrapper that automatically routes requests to the correct adapter and normalizer.
-- **`StructuredOutput`**: JSON repair and streaming validation.
+- **`StructuredOutput`**: schema-first structured generation with repair fallback, provider-native response formats, and optional grammar-constrained decoding.
 - **`Recovery`**: Graceful handling of truncated streams or network interruptions.
 - **`ContextManagement`**: Advanced window management with automatic compression triggers (REQ-007).
+
+### 5. Context manager cache-awareness (LMCache-inspired)
+
+The core context manager should learn from LMCache’s reuse model by treating context assembly as a cacheable computation, not just a string concatenation step.
+
+#### What to adapt
+
+- **Stable segment reuse**: preserve and reuse system prompts, tool schemas, policy preambles, and synthesized memory blocks when their fingerprints match.
+- **Fingerprint-driven invalidation**: invalidate reusable segments when the model family, prompt template, tool schema, or user-edit state changes.
+- **Hot/warm/cold assembly tiers**: promote frequently reused context segments and evict cold ones before they inflate the prompt.
+- **Reuse accounting**: measure how often the context manager reuses blocks versus rebuilding them.
+
+#### Recommended implementation guidance
+
+1. Add a `ContextSegment` abstraction with `content`, `fingerprint`, `reuseClass`, and `invalidations`.
+2. Keep context assembly deterministic so the same inputs produce the same prompt layout.
+3. Expose cache-hit telemetry to observability so we can tell whether memory reuse is actually reducing token burn.
+4. Reuse compatible segments across sessions when session state and policy allow it.
+5. Keep the assembly layer backend-agnostic; it should not know about GPU KV cache internals.
+
+### 5. Structured Output Handler (`structured/`)
+
+The structured output handler should be the canonical place for turning a desired output shape into a provider-friendly generation strategy.
+
+#### What to adapt from Outlines
+
+- **Type-first API surface**: callers should be able to pass a schema/type and get back a structured-generation plan.
+- **Provider independence**: the same schema should work across OpenAI-compatible, Ollama, vLLM, and provider-native modes.
+- **Explicit output contracts**: prefer clear builders for JSON schema, literal/enum constraints, and repair prompts rather than opaque prompt text.
+
+#### What to adapt from llguidance
+
+- **Grammar backend abstraction**: allow structured output enforcement via grammar constraints when a provider/runtime supports it.
+- **Schema to grammar lowering**: support JSON Schema, regex, and limited CFG-style constraints as an execution backend.
+- **Low-latency decode path**: avoid repeated reparsing when a constrained-decoding backend can enforce the shape during generation.
+
+#### Recommended execution modes
+
+1. **Native structured outputs** — use provider features like OpenAI `response_format`, Ollama `format`, or equivalent native schema support.
+2. **Grammar-constrained decoding** — use a backend such as llguidance-style constraints when the runtime can enforce structure before tokens are emitted.
+3. **Repair fallback** — keep the current parse/repair loop as the compatibility path for models/providers without native support.
+
+#### Implementation guidance
+
+- Keep the public API centered on a schema argument and a small set of output-mode options.
+- Preserve the current `buildFormatInstructions`, `buildOpenAIResponseFormat`, `buildOllamaFormat`, and repair helpers as composable building blocks.
+- Add provider capability flags so the runtime can choose the best path without duplicating logic in each adapter.
+- Make streaming validation work the same way regardless of backend: validate chunks where possible, repair at the end when necessary.
 
 ## Logic & Data Flow
 
@@ -142,7 +190,7 @@ The `tool-calls/` module must handle both "Native" tool calls (JSON-based) and "
 3. **Streaming optimization** — implementing techniques for low-latency processing of large responses.
 4. **Observability hooks** — standardized events for `ContextWindowWillOverflow`, `ChatCompressed`, `LoopDetected`, `Citation`, `Retry`, `InvalidStream` (REQ-006).
 5. **Remove remaining legacy APIs** — any compatibility re-exports added during migration must be tracked and removed once downstream consumers are updated.
-6. **Structured output parsing** — JSON parse/repair and streaming validation for tool results and structured response modes.
+6. **Structured output parsing** — schema-first generation, JSON parse/repair, and optional grammar-constrained decoding for tool results and structured response modes.
 7. **Recovery** — stream recovery on partial failures; retry logic at the normalizer layer.
 8. **Event Emission** — `LLMStreamProcessor` must emit: `ContextWindowWillOverflow`, `ChatCompressed`, `LoopDetected`, `LoopExceeded`, `Citation`, `Retry`, `InvalidStream` (REQ-006).
 9. **Provider Routing** — Ensure `openaiResponses` provider is routable through normalizers and processor pipeline (REQ-020).
@@ -153,6 +201,7 @@ The `tool-calls/` module must handle both "Native" tool calls (JSON-based) and "
 
 - Adopt layered architecture with clear package boundaries and avoid monolithic agent abstraction.
 - Keep core parsing/processing primitives separate and stable (`types`, `xml-filter`, `context`, `formatting`, `sse`, `thinking`, `structured`, `tool-calls`, `processor`, `recovery`).
+- Keep structured-output generation extensible enough to support provider-native formats, repair fallback, and grammar-backend implementations without leaking those details into orchestration.
 - Prefer boundary clarity over aggressive package-count reduction.
 - Enforce direct cutover migration (no compatibility wrapper packages).
 - Keep dependency graph acyclic as a hard verification criterion.

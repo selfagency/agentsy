@@ -12,6 +12,7 @@ Use `@agentsy/tokens` when you need lightweight budget enforcement around model 
 - `createTokenLedger`
 - `createInMemoryTokenManager`
 - `compressConversation`
+- `compressOutput`
 - `PacingController`
 - `TokenBudget`, `TokenRequest`, `TokenUsage`, `TokenAllocation`
 - `CostAnalysis`, `OptimizationSuggestion`, `RateLimit`, `RateLimitStatus`

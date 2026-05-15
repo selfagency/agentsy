@@ -68,7 +68,7 @@ describe('compressMemoryFile', () => {
 
     await compressMemoryFile(filePath, { backup: true });
 
-    await expect(compressMemoryFile(filePath, { backup: true })).rejects.toThrow();
+    await expect(compressMemoryFile(filePath, { backup: true })).rejects.toThrow('already exists');
 
     const backup = await readFile(backupPath, 'utf8');
     expect(backup).toBe(original);

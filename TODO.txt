@@ -1,10 +1,38 @@
 # @agentsy Monorepo TODO
 # Revised: Thu May 14 2026
 # Status: Plan-state completely reconciled | Foundation work prioritization in progress
+# Verification Update: Fri May 15 2026
+# - Phase 1 (memory coordination + wiki foundation): COMPLETE for current scope in @agentsy/memory
+# - Phase 0 (token reduction foundation): PARTIAL; output + memory-file compression APIs and CLI flows are implemented, benchmark target gates remain open
+# Planning Update: Fri May 15 2026 (Local LLM Expansion)
+# - @agentsy/models implementation plan: UPDATED for full local provider support strategy
+# - @agentsy/providers implementation plan: UPDATED with concrete local adapter roadmap
+# - master plan: UPDATED with canonical ownership split (models selection vs providers protocol adapters)
+# - Next implementation slice: scaffold local provider profiles + node-llama-cpp first-party adapter contracts
 #
 # Based on: plan/REVIEW.md (Complete package-by-package analysis)
 # Repository State: 19 manifest-backed packages + 4 packages needing manifests
 # Note: No "plan-only" packages - all packages should be fully implemented
+
+====================================================================
+
+## IMMEDIATE ACTIONS — LOCAL LLM PROVIDER SUPPORT (NEW)
+
+- [ ] Add local provider profile contracts in `@agentsy/models` (Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel)
+- [ ] Add open model-source discovery contracts in `@agentsy/models` (Hugging Face, Ollama, pluggable open providers)
+- [ ] Add endpoint probing + capability normalization in `@agentsy/models`
+- [ ] Add criteria-based recommendation engine using `llm-stats` developer endpoints
+- [ ] Add implementation guidance for local automodel selection and llama-swap hot-swap routing
+- [ ] Add implementation guidance for structured output handling (schema-first + grammar-backed modes)
+- [ ] Add implementation guidance for cache-aware reusable context and memory fingerprinting
+- [ ] Add deterministic fixture-based tests for local provider model discovery
+- [ ] Scaffold local adapter interfaces in `@agentsy/providers`
+- [ ] Implement first local HTTP adapters (OpenAI-compatible + Ollama-native)
+- [ ] Implement source adapters for model search/fetch (Hugging Face + Ollama + open-provider plugin)
+- [ ] Implement `agentsy-local-llama` provider using `node-llama-cpp`
+- [ ] Implement runner model acquisition lifecycle in `@agentsy/runtime` (search -> fetch -> install -> activate)
+- [ ] Add cross-package contract tests (`@agentsy/models` profiles <-> `@agentsy/providers` adapters)
+- [ ] Add local-only example workflow docs and migration guidance
 
 ====================================================================
 
@@ -28,7 +56,7 @@
 
 ### PRIMARY Packages (Bundle and Integrate):
 1. **models.dev** - Model selection engine with 100+ providers, capability/cost matching, intelligent selection
-2. **Honker** - SQLite extension for local pub/sub + task queues (1-5ms latency)  
+2. **Honker** - SQLite extension for local pub/sub + task queues (1-5ms latency)
 3. **AgentFS** - Agent-specific filesystem with tool call tracking and audit trails (Turso-native)
 4. **mcp-rag-server** - Zero-ceremony RAG with local LLM support (MCP-native)
 5. **Maki** - Token-efficient tooling (tree-sitter, 59 token cost vs 224 token reads)
@@ -63,7 +91,7 @@
 
 ### IMMEDIATE (Weeks 1-4):
 - **Caveman Output Compression** - 75% output token reduction
-- **Memory File Compression** - 46% memory token reduction  
+- **Memory File Compression** - 46% memory token reduction
 - **Virtual Sandbox Mode** - Virtual-first execution for 90% infrastructure savings
 
 ### HIGH IMPACT (Weeks 5-12):
@@ -82,7 +110,7 @@
 
 ### Phase 0 (Weeks 1-16): Token Optimization Foundation
 - Output compression (75% savings) in @agentsy/tokens
-- Memory compression (46% savings) in @agentsy/core/context  
+- Memory compression (46% savings) in @agentsy/core/context
 - Virtual sandbox (90% savings) in @agentsy/runtime
 - BLAKE3 content addressing in @agentsy/memory
 
@@ -96,7 +124,7 @@
 - Conditional mirage for external resources
 - Maki tree-sitter tool efficiency
 
-### Phase 3 (Weeks 1-24): Model Selection & Analytics  
+### Phase 3 (Weeks 1-24): Model Selection & Analytics
 - models.dev integration in new @agentsy/models
 - Codeburn analytics in @agentsy/observability
 - Varlock secrets in @agentsy/secrets
@@ -110,7 +138,7 @@
 ```
 Local Layer (1-5ms latency):
 - Local SQLite with honk extension loaded
-- honker pub/sub for cross-process events  
+- honker pub/sub for cross-process events
 - honker task queues for orchestration
 - honker time-triggered scheduling
 
@@ -156,7 +184,7 @@ Integration Pattern:
 
 ### IMMEDIATE ACTIONS (Weeks 1-4):
 1. **Caveman Output Compression** - 75% output token reduction
-2. **Memory File Compression** - 46% memory token reduction  
+2. **Memory File Compression** - 46% memory token reduction
 3. **Virtual Sandbox Mode** - Virtual-first execution, containers only for coding/git/browser
 
 ### HIGH-IMPACT ACTIONS (Weeks 5-12):
@@ -332,19 +360,19 @@ Integration Pattern:
 **Estimated Effort**: 3-4 days
 
 ### PRIORITY 5: @agentsy/memory - Complete 6-Tier Architecture ❌
-**Status**: 1% complete
+**Status**: ~65% complete (Phase 1 complete for current memory coordination + wiki foundation scope)
 **Critical Gaps**:
-- ❌ 6-tier architecture (sensory through archival) missing
-- ❌ Three-layer architecture (raw → wiki → vector index) missing
-- ❌ Only in-memory Map, no persistence (SQLite/Vector DB)
-- ❌ No context engineering or dynamic composition
+- ❌ Full 6-tier architecture (sensory through archival) still missing
+- ✅ Three-layer architecture foundation (raw → wiki → vector) implemented
+- ⚠️ In-memory foundations complete; durable persistence (SQLite/Vector DB integration) remains
+- ⚠️ Context engineering and dynamic composition remain
 **Impact**: Breaks AG-UI agent expectations for persistent memory
 **Required Work**:
-- Implement 6-tier architecture
-- Implement three-layer memory system
+- Implement full 6-tier architecture
+- Productionize three-layer memory system beyond in-memory foundations
 - Add persistence (SQLite/Vector DB)
 - Add context engineering and dynamic composition
-**Estimated Effort**: 5-7 days
+**Estimated Effort**: 3-5 days
 
 ### PRIORITY 6: @agentsy/session - Add Crash Recovery ❌
 **Status**: 5% complete
