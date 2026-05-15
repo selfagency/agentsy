@@ -3,7 +3,9 @@ import type { CredentialSource, SecureSyncErrorEnvelope, SecureSyncErrorOptions 
 const SECRET_PATTERNS = [
   /sk_[a-z0-9_-]{8,}/giu,
   /api[_-]?key\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
-  /(?:auth[_-]?token|turso[_-]?auth[_-]?token|token)\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
+  /auth[_-]?token\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
+  /turso[_-]?auth[_-]?token\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
+  /token\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
   /bearer\s+[a-z0-9._-]{10,}/giu,
   /libsql:\/\/[^\s:]+:[^@\s]+@/giu
 ] as const;

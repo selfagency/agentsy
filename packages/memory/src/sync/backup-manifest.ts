@@ -3,7 +3,7 @@ import type { BackupManifest, BackupManifestInput, SyncRecord } from './types.js
 import { computeSyncChecksum } from './integrity.js';
 
 function cloneJsonMetadata<T>(metadata: T): T {
-  return JSON.parse(JSON.stringify(metadata)) as T;
+  return structuredClone(metadata);
 }
 
 function cloneRecords(records: SyncRecord[]): SyncRecord[] {

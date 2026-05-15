@@ -19,7 +19,7 @@ const EMPTY_ENVELOPE: StoredConflictEnvelope = {
 };
 
 function cloneConflict<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function createEmptyEnvelope(): StoredConflictEnvelope {

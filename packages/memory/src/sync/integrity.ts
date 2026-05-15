@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import type { RemoteValidationResult, SyncRecord, SyncSnapshot } from './types.js';
 
 function cloneJsonValue<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -55,7 +55,9 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
         errors.push(`records[${index}].id must be a non-empty string`);
       }
 
-      if (!isValidTier(record.tier)) {
+      const tierIsValid = isValidTier(record.tier);
+
+      if (tierIsValid === false) {
         errors.push(`records[${index}].tier must be one of raw|wiki|vector`);
       }
 
@@ -80,7 +82,6 @@ export function cloneSyncSnapshot(snapshot: SyncSnapshot): SyncSnapshot {
     cursor: snapshot.cursor,
     records: snapshot.records.map((record: SyncRecord) => ({
       ...record,
-      ...(record.metadata === undefined ? {} : { metadata: record.metadata }),
       ...(record.metadata === undefined ? {} : { metadata: cloneJsonValue(record.metadata) }),
       ...(record.relationships === undefined ? {} : { relationships: [...record.relationships] })
     }))
