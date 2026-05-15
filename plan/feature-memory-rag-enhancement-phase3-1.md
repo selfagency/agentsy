@@ -57,7 +57,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 | TASK-004 | Implement startup auto-ingest bootstrap in `packages/memory/src/retrieval/rag/bootstrap.ts`.                                                             | ✅        | 2026-05-15 |
 | TASK-005 | Create typed retrieval model contracts in `packages/memory/src/retrieval/rag/types.ts` (evidence, citation, score breakdown).                            | ✅        | 2026-05-15 |
 | TASK-006 | Add unit tests for client/config/bootstrap flows in `packages/memory/src/retrieval/rag/*.test.ts`.                                                       | ✅        | 2026-05-15 |
-| TASK-025 | Add shared MSW handler suites for RAG server/web connector endpoints and integrate them with test lifecycle setup for Node-based suites.                 |           |      |
+| TASK-025 | Add shared MSW handler suites for RAG server/web connector endpoints and integrate them with test lifecycle setup for Node-based suites.                 |           |            |
 
 ### Implementation Phase 2
 
