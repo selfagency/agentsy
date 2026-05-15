@@ -44,12 +44,12 @@ function entityScore(queryTokens: readonly string[], document: RetrievalBenchmar
     return 0;
   }
 
-  const normalized = entities
-    .filter((item): item is string => typeof item === 'string')
-    .map(item => item.toLowerCase());
+  const normalized = new Set(
+    entities.filter((item): item is string => typeof item === 'string').map(item => item.toLowerCase())
+  );
   let hits = 0;
   for (const token of queryTokens) {
-    if (normalized.includes(token)) {
+    if (normalized.has(token)) {
       hits += 1;
     }
   }

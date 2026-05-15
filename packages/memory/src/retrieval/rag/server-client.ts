@@ -35,7 +35,7 @@ async function requestJson<T>(
       ...init,
       headers: {
         'content-type': 'application/json',
-        ...(init.headers ?? {})
+        ...init.headers
       },
       signal: controller.signal
     });

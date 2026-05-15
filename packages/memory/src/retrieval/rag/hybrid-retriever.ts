@@ -12,12 +12,13 @@ interface HybridRecord {
   metadata?: Record<string, unknown>;
 }
 
-function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
-  const length = Math.min(a.length, b.length);
-  if (length <= 0) {
-    return 0;
-  }
+interface DotAndNorms {
+  dot: number;
+  normA: number;
+  normB: number;
+}
 
+function computeDotAndNorms(a: readonly number[], b: readonly number[], length: number): DotAndNorms {
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -28,11 +29,18 @@ function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
     normA += valueA * valueA;
     normB += valueB * valueB;
   }
+  return { dot, normA, normB };
+}
 
+function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
+  const length = Math.min(a.length, b.length);
+  if (length <= 0) {
+    return 0;
+  }
+  const { dot, normA, normB } = computeDotAndNorms(a, b, length);
   if (normA === 0 || normB === 0) {
     return 0;
   }
-
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 

@@ -40,7 +40,8 @@ export function buildRuntimeMemoryContextXml(
     .map(item => {
       const citationXml = item.citations
         .map(citation => {
-          return `<citation source_id="${escapeXml(citation.sourceId)}" source_type="${escapeXml(citation.sourceType)}"${citation.url ? ` url="${escapeXml(citation.url)}"` : ''}>${escapeXml(citation.title ?? citation.sourceId)}</citation>`;
+          const urlAttr = citation.url ? ` url="${escapeXml(citation.url)}"` : '';
+          return `<citation source_id="${escapeXml(citation.sourceId)}" source_type="${escapeXml(citation.sourceType)}"${urlAttr}>${escapeXml(citation.title ?? citation.sourceId)}</citation>`;
         })
         .join('');
 
@@ -69,5 +70,6 @@ export function injectRuntimeMemoryContext(existingPrompt: string, memoryContext
   }
 
   const remainder = trimmedExisting.slice(endIndex + '</memory_context>'.length).trimStart();
-  return `${memoryContextXml}${remainder.length > 0 ? `\n${remainder}` : ''}`;
+  const separator = remainder.length > 0 ? '\n' : '';
+  return `${memoryContextXml}${separator}${remainder}`;
 }
