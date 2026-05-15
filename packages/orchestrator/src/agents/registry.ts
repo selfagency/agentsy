@@ -8,7 +8,7 @@ export class AgentRegistry extends EventEmitter {
     ['beginner', 0],
     ['intermediate', 1],
     ['advanced', 2],
-    ['expert', 3],
+    ['expert', 3]
   ]);
 
   register(agent: AgentCapabilities): void {

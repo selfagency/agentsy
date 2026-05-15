@@ -28,11 +28,11 @@ describe('captureStreamState', () => {
 
   it('captures tool calls in snapshot', () => {
     const processor = new LLMStreamProcessor({
-      knownTools: new Set(['lookup']),
+      knownTools: new Set(['lookup'])
     });
     processor.process({
       content: '<toolCall>{"name":"lookup","arguments":{"q":"test"}}</toolCall>',
-      done: true,
+      done: true
     });
 
     const snap = captureStreamState(processor);
@@ -152,7 +152,7 @@ describe('buildContinuationPrompt', () => {
       thinking: '',
       toolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' as const }],
       options: {},
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     const messages = buildContinuationPrompt(snap, { provider: 'openai' });
@@ -169,7 +169,7 @@ describe('buildContinuationPrompt', () => {
       thinking: '',
       toolCalls: [{ name: 'lookup', parameters: { id: '123' }, format: 'native-json' as const }],
       options: {},
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     const messages = buildContinuationPrompt(snap, { provider: 'anthropic' });

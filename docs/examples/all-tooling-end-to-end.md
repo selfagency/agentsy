@@ -49,8 +49,8 @@ const decisionSchema = {
     targetIp: { type: 'string' },
     reason: { type: 'string' },
     severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-    evidence: { type: 'array', items: { type: 'string' }, minItems: 1 },
-  },
+    evidence: { type: 'array', items: { type: 'string' }, minItems: 1 }
+  }
 } as const;
 
 async function* executeProviderStream(messages: Array<{ role: string; content: string }>) {
@@ -60,8 +60,8 @@ async function* executeProviderStream(messages: Array<{ role: string; content: s
     body: JSON.stringify({
       model: 'gpt-4.1-mini',
       stream: true,
-      messages,
-    }),
+      messages
+    })
   });
 
   if (!response.body) {
@@ -93,11 +93,11 @@ async function runFullWorkflow(): Promise<void> {
   // 3) processor + 7) conversation state + 8) AG-UI + 9) rendering
   const processor = new LLMStreamProcessor({
     parseThinkTags: true,
-    knownTools: new Set(['geo_lookup', 'reputation_check', 'dns_block']),
+    knownTools: new Set(['geo_lookup', 'reputation_check', 'dns_block'])
   });
 
   const bridge = createConversationStoreFromProcessor(processor, {
-    conversationId: 'security-ops-demo',
+    conversationId: 'security-ops-demo'
   });
 
   const processorEvents = createProcessorEventAdapter(processor);
@@ -122,7 +122,7 @@ async function runFullWorkflow(): Promise<void> {
         messages.push(buildToolResultMessage(call, toolResult));
       }
       return messages;
-    },
+    }
   });
 
   async function* executeWithContinuation(messages: Array<{ role: string; content: string }>) {
@@ -154,8 +154,8 @@ async function runFullWorkflow(): Promise<void> {
   const initialMessages = [
     {
       role: 'user',
-      content: 'Analyze current telemetry and decide whether to block malicious IPs. Use tools before final decision.',
-    },
+      content: 'Analyze current telemetry and decide whether to block malicious IPs. Use tools before final decision.'
+    }
   ];
 
   for await (const part of loop.run(initialMessages)) {
@@ -188,9 +188,9 @@ async function runFullWorkflow(): Promise<void> {
       await updateRemoteDnsBlocklist(value.targetIp, {
         reason: value.reason,
         severity: value.severity,
-        evidence: value.evidence,
+        evidence: value.evidence
       });
-    },
+    }
   });
 
   bridge.dispose();
@@ -204,13 +204,13 @@ async function runSimplePath(rawSource: AsyncIterable<unknown>) {
       const normalized = normalizeOpenAIResponseEvent(event);
       return normalized ? normalized.chunk : null;
     },
-    schema: decisionSchema,
+    schema: decisionSchema
   });
 
   if (simpleDecision.success) {
     await applyDecisionAction(simpleDecision.decision, {
       shouldAct: value => value.shouldBlock,
-      action: async value => updateRemoteDnsBlocklist(value.targetIp, value),
+      action: async value => updateRemoteDnsBlocklist(value.targetIp, value)
     });
   }
 }

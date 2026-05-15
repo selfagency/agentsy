@@ -19,7 +19,7 @@ export {
   computeStateDelta,
   createStateDeltaEvent,
   createStateSnapshotEvent,
-  StateManager,
+  StateManager
 } from './state-manager.js';
 export type { JsonPatchOp } from './state-manager.js';
 
@@ -37,5 +37,5 @@ export {
   type ToolCallArgsEvent,
   type ToolCallEndEvent,
   type ToolCallStartEvent,
-  EventType,
+  EventType
 } from '@agentsy/types';

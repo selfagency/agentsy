@@ -175,7 +175,7 @@ function getNextEmission<T>(
     stopAfterRoot: boolean;
     tryParse: (text: string, repair: boolean) => unknown;
     computeNewFields: (parsed: unknown, isComplete: boolean) => StreamJsonField[];
-  },
+  }
 ): StreamJsonEmission<T> {
   if (options.stopAfterRoot && state.rootComplete) {
     return { state };
@@ -191,9 +191,9 @@ function getNextEmission<T>(
           accumulated,
           lastParsed: complete,
           lastWasPartial: false,
-          rootComplete: true,
+          rootComplete: true
         },
-        result: { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields },
+        result: { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields }
       };
     }
     return {
@@ -201,8 +201,8 @@ function getNextEmission<T>(
         accumulated,
         lastParsed: state.lastParsed,
         lastWasPartial: false,
-        rootComplete: true,
-      },
+        rootComplete: true
+      }
     };
   }
 
@@ -210,8 +210,8 @@ function getNextEmission<T>(
     return {
       state: {
         ...state,
-        accumulated,
-      },
+        accumulated
+      }
     };
   }
 
@@ -220,8 +220,8 @@ function getNextEmission<T>(
     return {
       state: {
         ...state,
-        accumulated,
-      },
+        accumulated
+      }
     };
   }
 
@@ -231,9 +231,9 @@ function getNextEmission<T>(
       accumulated,
       lastParsed: partial,
       lastWasPartial: true,
-      rootComplete: false,
+      rootComplete: false
     },
-    result: { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields },
+    result: { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields }
   };
 }
 
@@ -246,7 +246,7 @@ function getNextEmission<T>(
  */
 export async function* streamJson<T = unknown>(
   source: AsyncIterable<string>,
-  options: StreamJsonOptions = {},
+  options: StreamJsonOptions = {}
 ): AsyncGenerator<StreamJsonResult<StreamingPartial<T>>> {
   const emitPartials = options.emitPartials ?? true;
   const trackFields = options.emitFields === true;
@@ -266,7 +266,7 @@ export async function* streamJson<T = unknown>(
     accumulated: '',
     lastParsed: undefined,
     lastWasPartial: false,
-    rootComplete: false,
+    rootComplete: false
   };
   let prevPaths: Map<string, unknown> = new Map();
 
@@ -283,7 +283,7 @@ export async function* streamJson<T = unknown>(
     return changedPaths.map(path => ({
       path,
       value: next.get(path),
-      isComplete,
+      isComplete
     }));
   }
 
@@ -292,7 +292,7 @@ export async function* streamJson<T = unknown>(
       emitPartials,
       stopAfterRoot,
       tryParse,
-      computeNewFields,
+      computeNewFields
     });
     loopState = state;
 

@@ -13,13 +13,13 @@ function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilit
         name: 'summarization',
         category: 'nlp',
         proficiency: 'advanced',
-        capabilities: ['summarize'],
-      },
+        capabilities: ['summarize']
+      }
     ],
     maxConcurrency: overrides.maxConcurrency ?? 1,
     costPerTask: overrides.costPerTask ?? 0.1,
     available: overrides.available ?? true,
-    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z'),
+    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z')
   };
 }
 
@@ -51,17 +51,17 @@ describe('AgentRegistry', () => {
             name: 'typescript',
             category: 'language',
             proficiency: 'expert',
-            capabilities: ['coding'],
+            capabilities: ['coding']
           },
           {
             id: 'skill-test',
             name: 'testing',
             category: 'quality',
             proficiency: 'advanced',
-            capabilities: ['unit-tests'],
-          },
-        ],
-      }),
+            capabilities: ['unit-tests']
+          }
+        ]
+      })
     );
 
     registry.register(
@@ -73,22 +73,22 @@ describe('AgentRegistry', () => {
             name: 'typescript',
             category: 'language',
             proficiency: 'beginner',
-            capabilities: ['coding'],
+            capabilities: ['coding']
           },
           {
             id: 'skill-test-low',
             name: 'testing',
             category: 'quality',
             proficiency: 'intermediate',
-            capabilities: ['unit-tests'],
-          },
-        ],
-      }),
+            capabilities: ['unit-tests']
+          }
+        ]
+      })
     );
 
     const matched = registry.findAgentsBySkills([
       { name: 'typescript', proficiency: 'advanced' },
-      { name: 'testing', proficiency: 'advanced' },
+      { name: 'testing', proficiency: 'advanced' }
     ]);
 
     expect(matched.map(item => item.id)).toEqual(['agent-expert']);
@@ -102,8 +102,8 @@ describe('AgentRegistry', () => {
       createAgent({
         id: 'agent-update',
         available: true,
-        lastSeen: originalLastSeen,
-      }),
+        lastSeen: originalLastSeen
+      })
     );
 
     registry.updateAvailability('agent-update', false);

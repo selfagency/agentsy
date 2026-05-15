@@ -6,5 +6,5 @@ export type {
   McpCapabilities,
   McpToolInvocation,
   McpToolResult,
-  McpResourceResult,
+  McpResourceResult
 } from './types.js';

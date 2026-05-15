@@ -68,7 +68,7 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
   const {
     formatEvent = defaultFormatEvent,
     includeComments: _includeComments = false,
-    heartbeatInterval: _heartbeatInterval = 30000,
+    heartbeatInterval: _heartbeatInterval = 30000
   } = options;
 
   // Create an async iterable that produces SSE-formatted chunks
@@ -96,7 +96,7 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
       } catch (err) {
         controller.error(err);
       }
-    },
+    }
   });
 
   return {
@@ -112,7 +112,7 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
       } finally {
         reader.releaseLock();
       }
-    },
+    }
   };
 }
 
@@ -155,7 +155,7 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       res.writeHead?.(200, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type'
       });
       res.end?.();
       return;
@@ -179,7 +179,7 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
         Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type'
       });
 
       for await (const chunk of sseStream) {
@@ -243,7 +243,7 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
 
       const bodyFn = c.body as (
         stream: ReadableStream<Uint8Array> | AsyncGenerator<Uint8Array>,
-        options: Record<string, unknown>,
+        options: Record<string, unknown>
       ) => unknown;
 
       return bodyFn(sseStream.readable, {
@@ -251,8 +251,8 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           Connection: 'keep-alive',
-          'Access-Control-Allow-Origin': '*',
-        },
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';

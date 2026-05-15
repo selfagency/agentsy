@@ -18,7 +18,7 @@ export interface AnthropicToolResult {
       tool_use_id: string;
       content: string;
       is_error?: true;
-    },
+    }
   ];
 }
 
@@ -38,7 +38,7 @@ export interface GeminiToolResult {
         name: string;
         response: { output?: string; error?: string };
       };
-    },
+    }
   ];
 }
 
@@ -65,14 +65,14 @@ function normalizeContent(result: string | object): string {
 export function buildToolResultMessage(
   toolCall: XmlToolCall,
   result: string | object,
-  options?: { isError?: boolean },
+  options?: { isError?: boolean }
 ): ToolResultMessage {
   const id = toolCall.id ?? toolCall.name;
   const message: ToolResultMessage = {
     role: 'tool',
     tool_call_id: id,
     name: toolCall.name,
-    content: normalizeContent(result),
+    content: normalizeContent(result)
   };
   if (options?.isError) {
     message.is_error = true;
@@ -90,14 +90,14 @@ export function buildToolResultMessage(
 export function buildAnthropicToolResult(
   toolCall: XmlToolCall,
   result: string | object,
-  options?: { isError?: boolean },
+  options?: { isError?: boolean }
 ): AnthropicToolResult {
   const id = toolCall.id ?? toolCall.name;
   const content = normalizeContent(result);
   const block: AnthropicToolResult['content'][0] = {
     type: 'tool_result',
     tool_use_id: id,
-    content,
+    content
   };
   if (options?.isError) {
     block.is_error = true;
@@ -116,7 +116,7 @@ export function buildOpenAIToolResult(toolCall: XmlToolCall, result: string | ob
   return {
     role: 'tool',
     tool_call_id: id,
-    content: normalizeContent(result),
+    content: normalizeContent(result)
   };
 }
 
@@ -130,7 +130,7 @@ export function buildOpenAIToolResult(toolCall: XmlToolCall, result: string | ob
 export function buildGeminiToolResult(
   toolCall: XmlToolCall,
   result: string | object,
-  options?: { isError?: boolean },
+  options?: { isError?: boolean }
 ): GeminiToolResult {
   const content = normalizeContent(result);
   const response = options?.isError ? { error: content } : { output: content };
@@ -140,9 +140,9 @@ export function buildGeminiToolResult(
       {
         functionResponse: {
           name: toolCall.name,
-          response,
-        },
-      },
-    ],
+          response
+        }
+      }
+    ]
   };
 }

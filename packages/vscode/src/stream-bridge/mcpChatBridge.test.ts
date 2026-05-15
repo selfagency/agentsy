@@ -10,13 +10,13 @@ describe('VSCode Stream Bridge', () => {
       start(controller) {
         controller.enqueue('data: test\n\n');
         controller.close();
-      },
-    }),
+      }
+    })
   };
 
   const mockCancellationToken: CancellationToken = {
     isCancellationRequested: false,
-    onCancellationRequested: vi.fn(),
+    onCancellationRequested: vi.fn()
   };
 
   describe('MCPChatBridge', () => {

@@ -299,7 +299,7 @@ export enum MemoryTier {
   SHORT_TERM = 'short-term', // Message buffer + recent memories (days)
   LONG_TERM = 'long-term', // Semantic + episodic consolidated (months)
   PERMANENT = 'permanent', // Core procedural knowledge (years)
-  ARCHIVAL = 'archival', // External database storage (indefinite)
+  ARCHIVAL = 'archival' // External database storage (indefinite)
 }
 
 // Memory types based on cognitive science research
@@ -308,7 +308,7 @@ export enum MemoryType {
   EPISODIC = 'episodic', // Events, experiences, conversations
   PROCEDURAL = 'procedural', // Skills, routines, processes
   WORKING = 'working', // Active context window content
-  SENSORY = 'sensory', // Raw, unfiltered input
+  SENSORY = 'sensory' // Raw, unfiltered input
 }
 
 // Memory entry with rich metadata (Enhanced)
@@ -492,7 +492,7 @@ const memoryTiers = {
   sensory: {
     store: new InMemoryStore({ maxSize: 100, ttl: '5m' }),
     evictionPolicy: 'fifo',
-    compression: false,
+    compression: false
   },
 
   // Working memory - active context window
@@ -500,7 +500,7 @@ const memoryTiers = {
     store: new InMemoryStore({ maxSize: 10000, ttl: '4h' }),
     blockManagement: new MemoryBlockManager(),
     contextWindowAware: true,
-    smartEviction: new IntelligentEviction(),
+    smartEviction: new IntelligentEviction()
   },
 
   // Short-term memory - message buffer + recent
@@ -508,7 +508,7 @@ const memoryTiers = {
     store: new SQLiteStore({ path: './short-term.db', maxSize: '50MB' }),
     includes: ['message_buffer', 'recent_experiences'],
     vectorSearch: true,
-    temperatureTracking: true,
+    temperatureTracking: true
   },
 
   // Long-term memory - semantic + episodic consolidated
@@ -517,7 +517,7 @@ const memoryTiers = {
     includes: ['semantic_knowledge', 'episodic_memories'],
     vectorIndex: true,
     relationshipGraph: true,
-    compression: 'automatic',
+    compression: 'automatic'
   },
 
   // Permanent memory - procedural knowledge
@@ -525,7 +525,7 @@ const memoryTiers = {
     store: new SQLiteStore({ path: './permanent.db', maxSize: '2GB' }),
     includes: ['procedural_skills', 'core_facts'],
     versioned: true,
-    backupRequired: true,
+    backupRequired: true
   },
 
   // Archival memory - external database
@@ -533,8 +533,8 @@ const memoryTiers = {
     store: new VectorDBStore({ connectionString: process.env.VECTOR_DB }),
     includes: ['processed_knowledge', 'indexed_content'],
     searchOptimized: true,
-    scalable: true,
-  },
+    scalable: true
+  }
 };
 
 // Context engineering system (NEW)
@@ -542,36 +542,36 @@ const contextEngineering = {
   builder: new ContextBuilder({
     informationGatherer: new RichContextGatherer(),
     formatter: new ContextFormatter(),
-    validator: new ContextValidator(),
+    validator: new ContextValidator()
   }),
   windowManager: new ContextWindowManager({
     budgetManager: new TokenBudgetManager(),
     evictionStrategy: new SmartEvictionStrategy({ preservePercentage: 30 }),
-    optimizer: new ContextOptimizer(),
+    optimizer: new ContextOptimizer()
   }),
   qualityAssurance: new ContextQualityAssurance({
     completenessChecker: new CompletenessChecker(),
     relevanceScorer: new RelevanceScorer(),
-    formatOptimizer: new FormatOptimizer(),
-  }),
+    formatOptimizer: new FormatOptimizer()
+  })
 };
 
 // Sleep-time compute system (NEW)
 const sleepTimeSystem = {
   scheduler: new SleepScheduler({
     idleDetection: new IdleDetector(),
-    timeBudgetManager: new TimeBudgetManager(),
+    timeBudgetManager: new TimeBudgetManager()
   }),
   memoryOptimizer: new MemoryOptimizer({
     consolidationEngine: new ConsolidationEngine(),
     relationshipRefiner: new RelationshipRefiner(),
-    compressionEngine: new AdvancedCompressionEngine(),
+    compressionEngine: new AdvancedCompressionEngine()
   }),
   learningEngine: new SleepLearningEngine({
     patternDetector: new PatternDetector(),
     preferenceLearner: new PreferenceLearner(),
-    feedbackProcessor: new FeedbackProcessor(),
-  }),
+    feedbackProcessor: new FeedbackProcessor()
+  })
 };
 ```
 
@@ -584,7 +584,7 @@ const gitIntegration = {
   hookType: ['pre-commit', 'post-merge', 'post-checkout'],
   conflictResolution: true,
   branchTracking: true,
-  decisionLogging: true,
+  decisionLogging: true
 };
 ```
 

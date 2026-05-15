@@ -83,14 +83,14 @@ const VALID_TOOL_NAME = /^[A-Za-z_][A-Za-z0-9_:-]*$/;
 
 export function buildNativeToolsArray(
   tools: readonly XmlToolInfo[],
-  options: BuildNativeToolsOptions = {},
+  options: BuildNativeToolsOptions = {}
 ): NativeTool[] {
   const strict = options.strict ?? false;
 
   return tools.map(tool => {
     if (!VALID_TOOL_NAME.test(tool.name)) {
       throw new Error(
-        `Invalid tool name "${tool.name}" for native tool payload: tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`,
+        `Invalid tool name "${tool.name}" for native tool payload: tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`
       );
     }
     const props = tool.inputSchema?.properties ?? {};
@@ -108,8 +108,8 @@ export function buildNativeToolsArray(
       parameters: {
         type: 'object',
         properties: Object.fromEntries(properties.entries()),
-        additionalProperties: false,
-      },
+        additionalProperties: false
+      }
     };
 
     if (tool.description) fn.description = tool.description;

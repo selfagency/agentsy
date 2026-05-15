@@ -153,7 +153,7 @@ export interface Meter {
   createObservableGauge(
     name: string,
     callback: (observable: ObservableGauge) => void,
-    options?: MetricOptions,
+    options?: MetricOptions
   ): ObservableGauge;
 }
 

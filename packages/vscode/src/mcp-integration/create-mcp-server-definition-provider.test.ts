@@ -10,11 +10,11 @@ describe('createMcpServerDefinitionProvider', () => {
           command: 'node',
           args: ['server.js'],
           apiKeyEnvVar: 'ZAI_API_KEY',
-          apiKeyHeader: 'Authorization',
-        },
+          apiKeyHeader: 'Authorization'
+        }
       ],
       getApiKey: async () => 'secret-key',
-      formatApiKeyHeaderValue: apiKey => `Bearer ${apiKey}`,
+      formatApiKeyHeaderValue: apiKey => `Bearer ${apiKey}`
     });
 
     const servers = await provider.provide();
@@ -23,7 +23,7 @@ describe('createMcpServerDefinitionProvider', () => {
     expect(servers[0]).toMatchObject({
       name: 'zai-mcp',
       env: { ZAI_API_KEY: 'secret-key' },
-      headers: { Authorization: 'Bearer secret-key' },
+      headers: { Authorization: 'Bearer secret-key' }
     });
   });
 
@@ -33,8 +33,8 @@ describe('createMcpServerDefinitionProvider', () => {
         {
           name: 'disabled-by-setting',
           command: 'node',
-          enabledSettingKey: 'mcp.disabledBySetting.enabled',
-        },
+          enabledSettingKey: 'mcp.disabledBySetting.enabled'
+        }
       ],
       settings: {
         get: <T>(key: string, fallback?: T): T | undefined => {
@@ -42,8 +42,8 @@ describe('createMcpServerDefinitionProvider', () => {
             return false as T;
           }
           return fallback;
-        },
-      },
+        }
+      }
     });
 
     const servers = await provider.provide();

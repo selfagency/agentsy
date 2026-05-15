@@ -22,11 +22,11 @@ export class SlackAdapterNotAvailableError extends Error {
     super('SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.');
     Object.defineProperty(this, 'name', {
       value: 'SlackAdapterNotAvailableError',
-      configurable: true,
+      configurable: true
     });
     Object.defineProperty(this, 'message', {
       value: 'SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.',
-      configurable: true,
+      configurable: true
     });
   }
 }
@@ -43,5 +43,5 @@ export const SlackAdapter = {
   },
   onMessage: () => {
     throw new SlackAdapterNotAvailableError();
-  },
+  }
 };

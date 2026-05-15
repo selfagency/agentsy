@@ -168,7 +168,7 @@ export class ToolCallAccumulator {
     const flushedCall: NativeToolCall = {
       name: pending.name,
       arguments:
-        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired) ? (repaired as JsonObject) : {},
+        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired) ? (repaired as JsonObject) : {}
     };
     if (pending.id !== undefined) flushedCall.id = pending.id;
     return flushedCall;

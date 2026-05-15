@@ -7,7 +7,7 @@ const ZAI_FINISH_REASON_MAP: Record<string, FinishReason> = {
   length: 'length',
   sensitive: 'content-filter',
   model_context_window_exceeded: 'error',
-  network_error: 'error',
+  network_error: 'error'
 };
 
 function mapZAiFinishReason(reason: string | null | undefined): FinishReason | undefined {
@@ -41,7 +41,7 @@ function nonEmptyString(value: string | null | undefined): string | undefined {
 
 function mapToolCallDelta(delta: ZAiToolCallDelta): NativeToolCallDelta {
   const mapped: NativeToolCallDelta = {
-    index: delta.index,
+    index: delta.index
   };
 
   const id = nonEmptyString(delta.id);
@@ -146,7 +146,7 @@ export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
       ...(nativeToolCallDeltas === undefined ? {} : { nativeToolCallDeltas }),
       ...(done === undefined ? {} : { done }),
       ...(mappedFinishReason === undefined ? {} : { finishReason: mappedFinishReason }),
-      ...(usage === undefined ? {} : { usage }),
+      ...(usage === undefined ? {} : { usage })
     });
 
     if (Object.keys(chunk).length === 0) return null;

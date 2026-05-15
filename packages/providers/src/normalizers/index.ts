@@ -10,7 +10,7 @@ export {
   isOpenAICompatibleNormalizerProvider,
   normalizeOpenAICompatibleChunk,
   OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS,
-  type OpenAICompatibleNormalizerProvider,
+  type OpenAICompatibleNormalizerProvider
 } from './openai-compatible.js';
 export { normalizeOpenAIChatChunk } from './openai.js';
 export { normalizeOpenAIResponseEvent } from './openaiResponses.js';

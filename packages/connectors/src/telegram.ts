@@ -22,11 +22,11 @@ export class TelegramAdapterNotAvailableError extends Error {
     super('TelegramAdapter requires the grammy peer dependency. Install it with pnpm add grammy@^1.');
     Object.defineProperty(this, 'name', {
       value: 'TelegramAdapterNotAvailableError',
-      configurable: true,
+      configurable: true
     });
     Object.defineProperty(this, 'message', {
       value: 'TelegramAdapter requires the grammy peer dependency. Install it with pnpm add grammy@^1.',
-      configurable: true,
+      configurable: true
     });
   }
 }
@@ -43,5 +43,5 @@ export const TelegramAdapter = {
   },
   onMessage: () => {
     throw new TelegramAdapterNotAvailableError();
-  },
+  }
 };

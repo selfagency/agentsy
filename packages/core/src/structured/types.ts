@@ -40,6 +40,6 @@ export function isStreamingDone<T>(partial: StreamingPartial<T>): boolean {
 export function markStreamingDone<T>(partial: StreamingPartial<T>): StreamingPartial<T> {
   return {
     ...partial,
-    [ItemDoneStreaming]: true,
+    [ItemDoneStreaming]: true
   };
 }

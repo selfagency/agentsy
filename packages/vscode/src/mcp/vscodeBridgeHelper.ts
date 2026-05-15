@@ -25,7 +25,7 @@ function mapMcpToStreamEvent(mcpType: string): MCPStreamEvent['type'] | null {
     filetree: 'filetree',
     progress: 'progress',
     reference: 'reference',
-    push: 'push',
+    push: 'push'
   };
   return mapping[mcpType] ?? null;
 }
@@ -67,12 +67,12 @@ export class VSCodeMCPBridgeHelper {
       button: command =>
         this.pushEvent({
           type: 'button',
-          data: { command: String(command) },
+          data: { command: String(command) }
         }),
       filetree: (value, baseUri) =>
         this.pushEvent({
           type: 'filetree',
-          data: { value, baseUri: String(baseUri) },
+          data: { value, baseUri: String(baseUri) }
         }),
       progress: value => this.pushEvent({ type: 'progress', data: { value } }),
       reference: (value, iconPath) =>
@@ -80,10 +80,10 @@ export class VSCodeMCPBridgeHelper {
           type: 'reference',
           data: {
             value: String(value),
-            iconPath: iconPath ? String(iconPath) : undefined,
-          },
+            iconPath: iconPath ? String(iconPath) : undefined
+          }
         }),
-      push: part => this.pushEvent({ type: 'push', data: part }),
+      push: part => this.pushEvent({ type: 'push', data: part })
     };
 
     return chatStream;
@@ -105,7 +105,7 @@ export class VSCodeMCPBridgeHelper {
    */
   private async processRawStream(
     transportStream: ReadableStream<string>,
-    chatStream: ChatResponseStream,
+    chatStream: ChatResponseStream
   ): Promise<void> {
     const reader = transportStream.getReader();
 
@@ -129,7 +129,7 @@ export class VSCodeMCPBridgeHelper {
         if (mappedType) {
           const event: MCPStreamEvent = {
             type: mappedType,
-            data: sseEvent.data ? JSON.parse(sseEvent.data) : null,
+            data: sseEvent.data ? JSON.parse(sseEvent.data) : null
           };
           this.handleEvent(event, chatStream);
         }
@@ -277,7 +277,7 @@ export class VSCodeMCPBridgeHelper {
  */
 export function createVSCodeMCPBridge(
   transport: MCPTransport,
-  cancellationToken: CancellationToken,
+  cancellationToken: CancellationToken
 ): VSCodeMCPBridgeHelper {
   return new VSCodeMCPBridgeHelper(transport, cancellationToken);
 }

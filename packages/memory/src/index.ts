@@ -72,6 +72,6 @@ export function createMemoryStore(): MemoryStore {
     },
     list() {
       return [...records.values()];
-    },
+    }
   };
 }

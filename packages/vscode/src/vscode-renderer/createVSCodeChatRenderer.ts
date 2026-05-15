@@ -46,7 +46,7 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
           uri: { scheme: string; path: string };
           range: { start: { line: number; character: number }; end: { line: number; character: number } };
         },
-    title?: string,
+    title?: string
   ): void;
 
   /** Reference a file, location, or variable. */
@@ -60,7 +60,7 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
       | { variableName: string; value?: { scheme: string; path: string } },
     iconPath?:
       | { scheme: string; path: string }
-      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } },
+      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } }
   ): void;
 
   /** Emit a button that runs a command. */
@@ -132,7 +132,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     onError,
     onToolCall,
     onToolCallDelta,
-    onFinish,
+    onFinish
   } = options;
 
   if (!stream) {
@@ -183,7 +183,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   };
 
   const sharedOptions: BaseRendererOptions = {
-    onFinish: sharedOnFinish,
+    onFinish: sharedOnFinish
   };
 
   if (options.processor) {
@@ -210,7 +210,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
 
         if (stream.beginToolInvocation && typeof part.call?.name === 'string') {
           const vscodePart = toVSCodeToolCallPart(part, {
-            fallbackCallId: `tool_call_${part.call.name}_${++_toolCallCounter}`,
+            fallbackCallId: `tool_call_${part.call.name}_${++_toolCallCounter}`
           });
           stream.beginToolInvocation(vscodePart.callId, vscodePart.name, vscodePart.input);
         }
@@ -228,8 +228,8 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
           stream.markdown('\n\n');
           blockquoteThinkingStarted = false;
         }
-      },
+      }
     },
-    onError,
+    onError
   );
 }

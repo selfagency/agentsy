@@ -12,8 +12,8 @@ vi.mock('ink', async () => {
       lastFrame: () => '',
       rerender: vi.fn(),
       clear: vi.fn(),
-      unmount: vi.fn(),
-    })),
+      unmount: vi.fn()
+    }))
   };
 });
 
@@ -30,7 +30,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.text).toBe('Analyzing the problem');
@@ -42,7 +42,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.isStreaming).toBe(false);
@@ -54,7 +54,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.thinking).toBeDefined();
       expect(element.props.theme.thinking.borderColor).toBeDefined();
@@ -69,7 +69,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.style).toBe('inline');
@@ -81,7 +81,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.isStreaming).toBe(false);
@@ -96,7 +96,7 @@ describe('ThinkingBlock Component', () => {
         style: 'suppress',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
       expect(element.props.style).toBe('suppress');
@@ -108,7 +108,7 @@ describe('ThinkingBlock Component', () => {
         style: 'suppress',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element).toBeDefined();
     });
@@ -122,7 +122,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element).toBeDefined();
       expect(element.props.screenReader).toBe(true);
@@ -134,7 +134,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element).toBeDefined();
       expect(element.props.screenReader).toBe(true);
@@ -146,7 +146,7 @@ describe('ThinkingBlock Component', () => {
         style: 'suppress',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element).toBeDefined();
     });
@@ -160,7 +160,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toBe('');
     });
@@ -172,7 +172,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text.length).toBe(1000);
     });
@@ -184,7 +184,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toBe(specialText);
     });
@@ -196,7 +196,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.text).toContain('Line 1');
       expect(element.props.text).toContain('Line 2');
@@ -211,7 +211,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.thinking.borderColor).toBe(darkTheme.thinking.borderColor);
       expect(element.props.theme.thinking.spinnerColor).toBe(darkTheme.thinking.spinnerColor);
@@ -223,7 +223,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         isStreaming: true,
         theme: defaultTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme).toBe(defaultTheme);
     });
@@ -231,14 +231,14 @@ describe('ThinkingBlock Component', () => {
     it('uses theme spinner interval when defined', () => {
       const customTheme = {
         ...darkTheme,
-        thinking: { ...darkTheme.thinking, spinnerIntervalMs: 120 },
+        thinking: { ...darkTheme.thinking, spinnerIntervalMs: 120 }
       };
       const element = React.createElement(ThinkingBlock, {
         text: 'Animated',
         style: 'blockquote',
         isStreaming: true,
         theme: customTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.thinking.spinnerIntervalMs).toBe(120);
     });
@@ -252,7 +252,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: true,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
 
       const completeElement = React.createElement(ThinkingBlock, {
@@ -260,7 +260,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         isStreaming: false,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
 
       expect(streamingElement.props.isStreaming).toBe(true);
@@ -275,7 +275,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Test',
         style: 'blockquote',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element).toBeDefined();
     });
@@ -285,7 +285,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Inline thoughts',
         style: 'inline',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.style).toBe('inline');
     });
@@ -295,7 +295,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Hidden thoughts',
         style: 'suppress',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.style).toBe('suppress');
     });
@@ -307,7 +307,7 @@ describe('ThinkingBlock Component', () => {
         text: '',
         style: 'blockquote',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.text).toBe('');
     });
@@ -318,7 +318,7 @@ describe('ThinkingBlock Component', () => {
         text: longThinking,
         style: 'blockquote',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.text.length).toBeGreaterThan(500);
     });
@@ -329,7 +329,7 @@ describe('ThinkingBlock Component', () => {
         text: multilineThinking,
         style: 'blockquote',
         isStreaming: true,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.text).toContain('First thought');
       expect(element.props.text).toContain('Second thought');
@@ -342,7 +342,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Themed thought',
         style: 'blockquote',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.theme).toBe(darkTheme);
     });
@@ -352,7 +352,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Themed thought',
         style: 'blockquote',
         isStreaming: false,
-        theme: defaultTheme,
+        theme: defaultTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.theme).toBe(defaultTheme);
     });
@@ -364,7 +364,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Streaming thought...',
         style: 'blockquote',
         isStreaming: true,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.isStreaming).toBe(true);
     });
@@ -374,7 +374,7 @@ describe('ThinkingBlock Component', () => {
         text: 'Completed thought',
         style: 'blockquote',
         isStreaming: false,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ThinkingBlock>[0]);
       expect(element.props.isStreaming).toBe(false);
     });

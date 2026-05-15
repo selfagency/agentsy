@@ -27,7 +27,7 @@ async function* providerStream(messages: Array<{ role: string; content: string }
   const response = await fetch('https://api.example.com/v1/responses', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ model: 'gpt-4.1-mini', stream: true, messages }),
+    body: JSON.stringify({ model: 'gpt-4.1-mini', stream: true, messages })
   });
 
   const textStream = response.body?.pipeThrough(new TextDecoderStream());

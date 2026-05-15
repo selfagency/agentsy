@@ -41,7 +41,7 @@ import { createPlainTextRenderer } from '@agentsy/renderers';
 
 const processor = new LLMStreamProcessor();
 const renderer = createPlainTextRenderer({
-  output: text => process.stdout.write(text),
+  output: text => process.stdout.write(text)
 });
 
 processor.on('text', text => void renderer.write(text));

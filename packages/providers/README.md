@@ -30,7 +30,7 @@ import {
   adaptToOllama,
   adaptOpenAIResponses,
   adaptToZai,
-  type GenericAdapterOptions,
+  type GenericAdapterOptions
 } from '@agentsy/providers/adapters';
 
 // Provider-specific normalizers
@@ -46,7 +46,7 @@ import {
   normalizeOllamaChunk,
   normalizeZaiChunk,
   type Normalizer,
-  type NormalizerProvider,
+  type NormalizerProvider
 } from '@agentsy/providers/normalizers';
 
 // Universal client utilities
@@ -74,7 +74,7 @@ const pipelined = createPipeline(stream, {
   parseThinkTags: true,
   scrubContextTags: true,
   knownTools: new Set(['weather', 'calculator']),
-  modelId: 'gpt-4',
+  modelId: 'gpt-4'
 });
 
 pipelined.addEventListener('delta', chunk => {
@@ -97,7 +97,7 @@ import { adaptToGemini, type GenericAdapterOptions } from '@agentsy/providers/ad
 
 const adapter = adaptToGemini({
   maxInputLength: 262144,
-  maxToolCallsPerMessage: 64,
+  maxToolCallsPerMessage: 64
   // ... other ProcessorOptions
 });
 
@@ -239,7 +239,7 @@ const customNormalizer: Normalizer = (data): { chunk: StreamChunk } | null => {
   return {
     chunk: {
       /* ... */
-    },
+    }
   };
 };
 ```
@@ -254,11 +254,11 @@ const customTransform = new TransformStream({
   transform(chunk, controller) {
     // Custom transformation
     controller.enqueue(chunk);
-  },
+  }
 });
 
 createPipeline(stream, {
-  provider: 'openai',
+  provider: 'openai'
   // Note: transforms are not documented in current PipelineOptions interface
   // Add to interface if needed
 });

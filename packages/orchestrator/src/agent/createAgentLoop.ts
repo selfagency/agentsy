@@ -15,7 +15,7 @@ import type {
   StepResult,
   ToolApprovalDecision,
   ToolApprovalMode,
-  ToolApprovalResult,
+  ToolApprovalResult
 } from './types.js';
 import { mergeCallbacks } from './utils.js';
 
@@ -35,7 +35,7 @@ function getSortedEntries(value: object): Array<[string, unknown]> {
 function assignCallbackIfDefined<K extends keyof AgentLoopOptions>(
   target: AgentLoopOptions,
   key: K,
-  callback: AgentLoopOptions[K] | undefined,
+  callback: AgentLoopOptions[K] | undefined
 ): void {
   if (callback !== undefined) {
     target[key] = callback;
@@ -72,7 +72,7 @@ function parametersEqual(a: unknown, b: unknown): boolean {
 
 function toolCallsEqual(
   a: { name: string; parameters: unknown; id?: string },
-  b: { name: string; parameters: unknown; id?: string },
+  b: { name: string; parameters: unknown; id?: string }
 ) {
   const idsMatch = a.id !== undefined && b.id !== undefined ? a.id === b.id : true;
   return a.name === b.name && idsMatch && parametersEqual(a.parameters, b.parameters);
@@ -87,7 +87,7 @@ function mergeStepCallbacks(base: AgentLoopOptions, overrides: AgentLoopStepOver
 function mergeToolAndFinalCallbacks(
   base: AgentLoopOptions,
   overrides: AgentLoopStepOverrides,
-  merged: AgentLoopOptions,
+  merged: AgentLoopOptions
 ): void {
   const beforeToolCall = mergeCallbacks(base.beforeToolCall, overrides.beforeToolCall);
   const afterToolCall = mergeCallbacks(base.afterToolCall, overrides.afterToolCall);
@@ -106,7 +106,7 @@ function mergeToolAndFinalCallbacks(
 function mergeLifecycleCallbacks(
   base: AgentLoopOptions,
   overrides: AgentLoopStepOverrides,
-  merged: AgentLoopOptions,
+  merged: AgentLoopOptions
 ): void {
   mergeStepCallbacks(base, overrides, merged);
   mergeToolAndFinalCallbacks(base, overrides, merged);
@@ -114,14 +114,14 @@ function mergeLifecycleCallbacks(
 
 function resolveBuildToolResultMessages(
   base: AgentLoopOptions,
-  overrides: AgentLoopStepOverrides,
+  overrides: AgentLoopStepOverrides
 ): AgentLoopOptions['buildToolResultMessages'] {
   return overrides.buildToolResultMessages ?? base.buildToolResultMessages;
 }
 
 function resolveApproveToolCalls(
   baseApproveToolCalls: AgentLoopOptions['approveToolCalls'],
-  overrideApproveToolCalls: AgentLoopStepOverrides['approveToolCalls'],
+  overrideApproveToolCalls: AgentLoopStepOverrides['approveToolCalls']
 ): AgentLoopOptions['approveToolCalls'] {
   return overrideApproveToolCalls ?? baseApproveToolCalls;
 }
@@ -132,7 +132,7 @@ function createRunId(): string {
 
 function mapApprovalDecision(
   toolCalls: AgentLoopToolContext['toolCalls'],
-  decision: ToolApprovalDecision,
+  decision: ToolApprovalDecision
 ): { approvedToolCalls: AgentLoopToolContext['toolCalls']; deniedToolCalls: AgentLoopToolContext['toolCalls'] } {
   return decision === 'allow'
     ? { approvedToolCalls: [...toolCalls], deniedToolCalls: [] }
@@ -141,7 +141,7 @@ function mapApprovalDecision(
 
 function deriveDeniedToolCalls(
   toolCalls: AgentLoopToolContext['toolCalls'],
-  approvedToolCalls: AgentLoopToolContext['toolCalls'],
+  approvedToolCalls: AgentLoopToolContext['toolCalls']
 ): AgentLoopToolContext['toolCalls'] {
   return toolCalls.filter(toolCall => !approvedToolCalls.some(candidate => toolCallsEqual(candidate, toolCall)));
 }
@@ -149,21 +149,21 @@ function deriveDeniedToolCalls(
 function normalizeApprovalResult(
   toolCalls: AgentLoopToolContext['toolCalls'],
   result: ToolApprovalResult,
-  fallbackDecision: ToolApprovalDecision,
+  fallbackDecision: ToolApprovalDecision
 ): { approvedToolCalls: AgentLoopToolContext['toolCalls']; deniedToolCalls: AgentLoopToolContext['toolCalls'] } {
   if (result.approvedToolCalls) {
     return {
       approvedToolCalls: [...result.approvedToolCalls],
       deniedToolCalls: result.deniedToolCalls
         ? [...result.deniedToolCalls]
-        : deriveDeniedToolCalls(toolCalls, result.approvedToolCalls),
+        : deriveDeniedToolCalls(toolCalls, result.approvedToolCalls)
     };
   }
 
   if (result.deniedToolCalls && result.decision !== 'allow') {
     return {
       approvedToolCalls: deriveDeniedToolCalls(toolCalls, result.deniedToolCalls),
-      deniedToolCalls: [...result.deniedToolCalls],
+      deniedToolCalls: [...result.deniedToolCalls]
     };
   }
 
@@ -172,7 +172,7 @@ function normalizeApprovalResult(
 
 async function resolveToolApproval(
   options: AgentLoopOptions,
-  toolContext: AgentLoopToolContext,
+  toolContext: AgentLoopToolContext
 ): Promise<{
   approvedToolCalls: AgentLoopToolContext['toolCalls'];
   deniedToolCalls: AgentLoopToolContext['toolCalls'];
@@ -195,7 +195,7 @@ async function resolveToolApproval(
 
   const result = await options.approveToolCalls({
     ...toolContext,
-    mode,
+    mode
   });
 
   if (typeof result === 'boolean') {
@@ -221,7 +221,7 @@ function mergeStepOptions(base: AgentLoopOptions, overrides?: AgentLoopStepOverr
     ...baseWithoutApprove,
     ...overrideWithoutApprove,
     stopWhen: overrides.stopWhen ?? base.stopWhen,
-    buildToolResultMessages: resolveBuildToolResultMessages(base, overrides),
+    buildToolResultMessages: resolveBuildToolResultMessages(base, overrides)
   } as AgentLoopOptions;
 
   mergeLifecycleCallbacks(base, overrides, merged);
@@ -241,7 +241,7 @@ function mergeStepOptions(base: AgentLoopOptions, overrides?: AgentLoopStepOverr
 async function safeEmitEvent(
   event: AgUiEvent,
   callbackName: string,
-  onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>,
+  onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>
 ): Promise<void> {
   if (!onAgUiEvent) return;
   try {
@@ -270,7 +270,7 @@ async function processSingleStep(
   context: AgentLoopContext,
   currentMessages: unknown[],
   abortController: AbortController,
-  stopConditions: Array<(state: AgentLoopState) => boolean>,
+  stopConditions: Array<(state: AgentLoopState) => boolean>
 ): Promise<{ parts: OutputPart[]; continueLoop: boolean; nextMessages?: unknown[] }> {
   await options.beforeStep?.(context);
 
@@ -288,7 +288,7 @@ async function processSingleStep(
     content: accumulatedMessage.content,
     toolCalls: accumulatedMessage.toolCalls,
     parts: [...streamedParts, ...flushedOutput.parts],
-    ...(accumulatedMessage.usage === undefined ? {} : { usage: accumulatedMessage.usage }),
+    ...(accumulatedMessage.usage === undefined ? {} : { usage: accumulatedMessage.usage })
   };
   const parts = finalOutput.parts;
 
@@ -299,7 +299,7 @@ async function processSingleStep(
     output: finalOutput,
     toolCalls: finalOutput.toolCalls,
     finishReason: finalOutput.finishReason ?? undefined,
-    usage: finalOutput.usage ?? undefined,
+    usage: finalOutput.usage ?? undefined
   };
 
   state.steps.push(stepResult);
@@ -315,7 +315,7 @@ async function processSingleStep(
     ...context,
     stepIndex: state.stepIndex,
     state,
-    stepResult,
+    stepResult
   };
 
   await options.afterStep?.(stepContext);
@@ -329,7 +329,7 @@ async function processSingleStep(
   const toolContext: AgentLoopToolContext = {
     ...stepContext,
     toolCalls: stepResult.toolCalls,
-    toolApprovalMode: options.toolApprovalMode ?? 'allow',
+    toolApprovalMode: options.toolApprovalMode ?? 'allow'
   };
 
   await options.beforeToolCall?.(toolContext);
@@ -340,7 +340,7 @@ async function processSingleStep(
       ...toolContext,
       approvedToolCalls,
       deniedToolCalls,
-      toolResultMessages: [],
+      toolResultMessages: []
     });
     return { parts, continueLoop: false };
   }
@@ -351,7 +351,7 @@ async function processSingleStep(
     toolCalls: approvedToolCalls,
     approvedToolCalls,
     deniedToolCalls,
-    toolResultMessages,
+    toolResultMessages
   });
   const newMessages = [...currentMessages, { role: 'assistant', content: finalOutput.content }, ...toolResultMessages];
 
@@ -391,7 +391,7 @@ function updateConsecutiveIdenticalCalls(state: AgentLoopState, stepResult: Step
 async function executeStep(
   options: AgentLoopOptions,
   currentMessages: unknown[],
-  abortController: AbortController,
+  abortController: AbortController
 ): Promise<{ processor: LLMStreamProcessor; parts: OutputPart[]; isAborted: boolean }> {
   const processor = new LLMStreamProcessor();
   const parts: OutputPart[] = [];
@@ -409,7 +409,7 @@ async function executeStep(
   return {
     processor,
     parts,
-    isAborted: abortController.signal.aborted,
+    isAborted: abortController.signal.aborted
   };
 }
 
@@ -422,7 +422,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     threadId: string | undefined,
     stepIndex: number,
     messages: unknown[],
-    state: AgentLoopState,
+    state: AgentLoopState
   ): AgentLoopContext {
     return {
       runId,
@@ -430,7 +430,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       messages,
       state,
       signal: abortController.signal,
-      ...(threadId === undefined ? {} : { threadId }),
+      ...(threadId === undefined ? {} : { threadId })
     };
   }
 
@@ -442,7 +442,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     runId: string,
     threadId: string | undefined,
     state: AgentLoopState,
-    currentMessages: unknown[],
+    currentMessages: unknown[]
   ): Promise<LoopIterationResult> {
     const { onAgUiEvent, interruptController } = options;
     const loopContext = createContext(runId, threadId, state.steps.length, currentMessages, state);
@@ -458,7 +458,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         runId,
         interruptController.getReason(),
         interruptController.getMessage(),
-        threadId,
+        threadId
       );
       await safeEmitEvent(interruptEvent, 'interrupt', onAgUiEvent);
       return { interrupted: true };
@@ -470,12 +470,12 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           type: EventType.STEP_STARTED as const,
           runId,
           stepIndex: state.steps.length,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         },
-        threadId,
+        threadId
       ),
       'STEP_STARTED',
-      onAgUiEvent,
+      onAgUiEvent
     );
 
     const result = await processSingleStep(
@@ -484,7 +484,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       loopContext,
       stepMessages,
       abortController,
-      stepStopConditions,
+      stepStopConditions
     );
 
     await safeEmitEvent(
@@ -494,12 +494,12 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           runId,
           stepIndex: state.stepIndex,
           outputLength: result.parts.length,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         },
-        threadId,
+        threadId
       ),
       'STEP_FINISHED',
-      onAgUiEvent,
+      onAgUiEvent
     );
 
     let nextMessages: unknown[] | undefined;
@@ -517,7 +517,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     runId: string,
     threadId: string | undefined,
     state: AgentLoopState,
-    currentMessages: unknown[],
+    currentMessages: unknown[]
   ): Promise<never> {
     const { onAgUiEvent } = options;
     const errorMessage = error instanceof Error ? error.message : 'Unknown agent loop error';
@@ -529,18 +529,18 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           type: EventType.RUN_ERROR as const,
           runId,
           error: { message: errorMessage },
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         },
-        threadId,
+        threadId
       ),
       'RUN_ERROR',
-      onAgUiEvent,
+      onAgUiEvent
     );
 
     const finalContext: AgentLoopFinalContext = {
       ...createContext(runId, threadId, state.steps.length, currentMessages, state),
       outcome: 'error',
-      finalOutput: state.lastOutput,
+      finalOutput: state.lastOutput
     };
 
     await options.beforeFinal?.(finalContext);
@@ -562,10 +562,10 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         done: false,
         parts: [],
         incomplete: false,
-        incompleteness: [],
+        incompleteness: []
       },
       toolCallCount: 0,
-      consecutiveIdenticalCalls: 0,
+      consecutiveIdenticalCalls: 0
     };
 
     const maxSteps = options.maxSteps ?? 20;
@@ -581,12 +581,12 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         {
           type: EventType.RUN_STARTED as const,
           runId,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         },
-        threadId,
+        threadId
       ),
       'RUN_STARTED',
-      onAgUiEvent,
+      onAgUiEvent
     );
 
     await options.afterInit?.(initialContext);
@@ -619,7 +619,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       const finalContext: AgentLoopFinalContext = {
         ...createContext(runId, threadId, state.steps.length, currentMessages, state),
         outcome: abortReason,
-        finalOutput: state.lastOutput,
+        finalOutput: state.lastOutput
       };
 
       await options.beforeFinal?.(finalContext);
@@ -633,12 +633,12 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
             type: EventType.RUN_FINISHED as const,
             runId,
             outcome: { type: finishedOutcomeType },
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString()
           } as const,
-          threadId,
+          threadId
         ),
         'RUN_FINISHED',
-        onAgUiEvent,
+        onAgUiEvent
       );
 
       await options.afterFinal?.(finalContext);
@@ -652,7 +652,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     abort: () => {
       aborted = true;
       abortController.abort();
-    },
+    }
   };
 }
 

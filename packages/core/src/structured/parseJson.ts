@@ -18,7 +18,7 @@ function processBracketChar(
   start: number,
   i: number,
   text: string,
-  candidates: string[],
+  candidates: string[]
 ): number {
   if (char === '{' || char === '[') {
     const newStart = stack.length === 0 ? i : start;
@@ -95,7 +95,7 @@ function processRepairBracket(char: string, stack: string[]): string | null {
 
 function consumeRepairChar(
   char: string,
-  state: { inString: boolean; escaped: boolean; stack: string[] },
+  state: { inString: boolean; escaped: boolean; stack: string[] }
 ): { append: string; skip: boolean } {
   if (state.escaped) {
     state.escaped = false;

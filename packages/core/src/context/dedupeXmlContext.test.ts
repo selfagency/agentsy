@@ -28,7 +28,7 @@ describe('dedupeXmlContextBlocksByTag', () => {
       '<tag1><tag1>nested1</tag1>outer1</tag1>',
       '<tag2>content2</tag2>',
       '<tag1>latest1</tag1>',
-      '<tag2><tag2>nested2</tag2>outer2</tag2>',
+      '<tag2><tag2>nested2</tag2>outer2</tag2>'
     ];
     const out = dedupeXmlContextBlocksByTag(xmlBlocks);
     // tag1 latest: <tag1>latest1</tag1>

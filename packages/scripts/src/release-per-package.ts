@@ -171,7 +171,7 @@ function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnS
     cwd: ROOT,
     encoding: 'utf8',
     shell: false,
-    ...options,
+    ...options
   }) as SpawnSyncReturns<string>;
 
   if (result.status !== 0) {
@@ -287,7 +287,7 @@ function updateChangelogFile(
   heading: string,
   releaseNotes: string,
   previousTag: string,
-  tag: string,
+  tag: string
 ): void {
   let original;
   try {
@@ -349,7 +349,7 @@ function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: 
 
     return {
       owner: path.slice(0, slashIndex),
-      repo: path.slice(slashIndex + 1),
+      repo: path.slice(slashIndex + 1)
     };
   }
 
@@ -362,7 +362,7 @@ function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: 
 
     return {
       owner: parts[0] ?? '',
-      repo: parts[1] ?? '',
+      repo: parts[1] ?? ''
     };
   } catch {
     return { owner: '', repo: '' };
@@ -462,7 +462,7 @@ async function main() {
   const packageRepository = getRepositoryField(latestPkgJson.repository);
   if (!packageRepository) {
     console.error(
-      `❌ Package ${latestPkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`,
+      `❌ Package ${latestPkgJson.name} is missing package.json repository metadata. Add repository.url before releasing or marking this package oidc-ready.`
     );
     process.exit(1);
   }
@@ -482,7 +482,7 @@ async function main() {
     owner,
     repo,
     ref: 'tags/',
-    per_page: 100,
+    per_page: 100
   });
 
   // Filter tags for this package, sort by semver
@@ -510,7 +510,7 @@ async function main() {
     owner,
     repo,
     tag_name: tag,
-    target_commitish: 'main',
+    target_commitish: 'main'
   };
   if (previousTag) {
     releaseNotesOpts.previous_tag_name = previousTag;
@@ -541,7 +541,7 @@ async function main() {
     '--name-only',
     '--',
     resolve(pkgDir, 'package.json'),
-    resolve(pkgDir, 'CHANGELOG.md'),
+    resolve(pkgDir, 'CHANGELOG.md')
   ]).stdout.trim();
 
   if (hasChanges) {
@@ -592,7 +592,7 @@ async function main() {
 
   if (isMetadataOnlyReleaseCommit) {
     console.log(
-      `⚡ Metadata-only release commit detected; validating Test & Build on parent commit ${parentSha.slice(0, 7)} instead of ${headSha.slice(0, 7)}.`,
+      `⚡ Metadata-only release commit detected; validating Test & Build on parent commit ${parentSha.slice(0, 7)} instead of ${headSha.slice(0, 7)}.`
     );
     const spinner = ora('Test & Build: checking latest successful run on main').start();
     await waitForLatestSuccessfulWorkflow(octokit, 'Test & Build', owner, repo, spinner);
@@ -613,7 +613,7 @@ async function main() {
     `Release ${tag}`,
     releaseNotes,
     previousTag ? `Source: changes from ${previousTag} to ${tag}.` : '',
-    `Target commit: ${headSha}`,
+    `Target commit: ${headSha}`
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -644,7 +644,7 @@ async function waitForWorkflow(
   repo: string,
   headSha: string,
   spinner: WorkflowSpinner,
-  { timeoutMs = 3_600_000, pollMs = 15_000, branch }: WaitForWorkflowOptions = {},
+  { timeoutMs = 3_600_000, pollMs = 15_000, branch }: WaitForWorkflowOptions = {}
 ) {
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
   const workflow = workflowsResp.data.workflows.find((w: GitHubWorkflow) => w.name === name);
@@ -663,7 +663,7 @@ async function waitForWorkflow(
       workflow_id: workflow.id,
       ...(branch ? { branch } : {}),
       head_sha: headSha,
-      per_page: 10,
+      per_page: 10
     });
 
     const run = runsResp.data.workflow_runs.find((r: GitHubWorkflowRun) => !cancelledRunIds.has(r.id));
@@ -697,7 +697,7 @@ async function waitForLatestSuccessfulWorkflow(
   owner: string,
   repo: string,
   spinner: WorkflowSpinner,
-  { timeoutMs = 600_000, pollMs = 10_000, branch = 'main' }: WaitForLatestWorkflowOptions = {},
+  { timeoutMs = 600_000, pollMs = 10_000, branch = 'main' }: WaitForLatestWorkflowOptions = {}
 ) {
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
   const workflow = workflowsResp.data.workflows.find((w: GitHubWorkflow) => w.name === name);
@@ -714,7 +714,7 @@ async function waitForLatestSuccessfulWorkflow(
       workflow_id: workflow.id,
       branch,
       status: 'completed',
-      per_page: 20,
+      per_page: 20
     });
 
     const successRun = runsResp.data.workflow_runs.find((r: GitHubWorkflowRun) => r.conclusion === 'success');

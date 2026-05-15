@@ -16,7 +16,7 @@ import {
   normalizeCohereEvent,
   normalizeGeminiChunk,
   normalizeOpenAIChatChunk,
-  normalizeOpenAIResponseEvent,
+  normalizeOpenAIResponseEvent
 } from '@agentsy/providers/normalizers';
 
 // ---------------------------------------------------------------------------
@@ -27,7 +27,7 @@ import {
 function pump<T>(
   events: T[],
   normalizer: (e: T) => NormalizerResult | null,
-  options: ConstructorParameters<typeof LLMStreamProcessor>[0] = {},
+  options: ConstructorParameters<typeof LLMStreamProcessor>[0] = {}
 ) {
   const processor = new LLMStreamProcessor(options);
   let content = '';
@@ -60,7 +60,7 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
     const chunks = [
       { choices: [{ delta: { content: 'Hello' }, finish_reason: null }] },
       { choices: [{ delta: { content: ', ' }, finish_reason: null }] },
-      { choices: [{ delta: { content: 'world!' }, finish_reason: 'stop' }] },
+      { choices: [{ delta: { content: 'world!' }, finish_reason: 'stop' }] }
     ];
 
     const { content, done } = pump(chunks, normalizeOpenAIChatChunk);
@@ -71,7 +71,7 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
   it('surfaces thinking / reasoning_content as thinking output', () => {
     const chunks = [
       { choices: [{ delta: { reasoning_content: 'step 1' }, finish_reason: null }] },
-      { choices: [{ delta: { reasoning_content: ' step 2', content: 'answer' }, finish_reason: 'stop' }] },
+      { choices: [{ delta: { reasoning_content: ' step 2', content: 'answer' }, finish_reason: 'stop' }] }
     ];
 
     const { content, thinking } = pump(chunks, normalizeOpenAIChatChunk);
@@ -87,29 +87,29 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
           {
             delta: {
               tool_calls: [
-                { index: 0, id: 'call_1', type: 'function', function: { name: 'get_weather', arguments: '' } },
-              ],
+                { index: 0, id: 'call_1', type: 'function', function: { name: 'get_weather', arguments: '' } }
+              ]
             },
-            finish_reason: null,
-          },
-        ],
+            finish_reason: null
+          }
+        ]
       },
       {
         choices: [
           {
             delta: { tool_calls: [{ index: 0, function: { arguments: '{"city":' } }] },
-            finish_reason: null,
-          },
-        ],
+            finish_reason: null
+          }
+        ]
       },
       {
         choices: [
           {
             delta: { tool_calls: [{ index: 0, function: { arguments: '"Paris"}' } }] },
-            finish_reason: 'tool_calls',
-          },
-        ],
-      },
+            finish_reason: 'tool_calls'
+          }
+        ]
+      }
     ];
 
     const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
@@ -131,8 +131,8 @@ describe('normalizeOpenAIChatChunk → LLMStreamProcessor', () => {
       { choices: [{ delta: { content: 'hi' }, finish_reason: null }] },
       {
         choices: [{ delta: {}, finish_reason: 'stop' }],
-        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-      },
+        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }
+      }
     ];
 
     const processor = new LLMStreamProcessor();
@@ -154,7 +154,7 @@ describe('normalizeOpenAIResponseEvent → LLMStreamProcessor', () => {
     const events = [
       { type: 'response.output_text.delta', delta: 'Hello' },
       { type: 'response.output_text.delta', delta: ' world' },
-      { type: 'response.completed', response: { usage: { input_tokens: 5, output_tokens: 2 } } },
+      { type: 'response.completed', response: { usage: { input_tokens: 5, output_tokens: 2 } } }
     ];
 
     const processor = new LLMStreamProcessor();
@@ -182,7 +182,7 @@ describe('normalizeAnthropicEvent → LLMStreamProcessor', () => {
       { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: ' Claude' } },
       { type: 'content_block_stop', index: 0 },
       { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 8 } },
-      { type: 'message_stop' },
+      { type: 'message_stop' }
     ];
 
     const { content, done, processor } = pump(events, normalizeAnthropicEvent);
@@ -198,7 +198,7 @@ describe('normalizeAnthropicEvent → LLMStreamProcessor', () => {
       { type: 'content_block_stop', index: 0 },
       { type: 'content_block_start', index: 1, content_block: { type: 'text', text: '' } },
       { type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: 'answer' } },
-      { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 5 } },
+      { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 5 } }
     ];
 
     const { thinking, content } = pump(events, normalizeAnthropicEvent);
@@ -211,7 +211,7 @@ describe('normalizeAnthropicEvent → LLMStreamProcessor', () => {
       { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_1', name: 'search' } },
       { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"q":' } },
       { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '"cats"}' } },
-      { type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: 10 } },
+      { type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: 10 } }
     ];
 
     const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
@@ -237,8 +237,8 @@ describe('normalizeGeminiChunk → LLMStreamProcessor', () => {
       { candidates: [{ content: { parts: [{ text: 'Gemini' }], role: 'model' }, finishReason: null }] },
       {
         candidates: [{ content: { parts: [{ text: ' says hi' }], role: 'model' }, finishReason: 'STOP' }],
-        usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 3, totalTokenCount: 8 },
-      },
+        usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 3, totalTokenCount: 8 }
+      }
     ];
 
     const processor = new LLMStreamProcessor();
@@ -264,7 +264,7 @@ describe('normalizeBedrockConverseEvent → LLMStreamProcessor', () => {
       { contentBlockStart: { start: { text: '' }, contentBlockIndex: 0 } },
       { contentBlockDelta: { delta: { text: 'Bedrock' }, contentBlockIndex: 0 } },
       { contentBlockDelta: { delta: { text: ' response' }, contentBlockIndex: 0 } },
-      { messageStop: { stopReason: 'end_turn' } },
+      { messageStop: { stopReason: 'end_turn' } }
     ];
 
     const { content, done } = pump(events, normalizeBedrockConverseEvent);
@@ -282,7 +282,7 @@ describe('normalizeCohereEvent → LLMStreamProcessor', () => {
     const events = [
       { type: 'content-delta', index: 0, delta: { message: { content: { text: 'Co' } } } },
       { type: 'content-delta', index: 0, delta: { message: { content: { text: 'here' } } } },
-      { type: 'message-end', delta: { finish_reason: 'COMPLETE' } },
+      { type: 'message-end', delta: { finish_reason: 'COMPLETE' } }
     ];
 
     const { content, done } = pump(events, normalizeCohereEvent);

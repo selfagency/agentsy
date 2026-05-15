@@ -10,7 +10,7 @@ describe('createSchedulerRegistry', () => {
       id: 'scheduled',
       prompt: 'run later',
       runAt: Date.now() + 1_000,
-      lane: 'nightly',
+      lane: 'nightly'
     });
 
     expect(pending.status).toBe('pending');
@@ -30,7 +30,7 @@ describe('createSchedulerRegistry', () => {
   it('filters tasks by lane and status', () => {
     const registry = createSchedulerRegistry([
       { id: 'a', prompt: 'alpha', lane: 'default' },
-      { id: 'b', prompt: 'beta', lane: 'nightly', runAt: Date.now() + 100 },
+      { id: 'b', prompt: 'beta', lane: 'nightly', runAt: Date.now() + 100 }
     ]);
 
     expect(registry.list({ lane: 'nightly' })).toHaveLength(1);
@@ -49,13 +49,13 @@ describe('createSchedulerRegistry', () => {
 
     const decision = await scheduler.schedule({
       taskInfo: { id: 'task-1', name: 'Task 1', input: { value: 1 } },
-      agents: [{ id: 'agent-1', available: true }],
+      agents: [{ id: 'agent-1', available: true }]
     });
 
     expect(decision).toEqual({
       agentId: 'agent-1',
       assigned: true,
-      status: 'scheduled',
+      status: 'scheduled'
     });
     expect(registry.get('task-1')?.metadata).toMatchObject({ assignedAgentId: 'agent-1' });
   });
@@ -66,8 +66,8 @@ describe('createSchedulerRegistry', () => {
     await expect(
       scheduler.schedule({
         taskInfo: { id: 'task-2', name: 'Task 2' },
-        agents: [{ nope: true }],
-      }),
+        agents: [{ nope: true }]
+      })
     ).resolves.toBeNull();
   });
 

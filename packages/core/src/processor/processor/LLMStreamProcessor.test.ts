@@ -9,12 +9,12 @@ import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';
 describe('LLMStreamProcessor', () => {
   it('processes thinking tags, scrubs content, and extracts xml-wrapped tool calls', () => {
     const processor = new LLMStreamProcessor({
-      knownTools: new Set(['search_files']),
+      knownTools: new Set(['search_files'])
     });
 
     const out = processor.process({
       content: '<think>reasoning</think>Hello <toolCall>{"name":"search_files","arguments":{"query":"abc"}}</toolCall>',
-      done: false,
+      done: false
     });
 
     expect(out.thinking).toBe('reasoning');
@@ -23,8 +23,8 @@ describe('LLMStreamProcessor', () => {
       {
         name: 'search_files',
         parameters: { query: 'abc' },
-        format: 'json-wrapped',
-      },
+        format: 'json-wrapped'
+      }
     ]);
     expect(out.parts.map(part => part.type)).toEqual(['thinking', 'text', 'tool_call']);
 
@@ -41,7 +41,7 @@ describe('LLMStreamProcessor', () => {
 
     const processor = new LLMStreamProcessor({
       maxInputLength: 20,
-      onWarning,
+      onWarning
     });
 
     processor.on('text', onText).on('thinking', onThinking).on('done', onDone);
@@ -63,18 +63,18 @@ describe('LLMStreamProcessor', () => {
         {
           function: {
             name: 'read_file',
-            arguments: { path: '/tmp/a.ts' },
-          },
-        },
-      ],
+            arguments: { path: '/tmp/a.ts' }
+          }
+        }
+      ]
     });
 
     expect(out.toolCalls).toEqual([
       {
         name: 'read_file',
         parameters: { path: '/tmp/a.ts' },
-        format: 'native-json',
-      },
+        format: 'native-json'
+      }
     ]);
   });
 
@@ -84,19 +84,19 @@ describe('LLMStreamProcessor', () => {
 
     // First chunk: 2 calls — should all pass (fills the limit)
     const out1 = processor.process({
-      tool_calls: [{ function: { name: 'a', arguments: {} } }, { function: { name: 'b', arguments: {} } }],
+      tool_calls: [{ function: { name: 'a', arguments: {} } }, { function: { name: 'b', arguments: {} } }]
     });
     expect(out1.toolCalls).toHaveLength(2);
     expect(onWarning).not.toHaveBeenCalled();
 
     // Second chunk: 1 more call — limit already reached, should be dropped
     const out2 = processor.process({
-      tool_calls: [{ function: { name: 'c', arguments: {} } }],
+      tool_calls: [{ function: { name: 'c', arguments: {} } }]
     });
     expect(out2.toolCalls).toHaveLength(0);
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('maxToolCallsPerMessage'),
-      expect.objectContaining({ accumulated: 2, maxToolCallsPerMessage: 2 }),
+      expect.objectContaining({ accumulated: 2, maxToolCallsPerMessage: 2 })
     );
   });
 
@@ -141,14 +141,14 @@ describe('LLMStreamProcessor', () => {
     const processor = new LLMStreamProcessor({ maxToolCallsPerMessage: 1, onWarning });
 
     const out = processor.process({
-      tool_calls: [{ function: { name: 'a', arguments: {} } }, { function: { name: 'b', arguments: {} } }],
+      tool_calls: [{ function: { name: 'a', arguments: {} } }, { function: { name: 'b', arguments: {} } }]
     });
 
     expect(out.toolCalls).toHaveLength(1);
     expect(out.toolCalls[0]?.name).toBe('a');
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('maxToolCallsPerMessage'),
-      expect.objectContaining({ originalCount: 2, maxToolCallsPerMessage: 1 }),
+      expect.objectContaining({ originalCount: 2, maxToolCallsPerMessage: 1 })
     );
   });
 
@@ -161,16 +161,16 @@ describe('LLMStreamProcessor', () => {
         {
           function: {
             name: 'read_file',
-            arguments: { path: '/a/very/long/path.ts' },
-          },
-        },
-      ],
+            arguments: { path: '/a/very/long/path.ts' }
+          }
+        }
+      ]
     });
 
     expect(out.toolCalls).toEqual([]);
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('maxToolArgumentBytes'),
-      expect.objectContaining({ toolName: 'read_file', maxToolArgumentBytes: 8 }),
+      expect.objectContaining({ toolName: 'read_file', maxToolArgumentBytes: 8 })
     );
   });
 
@@ -182,13 +182,13 @@ describe('LLMStreamProcessor', () => {
     circular.self = circular;
 
     const out = processor.process({
-      tool_calls: [{ function: { name: 'circular_tool', arguments: circular } }],
+      tool_calls: [{ function: { name: 'circular_tool', arguments: circular } }]
     });
 
     expect(out.toolCalls).toEqual([]);
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('could not be serialized'),
-      expect.objectContaining({ toolName: 'circular_tool' }),
+      expect.objectContaining({ toolName: 'circular_tool' })
     );
   });
 
@@ -197,20 +197,20 @@ describe('LLMStreamProcessor', () => {
     const processor = new LLMStreamProcessor({ onWarning });
 
     const out = processor.process({
-      tool_calls: [{ function: { name: 'bigint_tool', arguments: { value: BigInt(42) } } }],
+      tool_calls: [{ function: { name: 'bigint_tool', arguments: { value: BigInt(42) } } }]
     });
 
     expect(out.toolCalls).toEqual([]);
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('could not be serialized'),
-      expect.objectContaining({ toolName: 'bigint_tool' }),
+      expect.objectContaining({ toolName: 'bigint_tool' })
     );
   });
 
   it('uses modelId with thinkingTagMap to parse custom thinking tags', () => {
     const processor = new LLMStreamProcessor({
       modelId: 'my-custom-model-v1',
-      thinkingTagMap: new Map([['my-custom-model', ['<x>', '</x>']]]),
+      thinkingTagMap: new Map([['my-custom-model', ['<x>', '</x>']]])
     });
 
     const out = processor.process({ content: '<x>reason</x>ok' });
@@ -224,7 +224,7 @@ describe('LLMStreamProcessor', () => {
     const processor = new LLMStreamProcessor({
       onWarning,
       maxWarnings: 3,
-      maxInputLength: 10,
+      maxInputLength: 10
     });
 
     // Trigger 5 warnings by sending oversized content
@@ -240,7 +240,7 @@ describe('LLMStreamProcessor', () => {
     const processor = new LLMStreamProcessor({
       onWarning,
       maxWarnings: 2,
-      maxInputLength: 10,
+      maxInputLength: 10
     });
 
     processor.process({ content: 'x'.repeat(20) });
@@ -283,7 +283,7 @@ describe('LLMStreamProcessor', () => {
     const events: string[] = [];
     const processor = new LLMStreamProcessor({
       parseThinkTags: true,
-      scrubContextTags: false,
+      scrubContextTags: false
     });
 
     processor.on('thinking', () => events.push('thinking'));
@@ -307,7 +307,7 @@ describe('LLMStreamProcessor', () => {
     expect(processor.accumulatedMessage.usage).toEqual({
       inputTokens: 10,
       outputTokens: 20,
-      totalTokens: 30,
+      totalTokens: 30
     });
   });
 
@@ -326,7 +326,7 @@ describe('LLMStreamProcessor', () => {
     expect(processor.accumulatedMessage.usage).toEqual({
       inputTokens: 10,
       outputTokens: 20,
-      totalTokens: 30,
+      totalTokens: 30
     });
   });
 
@@ -371,7 +371,7 @@ describe('LLMStreamProcessor', () => {
     const out = processor.processComplete({
       content: 'done',
       done: true,
-      usage: { inputTokens: 4, outputTokens: 8, totalTokens: 12 },
+      usage: { inputTokens: 4, outputTokens: 8, totalTokens: 12 }
     });
 
     expect(out.usage).toEqual({ inputTokens: 4, outputTokens: 8, totalTokens: 12 });
@@ -431,7 +431,7 @@ describe('LLMStreamProcessor', () => {
 
     const out = processor.process({
       tool_calls: [{ function: { name: 'fetch', arguments: { url: 'https://example.com' } } }],
-      done: true,
+      done: true
     });
 
     expect(out.toolCalls).toHaveLength(1);
@@ -456,13 +456,13 @@ describe('LLMStreamProcessor', () => {
     const onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>(
       (message: string, context?: Record<string, unknown>) => {
         warnings.push([message, context]);
-      },
+      }
     );
 
     const processor = new LLMStreamProcessor({
       knownTools: new Set(['test']),
       maxResidualBytes: 100, // Very small limit for testing
-      onWarning,
+      onWarning
     });
 
     // First chunk: fits within limit
@@ -485,7 +485,7 @@ describe('LLMStreamProcessor', () => {
       maxInputLength: 20,
       onWarning: () => {
         // Intentionally empty to trigger warnings
-      },
+      }
     });
 
     // Process content that exceeds maxInputLength to trigger warning
@@ -563,12 +563,12 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     const processor = new LLMStreamProcessor({ knownTools: new Set(['get_weather']) });
     // Feed a complete native tool call via nativeToolCallDeltas (id+name header, then arguments done)
     processor.process({
-      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'get_weather' }],
+      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'get_weather' }]
     });
     const result = processor.process({
       done: true,
       nativeToolCallDeltas: [{ index: 0, argumentsDelta: '{"city":"NYC"}' }],
-      finishReason: 'tool-calls' as FinishReason,
+      finishReason: 'tool-calls' as FinishReason
     });
     const toolCallPart = result.parts.find(p => p.type === 'tool_call');
     expect(toolCallPart).toBeDefined();
@@ -599,7 +599,7 @@ describe('Phase 1 — type exports', () => {
     const result = processor.process({
       content: 'step output',
       stepIndex: 2,
-      stepUsage: { inputTokens: 11, outputTokens: 7 },
+      stepUsage: { inputTokens: 11, outputTokens: 7 }
     });
 
     expect(result.stepIndex).toBe(2);
@@ -637,7 +637,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
   it('tool_call_delta part includes id from header delta', () => {
     const processor = new LLMStreamProcessor({ accumulateNativeToolCalls: true });
     const output = processor.process({
-      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }],
+      nativeToolCallDeltas: [{ index: 0, id: 'call_abc', name: 'fn', argumentsDelta: '{}' }]
     });
 
     const deltaPart = output.parts.find(p => p.type === 'tool_call_delta');
@@ -780,12 +780,12 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 describe('LLMStreamProcessor — Z.ai inline tool-call parser', () => {
   it('strips Z.ai inline tool tokens from content and emits tool call parts', () => {
     const processor = new LLMStreamProcessor({
-      toolCallParsers: [createZAiInlineToolCallParser()],
+      toolCallParsers: [createZAiInlineToolCallParser()]
     });
 
     processor.process({
       content: '<|tool_call_begin|>get_weather<|tool_call_argument_begin|>{"city":"Boston"}<|tool_call_end|>',
-      done: false,
+      done: false
     });
 
     const flushed = processor.flush();
@@ -798,13 +798,13 @@ describe('LLMStreamProcessor — Z.ai inline tool-call parser', () => {
     expect(complete[0]).toMatchObject({
       name: 'get_weather',
       parameters: { city: 'Boston' },
-      format: 'native-json',
+      format: 'native-json'
     });
   });
 
   it('handles token boundaries split across chunks', () => {
     const processor = new LLMStreamProcessor({
-      toolCallParsers: [createZAiInlineToolCallParser()],
+      toolCallParsers: [createZAiInlineToolCallParser()]
     });
 
     processor.process({ content: 'Hello <|tool_call_be' });
@@ -815,7 +815,7 @@ describe('LLMStreamProcessor — Z.ai inline tool-call parser', () => {
     expect(processor.accumulatedMessage.toolCalls).toHaveLength(1);
     expect(processor.accumulatedMessage.toolCalls[0]).toMatchObject({
       name: 'search',
-      parameters: { q: 'a' },
+      parameters: { q: 'a' }
     });
   });
 });

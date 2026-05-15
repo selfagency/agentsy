@@ -18,7 +18,7 @@ export function StreamingText({
   isStreaming,
   theme,
   screenReader = false,
-  syntaxHighlight = false,
+  syntaxHighlight = false
 }: StreamingTextProps) {
   const [_tick, setTick] = useState(0); // tick triggers re-renders for cursor animation
 
@@ -34,7 +34,7 @@ export function StreamingText({
 
     return {
       stablePrefix: text.slice(0, lastBlockBoundary + 2),
-      unstableSuffix: text.slice(lastBlockBoundary + 2),
+      unstableSuffix: text.slice(lastBlockBoundary + 2)
     };
   }, [text, isStreaming]);
 

@@ -14,7 +14,7 @@ async function* mockEventGenerator() {
   yield {
     type: EventType.RUN_STARTED,
     runId: 'run_123',
-    timestamp: '2024-01-01T00:00:00Z',
+    timestamp: '2024-01-01T00:00:00Z'
   } as AgUiEvent;
 }
 
@@ -27,7 +27,7 @@ async function* errorGeneratorWithYield() {
   yield {
     type: EventType.RUN_STARTED,
     runId: 'run_123',
-    timestamp: '2024-01-01T00:00:00Z',
+    timestamp: '2024-01-01T00:00:00Z'
   } as AgUiEvent;
   throw new Error('Generator error');
 }
@@ -36,7 +36,7 @@ async function* mockErrorGenerator() {
   yield {
     type: EventType.RUN_STARTED,
     runId: 'run_123',
-    timestamp: '2024-01-01T00:00:00Z',
+    timestamp: '2024-01-01T00:00:00Z'
   } as AgUiEvent;
   throw new Error('Mock generator error');
 }
@@ -95,7 +95,7 @@ describe('createAgentRunHandler', () => {
     const req = { method: 'OPTIONS' };
     const res = {
       writeHead: vi.fn(),
-      end: vi.fn(),
+      end: vi.fn()
     };
 
     await handler(req, res);
@@ -104,8 +104,8 @@ describe('createAgentRunHandler', () => {
       200,
       expect.objectContaining({
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      }),
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+      })
     );
     expect(res.end).toHaveBeenCalled();
   });
@@ -117,7 +117,7 @@ describe('createAgentRunHandler', () => {
     const res = {
       writeHead: vi.fn(),
       end: vi.fn(),
-      write: vi.fn(),
+      write: vi.fn()
     };
 
     await handler(req, res);
@@ -134,7 +134,7 @@ describe('createAgentRunHandler', () => {
         Object.assign(writeHeadHeaders, headers);
       }),
       write: vi.fn(),
-      end: vi.fn(),
+      end: vi.fn()
     };
     const req = { method: 'POST' };
 
@@ -152,7 +152,7 @@ describe('createAgentRunHandler', () => {
     const res = {
       writeHead: vi.fn(),
       end: vi.fn(),
-      write: vi.fn(),
+      write: vi.fn()
     };
     const req = { method: 'POST' };
 
@@ -171,8 +171,8 @@ describe('createExpressMiddleware', () => {
       write: vi.fn(),
       end: vi.fn(),
       status: vi.fn(() => ({
-        json: vi.fn(),
-      })),
+        json: vi.fn()
+      }))
     };
     const req = {};
 
@@ -191,8 +191,8 @@ describe('createExpressMiddleware', () => {
       write: vi.fn(),
       end: vi.fn(),
       status: vi.fn(() => ({
-        json: vi.fn(),
-      })),
+        json: vi.fn()
+      }))
     };
     const req = {};
 
@@ -207,7 +207,7 @@ describe('createHonoHandler', () => {
     const handler = createHonoHandler(() => mockEventGenerator());
 
     const c = {
-      body: vi.fn(() => ({ status: 200 })),
+      body: vi.fn(() => ({ status: 200 }))
     };
 
     const result = await handler(c);
@@ -216,9 +216,9 @@ describe('createHonoHandler', () => {
       expect.any(Object),
       expect.objectContaining({
         headers: expect.objectContaining({
-          'Content-Type': 'text/event-stream',
-        }),
-      }),
+          'Content-Type': 'text/event-stream'
+        })
+      })
     );
     expect(result).toBeDefined();
   });
@@ -229,8 +229,8 @@ describe('createHonoHandler', () => {
     const c = {
       body: vi.fn(() => ({ status: 200 })),
       status: vi.fn(() => ({
-        json: vi.fn(),
-      })),
+        json: vi.fn()
+      }))
     };
 
     await handler(c);

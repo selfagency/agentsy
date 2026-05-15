@@ -25,17 +25,17 @@ const serverConfig: McpServerConfig = {
       inputSchema: {
         type: 'object',
         properties: {
-          text: { type: 'string' },
-        },
-      },
-    },
+          text: { type: 'string' }
+        }
+      }
+    }
   ],
   resources: [
     {
       uri: 'file:///data/documents/summary',
       name: 'Document summaries',
-      description: 'Cached document summaries',
-    },
+      description: 'Cached document summaries'
+    }
   ],
   prompts: [
     {
@@ -43,16 +43,16 @@ const serverConfig: McpServerConfig = {
       description: 'Prompt template for code review',
       arguments: {
         language: 'typescript',
-        focus: 'security',
-      },
-    },
+        focus: 'security'
+      }
+    }
   ],
   capabilities: {
     tools: true,
     resources: true,
     prompts: true,
-    streaming: true,
-  },
+    streaming: true
+  }
 };
 ```
 

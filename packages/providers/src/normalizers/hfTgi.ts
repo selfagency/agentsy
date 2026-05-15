@@ -92,9 +92,9 @@ export function normalizeHuggingFaceTGIChunk(raw: unknown): NormalizerResult | n
         ...(content !== undefined && { content }),
         ...(done !== undefined && { done }),
         ...(usage !== undefined && { usage }),
-        ...(finishReason !== undefined && { finishReason }),
+        ...(finishReason !== undefined && { finishReason })
       },
-      rawEvent: raw,
+      rawEvent: raw
     };
   } catch {
     return null;

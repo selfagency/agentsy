@@ -35,7 +35,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest --run",
+    "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage",
     "check-types": "tsc --noEmit",
     "lint": "oxlint --no-error-on-unmatched-pattern .",
@@ -46,12 +46,12 @@
     "@agentsy/memory": "workspace:*",
     "@agentsy/runtime": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
-    "oxfmt": "^0.48.0",
+    "oxfmt": "^0.49.0",
     "oxlint": "^1.64.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",

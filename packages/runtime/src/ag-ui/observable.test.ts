@@ -74,7 +74,7 @@ describe('toObservable', () => {
   it('should subscribe and emit values', async () => {
     const results: number[] = [];
     toObservable(sourceBasic()).subscribe({
-      next: value => results.push(value),
+      next: value => results.push(value)
     });
 
     // Give async generator time to consume
@@ -100,7 +100,7 @@ describe('toObservable', () => {
 
     toObservable(sourceWithError()).subscribe({
       next: value => results.push(value),
-      error: err => errors.push(err),
+      error: err => errors.push(err)
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -117,7 +117,7 @@ describe('toObservable', () => {
       next: () => {},
       complete: () => {
         completed = true;
-      },
+      }
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -129,7 +129,7 @@ describe('toObservable', () => {
     const results: number[] = [];
 
     const subscription = toObservable(sourceWithDelay()).subscribe({
-      next: value => results.push(value),
+      next: value => results.push(value)
     });
 
     // Unsubscribe immediately
@@ -145,7 +145,7 @@ describe('toObservable', () => {
     const next = vi.fn();
 
     toObservable(sourceTest()).subscribe({
-      next,
+      next
     });
 
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -159,7 +159,7 @@ describe('toObservable', () => {
 
     toObservable(sourceExpected()).subscribe({
       next,
-      complete,
+      complete
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -174,7 +174,7 @@ describe('toObservable', () => {
 
     toObservable(sourceEmpty()).subscribe({
       next,
-      complete,
+      complete
     });
 
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -193,7 +193,7 @@ describe('toObservable', () => {
     const results: number[] = [];
 
     toObservable(sourceMultiple()).subscribe({
-      next: value => results.push(value),
+      next: value => results.push(value)
     });
 
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -205,7 +205,7 @@ describe('toObservable', () => {
     const results: string[] = [];
 
     toObservable(sourceAsync()).subscribe({
-      next: value => results.push(value),
+      next: value => results.push(value)
     });
 
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -244,7 +244,7 @@ describe('toObservable', () => {
     toObservable(sourceWithCustomError()).subscribe({
       error: err => {
         capturedError = err;
-      },
+      }
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));

@@ -467,7 +467,7 @@ export class ModelSelector {
       'abacus',
       'perplexity-ai',
       'nebula',
-      'novita-ai',
+      'novita-ai'
     ]);
   }
 
@@ -478,7 +478,7 @@ export class ModelSelector {
       confidence: this.calculateConfidence(model, requirements),
       estimatedCost: this.estimateModelCost(model),
       capabilities: requirements.capabilities ?? {},
-      reasoning: this.generateReasoning(model, requirements),
+      reasoning: this.generateReasoning(model, requirements)
     }));
   }
 
@@ -503,7 +503,7 @@ export class ModelSelector {
   async estimateTask(
     prompt: string,
     modelId: string,
-    options?: { estimatedInputTokens?: number; estimatedOutputTokens?: number },
+    options?: { estimatedInputTokens?: number; estimatedOutputTokens?: number }
   ): Promise<ModelSelectionResult> {
     await this.client.fetchModelsDevData();
 
@@ -526,7 +526,7 @@ export class ModelSelector {
       confidence: 0.8,
       estimatedCost: inputCost + outputCost,
       capabilities: {},
-      reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`,
+      reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`
     };
   }
 

@@ -6,7 +6,7 @@ import type {
   DataSource,
   Document,
   RetrievalQuery,
-  SearchResult,
+  SearchResult
 } from '../src/types';
 
 describe('retrieval/types', () => {
@@ -26,8 +26,8 @@ describe('retrieval/types', () => {
           source: 'test.ts',
           startLine: 1,
           endLine: 10,
-          strategy: 'semantic',
-        },
+          strategy: 'semantic'
+        }
       };
 
       expect(chunk.id).toBe('test-chunk-1');
@@ -45,7 +45,7 @@ describe('retrieval/types', () => {
         strategy: 'semantic',
         language: 'typescript',
         createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-02'),
+        updatedAt: new Date('2024-01-02')
       };
 
       expect(metadata.source).toBe('test.ts');
@@ -60,7 +60,7 @@ describe('retrieval/types', () => {
       const dataSource: DataSource = {
         type: 'file',
         path: '/path/to/file.ts',
-        content: 'File content',
+        content: 'File content'
       };
 
       expect(dataSource.type).toBe('file');
@@ -72,7 +72,7 @@ describe('retrieval/types', () => {
   describe('RetrievalQuery', () => {
     it('should create valid retrieval query with defaults', () => {
       const query: RetrievalQuery = {
-        query: 'test query',
+        query: 'test query'
       };
 
       expect(query.query).toBe('test query');
@@ -84,7 +84,7 @@ describe('retrieval/types', () => {
       const query: RetrievalQuery = {
         query: 'test query',
         topK: 10,
-        minSimilarity: 0.8,
+        minSimilarity: 0.8
       };
 
       expect(query.query).toBe('test query');
@@ -98,7 +98,7 @@ describe('retrieval/types', () => {
       const document: Document = {
         id: 'doc-1',
         content: 'Document content',
-        chunks: [],
+        chunks: []
       };
 
       expect(document.id).toBe('doc-1');
@@ -114,14 +114,14 @@ describe('retrieval/types', () => {
           source: 'test.ts',
           startLine: 1,
           endLine: 5,
-          strategy: 'fixed',
-        },
+          strategy: 'fixed'
+        }
       };
 
       const document: Document = {
         id: 'doc-1',
         content: 'Document content',
-        chunks: [chunk],
+        chunks: [chunk]
       };
 
       expect(document.chunks).toHaveLength(1);
@@ -134,7 +134,7 @@ describe('retrieval/types', () => {
       const result: SearchResult = {
         documents: [],
         total: 0,
-        queryTime: 0,
+        queryTime: 0
       };
 
       expect(result.documents).toEqual([]);
@@ -146,13 +146,13 @@ describe('retrieval/types', () => {
       const document: Document = {
         id: 'doc-1',
         content: 'Content',
-        chunks: [],
+        chunks: []
       };
 
       const result: SearchResult = {
         documents: [document],
         total: 1,
-        queryTime: 100,
+        queryTime: 100
       };
 
       expect(result.documents).toHaveLength(1);

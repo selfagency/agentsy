@@ -14,7 +14,7 @@ import {
   normalizeMistralChunk,
   normalizeOllamaChatChunk,
   normalizeOpenAIChatChunk,
-  normalizeZAiChunk,
+  normalizeZAiChunk
 } from '../normalizers/index.js';
 
 export type NormalizerProvider =
@@ -56,7 +56,7 @@ const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   ollama: normalizeOllamaChatChunk,
   cohere: normalizeCohereEvent,
   'hugging-face': normalizeHuggingFaceTGIChunk,
-  zai: normalizeZAiChunk,
+  zai: normalizeZAiChunk
 };
 
 async function* processSSEEvent(
@@ -64,7 +64,7 @@ async function* processSSEEvent(
   normalizer: Normalizer,
   processor: LLMStreamProcessor,
   provider: NormalizerProvider,
-  jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number },
+  jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number }
 ): AsyncGenerator<PipelineEvent> {
   if (!sseEvent.data || sseEvent.data === '[DONE]') {
     return;
@@ -75,7 +75,7 @@ async function* processSSEEvent(
     yield {
       type: 'error',
       message: `Failed to parse JSON from SSE data: ${sseEvent.data.substring(0, 50)}...`,
-      provider,
+      provider
     };
     return;
   }
@@ -102,9 +102,9 @@ async function* processSSEEvent(
       type: 'tool_call',
       tool_call: {
         name: toolCall.name,
-        parameters: toolCall.parameters,
+        parameters: toolCall.parameters
       },
-      provider,
+      provider
     };
   }
 
@@ -115,7 +115,7 @@ async function* processSSEEvent(
 
 function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
   const processorOpts: ProcessorOptions = {
-    scrubContextTags: options.scrubContextTags ?? false,
+    scrubContextTags: options.scrubContextTags ?? false
   };
 
   if (options.parseThinkTags !== undefined) processorOpts.parseThinkTags = options.parseThinkTags;
@@ -135,7 +135,7 @@ function buildJsonParseOptions(options: PipelineOptions): { maxJsonDepth?: numbe
 
 export async function* createPipeline(
   source: AsyncIterable<string> | ReadableStream<string>,
-  options: PipelineOptions,
+  options: PipelineOptions
 ): AsyncGenerator<PipelineEvent> {
   const normalizer = NORMALIZERS[options.provider];
   if (!normalizer) {
@@ -153,7 +153,7 @@ export async function* createPipeline(
           normalizer,
           processor,
           options.provider,
-          jsonParseOptions,
+          jsonParseOptions
         )) {
           yield event;
         }
@@ -161,7 +161,7 @@ export async function* createPipeline(
         yield {
           type: 'error',
           message: _error instanceof Error ? _error.message : String(_error),
-          provider: options.provider,
+          provider: options.provider
         };
       }
     }
@@ -169,7 +169,7 @@ export async function* createPipeline(
     yield {
       type: 'error',
       message: _error instanceof Error ? _error.message : String(_error),
-      provider: options.provider,
+      provider: options.provider
     };
   }
 }

@@ -3,7 +3,7 @@ export const ELEVATED_CONTEXT_TAG_NAMES = new Set([
   'user_info',
   'workspace_info',
   'selection',
-  'file_context',
+  'file_context'
 ]);
 
 export const SYSTEM_WRAPPER_TAG_NAMES = new Set([
@@ -33,7 +33,7 @@ export const SYSTEM_WRAPPER_TAG_NAMES = new Set([
   'reminderInstructions',
   'userMemory',
   'sessionMemory',
-  'repository_memories',
+  'repository_memories'
 ]);
 
 export const PRIVACY_TAG_NAMES = new Set([
@@ -42,11 +42,11 @@ export const PRIVACY_TAG_NAMES = new Set([
   'userData',
   'userMemory',
   'sessionMemory',
-  'repository_memories',
+  'repository_memories'
 ]);
 
 export const DEFAULT_SCRUB_TAG_NAMES = new Set([
   ...ELEVATED_CONTEXT_TAG_NAMES,
   ...SYSTEM_WRAPPER_TAG_NAMES,
-  ...PRIVACY_TAG_NAMES,
+  ...PRIVACY_TAG_NAMES
 ]);

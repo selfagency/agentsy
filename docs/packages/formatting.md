@@ -32,7 +32,7 @@ import { appendToBlockquote, sanitizeNonStreamingModelOutput } from '@agentsy/co
 import { createPlainTextRenderer } from '@agentsy/renderers';
 
 const renderer = createPlainTextRenderer({
-  output: text => process.stdout.write(text),
+  output: text => process.stdout.write(text)
 });
 const cleanText = sanitizeNonStreamingModelOutput(rawModelOutput);
 

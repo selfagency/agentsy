@@ -7,7 +7,7 @@ import type {
   PartialDeep,
   StreamChunk,
   ToolCallState,
-  UsageInfo,
+  UsageInfo
 } from './index.js';
 
 test('UsageInfo shape', () => {
@@ -70,7 +70,7 @@ test('JsonObject and JsonValue exports are available', () => {
   const jsonObject: JsonObject = {
     label: 'agentsy',
     nested: { enabled: true },
-    items: [1, 'two', null],
+    items: [1, 'two', null]
   };
 
   const jsonValue: JsonValue = jsonObject;

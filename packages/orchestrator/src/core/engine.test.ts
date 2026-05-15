@@ -15,13 +15,13 @@ function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilit
         name: 'general',
         category: 'general',
         proficiency: 'advanced',
-        capabilities: ['execute'],
-      },
+        capabilities: ['execute']
+      }
     ],
     maxConcurrency: overrides.maxConcurrency ?? 1,
     costPerTask: overrides.costPerTask ?? 0.1,
     available: overrides.available ?? true,
-    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z'),
+    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z')
   };
 }
 
@@ -35,20 +35,20 @@ function createBaseSpec(overrides: Partial<WorkflowSpec>): WorkflowSpec {
       skills: [],
       resources: [],
       constraints: [],
-      dependencies: [],
+      dependencies: []
     },
     nodes: overrides.nodes ?? [],
     events: overrides.events ?? {
       triggers: [],
       handlers: [],
-      filters: [],
+      filters: []
     },
     timing: overrides.timing ?? {
       timeout: 10_000,
       retries: 0,
       scheduling: 'immediate',
-      priorities: {},
-    },
+      priorities: {}
+    }
   };
 }
 
@@ -62,9 +62,9 @@ function createScheduler(agentId: string): TaskScheduler {
       return {
         agentId,
         assigned: true as const,
-        status: 'scheduled' as const,
+        status: 'scheduled' as const
       };
-    },
+    }
   };
 }
 
@@ -86,10 +86,10 @@ describe('OrchestrationEngine', () => {
             name: 'Task 1',
             agent: 'agent-available',
             input: {},
-            output: {},
-          },
-        ],
-      }),
+            output: {}
+          }
+        ]
+      })
     );
 
     const result = await engine.execute(workflow);
@@ -114,10 +114,10 @@ describe('OrchestrationEngine', () => {
             name: 'Task default',
             agent: 'agent-default',
             input: {},
-            output: {},
-          },
-        ],
-      }),
+            output: {}
+          }
+        ]
+      })
     );
 
     const result = await engine.execute(workflow);
@@ -142,14 +142,14 @@ describe('OrchestrationEngine', () => {
             type: NodeType.SEQUENCE,
             id: 'sequence-1',
             name: 'Sequence 1',
-            steps: ['parallel-1', 'merge-1'],
+            steps: ['parallel-1', 'merge-1']
           },
           {
             type: NodeType.PARALLEL,
             id: 'parallel-1',
             name: 'Parallel 1',
             branches: ['task-a', 'task-b'],
-            failFast: true,
+            failFast: true
           },
           {
             type: NodeType.TASK,
@@ -157,7 +157,7 @@ describe('OrchestrationEngine', () => {
             name: 'Task A',
             agent: 'agent-seq',
             input: {},
-            output: {},
+            output: {}
           },
           {
             type: NodeType.TASK,
@@ -165,17 +165,17 @@ describe('OrchestrationEngine', () => {
             name: 'Task B',
             agent: 'agent-seq',
             input: {},
-            output: {},
+            output: {}
           },
           {
             type: NodeType.MERGE,
             id: 'merge-1',
             name: 'Merge 1',
             inputs: ['task-a', 'task-b'],
-            strategy: 'all',
-          },
-        ],
-      }),
+            strategy: 'all'
+          }
+        ]
+      })
     );
 
     const result = await engine.execute(workflow);
@@ -214,7 +214,7 @@ describe('OrchestrationEngine', () => {
             name: 'Decision 1',
             condition: 'true',
             trueBranch: ['task-true'],
-            falseBranch: ['task-false'],
+            falseBranch: ['task-false']
           },
           {
             type: NodeType.TASK,
@@ -222,7 +222,7 @@ describe('OrchestrationEngine', () => {
             name: 'Task True',
             agent: 'agent-decision',
             input: {},
-            output: {},
+            output: {}
           },
           {
             type: NodeType.TASK,
@@ -230,10 +230,10 @@ describe('OrchestrationEngine', () => {
             name: 'Task False',
             agent: 'agent-decision',
             input: {},
-            output: {},
-          },
-        ],
-      }),
+            output: {}
+          }
+        ]
+      })
     );
 
     const result = await engine.execute(workflow);
@@ -242,7 +242,7 @@ describe('OrchestrationEngine', () => {
     expect(result.results).toEqual({
       decision: true,
       branch: 'true',
-      results: [{ result: 'Task task-true executed by agent agent-decision' }],
+      results: [{ result: 'Task task-true executed by agent agent-decision' }]
     });
   });
 
@@ -261,11 +261,11 @@ describe('OrchestrationEngine', () => {
               type: NodeType.SEQUENCE,
               id: 'sequence-invalid',
               name: 'Invalid Sequence',
-              steps: ['missing-node'],
-            },
-          ],
-        }),
-      ),
+              steps: ['missing-node']
+            }
+          ]
+        })
+      )
     ).rejects.toThrow('Sequence node sequence-invalid references unknown node: missing-node');
   });
 });

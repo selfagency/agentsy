@@ -60,7 +60,7 @@ export class IndexingPipeline {
           chunks.push(
             this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
               return content.slice(0, pos).split('\n').length;
-            }),
+            })
           );
           currentPosition += currentChunk.length;
         }
@@ -72,7 +72,7 @@ export class IndexingPipeline {
       chunks.push(
         this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
           return content.slice(0, pos).split('\n').length;
-        }),
+        })
       );
     }
     return chunks;
@@ -123,7 +123,7 @@ export class IndexingPipeline {
         chunks.push(
           this.createChunk(block, sourcePath, position, (pos: number) => {
             return this.getCodePosition(content, pos);
-          }),
+          })
         );
         position += block.length;
       }
@@ -170,7 +170,7 @@ export class IndexingPipeline {
     braceDepth: number,
     parenDepth: number,
     inFunction: boolean,
-    currentBlock: string,
+    currentBlock: string
   ): { shouldSplit: boolean; newInFunction: boolean } {
     const isFunction = /function\b/.test(code.slice(i - 8, i + 1));
     const isAsync = code.slice(i - 5, i + 1).includes('async') && nextChar === ' ';
@@ -197,7 +197,7 @@ export class IndexingPipeline {
     content: string,
     sourcePath: string,
     startIdxOrPosition: number,
-    calculateLine?: (pos: number) => number,
+    calculateLine?: (pos: number) => number
   ): Chunk {
     const contentHash = hashString(content);
     const startLine = calculateLine ? calculateLine(startIdxOrPosition) : Math.max(1, startIdxOrPosition);
@@ -210,8 +210,8 @@ export class IndexingPipeline {
         startLine,
         endLine: startLine + content.split('\n').length - 1,
         strategy: this.currentStrategy,
-        language: this.detectLanguage(sourcePath),
-      },
+        language: this.detectLanguage(sourcePath)
+      }
     };
   }
 
@@ -243,8 +243,8 @@ export class IndexingPipeline {
       chunks,
       metadata: {
         chunkCount: chunks.length,
-        indexedAt: new Date().toISOString(),
-      },
+        indexedAt: new Date().toISOString()
+      }
     };
   }
 }

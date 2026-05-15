@@ -83,7 +83,7 @@ const VALID_TOOL_NAME = /^[A-Za-z_][A-Za-z0-9_:-]*$/;
  */
 export function buildXmlToolSystemPrompt(
   tools: readonly XmlToolInfo[],
-  options: BuildXmlToolSystemPromptOptions = {},
+  options: BuildXmlToolSystemPromptOptions = {}
 ): string {
   const format = options.format ?? 'xml';
 
@@ -94,7 +94,7 @@ export function buildXmlToolSystemPrompt(
   for (const tool of tools) {
     if (!VALID_TOOL_NAME.test(tool.name)) {
       throw new Error(
-        `Invalid tool name "${tool.name}": tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`,
+        `Invalid tool name "${tool.name}": tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`
       );
     }
   }
@@ -123,7 +123,7 @@ function buildXmlPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolInfo)
     });
 
     return [`// ${tool.name}: ${tool.description ?? ''}`, `<${tool.name}>`, ...paramLines, `</${tool.name}>`].join(
-      '\n',
+      '\n'
     );
   });
 
@@ -149,7 +149,7 @@ function buildXmlPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolInfo)
     '// Correct — bare XML only:',
     exampleCall,
     '',
-    `// After you receive [Tool result: ${exampleTool.name}], answer in plain text.`,
+    `// After you receive [Tool result: ${exampleTool.name}], answer in plain text.`
   ].join('\n');
 }
 
@@ -191,6 +191,6 @@ function buildHermesPrompt(tools: readonly XmlToolInfo[], exampleTool: XmlToolIn
     '',
     `Example:\n${exampleCall}`,
     '',
-    'After you receive a tool result, continue reasoning and respond to the user in plain text.',
+    'After you receive a tool result, continue reasoning and respond to the user in plain text.'
   ].join('\n');
 }

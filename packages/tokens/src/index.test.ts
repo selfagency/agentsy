@@ -35,7 +35,7 @@ describe('createInMemoryTokenManager', () => {
       maxCost: 5,
       periodMs: 60_000,
       resetStrategy: 'rolling',
-      priority: 'high',
+      priority: 'high'
     });
 
     const allocation = await manager.requestTokens({
@@ -44,7 +44,7 @@ describe('createInMemoryTokenManager', () => {
       model: 'gpt-4.1-mini',
       estimatedTokens: 40,
       estimatedCost: 1.5,
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     expect(allocation.budgetId).toBe(budget.id);
@@ -69,7 +69,7 @@ describe('createInMemoryTokenManager', () => {
       maxCost: 10,
       periodMs: 60_000,
       resetStrategy: 'rolling',
-      priority: 'low',
+      priority: 'low'
     });
 
     const high = await manager.createBudget({
@@ -80,14 +80,14 @@ describe('createInMemoryTokenManager', () => {
       maxCost: 10,
       periodMs: 60_000,
       resetStrategy: 'rolling',
-      priority: 'high',
+      priority: 'high'
     });
 
     const allocation = await manager.requestTokens({
       provider: 'openai',
       model: 'gpt-4.1-mini',
       estimatedTokens: 10,
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     expect(allocation.budgetId).toBe(high.id);
@@ -104,7 +104,7 @@ describe('createInMemoryTokenManager', () => {
       maxCost: 1,
       periodMs: 60_000,
       resetStrategy: 'rolling',
-      priority: 'medium',
+      priority: 'medium'
     });
 
     await expect(
@@ -113,8 +113,8 @@ describe('createInMemoryTokenManager', () => {
         provider: 'openai',
         model: 'gpt-4.1-mini',
         estimatedTokens: 11,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).rejects.toThrow('exceeds the remaining token budget');
   });
 
@@ -128,7 +128,7 @@ describe('createInMemoryTokenManager', () => {
       maxCost: 10,
       periodMs: 60_000,
       resetStrategy: 'rolling',
-      priority: 'medium',
+      priority: 'medium'
     });
 
     await manager.recordUsage({
@@ -138,7 +138,7 @@ describe('createInMemoryTokenManager', () => {
       tokensUsed: 85,
       cost: 8.5,
       timestamp: new Date(),
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     const analysis = await manager.getCostAnalysis(60_000);
@@ -160,12 +160,12 @@ describe('createInMemoryTokenManager', () => {
       periodMs: 60_000,
       resetStrategy: 'manual',
       priority: 'medium',
-      metadata: { team: 'agents' },
+      metadata: { team: 'agents' }
     });
 
     const updated = await manager.updateBudget(budget.id, {
       name: 'wildcard-updated',
-      metadata: { team: 'runtime' },
+      metadata: { team: 'runtime' }
     });
     const fetched = await manager.getBudget(budget.id);
     const filtered = await manager.listBudgets({ provider: 'anthropic' });
@@ -174,7 +174,7 @@ describe('createInMemoryTokenManager', () => {
       model: 'claude-3-7-sonnet',
       estimatedTokens: 20,
       estimatedCost: 0.5,
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     expect(updated.name).toBe('wildcard-updated');
@@ -198,7 +198,7 @@ describe('createInMemoryTokenManager', () => {
       maxCost: 10,
       periodMs: 1,
       resetStrategy: 'manual',
-      priority: 'medium',
+      priority: 'medium'
     });
 
     await manager.recordUsage({
@@ -208,7 +208,7 @@ describe('createInMemoryTokenManager', () => {
       tokensUsed: 95,
       cost: 1,
       timestamp: new Date(Date.now() - 10_000),
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     await expect(
@@ -217,8 +217,8 @@ describe('createInMemoryTokenManager', () => {
         provider: 'openai',
         model: 'gpt-4.1-mini',
         estimatedTokens: 10,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).rejects.toThrow('exceeds the remaining token budget');
 
     await expect(
@@ -226,8 +226,8 @@ describe('createInMemoryTokenManager', () => {
         provider: 'missing',
         model: 'missing',
         estimatedTokens: 1,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).rejects.toThrow('No matching token budget found');
   });
 });
@@ -237,7 +237,7 @@ describe('compressConversation', () => {
     const result = compressConversation(['aaaa', 'bbbb', 'cccc', 'dddd'], {
       maxTokens: 8,
       estimateTokens: (value: string) => value.length,
-      preserveLast: 1,
+      preserveLast: 1
     });
 
     expect(result.compressed).toBe(true);
@@ -279,8 +279,8 @@ describe('PacingController', () => {
         provider: 'openai',
         model: 'gpt-4.1-mini',
         estimatedTokens: 10,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).toBe(true);
 
     expect(
@@ -288,8 +288,8 @@ describe('PacingController', () => {
         provider: 'openai',
         model: 'gpt-4.1-mini',
         estimatedTokens: 10,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).toBe(false);
 
     const status = await controller.checkRateLimit('openai');
@@ -305,7 +305,7 @@ describe('PacingController', () => {
       provider: 'openai',
       model: 'gpt-4.1-mini',
       estimatedTokens: 10,
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     expect(wait).toBeGreaterThan(0);
@@ -315,7 +315,7 @@ describe('PacingController', () => {
     const controller = new PacingController(createInMemoryTokenManager());
     await controller.updateRateLimits('openai', [
       { windowMs: 1_000, maxRequests: 10 },
-      { windowMs: 10_000, maxRequests: 2 },
+      { windowMs: 10_000, maxRequests: 2 }
     ]);
 
     expect(
@@ -323,16 +323,16 @@ describe('PacingController', () => {
         provider: 'openai',
         model: 'gpt-4.1-mini',
         estimatedTokens: 10,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).toBe(true);
     expect(
       await controller.throttleRequest({
         provider: 'openai',
         model: 'gpt-4.1-mini',
         estimatedTokens: 10,
-        requestType: 'completion',
-      }),
+        requestType: 'completion'
+      })
     ).toBe(true);
 
     const status = await controller.checkRateLimit('openai');
@@ -351,7 +351,7 @@ describe('PacingController', () => {
       provider: 'openai',
       model: 'gpt-4.1-mini',
       estimatedTokens: 10,
-      requestType: 'completion',
+      requestType: 'completion'
     });
 
     expect(wait).toBe(0);

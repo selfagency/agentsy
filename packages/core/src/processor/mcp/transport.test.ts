@@ -9,7 +9,7 @@ describe('MCP Transport', () => {
         start(controller) {
           controller.enqueue('data: test\n\n');
           controller.close();
-        },
+        }
       });
 
       const adapted = adaptTransportToStream({ type: 'http', stream: mockStream });
@@ -27,13 +27,13 @@ describe('MCP Transport', () => {
           if (!this.push('data: stdio test\n\n')) {
             this.push(null);
           }
-        },
+        }
       });
 
       const writable = new Writable({
         write(_chunk: unknown, _encoding: BufferEncoding, callback: () => void) {
           callback();
-        },
+        }
       });
 
       const adapted = adaptTransportToStream({ type: 'stdio', readable, writable });

@@ -2,6 +2,8 @@
 
 import { randomUUID } from 'node:crypto';
 
+export * from './compression/index.js';
+
 export interface TokenLedgerBudget {
   limit: number;
 }
@@ -197,7 +199,7 @@ function createId(prefix: string): string {
 function cloneBudget(budget: TokenBudget): TokenBudget {
   return {
     ...budget,
-    ...(budget.metadata === undefined ? {} : { metadata: { ...budget.metadata } }),
+    ...(budget.metadata === undefined ? {} : { metadata: { ...budget.metadata } })
   };
 }
 
@@ -205,7 +207,7 @@ function cloneUsage(usage: TokenUsage): TokenUsage {
   return {
     ...usage,
     timestamp: new Date(usage.timestamp),
-    ...(usage.metadata === undefined ? {} : { metadata: { ...usage.metadata } }),
+    ...(usage.metadata === undefined ? {} : { metadata: { ...usage.metadata } })
   };
 }
 
@@ -213,7 +215,7 @@ function cloneAllocation(allocation: TokenAllocation): TokenAllocation {
   return {
     ...allocation,
     expiresAt: new Date(allocation.expiresAt),
-    ...(allocation.conditions === undefined ? {} : { conditions: [...allocation.conditions] }),
+    ...(allocation.conditions === undefined ? {} : { conditions: [...allocation.conditions] })
   };
 }
 
@@ -246,7 +248,7 @@ function getAllocationCost(request: TokenRequest): number {
 
 function selectBudget(budgets: TokenBudget[], request: TokenRequest): TokenBudget | null {
   const matching = budgets.filter(
-    budget => budget.provider === request.provider && (budget.model === request.model || budget.model === '*'),
+    budget => budget.provider === request.provider && (budget.model === request.model || budget.model === '*')
   );
   const candidates = matching.length > 0 ? matching : budgets.filter(budget => budget.provider === request.provider);
   if (candidates.length === 0) {
@@ -255,7 +257,7 @@ function selectBudget(budgets: TokenBudget[], request: TokenRequest): TokenBudge
 
   return (
     [...candidates].sort(
-      (left, right) => getBudgetPriorityRank(right.priority) - getBudgetPriorityRank(left.priority),
+      (left, right) => getBudgetPriorityRank(right.priority) - getBudgetPriorityRank(left.priority)
     )[0] ?? null
   );
 }
@@ -268,7 +270,7 @@ function getRetryAfterMs(
   recentTimestamps: readonly number[],
   now: number,
   windowMs: number,
-  maxRequests: number,
+  maxRequests: number
 ): number {
   if (recentTimestamps.length < maxRequests) {
     return 0;
@@ -295,24 +297,24 @@ function sumUsageForBudget(budget: TokenBudget, usage: TokenUsage[], now: number
     .reduce(
       (totals, entry) => ({
         tokens: totals.tokens + entry.tokensUsed,
-        cost: totals.cost + entry.cost,
+        cost: totals.cost + entry.cost
       }),
-      { tokens: 0, cost: 0 },
+      { tokens: 0, cost: 0 }
     );
 }
 
 function sumReservedForBudget(
   budgetId: string,
-  allocations: Map<string, AllocationRecord>,
+  allocations: Map<string, AllocationRecord>
 ): { tokens: number; cost: number } {
   return [...allocations.values()]
     .filter(record => record.allocation.budgetId === budgetId)
     .reduce(
       (totals, record) => ({
         tokens: totals.tokens + record.allocation.allocatedTokens,
-        cost: totals.cost + record.allocation.allocatedCost,
+        cost: totals.cost + record.allocation.allocatedCost
       }),
-      { tokens: 0, cost: 0 },
+      { tokens: 0, cost: 0 }
     );
 }
 
@@ -334,13 +336,13 @@ export const createTokenLedger = ({ limit }: TokenLedgerBudget): TokenLedger => 
     },
     remaining() {
       return Math.max(0, limit - consumed);
-    },
+    }
   };
 };
 
 export function compressConversation<TMessage>(
   messages: readonly TMessage[],
-  options: CompressionOptions<TMessage>,
+  options: CompressionOptions<TMessage>
 ): CompressionResult<TMessage> {
   const estimateTokens = options.estimateTokens ?? DEFAULT_ESTIMATE_TOKENS<TMessage>;
   const preserveLast = Math.max(0, options.preserveLast ?? 0);
@@ -363,7 +365,7 @@ export function compressConversation<TMessage>(
     messages: retained,
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
-    compressed: droppedCount > 0,
+    compressed: droppedCount > 0
   };
 }
 
@@ -581,7 +583,7 @@ export function createInMemoryTokenManager(): TokenManager {
         periodMs: config.periodMs,
         resetStrategy: config.resetStrategy,
         priority: config.priority,
-        ...(config.metadata === undefined ? {} : { metadata: { ...config.metadata } }),
+        ...(config.metadata === undefined ? {} : { metadata: { ...config.metadata } })
       };
       budgets.set(id, budget);
       return cloneBudget(budget);
@@ -601,7 +603,7 @@ export function createInMemoryTokenManager(): TokenManager {
       const next: TokenBudget = {
         ...current,
         ...updates,
-        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } }),
+        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } })
       };
       budgets.set(id, next);
       return cloneBudget(next);
@@ -647,16 +649,16 @@ export function createInMemoryTokenManager(): TokenManager {
         budgetId: budget.id,
         allocatedTokens: request.estimatedTokens,
         allocatedCost: getAllocationCost(request),
-        expiresAt: new Date(now + budget.periodMs),
+        expiresAt: new Date(now + budget.periodMs)
       };
 
       allocations.set(allocation.id, {
         allocation,
         request: {
           ...request,
-          ...(request.metadata === undefined ? {} : { metadata: { ...request.metadata } }),
+          ...(request.metadata === undefined ? {} : { metadata: { ...request.metadata } })
         },
-        createdAt: now,
+        createdAt: now
       });
 
       return cloneAllocation(allocation);
@@ -677,7 +679,7 @@ export function createInMemoryTokenManager(): TokenManager {
         cost: actualCost,
         timestamp: new Date(record.createdAt),
         requestType: record.request.requestType,
-        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } }),
+        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } })
       });
     },
 
@@ -699,7 +701,7 @@ export function createInMemoryTokenManager(): TokenManager {
           budgetId: entry.budgetId,
           totalTokens: 0,
           totalCost: 0,
-          requestCount: 0,
+          requestCount: 0
         };
         existing.totalTokens += entry.tokensUsed;
         existing.totalCost += entry.cost;
@@ -711,7 +713,7 @@ export function createInMemoryTokenManager(): TokenManager {
         totalTokens: inWindow.reduce((total, entry) => total + entry.tokensUsed, 0),
         totalCost: inWindow.reduce((total, entry) => total + entry.cost, 0),
         requestCount: inWindow.length,
-        budgets: [...budgetSummaries.values()].sort((left, right) => left.budgetId.localeCompare(right.budgetId)),
+        budgets: [...budgetSummaries.values()].sort((left, right) => left.budgetId.localeCompare(right.budgetId))
       };
     },
 
@@ -731,7 +733,7 @@ export function createInMemoryTokenManager(): TokenManager {
         suggestions.push({
           budgetId,
           type: 'reduce-tokens',
-          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.',
+          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.'
         });
       }
 
@@ -739,7 +741,7 @@ export function createInMemoryTokenManager(): TokenManager {
         suggestions.push({
           budgetId,
           type: 'reduce-cost',
-          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.',
+          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.'
         });
       }
 
@@ -747,12 +749,12 @@ export function createInMemoryTokenManager(): TokenManager {
         suggestions.push({
           budgetId,
           type: 'rate-limit',
-          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.',
+          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.'
         });
       }
 
       return suggestions;
-    },
+    }
   };
 }
 
@@ -789,7 +791,7 @@ export class PacingController {
   async updateRateLimits(provider: string, limits: RateLimit[]): Promise<void> {
     this.#limits.set(
       provider,
-      limits.map(limit => ({ ...limit })),
+      limits.map(limit => ({ ...limit }))
     );
   }
 
@@ -801,7 +803,7 @@ export class PacingController {
         limit: 0,
         remaining: Number.MAX_SAFE_INTEGER,
         windowMs: 0,
-        retryAfterMs: 0,
+        retryAfterMs: 0
       };
     }
 
@@ -813,7 +815,7 @@ export class PacingController {
       limit: 0,
       remaining: Number.MAX_SAFE_INTEGER,
       windowMs: 0,
-      retryAfterMs: 0,
+      retryAfterMs: 0
     };
 
     for (const limit of limits) {
@@ -825,7 +827,7 @@ export class PacingController {
         limit: limit.maxRequests,
         remaining,
         windowMs: limit.windowMs,
-        retryAfterMs,
+        retryAfterMs
       };
 
       if (!candidate.allowed) {

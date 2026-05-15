@@ -184,7 +184,7 @@ export class Saxophone extends EventEmitter {
     }
 
     this.emit(NT_PROC_INST, {
-      contents: input.slice(pos, piClose),
+      contents: input.slice(pos, piClose)
     } satisfies SaxophoneProcessingInstruction);
     return piClose + 2;
   }
@@ -217,7 +217,7 @@ export class Saxophone extends EventEmitter {
       this._handleTagOpening({
         name: input.slice(pos, realTagClose),
         attrs: '',
-        isSelfClosing,
+        isSelfClosing
       });
     } else if (wsOffset === 0) {
       return new Error('Tag names may not start with whitespace');
@@ -225,7 +225,7 @@ export class Saxophone extends EventEmitter {
       this._handleTagOpening({
         name: input.slice(pos, pos + wsOffset),
         attrs: input.slice(pos + wsOffset, realTagClose),
-        isSelfClosing,
+        isSelfClosing
       });
     }
 

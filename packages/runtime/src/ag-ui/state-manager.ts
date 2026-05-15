@@ -82,7 +82,7 @@ function unescapePathSegment(segment: string): string {
 export function createStateSnapshotEvent(
   state: Record<string, unknown>,
   runId: string,
-  threadId?: string,
+  threadId?: string
 ): StateSnapshotEvent {
   if (hasCircularReference(state)) {
     throw new Error('State object contains circular references and cannot be serialized');
@@ -92,7 +92,7 @@ export function createStateSnapshotEvent(
     type: EventType.STATE_SNAPSHOT,
     runId,
     state: structuredClone(state),
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   };
   if (threadId) event.threadId = threadId;
   return event;
@@ -111,7 +111,7 @@ export function createStateSnapshotEvent(
 function computeStateDeltaForRemovedAndModified(
   from: Record<string, unknown>,
   to: Record<string, unknown>,
-  basePathPrefix: string,
+  basePathPrefix: string
 ): JsonPatchOp[] {
   const patches: JsonPatchOp[] = [];
   const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
@@ -163,7 +163,7 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
 export function computeStateDelta(
   from: Record<string, unknown>,
   to: Record<string, unknown>,
-  basePathPrefix = '',
+  basePathPrefix = ''
 ): JsonPatchOp[] {
   if (hasCircularReference(from)) {
     throw new Error('Previous state contains circular references and cannot be processed');
@@ -203,7 +203,7 @@ export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, thr
     type: EventType.STATE_DELTA,
     runId,
     delta: patches,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   };
   if (threadId) deltaEvent.threadId = threadId;
   return deltaEvent;
@@ -213,7 +213,7 @@ function resolvePatchTarget(
   state: Record<string, unknown>,
   parts: string[],
   createMissing: boolean,
-  rootErrorMessage = 'Cannot operate on root',
+  rootErrorMessage = 'Cannot operate on root'
 ): { target: Record<string, unknown>; key: string } {
   if (parts.length === 0) {
     throw new Error(rootErrorMessage);
@@ -240,7 +240,7 @@ function setPatchValue(
   parts: string[],
   patch: JsonPatchOp,
   createMissing: boolean,
-  rootErrorMessage: string,
+  rootErrorMessage: string
 ): void {
   const { target, key } = resolvePatchTarget(state, parts, createMissing, rootErrorMessage);
   target[key] = patch.value;

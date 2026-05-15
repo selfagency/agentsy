@@ -5,7 +5,7 @@ describe('Provider Tools Contract', () => {
   describe('additional edge cases', () => {
     it('should require parameters in isProviderTool', () => {
       const tool = {
-        name: 'edgeTool',
+        name: 'edgeTool'
         // parameters intentionally omitted - should fail validation
       };
       expect(isProviderTool(tool)).toBe(false);
@@ -14,7 +14,7 @@ describe('Provider Tools Contract', () => {
     it('should require parameters when converting to native format', () => {
       const providerTool = {
         name: 'edgeTool',
-        id: 'id-123',
+        id: 'id-123'
       };
       expect(isProviderTool(providerTool)).toBe(false);
     });
@@ -33,7 +33,7 @@ describe('Provider Tools Contract', () => {
         name: 'testTool',
         parameters: { key: 'value' },
         id: 'testId',
-        format: 'native-json' as const,
+        format: 'native-json' as const
       };
       expect(isProviderTool(validTool)).toBe(true);
     });
@@ -41,7 +41,7 @@ describe('Provider Tools Contract', () => {
     it('should return false for invalid provider tool', () => {
       const invalidTool = {
         name: '',
-        parameters: { key: 'value' },
+        parameters: { key: 'value' }
       };
       expect(isProviderTool(invalidTool)).toBe(false);
     });
@@ -59,14 +59,14 @@ describe('Provider Tools Contract', () => {
       const providerTool = {
         name: 'testTool',
         parameters: { key: 'value' },
-        id: 'testId',
+        id: 'testId'
       };
 
       const native = providerToolToNative(providerTool);
       expect(native).toEqual({
         name: 'testTool',
         arguments: { key: 'value' },
-        id: 'testId',
+        id: 'testId'
       });
     });
 
@@ -74,14 +74,14 @@ describe('Provider Tools Contract', () => {
       const providerTool = {
         name: 'testTool',
         parameters: {},
-        id: 'testId',
+        id: 'testId'
       };
 
       const native = providerToolToNative(providerTool);
       expect(native).toEqual({
         name: 'testTool',
         arguments: {},
-        id: 'testId',
+        id: 'testId'
       });
     });
   });
@@ -91,7 +91,7 @@ describe('Provider Tools Contract', () => {
       const nativeTool = {
         name: 'testTool',
         arguments: { key: 'value' },
-        id: 'testId',
+        id: 'testId'
       };
 
       const provider = nativeToProviderTool(nativeTool);
@@ -99,7 +99,7 @@ describe('Provider Tools Contract', () => {
         name: 'testTool',
         parameters: { key: 'value' },
         id: 'testId',
-        format: 'native-json',
+        format: 'native-json'
       });
     });
 
@@ -107,7 +107,7 @@ describe('Provider Tools Contract', () => {
       const nativeTool = {
         name: 'testTool',
         arguments: {},
-        id: 'testId',
+        id: 'testId'
       };
 
       const provider = nativeToProviderTool(nativeTool);
@@ -115,7 +115,7 @@ describe('Provider Tools Contract', () => {
         name: 'testTool',
         parameters: {},
         id: 'testId',
-        format: 'native-json',
+        format: 'native-json'
       });
     });
   });

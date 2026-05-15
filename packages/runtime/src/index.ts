@@ -83,7 +83,7 @@ function createEmptySnapshot(sessionId: string, depth: number): RuntimeSnapshot 
     completedTaskIds: [],
     results: [],
     childSnapshots: [],
-    updatedAt: Date.now(),
+    updatedAt: Date.now()
   };
 }
 
@@ -131,13 +131,13 @@ function cloneSnapshot(snapshot: RuntimeSnapshot): RuntimeSnapshot {
     completedTaskIds: [...snapshot.completedTaskIds],
     results: snapshot.results.map(result => ({ ...result })),
     childSnapshots: snapshot.childSnapshots.map(cloneSnapshot),
-    updatedAt: snapshot.updatedAt,
+    updatedAt: snapshot.updatedAt
   };
 }
 
 export function loadRuntimeSnapshotFromSession(
   sessionStore: Pick<SessionStore, 'getValue'>,
-  snapshotKey: string = 'runtimeSnapshot',
+  snapshotKey: string = 'runtimeSnapshot'
 ): RuntimeSnapshot | null {
   const snapshot = sessionStore.getValue(snapshotKey);
   return isRuntimeSnapshot(snapshot) ? cloneSnapshot(snapshot) : null;
@@ -146,7 +146,7 @@ export function loadRuntimeSnapshotFromSession(
 export function saveRuntimeSnapshotToSession(
   sessionStore: Pick<SessionStore, 'setValue'>,
   snapshot: RuntimeSnapshot,
-  snapshotKey: string = 'runtimeSnapshot',
+  snapshotKey: string = 'runtimeSnapshot'
 ): void {
   sessionStore.setValue(snapshotKey, cloneSnapshot(snapshot));
 }
@@ -191,7 +191,7 @@ function getExecutionOrder(tasks: RuntimeWorkflowTask[]): RuntimeWorkflowTask[] 
 export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExecutor => {
   const executeWithResults = async (
     tasks: RuntimeTask[],
-    signal: AbortSignal = new AbortController().signal,
+    signal: AbortSignal = new AbortController().signal
   ): Promise<RuntimeTaskResult[]> => {
     const results: RuntimeTaskResult[] = [];
 
@@ -209,7 +209,7 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
           taskId: task.id,
           status: 'completed',
           startedAt,
-          finishedAt: Date.now(),
+          finishedAt: Date.now()
         };
         results.push(result);
         options.onTaskComplete?.(result, task);
@@ -221,7 +221,7 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
           status: 'failed',
           startedAt,
           finishedAt: Date.now(),
-          error: runtimeError,
+          error: runtimeError
         };
         results.push(result);
         options.onTaskComplete?.(result, task);
@@ -237,7 +237,7 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
 
   return {
     execute,
-    executeWithResults,
+    executeWithResults
   };
 };
 
@@ -247,7 +247,7 @@ function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
     depth: 0,
     async spawn() {
       throw new Error('Runtime spawning is unavailable without an attached runtime loop context');
-    },
+    }
   };
 }
 
@@ -274,13 +274,13 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
       ...options,
       sessionId: nextChildSessionId,
       depth: depth + 1,
-      maxDepth,
+      maxDepth
     });
     const childSnapshot = await childLoop.execute(tasks, signal);
     snapshot = {
       ...snapshot,
       childSnapshots: [...snapshot.childSnapshots, childSnapshot],
-      updatedAt: Date.now(),
+      updatedAt: Date.now()
     };
 
     if (options.sessionStore) {
@@ -295,8 +295,8 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
     taskContext: {
       sessionId,
       depth,
-      spawn,
-    },
+      spawn
+    }
   });
 
   return {
@@ -319,7 +319,7 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
         completedTaskIds: nextCompletedTaskIds,
         results: [...snapshot.results, ...results],
         childSnapshots: snapshot.childSnapshots,
-        updatedAt: Date.now(),
+        updatedAt: Date.now()
       };
 
       if (options.sessionStore) {
@@ -337,7 +337,7 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
 
     getDepth() {
       return depth;
-    },
+    }
   };
 }
 
@@ -348,6 +348,6 @@ export function createRuntimeWorkflowExecutor(options: RuntimeLoopOptions = {}):
     async execute(tasks, signal) {
       const orderedTasks = getExecutionOrder(tasks);
       return loop.execute(orderedTasks, signal);
-    },
+    }
   };
 }

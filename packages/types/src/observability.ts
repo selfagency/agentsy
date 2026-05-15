@@ -23,7 +23,7 @@ export enum EventType {
   TOOL_CALL_RESULT = 'tool_call:result',
   MESSAGES_SNAPSHOT = 'messages:snapshot',
   STATE_SNAPSHOT = 'state:snapshot',
-  STATE_DELTA = 'state:delta',
+  STATE_DELTA = 'state:delta'
 }
 
 /**

@@ -79,7 +79,7 @@
        level: 'lite' | 'full' | 'ultra';
        preserve: string[]; // code, technical, URLs
        intensity?: number;
-     },
+     }
    ): string;
    ```
 
@@ -139,7 +139,7 @@
      options: {
        preserve: string[]; // code, urls, paths
        backup: boolean; // Create .original.md backup
-     },
+     }
    ): Promise<{ original: string; compressed: string; savings: number }>;
    ```
 
@@ -637,13 +637,13 @@ import { compressMemoryFile } from '@agentsy/core/context/compression';
 // Compress output
 const compressedResponse = compressOutput(rawResponse, {
   level: 'full',
-  preserve: ['code', 'technical', 'urls'],
+  preserve: ['code', 'technical', 'urls']
 });
 
 // Compress memory
 const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
   preserve: ['code', 'urls', 'paths'],
-  backup: true,
+  backup: true
 });
 ```
 

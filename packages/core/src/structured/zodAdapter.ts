@@ -47,7 +47,7 @@ export async function zodToJsonSchema(zodSchema: ZodLike): Promise<JsonObject> {
 export async function validateWithZod<T = unknown>(
   text: string,
   zodSchema: ZodLike,
-  options?: ValidateJsonSchemaOptions,
+  options?: ValidateJsonSchemaOptions
 ): Promise<{ success: true; data: T } | { success: false; errors: string[] }> {
   const jsonSchema = await zodToJsonSchema(zodSchema);
   return validateJsonSchema<T>(text, jsonSchema, options);

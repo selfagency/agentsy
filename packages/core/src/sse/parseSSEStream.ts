@@ -17,14 +17,14 @@ import { SSEParser, type SSEEvent } from './SSEParser.js';
  * ```
  */
 export async function* parseSSEStream(
-  source: ReadableStream<string> | AsyncIterable<string>,
+  source: ReadableStream<string> | AsyncIterable<string>
 ): AsyncGenerator<SSEEvent, void> {
   const eventQueue: SSEEvent[] = [];
 
   const parser = new SSEParser({
     onEvent: (event: SSEEvent) => {
       eventQueue.push(event);
-    },
+    }
   });
 
   // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
