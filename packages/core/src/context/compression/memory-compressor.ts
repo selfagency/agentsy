@@ -1,4 +1,4 @@
-import { copyFile, readFile, writeFile } from 'node:fs/promises';
+import { constants, copyFile, readFile, writeFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import type { CompressionLevel } from './prose-compressor.js';
 import { compressProse, protectPattern, restoreProtectedSegments } from './prose-compressor.js';
@@ -86,7 +86,7 @@ export async function compressMemoryFile(
   let backupPath: string | undefined;
   if (options.backup ?? true) {
     backupPath = `${filePath}.original`;
-    await copyFile(filePath, backupPath);
+    await copyFile(filePath, backupPath, constants.COPYFILE_EXCL);
   }
 
   await writeFile(filePath, compressed, 'utf8');

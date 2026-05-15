@@ -48,6 +48,22 @@ describe('compressMemoryFile', () => {
     expect(backup).toBe(input);
   });
 
+  it('does not overwrite an existing backup on a second run', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'agentsy-memory-nooverwrite-'));
+    const filePath = join(dir, 'CLAUDE.md');
+    const backupPath = `${filePath}.original.md`;
+
+    const original = 'This is basically the very original content that should not be lost.';
+    await writeFile(filePath, original, 'utf8');
+
+    await compressMemoryFile(filePath, { backup: true });
+
+    await expect(compressMemoryFile(filePath, { backup: true })).rejects.toThrow();
+
+    const backup = await readFile(backupPath, 'utf8');
+    expect(backup).toBe(original);
+  });
+
   it('refuses to compress sensitive paths', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'agentsy-memory-sensitive-'));
     const filePath = join(dir, '.env');
