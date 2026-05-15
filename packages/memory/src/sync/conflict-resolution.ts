@@ -23,6 +23,10 @@ const DEFAULT_WIKI_FIELD_PRECEDENCE = {
   vectorFingerprint: 'remote'
 } as const;
 
+function createRecordKey(record: Pick<SyncRecord, 'id' | 'tier'>): string {
+  return `${record.tier}:${record.id}`;
+}
+
 function createConflictId(local: SyncRecord, remote: SyncRecord): string {
   const source = JSON.stringify({
     id: local.id,
@@ -53,7 +57,7 @@ function chooseRecord(preference: 'local' | 'remote', local: SyncRecord, remote:
 function mergeWikiConflict(conflict: ConflictRecord, options: ResolveConflictOptions = {}): SyncRecord {
   const precedence = {
     ...DEFAULT_WIKI_FIELD_PRECEDENCE,
-    ...(options.wikiFieldPrecedence ?? {})
+    ...options.wikiFieldPrecedence
   };
 
   const { local, remote } = conflict;
@@ -78,13 +82,13 @@ export function collectConflicts(
   remoteBatch: SyncRecord[],
   options: CollectConflictsOptions = {}
 ): ConflictRecord[] {
-  const remoteById = new Map(remoteBatch.map(record => [record.id, record]));
+  const remoteById = new Map(remoteBatch.map(record => [createRecordKey(record), record]));
   const detectedAt = options.detectedAt ?? new Date().toISOString();
   const policy = options.policy ?? 'lastWriteWins';
   const conflicts: ConflictRecord[] = [];
 
   for (const local of localBatch) {
-    const remote = remoteById.get(local.id);
+    const remote = remoteById.get(createRecordKey(local));
     if (!remote || isRecordEqual(local, remote)) {
       continue;
     }

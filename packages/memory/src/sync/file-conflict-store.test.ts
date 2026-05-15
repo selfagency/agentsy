@@ -77,4 +77,16 @@ describe('createFileConflictStore', () => {
       conflicts: [{ id: 'conflict-1' }]
     });
   });
+
+  it('serializes concurrent saves without losing conflicts', async () => {
+    const filePath = await createStorePath();
+    const store = createFileConflictStore({ filePath });
+
+    await Promise.all([
+      store.save(createConflict('conflict-1', '2026-05-15T10:01:00.000Z')),
+      store.save(createConflict('conflict-2', '2026-05-15T10:02:00.000Z'))
+    ]);
+
+    await expect(store.list()).resolves.toHaveLength(2);
+  });
 });

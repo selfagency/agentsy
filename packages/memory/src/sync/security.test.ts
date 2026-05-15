@@ -4,9 +4,10 @@ import { createSecureSyncErrorEnvelope, redactSyncSecrets, validateCredentialSou
 
 describe('sync security helpers', () => {
   it('redacts secret-like values', () => {
-    const text = 'Bearer sk_live_secret-token and api_key=super-secret';
+    const text = 'Bearer sk_live_secret-token and api_key=super-secret and TURSO_AUTH_TOKEN=abc123xyz';
 
     expect(redactSyncSecrets(text)).not.toContain('sk_live_secret-token');
+    expect(redactSyncSecrets(text)).not.toContain('abc123xyz');
     expect(redactSyncSecrets(text)).toContain('[REDACTED]');
   });
 

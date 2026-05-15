@@ -2,10 +2,14 @@ import type { BackupManifest, BackupManifestInput, SyncRecord } from './types.js
 
 import { computeSyncChecksum } from './integrity.js';
 
+function cloneJsonMetadata<T>(metadata: T): T {
+  return JSON.parse(JSON.stringify(metadata)) as T;
+}
+
 function cloneRecords(records: SyncRecord[]): SyncRecord[] {
   return records.map(record => ({
     ...record,
-    ...(record.metadata === undefined ? {} : { metadata: record.metadata }),
+    ...(record.metadata === undefined ? {} : { metadata: cloneJsonMetadata(record.metadata) }),
     ...(record.relationships === undefined ? {} : { relationships: [...record.relationships] })
   }));
 }

@@ -19,16 +19,33 @@ const INITIAL_SYNC_METRICS: SyncMetrics = {
   conflicts: 0
 };
 
+function createRecordKey(record: Pick<SyncRecord, 'id' | 'tier'>): string {
+  return `${record.tier}:${record.id}`;
+}
+
 function isNonEmptyString(value: string): boolean {
-  return value.trim().length > 0;
+  return /\S/u.test(value);
 }
 
 function hasAuthToken(value: TursoSyncConfig['authToken']): boolean {
-  return typeof value === 'function' || (typeof value === 'string' && isNonEmptyString(value));
+  if (typeof value === 'function') {
+    return true;
+  }
+
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  return isNonEmptyString(value);
 }
 
 function requiresAuthToken(databaseUrl: string): boolean {
-  return !databaseUrl.startsWith('http://localhost') && !databaseUrl.startsWith('http://127.0.0.1');
+  try {
+    const { hostname } = new URL(databaseUrl);
+    return hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '::1';
+  } catch {
+    return true;
+  }
 }
 
 function validateSyncConfig(config: TursoSyncConfig): void {
@@ -48,6 +65,10 @@ function validateSyncConfig(config: TursoSyncConfig): void {
 
   if (!Number.isInteger(config.maxRetries) || config.maxRetries < 0) {
     issues.push('maxRetries');
+  }
+
+  if (config.client === undefined && config.mode !== 'local-only' && !isNonEmptyString(config.path ?? '')) {
+    issues.push('path');
   }
 
   if (config.credentialSource !== undefined) {
@@ -104,16 +125,26 @@ export class TursoManager {
 
   #buildUploadSnapshot(
     localState: SyncSnapshot,
+    remoteState: SyncSnapshot,
     resolvedRecords: SyncRecord[],
     manualConflictIds: Set<string>
   ): SyncSnapshot {
-    const filteredLocal = localState.records.filter(record => !manualConflictIds.has(record.id));
-    const resolvedById = new Map(resolvedRecords.map(record => [record.id, record]));
-    const mergedRecords = filteredLocal.map(record => resolvedById.get(record.id) ?? record);
+    const mergedRecords = new Map(remoteState.records.map(record => [createRecordKey(record), record]));
+
+    for (const record of localState.records) {
+      const key = createRecordKey(record);
+      if (!manualConflictIds.has(key)) {
+        mergedRecords.set(key, record);
+      }
+    }
+
+    for (const record of resolvedRecords) {
+      mergedRecords.set(createRecordKey(record), record);
+    }
 
     return {
       cursor: localState.cursor,
-      records: mergedRecords
+      records: [...mergedRecords.values()]
     };
   }
 
@@ -146,7 +177,7 @@ export class TursoManager {
         const resolution = resolveConflict(conflict, mergePolicy);
         if (resolution.status === 'manual') {
           unresolvedConflicts += 1;
-          manualConflictIds.add(conflict.recordId);
+          manualConflictIds.add(createRecordKey(conflict.local));
           if (this.config.conflictStore) {
             await this.config.conflictStore.save(conflict);
           }
@@ -159,7 +190,9 @@ export class TursoManager {
         }
       }
 
-      const uploadResult = await this.upload(this.#buildUploadSnapshot(localState, resolvedRecords, manualConflictIds));
+      const uploadResult = await this.upload(
+        this.#buildUploadSnapshot(localState, remoteSnapshot, resolvedRecords, manualConflictIds)
+      );
 
       this.#metrics.successes += 1;
       this.#metrics.conflicts += conflicts.length;

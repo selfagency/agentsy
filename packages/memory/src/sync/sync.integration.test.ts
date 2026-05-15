@@ -40,7 +40,9 @@ describe('Phase 2 sync integration', () => {
     });
 
     expect(result.status).toBe('success');
-    expect(remoteRecords[0]?.id).toBe('local-1');
+    expect(remoteRecords).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'remote-1' }), expect.objectContaining({ id: 'local-1' })])
+    );
   });
 
   it('persists unresolved conflicts for manual resolution workflows', async () => {
@@ -101,10 +103,16 @@ describe('Phase 2 sync integration', () => {
       targetDatabaseId: 'agentsy-memory',
       schemaVersion: 1
     });
+    const rollbackSnapshotId = restore.rollbackSnapshotId;
 
     expect(state.records[0]?.id).toBe('record-1');
+    expect(rollbackSnapshotId).toBeDefined();
 
-    await backupManager.rollback(restore.rollbackSnapshotId!);
+    if (!rollbackSnapshotId) {
+      throw new Error('Expected restore to include rollback snapshot id');
+    }
+
+    await backupManager.rollback(rollbackSnapshotId);
     expect(state.records[0]?.id).toBe('record-2');
   });
 

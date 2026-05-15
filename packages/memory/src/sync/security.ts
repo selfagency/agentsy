@@ -1,12 +1,17 @@
 import type { CredentialSource, SecureSyncErrorEnvelope, SecureSyncErrorOptions } from './types.js';
 
-const SECRET_PATTERN =
-  /(sk_[a-z0-9_-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._-]{10,}|libsql:\/\/[^\s:]+:[^@\s]+@)/giu;
+const SECRET_PATTERNS = [
+  /sk_[a-z0-9_-]{8,}/giu,
+  /api[_-]?key\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
+  /(?:auth[_-]?token|turso[_-]?auth[_-]?token|token)\s*[:=]\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/giu,
+  /bearer\s+[a-z0-9._-]{10,}/giu,
+  /libsql:\/\/[^\s:]+:[^@\s]+@/giu
+] as const;
 
 const SAFE_CREDENTIAL_SOURCES = new Set<CredentialSource>(['environment', 'injected']);
 
 export function redactSyncSecrets(value: string): string {
-  return value.replace(SECRET_PATTERN, '[REDACTED]');
+  return SECRET_PATTERNS.reduce((redacted, pattern) => redacted.replace(pattern, '[REDACTED]'), value);
 }
 
 export function validateCredentialSource(source: CredentialSource): void {

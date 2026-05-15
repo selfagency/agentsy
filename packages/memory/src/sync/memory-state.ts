@@ -1,5 +1,5 @@
 import type { RawCapture, VectorEntry, WikiPage } from '../wiki/wiki-manager.js';
-import { computeSyncChecksum } from './integrity.js';
+import { computeSyncChecksum, verifySyncChecksum } from './integrity.js';
 import type { MemorySyncTier, SyncRecord, SyncSnapshot } from './types.js';
 
 export interface MemoryState {
@@ -136,9 +136,15 @@ function deserializeWikiPage(record: SyncRecord): WikiPage {
 
 function deserializeVectorEntry(record: SyncRecord): VectorEntry {
   const parsed = JSON.parse(record.content) as unknown;
+  const embedding = isNumberArray(parsed) ? parsed : [];
+
+  if (record.vectorFingerprint && !verifySyncChecksum(embedding, record.vectorFingerprint)) {
+    throw new Error(`Vector fingerprint mismatch for ${record.id}`);
+  }
+
   return {
     pageId: record.id,
-    embedding: isNumberArray(parsed) ? parsed : []
+    embedding
   };
 }
 

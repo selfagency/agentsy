@@ -38,16 +38,17 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
   async function executeRun(localState?: SyncSnapshot): Promise<SyncRunResult> {
     const state = localState ?? (await options.getLocalState());
     const result = await manager.sync(state);
+    const shouldRetry = result.status === 'error' && consecutiveErrors < options.maxRetries;
 
-    if (result.status === 'error' && consecutiveErrors < options.maxRetries) {
+    if (shouldRetry) {
       consecutiveErrors += 1;
       const retryDelay = Math.min(options.maxDelayMs, options.initialDelayMs * 2 ** consecutiveErrors);
       schedule(options.intervalMs + withJitter(retryDelay, options.jitterRatio ?? 0, random));
-      return result;
+    } else {
+      consecutiveErrors = 0;
+      schedule(withJitter(options.intervalMs, options.jitterRatio ?? 0, random));
     }
 
-    consecutiveErrors = 0;
-    schedule(withJitter(options.intervalMs, options.jitterRatio ?? 0, random));
     return result;
   }
 
@@ -61,7 +62,7 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
       consecutiveErrors = 0;
     },
 
-    async triggerNow() {
+    triggerNow() {
       return executeRun();
     },
 

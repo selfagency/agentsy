@@ -2,6 +2,10 @@ import { createHash } from 'node:crypto';
 
 import type { RemoteValidationResult, SyncRecord, SyncSnapshot } from './types.js';
 
+function cloneJsonValue<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -36,10 +40,12 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
     errors.push('cursor must be a string');
   }
 
-  if (!Array.isArray(payload.records)) {
+  const records = payload.records;
+
+  if (!Array.isArray(records)) {
     errors.push('records must be an array');
   } else {
-    payload.records.forEach((record, index) => {
+    records.forEach((record, index) => {
       if (!isPlainObject(record)) {
         errors.push(`records[${index}] must be an object`);
         return;
@@ -75,6 +81,7 @@ export function cloneSyncSnapshot(snapshot: SyncSnapshot): SyncSnapshot {
     records: snapshot.records.map((record: SyncRecord) => ({
       ...record,
       ...(record.metadata === undefined ? {} : { metadata: record.metadata }),
+      ...(record.metadata === undefined ? {} : { metadata: cloneJsonValue(record.metadata) }),
       ...(record.relationships === undefined ? {} : { relationships: [...record.relationships] })
     }))
   };

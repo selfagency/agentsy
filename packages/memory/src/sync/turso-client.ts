@@ -28,14 +28,19 @@ export interface TursoHttpClientConfig {
   authToken: string | (() => Promise<string>);
 }
 
+async function resolveAuthToken(authToken: TursoHttpClientConfig['authToken']): Promise<string> {
+  return typeof authToken === 'function' ? authToken() : authToken;
+}
+
 class TursoHttpClient implements TursoClient {
   constructor(private readonly config: TursoHttpClientConfig) {}
 
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
+    const authToken = await resolveAuthToken(this.config.authToken);
     const response = await fetch(`${this.config.databaseUrl}/sync/upload`, {
       method: 'POST',
       headers: {
-        authorization: `Bearer ${this.config.authToken}`,
+        authorization: `Bearer ${authToken}`,
         'content-type': 'application/json'
       },
       body: JSON.stringify(snapshot)
@@ -49,9 +54,10 @@ class TursoHttpClient implements TursoClient {
   }
 
   async download(cursor: string): Promise<SyncSnapshot> {
+    const authToken = await resolveAuthToken(this.config.authToken);
     const response = await fetch(`${this.config.databaseUrl}/sync/download?cursor=${encodeURIComponent(cursor)}`, {
       headers: {
-        authorization: `Bearer ${this.config.authToken}`
+        authorization: `Bearer ${authToken}`
       }
     });
 
@@ -203,7 +209,7 @@ class TursoSyncClient implements TursoClient {
 
   async stats(): Promise<Record<string, unknown>> {
     const database = await this.#getDatabase();
-    return (await database.stats()) as unknown as Record<string, unknown>;
+    return database.stats();
   }
 
   async close(): Promise<void> {
@@ -232,5 +238,9 @@ export function createDefaultTursoClient(config: TursoSyncConfig): TursoClient {
     });
   }
 
-  return createNoopTursoClient();
+  if (config.mode === 'local-only') {
+    return createNoopTursoClient();
+  }
+
+  throw new Error('Turso sync path is required unless sync mode is explicitly local-only.');
 }

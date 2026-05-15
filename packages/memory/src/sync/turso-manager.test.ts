@@ -27,7 +27,8 @@ describe('Turso sync foundation', () => {
       databaseUrl: 'libsql://agentsy-memory.turso.io',
       authToken: 'token-value',
       syncIntervalMs: 5_000,
-      maxRetries: 3
+      maxRetries: 3,
+      mode: 'local-only'
     });
 
     expect(manager.getStatus()).toBe('idle');
@@ -81,6 +82,7 @@ describe('Turso sync foundation', () => {
 
   it('tracks successful sync runs from an injected client', async () => {
     const { createTursoManager } = await import('./index.js');
+    let uploadedSnapshot: { cursor: string; records: { id: string; tier: string }[] } | undefined;
 
     const manager = createTursoManager({
       databaseUrl: 'libsql://agentsy-memory.turso.io',
@@ -89,6 +91,10 @@ describe('Turso sync foundation', () => {
       maxRetries: 3,
       client: {
         async upload(snapshot) {
+          uploadedSnapshot = {
+            cursor: snapshot.cursor,
+            records: snapshot.records.map(record => ({ id: record.id, tier: record.tier }))
+          };
           return {
             uploadedCount: snapshot.records.length,
             nextCursor: 'remote-cursor-2'
@@ -124,7 +130,7 @@ describe('Turso sync foundation', () => {
 
     expect(result).toMatchObject({
       status: 'success',
-      uploaded: 1,
+      uploaded: 2,
       downloaded: 1,
       resolvedConflicts: 0,
       unresolvedConflicts: 0,
@@ -137,6 +143,12 @@ describe('Turso sync foundation', () => {
       retries: 0,
       conflicts: 0
     });
+    expect(uploadedSnapshot?.records).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'local-1', tier: 'wiki' }),
+        expect.objectContaining({ id: 'remote-1', tier: 'wiki' })
+      ])
+    );
   });
 
   it('moves to error status and increments failures when the client throws', async () => {

@@ -82,4 +82,17 @@ describe('memory state serialization', () => {
       })
     );
   });
+
+  it('rejects vector snapshots with mismatched fingerprints', () => {
+    const snapshot = serializeMemoryState(createState(), 'cursor-1');
+    const vectorRecord = snapshot.records.find(record => record.tier === 'vector');
+
+    if (!vectorRecord) {
+      throw new Error('Expected vector record in snapshot');
+    }
+
+    vectorRecord.content = JSON.stringify([9, 9, 9]);
+
+    expect(() => deserializeMemoryState(snapshot)).toThrow(/fingerprint mismatch/u);
+  });
 });

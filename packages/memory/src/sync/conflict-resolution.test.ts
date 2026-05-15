@@ -4,31 +4,35 @@ import { collectConflicts, resolveConflict } from './conflict-resolution.js';
 import type { ConflictRecord, SyncRecord } from './types.js';
 
 function createRecord(overrides: Partial<SyncRecord> & Pick<SyncRecord, 'id'>): SyncRecord {
-  return {
+  const baseRecord: SyncRecord = {
     id: overrides.id,
-    tier: overrides.tier ?? 'wiki',
-    updatedAt: overrides.updatedAt ?? '2026-05-15T00:00:00.000Z',
-    content: overrides.content ?? 'value',
-    ...(overrides.metadata === undefined ? {} : { metadata: overrides.metadata }),
-    ...(overrides.relationships === undefined ? {} : { relationships: overrides.relationships }),
-    ...(overrides.vectorFingerprint === undefined ? {} : { vectorFingerprint: overrides.vectorFingerprint })
+    tier: 'wiki',
+    updatedAt: '2026-05-15T00:00:00.000Z',
+    content: 'value'
+  };
+
+  return {
+    ...baseRecord,
+    ...overrides
   };
 }
 
 function createConflict(overrides: Partial<ConflictRecord> = {}): ConflictRecord {
-  const local =
-    overrides.local ?? createRecord({ id: 'page-1', content: 'local', updatedAt: '2026-05-15T00:00:00.000Z' });
-  const remote =
-    overrides.remote ?? createRecord({ id: 'page-1', content: 'remote', updatedAt: '2026-05-15T01:00:00.000Z' });
+  const baseConflict: ConflictRecord = {
+    id: 'conflict-1',
+    recordId: 'page-1',
+    tier: 'wiki',
+    local: createRecord({ id: 'page-1', content: 'local', updatedAt: '2026-05-15T00:00:00.000Z' }),
+    remote: createRecord({ id: 'page-1', content: 'remote', updatedAt: '2026-05-15T01:00:00.000Z' }),
+    detectedAt: '2026-05-15T02:00:00.000Z',
+    policy: 'lastWriteWins'
+  };
 
   return {
-    id: overrides.id ?? 'conflict-1',
-    recordId: overrides.recordId ?? 'page-1',
-    tier: overrides.tier ?? 'wiki',
-    local,
-    remote,
-    detectedAt: overrides.detectedAt ?? '2026-05-15T02:00:00.000Z',
-    policy: overrides.policy ?? 'lastWriteWins'
+    ...baseConflict,
+    ...overrides,
+    local: overrides.local ?? baseConflict.local,
+    remote: overrides.remote ?? baseConflict.remote
   };
 }
 
@@ -56,6 +60,23 @@ describe('collectConflicts', () => {
     const mirrored = createRecord({ id: 'page-1', content: 'same', updatedAt: '2026-05-15T00:00:00.000Z' });
 
     expect(collectConflicts([mirrored], [{ ...mirrored }])).toEqual([]);
+  });
+
+  it('matches records by composite tier and id', () => {
+    const conflicts = collectConflicts(
+      [createRecord({ id: 'page-1', tier: 'wiki', content: 'local wiki' })],
+      [
+        createRecord({ id: 'page-1', tier: 'vector', content: '[0.1,0.2]' }),
+        createRecord({ id: 'page-1', tier: 'wiki', content: 'remote wiki' })
+      ]
+    );
+
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0]).toMatchObject({
+      tier: 'wiki',
+      local: { content: 'local wiki' },
+      remote: { content: 'remote wiki' }
+    });
   });
 });
 

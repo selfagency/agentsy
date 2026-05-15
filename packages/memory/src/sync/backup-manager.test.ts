@@ -84,10 +84,16 @@ describe('createBackupManager', () => {
       targetDatabaseId: 'agentsy-memory',
       schemaVersion: 1
     });
+    const rollbackSnapshotId = restore.rollbackSnapshotId;
 
     expect(current.records[0]?.id).toBe('record-old');
+    expect(rollbackSnapshotId).toBeDefined();
 
-    await manager.rollback(restore.rollbackSnapshotId!);
+    if (!rollbackSnapshotId) {
+      throw new Error('Expected restore to include rollback snapshot id');
+    }
+
+    await manager.rollback(rollbackSnapshotId);
     expect(current.records[0]?.id).toBe('record-new');
   });
 });
