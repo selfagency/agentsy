@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { join } from 'path';
-import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'fs';
+import { join } from 'node:path';
+import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'node:fs';
 import { compressMemoryFile } from './compressMemoryFile.js';
 
 /**
@@ -173,7 +173,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('handles large memory files efficiently', async () => {
     // Create a larger test file
-    const largeContent = SAMPLE_MEMORY_FILE + '\n\n' + SAMPLE_MEMORY_FILE.repeat(5);
+    const largeContent = `${SAMPLE_MEMORY_FILE}\n\n${SAMPLE_MEMORY_FILE.repeat(5)}`;
     writeFileSync(testFile, largeContent, 'utf-8');
 
     const startTime = performance.now();

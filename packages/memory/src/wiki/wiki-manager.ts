@@ -164,11 +164,17 @@ function getHistoryBody(history: Map<string, WikiPageHistoryEntry[]>, pageId: st
   return item.body;
 }
 
+function resolveWikiDependencies(dependencies: WikiManagerDependencies) {
+  return {
+    contentProcessor: dependencies.contentProcessor ?? createContentProcessor(),
+    embeddingEngine: dependencies.embeddingEngine ?? createLocalEmbeddingEngine(),
+    versionTracker: dependencies.versionTracker ?? createVersionTracker(),
+    navigation: dependencies.navigation ?? createNavigationSystem()
+  };
+}
+
 export function createWikiManager(dependencies: WikiManagerDependencies = {}): WikiManager {
-  const contentProcessor = dependencies.contentProcessor ?? createContentProcessor();
-  const embeddingEngine = dependencies.embeddingEngine ?? createLocalEmbeddingEngine();
-  const versionTracker = dependencies.versionTracker ?? createVersionTracker();
-  const navigation = dependencies.navigation ?? createNavigationSystem();
+  const { contentProcessor, embeddingEngine, versionTracker, navigation } = resolveWikiDependencies(dependencies);
 
   const pages = new Map<string, WikiPage>();
   const vectors = new Map<string, VectorEntry>();

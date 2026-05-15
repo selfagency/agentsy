@@ -149,6 +149,16 @@ interface RecommendationInputs {
   availableVram: number;
 }
 
+function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendationCriteria): boolean {
+  if (criteria.requireToolCalling && !model.tool_call) {
+    return false;
+  }
+  if (criteria.minContext !== undefined && model.limit.context < criteria.minContext) {
+    return false;
+  }
+  return true;
+}
+
 function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommendation | null {
   const { entry, criteria, category, modelsDevData, systemCapabilities, availableVram } = inputs;
 
@@ -164,11 +174,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
     return null;
   }
 
-  if (criteria.requireToolCalling && !model.tool_call) {
-    return null;
-  }
-
-  if (criteria.minContext !== undefined && model.limit.context < criteria.minContext) {
+  if (!isEligibleForCriteria(model, criteria)) {
     return null;
   }
 
