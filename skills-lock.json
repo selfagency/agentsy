@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "fallow/skills/fallow/SKILL.md",
       "computedHash": "6b457c906ce5fcd6773e9f6b418d46983c0da3338c514cac5acc9651521af6e9"
+    },
+    "ink-cli": {
+      "source": "AndrewUsher/research-kit-cli",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ink-cli/SKILL.md",
+      "computedHash": "61dd73f4b05daa978f0ff589439cb311bf1c05af9f4642f169e9ab87f25d4f1a"
     }
   }
 }

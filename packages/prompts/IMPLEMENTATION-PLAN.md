@@ -1,4 +1,91 @@
-# @agentsy/prompts Implementation Plan
+---
+goal: @agentsy/prompts production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: prompts-maintainers
+status: In progress
+tags: [feature, architecture, prompts, policy, composition]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/prompts` as the deterministic prompt policy and composition stack.
+
+## 1. Requirements & Constraints
+
+- **REQ-PROMPTS-001**: Prompt composition supports layered precedence (system, workspace, session, slash overrides).
+- **REQ-PROMPTS-002**: Prompt transforms are deterministic and reproducible.
+- **REQ-PROMPTS-003**: Budget-aware truncation/compression integrates with token governance.
+- **REQ-PROMPTS-004**: Prompt provenance and assembly diagnostics are explainable.
+- **SEC-PROMPTS-001**: Untrusted inserted content is sanitized before inclusion.
+- **SEC-PROMPTS-002**: Policy-critical directives remain immutable without explicit override authorization.
+- **CON-PROMPTS-001**: Provider transport concerns remain outside prompts package.
+- **CON-PROMPTS-002**: Memory retrieval ranking logic remains in memory/retrieval packages.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-PROMPTS-001: Contract and precedence stabilization.
+
+| Task             | Description                                                         | Completed | Date |
+| ---------------- | ------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROMPTS-001 | Stabilize prompt layer schema and precedence rules.                 |           |      |
+| TASK-PROMPTS-002 | Add typed tests for deterministic assembly and policy immutability. |           |      |
+| TASK-PROMPTS-003 | Document boundary ownership with runtime/tokens/memory.             |           |      |
+
+### Implementation Phase 2
+
+- GOAL-PROMPTS-002: Core prompt stack implementation.
+
+| Task             | Description                                                         | Completed | Date |
+| ---------------- | ------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROMPTS-004 | Implement composable prompt graph and deterministic merge pipeline. |           |      |
+| TASK-PROMPTS-005 | Implement budget-aware compression/truncation adapters.             |           |      |
+| TASK-PROMPTS-006 | Implement provenance diagnostics and explainability payloads.       |           |      |
+
+### Implementation Phase 3
+
+- GOAL-PROMPTS-003: Integration and operator pathways.
+
+| Task             | Description                                                               | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROMPTS-007 | Integrate runtime request path and slash command prompt controls.         |           |      |
+| TASK-PROMPTS-008 | Add integration tests for policy stack behavior under budget pressure.    |           |      |
+| TASK-PROMPTS-009 | Validate compatibility with memory injection and retrieval context flows. |           |      |
+
+### Implementation Phase 4
+
+- GOAL-PROMPTS-004: Hardening and release gates.
+
+| Task             | Description                                                           | Completed | Date |
+| ---------------- | --------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROMPTS-010 | Add regression suites for composition determinism and safety filters. |           |      |
+| TASK-PROMPTS-011 | Update docs/examples for prompt policy operation.                     |           |      |
+| TASK-PROMPTS-012 | Pass package and monorepo release gates.                              |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-PROMPTS-001**: Prompt assembly is deterministic and test-validated.
+- **ACC-PROMPTS-002**: Runtime integration and budget behavior are verified.
+- **ACC-PROMPTS-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/prompts.md`
+- `packages/prompts/README.md`
+- `packages/prompts/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/prompts Implementation Plan
 
 ## Overview
 
@@ -22,6 +109,9 @@ Create a prompt optimization and agentic pattern management module that integrat
    - Global system prompts storage and retrieval
    - Session-level prompt management
    - Prompt versioning and history tracking
+
+4. **Project-Specific Instructions**
+   Workspace instruction ingestion from repository-local instruction files, layered merge of user defaults/project instructions/session overrides, and structured projection of the active instruction stack for CLI diagnostics.
 
 ### Priority Areas
 
@@ -118,6 +208,18 @@ class PromptStorage {
 }
 ```
 
+### With project/workspace instructions
+
+The prompts package must support a deterministic instruction stack assembled from:
+
+1. built-in/default system prompts
+2. user-level preferences from `~/.agentsy/agentsy.yml`
+3. project-level instructions (`.agents/AGENTS.md`, `.github/copilot-instructions.md`, repo-local instruction/skill assets)
+4. session-level overrides
+5. inline slash-command overrides
+
+The package should expose a merged prompt artifact plus provenance metadata so the CLI can show which project-specific instructions are active.
+
 ## Implementation Tasks
 
 ### Phase 1: Foundation (1-2 days)
@@ -145,6 +247,13 @@ class PromptStorage {
 - [ ] Implement structured prompting
 - [ ] Create system prompt templates library
 - [ ] Add tests for agentic patterns
+
+### Phase 3.5: Project Instruction Layering
+
+- [ ] Implement project instruction ingestion contracts
+- [ ] Add precedence resolution logic for user/project/session overrides
+- [ ] Add provenance metadata for active instruction sources
+- [ ] Add tests for deterministic instruction-stack merging
 
 ### Phase 4: Safety & Guardrails (1-2 days)
 

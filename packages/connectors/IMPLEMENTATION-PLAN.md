@@ -1,4 +1,90 @@
-# @agentsy/connectors — Implementation Plan
+---
+goal: @agentsy/connectors production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: connectors-maintainers
+status: In progress
+tags: [feature, architecture, connectors, channels, integration]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines a production implementation order for `@agentsy/connectors` with explicit constraints, phase gates, and acceptance criteria.
+
+## 1. Requirements & Constraints
+
+- **REQ-CONNECTORS-001**: Connector adapters normalize channel-native events/messages into canonical framework contracts.
+- **REQ-CONNECTORS-002**: Delivery/retry/idempotency behavior is explicit and test-covered per connector.
+- **REQ-CONNECTORS-003**: Connector sessions integrate with `@agentsy/session` durability/resume semantics.
+- **REQ-CONNECTORS-004**: Capability metadata is exposed for runtime/orchestrator policy checks.
+- **SEC-CONNECTORS-001**: Inbound webhooks and signatures are validated before event acceptance.
+- **SEC-CONNECTORS-002**: Connector logs and traces redact channel secrets and sensitive user fields.
+- **CON-CONNECTORS-001**: Channel transport logic remains in connectors, not runtime.
+- **CON-CONNECTORS-002**: Tool/approval policy remains enforced by runtime/guardrails.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-CONNECTORS-001: Stabilize channel contracts and boundaries.
+
+| Task                | Description                                                               | Completed | Date |
+| ------------------- | ------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CONNECTORS-001 | Stabilize adapter interfaces and normalized channel event/message schema. |           |      |
+| TASK-CONNECTORS-002 | Define capability metadata and policy hook integration points.            |           |      |
+| TASK-CONNECTORS-003 | Document boundary ownership vs runtime/session packages.                  |           |      |
+
+### Implementation Phase 2
+
+- GOAL-CONNECTORS-002: Implement core connector capabilities.
+
+| Task                | Description                                                      | Completed | Date |
+| ------------------- | ---------------------------------------------------------------- | --------- | ---- |
+| TASK-CONNECTORS-004 | Finalize first-party adapters and message routing substrate.     |           |      |
+| TASK-CONNECTORS-005 | Implement delivery acknowledgement, retry, and backoff policies. |           |      |
+| TASK-CONNECTORS-006 | Integrate secure credential sourcing through `@agentsy/secrets`. |           |      |
+
+### Implementation Phase 3
+
+- GOAL-CONNECTORS-003: Integrate with runtime/session/observability.
+
+| Task                | Description                                                             | Completed | Date |
+| ------------------- | ----------------------------------------------------------------------- | --------- | ---- |
+| TASK-CONNECTORS-007 | Wire connector lifecycle events into runtime/session orchestration.     |           |      |
+| TASK-CONNECTORS-008 | Add integration tests for multi-channel continuity and reconnect flows. |           |      |
+| TASK-CONNECTORS-009 | Emit connector telemetry with redacted payload guarantees.              |           |      |
+
+### Implementation Phase 4
+
+- GOAL-CONNECTORS-004: Hardening and release gates.
+
+| Task                | Description                                                       | Completed | Date |
+| ------------------- | ----------------------------------------------------------------- | --------- | ---- |
+| TASK-CONNECTORS-010 | Add failure-mode, load, and channel API drift regression tests.   |           |      |
+| TASK-CONNECTORS-011 | Align package docs/examples with shipped connectors.              |           |      |
+| TASK-CONNECTORS-012 | Pass monorepo check-types/test gates with connector suites green. |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-CONNECTORS-001**: Connector contracts and adapter behaviors are documented and test-covered.
+- **ACC-CONNECTORS-002**: Runtime/session integration flows pass end-to-end tests.
+- **ACC-CONNECTORS-003**: Secret handling and redaction requirements are validated.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/IMPLEMENTATION-PRIORITY.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `packages/connectors/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/connectors — Implementation Plan
 
 ## Role in Framework Ecosystem
 

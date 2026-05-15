@@ -1,4 +1,94 @@
-# Tokens Package Implementation Plan — REVISED
+---
+goal: @agentsy/tokens production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: tokens-maintainers
+status: In progress
+tags: [feature, architecture, tokens, budget, compression]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/tokens` as the canonical budget, accounting, and compression authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-TOKENS-001**: Token accounting supports model-aware estimation and usage reconciliation.
+- **REQ-TOKENS-002**: Budget policies enforce hard/soft limits for input/output/context/turn/session.
+- **REQ-TOKENS-003**: Compression/truncation preserves critical instruction content deterministically.
+- **REQ-TOKENS-004**: Runtime/orchestrator integrations fail closed on hard-limit breaches.
+- **REQ-TOKENS-005**: Cost telemetry emits stable metrics for observability and UI surfaces.
+- **SEC-TOKENS-001**: Budget override pathways require explicit authorization.
+- **SEC-TOKENS-002**: Token/cost diagnostics avoid leaking sensitive prompt data.
+- **CON-TOKENS-001**: Budget logic is centralized in tokens package, not duplicated in consumers.
+- **CON-TOKENS-002**: Provider tokenizer quirks are abstracted behind adapters.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-TOKENS-001: Contract stabilization.
+
+| Task            | Description                                                     | Completed | Date |
+| --------------- | --------------------------------------------------------------- | --------- | ---- |
+| TASK-TOKENS-001 | Stabilize accounting/budget contract schema and error taxonomy. |           |      |
+| TASK-TOKENS-002 | Add typed tests for hard/soft limit policy behavior.            |           |      |
+| TASK-TOKENS-003 | Document package boundaries with runtime/orchestrator/core.     |           |      |
+
+### Implementation Phase 2
+
+- GOAL-TOKENS-002: Core accounting and compression implementation.
+
+| Task            | Description                                                        | Completed | Date |
+| --------------- | ------------------------------------------------------------------ | --------- | ---- |
+| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. |           |      |
+| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  |           |      |
+| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       |           |      |
+
+### Implementation Phase 3
+
+- GOAL-TOKENS-003: Integration and enforcement validation.
+
+| Task            | Description                                                                          | Completed | Date |
+| --------------- | ------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-TOKENS-007 | Integrate runtime/orchestrator enforcement middleware and fallback behavior.         |           |      |
+| TASK-TOKENS-008 | Add integration tests for budget rejection/downscoping and policy override handling. |           |      |
+| TASK-TOKENS-009 | Validate observability/CLI/UI metric wiring.                                         |           |      |
+
+### Implementation Phase 4
+
+- GOAL-TOKENS-004: Hardening and release gates.
+
+| Task            | Description                                                             | Completed | Date |
+| --------------- | ----------------------------------------------------------------------- | --------- | ---- |
+| TASK-TOKENS-010 | Add perf/benchmark regressions for accounting and compression pathways. |           |      |
+| TASK-TOKENS-011 | Update docs/examples and operator budget guidance.                      |           |      |
+| TASK-TOKENS-012 | Pass package and monorepo release gates.                                |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-TOKENS-001**: Budget enforcement and accounting behavior are deterministic and test-validated.
+- **ACC-TOKENS-002**: Runtime/orchestrator integrations pass end-to-end tests.
+- **ACC-TOKENS-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `plan/feature-memory-token-reduction-phase0-1.md`
+- `docs/packages/tokens.md`
+- `packages/tokens/README.md`
+- `packages/tokens/TOON-INSIGHTS.md`
+- `packages/tokens/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## Tokens Package Implementation Plan — REVISED
 
 ## Executive Summary
 

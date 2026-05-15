@@ -1,4 +1,91 @@
-# @agentsy/scripts — Implementation Plan
+---
+goal: @agentsy/scripts production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: scripts-maintainers
+status: In progress
+tags: [feature, architecture, scripts, automation, release]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/scripts` as the automation and release operations package.
+
+## 1. Requirements & Constraints
+
+- **REQ-SCRIPTS-001**: Scripts cover bootstrap, build, test, lint, release, and maintenance workflows.
+- **REQ-SCRIPTS-002**: CI-targeted scripts are deterministic and non-interactive.
+- **REQ-SCRIPTS-003**: Release automation aligns with versioning/changelog workflows.
+- **REQ-SCRIPTS-004**: Script entrypoints and prerequisites are documented.
+- **SEC-SCRIPTS-001**: Publish/release scripts validate credentials/targets before mutation.
+- **SEC-SCRIPTS-002**: Destructive maintenance actions require explicit confirmation flags.
+- **CON-SCRIPTS-001**: Scripts package is dev/CI-only and not imported into runtime paths.
+- **CON-SCRIPTS-002**: Avoid duplicating logic already exposed by package APIs.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-SCRIPTS-001: Contract and command inventory stabilization.
+
+| Task             | Description                                                  | Completed | Date |
+| ---------------- | ------------------------------------------------------------ | --------- | ---- |
+| TASK-SCRIPTS-001 | Audit script entrypoints and normalize command taxonomy.     |           |      |
+| TASK-SCRIPTS-002 | Define non-interactive CI contracts and exit-code semantics. |           |      |
+| TASK-SCRIPTS-003 | Document script boundaries and ownership.                    |           |      |
+
+### Implementation Phase 2
+
+- GOAL-SCRIPTS-002: Core automation implementation.
+
+| Task             | Description                                                 | Completed | Date |
+| ---------------- | ----------------------------------------------------------- | --------- | ---- |
+| TASK-SCRIPTS-004 | Implement/refresh build-test-release script pipelines.      |           |      |
+| TASK-SCRIPTS-005 | Add guardrails for destructive and publish operations.      |           |      |
+| TASK-SCRIPTS-006 | Add script configuration validation and diagnostics output. |           |      |
+
+### Implementation Phase 3
+
+- GOAL-SCRIPTS-003: CI and monorepo integration.
+
+| Task             | Description                                                          | Completed | Date |
+| ---------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-SCRIPTS-007 | Integrate script package with CI workflows and release jobs.         |           |      |
+| TASK-SCRIPTS-008 | Add integration tests for release dry-run and publish safety checks. |           |      |
+| TASK-SCRIPTS-009 | Validate cross-platform script compatibility.                        |           |      |
+
+### Implementation Phase 4
+
+- GOAL-SCRIPTS-004: Hardening and release gates.
+
+| Task             | Description                                                             | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------- | --------- | ---- |
+| TASK-SCRIPTS-010 | Add regression/perf checks for script reliability and failure handling. |           |      |
+| TASK-SCRIPTS-011 | Update docs for contributor and release-operator workflows.             |           |      |
+| TASK-SCRIPTS-012 | Pass monorepo release gates with scripts package checks green.          |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-SCRIPTS-001**: Script workflows are deterministic and CI-safe.
+- **ACC-SCRIPTS-002**: Release automation safety checks are validated.
+- **ACC-SCRIPTS-003**: Docs and release gates are complete.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/IMPLEMENTATION-PRIORITY.md`
+- `docs/packages/scripts.md`
+- `packages/scripts/README.md`
+- `packages/scripts/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/scripts — Implementation Plan
 
 ## Role in Framework Ecosystem
 

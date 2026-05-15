@@ -1,4 +1,91 @@
-# @agentsy/testing — Implementation Plan
+---
+goal: @agentsy/testing production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: testing-maintainers
+status: In progress
+tags: [feature, architecture, testing, fixtures, e2e]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/testing` as shared quality infrastructure for package and system workflows.
+
+## 1. Requirements & Constraints
+
+- **REQ-TESTING-001**: Shared fixtures support providers/runtime/tools/orchestrator/memory/session integration tests.
+- **REQ-TESTING-002**: Harness supports deterministic and probabilistic scenario modes.
+- **REQ-TESTING-003**: E2E helpers support CLI and non-CLI surfaces with stable assertions.
+- **REQ-TESTING-004**: Golden/snapshot outputs are versioned and documented.
+- **SEC-TESTING-001**: Test data is synthetic/scrubbed and free of real secrets.
+- **SEC-TESTING-002**: Adversarial scenarios execute in isolated test boundaries.
+- **CON-TESTING-001**: Package-specific business logic assertions stay in owning packages.
+- **CON-TESTING-002**: Testing package exposes reusable primitives, not product runtime logic.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-TESTING-001: Harness contract stabilization.
+
+| Task             | Description                                                               | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                   |           |      |
+| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls. |           |      |
+| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                 |           |      |
+
+### Implementation Phase 2
+
+- GOAL-TESTING-002: Core testing infrastructure completion.
+
+| Task             | Description                                                          | Completed | Date |
+| ---------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-TESTING-004 | Implement shared mock providers/tools and scenario runner utilities. |           |      |
+| TASK-TESTING-005 | Implement snapshot/golden management helpers and update workflow.    |           |      |
+| TASK-TESTING-006 | Implement red-team/adversarial fixture sets and safety checks.       |           |      |
+
+### Implementation Phase 3
+
+- GOAL-TESTING-003: Cross-package integration.
+
+| Task             | Description                                                                   | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TESTING-007 | Integrate package-level suites for runtime/orchestrator/memory/retrieval/CLI. |           |      |
+| TASK-TESTING-008 | Add CI-focused deterministic pipelines and flake detection handling.          |           |      |
+| TASK-TESTING-009 | Validate multi-surface test parity outputs.                                   |           |      |
+
+### Implementation Phase 4
+
+- GOAL-TESTING-004: Hardening and release gates.
+
+| Task             | Description                                                        | Completed | Date |
+| ---------------- | ------------------------------------------------------------------ | --------- | ---- |
+| TASK-TESTING-010 | Add performance/stress harness support for long-running scenarios. |           |      |
+| TASK-TESTING-011 | Update docs for contributors and test-author workflows.            |           |      |
+| TASK-TESTING-012 | Pass package and monorepo release gates.                           |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-TESTING-001**: Shared harness behavior is stable and package-consumer validated.
+- **ACC-TESTING-002**: CI reliability and deterministic-mode requirements are met.
+- **ACC-TESTING-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/testing.md`
+- `packages/testing/README.md`
+- `packages/testing/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/testing — Implementation Plan
 
 ## Role in Framework Ecosystem
 

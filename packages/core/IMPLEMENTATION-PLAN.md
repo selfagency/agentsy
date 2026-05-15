@@ -1,4 +1,95 @@
-# @agentsy/core — Implementation Plan
+---
+goal: @agentsy/core production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: core-maintainers
+status: In progress
+tags: [feature, architecture, core, streaming, contracts]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the canonical production implementation order for `@agentsy/core` as the stream-processing contract layer.
+
+## 1. Requirements & Constraints
+
+- **REQ-CORE-001**: Provider-native outputs normalize into stable chunk/event contracts.
+- **REQ-CORE-002**: Processor pipeline preserves ordering for interleaved text/thinking/tool streams.
+- **REQ-CORE-003**: Error surfaces remain typed and actionable for runtime/orchestrator recovery.
+- **REQ-CORE-004**: Context assembly interfaces support deterministic, budget-aware composition.
+- **SEC-CORE-001**: Untrusted model/provider content is treated as data and sanitized at boundaries.
+- **SEC-CORE-002**: Core processing does not execute embedded content.
+- **CON-CORE-001**: Orchestration strategy remains in `@agentsy/orchestrator`, not core.
+- **CON-CORE-002**: UI/rendering concerns remain in `@agentsy/renderers` and surface packages.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-CORE-001: Contract stabilization.
+
+| Task          | Description                                                          | Completed | Date |
+| ------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-CORE-001 | Freeze normalized chunk/event type contracts and adapter boundaries. |           |      |
+| TASK-CORE-002 | Add compile-time snapshots for processor and normalizer interfaces.  |           |      |
+| TASK-CORE-003 | Document ownership boundaries in package docs and exports map.       |           |      |
+
+### Implementation Phase 2
+
+- GOAL-CORE-002: Core module completion.
+
+| Task          | Description                                                                       | Completed | Date |
+| ------------- | --------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CORE-004 | Finalize adapters/normalizers/processor behavior for canonical stream conversion. |           |      |
+| TASK-CORE-005 | Complete deterministic context assembly and compression integration seams.        |           |      |
+| TASK-CORE-006 | Implement typed error taxonomy and recovery signals.                              |           |      |
+
+### Implementation Phase 3
+
+- GOAL-CORE-003: Cross-package integration.
+
+| Task          | Description                                                                     | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CORE-007 | Validate runtime/orchestrator/provider integration through end-to-end tests.    |           |      |
+| TASK-CORE-008 | Add compatibility tests for renderer and UI consumers of normalized events.     |           |      |
+| TASK-CORE-009 | Ensure token/memory/session boundaries are respected in context assembly flows. |           |      |
+
+### Implementation Phase 4
+
+- GOAL-CORE-004: Hardening and release readiness.
+
+| Task          | Description                                                          | Completed | Date |
+| ------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-CORE-010 | Add regression/performance suites for stream correctness under load. |           |      |
+| TASK-CORE-011 | Update docs for stable APIs and migration notes.                     |           |      |
+| TASK-CORE-012 | Pass monorepo release gates with core suites green.                  |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-CORE-001**: Stream contracts are stable and validated by tests.
+- **ACC-CORE-002**: Integration flows pass for runtime/orchestrator/provider pipelines.
+- **ACC-CORE-003**: Release gates pass (`pnpm check-types`, `pnpm test`).
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/IMPLEMENTATION-PRIORITY.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/adapters.md`
+- `docs/packages/normalizers.md`
+- `docs/packages/processor.md`
+- `docs/packages/context.md`
+- `packages/core/README.md`
+- `packages/core/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/core — Implementation Plan
 
 ## Role in Framework Ecosystem
 

@@ -1,4 +1,91 @@
-# @agentsy/guardrails — Implementation Plan
+---
+goal: @agentsy/guardrails production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: guardrails-maintainers
+status: In progress
+tags: [feature, architecture, guardrails, safety, policy]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/guardrails` as the canonical policy enforcement layer.
+
+## 1. Requirements & Constraints
+
+- **REQ-GUARDRAILS-001**: Guardrail engine supports composable input/output/tool/retrieval/memory policy checks.
+- **REQ-GUARDRAILS-002**: Policy decisions are deterministic and explainable via reason codes.
+- **REQ-GUARDRAILS-003**: Runtime integration supports allow/block/transform/escalate outcomes.
+- **REQ-GUARDRAILS-004**: Policy traces and audit receipts are emitted for enforcement actions.
+- **SEC-GUARDRAILS-001**: High-impact action pathways fail closed when policy resolution is unavailable.
+- **SEC-GUARDRAILS-002**: Policy traces redact secret/sensitive fields.
+- **CON-GUARDRAILS-001**: Enforcement logic remains centralized in guardrails package.
+- **CON-GUARDRAILS-002**: Execution orchestration remains runtime/orchestrator responsibility.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-GUARDRAILS-001: Policy contract stabilization.
+
+| Task                | Description                                                          | Completed | Date |
+| ------------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-GUARDRAILS-001 | Finalize policy schema, decision envelope, and reason code taxonomy. |           |      |
+| TASK-GUARDRAILS-002 | Add deterministic evaluation contract tests and fixture sets.        |           |      |
+| TASK-GUARDRAILS-003 | Align package boundaries with runtime/tools/retrieval consumers.     |           |      |
+
+### Implementation Phase 2
+
+- GOAL-GUARDRAILS-002: Core policy implementation.
+
+| Task                | Description                                                                        | Completed | Date |
+| ------------------- | ---------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-GUARDRAILS-004 | Implement layered policy evaluators for prompt, tool, retrieval, and output flows. |           |      |
+| TASK-GUARDRAILS-005 | Implement transform/redact and escalation pathways.                                |           |      |
+| TASK-GUARDRAILS-006 | Add local-first policy-pack loading and version checks.                            |           |      |
+
+### Implementation Phase 3
+
+- GOAL-GUARDRAILS-003: Cross-package integration.
+
+| Task                | Description                                                            | Completed | Date |
+| ------------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| TASK-GUARDRAILS-007 | Integrate runtime hook points and tool/retrieval authorization checks. |           |      |
+| TASK-GUARDRAILS-008 | Add red-team and adversarial scenario coverage via testing package.    |           |      |
+| TASK-GUARDRAILS-009 | Validate observability/audit trace completeness for policy actions.    |           |      |
+
+### Implementation Phase 4
+
+- GOAL-GUARDRAILS-004: Hardening and release gates.
+
+| Task                | Description                                                      | Completed | Date |
+| ------------------- | ---------------------------------------------------------------- | --------- | ---- |
+| TASK-GUARDRAILS-010 | Add regression suites for policy drift detection.                |           |      |
+| TASK-GUARDRAILS-011 | Update policy docs and operator guidance.                        |           |      |
+| TASK-GUARDRAILS-012 | Pass release gates and security checks for production promotion. |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-GUARDRAILS-001**: Deterministic policy outcomes are test-validated.
+- **ACC-GUARDRAILS-002**: Runtime integration and audit tracing are complete.
+- **ACC-GUARDRAILS-003**: Security and release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/IMPLEMENTATION-PRIORITY.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `packages/guardrails/README.md`
+- `packages/guardrails/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/guardrails — Implementation Plan
 
 ## Purpose
 

@@ -96,6 +96,8 @@ Current exports from providers include:
 
 Agentsy should stay adapter-first: use proven external projects as interoperability and durability references, but keep the core package boundaries internal and explicit.
 
+Any package that is valuable outside the framework must also behave as a reusable library: it should expose a stable, framework-agnostic public API, typed entry points, and documentation/examples that let external projects consume it without depending on CLI or host-specific internals.
+
 **NEW Ecosystem Analysis Findings (2026-05-14):**
 
 #### A) Packages to Use Instead of Building (Bundle Strategy)
@@ -174,6 +176,11 @@ Local automodel selection should prefer a single stable API endpoint when it imp
 - **Schema-first secrets** (Varlock): Agents receive schema, not raw secrets
 - **Preview-first execution** (Stagehand): Show tool effects before execution
 - **Tree-sitter tools** (Maki): Efficient code analysis (59 token cost vs 224 token reads)
+- **Spec-first workflow** (Superpowers, gstack, Sisyphus): think/plan/build/review/test/ship as explicit gated phases
+- **Category-based delegation** (oh-my-openagent): route work by semantic mode/category rather than hardcoded vendor personas
+- **Iterative research loops** (local-deep-researcher, local-deep-research): search → summarize → reflect → re-search with citations and configurable strategies
+- **Planner/conductor/worker separation** (Sisyphus): keep planning and orchestration responsibilities distinct from execution workers
+- **Optional computer-use substrate** (Agent-S): grounding/reflection/computer-use should be pluggable capability, not required for normal coding flows
 
 #### C) Standards/Frameworks to Embrace
 
@@ -188,6 +195,34 @@ Local automodel selection should prefer a single stable API endpoint when it imp
 - **Ratify** - Identity and trust infrastructure (NEW)
 - **Skills Protocol** - Modular capability framework (NEW)
 - **AP2** - Payment protocol (domain-specific, NEW)
+
+#### C.1) First-party superagents plugin strategy (NEW)
+
+Agentsy should not ship third-party named agent packs such as Caveman, Superpowers, or Garry's mode as canonical built-ins. Instead, it should ship a **first-party official superagents plugin** that is installable like any external plugin, but prepackaged with `@agentsy/cli` for zero-config usage.
+
+Canonical shape:
+
+- distribution model: standard plugin registry/discovery path, independently installable, bundled by default in CLI
+- mode set:
+  - `research` — iterative retrieval, synthesis, citation, source strategy selection, and gap detection
+  - `plan` — interview-driven clarification, architecture review, implementation-plan generation, and explicit approval gates
+  - `agent` — execution mode combining investigation discipline, review/test gates, completion enforcement, and safe shipping workflows
+- picker UX: mode discovery must include bundled modes plus user/project-installed modes from `~/.agents`, project `.agents`, and `~/.config/agentsy`
+
+Pattern sources to adapt rather than rebrand:
+
+- `minds-platform`: deploy-anywhere platform mindset; automation + retrieval as dual foundations
+- `Agent-S`: optional grounding, reflection, and computer-use execution patterns
+- `local-deep-researcher` and `local-deep-research`: configurable research strategies, iterative loops, and citation-heavy outputs
+- `superpowers`: spec-first workflow, TDD discipline, and subagent-driven execution methodology
+- `oh-my-openagent` and Sisyphus: planner/conductor/worker separation, category-based delegation, background specialists, and continuation enforcement
+- `gstack`: think → plan → build → review → test → ship → reflect pipeline, checkpointing, QA/review/ship specialization, and multi-host skill distribution
+
+Harness decision:
+
+- Do **not** adopt `oh-my-openagent` wholesale as the Agentsy runtime harness.
+- Do adopt its strongest orchestration and specialization patterns within Agentsy's own `plugins`, `orchestrator`, `runtime`, and `renderers` boundaries.
+- Keep the official superagents plugin host-neutral so it works in Agentsy first and remains reusable by any compatible external host.
 
 **Legacy Standards:**
 
@@ -229,6 +264,39 @@ interface ExternalIntegrationLayer {
   };
 }
 ```
+
+### 2.3 Public API posture matrix
+
+Packages below are classified by whether they should expose a reusable, framework-agnostic external API.
+
+| Package                  | API posture                               | Notes                                                                                             |
+| ------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `@agentsy/core`          | External API required                     | Core stream/context primitives must remain consumable by non-CLI hosts.                           |
+| `@agentsy/connectors`    | External API required                     | Bridge/adaptation layer should be reusable by other runtimes and integrations.                    |
+| `@agentsy/guardrails`    | External API required                     | Policy enforcement must be importable outside the CLI.                                            |
+| `@agentsy/mcp`           | External API required                     | Server/client integration surface is inherently external-facing.                                  |
+| `@agentsy/memory`        | External API required                     | Memory capture, retrieval, and reuse are library concerns as well as framework concerns.          |
+| `@agentsy/models`        | External API required                     | Selection/ranking/catalog APIs should be reusable by other apps.                                  |
+| `@agentsy/observability` | External API required                     | Tracing/redaction/event helpers should be consumable by other projects.                           |
+| `@agentsy/orchestrator`  | External API required                     | Planning and policy APIs should be available to alternate hosts.                                  |
+| `@agentsy/plugins`       | External API required                     | Registry/manifests/capability filtering are designed for reuse.                                   |
+| `@agentsy/prompts`       | External API required                     | Deterministic prompt composition helpers must be importable independently.                        |
+| `@agentsy/providers`     | External API required                     | Protocol adapters are a primary integration boundary.                                             |
+| `@agentsy/renderers`     | External API required                     | Ink/rendering components should be reusable by other terminal apps.                               |
+| `@agentsy/retrieval`     | External API required                     | Retrieval adapters and query interfaces should be importable directly.                            |
+| `@agentsy/runtime`       | External API required                     | Execution policy/runtime orchestration should be host-agnostic.                                   |
+| `@agentsy/secrets`       | External API required                     | Secrets lifecycle helpers should be reusable by other hosts.                                      |
+| `@agentsy/session`       | External API required                     | Persistence/resume state models should be available to other integrations.                        |
+| `@agentsy/tokens`        | External API required                     | Token accounting and budget policy helpers are cross-host utilities.                              |
+| `@agentsy/tools`         | External API required                     | Tool schemas/registry contracts should be reusable outside the CLI.                               |
+| `@agentsy/types`         | External API required                     | Shared contracts are the foundation of external consumption.                                      |
+| `@agentsy/ui`            | External API required                     | Shared UI state/contracts should be consumable by other surfaces.                                 |
+| `@agentsy/cli`           | Host surface / no external API commitment | Primary product shell; may export narrow helpers, but external reuse is not the default contract. |
+| `@agentsy/scripts`       | Host-only/private                         | Operational scripts are not a public library surface.                                             |
+| `@agentsy/testing`       | Host-only/private                         | Test utilities stay private unless explicitly promoted.                                           |
+| `@agentsy/vscode`        | Host surface / integration package        | Extension integration surface; public API only if needed for editor-side composition.             |
+
+Planned package domains (`packages/connectors`, `packages/guardrails`, `packages/mcp`, `packages/retrieval`) should inherit the same rule once promoted to manifest-bearing workspaces.
 
 #### E) Implementation Priority Phases
 

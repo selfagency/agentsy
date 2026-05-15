@@ -1,4 +1,91 @@
-# @agentsy/models — Implementation Plan
+---
+goal: @agentsy/models production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: models-maintainers
+status: In progress
+tags: [feature, architecture, models, selection, routing]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/models` as model catalog and recommendation authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-MODELS-001**: Model catalog normalization includes capabilities, limits, pricing, and context metadata.
+- **REQ-MODELS-002**: Selection/ranking pipeline is deterministic and explainable.
+- **REQ-MODELS-003**: Local provider probing surfaces health/status metadata for chooser workflows.
+- **REQ-MODELS-004**: Selection outputs integrate with CLI slash/chooser flows and orchestration policy.
+- **SEC-MODELS-001**: Probe and catalog telemetry redacts private endpoints and secret-bearing fields.
+- **SEC-MODELS-002**: Untrusted metadata updates are validated before merge.
+- **CON-MODELS-001**: Transport/protocol handling remains in `@agentsy/providers`.
+- **CON-MODELS-002**: Runtime execution policy remains outside model selection logic.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-MODELS-001: Contract stabilization.
+
+| Task            | Description                                                                    | Completed | Date |
+| --------------- | ------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-MODELS-001 | Stabilize model/profile/capability contracts and recommendation output schema. |           |      |
+| TASK-MODELS-002 | Add typed tests for deterministic ranking and override precedence.             |           |      |
+| TASK-MODELS-003 | Document boundaries with providers/runtime/orchestrator/CLI.                   |           |      |
+
+### Implementation Phase 2
+
+- GOAL-MODELS-002: Core model intelligence completion.
+
+| Task            | Description                                                            | Completed | Date |
+| --------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| TASK-MODELS-004 | Finalize model catalog ingestion, enrichment, and normalization logic. |           |      |
+| TASK-MODELS-005 | Implement local-first recommendation and capability filtering paths.   |           |      |
+| TASK-MODELS-006 | Implement provider probing and health signal ingestion.                |           |      |
+
+### Implementation Phase 3
+
+- GOAL-MODELS-003: Integration and UX composition.
+
+| Task            | Description                                                            | Completed | Date |
+| --------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| TASK-MODELS-007 | Integrate chooser/search-select-refine flows with CLI/renderers.       |           |      |
+| TASK-MODELS-008 | Validate provider bridge and fallback metadata integration.            |           |      |
+| TASK-MODELS-009 | Add integration tests for deterministic route recommendation outcomes. |           |      |
+
+### Implementation Phase 4
+
+- GOAL-MODELS-004: Hardening and release gates.
+
+| Task            | Description                                                    | Completed | Date |
+| --------------- | -------------------------------------------------------------- | --------- | ---- |
+| TASK-MODELS-010 | Add regression/performance suites for catalog/scoring updates. |           |      |
+| TASK-MODELS-011 | Align docs/examples and operator guidance.                     |           |      |
+| TASK-MODELS-012 | Pass package and monorepo release gates.                       |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-MODELS-001**: Selection/ranking behavior is deterministic and test-validated.
+- **ACC-MODELS-002**: CLI/provider integrations are production-ready and documented.
+- **ACC-MODELS-003**: Release gates pass with models suites green.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `packages/models/IMPLEMENTATION-PLAN.md`
+- `packages/models/src/types.ts`
+- `packages/models/src/local-recommendation.test.ts`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/models — Implementation Plan
 
 Last updated: 2026-05-15
 
@@ -241,6 +328,32 @@ Recommendation criteria should combine:
 4. freshness (recent updates)
 5. deployment fit (local availability + artifact compatibility)
 
+### 5.1) CLI search/select/refine support contracts (NEW)
+
+The models package must expose query and refinement contracts specifically designed for Ink-based chooser workflows in `@agentsy/cli`.
+
+```ts
+export interface ModelSearchQuery {
+  text?: string;
+  providerIds?: string[];
+  preferLocal?: boolean;
+  supportsTools?: boolean;
+  supportsStreaming?: boolean;
+  supportsEmbeddings?: boolean;
+  maxPricePer1mInputUsd?: number;
+  minContextWindow?: number;
+}
+
+export interface ModelRefinementRequest {
+  baseSelectionId?: string;
+  tighten?: Array<'cost' | 'latency' | 'quality' | 'privacy' | 'tooling'>;
+  relax?: Array<'cost' | 'latency' | 'quality' | 'privacy' | 'tooling'>;
+  task?: RecommendationCriteria['task'];
+}
+```
+
+These APIs must return explainable ranking reasons so the CLI can show "why this model" and "why not this one" in selection/refinement panes.
+
 ```ts
 export interface RecommendationCriteria {
   task: 'coding' | 'math' | 'writing' | 'general' | 'multimodal';
@@ -316,6 +429,7 @@ The models package must never decide how to spawn the process or manage the upst
 5. **Performance tests** for selection latency (<100ms on warm cache).
 6. **Recommendation quality tests** (criteria-based ranking stability).
 7. **Acquisition planning tests** (Hugging Face/Ollama/open-provider fetch plan generation).
+8. **Chooser contract tests** for search/select/refine APIs consumed by Ink model-picker components.
 
 ## Export Surface (target)
 

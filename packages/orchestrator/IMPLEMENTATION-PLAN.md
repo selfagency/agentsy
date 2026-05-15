@@ -1,4 +1,96 @@
-# @agentsy/orchestrator — Implementation Plan
+---
+goal: @agentsy/orchestrator production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: orchestrator-maintainers
+status: In progress
+tags: [feature, architecture, orchestrator, planning, autonomy]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/orchestrator` as the multi-step planning and execution-mode authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-ORCH-001**: Orchestrator supports explicit execution modes (single, orchestrated, constrained autonomous).
+- **REQ-ORCH-002**: Plan/act loops are token-budget-aware and fail safely when limits are exceeded.
+- **REQ-ORCH-003**: Task-board semantics support durable backend options and deterministic recovery.
+- **REQ-ORCH-004**: Slash-command interception and mode controls are policy-aware and explainable.
+- **REQ-ORCH-005**: Orchestrator must consume plugin-defined agent modes (including official superagents `research`, `plan`, and `agent`) through stable mode contracts rather than hardcoded internal personas.
+- **SEC-ORCH-001**: Autonomous mode requires explicit policy profile and hard ceilings.
+- **SEC-ORCH-002**: Decision traces preserve explainability without exposing secrets.
+- **CON-ORCH-001**: Concrete tool execution remains in runtime/tools.
+- **CON-ORCH-002**: Provider protocol adaptation remains in providers/core.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-ORCH-001: Strategy contract stabilization.
+
+| Task          | Description                                                              | Completed | Date |
+| ------------- | ------------------------------------------------------------------------ | --------- | ---- |
+| TASK-ORCH-001 | Finalize planner/strategy interfaces and execution-mode contract schema. |           |      |
+| TASK-ORCH-002 | Stabilize task-board and persistence abstraction boundaries.             |           |      |
+| TASK-ORCH-003 | Document orchestration ownership vs runtime/tools boundaries.            |           |      |
+
+### Implementation Phase 2
+
+- GOAL-ORCH-002: Core orchestration implementation.
+
+| Task          | Description                                                                                                                                            | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-ORCH-004 | Implement deterministic plan/act loops with guardrail/budget checkpoints.                                                                              |           |      |
+| TASK-ORCH-005 | Implement mode profiles and fallback/downgrade behavior.                                                                                               |           |      |
+| TASK-ORCH-006 | Finalize task persistence and scheduling/backoff semantics.                                                                                            |           |      |
+| TASK-ORCH-013 | Add mode-contract support for plugin-supplied `research`, `plan`, and `agent` supermodes with deterministic handoff points between plan and execution. |           |      |
+
+### Implementation Phase 3
+
+- GOAL-ORCH-003: Integration and operator controls.
+
+| Task          | Description                                                                  | Completed | Date |
+| ------------- | ---------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-007 | Integrate CLI/runtime slash controls and mode telemetry events.              |           |      |
+| TASK-ORCH-008 | Add integration tests for budget rejection, downscoping, and fallback paths. |           |      |
+| TASK-ORCH-009 | Validate observability and session interaction coverage.                     |           |      |
+
+### Implementation Phase 4
+
+- GOAL-ORCH-004: Hardening and release gates.
+
+| Task          | Description                                                                     | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-010 | Add regressions for autonomy safety, persistence recovery, and race conditions. |           |      |
+| TASK-ORCH-011 | Align docs and custom-agent guidance with shipped behavior.                     |           |      |
+| TASK-ORCH-012 | Pass package and monorepo release gates.                                        |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-ORCH-001**: Execution-mode semantics and planner outcomes are deterministic and test-validated.
+- **ACC-ORCH-002**: Runtime/CLI integration and budget safety checks pass.
+- **ACC-ORCH-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/IMPLEMENTATION-PRIORITY.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `plan/feature-advanced-capabilities-phase4-1.md`
+- `packages/orchestrator/README.md`
+- `packages/orchestrator/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/orchestrator — Implementation Plan
+
+> Update: the older Caveman/Superpowers/Garry's-mode concept below is superseded by a first-party official superagents plugin distributed through `@agentsy/plugins` and bundled by `@agentsy/cli`. Preserve the methodology ideas; do not keep those third-party brands as canonical product modes.
 
 ## Custom Agent Modes — `@agentsy/orchestrator/agents`
 
@@ -818,10 +910,21 @@ Instead of creating a standalone `@agentsy/scheduler` package, scheduler capabil
 - Support task types: `once`, `recurring`, `immediate`.
 - Deterministic task IDs via UUID v5 from canonical fingerprint (`taskName + ownerId + scheduleSignature`) for idempotent scheduling.
 - Persist tasks before returning from `schedule()`; on restart, restore pending tasks and re-register.
+- Prefer a local SQLite-backed store when available, using honker queue and time-trigger scheduling primitives as the execution substrate.
+- Expose consumer-selectable persistence backends: honker/SQLite (preferred local-first), PostgreSQL, and plaintext/file-backed local storage.
+- Expose consumer-selectable scheduling drivers: honker time-trigger scheduling (preferred when available), cron-compatible scheduling, and in-process immediate/interval fallback.
 - Run each scheduled task as isolated `createAgentLoop` invocation with fresh context.
 - Enforce execution timeout (default 5m), retry policy (default 3), and task suspension after retry exhaustion.
 - Expose scheduler tools for MCP/local registration: `schedule_task`, `cancel_task`, `list_tasks`.
 - Enforce cron-expression validation and prompt sanitization before execution.
+
+### Scheduler ownership clarification
+
+- `@agentsy/orchestrator` owns task semantics, task state machine, dependency graph, checklist/todo state, and lane/circuit-breaker policy.
+- honker/SQLite provides durable queueing, locking, retries, and time-trigger scheduling when available.
+- If honker/SQLite is unavailable, orchestrator may fall back to PostgreSQL-backed persistence or a plaintext/file local mode with reduced concurrency guarantees.
+- Cron-compatible scheduling should be treated as a driver option beneath orchestrator policy, not a separate task-manager owner.
+- Remote sync must remain optional; the authoritative scheduler path is local-first.
 
 ### Additional requirements integrated
 
@@ -839,6 +942,14 @@ packages/orchestrator/src/scheduler/
   scheduler.ts
   runner.ts
   tools.ts
+  backends/
+    sqlite-honker.ts
+    postgres.ts
+    plaintext.ts
+  drivers/
+    honker.ts
+    cron.ts
+    interval.ts
   circuit-breaker.ts
   lane-queue.ts
   handoff.ts
@@ -857,6 +968,9 @@ packages/orchestrator/src/scheduler/
 - `proper-lockfile@^4` for file-backed store locking (if using file store integration).
 - `uuid@^9` for UUID v5 task IDs.
 - Existing `@agentsy/core`, `@agentsy/session`, and `@agentsy/connectors` integration points.
+- honker-backed SQLite queue/scheduler primitives from the local coordination stack when available.
+- PostgreSQL driver/adapter for durable multi-process task persistence when consumers opt in.
+- Cron-compatible scheduler support for consumer environments that standardize on cron semantics.
 
 ---
 

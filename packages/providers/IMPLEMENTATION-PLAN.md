@@ -1,4 +1,91 @@
-# @agentsy/providers — Implementation Plan
+---
+goal: @agentsy/providers production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: providers-maintainers
+status: In progress
+tags: [feature, architecture, providers, adapters, routing]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/providers` as provider adapter/routing authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-PROVIDERS-001**: Provider adapters normalize auth/request/stream/error behavior into stable contracts.
+- **REQ-PROVIDERS-002**: Routing and fallback decisions expose deterministic reasoning metadata.
+- **REQ-PROVIDERS-003**: Capability matrix is queryable by models/runtime/orchestrator.
+- **REQ-PROVIDERS-004**: Timeout/retry/circuit-breaker policies are configurable per provider.
+- **SEC-PROVIDERS-001**: Credentials are sourced via `@agentsy/secrets`; no plaintext embedding.
+- **SEC-PROVIDERS-002**: Request/response logging redacts secret-like fields.
+- **CON-PROVIDERS-001**: Core stream normalization contracts remain consistent with `@agentsy/core`.
+- **CON-PROVIDERS-002**: UI formatting and interaction concerns remain outside providers.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-PROVIDERS-001: Adapter and routing contract stabilization.
+
+| Task               | Description                                                                 | Completed | Date |
+| ------------------ | --------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-001 | Stabilize provider profile/capability schema and routing decision envelope. |           |      |
+| TASK-PROVIDERS-002 | Add typed tests for deterministic fallback and override behavior.           |           |      |
+| TASK-PROVIDERS-003 | Document boundaries with models/core/runtime/secrets packages.              |           |      |
+
+### Implementation Phase 2
+
+- GOAL-PROVIDERS-002: Core provider implementation completion.
+
+| Task               | Description                                                        | Completed | Date |
+| ------------------ | ------------------------------------------------------------------ | --------- | ---- |
+| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.       |           |      |
+| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes. |           |      |
+| TASK-PROVIDERS-006 | Implement mock providers for deterministic test harnesses.         |           |      |
+
+### Implementation Phase 3
+
+- GOAL-PROVIDERS-003: Integration and observability wiring.
+
+| Task               | Description                                                     | Completed | Date |
+| ------------------ | --------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-007 | Integrate runtime/core streaming and models selection pathways. |           |      |
+| TASK-PROVIDERS-008 | Add integration tests for provider routing and failover.        |           |      |
+| TASK-PROVIDERS-009 | Emit provider telemetry with redaction-safe defaults.           |           |      |
+
+### Implementation Phase 4
+
+- GOAL-PROVIDERS-004: Hardening and release gates.
+
+| Task               | Description                                                               | Completed | Date |
+| ------------------ | ------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-010 | Add regression/perf tests for streaming correctness and timeout behavior. |           |      |
+| TASK-PROVIDERS-011 | Align docs and operational guidance with shipped adapters.                |           |      |
+| TASK-PROVIDERS-012 | Pass package and monorepo release gates.                                  |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-PROVIDERS-001**: Adapter/routing contracts are stable and test-validated.
+- **ACC-PROVIDERS-002**: Runtime/models/core integrations pass end-to-end tests.
+- **ACC-PROVIDERS-003**: Security and release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/providers.md`
+- `packages/providers/README.md`
+- `packages/providers/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/providers — Implementation Plan
 
 ## Role in Framework Ecosystem
 
@@ -283,6 +370,21 @@ Implement a first-party provider adapter for fully local inference and embedding
 2. Live smoke tests behind optional env flags (`LOCAL_PROVIDER_SMOKE=1`).
 3. No-network deterministic test suite by default in CI.
 4. Cross-package compatibility tests with `@agentsy/models` provider profile contracts.
+
+### CLI-facing provider discovery support (NEW)
+
+`@agentsy/providers` must expose health, auth posture, and protocol metadata in a shape that the CLI can present inside provider search/select/refine Ink components.
+
+Required metadata for chooser UI:
+
+- connectivity state
+- auth requirement state
+- streaming/tools/embeddings support
+- local/cloud provenance
+- protocol family (`openai-compatible`, `ollama-native`, etc.)
+- last probe latency and last error summary
+
+This package should not render UI, but it must make provider refinement possible by returning structured probe and capability summaries to `@agentsy/models` and `@agentsy/cli`.
 
 ### Documentation updates required with implementation
 
