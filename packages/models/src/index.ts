@@ -5,11 +5,11 @@ import type {
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
-  TaskRequirements,
   ModelSelectionResult,
+  TaskRequirements,
 } from './types.js';
 
-export type { ModelsDevAPI, ModelsDevModel, ModelsDevProvider, TaskRequirements, ModelSelectionResult };
+export type { ModelsDevAPI, ModelsDevModel, ModelsDevProvider, ModelSelectionResult, TaskRequirements };
 
 // Cache structure
 interface CacheData {
@@ -61,6 +61,10 @@ export class ModelsDevClient {
     this.cache = data;
     this.lastFetched = new Date();
     return data;
+  }
+
+  getCachedData(): ModelsDevAPI | undefined {
+    return this.cache;
   }
 
   /**
@@ -200,7 +204,12 @@ export class ModelSelector {
     // Sort by confidence score
     scoredModels.sort((a: ModelSelectionResult, b: ModelSelectionResult) => b.confidence - a.confidence);
 
-    return scoredModels[0]!;
+    const bestModel = scoredModels[0];
+    if (!bestModel) {
+      throw new Error('No model could be ranked after filtering');
+    }
+
+    return bestModel;
   }
 
   /**
@@ -253,64 +262,87 @@ export class ModelSelector {
    * Check if a model meets the given requirements
    */
   private meetsRequirements(model: ModelsDevModel, requirements: TaskRequirements): boolean {
-    // Exclude interface/alias models
+    if (this.isInterfaceModel(model)) {
+      return false;
+    }
+
+    if (!this.matchesModalityRequirements(model, requirements.modality)) {
+      return false;
+    }
+
+    if (!this.matchesCapabilityRequirements(model, requirements)) {
+      return false;
+    }
+
+    if (!this.matchesConstraints(model, requirements.constraints)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private isInterfaceModel(model: ModelsDevModel): boolean {
     if (model.family === 'auto') {
-      return false;
+      return true;
     }
 
-    // Exclude auto interfaces (but keep autoglm which seems to be a real model name)
     if (model.id.includes('auto') && !model.id.includes('autoglm')) {
-      return false;
+      return true;
     }
 
-    // Exclude prefix-based interface models like kilo-auto
-    if (model.id.toLowerCase().startsWith('kilo-auto') || model.id.toLowerCase().includes('kilo-auto/')) {
-      return false;
+    const modelIdLower = model.id.toLowerCase();
+    return modelIdLower.startsWith('kilo-auto') || modelIdLower.includes('kilo-auto/');
+  }
+
+  private matchesModalityRequirements(model: ModelsDevModel, modality?: TaskRequirements['modality']): boolean {
+    if (!modality) {
+      return true;
     }
 
-    // Check modality
-    // Check modality
-    if (requirements.modality) {
-      const inputModalities = model.modalities?.input ?? [];
-      const outputModalities = model.modalities?.output ?? [];
+    const inputModalities = model.modalities?.input ?? [];
+    const outputModalities = model.modalities?.output ?? [];
 
-      if (requirements.modality === 'multimodal') {
-        if (
-          !inputModalities.includes('image') &&
-          !inputModalities.includes('audio') &&
-          !inputModalities.includes('video')
-        ) {
-          return false;
-        }
-      } else if (requirements.modality === 'code') {
-        if (!inputModalities.includes('text') || !outputModalities.includes('text')) {
-          return false;
-        }
-      }
+    if (modality === 'multimodal') {
+      return (
+        inputModalities.includes('image') || inputModalities.includes('audio') || inputModalities.includes('video')
+      );
     }
 
-    // Check capabilities
+    if (modality === 'code') {
+      return inputModalities.includes('text') && outputModalities.includes('text');
+    }
+
+    return true;
+  }
+
+  private matchesCapabilityRequirements(model: ModelsDevModel, requirements: TaskRequirements): boolean {
     if (requirements.capabilities?.tool_calling && !model.tool_call) {
       return false;
     }
 
-    // Check constraints
-    if (requirements.constraints?.max_cost) {
-      const cost = model.cost;
-      const estimatedCost = (cost?.input ?? 0) + (cost?.output ?? 0) * 10; // rough estimate
-      if (estimatedCost > requirements.constraints.max_cost) {
+    return true;
+  }
+
+  private matchesConstraints(model: ModelsDevModel, constraints?: TaskRequirements['constraints']): boolean {
+    if (!constraints) {
+      return true;
+    }
+
+    if (constraints.max_cost !== undefined) {
+      const estimatedCost = this.estimateModelCost(model);
+      if (estimatedCost > constraints.max_cost) {
         return false;
       }
     }
 
-    if (requirements.constraints?.max_context) {
-      const limit = model.limit;
-      if ((limit?.context ?? 0) < requirements.constraints.max_context) {
+    if (constraints.max_context !== undefined) {
+      const maxContext = model.limit?.context ?? 0;
+      if (maxContext < constraints.max_context) {
         return false;
       }
     }
 
-    if (requirements.constraints?.exclude_family?.includes(model.family)) {
+    if (constraints.exclude_family?.includes(model.family)) {
       return false;
     }
 
@@ -378,6 +410,6 @@ export class ModelSelector {
 
   // Helper method to get cache for findProviderForModel
   private get cache(): ModelsDevAPI | undefined {
-    return (this.client as any).cache;
+    return this.client.getCachedData();
   }
 }

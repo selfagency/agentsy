@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { IndexingPipeline } from '../src/indexing';
 import type { DataSource } from '../src/types';
 
 describe('IndexingPipeline', () => {
   let pipeline: IndexingPipeline;
   let testDataSource: DataSource;
+  let sourcePath: string;
 
   beforeEach(() => {
     pipeline = new IndexingPipeline({
@@ -18,6 +19,8 @@ describe('IndexingPipeline', () => {
       content:
         'This is a test file with multiple sentences. It has enough content to be split into multiple chunks for testing purposes. We want to ensure that the chunking logic works correctly with different strategies.',
     };
+
+    sourcePath = testDataSource.path ?? '/test/file.ts';
   });
 
   describe('constructor', () => {
@@ -79,7 +82,7 @@ describe('IndexingPipeline', () => {
   describe('semanticChunk', () => {
     it('should split content into semantic chunks', async () => {
       const content = 'First sentence. Second sentence. Third paragraph with more content here.';
-      const chunks = await pipeline.semanticChunk(content, testDataSource.path);
+      const chunks = await pipeline.semanticChunk(content, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
       chunks.forEach(chunk => {
@@ -90,7 +93,7 @@ describe('IndexingPipeline', () => {
 
     it('should generate chunk IDs based on content hash', async () => {
       const content = 'Test content for hashing';
-      const chunks = await pipeline.semanticChunk(content, testDataSource.path);
+      const chunks = await pipeline.semanticChunk(content, sourcePath);
 
       expect(chunks[0].id).toBeDefined();
       expect(typeof chunks[0].id).toBe('string');
@@ -100,7 +103,7 @@ describe('IndexingPipeline', () => {
   describe('fixedSizeChunk', () => {
     it('should split content into fixed-size chunks with words not exceeding chunk size', async () => {
       const fiftyWordContent = 'Word '.repeat(50);
-      const chunks = await pipeline.fixedSizeChunk(fiftyWordContent, testDataSource.path);
+      const chunks = await pipeline.fixedSizeChunk(fiftyWordContent, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
       chunks.forEach(chunk => {
@@ -117,11 +120,20 @@ describe('IndexingPipeline', () => {
         chunkOverlap: 2,
       });
 
-      const chunks = await pipelineWithOverlap.fixedSizeChunk(content, testDataSource.path);
+      const chunks = await pipelineWithOverlap.fixedSizeChunk(content, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(1);
-      const firstChunkWords = chunks[0]!.content.split(/\s+/);
-      const secondChunkWords = chunks[1]!.content.split(/\s+/);
+      const firstChunk = chunks[0];
+      const secondChunk = chunks[1];
+      expect(firstChunk).toBeDefined();
+      expect(secondChunk).toBeDefined();
+
+      if (!firstChunk || !secondChunk) {
+        return;
+      }
+
+      const firstChunkWords = firstChunk.content.split(/\s+/);
+      const secondChunkWords = secondChunk.content.split(/\s+/);
       // With chunkSize=5 and overlap=2, consecutive chunks share 2 words
       // Chunk 1: words 0-4, Chunk 2: words 3-7
       // Overlap: words 3-4 should appear in both
@@ -146,7 +158,7 @@ function example() {
 export const result = example();
       `.trim();
 
-      const chunks = await pipeline.astChunk(tsCode, testDataSource.path);
+      const chunks = await pipeline.astChunk(tsCode, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
       chunks.forEach(chunk => {
@@ -165,7 +177,7 @@ function second() {
 }
       `.trim();
 
-      const chunks = await pipeline.astChunk(codeWithTwoFunctions, testDataSource.path);
+      const chunks = await pipeline.astChunk(codeWithTwoFunctions, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
     });

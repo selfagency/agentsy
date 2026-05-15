@@ -11,6 +11,7 @@ import type { SpanId, TraceId } from '@agentsy/types';
  * Attribute value type for span attributes
  */
 export type AttributeValue = string | number | boolean | string[];
+export type Attributes = Record<string, AttributeValue>;
 
 /**
  * Core observability engine that provides tracing, metrics, and logging capabilities.
@@ -84,12 +85,12 @@ export interface Span {
    * Records an exception that occurred during the span's operation.
    * Automatically sets status to error and adds error details.
    */
-  recordException(exception: unknown, attributes?: Record<string, string | number | boolean | string[]>): void;
+  recordException(exception: unknown, attributes?: Attributes): void;
   /**
    * Adds a single event to the span timeline.
    * Events are ordered in time and can carry arbitrary data.
    */
-  addEvent(name: string, attributes?: Record<string, string | number | boolean | string[]>): void;
+  addEvent(name: string, attributes?: Attributes): void;
   /**
    * Ends the span and flushes its data to the configured exporters.
    * After end(), no further operations can be performed on the span.
@@ -107,7 +108,7 @@ export interface Span {
  */
 export interface SpanOptions {
   /** Initial attributes for the span */
-  attributes?: Record<string, string | number | boolean | string[]>;
+  attributes?: Attributes;
   /** Links to related spans from other traces */
   links?: SpanLink[];
   /** Start time in milliseconds since epoch */
@@ -122,7 +123,7 @@ export interface SpanOptions {
 export interface SpanLink {
   readonly traceId: TraceId;
   readonly spanId: SpanId;
-  readonly attributes?: Record<string, string | number | boolean | string[]>;
+  readonly attributes?: Attributes;
 }
 
 /**
@@ -182,13 +183,13 @@ export interface Counter {
    * @param amount - The amount to increment by (must be positive)
    * @param attributes - Additional attributes to associate with this recording
    */
-  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  increment(amount?: number, attributes?: Attributes): void;
   /**
    * Records a value to this counter (alternative interface for increment)
    * @param amount - The value to record (must be positive)
    * @param attributes - Additional attributes to associate with this recording
    */
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  record(amount: number, attributes?: Attributes): void;
 }
 
 /**
@@ -200,7 +201,7 @@ export interface Histogram {
    * @param amount - The value to record
    * @param attributes - Additional attributes to associate with this recording
    */
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  record(amount: number, attributes?: Attributes): void;
 }
 
 /**
@@ -215,19 +216,19 @@ export interface Gauge {
    *
    * In English: Additional attributes to associate with this recording
    */
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  record(amount: number, attributes?: Attributes): void;
   /**
    * Increments the gauge by the specified amount
    * @param amount - Optional amount to increment by
    * @param attributes - Optional attributes to add
    */
-  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  increment(amount?: number, attributes?: Attributes): void;
   /**
    * Decrements the gauge by the specified amount
    * @param amount - Optional amount to decrement by
    * @param attributes - Optional attributes to add
    */
-  decrement(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  decrement(amount?: number, attributes?: Attributes): void;
 }
 
 /**
@@ -241,7 +242,7 @@ export interface ObservableGauge {
    *
    * In English: Additional attributes to associate with this recording
    */
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void;
+  record(amount: number, attributes?: Attributes): void;
 }
 
 /**
@@ -309,7 +310,7 @@ export interface SpanData {
   /** Span type (agent, tool, model, internal) */
   readonly type?: 'agent' | 'tool' | 'model' | 'internal';
   /** Span attributes */
-  readonly attributes: Record<string, string | number | boolean | string[]>;
+  readonly attributes: Attributes;
   /** Span status */
   readonly status: 'ok' | 'error';
   /** Events recorded on the span */
@@ -333,7 +334,7 @@ export interface SpanEvent {
   /** Event timestamp in milliseconds */
   readonly timestamp: number;
   /** Event attributes */
-  readonly attributes: Record<string, string | number | boolean | string[]>;
+  readonly attributes: Attributes;
 }
 
 /**
@@ -349,7 +350,7 @@ export interface MetricData {
   /** Metric unit (e.g., 'ms', 'bytes', '1') */
   readonly unit?: string;
   /** Associated attributes */
-  readonly attributes: Record<string, string | number | boolean | string[]>;
+  readonly attributes: Attributes;
   /** Recording timestamp in milliseconds */
   readonly timestamp: number;
 }

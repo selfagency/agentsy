@@ -5,6 +5,7 @@
  */
 
 import type {
+  AttributeValue,
   Counter,
   Gauge,
   Histogram,
@@ -14,7 +15,6 @@ import type {
   RedactionPolicy,
   Span,
 } from '../core/types.js';
-import type { AttributeValue } from '../core/types.js';
 import { LoggerImpl, type LogLevel, type LoggerConfig } from './logger.js';
 import { MeterImpl } from './meter.js';
 import { TracerImpl } from './tracer.js';
@@ -66,13 +66,11 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   readonly tracer: TracerImpl;
   readonly meter: MeterImpl;
   readonly logger: LoggerImpl;
-  private readonly config: ObservabilityEngineConfig;
   private readonly _sinks: ObservabilitySink[] = [];
   private _redactionPolicy: RedactionPolicy | null = null;
   private _isShutdown = false;
 
   constructor(config: ObservabilityEngineConfig) {
-    this.config = config;
     this.tracer = new TracerImpl();
     this.meter = new MeterImpl();
 
@@ -109,14 +107,6 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
       }
     }
 
-    // Shutdown OpenTelemetry SDKs
-    try {
-      // api.metrics.getMeter('agentsy').shutdown(); // This was incorrect, Meter doesn't have shutdown()
-      // Usually the MeterProvider is shut down, but we don't have it here directly
-    } catch (error) {
-      this.logger.error('Failed to shutdown OpenTelemetry SDKs', { error });
-    }
-
     this.logger.info('Observability engine shut down complete');
   }
 
@@ -142,7 +132,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     histogram.record(value, attributes);
   }
 
-  recordGauge(name: string, value: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  recordGauge(name: string, value: number, attributes?: Record<string, AttributeValue>): void {
     const gauge = this.meter.createGauge(name);
     gauge.record(value, attributes);
   }
@@ -168,14 +158,12 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     return this.meter.createGauge(name, metricOptions);
   }
 
-  applyRedaction(
-    attributes: Record<string, string | number | boolean | string[]>,
-  ): Record<string, string | number | boolean | string[]> {
+  applyRedaction(attributes: Record<string, AttributeValue>): Record<string, AttributeValue> {
     if (!this._redactionPolicy) {
       return attributes;
     }
 
-    const result: Record<string, string | number | boolean | string[]> = {};
+    const result: Record<string, AttributeValue> = {};
 
     for (const [key, value] of Object.entries(attributes)) {
       if (typeof value === 'string') {
@@ -200,12 +188,10 @@ export const createObservabilityEngine = (config: ObservabilityEngineConfig): Ob
 let _defaultEngine: ObservabilityEngineImpl | null = null;
 
 export const getDefaultEngine = (): ObservabilityEngine => {
-  if (!_defaultEngine) {
-    _defaultEngine = new ObservabilityEngineImpl({
-      serviceName: 'agentsy-runtime',
-      serviceVersion: '0.0.0',
-    });
-  }
+  _defaultEngine ??= new ObservabilityEngineImpl({
+    serviceName: 'agentsy-runtime',
+    serviceVersion: '0.0.0',
+  });
   return _defaultEngine;
 };
 

@@ -86,7 +86,10 @@ export class IndexingPipeline {
     let currentWordCount = 0;
 
     for (let i = 0; i < words.length; i++) {
-      const word = words[i]!;
+      const word = words[i];
+      if (!word) {
+        continue;
+      }
       const testChunk = currentChunk ? `${currentChunk} ${word}` : word;
       if (currentWordCount < this.chunkSize) {
         currentChunk = testChunk;
@@ -133,7 +136,7 @@ export class IndexingPipeline {
     let inFunction = false;
 
     for (let i = 0; i < code.length; i++) {
-      const char = code[i]!;
+      const char = code[i] ?? '';
       const nextChar = code[i + 1] ?? '';
 
       if (char === '{') braceDepth++;
@@ -176,7 +179,7 @@ export class IndexingPipeline {
       newInFunction = true;
     }
 
-    const char = code[i]!;
+    const char = code[i] ?? '';
     const shouldSplit =
       newInFunction &&
       braceDepth === 0 &&

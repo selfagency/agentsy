@@ -5,8 +5,15 @@
  */
 
 import * as api from '@opentelemetry/api';
-import type { Counter, Gauge, Histogram, Meter, MetricOptions, ObservableGauge } from '../core/types.js';
-import type { AttributeValue } from '../core/types.js';
+import type {
+  AttributeValue,
+  Counter,
+  Gauge,
+  Histogram,
+  Meter,
+  MetricOptions,
+  ObservableGauge,
+} from '../core/types.js';
 
 /**
  * Base implementation for shared utility methods
@@ -28,13 +35,13 @@ class CounterImpl extends BaseMetric implements Counter {
     this._otelCounter = otelCounter;
   }
 
-  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  increment(amount?: number, attributes?: Record<string, AttributeValue>): void {
     const amt = amount ?? 1;
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
     this._otelCounter.add(amt, attrs);
   }
 
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  record(amount: number, attributes?: Record<string, AttributeValue>): void {
     this.increment(amount, attributes);
   }
 }
@@ -50,7 +57,7 @@ class HistogramImpl extends BaseMetric implements Histogram {
     this._otelHistogram = otelHistogram;
   }
 
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  record(amount: number, attributes?: Record<string, AttributeValue>): void {
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
     this._otelHistogram.record(amount, attrs);
   }
@@ -67,12 +74,12 @@ class GaugeImpl extends BaseMetric implements Gauge {
     this._otelGauge = otelGauge;
   }
 
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  record(amount: number, attributes?: Record<string, AttributeValue>): void {
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
     this._otelGauge.record(amount, attrs);
   }
 
-  increment(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  increment(amount?: number, attributes?: Record<string, AttributeValue>): void {
     const amt = amount ?? 1;
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
     if ('add' in this._otelGauge && typeof this._otelGauge.add === 'function') {
@@ -80,7 +87,7 @@ class GaugeImpl extends BaseMetric implements Gauge {
     }
   }
 
-  decrement(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  decrement(amount?: number, attributes?: Record<string, AttributeValue>): void {
     const amt = amount ?? 1;
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
     if ('add' in this._otelGauge && typeof this._otelGauge.add === 'function') {
@@ -100,7 +107,7 @@ class ObservableGaugeImpl extends BaseMetric implements ObservableGauge {
     this._observableResult = observableResult;
   }
 
-  record(amount: number, attributes?: Record<string, string | number | boolean | string[]>): void {
+  record(amount: number, attributes?: Record<string, AttributeValue>): void {
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
     this._observableResult.observe(amount, attrs);
   }
@@ -164,7 +171,7 @@ export class MeterImpl implements Meter {
     // We need to return a dummy ObservableGauge that doesn't actually do anything
     // since the real recording happens in the callback.
     return {
-      record: (_amount: number, _attributes?: Record<string, string | number | boolean | string[]>) => {},
+      record: (_amount: number, _attributes?: Record<string, AttributeValue>) => {},
     };
   }
 }

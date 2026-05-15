@@ -288,14 +288,14 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
         throw new Error(`Provider stream request failed: ${response.status} ${response.statusText}`);
       }
 
-      const pipeline = createPipeline(response.body!, {
+      if (!response.body) {
+        throw new Error('Provider stream response did not include a body');
+      }
+
+      const pipeline = createPipeline(response.body, {
         provider,
         maxJsonDepth: 64,
         maxJsonKeys: 10000,
-        knownTools: new Set(),
-        parseThinkTags: false,
-        modelId: request.model,
-        scrubContextTags: false,
       });
 
       const chunks: NormalizedChunk[] = [];
@@ -338,7 +338,7 @@ function buildHeaders(
   if (apiKey) {
     switch (_provider) {
       case 'openai':
-        headers['Authorization'] = `Bearer ${apiKey}`;
+        headers.Authorization = `Bearer ${apiKey}`;
         if (organizationId) headers['OpenAI-Organization'] = organizationId;
         break;
       case 'anthropic':
@@ -347,10 +347,10 @@ function buildHeaders(
         if (stream) headers['accept'] = 'text/event-stream';
         break;
       case 'gemini':
-        headers['Authorization'] = `Bearer ${apiKey}`;
+        headers.Authorization = `Bearer ${apiKey}`;
         break;
       default:
-        headers['Authorization'] = `Bearer ${apiKey}`;
+        headers.Authorization = `Bearer ${apiKey}`;
     }
   }
 

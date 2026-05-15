@@ -29,7 +29,7 @@
     "lint": "oxlint --no-error-on-unmatched-pattern .",
     "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --run --passWithNoTests",
-    "coverage": "vitest --run --coverage"
+    "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",

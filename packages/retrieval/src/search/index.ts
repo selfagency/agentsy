@@ -113,17 +113,27 @@ export class RetrievalEngine {
     const results = new Map<string, { document: Document; keywordScore: number; vectorScore: number }>();
 
     for (const doc of keywordResult.documents) {
+      const storedDocument = this.documents.get(doc.id);
+      if (!storedDocument) {
+        continue;
+      }
+
       results.set(doc.id, {
-        document: this.documents.get(doc.id)!,
+        document: storedDocument,
         keywordScore: doc.score || 0,
         vectorScore: 0,
       });
     }
 
     for (const doc of vectorResult.documents) {
+      const storedDocument = this.documents.get(doc.id);
+      if (!storedDocument) {
+        continue;
+      }
+
       const existing = results.get(doc.id);
       results.set(doc.id, {
-        document: this.documents.get(doc.id)!,
+        document: storedDocument,
         keywordScore: existing?.keywordScore || 0,
         vectorScore: doc.similarity || 0,
       });

@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import {
-  type Chunk,
-  type ChunkMetadata,
-  type ChunkingStrategy,
-  type DataSource,
-  type RetrievalQuery,
-  type Document,
-  type SearchResult,
+import { describe, expect, it } from 'vitest';
+import type {
+  Chunk,
+  ChunkMetadata,
+  ChunkingStrategy,
+  DataSource,
+  Document,
+  RetrievalQuery,
+  SearchResult,
 } from '../src/types';
 
 describe('retrieval/types', () => {
@@ -134,11 +134,12 @@ describe('retrieval/types', () => {
       const result: SearchResult = {
         documents: [],
         total: 0,
+        queryTime: 0,
       };
 
       expect(result.documents).toEqual([]);
       expect(result.total).toBe(0);
-      expect(result.queryTime).toBeUndefined();
+      expect(result.queryTime).toBe(0);
     });
 
     it('should create valid search result with query time', () => {

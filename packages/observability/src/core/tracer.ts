@@ -6,8 +6,7 @@
 
 import type { SpanId, TraceId } from '@agentsy/types';
 import * as api from '@opentelemetry/api';
-import type { Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
-import type { AttributeValue } from '../core/types.js';
+import type { AttributeValue, Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
 
 /**
  * Internal span implementation
@@ -65,7 +64,7 @@ export class InternalSpan implements Span {
     }
   }
 
-  get attributes(): Record<string, string | number | boolean | string[]> {
+  get attributes(): Record<string, AttributeValue> {
     return { ...this._attributes };
   }
 
@@ -89,7 +88,7 @@ export class InternalSpan implements Span {
     return this._endTime ? this._endTime - this._startTime : undefined;
   }
 
-  setAttribute(key: string, value: string | number | boolean | string[]): void {
+  setAttribute(key: string, value: AttributeValue): void {
     this._attributes[key] = value;
     this._otelSpan.setAttribute(key, value);
 
@@ -98,13 +97,13 @@ export class InternalSpan implements Span {
     }
   }
 
-  setAttributes(attributes: Record<string, string | number | boolean | string[]>): void {
+  setAttributes(attributes: Record<string, AttributeValue>): void {
     for (const [key, value] of Object.entries(attributes)) {
       this.setAttribute(key, value);
     }
   }
 
-  recordException(exception: unknown, attributes?: Record<string, string | number | boolean | string[]>): void {
+  recordException(exception: unknown, attributes?: Record<string, AttributeValue>): void {
     this._status = 'error';
 
     const errorInfo = this._extractErrorInfo(exception);
@@ -126,7 +125,7 @@ export class InternalSpan implements Span {
     });
   }
 
-  addEvent(name: string, attributes?: Record<string, string | number | boolean | string[]>): void {
+  addEvent(name: string, attributes?: Record<string, AttributeValue>): void {
     if (attributes) {
       this._otelSpan.addEvent(name, attributes);
     } else {
@@ -159,9 +158,7 @@ export class InternalSpan implements Span {
     return new InternalSpan(name, options, this);
   }
 
-  private _otelAttributesToAttributes(
-    attributes: Record<string, string | number | boolean | string[]>,
-  ): api.Attributes {
+  private _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): api.Attributes {
     return attributes;
   }
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ModelSelector, ModelsDevClient } from './index.js';
 
 describe('models.dev integration', () => {
@@ -113,19 +113,6 @@ describe('models.dev integration', () => {
       expect(result.provider).toBeDefined();
       expect(result.model).toBeDefined();
       expect(result.confidence).toBeGreaterThan(0);
-
-      const whitelistedProviders = [
-        'anthropic',
-        'google',
-        'openai',
-        'meta',
-        'mistral',
-        'cohere',
-        'deepseek',
-        'xai',
-        'aws',
-        'azure',
-      ];
 
       const excludedProviders = ['302ai', 'openrouter', 'llmgateway', 'fireworks-ai', 'replicate'];
 
