@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import {
   createInMemoryPubSubManager,
@@ -11,7 +12,7 @@ import {
 
 describe('Phase 1: coordination foundations', () => {
   it('returns fallback mode when honker extension is unavailable', async () => {
-    const fakeExtensionRoot = join(process.cwd(), '.agentsy-missing-ext', `${Date.now()}-${Math.random()}`);
+    const fakeExtensionRoot = join(process.cwd(), '.agentsy-missing-ext', randomUUID());
     const result = await loadHonkerExtension({
       dbPath: 'memory.db',
       extensionPath: join(fakeExtensionRoot, 'honker.so'),

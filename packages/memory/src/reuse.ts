@@ -16,10 +16,14 @@ function reuseRank(reuseClass: ReusableMemoryBlock['reuseClass']): number {
   }
 }
 
-export function rankReusableMemoryBlocks(blocks: ReusableMemoryBlock[], fingerprint: string): ReusableMemoryBlock[] {
+export function rankReusableMemoryBlocks(
+  blocks: ReusableMemoryBlock[],
+  fingerprint: string,
+  invalidatedKeys: readonly string[] = []
+): ReusableMemoryBlock[] {
   return [...blocks]
     .filter(block => block.reuseClass !== 'cold')
-    .filter(block => !block.invalidations.includes(fingerprint))
+    .filter(block => invalidatedKeys.every(key => !block.invalidations.includes(key)))
     .sort((left, right) => {
       if (left.fingerprint === fingerprint && right.fingerprint !== fingerprint) {
         return -1;

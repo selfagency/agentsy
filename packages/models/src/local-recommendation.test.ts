@@ -156,7 +156,7 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
   });
 
   it('enforces tool-calling requirement', () => {
-    const qwenProvider = modelsDevFixture['qwen'];
+    const qwenProvider = modelsDevFixture.qwen;
     if (!qwenProvider) {
       throw new Error('Expected qwen provider in fixture');
     }

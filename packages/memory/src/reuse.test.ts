@@ -17,4 +17,14 @@ describe('rankReusableMemoryBlocks', () => {
     expect(ranked[0]?.reuseClass).toBe('hot');
     expect(ranked).toHaveLength(2);
   });
+
+  it('filters invalidated keys separately from the prioritization fingerprint', () => {
+    const ranked = rankReusableMemoryBlocks(
+      [{ fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', hitCount: 9, invalidations: ['template:v2'] }],
+      'systemPrompt:qwen:v3',
+      ['template:v2']
+    );
+
+    expect(ranked).toHaveLength(0);
+  });
 });

@@ -1,6 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 export interface MemoryFileCompressionOptions {
+  /**
+   * Create a `.original.md` backup before rewriting the file.
+   * Defaults to true to avoid accidental data loss when `writeCompressed` is enabled.
+   */
   backup?: boolean;
   writeCompressed?: boolean;
 }
@@ -95,7 +99,7 @@ export async function compressMemoryFile(
   const savingsRatio = Math.max(0, (originalLength - compressed.length) / originalLength);
 
   let backupPath: string | undefined;
-  if (options.backup === true) {
+  if (options.backup ?? true) {
     backupPath = `${filePath}.original.md`;
     await writeFile(backupPath, original, 'utf8');
   }

@@ -2,8 +2,6 @@
 
 import { randomUUID } from 'node:crypto';
 
-export * from './compression/index.js';
-
 export interface TokenLedgerBudget {
   limit: number;
 }
@@ -370,7 +368,7 @@ export function compressConversation<TMessage>(
 }
 
 const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
-const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths']);
+const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths', 'markdown', 'errors']);
 const FILLER_WORDS = new Set([
   'really',
   'very',
@@ -518,7 +516,7 @@ function protectPreservedContent(
 
   if (preserve.has('markdown')) {
     masked = masked.replace(/`[^`]+`/g, stash);
-    masked = masked.replace(/\[[^\]]+\]\([^)]*\)/g, stash);
+    masked = protectMarkdownLinks(masked, stash);
   }
 
   if (preserve.has('errors')) {
@@ -536,6 +534,34 @@ function protectPreservedContent(
     });
 
   return { masked, restore };
+}
+
+function protectMarkdownLinks(source: string, stash: (value: string) => string): string {
+  let result = '';
+  let index = 0;
+
+  while (index < source.length) {
+    const start = source.indexOf('[', index);
+    if (start === -1) {
+      return result + source.slice(index);
+    }
+
+    const closeBracket = source.indexOf(']', start + 1);
+    const openParen = closeBracket === -1 ? -1 : source.indexOf('(', closeBracket + 1);
+    const closeParen = openParen === -1 ? -1 : source.indexOf(')', openParen + 1);
+
+    if (closeBracket === -1 || openParen !== closeBracket + 1 || closeParen === -1) {
+      result += source.slice(index, start + 1);
+      index = start + 1;
+      continue;
+    }
+
+    result += source.slice(index, start);
+    result += stash(source.slice(start, closeParen + 1));
+    index = closeParen + 1;
+  }
+
+  return result;
 }
 
 function stripFillerWords(source: string, strongOnly: boolean): string {
@@ -573,25 +599,56 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
 
     case 'ultra': {
       const withoutFiller = stripFillerWords(masked, false);
-      const reduced = applyReplacements(withoutFiller, REDUNDANT_PHRASES)
-        .replace(/\b(and|or)\s+(and|or)\s+/gi, ' ')
-        .replace(/\b(is|are|was|were)\s+quite\s+/gi, '')
-        .replace(/,\s*which\s+[^,.]*(?=[,.])/gi, '')
-        .replace(/\s+(?=[,.?!])/g, '');
-
+      const reduced = normalizeUltraText(applyReplacements(withoutFiller, REDUNDANT_PHRASES));
       const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replace(
-        /\b(?:the|a|an)\s+([a-z]+)\s+/gi,
+        /\b(?:the|a|an)\s+([a-z]+)\b/gi,
         (_, adjective: string) => `${adjective} `
       );
 
       return restore(
         abbreviated
           .replace(/\s{2,}/g, ' ')
-          .replace(/\s+(?=[,.])/g, '')
+          .replace(/ ([,.])/g, '$1')
           .trim()
       );
     }
   }
+}
+
+function normalizeUltraText(source: string): string {
+  let output = source.replace(/\b(and|or)\s+\1\s+/gi, '$1 ').replace(/\b(is|are|was|were)\s+quite\s+/gi, '');
+
+  output = removeWhichClauses(output);
+  return output.replace(/ ([,.?!])/g, '$1');
+}
+
+function removeWhichClauses(source: string): string {
+  const needle = ', which ';
+  let index = 0;
+  let output = '';
+
+  while (index < source.length) {
+    const matchIndex = source.toLowerCase().indexOf(needle, index);
+    if (matchIndex === -1) {
+      return output + source.slice(index);
+    }
+
+    output += source.slice(index, matchIndex);
+
+    let clauseEnd = matchIndex + needle.length;
+    while (clauseEnd < source.length && !',.?!'.includes(source[clauseEnd] ?? '')) {
+      clauseEnd += 1;
+    }
+
+    if (clauseEnd < source.length) {
+      output += source[clauseEnd];
+      index = clauseEnd + 1;
+    } else {
+      index = clauseEnd;
+    }
+  }
+
+  return output;
 }
 
 export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {

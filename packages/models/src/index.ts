@@ -429,19 +429,27 @@ export class ModelsDevClient {
  * Model selector for intelligent model selection based on task requirements
  */
 export class ModelSelector {
-  private readonly client: ModelsDevClient;
+  private client?: ModelsDevClient;
 
-  static readonly modelsDevClient = new ModelsDevClient();
+  constructor(client?: ModelsDevClient) {
+    if (client) {
+      this.client = client;
+    }
+  }
 
-  constructor() {
-    this.client = ModelSelector.modelsDevClient;
+  private getClient(): ModelsDevClient {
+    if (!this.client) {
+      this.client = new ModelsDevClient();
+    }
+
+    return this.client;
   }
 
   /**
    * Select the best model for a given set of task requirements
    */
   async selectModel(requirements: TaskRequirements): Promise<ModelSelectionResult> {
-    await this.client.fetchModelsDevData();
+    await this.getClient().fetchModelsDevData();
 
     const suitableModels = this.getModelsMatchingRequirements(requirements);
     const scoredModels = this.scoreModels(suitableModels, requirements);
@@ -456,12 +464,12 @@ export class ModelSelector {
     systemCapabilities: SystemCapabilities,
     criteria: LocalRecommendationCriteria = {}
   ): Promise<LocalModelRecommendation[]> {
-    const data = await this.client.fetchModelsDevData();
+    const data = await this.getClient().fetchModelsDevData();
     return recommendLocalModelsBySystemCapabilities(data, llmStatsLocalModels, systemCapabilities, criteria);
   }
 
   private getModelsMatchingRequirements(requirements: TaskRequirements): ModelsDevModel[] {
-    const allModels = this.client.listModels();
+    const allModels = this.getClient().listModels();
     const providerModels = this.filterUniqueProviderModels(allModels);
     return providerModels.filter(model => this.meetsRequirements(model, requirements));
   }
@@ -542,9 +550,9 @@ export class ModelSelector {
     modelId: string,
     options?: { estimatedInputTokens?: number; estimatedOutputTokens?: number }
   ): Promise<ModelSelectionResult> {
-    await this.client.fetchModelsDevData();
+    await this.getClient().fetchModelsDevData();
 
-    const model = this.client.getModel(modelId);
+    const model = this.getClient().getModel(modelId);
     if (!model) {
       throw new Error(`Model not found: ${modelId}`);
     }
@@ -572,7 +580,7 @@ export class ModelSelector {
    */
   private findProviderForModel(modelId: string): string {
     // Search all providers for this model
-    for (const [providerId, provider] of Object.entries(this.cache ?? {})) {
+    for (const [providerId, provider] of Object.entries(this.getClient().getCachedData() ?? {})) {
       if (Object.hasOwn(provider.models, modelId)) {
         return providerId;
       }
@@ -732,6 +740,6 @@ export class ModelSelector {
 
   // Helper method to get cache for findProviderForModel
   private get cache(): ModelsDevAPI | undefined {
-    return this.client.getCachedData();
+    return this.getClient().getCachedData();
   }
 }
