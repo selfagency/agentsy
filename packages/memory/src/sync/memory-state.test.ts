@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createMemoryStateAdapter, deserializeMemoryState, serializeMemoryState } from './memory-state.js';
 import type { MemoryState } from './memory-state.js';
+import { createMemoryStateAdapter, deserializeMemoryState, serializeMemoryState } from './memory-state.js';
 
 function createState(): MemoryState {
   return {

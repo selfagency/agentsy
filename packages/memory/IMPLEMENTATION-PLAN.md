@@ -32,21 +32,21 @@ This plan defines the production implementation order for `@agentsy/memory` with
 
 - GOAL-MEMORY-001: Contract and scope stabilization.
 
-| Task            | Description                                                                       | Completed | Date |
-| --------------- | --------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-MEMORY-001 | Stabilize memory record schemas, scope manager contracts, and promotion taxonomy. |           |      |
-| TASK-MEMORY-002 | Finalize retrieval/injection envelope and XML context insertion contract.         |           |      |
-| TASK-MEMORY-003 | Document ownership boundaries vs session/retrieval/runtime packages.              |           |      |
+| Task            | Description                                                                       | Completed | Date       |
+| --------------- | --------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-MEMORY-001 | Stabilize memory record schemas, scope manager contracts, and promotion taxonomy. | ✅        | 2026-05-15 |
+| TASK-MEMORY-002 | Finalize retrieval/injection envelope and XML context insertion contract.         | ✅        | 2026-05-15 |
+| TASK-MEMORY-003 | Document ownership boundaries vs session/retrieval/runtime packages.              | ✅        | 2026-05-15 |
 
 ### Implementation Phase 2
 
 - GOAL-MEMORY-002: Core memory subsystem completion.
 
-| Task            | Description                                                                            | Completed | Date |
-| --------------- | -------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-MEMORY-004 | Complete capture/retrieval/reuse modules and scope-aware storage behavior.             |           |      |
-| TASK-MEMORY-005 | Implement cache-aware context segment reuse and invalidation logic.                    |           |      |
-| TASK-MEMORY-006 | Implement memory tools (`search`, `list`, `stats`, `lint`, capture) and policy checks. |           |      |
+| Task            | Description                                                                            | Completed | Date       |
+| --------------- | -------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-MEMORY-004 | Complete capture/retrieval/reuse modules and scope-aware storage behavior.             | ✅        | 2026-05-15 |
+| TASK-MEMORY-005 | Implement cache-aware context segment reuse and invalidation logic.                    | ✅        | 2026-05-15 |
+| TASK-MEMORY-006 | Implement memory tools (`search`, `list`, `stats`, `lint`, capture) and policy checks. | ✅        | 2026-05-15 |
 
 ### Implementation Phase 3
 

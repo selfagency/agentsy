@@ -4,13 +4,13 @@ version: 1.0
 date_created: 2026-05-15
 last_updated: 2026-05-15
 owner: agentsy-core
-status: Planned
+status: Complete
 tags: [feature, memory, turso, sync, backup, security, observability]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Complete](https://img.shields.io/badge/status-Complete-brightgreen)
 
 This plan implements Phase 2 from `plan/IMPLEMENTATION-PRIORITY.md`: reliable Turso synchronization and cloud backup for the local-first memory coordination system in `@agentsy/memory`. The implementation preserves the existing local honker-first architecture, adds deterministic conflict handling and backup flows, and introduces security and observability controls required for production use.
 
@@ -53,53 +53,53 @@ This plan implements Phase 2 from `plan/IMPLEMENTATION-PRIORITY.md`: reliable Tu
 
 - GOAL-001: Create sync domain contracts and Turso manager foundation with deterministic status lifecycle.
 
-| Task     | Description                                                                                                                                                                                                                                               | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-001 | Create `packages/memory/src/sync/types.ts` defining `SyncStatus`, `SyncMode`, `SyncMetrics`, `SyncError`, `ConflictRecord`, `MergePolicy`, `BackupSnapshot`, `RestoreResult`, `TursoSyncConfig`, `SyncRunResult`, and `RemoteValidationResult`.           |           |      |
-| TASK-002 | Create `packages/memory/src/sync/turso-manager.ts` with `createTursoManager(config: TursoSyncConfig)` and class `TursoManager` methods: `sync(localState)`, `upload(snapshot)`, `download(cursor)`, `getStatus()`, `getMetrics()`, `pause()`, `resume()`. |           |      |
-| TASK-003 | Implement configuration validation in `turso-manager.ts` for required fields (`databaseUrl`, `authToken`, `syncIntervalMs`, `maxRetries`) and fail-fast setup errors.                                                                                     |           |      |
-| TASK-004 | Create `packages/memory/src/sync/turso-client.ts` adapter interface `TursoClient` with concrete HTTP/libSQL transport abstraction for testability.                                                                                                        |           |      |
-| TASK-005 | Add unit tests `packages/memory/src/sync/turso-manager.test.ts` covering status transitions, paused mode, config validation, and basic upload/download success/failure paths.                                                                             |           |      |
-| TASK-006 | Export sync foundation types and manager from `packages/memory/src/index.ts` and add barrel file `packages/memory/src/sync/index.ts`.                                                                                                                     |           |      |
+| Task     | Description                                                                                                                                                                                                                                               | Completed | Date       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-001 | Create `packages/memory/src/sync/types.ts` defining `SyncStatus`, `SyncMode`, `SyncMetrics`, `SyncError`, `ConflictRecord`, `MergePolicy`, `BackupSnapshot`, `RestoreResult`, `TursoSyncConfig`, `SyncRunResult`, and `RemoteValidationResult`.           | ✅        | 2026-05-15 |
+| TASK-002 | Create `packages/memory/src/sync/turso-manager.ts` with `createTursoManager(config: TursoSyncConfig)` and class `TursoManager` methods: `sync(localState)`, `upload(snapshot)`, `download(cursor)`, `getStatus()`, `getMetrics()`, `pause()`, `resume()`. | ✅        | 2026-05-15 |
+| TASK-003 | Implement configuration validation in `turso-manager.ts` for required fields (`databaseUrl`, `authToken`, `syncIntervalMs`, `maxRetries`) and fail-fast setup errors.                                                                                     | ✅        | 2026-05-15 |
+| TASK-004 | Create `packages/memory/src/sync/turso-client.ts` adapter interface `TursoClient` with concrete HTTP/libSQL transport abstraction for testability.                                                                                                        | ✅        | 2026-05-15 |
+| TASK-005 | Add unit tests `packages/memory/src/sync/turso-manager.test.ts` covering status transitions, paused mode, config validation, and basic upload/download success/failure paths.                                                                             | ✅        | 2026-05-15 |
+| TASK-006 | Export sync foundation types and manager from `packages/memory/src/index.ts` and add barrel file `packages/memory/src/sync/index.ts`.                                                                                                                     | ✅        | 2026-05-15 |
 
 ### Implementation Phase 2
 
 - GOAL-002: Implement deterministic conflict resolution and merge pipeline for local/remote divergence.
 
-| Task     | Description                                                                                                                                                                                         | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-007 | Create `packages/memory/src/sync/conflict-resolution.ts` with `resolveConflict(record, policy)` supporting policies `lastWriteWins`, `localWins`, `remoteWins`, `fieldMerge`, and `manualRequired`. |           |      |
-| TASK-008 | Implement deterministic field-merge order for wiki records: `metadata -> content -> relationships -> vectorFingerprint` with per-field precedence map.                                              |           |      |
-| TASK-009 | Add `collectConflicts(localBatch, remoteBatch)` producing normalized `ConflictRecord[]` with stable IDs and timestamps.                                                                             |           |      |
-| TASK-010 | Integrate conflict pipeline into `TursoManager.sync()` sequence: fetch remote delta -> detect conflicts -> apply policy -> produce `SyncRunResult` with resolved/unresolved counts.                 |           |      |
-| TASK-011 | Add unresolved-conflict persistence in `packages/memory/src/sync/conflict-store.ts` for operator/manual resolution workflows.                                                                       |           |      |
-| TASK-012 | Add unit tests `packages/memory/src/sync/conflict-resolution.test.ts` and `packages/memory/src/sync/conflict-store.test.ts` validating deterministic outcomes and unresolved handling.              |           |      |
+| Task     | Description                                                                                                                                                                                         | Completed | Date       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-007 | Create `packages/memory/src/sync/conflict-resolution.ts` with `resolveConflict(record, policy)` supporting policies `lastWriteWins`, `localWins`, `remoteWins`, `fieldMerge`, and `manualRequired`. | ✅        | 2026-05-15 |
+| TASK-008 | Implement deterministic field-merge order for wiki records: `metadata -> content -> relationships -> vectorFingerprint` with per-field precedence map.                                              | ✅        | 2026-05-15 |
+| TASK-009 | Add `collectConflicts(localBatch, remoteBatch)` producing normalized `ConflictRecord[]` with stable IDs and timestamps.                                                                             | ✅        | 2026-05-15 |
+| TASK-010 | Integrate conflict pipeline into `TursoManager.sync()` sequence: fetch remote delta -> detect conflicts -> apply policy -> produce `SyncRunResult` with resolved/unresolved counts.                 | ✅        | 2026-05-15 |
+| TASK-011 | Add unresolved-conflict persistence in `packages/memory/src/sync/conflict-store.ts` for operator/manual resolution workflows.                                                                       | ✅        | 2026-05-15 |
+| TASK-012 | Add unit tests `packages/memory/src/sync/conflict-resolution.test.ts` and `packages/memory/src/sync/conflict-store.test.ts` validating deterministic outcomes and unresolved handling.              | ✅        | 2026-05-15 |
 
 ### Implementation Phase 3
 
 - GOAL-003: Implement sync scheduler, retry strategy, and cloud backup manager with restore safety.
 
-| Task     | Description                                                                                                                                                                  | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-013 | Create `packages/memory/src/sync/sync-scheduler.ts` with `createSyncScheduler(manager, options)` and methods `start()`, `stop()`, `triggerNow()`, `getNextRunAt()`.          |           |      |
-| TASK-014 | Implement bounded exponential backoff in scheduler (`initialDelayMs`, `maxDelayMs`, `maxRetries`) with jitter and terminal error signaling.                                  |           |      |
-| TASK-015 | Create `packages/memory/src/sync/backup-manager.ts` implementing `createSnapshot()`, `verifySnapshot()`, `restoreSnapshot(snapshotId)`, `rollback(restorePointId)`.          |           |      |
-| TASK-016 | Implement backup manifest format in `packages/memory/src/sync/backup-manifest.ts` with hash, createdAt, sourceVersion, and record counts for integrity validation.           |           |      |
-| TASK-017 | Implement pre-restore safety checks in `backup-manager.ts`: target database identity check, schema version compatibility, and explicit `force` gate for destructive restore. |           |      |
-| TASK-018 | Add unit tests `packages/memory/src/sync/sync-scheduler.test.ts`, `packages/memory/src/sync/backup-manager.test.ts`, and `packages/memory/src/sync/backup-manifest.test.ts`. |           |      |
+| Task     | Description                                                                                                                                                                  | Completed | Date       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-013 | Create `packages/memory/src/sync/sync-scheduler.ts` with `createSyncScheduler(manager, options)` and methods `start()`, `stop()`, `triggerNow()`, `getNextRunAt()`.          | ✅        | 2026-05-15 |
+| TASK-014 | Implement bounded exponential backoff in scheduler (`initialDelayMs`, `maxDelayMs`, `maxRetries`) with jitter and terminal error signaling.                                  | ✅        | 2026-05-15 |
+| TASK-015 | Create `packages/memory/src/sync/backup-manager.ts` implementing `createSnapshot()`, `verifySnapshot()`, `restoreSnapshot(snapshotId)`, `rollback(restorePointId)`.          | ✅        | 2026-05-15 |
+| TASK-016 | Implement backup manifest format in `packages/memory/src/sync/backup-manifest.ts` with hash, createdAt, sourceVersion, and record counts for integrity validation.           | ✅        | 2026-05-15 |
+| TASK-017 | Implement pre-restore safety checks in `backup-manager.ts`: target database identity check, schema version compatibility, and explicit `force` gate for destructive restore. | ✅        | 2026-05-15 |
+| TASK-018 | Add unit tests `packages/memory/src/sync/sync-scheduler.test.ts`, `packages/memory/src/sync/backup-manager.test.ts`, and `packages/memory/src/sync/backup-manifest.test.ts`. | ✅        | 2026-05-15 |
 
 ### Implementation Phase 4
 
 - GOAL-004: Add production controls (security, integrity, observability), wire docs, and validate readiness gates.
 
-| Task     | Description                                                                                                                                                                                                         | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-019 | Create `packages/memory/src/sync/security.ts` with secret redaction utilities, credential-source validation, and secure error envelope helpers.                                                                     |           |      |
-| TASK-020 | Create `packages/memory/src/sync/integrity.ts` with payload schema validation and checksum verification for download/import flows.                                                                                  |           |      |
-| TASK-021 | Create `packages/memory/src/sync/metrics.ts` providing counters/timers for `sync_runs_total`, `sync_failures_total`, `sync_conflicts_total`, `backup_runs_total`, `backup_restore_total`, and `sync_duration_ms`.   |           |      |
-| TASK-022 | Add integration tests `packages/memory/src/sync/sync.integration.test.ts` for end-to-end local<->remote sync, conflict scenarios, backup/restore, and offline fallback behavior.                                    |           |      |
-| TASK-023 | Update `packages/memory/README.md` with configuration section (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AGENTSY_MEMORY_SYNC_INTERVAL_MS`) and operational examples.                                               |           |      |
-| TASK-024 | Validate Phase 2 gates by running `pnpm --filter @agentsy/memory check-types`, `pnpm --filter @agentsy/memory test`, and monorepo `pnpm check-types && pnpm test`; record outcomes in `plan/PHASE-2-COMPLETION.md`. |           |      |
+| Task     | Description                                                                                                                                                                                                         | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-019 | Create `packages/memory/src/sync/security.ts` with secret redaction utilities, credential-source validation, and secure error envelope helpers.                                                                     | ✅        | 2026-05-15 |
+| TASK-020 | Create `packages/memory/src/sync/integrity.ts` with payload schema validation and checksum verification for download/import flows.                                                                                  | ✅        | 2026-05-15 |
+| TASK-021 | Create `packages/memory/src/sync/metrics.ts` providing counters/timers for `sync_runs_total`, `sync_failures_total`, `sync_conflicts_total`, `backup_runs_total`, `backup_restore_total`, and `sync_duration_ms`.   | ✅        | 2026-05-15 |
+| TASK-022 | Add integration tests `packages/memory/src/sync/sync.integration.test.ts` for end-to-end local<->remote sync, conflict scenarios, backup/restore, and offline fallback behavior.                                    | ✅        | 2026-05-15 |
+| TASK-023 | Update `packages/memory/README.md` with configuration section (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AGENTSY_MEMORY_SYNC_INTERVAL_MS`) and operational examples.                                               | ✅        | 2026-05-15 |
+| TASK-024 | Validate Phase 2 gates by running `pnpm --filter @agentsy/memory check-types`, `pnpm --filter @agentsy/memory test`, and monorepo `pnpm check-types && pnpm test`; record outcomes in `plan/PHASE-2-COMPLETION.md`. | ✅        | 2026-05-15 |
 
 ## 3. Alternatives
 
@@ -110,7 +110,7 @@ This plan implements Phase 2 from `plan/IMPLEMENTATION-PRIORITY.md`: reliable Tu
 
 ## 4. Dependencies
 
-- **DEP-001**: Turso transport dependency selection (`@libsql/client` or equivalent approved client) in `packages/memory/package.json`.
+- **DEP-001**: Turso transport dependency integration (`@tursodatabase/sync`) in `packages/memory/package.json`.
 - **DEP-002**: Existing local coordination primitives from `packages/memory/src/coordination/*` must remain available during remote outages.
 - **DEP-003**: Existing wiki data structures from `packages/memory/src/wiki/wiki-manager.ts` are required for conflict model typing.
 - **DEP-004**: Existing fingerprint/reuse metadata (`packages/memory/src/types.ts`, `packages/memory/src/reuse.ts`) is required for integrity and dedup checks.
