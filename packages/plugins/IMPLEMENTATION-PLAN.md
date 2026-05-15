@@ -68,6 +68,21 @@ The package fulfills its role by providing:
 - **Skills Support**: Full support for `SKILL.md` files as defined in the Agent Skills open standard.
 - **Entry Points**: Features register themselves via package entry points or explicit manifests.
 
+### 7. Skill Discovery and Activation (Agentspan-inspired)
+
+Agentspan-style skill management is a good fit for the plugin layer because it already owns capability discovery and activation.
+
+- **Skill discovery**: search installed skills by name, description, and capability tags.
+- **Context-based activation**: enable skills only when the current task matches their scope.
+- **Permission scoping**: attach explicit tool and filesystem permissions to each skill bundle.
+- **Collaboration metadata**: preserve skill provenance, version, and activation history for review.
+
+**Implementation notes:**
+
+- Keep the model lightweight: adapt the concepts, do not depend on Agentspan at runtime.
+- Surface skills through the existing registry and manifest flow.
+- Let orchestrator/runtime decide activation; plugins should expose metadata and safe defaults.
+
 ## Logic & Data Flow
 
 ### 1. Tool Discovery Flow

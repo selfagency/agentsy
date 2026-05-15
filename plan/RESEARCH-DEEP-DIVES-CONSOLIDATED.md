@@ -1,24 +1,132 @@
----
-goal: 'Consolidated research synthesis — 37 reference codebases and architectural findings for @agentsy platform'
-version: '3.0'
-date_created: '2026-05-02'
-date_consolidated: '2026-05-11'
-sources: ['agentsy-deep-dive-v1.md', 'agentsy-deep-dive-v2.md']
-owner: 'research'
-status: 'Completed'
-tags: ['research', 'architecture', 'competitive-analysis', 'memory', 'agent-loop', 'testing', 'reference']
----
+# Consolidated Deep-Dive Research — Canonical Synthesis
 
-# Consolidated Deep-Dive Research — 37 Reference Codebases & Architectural Patterns
+**Goal:** Single canonical synthesis of Agentsy framework research and package migration targets  
+**Version:** 4.0  
+**Created:** 2026-05-02  
+**Consolidated:** 2026-05-14  
+**Sources:** `agentsy-deep-dive-v1.md`, `agentsy-deep-dive-v2.md`, `AGENT_PATTERNS_ANALYSIS.md`, `AGENT-ECOSYSTEM-ANALYSIS-REPORT.md`  
+**Owner:** research  
+**Status:** Completed  
+**Tags:** research, architecture, competitive-analysis, memory, agent-loop, testing, reference, migration
 
 ![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
-This is a consolidated research synthesis combining two prior deep-dive analysis sessions:
+This is the single canonical synthesis of the Agentsy research reports. It merges the framework-pattern analysis and the ecosystem/package-reuse analysis into one document and maps package-specific recommendations into the relevant `IMPLEMENTATION-PLAN.md` files.
+
+The historical source reports are retained as lightweight pointers only.
+
+This synthesis combines two deep-dive analysis sessions plus the package reuse review:
 
 - **Phase 1 (v1)**: 9 reference codebases (Claude Code, nanobot, Hermes, Codex, Gemini CLI, OpenCode, nano-claude-code, Vercel AI, TanStack AI)
 - **Phase 2 (v2)**: 28 additional frameworks and research artifacts (smolagents, Agentica, Eko, OpenCrabs, DeerFlow, OctoTools, LobeHub, gstack, scenario, and 19 others)
+- **Package reuse / standards review**: direct package reuse candidates, standards, and migration targets across the Agentsy package ecosystem.
 
 **Total**: 37 independent codebases analyzed; patterns validated by 3+ implementations; architectural innovations catalogued for platform enrichment.
+
+## Package migration ledger
+
+Package-specific recommendations are tracked in the owning package plans. The most important mappings are:
+
+| Recommendation                        | Target plan                                                                                                                  | Status    |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Codeburn analytics and yield analysis | `packages/observability/IMPLEMENTATION-PLAN.md`                                                                              | migrated  |
+| models.dev provider and cost database | `packages/models/IMPLEMENTATION-PLAN.md`                                                                                     | migrated  |
+| Honker coordination and queueing      | `packages/memory/IMPLEMENTATION-PLAN.md`, `packages/runtime/IMPLEMENTATION-PLAN.md`, `packages/tools/IMPLEMENTATION-PLAN.md` | migrated  |
+| mcp-rag-server primary RAG path       | `packages/memory/IMPLEMENTATION-PLAN.md`, `packages/retrieval/IMPLEMENTATION-PLAN.md`                                        | migrated  |
+| Varlock schema-first secrets          | `packages/secrets/IMPLEMENTATION-PLAN.md`                                                                                    | migrated  |
+| Mirage unified resources              | `packages/tools/IMPLEMENTATION-PLAN.md`                                                                                      | migrated  |
+| Stagehand browser automation          | `packages/tools/IMPLEMENTATION-PLAN.md`                                                                                      | migrating |
+| Crit code-review workflow             | `packages/tools/IMPLEMENTATION-PLAN.md`                                                                                      | migrating |
+| Agentspan skill system                | `packages/plugins/IMPLEMENTATION-PLAN.md`                                                                                    | migrating |
+| tldw_server media retrieval           | `packages/retrieval/IMPLEMENTATION-PLAN.md`                                                                                  | migrating |
+
+The source reports below are intentionally kept focused on cross-cutting synthesis. Implementation details live with the owning package.
+
+## Migrated findings from source reports
+
+### Framework pattern analysis highlights
+
+#### State management
+
+- **Hybrid persistence wins**: the strongest frameworks combine in-memory speed with durable storage.
+- **Local-first and cloud-native both matter**: SQLite-backed local workflows fit personal or offline agents, while PostgreSQL/Redis-backed services fit collaborative or hosted deployments.
+- **Memory-first systems are common**: layered memory models and structured episodic storage are a recurring differentiator.
+
+**Agentsy takeaway:** keep the backend pluggable so `@agentsy/memory` and adjacent packages can support both local-first and hosted deployments without changing the higher-level API.
+
+#### Tooling and MCP
+
+- **MCP is the dominant tool layer** across the analyzed frameworks.
+- **Policy enforcement matters as much as transport**: tool access should be shaped by runtime policy, not just discovery.
+- **Curated starter toolkits beat empty extensibility promises**: the ecosystems with the most adoption ship useful tools on day one.
+
+**Agentsy takeaway:** native MCP support should remain a core capability, paired with tool-level policy enforcement and a small, opinionated starter toolkit.
+
+#### Observability
+
+- **Cost, latency, token usage, and tool usage** are the metrics that show up consistently in the best systems.
+- **Cost-yield analysis is rare but valuable**: frameworks like Codeburn show the upside of correlating runs with git history and success rates.
+- **Structured tracing is the baseline** for debugging non-deterministic agent behavior.
+
+**Agentsy takeaway:** make observability multi-dimensional from the start instead of bolting it on later.
+
+#### Security
+
+- **Sandboxing and identity controls** are the strongest recurring theme.
+- **Environment-variable and keychain-based secret handling** is the baseline, not the goal.
+- **Policy engines belong in the runtime path** so tool access can be denied before execution, not after failure.
+
+**Agentsy takeaway:** treat tool permissioning, secret handling, and process isolation as part of the core platform contract.
+
+#### Feature and architecture implications
+
+- Support both **single-agent** and **multi-agent** workflows.
+- Prefer **DAG orchestration** for long-running or branching workflows.
+- Keep **browser automation** optional and modular.
+- Treat **domain-specific coding agents** as a separate capability from general-purpose orchestration.
+- Plan for **API-first** delivery, with a UI layered on once the core flows stabilize.
+
+### Ecosystem/package-reuse analysis highlights
+
+#### Direct package reuse candidates
+
+| Package                | Why it matters                                                                                 | Where it belongs                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Agentseal Codeburn** | cost breakdown, one-shot success rate, git correlation, deterministic optimization suggestions | `packages/observability/IMPLEMENTATION-PLAN.md`                                       |
+| **Stagehand**          | hybrid AI + code browser automation with preview-before-execution                              | `packages/tools/IMPLEMENTATION-PLAN.md`                                               |
+| **Agentspan**          | skill discovery, context-based activation, scope/permission control                            | `packages/plugins/IMPLEMENTATION-PLAN.md`                                             |
+| **Crit**               | browser-based code review, persistent review state, PR sync                                    | `packages/tools/IMPLEMENTATION-PLAN.md`                                               |
+| **Varlock**            | schema-first secrets, runtime leak scanning, multi-env loading                                 | `packages/secrets/IMPLEMENTATION-PLAN.md`                                             |
+| **models.dev**         | provider/model discovery, cost estimation, capability matching                                 | `packages/models/IMPLEMENTATION-PLAN.md`                                              |
+| **Honker**             | SQLite pub/sub, task queues, atomic workflow commits                                           | `packages/memory/IMPLEMENTATION-PLAN.md`, `packages/runtime/IMPLEMENTATION-PLAN.md`   |
+| **mcp-rag-server**     | MCP-native RAG, auto-ingestion, local-first knowledge base                                     | `packages/memory/IMPLEMENTATION-PLAN.md`, `packages/retrieval/IMPLEMENTATION-PLAN.md` |
+| **mirage**             | unified filesystem abstraction across multiple resource backends                               | `packages/tools/IMPLEMENTATION-PLAN.md`                                               |
+
+#### Build-vs-bundle decision matrix
+
+| Component           | Recommendation                                       | Reason                                                       |
+| ------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| Model selection     | build new orchestration logic on top of `models.dev` | avoid hardcoding providers and pricing                       |
+| Memory coordination | use Honker-style extension support                   | durable pub/sub and queues without new infrastructure        |
+| Knowledge base      | use `mcp-rag-server` as the primary path             | MCP-native and local-first                                   |
+| Media analysis      | add `tldw_server` only if needed                     | useful, but only when media becomes a priority               |
+| Tool unification    | use mirage patterns selectively                      | only when multi-resource abstraction is worth the complexity |
+| Token optimization  | adopt Caveman-style compression patterns             | proven output reduction for skill bundles and prompts        |
+
+#### Standards and protocol stack
+
+- **MCP** remains the baseline interoperability layer.
+- **A2A**, **AP2**, and **Ratify** are worth tracking for future agent networking and trust flows.
+- The architecture should stay compatible with local-first workflows while still supporting hosted or team-scale operation.
+
+#### Cross-cutting implementation guidance
+
+- Use **honker** for coordination, but keep actual memory semantics in `@agentsy/memory`.
+- Use **mcp-rag-server** for the primary RAG path, and only add **tldw_server** if media analysis becomes a real requirement.
+- Keep **mirage** optional so core tool execution stays simple.
+- Let **`@agentsy/plugins`** own skill discovery and activation, not a new standalone skill runtime.
+
+The result is a clearer package map: source research informs the product direction, and package plans own the implementation details.
 
 ---
 

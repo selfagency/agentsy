@@ -92,6 +92,40 @@ Web search integration (e.g., via Exa, Brave, or DuckDuckGo APIs).
 - `web_search(query, numResults?)` → `SearchResult[]`
 - Provider configured via `AGENTSY_SEARCH_PROVIDER` env + key
 
+### Browser Automation (`tools/browser-automation/`)
+
+Optional browser automation adapter based on the Stagehand pattern for reliable, production-grade web interactions.
+
+- `browser_automation_act(action, context?)` — deterministic code-first interaction
+- `browser_automation_agent(task, options?)` — AI-guided multi-step automation
+- `browser_automation_extract(selector, schema?)` — structured extraction from a live page
+
+**Integration notes:**
+
+- Expose as `@agentsy/tools/browser-automation` so it can stay optional and isolated from the core tool surface.
+- Preserve a preview-before-execution flow where the caller can inspect the planned action before mutation.
+- Cache successful interaction sequences when safe to reduce repeated navigation cost.
+
+**Security:**
+
+- Keep browser permissions explicit and scoped per session.
+- Treat page content as untrusted input.
+- Prefer deterministic `act()`-style operations for destructive mutations; use AI guidance only when necessary.
+
+### Code Review (`tools/code-review/`)
+
+Browser-assisted review workflow inspired by Crit for round-diff tracking, persistent review state, and PR feedback loops.
+
+- `code_review_open(prUrl, options?)` — open or attach to a review session
+- `code_review_diff(target, base?)` — inspect changed files and round diffs
+- `code_review_summarize(sessionId)` — produce a review summary for follow-up
+
+**Integration notes:**
+
+- Keep this as `@agentsy/tools/code-review` and let orchestrator agents call it as a capability, not as a hard dependency.
+- Capture review rounds and agent feedback so the evaluator-optimizer loop can compare iterations.
+- Favor browser automation for human-in-the-loop review coordination, not for core code execution.
+
 ### MCP Bridge (`tools/mcp/`)
 
 Expose MCP server tools as native `ToolDefinition` objects.

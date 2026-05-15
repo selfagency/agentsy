@@ -61,6 +61,20 @@ If the managed adapter is enabled, it should still expose the same `RetrievalEng
 - **Responsibility**: Precision improvement.
 - **Logic**: A lightweight cross-encoder pass over the top 10-20 results to ensure the most relevant context is selected for the limited context window.
 
+### 4. Conditional media retrieval (`tldw_server`)
+
+If media analysis becomes a first-class requirement, add a secondary retrieval adapter modeled after `tldw_server`.
+
+- **Supported media**: video transcripts/chapters, audio transcription/summary, OCR/description for images.
+- **Provider breadth**: multi-provider embeddings and completions when a local-only stack is not enough.
+- **Interface options**: CLI and Web UI for teams that prefer a non-MCP workflow.
+
+**Recommendation:**
+
+- Keep `mcp-rag-server` as the primary RAG path.
+- Add `tldw_server` only when media analysis is critical and the extra surface area is justified.
+- Preserve the same retrieval contract so runtime callers do not care which backend is active.
+
 ## Logic & Data Flow
 
 ### 1. The Indexing Flow
