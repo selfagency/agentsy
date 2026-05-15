@@ -157,6 +157,92 @@ The runtime consumes `@agentsy/core/processor` and `@agentsy/core/universal-clie
 
 `agentsy-agents-v1.md`, `agentsy-tech.md`, `agentsy-testing-plan.md`, `RECONCILIATION-REPORT.md`, `DECISION-LOG.md`, `research/AGENT-PLATFORMS-ANALYSIS.md`, `packages/runtime/IMPLEMENTATION-PLAN.md`.
 
+---
+
+## Agentsy Runner: Model Search & Fetch Support (NEW)
+
+The Agentsy runner must support **model discovery and acquisition** for local execution from:
+
+- Hugging Face
+- Ollama
+- other open provider registries (via adapter interface)
+
+### Ownership split
+
+- `@agentsy/models`: recommendation + ranking + fetch plan generation
+- `@agentsy/providers`: source adapters and protocol adapters
+- `@agentsy/runtime` (runner): executes search/fetch/install flows and model activation lifecycle
+
+### Runner acquisition workflow
+
+1. Runner receives user criteria (task, budget, local preference, hardware constraints).
+2. Runner calls `@agentsy/models` recommendation service.
+3. Runner receives ranked models + `ModelArtifactFetchPlan` entries.
+4. Runner executes plan through `@agentsy/providers` source adapters.
+5. Runner validates checksum/license/compatibility.
+6. Runner registers local model and optionally warm-loads provider runtime.
+
+### Runtime interfaces (planned)
+
+    interface RunnerModelService {
+      search(criteria: RecommendationCriteria): Promise<ModelRecommendation[]>;
+      fetch(plan: ModelArtifactFetchPlan): Promise<LocalModelRecord>;
+      install(localModelId: string): Promise<void>;
+      listInstalled(): Promise<LocalModelRecord[]>;
+    }
+
+### Local provider execution support
+
+For `agentsy-local-llama` execution, runner lifecycle must include:
+
+- model preflight checks (GGUF, quantization, context)
+- resource fit checks (RAM/VRAM/Metal/CUDA capability)
+- optional source conversion path support (e.g., Ollama split blobs -> GGUF)
+- warm pool policy and unload policy hooks
+
+### Local automodel selection with llama-swap (NEW)
+
+When the recommendation layer returns multiple viable local candidates, runtime should be able to launch a llama-swap-backed endpoint instead of binding directly to a single backend.
+
+This is the preferred strategy when:
+
+- multiple models need to share one OpenAI-compatible endpoint,
+- hot-swapping between backends is desirable,
+- the selected model can be served by multiple local runtimes with different tradeoffs,
+- the user wants one stable endpoint while the runtime manages backend churn.
+
+Runtime responsibilities:
+
+1. Translate recommendation plans into llama-swap model entries.
+2. Start or reuse the llama-swap process with the generated config file.
+3. Route requests to the hot-swapped endpoint and monitor `/running`, `/logs`, and `/health`.
+4. Fall back to direct provider execution if llama-swap is unavailable.
+5. Preserve streamed responses by disabling reverse-proxy buffering where applicable.
+
+Suggested runtime state model:
+
+    interface LocalAutomodelSession {
+      selectedModelId: string;
+      selectedRuntime: 'llama-swap' | 'ollama' | 'llama.cpp' | 'vllm' | 'mlx' | 'apfel';
+      endpointUrl: string;
+      configPath?: string;
+      runningModels: string[];
+    }
+
+### Quality gates for runner acquisition path
+
+1. deterministic dry-run mode for fetch plans
+2. resumable downloads and retry policy
+3. integrity + provenance capture for each installed model
+4. explicit approval gate for large downloads or external network egress
+
+### Quality gates for local automodel selection
+
+1. same input recommendation must yield the same ranked local plan
+2. llama-swap config rendering must be deterministic and idempotent
+3. if llama-swap is unavailable, runtime must continue with direct backend execution
+4. streamed requests must not regress behind reverse proxies
+
 // Main runtime manager
 export class RuntimeManager {
 constructor(config: RuntimeConfig);

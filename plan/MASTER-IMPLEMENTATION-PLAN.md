@@ -1,6 +1,6 @@
 # @agentsy Master Implementation Plan (Canonical)
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 Repository: `selfagency/agentsy` (`main`)
 Scope: architecture authority, implementation sequencing, and documentation governance
 
@@ -31,6 +31,7 @@ The workspace currently has two package maturity classes:
 - `@agentsy/cli`
 - `@agentsy/core`
 - `@agentsy/memory`
+- `@agentsy/models`
 - `@agentsy/observability`
 - `@agentsy/orchestrator`
 - `@agentsy/plugins`
@@ -105,6 +106,56 @@ Agentsy should stay adapter-first: use proven external projects as interoperabil
 4. **tldw_server** (CONDITIONAL) - Media analysis capabilities only if critically needed
 5. **mcp-rag-server** - Zero-ceremony RAG with local LLM support (PRIMARY)
 6. **Mirage** (CONDITIONAL) - Multi-resource unification only if external resource access needed
+
+#### A.1) Local LLM provider support strategy (NEW)
+
+Agentsy must support both cloud and local model execution by combining catalog intelligence with protocol adapters:
+
+- **Catalog + selection:** `@agentsy/models` (models.dev + local provider profiles)
+- **Protocol adapters:** `@agentsy/providers` (OpenAI-compatible, Ollama-native, native local runtimes)
+- **First-party local runtime provider:** `node-llama-cpp`-based adapter in `@agentsy/providers`
+
+Initial local provider targets:
+
+1. Ollama
+2. vLLM OpenAI-compatible server
+3. LM Studio
+4. Lemonade Server
+5. Docker Model Runner
+6. Jan API Server
+7. Apfel
+8. Agentsy native local provider (`node-llama-cpp`)
+
+#### A.2) Runner model acquisition strategy (NEW)
+
+Agentsy runner must support searching and fetching models from open ecosystems:
+
+1. Hugging Face (GGUF/llama.cpp-compatible model discovery + artifact fetch)
+2. Ollama registry/local manifests
+3. Additional open providers via pluggable source adapters
+
+Canonical ownership:
+
+- `@agentsy/models`: recommendation, ranking, and fetch-plan generation
+- `@agentsy/providers`: source/protocol adapters
+- `@agentsy/runtime`: execution of fetch/install/activation lifecycle
+
+#### A.3) Local automodel selection strategy (NEW)
+
+Agentsy should support a **model recommendation → runtime selection → hot-swap** pipeline for local use cases.
+
+Reference sources:
+
+- `llmfit`-style hardware fit scoring and benchmark overlays
+- `llama-swap`-style hot-swapped OpenAI/Anthropic-compatible endpoint management
+
+System behavior:
+
+1. `@agentsy/models` ranks candidates using hardware + benchmark + cost criteria.
+2. `@agentsy/runtime` chooses direct backend, fetch/install, or llama-swap hot-swap routing.
+3. `@agentsy/providers` owns the protocol adapters and request filters.
+
+Local automodel selection should prefer a single stable API endpoint when it improves developer experience, but it must keep direct provider fallback available.
 
 #### B) Patterns to Adopt
 
@@ -187,6 +238,7 @@ interface ExternalIntegrationLayer {
 - Memory file compression (46% savings) in `@agentsy/core/context`
 - Virtual sandbox mode (90% savings) in `@agentsy/runtime` sandbox
 - BLAKE3 content addressing in `@agentsy/memory`
+- Cache-aware reusable context fingerprints across memory, context manager, and session resume paths
 - Maki tree-sitter tool efficiency in `@agentsy/tools`
 - Role-based orchestration in `@agentsy/orchestrator`
 - Task delegation with isolated history in `@agentsy/runtime`
@@ -200,6 +252,7 @@ interface ExternalIntegrationLayer {
 - **Memory coordination:** honker pub/sub for cross-process events, task queues for orchestration
 - **Turso sync:** Cloud persistence, analytics, backup with conflict resolution
 - **mcp-rag-server integration:** Zero-ceremony RAG, local-only processing, MCP-native design
+- **Context reuse:** fingerprinted stable segments and cache-aware memory assembly inspired by LMCache
 
 **Phase 2 (Weeks 9-26): Tool & Resource Integration**
 
@@ -213,6 +266,11 @@ interface ExternalIntegrationLayer {
 **Phase 3 (Weeks 1-24): Model Selection & Analytics**
 
 - **models.dev integration:** New `@agentsy/models` package with 100+ provider support
+- **Local LLM provider profiles:** Full support matrix (Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel)
+- **First-party local runtime provider:** `node-llama-cpp` adapter plan in `@agentsy/providers`
+- **Recommendation engine enhancement:** llm-stats developer endpoint integration for criteria-driven ranking
+- **Runner acquisition flows:** search/fetch/install support for Hugging Face + Ollama + open providers
+- **Local automodel selection:** llama-swap-backed hot-swap routing for multiple local backends
 - **Expected Benefits:** Cost-optimized model selection, automatic updates, capability-aware matching
 - **Codeburn analytics:** Cost-yield analysis, deterministic optimization suggestions
 - **Varlock secrets:** Schema-first validation, runtime leak prevention
@@ -222,6 +280,7 @@ interface ExternalIntegrationLayer {
 - **ACP integration:** Editor integration server/client patterns (NEW)
 - **Enhanced MCP 1.0:** Dynamic tool loading, enterprise gateway configuration
 - **Skills Protocol:** Modular capability framework (NEW)
+- **Structured output handler:** adopt schema-first + grammar-backed structured generation patterns from Outlines/llguidance
 - **Other standards:** Ratify identity, AP2 payments (domain-specific)
 
 #### F) Expected Combined Benefits
@@ -264,6 +323,10 @@ interface ExternalIntegrationLayer {
 
 - `context`, `formatting`, `processor`, `recovery`, `retry`, `sse`, `structured`, `thinking`, `tool-calls`, `xml-filter` live under `@agentsy/core`.
 - Provider abstractions and provider-facing adaptation/normalization remain under `@agentsy/providers`.
+- Model catalog federation, scoring, and route recommendation live under `@agentsy/models`.
+- Local provider protocol implementations (including node-llama-cpp native runtime) remain under `@agentsy/providers`.
+- Runner-side model acquisition lifecycle (fetch/install/activate) lives under `@agentsy/runtime`.
+- Runtime-owned local automodel selection routing may delegate to llama-swap when multiple backends are viable.
 - Orchestration logic belongs in `@agentsy/orchestrator`; runtime execution controls belong in `@agentsy/runtime`.
 - `ag-ui` exists as runtime capability (`@agentsy/runtime/ag-ui`), not a standalone package.
 - `token-economy` naming is reconciled to `@agentsy/tokens`.
@@ -418,3 +481,6 @@ This plan is being executed successfully when:
 
 - **2026-05-13**: Comprehensive synthesis rewrite; resolved providers/core ambiguity; normalized package maturity model; retired `agentsy-platform-v2.md`; aligned execution authority around package plans + canonical master.
 - **2026-05-14**: Added external ecosystem recommendations and explicit adapter guidance for observability, durable execution, retrieval/memory, interoperability, prompt caching, and orchestration patterns.
+- **2026-05-15**: Added canonical local LLM strategy across `@agentsy/models` + `@agentsy/providers`, including support targets (Ollama/vLLM/LM Studio/Lemonade/Docker Model Runner/Jan/Apfel) and first-party `node-llama-cpp` provider plan.
+- **2026-05-15**: Added runner model acquisition strategy (Hugging Face/Ollama/open providers) and llm-stats-based recommendation integration plan.
+- **2026-05-15**: Added local automodel selection guidance and llama-swap hot-swap routing strategy.
