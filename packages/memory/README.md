@@ -97,6 +97,8 @@ Phase 2 is now implemented for the local-first sync scope in this package. The p
 
 The recommended remote-sync transport for this package is Turso Sync, not the legacy `@libsql/client` path.
 
+For integration tests that exercise sync endpoints, use MSW (`msw` v2) handlers to keep HTTP behavior deterministic and reusable across suites.
+
 ```ts
 import { createTursoManager } from '@agentsy/memory';
 

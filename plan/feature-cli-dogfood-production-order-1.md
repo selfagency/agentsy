@@ -25,6 +25,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **REQ-007**: Retrieval must be local-first by default and preserve source attribution.
 - **REQ-008**: Observability must provide traceability for model, tool, memory, and approval events before GA.
 - **REQ-030**: Cross-domain logging (CLI, runtime, orchestrator, tools, memory, providers, and UI adapters) must use a single structured logger contract based on `tslog` through `@agentsy/observability`.
+- **REQ-031**: Network-facing integration and e2e suites should use MSW (`msw` v2) as the default HTTP mocking layer for deterministic cross-package tests.
 - **REQ-009**: Every package in `packages/*` with a manifest must be explicitly covered by at least one implementation phase in this plan.
 - **REQ-010**: Documentation and CLI help output must reflect actual shipped behavior at each milestone.
 - **REQ-011**: All phases must preserve package boundaries from `plan/MASTER-IMPLEMENTATION-PLAN.md`.
@@ -140,6 +141,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 | TASK-010 | Implement runtime turn execution path in `packages/runtime/src/loop/` for text-only model responses (no tool actions yet).                                                                                                                                    |           |      |
 | TASK-011 | Implement renderer bridge in `packages/renderers/src/adapters/cli*` for streaming token output, partial delta rendering, and final summary/footer.                                                                                                            |           |      |
 | TASK-012 | Add end-to-end test `packages/cli/src/e2e/chat-streaming.e2e.test.ts` validating streamed output from mock provider through full stack.                                                                                                                       |           |      |
+| TASK-095 | Add shared MSW bootstrap and reusable HTTP handlers for provider-facing CLI/runtime integration tests to replace bespoke network stubs.                                                                                                                       |           |      |
 
 ### Implementation Phase 3
 
@@ -262,14 +264,15 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 
 - GOAL-011: Complete integration surfaces across all in-development packages and external bridges.
 
-| Task     | Description                                                                                                                             | Completed | Date |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-049 | Finalize `packages/guardrails` integration and wire runtime policy hooks to it as canonical enforcement layer.                          |           |      |
-| TASK-050 | Finalize `packages/mcp` integration and CLI server management commands (`agentsy mcp list/add/remove/check`).                           |           |      |
-| TASK-051 | Finalize `packages/connectors` integration and expose minimal bridge commands for channel adapters (without blocking core CLI release). |           |      |
-| TASK-052 | Finalize `packages/retrieval` integration and align package exports/documentation with runtime memory-retrieval contracts.              |           |      |
-| TASK-053 | Add integration tests validating CLI -> runtime -> mcp -> tool loop path and guardrail interception path.                               |           |      |
-| TASK-054 | Update `README.md`, `docs/packages.md`, and migration docs to reflect fully promoted package set and canonical boundaries.              |           |      |
+| Task     | Description                                                                                                                                                                    | Completed | Date |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-049 | Finalize `packages/guardrails` integration and wire runtime policy hooks to it as canonical enforcement layer.                                                                 |           |      |
+| TASK-050 | Finalize `packages/mcp` integration and CLI server management commands (`agentsy mcp list/add/remove/check`).                                                                  |           |      |
+| TASK-051 | Finalize `packages/connectors` integration and expose minimal bridge commands for channel adapters (without blocking core CLI release).                                        |           |      |
+| TASK-052 | Finalize `packages/retrieval` integration and align package exports/documentation with runtime memory-retrieval contracts.                                                     |           |      |
+| TASK-053 | Add integration tests validating CLI -> runtime -> mcp -> tool loop path and guardrail interception path.                                                                      |           |      |
+| TASK-096 | Ensure networked integration suites (providers/retrieval/connectors/memory-sync) run against MSW handlers with deterministic fixture payloads and explicit per-test overrides. |           |      |
+| TASK-054 | Update `README.md`, `docs/packages.md`, and migration docs to reflect fully promoted package set and canonical boundaries.                                                     |           |      |
 
 ### Implementation Phase 12
 
@@ -317,6 +320,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **DEP-017**: `packages/plugins` plugin capability registry and policy filters.
 - **DEP-018**: `packages/secrets` keychain/env/file precedence and redaction helpers.
 - **DEP-019**: `packages/testing` shared fixtures, scenario harnesses, and benchmark infrastructure.
+- **DEP-027**: Shared MSW handler/server setup (`msw` v2) for Node/browser request interception in integration and e2e suites.
 - **DEP-020**: `packages/scripts` release and validation automation used in Phase 12.
 - **DEP-021**: `packages/vscode` parity validation with shared runtime/orchestrator behavior.
 - **DEP-022**: Documentation surfaces in `README.md`, `docs/packages.md`, `docs/examples/*`, `docs/developers/*`.
@@ -370,6 +374,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **TEST-006**: Retrieval hybrid ranking + citation coverage benchmark tests.
 - **TEST-007**: Observability trace completeness and redaction tests.
 - **TEST-029**: Cross-domain logging contract tests verifying tslog-backed field shape consistency, correlation IDs, redaction, and sink routing across CLI/runtime/orchestrator/providers/tools.
+- **TEST-030**: MSW handler contract tests ensuring provider/retrieval/connectors/sync request mocks remain deterministic and reusable across package suites.
 - **TEST-008**: Guardrail policy interception tests for high-risk tool calls.
 - **TEST-009**: MCP integration tests for server lifecycle and tool invocation path.
 - **TEST-010**: Connectors adapter contract tests for message normalization and session mapping.
@@ -427,6 +432,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - `packages/retrieval/IMPLEMENTATION-PLAN.md`
 - `packages/observability/IMPLEMENTATION-PLAN.md`
 - `https://tslog.js.org`
+- `https://mswjs.io/docs`
 - `packages/tools/IMPLEMENTATION-PLAN.md`
 - `packages/vscode/IMPLEMENTATION-PLAN.md`
 - `docs/getting-started.md`

@@ -42,6 +42,7 @@ This plan implements Phase 2 from `plan/IMPLEMENTATION-PRIORITY.md`: reliable Tu
 - **GUD-001**: Follow existing naming patterns (`create*`, `*Manager`, `*Scheduler`, `*Resolution`).
 - **GUD-002**: Use fail-fast validation for setup/configuration paths, graceful degradation for runtime sync paths.
 - **GUD-003**: Add tests colocated with implementation files and validate with `pnpm check-types` and `pnpm test`.
+- **GUD-004**: Use MSW (`msw` v2) as the default network-mocking layer for Turso HTTP/sync endpoints in integration tests.
 - **PAT-001**: Local-first + remote-shadow sync pattern.
 - **PAT-002**: Deterministic conflict resolution with explicit policy ordering.
 - **PAT-003**: Retry with bounded exponential backoff and terminal error state.
@@ -146,7 +147,7 @@ This plan implements Phase 2 from `plan/IMPLEMENTATION-PRIORITY.md`: reliable Tu
 - **TEST-007**: `packages/memory/src/sync/security.test.ts` — Secret redaction and secure error envelopes.
 - **TEST-008**: `packages/memory/src/sync/integrity.test.ts` — Payload schema + checksum validation failures/successes.
 - **TEST-009**: `packages/memory/src/sync/metrics.test.ts` — Counter/timer registration and updates.
-- **TEST-010**: `packages/memory/src/sync/sync.integration.test.ts` — End-to-end local/remote sync, conflicts, offline fallback, backup restore.
+- **TEST-010**: `packages/memory/src/sync/sync.integration.test.ts` — End-to-end local/remote sync, conflicts, offline fallback, backup restore (with MSW-backed network handlers for deterministic endpoint behavior).
 - **TEST-011**: Command validation: `pnpm --filter @agentsy/memory check-types` must pass.
 - **TEST-012**: Command validation: `pnpm --filter @agentsy/memory test` must pass.
 - **TEST-013**: Command validation: `pnpm check-types && pnpm test` must pass with no regressions.
@@ -171,4 +172,5 @@ This plan implements Phase 2 from `plan/IMPLEMENTATION-PRIORITY.md`: reliable Tu
 - `packages/memory/MEMORY-ARCHITECTURE.md`
 - `packages/memory/MEMORY-STRATEGY-SYNTHESIS.md`
 - `packages/memory/UPDATED-IMPLEMENTATION-PLAN.md`
+- `https://mswjs.io/docs`
 - `docs/packages/memory.md`

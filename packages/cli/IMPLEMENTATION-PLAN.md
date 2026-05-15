@@ -29,6 +29,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - **REQ-CLI-011**: CLI should support cmux-native subagent pane orchestration patterns (auto-layout, bounded pane lifecycle, idle cleanup, and queued split retries when workspace size is temporarily constrained).
 - **REQ-CLI-012**: CLI must only show/enable cmux integrations when cmux is discovered for the active user workspace (including workspace Applications-folder discovery checks).
 - **REQ-CLI-013**: CLI operational logging must use the universal cross-domain logger contract from `@agentsy/observability` (tslog-backed), including correlation IDs for turns, tools, and session transitions.
+- **REQ-CLI-014**: CLI network-facing integration tests should use shared MSW (`msw` v2) handlers for deterministic provider/retrieval/connectors mocking.
 - **SEC-CLI-001**: Secrets are never persisted in plaintext config.
 - **SEC-CLI-002**: Destructive operations remain approval-gated via runtime policy.
 - **SEC-CLI-003**: cmux connectivity must default to least privilege (`cmux processes only`/`off` as configured) and must never silently force `allowAll`.
@@ -89,6 +90,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 | TASK-CLI-028 | Add integration tests for cmux subagent pane lifecycle (spawn/focus/cleanup), idle-agent reap behavior, and retry queue drain when workspace capacity changes.                                 |           |      |
 | TASK-CLI-031 | Add tests for discovery gating across workspace states (cmux in Applications folder, cmux outside workspace scope, and no cmux) validating command visibility/help/autocomplete/menu behavior. |           |      |
 | TASK-CLI-032 | Integrate CLI command/workflow logging with tslog-backed observability logger factories and validate correlation propagation into trace/event views (`/trace`, `/events`, status JSON).        |           |      |
+| TASK-CLI-033 | Migrate CLI integration/e2e suites that mock HTTP to shared MSW handlers and lifecycle setup utilities from `@agentsy/testing`.                                                                |           |      |
 
 ### Implementation Phase 4
 
@@ -113,6 +115,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - **ACC-CLI-006**: Parallel subagent pane orchestration in cmux is stable under resize/capacity pressure and cleans up idle panes according to documented policy.
 - **ACC-CLI-007**: cmux surfaces are only visible/enabled when discovery succeeds for the active workspace Applications-folder context; undiscovered states do not expose cmux by default.
 - **ACC-CLI-008**: CLI logs emitted through observability use the shared tslog-backed schema and carry correlation metadata compatible with cross-package diagnostics.
+- **ACC-CLI-009**: Network-bound CLI integration tests use MSW handlers with deterministic request/response fixtures across provider/retrieval flows.
 
 ## 4. Sources Synthesized
 
@@ -122,6 +125,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - `https://github.com/oclif/core`
 - `https://cmux.com/docs/api`
 - `https://cmux.com/docs/agent-integrations/oh-my-opencode`
+- `https://mswjs.io/docs`
 - `https://tslog.js.org`
 - `https://www.npmjs.com/package/@rune-cli/rune`
 - `docs/packages/cli.md`

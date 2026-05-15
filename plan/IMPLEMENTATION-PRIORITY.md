@@ -793,6 +793,7 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 
 - Each component isolated testing
 - Mock dependencies for fast testing
+- Use MSW handler-based mocks for any network interactions instead of ad hoc request stubs
 - Edge case and error handling validation
 - Performance benchmark testing
 
@@ -802,6 +803,7 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 - AgentFS filesystem integration
 - Memory coordination verification
 - RAG system validation
+- Shared MSW server/handler setup across packages for deterministic HTTP request interception
 
 **Acceptance Tests:**
 
