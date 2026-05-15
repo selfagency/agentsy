@@ -15,6 +15,7 @@ Concrete showcase workflows built with the current Agentsy package ecosystem.
 
 - [Agent tool loop with retries + continuation](./tool-loop-retries-continuation.md) — run a multi-step tool loop, retry transient failures, and resume interrupted streams with continuation prompts.
 - [Stateful ops copilot backend](./stateful-ops-copilot.md) — keep conversation state, stream AG-UI events, and recover interrupted responses.
+- [Local-first memory RAG + runtime injection](./memory-rag-local-first.md) — build citation-preserving memory context with hybrid retrieval and token-budget packing.
 - [All-tooling end-to-end workflow](./all-tooling-end-to-end.md) — combine SSE parsing, normalization, processing, tool loop orchestration, recovery, UI state, AG-UI conversion, rendering, and gated actions.
 
 ## Notes

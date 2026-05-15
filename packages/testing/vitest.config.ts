@@ -19,6 +19,7 @@ export default defineConfig({
         replacement: resolve(__dirname, '../providers/src/normalizers/index.ts')
       },
       { find: '@agentsy/providers/pipeline', replacement: resolve(__dirname, '../providers/src/pipeline/index.ts') },
+      { find: '@agentsy/memory', replacement: resolve(__dirname, '../memory/src/index.ts') },
       { find: '@agentsy/core', replacement: resolve(__dirname, '../core/src/index.ts') },
       { find: '@agentsy/providers', replacement: resolve(__dirname, '../providers/src/index.ts') },
       { find: '@agentsy/renderers', replacement: resolve(__dirname, '../renderers/src/index.ts') }

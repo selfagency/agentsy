@@ -18,6 +18,12 @@ Long-term memory and persistent state management.
   - scope isolation: deny-by-default access policy for `session|user|project|team|global`
   - tool surface: `memory_capture`, `memory_search`, `memory_list`, `memory_stats`, `memory_lint`
   - observability: latency/retrieval/injection budget metrics
+- Current implementation now includes the Phase 3 RAG enhancement scope:
+  - `retrieval/rag` modules for config, server client, bootstrap, ingestion, index management, scheduler, and sanitization
+  - hybrid retrieval (`vector + lexical + entity + temporal`) + reranking and query planning
+  - token-budget-aware evidence packing and citation-preserving context assembly
+  - retrieval metrics for latency, source mix, and citation coverage
+  - integration hooks for runtime memory context injection with evidence/citations
 
 ## Notes
 
@@ -28,3 +34,6 @@ This package is currently in active development. API surface is subject to chang
 - `pnpm --filter @agentsy/memory check-types` passes
 - `pnpm --filter @agentsy/memory test` passes
 - completion evidence is tracked in `plan/PHASE-1-COMPLETION.md`
+- completion evidence is tracked in:
+  - `plan/PHASE-1-COMPLETION.md`
+  - `plan/PHASE-3-COMPLETION.md`

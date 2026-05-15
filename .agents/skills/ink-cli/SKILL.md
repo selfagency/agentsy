@@ -50,7 +50,7 @@ render(<App />);
 
 ### Project Structure
 
-```
+```text
 my-cli/
 ├── source/
 │   ├── cli.tsx          # Entry point

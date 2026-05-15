@@ -2,6 +2,8 @@
 
 import { randomUUID } from 'node:crypto';
 
+import stopwords from './stopwords.json' with { type: 'json' };
+
 export interface TokenLedgerBudget {
   limit: number;
 }
@@ -420,6 +422,12 @@ const FILLER_WORDS = new Set([
   'super',
   'extremely'
 ]);
+const STOP_WORDS = new Set(
+  stopwords
+    .filter((item): item is string => typeof item === 'string')
+    .map(item => item.trim().toLowerCase())
+    .filter(item => item.length > 0)
+);
 
 const REDUNDANT_PHRASES: ReadonlyArray<[RegExp, string]> = [
   [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
@@ -566,11 +574,22 @@ function protectMarkdownLinks(source: string, stash: (value: string) => string):
 
 function stripFillerWords(source: string, strongOnly: boolean): string {
   const strongWords = new Set(['really', 'very', 'just', 'basically', 'simply']);
-  return source.replace(/\b[a-z]+\b/gi, (word: string) => {
-    const normalized = word.toLowerCase();
-    const shouldRemove = strongOnly ? strongWords.has(normalized) : FILLER_WORDS.has(normalized);
-    return shouldRemove ? '' : word;
-  });
+  return source
+    .split(/(\s+)/u)
+    .map(segment => {
+      if (/^\s+$/u.test(segment) || segment.length === 0) {
+        return segment;
+      }
+
+      const normalized = segment.toLowerCase();
+      const isShortToken = normalized.length <= 2;
+      const shouldRemove = strongOnly
+        ? strongWords.has(normalized)
+        : FILLER_WORDS.has(normalized) || (!isShortToken && STOP_WORDS.has(normalized));
+
+      return shouldRemove ? '' : segment;
+    })
+    .join('');
 }
 
 function finalizeWhitespace(source: string): string {

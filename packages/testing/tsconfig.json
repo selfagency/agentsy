@@ -19,6 +19,7 @@
       "@agentsy/providers/adapters": ["packages/providers/src/adapters/index.ts"],
       "@agentsy/providers/normalizers": ["packages/providers/src/normalizers/index.ts"],
       "@agentsy/providers/pipeline": ["packages/providers/src/pipeline/index.ts"],
+      "@agentsy/memory": ["packages/memory/src/index.ts"],
       "@agentsy/renderers": ["packages/renderers/src/index.ts"]
     }
   },

@@ -267,6 +267,15 @@ describe('compressOutput', () => {
     expect(result.compressedTokens).toBeLessThan(result.originalTokens);
     expect(result.savingsRatio).toBeGreaterThan(0);
   });
+
+  it('only removes stopwords when they are whitespace-delimited tokens', () => {
+    const source = 'Use cache and tokens in production. token, cache,and strict-mode.';
+
+    const result = compressOutput(source, { level: 'full' });
+
+    expect(result.compressed).toContain('token,');
+    expect(result.compressed).toContain('cache,and');
+  });
 });
 
 describe('PacingController', () => {
