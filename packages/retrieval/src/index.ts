@@ -1,6 +1,5 @@
 export type {
   Chunk,
-  ChunkingStrategy,
   ChunkMetadata,
   DataSource,
   Document,
@@ -19,6 +18,7 @@ export {
   _RetrievalQuery,
   _SearchDocument,
   _SearchResult,
+  ChunkingStrategy,
 } from './types.js';
 
 export { IndexingPipeline } from './indexing/index.js';

@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as retrievalExports from '../src/index';
+
+function parseChunkingStrategy(
+  strategy: (typeof retrievalExports.ChunkingStrategy)[keyof typeof retrievalExports.ChunkingStrategy],
+): (typeof retrievalExports.ChunkingStrategy)[keyof typeof retrievalExports.ChunkingStrategy] {
+  return strategy;
+}
 
 describe('retrieval/export-contracts', () => {
   describe('public API exports', () => {
@@ -185,7 +191,7 @@ describe('retrieval/export-contracts', () => {
       });
 
       it('should create typed Query object', () => {
-        const query: retrievalExports._RetrievalQuery = {
+        const query: retrievalExports.RetrievalQuery = {
           query: 'test query',
           topK: 10,
           minSimilarity: 0.8,

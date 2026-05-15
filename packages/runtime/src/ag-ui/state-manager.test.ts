@@ -300,8 +300,8 @@ describe('StateManager', () => {
 
     const deltaEvent = manager.updateState({ a: 2, b: 3 }, 'run_123');
 
-    expect(deltaEvent.type).toBe(EventType.STATE_DELTA);
-    expect(deltaEvent.delta.length).toBeGreaterThan(0);
+    expect(deltaEvent?.type).toBe(EventType.STATE_DELTA);
+    expect(deltaEvent?.delta.length).toBeGreaterThan(0);
   });
 
   it('should return undefined if no changes', () => {

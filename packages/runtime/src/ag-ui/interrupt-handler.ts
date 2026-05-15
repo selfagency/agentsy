@@ -92,7 +92,7 @@ export class InterruptController {
  */
 export function createInterruptEvent(
   runId: string,
-  reason: InterruptReason | string = InterruptReason.USER_REQUEST,
+  reason: InterruptReason | string = InterruptReason.TIMEOUT,
   message?: string,
   threadId?: string,
 ): RunInterruptedEvent {

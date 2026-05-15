@@ -81,31 +81,34 @@ export class IndexingPipeline {
   async fixedSizeChunk(content: string, sourcePath: string): Promise<Chunk[]> {
     this.currentStrategy = 'fixed';
     const chunks: Chunk[] = [];
-    const words = content.split(/\s+/);
-    let currentChunk = '';
-    let currentWordCount = 0;
+    const words = content
+      .split(/\s+/)
+      .map(word => word.trim())
+      .filter(Boolean);
 
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      if (!word) {
-        continue;
+    if (words.length === 0) {
+      return chunks;
+    }
+
+    const maxChunkWords = Math.max(1, this.chunkSize);
+    const overlap = Math.max(0, Math.min(this.chunkOverlap, maxChunkWords - 1));
+    const step = Math.max(1, maxChunkWords - overlap);
+
+    for (let start = 0; start < words.length; start += step) {
+      const end = Math.min(start + maxChunkWords, words.length);
+      const chunkWords = words.slice(start, end);
+
+      if (chunkWords.length === 0) {
+        break;
       }
-      const testChunk = currentChunk ? `${currentChunk} ${word}` : word;
-      if (currentWordCount < this.chunkSize) {
-        currentChunk = testChunk;
-        currentWordCount++;
-      } else {
-        if (currentChunk) {
-          chunks.push(this.createChunk(currentChunk, sourcePath, i - currentWordCount));
-        }
-        currentChunk = word;
-        currentWordCount = 1;
+
+      chunks.push(this.createChunk(chunkWords.join(' '), sourcePath, start + 1));
+
+      if (end >= words.length) {
+        break;
       }
     }
 
-    if (currentChunk) {
-      chunks.push(this.createChunk(currentChunk, sourcePath, words.length - currentWordCount + 1));
-    }
     return chunks;
   }
 

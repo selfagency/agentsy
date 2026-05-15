@@ -105,10 +105,10 @@ describe('createInterruptEvent', () => {
     // Both events should have unique IDs
     expect(event1.interrupts).toBeDefined();
     expect(event2.interrupts).toBeDefined();
-    expect(event1.interrupts!.length).toBeGreaterThan(0);
-    expect(event2.interrupts!.length).toBeGreaterThan(0);
-    const id1 = event1.interrupts![0]?.id;
-    const id2 = event2.interrupts![0]?.id;
+    expect(event1.interrupts?.length).toBeGreaterThan(0);
+    expect(event2.interrupts?.length).toBeGreaterThan(0);
+    const id1 = event1.interrupts?.[0]?.id;
+    const id2 = event2.interrupts?.[0]?.id;
     expect(id1).not.toBe(id2);
   });
 
@@ -127,9 +127,9 @@ describe('createInterruptEvent', () => {
     const event = createInterruptEvent(runId, InterruptReason.USER_REQUEST, message);
 
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts!.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts![0]!;
-    expect(interrupt.options?.message).toBe(message);
+    expect(event.interrupts?.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts?.[0];
+    expect(interrupt?.options?.message).toBe(message);
   });
 
   it('should include threadId in interrupt event if provided', () => {
@@ -139,18 +139,18 @@ describe('createInterruptEvent', () => {
 
     expect(event.threadId).toBe(threadId);
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts!.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts![0]!;
-    expect(interrupt.reason).toBe(InterruptReason.USER_REQUEST);
+    expect(event.interrupts?.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts?.[0];
+    expect(interrupt?.reason).toBe(InterruptReason.USER_REQUEST);
   });
 
   it('should not include message if undefined', () => {
     const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT);
 
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts!.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts![0]!;
-    expect(interrupt.options?.message).toBeUndefined();
+    expect(event.interrupts?.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts?.[0];
+    expect(interrupt?.options?.message).toBeUndefined();
   });
 
   it('should include optional threadId', () => {

@@ -332,9 +332,14 @@ export class StateManager {
   /**
    * Updates state with a new object and returns a delta event.
    */
-  updateState(newState: Record<string, unknown>, runId: string, threadId?: string): StateDeltaEvent {
+  updateState(newState: Record<string, unknown>, runId: string, threadId?: string): StateDeltaEvent | undefined {
     const patches = computeStateDelta(this.currentState, newState);
     this.currentState = structuredClone(newState);
+
+    if (patches.length === 0) {
+      return undefined;
+    }
+
     return createStateDeltaEvent(patches, runId, threadId);
   }
 

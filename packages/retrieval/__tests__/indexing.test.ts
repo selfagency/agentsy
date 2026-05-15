@@ -134,12 +134,9 @@ describe('IndexingPipeline', () => {
 
       const firstChunkWords = firstChunk.content.split(/\s+/);
       const secondChunkWords = secondChunk.content.split(/\s+/);
-      // With chunkSize=5 and overlap=2, consecutive chunks share 2 words
+      // With chunkSize=5 and overlap=2, consecutive chunks share the final 2 words
       // Chunk 1: words 0-4, Chunk 2: words 3-7
-      // Overlap: words 3-4 should appear in both
-      // Check only the overlap region words
-      const overlapIndex = 5 - 2 - 1; // chunkSize - chunkOverlap - 1
-      const overlapRegionFirst = firstChunkWords.slice(overlapIndex);
+      const overlapRegionFirst = firstChunkWords.slice(-2);
 
       overlapRegionFirst.forEach(word => {
         expect(secondChunkWords).toContain(word);

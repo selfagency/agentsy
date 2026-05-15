@@ -188,7 +188,7 @@ export interface StateSnapshotEvent extends BaseAgUiEvent {
  */
 export interface StateDeltaEvent extends BaseAgUiEvent {
   type: EventType.STATE_DELTA;
-  delta: any[]; // JsonPatchOperation[]
+  delta: JsonPatchOperation[];
 }
 
 /**
@@ -197,7 +197,7 @@ export interface StateDeltaEvent extends BaseAgUiEvent {
 export interface JsonPatchOperation {
   op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
   path: string;
-  value?: any;
+  value?: unknown;
   from?: string;
 }
 

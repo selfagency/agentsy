@@ -344,7 +344,7 @@ function buildHeaders(
       case 'anthropic':
         headers['x-api-key'] = apiKey;
         headers['anthropic-version'] = '2023-06-01';
-        if (stream) headers['accept'] = 'text/event-stream';
+        if (stream) headers.accept = 'text/event-stream';
         break;
       case 'gemini':
         headers.Authorization = `Bearer ${apiKey}`;

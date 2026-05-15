@@ -4,7 +4,7 @@
 
 import type { UsageInfo, NativeToolCallDelta } from './usage.js';
 import type { FinishReason } from './tool-calls.js';
-import { type StreamChunk } from './stream.js';
+import type { StreamChunk } from './stream.js';
 
 /**
  * Standardized non-streaming result from any LLM.

@@ -17,6 +17,12 @@ interface CacheData {
   data: ModelsDevAPI;
 }
 
+const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+
+function isSafeLookupKey(key: string): boolean {
+  return key.length > 0 && !FORBIDDEN_OBJECT_KEYS.has(key);
+}
+
 // Simple models.dev client with caching
 export class ModelsDevClient {
   private cache?: ModelsDevAPI;
@@ -71,7 +77,16 @@ export class ModelsDevClient {
    * Get a provider by ID
    */
   getProvider(providerId: string): ModelsDevProvider | undefined {
-    return this.cache?.[providerId];
+    if (!isSafeLookupKey(providerId)) {
+      return undefined;
+    }
+
+    const cache = this.cache;
+    if (!cache || !Object.hasOwn(cache, providerId)) {
+      return undefined;
+    }
+
+    return cache[providerId];
   }
 
   /**
@@ -82,26 +97,41 @@ export class ModelsDevClient {
     if (modelId.includes(':')) {
       const [providerId, modelName] = modelId.split(':');
       if (providerId && modelName) {
-        const provider = this.getProvider(providerId);
-        return provider?.models[modelName];
+        return this.getModelFromProvider(providerId, modelName);
       }
     }
 
     if (modelId.includes('/')) {
       const [providerId, modelName] = modelId.split('/');
       if (providerId && modelName) {
-        const provider = this.getProvider(providerId);
-        return provider?.models[modelName];
+        return this.getModelFromProvider(providerId, modelName);
       }
     }
 
     // Search for model ID across all providers
+    if (!isSafeLookupKey(modelId)) {
+      return undefined;
+    }
+
     for (const provider of Object.values(this.cache ?? {})) {
-      if (provider.models[modelId]) {
+      if (Object.hasOwn(provider.models, modelId)) {
         return provider.models[modelId];
       }
     }
     return undefined;
+  }
+
+  private getModelFromProvider(providerId: string, modelName: string): ModelsDevModel | undefined {
+    if (!isSafeLookupKey(providerId) || !isSafeLookupKey(modelName)) {
+      return undefined;
+    }
+
+    const provider = this.getProvider(providerId);
+    if (!provider || !Object.hasOwn(provider.models, modelName)) {
+      return undefined;
+    }
+
+    return provider.models[modelName];
   }
 
   /**
