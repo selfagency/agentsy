@@ -237,6 +237,121 @@ src/
 
 ---
 
+## Ecosystem Integration Analysis (2026-05-14)
+
+### CRITICAL: Filesystem Strategy Update
+
+**PRIMARY: AgentFS for Agent Operations**
+
+- **Rationale:** AgentFS is designed specifically for agents with three interfaces (filesystem, KV store, toolcall audit trails)
+- **Benefits:** Turso-native compatibility, agent-specific snapshots, time-travel, state reproduction, built-in coordination with honker
+- **Implementation:** Replace sandboxes with AgentFS SDK integration
+- **Expected Benefits:** Single API for 12+ resource types, 30-40% integration cost reduction, 3-5x faster workflow development
+
+**CONDITIONAL: Mirage for External Resources**
+
+- **Rationale:** Use mirage ONLY for external resource access becomes critical
+- **Use Case:** Multi-resource unification (S3, GitHub, Notion, Linear, Slack, etc.)
+- **Integration Pattern:** Add as alternative backend when AgentFS internal resources insufficient
+- **Implementation:** Optional mirage adapter only if external resource access needed
+- **Fallback:** Use AgentFS + Turso when multi-resource access isn't needed
+
+### Maki Tool Efficiency Integration
+
+- **Rationale:** Token-efficient tooling with tree-sitter integration (59 token cost vs 224 token reads)
+- **Expected Benefits:** 70%+ token savings on code operations, AST-based permission inference for security
+- **Implementation:**
+  - Integrate tree-sitter tools for efficient code analysis
+  - Implement Monty interpreter for data pipelining
+  - Add bash parsing for permission inference
+- **Expected Savings:** 224 → 59 token code reads (70%+ savings)
+
+### Tool Coordination with Honker
+
+- **Rationale:** Cross-process coordination for tool events and background workflows
+- **Integration Pattern:** honker pub/sub for memory updates, task queues for background tasks
+- **Expected Benefits:** 1-5ms coordination latency vs polling, atomic queue operations prevent lost tasks
+
+### Enhanced Tool Architecture
+
+```typescript
+// Enhanced tool architecture with AgentFS integration
+interface EnhancedToolsArchitecture {
+  // Existing tools
+  existing: ['repl', 'fileops', 'shell', 'fetch', 'search'];
+
+  // NEW: AgentFS PRIMARY for agent operations
+  agentFilesystem: {
+    sdk: 'AgentFS TypeScript SDK',
+    interfaces: ['Filesystem', 'Key-Value', 'Toolcall audit trails'],
+    features: ['Snapshotting', 'Time-travel', 'State reproduction'],
+    coordination: 'honker pub/sub for tool events',
+    storage: 'Turso-native SQLite-based'
+  };
+
+  // CONDITIONAL: mirage for external resources
+  externalResources: {
+    backends: ['S3', 'GitHub', 'Notion', 'Linear', 'Slack'] (if needed),
+    useCase: 'Multi-resource integration only if critically needed',
+    fallback: 'AgentFS + Turso for internal operations'
+  };
+
+  // Token-efficient tools
+  efficientTools: {
+    treeSitter: 'Maki 59 token cost vs 224 token reads (70%+ savings)',
+    permissions: 'AST-based permission inference for security',
+    interpreter: 'Monty data pipelining'
+  };
+}
+```
+
+### Integration Timeline
+
+**Phase 1: AgentFS Integration (Weeks 1-4)**
+
+- Week 1-2: Replace sandbox with AgentFS SDK integration
+- Week 3-4: Implement KV store and audit trail interfaces
+
+**Phase 2: Tool Efficiency (Weeks 5-8)**
+
+- Week 5-6: Integrate Maki tree-sitter tools for code analysis
+- Week 7-8: Implement permission inference via AST parsing
+
+**Phase 3: External Resources (Weeks 9-12)**
+
+- Week 9-10: Conditional mirage adapter evaluation
+- Week 11-12: Implement only if external resource access needed
+
+**Phase 4: Tool Coordination (Weeks 13-16)**
+
+- Week 13-14: honker pub/sub integration for tool events
+- Week 15-16: Task queue integration for background workflows
+
+### Expected Combined Benefits
+
+1. **Cost Efficiency:**
+   - **Tool tokens:** 70%+ savings via Maki tree-sitter efficiency
+   - **Integration:** 30-40% integration cost reduction via AgentFS unified API
+   - **Coordination:** 90% infrastructure savings via honker vs custom broker
+
+2. **Performance:**
+   - **Latency:** 1-5ms tool coordination vs current polling
+   - **Speed:** 3-5x faster tool workflow development
+   - **Reliability:** Atomic operations prevent lost tool tasks/corrupted workflows
+
+3. **Developer Experience:**
+   - **Simplicity:** 50% tool integration complexity reduction
+   - **Productivity:** 3-5x faster multi-resource agent workflows
+   - **Flexibility:** Add new resources/backends without changing agent code
+
+4. **Security & Privacy:**
+   - **Local-First:** Tool operation local-first where possible
+   - **Safe Execution:** Copy-on-write filesystem isolation with AgentFS
+   - **Consistent:** Unified permission model across all tool types
+   - **AST-Based:** Permission inference via tree-sitter for security
+
+---
+
 ## Package Naming Snapshot (migrated from `plan/PACKAGE-NAMING-MAP.md`)
 
 - Tooling layer package remains `@agentsy/tools`.

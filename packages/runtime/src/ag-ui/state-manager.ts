@@ -5,8 +5,8 @@
  * Enables STATE_SNAPSHOT and STATE_DELTA events for incremental state updates.
  */
 
-import type { JsonPatchOperation, StateDeltaEvent, StateSnapshotEvent } from './types.js';
-import { EventType } from './types.js';
+import type { JsonPatchOperation, StateDeltaEvent, StateSnapshotEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 
 /**
  * Represents a JSON Patch operation per RFC 6902.
@@ -88,17 +88,14 @@ export function createStateSnapshotEvent(
     throw new Error('State object contains circular references and cannot be serialized');
   }
 
-  const eventBase = {
-    type: EventType.STATE_SNAPSHOT as const,
+  const event: StateSnapshotEvent = {
+    type: EventType.STATE_SNAPSHOT,
     runId,
+    state: structuredClone(state),
     timestamp: new Date().toISOString(),
-    state,
   };
-
-  return {
-    ...eventBase,
-    ...(threadId !== undefined && { threadId }),
-  } as StateSnapshotEvent;
+  if (threadId) event.threadId = threadId;
+  return event;
 }
 
 /**
@@ -203,13 +200,12 @@ export function computeStateDelta(
  */
 export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, threadId?: string): StateDeltaEvent {
   const deltaEvent: StateDeltaEvent = {
-    type: EventType.STATE_DELTA as const,
+    type: EventType.STATE_DELTA,
     runId,
+    delta: patches,
     timestamp: new Date().toISOString(),
-    ops: patches,
-    ...(threadId !== undefined && { threadId }),
   };
-
+  if (threadId) deltaEvent.threadId = threadId;
   return deltaEvent;
 }
 
@@ -316,7 +312,7 @@ export class StateManager {
     if (hasCircularReference(initialState)) {
       throw new Error('Initial state contains circular references and cannot be processed');
     }
-    this.currentState = structuredClone(initialState);
+    this.currentState = initialState ? structuredClone(initialState) : {};
   }
 
   /**
@@ -330,28 +326,33 @@ export class StateManager {
    * Creates a snapshot event for current state.
    */
   createSnapshotEvent(runId: string, threadId?: string): StateSnapshotEvent {
-    return createStateSnapshotEvent(this.getCurrentState(), runId, threadId);
+    return createStateSnapshotEvent(this.currentState, runId, threadId);
   }
 
   /**
-   * Updates state and returns delta event.
-   *
-   * @param newState - New state values to merge/replace
-   * @param runId - Run ID for the event
-   * @param threadId - Optional thread ID
-   * @returns Computed delta event (if changes exist), undefined otherwise
-   * @throws Error if new state contains circular references
+   * Updates state with a new object and returns a delta event.
    */
   updateState(newState: Record<string, unknown>, runId: string, threadId?: string): StateDeltaEvent | undefined {
-    if (hasCircularReference(newState)) {
-      throw new Error('New state contains circular references and cannot be processed');
-    }
     const patches = computeStateDelta(this.currentState, newState);
-    if (patches.length === 0) {
-      return undefined; // No changes
-    }
-    // Deep-clone to prevent external mutations
     this.currentState = structuredClone(newState);
+
+    if (patches.length === 0) {
+      return undefined;
+    }
+
+    return createStateDeltaEvent(patches, runId, threadId);
+  }
+
+  /**
+   * Applies JSON patches to current state and returns delta event.
+   *
+   * @param patches - JSON patch operations
+   * @param runId - Run ID
+   * @param threadId - Optional thread ID
+   * @returns State delta event
+   */
+  applyPatches(patches: JsonPatchOp[], runId: string, threadId?: string): StateDeltaEvent {
+    applyJsonPatches(this.currentState, patches);
     return createStateDeltaEvent(patches, runId, threadId);
   }
 

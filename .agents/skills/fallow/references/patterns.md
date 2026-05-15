@@ -420,6 +420,7 @@ fallow migrate
 ```
 
 Creates `.fallowrc.json` with mapped settings:
+
 - knip `rules`/`exclude`/`include` → fallow `rules` (error/warn/off)
 - knip `ignore` → fallow `ignorePatterns`
 - knip `ignoreDependencies` → fallow `ignoreDependencies`
@@ -459,6 +460,7 @@ fallow migrate
 ```
 
 Maps jscpd settings:
+
 - `minTokens` → `duplicates.minTokens`
 - `minLines` → `duplicates.minLines`
 - `threshold` → `duplicates.threshold`
@@ -492,6 +494,7 @@ fallow fix --dry-run --format json --quiet
 ### Step 2: Review each proposed change
 
 Parse the JSON `changes` array. Each entry shows:
+
 - `path`: file to be modified
 - `action`: what will happen (`remove_export`, `remove_dependency`)
 - `name`: the symbol or dependency being removed
@@ -536,17 +539,20 @@ fallow dead-code --format json --quiet --production
 ```
 
 Differences:
+
 - Excludes: `*.test.*`, `*.spec.*`, `*.stories.*`, `__tests__/**`, `__mocks__/**`
 - Only analyzes: `start`, `build`, `serve`, `preview`, `prepare` scripts
 - Skips: unused devDependency detection
 - Adds: type-only production dependency detection
 
 Use production mode for:
+
 - Checking what ships to users
 - Finding dependencies that should be devDependencies
 - CI pipelines focused on production bundle
 
 Use full mode for:
+
 - Complete codebase hygiene
 - Finding unused test utilities
 - Auditing devDependency usage
@@ -614,6 +620,7 @@ This adds duplication context to dead code findings, identifying clone instances
 ### Step 2: Prioritize cleanup
 
 Focus on findings that are BOTH dead code and duplicated:
+
 - Unused files containing duplicate code → delete the file entirely
 - Unused exports that are clones of other exports → remove the duplicate
 
@@ -756,6 +763,7 @@ Manual files:
 Prefer `fallow hooks install --target agent` to install this file. The script is written and maintained by fallow itself; the canonical source is [`crates/cli/src/setup_hooks/fallow-gate.sh`](https://github.com/fallow-rs/fallow/blob/main/crates/cli/src/setup_hooks/fallow-gate.sh).
 
 Behavior you can rely on:
+
 - Runs only when the intercepted command matches `git commit` or `git push`; otherwise exits 0.
 - Resolves `fallow` from PATH first, then `npx --no-install fallow` as a fallback. Skips with a stderr notice if neither is available or if `jq` is missing.
 - Enforces a version floor via `FALLOW_GATE_MIN_VERSION` (default `2.46.0`). Binaries below the floor are blocked with an upgrade hint. Set the env var to the empty string to disable the check.

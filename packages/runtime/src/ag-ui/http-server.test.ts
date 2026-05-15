@@ -4,10 +4,10 @@
  * Verifies SSE streaming, CORS preflight, and error handling
  */
 
+import type { AgUiEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 import { describe, expect, it, vi } from 'vitest';
 import { createAgentRunHandler, createExpressMiddleware, createHonoHandler, createSSEStream } from './http-server.js';
-import type { AgUiEvent } from './types.js';
-import { EventType } from './types.js';
 
 // Test fixtures
 async function* mockEventGenerator() {

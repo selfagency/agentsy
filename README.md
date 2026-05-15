@@ -10,13 +10,16 @@ Agentsy is a pnpm/turborepo monorepo of focused `@agentsy/*` packages for stream
 
 This workspace currently contains:
 
-- **19 manifest-backed packages** (have `package.json` and build/test surfaces)
-- **4 plan-only package domains** (directory + implementation plan, not yet manifest-backed packages)
+- **23 manifest-backed packages** (have `package.json` and build/test surfaces)
+- **0 plan-only package domains** (all domains have been promoted)
 
 ### Manifest-backed packages
 
 - `@agentsy/cli`
+- `@agentsy/connectors`
 - `@agentsy/core`
+- `@agentsy/guardrails`
+- `@agentsy/mcp`
 - `@agentsy/memory`
 - `@agentsy/observability`
 - `@agentsy/orchestrator`
@@ -24,6 +27,7 @@ This workspace currently contains:
 - `@agentsy/prompts`
 - `@agentsy/providers`
 - `@agentsy/renderers`
+- `@agentsy/retrieval`
 - `@agentsy/runtime`
 - `@agentsy/scripts` (private)
 - `@agentsy/secrets`
@@ -35,20 +39,13 @@ This workspace currently contains:
 - `@agentsy/ui`
 - `@agentsy/vscode`
 
-### Plan-only domains (not package manifests yet)
-
-- `packages/connectors`
-- `packages/guardrails`
-- `packages/mcp`
-- `packages/retrieval`
-
-## Canonical architecture boundaries
+### Canonical architecture boundaries
 
 - **Core stream/transformation primitives**: `@agentsy/core`
-- **Provider adaptation + normalization boundary**: `@agentsy/providers`
-- **Orchestration and execution**: `@agentsy/orchestrator`, `@agentsy/runtime`
-- **Durability and long-horizon state**: `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`
-- **Surface and presentation**: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`
+- **Provider adaptation + normalization boundary**: `@agentsy/providers`, `@agentsy/mcp`
+- **Orchestration and execution**: `@agentsy/orchestrator`, `@agentsy/runtime`, `@agentsy/guardrails`
+- **Durability and long-horizon state**: `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`, `@agentsy/retrieval`
+- **Surface and presentation**: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`, `@agentsy/connectors`
 - **Extensibility**: `@agentsy/plugins`
 
 > Important: `@agentsy/providers` is currently active and not merged away into `@agentsy/core`.

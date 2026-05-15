@@ -100,30 +100,30 @@ The MCP server uses <Tooltip tip="Communication via standard input/output stream
   <Tab title="Claude Code">
     Add to your `.claude/settings.json`:
 
-    ```json theme={null}
-    {
-      "mcpServers": {
-        "fallow": {
-          "command": "fallow-mcp"
-        }
-      }
-    }
-    ```
+```json theme={null}
+{
+"mcpServers": {
+"fallow": {
+"command": "fallow-mcp"
+}
+}
+}
+```
 
   </Tab>
 
   <Tab title="Cursor">
     Add to your Cursor MCP settings:
 
-    ```json theme={null}
-    {
-      "mcpServers": {
-        "fallow": {
-          "command": "fallow-mcp"
-        }
-      }
-    }
-    ```
+```json theme={null}
+{
+"mcpServers": {
+"fallow": {
+"command": "fallow-mcp"
+}
+}
+}
+```
 
   </Tab>
 
@@ -138,7 +138,9 @@ The MCP server uses <Tooltip tip="Communication via standard input/output stream
     FALLOW_BIN=/usr/local/bin/fallow fallow-mcp
     ```
 
-    Configure your client to launch `fallow-mcp` as a stdio subprocess.
+```text
+Configure your client to launch `fallow-mcp` as a stdio subprocess.
+```
 
   </Tab>
 </Tabs>

@@ -55,6 +55,17 @@ The package fulfills its role by providing:
 - **Responsibility**: Protocol compliance.
 - **Key Logic**: Handling the JSON-RPC request/response cycle, version matching, and error mapping.
 
+### 4. Companion protocol bridges
+
+`@agentsy/mcp` should remain MCP-first, but it can expose small bridge layers for nearby standards when the host application needs them:
+
+- **ACP**: preserve an editor/client-friendly remote-agent surface with typed request/response envelopes.
+- **A2A**: hand off capabilities, session identity, and task state when another agent must continue the work.
+- **Skills Protocol**: treat skill discovery as a separate concern from server lifecycle so compact skill manifests can be loaded on demand.
+- **Ratify**: carry trust metadata and delegation evidence alongside server trust levels when a consumer needs cryptographic receipts.
+
+These bridges should stay adapter-only. The actual protocol or skill logic should continue to live in the owning package.
+
 ## Logic & Data Flow
 
 ### 1. Tool Call Flow
@@ -172,6 +183,12 @@ We are **not** creating `@agentsy/fileops-mcp` as a separate package. File opera
 
 - Inspector should list bridged `fileops_*` tools with correct read-only vs destructive hints.
 - Errors from bridged tools should be normalized into MCP-friendly structured responses.
+
+### Interop implementation notes
+
+- Keep the MCP transport and orchestrator responsible for lifecycle; companion protocol bridges should only translate envelopes and metadata.
+- If a bridge needs UI payloads, emit declarative data structures rather than embedding client framework code.
+- When auto-installing or auto-discovering tools, preserve trust-level filtering so new protocol bridges do not silently escalate capability.
 
 ---
 

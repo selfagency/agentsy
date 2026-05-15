@@ -1,6 +1,7 @@
 import type { JsonObject } from 'type-fest';
 
-import type { FinishReason, ToolCallState, UsageInfo } from './index.js';
+import type { FinishReason, ToolCallState } from './tool-calls.js';
+import type { UsageInfo } from './usage.js';
 
 /**
  * Events that drive conversation state transitions.

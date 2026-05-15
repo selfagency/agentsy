@@ -43,6 +43,9 @@
     "bootstrap-release": "pnpm -C packages/scripts run bootstrap-release",
     "prepare": "husky"
   },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1"
+  },
   "devDependencies": {
     "@octokit/rest": "22.0.1",
     "@types/node": "^25.7.0",
@@ -74,7 +77,8 @@
       "@go-task/cli",
       "es5-ext",
       "esbuild",
-      "fallow"
+      "fallow",
+      "protobufjs"
     ]
   }
 }

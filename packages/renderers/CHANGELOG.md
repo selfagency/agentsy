@@ -10,7 +10,7 @@
 - Add orchestration helpers and progressive real-world examples by @selfagency in <https://github.com/selfagency/agentsy/pull/61>
 - refactor: resolve code-smell findings across monorepo by @selfagency in <https://github.com/selfagency/agentsy/pull/62>
 
-**Full Changelog**: https://github.com/selfagency/agentsy/compare/@agentsy/renderers@0.1.1...@agentsy/renderers@0.1.2
+**Full Changelog**: <https://github.com/selfagency/agentsy/compare/@agentsy/renderers@0.1.1...@agentsy/renderers@0.1.2>
 
 _Source: changes from @agentsy/renderers@0.1.1 to @agentsy/renderers@0.1.2._
 

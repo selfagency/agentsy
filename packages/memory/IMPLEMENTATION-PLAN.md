@@ -893,7 +893,7 @@ packages/memory/src/
 
 ## Extracted Technical API Surface (from `plan/agentsy-tech.md`)
 
-### Three-layer architecture alignment
+### Three-layer architecture alignment (updated with ecosystem findings)
 
 Layering extracted and preserved from technical design:
 
@@ -901,7 +901,205 @@ Layering extracted and preserved from technical design:
 2. **Wiki store (Layer 1)** — synthesized pages across `entities`, `concepts`, `synthesis`, `sources`.
 3. **Vector index (Layer 2)** — semantic retrieval over synthesized pages.
 
-### Lifecycle contracts
+### Lifecycle contracts (updated with ecosystem integration)
+
+- `startTask(sessionId)` at loop entry.
+- `endTask(sessionId)` at loop end with synthesis trigger.
+- Context injection path remains XML-based via `buildContextXml(...)` for downstream prompt assembly.
+
+### Security constraints carried forward
+
+- Retrieved memory is treated as untrusted content.
+- Sanitization before prompt injection remains required.
+- Scope isolation (`project`, `user`, `team`, `global`) remains explicit in storage and retrieval paths.
+
+### NEW Ecosystem Integration Additions (from 2026-05-14 ecosystem analysis)
+
+#### A. Honker Coordination Layer (NEW - HIGH PRIORITY)
+
+**Purpose:** Local-low-latency coordination with remote Turso sync support
+
+```typescript
+// Honker extension integration for coordination
+interface HonkerCoordination {
+  // Extension loading
+  loadExtension_in_sqlite: () => Promise<void>;
+
+  // Pub/sub for coordination
+  pubSub: {
+    notify: (channel: string, data: any) => Promise<void>;
+    listen: (channel: string, callback: (data: any) => void) => void;
+    channels: ['agent-lifecycle', 'memory-updates', 'coordination-events']
+  };
+
+  // Task queue for orchestration
+  queue: {
+    enqueue: (task: any, tx?: any) => Promise<void>;
+    dequeue: (workerId: string, options?: DequeueOptions) => Promise<Task | null>;
+    heartbeat: (taskId: string) => Promise<void>;
+    retry: { exponential: true, maxAttempts: 5, backoffMs: 1000 }
+  };
+
+  // Atomic pattern
+  atomicWorkflow: async (tx: any) => {
+    await tx.queue.enqueue({ payload: 'task-data' });
+    await tx.memory.insert({ data: 'memory-data' });
+    // Rollback together if either fails
+  };
+
+  // Time-triggered scheduling
+  scheduling: {
+    schedule: (cron: string, taskId: string) => Promise<void>;
+    schedule_periodic: (seconds: number, action: () => Promise<void>) => Promise<void>;
+    jobCancellation: (taskId: string) => Promise<void>;
+  };
+
+  // Local SQLite + Turso sync
+  tursoSync: {
+    sync: () => Promise<void>;
+    replication: 'Turso for cloud sync and backup',
+    conflictResolution: 'Time-triggered merge strategies'
+  };
+}
+```
+
+#### B. AgentFS Integration (NEW - PRIMARY FILESYSTEM)
+
+**Purpose:** Agent-specific filesystem with audit trails and Turso-native design
+
+```typescript
+// AgentFS SDK integration for agent operations
+interface AgentFSIntegration {
+  // Core filesystem operations
+  filesystem: {
+    readFile: (path: string) => Promise<Buffer>;
+    writeFile: (path: string, content: Buffer) => Promise<void>;
+    listDirectory: (path: string) => Promise<string[]>;
+    createDirectory: (path: string) => Promise<void>;
+    removeFile: (path: (path: string) => Promise<void>;
+    removeDirectory: (path: string) => Promise<void>;
+  };
+
+  // Key-value store for state
+  keyvalue: {
+    set: (key: string, value: any) => Promise<void>;
+    get: (key: string) => Promise<any>;
+    delete: (key: string) => Promise<void>;
+  };
+
+  // Tool call audit trails
+  toolcall: {
+    record: (tool: string, startTime: number, endTime: number, input: any, output: any, error?: string) => Promise<void>;
+    get: (limit: number, offset: number) => Promise<ToolCallRecord[]>;
+    query: (filter?: ToolCallFilter) => Promise<ToolCallRecord[]>;
+  };
+
+  // Snapshot capabilities
+  snapshot: {
+    create: () => Promise<string>;    // Returns snapshot ID
+    restore: (snapshotId: string) => Promise<void>;  // Restore to exact state
+    timeTravel: (pointInTime: string) => Promise<void>;  // Time travel to exact state
+  };
+
+  // Integration points
+  integration: {
+    sdk: 'TypeScript SDK for TS clients',
+    python: 'Python SDK for runtime integration',
+    rust: 'Rust SDK for performance',
+   \Facades: 'FsClient, FsClient, FsClient',
+    mounting: 'FUSE (Linux), NFS (macOS)'
+  };
+
+  // Toole support
+  cli: 'agentfs fs <agent-id> ls',
+  mount: 'Local filesystem mounting at /mnt',
+  sandboxRun: 'Run code with sandbox environment'
+};
+```
+
+#### C. RAG Enhancement with mcp-rag-server (PRIMARY)
+
+**Purpose:** Zero-ceremony RAG with local LLM support, MCP-native design
+
+```typescript
+// mcp-rag-server integration for retrieval
+interface MCRAGServerIntegration {
+  // Auto-ingest on startup
+  autoIngest: {
+    dataDirectory: '/data/documents',
+    supportedFormats: ['markdown', 'text', 'pdf', 'docx'],
+    localEmbeddings: 'Nomic v1.5 cached locally'
+  };
+
+  // Dual-tool pattern
+  localFirst: {
+    storage: 'local filesystem',
+    indexing: 'local vector database',
+    llmSupport: 'ollama + continue.dev'
+  };
+
+ -tools: 'knowledgeBaseSearch | Web Search | IngestDocument';
+
+  // MCP integration
+  mcpServer: {
+    protocol: 'Model Context Protocol',
+    tools: 'Three MCP tools for agent integration'
+  };
+}
+```
+
+#### D. Content Addressing (re_gent pattern)
+
+**Purpose:** Automatic deduplication + sub-10ms lookups
+
+```typescript
+// BLAKE3 content addressing integration
+interface ContentAddressing {
+  // BLAKE3 hashing for content
+  hash: (content: Buffer) => BLAKE3Hash;
+
+  // Automatic deduplication
+  deduplicate: (hash: BLAKE3Hash) => Promise<MemoryEntry | null>;
+
+  // Fast lookups
+  query: (hash: BLAKE3Hash) => Promise<MemoryEntry | undefined>;
+
+  // SQLite index for sub-10ms lookups
+  index: {
+    create: () => Promise<SQLiteIndex>;
+    query: (hash: BLAKE3Hash) => Promise<MemoryEntry[]>;
+  };
+}
+```
+
+#### E. Learning Systems Adaptation (Marmot patterns)
+
+**Purpose:** Adaptive behavior from interactions
+
+```typescript
+// Learning interface extensions
+interface LearningEnhancements {
+  // Interaction-based learning
+  learnFromInteraction: (interaction: Interaction) => Promise<void>;
+  updateEmbeddings: (memoryIds: string[]) => Promise<void>;
+
+  // Quality feedback
+  improveWithFeedback: (feedback: RetrievalFeedback) => Promise<void>;
+  detectPatterns: () => Promise<MemoryPattern[]>;
+
+  // Context circulation
+  learnFromContextFailures: (failures: ContextFailure[]) => Promise<void>;
+  optimizeContextBuilding: (usage: ContextUsage[]) => Promise<OptimizationResult>;
+  learnContentPreference: (feedback: ContentFeedback) => Promise<PreferenceProfile>;
+
+  // Sleep-time compute
+  scheduleSleepProcessing: (schedule: SleepSchedule) => Promise<void>;
+  optimizeDuringSleep: (criteria: SleepOptimizationCriteria) => Promise<SleepResult>;
+  consolidateDuringSleep: (timeBudget: number) => Promise<ConsolidationResult>;
+}
+```
+
+### Lifecycle contracts (updated with integration)
 
 - `startTask(sessionId)` at loop entry.
 - `endTask(sessionId)` at loop end with synthesis trigger.

@@ -1,0 +1,25 @@
+
+> @agentsy/providers@0.2.0-alpha.0 build /Users/daniel/Developer/agentsy/packages/providers
+> tsup /dev/stdout
+
+CLI Building entry: ../../../../../../dev/stdout
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Using tsup config: /Users/daniel/Developer/agentsy/packages/providers/tsup.config.ts
+CLI Target: node18
+CLI Cleaning output folder
+ESM Build start
+CJS Build start
+DTS Build start
+RollupError: Could not resolve entry module "../../../../../../dev/stdout".
+    at getRollupError (/Users/daniel/Developer/agentsy/node_modules/.pnpm/rollup@4.60.1/node_modules/rollup/dist/shared/parseAst.js:289:41)
+    at Object.error (/Users/daniel/Developer/agentsy/node_modules/.pnpm/rollup@4.60.1/node_modules/rollup/dist/shared/parseAst.js:285:42)
+    at ModuleLoader.loadEntryModule (/Users/daniel/Developer/agentsy/node_modules/.pnpm/rollup@4.60.1/node_modules/rollup/dist/shared/rollup.js:23356:32)
+    at async Promise.all (index 0)
+Error: error occurred in dts build
+    at Worker.<anonymous> (/Users/daniel/Developer/agentsy/node_modules/.pnpm/tsup@8.5.1_postcss@8.5.14_tsx@4.21.0_typescript@6.0.3_yaml@2.8.2/node_modules/tsup/dist/index.js:1545:26)
+    at Worker.emit (node:events:509:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+DTS Build error

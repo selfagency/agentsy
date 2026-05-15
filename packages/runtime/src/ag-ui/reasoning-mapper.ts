@@ -11,8 +11,8 @@ import type {
   ReasoningMessageEndEvent,
   ReasoningMessageStartEvent,
   ReasoningStartEvent,
-} from './types.js';
-import { EventType } from './types.js';
+} from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 
 export interface ReasoningMapperOptions {
   runId: string;
