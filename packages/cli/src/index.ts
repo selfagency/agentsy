@@ -64,14 +64,14 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
       return 1;
     }
 
-    const level = toCompressionLevel(getFlagValue(rest, '--level'));
     const backup = !hasFlag(rest, '--no-backup');
 
-    await compressMemoryFile(filePath, {
-      level,
-      backup
+    const result = await compressMemoryFile(filePath, {
+      backup,
+      writeCompressed: true,
     });
-    io.stdout(`Compressed memory file: ${filePath}`);
+    io.stdout(`Compressed ${filePath}`);
+    io.stdout(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
     return 0;
   }
 
