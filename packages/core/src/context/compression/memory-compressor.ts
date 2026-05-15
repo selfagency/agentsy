@@ -85,7 +85,7 @@ export async function compressMemoryFile(
 
   let backupPath: string | undefined;
   if (options.backup ?? true) {
-    backupPath = `${filePath}.original.md`;
+    backupPath = `${filePath}.original`;
     await copyFile(filePath, backupPath);
   }
 
