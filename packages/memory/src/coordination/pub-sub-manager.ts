@@ -42,6 +42,6 @@ export function createInMemoryPubSubManager(): PubSubManager {
 
     subscriberCount(channel: string) {
       return listeners.get(channel)?.size ?? 0;
-    },
+    }
   };
 }

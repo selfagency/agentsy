@@ -80,7 +80,7 @@ describe('Phase 0: Output Compression Performance Validation', () => {
   it('achieves 10%+ token reduction on large response (full level)', () => {
     const result = compressOutput(LARGE_RESPONSE, {
       level: 'full',
-      preserve: ['code'],
+      preserve: ['code']
     });
 
     const reductionRatio = (result.originalTokens - result.compressedTokens) / result.originalTokens;
@@ -98,7 +98,7 @@ describe('Phase 0: Output Compression Performance Validation', () => {
   it('achieves 15%+ token reduction on large response (ultra level)', () => {
     const result = compressOutput(LARGE_RESPONSE, {
       level: 'ultra',
-      preserve: ['code'],
+      preserve: ['code']
     });
 
     const reductionRatio = (result.originalTokens - result.compressedTokens) / result.originalTokens;
@@ -118,7 +118,7 @@ describe('Phase 0: Output Compression Performance Validation', () => {
     for (let i = 0; i < 100; i++) {
       compressOutput(LARGE_RESPONSE, {
         level: 'full',
-        preserve: ['code'],
+        preserve: ['code']
       });
     }
     const endTime = performance.now();
@@ -143,7 +143,7 @@ More text that should be compressed.
 
     const result = compressOutput(codeContent, {
       level: 'full',
-      preserve: ['code'],
+      preserve: ['code']
     });
 
     // Code block should be preserved verbatim
@@ -162,7 +162,7 @@ More verbose text that is basically just filler content here.
 
     const result = compressOutput(urlContent, {
       level: 'full',
-      preserve: ['code', 'urls', 'paths'],
+      preserve: ['code', 'urls', 'paths']
     });
 
     // URL should be preserved
@@ -182,7 +182,7 @@ sophisticated but basically follows the standard pattern for this type of algori
 
     const result = compressOutput(technicalContent, {
       level: 'full',
-      preserve: ['code'],
+      preserve: ['code']
     });
 
     // Technical details should be preserved
@@ -202,7 +202,7 @@ Another key point. Another key point. Another key point.
 
     const result = compressOutput(redundantContent, {
       level: 'full',
-      preserve: ['code'],
+      preserve: ['code']
     });
 
     // Should remove duplicate lines
@@ -229,7 +229,7 @@ Additional explanation that is basically just verbose filler text.
 
     const result = compressOutput(mixedContent, {
       level: 'full',
-      preserve: ['code'],
+      preserve: ['code']
     });
 
     // Code and heading should be preserved, verbose text should be reduced

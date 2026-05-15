@@ -31,13 +31,13 @@ function buildFingerprint(
   modelFamily: string,
   templateVersion: string,
   schemaVersion: number,
-  content: string,
+  content: string
 ): ContextFingerprint {
   return {
     value: fingerprintValue([modelFamily, templateVersion, String(schemaVersion), content]),
     modelFamily,
     templateVersion,
-    schemaVersion,
+    schemaVersion
   };
 }
 
@@ -48,8 +48,8 @@ export function buildContextSegments(input: BuildContextSegmentsInput): ContextS
       content: input.systemPrompt,
       fingerprint: buildFingerprint(input.modelFamily, input.templateVersion, 1, `system:${input.systemPrompt}`),
       reuseClass: 'hot',
-      invalidations,
-    },
+      invalidations
+    }
   ];
 
   if (input.toolSchema !== undefined) {
@@ -59,10 +59,10 @@ export function buildContextSegments(input: BuildContextSegmentsInput): ContextS
         input.modelFamily,
         input.templateVersion,
         1,
-        `toolSchema:${JSON.stringify(input.toolSchema)}`,
+        `toolSchema:${JSON.stringify(input.toolSchema)}`
       ),
       reuseClass: 'warm',
-      invalidations: [...invalidations, 'tool-schema'],
+      invalidations: [...invalidations, 'tool-schema']
     });
   }
 
@@ -71,7 +71,7 @@ export function buildContextSegments(input: BuildContextSegmentsInput): ContextS
       content: input.memorySummary,
       fingerprint: buildFingerprint(input.modelFamily, input.templateVersion, 1, `memory:${input.memorySummary}`),
       reuseClass: 'warm',
-      invalidations: [...invalidations, 'memory-summary'],
+      invalidations: [...invalidations, 'memory-summary']
     });
   }
 

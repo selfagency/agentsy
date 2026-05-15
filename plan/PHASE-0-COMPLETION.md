@@ -174,7 +174,7 @@ import { compressMemoryFile } from '@agentsy/core/context';
 // Compress memory file with backup
 const result = await compressMemoryFile('/path/to/file.md', {
   backup: true, // Creates file.md.original.md
-  preserve: ['code', 'urls'],
+  writeCompressed: true
 });
 console.log(`Saved ${result.savingsRatio * 100}%`);
 console.log(`Backup: ${result.backupPath}`);

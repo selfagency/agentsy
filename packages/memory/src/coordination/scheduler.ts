@@ -19,7 +19,7 @@ export function createInMemoryScheduler(): Scheduler {
           jobs.delete(jobId);
           callback();
         },
-        Math.max(0, delayMs),
+        Math.max(0, delayMs)
       );
 
       jobs.set(jobId, timeout);
@@ -37,6 +37,6 @@ export function createInMemoryScheduler(): Scheduler {
 
     pendingCount() {
       return jobs.size;
-    },
+    }
   };
 }

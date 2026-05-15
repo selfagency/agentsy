@@ -10,7 +10,7 @@ const CODE_BLOCK_PATTERN = /```[\s\S]*?```/g;
 const ENTITY_PATTERN = /\b[A-Z][A-Za-z0-9]*\b/g;
 
 function normalizeWhitespace(content: string): string {
-  return content.replace(/\r\n/g, '\n').trim();
+  return content.replaceAll('\r\n', '\n').trim();
 }
 
 function looksLikeJson(content: string): boolean {
@@ -71,6 +71,6 @@ export function createContentProcessor(): ContentProcessor {
     extractEntities(content: string) {
       const candidates = content.match(ENTITY_PATTERN) ?? [];
       return [...new Set(candidates.filter(entity => entity.length >= 3))];
-    },
+    }
   };
 }

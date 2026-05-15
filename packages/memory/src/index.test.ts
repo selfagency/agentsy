@@ -1,19 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
+import { join } from 'node:path';
 import {
   createInMemoryPubSubManager,
   createInMemoryScheduler,
   createInMemoryTaskQueue,
   createLocalEmbeddingEngine,
   createWikiManager,
-  loadHonkerExtension,
+  loadHonkerExtension
 } from './index.js';
 
 describe('Phase 1: coordination foundations', () => {
   it('returns fallback mode when honker extension is unavailable', async () => {
+    const fakeExtensionRoot = join(process.cwd(), '.agentsy-missing-ext', `${Date.now()}-${Math.random()}`);
     const result = await loadHonkerExtension({
       dbPath: 'memory.db',
-      extensionPath: '/tmp/does-not-exist/honker.so',
-      blake3ExtensionPath: '/tmp/does-not-exist/blake3.so',
+      extensionPath: join(fakeExtensionRoot, 'honker.so'),
+      blake3ExtensionPath: join(fakeExtensionRoot, 'blake3.so')
     });
 
     expect(result.mode).toBe('fallback');
@@ -77,14 +79,14 @@ describe('Phase 1: three-tier wiki foundation', () => {
     const raw = await wiki.captureRaw({
       sourceId: 'doc-1',
       content: '# OAuth Login\nUse PKCE for public clients.',
-      sourceType: 'document',
+      sourceType: 'document'
     });
 
     const page = await wiki.upsertPage({
       pageId: 'wiki-auth',
       title: 'OAuth Login',
       body: raw.normalizedContent,
-      tags: ['auth'],
+      tags: ['auth']
     });
 
     await wiki.upsertVector(page.pageId, [0.2, 0.8, 0.1]);
@@ -107,7 +109,7 @@ describe('Phase 1: three-tier wiki foundation', () => {
       tags: ['auth'],
       actorId: 'owner',
       format: 'markdown',
-      writerIds: ['owner'],
+      writerIds: ['owner']
     });
 
     await wiki.updatePage('wiki-auth-history', { body: 'Use PKCE and state' }, 'owner');
@@ -129,11 +131,11 @@ describe('Phase 1: three-tier wiki foundation', () => {
       body: 'private',
       actorId: 'owner',
       format: 'text',
-      writerIds: ['owner'],
+      writerIds: ['owner']
     });
 
     await expect(wiki.updatePage('wiki-secure', { body: 'intrusion' }, 'intruder')).rejects.toThrow(
-      'does not have write access',
+      'does not have write access'
     );
   });
 
@@ -145,7 +147,7 @@ describe('Phase 1: three-tier wiki foundation', () => {
       title: 'OAuth Search',
       body: 'OAuth PKCE refresh token flow',
       format: 'markdown',
-      actorId: 'system',
+      actorId: 'system'
     });
 
     await wiki.upsertPage({
@@ -153,7 +155,7 @@ describe('Phase 1: three-tier wiki foundation', () => {
       title: 'Cache Search',
       body: 'Redis eviction policy',
       format: 'text',
-      actorId: 'system',
+      actorId: 'system'
     });
 
     await wiki.upsertVector('wiki-auth-search', [0.2, 0.9, 0.1]);
@@ -174,7 +176,7 @@ describe('Phase 1: three-tier wiki foundation', () => {
       title: 'OAuth and OpenID',
       body: 'OAuth works with OpenID Connect and PKCE.',
       format: 'markdown',
-      actorId: 'system',
+      actorId: 'system'
     });
 
     await wiki.linkConcepts('wiki-entities', 'wiki-auth', 'related');

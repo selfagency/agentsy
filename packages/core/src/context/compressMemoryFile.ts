@@ -86,7 +86,7 @@ export function compressMemoryContent(content: string): string {
 
 export async function compressMemoryFile(
   filePath: string,
-  options: MemoryFileCompressionOptions = {},
+  options: MemoryFileCompressionOptions = {}
 ): Promise<MemoryFileCompressionResult> {
   const original = await readFile(filePath, 'utf8');
   const compressed = compressMemoryContent(original);
@@ -108,6 +108,6 @@ export async function compressMemoryFile(
     original,
     compressed,
     savingsRatio,
-    ...(backupPath === undefined ? {} : { backupPath }),
+    ...(backupPath === undefined ? {} : { backupPath })
   };
 }

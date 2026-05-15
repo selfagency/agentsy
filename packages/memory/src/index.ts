@@ -7,27 +7,27 @@ export {
   type ContextFingerprint,
   type CreateContextFingerprintInput,
   type CreateMemoryReuseHintInput,
-  type MemoryReuseHint,
+  type MemoryReuseHint
 } from './types.js';
 
 export {
   loadHonkerExtension,
   type HonkerLoadFeatures,
   type HonkerLoadOptions,
-  type HonkerLoadResult,
+  type HonkerLoadResult
 } from './coordination/honker/loader.js';
 export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
 export {
   createInMemoryPubSubManager,
   type ChannelListener,
-  type PubSubManager,
+  type PubSubManager
 } from './coordination/pub-sub-manager.js';
 export { createInMemoryScheduler, type Scheduler } from './coordination/scheduler.js';
 export { createInMemoryTaskQueue, type CoordinationTask, type TaskQueue } from './coordination/task-queue.js';
 export {
   createLocalEmbeddingEngine,
   type LocalEmbeddingEngine,
-  type LocalEmbeddingEngineOptions,
+  type LocalEmbeddingEngineOptions
 } from './wiki/local-embedding-engine.js';
 export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
 export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
@@ -45,7 +45,7 @@ export {
   type WikiManagerDependencies,
   type WikiPage,
   type WikiPageHistoryEntry,
-  type WikiPageInput,
+  type WikiPageInput
 } from './wiki/wiki-manager.js';
 
 export interface MemoryRecord {

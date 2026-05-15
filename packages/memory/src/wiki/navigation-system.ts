@@ -38,6 +38,6 @@ export function createNavigationSystem(): NavigationSystem {
       }
 
       return backlinks;
-    },
+    }
   };
 }

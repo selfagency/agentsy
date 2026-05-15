@@ -44,16 +44,16 @@ export function createSessionSnapshot(input: CreateSessionSnapshotInput): Sessio
           reusableSegments: input.reusableSegments.map(segment => ({
             fingerprint: segment.fingerprint,
             reuseClass: segment.reuseClass,
-            invalidations: [...segment.invalidations],
-          })),
-        }),
+            invalidations: [...segment.invalidations]
+          }))
+        })
   };
 
   const checksumSource = JSON.stringify({
     id: snapshotState.id,
     values: snapshotState.values,
     modelFamily: snapshotState.modelFamily ?? null,
-    reusableSegments: snapshotState.reusableSegments ?? null,
+    reusableSegments: snapshotState.reusableSegments ?? null
   });
 
   return {
@@ -61,7 +61,7 @@ export function createSessionSnapshot(input: CreateSessionSnapshotInput): Sessio
     timestamp: new Date(),
     checksum: `sha256:${createHash('sha256').update(checksumSource).digest('hex')}`,
     state: snapshotState,
-    schemaVersion: 1,
+    schemaVersion: 1
   };
 }
 

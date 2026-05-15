@@ -70,8 +70,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('achieves 5%+ compression on memory file', async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
 
     const compressionRatio = (result.original.length - result.compressed.length) / result.original.length;
@@ -89,8 +88,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('creates backup file when enabled', async () => {
     await compressMemoryFile(testFile, {
-      backup: true,
-      preserve: ['code', 'urls', 'paths'],
+      backup: true
     });
 
     // Backup is created with .original.md appended to the full filename
@@ -105,8 +103,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('preserves code blocks in memory files', async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
 
     // Code should be preserved
@@ -116,8 +113,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('preserves URLs in memory files', async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
 
     // URLs should be preserved
@@ -128,8 +124,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('preserves markdown structure', async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
 
     // Markdown structure should be preserved
@@ -140,8 +135,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('reduces verbose filler text', async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
 
     // Should achieve some reduction compared to original
@@ -155,8 +149,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
   it('completes compression in <10ms for medium files', async () => {
     const startTime = performance.now();
     await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
     const endTime = performance.now();
     const elapsed = endTime - startTime;
@@ -167,8 +160,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
   it('maintains data integrity of structured content', async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
 
     // Checklist items should be preserved
@@ -186,8 +178,7 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
     const startTime = performance.now();
     const result = await compressMemoryFile(testFile, {
-      backup: false,
-      preserve: ['code', 'urls', 'paths'],
+      backup: false
     });
     const endTime = performance.now();
 
@@ -216,19 +207,14 @@ describe('Phase 0: Memory File Compression Validation', () => {
 
     try {
       await compressMemoryFile(uniqueFile, {
-        backup: true,
-        preserve: ['code', 'urls', 'paths'],
+        backup: true
       });
 
       const backupFile = `${uniqueFile}.original.md`;
-      if (existsSync(backupFile)) {
-        const backupContent = readFileSync(backupFile, 'utf-8');
-        expect(backupContent).toBe(SAMPLE_MEMORY_FILE);
-        unlinkSync(backupFile);
-      } else {
-        // If backup wasn't created, the test still passes but logs the issue
-        console.warn('Backup file was not created - may indicate API issue');
-      }
+      expect(existsSync(backupFile)).toBe(true);
+      const backupContent = readFileSync(backupFile, 'utf-8');
+      expect(backupContent).toBe(SAMPLE_MEMORY_FILE);
+      unlinkSync(backupFile);
     } finally {
       if (existsSync(uniqueFile)) {
         unlinkSync(uniqueFile);

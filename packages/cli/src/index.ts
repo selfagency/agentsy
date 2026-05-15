@@ -32,12 +32,16 @@ function hasFlag(args: readonly string[], flag: string): boolean {
   return args.includes(flag);
 }
 
-function toCompressionLevel(value: string | null): CompressionLevel {
+function toCompressionLevel(value: string | null): CompressionLevel | null {
   if (value === 'lite' || value === 'full' || value === 'ultra') {
     return value;
   }
 
-  return 'full';
+  if (value === null) {
+    return 'full';
+  }
+
+  return null;
 }
 
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
@@ -46,14 +50,19 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
   if (command === 'compress') {
     const filePath = getFlagValue(rest, '--file');
     const text = getFlagValue(rest, '--text');
+    const level = toCompressionLevel(getFlagValue(rest, '--level'));
+
+    if (level === null) {
+      io.stderr('Invalid --level value. Use one of: lite, full, ultra.');
+      return 1;
+    }
 
     if (filePath === null && text === null) {
       io.stderr('Missing input. Provide --text or --file.');
       return 1;
     }
 
-    const level = toCompressionLevel(getFlagValue(rest, '--level'));
-    const source = text ?? (await readFile(filePath as string, 'utf8'));
+    const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf8'));
     const result = compressOutput(source, { level });
     io.stdout(result.compressed);
     io.stdout(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
@@ -63,7 +72,7 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
   if (command === 'compress-memory') {
     const filePath = getFlagValue(rest, '--file');
     if (filePath === null) {
-      io.stderr('Missing required flag: --file');
+      io.stderr('Missing --file for compress-memory command.');
       return 1;
     }
 
@@ -71,7 +80,7 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
     const result = await compressMemoryFile(filePath, {
       backup,
-      writeCompressed: true,
+      writeCompressed: true
     });
     io.stdout(`Compressed ${filePath}`);
     io.stdout(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);

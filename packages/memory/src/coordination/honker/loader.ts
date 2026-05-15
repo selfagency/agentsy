@@ -41,8 +41,8 @@ export async function loadHonkerExtension(options: HonkerLoadOptions): Promise<H
         pubSub: true,
         taskQueue: true,
         scheduler: true,
-        blake3: true,
-      },
+        blake3: true
+      }
     };
   }
 
@@ -53,8 +53,8 @@ export async function loadHonkerExtension(options: HonkerLoadOptions): Promise<H
       pubSub: false,
       taskQueue: false,
       scheduler: false,
-      blake3: false,
+      blake3: false
     },
-    reason: 'Required native extensions were not found on disk.',
+    reason: 'Required native extensions were not found on disk.'
   };
 }

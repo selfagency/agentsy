@@ -9,7 +9,7 @@ describe('buildContextSegments', () => {
       toolSchema: { type: 'object', properties: { name: { type: 'string' } } },
       memorySummary: 'cached summary',
       modelFamily: 'qwen',
-      templateVersion: 'v3',
+      templateVersion: 'v3'
     });
 
     expect(segments).toHaveLength(3);

@@ -36,7 +36,7 @@ export function createContextFingerprint(input: CreateContextFingerprintInput): 
     value,
     modelFamily: input.modelFamily,
     templateVersion: input.templateVersion,
-    schemaVersion: input.schemaVersion,
+    schemaVersion: input.schemaVersion
   };
 }
 
@@ -45,6 +45,6 @@ export function createMemoryReuseHint(input: CreateMemoryReuseHintInput): Memory
     reuseClass: input.reuseClass,
     stablePrefix: input.stablePrefix,
     toolSchema: input.toolSchema,
-    invalidationKeys: [...input.invalidationKeys],
+    invalidationKeys: [...input.invalidationKeys]
   };
 }

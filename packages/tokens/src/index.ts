@@ -371,13 +371,98 @@ export function compressConversation<TMessage>(
 
 const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
 const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths']);
+const FILLER_WORDS = new Set([
+  'really',
+  'very',
+  'just',
+  'actually',
+  'basically',
+  'simply',
+  'quite',
+  'definitely',
+  'certainly',
+  'absolutely',
+  'clearly',
+  'obviously',
+  'perhaps',
+  'maybe',
+  'apparently',
+  'evidently',
+  'fortunately',
+  'unfortunately',
+  'however',
+  'thus',
+  'therefore',
+  'moreover',
+  'furthermore',
+  'additionally',
+  'also',
+  'indeed',
+  'otherwise',
+  'meanwhile',
+  'primarily',
+  'largely',
+  'mostly',
+  'thoroughly',
+  'remarkably',
+  'practically',
+  'exceptionally',
+  'notably',
+  'particularly',
+  'significantly',
+  'essentially',
+  'fundamentally',
+  'well',
+  'rather',
+  'somewhat',
+  'fairly',
+  'pretty',
+  'awfully',
+  'terribly',
+  'super',
+  'extremely'
+]);
+
+const REDUNDANT_PHRASES: ReadonlyArray<[RegExp, string]> = [
+  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
+  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
+  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
+  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
+  [/\bas\s+mentioned\b/gi, ''],
+  [/\bas\s+you\s+may\s+know\b/gi, ''],
+  [/\bin\s+conclusion/gi, 'Finally'],
+  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
+  [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now']
+];
+
+const ABBREVIATIONS: ReadonlyArray<[RegExp, string]> = [
+  [/\bapproximately\b/gi, 'approx'],
+  [/\bconfiguration\b/gi, 'config'],
+  [/\binformation\b/gi, 'info'],
+  [/\badministration\b/gi, 'admin'],
+  [/\bdocumentation\b/gi, 'docs'],
+  [/\bdirectory\b/gi, 'dir'],
+  [/\bnumber\b/gi, '#'],
+  [/\btechnology\b/gi, 'tech'],
+  [/\bimplementation\b/gi, 'impl'],
+  [/\boperation\b/gi, 'op'],
+  [/\bgeneral\b/gi, 'gen']
+];
 
 function estimateTextTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-function compressNonCodeSegment(segment: string, level: OutputCompressionLevel): string {
-  // First pass: normalize whitespace and preserve structure
+function applyReplacements(source: string, replacements: ReadonlyArray<[RegExp, string]>): string {
+  let result = source;
+  for (const [pattern, replacement] of replacements) {
+    result = result.replace(pattern, replacement);
+  }
+
+  return result;
+}
+
+function normalizeAndDedupeLines(segment: string): string {
   const lines = segment.split('\n');
   const dedupedLines: string[] = [];
   let lastComparable = '';
@@ -406,106 +491,105 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel):
     dedupedLines.push(line);
   }
 
-  let joined = dedupedLines.join('\n').trim();
+  return dedupedLines.join('\n').trim();
+}
+
+function protectPreservedContent(
+  source: string,
+  preserve: ReadonlySet<string>
+): { masked: string; restore: (value: string) => string } {
+  const preserved: string[] = [];
+  const stash = (value: string): string => {
+    const index = preserved.push(value) - 1;
+    return `__AGENTSY_PRESERVE_${index}__`;
+  };
+
+  let masked = source;
+
+  if (preserve.has('urls')) {
+    masked = masked.replace(/https?:\/\/[^\s)]+/g, stash);
+  }
+
+  if (preserve.has('paths')) {
+    masked = masked.replace(/(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/g, (_, prefix: string, path: string) => {
+      return `${prefix}${stash(path)}`;
+    });
+  }
+
+  if (preserve.has('markdown')) {
+    masked = masked.replace(/`[^`]+`/g, stash);
+    masked = masked.replace(/\[[^\]]+\]\([^)]*\)/g, stash);
+  }
+
+  if (preserve.has('errors')) {
+    masked = masked.replace(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi, stash);
+  }
+
+  if (preserve.has('technical')) {
+    masked = masked.replace(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/g, stash);
+  }
+
+  const restore = (value: string): string =>
+    value.replace(/__AGENTSY_PRESERVE_(\d+)__/g, (_, indexRaw: string) => {
+      const index = Number(indexRaw);
+      return preserved[index] ?? '';
+    });
+
+  return { masked, restore };
+}
+
+function stripFillerWords(source: string, strongOnly: boolean): string {
+  const strongWords = new Set(['really', 'very', 'just', 'basically', 'simply']);
+  return source.replace(/\b[a-z]+\b/gi, (word: string) => {
+    const normalized = word.toLowerCase();
+    const shouldRemove = strongOnly ? strongWords.has(normalized) : FILLER_WORDS.has(normalized);
+    return shouldRemove ? '' : word;
+  });
+}
+
+function finalizeWhitespace(source: string): string {
+  return source.replace(/\s{2,}/g, ' ').trim();
+}
+
+function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, preserve: ReadonlySet<string>): string {
+  const joined = normalizeAndDedupeLines(segment);
   if (joined.length === 0) {
     return '';
   }
 
-  // Filler words and intensifiers to remove
-  const fillerPattern =
-    /\b(really|very|just|actually|basically|simply|quite|definitely|certainly|absolutely|clearly|obviously|perhaps|maybe|apparently|evidently|fortunately|unfortunately|however|thus|therefore|moreover|furthermore|additionally|also|indeed|otherwise|meanwhile|basically|primarily|largely|mostly|thoroughly|remarkably|practically|exceptionally|notably|particularly|significantly|essentially|fundamentally|well|very|quite|rather|rather|somewhat|fairly|pretty|quite|rather|really|awfully|terribly|super|extremely)\b/gi;
-
-  const redundantPhrases = [
-    [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
-    [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
-    [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
-    [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
-    [/\bas\s+mentioned\b/gi, ''],
-    [/\bas\s+you\s+may\s+know\b/gi, ''],
-    [/\bin\s+conclusion/gi, 'Finally'],
-    [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
-    [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now'],
-  ];
-
-  const abbreviations: Array<[RegExp, string]> = [
-    [/\bapproximately\b/gi, 'approx'],
-    [/\bconfiguration\b/gi, 'config'],
-    [/\binformation\b/gi, 'info'],
-    [/\badministration\b/gi, 'admin'],
-    [/\bdocumentation\b/gi, 'docs'],
-    [/\bdirectory\b/gi, 'dir'],
-    [/\bnumber\b/gi, '#'],
-    [/\btechnology\b/gi, 'tech'],
-    [/\bimplementation\b/gi, 'impl'],
-    [/\boperation\b/gi, 'op'],
-    [/\bspecifically\b/gi, 'specifically'],
-    [/\bgeneral\b/gi, 'gen'],
-  ];
+  const { masked, restore } = protectPreservedContent(joined, preserve);
 
   switch (level) {
     case 'lite': {
-      // Minimal compression: remove filler words only
-      let result = joined;
-      // Remove only the strongest filler words
-      result = result.replace(/\b(really|very|just|basically|simply)\b/gi, ' ');
-      result = result.replace(/\s{2,}/g, ' ').trim();
-      return result;
+      const result = finalizeWhitespace(stripFillerWords(masked, true));
+      return restore(result);
     }
 
     case 'full': {
-      // Aggressive compression
-      let result = joined;
-
-      // Remove filler words
-      result = result.replace(fillerPattern, ' ');
-
-      // Remove redundant phrases
-      for (const [pattern, replacement] of redundantPhrases) {
-        result = result.replace(pattern as RegExp, replacement as string);
-      }
-
-      // Collapse multiple spaces and clean
-      result = result.replace(/\s{2,}/g, ' ').trim();
-
-      return result;
+      const withoutFiller = stripFillerWords(masked, false);
+      const reduced = applyReplacements(withoutFiller, REDUNDANT_PHRASES);
+      return restore(finalizeWhitespace(reduced));
     }
 
     case 'ultra': {
-      // Maximum compression
-      let result = joined;
-
-      // Aggressive filler removal
-      result = result.replace(fillerPattern, ' ');
-
-      // Remove redundant phrases
-      for (const [pattern, replacement] of redundantPhrases) {
-        result = result.replace(pattern as RegExp, replacement as string);
-      }
-
-      // Remove common verbose patterns
-      result = result
+      const withoutFiller = stripFillerWords(masked, false);
+      const reduced = applyReplacements(withoutFiller, REDUNDANT_PHRASES)
         .replace(/\b(and|or)\s+(and|or)\s+/gi, ' ')
         .replace(/\b(is|are|was|were)\s+quite\s+/gi, '')
         .replace(/,\s*which\s+[^,.]*(?=[,.])/gi, '')
-        .replace(/\s+(?=,|\.|\?|!)/g, '');
+        .replace(/\s+(?=[,.?!])/g, '');
 
-      // Apply abbreviations
-      for (const [pattern, replacement] of abbreviations) {
-        result = result.replace(pattern as RegExp, replacement as string);
-      }
+      const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replace(
+        /\b(?:the|a|an)\s+([a-z]+)\s+/gi,
+        (_, adjective: string) => `${adjective} `
+      );
 
-      // Remove articles before adjectives
-      result = result.replace(/\b(the|a|an)\s+([a-z]+)\s+/gi, (m, article, adj) => {
-        return `${adj} `;
-      });
-
-      // Final cleanup
-      result = result
-        .replace(/\s{2,}/g, ' ')
-        .replace(/\s+(?=,|\.)/g, '')
-        .trim();
-
-      return result;
+      return restore(
+        abbreviated
+          .replace(/\s{2,}/g, ' ')
+          .replace(/\s+(?=[,.])/g, '')
+          .trim()
+      );
     }
   }
 }
@@ -516,14 +600,14 @@ export function compressOutput(response: string, options: OutputCompressionOptio
 
   if (!preserve.has('code')) {
     const originalTokens = estimateTextTokens(response);
-    const compressed = compressNonCodeSegment(response, level);
+    const compressed = compressNonCodeSegment(response, level, preserve);
     const compressedTokens = estimateTextTokens(compressed);
     return {
       original: response,
       compressed,
       originalTokens,
       compressedTokens,
-      savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens),
+      savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
     };
   }
 
@@ -548,7 +632,7 @@ export function compressOutput(response: string, options: OutputCompressionOptio
   }
 
   const compressed = segments
-    .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level)))
+    .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level, preserve)))
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
@@ -561,7 +645,7 @@ export function compressOutput(response: string, options: OutputCompressionOptio
     compressed,
     originalTokens,
     compressedTokens,
-    savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens),
+    savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
   };
 }
 

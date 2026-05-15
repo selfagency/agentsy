@@ -20,14 +20,14 @@ describe('compressMemoryFile', () => {
         '',
         '```json',
         '{"a":1}',
-        '```',
+        '```'
       ].join('\n');
 
       await writeFile(filePath, source, 'utf8');
 
       const result = await compressMemoryFile(filePath, {
         backup: true,
-        writeCompressed: true,
+        writeCompressed: true
       });
 
       const rewritten = await readFile(filePath, 'utf8');

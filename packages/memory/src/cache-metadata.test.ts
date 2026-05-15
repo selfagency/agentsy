@@ -8,14 +8,14 @@ describe('cache-aware memory metadata', () => {
       content: 'system prompt',
       modelFamily: 'qwen',
       templateVersion: 'v3',
-      schemaVersion: 1,
+      schemaVersion: 1
     });
 
     const hint = createMemoryReuseHint({
       reuseClass: 'hot',
       stablePrefix: true,
       toolSchema: true,
-      invalidationKeys: ['model-family:qwen', 'template:v3'],
+      invalidationKeys: ['model-family:qwen', 'template:v3']
     });
 
     expect(fingerprint.value).toMatch(/^sha256:/);

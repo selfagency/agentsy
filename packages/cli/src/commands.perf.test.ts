@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { join } from 'path';
-import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { join } from 'node:path';
+import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'node:fs';
 import { runCli } from './index.js';
 
 /**
@@ -39,7 +39,7 @@ describe('Phase 0: CLI Commands Validation', () => {
 
   it('compress command works with --text flag', async () => {
     const exitCode = await runCli(['compress', '--level', 'full', '--text', SAMPLE_TEXT], {
-      stdout: (value: string) => capturedOutput.push(value),
+      stdout: (value: string) => capturedOutput.push(value)
     });
 
     expect(exitCode).toBe(0);
@@ -51,7 +51,7 @@ describe('Phase 0: CLI Commands Validation', () => {
     for (const level of ['lite', 'full', 'ultra']) {
       capturedOutput = [];
       const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], {
-        stdout: (value: string) => capturedOutput.push(value),
+        stdout: (value: string) => capturedOutput.push(value)
       });
 
       expect(exitCode).toBe(0);
@@ -64,7 +64,7 @@ describe('Phase 0: CLI Commands Validation', () => {
     writeFileSync(memoryFile, SAMPLE_TEXT, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      stdout: (value: string) => capturedOutput.push(value),
+      stdout: (value: string) => capturedOutput.push(value)
     });
 
     expect(exitCode).toBe(0);
@@ -90,7 +90,7 @@ More text after code.
     writeFileSync(memoryFile, contentWithCode, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      stdout: (value: string) => capturedOutput.push(value),
+      stdout: (value: string) => capturedOutput.push(value)
     });
 
     expect(exitCode).toBe(0);
@@ -102,7 +102,7 @@ More text after code.
 
   it('compress command reports savings ratio', async () => {
     const exitCode = await runCli(['compress', '--level', 'ultra', '--text', SAMPLE_TEXT], {
-      stdout: (value: string) => capturedOutput.push(value),
+      stdout: (value: string) => capturedOutput.push(value)
     });
 
     expect(exitCode).toBe(0);
@@ -116,7 +116,7 @@ More text after code.
   it('compress command completes quickly', async () => {
     const startTime = performance.now();
     await runCli(['compress', '--level', 'full', '--text', SAMPLE_TEXT], {
-      stdout: (value: string) => capturedOutput.push(value),
+      stdout: (value: string) => capturedOutput.push(value)
     });
     const elapsed = performance.now() - startTime;
 
@@ -127,7 +127,7 @@ More text after code.
   it('handles missing --file argument gracefully', async () => {
     const errors: string[] = [];
     const exitCode = await runCli(['compress-memory'], {
-      stderr: (value: string) => errors.push(value),
+      stderr: (value: string) => errors.push(value)
     });
 
     expect(exitCode).toBe(1);
@@ -137,7 +137,7 @@ More text after code.
   it('handles missing input for compress command', async () => {
     const errors: string[] = [];
     const exitCode = await runCli(['compress'], {
-      stderr: (value: string) => errors.push(value),
+      stderr: (value: string) => errors.push(value)
     });
 
     expect(exitCode).toBe(1);
@@ -149,7 +149,7 @@ More text after code.
     writeFileSync(memoryFile, SAMPLE_TEXT, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      stdout: (value: string) => capturedOutput.push(value),
+      stdout: (value: string) => capturedOutput.push(value)
     });
 
     expect(exitCode).toBe(0);

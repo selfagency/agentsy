@@ -61,7 +61,7 @@ export function compressOutput(response: string, options: OutputCompressionOptio
 \`\`\`
 
 And here is some text that is really quite verbose and basically says nothing important. The code above is quite important and should be preserved carefully.
-`,
+`
 };
 
 describe('Phase 0: Output Compression Benchmarks', () => {
@@ -69,21 +69,21 @@ describe('Phase 0: Output Compression Benchmarks', () => {
     bench('short text (<100 chars)', () => {
       compressOutput(BENCHMARK_SAMPLES.shortOutput, {
         level: 'lite',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('medium text (~500 chars)', () => {
       compressOutput(BENCHMARK_SAMPLES.mediumOutput, {
         level: 'lite',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('large text (~2000 chars)', () => {
       compressOutput(BENCHMARK_SAMPLES.largeOutput, {
         level: 'lite',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
   });
@@ -92,21 +92,21 @@ describe('Phase 0: Output Compression Benchmarks', () => {
     bench('short text', () => {
       compressOutput(BENCHMARK_SAMPLES.shortOutput, {
         level: 'full',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('medium text', () => {
       compressOutput(BENCHMARK_SAMPLES.mediumOutput, {
         level: 'full',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('large text', () => {
       compressOutput(BENCHMARK_SAMPLES.largeOutput, {
         level: 'full',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
   });
@@ -115,21 +115,21 @@ describe('Phase 0: Output Compression Benchmarks', () => {
     bench('short text', () => {
       compressOutput(BENCHMARK_SAMPLES.shortOutput, {
         level: 'ultra',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('medium text', () => {
       compressOutput(BENCHMARK_SAMPLES.mediumOutput, {
         level: 'ultra',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('large text', () => {
       compressOutput(BENCHMARK_SAMPLES.largeOutput, {
         level: 'ultra',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
   });
@@ -138,14 +138,14 @@ describe('Phase 0: Output Compression Benchmarks', () => {
     bench('text with code blocks (full)', () => {
       compressOutput(BENCHMARK_SAMPLES.codeOutput, {
         level: 'full',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
 
     bench('text with code blocks (ultra)', () => {
       compressOutput(BENCHMARK_SAMPLES.codeOutput, {
         level: 'ultra',
-        preserve: ['code'],
+        preserve: ['code']
       });
     });
   });

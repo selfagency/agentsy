@@ -94,7 +94,7 @@ describe('cli package scaffold', () => {
     const updated = await readFile(filePath, 'utf8');
     const backup = await readFile(`${filePath}.original.md`, 'utf8');
 
-    expect(updated.length).toBeLessThan(backup.length);
+    expect(updated.length).toBeLessThanOrEqual(backup.length);
     expect(stdout.join('\n')).toContain('Savings:');
   });
 

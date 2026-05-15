@@ -79,7 +79,7 @@ export interface WikiManager {
   updatePage(
     pageId: string,
     patch: Partial<Pick<WikiPageInput, 'title' | 'body' | 'tags' | 'format'>>,
-    actorId: string,
+    actorId: string
   ): Promise<WikiPage>;
   getPageHistory(pageId: string): Promise<WikiPageHistoryEntry[]>;
   diffPageVersions(pageId: string, fromVersion: number, toVersion: number): Promise<PageDiff>;
@@ -124,57 +124,56 @@ function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+function toSearchResult(pageId: string, score: number): VectorSearchResult {
+  return { pageId, score };
+}
+
+function scoreByFullText(query: string, page: WikiPage, contentProcessor: ContentProcessor): number {
+  const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (queryTerms.length === 0) {
+    return 0;
+  }
+
+  const searchable = `${page.title}\n${contentProcessor.toSearchableText(page.body)}`.toLowerCase();
+  let hits = 0;
+
+  for (const term of queryTerms) {
+    if (searchable.includes(term)) {
+      hits += 1;
+    }
+  }
+
+  return hits / queryTerms.length;
+}
+
+function ensureCanWrite(page: WikiPage, actorId: string): void {
+  if (page.writerIds.length === 0 || page.writerIds.includes(actorId)) {
+    return;
+  }
+
+  throw new Error(`Actor ${actorId} does not have write access to ${page.pageId}`);
+}
+
+function getHistoryBody(history: Map<string, WikiPageHistoryEntry[]>, pageId: string, version: number): string {
+  const pageHistory = history.get(pageId) ?? [];
+  const item = pageHistory.find(entry => entry.version === version);
+  if (!item) {
+    throw new Error(`Unknown version ${version} for page ${pageId}`);
+  }
+
+  return item.body;
+}
+
 export function createWikiManager(dependencies: WikiManagerDependencies = {}): WikiManager {
   const contentProcessor = dependencies.contentProcessor ?? createContentProcessor();
   const embeddingEngine = dependencies.embeddingEngine ?? createLocalEmbeddingEngine();
   const versionTracker = dependencies.versionTracker ?? createVersionTracker();
   const navigation = dependencies.navigation ?? createNavigationSystem();
 
-  const rawCaptures = new Map<string, RawCapture>();
   const pages = new Map<string, WikiPage>();
   const vectors = new Map<string, VectorEntry>();
   const history = new Map<string, WikiPageHistoryEntry[]>();
   const concepts = new Map<string, ConceptRelation[]>();
-
-  function toSearchResult(pageId: string, score: number): VectorSearchResult {
-    return { pageId, score };
-  }
-
-  function scoreByFullText(query: string, page: WikiPage): number {
-    const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    if (queryTerms.length === 0) {
-      return 0;
-    }
-
-    const searchable = `${page.title}\n${contentProcessor.toSearchableText(page.body)}`.toLowerCase();
-    let hits = 0;
-
-    for (const term of queryTerms) {
-      if (searchable.includes(term)) {
-        hits += 1;
-      }
-    }
-
-    return hits / queryTerms.length;
-  }
-
-  function ensureCanWrite(page: WikiPage, actorId: string): void {
-    if (page.writerIds.length === 0 || page.writerIds.includes(actorId)) {
-      return;
-    }
-
-    throw new Error(`Actor ${actorId} does not have write access to ${page.pageId}`);
-  }
-
-  function getHistoryBody(pageId: string, version: number): string {
-    const pageHistory = history.get(pageId) ?? [];
-    const item = pageHistory.find(entry => entry.version === version);
-    if (!item) {
-      throw new Error(`Unknown version ${version} for page ${pageId}`);
-    }
-
-    return item.body;
-  }
 
   return {
     async captureRaw(input: RawCaptureInput) {
@@ -184,10 +183,9 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         sourceType: input.sourceType,
         content: input.content,
         normalizedContent: contentProcessor.normalize(input.content),
-        createdAt: new Date(),
+        createdAt: new Date()
       };
 
-      rawCaptures.set(capture.id, capture);
       return capture;
     },
 
@@ -204,13 +202,13 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         version,
         format,
         writerIds,
-        updatedAt: new Date(),
+        updatedAt: new Date()
       };
 
       pages.set(page.pageId, page);
       vectors.set(page.pageId, {
         pageId: page.pageId,
-        embedding: embeddingEngine.embed(`${page.title}\n${contentProcessor.toSearchableText(page.body)}`),
+        embedding: embeddingEngine.embed(`${page.title}\n${contentProcessor.toSearchableText(page.body)}`)
       });
 
       const pageHistory = history.get(page.pageId) ?? [];
@@ -218,7 +216,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         version,
         body: page.body,
         actorId,
-        editedAt: page.updatedAt,
+        editedAt: page.updatedAt
       });
       history.set(page.pageId, pageHistory);
 
@@ -231,7 +229,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         ? {
             ...page,
             tags: [...page.tags],
-            writerIds: [...page.writerIds],
+            writerIds: [...page.writerIds]
           }
         : null;
     },
@@ -239,7 +237,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
     async upsertVector(pageId: string, embedding: number[]) {
       vectors.set(pageId, {
         pageId,
-        embedding: [...embedding],
+        embedding: [...embedding]
       });
     },
 
@@ -247,7 +245,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
       const scored: VectorSearchResult[] = [...vectors.values()]
         .map(entry => ({
           pageId: entry.pageId,
-          score: cosineSimilarity(queryEmbedding, entry.embedding),
+          score: cosineSimilarity(queryEmbedding, entry.embedding)
         }))
         .sort((left, right) => right.score - left.score);
 
@@ -271,13 +269,13 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         body: nextBody,
         format: patch.format ?? current.format,
         version: nextVersion,
-        updatedAt: new Date(),
+        updatedAt: new Date()
       };
 
       pages.set(pageId, nextPage);
       vectors.set(pageId, {
         pageId,
-        embedding: embeddingEngine.embed(`${nextPage.title}\n${contentProcessor.toSearchableText(nextPage.body)}`),
+        embedding: embeddingEngine.embed(`${nextPage.title}\n${contentProcessor.toSearchableText(nextPage.body)}`)
       });
 
       const pageHistory = history.get(pageId) ?? [];
@@ -285,14 +283,14 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         version: nextVersion,
         body: nextPage.body,
         actorId,
-        editedAt: nextPage.updatedAt,
+        editedAt: nextPage.updatedAt
       });
       history.set(pageId, pageHistory);
 
       return {
         ...nextPage,
         tags: [...nextPage.tags],
-        writerIds: [...nextPage.writerIds],
+        writerIds: [...nextPage.writerIds]
       };
     },
 
@@ -301,8 +299,8 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
     },
 
     async diffPageVersions(pageId, fromVersion, toVersion) {
-      const fromBody = getHistoryBody(pageId, fromVersion);
-      const toBody = getHistoryBody(pageId, toVersion);
+      const fromBody = getHistoryBody(history, pageId, fromVersion);
+      const toBody = getHistoryBody(history, pageId, toVersion);
 
       const fromLines = fromBody.split('\n');
       const toLines = toBody.split('\n');
@@ -318,7 +316,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
 
     async searchFullText(query, limit) {
       const scored = [...pages.values()]
-        .map(page => toSearchResult(page.pageId, scoreByFullText(query, page)))
+        .map(page => toSearchResult(page.pageId, scoreByFullText(query, page, contentProcessor)))
         .filter(item => item.score > 0)
         .sort((left, right) => right.score - left.score);
 
@@ -331,7 +329,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
 
       const hybridScores = [...pages.values()]
         .map(page => {
-          const textScore = scoreByFullText(query, page);
+          const textScore = scoreByFullText(query, page, contentProcessor);
           const vectorScore = vectorScoreMap.get(page.pageId) ?? 0;
           const score = textScore * 0.5 + vectorScore * 0.5;
           return toSearchResult(page.pageId, score);
@@ -367,6 +365,6 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
 
     async getBacklinks(pageId: string) {
       return navigation.getBacklinks(pageId);
-    },
+    }
   };
 }

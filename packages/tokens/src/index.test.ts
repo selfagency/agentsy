@@ -4,7 +4,7 @@ import {
   compressConversation,
   compressOutput,
   createInMemoryTokenManager,
-  createTokenLedger,
+  createTokenLedger
 } from './index.js';
 
 describe('createTokenLedger', () => {
@@ -256,7 +256,7 @@ describe('compressOutput', () => {
       'const url = "https://example.com/a/b";',
       '```',
       '',
-      'This is a very verbose explanation that repeats itself repeatedly and unnecessarily.',
+      'This is a very verbose explanation that repeats itself repeatedly and unnecessarily.'
     ].join('\n');
 
     const result = compressOutput(source, { level: 'full' });

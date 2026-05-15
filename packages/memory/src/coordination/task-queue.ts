@@ -25,6 +25,6 @@ export function createInMemoryTaskQueue(): TaskQueue {
 
     size() {
       return queue.length;
-    },
+    }
   };
 }
