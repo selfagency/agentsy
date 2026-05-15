@@ -5,7 +5,7 @@ export {
   hasNoToolCalls,
   hasToolCall,
   isLoopFinished,
-  isStepCount,
+  isStepCount
 } from './stopConditions.js';
 export type {
   AgentLoopAbortReason,
@@ -26,6 +26,6 @@ export type {
   ToolApprovalContext,
   ToolApprovalDecision,
   ToolApprovalMode,
-  ToolApprovalResult,
+  ToolApprovalResult
 } from './types.js';
 export { mergeCallbacks } from './utils.js';

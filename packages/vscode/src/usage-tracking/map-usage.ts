@@ -16,6 +16,6 @@ export function mapUsageToVSCode(usage: UsageInfo | undefined): VSCodeUsage | un
 
   return {
     promptTokens: usage.inputTokens ?? 0,
-    completionTokens: usage.outputTokens ?? 0,
+    completionTokens: usage.outputTokens ?? 0
   };
 }

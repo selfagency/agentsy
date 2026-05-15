@@ -20,7 +20,7 @@ describe('LLMStreamProcessor — thinking tag integration', () => {
     const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
 
     const out = processor.process({
-      content: '<think>my reasoning here</think>The final answer.',
+      content: '<think>my reasoning here</think>The final answer.'
     });
 
     expect(out.thinking).toBe('my reasoning here');
@@ -43,12 +43,12 @@ describe('LLMStreamProcessor — thinking tag integration', () => {
     const processor = new LLMStreamProcessor({
       parseThinkTags: true,
       thinkingOpenTag: '<reasoning>',
-      thinkingCloseTag: '</reasoning>',
+      thinkingCloseTag: '</reasoning>'
     });
 
     const out = processor.processComplete({
       content: '<reasoning>custom reasoning</reasoning>result',
-      done: true,
+      done: true
     });
 
     expect(out.thinking).toBe('custom reasoning');
@@ -61,7 +61,7 @@ describe('LLMStreamProcessor — thinking tag integration', () => {
     // Content that looks like nested XML should not throw
     const out = processor.processComplete({
       content: '<think><step>a</step><step>b</step></think>done',
-      done: true,
+      done: true
     });
 
     expect(out.thinking).toContain('step');
@@ -129,12 +129,12 @@ describe('ThinkingParser (standalone)', () => {
 describe('LLMStreamProcessor — XML tool call extraction', () => {
   it('extracts a single complete XML tool call from content', () => {
     const processor = new LLMStreamProcessor({
-      knownTools: new Set(['read_file']),
+      knownTools: new Set(['read_file'])
     });
 
     const out = processor.processComplete({
       content: 'Let me read that. <read_file><path>package.json</path></read_file>',
-      done: true,
+      done: true
     });
 
     expect(out.toolCalls).toHaveLength(1);
@@ -145,14 +145,14 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
 
   it('extracts multiple XML tool calls from a single response', () => {
     const processor = new LLMStreamProcessor({
-      knownTools: new Set(['read_file', 'write_file']),
+      knownTools: new Set(['read_file', 'write_file'])
     });
 
     const out = processor.processComplete({
       content:
         '<read_file><path>a.ts</path></read_file>' +
         '<write_file><path>b.ts</path><content>hello</content></write_file>',
-      done: true,
+      done: true
     });
 
     expect(out.toolCalls).toHaveLength(2);
@@ -163,12 +163,12 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
 
   it('preserves surrounding text content and strips the tool call markup', () => {
     const processor = new LLMStreamProcessor({
-      knownTools: new Set(['search']),
+      knownTools: new Set(['search'])
     });
 
     const out = processor.processComplete({
       content: 'Searching now.<search><query>cats</query></search>Done.',
-      done: true,
+      done: true
     });
 
     // Content should not include the tool call XML
@@ -179,7 +179,7 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
 
   it('handles tool call arguments streamed across chunk boundaries', () => {
     const processor = new LLMStreamProcessor({
-      knownTools: new Set(['search']),
+      knownTools: new Set(['search'])
     });
 
     processor.process({ content: '<search><query>split ' });
@@ -213,15 +213,15 @@ describe('ToolCallAccumulator (standalone)', () => {
   it('extracts bare JSON tool calls wrapped in markdown fences', () => {
     const result = extractXmlToolCalls(
       '```json\n{"name":"find","arguments":{"pattern":"*.ts"}}\n```',
-      new Set(['find']),
+      new Set(['find'])
     );
 
     expect(result).toEqual([
       {
         name: 'find',
         parameters: { pattern: '*.ts' },
-        format: 'json-wrapped',
-      },
+        format: 'json-wrapped'
+      }
     ]);
   });
 });
@@ -260,7 +260,7 @@ describe('LLMStreamProcessor — context tag scrubbing', () => {
 
     const out = processor.processComplete({
       content: '<context>hidden</context>visible text',
-      done: true,
+      done: true
     });
 
     expect(out.content).toBe('visible text');
@@ -269,12 +269,12 @@ describe('LLMStreamProcessor — context tag scrubbing', () => {
 
   it('strips custom tags when extraScrubTags are specified', () => {
     const processor = new LLMStreamProcessor({
-      extraScrubTags: new Set(['internal_memo']),
+      extraScrubTags: new Set(['internal_memo'])
     });
 
     const out = processor.processComplete({
       content: '<internal_memo>secret</internal_memo>public',
-      done: true,
+      done: true
     });
 
     expect(out.content).toBe('public');

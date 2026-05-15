@@ -83,9 +83,9 @@ export function createMockExtensionContext(): ExtensionContext {
         fragment: '',
         fsPath: '/mock/path',
         with: () => ({}),
-        toJSON: () => ({}),
+        toJSON: () => ({})
       }) as unknown,
-    toJSON: () => ({}),
+    toJSON: () => ({})
   } as unknown;
 
   return {
@@ -114,11 +114,11 @@ export function createMockExtensionContext(): ExtensionContext {
       packageJSON: {},
       isActive: true,
       exports: undefined,
-      activate: async () => undefined,
+      activate: async () => undefined
     } as unknown,
     languageModelAccessInformation: {
       models: [],
-      onDidChange: createMockEvent(),
-    } as unknown,
+      onDidChange: createMockEvent()
+    } as unknown
   } as unknown as ExtensionContext;
 }

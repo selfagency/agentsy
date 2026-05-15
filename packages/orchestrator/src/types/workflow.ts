@@ -3,7 +3,7 @@ export enum NodeType {
   DECISION = 'decision',
   PARALLEL = 'parallel',
   SEQUENCE = 'sequence',
-  MERGE = 'merge',
+  MERGE = 'merge'
 }
 
 export enum WorkflowStatus {
@@ -11,14 +11,14 @@ export enum WorkflowStatus {
   RUNNING = 'running',
   COMPLETED = 'completed',
   FAILED = 'failed',
-  CANCELLED = 'cancelled',
+  CANCELLED = 'cancelled'
 }
 
 export enum AgentStatus {
   IDLE = 'idle',
   BUSY = 'busy',
   OFFLINE = 'offline',
-  ERROR = 'error',
+  ERROR = 'error'
 }
 
 export interface TaskNode {

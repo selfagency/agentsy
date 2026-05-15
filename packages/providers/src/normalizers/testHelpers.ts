@@ -10,7 +10,7 @@ import type { NormalizerResult } from './types.js';
 export function createFinishReasonTest(
   normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
   createInput: (finishReason: string | null) => Record<string, unknown>,
-  testCases: Array<{ input: string | null; expectedFinishReason: string | undefined; expectedDone: boolean }>,
+  testCases: Array<{ input: string | null; expectedFinishReason: string | undefined; expectedDone: boolean }>
 ): void {
   for (const { input, expectedFinishReason, expectedDone } of testCases) {
     const result = normalizer(createInput(input));
@@ -27,7 +27,7 @@ export function testContentMapping(
   normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
   setupInput: (content: string) => Record<string, unknown>,
   expectedField: 'content' | 'thinking',
-  expectedValue: string,
+  expectedValue: string
 ): void {
   const result = normalizer(setupInput(expectedValue));
   expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(expectedValue);
@@ -40,7 +40,7 @@ export function testContentMapping(
  */
 export function testMidStreamNoFinishReason(
   normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
-  setupInput: () => Record<string, unknown>,
+  setupInput: () => Record<string, unknown>
 ): void {
   const result = normalizer(setupInput());
   expect(result?.chunk.finishReason).toBeUndefined();

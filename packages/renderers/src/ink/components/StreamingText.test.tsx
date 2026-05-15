@@ -7,31 +7,31 @@ import { StreamingText } from './StreamingText.js';
 
 // Mock markdownToAnsi
 vi.mock('../utils/markdownToAnsi.js', () => ({
-  markdownToAnsi: vi.fn(async (text: string) => `ANSI[${text}]`),
+  markdownToAnsi: vi.fn(async (text: string) => `ANSI[${text}]`)
 }));
 
 const mockTheme: Theme = {
   text: {
     dimColor: false,
-    cursorSymbol: '▌',
+    cursorSymbol: '▌'
   },
   border: {
     style: 'round',
-    color: 'blue',
+    color: 'blue'
   },
   thinking: {
     borderColor: 'cyan',
     spinnerColor: 'cyan',
     textColor: 'yellow',
-    spinnerIntervalMs: 80,
+    spinnerIntervalMs: 80
   },
   toolCall: {
     pendingColor: 'yellow',
     doneColor: 'green',
     pendingSymbol: '⠋',
-    doneSymbol: '✓',
+    doneSymbol: '✓'
   },
-  highlight: {},
+  highlight: {}
 };
 
 describe('StreamingText', () => {
@@ -45,7 +45,7 @@ describe('StreamingText', () => {
 
   it('renders static text without streaming', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="Hello world" markdown={false} isStreaming={false} theme={mockTheme} />,
+      <StreamingText text="Hello world" markdown={false} isStreaming={false} theme={mockTheme} />
     );
 
     // Give rendering time
@@ -59,7 +59,7 @@ describe('StreamingText', () => {
 
   it('renders text with streaming cursor', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="Streaming" markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text="Streaming" markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     // Let rendering complete
@@ -74,7 +74,7 @@ describe('StreamingText', () => {
 
   it('splits text at last double newline when streaming', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="Para 1\n\nPara 2 incomplete" markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text="Para 1\n\nPara 2 incomplete" markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     // Let rendering complete
@@ -89,7 +89,7 @@ describe('StreamingText', () => {
 
   it('renders complete text when no double newline', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="Single paragraph" markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text="Single paragraph" markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     // Let rendering complete
@@ -103,7 +103,7 @@ describe('StreamingText', () => {
 
   it('disables markdown for screen readers', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="**Bold** text" markdown={true} isStreaming={false} theme={mockTheme} screenReader={true} />,
+      <StreamingText text="**Bold** text" markdown={true} isStreaming={false} theme={mockTheme} screenReader={true} />
     );
 
     await vi.runAllTimersAsync();
@@ -119,7 +119,7 @@ describe('StreamingText', () => {
     const { markdownToAnsi } = await import('../utils/markdownToAnsi.js');
 
     const { unmount } = render(
-      <StreamingText text="*italic*" markdown={true} isStreaming={false} theme={mockTheme} screenReader={false} />,
+      <StreamingText text="*italic*" markdown={true} isStreaming={false} theme={mockTheme} screenReader={false} />
     );
 
     await vi.runAllTimersAsync();
@@ -131,7 +131,7 @@ describe('StreamingText', () => {
 
   it('skips markdown conversion when markdown prop is false', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="# Heading" markdown={false} isStreaming={false} theme={mockTheme} />,
+      <StreamingText text="# Heading" markdown={false} isStreaming={false} theme={mockTheme} />
     );
 
     await vi.runAllTimersAsync();
@@ -152,7 +152,7 @@ describe('StreamingText', () => {
         isStreaming={false}
         theme={mockTheme}
         syntaxHighlight={true}
-      />,
+      />
     );
 
     await vi.runAllTimersAsync();
@@ -164,7 +164,7 @@ describe('StreamingText', () => {
 
   it('animates cursor while streaming', async () => {
     const { lastFrame, unmount } = render(
-      <StreamingText text="Streaming content" markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text="Streaming content" markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     // Advance timer to trigger cursor animation
@@ -185,7 +185,7 @@ describe('StreamingText', () => {
 
   it('stops cursor animation when stream completes', async () => {
     const { lastFrame, rerender, unmount } = render(
-      <StreamingText text="Still streaming" markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text="Still streaming" markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     vi.advanceTimersByTime(100);
@@ -205,7 +205,7 @@ describe('StreamingText', () => {
 
   it('cancels pending markdown conversion on unmount', async () => {
     const { unmount } = render(
-      <StreamingText text="**markdown**" markdown={true} isStreaming={false} theme={mockTheme} />,
+      <StreamingText text="**markdown**" markdown={true} isStreaming={false} theme={mockTheme} />
     );
 
     // Unmount before async conversion completes
@@ -218,7 +218,7 @@ describe('StreamingText', () => {
 
   it('handles rapid text updates', async () => {
     const { lastFrame, rerender, unmount } = render(
-      <StreamingText text="First" markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text="First" markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     vi.advanceTimersByTime(100);
@@ -239,7 +239,7 @@ describe('StreamingText', () => {
   it('handles multiline streaming text correctly', async () => {
     const multiline = 'Line 1\nLine 2\nLine 3 partial';
     const { lastFrame, unmount } = render(
-      <StreamingText text={multiline} markdown={false} isStreaming={true} theme={mockTheme} />,
+      <StreamingText text={multiline} markdown={false} isStreaming={true} theme={mockTheme} />
     );
 
     vi.advanceTimersByTime(100);
@@ -259,7 +259,7 @@ describe('StreamingText', () => {
         isStreaming={true}
         theme={mockTheme}
         screenReader={true}
-      />,
+      />
     );
 
     vi.advanceTimersByTime(100);

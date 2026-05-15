@@ -11,7 +11,7 @@ export enum AgentStatus {
   PAUSED = 'paused',
   COMPLETED = 'completed',
   FAILED = 'failed',
-  STOPPED = 'stopped',
+  STOPPED = 'stopped'
 }
 
 /**

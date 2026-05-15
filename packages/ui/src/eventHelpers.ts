@@ -10,7 +10,7 @@ import type { UIConversation, UIMessagePart, UIMessagePartWithoutCreatedAt, UITo
 export function addPartToMessage(
   state: UIConversation,
   messageId: string,
-  part: UIMessagePartWithoutCreatedAt,
+  part: UIMessagePartWithoutCreatedAt
 ): UIConversation {
   const now = new Date();
 
@@ -18,7 +18,7 @@ export function addPartToMessage(
     if (msg.id === messageId) {
       return {
         ...msg,
-        parts: [...msg.parts, { ...part, createdAt: now } as UIMessagePart],
+        parts: [...msg.parts, { ...part, createdAt: now } as UIMessagePart]
       };
     }
     return msg;
@@ -27,7 +27,7 @@ export function addPartToMessage(
   return {
     ...state,
     messages,
-    lastEventAt: now,
+    lastEventAt: now
   };
 }
 
@@ -39,7 +39,7 @@ export function finishMessage(
   state: UIConversation,
   messageId: string,
   finishReason: FinishReason | undefined,
-  usage: UsageInfo | undefined,
+  usage: UsageInfo | undefined
 ): UIConversation {
   const now = new Date();
   let totalTokens = state.totalTokens;
@@ -55,7 +55,7 @@ export function finishMessage(
       return {
         ...msg,
         ...(finishReason === undefined ? {} : { finishReason }),
-        ...(usage === undefined ? {} : { usage }),
+        ...(usage === undefined ? {} : { usage })
       };
     }
     return msg;
@@ -67,7 +67,7 @@ export function finishMessage(
     status: state.status === 'error' ? 'error' : 'idle',
     totalTokens,
     totalUsage,
-    lastEventAt: now,
+    lastEventAt: now
   };
 }
 
@@ -79,7 +79,7 @@ export function updateToolCallInMessage(
   state: UIConversation,
   messageId: string,
   toolCallId: string,
-  updates: Partial<Pick<UIToolCallPart, 'state' | 'argumentsText' | 'parameters' | 'result' | 'error'>>,
+  updates: Partial<Pick<UIToolCallPart, 'state' | 'argumentsText' | 'parameters' | 'result' | 'error'>>
 ): UIConversation {
   const now = new Date();
 
@@ -103,15 +103,15 @@ export function updateToolCallInMessage(
           ...(updates.error === undefined ? {} : { error: updates.error }),
           ...(updates.argumentsText === undefined
             ? {}
-            : { argumentsText: (part.argumentsText ?? '') + updates.argumentsText }),
+            : { argumentsText: (part.argumentsText ?? '') + updates.argumentsText })
         };
-      }),
+      })
     };
   });
 
   return {
     ...state,
     messages,
-    lastEventAt: now,
+    lastEventAt: now
   };
 }

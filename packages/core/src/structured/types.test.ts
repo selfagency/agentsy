@@ -5,7 +5,7 @@ import {
   isStreamingDone,
   markStreamingDone,
   type DeepPartial,
-  type StreamingPartial,
+  type StreamingPartial
 } from './types.js';
 
 test('DeepPartial preserves nested array partials', () => {
@@ -21,9 +21,9 @@ test('DeepPartial preserves nested array partials', () => {
   const partial: DeepPartial<Input> = {
     items: [
       {
-        nested: {},
-      },
-    ],
+        nested: {}
+      }
+    ]
   };
 
   expectTypeOf(partial.items?.[0]?.id).toEqualTypeOf<string | undefined>();

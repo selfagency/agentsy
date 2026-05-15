@@ -33,14 +33,14 @@ describe('createPipeline', () => {
     const events: unknown[] = [];
     for await (const event of createPipeline(mockOpenAIStream(), {
       provider: 'openai',
-      scrubContextTags: false,
+      scrubContextTags: false
     })) {
       events.push(event);
     }
 
     const textEvents = events.filter(
       (e: unknown): e is { type: string; content: string } =>
-        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'delta',
+        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'delta'
     );
     expect(textEvents.length).toBeGreaterThan(0);
     expect(textEvents.map(e => e.content).join('')).toContain('Hello');
@@ -54,7 +54,7 @@ describe('createPipeline', () => {
 
     const errorEvent = events.find(
       (e: unknown): e is { type: string } =>
-        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'error',
+        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'error'
     );
     expect(errorEvent).toBeDefined();
   });
@@ -63,7 +63,7 @@ describe('createPipeline', () => {
     const events: unknown[] = [];
     for await (const event of createPipeline(mockStreamWithJson(), {
       provider: 'openai',
-      scrubContextTags: false,
+      scrubContextTags: false
     })) {
       events.push(event);
     }
@@ -71,7 +71,7 @@ describe('createPipeline', () => {
     const deltaContent = events
       .filter(
         (e: unknown): e is { type: string; content: string } =>
-          typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'delta',
+          typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'delta'
       )
       .map(e => e.content)
       .join('');
@@ -86,7 +86,7 @@ describe('createPipeline', () => {
 
     const hasThinking = events.some(
       (e: unknown): e is { type: string } =>
-        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'thinking',
+        typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'thinking'
     );
     expect(hasThinking).toBe(true);
   });

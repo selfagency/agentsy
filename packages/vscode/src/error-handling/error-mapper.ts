@@ -7,7 +7,7 @@ const STATUS_TO_ERROR_CODE = new Map<number, ProviderErrorCode>([
   [404, ProviderErrorCode.ModelNotFound],
   [408, ProviderErrorCode.Timeout],
   [504, ProviderErrorCode.Timeout],
-  [400, ProviderErrorCode.InvalidRequest],
+  [400, ProviderErrorCode.InvalidRequest]
 ]);
 
 /**
@@ -64,7 +64,7 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
     [['econnrefused', 'connection refused', 'network', 'fetch failed'], ProviderErrorCode.ConnectionError],
     [['timeout', 'timed out', 'etimedout'], ProviderErrorCode.Timeout],
     [['cancelled', 'aborted'], ProviderErrorCode.Cancelled],
-    [['invalid request', 'bad request'], ProviderErrorCode.InvalidRequest],
+    [['invalid request', 'bad request'], ProviderErrorCode.InvalidRequest]
   ];
 
   for (const [keywords, code] of patterns) {
@@ -94,7 +94,7 @@ export interface CreateProviderErrorOptions {
 export function createProviderError(
   code: ProviderErrorCode,
   originalError?: unknown,
-  options: CreateProviderErrorOptions = {},
+  options: CreateProviderErrorOptions = {}
 ): Error {
   const baseMessage = errorCodeToMessage(code);
   const originalMessage =

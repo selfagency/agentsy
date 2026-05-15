@@ -66,7 +66,7 @@ export function captureStreamState(processor: LLMStreamProcessor, options?: Proc
     toolCalls: msg.toolCalls,
     ...(msg.usage != null ? { usage: msg.usage } : {}),
     options: options ?? {},
-    timestamp: Date.now(),
+    timestamp: Date.now()
   };
 }
 
@@ -79,7 +79,7 @@ export function captureStreamState(processor: LLMStreamProcessor, options?: Proc
  */
 export function buildContinuationPrompt(
   snapshot: StreamSnapshot,
-  options?: ContinuationOptions,
+  options?: ContinuationOptions
 ): ContinuationMessage[] {
   const provider = options?.provider ?? 'openai';
 
@@ -92,9 +92,9 @@ export function buildContinuationPrompt(
         return [
           {
             role: 'user',
-            content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
+            content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`
           },
-          { role: 'assistant', content: partialContent },
+          { role: 'assistant', content: partialContent }
         ];
       }
 
@@ -107,7 +107,7 @@ export function buildContinuationPrompt(
 
     return [
       { role: 'assistant', content: partialContent },
-      { role: 'user', content: userContent },
+      { role: 'user', content: userContent }
     ];
   }
 

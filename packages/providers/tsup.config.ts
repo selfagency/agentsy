@@ -6,7 +6,7 @@ export default defineConfig({
     adapters: 'src/adapters/index.ts',
     normalizers: 'src/normalizers/index.ts',
     pipeline: 'src/pipeline/index.ts',
-    'universal-client': 'src/universal-client/index.ts',
+    'universal-client': 'src/universal-client/index.ts'
   },
   format: ['esm', 'cjs'],
   dts: true,
@@ -18,10 +18,10 @@ export default defineConfig({
     '@agentsy/core/structured',
     '@agentsy/core/tool-calls',
     '@agentsy/types',
-    'zod',
+    'zod'
   ],
   splitting: false,
   treeshake: true,
   minify: false,
-  target: 'node18',
+  target: 'node18'
 });

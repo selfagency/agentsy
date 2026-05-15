@@ -163,7 +163,7 @@ export interface CompressionResult {
 
 export async function compressMemoryFile(
   filePath: string,
-  options: MemoryCompressionOptions,
+  options: MemoryCompressionOptions
 ): Promise<CompressionResult> {
   // 1. Security check - refuse sensitive paths
   if (isSensitivePath(filePath)) {
@@ -520,7 +520,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
       isFlat: false,
       fieldCount: 0,
       itemCount: 0,
-      allPrimitives: false,
+      allPrimitives: false
     };
   }
 
@@ -542,7 +542,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
 
     // Check primitive-only
     const allPrimitives = Object.values(item).every(
-      v => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean',
+      v => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
     );
 
     if (hasSameKeys && allPrimitives) {
@@ -558,7 +558,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
     isFlat: !nestedDetected,
     fieldCount: keys.length,
     itemCount: data.length,
-    allPrimitives,
+    allPrimitives
   };
 }
 ```
@@ -623,7 +623,7 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
     formatUsed: actualFormat,
     tokenCount,
     savingsPercentage,
-    accuracy,
+    accuracy
   };
 }
 ```
@@ -655,7 +655,7 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
 export async function encodeLargeDataset(
   data: any[],
   outputPath: string,
-  options?: EncodingOptions,
+  options?: EncodingOptions
 ): Promise<{ file: string; stats: StreamStats }> {
   const fileStream = fs.createWriteStream(outputPath);
 
@@ -686,8 +686,8 @@ export async function encodeLargeDataset(
     itemCount: data.length,
     format: actualFormat,
     estimatedTokens: await estimateTokensFromPath(outputPath, {
-      model: options?.modelContext?.model || 'gpt-4o',
-    }),
+      model: options?.modelContext?.model || 'gpt-4o'
+    })
   };
 
   return { file: outputPath, stats };
@@ -795,7 +795,7 @@ export enum ModelName {
   GPT_4O = 'gpt-4o', // o200k_base (cl100k_base compatible)
   GPT_4O_MINI = 'gpt-4o-mini', // o200k_base
   DEEPSEEK_CHAT = 'deepseek-chat', // cl100k_base
-  LLaMA_3 = 'llama-3', // llama-tokenizer
+  LLaMA_3 = 'llama-3' // llama-tokenizer
 }
 ```
 
@@ -860,13 +860,13 @@ const PRICING: Record<string, ModelPricing> = {
   'claude-3-5-sonnet': {
     modelName: ModelName.CLAUDE_3_5_SONNET,
     inputCostPer1M: 3.0,
-    outputCostPer1M: 15.0,
+    outputCostPer1M: 15.0
   },
   'gpt-4o': {
     modelName: ModelName.GPT_4O,
     inputCostPer1M: 2.5,
-    outputCostPer1M: 10.0,
-  },
+    outputCostPer1M: 10.0
+  }
   // ... more models
 };
 ```
@@ -942,8 +942,8 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
       recommendedActions: [
         'Stop new requests',
         'Review most expensive operations',
-        'Consider cheaper model alternatives',
-      ],
+        'Consider cheaper model alternatives'
+      ]
     };
   }
 
@@ -952,7 +952,7 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
       level: 'warning',
       message: `Budget warning: ${percentage.toFixed(1)}% used`,
       percentage,
-      recommendedActions: ['Monitor spending closely', 'Consider model routing for expensive operations'],
+      recommendedActions: ['Monitor spending closely', 'Consider model routing for expensive operations']
     };
   }
 
@@ -960,7 +960,7 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
     level: 'info',
     message: `Budget alert: ${percentage.toFixed(1)}% used`,
     percentage,
-    recommendedActions: ['Continue monitoring'],
+    recommendedActions: ['Continue monitoring']
   };
 }
 ```
@@ -1065,7 +1065,7 @@ export class LRUCache<K, V> {
       createdAt: new Date(),
       lastAccessed: new Date(),
       hits: 0,
-      ttl: ttl || this.defaultTTL,
+      ttl: ttl || this.defaultTTL
     });
   }
 
@@ -1268,7 +1268,7 @@ export class CompactMemoryManager {
   // Compact a stage's memory
   async compact(
     stage: CompactStage,
-    targetRatio: number, // Target concreteness (0.0-1.0)
+    targetRatio: number // Target concreteness (0.0-1.0)
   ): Promise<CompactResult>;
 }
 
@@ -1277,7 +1277,7 @@ export enum CompactStage {
   PRECISE = 'precise', // Recent context, 70% concreteness
   WARM = 'warm', // Historical, 50% concreteness
   ARCHIVE = 'archive', // Important decisions, structured summary
-  OVERFLOW = 'overflow', // Overflow, delete or archive
+  OVERFLOW = 'overflow' // Overflow, delete or archive
 }
 
 export interface CompactMemory {
@@ -1621,7 +1621,7 @@ import { compressOutput } from '@agentsy/tokens/compression';
 const compressed = compressOutput(rawResponse, {
   level: 'full',
   preserve: { codeBlocks: true, urls: true, filePaths: true },
-  autoClarity: true,
+  autoClarity: true
 });
 
 // 2. Budget tracking
@@ -1630,7 +1630,7 @@ import { BudgetManager } from '@agentsy/tokens/budget';
 const budget = new BudgetManager({
   totalBudget: 100.0,
   period: 'day',
-  alertThreshold: 0.8,
+  alertThreshold: 0.8
 });
 
 budget.trackUsage({ inputTokens: 1000, outputTokens: 500 }, { model: 'claude-3-5-sonnet' });

@@ -127,8 +127,8 @@ import { encode, decode } from '@toon-format/toon';
 const data = {
   users: [
     { id: 1, name: 'Alice', role: 'admin' },
-    { id: 2, name: 'Bob', role: 'user' },
-  ],
+    { id: 2, name: 'Bob', role: 'user' }
+  ]
 };
 
 // Encode to TOON
@@ -191,7 +191,7 @@ await writer.close();
 ```typescript
 const user = { name: 'Alice', password: 'secret', email: 'alice@example.com' };
 const safe = encode(user, {
-  replacer: (key, value) => (key === 'password' ? undefined : value),
+  replacer: (key, value) => (key === 'password' ? undefined : value)
 });
 ```
 

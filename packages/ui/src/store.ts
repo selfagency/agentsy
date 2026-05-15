@@ -65,7 +65,7 @@ export function createConversationStore(conversationId: string): ConversationSto
     lastEventAt: new Date(),
     totalTokens: 0,
     totalUsage: {},
-    metadata: undefined,
+    metadata: undefined
   };
 
   const listeners = new Set<StoreListener>();
@@ -82,7 +82,7 @@ export function createConversationStore(conversationId: string): ConversationSto
       // Return a shallow copy to prevent external mutations
       return {
         ...state,
-        messages: [...state.messages],
+        messages: [...state.messages]
       };
     },
 
@@ -109,6 +109,6 @@ export function createConversationStore(conversationId: string): ConversationSto
     getEventLog(): ConversationEvent[] {
       // Return copy of event log
       return [...eventLog];
-    },
+    }
   };
 }

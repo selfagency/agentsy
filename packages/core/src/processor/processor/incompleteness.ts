@@ -36,7 +36,7 @@ export function detectIncompleteness(accumulatedContent: string, toolCalls: XmlT
   if (hasUnclosedXmlTags(accumulatedContent)) {
     incompleteness.push({
       type: 'xml',
-      reason: 'Unmatched XML tags in residual buffer',
+      reason: 'Unmatched XML tags in residual buffer'
     });
   }
 
@@ -44,7 +44,7 @@ export function detectIncompleteness(accumulatedContent: string, toolCalls: XmlT
     if (Object.keys(call.parameters).length === 0 && call.format === 'bare-xml') {
       incompleteness.push({
         type: 'tool_calls',
-        reason: `Tool call "${call.name}" has no parsed parameters`,
+        reason: `Tool call "${call.name}" has no parsed parameters`
       });
     }
   }

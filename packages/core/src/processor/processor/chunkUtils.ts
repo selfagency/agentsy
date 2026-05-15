@@ -67,7 +67,7 @@ export function mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCal
     mapped.push({
       name,
       parameters: normalizeToolArguments(call.function?.arguments),
-      format: 'native-json',
+      format: 'native-json'
     });
   }
 
@@ -78,7 +78,7 @@ export function enforceMaxLength(
   value: string,
   field: 'content' | 'thinking',
   maxInputLength: number,
-  onWarning: (message: string, context?: Record<string, unknown>) => void,
+  onWarning: (message: string, context?: Record<string, unknown>) => void
 ): string {
   const valueBytes = SHARED_TEXT_ENCODER.encode(value).length;
   if (maxInputLength <= 0 || valueBytes <= maxInputLength) {
@@ -88,7 +88,7 @@ export function enforceMaxLength(
   onWarning(`Chunk ${field} exceeded maxInputLength and was truncated`, {
     field,
     maxInputLength,
-    originalLength: valueBytes,
+    originalLength: valueBytes
   });
 
   const charIndexForByteLimit = (() => {

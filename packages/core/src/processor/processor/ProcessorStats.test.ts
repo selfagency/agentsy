@@ -27,7 +27,7 @@ describe('ProcessorStats', () => {
     processor.process({
       content: 'Hello',
       thinking: 'Thinking...',
-      done: false,
+      done: false
     });
 
     const stats = processor.getStats();
@@ -65,7 +65,7 @@ describe('ProcessorStats', () => {
 
     processor.process({
       content: '<test_tool>{"arg": "value"}</test_tool>',
-      done: true,
+      done: true
     });
 
     const stats = processor.getStats();
@@ -146,7 +146,7 @@ describe('ProcessorStats', () => {
       maxInputLength: 50,
       onWarning: () => {
         // Ignore warnings
-      },
+      }
     });
 
     // Trigger a warning by exceeding maxInputLength

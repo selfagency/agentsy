@@ -51,7 +51,7 @@ export function providerToolToNative(tool: ProviderTool): { name: string; argume
   return {
     name: tool.name,
     arguments: tool.parameters,
-    ...(tool.id !== undefined && { id: tool.id }),
+    ...(tool.id !== undefined && { id: tool.id })
   };
 }
 
@@ -60,6 +60,6 @@ export function nativeToProviderTool(nativeTool: { name: string; arguments: Json
     name: nativeTool.name,
     parameters: nativeTool.arguments,
     ...(nativeTool.id !== undefined && { id: nativeTool.id }),
-    format: 'native-json',
+    format: 'native-json'
   };
 }

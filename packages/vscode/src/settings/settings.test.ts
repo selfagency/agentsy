@@ -20,7 +20,7 @@ describe('validateSettings', () => {
 
   it('validates type mismatch', () => {
     const schema: SettingsSchema = {
-      properties: { port: { type: 'number' } },
+      properties: { port: { type: 'number' } }
     };
     const result = validateSettings({ port: 'not-a-number' }, schema);
     expect(result.valid).toBe(false);
@@ -29,7 +29,7 @@ describe('validateSettings', () => {
 
   it('validates enum values', () => {
     const schema: SettingsSchema = {
-      properties: { level: { type: 'string', enum: ['debug', 'info', 'error'] } },
+      properties: { level: { type: 'string', enum: ['debug', 'info', 'error'] } }
     };
     expect(validateSettings({ level: 'info' }, schema).valid).toBe(true);
     const bad = validateSettings({ level: 'verbose' }, schema);
@@ -39,7 +39,7 @@ describe('validateSettings', () => {
 
   it('validates number minimum', () => {
     const schema: SettingsSchema = {
-      properties: { port: { type: 'number', minimum: 1, maximum: 65535 } },
+      properties: { port: { type: 'number', minimum: 1, maximum: 65535 } }
     };
     expect(validateSettings({ port: 80 }, schema).valid).toBe(true);
     expect(validateSettings({ port: 0 }, schema).valid).toBe(false);
@@ -48,7 +48,7 @@ describe('validateSettings', () => {
 
   it('skips validation for absent optional fields', () => {
     const schema: SettingsSchema = {
-      properties: { port: { type: 'number' } },
+      properties: { port: { type: 'number' } }
     };
     const result = validateSettings({}, schema);
     expect(result.valid).toBe(true);
@@ -94,7 +94,7 @@ describe('SettingsLoader', () => {
     const loader = new SettingsLoader({
       namespace: 'myExt',
       schema: { properties: { host: { type: 'string' } } },
-      defaults: { host: 'localhost', port: 11434 },
+      defaults: { host: 'localhost', port: 11434 }
     });
     const settings = await loader.load();
     expect(settings.host).toBe('localhost');
@@ -106,8 +106,8 @@ describe('SettingsLoader', () => {
       namespace: 'myExt',
       schema: {
         required: ['host'],
-        properties: { host: { type: 'string' }, port: { type: 'number' } },
-      },
+        properties: { host: { type: 'string' }, port: { type: 'number' } }
+      }
     });
     const result = loader.validate({ host: 'localhost', port: 80 });
     expect(result.valid).toBe(true);
@@ -116,7 +116,7 @@ describe('SettingsLoader', () => {
   it('validate returns errors for invalid settings', () => {
     const loader = new SettingsLoader({
       namespace: 'myExt',
-      schema: { required: ['host'] },
+      schema: { required: ['host'] }
     });
     const result = loader.validate({ port: 80 });
     expect(result.valid).toBe(false);
@@ -137,7 +137,7 @@ describe('SettingsLoader', () => {
     const loader = new SettingsLoader({
       namespace: 'myExt',
       schema: {},
-      defaults: { myKey: 'myValue' },
+      defaults: { myKey: 'myValue' }
     });
     await loader.load();
     expect(loader.get('myKey')).toBe('myValue');
@@ -147,7 +147,7 @@ describe('SettingsLoader', () => {
     const loader = new SettingsLoader({
       namespace: 'myExt',
       schema: { properties: { port: { type: 'number' } } },
-      defaults: { port: 80 },
+      defaults: { port: 80 }
     });
     await loader.load();
 
@@ -198,7 +198,7 @@ describe('SettingsLoader', () => {
     const loader = new SettingsLoader({
       namespace: 'myExt',
       schema: {},
-      defaults: { x: 1 },
+      defaults: { x: 1 }
     });
     const settings = await loader.load();
     expect(settings.x).toBe(1);

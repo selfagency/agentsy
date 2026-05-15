@@ -43,7 +43,7 @@ describe('bridgeStream', () => {
 
     expect(out).toEqual([
       { part: { type: 'text', value: 'a' } },
-      { part: { type: 'text', value: '<think>b</think>\n' } },
+      { part: { type: 'text', value: '<think>b</think>\n' } }
     ]);
   });
 });

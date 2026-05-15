@@ -32,7 +32,7 @@ export { applyConversationEvent } from './eventSourcing.js';
 export {
   bindProcessorToConversationStore,
   createConversationStoreFromProcessor,
-  type ConversationStoreBridge,
+  type ConversationStoreBridge
 } from './processorBridge.js';
 export { createConversationStore, type ConversationStore, type StoreListener } from './store.js';
 export type {
@@ -44,5 +44,5 @@ export type {
   UIStepPart,
   UITextPart,
   UIThinkingPart,
-  UIToolCallPart,
+  UIToolCallPart
 } from './types.js';

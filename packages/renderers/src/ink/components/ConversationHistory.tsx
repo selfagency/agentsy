@@ -24,7 +24,7 @@ export function ConversationHistory({ turns, theme, screenReader = false, option
     thinkingStyle = 'blockquote',
     showToolCalls = true,
     markdown = true,
-    syntaxHighlight = false,
+    syntaxHighlight = false
   } = options;
 
   return (

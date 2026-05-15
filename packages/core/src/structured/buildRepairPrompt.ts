@@ -12,7 +12,7 @@ export function buildRepairPrompt(options: BuildRepairPromptOptions): string {
     'The previous response could not be parsed as valid structured output.',
     'Please return a corrected response as valid JSON only (no markdown fences, no prose).',
     `Parse/validation error:\n${options.error}`,
-    `Failed output:\n${options.failedOutput}`,
+    `Failed output:\n${options.failedOutput}`
   ];
 
   if (options.originalPrompt) {

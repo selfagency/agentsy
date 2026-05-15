@@ -13,7 +13,7 @@ describe('ApiKeyManager', () => {
     config = {
       secretKey: 'TEST_API_KEY',
       contextKey: 'test.hasApiKey',
-      displayName: 'Test API Key',
+      displayName: 'Test API Key'
     };
     manager = new ApiKeyManager(mockContext, config);
   });
@@ -91,7 +91,7 @@ describe('ApiKeyManager', () => {
       const validator = vi.fn().mockResolvedValue(true);
       const configWithValidator: ApiKeyManagerConfig = {
         ...config,
-        validateBeforeStore: validator,
+        validateBeforeStore: validator
       };
       const validatingManager = new ApiKeyManager(mockContext, configWithValidator);
       await validatingManager.setApiKey('test-key');
@@ -101,7 +101,7 @@ describe('ApiKeyManager', () => {
     it('should throw if validation fails', async () => {
       const configWithValidator: ApiKeyManagerConfig = {
         ...config,
-        validateBeforeStore: () => false,
+        validateBeforeStore: () => false
       };
       const validatingManager = new ApiKeyManager(mockContext, configWithValidator);
       await expect(validatingManager.setApiKey('invalid-key')).rejects.toThrow('API key validation failed');
@@ -112,7 +112,7 @@ describe('ApiKeyManager', () => {
       const configWithValidator: ApiKeyManagerConfig = {
         ...config,
         validateBeforeStore: () => false,
-        onError,
+        onError
       };
       const validatingManager = new ApiKeyManager(mockContext, configWithValidator);
       try {

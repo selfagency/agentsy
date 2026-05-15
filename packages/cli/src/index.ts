@@ -16,7 +16,7 @@ const DEFAULT_IO: CliIO = {
   },
   stderr: message => {
     console.error(message);
-  },
+  }
 };
 
 function getFlagValue(args: readonly string[], flag: string): string | null {
@@ -69,7 +69,7 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
     await compressMemoryFile(filePath, {
       level,
-      backup,
+      backup
     });
     io.stdout(`Compressed memory file: ${filePath}`);
     return 0;

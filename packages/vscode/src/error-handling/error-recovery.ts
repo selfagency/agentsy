@@ -28,7 +28,7 @@ const RETRYABLE_CODES = new Set<ProviderErrorCode>([
   ProviderErrorCode.RateLimited,
   ProviderErrorCode.Timeout,
   ProviderErrorCode.ConnectionError,
-  ProviderErrorCode.InternalError,
+  ProviderErrorCode.InternalError
 ]);
 
 /**
@@ -44,7 +44,7 @@ export function isRetryableError(error: unknown): boolean {
  */
 export function calculateRetryDelay(
   attempt: number,
-  options: Required<Pick<RetryOptions, 'initialDelayMs' | 'backoffMultiplier' | 'maxDelayMs'>>,
+  options: Required<Pick<RetryOptions, 'initialDelayMs' | 'backoffMultiplier' | 'maxDelayMs'>>
 ): number {
   const delay = options.initialDelayMs * options.backoffMultiplier ** attempt;
   return Math.min(delay, options.maxDelayMs);

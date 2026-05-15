@@ -17,7 +17,7 @@ This guide describes how `@agentsy/*` stream-processing packages can be integrat
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
   scrubContextTags: true,
-  knownTools: new Set(['search', 'edit_file']),
+  knownTools: new Set(['search', 'edit_file'])
 });
 
 processor.on('thinking', delta => {
@@ -39,7 +39,7 @@ for await (const chunk of chatStream) {
   const output = processor.process({
     content: chunk.content,
     thinking: chunk.thinking,
-    done: chunk.done,
+    done: chunk.done
   });
 }
 
@@ -93,7 +93,7 @@ const response = await chatCompletion(messages);
 
 const toolCalls = extractXmlToolCalls(
   response,
-  new Set(['search_codebase', 'edit_file', 'run_tests', 'execute_command']),
+  new Set(['search_codebase', 'edit_file', 'run_tests', 'execute_command'])
 );
 
 for (const call of toolCalls) {
@@ -116,9 +116,9 @@ const schema = {
   properties: {
     suggestions: {
       type: 'array',
-      items: { type: 'string' },
-    },
-  },
+      items: { type: 'string' }
+    }
+  }
 };
 
 let response = await chatCompletion(messages);
@@ -137,7 +137,7 @@ if (!validation.success) {
     failedOutput: response,
     error: validation.errors[0],
     schema,
-    originalPrompt: messages[messages.length - 1].content,
+    originalPrompt: messages[messages.length - 1].content
   });
 
   // Ask model to fix
@@ -170,7 +170,7 @@ if (validation.success) {
 const processor = new LLMStreamProcessor({
   modelId: 'claude-opus', // Auto-detects thinking tags
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 ```
 
@@ -185,7 +185,7 @@ const processor = new LLMStreamProcessor({
   thinkingOpenTag: '<think>',
   thinkingCloseTag: '</think>',
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 ```
 
@@ -199,7 +199,7 @@ const processor = new LLMStreamProcessor({
 const processor = new LLMStreamProcessor({
   modelId: 'deepseek', // Auto-detects for known models
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 
 // Custom configuration for unknown models
@@ -207,7 +207,7 @@ const processor2 = new LLMStreamProcessor({
   thinkingOpenTag: '<reasoning>',
   thinkingCloseTag: '</reasoning>',
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 ```
 
@@ -255,6 +255,6 @@ const processor = new LLMStreamProcessor({
   onWarning: (message, context) => {
     console.log(`[@agentsy/core/processor] ${message}`, context);
   },
-  ...config,
+  ...config
 });
 ```

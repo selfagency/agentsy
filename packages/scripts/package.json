@@ -15,5 +15,11 @@
     "test": "vitest --run --passWithNoTests",
     "lint": "oxlint src",
     "format": "oxfmt src"
+  },
+  "dependencies": {
+    "@octokit/rest": "22.0.1",
+    "@types/node": "^25.8.0",
+    "ora": "^9.4.0",
+    "zx": "^8.8.5"
   }
 }

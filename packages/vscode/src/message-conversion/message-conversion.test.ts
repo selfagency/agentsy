@@ -40,7 +40,7 @@ describe('role-converter', () => {
       const result = extractToolCall({
         callId: 'call-1',
         name: 'myTool',
-        input: { foo: 'bar' },
+        input: { foo: 'bar' }
       });
       expect(result).toEqual({ id: 'call-1', name: 'myTool', arguments: { foo: 'bar' } });
     });
@@ -49,7 +49,7 @@ describe('role-converter', () => {
       const result = extractToolCall({
         callId: 'call-2',
         name: 'fn',
-        input: '{"x": 42}',
+        input: '{"x": 42}'
       });
       expect(result?.arguments).toEqual({ x: 42 });
     });
@@ -73,7 +73,7 @@ describe('role-converter', () => {
     it('extracts tool result with array content', () => {
       const result = extractToolResult({
         callId: 'call-1',
-        content: [{ value: 'result text' }],
+        content: [{ value: 'result text' }]
       });
       expect(result).toEqual({ callId: 'call-1', content: 'result text' });
     });
@@ -118,7 +118,7 @@ describe('message-adapter', () => {
     it('concatenates text parts', () => {
       const result = convertMessage({
         role: 1,
-        content: [{ value: 'Hello ' }, { value: 'world' }],
+        content: [{ value: 'Hello ' }, { value: 'world' }]
       });
       expect(result.content).toBe('Hello world');
     });
@@ -126,7 +126,7 @@ describe('message-adapter', () => {
     it('extracts tool calls from content parts', () => {
       const result = convertMessage({
         role: 2,
-        content: [{ callId: 'c1', name: 'myTool', input: { a: 1 } }],
+        content: [{ callId: 'c1', name: 'myTool', input: { a: 1 } }]
       });
       expect(result.toolCalls).toEqual([{ id: 'c1', name: 'myTool', arguments: { a: 1 } }]);
       expect(result.role).toBe('assistant');
@@ -135,7 +135,7 @@ describe('message-adapter', () => {
     it('converts tool result message', () => {
       const result = convertMessage({
         role: 1,
-        content: [{ callId: 'c1', content: [{ value: 'result' }] }],
+        content: [{ callId: 'c1', content: [{ value: 'result' }] }]
       });
       expect(result.role).toBe('tool');
       expect(result.toolCallId).toBe('c1');
@@ -152,7 +152,7 @@ describe('message-adapter', () => {
     it('converts array of messages', () => {
       const msgs = [
         { role: 1, content: 'Hi' },
-        { role: 2, content: 'Hello' },
+        { role: 2, content: 'Hello' }
       ];
       const result = convertMessages(msgs);
       expect(result).toHaveLength(2);

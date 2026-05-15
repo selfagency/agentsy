@@ -7,7 +7,7 @@ describe('mapStreamChunkToVsCode', () => {
     const chunk: StreamChunk = {
       content: 'Hello',
       thinking: 'reason',
-      nativeToolCallDeltas: [{ index: 0, id: 'call-1', name: 'search', argumentsDelta: '{"q":"x"}' }],
+      nativeToolCallDeltas: [{ index: 0, id: 'call-1', name: 'search', argumentsDelta: '{"q":"x"}' }]
     };
 
     expect(mapStreamChunkToVsCode(chunk)).toEqual([
@@ -19,9 +19,9 @@ describe('mapStreamChunkToVsCode', () => {
           index: 0,
           callId: 'call-1',
           name: 'search',
-          input: '{"q":"x"}',
-        },
-      },
+          input: '{"q":"x"}'
+        }
+      }
     ]);
   });
 

@@ -41,7 +41,7 @@
 import { createGenericAdapter } from '@agentsy/providers/adapters';
 
 const adapter = createGenericAdapter({
-  onContent: text => process.stdout.write(text),
+  onContent: text => process.stdout.write(text)
 });
 ```
 
@@ -51,7 +51,7 @@ const adapter = createGenericAdapter({
 import {
   applyDecisionAction,
   createGenericAdapter,
-  runStructuredDecisionFromRawStream,
+  runStructuredDecisionFromRawStream
 } from '@agentsy/providers/adapters';
 import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
@@ -63,8 +63,8 @@ const schema = {
     targetIp: { type: 'string' },
     reason: { type: 'string' },
     ttlSeconds: { type: 'number' },
-    evidence: { type: 'array', items: { type: 'string' } },
-  },
+    evidence: { type: 'array', items: { type: 'string' } }
+  }
 } as const;
 
 const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
@@ -74,7 +74,7 @@ const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock
     return normalized ? normalized.chunk : null;
   },
   schema,
-  processorOptions: { parseThinkTags: true },
+  processorOptions: { parseThinkTags: true }
 });
 
 if (decision.success) {
@@ -82,16 +82,16 @@ if (decision.success) {
     shouldAct: value => value.shouldBlock,
     action: async value => {
       await updateRemoteDns(value);
-    },
+    }
   });
 }
 
 const adapter = createGenericAdapter(
   {
     onContent: text => process.stdout.write(text),
-    onDone: () => console.log('\nDone'),
+    onDone: () => console.log('\nDone')
   },
-  { parseThinkTags: true, scrubContextTags: false },
+  { parseThinkTags: true, scrubContextTags: false }
 );
 
 for await (const rawChunk of streamFromProvider) {

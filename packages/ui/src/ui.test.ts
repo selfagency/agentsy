@@ -10,7 +10,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 function startMessage(
   store: ReturnType<typeof createConversationStore>,
   role: 'user' | 'assistant',
-  messageId: string,
+  messageId: string
 ): void {
   store.dispatch({ type: 'message_started', role, messageId });
 }
@@ -26,7 +26,7 @@ function addThinkingPart(store: ReturnType<typeof createConversationStore>, mess
 function addToolCallPart(
   store: ReturnType<typeof createConversationStore>,
   messageId: string,
-  toolCall: { id: string; name: string; parameters: JsonObject },
+  toolCall: { id: string; name: string; parameters: JsonObject }
 ): void {
   store.dispatch({ type: 'tool_call_part_added', messageId, toolCall });
 }
@@ -35,7 +35,7 @@ function finishMessage(
   store: ReturnType<typeof createConversationStore>,
   messageId: string,
   finishReason?: FinishReason,
-  usage?: { inputTokens: number; outputTokens: number; totalTokens: number },
+  usage?: { inputTokens: number; outputTokens: number; totalTokens: number }
 ): void {
   if (finishReason && usage) {
     store.dispatch({ type: 'message_finished', messageId, finishReason, usage });
@@ -56,14 +56,14 @@ describe('UI Event Sourcing', () => {
       lastEventAt: new Date('2025-01-01'),
       totalTokens: 0,
       totalUsage: {},
-      metadata: undefined,
+      metadata: undefined
     };
 
     it('should add a new message on message_started event', () => {
       const event: ConversationEvent = {
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       };
 
       const newState = applyConversationEvent(initialState, event);
@@ -78,13 +78,13 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'text_part_added',
         messageId: 'msg-1',
-        text: 'Hello, world!',
+        text: 'Hello, world!'
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
@@ -96,19 +96,19 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'thinking_part_added',
         messageId: 'msg-1',
-        text: 'Let me think about this...',
+        text: 'Let me think about this...'
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
       expect(state.messages[0]?.parts?.[0]?.type).toBe('thinking');
       expect(state.messages[0]?.parts?.[0]?.type === 'thinking' && state.messages[0]?.parts[0]?.text).toBe(
-        'Let me think about this...',
+        'Let me think about this...'
       );
     });
 
@@ -116,7 +116,7 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
@@ -125,8 +125,8 @@ describe('UI Event Sourcing', () => {
         toolCall: {
           id: 'call-1',
           name: 'search',
-          parameters: { query: 'TypeScript best practices' },
-        },
+          parameters: { query: 'TypeScript best practices' }
+        }
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
@@ -146,7 +146,7 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
@@ -156,8 +156,8 @@ describe('UI Event Sourcing', () => {
           id: 'call-1',
           name: 'search',
           parameters: {},
-          state: 'awaiting-input',
-        },
+          state: 'awaiting-input'
+        }
       });
 
       state = applyConversationEvent(state, {
@@ -165,7 +165,7 @@ describe('UI Event Sourcing', () => {
         messageId: 'msg-1',
         toolCallId: 'call-1',
         state: 'input-streaming',
-        argumentsTextDelta: '{"q":',
+        argumentsTextDelta: '{"q":'
       });
 
       const part = state.messages[0]?.parts?.[0];
@@ -181,7 +181,7 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
@@ -190,15 +190,15 @@ describe('UI Event Sourcing', () => {
         toolCall: {
           id: 'call-1',
           name: 'search',
-          parameters: { q: 'ts' },
-        },
+          parameters: { q: 'ts' }
+        }
       });
 
       state = applyConversationEvent(state, {
         type: 'tool_call_result_added',
         messageId: 'msg-1',
         toolCallId: 'call-1',
-        result: { ok: true },
+        result: { ok: true }
       });
 
       const part = state.messages[0]?.parts?.[0];
@@ -214,14 +214,14 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'message_finished',
         messageId: 'msg-1',
         finishReason: 'stop',
-        usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+        usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 }
       });
 
       expect(state.messages[0]?.finishReason).toBe('stop');
@@ -233,25 +233,25 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'message_finished',
         messageId: 'msg-1',
-        usage: { totalTokens: 30 },
+        usage: { totalTokens: 30 }
       });
 
       state = applyConversationEvent(state, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-2',
+        messageId: 'msg-2'
       });
 
       state = applyConversationEvent(state, {
         type: 'message_finished',
         messageId: 'msg-2',
-        usage: { totalTokens: 20 },
+        usage: { totalTokens: 20 }
       });
 
       expect(state.totalTokens).toBe(50);
@@ -260,7 +260,7 @@ describe('UI Event Sourcing', () => {
     it('should update stepIndex on step_updated event', () => {
       const event: ConversationEvent = {
         type: 'step_updated',
-        stepIndex: 3,
+        stepIndex: 3
       };
 
       const newState = applyConversationEvent(initialState, event);
@@ -272,20 +272,20 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'step_started',
         messageId: 'msg-1',
         stepIndex: 1,
-        usage: { inputTokens: 3 },
+        usage: { inputTokens: 3 }
       });
 
       state = applyConversationEvent(state, {
         type: 'message_finished',
         messageId: 'msg-1',
-        usage: { inputTokens: 3, outputTokens: 7, totalTokens: 10 },
+        usage: { inputTokens: 3, outputTokens: 7, totalTokens: 10 }
       });
 
       expect(state.status).toBe('idle');
@@ -297,19 +297,19 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'text_part_added',
         messageId: 'msg-1',
-        text: 'Hello',
+        text: 'Hello'
       });
 
       expect(state.messages).toHaveLength(1);
 
       state = applyConversationEvent(state, {
-        type: 'conversation_reset',
+        type: 'conversation_reset'
       });
 
       expect(state.messages).toHaveLength(0);
@@ -323,7 +323,7 @@ describe('UI Event Sourcing', () => {
       applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       expect(JSON.stringify(initialState)).toBe(originalState);
@@ -333,19 +333,19 @@ describe('UI Event Sourcing', () => {
       let state = applyConversationEvent(initialState, {
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       state = applyConversationEvent(state, {
         type: 'thinking_part_added',
         messageId: 'msg-1',
-        text: 'Processing request...',
+        text: 'Processing request...'
       });
 
       state = applyConversationEvent(state, {
         type: 'text_part_added',
         messageId: 'msg-1',
-        text: 'I found something relevant.',
+        text: 'I found something relevant.'
       });
 
       state = applyConversationEvent(state, {
@@ -354,15 +354,15 @@ describe('UI Event Sourcing', () => {
         toolCall: {
           id: 'call-1',
           name: 'verify',
-          parameters: { data: 'test' },
-        },
+          parameters: { data: 'test' }
+        }
       });
 
       state = applyConversationEvent(state, {
         type: 'message_finished',
         messageId: 'msg-1',
         finishReason: 'tool-calls',
-        usage: { totalTokens: 100 },
+        usage: { totalTokens: 100 }
       });
 
       expect(state.messages[0]?.parts).toHaveLength(3);
@@ -388,7 +388,7 @@ describe('UI Event Sourcing', () => {
       store.dispatch({
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       const state = store.getState();
@@ -405,7 +405,7 @@ describe('UI Event Sourcing', () => {
       store.dispatch({
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -421,7 +421,7 @@ describe('UI Event Sourcing', () => {
       store.dispatch({
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       expect(listener).toHaveBeenCalledTimes(1);
@@ -431,7 +431,7 @@ describe('UI Event Sourcing', () => {
       store.dispatch({
         type: 'message_started',
         role: 'assistant',
-        messageId: 'msg-2',
+        messageId: 'msg-2'
       });
 
       expect(listener).toHaveBeenCalledTimes(1); // Still only 1 call
@@ -443,13 +443,13 @@ describe('UI Event Sourcing', () => {
       const event1: ConversationEvent = {
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       };
 
       const event2: ConversationEvent = {
         type: 'text_part_added',
         messageId: 'msg-1',
-        text: 'Hello',
+        text: 'Hello'
       };
 
       store.dispatch(event1);
@@ -467,7 +467,7 @@ describe('UI Event Sourcing', () => {
       store.dispatch({
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       const state1 = store.getState();
@@ -492,7 +492,7 @@ describe('UI Event Sourcing', () => {
       store.dispatch({
         type: 'message_started',
         role: 'user',
-        messageId: 'msg-1',
+        messageId: 'msg-1'
       });
 
       expect(listener1).toHaveBeenCalledTimes(1);
@@ -514,7 +514,7 @@ describe('UI Event Sourcing', () => {
       addToolCallPart(store, 'msg-2', {
         id: 'call-1',
         name: 'search_docs',
-        parameters: { query: 'TypeScript documentation' },
+        parameters: { query: 'TypeScript documentation' }
       });
       finishMessage(store, 'msg-2', 'tool-calls', { inputTokens: 20, outputTokens: 50, totalTokens: 70 });
 

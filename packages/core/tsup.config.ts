@@ -12,7 +12,7 @@ export default defineConfig({
     sse: 'src/sse/index.ts',
     structured: 'src/structured/index.ts',
     thinking: 'src/thinking/index.ts',
-    'tool-calls': 'src/tool-calls/index.ts',
+    'tool-calls': 'src/tool-calls/index.ts'
   },
   format: ['esm', 'cjs'],
   dts: true,
@@ -22,5 +22,5 @@ export default defineConfig({
   splitting: false,
   treeshake: true,
   minify: false,
-  target: 'node18',
+  target: 'node18'
 });

@@ -151,7 +151,7 @@ describe('createXmlStreamFilter', () => {
 
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('maxXmlNestingDepth'),
-      expect.objectContaining({ maxXmlNestingDepth: 2 }),
+      expect.objectContaining({ maxXmlNestingDepth: 2 })
     );
   });
 
@@ -259,7 +259,7 @@ describe('createXmlStreamFilter', () => {
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['custom']),
       enforcePrivacyTags: true,
-      onWarning,
+      onWarning
     });
 
     // userMemory is a PRIVACY_TAG_NAME — must still be scrubbed even when not in override
@@ -268,7 +268,7 @@ describe('createXmlStreamFilter', () => {
     expect(out).toContain('visible');
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('Privacy-sensitive'),
-      expect.objectContaining({ missingPrivacyTags: expect.any(Array) }),
+      expect.objectContaining({ missingPrivacyTags: expect.any(Array) })
     );
   });
 
@@ -277,7 +277,7 @@ describe('createXmlStreamFilter', () => {
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['custom']),
       enforcePrivacyTags: false,
-      onWarning,
+      onWarning
     });
 
     // With privacy enforcement disabled, userMemory is NOT in the override so it passes through

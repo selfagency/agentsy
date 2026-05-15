@@ -47,7 +47,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
         } finally {
           reader.releaseLock();
         }
-      },
+      }
     });
   }
 
@@ -94,6 +94,6 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
       finished = true;
       await iterator.return?.();
       readableStream.destroy();
-    },
+    }
   });
 }

@@ -15,7 +15,7 @@ export interface OutputCompressionOptions {
 const DEFAULT_PRESERVE: OutputPreserveOptions = {
   codeFences: true,
   inlineCode: true,
-  urls: true,
+  urls: true
 };
 
 const PLACEHOLDER_PREFIX = '__AGENTSY_PRESERVE_';
@@ -23,7 +23,7 @@ const PLACEHOLDER_PREFIX = '__AGENTSY_PRESERVE_';
 function mergePreserveOptions(options?: Partial<OutputPreserveOptions>): OutputPreserveOptions {
   return {
     ...DEFAULT_PRESERVE,
-    ...options,
+    ...options
   };
 }
 

@@ -93,7 +93,7 @@ describe('ThinkingParser', () => {
   it('handles multiple thinking blocks in a single chunk', () => {
     const parser = new ThinkingParser();
     const [thinking, content] = parser.addContent(
-      '<think>first thought</think>middle<think>second thought</think>final',
+      '<think>first thought</think>middle<think>second thought</think>final'
     );
     expect(thinking).toBe('first thoughtsecond thought');
     expect(content).toBe('middlefinal');

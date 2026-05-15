@@ -93,9 +93,9 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
       chunk: {
         ...base.chunk,
         ...(text && { content: text }),
-        ...(thinking && { thinking }),
+        ...(thinking && { thinking })
       },
-      rawEvent: raw,
+      rawEvent: raw
     };
   } catch {
     return standard;

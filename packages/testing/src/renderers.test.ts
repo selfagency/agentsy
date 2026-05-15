@@ -18,7 +18,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('collects text written via write()', async () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
-      output: chunk => collected.push(chunk),
+      output: chunk => collected.push(chunk)
     });
 
     await renderer.write('Hello');
@@ -31,7 +31,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('passes raw StreamChunks via writeChunk()', async () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
-      output: chunk => collected.push(chunk),
+      output: chunk => collected.push(chunk)
     });
 
     await renderer.writeChunk({ content: 'chunk one' });
@@ -45,7 +45,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
       output: chunk => collected.push(chunk),
-      showThinking: false,
+      showThinking: false
     });
 
     await renderer.writeChunk({ thinking: 'internal thought', content: 'answer' });
@@ -60,7 +60,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     const renderer = createPlainTextRenderer({
       output: chunk => collected.push(chunk),
       showThinking: true,
-      thinkingPrefix: '[T] ',
+      thinkingPrefix: '[T] '
     });
 
     await renderer.writeChunk({ thinking: 'thought' });
@@ -73,14 +73,14 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     const onFinish = vi.fn<NonNullable<BaseRendererOptions['onFinish']>>();
     const renderer = createPlainTextRenderer({
       output: () => {},
-      onFinish,
+      onFinish
     });
 
     await renderer.writeChunk({
       content: 'done',
       done: true,
       finishReason: 'stop',
-      usage: { inputTokens: 5, outputTokens: 3 },
+      usage: { inputTokens: 5, outputTokens: 3 }
     });
     await renderer.end();
 
@@ -94,12 +94,12 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     const renderer = createPlainTextRenderer({
       output: () => {},
       processor,
-      onToolCall,
+      onToolCall
     });
 
     await renderer.writeChunk({
       content: '<lookup><term>vitest</term></lookup>',
-      done: true,
+      done: true
     });
     await renderer.end();
 
@@ -135,8 +135,8 @@ describe('createSharedRendererHandle', () => {
         },
         onToolCall: async part => {
           toolCalls.push(part.call.name);
-        },
-      },
+        }
+      }
     );
 
     await handle.writeChunk({ thinking: 'a thought', content: 'text part' });
@@ -158,8 +158,8 @@ describe('createSharedRendererHandle', () => {
         onText: async t => {
           texts.push(t);
         },
-        onThinking: async () => {},
-      },
+        onThinking: async () => {}
+      }
     );
 
     await handle.write('direct write');
@@ -177,9 +177,9 @@ describe('createSharedRendererHandle', () => {
       {
         onFinish: async (reason, usage) => {
           finishArgs.push([reason, usage]);
-        },
+        }
       },
-      { onText: async () => {}, onThinking: async () => {} },
+      { onText: async () => {}, onThinking: async () => {} }
     );
 
     await handle.writeChunk({ content: 'hi', done: true, finishReason: 'stop', usage: { outputTokens: 2 } });

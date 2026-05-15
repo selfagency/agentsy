@@ -25,7 +25,7 @@ describe('cli package scaffold', () => {
       },
       stderr: (message: string) => {
         stderr.push(message);
-      },
+      }
     });
 
     expect(code).toBe(0);
@@ -45,7 +45,7 @@ describe('cli package scaffold', () => {
       },
       stderr: () => {
         // no-op for test
-      },
+      }
     });
 
     expect(code).toBe(0);
@@ -64,7 +64,7 @@ describe('cli package scaffold', () => {
       },
       stderr: (message: string) => {
         stderr.push(message);
-      },
+      }
     });
 
     expect(code).toBe(1);

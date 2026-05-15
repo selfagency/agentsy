@@ -26,7 +26,7 @@ export interface InkConversationRendererHandle extends InkRendererHandle {
 
 // fallow-ignore-next-line unused-export
 export async function createInkConversationRenderer(
-  options: InkConversationRendererOptions,
+  options: InkConversationRendererOptions
 ): Promise<InkConversationRendererHandle> {
   let ink: typeof import('ink');
   let react: typeof import('react');
@@ -46,11 +46,11 @@ export async function createInkConversationRenderer(
     text: '',
     thinking: '',
     toolCalls: [] as Array<{ id: string; name: string; arguments: JsonObject; done: boolean }>,
-    isStreaming: true,
+    isStreaming: true
   };
 
   const historyRef: { current: ConversationTurn[] } = {
-    current: options.initialHistory ? [...options.initialHistory] : [],
+    current: options.initialHistory ? [...options.initialHistory] : []
   };
 
   const forceUpdateRef = { current: () => {} };
@@ -72,7 +72,7 @@ export async function createInkConversationRenderer(
         id: part.id || randomUUID(),
         name: part.name,
         arguments: part.parameters,
-        done: true,
+        done: true
       });
       forceUpdateRef.current();
     },
@@ -83,7 +83,7 @@ export async function createInkConversationRenderer(
     },
     warning: (error: string) => {
       options.onWarning?.(error);
-    },
+    }
   };
 
   processor.on('text', listeners.text);
@@ -103,7 +103,7 @@ export async function createInkConversationRenderer(
     theme: resolvedTheme,
     screenReader: options.screenReader,
     syntaxHighlight: options.syntaxHighlight,
-    keyboard: options.keyboard,
+    keyboard: options.keyboard
   };
 
   const instance: Instance = render(
@@ -114,7 +114,7 @@ export async function createInkConversationRenderer(
         turns: historyRef.current,
         theme: resolvedTheme,
         screenReader: options.screenReader,
-        options: rendererOptions,
+        options: rendererOptions
       }),
       h(InkStreamRenderer, {
         stateRef,
@@ -122,10 +122,10 @@ export async function createInkConversationRenderer(
         setForceUpdate: (fn: () => void) => {
           forceUpdateRef.current = fn;
         },
-        options: rendererOptions,
-      }),
+        options: rendererOptions
+      })
     ),
-    options.inkOptions as Partial<RenderOptions>,
+    options.inkOptions as Partial<RenderOptions>
   );
 
   return {
@@ -153,7 +153,7 @@ export async function createInkConversationRenderer(
         text: stateRef.text,
         thinking: stateRef.thinking || undefined,
         toolCalls: [...stateRef.toolCalls],
-        timestamp: Date.now(),
+        timestamp: Date.now()
       });
       stateRef.text = '';
       stateRef.thinking = '';
@@ -167,12 +167,12 @@ export async function createInkConversationRenderer(
         role: 'user',
         text,
         toolCalls: [],
-        timestamp: Date.now(),
+        timestamp: Date.now()
       });
       forceUpdateRef.current();
     },
     getHistory(): readonly ConversationTurn[] {
       return historyRef.current;
-    },
+    }
   };
 }

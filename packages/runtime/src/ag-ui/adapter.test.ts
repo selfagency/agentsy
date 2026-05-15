@@ -13,7 +13,7 @@ import type {
   TextMessageContentEvent,
   ToolCallArgsEvent,
   ToolCallEndEvent,
-  ToolCallStartEvent,
+  ToolCallStartEvent
 } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
@@ -46,7 +46,7 @@ describe('toAgUiStream', () => {
   it('should wrap stream with RUN_STARTED and RUN_FINISHED', async () => {
     const pipeline = createMockPipeline([
       { type: 'delta', content: 'Hello' },
-      { type: 'message_done', usage: { inputTokens: 10, outputTokens: 5 } },
+      { type: 'message_done', usage: { inputTokens: 10, outputTokens: 5 } }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId, threadId }));
@@ -68,7 +68,7 @@ describe('toAgUiStream', () => {
     const pipeline = createMockPipeline([
       { type: 'delta', content: 'Hello ' },
       { type: 'delta', content: 'world!' },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -90,7 +90,7 @@ describe('toAgUiStream', () => {
       { type: 'thinking', content: 'Thinking step 1' },
       { type: 'thinking', content: 'Thinking step 2' },
       { type: 'delta', content: 'Answer' },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -109,7 +109,7 @@ describe('toAgUiStream', () => {
 
     // Content events should be consecutive
     const contentEvents = reasoningEvents.filter(
-      (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT,
+      (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT
     );
     expect(contentEvents.length).toBe(2);
     const firstContent = contentEvents[0];
@@ -128,9 +128,9 @@ describe('toAgUiStream', () => {
         type: 'tool_call',
         toolCallId: 'call_123',
         toolName: 'search',
-        toolArgs: { query: 'AI trends' },
+        toolArgs: { query: 'AI trends' }
       },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -159,9 +159,9 @@ describe('toAgUiStream', () => {
         type: 'tool_call',
         toolCallId: 'call_456',
         toolName: 'search',
-        toolArgs: { query: 'something' },
+        toolArgs: { query: 'something' }
       },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -188,8 +188,8 @@ describe('toAgUiStream', () => {
       {
         type: 'error',
         message: 'API rate limit exceeded',
-        code: 'RATE_LIMIT',
-      },
+        code: 'RATE_LIMIT'
+      }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -201,7 +201,7 @@ describe('toAgUiStream', () => {
     }
 
     expect(errorEvent.error).toEqual(
-      expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' }),
+      expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' })
     );
   });
 
@@ -210,8 +210,8 @@ describe('toAgUiStream', () => {
       { type: 'delta', content: 'Response' },
       {
         type: 'message_done',
-        usage: { inputTokens: 100, outputTokens: 50 },
-      },
+        usage: { inputTokens: 100, outputTokens: 50 }
+      }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -219,7 +219,7 @@ describe('toAgUiStream', () => {
     const finished = events.find((e): e is RunFinishedEvent => e.type === EventType.RUN_FINISHED);
     expect(finished?.usage).toEqual({
       inputTokens: 100,
-      outputTokens: 50,
+      outputTokens: 50
     });
   });
 
@@ -237,7 +237,7 @@ describe('toAgUiStream', () => {
     const pipeline = createMockPipeline([
       { type: 'delta', content: 'Part 1 ' },
       { type: 'delta', content: 'Part 2' },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -255,7 +255,7 @@ describe('toAgUiStream', () => {
     const pipeline = createMockPipeline([
       { type: 'delta', content: '' },
       { type: 'delta', content: 'Real content' },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -272,9 +272,9 @@ describe('toAgUiStream', () => {
         type: 'tool_call',
         toolCallId: 'call_789',
         toolName: 'calculate',
-        toolArgs: { expression: '2+2' },
+        toolArgs: { expression: '2+2' }
       },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
@@ -295,7 +295,7 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId, encryptReasoning: true }));
 
     const contentEvent = events.find(
-      (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT,
+      (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT
     );
     expect(contentEvent).toBeDefined();
     if (!contentEvent) {
@@ -325,9 +325,9 @@ describe('toAgUiStream', () => {
         type: 'tool_call',
         toolCallId: 'call_1',
         toolName: 'test',
-        toolArgs: {},
+        toolArgs: {}
       },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId, threadId }));
@@ -344,15 +344,15 @@ describe('toAgUiStream', () => {
         type: 'tool_call',
         toolCallId: 'call_1',
         toolName: 'tool_a',
-        toolArgs: { key: 'value1' },
+        toolArgs: { key: 'value1' }
       },
       {
         type: 'tool_call',
         toolCallId: 'call_1',
         toolName: 'tool_a',
-        toolArgs: { key: 'value2' },
+        toolArgs: { key: 'value2' }
       },
-      { type: 'message_done' },
+      { type: 'message_done' }
     ]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId, threadId }));
@@ -360,7 +360,7 @@ describe('toAgUiStream', () => {
     // Filter tool call events
     const toolCallEvents = events.filter(
       (e): e is ToolCallStartEvent | ToolCallEndEvent =>
-        e.type === EventType.TOOL_CALL_START || e.type === EventType.TOOL_CALL_END,
+        e.type === EventType.TOOL_CALL_START || e.type === EventType.TOOL_CALL_END
     );
 
     // Should have tool call events

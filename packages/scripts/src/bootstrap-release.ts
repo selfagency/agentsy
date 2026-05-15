@@ -57,14 +57,14 @@ const otp = typeof argv.otp === 'string' || typeof argv.otp === 'number' ? Strin
 
 if (!packageArg || !version) {
   console.error(
-    'Usage: pnpm bootstrap-release <package-name> <version> [--tag latest|prerelease] [--otp=<code>] [--dry-run] --yes-i-know-this-is-first-publish',
+    'Usage: pnpm bootstrap-release <package-name> <version> [--tag latest|prerelease] [--otp=<code>] [--dry-run] --yes-i-know-this-is-first-publish'
   );
   process.exit(1);
 }
 
 if (!confirm) {
   console.error(
-    '❌ Refusing to bootstrap publish without explicit confirmation flag: --yes-i-know-this-is-first-publish',
+    '❌ Refusing to bootstrap publish without explicit confirmation flag: --yes-i-know-this-is-first-publish'
   );
   process.exit(1);
 }
@@ -135,7 +135,7 @@ async function main() {
 
   if (isDryRun) {
     console.log(
-      '[dry-run] Would run package build, write dist package.json, publish once locally, and mark oidc-ready.',
+      '[dry-run] Would run package build, write dist package.json, publish once locally, and mark oidc-ready.'
     );
     return;
   }

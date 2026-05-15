@@ -13,7 +13,7 @@ import {
   toCopilotKitEvent,
   toCustomUIEvent,
   type CopilotKitEvent,
-  type CustomUIEvent,
+  type CustomUIEvent
 } from './event-converters.js';
 
 // Test fixtures
@@ -22,13 +22,13 @@ async function createMockStream() {
     {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     },
     {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:01Z',
-    },
+      timestamp: '2024-01-01T00:00:01Z'
+    }
   ];
 
   async function* generate() {
@@ -45,18 +45,18 @@ async function* multiEventGenerator() {
     {
       type: EventType.RUN_STARTED,
       runId: 'run_a',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     },
     {
       type: EventType.RUN_STARTED,
       runId: 'run_b',
-      timestamp: '2024-01-01T00:00:01Z',
+      timestamp: '2024-01-01T00:00:01Z'
     },
     {
       type: EventType.RUN_STARTED,
       runId: 'run_c',
-      timestamp: '2024-01-01T00:00:02Z',
-    },
+      timestamp: '2024-01-01T00:00:02Z'
+    }
   ];
   for (const event of events) {
     yield event;
@@ -68,7 +68,7 @@ describe('toCopilotKitEvent', () => {
     const event: RunStartedEvent = {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCopilotKitEvent(event);
@@ -83,7 +83,7 @@ describe('toCopilotKitEvent', () => {
       runId: 'run_123',
       messageId: 'msg_123',
       content: 'Hello',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCopilotKitEvent(event);
@@ -99,7 +99,7 @@ describe('toCopilotKitEvent', () => {
       runId: 'run_123',
       toolCallId: 'call_123',
       toolName: 'search',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCopilotKitEvent(event);
@@ -120,14 +120,14 @@ describe('toCopilotKitEvent', () => {
       { eventType: EventType.REASONING_MESSAGE_CONTENT, expected: 'reasoning_message:content' },
       { eventType: EventType.TOOL_CALL_START, expected: 'tool_call:start' },
       { eventType: EventType.TOOL_CALL_ARGS, expected: 'tool_call:args' },
-      { eventType: EventType.TOOL_CALL_END, expected: 'tool_call:end' },
+      { eventType: EventType.TOOL_CALL_END, expected: 'tool_call:end' }
     ];
 
     for (const { eventType, expected } of testCases) {
       const event: Record<string, unknown> = {
         type: eventType,
         runId: 'run_123',
-        timestamp: '2024-01-01T00:00:00Z',
+        timestamp: '2024-01-01T00:00:00Z'
       };
 
       const result = toCopilotKitEvent(event as unknown as RunStartedEvent);
@@ -142,7 +142,7 @@ describe('toCopilotKitEvent', () => {
       messageId: 'msg_123',
       content: 'Test content',
       timestamp: '2024-01-01T00:00:00Z',
-      threadId: 'thread_456',
+      threadId: 'thread_456'
     };
 
     const result = toCopilotKitEvent(event);
@@ -159,7 +159,7 @@ describe('toCustomUIEvent', () => {
     const event: RunStartedEvent = {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCustomUIEvent(event);
@@ -174,7 +174,7 @@ describe('toCustomUIEvent', () => {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
       threadId: 'thread_456',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCustomUIEvent(event);
@@ -188,7 +188,7 @@ describe('toCustomUIEvent', () => {
       runId: 'run_123',
       messageId: 'msg_123',
       content: 'Hello world',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCustomUIEvent(event);
@@ -203,7 +203,7 @@ describe('toCustomUIEvent', () => {
       runId: 'run_123',
       toolCallId: 'call_123',
       toolName: 'search',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCustomUIEvent(event);
@@ -216,7 +216,7 @@ describe('toCustomUIEvent', () => {
     const event: RunStartedEvent = {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = toCustomUIEvent(event);
@@ -232,7 +232,7 @@ describe('createEventConverter', () => {
     const event: RunStartedEvent = {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = converter(event);
@@ -246,7 +246,7 @@ describe('createEventConverter', () => {
     const event: RunStartedEvent = {
       type: EventType.RUN_STARTED,
       runId: 'run_123',
-      timestamp: '2024-01-01T00:00:00Z',
+      timestamp: '2024-01-01T00:00:00Z'
     };
 
     const result = converter(event);

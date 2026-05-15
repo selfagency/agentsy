@@ -36,8 +36,8 @@ async function* executeWithRetries(messages: Array<{ role: string; content: stri
         body: JSON.stringify({
           model: 'gpt-4.1-mini',
           stream: true,
-          messages: workingMessages,
-        }),
+          messages: workingMessages
+        })
       });
 
       for await (const rawChunk of response.body as AsyncIterable<unknown>) {
@@ -80,7 +80,7 @@ const loop = createAgentLoop({
       results.push(buildToolResultMessage(call, toolResult));
     }
     return results;
-  },
+  }
 });
 
 for await (const part of loop.run([{ role: 'user', content: 'Investigate elevated 5xx rates and propose fixes.' }])) {

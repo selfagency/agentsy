@@ -3,7 +3,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createInkRenderer } from './createInkRenderer.js';
 
 vi.mock('cli-markdown', () => ({
-  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`),
+  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`)
 }));
 
 vi.mock('ink', async () => {
@@ -14,8 +14,8 @@ vi.mock('ink', async () => {
       lastFrame: () => '[mock frame]',
       rerender: vi.fn(),
       clear: vi.fn(),
-      unmount: vi.fn(),
-    })),
+      unmount: vi.fn()
+    }))
   };
 });
 
@@ -32,7 +32,7 @@ describe('Ink Renderer behavior', () => {
       parseThinkTags: true,
       scrubContextTags: true,
       enforcePrivacyTags: true,
-      onWarning,
+      onWarning
     });
   });
 
@@ -47,8 +47,8 @@ describe('Ink Renderer behavior', () => {
         onWarning,
         onFinish,
         keyboard: {
-          enabled: true,
-        },
+          enabled: true
+        }
       });
 
       expect(renderer.instance).toBeDefined();
@@ -63,8 +63,8 @@ describe('Ink Renderer behavior', () => {
         onFinish,
         keyboard: {
           enabled: true,
-          onInterrupt,
-        },
+          onInterrupt
+        }
       });
 
       expect(renderer.instance).toBeDefined();
@@ -77,7 +77,7 @@ describe('Ink Renderer behavior', () => {
       const renderer = await createInkRenderer({
         processor,
         onWarning,
-        onFinish,
+        onFinish
       });
 
       renderer.write('Test content');
@@ -90,7 +90,7 @@ describe('Ink Renderer behavior', () => {
       const renderer = await createInkRenderer({
         processor,
         onWarning,
-        onFinish,
+        onFinish
       });
 
       renderer.write('Content');
@@ -106,7 +106,7 @@ describe('Ink Renderer behavior', () => {
       const renderer = await createInkRenderer({
         processor,
         onWarning,
-        onFinish,
+        onFinish
       });
 
       processor.process({ content: '<invalid>' });
@@ -121,7 +121,7 @@ describe('Ink Renderer behavior', () => {
         processor,
         onWarning,
         onFinish,
-        showToolCalls: true,
+        showToolCalls: true
       });
 
       processor.process({ content: '<tool_call id="1" name="test"><arguments>{invalid json}</arguments></tool_call>' });
@@ -138,7 +138,7 @@ describe('Ink Renderer behavior', () => {
         processor,
         onWarning,
         onFinish,
-        screenReader: true,
+        screenReader: true
       });
 
       processor.process({ content: 'Accessible content' });
@@ -153,7 +153,7 @@ describe('Ink Renderer behavior', () => {
         processor,
         onWarning,
         onFinish,
-        screenReader: false,
+        screenReader: false
       });
 
       processor.process({ content: 'Regular content' });
@@ -170,7 +170,7 @@ describe('Ink Renderer behavior', () => {
         processor,
         onWarning,
         onFinish,
-        markdown: true,
+        markdown: true
       });
 
       processor.process({ content: '# Heading\n\n**Bold** text' });
@@ -185,7 +185,7 @@ describe('Ink Renderer behavior', () => {
         processor,
         onWarning,
         onFinish,
-        markdown: false,
+        markdown: false
       });
 
       processor.process({ content: '# Not a heading\n\n**Not bold**' });
@@ -200,7 +200,7 @@ describe('Ink Renderer behavior', () => {
         processor,
         onWarning,
         onFinish,
-        markdown: true,
+        markdown: true
       });
 
       processor.process({ content: '```typescript\nconst x = 42;\n```' });
@@ -218,7 +218,7 @@ describe('Ink Renderer behavior', () => {
         onWarning,
         onFinish,
         syntaxHighlight: true,
-        markdown: true,
+        markdown: true
       });
 
       processor.process({ content: '```js\nconst fn = () => {};\n```' });
@@ -234,7 +234,7 @@ describe('Ink Renderer behavior', () => {
         onWarning,
         onFinish,
         syntaxHighlight: false,
-        markdown: true,
+        markdown: true
       });
 
       processor.process({ content: '```js\nconst fn = () => {};\n```' });

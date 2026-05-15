@@ -7,7 +7,7 @@ describe('compressOutput', () => {
       'This is basically a simple response that actually contains fluff.',
       'Run `pnpm test` before opening a pull request.',
       'Visit https://example.com/docs for full reference.',
-      '```ts\nconst value = 42;\nconsole.log(value);\n```',
+      '```ts\nconst value = 42;\nconsole.log(value);\n```'
     ].join('\n\n');
 
     const output = compressOutput(input, { level: 'full' });
@@ -35,8 +35,8 @@ describe('compressOutput', () => {
       level: 'full',
       preserve: {
         inlineCode: false,
-        urls: false,
-      },
+        urls: false
+      }
     });
 
     expect(output).not.toContain('`agentsy`');

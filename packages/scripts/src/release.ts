@@ -92,7 +92,7 @@ function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnS
     cwd: ROOT,
     encoding: 'utf8',
     shell: false,
-    ...options,
+    ...options
   }) as SpawnSyncReturns<string>;
 
   if (result.status !== 0) {
@@ -219,7 +219,7 @@ function updateChangelogFile(
   heading: string,
   releaseNotes: string,
   previousTag: string,
-  tag: string,
+  tag: string
 ): void {
   // Use outer scope isPathInsideRoot, safeRead, safeWrite functions for defensive
   // filesystem access that satisfies static analysis rules.
@@ -285,7 +285,7 @@ function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: 
 
     return {
       owner: path.slice(0, slashIndex),
-      repo: path.slice(slashIndex + 1),
+      repo: path.slice(slashIndex + 1)
     };
   }
 
@@ -298,7 +298,7 @@ function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: 
 
     return {
       owner: parts[0] ?? '',
-      repo: parts[1] ?? '',
+      repo: parts[1] ?? ''
     };
   } catch {
     return { owner: '', repo: '' };
@@ -385,7 +385,7 @@ async function main() {
     owner,
     repo,
     ref: 'tags/v',
-    per_page: 100,
+    per_page: 100
   });
 
   const previousTag =
@@ -412,7 +412,7 @@ async function main() {
     owner,
     repo,
     tag_name: tag,
-    target_commitish: 'main',
+    target_commitish: 'main'
   };
   if (previousTag) {
     releaseNotesOpts.previous_tag_name = previousTag;
@@ -477,7 +477,7 @@ async function main() {
     `Release ${tag}`,
     releaseNotes,
     previousTag ? `Source: changes from ${previousTag} to ${tag}.` : '',
-    `Target commit: ${headSha}`,
+    `Target commit: ${headSha}`
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -493,7 +493,7 @@ async function main() {
   spinner.text = 'Release: waiting for workflow to trigger...';
   spinner.start();
   await waitForWorkflow(octokit, 'Release', owner, repo, headSha, spinner, {
-    autoDispatch: false,
+    autoDispatch: false
   });
 
   console.log(`✅ GitHub release complete: ${tag} → ${headSha}`);
@@ -520,8 +520,8 @@ async function main() {
       ['publish', './dist', '--tag', distTag, `--registry=${NPM_REGISTRY}`, ...accessFlag],
       {
         stdio: 'inherit',
-        cwd: process.cwd(),
-      },
+        cwd: process.cwd()
+      }
     );
     if (result.status !== 0) {
       throw new Error(`npm publish exited with code ${result.status}`);
@@ -547,7 +547,7 @@ async function waitForWorkflow(
   repo: string,
   headSha: string,
   spinner: WorkflowSpinner,
-  { timeoutMs = 3_600_000, pollMs = 15_000, autoDispatch = true, branch = 'main' }: WaitForWorkflowOptions = {},
+  { timeoutMs = 3_600_000, pollMs = 15_000, autoDispatch = true, branch = 'main' }: WaitForWorkflowOptions = {}
 ) {
   // Resolve the workflow ID by name.
   const workflowsResp = await octokit.actions.listRepoWorkflows({ owner, repo, per_page: 100 });
@@ -570,7 +570,7 @@ async function waitForWorkflow(
       workflow_id: workflow.id,
       ...(branch ? { branch } : {}),
       head_sha: headSha,
-      per_page: 10,
+      per_page: 10
     });
 
     // Find the latest run that isn't one we already marked as cancelled.
@@ -624,6 +624,6 @@ try {
   }
   await rollback();
   process.exit(
-    typeof err === 'object' && err !== null && 'exitCode' in err ? ((err as { exitCode?: number }).exitCode ?? 1) : 1,
+    typeof err === 'object' && err !== null && 'exitCode' in err ? ((err as { exitCode?: number }).exitCode ?? 1) : 1
   );
 }

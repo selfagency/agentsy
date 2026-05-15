@@ -24,7 +24,7 @@ function InlineThinking({
   text,
   isStreaming,
   theme,
-  screenReader,
+  screenReader
 }: {
   readonly text: string;
   readonly isStreaming: boolean;
@@ -49,7 +49,7 @@ function BlockquoteThinking({
   frame,
   isStreaming,
   theme,
-  screenReader,
+  screenReader
 }: {
   readonly text: string;
   readonly frame: number;

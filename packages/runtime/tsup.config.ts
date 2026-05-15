@@ -7,5 +7,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: false,
-  target: 'es2022',
+  target: 'es2022'
 });

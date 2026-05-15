@@ -14,7 +14,7 @@ export function recordChunkStats(stats: ProcessorStats, chunk: StreamChunk, enco
 export function getChunkInputFlags(chunk: StreamChunk): { hasContentInput: boolean; hasThinkingInput: boolean } {
   return {
     hasContentInput: typeof chunk.content === 'string' && chunk.content.length > 0,
-    hasThinkingInput: typeof chunk.thinking === 'string' && chunk.thinking.length > 0,
+    hasThinkingInput: typeof chunk.thinking === 'string' && chunk.thinking.length > 0
   };
 }
 

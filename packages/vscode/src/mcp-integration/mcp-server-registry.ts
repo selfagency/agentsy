@@ -101,7 +101,7 @@ export class McpServerRegistry {
 
   private toWorkspaceServerConfig(server: McpServerDefinition): Record<string, unknown> {
     const config: Record<string, unknown> = {
-      command: server.command,
+      command: server.command
     };
 
     if (server.args?.length) {

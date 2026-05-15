@@ -17,7 +17,7 @@ export interface ProcessorCallbackAdapterOptions {
  */
 export function createProcessorEventAdapter(
   processor: LLMStreamProcessor,
-  options: ProcessorCallbackAdapterOptions,
+  options: ProcessorCallbackAdapterOptions
 ): { dispose(): void } {
   function textListener(delta: string): void {
     options.onText?.(delta);
@@ -67,6 +67,6 @@ export function createProcessorEventAdapter(
       processor.off('tool_call_delta', toolCallDeltaListener);
       processor.off('warning', warningListener);
       processor.off('conversation_event', conversationListener);
-    },
+    }
   };
 }

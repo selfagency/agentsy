@@ -139,7 +139,7 @@ export function formatQuotaText(quota: UsageQuota): string {
 export function getQuotaStatus(
   percentUsed: number,
   warningThreshold = DEFAULT_WARNING_THRESHOLD,
-  errorThreshold = DEFAULT_ERROR_THRESHOLD,
+  errorThreshold = DEFAULT_ERROR_THRESHOLD
 ): 'normal' | 'warning' | 'error' {
   if (percentUsed >= errorThreshold) return 'error';
   if (percentUsed >= warningThreshold) return 'warning';

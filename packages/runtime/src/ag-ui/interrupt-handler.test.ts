@@ -11,7 +11,7 @@ import {
   createInterruptEvent,
   InterruptController,
   InterruptReason,
-  TimeoutInterrupt,
+  TimeoutInterrupt
 } from './interrupt-handler.js';
 
 describe('InterruptReason enum', () => {

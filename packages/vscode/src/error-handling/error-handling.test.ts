@@ -115,7 +115,7 @@ describe('error-mapper', () => {
 
     it('can preserve original message content', () => {
       const err = createProviderError(ProviderErrorCode.Timeout, new Error('socket timed out'), {
-        preserveOriginalMessage: true,
+        preserveOriginalMessage: true
       });
 
       expect(err.message).toContain('socket timed out');

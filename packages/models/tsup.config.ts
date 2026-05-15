@@ -9,9 +9,9 @@ export default defineConfig({
     tsconfig: {
       compilerOptions: {
         declaration: true,
-        moduleResolution: 'bundler',
-      },
-    },
+        moduleResolution: 'bundler'
+      }
+    }
   },
-  external: ['node-fetch'],
+  external: ['node-fetch']
 });
