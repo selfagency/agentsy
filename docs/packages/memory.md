@@ -45,7 +45,5 @@ This package is currently in active development. API surface is subject to chang
 - `pnpm --filter @agentsy/memory test` passes
 - completion evidence is tracked in:
   - `plan/PHASE-1-COMPLETION.md`
-- completion evidence is tracked in:
-  - `plan/PHASE-1-COMPLETION.md`
-  - `plan/PHASE-3-COMPLETION.md`
   - `plan/PHASE-2-COMPLETION.md`
+  - `plan/PHASE-3-COMPLETION.md`
