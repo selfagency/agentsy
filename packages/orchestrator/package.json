@@ -35,8 +35,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run",
-    "coverage": "vitest run --coverage",
+    "test": "vitest --run",
+    "coverage": "vitest --run --coverage",
     "check-types": "tsc --noEmit",
     "lint": "oxlint --no-error-on-unmatched-pattern .",
     "format": "oxfmt --no-error-on-unmatched-pattern --write ."

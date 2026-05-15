@@ -3,19 +3,25 @@ import path from 'node:path';
 
 import type {
   ModelsDevAPI,
-  ModelsDevProvider,
   ModelsDevModel,
+  ModelsDevProvider,
   TaskRequirements,
   ModelSelectionResult,
 } from './types.js';
+
+export type {
+  ModelsDevAPI,
+  ModelsDevModel,
+  ModelsDevProvider,
+  TaskRequirements,
+  ModelSelectionResult,
+};
 
 // Cache structure
 interface CacheData {
   timestamp: number;
   data: ModelsDevAPI;
 }
-
-export type { ModelsDevAPI, ModelsDevProvider, ModelsDevModel, TaskRequirements, ModelSelectionResult };
 
 // Simple models.dev client with caching
 export class ModelsDevClient {
@@ -63,17 +69,32 @@ export class ModelsDevClient {
     return data;
   }
 
+  /**
+   * Get a provider by ID
+   */
   getProvider(providerId: string): ModelsDevProvider | undefined {
     return this.cache?.[providerId];
   }
 
+  /**
+   * Get a specific model by ID (supports provider:model or just model format)
+   */
   getModel(modelId: string): ModelsDevModel | undefined {
-    // Parse model ID (format: provider:model or just model)
-    const parts = modelId.includes(':') ? modelId.split(':') : [null, modelId];
+    // Try parsing as provider:model format
+    if (modelId.includes(':')) {
+      const [providerId, modelName] = modelId.split(':');
+      if (providerId && modelName) {
+        const provider = this.getProvider(providerId);
+        return provider?.models[modelName];
+      }
+    }
 
-    if (parts[0]) {
-      const provider = this.getProvider(parts[0]);
-      return provider?.models[parts[1] ?? ''];
+    if (modelId.includes('/')) {
+      const [providerId, modelName] = modelId.split('/');
+      if (providerId && modelName) {
+        const provider = this.getProvider(providerId);
+        return provider?.models[modelName];
+      }
     }
 
     // Search for model ID across all providers
@@ -85,16 +106,22 @@ export class ModelsDevClient {
     return undefined;
   }
 
+  /**
+   * List all providers
+   */
   listProviders(): ModelsDevProvider[] {
     return Object.values(this.cache ?? {});
   }
 
+  /**
+   * List all models across all providers
+   */
   listModels(providerId?: string): ModelsDevModel[] {
     if (providerId) {
       const provider = this.getProvider(providerId);
       return Object.values(provider?.models ?? {});
     }
-    return Object.values(this.cache ?? {}).flatMap(p => Object.values(p.models));
+    return Object.values(this.cache ?? {}).flatMap(provider => Object.values(provider.models));
   }
 }
 
@@ -116,11 +143,18 @@ export class ModelSelector {
   async selectModel(requirements: TaskRequirements): Promise<ModelSelectionResult> {
     await this.client.fetchModelsDevData();
 
-    const providers = this.client.listProviders();
     const allModels = this.client.listModels();
 
+    // First filter out routing service providers
+    const routingProviders = ['helicone', 'kilo', 'openrouter', 'llmgateway', 'morph', 'auriko', 'firepass', 'xiaomi-token-plan', 'xiaomi-token-plan-cn', 'nano-gpt'];
+    const allProviders = Object.keys(this.cache ?? {});
+    const originalProviderModels = allModels.filter(model => {
+      const provider = this.findProviderForModel(model.id);
+      return provider && !routingProviders.includes(provider);
+    });
+
     // Filter models based on requirements
-    const suitableModels = allModels.filter(model => this.meetsRequirements(model, requirements));
+    const suitableModels = originalProviderModels.filter(model => this.meetsRequirements(model, requirements));
 
     if (suitableModels.length === 0) {
       throw new Error('No models found that meet the requirements');
@@ -137,7 +171,7 @@ export class ModelSelector {
     }));
 
     // Sort by confidence score
-    scoredModels.sort((a, b) => b.confidence - a.confidence);
+    scoredModels.sort((a: ModelSelectionResult, b: ModelSelectionResult) => b.confidence - a.confidence);
 
     return scoredModels[0]!;
   }
@@ -161,8 +195,9 @@ export class ModelSelector {
     const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
     const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/).length * 0.5);
 
-    const inputCost = (inputTokens / 1000) * model.cost.input;
-    const outputCost = (outputTokens / 1000) * model.cost.output;
+    const cost = model.cost;
+    const inputCost = (inputTokens / 1000) * cost.input;
+    const outputCost = (outputTokens / 1000) * cost.output;
 
     return {
       model: modelId,
@@ -178,7 +213,8 @@ export class ModelSelector {
    * Find the provider for a given model
    */
   private findProviderForModel(modelId: string): string {
-    for (const [providerId, provider] of Object.entries(this.client.listProviders())) {
+    // Search all providers for this model
+    for (const [providerId, provider] of Object.entries(this.cache ?? {})) {
       if (provider.models[modelId]) {
         return providerId;
       }
@@ -190,10 +226,27 @@ export class ModelSelector {
    * Check if a model meets the given requirements
    */
   private meetsRequirements(model: ModelsDevModel, requirements: TaskRequirements): boolean {
+    // Exclude interface/alias models
+    if (model.family === 'auto') {
+      return false;
+    }
+    
+    // Exclude auto interfaces (but keep autoglm which seems to be a real model name)
+    if (model.id.includes('auto') && !model.id.includes('autoglm')) {
+      return false;
+    }
+    
+    // Exclude prefix-based interface models like kilo-auto
+    if (model.id.toLowerCase().startsWith('kilo-auto') || 
+        model.id.toLowerCase().includes('kilo-auto/')) {
+      return false;
+    }
+
+    // Check modality
     // Check modality
     if (requirements.modality) {
-      const inputModalities = model.modalities.input;
-      const outputModalities = model.modalities.output;
+      const inputModalities = model.modalities?.input ?? [];
+      const outputModalities = model.modalities?.output ?? [];
 
       if (requirements.modality === 'multimodal') {
         if (
@@ -217,14 +270,16 @@ export class ModelSelector {
 
     // Check constraints
     if (requirements.constraints?.max_cost) {
-      const estimatedCost = model.cost.input + model.cost.output * 10; // rough estimate
+      const cost = model.cost;
+      const estimatedCost = (cost?.input ?? 0) + (cost?.output ?? 0) * 10; // rough estimate
       if (estimatedCost > requirements.constraints.max_cost) {
         return false;
       }
     }
 
     if (requirements.constraints?.max_context) {
-      if (model.limit.context < requirements.constraints.max_context) {
+      const limit = model.limit;
+      if ((limit?.context ?? 0) < requirements.constraints.max_context) {
         return false;
       }
     }
@@ -253,11 +308,11 @@ export class ModelSelector {
     }
 
     // Consider specialization
-    if (
-      requirements.specialization &&
-      model.knowledge.toLowerCase().includes(requirements.specialization.toLowerCase())
-    ) {
-      confidence += 0.2;
+    if (requirements.specialization && model.knowledge) {
+      const knowledge = model.knowledge;
+      if (knowledge.toLowerCase().includes(requirements.specialization.toLowerCase())) {
+        confidence += 0.2;
+      }
     }
 
     return Math.min(confidence, 1);
@@ -267,8 +322,9 @@ export class ModelSelector {
    * Estimate model cost based on cost per thousand tokens
    */
   private estimateModelCost(model: ModelsDevModel): number {
+    const cost = model.cost;
     // Rough estimate assuming 1000 input and 1000 output tokens
-    return model.cost.input + model.cost.output * 10;
+    return (cost?.input ?? 0) + (cost?.output ?? 0) * 10;
   }
 
   /**
@@ -281,14 +337,21 @@ export class ModelSelector {
       reasons.push('Supports tool calling');
     }
 
-    if (model.limit.context > 200000) {
+    const limit = model.limit;
+    if (limit?.context && limit.context > 200000) {
       reasons.push('Large context window');
     }
 
-    if (model.cost.input + model.cost.output < 0.01) {
+    const cost = model.cost;
+    if (cost && (cost.input + cost.output) < 0.01) {
       reasons.push('Cost-effective');
     }
 
     return reasons.join(', ') || 'Selected based on requirements';
+  }
+
+  // Helper method to get cache for findProviderForModel
+  private get cache(): ModelsDevAPI | undefined {
+    return (this.client as any).cache;
   }
 }

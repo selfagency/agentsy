@@ -36,8 +36,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "test": "vitest run",
-    "coverage": "vitest run --coverage"
+    "test": "vitest --run",
+    "coverage": "vitest --run --coverage"
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",

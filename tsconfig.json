@@ -5,8 +5,12 @@
     "outDir": "./dist",
     "module": "nodenext",
     "target": "esnext",
-    "lib": ["esnext"],
-    "types": ["node"],
+    "lib": [
+      "esnext"
+    ],
+    "types": [
+      "node"
+    ],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -23,6 +27,11 @@
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["**/src/**/*.ts"],
-  "exclude": ["dist", "node_modules"]
+  "include": [
+    "**/src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }
