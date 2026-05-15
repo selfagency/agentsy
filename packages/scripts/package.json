@@ -12,7 +12,7 @@
     "validate-workspace": "tsx src/validate-workspace.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest --run",
+    "test": "vitest --run --passWithNoTests",
     "lint": "oxlint src",
     "format": "oxfmt src"
   }
