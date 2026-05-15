@@ -84,10 +84,10 @@
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

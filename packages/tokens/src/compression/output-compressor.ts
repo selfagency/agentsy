@@ -1,4 +1,5 @@
-export type CompressionLevel = 'lite' | 'full' | 'ultra';
+import type { CompressionLevel } from '@agentsy/core/context';
+import { compressProse, protectPattern, restoreProtectedSegments } from '@agentsy/core/context';
 
 export interface OutputPreserveOptions {
   codeFences: boolean;
@@ -17,12 +18,6 @@ const DEFAULT_PRESERVE: OutputPreserveOptions = {
   urls: true,
 };
 
-const LITE_REMOVALS = ['basically', 'actually', 'simply', 'really', 'just', 'generally', 'essentially'];
-
-const FULL_REMOVALS = [...LITE_REMOVALS, 'furthermore', 'additionally', 'however', 'of course'];
-
-const ULTRA_REMOVALS = [...FULL_REMOVALS, 'you should', 'it might be worth', 'you could consider'];
-
 const PLACEHOLDER_PREFIX = '__AGENTSY_PRESERVE_';
 
 function mergePreserveOptions(options?: Partial<OutputPreserveOptions>): OutputPreserveOptions {
@@ -30,66 +25,6 @@ function mergePreserveOptions(options?: Partial<OutputPreserveOptions>): OutputP
     ...DEFAULT_PRESERVE,
     ...options,
   };
-}
-
-function protectPattern(
-  input: string,
-  pattern: RegExp,
-  placeholderMap: Map<string, string>,
-  nextId: { value: number },
-): string {
-  return input.replace(pattern, match => {
-    const key = `${PLACEHOLDER_PREFIX}${nextId.value}__`;
-    nextId.value += 1;
-    placeholderMap.set(key, match);
-    return key;
-  });
-}
-
-function restoreProtectedSegments(input: string, placeholderMap: Map<string, string>): string {
-  let output = input;
-  for (const [key, value] of placeholderMap.entries()) {
-    output = output.replaceAll(key, value);
-  }
-
-  return output;
-}
-
-function removeWordList(input: string, words: readonly string[]): string {
-  let output = input;
-  for (const word of words) {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    output = output.replace(new RegExp(`\\b${escaped}\\b`, 'gi'), '');
-  }
-
-  return output;
-}
-
-function compressProse(input: string, level: CompressionLevel): string {
-  const removals = level === 'lite' ? LITE_REMOVALS : level === 'full' ? FULL_REMOVALS : ULTRA_REMOVALS;
-
-  let output = removeWordList(input, removals);
-
-  if (level !== 'lite') {
-    output = output.replace(/\b(a|an|the)\b/gi, '');
-  }
-
-  if (level === 'ultra') {
-    output = output
-      .replace(/\bin order to\b/gi, 'to')
-      .replace(/\bmake sure to\b/gi, 'ensure')
-      .replace(/\bthat\b/gi, '');
-  }
-
-  output = output
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\s+([,.;:!?])/g, '$1')
-    .replace(/\n[ \t]+/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .replace(/ {2,}/g, ' ')
-    .trim();
-
-  return output;
 }
 
 export function compressOutput(input: string, options: OutputCompressionOptions = {}): string {
@@ -110,15 +45,15 @@ export function compressOutput(input: string, options: OutputCompressionOptions 
   const nextId = { value: 0 };
 
   if (preserve.codeFences) {
-    working = protectPattern(working, /```[\s\S]*?```/g, placeholderMap, nextId);
+    working = protectPattern(working, /```[\s\S]*?```/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
   }
 
   if (preserve.inlineCode) {
-    working = protectPattern(working, /`[^`\n]+`/g, placeholderMap, nextId);
+    working = protectPattern(working, /`[^`\n]+`/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
   }
 
   if (preserve.urls) {
-    working = protectPattern(working, /https?:\/\/\S+/gi, placeholderMap, nextId);
+    working = protectPattern(working, /https?:\/\/\S+/gi, placeholderMap, nextId, PLACEHOLDER_PREFIX);
   }
 
   const compressed = compressProse(working, level);
