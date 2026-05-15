@@ -4,7 +4,7 @@ import {
   recommendLocalModelsBySystemCapabilities,
   type LLMStatsLocalModel,
   type ModelsDevAPI,
-  type SystemCapabilities,
+  type SystemCapabilities
 } from './index.js';
 
 const modelsDevFixture: ModelsDevAPI = {
@@ -28,9 +28,9 @@ const modelsDevFixture: ModelsDevAPI = {
         modalities: { input: ['text'], output: ['text'] },
         open_weights: false,
         limit: { context: 128000, output: 8192 },
-        cost: { input: 0.3, output: 0.6 },
-      },
-    },
+        cost: { input: 0.3, output: 0.6 }
+      }
+    }
   },
   qwen: {
     id: 'qwen',
@@ -52,7 +52,7 @@ const modelsDevFixture: ModelsDevAPI = {
         modalities: { input: ['text'], output: ['text'] },
         open_weights: true,
         limit: { context: 131072, output: 8192 },
-        cost: { input: 0.05, output: 0.1 },
+        cost: { input: 0.05, output: 0.1 }
       },
       'qwen2.5-coder-32b': {
         id: 'qwen2.5-coder-32b',
@@ -67,10 +67,10 @@ const modelsDevFixture: ModelsDevAPI = {
         modalities: { input: ['text'], output: ['text'] },
         open_weights: true,
         limit: { context: 262144, output: 8192 },
-        cost: { input: 0.2, output: 0.4 },
-      },
-    },
-  },
+        cost: { input: 0.2, output: 0.4 }
+      }
+    }
+  }
 };
 
 const llmStatsFixture: LLMStatsLocalModel[] = [
@@ -82,7 +82,7 @@ const llmStatsFixture: LLMStatsLocalModel[] = [
     estimatedTokensPerSecond: 44,
     runtime: 'llama.cpp',
     quantization: 'q4_k_m',
-    isLocalCompatible: true,
+    isLocalCompatible: true
   },
   {
     modelId: 'qwen2.5-coder-32b',
@@ -92,7 +92,7 @@ const llmStatsFixture: LLMStatsLocalModel[] = [
     estimatedTokensPerSecond: 18,
     runtime: 'llama.cpp',
     quantization: 'q4_k_m',
-    isLocalCompatible: true,
+    isLocalCompatible: true
   },
   {
     modelId: 'gpt-4o-mini',
@@ -102,15 +102,15 @@ const llmStatsFixture: LLMStatsLocalModel[] = [
     estimatedTokensPerSecond: 60,
     runtime: 'ollama',
     quantization: 'q8_0',
-    isLocalCompatible: true,
-  },
+    isLocalCompatible: true
+  }
 ];
 
 const systemCapabilities: SystemCapabilities = {
   ramGb: 32,
   vramGb: 12,
   cpuCores: 8,
-  backend: 'cuda',
+  backend: 'cuda'
 };
 
 describe('recommendLocalModelsBySystemCapabilities', () => {
@@ -119,7 +119,7 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
       modelsDevFixture,
       llmStatsFixture,
       systemCapabilities,
-      { taskCategory: 'coding' },
+      { taskCategory: 'coding' }
     );
 
     const ids = recommendations.map(entry => entry.model);
@@ -132,7 +132,7 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
       modelsDevFixture,
       llmStatsFixture,
       systemCapabilities,
-      { taskCategory: 'coding' },
+      { taskCategory: 'coding' }
     );
 
     expect(recommendations.length).toBeGreaterThan(0);
@@ -148,7 +148,7 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
       modelsDevFixture,
       llmStatsFixture,
       systemCapabilities,
-      { taskCategory: 'coding', preferLowCost: true, topN: 1 },
+      { taskCategory: 'coding', preferLowCost: true, topN: 1 }
     );
 
     expect(recommendations).toHaveLength(1);
@@ -159,22 +159,22 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
     const noToolModelData: ModelsDevAPI = {
       ...modelsDevFixture,
       qwen: {
-        ...modelsDevFixture.qwen,
+        ...modelsDevFixture.qwen!,
         models: {
-          ...modelsDevFixture.qwen.models,
+          ...modelsDevFixture.qwen!.models,
           'qwen2.5-coder-7b': {
-            ...modelsDevFixture.qwen.models['qwen2.5-coder-7b'],
-            tool_call: false,
-          },
-        },
-      },
+            ...modelsDevFixture.qwen!.models['qwen2.5-coder-7b']!,
+            tool_call: false
+          }
+        }
+      }
     };
 
     const recommendations = recommendLocalModelsBySystemCapabilities(
       noToolModelData,
       llmStatsFixture,
       systemCapabilities,
-      { taskCategory: 'coding', requireToolCalling: true },
+      { taskCategory: 'coding', requireToolCalling: true }
     );
 
     const ids = recommendations.map(entry => entry.model);
