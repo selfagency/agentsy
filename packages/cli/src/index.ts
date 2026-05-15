@@ -1,16 +1,16 @@
 import { readFile } from 'node:fs/promises';
 
 import { compressMemoryFile } from '@agentsy/core/context';
-import { compressOutput, type CompressionLevel } from '@agentsy/tokens';
+import { compressOutput, type OutputCompressionLevel } from '@agentsy/tokens';
 
 export const name = 'cli';
 
 export interface CliIO {
-  stdout: (message: string) => void;
-  stderr: (message: string) => void;
+  stdout?: (message: string) => void;
+  stderr?: (message: string) => void;
 }
 
-const DEFAULT_IO: CliIO = {
+const DEFAULT_IO: Required<CliIO> = {
   stdout: message => {
     console.log(message);
   },
@@ -32,7 +32,7 @@ function hasFlag(args: readonly string[], flag: string): boolean {
   return args.includes(flag);
 }
 
-function toCompressionLevel(value: string | null): CompressionLevel | null {
+function toCompressionLevel(value: string | null): OutputCompressionLevel | null {
   if (value === 'lite' || value === 'full' || value === 'ultra') {
     return value;
   }
@@ -53,41 +53,40 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     const level = toCompressionLevel(getFlagValue(rest, '--level'));
 
     if (level === null) {
-      io.stderr('Invalid --level value. Use one of: lite, full, ultra.');
+      (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
       return 1;
     }
 
     if (filePath === null && text === null) {
-      io.stderr('Missing input. Provide --text or --file.');
+      (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
       return 1;
     }
 
     const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf8'));
     const result = compressOutput(source, { level });
-    io.stdout(result.compressed);
-    io.stdout(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+    (io.stdout ?? DEFAULT_IO.stdout)(result.compressed);
+    (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
     return 0;
   }
 
   if (command === 'compress-memory') {
     const filePath = getFlagValue(rest, '--file');
     if (filePath === null) {
-      io.stderr('Missing --file for compress-memory command.');
+      (io.stderr ?? DEFAULT_IO.stderr)('Missing --file for compress-memory command.');
       return 1;
     }
 
     const backup = !hasFlag(rest, '--no-backup');
 
     const result = await compressMemoryFile(filePath, {
-      backup,
-      writeCompressed: true
+      backup
     });
-    io.stdout(`Compressed ${filePath}`);
-    io.stdout(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+    (io.stdout ?? DEFAULT_IO.stdout)(`Compressed ${filePath}`);
+    (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
     return 0;
   }
 
-  io.stderr(`Unknown command: ${command ?? '(none)'}`);
-  io.stderr('Supported commands: compress, compress-memory');
+  (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
+  (io.stderr ?? DEFAULT_IO.stderr)('Supported commands: compress, compress-memory');
   return 1;
 }

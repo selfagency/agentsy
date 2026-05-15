@@ -26,8 +26,7 @@ describe('compressMemoryFile', () => {
       await writeFile(filePath, source, 'utf8');
 
       const result = await compressMemoryFile(filePath, {
-        backup: true,
-        writeCompressed: true
+        backup: true
       });
 
       const rewritten = await readFile(filePath, 'utf8');
