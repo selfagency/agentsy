@@ -15,7 +15,7 @@ function addListener<K extends keyof StreamEventMap>(
   processor: LLMStreamProcessor,
   event: K,
   listener: StreamEventMap[K],
-  listeners: Array<() => void>,
+  listeners: Array<() => void>
 ): void {
   processor.on(event, listener);
   listeners.push(() => {
@@ -32,7 +32,7 @@ export function bindProcessorToConversationStore(processor: LLMStreamProcessor, 
     ((event: ConversationEvent) => {
       store.dispatch(event);
     }) as StreamEventMap['conversation_event'],
-    removers,
+    removers
   );
 
   return () => {
@@ -44,13 +44,13 @@ export function bindProcessorToConversationStore(processor: LLMStreamProcessor, 
 
 export function createConversationStoreFromProcessor(
   processor: LLMStreamProcessor,
-  options: BridgeOptions,
+  options: BridgeOptions
 ): ConversationStoreBridge {
   const store = createConversationStore(options.conversationId);
   const dispose = bindProcessorToConversationStore(processor, store);
 
   return {
     store,
-    dispose,
+    dispose
   };
 }

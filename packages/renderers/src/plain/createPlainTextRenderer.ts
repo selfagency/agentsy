@@ -57,7 +57,7 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
       ...(onToolCall !== undefined && {
         onToolCall: async (part: Parameters<NonNullable<typeof options.onToolCall>>[0]) => {
           await onToolCall(part);
-        },
+        }
       }),
       onEnd: async () => {
         // Call end() on stream if it has one (but not on process.stdout)
@@ -69,8 +69,8 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
         ) {
           output.end();
         }
-      },
+      }
     },
-    options.onError,
+    options.onError
   );
 }

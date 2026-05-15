@@ -11,14 +11,14 @@ export {
   createVSCodeAgentLoop,
   createVSCodeChatRenderer,
   ToolCallDeltaAccumulator,
-  toVSCodeToolCallPart,
+  toVSCodeToolCallPart
 } from './vscode-renderer/index.js';
 export type {
   ChatResponseStream,
   MinimalChatResponseStream,
   VSCodeAgentLoopOptions,
   VSCodeChatRendererOptions,
-  VSCodeToolCallPartLike,
+  VSCodeToolCallPartLike
 } from './vscode-renderer/index.js';
 
 // Error handling
@@ -26,7 +26,7 @@ export {
   createProviderError,
   errorCodeToMessage,
   errorToProviderCode,
-  httpStatusToErrorCode,
+  httpStatusToErrorCode
 } from './error-handling/error-mapper.js';
 export { calculateRetryDelay, isRetryableError, withRetry } from './error-handling/error-recovery.js';
 export type { RetryOptions } from './error-handling/error-recovery.js';
@@ -37,7 +37,7 @@ export {
   convertRole,
   extractTextFromPart,
   extractToolCall,
-  extractToolResult,
+  extractToolResult
 } from './message-conversion/role-converter.js';
 export type { ChatMessage, ChatToolCall } from './message-conversion/role-converter.js';
 
@@ -63,7 +63,7 @@ export type {
   ExtensionContext,
   LanguageModelChatRequest,
   LanguageModelChatResponse,
-  LanguageModelChatResponseChunk,
+  LanguageModelChatResponseChunk
 } from './provider/index.js';
 
 // Settings
@@ -83,7 +83,7 @@ export {
   type QuotaAdapterOptions,
   type QuotaWindow,
   type QuotaWindowValue,
-  type VSCodeUsage,
+  type VSCodeUsage
 } from './usage-tracking/index.js';
 
 // MCP integration
@@ -92,7 +92,7 @@ export {
   McpServerRegistry,
   type CreateMcpServerDefinitionProviderOptions,
   type McpProviderServerDefinition,
-  type McpProviderSettingsReader,
+  type McpProviderSettingsReader
 } from './mcp-integration/index.js';
 
 // Testing utilities
@@ -101,5 +101,5 @@ export {
   createMockApiKeyManager,
   createMockRendererHandle,
   type MockApiKeyManager,
-  type MockRendererHandle,
+  type MockRendererHandle
 } from './testing/index.js';

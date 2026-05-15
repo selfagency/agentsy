@@ -19,16 +19,16 @@ function createMockCancellationToken(initiallyCancelled = false): {
         return {
           dispose: () => {
             listeners.delete(listener);
-          },
+          }
         };
-      }) as unknown as Event<unknown>,
+      }) as unknown as Event<unknown>
     },
     cancel() {
       cancelled = true;
       for (const listener of listeners) {
         listener(undefined);
       }
-    },
+    }
   };
 }
 

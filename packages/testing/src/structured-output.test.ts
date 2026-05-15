@@ -10,7 +10,7 @@ import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlCont
 import {
   appendToBlockquote,
   formatXmlLikeResponseForDisplay,
-  sanitizeNonStreamingModelOutput,
+  sanitizeNonStreamingModelOutput
 } from '@agentsy/core/formatting';
 import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
@@ -59,8 +59,8 @@ describe('validateJsonSchema', () => {
     required: ['name', 'age'],
     properties: {
       name: { type: 'string' },
-      age: { type: 'number' },
-    },
+      age: { type: 'number' }
+    }
   };
 
   it('returns no errors for a valid object', () => {
@@ -93,7 +93,7 @@ describe('buildRepairPrompt', () => {
   it('includes the parse error in the output', () => {
     const prompt = buildRepairPrompt({
       failedOutput: '{broken json',
-      error: 'Unexpected end of JSON input',
+      error: 'Unexpected end of JSON input'
     });
 
     expect(prompt).toContain('Unexpected end of JSON input');
@@ -105,7 +105,7 @@ describe('buildRepairPrompt', () => {
     const prompt = buildRepairPrompt({
       failedOutput: '{}',
       error: 'Missing required field: id',
-      schema,
+      schema
     });
 
     expect(prompt).toContain('"id"');
@@ -115,7 +115,7 @@ describe('buildRepairPrompt', () => {
     const prompt = buildRepairPrompt({
       failedOutput: '{}',
       error: 'err',
-      originalPrompt: 'Return a user object',
+      originalPrompt: 'Return a user object'
     });
 
     expect(prompt).toContain('Return a user object');

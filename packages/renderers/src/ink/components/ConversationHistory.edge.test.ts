@@ -17,7 +17,7 @@ describe('ConversationHistory Component edge cases', () => {
           role: 'user',
           text: 'Question?',
           timestamp: Date.now(),
-          toolCalls: [],
+          toolCalls: []
         },
         {
           id: 'turn-2',
@@ -25,13 +25,13 @@ describe('ConversationHistory Component edge cases', () => {
           text: 'Answer',
           timestamp: Date.now(),
           toolCalls: [],
-          thinking: undefined,
-        },
+          thinking: undefined
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(2);
     });
@@ -42,12 +42,12 @@ describe('ConversationHistory Component edge cases', () => {
         role: i % 2 === 0 ? ('user' as const) : ('assistant' as const),
         text: `Message ${i}`,
         timestamp: Date.now(),
-        toolCalls: [],
+        toolCalls: []
       }));
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(100);
     });
@@ -58,12 +58,12 @@ describe('ConversationHistory Component edge cases', () => {
         { id: '2', role: 'assistant', text: 'A1', timestamp: Date.now(), toolCalls: [] },
         { id: '3', role: 'user', text: 'Q2', timestamp: Date.now(), toolCalls: [] },
         { id: '4', role: 'assistant', text: 'A2', timestamp: Date.now(), toolCalls: [] },
-        { id: '5', role: 'user', text: 'Q3', timestamp: Date.now(), toolCalls: [] },
+        { id: '5', role: 'user', text: 'Q3', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.map((t: ConversationTurn) => t.id)).toEqual(['1', '2', '3', '4', '5']);
     });
@@ -72,12 +72,12 @@ describe('ConversationHistory Component edge cases', () => {
       const now = Date.now();
       const turns: ConversationTurn[] = [
         { id: '1', role: 'user', text: 'Q1', timestamp: now - 10000, toolCalls: [] },
-        { id: '2', role: 'assistant', text: 'A1', timestamp: now, toolCalls: [] },
+        { id: '2', role: 'assistant', text: 'A1', timestamp: now, toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.timestamp).toBeLessThan(element.props.turns.at(1)?.timestamp ?? 0);
     });
@@ -85,12 +85,12 @@ describe('ConversationHistory Component edge cases', () => {
     it('handles unicode text in turns', () => {
       const turns: ConversationTurn[] = [
         { id: '1', role: 'user', text: 'Hello 👋 世界', timestamp: Date.now(), toolCalls: [] },
-        { id: '2', role: 'assistant', text: 'Привет 🌍 мир', timestamp: Date.now(), toolCalls: [] },
+        { id: '2', role: 'assistant', text: 'Привет 🌍 мир', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.text).toContain('👋');
       expect(element.props.turns.at(1)?.text).toContain('Привет');
@@ -103,20 +103,20 @@ describe('ConversationHistory Component edge cases', () => {
           role: 'user',
           text: '```code\n// comment\nconst x = 1;\n```',
           timestamp: Date.now(),
-          toolCalls: [],
+          toolCalls: []
         },
         {
           id: '2',
           role: 'assistant',
           text: 'Here is **bold** and *italic* text',
           timestamp: Date.now(),
-          toolCalls: [],
-        },
+          toolCalls: []
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.text).toContain('code');
       expect(element.props.turns.at(1)?.text).toContain('bold');

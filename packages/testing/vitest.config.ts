@@ -16,20 +16,20 @@ export default defineConfig({
       { find: '@agentsy/providers/adapters', replacement: resolve(__dirname, '../providers/src/adapters/index.ts') },
       {
         find: '@agentsy/providers/normalizers',
-        replacement: resolve(__dirname, '../providers/src/normalizers/index.ts'),
+        replacement: resolve(__dirname, '../providers/src/normalizers/index.ts')
       },
       { find: '@agentsy/providers/pipeline', replacement: resolve(__dirname, '../providers/src/pipeline/index.ts') },
       { find: '@agentsy/core', replacement: resolve(__dirname, '../core/src/index.ts') },
       { find: '@agentsy/providers', replacement: resolve(__dirname, '../providers/src/index.ts') },
-      { find: '@agentsy/renderers', replacement: resolve(__dirname, '../renderers/src/index.ts') },
-    ],
+      { find: '@agentsy/renderers', replacement: resolve(__dirname, '../renderers/src/index.ts') }
+    ]
   },
   test: {
     globals: false,
     environment: 'node',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
-    },
-  },
+      reporter: ['text', 'lcov']
+    }
+  }
 });

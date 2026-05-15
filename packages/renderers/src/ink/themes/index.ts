@@ -8,7 +8,7 @@ export const defaultTheme: Theme = {
   toolCall: { pendingColor: 'yellow', doneColor: 'green', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▌', dimColor: true },
   border: { style: 'single', color: 'gray' },
-  highlight: {},
+  highlight: {}
 };
 
 export const darkTheme: Theme = {
@@ -16,7 +16,7 @@ export const darkTheme: Theme = {
   toolCall: { pendingColor: 'yellowBright', doneColor: 'greenBright', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▌', dimColor: false },
   border: { style: 'round', color: 'cyan' },
-  highlight: {},
+  highlight: {}
 };
 
 export const lightTheme: Theme = {
@@ -24,7 +24,7 @@ export const lightTheme: Theme = {
   toolCall: { pendingColor: 'yellow', doneColor: 'green', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▌', dimColor: true },
   border: { style: 'single', color: 'blue' },
-  highlight: {},
+  highlight: {}
 };
 
 export const minimalTheme: Theme = {
@@ -32,7 +32,7 @@ export const minimalTheme: Theme = {
   toolCall: { pendingColor: '', doneColor: '', pendingSymbol: '>', doneSymbol: '+' },
   text: { cursorSymbol: '_', dimColor: false },
   border: { style: 'none', color: '' },
-  highlight: {},
+  highlight: {}
 };
 
 // Dracula — https://draculatheme.com
@@ -41,7 +41,7 @@ export const draculaTheme: Theme = {
   toolCall: { pendingColor: '#ffb86c', doneColor: '#50fa7b', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#44475a' },
-  highlight: { theme: 'dracula' },
+  highlight: { theme: 'dracula' }
 };
 
 // Catppuccin Mocha — https://catppuccin.com
@@ -50,7 +50,7 @@ export const catppuccinMochaTheme: Theme = {
   toolCall: { pendingColor: '#fab387', doneColor: '#a6e3a1', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#313244' },
-  highlight: { theme: 'catppuccin-mocha' },
+  highlight: { theme: 'catppuccin-mocha' }
 };
 
 // Catppuccin Latte — https://catppuccin.com (light variant)
@@ -59,7 +59,7 @@ export const catppuccinLatteTheme: Theme = {
   toolCall: { pendingColor: '#fe640b', doneColor: '#40a02b', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: true },
   border: { style: 'single', color: '#ccd0da' },
-  highlight: { theme: 'catppuccin-latte' },
+  highlight: { theme: 'catppuccin-latte' }
 };
 
 // Catppuccin Macchiato — https://catppuccin.com
@@ -68,7 +68,7 @@ export const catppuccinMacchiatoTheme: Theme = {
   toolCall: { pendingColor: '#f5a97f', doneColor: '#a6da95', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#363a4f' },
-  highlight: { theme: 'catppuccin-macchiato' },
+  highlight: { theme: 'catppuccin-macchiato' }
 };
 
 // Catppuccin Frappé — https://catppuccin.com
@@ -77,7 +77,7 @@ export const catppuccinFrappeTheme: Theme = {
   toolCall: { pendingColor: '#ef9f76', doneColor: '#a6d189', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#414559' },
-  highlight: { theme: 'catppuccin-frappe' },
+  highlight: { theme: 'catppuccin-frappe' }
 };
 
 // Ayu Mirage — https://github.com/dempfi/ayu
@@ -86,7 +86,7 @@ export const ayuMirageTheme: Theme = {
   toolCall: { pendingColor: '#ffa659', doneColor: '#d5ff80', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#282e3b' },
-  highlight: { theme: 'ayu-mirage' },
+  highlight: { theme: 'ayu-mirage' }
 };
 
 // Houston — Astro's official theme — https://github.com/withastro/houston-vscode
@@ -95,7 +95,7 @@ export const houstonTheme: Theme = {
   toolCall: { pendingColor: '#ffd493', doneColor: '#4bf3c8', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#23262d' },
-  highlight: {},
+  highlight: {}
 };
 
 // One Dark — based on Atom's One Dark palette
@@ -104,7 +104,7 @@ export const oneDarkTheme: Theme = {
   toolCall: { pendingColor: '#d19a66', doneColor: '#98c379', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#3e4451' },
-  highlight: { theme: 'one-dark' },
+  highlight: { theme: 'one-dark' }
 };
 
 // OneCandy — One Dark with pastel candy accents — https://github.com/KacperBiedka/OneCandy
@@ -113,7 +113,7 @@ export const oneCandyTheme: Theme = {
   toolCall: { pendingColor: '#fcdfad', doneColor: '#79c3a4', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#3e4451' },
-  highlight: {},
+  highlight: {}
 };
 
 // GitHub Dark — GitHub Primer color system
@@ -122,7 +122,7 @@ export const githubDarkTheme: Theme = {
   toolCall: { pendingColor: '#ffa657', doneColor: '#3fb950', pendingSymbol: '⠋', doneSymbol: '✓' },
   text: { cursorSymbol: '▋', dimColor: false },
   border: { style: 'round', color: '#161b22' },
-  highlight: { theme: 'github-dark' },
+  highlight: { theme: 'github-dark' }
 };
 
 export const THEME_MAP: Record<ThemeName, Theme> = {
@@ -139,7 +139,7 @@ export const THEME_MAP: Record<ThemeName, Theme> = {
   houston: houstonTheme,
   'one-dark': oneDarkTheme,
   'one-candy': oneCandyTheme,
-  'github-dark': githubDarkTheme,
+  'github-dark': githubDarkTheme
 };
 
 function isThemeName(value: string): value is ThemeName {

@@ -16,7 +16,7 @@ function createFakeProcessor(processParts: Record<string, unknown>[] = [], custo
       done: false,
       parts: processParts,
       incomplete: false,
-      incompleteness: [],
+      incompleteness: []
     })),
     flush:
       customFlush ||
@@ -27,8 +27,8 @@ function createFakeProcessor(processParts: Record<string, unknown>[] = [], custo
         done: true,
         parts: [],
         incomplete: false,
-        incompleteness: [],
-      })),
+        incompleteness: []
+      }))
   } as unknown as LLMStreamProcessor;
 }
 
@@ -48,14 +48,14 @@ describe('VS Code Chat Renderer', () => {
       thinkingProgress: vi.fn(),
       beginToolInvocation: vi.fn(),
       updateToolInvocation: vi.fn(),
-      usage: vi.fn(),
+      usage: vi.fn()
     };
   });
 
   it('requires ChatResponseStream', () => {
     expect(() => {
       createVSCodeChatRenderer({
-        stream: null as unknown as ChatResponseStream,
+        stream: null as unknown as ChatResponseStream
       });
     }).toThrow('ChatResponseStream is required');
   });
@@ -94,7 +94,7 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: true,
-        thinkingStyle: 'blockquote',
+        thinkingStyle: 'blockquote'
       });
 
       await renderer.write('Content');
@@ -107,16 +107,16 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: {
           ...mockStream,
-          thinkingProgress: undefined, // Test fallback to progress()
+          thinkingProgress: undefined // Test fallback to progress()
         } as unknown as ChatResponseStream,
         showThinking: true,
-        thinkingStyle: 'progress',
+        thinkingStyle: 'progress'
       });
 
       await renderer.writeChunk({
         thinking: 'Internal reasoning',
         content: 'Content',
-        done: true,
+        done: true
       });
 
       expect(mockStream.progress).toHaveBeenCalled();
@@ -126,18 +126,18 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: true,
-        thinkingStyle: 'blockquote',
+        thinkingStyle: 'blockquote'
       });
 
       await renderer.writeChunk({
         thinking: 'Internal reasoning',
-        content: 'Visible content',
+        content: 'Visible content'
       });
       await renderer.end();
 
       expect(mockStream.thinkingProgress).toHaveBeenCalledWith({
         text: 'Internal reasoning',
-        id: 'thinking',
+        id: 'thinking'
       });
       expect(mockStream.progress).not.toHaveBeenCalled();
     });
@@ -146,7 +146,7 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: true,
-        thinkingStyle: 'suppress',
+        thinkingStyle: 'suppress'
       });
 
       await renderer.write('Content');
@@ -158,7 +158,7 @@ describe('VS Code Chat Renderer', () => {
     it('suppresses thinking when showThinking is false', async () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        showThinking: false,
+        showThinking: false
       });
 
       await renderer.write('Content');
@@ -175,14 +175,14 @@ describe('VS Code Chat Renderer', () => {
         {
           type: 'tool_call',
           call: { id: 'tc_callback', name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' },
-          state: 'pending',
-        },
+          state: 'pending'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         onToolCall,
-        processor: fakeProcessor,
+        processor: fakeProcessor
       });
 
       await renderer.writeChunk({ content: 'Tool use call' });
@@ -193,8 +193,8 @@ describe('VS Code Chat Renderer', () => {
         expect.objectContaining({
           type: 'tool_call',
           call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
-          state: 'pending',
-        }),
+          state: 'pending'
+        })
       );
     });
 
@@ -203,13 +203,13 @@ describe('VS Code Chat Renderer', () => {
         {
           type: 'tool_call',
           call: { id: 'tc_begin', name: 'weather', parameters: { city: 'NYC' }, format: 'bare-xml' },
-          state: 'pending',
-        },
+          state: 'pending'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        processor: fakeProcessor,
+        processor: fakeProcessor
       });
 
       await renderer.writeChunk({ content: 'invoke tool' });
@@ -227,14 +227,14 @@ describe('VS Code Chat Renderer', () => {
           id: 'tc_delta',
           name: 'search',
           argumentsDelta: '{"query":',
-          index: 0,
-        },
+          index: 0
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         onToolCallDelta,
-        processor: fakeProcessor,
+        processor: fakeProcessor
       });
 
       await renderer.writeChunk({ content: 'Tool delta' });
@@ -246,8 +246,8 @@ describe('VS Code Chat Renderer', () => {
           type: 'tool_call_delta',
           id: 'tc_delta',
           name: 'search',
-          argumentsDelta: '{"query":',
-        }),
+          argumentsDelta: '{"query":'
+        })
       );
     });
 
@@ -258,13 +258,13 @@ describe('VS Code Chat Renderer', () => {
           id: 'tc_update',
           name: 'search',
           argumentsDelta: '"docs"}',
-          index: 1,
-        },
+          index: 1
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        processor: fakeProcessor,
+        processor: fakeProcessor
       });
 
       await renderer.writeChunk({ content: 'delta content' });
@@ -277,8 +277,8 @@ describe('VS Code Chat Renderer', () => {
           type: 'tool_call_delta',
           id: 'tc_update',
           name: 'search',
-          argumentsDelta: '"docs"}',
-        }),
+          argumentsDelta: '"docs"}'
+        })
       );
     });
 
@@ -298,14 +298,14 @@ describe('VS Code Chat Renderer', () => {
         {
           type: 'tool_call',
           call: { id: 'tc1', name: 'search', arguments: {} },
-          state: 'pending',
-        },
+          state: 'pending'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         onToolCall,
-        processor: fakeProcessor,
+        processor: fakeProcessor
       });
 
       const writePromise = renderer.writeChunk({ content: 'chunk' });
@@ -325,29 +325,29 @@ describe('VS Code Chat Renderer', () => {
   describe('Usage Reporting', () => {
     it('reports usage when available', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        usage: { inputTokens: 10, outputTokens: 20 },
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
       expect(mockStream.usage).toHaveBeenCalledWith({
         promptTokens: 10,
-        completionTokens: 20,
+        completionTokens: 20
       });
     });
 
     it('handles missing usage data gracefully', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
         content: 'Test',
-        done: true,
+        done: true
       });
 
       expect(renderer).toBeDefined();
@@ -359,7 +359,7 @@ describe('VS Code Chat Renderer', () => {
       const onError = vi.fn();
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        onError,
+        onError
       });
 
       await renderer.write('Content');
@@ -372,13 +372,13 @@ describe('VS Code Chat Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       expect(onFinish).toHaveBeenCalledWith('stop', undefined);
@@ -388,13 +388,13 @@ describe('VS Code Chat Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        onFinish,
+        onFinish
       });
 
       await renderer.writeChunk({
         content: 'Test',
         done: true,
-        finishReason: 'stop',
+        finishReason: 'stop'
       });
 
       await renderer.end();
@@ -406,7 +406,7 @@ describe('VS Code Chat Renderer', () => {
       const onFinish = vi.fn();
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        onFinish,
+        onFinish
       });
 
       await renderer.write('Content');
@@ -419,7 +419,7 @@ describe('VS Code Chat Renderer', () => {
       const onStep = vi.fn();
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        onStep,
+        onStep
       });
 
       await renderer.writeChunk({ content: 'Step 0', stepIndex: 0, stepUsage: { outputTokens: 2 } });
@@ -435,13 +435,13 @@ describe('VS Code Chat Renderer', () => {
   describe('writeChunk vs write', () => {
     it('writeChunk processes StreamChunk objects', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
         content: 'Streamed content',
         thinking: 'Internal reasoning',
-        done: false,
+        done: false
       });
 
       await renderer.end();
@@ -451,7 +451,7 @@ describe('VS Code Chat Renderer', () => {
 
     it('write processes string chunks', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.write('String content');
@@ -466,7 +466,7 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: true,
-        thinkingStyle: 'blockquote',
+        thinkingStyle: 'blockquote'
       });
 
       await renderer.write('Let me think about this');
@@ -478,7 +478,7 @@ describe('VS Code Chat Renderer', () => {
     it('suppresses thinking blocks when showThinking is false', async () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
-        showThinking: false,
+        showThinking: false
       });
 
       await renderer.write('Content');
@@ -491,7 +491,7 @@ describe('VS Code Chat Renderer', () => {
       const renderer = createVSCodeChatRenderer({
         stream: mockStream,
         showThinking: true,
-        thinkingStyle: 'blockquote',
+        thinkingStyle: 'blockquote'
       });
 
       await renderer.write('content');
@@ -502,12 +502,12 @@ describe('VS Code Chat Renderer', () => {
 
     it('should handle structured chunk output with tool calls', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
         content: 'I will call a tool',
-        done: false,
+        done: false
       });
 
       await renderer.end();
@@ -528,13 +528,13 @@ describe('VS Code Agent Loop', () => {
       anchor: vi.fn(),
       reference: vi.fn(),
       button: vi.fn(),
-      filetree: vi.fn(),
+      filetree: vi.fn()
     };
   });
 
   it('creates agent loop renderer', () => {
     const renderer = createVSCodeAgentLoop({
-      stream: mockStream,
+      stream: mockStream
     });
 
     expect(renderer).toBeDefined();
@@ -544,7 +544,7 @@ describe('VS Code Agent Loop', () => {
 
   it('defaults showThinking to true for agent loops', async () => {
     const renderer = createVSCodeAgentLoop({
-      stream: mockStream,
+      stream: mockStream
     });
 
     expect(renderer).toBeDefined();
@@ -554,7 +554,7 @@ describe('VS Code Agent Loop', () => {
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
       thinkingStyle: 'progress',
-      showThinking: true,
+      showThinking: true
     });
 
     await renderer.write('Agent step');
@@ -567,7 +567,7 @@ describe('VS Code Agent Loop', () => {
     const abortController = new AbortController();
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
-      abortSignal: abortController.signal,
+      abortSignal: abortController.signal
     });
 
     await renderer.write('Content');
@@ -587,7 +587,7 @@ describe('VS Code Agent Loop', () => {
       done: true,
       parts: [],
       incomplete: false,
-      incompleteness: [],
+      incompleteness: []
     }));
 
     const fakeProcessor = createFakeProcessor([], flush);
@@ -595,7 +595,7 @@ describe('VS Code Agent Loop', () => {
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
       abortSignal: abortController.signal,
-      processor: fakeProcessor,
+      processor: fakeProcessor
     });
 
     abortController.abort();
@@ -612,12 +612,12 @@ describe('VS Code Agent Loop', () => {
     const fakeAbortSignal = {
       aborted: false,
       addEventListener,
-      removeEventListener,
+      removeEventListener
     } as unknown as AbortSignal;
 
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
-      abortSignal: fakeAbortSignal,
+      abortSignal: fakeAbortSignal
     });
 
     await renderer.end();
@@ -641,13 +641,13 @@ describe('VS Code Agent Loop', () => {
       anchor: vi.fn(),
       reference: vi.fn(),
       button: vi.fn(),
-      filetree: vi.fn(),
+      filetree: vi.fn()
     } as unknown as ChatResponseStream;
 
     const abortController = new AbortController();
     const renderer = createVSCodeAgentLoop({
       stream: failingStream,
-      abortSignal: abortController.signal,
+      abortSignal: abortController.signal
     });
 
     await renderer.write('test content');
@@ -660,7 +660,7 @@ describe('VS Code Agent Loop', () => {
 
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       expect.stringContaining('[VS Code Agent Loop] Error'),
-      expect.any(Error),
+      expect.any(Error)
     );
 
     consoleWarnSpy.mockRestore();
@@ -672,7 +672,7 @@ describe('VS Code Agent Loop', () => {
 
     const renderer = createVSCodeAgentLoop({
       stream: mockStream,
-      abortSignal: abortController.signal,
+      abortSignal: abortController.signal
     });
 
     await Promise.resolve();
@@ -687,8 +687,8 @@ describe('Cancellation Token Bridge', () => {
     const mockToken: CancellationToken = {
       isCancellationRequested: false,
       onCancellationRequested: vi.fn(() => ({
-        dispose: vi.fn(),
-      })),
+        dispose: vi.fn()
+      }))
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);
@@ -701,8 +701,8 @@ describe('Cancellation Token Bridge', () => {
     const mockToken: CancellationToken = {
       isCancellationRequested: true,
       onCancellationRequested: vi.fn(() => ({
-        dispose: vi.fn(),
-      })),
+        dispose: vi.fn()
+      }))
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);
@@ -718,7 +718,7 @@ describe('Cancellation Token Bridge', () => {
       onCancellationRequested: vi.fn((listener: (e: unknown) => void) => {
         listeners.push(listener);
         return { dispose: vi.fn() };
-      }),
+      })
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);
@@ -734,7 +734,7 @@ describe('Cancellation Token Bridge', () => {
 
   it('returns a non-aborted signal for partial tokens without onCancellationRequested', () => {
     const signal = cancellationTokenToAbortSignal({
-      isCancellationRequested: false,
+      isCancellationRequested: false
     });
 
     expect(signal).toBeDefined();
@@ -748,7 +748,7 @@ describe('Cancellation Token Bridge', () => {
       onCancellationRequested: vi.fn(listener => {
         listener(undefined);
         return { dispose };
-      }),
+      })
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);

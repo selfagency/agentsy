@@ -11,13 +11,13 @@ describe('VSCode MCP Bridge Helper', () => {
       start(controller) {
         controller.enqueue('data: test\n\n');
         controller.close();
-      },
-    }),
+      }
+    })
   };
 
   const mockCancellationToken: CancellationToken = {
     isCancellationRequested: false,
-    onCancellationRequested: vi.fn(),
+    onCancellationRequested: vi.fn()
   };
 
   describe('VSCodeMCPBridgeHelper', () => {
@@ -57,7 +57,7 @@ describe('VSCode MCP Bridge Helper', () => {
         filetree: vi.fn(),
         progress: vi.fn(),
         reference: vi.fn(),
-        push: vi.fn(),
+        push: vi.fn()
       };
       const stream = helper.createChatResponseStream(targetStream);
       expect(stream).toBe(targetStream);
@@ -67,7 +67,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle markdown event with string value', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          markdown: vi.fn(),
+          markdown: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'markdown' as const, data: { value: 'test markdown' } };
@@ -79,7 +79,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle markdown event with non-string value', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          markdown: vi.fn(),
+          markdown: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'markdown' as const, data: { value: 123 } };
@@ -91,7 +91,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle markdown event with missing value', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          markdown: vi.fn(),
+          markdown: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'markdown' as const, data: {} };
@@ -105,7 +105,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle progress event with string value', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          progress: vi.fn(),
+          progress: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'progress' as const, data: { value: 'loading...' } };
@@ -117,7 +117,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle progress event with non-string value', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          progress: vi.fn(),
+          progress: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'progress' as const, data: { value: 123 } };
@@ -131,7 +131,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle anchor event with valid data', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          anchor: vi.fn(),
+          anchor: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: '#section', title: 'Section' } };
@@ -143,7 +143,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should skip anchor event with missing anchorData', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          anchor: vi.fn(),
+          anchor: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { title: 'Section' } };
@@ -155,7 +155,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should skip anchor event with missing title', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          anchor: vi.fn(),
+          anchor: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: '#section' } };
@@ -167,7 +167,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should skip anchor event with non-string anchorData', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          anchor: vi.fn(),
+          anchor: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: 123, title: 'Section' } };
@@ -179,7 +179,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should skip anchor event with non-string title', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          anchor: vi.fn(),
+          anchor: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'anchor' as const, data: { anchorData: '#section', title: 123 } };
@@ -193,7 +193,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle button event with valid data', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          button: vi.fn(),
+          button: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 'test.command', title: 'Test Button' } };
@@ -205,7 +205,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle button event with missing command', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          button: vi.fn(),
+          button: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { title: 'Test Button' } };
@@ -217,7 +217,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle button event with missing title', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          button: vi.fn(),
+          button: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 'test.command' } };
@@ -229,7 +229,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle button event with non-string command', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          button: vi.fn(),
+          button: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 123, title: 'Test Button' } };
@@ -241,7 +241,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle button event with non-string title', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          button: vi.fn(),
+          button: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'button' as const, data: { command: 'test.command', title: 123 } };
@@ -255,7 +255,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle filetree event', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          filetree: vi.fn(),
+          filetree: vi.fn()
         } as unknown as ChatResponseStream;
 
         helper._testHandleFiletree(mockChatStream);
@@ -277,7 +277,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle reference event with valid uri', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          reference: vi.fn(),
+          reference: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'reference' as const, data: { uri: 'file:///path/to/file' } };
@@ -289,7 +289,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle reference event with missing uri', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          reference: vi.fn(),
+          reference: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'reference' as const, data: {} };
@@ -301,7 +301,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle reference event with non-string uri', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          reference: vi.fn(),
+          reference: vi.fn()
         } as unknown as ChatResponseStream;
 
         const event = { type: 'reference' as const, data: { uri: 123 } };
@@ -315,7 +315,7 @@ describe('VSCode MCP Bridge Helper', () => {
       it('should handle push event', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         const mockChatStream = {
-          push: vi.fn(),
+          push: vi.fn()
         } as unknown as ChatResponseStream;
 
         helper._testHandlePush(mockChatStream);

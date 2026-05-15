@@ -7,7 +7,7 @@ import {
   type SaxophoneProcessingInstruction,
   type SaxophoneTag,
   type SaxophoneTagClose,
-  type SaxophoneText,
+  type SaxophoneText
 } from './index.js';
 
 function firstEvent<T>(events: T[]): T {

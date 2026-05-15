@@ -33,8 +33,8 @@ const policySchema = {
     shouldEscalate: { type: 'boolean' },
     queue: { type: 'string', enum: ['security', 'payments', 'platform'] },
     reason: { type: 'string', minLength: 1 },
-    confidence: { type: 'number', minimum: 0, maximum: 1 },
-  },
+    confidence: { type: 'number', minimum: 0, maximum: 1 }
+  }
 } as const;
 
 async function* streamOpenAI(prompt: string): AsyncGenerator<unknown> {
@@ -54,7 +54,7 @@ async function runPolicyGate(provider: 'openai' | 'anthropic', prompt: string): 
   const decision = await runStructuredDecisionFromRawStream<unknown, PolicyDecision>({
     source,
     normalize: raw => normalize(raw),
-    schema: policySchema,
+    schema: policySchema
   });
 
   if (!decision.success) {
@@ -68,7 +68,7 @@ async function runPolicyGate(provider: 'openai' | 'anthropic', prompt: string): 
     },
     action: async value => {
       await enqueueIncident(value.queue, value.reason);
-    },
+    }
   });
 }
 ```

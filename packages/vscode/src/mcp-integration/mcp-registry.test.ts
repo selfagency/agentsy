@@ -7,7 +7,7 @@ function makeServer(overrides: Partial<McpServerDefinition> = {}): McpServerDefi
     name: 'test-server',
     command: 'node',
     args: ['./mcp-server.js'],
-    ...overrides,
+    ...overrides
   };
 }
 
@@ -68,13 +68,11 @@ describe('McpServerRegistry', () => {
 
   it('loadFromProviders populates servers from provider', async () => {
     const provider: McpServerProvider = {
-      provide: vi
-        .fn()
-        .mockResolvedValue([makeServer({ name: 'prov-server-1' }), makeServer({ name: 'prov-server-2' })]),
+      provide: vi.fn().mockResolvedValue([makeServer({ name: 'prov-server-1' }), makeServer({ name: 'prov-server-2' })])
     };
     const registry = new McpServerRegistry({
       namespace: 'ext.mcpServers',
-      providers: [provider],
+      providers: [provider]
     });
     await registry.loadFromProviders();
     expect(registry.has('prov-server-1')).toBe(true);
@@ -89,12 +87,12 @@ describe('McpServerRegistry', () => {
 
   it('activate loads providers and skips vscode registration when autoRegister is false', async () => {
     const provider: McpServerProvider = {
-      provide: vi.fn().mockResolvedValue([makeServer({ name: 'loaded' })]),
+      provide: vi.fn().mockResolvedValue([makeServer({ name: 'loaded' })])
     };
     const registry = new McpServerRegistry({
       namespace: 'ext.mcpServers',
       providers: [provider],
-      autoRegister: false,
+      autoRegister: false
     });
     await registry.activate();
     expect(registry.has('loaded')).toBe(true);
@@ -113,11 +111,11 @@ describe('McpServerRegistry', () => {
 
     vi.doMock('vscode', () => ({
       workspace: {
-        getConfiguration: () => ({ get, update }),
+        getConfiguration: () => ({ get, update })
       },
       ConfigurationTarget: {
-        Workspace: 1,
-      },
+        Workspace: 1
+      }
     }));
 
     const { McpServerRegistry: Registry } = await import('./mcp-server-registry.js');
@@ -128,7 +126,7 @@ describe('McpServerRegistry', () => {
       args: ['mcp.js'],
       env: { API_KEY: 'x' },
       headers: { Authorization: 'Bearer x' },
-      alwaysAllow: true,
+      alwaysAllow: true
     });
 
     await registry.registerWithVscode();
@@ -141,10 +139,10 @@ describe('McpServerRegistry', () => {
         'zai-server': {
           command: 'node',
           args: ['mcp.js'],
-          alwaysAllow: true,
-        },
+          alwaysAllow: true
+        }
       }),
-      1,
+      1
     );
   });
 

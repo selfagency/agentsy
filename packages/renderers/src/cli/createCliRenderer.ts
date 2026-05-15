@@ -46,7 +46,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     thinkingStyle = 'blockquote',
     processor,
     onError,
-    onFinish,
+    onFinish
   } = options;
 
   // Create processor if not provided (owns it internally)
@@ -80,7 +80,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
         cliMarkdown = mod.default as (markdown: string) => string;
       } catch {
         throw new Error(
-          'CLI renderer requires "cli-markdown" peer dependency. Install it with: npm install cli-markdown',
+          'CLI renderer requires "cli-markdown" peer dependency. Install it with: npm install cli-markdown'
         );
       }
     }
@@ -169,6 +169,6 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
         finished = true;
         await onFinish(result.finishReason, result.usage);
       }
-    },
+    }
   };
 }

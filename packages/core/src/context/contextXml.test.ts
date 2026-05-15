@@ -40,7 +40,7 @@ describe('createXmlStreamFilter', () => {
           return;
         }
         warnings.push({ message, context });
-      },
+      }
     });
 
     const out = filter.write('<user_info>secret</user_info><code>safe</code>') + filter.end();
@@ -52,7 +52,7 @@ describe('createXmlStreamFilter', () => {
   it('allows unsafe override when enforcePrivacyTags is false', () => {
     const filter = createXmlStreamFilter({
       overrideScrubTags: new Set(['environment_info']),
-      enforcePrivacyTags: false,
+      enforcePrivacyTags: false
     });
 
     const out = filter.write('<user_info>secret</user_info><code>safe</code>') + filter.end();
@@ -65,7 +65,7 @@ describe('createXmlStreamFilter', () => {
       maxXmlNestingDepth: 2,
       onWarning: message => {
         warnings.push(message);
-      },
+      }
     });
 
     const out = filter.write('<a><b><c>deep</c></b><d>ok</d></a>') + filter.end();
@@ -117,7 +117,7 @@ describe('stripXmlContextTags', () => {
 
   it('strips toolCall wrappers from model output', () => {
     const result = stripXmlContextTags(
-      'Before.<toolCall> {"name": "semantic_search", "arguments": {"query": "test"}} </toolCall>After.',
+      'Before.<toolCall> {"name": "semantic_search", "arguments": {"query": "test"}} </toolCall>After.'
     );
     expect(result).toBe('Before.After.');
   });
@@ -169,14 +169,14 @@ describe('dedupeXmlContextBlocksByTag', () => {
       '<environment_info>old-env</environment_info>',
       '<workspace_info>w1</workspace_info>',
       '<environment_info>new-env</environment_info>',
-      '<user_info>u1</user_info>',
+      '<user_info>u1</user_info>'
     ];
 
     const deduped = dedupeXmlContextBlocksByTag(xmlBlocks);
     expect(deduped).toEqual([
       '<workspace_info>w1</workspace_info>',
       '<environment_info>new-env</environment_info>',
-      '<user_info>u1</user_info>',
+      '<user_info>u1</user_info>'
     ]);
   });
 });

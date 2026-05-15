@@ -139,7 +139,7 @@ export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null 
       const chunk: { [k: string]: unknown } = {
         ...getContentParts(delta),
         ...getFinishReasonParts(choice),
-        ...getUsageParts(raw),
+        ...getUsageParts(raw)
       };
       if (nativeToolCallDeltas !== undefined) {
         chunk.nativeToolCallDeltas = nativeToolCallDeltas;

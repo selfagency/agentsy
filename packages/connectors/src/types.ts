@@ -90,7 +90,7 @@ export const BUILT_IN_COMMANDS: readonly BuiltInCommand[] = [
   { command: '/compact', description: 'Compact conversation history' },
   { command: '/think', description: 'Toggle verbose thinking' },
   { command: '/verbose', description: 'Add verbose output' },
-  { command: '/usage', description: 'Show usage statistics' },
+  { command: '/usage', description: 'Show usage statistics' }
 ] as const;
 
 /**

@@ -97,7 +97,7 @@ export interface AgentLoopOptions {
   beforeStep?: (context: AgentLoopContext) => void | Promise<void>;
   /** Optional hook for per-step message/callback/tool configuration overrides. */
   prepareStep?: (
-    context: AgentLoopContext,
+    context: AgentLoopContext
   ) => AgentLoopStepOverrides | undefined | Promise<AgentLoopStepOverrides | undefined>;
   /** Optional callback fired after each completed step. */
   onStep?: (result: StepResult) => void | Promise<void>;
@@ -111,7 +111,7 @@ export interface AgentLoopOptions {
   toolApprovalMode?: ToolApprovalMode;
   /** Optional tool approval callback used by `ask` and `auto` modes. */
   approveToolCalls?: (
-    context: ToolApprovalContext,
+    context: ToolApprovalContext
   ) =>
     | boolean
     | ToolApprovalDecision

@@ -5,7 +5,7 @@ import { createSmoothStream, createThinkingFilter, createToolCallFilter } from '
 
 async function writeAndCollect(
   transform: TransformStream<OutputPart, OutputPart>,
-  input: OutputPart[],
+  input: OutputPart[]
 ): Promise<OutputPart[]> {
   async function write(): Promise<void> {
     const writer = transform.writable.getWriter();
@@ -106,7 +106,7 @@ describe('createThinkingFilter', () => {
   it('strips thinking parts', async () => {
     const parts = await writeAndCollect(createThinkingFilter(), [
       { type: 'thinking', text: 'internal' },
-      { type: 'text', text: 'output' },
+      { type: 'text', text: 'output' }
     ]);
     expect(parts).toHaveLength(1);
     expect(parts[0]).toEqual({ type: 'text', text: 'output' });
@@ -116,7 +116,7 @@ describe('createThinkingFilter', () => {
     const call = { name: 'get_data', parameters: {}, format: 'native-json' as const };
     const parts = await writeAndCollect(createThinkingFilter(), [
       { type: 'text', text: 'hello' },
-      { type: 'tool_call', call, state: 'input-complete' },
+      { type: 'tool_call', call, state: 'input-complete' }
     ]);
     expect(parts).toHaveLength(2);
   });
@@ -126,7 +126,7 @@ function makeCall(name: string): OutputPart {
   return {
     type: 'tool_call',
     call: { name, parameters: {}, format: 'native-json' },
-    state: 'input-complete',
+    state: 'input-complete'
   };
 }
 
@@ -135,7 +135,7 @@ describe('createToolCallFilter', () => {
     const parts = await writeAndCollect(createToolCallFilter(['search', 'fetch']), [
       makeCall('search'),
       makeCall('delete'),
-      makeCall('fetch'),
+      makeCall('fetch')
     ]);
     expect(parts).toHaveLength(2);
     expect(parts[0]).toMatchObject({ type: 'tool_call', call: { name: 'search' } });
@@ -145,7 +145,7 @@ describe('createToolCallFilter', () => {
   it('passes non-tool_call parts through unchanged', async () => {
     const parts = await writeAndCollect(createToolCallFilter(['search']), [
       { type: 'text', text: 'hello' },
-      makeCall('other'),
+      makeCall('other')
     ]);
     expect(parts).toHaveLength(1);
     expect(parts[0]).toEqual({ type: 'text', text: 'hello' });
@@ -180,7 +180,7 @@ describe('LLMStreamProcessor.partsStream', () => {
 
   it('chains multiple transforms in order', async () => {
     const processor = new LLMStreamProcessor({
-      transforms: [createThinkingFilter(), createSmoothStream({ chunkSize: 3 })],
+      transforms: [createThinkingFilter(), createSmoothStream({ chunkSize: 3 })]
     });
     const streamPromise = collectStream(processor.partsStream);
     // processComplete calls process() + flush() internally, ensuring the stream is closed.

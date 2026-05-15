@@ -15,7 +15,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.call.done).toBe(true);
       expect(element.props.call.name).toBe('search');
@@ -26,7 +26,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.call.done).toBe(false);
     });
@@ -36,7 +36,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.toolCall.doneSymbol).toBeDefined();
     });
@@ -46,7 +46,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.toolCall.pendingSymbol).toBeDefined();
     });
@@ -61,7 +61,7 @@ describe('ToolCallBlock Component', () => {
         const element = React.createElement(ToolCallBlock, {
           call,
           theme: darkTheme,
-          screenReader: false,
+          screenReader: false
         });
         expect(element.props.call.name).toBe(name);
       });
@@ -73,14 +73,14 @@ describe('ToolCallBlock Component', () => {
         { x: 10, y: 20 },
         { nested: { key: 'value' } },
         { array: [1, 2, 3] },
-        {},
+        {}
       ];
       argumentSets.forEach(args => {
         const call = { id: '1', name: 'tool', arguments: args, done: false };
         const element = React.createElement(ToolCallBlock, {
           call,
           theme: darkTheme,
-          screenReader: false,
+          screenReader: false
         });
         expect(element.props.call.arguments).toEqual(args);
       });
@@ -93,7 +93,7 @@ describe('ToolCallBlock Component', () => {
         const element = React.createElement(ToolCallBlock, {
           call,
           theme: darkTheme,
-          screenReader: false,
+          screenReader: false
         });
         expect(element.props.call.id).toBe(id);
       });
@@ -107,7 +107,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element.props.screenReader).toBe(true);
       expect(element.props.call.done).toBe(true);
@@ -118,7 +118,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element.props.screenReader).toBe(true);
       expect(element.props.call.done).toBe(false);
@@ -129,7 +129,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.screenReader).toBe(false);
     });
@@ -142,7 +142,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.toolCall.pendingColor).toBeDefined();
     });
@@ -152,7 +152,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.toolCall.doneColor).toBeDefined();
     });
@@ -160,13 +160,13 @@ describe('ToolCallBlock Component', () => {
     it('uses theme spinner interval when defined', () => {
       const customTheme = {
         ...darkTheme,
-        toolCall: { ...darkTheme.toolCall, spinnerIntervalMs: 100 },
+        toolCall: { ...darkTheme.toolCall, spinnerIntervalMs: 100 }
       };
       const call = { id: '1', name: 'anim', arguments: {}, done: false };
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: customTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.theme.toolCall.spinnerIntervalMs).toBe(100);
     });
@@ -176,12 +176,12 @@ describe('ToolCallBlock Component', () => {
       const darkElement = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       const lightElement = React.createElement(ToolCallBlock, {
         call,
         theme: defaultTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(darkElement.props.theme).toBe(darkTheme);
       expect(lightElement.props.theme).toBe(defaultTheme);
@@ -195,7 +195,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.call.done).toBe(false);
       expect(element.props.screenReader).toBe(false);
@@ -206,7 +206,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.call.done).toBe(true);
     });
@@ -216,7 +216,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: true,
+        screenReader: true
       });
       expect(element.props.screenReader).toBe(true);
     });
@@ -230,14 +230,14 @@ describe('ToolCallBlock Component', () => {
         name: 'complex_tool',
         arguments: {
           nested: { deep: { value: 42 } },
-          list: [1, 2, 3],
+          list: [1, 2, 3]
         },
-        done: false,
+        done: false
       };
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.call.arguments.nested).toBeDefined();
       expect(element.props.call.arguments.list).toBeDefined();
@@ -249,12 +249,12 @@ describe('ToolCallBlock Component', () => {
         id: '1',
         name: 'large_args_tool',
         arguments: largeArgs,
-        done: false,
+        done: false
       };
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(Object.keys(element.props.call.arguments).length).toBe(100);
     });
@@ -264,14 +264,14 @@ describe('ToolCallBlock Component', () => {
         id: '1',
         name: 'special_tool',
         arguments: {
-          text: 'Special <chars> & "quotes" and \'apostrophes\'',
+          text: 'Special <chars> & "quotes" and \'apostrophes\''
         },
-        done: true,
+        done: true
       };
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme,
-        screenReader: false,
+        screenReader: false
       });
       expect(element.props.call.arguments.text).toContain('<chars>');
     });
@@ -283,7 +283,7 @@ describe('ToolCallBlock Component', () => {
       const call = { id: '1', name: 'default_tool', arguments: {}, done: false };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element).toBeDefined();
     });
@@ -296,13 +296,13 @@ describe('ToolCallBlock Component', () => {
           query: 'test query',
           filters: { type: 'article', date: '2024' },
           limit: 10,
-          nested: { deep: { value: 'found' } },
+          nested: { deep: { value: 'found' } }
         },
-        done: false,
+        done: false
       };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.call.arguments.query).toBe('test query');
     });
@@ -313,7 +313,7 @@ describe('ToolCallBlock Component', () => {
       const call = { id: '1', name: 'pending_tool', arguments: {}, done: false };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.call.done).toBe(false);
     });
@@ -322,7 +322,7 @@ describe('ToolCallBlock Component', () => {
       const call = { id: '1', name: 'completed_tool', arguments: {}, done: true };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.call.done).toBe(true);
     });
@@ -333,7 +333,7 @@ describe('ToolCallBlock Component', () => {
       const call = { id: '1', name: 'no_args_tool', arguments: {}, done: false };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(Object.keys(element.props.call.arguments)).toHaveLength(0);
     });
@@ -347,13 +347,13 @@ describe('ToolCallBlock Component', () => {
           arg2: 'value2',
           arg3: 'value3',
           arg4: 'value4',
-          arg5: 'value5',
+          arg5: 'value5'
         },
-        done: false,
+        done: false
       };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(Object.keys(element.props.call.arguments).length).toBe(5);
     });
@@ -363,11 +363,11 @@ describe('ToolCallBlock Component', () => {
         id: '1',
         name: 'string_tool',
         arguments: { text: 'hello world', prompt: 'test prompt' },
-        done: false,
+        done: false
       };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.call.arguments.text).toBe('hello world');
     });
@@ -377,11 +377,11 @@ describe('ToolCallBlock Component', () => {
         id: '1',
         name: 'numeric_tool',
         arguments: { count: 42, max: 100, threshold: 0.5 },
-        done: false,
+        done: false
       };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.call.arguments.count).toBe(42);
     });
@@ -392,7 +392,7 @@ describe('ToolCallBlock Component', () => {
       const call = { id: '1', name: 'themed_tool', arguments: {}, done: false };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: darkTheme,
+        theme: darkTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.theme).toBe(darkTheme);
     });
@@ -401,7 +401,7 @@ describe('ToolCallBlock Component', () => {
       const call = { id: '1', name: 'themed_tool', arguments: {}, done: false };
       const element = React.createElement(ToolCallBlock, {
         call,
-        theme: defaultTheme,
+        theme: defaultTheme
       } as Parameters<typeof ToolCallBlock>[0]);
       expect(element.props.theme).toBe(defaultTheme);
     });

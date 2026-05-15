@@ -68,7 +68,7 @@ describe('mapReasoningToEvents', () => {
   it('should include threadId when provided', () => {
     const events = mapReasoningToEvents('reason', {
       runId: 'run_123',
-      threadId: 'thread_789',
+      threadId: 'thread_789'
     });
 
     for (const event of events) {
@@ -87,12 +87,12 @@ describe('mapReasoningToEvents', () => {
   it('should encrypt reasoningContent when option enabled', () => {
     const events = mapReasoningToEvents('secret', {
       runId: 'run_123',
-      encryptReasoning: true,
+      encryptReasoning: true
     });
 
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT
     ) as ReasoningMessageContentEvent;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.encryptedValue).toBe('encrypted');
@@ -102,12 +102,12 @@ describe('mapReasoningToEvents', () => {
     const reasoning = 'plain thinking';
     const events = mapReasoningToEvents(reasoning, {
       runId: 'run_123',
-      encryptReasoning: false,
+      encryptReasoning: false
     });
 
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT
     ) as ReasoningMessageContentEvent;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.content).toBe(reasoning);
@@ -119,7 +119,7 @@ describe('mapReasoningToEvents', () => {
 
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT
     ) as ReasoningMessageContentEvent;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.content).toBe(reasoning);
@@ -167,7 +167,7 @@ describe('mapReasoningToEvents', () => {
 
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT,
+      e => e.type === EventType.REASONING_MESSAGE_CONTENT
     ) as ReasoningMessageContentEvent;
     expect(contentEvent?.content).toContain('line 1');
     expect(contentEvent?.content).toContain('line 2');

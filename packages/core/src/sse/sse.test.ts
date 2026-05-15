@@ -6,7 +6,7 @@ function createParser(onError?: (_error: Error) => void) {
   const events: unknown[] = [];
   const parser = new SSEParser({
     onEvent: event => events.push(event),
-    ...(onError && { onError }),
+    ...(onError && { onError })
   });
   return { parser, events };
 }
@@ -69,7 +69,7 @@ describe('SSEParser', () => {
       event: 'custom',
       data: 'content',
       id: '123',
-      retry: 5000,
+      retry: 5000
     });
   });
 
@@ -143,7 +143,7 @@ describe('SSEParser', () => {
 
     expect(events).toHaveLength(1);
     expect(events[0]).toEqual({
-      data: '{"type":"message","content":"hello"}',
+      data: '{"type":"message","content":"hello"}'
     });
   });
 
@@ -273,7 +273,7 @@ describe('parseSSEStream', () => {
       event: 'progress',
       id: 'msg1',
       data: '{"step":1}',
-      retry: 5000,
+      retry: 5000
     });
   });
 
@@ -295,7 +295,7 @@ describe('parseSSEStream', () => {
       start(controller) {
         controller.enqueue('data: from-stream\n\n');
         controller.close();
-      },
+      }
     });
 
     const events = [];
@@ -313,8 +313,8 @@ describe('parseSSEStream', () => {
         read: async () => {
           throw new Error('read failed');
         },
-        releaseLock,
-      }),
+        releaseLock
+      })
     } as unknown as ReadableStream<string>;
 
     await expect(async () => {

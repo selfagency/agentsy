@@ -57,7 +57,7 @@ export interface ExtensionContext {
 export abstract class BaseLanguageModelChatProvider {
   constructor(
     protected readonly context: ExtensionContext,
-    protected readonly config: ProviderConfig,
+    protected readonly config: ProviderConfig
   ) {}
 
   // fallow-ignore-next-line unused-class-member
@@ -133,7 +133,7 @@ export abstract class BaseLanguageModelChatProvider {
 
       return {
         stream: generateStream(),
-        text: textPromise,
+        text: textPromise
       };
     } catch (error) {
       abortController?.abort();
@@ -149,7 +149,7 @@ export abstract class BaseLanguageModelChatProvider {
    */
   protected async streamChat(
     request: ProviderApiRequest & { signal?: AbortSignal },
-    _token: CancellationToken,
+    _token: CancellationToken
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const { url, method, headers, body, signal } = request;
     if (url === undefined || url === null) {
@@ -160,7 +160,7 @@ export abstract class BaseLanguageModelChatProvider {
       method: method ?? 'POST',
       headers: headers as NonNullable<RequestInit['headers']>,
       body: body !== undefined ? JSON.stringify(body) : null,
-      ...(signal && { signal }),
+      ...(signal && { signal })
     });
 
     if (response.ok) {
@@ -212,7 +212,7 @@ export abstract class BaseLanguageModelChatProvider {
 
     return {
       stream: emptyStream(),
-      text: Promise.resolve(msg),
+      text: Promise.resolve(msg)
     };
   }
 
@@ -221,14 +221,14 @@ export abstract class BaseLanguageModelChatProvider {
    */
   protected abstract buildRequest(
     messages: ChatMessage[],
-    request: LanguageModelChatRequest,
+    request: LanguageModelChatRequest
   ): Promise<ProviderApiRequest>;
 
   /**
    * Normalize raw provider stream chunks into VS Code LanguageModelChatResponseChunks.
    */
   protected abstract normalizeStream(
-    response: AsyncIterable<ProviderStreamChunk>,
+    response: AsyncIterable<ProviderStreamChunk>
   ): AsyncIterable<LanguageModelChatResponseChunk>;
 
   /**

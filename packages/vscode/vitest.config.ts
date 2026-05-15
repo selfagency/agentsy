@@ -15,15 +15,15 @@ export default defineConfig({
       lines: 90,
       functions: 90,
       branches: 85,
-      statements: 90,
+      statements: 90
     },
     include: ['src/**/*.test.ts'],
-    exclude: ['node_modules', 'dist'],
+    exclude: ['node_modules', 'dist']
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      vscode: path.resolve(__dirname, './src/test/mocks/vscode.ts'),
-    },
-  },
+      vscode: path.resolve(__dirname, './src/test/mocks/vscode.ts')
+    }
+  }
 });

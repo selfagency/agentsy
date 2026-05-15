@@ -4,7 +4,7 @@ import { createInkRenderer } from './createInkRenderer.js';
 import { darkTheme } from './themes/index.js';
 
 vi.mock('cli-markdown', () => ({
-  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`),
+  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`)
 }));
 
 vi.mock('ink', async () => {
@@ -15,8 +15,8 @@ vi.mock('ink', async () => {
       lastFrame: () => '[mock frame]',
       rerender: vi.fn(),
       clear: vi.fn(),
-      unmount: vi.fn(),
-    })),
+      unmount: vi.fn()
+    }))
   };
 });
 
@@ -33,7 +33,7 @@ describe('Ink Renderer features', () => {
       parseThinkTags: true,
       scrubContextTags: true,
       enforcePrivacyTags: true,
-      onWarning,
+      onWarning
     });
   });
 
@@ -47,7 +47,7 @@ describe('Ink Renderer features', () => {
         processor,
         onWarning,
         onFinish,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
 
       processor.process({ content: '```javascript\nconst x = 42;\n```' });
@@ -62,7 +62,7 @@ describe('Ink Renderer features', () => {
         processor,
         onWarning,
         onFinish,
-        syntaxHighlight: false,
+        syntaxHighlight: false
       });
 
       processor.process({ content: '```javascript\nconst x = 42;\n```' });
@@ -77,11 +77,11 @@ describe('Ink Renderer features', () => {
         processor,
         onWarning,
         onFinish,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
 
       processor.process({
-        content: 'First block:\n```ts\nconst a = 1;\n```\n\nSecond block:\n```python\nb = 2\n```',
+        content: 'First block:\n```ts\nconst a = 1;\n```\n\nSecond block:\n```python\nb = 2\n```'
       });
       processor.process({ done: true });
 
@@ -94,7 +94,7 @@ describe('Ink Renderer features', () => {
         processor,
         onWarning,
         onFinish,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
 
       processor.process({ content: '```unknownlang\nfoo bar baz\n```' });
@@ -115,8 +115,8 @@ describe('Ink Renderer features', () => {
         onFinish,
         keyboard: {
           enabled: true,
-          onInterrupt,
-        },
+          onInterrupt
+        }
       });
 
       processor.process({ content: 'Text' });
@@ -135,8 +135,8 @@ describe('Ink Renderer features', () => {
         onFinish,
         keyboard: {
           enabled: true,
-          onCancel,
-        },
+          onCancel
+        }
       });
 
       processor.process({ content: 'Text' });
@@ -151,7 +151,7 @@ describe('Ink Renderer features', () => {
     it('respects spinnerIntervalMs in thinking theme', async () => {
       const customTheme = {
         ...darkTheme,
-        thinking: { ...darkTheme.thinking, spinnerIntervalMs: 50 },
+        thinking: { ...darkTheme.thinking, spinnerIntervalMs: 50 }
       };
 
       const renderer = await createInkRenderer({
@@ -159,7 +159,7 @@ describe('Ink Renderer features', () => {
         onWarning,
         onFinish,
         theme: customTheme,
-        showThinking: true,
+        showThinking: true
       });
 
       processor.process({ content: '<thinking>Fast spinner</thinking>' });
@@ -173,7 +173,7 @@ describe('Ink Renderer features', () => {
     it('respects spinnerIntervalMs in toolCall theme', async () => {
       const customTheme = {
         ...darkTheme,
-        toolCall: { ...darkTheme.toolCall, spinnerIntervalMs: 100 },
+        toolCall: { ...darkTheme.toolCall, spinnerIntervalMs: 100 }
       };
 
       const renderer = await createInkRenderer({
@@ -181,7 +181,7 @@ describe('Ink Renderer features', () => {
         onWarning,
         onFinish,
         theme: customTheme,
-        showToolCalls: true,
+        showToolCalls: true
       });
 
       processor.process({ content: 'Text' });
@@ -197,7 +197,7 @@ describe('Ink Renderer features', () => {
         onWarning,
         onFinish,
         theme: darkTheme,
-        showThinking: true,
+        showThinking: true
       });
 
       processor.process({ content: '<thinking>Default speed</thinking>' });
@@ -215,7 +215,7 @@ describe('Ink Renderer features', () => {
         onWarning,
         onFinish,
         showThinking: true,
-        markdown: true,
+        markdown: true
       });
 
       processor.process({ content: '<thinking>Processing...' });
@@ -232,11 +232,11 @@ describe('Ink Renderer features', () => {
         processor,
         onWarning,
         onFinish,
-        showToolCalls: true,
+        showToolCalls: true
       });
 
       processor.process({
-        content: '<tool_call id="1" name="search"><arguments>{"query":"test"}</arguments></tool_call>',
+        content: '<tool_call id="1" name="search"><arguments>{"query":"test"}</arguments></tool_call>'
       });
       processor.process({ content: 'Search results...' });
       processor.process({ done: true });
@@ -249,7 +249,7 @@ describe('Ink Renderer features', () => {
       const renderer = await createInkRenderer({
         processor,
         onWarning,
-        onFinish,
+        onFinish
       });
 
       processor.process({ content: '' });

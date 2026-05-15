@@ -42,7 +42,7 @@ interface RenderOptions {
 function ToolCallsRenderer({
   toolCalls,
   theme,
-  screenReader,
+  screenReader
 }: {
   readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly theme: Theme;
@@ -61,7 +61,7 @@ function ToolCallsRenderer({
 function ThinkingSection({
   thinking,
   isStreaming,
-  options,
+  options
 }: {
   readonly thinking: string;
   readonly isStreaming: boolean;
@@ -81,7 +81,7 @@ function ThinkingSection({
 
 function ToolCallsSection({
   toolCalls,
-  options,
+  options
 }: {
   readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly options: RenderOptions;
@@ -93,7 +93,7 @@ function ToolCallsSection({
 function ThinkingContent({
   thinking,
   isStreaming,
-  options,
+  options
 }: {
   readonly thinking: string;
   readonly isStreaming: boolean;
@@ -104,7 +104,7 @@ function ThinkingContent({
 
 function ToolCallsContent({
   toolCalls,
-  options,
+  options
 }: {
   readonly toolCalls: readonly { id: string; name: string; arguments: JsonObject; done: boolean }[];
   readonly options: RenderOptions;
@@ -115,7 +115,7 @@ function ToolCallsContent({
 function TextContent({
   text,
   isStreaming,
-  options,
+  options
 }: {
   readonly text: string;
   readonly isStreaming: boolean;
@@ -138,7 +138,7 @@ function ContentRenderer({
   thinking,
   toolCalls,
   isStreaming,
-  options,
+  options
 }: {
   readonly text: string;
   readonly thinking: string;
@@ -163,7 +163,7 @@ function buildRenderOptions(options: InkStreamRendererProps['options']): RenderO
     markdown: options.markdown ?? true,
     theme: options.theme,
     screenReader: options.screenReader ?? false,
-    syntaxHighlight: options.syntaxHighlight ?? false,
+    syntaxHighlight: options.syntaxHighlight ?? false
   };
 }
 
@@ -172,7 +172,7 @@ export default function InkStreamRenderer({
   stateRef,
   forceUpdateRef: _forceUpdateRef,
   setForceUpdate,
-  options,
+  options
 }: InkStreamRendererProps) {
   // tick triggers re-renders when stateRef is mutated externally
   const [_tick, setTick] = useState(0);

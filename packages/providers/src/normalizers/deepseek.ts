@@ -6,7 +6,7 @@ const DEEPSEEK_FINISH_REASON_MAP: Record<string, FinishReason> = {
   tool_calls: 'tool-calls',
   length: 'length',
   content_filter: 'content-filter',
-  insufficient_balance: 'error',
+  insufficient_balance: 'error'
 };
 
 interface DeepSeekToolCallDeltaRaw {
@@ -36,7 +36,7 @@ function toNativeToolCallDelta(raw: DeepSeekToolCallDeltaRaw): NativeToolCallDel
     index: raw.index,
     ...(raw.id ? { id: raw.id } : {}),
     ...(raw.function?.name ? { name: raw.function.name } : {}),
-    ...(raw.function?.arguments ? { argumentsDelta: raw.function.arguments } : {}),
+    ...(raw.function?.arguments ? { argumentsDelta: raw.function.arguments } : {})
   };
 }
 
@@ -84,8 +84,8 @@ export function normalizeDeepSeekChunk(raw: unknown): NormalizerResult | null {
       nativeToolCallDeltas,
       finishReason,
       usage,
-      done: finishReason !== undefined,
+      done: finishReason !== undefined
     },
-    rawEvent: raw,
+    rawEvent: raw
   };
 }

@@ -22,7 +22,7 @@ export class AgentsyError extends Error {
       name: this.name,
       message: this.message,
       code: this.code,
-      details: this.details,
+      details: this.details
     };
   }
 }

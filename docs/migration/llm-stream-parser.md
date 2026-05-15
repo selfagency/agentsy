@@ -113,7 +113,7 @@ import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
-  knownTools: new Set(['search', 'edit_file']),
+  knownTools: new Set(['search', 'edit_file'])
 });
 ```
 
@@ -124,7 +124,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
-  knownTools: new Set(['search', 'edit_file']),
+  knownTools: new Set(['search', 'edit_file'])
 });
 ```
 
@@ -231,7 +231,7 @@ import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
   source: providerStream,
   normalize: normalizeOpenAIChatChunk,
-  schema,
+  schema
 });
 
 if (!decision.success) {
@@ -240,7 +240,7 @@ if (!decision.success) {
 
 await applyDecisionAction(decision.decision, {
   shouldAct: value => value.shouldBlock,
-  action: async value => updateRemoteDns(value),
+  action: async value => updateRemoteDns(value)
 });
 ```
 

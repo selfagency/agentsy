@@ -16,7 +16,7 @@ export enum InterruptReason {
   RESOURCE_LIMIT = 'resource_limit',
   SAFETY_CHECK = 'safety_check',
   TIMEOUT = 'timeout',
-  ERROR = 'error',
+  ERROR = 'error'
 }
 
 /**
@@ -94,11 +94,11 @@ export function createInterruptEvent(
   runId: string,
   reason: InterruptReason | string = InterruptReason.TIMEOUT,
   message?: string,
-  threadId?: string,
+  threadId?: string
 ): RunInterruptedEvent {
   const interrupt: { id: string; reason: string; options?: { message: string } } = {
     id: `interrupt_${Math.random().toString(36).slice(2, 11)}`,
-    reason: String(reason),
+    reason: String(reason)
   };
   if (message !== undefined) {
     interrupt.options = { message };
@@ -108,7 +108,7 @@ export function createInterruptEvent(
     type: EventType.RUN_INTERRUPTED,
     runId,
     timestamp: new Date().toISOString(),
-    interrupts: [interrupt],
+    interrupts: [interrupt]
   };
 
   if (threadId !== undefined) {
@@ -134,7 +134,7 @@ export function createInterruptAbortController(): {
     interrupt: (_reason?: InterruptReason | string, _message?: string) => {
       controller.abort();
     },
-    isInterrupted: () => controller.signal.aborted,
+    isInterrupted: () => controller.signal.aborted
   };
 }
 

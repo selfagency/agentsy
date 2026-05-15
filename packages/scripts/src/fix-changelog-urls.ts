@@ -13,7 +13,7 @@ files.forEach(file => {
     // Add angle brackets around GitHub URLs in commit references
     content = content.replace(
       /by @selfagency in (https:\/\/github\.com\/selfagency\/agentsy\/pull\/\d+)/g,
-      'by @selfagency in <$1>',
+      'by @selfagency in <$1>'
     );
     fs.writeFileSync(filePath, content);
   }

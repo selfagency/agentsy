@@ -71,7 +71,7 @@ function handleResponsesCompleted(raw: Record<string, unknown>): NormalizerResul
 
   return {
     chunk: { done: true, ...(usage !== undefined && { usage }), finishReason: 'stop' as FinishReason },
-    rawEvent: raw,
+    rawEvent: raw
   };
 }
 

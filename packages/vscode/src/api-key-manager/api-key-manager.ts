@@ -12,7 +12,7 @@ export class ApiKeyManager {
 
   constructor(
     private readonly context: ExtensionContext,
-    private readonly config: ApiKeyManagerConfig,
+    private readonly config: ApiKeyManagerConfig
   ) {}
 
   /**
@@ -125,7 +125,7 @@ export class ApiKeyManager {
     return {
       dispose: () => {
         this.listeners.delete(listener);
-      },
+      }
     };
   }
 
@@ -155,7 +155,7 @@ export class ApiKeyManager {
     const input = await this.promptForInput(
       this.config.displayName,
       this.config.promptMessage || `Enter your ${this.config.displayName}:`,
-      true,
+      true
     );
     return input;
   }
@@ -169,7 +169,7 @@ export class ApiKeyManager {
       return await window.showInputBox({
         prompt,
         password,
-        ignoreFocusOut: true,
+        ignoreFocusOut: true
       });
     } catch {
       // Gracefully ignore when vscode is unavailable (e.g., during tests)

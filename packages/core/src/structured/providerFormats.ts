@@ -31,15 +31,15 @@ export interface GeminiResponseSchema {
  */
 export function buildOpenAIResponseFormat(
   schema: Record<string, unknown>,
-  options?: OpenAIResponseFormatOptions,
+  options?: OpenAIResponseFormatOptions
 ): OpenAIResponseFormat {
   return {
     type: 'json_schema',
     json_schema: {
       name: options?.name ?? 'response',
       strict: options?.strict ?? true,
-      schema,
-    },
+      schema
+    }
   };
 }
 
@@ -65,6 +65,6 @@ export function buildOllamaFormat(schema: Record<string, unknown>): Record<strin
 export function buildGeminiResponseSchema(schema: Record<string, unknown>): GeminiResponseSchema {
   return {
     responseMimeType: 'application/json',
-    responseSchema: schema,
+    responseSchema: schema
   };
 }

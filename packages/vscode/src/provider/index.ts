@@ -4,5 +4,5 @@ export type {
   CancellationToken,
   LanguageModelChatResponse,
   LanguageModelChatResponseChunk,
-  ExtensionContext,
+  ExtensionContext
 } from './base-language-model-chat-provider.js';

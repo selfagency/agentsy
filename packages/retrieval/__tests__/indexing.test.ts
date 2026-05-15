@@ -10,14 +10,14 @@ describe('IndexingPipeline', () => {
   beforeEach(() => {
     pipeline = new IndexingPipeline({
       chunkSize: 100,
-      chunkOverlap: 20,
+      chunkOverlap: 20
     });
 
     testDataSource = {
       type: 'file',
       path: '/test/file.ts',
       content:
-        'This is a test file with multiple sentences. It has enough content to be split into multiple chunks for testing purposes. We want to ensure that the chunking logic works correctly with different strategies.',
+        'This is a test file with multiple sentences. It has enough content to be split into multiple chunks for testing purposes. We want to ensure that the chunking logic works correctly with different strategies.'
     };
 
     sourcePath = testDataSource.path ?? '/test/file.ts';
@@ -33,7 +33,7 @@ describe('IndexingPipeline', () => {
       const customPipeline = new IndexingPipeline({
         chunkSize: 200,
         chunkOverlap: 50,
-        semanticThreshold: 0.85,
+        semanticThreshold: 0.85
       });
 
       expect(customPipeline).toBeInstanceOf(IndexingPipeline);
@@ -117,7 +117,7 @@ describe('IndexingPipeline', () => {
       const content = 'One two three four five six seven eight nine ten eleven twelve thirteen';
       const pipelineWithOverlap = new IndexingPipeline({
         chunkSize: 5,
-        chunkOverlap: 2,
+        chunkOverlap: 2
       });
 
       const chunks = await pipelineWithOverlap.fixedSizeChunk(content, sourcePath);

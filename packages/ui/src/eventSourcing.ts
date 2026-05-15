@@ -10,14 +10,14 @@ function handleMessageStarted(state: UIConversation, messageId: string, role: st
     id: messageId,
     role: role as 'user' | 'assistant',
     parts: [],
-    createdAt: now,
+    createdAt: now
   };
 
   return {
     ...state,
     messages: [...state.messages, newMessage],
     status: 'streaming',
-    lastEventAt: now,
+    lastEventAt: now
   };
 }
 
@@ -30,7 +30,7 @@ function handleStepUpdated(state: UIConversation, stepIndex: number, now: Date):
     ...state,
     stepIndex,
     status: state.status,
-    lastEventAt: now,
+    lastEventAt: now
   };
 }
 
@@ -47,13 +47,13 @@ function handleConversationReset(state: UIConversation, now: Date): UIConversati
     lastEventAt: now,
     totalTokens: 0,
     totalUsage: {},
-    metadata: undefined,
+    metadata: undefined
   };
 }
 
 function addStepPart(
   state: UIConversation,
-  event: Extract<ConversationEvent, { type: 'step_started' | 'step_finished' }>,
+  event: Extract<ConversationEvent, { type: 'step_started' | 'step_finished' }>
 ): UIConversation {
   const nextState = handleStepUpdated(state, event.stepIndex, new Date());
   if (event.messageId === undefined) {
@@ -64,7 +64,7 @@ function addStepPart(
     type: 'step',
     stepIndex: event.stepIndex,
     status: event.type === 'step_started' ? 'started' : 'finished',
-    ...(event.usage === undefined ? {} : { usage: event.usage }),
+    ...(event.usage === undefined ? {} : { usage: event.usage })
   });
 }
 
@@ -87,14 +87,14 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
     case 'text_part_added': {
       return addPartToMessage(state, event.messageId, {
         type: 'text',
-        text: event.text,
+        text: event.text
       } as const);
     }
 
     case 'thinking_part_added': {
       return addPartToMessage(state, event.messageId, {
         type: 'thinking',
-        text: event.text,
+        text: event.text
       } as const);
     }
 
@@ -105,7 +105,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
         name: event.toolCall.name,
         parameters: event.toolCall.parameters,
         state: event.toolCall.state ?? 'input-complete',
-        ...(event.toolCall.argumentsText === undefined ? {} : { argumentsText: event.toolCall.argumentsText }),
+        ...(event.toolCall.argumentsText === undefined ? {} : { argumentsText: event.toolCall.argumentsText })
       } as const);
     }
 
@@ -113,14 +113,14 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
       return updateToolCallInMessage(state, event.messageId, event.toolCallId, {
         ...(event.state === undefined ? {} : { state: event.state }),
         ...(event.argumentsTextDelta === undefined ? {} : { argumentsText: event.argumentsTextDelta }),
-        ...(event.parameters === undefined ? {} : { parameters: event.parameters }),
+        ...(event.parameters === undefined ? {} : { parameters: event.parameters })
       });
     }
 
     case 'tool_call_result_added': {
       return updateToolCallInMessage(state, event.messageId, event.toolCallId, {
         ...(event.isError ? { state: 'output-error', error: String(event.result) } : { state: 'output-available' }),
-        ...(event.isError ? {} : { result: event.result }),
+        ...(event.isError ? {} : { result: event.result })
       });
     }
 
@@ -141,12 +141,12 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
       const nextState = addPartToMessage(state, event.messageId, {
         type: 'error',
         message: event.message,
-        ...(event.code === undefined ? {} : { code: event.code }),
+        ...(event.code === undefined ? {} : { code: event.code })
       });
 
       return {
         ...nextState,
-        status: 'error',
+        status: 'error'
       };
     }
 

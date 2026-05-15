@@ -36,7 +36,7 @@ export function createRepairState(): RepairState {
     inString: false,
     escaped: false,
     lastSafeEnd: -1,
-    buffer: '',
+    buffer: ''
   };
 }
 

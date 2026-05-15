@@ -3,7 +3,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 export function createStepChangeEmitter(
-  onStep: BaseRendererOptions['onStep'] | undefined,
+  onStep: BaseRendererOptions['onStep'] | undefined
 ): (chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>) => Promise<void> {
   let lastReportedStepIndex: number | undefined;
 
@@ -32,7 +32,7 @@ export function createSharedRendererHandle(
     onToolCallDelta?: (part: OutputPart & { type: 'tool_call_delta' }) => Promise<void>;
     onEnd?: () => Promise<void>;
   },
-  onError?: (error: Error) => void,
+  onError?: (error: Error) => void
 ): RendererHandle {
   const { processor, onFinish } = options;
 
@@ -130,7 +130,7 @@ export function createSharedRendererHandle(
           throw error;
         }
       }
-    },
+    }
   };
 }
 
@@ -139,7 +139,7 @@ export function createSharedRendererHandle(
  * @internal
  */
 export function createOutputWriter(
-  output: NodeJS.WritableStream | ((text: string) => void) | { write: (text: string) => void },
+  output: NodeJS.WritableStream | ((text: string) => void) | { write: (text: string) => void }
 ): (text: string) => void {
   return (text: string): void => {
     if (typeof output === 'function') {

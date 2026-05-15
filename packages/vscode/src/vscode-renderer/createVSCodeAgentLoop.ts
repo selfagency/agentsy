@@ -67,7 +67,7 @@ export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
 export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   const mergedOptions = {
     ...options,
-    showThinking: options.showThinking !== false,
+    showThinking: options.showThinking !== false
   };
 
   const renderer = createVSCodeChatRenderer(mergedOptions);
@@ -115,6 +115,6 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   return {
     write: renderer.write,
     writeChunk: renderer.writeChunk,
-    end: endOnce,
+    end: endOnce
   };
 }

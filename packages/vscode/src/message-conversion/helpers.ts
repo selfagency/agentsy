@@ -13,8 +13,8 @@ export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatRes
     parts.push({
       part: {
         type: 'text',
-        value: chunk.content,
-      },
+        value: chunk.content
+      }
     });
   }
 
@@ -24,8 +24,8 @@ export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatRes
     parts.push({
       part: {
         type: 'text',
-        value: `<think>${chunk.thinking}</think>\n`,
-      },
+        value: `<think>${chunk.thinking}</think>\n`
+      }
     });
   }
 
@@ -38,8 +38,8 @@ export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatRes
           index: delta.index,
           callId: delta.id,
           name: delta.name,
-          input: delta.argumentsDelta,
-        },
+          input: delta.argumentsDelta
+        }
       });
     }
   }

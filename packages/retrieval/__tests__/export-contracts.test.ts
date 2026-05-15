@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as retrievalExports from '../src/index';
 
 function parseChunkingStrategy(
-  strategy: (typeof retrievalExports.ChunkingStrategy)[keyof typeof retrievalExports.ChunkingStrategy],
+  strategy: (typeof retrievalExports.ChunkingStrategy)[keyof typeof retrievalExports.ChunkingStrategy]
 ): (typeof retrievalExports.ChunkingStrategy)[keyof typeof retrievalExports.ChunkingStrategy] {
   return strategy;
 }
@@ -82,7 +82,7 @@ describe('retrieval/export-contracts', () => {
       it('should instantiate IndexingPipeline with options', () => {
         const pipeline = new retrievalExports.IndexingPipeline({
           chunkSize: 100,
-          chunkOverlap: 20,
+          chunkOverlap: 20
         });
         expect(pipeline).toBeInstanceOf(retrievalExports.IndexingPipeline);
       });
@@ -122,7 +122,7 @@ describe('retrieval/export-contracts', () => {
       it('should instantiate RetrievalEngine with options', () => {
         const engine = new retrievalExports.RetrievalEngine({
           topK: 10,
-          minSimilarity: 0.8,
+          minSimilarity: 0.8
         });
         expect(engine).toBeInstanceOf(retrievalExports.RetrievalEngine);
       });
@@ -185,7 +185,7 @@ describe('retrieval/export-contracts', () => {
           [
             retrievalExports.ChunkingStrategy.SEMANTIC,
             retrievalExports.ChunkingStrategy.FIXED,
-            retrievalExports.ChunkingStrategy.AST,
+            retrievalExports.ChunkingStrategy.AST
           ];
         expect(strategies).toHaveLength(3);
       });
@@ -194,7 +194,7 @@ describe('retrieval/export-contracts', () => {
         const query: retrievalExports.RetrievalQuery = {
           query: 'test query',
           topK: 10,
-          minSimilarity: 0.8,
+          minSimilarity: 0.8
         };
         expect(query.query).toBe('test query');
       });

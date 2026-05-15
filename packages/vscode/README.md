@@ -64,13 +64,13 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
       family: 'MyFamily',
       displayName: 'My Provider',
       maxInputTokens: 4096,
-      supportedCapabilities: ['thinking', 'tool-calls'],
+      supportedCapabilities: ['thinking', 'tool-calls']
     });
   }
 
   protected async buildRequest(
     messages: ChatMessage[],
-    request: LanguageModelChatRequest,
+    request: LanguageModelChatRequest
   ): Promise<ProviderApiRequest> {
     // Convert VS Code messages to your provider's API format
     return {
@@ -78,24 +78,24 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${await this.getApiKey()}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: {
         model: request.model?.id,
         messages,
-        stream: true,
-      },
+        stream: true
+      }
     };
   }
 
   protected async *normalizeStream(
-    response: AsyncIterable<ProviderStreamChunk>,
+    response: AsyncIterable<ProviderStreamChunk>
   ): AsyncIterable<LanguageModelChatResponseChunk> {
     for await (const chunk of response) {
       const text = extractText(chunk); // provider-specific extraction
       if (!text) continue;
       yield {
-        part: { value: text },
+        part: { value: text }
       } as LanguageModelChatResponseChunk;
     }
   }
@@ -126,16 +126,16 @@ export async function* normalizeMyProviderStream(response: AsyncIterable<MyProvi
       tool_calls: chunk.tool_calls?.map(tc => ({
         function: {
           name: tc.name,
-          arguments: tc.arguments,
-        },
+          arguments: tc.arguments
+        }
       })),
       done: chunk.finish_reason !== null,
       usage: chunk.usage && {
         inputTokens: chunk.usage.prompt_tokens,
         outputTokens: chunk.usage.completion_tokens,
-        totalTokens: chunk.usage.total_tokens,
+        totalTokens: chunk.usage.total_tokens
       },
-      finishReason: chunk.finish_reason,
+      finishReason: chunk.finish_reason
     };
   }
 }
@@ -153,7 +153,7 @@ const processor = new LLMStreamProcessor({
   parseThinkTags: true,
   onWarning: message => {
     console.warn('Warning:', message);
-  },
+  }
 });
 
 processor.on('tool_call', call => {
@@ -177,7 +177,7 @@ import { ApiKeyManager } from '@agentsy/vscode';
 const apiKeyManager = new ApiKeyManager(context, {
   secretKey: 'MY_PROVIDER_API_KEY',
   contextKey: 'myProvider.hasApiKey',
-  displayName: 'My Provider API Key',
+  displayName: 'My Provider API Key'
 });
 
 // Register command to set API key
@@ -211,12 +211,12 @@ const statusBar = new UsageStatusBar(context, {
         total: usage.limit,
         unit: 'tokens',
         window: 'hourly',
-        percentUsed: usage.tokens_used / usage.limit,
+        percentUsed: usage.tokens_used / usage.limit
       };
-    },
+    }
   },
   warningThreshold: 0.8,
-  errorThreshold: 0.95,
+  errorThreshold: 0.95
 });
 
 await statusBar.show();
@@ -249,7 +249,7 @@ const toolCallPartPayload = toVSCodeToolCallPart(toolCallOutputPart);
 
 ```typescript
 export async function* normalizeOllamaChatChunk(
-  response: AsyncIterable<OllamaChatResponse>,
+  response: AsyncIterable<OllamaChatResponse>
 ): AsyncIterable<StreamChunk> {
   for await (const chunk of response) {
     yield {
@@ -260,9 +260,9 @@ export async function* normalizeOllamaChatChunk(
           ? {
               inputTokens: chunk.prompt_eval_count,
               outputTokens: chunk.eval_count,
-              totalTokens: chunk.prompt_eval_count + (chunk.eval_count || 0),
+              totalTokens: chunk.prompt_eval_count + (chunk.eval_count || 0)
             }
-          : undefined,
+          : undefined
     };
   }
 }
@@ -275,7 +275,7 @@ import { normalizeZAiChunk } from '@agentsy/normalizers';
 import { createZAiInlineToolCallParser, LLMStreamProcessor } from '@agentsy/processor';
 
 const processor = new LLMStreamProcessor({
-  toolCallParsers: [createZAiInlineToolCallParser()],
+  toolCallParsers: [createZAiInlineToolCallParser()]
 });
 
 for await (const raw of zaiStream) {
@@ -303,11 +303,11 @@ const provider = createMcpServerDefinitionProvider({
       command: 'node',
       args: ['dist/server.js'],
       enabledSettingKey: 'mcp.zai.enabled',
-      apiKeyEnvVar: 'ZAI_API_KEY',
-    },
+      apiKeyEnvVar: 'ZAI_API_KEY'
+    }
   ],
   settings: settingsLoader,
-  getApiKey: async () => apiKeyManager.getApiKey(),
+  getApiKey: async () => apiKeyManager.getApiKey()
 });
 
 const servers = await provider.provide();

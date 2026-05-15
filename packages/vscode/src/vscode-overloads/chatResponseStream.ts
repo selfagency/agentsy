@@ -58,7 +58,7 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     },
     push: (_part: unknown, _options?: { validate?: boolean }) => {
       runIfActive(() => {});
-    },
+    }
   };
 
   return stream;

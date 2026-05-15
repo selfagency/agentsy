@@ -41,7 +41,7 @@ export class Workflow {
   constructor(
     private readonly spec: WorkflowSpec,
     private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler,
+    private readonly scheduler: TaskScheduler
   ) {
     this.id = spec.id;
   }
@@ -122,14 +122,14 @@ function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions):
         metrics: {
           duration: 0, // Will be calculated by orchestration engine
           cost: 0,
-          agentsUsed: 0,
-        },
+          agentsUsed: 0
+        }
       };
     },
 
     async cancel(): Promise<void> {
       cancelled = true;
-    },
+    }
   };
 }
 
@@ -140,7 +140,7 @@ async function executeNode(
   registry: AgentRegistry,
   scheduler: TaskScheduler,
   cancelled: boolean,
-  nodeResults: Map<string, unknown>,
+  nodeResults: Map<string, unknown>
 ): Promise<unknown> {
   if (cancelled) {
     throw new Error('Workflow cancelled');
@@ -184,9 +184,9 @@ function executeTaskNode(node: RuntimeTaskNode, registry: AgentRegistry, schedul
         type: node.type,
         requirements: [],
         input: node.input,
-        priority: 'high',
+        priority: 'high'
       },
-      agents: availableAgents,
+      agents: availableAgents
     })
     .then(decision => {
       if (!decision) {
@@ -204,7 +204,7 @@ async function executeSequenceNode(
   registry: AgentRegistry,
   scheduler: TaskScheduler,
   cancelled: boolean,
-  nodeResults: Map<string, unknown>,
+  nodeResults: Map<string, unknown>
 ): Promise<unknown> {
   const results: unknown[] = [];
 
@@ -227,7 +227,7 @@ async function executeDecisionNode(
   registry: AgentRegistry,
   scheduler: TaskScheduler,
   cancelled: boolean,
-  nodeResults: Map<string, unknown>,
+  nodeResults: Map<string, unknown>
 ): Promise<unknown> {
   const condition = node.condition.trim();
   const decision =
@@ -258,7 +258,7 @@ async function executeParallelNode(
   registry: AgentRegistry,
   scheduler: TaskScheduler,
   cancelled: boolean,
-  nodeResults: Map<string, unknown>,
+  nodeResults: Map<string, unknown>
 ): Promise<unknown> {
   const failFast = node.failFast ?? true;
   const maxConcurrency = Math.max(node.maxConcurrency ?? node.branches.length, 1);
@@ -406,7 +406,7 @@ export class OrchestrationEngine extends EventEmitter {
 
   constructor(
     private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler = createTaskScheduler(),
+    private readonly scheduler: TaskScheduler = createTaskScheduler()
   ) {
     super();
   }
@@ -422,7 +422,7 @@ export class OrchestrationEngine extends EventEmitter {
       status: WorkflowStatus.PENDING,
       startTime: null,
       endTime: null,
-      context: {},
+      context: {}
     });
 
     this.emit('workflow:created', workflow.id);
@@ -468,8 +468,8 @@ export class OrchestrationEngine extends EventEmitter {
         metrics: {
           duration: context.startTime ? Date.now() - context.startTime.getTime() : 0,
           cost: 0,
-          agentsUsed: 0,
-        },
+          agentsUsed: 0
+        }
       };
 
       this.emit('workflow:failed', workflow.id, result);

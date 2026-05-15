@@ -6,7 +6,7 @@ export type {
   DocumentMetadata,
   RetrievalQuery,
   SearchDocument,
-  SearchResult,
+  SearchResult
 } from './types.js';
 
 export {
@@ -18,7 +18,7 @@ export {
   _RetrievalQuery,
   _SearchDocument,
   _SearchResult,
-  ChunkingStrategy,
+  ChunkingStrategy
 } from './types.js';
 
 export { IndexingPipeline } from './indexing/index.js';

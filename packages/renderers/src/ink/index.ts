@@ -8,7 +8,7 @@ export {
   createInkConversationRenderer,
   type ConversationTurn,
   type InkConversationRendererHandle,
-  type InkConversationRendererOptions,
+  type InkConversationRendererOptions
 } from './createInkConversationRenderer.js';
 export { createInkRenderer, type InkRendererHandle, type InkRendererOptions } from './createInkRenderer.js';
 export {
@@ -27,6 +27,6 @@ export {
   oneCandyTheme,
   oneDarkTheme,
   resolveTheme,
-  type ThemeName,
+  type ThemeName
 } from './themes/index.js';
 export type { BorderTheme, HighlightTheme, TextTheme, Theme, ThinkingTheme, ToolCallTheme } from './themes/types.js';

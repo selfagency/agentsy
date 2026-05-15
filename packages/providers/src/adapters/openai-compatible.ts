@@ -28,7 +28,7 @@ export type OpenAICompatibleMessage =
  */
 export function toOpenAICompatibleMessages(
   messages: readonly OutboundMessage[],
-  _options: OutboundAdapterOptions = {},
+  _options: OutboundAdapterOptions = {}
 ): OpenAICompatibleMessage[] {
   return messages.map(msg => {
     const text = msg.parts
@@ -43,7 +43,7 @@ export function toOpenAICompatibleMessages(
       return {
         role: 'tool',
         content: toolResultPart.content,
-        tool_call_id: toolResultPart.callId,
+        tool_call_id: toolResultPart.callId
       };
     }
 
@@ -60,10 +60,10 @@ export function toOpenAICompatibleMessages(
             type: 'function',
             function: {
               name: toolCallPart.name,
-              arguments: JSON.stringify(toolCallPart.input ?? {}),
-            },
-          },
-        ],
+              arguments: JSON.stringify(toolCallPart.input ?? {})
+            }
+          }
+        ]
       };
     }
 
@@ -77,7 +77,7 @@ export function toOpenAICompatibleMessages(
 export function toOpenAICompatibleProviderMessages(
   provider: OpenAICompatibleProvider,
   messages: readonly OutboundMessage[],
-  options: OutboundAdapterOptions = {},
+  options: OutboundAdapterOptions = {}
 ): OpenAICompatibleMessage[] {
   if (!isOpenAICompatibleProvider(provider)) {
     return [];

@@ -21,7 +21,7 @@ export interface Observable<T> {
   subscribe(
     next: ((value: T) => void) | null,
     error?: ((error: unknown) => void) | null,
-    complete?: (() => void) | null,
+    complete?: (() => void) | null
   ): Subscription;
 }
 
@@ -56,7 +56,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
     subscribe(
       observerOrNext: Partial<Observer<T>> | ((value: T) => void) | null,
       error?: ((error: unknown) => void) | null,
-      complete?: (() => void) | null,
+      complete?: (() => void) | null
     ) {
       // Normalize observer
       let observer: Partial<Observer<T>>;
@@ -65,7 +65,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
         observer = {
           next: observerOrNext,
           ...(error !== null && error !== undefined && { error }),
-          ...(complete !== null && complete !== undefined && { complete }),
+          ...(complete !== null && complete !== undefined && { complete })
         };
       } else {
         observer = observerOrNext || {};
@@ -99,8 +99,8 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
           isCancelled = true;
           // Also clean up generator on early unsubscribe
           void generator.return?.(undefined);
-        },
+        }
       };
-    },
+    }
   };
 }

@@ -22,7 +22,7 @@ describe('createSharedRendererHandle', () => {
       onThinking: vi.fn().mockResolvedValue(undefined),
       onToolCall: vi.fn().mockResolvedValue(undefined),
       onToolCallDelta: vi.fn().mockResolvedValue(undefined),
-      onEnd: vi.fn().mockResolvedValue(undefined),
+      onEnd: vi.fn().mockResolvedValue(undefined)
     };
 
     mockOnFinish = vi.fn().mockResolvedValue(undefined);
@@ -63,7 +63,7 @@ describe('createSharedRendererHandle', () => {
     await renderer.writeChunk({
       content: 'Test',
       done: true,
-      finishReason: 'stop',
+      finishReason: 'stop'
     });
 
     expect(mockOnFinish).toHaveBeenCalledWith('stop', undefined);
@@ -75,7 +75,7 @@ describe('createSharedRendererHandle', () => {
     await renderer.writeChunk({
       content: 'Test',
       done: true,
-      usage: { inputTokens: 10, outputTokens: 20 },
+      usage: { inputTokens: 10, outputTokens: 20 }
     });
 
     expect(mockOnFinish).toHaveBeenCalledWith(undefined, { inputTokens: 10, outputTokens: 20 });
@@ -87,7 +87,7 @@ describe('createSharedRendererHandle', () => {
     await renderer.writeChunk({
       content: 'Test',
       done: true,
-      finishReason: 'stop',
+      finishReason: 'stop'
     });
 
     await renderer.end();
@@ -176,14 +176,14 @@ describe('createSharedRendererHandle', () => {
   it('skips onToolCall handler when not provided', async () => {
     const handlersWithoutToolCall = {
       onText: mockHandlers.onText,
-      onThinking: mockHandlers.onThinking,
+      onThinking: mockHandlers.onThinking
     };
     const processor = new LLMStreamProcessor();
     const renderer = createSharedRendererHandle({ processor, onFinish: mockOnFinish }, handlersWithoutToolCall);
 
     // Process XML tool call
     await renderer.write(
-      '<function_calls><invoke name="test"><parameter name="x">1</parameter></invoke></function_calls>',
+      '<function_calls><invoke name="test"><parameter name="x">1</parameter></invoke></function_calls>'
     );
 
     // onToolCall is undefined, so should not be called
@@ -193,7 +193,7 @@ describe('createSharedRendererHandle', () => {
   it('skips onToolCallDelta handler when not provided', async () => {
     const handlersWithoutDelta = {
       onText: mockHandlers.onText,
-      onThinking: mockHandlers.onThinking,
+      onThinking: mockHandlers.onThinking
     };
 
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, handlersWithoutDelta);

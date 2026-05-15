@@ -124,7 +124,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
       ...(done !== undefined && { done }),
       ...(nativeToolCallList.length > 0 && { nativeToolCallDeltas: nativeToolCallList }),
       ...(usage !== undefined && { usage }),
-      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason }),
+      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason })
     };
 
     return { chunk, rawEvent: raw };

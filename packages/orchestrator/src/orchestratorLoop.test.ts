@@ -9,7 +9,7 @@ describe('createOrchestratorLoop', () => {
         yield { content: 'done', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => [],
+      buildToolResultMessages: async () => []
     });
 
     const scheduled = loop.scheduleTask({ id: 'task-1', prompt: 'run later', lane: 'nightly' });

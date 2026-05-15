@@ -18,7 +18,7 @@ interface PendingDeltaCall {
  */
 export function toVSCodeToolCallPart(
   part: Extract<OutputPart, { type: 'tool_call' }>,
-  options?: { fallbackCallId?: string | (() => string) },
+  options?: { fallbackCallId?: string | (() => string) }
 ): VSCodeToolCallPartLike {
   const fallbackCallId =
     typeof options?.fallbackCallId === 'function'
@@ -28,7 +28,7 @@ export function toVSCodeToolCallPart(
   return {
     callId: part.call.id ?? fallbackCallId,
     name: part.call.name,
-    input: part.call.parameters,
+    input: part.call.parameters
   };
 }
 
@@ -50,7 +50,7 @@ export class ToolCallDeltaAccumulator {
     this.calls.set(delta.index, {
       ...(delta.id === undefined ? {} : { id: delta.id }),
       name: delta.name,
-      argumentsBuffer: delta.argumentsDelta,
+      argumentsBuffer: delta.argumentsDelta
     });
   }
 
@@ -69,7 +69,7 @@ export class ToolCallDeltaAccumulator {
       parts.push({
         callId: fallbackId,
         name: fallbackName,
-        input: parsed,
+        input: parsed
       });
     }
 
@@ -86,7 +86,7 @@ export class ToolCallDeltaAccumulator {
     argumentsBuffer: string,
     index: number,
     repairIncomplete: boolean,
-    onWarning?: (message: string, context?: Record<string, unknown>) => void,
+    onWarning?: (message: string, context?: Record<string, unknown>) => void
   ): Record<string, unknown> {
     if (argumentsBuffer.length === 0) {
       return {};
@@ -136,7 +136,7 @@ export class ToolCallDeltaAccumulator {
 /** Convenience function wrapper around ToolCallDeltaAccumulator#add. */
 export function accumulateToolCallDeltas(
   accumulator: ToolCallDeltaAccumulator,
-  delta: Extract<OutputPart, { type: 'tool_call_delta' }>,
+  delta: Extract<OutputPart, { type: 'tool_call_delta' }>
 ): void {
   accumulator.add(delta);
 }

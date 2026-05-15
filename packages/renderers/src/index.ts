@@ -36,5 +36,5 @@ export type {
   OnToolCall,
   RendererHandle,
   TextOutput,
-  ThinkingStyle,
+  ThinkingStyle
 } from './types.js';

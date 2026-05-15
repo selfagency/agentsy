@@ -25,6 +25,6 @@ export const createMemoryStore = (): MemoryStore => {
     },
     list() {
       return [...records.values()];
-    },
+    }
   };
 };

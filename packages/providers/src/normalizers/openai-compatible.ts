@@ -14,7 +14,7 @@ export function isOpenAICompatibleNormalizerProvider(value: string): value is Op
  */
 export function normalizeOpenAICompatibleChunk(
   _provider: OpenAICompatibleNormalizerProvider,
-  raw: unknown,
+  raw: unknown
 ): NormalizerResult | null {
   return normalizeOpenAIChatChunk(raw);
 }

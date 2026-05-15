@@ -17,14 +17,14 @@ describe('RetrievalEngine', () => {
           {
             id: 'chunk-1',
             content: 'JavaScript is a versatile programming language',
-            metadata: { source: 'doc-1', startLine: 1, endLine: 5, strategy: 'semantic' },
+            metadata: { source: 'doc-1', startLine: 1, endLine: 5, strategy: 'semantic' }
           },
           {
             id: 'chunk-2',
             content: 'used for web development',
-            metadata: { source: 'doc-1', startLine: 6, endLine: 10, strategy: 'semantic' },
-          },
-        ],
+            metadata: { source: 'doc-1', startLine: 6, endLine: 10, strategy: 'semantic' }
+          }
+        ]
       },
       {
         id: 'doc-2',
@@ -33,14 +33,14 @@ describe('RetrievalEngine', () => {
           {
             id: 'chunk-3',
             content: 'Python is popular for data science',
-            metadata: { source: 'doc-2', startLine: 1, endLine: 5, strategy: 'semantic' },
+            metadata: { source: 'doc-2', startLine: 1, endLine: 5, strategy: 'semantic' }
           },
           {
             id: 'chunk-4',
             content: 'and machine learning applications',
-            metadata: { source: 'doc-2', startLine: 6, endLine: 10, strategy: 'semantic' },
-          },
-        ],
+            metadata: { source: 'doc-2', startLine: 6, endLine: 10, strategy: 'semantic' }
+          }
+        ]
       },
       {
         id: 'doc-3',
@@ -49,15 +49,15 @@ describe('RetrievalEngine', () => {
           {
             id: 'chunk-5',
             content: 'TypeScript adds static typing to JavaScript',
-            metadata: { source: 'doc-3', startLine: 1, endLine: 5, strategy: 'semantic' },
+            metadata: { source: 'doc-3', startLine: 1, endLine: 5, strategy: 'semantic' }
           },
           {
             id: 'chunk-6',
             content: 'for better tooling',
-            metadata: { source: 'doc-3', startLine: 6, endLine: 10, strategy: 'semantic' },
-          },
-        ],
-      },
+            metadata: { source: 'doc-3', startLine: 6, endLine: 10, strategy: 'semantic' }
+          }
+        ]
+      }
     ];
   });
 
@@ -70,7 +70,7 @@ describe('RetrievalEngine', () => {
     it('should create engine with custom options', () => {
       const customEngine = new RetrievalEngine({
         topK: 20,
-        minSimilarity: 0.75,
+        minSimilarity: 0.75
       });
 
       expect(customEngine).toBeInstanceOf(RetrievalEngine);
@@ -108,7 +108,7 @@ describe('RetrievalEngine', () => {
 
     it('should search documents by keyword', async () => {
       const query: RetrievalQuery = {
-        query: 'JavaScript',
+        query: 'JavaScript'
       };
 
       const result = await engine.keywordSearch(query);
@@ -119,7 +119,7 @@ describe('RetrievalEngine', () => {
 
     it('should return documents matching search query', async () => {
       const query: RetrievalQuery = {
-        query: 'Python',
+        query: 'Python'
       };
 
       const result = await engine.keywordSearch(query);
@@ -131,7 +131,7 @@ describe('RetrievalEngine', () => {
     it('should respect topK parameter', async () => {
       const query: RetrievalQuery = {
         query: 'language',
-        topK: 1,
+        topK: 1
       };
 
       const result = await engine.keywordSearch(query);
@@ -141,7 +141,7 @@ describe('RetrievalEngine', () => {
 
     it('should return empty results for non-existent query', async () => {
       const query: RetrievalQuery = {
-        query: 'nonexistentterm12345',
+        query: 'nonexistentterm12345'
       };
 
       const result = await engine.keywordSearch(query);
@@ -152,7 +152,7 @@ describe('RetrievalEngine', () => {
 
     it('should include query time in results', async () => {
       const query: RetrievalQuery = {
-        query: 'development',
+        query: 'development'
       };
 
       const result = await engine.keywordSearch(query);
@@ -163,7 +163,7 @@ describe('RetrievalEngine', () => {
 
     it('should sort results by relevance', async () => {
       const query: RetrievalQuery = {
-        query: 'JavaScript',
+        query: 'JavaScript'
       };
 
       const result = await engine.keywordSearch(query);
@@ -184,7 +184,7 @@ describe('RetrievalEngine', () => {
     it('should perform vector search when embeddings provided', async () => {
       const query: RetrievalQuery = {
         query: 'programming language',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
       };
 
       const result = await engine.vectorSearch(query);
@@ -196,7 +196,7 @@ describe('RetrievalEngine', () => {
       const query: RetrievalQuery = {
         query: 'test query',
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
-        minSimilarity: 0.9,
+        minSimilarity: 0.9
       };
 
       const result = await engine.vectorSearch(query);
@@ -209,7 +209,7 @@ describe('RetrievalEngine', () => {
     it('should return results with similarity scores', async () => {
       const query: RetrievalQuery = {
         query: 'development',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
       };
 
       const result = await engine.vectorSearch(query);
@@ -230,7 +230,7 @@ describe('RetrievalEngine', () => {
     it('should combine keyword and vector search results', async () => {
       const query: RetrievalQuery = {
         query: 'JavaScript code',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
       };
 
       const result = await engine.search(query);
@@ -242,7 +242,7 @@ describe('RetrievalEngine', () => {
     it('should return query time for hybrid search', async () => {
       const query: RetrievalQuery = {
         query: 'data science',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
       };
 
       const result = await engine.search(query);

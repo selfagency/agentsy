@@ -4,6 +4,6 @@ export function buildFormatInstructions(schema: Record<string, unknown>): string
     'Return output as a valid JSON instance that conforms to the following JSON Schema.',
     'Do not wrap the JSON in markdown fences and do not add explanatory prose.',
     'JSON Schema:',
-    schemaText,
+    schemaText
   ].join('\n\n');
 }

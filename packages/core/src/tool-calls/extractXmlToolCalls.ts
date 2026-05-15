@@ -97,7 +97,7 @@ function parseXmlElement(text: string, startIndex: number): ParsedXmlElement | n
   return {
     name: tagName,
     inner: text.slice(openEnd + 1, closeStart),
-    endIndex: closeEnd + 1,
+    endIndex: closeEnd + 1
   };
 }
 
@@ -217,7 +217,7 @@ function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: S
   return {
     name,
     parameters: normalizeWrappedToolCallArguments(parsed),
-    format: 'json-wrapped',
+    format: 'json-wrapped'
   };
 }
 
@@ -330,6 +330,6 @@ function parseXmlToolCallMatch(toolName: string, inner: string, knownTools: Set<
   return {
     name: toolName,
     parameters: extractBareXmlParams(inner),
-    format: 'bare-xml',
+    format: 'bare-xml'
   };
 }

@@ -34,7 +34,7 @@ export function readReleaseState(releaseStatePath: string) {
  */
 export function getPackageReleaseState(
   state: { defaultState: string; packages: Record<string, string> },
-  packageName: string,
+  packageName: string
 ): string {
   return state.packages[packageName] ?? state.defaultState;
 }
@@ -45,11 +45,11 @@ export function getPackageReleaseState(
  */
 export function writeReleaseState(
   releaseStatePath: string,
-  state: { defaultState: string; packages: Record<string, string> },
+  state: { defaultState: string; packages: Record<string, string> }
 ) {
   const sortedPackages = Object.fromEntries(Object.entries(state.packages).sort(([a], [b]) => a.localeCompare(b)));
   writeFileSync(
     releaseStatePath,
-    `${JSON.stringify({ defaultState: state.defaultState, packages: sortedPackages }, null, 2)}\n`,
+    `${JSON.stringify({ defaultState: state.defaultState, packages: sortedPackages }, null, 2)}\n`
   );
 }

@@ -7,7 +7,7 @@ export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: st
   if (input.length > XML_CONTEXT_MAX_PART_LENGTH) {
     return {
       contextBlocks: [],
-      remaining: input,
+      remaining: input
     };
   }
 
@@ -41,6 +41,6 @@ export function splitLeadingXmlContextBlocks(input: string): { contextBlocks: st
 
   return {
     contextBlocks,
-    remaining: hadLeadingContext ? remainingText : input,
+    remaining: hadLeadingContext ? remainingText : input
   };
 }

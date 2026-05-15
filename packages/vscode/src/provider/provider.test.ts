@@ -6,13 +6,13 @@ import {
   type CancellationToken,
   type LanguageModelChatRequest,
   type LanguageModelChatResponse,
-  type LanguageModelChatResponseChunk,
+  type LanguageModelChatResponseChunk
 } from './base-language-model-chat-provider.js';
 
 function makeCancellationToken(cancelled = false): CancellationToken {
   return {
     isCancellationRequested: cancelled,
-    onCancellationRequested: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+    onCancellationRequested: vi.fn().mockReturnValue({ dispose: vi.fn() })
   };
 }
 
@@ -21,8 +21,8 @@ function makeExtensionContext() {
     secrets: {
       get: vi.fn().mockResolvedValue(undefined),
       store: vi.fn().mockResolvedValue(undefined),
-      delete: vi.fn().mockResolvedValue(undefined),
-    },
+      delete: vi.fn().mockResolvedValue(undefined)
+    }
   };
 }
 
@@ -31,7 +31,7 @@ const config = {
   vendor: 'Test',
   family: 'TestFamily',
   displayName: 'Test Provider',
-  maxInputTokens: 4096,
+  maxInputTokens: 4096
 };
 
 class TestProvider extends BaseLanguageModelChatProvider {
@@ -41,19 +41,19 @@ class TestProvider extends BaseLanguageModelChatProvider {
 
   protected async buildRequest(
     messages: ChatMessage[],
-    request: LanguageModelChatRequest,
+    request: LanguageModelChatRequest
   ): Promise<ProviderApiRequest> {
     this.builtRequest = {
       url: 'http://localhost:11434/api/chat',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: { messages, model: request.model?.id ?? 'test' },
+      body: { messages, model: request.model?.id ?? 'test' }
     };
     return this.builtRequest;
   }
 
   protected normalizeStream(
-    response: AsyncIterable<ProviderStreamChunk>,
+    response: AsyncIterable<ProviderStreamChunk>
   ): AsyncIterable<LanguageModelChatResponseChunk> {
     const pushChunk = (chunk: ProviderStreamChunk): void => {
       this.streamChunks.push(chunk);
@@ -76,7 +76,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
   // Override streamChat for unit testing (no real HTTP)
   protected async streamChat(
     _request: ProviderApiRequest & { signal?: AbortSignal },
-    _token: CancellationToken,
+    _token: CancellationToken
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const chunks = this.streamChunks;
     const mockChunks = chunks.length > 0 ? [...chunks] : [{ content: 'Hello' }];
@@ -126,7 +126,7 @@ describe('BaseLanguageModelChatProvider', () => {
       const provider = new TestProvider(makeExtensionContext(), config);
       const request: LanguageModelChatRequest = {
         messages: [{ role: 1, content: 'Hello' }],
-        model: { id: 'my-model' },
+        model: { id: 'my-model' }
       };
       const token = makeCancellationToken();
       await provider.makeRequest(request, token);

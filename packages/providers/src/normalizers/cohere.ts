@@ -77,7 +77,7 @@ function normalizeCohereToolPlanDelta(raw: unknown, delta: CohereDelta | undefin
 function normalizeCohereToolCallStart(
   raw: unknown,
   delta: CohereDelta | undefined,
-  index: number,
+  index: number
 ): NormalizerResult | null {
   const tc = delta?.message?.tool_calls;
   if (!tc || typeof tc !== 'object') return null;
@@ -90,7 +90,7 @@ function normalizeCohereToolCallStart(
 function normalizeCohereToolCallDelta(
   raw: unknown,
   delta: CohereDelta | undefined,
-  index: number,
+  index: number
 ): NormalizerResult | null {
   const args = delta?.message?.tool_calls?.function?.arguments;
   if (typeof args !== 'string' || args === '') return null;
@@ -107,9 +107,9 @@ function normalizeCohereMessageEnd(raw: unknown, delta: CohereDelta | undefined)
     chunk: {
       ...(done !== undefined && { done }),
       ...(usage !== undefined && { usage }),
-      ...(finishReason !== undefined && { finishReason }),
+      ...(finishReason !== undefined && { finishReason })
     },
-    rawEvent: raw,
+    rawEvent: raw
   };
 }
 

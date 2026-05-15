@@ -16,7 +16,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       });
       expect(element).toBeDefined();
       expect(element.props.turns).toHaveLength(0);
@@ -27,12 +27,12 @@ describe('ConversationHistory Component', () => {
   describe('user turns', () => {
     it('renders single user turn', () => {
       const turns: ConversationTurn[] = [
-        { id: 'turn-1', role: 'user', text: 'Hello', timestamp: Date.now(), toolCalls: [] },
+        { id: 'turn-1', role: 'user', text: 'Hello', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(1);
       expect(element.props.turns.at(0)?.role).toBe('user');
@@ -41,12 +41,12 @@ describe('ConversationHistory Component', () => {
     it('renders multiple user turns', () => {
       const turns: ConversationTurn[] = [
         { id: 'turn-1', role: 'user', text: 'First question?', timestamp: Date.now(), toolCalls: [] },
-        { id: 'turn-2', role: 'user', text: 'Second question?', timestamp: Date.now(), toolCalls: [] },
+        { id: 'turn-2', role: 'user', text: 'Second question?', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(2);
     });
@@ -54,12 +54,12 @@ describe('ConversationHistory Component', () => {
     it('preserves user message text', () => {
       const userText = 'What is the meaning of life?';
       const turns: ConversationTurn[] = [
-        { id: 'turn-1', role: 'user', text: userText, timestamp: Date.now(), toolCalls: [] },
+        { id: 'turn-1', role: 'user', text: userText, timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.text).toBe(userText);
     });
@@ -67,12 +67,12 @@ describe('ConversationHistory Component', () => {
     it('handles user messages with special characters', () => {
       const specialText = 'Message with <html>, "quotes", & symbols!';
       const turns: ConversationTurn[] = [
-        { id: 'turn-1', role: 'user', text: specialText, timestamp: Date.now(), toolCalls: [] },
+        { id: 'turn-1', role: 'user', text: specialText, timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.text).toContain('<html>');
     });
@@ -82,12 +82,12 @@ describe('ConversationHistory Component', () => {
   describe('assistant turns', () => {
     it('renders single assistant turn', () => {
       const turns: ConversationTurn[] = [
-        { id: 'turn-1', role: 'assistant', text: 'Hi there!', timestamp: Date.now(), toolCalls: [] },
+        { id: 'turn-1', role: 'assistant', text: 'Hi there!', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(1);
       expect(element.props.turns.at(0)?.role).toBe('assistant');
@@ -101,13 +101,13 @@ describe('ConversationHistory Component', () => {
           text: 'Response text',
           thinking: 'Internal reasoning',
           timestamp: Date.now(),
-          toolCalls: [],
-        },
+          toolCalls: []
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showThinking: true },
+        options: { showThinking: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.thinking).toBe('Internal reasoning');
     });
@@ -124,15 +124,15 @@ describe('ConversationHistory Component', () => {
               id: 'call-1',
               name: 'search',
               arguments: { q: 'test' },
-              done: true,
-            },
-          ],
-        },
+              done: true
+            }
+          ]
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showToolCalls: true },
+        options: { showToolCalls: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.toolCalls).toHaveLength(1);
     });
@@ -150,10 +150,10 @@ describe('ConversationHistory Component', () => {
               id: 'call-1',
               name: 'compute',
               arguments: {},
-              done: true,
-            },
-          ],
-        },
+              done: true
+            }
+          ]
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
@@ -161,8 +161,8 @@ describe('ConversationHistory Component', () => {
         options: {
           showThinking: true,
           thinkingStyle: 'blockquote',
-          showToolCalls: true,
-        },
+          showToolCalls: true
+        }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.thinking).toBeDefined();
       expect(element.props.turns.at(0)?.toolCalls).toBeDefined();
@@ -176,12 +176,12 @@ describe('ConversationHistory Component', () => {
         { id: 'turn-1', role: 'user', text: 'Q1', timestamp: Date.now(), toolCalls: [] },
         { id: 'turn-2', role: 'assistant', text: 'A1', timestamp: Date.now(), toolCalls: [] },
         { id: 'turn-3', role: 'user', text: 'Q2', timestamp: Date.now(), toolCalls: [] },
-        { id: 'turn-4', role: 'assistant', text: 'A2', timestamp: Date.now(), toolCalls: [] },
+        { id: 'turn-4', role: 'assistant', text: 'A2', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(4);
       expect(element.props.turns.at(0)?.role).toBe('user');
@@ -192,12 +192,12 @@ describe('ConversationHistory Component', () => {
       const turns: ConversationTurn[] = [
         { id: '1', role: 'user', text: 'First', timestamp: Date.now(), toolCalls: [] },
         { id: '2', role: 'assistant', text: 'Second', timestamp: Date.now(), toolCalls: [] },
-        { id: '3', role: 'user', text: 'Third', timestamp: Date.now(), toolCalls: [] },
+        { id: '3', role: 'user', text: 'Third', timestamp: Date.now(), toolCalls: [] }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.text).toBe('First');
       expect(element.props.turns.at(1)?.text).toBe('Second');
@@ -215,13 +215,13 @@ describe('ConversationHistory Component', () => {
           text: 'Response',
           thinking: 'Hidden thought',
           timestamp: Date.now(),
-          toolCalls: [],
-        },
+          toolCalls: []
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showThinking: true },
+        options: { showThinking: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.showThinking).toBe(true);
     });
@@ -234,13 +234,13 @@ describe('ConversationHistory Component', () => {
           text: 'Response',
           thinking: 'Suppressed thought',
           timestamp: Date.now(),
-          toolCalls: [],
-        },
+          toolCalls: []
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showThinking: false },
+        options: { showThinking: false }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.showThinking).toBe(false);
     });
@@ -249,7 +249,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { showThinking: true, thinkingStyle: 'blockquote' },
+        options: { showThinking: true, thinkingStyle: 'blockquote' }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.thinkingStyle).toBe('blockquote');
     });
@@ -258,7 +258,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { showThinking: true, thinkingStyle: 'inline' },
+        options: { showThinking: true, thinkingStyle: 'inline' }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.thinkingStyle).toBe('inline');
     });
@@ -267,7 +267,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { showThinking: true, thinkingStyle: 'suppress' },
+        options: { showThinking: true, thinkingStyle: 'suppress' }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.thinkingStyle).toBe('suppress');
     });
@@ -282,13 +282,13 @@ describe('ConversationHistory Component', () => {
           role: 'assistant',
           text: 'Using tools',
           timestamp: Date.now(),
-          toolCalls: [{ id: 'c1', name: 'tool1', arguments: {}, done: true }],
-        },
+          toolCalls: [{ id: 'c1', name: 'tool1', arguments: {}, done: true }]
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showToolCalls: true },
+        options: { showToolCalls: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.showToolCalls).toBe(true);
     });
@@ -300,13 +300,13 @@ describe('ConversationHistory Component', () => {
           role: 'assistant',
           text: 'Using tools',
           timestamp: Date.now(),
-          toolCalls: [{ id: 'c1', name: 'tool1', arguments: {}, done: true }],
-        },
+          toolCalls: [{ id: 'c1', name: 'tool1', arguments: {}, done: true }]
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showToolCalls: false },
+        options: { showToolCalls: false }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.showToolCalls).toBe(false);
     });
@@ -318,7 +318,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { markdown: true },
+        options: { markdown: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.markdown).toBe(true);
     });
@@ -327,7 +327,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { markdown: false },
+        options: { markdown: false }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.markdown).toBe(false);
     });
@@ -339,7 +339,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { syntaxHighlight: true },
+        options: { syntaxHighlight: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.syntaxHighlight).toBe(true);
     });
@@ -348,7 +348,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: { syntaxHighlight: false },
+        options: { syntaxHighlight: false }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.options.syntaxHighlight).toBe(false);
     });
@@ -360,7 +360,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.theme).toBe(darkTheme);
     });
@@ -369,7 +369,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: defaultTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.theme).toBe(defaultTheme);
     });
@@ -382,7 +382,7 @@ describe('ConversationHistory Component', () => {
         turns: [],
         theme: darkTheme,
         screenReader: true,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.screenReader).toBe(true);
     });
@@ -392,7 +392,7 @@ describe('ConversationHistory Component', () => {
         turns: [],
         theme: darkTheme,
         screenReader: false,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.screenReader).toBe(false);
     });
@@ -410,14 +410,14 @@ describe('ConversationHistory Component', () => {
           toolCalls: [
             { id: 'c1', name: 'search', arguments: {}, done: true },
             { id: 'c2', name: 'fetch', arguments: {}, done: true },
-            { id: 'c3', name: 'parse', arguments: {}, done: false },
-          ],
-        },
+            { id: 'c3', name: 'parse', arguments: {}, done: false }
+          ]
+        }
       ];
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: { showToolCalls: true },
+        options: { showToolCalls: true }
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns.at(0)?.toolCalls).toHaveLength(3);
     });
@@ -431,12 +431,12 @@ describe('ConversationHistory Component', () => {
         role: i % 2 === 0 ? 'user' : 'assistant',
         text: `Message ${i}`,
         timestamp: Date.now(),
-        toolCalls: [],
+        toolCalls: []
       }));
       const element = React.createElement(ConversationHistory, {
         turns,
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element.props.turns).toHaveLength(50);
     });
@@ -448,7 +448,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [{ id: '1', role: 'user', text: 'Hi', timestamp: Date.now(), toolCalls: [] }],
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element).toBeDefined();
     });
@@ -457,7 +457,7 @@ describe('ConversationHistory Component', () => {
       const element = React.createElement(ConversationHistory, {
         turns: [],
         theme: darkTheme,
-        options: {},
+        options: {}
       } as Parameters<typeof ConversationHistory>[0]);
       expect(element).toBeDefined();
     });
