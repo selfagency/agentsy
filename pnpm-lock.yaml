@@ -185,6 +185,9 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
+      '@tursodatabase/sync':
+        specifier: ^0.6.0
+        version: 0.6.0
     devDependencies:
       '@types/node':
         specifier: ^25.8.0
@@ -200,7 +203,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.6
-        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.8.0)(esbuild@0.28.0)(tsx@4.22.0)(yaml@2.8.2))
+        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.8.0)(esbuild@0.27.3)(tsx@4.22.0)(yaml@2.8.2))
 
   packages/models:
     dependencies:
@@ -627,7 +630,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.6
-        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.8.0)(esbuild@0.27.3)(tsx@4.22.0)(yaml@2.8.2))
+        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.8.0)(esbuild@0.28.0)(tsx@4.22.0)(yaml@2.8.2))
 
   packages/ui:
     dependencies:
@@ -2137,6 +2140,40 @@ packages:
     resolution: {integrity: sha512-fVdCsnmYoKICsycbWuuGp6Jvi51/3G/UluFWuAUCvR8PIW5IJkAk5BM9UF8PSm0Q2IphWHFZjYEgjHsh3B9y/g==}
     cpu: [arm64]
     os: [win32]
+
+  '@tursodatabase/database-common@0.6.0':
+    resolution: {integrity: sha512-5Dkv2r+H5Ir9cNTp+0QyesuQ/89WrEi8IKCppczDOqBeDrGskw1v82bnEQXAyxslt6xGexDznxqxcLtf83zn7A==}
+
+  '@tursodatabase/serverless@0.2.4':
+    resolution: {integrity: sha512-kqf3FINvTGx8N1iH/4e1Dkbr/om5q9qitshzvljtQXwZFQIsVP/mDE76mGg9U2dg/ElOZKFKtT1VXDgd39Dr1w==}
+
+  '@tursodatabase/sync-common@0.6.0':
+    resolution: {integrity: sha512-r8quXSs3XAyGLyhc5uC46RBJBaCKNgVF/fG0bzj0KvvKXzWRLW+VkMoScrX+Ai6+7rtZ9g0J+EwPoNeg1Ph39Q==}
+
+  '@tursodatabase/sync-darwin-arm64@0.6.0':
+    resolution: {integrity: sha512-8RzoxroxG5UJaDX+xarCukwTyrw2AygMeEHSR+Xb0I2oKTHMACgnhvmokLGZUP3hOwygp0+QrShZx+qU7K8WBw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@tursodatabase/sync-linux-arm64-gnu@0.6.0':
+    resolution: {integrity: sha512-7dogVhpxI+KPj8mvxFbUqYuBaV+6emOSj3XIeKwAr+KdQF97li35Qpab6UqeJoS7aHNU64uoAEuK0GXy2i3Ykw==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@tursodatabase/sync-linux-x64-gnu@0.6.0':
+    resolution: {integrity: sha512-KxHRnE+5c1jmxaWRAMV9mA9Y5AYugvZ8bK91BNhmqvKah0lD6vSiQULWkA0gZx+vrGuj4nfYzwZpM4xUbId+xA==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@tursodatabase/sync-win32-x64-msvc@0.6.0':
+    resolution: {integrity: sha512-c+LzrfAgycMA+lS2smGn+MGfz4+5Yu8BWTe+KMoZOzTvOGNZHd870h9bSU71y4hdN43BPal6fja5sdl95SdolA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@tursodatabase/sync@0.6.0':
+    resolution: {integrity: sha512-Oys6WOS7EgC0YgFW34SOlRvQlGuE5KhqxlY51HVqe/lxnA/EmVoe15mDOxCf4umuDArq9Js+432Ol2sgjh730A==}
 
   '@tybys/wasm-util@0.10.2':
     resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
@@ -5321,6 +5358,37 @@ snapshots:
   '@turbo/windows-arm64@2.9.14':
     optional: true
 
+  '@tursodatabase/database-common@0.6.0': {}
+
+  '@tursodatabase/serverless@0.2.4': {}
+
+  '@tursodatabase/sync-common@0.6.0':
+    dependencies:
+      '@tursodatabase/database-common': 0.6.0
+      '@tursodatabase/serverless': 0.2.4
+
+  '@tursodatabase/sync-darwin-arm64@0.6.0':
+    optional: true
+
+  '@tursodatabase/sync-linux-arm64-gnu@0.6.0':
+    optional: true
+
+  '@tursodatabase/sync-linux-x64-gnu@0.6.0':
+    optional: true
+
+  '@tursodatabase/sync-win32-x64-msvc@0.6.0':
+    optional: true
+
+  '@tursodatabase/sync@0.6.0':
+    dependencies:
+      '@tursodatabase/database-common': 0.6.0
+      '@tursodatabase/sync-common': 0.6.0
+    optionalDependencies:
+      '@tursodatabase/sync-darwin-arm64': 0.6.0
+      '@tursodatabase/sync-linux-arm64-gnu': 0.6.0
+      '@tursodatabase/sync-linux-x64-gnu': 0.6.0
+      '@tursodatabase/sync-win32-x64-msvc': 0.6.0
+
   '@tybys/wasm-util@0.10.2':
     dependencies:
       tslib: 2.8.1
@@ -5443,7 +5511,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.8.0)(esbuild@0.28.0)(tsx@4.22.0)(yaml@2.8.2))
+      vitest: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.8.0)(esbuild@0.27.3)(tsx@4.22.0)(yaml@2.8.2))
 
   '@vitest/expect@4.1.6':
     dependencies:
