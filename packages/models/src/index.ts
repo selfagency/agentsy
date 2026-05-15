@@ -171,10 +171,27 @@ export class ModelSelector {
   async selectModel(requirements: TaskRequirements): Promise<ModelSelectionResult> {
     await this.client.fetchModelsDevData();
 
-    const allModels = this.client.listModels();
+    const suitableModels = this.getModelsMatchingRequirements(requirements);
+    const scoredModels = this.scoreModels(suitableModels, requirements);
+    return this.pickBestModel(scoredModels);
+  }
 
-    // Only use models from unique model-originated providers (not routing platforms)
-    const uniqueModelProviders = new Set([
+  private getModelsMatchingRequirements(requirements: TaskRequirements): ModelsDevModel[] {
+    const allModels = this.client.listModels();
+    const providerModels = this.filterUniqueProviderModels(allModels);
+    return providerModels.filter(model => this.meetsRequirements(model, requirements));
+  }
+
+  private filterUniqueProviderModels(allModels: ModelsDevModel[]): ModelsDevModel[] {
+    const uniqueModelProviders = this.getUniqueProviderSet();
+    return allModels.filter(model => {
+      const provider = this.findProviderForModel(model.id);
+      return provider && uniqueModelProviders.has(provider);
+    });
+  }
+
+  private getUniqueProviderSet(): Set<string> {
+    return new Set([
       'anthropic',
       'google',
       'google-vertex',
@@ -205,21 +222,10 @@ export class ModelSelector {
       'nebula',
       'novita-ai',
     ]);
+  }
 
-    const originalProviderModels = allModels.filter(model => {
-      const provider = this.findProviderForModel(model.id);
-      return provider && uniqueModelProviders.has(provider);
-    });
-
-    // Filter models based on requirements
-    const suitableModels = originalProviderModels.filter(model => this.meetsRequirements(model, requirements));
-
-    if (suitableModels.length === 0) {
-      throw new Error('No models found that meet the requirements');
-    }
-
-    // Score and rank models
-    const scoredModels = suitableModels.map(model => ({
+  private scoreModels(models: ModelsDevModel[], requirements: TaskRequirements): ModelSelectionResult[] {
+    return models.map(model => ({
       model: model.id,
       provider: this.findProviderForModel(model.id),
       confidence: this.calculateConfidence(model, requirements),
@@ -227,11 +233,16 @@ export class ModelSelector {
       capabilities: requirements.capabilities ?? {},
       reasoning: this.generateReasoning(model, requirements),
     }));
+  }
 
-    // Sort by confidence score
+  private pickBestModel(scoredModels: ModelSelectionResult[]): ModelSelectionResult {
+    if (scoredModels.length === 0) {
+      throw new Error('No models found that meet the requirements');
+    }
+
     scoredModels.sort((a: ModelSelectionResult, b: ModelSelectionResult) => b.confidence - a.confidence);
-
     const bestModel = scoredModels[0];
+
     if (!bestModel) {
       throw new Error('No model could be ranked after filtering');
     }
