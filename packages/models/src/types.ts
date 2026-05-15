@@ -90,3 +90,51 @@ export interface ModelSelectionResult {
   capabilities: Record<string, boolean>;
   reasoning: string;
 }
+
+/**
+ * Local system capabilities used for hardware-aware recommendation.
+ */
+export interface SystemCapabilities {
+  ramGb: number;
+  vramGb?: number;
+  cpuCores?: number;
+  backend?: 'cuda' | 'metal' | 'rocm' | 'sycl' | 'cpu' | 'unknown';
+  unifiedMemory?: boolean;
+}
+
+/**
+ * llm-stats/local benchmark data for a model candidate.
+ */
+export interface LLMStatsLocalModel {
+  modelId: string;
+  categoryScores?: Record<string, number>;
+  rankingScore?: number;
+  minRamGb?: number;
+  minVramGb?: number;
+  recommendedRamGb?: number;
+  recommendedVramGb?: number;
+  estimatedTokensPerSecond?: number;
+  runtime?: 'ollama' | 'llama.cpp' | 'vllm' | 'mlx' | 'docker-model-runner' | 'other';
+  quantization?: string;
+  isLocalCompatible?: boolean;
+}
+
+export interface LocalRecommendationCriteria {
+  taskCategory?: 'general' | 'coding' | 'reasoning' | 'chat' | 'multimodal';
+  requireToolCalling?: boolean;
+  minContext?: number;
+  preferLowCost?: boolean;
+  topN?: number;
+}
+
+export interface LocalModelRecommendation extends ModelSelectionResult {
+  fitScore: number;
+  benchmarkScore: number;
+  speedScore: number;
+  costScore: number;
+  compositeScore: number;
+  requiredRamGb: number;
+  requiredVramGb: number;
+  runtime?: string;
+  quantization?: string;
+}

@@ -1,5 +1,52 @@
 // @agentsy/memory — Three-layer memory engine (raw event log, synthesized wiki, vector retrieval)
-// Initial API scaffold. For broader roadmap context, see plan/MASTER-IMPLEMENTATION-PLAN.md.
+// Phase 1 foundation: coordination contracts + three-tier wiki primitives.
+
+export {
+  createContextFingerprint,
+  createMemoryReuseHint,
+  type ContextFingerprint,
+  type CreateContextFingerprintInput,
+  type CreateMemoryReuseHintInput,
+  type MemoryReuseHint,
+} from './types.js';
+
+export {
+  loadHonkerExtension,
+  type HonkerLoadFeatures,
+  type HonkerLoadOptions,
+  type HonkerLoadResult,
+} from './coordination/honker/loader.js';
+export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
+export {
+  createInMemoryPubSubManager,
+  type ChannelListener,
+  type PubSubManager,
+} from './coordination/pub-sub-manager.js';
+export { createInMemoryScheduler, type Scheduler } from './coordination/scheduler.js';
+export { createInMemoryTaskQueue, type CoordinationTask, type TaskQueue } from './coordination/task-queue.js';
+export {
+  createLocalEmbeddingEngine,
+  type LocalEmbeddingEngine,
+  type LocalEmbeddingEngineOptions,
+} from './wiki/local-embedding-engine.js';
+export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
+export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
+export { createVersionTracker, type VersionTracker } from './wiki/version-tracker.js';
+export {
+  createWikiManager,
+  type RawCapture,
+  type RawCaptureInput,
+  type RawSourceType,
+  type ConceptRelation,
+  type PageDiff,
+  type VectorEntry,
+  type VectorSearchResult,
+  type WikiManager,
+  type WikiManagerDependencies,
+  type WikiPage,
+  type WikiPageHistoryEntry,
+  type WikiPageInput,
+} from './wiki/wiki-manager.js';
 
 export interface MemoryRecord {
   id: string;
@@ -13,7 +60,7 @@ export interface MemoryStore {
   list(): MemoryRecord[];
 }
 
-export const createMemoryStore = (): MemoryStore => {
+export function createMemoryStore(): MemoryStore {
   const records = new Map<string, MemoryRecord>();
 
   return {
@@ -27,4 +74,4 @@ export const createMemoryStore = (): MemoryStore => {
       return [...records.values()];
     },
   };
-};
+}

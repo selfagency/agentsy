@@ -63,6 +63,31 @@ The package fulfills its role by implementing a hierarchical memory model:
 - **Mechanism**: Periodic review of episodic logs to generate or update semantic wiki pages.
 - **Goal**: 75-99% token reduction in long-running sessions via tree-based navigation and delta versioning (RemindB pattern).
 
+### 5. Cache-aware memory reuse (LMCache-inspired)
+
+LMCache’s most useful idea for `@agentsy/memory` is not GPU-specific cache plumbing; it is the concept of **reusable context artifacts** with explicit reuse and invalidation rules.
+
+#### What to adapt
+
+- **Reusable context fingerprints** for stable memory blocks, system preambles, tool schemas, and synthesized wiki pages.
+- **Hot / warm / cold memory tiers** that reflect retrieval frequency and recency.
+- **Cache eligibility metadata** so the runtime can tell which context fragments are safe to reuse across turns or sessions.
+- **Hit/miss accounting** for context assembly so we can measure whether memory is actually reducing prompt cost.
+
+#### What not to overfit from LMCache
+
+- Do not hardcode GPU-only or vLLM-specific KV cache internals into memory storage.
+- Do not require a distributed cache backend before the abstraction is useful.
+- Do not store raw chat as the primary unit of reuse; reuse synthesized blocks and stable context segments instead.
+
+#### Recommended memory-layer guidance
+
+1. Introduce a `ContextFingerprint` concept for memory blocks, prompt segments, and wiki pages.
+2. Mark entries with reuse hints like `stablePrefix`, `toolSchema`, `conversationSummary`, and `sessionCheckpoint`.
+3. Track invalidation triggers for model changes, prompt-template changes, tool-schema changes, and user edits.
+4. Add cache-aware retrieval that prefers a previously assembled block when its fingerprint and invalidation keys still match.
+5. Surface cache hit rate and reuse distance in memory observability.
+
 ## Logic & Data Flow
 
 ### 1. Memory Injection Flow
@@ -236,6 +261,7 @@ Following cognitive science research and Letta's agent memory insights:
 - **Hierarchical storage strategy** matching memory access patterns to storage costs
 - **Sleep-time compute optimization** using idle periods for memory improvement
 - **Context window management** with intelligent eviction and recursive summarization
+- **Reusable context artifacts** with fingerprinted hot/warm/cold tiers and explicit invalidation
 
 ### Architecture Inspired By
 

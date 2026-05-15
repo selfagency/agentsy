@@ -2,14 +2,28 @@ import os from 'node:os';
 import path from 'node:path';
 
 import type {
+  LLMStatsLocalModel,
+  LocalModelRecommendation,
+  LocalRecommendationCriteria,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
   ModelSelectionResult,
+  SystemCapabilities,
   TaskRequirements,
 } from './types.js';
 
-export type { ModelsDevAPI, ModelsDevModel, ModelsDevProvider, ModelSelectionResult, TaskRequirements };
+export type {
+  LLMStatsLocalModel,
+  LocalModelRecommendation,
+  LocalRecommendationCriteria,
+  ModelsDevAPI,
+  ModelsDevModel,
+  ModelsDevProvider,
+  ModelSelectionResult,
+  SystemCapabilities,
+  TaskRequirements,
+};
 
 // Cache structure
 interface CacheData {
@@ -21,6 +35,227 @@ const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 
 function isSafeLookupKey(key: string): boolean {
   return key.length > 0 && !FORBIDDEN_OBJECT_KEYS.has(key);
+}
+
+function normalizeModelId(id: string): string {
+  return id.trim().toLowerCase().replace('/', ':');
+}
+
+function clamp01(value: number): number {
+  if (Number.isNaN(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(1, value));
+}
+
+function parseParamsBillionsFromId(modelId: string): number | undefined {
+  const lower = modelId.toLowerCase();
+  const match = lower.match(/(\d+(?:\.\d+)?)\s*b\b/);
+  if (!match?.[1]) {
+    return undefined;
+  }
+
+  const parsed = Number(match[1]);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function quantizationFactor(quantization?: string): number {
+  if (!quantization) {
+    return 0.5;
+  }
+
+  const q = quantization.toLowerCase();
+
+  if (q.includes('q2')) return 0.2;
+  if (q.includes('q3')) return 0.28;
+  if (q.includes('q4')) return 0.36;
+  if (q.includes('q5')) return 0.45;
+  if (q.includes('q6')) return 0.56;
+  if (q.includes('q8')) return 0.7;
+  if (q.includes('f16')) return 1;
+
+  return 0.5;
+}
+
+function estimateMemoryRequirementsFromModelId(
+  modelId: string,
+  quantization?: string,
+): {
+  requiredRamGb: number;
+  requiredVramGb: number;
+} {
+  const paramsB = parseParamsBillionsFromId(modelId) ?? 7;
+  const fp16Gb = paramsB * 2;
+  const quantizedGb = fp16Gb * quantizationFactor(quantization);
+  const requiredVramGb = Math.max(1, quantizedGb);
+  const requiredRamGb = Math.max(2, requiredVramGb * 1.3);
+
+  return { requiredRamGb, requiredVramGb };
+}
+
+function resolveModelsDevModel(
+  modelsDevData: ModelsDevAPI,
+  modelId: string,
+): { provider: string; model: ModelsDevModel } | undefined {
+  const normalizedTarget = normalizeModelId(modelId);
+
+  for (const [providerId, provider] of Object.entries(modelsDevData)) {
+    for (const [modelKey, model] of Object.entries(provider.models)) {
+      const normalizedModelKey = normalizeModelId(modelKey);
+      const normalizedModelId = normalizeModelId(model.id);
+      const normalizedProviderModel = normalizeModelId(`${providerId}:${modelKey}`);
+
+      if (
+        normalizedTarget === normalizedModelId ||
+        normalizedTarget === normalizedModelKey ||
+        normalizedTarget === normalizedProviderModel
+      ) {
+        return { provider: providerId, model };
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function getCategoryBenchmarkScore(
+  entry: LLMStatsLocalModel,
+  category: NonNullable<LocalRecommendationCriteria['taskCategory']>,
+): number {
+  const categoryValue = entry.categoryScores?.[category];
+  if (typeof categoryValue === 'number') {
+    return clamp01(categoryValue / 100);
+  }
+
+  if (typeof entry.rankingScore === 'number') {
+    return clamp01(entry.rankingScore / 100);
+  }
+
+  return 0.5;
+}
+
+function getMemoryRequirements(entry: LLMStatsLocalModel): { requiredRamGb: number; requiredVramGb: number } {
+  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
+    return {
+      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
+      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0,
+    };
+  }
+
+  return estimateMemoryRequirementsFromModelId(entry.modelId, entry.quantization);
+}
+
+/**
+ * Recommend local models by combining models.dev metadata, llm-stats/local benchmark data,
+ * and system capability constraints.
+ */
+export function recommendLocalModelsBySystemCapabilities(
+  modelsDevData: ModelsDevAPI,
+  llmStatsLocalModels: LLMStatsLocalModel[],
+  systemCapabilities: SystemCapabilities,
+  criteria: LocalRecommendationCriteria = {},
+): LocalModelRecommendation[] {
+  const category = criteria.taskCategory ?? 'general';
+  const availableVram = systemCapabilities.unifiedMemory ? systemCapabilities.ramGb : (systemCapabilities.vramGb ?? 0);
+
+  const recommendations: LocalModelRecommendation[] = [];
+
+  for (const entry of llmStatsLocalModels) {
+    if (entry.isLocalCompatible === false) {
+      continue;
+    }
+
+    const resolved = resolveModelsDevModel(modelsDevData, entry.modelId);
+    const model = resolved?.model;
+    const provider = resolved?.provider ?? 'unknown';
+
+    if (!model) {
+      continue;
+    }
+
+    if (criteria.requireToolCalling && !model.tool_call) {
+      continue;
+    }
+
+    if (criteria.minContext !== undefined && model.limit.context < criteria.minContext) {
+      continue;
+    }
+
+    const { requiredRamGb, requiredVramGb } = getMemoryRequirements(entry);
+    const ramFits = requiredRamGb <= systemCapabilities.ramGb;
+    const vramFits = requiredVramGb <= availableVram || availableVram === 0;
+
+    if (!ramFits || !vramFits) {
+      continue;
+    }
+
+    const ramUtilization = requiredRamGb / Math.max(systemCapabilities.ramGb, 0.1);
+    const vramUtilization = requiredVramGb / Math.max(availableVram || requiredVramGb || 1, 0.1);
+    const utilization = Math.max(ramUtilization, vramUtilization);
+
+    // Prefer sweet spot around 50-80% utilization, penalize extremes.
+    const fitScore = clamp01(1 - Math.abs(utilization - 0.65));
+    const benchmarkScore = getCategoryBenchmarkScore(entry, category);
+    const speedScore = clamp01((entry.estimatedTokensPerSecond ?? 20) / 100);
+
+    const rawCost = (model.cost.input ?? 0) + (model.cost.output ?? 0);
+    const costScore = clamp01(1 / (1 + rawCost * 50));
+
+    const contextScore = clamp01(model.limit.context / 256000);
+    const capabilityScore = criteria.requireToolCalling ? (model.tool_call ? 1 : 0) : 0.8;
+
+    const fitWeight = 0.4;
+    const benchmarkWeight = 0.3;
+    const capabilityWeight = 0.1;
+    const contextWeight = 0.1;
+    const speedWeight = 0.05;
+    const costWeight = criteria.preferLowCost ? 0.15 : 0.05;
+
+    const compositeScore =
+      fitWeight * fitScore +
+      benchmarkWeight * benchmarkScore +
+      capabilityWeight * capabilityScore +
+      contextWeight * contextScore +
+      speedWeight * speedScore +
+      costWeight * costScore;
+
+    const recommendation: LocalModelRecommendation = {
+      model: model.id,
+      provider,
+      confidence: clamp01(compositeScore),
+      estimatedCost: rawCost,
+      capabilities: {
+        tool_calling: model.tool_call,
+        reasoning: model.reasoning,
+      },
+      reasoning: `Fit ${fitScore.toFixed(2)}, benchmark ${benchmarkScore.toFixed(2)}, cost ${costScore.toFixed(2)} for ${category}`,
+      fitScore,
+      benchmarkScore,
+      speedScore,
+      costScore,
+      compositeScore,
+      requiredRamGb,
+      requiredVramGb,
+    };
+
+    if (entry.runtime !== undefined) {
+      recommendation.runtime = entry.runtime;
+    }
+
+    if (entry.quantization !== undefined) {
+      recommendation.quantization = entry.quantization;
+    }
+
+    recommendations.push(recommendation);
+  }
+
+  recommendations.sort((a, b) => b.compositeScore - a.compositeScore);
+
+  if (criteria.topN !== undefined) {
+    return recommendations.slice(0, Math.max(0, criteria.topN));
+  }
+
+  return recommendations;
 }
 
 // Simple models.dev client with caching
@@ -174,6 +409,18 @@ export class ModelSelector {
     const suitableModels = this.getModelsMatchingRequirements(requirements);
     const scoredModels = this.scoreModels(suitableModels, requirements);
     return this.pickBestModel(scoredModels);
+  }
+
+  /**
+   * Local recommendation entrypoint using cached models.dev + provided llm-stats/local signals.
+   */
+  async recommendLocalModels(
+    llmStatsLocalModels: LLMStatsLocalModel[],
+    systemCapabilities: SystemCapabilities,
+    criteria: LocalRecommendationCriteria = {},
+  ): Promise<LocalModelRecommendation[]> {
+    const data = await this.client.fetchModelsDevData();
+    return recommendLocalModelsBySystemCapabilities(data, llmStatsLocalModels, systemCapabilities, criteria);
   }
 
   private getModelsMatchingRequirements(requirements: TaskRequirements): ModelsDevModel[] {

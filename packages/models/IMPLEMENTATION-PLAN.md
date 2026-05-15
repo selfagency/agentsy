@@ -1,353 +1,377 @@
 # @agentsy/models — Implementation Plan
 
+Last updated: 2026-05-15
+
 ## Purpose
 
-model selection engine with intelligent provider/model matching, cost estimation, and capability analysis. Integrate with models.dev API to provide access to 100+ providers with complete capability/cost data, enabling cost-optimized, capability-aware model selection while maintaining Agentsy's differentiated orchestration.
+`@agentsy/models` is the model intelligence layer for Agentsy:
 
-## Architecture
+- model/provider catalog ingestion
+- capability + cost-aware selection
+- local-vs-remote routing recommendations
+- normalized metadata for `@agentsy/orchestrator`
 
-Models package capabilities conform to the model selection and orchestration layer in the framework ecosystem. Agents integrate via `@agentsy/orchestrator` for intelligent model selection and cost estimation.
+It remains **selection/catalog authority**, while transport/runtime adapters stay in `@agentsy/providers`.
+
+## Architecture Boundary (Canonical)
 
 ```text
-model selection engine → @agentsy/orchestrator → provider/model selection → cost-optimized execution
+@agentsy/models        => catalog + scoring + route recommendation
+@agentsy/providers     => provider adapters (HTTP/native), auth, streaming protocol handling
+@agentsy/orchestrator  => policy + budget + workflow planning
+@agentsy/runtime       => execution, approvals, tool loop semantics
 ```
+
+### Ownership rules
+
+1. `@agentsy/models` must not implement provider wire protocols directly.
+2. `@agentsy/providers` owns request/response protocol implementations.
+3. `@agentsy/models` publishes provider profile contracts consumed by `@agentsy/providers`.
 
 ## Current Source Layout
 
 ```text
 packages/models/src/
-  index.ts                    # Public exports
-  types.ts                    # Type definitions
-  model-selector.test.ts      # Unit tests
+  index.ts
+  types.ts
+  model-selector.test.ts
 ```
 
-## Ecosystem Integration Analysis (2026-05-14)
+## Current Implementation Snapshot (as of 2026-05-15)
 
-### CRITICAL: models.dev API Integration
+| Area                              | Status     | Notes                                   |
+| --------------------------------- | ---------- | --------------------------------------- |
+| models.dev fetch client           | ✅ partial | Live fetch + 24h temp-file cache exists |
+| selector logic                    | ✅ partial | Requirement matching + scoring exists   |
+| cost estimation                   | ✅ partial | Basic token/cost estimation exists      |
+| provider profile system           | ❌ missing | Needed for local provider support       |
+| local provider discovery          | ❌ missing | No endpoint probing/health yet          |
+| deterministic offline fallback    | ❌ missing | Needs bundled baseline catalog snapshot |
+| contract tests (no live internet) | ⚠️ partial | Tests currently depend on live API      |
 
-**Primary Integration Strategy**
+## External Integration Targets (Models Layer)
 
-- **Rationale:** Comprehensive open-source database with 100+ providers and complete model specifications
-- **Expected Benefits:** Cost-optimized model selection, automatic provider updates, capability-aware matching
-- **Implementation:** Cache models.dev API (24-hour TTL with fallback) for provider/model discovery
-- **ROI:** 3-6 months of manual model management, continuous updates, cost optimization
+### A) Primary cloud/global catalog source
 
-**models.dev Capabilities:**
+- **models.dev API** (`https://models.dev/api.json`) for broad provider/model metadata.
 
-```typescript
-// models.dev integration architecture
-interface ModelsDevIntegration {
-  // API capabilities
-  api: {
-    providers: '100+ providers vs 11 hardcoded';
-    specifications: 'Complete model specs (capabilities, limits, pricing)';
-    discovery: 'Provider discovery and configuration automation';
-  };
+### B) Required local provider families (new)
 
-  // Cost estimation
-  cost: {
-    estimation: 'Per task/model with input/output, caching costs';
-    optimization: 'Cost-aware model selection and orchestration';
-    accuracy: '±10% accuracy on cost predictions';
-  };
+The models layer must include first-class profile support for:
 
-  // Capability matching
-  capabilities: {
-    matching: 'tool_call, reasoning, attachment, temperature';
-    requirements: 'Task requirement analysis and model compatibility';
-  };
+1. **Ollama** (`/api/*`, local default `http://localhost:11434`)
+2. **vLLM OpenAI-compatible server** (`/v1/*`, commonly `http://localhost:8000/v1`)
+3. **LM Studio** (`/v1/*` OpenAI-compatible + `/api/v1/*` native)
+4. **Lemonade Server** (OpenAI-compatible local API)
+5. **Docker Model Runner** (OpenAI/Ollama/Anthropic compatible surfaces)
+6. **Jan API Server** (OpenAI-compatible local API)
+7. **Apfel** (OpenAI-compatible local API backed by Apple FoundationModels)
+8. **Agentsy Local Llama Provider** (new, powered by `node-llama-cpp`)
 
-  // Integration strategy
-  integration: {
-    cache: '24-hour TTL with fallback to live API';
-    selection: 'Intelligent model selection engine';
-    orchestration: 'Cost-aware agent and model ranking';
-  };
+## Local LLM Support: Canonical Provider Profile Contract
+
+```ts
+export type ProviderProtocol =
+  | 'openai-compatible'
+  | 'ollama-native'
+  | 'anthropic-compatible'
+  | 'lmstudio-native'
+  | 'node-llama-cpp-native';
+
+export interface LocalProviderProfile {
+  id: string; // ollama | vllm | lmstudio | lemonade | docker-model-runner | jan | apfel | agentsy-local-llama
+  displayName: string;
+  protocol: ProviderProtocol;
+  defaultBaseUrl: string;
+  healthEndpoint?: string;
+  modelsEndpoint?: string;
+  supportsApiKey: boolean;
+  requiresApiKeyByDefault: boolean;
+  supportsTools: boolean;
+  supportsStreaming: boolean;
+  supportsEmbeddings: boolean;
+  supportsResponsesApi?: boolean;
+  notes?: string[];
 }
 ```
 
-## Core Design Contracts
+## Local Provider Coverage Matrix (must ship)
 
-### Model Selection Engine
+| Provider            | Protocol(s)                                        | Discovery Strategy                                     | Auth Posture                                 |
+| ------------------- | -------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------- |
+| Ollama              | `ollama-native` (+ optional OpenAI-compat mapping) | `GET /api/tags` / model listing                        | local no-auth by default; cloud requires key |
+| vLLM                | OpenAI-compatible                                  | `GET /v1/models`                                       | optional API key (`--api-key`)               |
+| LM Studio           | OpenAI-compatible + native API                     | `GET /v1/models`, optional `/api/v1/models`            | optional token auth                          |
+| Lemonade            | OpenAI-compatible                                  | `GET /v1/models`                                       | deployment dependent                         |
+| Docker Model Runner | OpenAI/Ollama/Anthropic compatible                 | `GET /engines/v1/models` and engine-specific endpoints | key ignored in OpenAI-compatible mode        |
+| Jan                 | OpenAI-compatible                                  | `GET /v1/models`                                       | bearer key required in Jan config            |
+| Apfel               | OpenAI-compatible                                  | `GET /v1/models` (`apple-foundationmodel`)             | local no-key default; optional token support |
+| Agentsy Local Llama | `node-llama-cpp-native`                            | local runtime model registry                           | local-only; no network key                   |
+
+## New Plan: Agentsy Local Provider (node-llama-cpp)
+
+### Goal
+
+Introduce an Agentsy-owned local provider powered by `node-llama-cpp` for offline/private execution with native control over:
+
+- model lifecycle
+- context reuse
+- chat sessions
+- embeddings
+- deterministic local fallback when remote providers are unavailable
+
+### Boundary and placement
+
+- `@agentsy/models`: catalog profile, capability metadata, route/scoring support.
+- `@agentsy/providers`: concrete adapter implementation (`agentsy-local-llama`).
+
+### Node-llama-cpp primitives to leverage
+
+- `getLlama(...)` for runtime/backend initialization
+- `LlamaChatSession` for structured chat loops
+- `LlamaEmbeddingContext` for embeddings support
+
+### Proposed provider interface contract
 
 ```ts
-interface ModelSelector {
-  selectModel(requirements: TaskRequirements, availableModels: ModelInfo[]): Promise<ModelSelection>;
-  estimateCost(model: ModelInfo, inputTokens: number, outputTokens: number): Promise<CostEstimate>;
-  discoverProviders(): Promise<ProviderInfo[]>;
-  getModelInfo(modelId: string): Promise<ModelInfo>;
+interface AgentsyLocalLlamaProviderConfig {
+  modelPath: string;
+  contextSize?: number;
+  gpuLayers?: number;
+  temperature?: number;
+  topP?: number;
+  maxTokens?: number;
 }
 ```
 
-### Model Selection Request
+### Delivery phases
+
+**Phase L0 (Design + contracts)**
+
+- define provider profile and capability schema in `@agentsy/models`
+- add adapter contract tests in `@agentsy/providers`
+
+**Phase L1 (MVP local chat provider)**
+
+- initialize llama runtime via `getLlama`
+- implement prompt->completion and streaming chunk conversion
+- add health + readiness checks
+
+**Phase L2 (Tool calling + structured output parity)**
+
+- support tool-call message transforms where model supports it
+- add schema-constrained generation fallback strategy
+
+**Phase L3 (Embeddings + retrieval integration hooks)**
+
+- expose embeddings via `LlamaEmbeddingContext`
+- connect with `@agentsy/retrieval` adapter boundary
+
+**Phase L4 (Optimization + observability)**
+
+- model warm pools / context reuse policies
+- token/cost telemetry integration with `@agentsy/observability`
+
+## Detailed Feature Plan (Models Package)
+
+### 1) Catalog federation
+
+- merge models.dev catalog with local provider-discovered catalogs
+- merge open-model source catalogs (Hugging Face, Ollama library/local registry, additional open providers)
+- assign source provenance (`cloud`, `local-http`, `local-native`)
+- support stale-while-revalidate cache policy
+
+### 1.1) Open model discovery + fetch planning (NEW)
+
+The models package must support **search and acquisition planning** for runner-managed local models.
 
 ```ts
-interface TaskRequirements {
-  modality: 'text' | 'image' | 'audio' | 'code' | 'multimodal';
-  capabilities: string[]; // e.g., 'tool_call', 'reasoning', 'attachment'
-  specialization?: string; // e.g., 'coding', 'creative', 'analysis'
-  budget?: number; // Max cost for this task
-  quality?: 'fast' | 'balanced' | 'premium';
-  constraints?: ModelConstraints;
+export interface ModelDiscoveryQuery {
+  text?: string;
+  provider?: 'huggingface' | 'ollama' | 'open-provider';
+  modalities?: Array<'text' | 'image' | 'audio'>;
+  minContext?: number;
+  quantizations?: string[]; // q4_k_m, q8_0, f16, etc.
+  licenseAllowlist?: string[];
+}
+
+export interface ModelArtifactFetchPlan {
+  source: 'huggingface' | 'ollama' | 'open-provider';
+  modelId: string;
+  artifactType: 'gguf' | 'safetensors' | 'provider-native';
+  fetchMethod: 'direct-download' | 'llama-hf-shortcut' | 'ollama-pull' | 'conversion';
+  estimatedSizeBytes?: number;
+  checks?: Array<'checksum' | 'license' | 'compatibility'>;
 }
 ```
 
-### Model Selection Response
+Design rule: `@agentsy/models` returns a **fetch plan and recommendation**, while `@agentsy/runtime` + `@agentsy/providers` execute the fetch.
+
+### 2) Capability normalization
+
+- normalize capabilities across OpenAI-compatible and non-OpenAI local APIs
+- track tools/streaming/embeddings/reasoning support at model+provider level
+
+### 3) Local endpoint awareness
+
+- endpoint health scoring (reachable, latency, auth state)
+- prefer healthy local providers when policy requests local-first execution
+
+### 4) Cost and policy scoring
+
+- cloud: token-pricing based from models.dev
+- local: estimated resource cost classes (`cpu-low`, `gpu-mid`, `gpu-high`) and latency priors
+- expose confidence + rationale for routing decisions
+
+### 5) Recommendation engine enhancement (LLM Stats integration)
+
+Use `https://llm-stats.com/developer` endpoints to enrich recommendation quality:
+
+- `GET /stats/v1/models`
+- `GET /stats/v1/models/{id}`
+- `GET /stats/v1/scores`
+- `GET /stats/v1/rankings`
+- `GET /stats/v1/updates`
+
+Recommendation criteria should combine:
+
+1. capability fit (tools, context, modalities)
+2. price (models.dev)
+3. benchmark/category fit (llm-stats rankings + scores)
+4. freshness (recent updates)
+5. deployment fit (local availability + artifact compatibility)
 
 ```ts
-interface ModelSelection {
-  model: ModelInfo;
-  provider: ProviderInfo;
-  confidence: number; // 0-1 score for match quality
-  estimatedCost: CostEstimate;
-  alternatives?: ModelSelection[]; // Backup options
+export interface RecommendationCriteria {
+  task: 'coding' | 'math' | 'writing' | 'general' | 'multimodal';
+  budgetTier?: 'low' | 'mid' | 'high';
+  preferLocal?: boolean;
+  minBenchmarks?: Record<string, number>; // e.g. { HumanEval: 80 }
+  preferredLicenses?: string[];
 }
 ```
 
-### Cost Estimation Coverage
+### 6) Implementation guidance: local automodel selection
 
-```ts
-interface CostEstimate {
-  inputCost: number; // per 1M tokens
-  outputCost: number; // per 1M tokens
-  cacheCost?: number; // per 1M cache read/write tokens
-  totalCost: number; // Estimated for this task
-  confidence: number; // 0-1 score for accuracy
-}
-```
+The models package should remain the **pure decision layer** for local automodel selection.
 
-## Implementation Status
+Use the existing `recommendLocalModelsBySystemCapabilities(...)` helper as the core scoring function. Keep it deterministic and side-effect free: it should only consume models.dev catalog data, llm-stats benchmark/ranking data, and the caller's current hardware profile.
 
-| Feature            | Status                    |
-| ------------------ | ------------------------- |
-| `types`            | ✅ Basic type definitions |
-| `model-selector`   | ❌ Not started            |
-| `api` integration  | ❌ Not started            |
-| `cache`            | ❌ Not started            |
-| `selection` engine | ❌ Not started            |
-| `cost` estimation  | ❌ Not started            |
-| `cli` commands     | ❌ Not started            |
+Recommended implementation tasks:
 
-## Dependencies
+1. Add a small `LLMStatsClient` helper that fetches `/stats/v1/models`, `/stats/v1/scores`, `/stats/v1/rankings`, and `/stats/v1/updates` and caches them separately from models.dev.
+2. Preserve stable ranking for identical inputs so the runtime can reproduce decisions across retries.
+3. Emit a recommendation plan that includes runtime family hints, provenance, and fetch/activation hints, not process-launch logic.
+4. Prefer local candidates when they fit with comfortable headroom; otherwise return an ordered remote fallback list.
+5. Keep `llama-swap` in the runtime layer as the hot-swap execution strategy, not in the models layer.
 
-- `@agentsy/types` — Model-related types
-- External: models.dev API integration
-- Optional: caching layer for API responses
+The recommendation output should be able to hint at the intended runtime family, for example:
 
-## Core Features
+- `ollama` for daemon-backed local pulls
+- `llama.cpp` for GGUF direct inference
+- `llama-swap` for hot-swapped OpenAI/Anthropic-compatible routing across multiple local backends
+- `mlx` or `apfel` when Apple Silicon-local support is the best fit
 
-### 1. Model Selection Engine (`src/model-selector/`)
-
-**Capability Analysis**
-
-- Analyze task requirements (modality, capabilities, specialization, budget, quality)
-- Match requirements against available models
-- Score models for compatibility and quality
-- Provide confidence scores and alternatives
-
-**Cost-Aware Selection**
-
-- Pre-execution cost estimation based on models.dev pricing data
-- Budget verification before model selection
-- Cost-aware agent and model ranking
-- Priority-based model selection under budget constraints
-
-**Pattern:**
-
-```ts
-modelSelector.selectModel(requirements, availableModels) -> { model, cost, confidence, alternatives }
-```
-
-### 2. Provider Discovery (`src/provider-discovery/`)
-
-**API Integration**
-
-- Fetch models.dev API for provider and model metadata
-- Cache responses with 24-hour TTL
-- Fallback to live API if cache expired or unavailable
-- Update provider configurations automatically
-
-**Provider Management**
-
-- 100+ provider support (anthropic, openai, deepseek, etc.)
-- Provider discovery and configuration automation
-- Model logos and documentation links
-- Capability matching by provider
-
-### 3. Cost Estimation (`src/cost-estimator/`)
-
-**Detailed Cost Calculation**
-
-- Input/output token pricing per model
-- Cache read/write costs where applicable
-- Context window overflow handling
-- Usage-based cost projections
-
-**Accuracy Metrics**
-
-- ±10% accuracy on cost predictions
-- Confidence scores for estimations
-- Historical cost tracking and learning
-
-### 4. CLI Commands (`src/cli/`)
-
-**Model Discovery**
-
-- Search models by capabilities, providers, cost
-- Compare model specifications side-by-side
-- Test cost estimation for specific tasks
-
-**Cost Analysis**
-
-- Estimate costs for specific workflows
-- Compare provider costs for similar models
-- Optimize model selection for budget constraints
-
-## Testing
-
-```ts
-// packages/models/src/model-selector/model-selector.test.ts
-// packages/models/src/provider-discovery/discovery.test.ts
-// packages/models/src/cost-estimator/estimation.test.ts
-```
-
-- Unit: capability matching, cost calculation, provider discovery
-- Integration: models.dev API integration, cache logic
-- Accuracy: cost estimation ±10% accuracy validation
-- Performance: cache hit rates, API response times
-
-## Export Surface
-
-```ts
-// packages/models/src/index.ts
-export * from './model-selector/index.js';
-export * from './provider-discovery/index.js';
-export * from './cost-estimator/index.js';
-export * from './cli/index.js'; // optional CLI commands
-```
-
-## Integration with Orchestrator
-
-**Pattern:**
-
-```ts
-// Integration with @agentsy/orchestrator
-// Model selection before execution
-const selection = await modelSelector.selectModel(taskRequirements, availableModels);
-
-// Cost-aware orchestration
- orchestrator.orchestrateTask(task, skills, budget) -> { agent, model, plan, estimatedCost }
-
-// Budget verification
-if (selection.estimatedCost.totalCost > budget) {
-  // Fall back to cheaper alternatives
-}
-```
+The models package must never decide how to spawn the process or manage the upstream server lifecycle.
 
 ## Implementation Priorities
 
-**Phase 1: API Integration & Caching (Weeks 1-4)**
+### Phase 1 (Weeks 1-3): Contract hardening + deterministic tests
 
-- models.dev API client implementation
-- 24-hour TTL caching with fallback
-- Provider discovery and configuration
-- Model metadata fetching
+- introduce provider profile contracts
+- migrate tests away from mandatory live-network dependency
+- add fixtures for models.dev payload snapshots
 
-**Phase 2: Selection Engine (Weeks 5-10)**
+### Phase 2 (Weeks 4-8): Local provider profile support
 
-- Task requirements analysis
-- Capability matching algorithm
-- Model scoring and ranking
-- Confidence calculation and alternatives
+- implement profile modules for Ollama/vLLM/LM Studio/Lemonade/Docker Model Runner/Jan/Apfel
+- add endpoint probing and capability normalization
+- add open-model discovery connectors (Hugging Face + Ollama + pluggable open providers)
+- add fetch-plan generation for GGUF/local-compatible artifacts
 
-**Phase 3: Cost Estimation (Weeks 11-14)**
+### Phase 3 (Weeks 9-14): Routing improvements
 
-- Detailed cost calculation engine
-- Input/output/token pricing integration
-- Budget constraint handling
-- Cost projection and optimization
+- local-first and hybrid routing policies
+- local health + latency-aware scoring
+- local fallback chains (e.g., Jan -> Ollama -> vLLM)
 
-**Phase 4: CLI & Analytics (Weeks 15-16)**
+### Phase 4 (Weeks 15-22): Agentsy local llama provider integration
 
-- Model discovery commands
-- Cost comparison tools
-- Budget optimization suggestions
-- Usage analytics
+- integrate `agentsy-local-llama` profile + selection semantics
+- surface embeddings capability and runtime constraints
+- complete orchestrator integration docs and examples
 
-## Expected Benefits
+### Phase 5 (Weeks 23-28): recommendation intelligence
 
-**Cost Optimization:**
+- integrate llm-stats-based ranking overlays
+- implement criteria-driven recommendations API for runtime and CLI
+- add offline fallback when llm-stats unavailable
 
-- **Model selection:** Intelligent model choice based on capabilities and pricing
-- **Budget enforcement:** Cost-aware model selection and orchestration
-- **Optimization:** 20-30% cost reduction through intelligent selection
+## Testing Requirements
 
-**Capability Enhancement:**
+1. **Unit tests** for profile normalization and scoring.
+2. **Fixture-based integration tests** for each local provider API shape.
+3. **No-network default test mode** in CI.
+4. **Contract tests** with `@agentsy/providers` adapter expectations.
+5. **Performance tests** for selection latency (<100ms on warm cache).
+6. **Recommendation quality tests** (criteria-based ranking stability).
+7. **Acquisition planning tests** (Hugging Face/Ollama/open-provider fetch plan generation).
 
-- **Provider coverage:** 100+ providers vs 11 hardcoded models
-- **Automatic updates:** Continuous provider and model updates without manual intervention
-- **Matching accuracy:** Capability-aware model selection for better task performance
+## Export Surface (target)
 
-**Developer Experience:**
+```ts
+export * from './types.js';
+export * from './catalog/index.js';
+export * from './selector/index.js';
+export * from './providers/profiles/index.js';
+```
 
-- **Discovery:** Easy model discovery and comparison
-- **Testing:** Cost estimation for task scenarios before implementation
-- **Configuration:** Automated provider configuration
+## Risks and Mitigations
 
-**Strategic Positioning:**
-
-By integrating models.dev, Agentsy gains:
-
-1. **Model Selection Leadership:** Intelligent, cost-optimized model selection
-2. **Provider Coverage:** 100+ provider access with automatic updates
-3. **Cost Optimization:** Real-time cost estimation and budget management
-4. **Capability Matching:** Task-aware model selection for better performance
-
-This positions Agentsy as a **cost-optimized agent platform** with superior model selection and orchestration capabilities, differentiated by intelligent cost-aware model choice and comprehensive provider coverage.
-
-## Risk Mitigation
-
-**API Dependency:**
-
-- **Risk:** models.dev API availability or changes
-- **Mitigation:** 24-hour caching with fallback, graceful degradation
-
-**Accuracy:**
-
-- **Risk:** Cost estimation accuracy ±10% may not meet needs
-- **Mitigation:** Historical learning and continuous improvement
-
-**Complexity:**
-
-- **Risk:** 100+ provider integration complexity
-- **Mitigation:** Standardized API patterns, automated testing
+- **Protocol drift risk:** local servers evolve quickly.
+  - Mitigation: profile versioning + fixture regression tests.
+- **False capability claims:** endpoint advertises support but fails runtime.
+  - Mitigation: active probe tests + runtime fallback logic.
+- **Boundary leakage:** selection logic accidentally performs wire calls.
+  - Mitigation: strict package contract tests (`models` vs `providers`).
 
 ## Success Metrics
 
-**Cost Metrics:**
+- Local provider profile coverage for all 7 external local servers + Agentsy local llama.
+- 95%+ successful model discovery on supported local endpoints.
+- Selection reliability: valid fallback choice returned for 99% of provider outage simulations.
+- Zero circular dependency regressions between `models`, `providers`, `orchestrator`.
+- 90%+ recommendation acceptance in internal eval harness for criteria-driven tasks.
 
-- **Optimization:** 20-30% cost reduction through intelligent selection
-- **Accuracy:** ±10% cost estimation accuracy
-- **Budget compliance:** 95% budget adherence rate
+## Sources Reviewed for This Plan Update (2026-05-15)
 
-**Performance Metrics:**
+- <https://docs.ollama.com/api/introduction>
+- <https://docs.vllm.ai/en/latest/api/>
+- <https://lmstudio.ai/docs/developer/rest>
+- <https://lemonade-server.ai/docs/api/openai/>
+- <https://docs.docker.com/ai/model-runner/>
+- <https://node-llama-cpp.withcat.ai/api/functions/getLlama>
+- <https://www.jan.ai/docs/desktop/api-server>
+- <https://github.com/Arthur-Ficial/apfel>
+- <https://llm-stats.com/developer>
+- <https://huggingface.co/docs/hub/gguf-llamacpp>
+- <https://huggingface.co/docs/hub/agents-local>
+- <https://github.com/mattjamo/OllamaToGGUF>
+- <https://www.danielcorin.com/til/llama-cpp/running-huggingface-models/>
+- <https://martinuke0.github.io/posts/2026-01-07-mastering-llamacpp-a-comprehensive-guide-to-local-llm-inference/>
+- <https://markaicode.com/tutorial/how-to-use-llamacpp/>
+- <https://medium.com/@jallenswrx2016/llama-cpp-the-gateway-to-huggingface-model-bonanza-5586b3166a9f> (access-limited)
 
-- **Selection speed:** <100ms average model selection time
-- **Cache hit rate:** >80% cache hit rate for频繁 accessed models
-- **API fallback:** <5% API failure rate with graceful degradation
+Additional referenced pages (recursively reviewed):
 
-**Adoption Metrics:**
-
-- **Provider coverage:** 90%+ common providers supported
-- **Model discovery:** 80%+ users using CLI for model discovery
-- **Cost analysis:** 70%+ workflows using cost estimation before execution
-
-## Integration Timeline
-
-**Week 1-2:** API client and caching infrastructure
-**Week 3-4:** Provider discovery and model metadata
-**Week 5-8:** Selection engine and capability matching
-**Week 9-14:** Cost estimation and budget enforcement
-**Week 15-16:** CLI commands and analytics
-
-Total estimated effort: 14-16 weeks for full integration
+- <https://docs.ollama.com/llms.txt>
+- <https://docs.ollama.com/api/authentication>
+- <https://docs.vllm.ai/en/latest/serving/openai_compatible_server/>
+- <https://lmstudio.ai/docs/developer/openai-compat>
+- <https://lmstudio.ai/docs/developer/core/authentication>
+- <https://docs.docker.com/ai/model-runner/api-reference/>
+- <https://docs.docker.com/ai/model-runner/inference-engines/>
+- <https://docs.docker.com/ai/model-runner/configuration/>
+- <https://www.jan.ai/docs/desktop/api-preference>
+- <https://node-llama-cpp.withcat.ai/api/classes/LlamaChatSession>
+- <https://node-llama-cpp.withcat.ai/api/classes/LlamaEmbeddingContext>

@@ -8,8 +8,12 @@ Long-term memory and persistent state management.
 
 ## Status
 
-- Published package.
+- Internal/pre-release workspace package.
 - See the [roadmap](../roadmap.md) for planned capabilities.
+- Current implementation includes Phase 1 foundation APIs for:
+- honker loader contract + fallback mode
+- in-memory pub/sub and task queue primitives
+- raw→wiki→vector scaffolding via wiki manager
 
 ## Notes
 
