@@ -25,12 +25,21 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - **REQ-CLI-007**: Interactive terminal UX should incorporate Rune-style patterns: frame-based banners, motion-safe ASCII scenes, reactive status transitions, and composable terminal screens.
 - **REQ-CLI-008**: CLI must ship the official superagents plugin as a bundled default while still loading it through the normal plugin registry.
 - **REQ-CLI-009**: CLI must provide an agent-mode picker/search flow that merges bundled modes with user/workspace-installed modes discovered from `~/.agents`, project `.agents`, and `~/.config/agentsy`.
+- **REQ-CLI-010**: CLI must provide native cmux integration for workspace/surface awareness, terminal input dispatch, and sidebar metadata updates using cmux-supported interfaces.
+- **REQ-CLI-011**: CLI should support cmux-native subagent pane orchestration patterns (auto-layout, bounded pane lifecycle, idle cleanup, and queued split retries when workspace size is temporarily constrained).
+- **REQ-CLI-012**: CLI must only show/enable cmux integrations when cmux is discovered for the active user workspace (including workspace Applications-folder discovery checks).
+- **REQ-CLI-013**: CLI operational logging must use the universal cross-domain logger contract from `@agentsy/observability` (tslog-backed), including correlation IDs for turns, tools, and session transitions.
+- **REQ-CLI-014**: CLI network-facing integration tests should use shared MSW (`msw` v2) handlers for deterministic provider/retrieval/connectors mocking.
 - **SEC-CLI-001**: Secrets are never persisted in plaintext config.
 - **SEC-CLI-002**: Destructive operations remain approval-gated via runtime policy.
+- **SEC-CLI-003**: cmux connectivity must default to least privilege (`cmux processes only`/`off` as configured) and must never silently force `allowAll`.
 - **CON-CLI-001**: Provider protocol handling stays in `@agentsy/providers`/`@agentsy/core`, not CLI.
 - **CON-CLI-002**: Budget enforcement stays in `@agentsy/tokens`, not duplicated in CLI.
 - **CON-CLI-003**: CLI command lifecycle, plugin discovery, autocomplete, and update flows follow `@oclif/core` plus supported oclif plugins rather than custom one-off plumbing.
 - **CON-CLI-004**: Rune-style animations and banners remain presentation concerns layered on top of `@agentsy/renderers`, not embedded in command logic.
+- **CON-CLI-005**: cmux integration transport should support both Unix socket JSON-RPC and `cmux` CLI invocation, with deterministic preference order and graceful fallback when unavailable.
+- **CON-CLI-006**: cmux support remains native-first; tmux-compat shim semantics may be emulated where useful, but CLI must not require `opencode` shadow config or direct dependency on `oh-my-opencode` internals.
+- **CON-CLI-007**: cmux command registration/help/autocomplete surfaces must be runtime-gated by discovery state; when undiscovered, cmux commands are hidden or clearly marked unavailable and excluded from default interactive menus.
 - **QOS-CLI-001**: Streaming responsiveness and first-token latency must not regress between phases.
 
 ## 2. Implementation Steps
@@ -39,49 +48,62 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 
 - GOAL-CLI-001: Contract and boundary stabilization on an oclif foundation.
 
-| Task         | Description                                                                                                                                                                                                                                                                                | Completed | Date |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-CLI-001 | Align CLI command-routing contracts with `@oclif/core` command classes, `@agentsy/plugins`, `@agentsy/models`, and `@agentsy/renderers`.                                                                                                                                                   |           |      |
-| TASK-CLI-002 | Stabilize typed config contracts and precedence diagnostics for user/workspace/session overlays.                                                                                                                                                                                           |           |      |
-| TASK-CLI-003 | Publish boundary notes in package docs for ownership of shell composition vs package-owned capabilities.                                                                                                                                                                                   |           |      |
-| TASK-CLI-013 | Define the oclif plugin stack (`plugin-help`, `plugin-not-found`, `plugin-plugins`, `plugin-autocomplete`, `plugin-update`, `plugin-warn-if-update-available`, `plugin-which`, `plugin-commands`, `plugin-search`, `plugin-version`) and map each plugin to the corresponding CLI surface. |           |      |
+| Task         | Description                                                                                                                                                                                                                                                                                                       | Completed | Date |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CLI-001 | Align CLI command-routing contracts with `@oclif/core` command classes, `@agentsy/plugins`, `@agentsy/models`, and `@agentsy/renderers`.                                                                                                                                                                          |           |      |
+| TASK-CLI-002 | Stabilize typed config contracts and precedence diagnostics for user/workspace/session overlays.                                                                                                                                                                                                                  |           |      |
+| TASK-CLI-003 | Publish boundary notes in package docs for ownership of shell composition vs package-owned capabilities.                                                                                                                                                                                                          |           |      |
+| TASK-CLI-013 | Define the oclif plugin stack (`plugin-help`, `plugin-not-found`, `plugin-plugins`, `plugin-autocomplete`, `plugin-update`, `plugin-warn-if-update-available`, `plugin-which`, `plugin-commands`, `plugin-search`, `plugin-version`) and map each plugin to the corresponding CLI surface.                        |           |      |
+| TASK-CLI-021 | Define cmux integration contracts (transport abstraction, capability probing via `system.capabilities`/`cmux capabilities`, context detection via `CMUX_WORKSPACE_ID`/`CMUX_SURFACE_ID`, socket path/mode handling via `CMUX_SOCKET_PATH`/`CMUX_SOCKET_MODE`, and workspace Applications-folder discovery rules). |           |      |
+| TASK-CLI-026 | Define subagent-pane orchestration contracts inspired by cmux `omo` flows (split allocation policy, layout strategy, idle-reap thresholds, queue/retry timing, and compatibility behavior when tmux-like env vars are present).                                                                                   |           |      |
 
 ### Implementation Phase 2
 
 - GOAL-CLI-002: Core CLI capability completion with oclif command discovery and Rune-style presentation.
 
-| Task         | Description                                                                                                                                                      | Completed | Date |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-CLI-004 | Complete interactive shell flows (chat, chooser, panes, approvals, config edit, slash command UX) as oclif commands and command groups.                          |           |      |
-| TASK-CLI-005 | Implement deterministic headless and JSON operation modes.                                                                                                       |           |      |
-| TASK-CLI-006 | Finalize project-aware context insertion (`@`) with budget-aware previews.                                                                                       |           |      |
-| TASK-CLI-014 | Add rune-style banner, splash, and motion-safe status components hosted by CLI composition but rendered through `@agentsy/renderers`.                            |           |      |
-| TASK-CLI-015 | Implement plugin-backed command discovery, `commands` listing, `version`, `help`, `search`, `which`, and autocomplete surfaces using oclif plugin conventions.   |           |      |
-| TASK-CLI-018 | Add bundled-superagent bootstrap so the official plugin is available out of the box but can still be disabled, overridden, or upgraded like any external plugin. |           |      |
-| TASK-CLI-019 | Add `/agent-mode` and startup picker workflows backed by plugin discovery, provenance labels, and persisted default-mode selection.                              |           |      |
+| Task         | Description                                                                                                                                                                                                              | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-CLI-004 | Complete interactive shell flows (chat, chooser, panes, approvals, config edit, slash command UX) as oclif commands and command groups.                                                                                  |           |      |
+| TASK-CLI-005 | Implement deterministic headless and JSON operation modes.                                                                                                                                                               |           |      |
+| TASK-CLI-006 | Finalize project-aware context insertion (`@`) with budget-aware previews.                                                                                                                                               |           |      |
+| TASK-CLI-014 | Add rune-style banner, splash, and motion-safe status components hosted by CLI composition but rendered through `@agentsy/renderers`.                                                                                    |           |      |
+| TASK-CLI-015 | Implement plugin-backed command discovery, `commands` listing, `version`, `help`, `search`, `which`, and autocomplete surfaces using oclif plugin conventions.                                                           |           |      |
+| TASK-CLI-018 | Add bundled-superagent bootstrap so the official plugin is available out of the box but can still be disabled, overridden, or upgraded like any external plugin.                                                         |           |      |
+| TASK-CLI-019 | Add `/agent-mode` and startup picker workflows backed by plugin discovery, provenance labels, and persisted default-mode selection.                                                                                      |           |      |
+| TASK-CLI-022 | Implement native cmux command surfaces (`/cmux status`, `/cmux workspace`, `/cmux surface`, `/cmux notify`) plus automatic context attachment for terminal panes when running inside cmux.                               |           |      |
+| TASK-CLI-023 | Implement sidebar metadata publishing hooks (status/progress/log) mapped to cmux APIs (`set-status`, `set-progress`, `log` / socket equivalents) with feature flags and motion-safe renderer behavior.                   |           |      |
+| TASK-CLI-027 | Implement cmux-native subagent split orchestration for parallel agents (grid/main-vertical layouts, dynamic resize/reflow, and queued pane creation retries under constrained terminal geometry).                        |           |      |
+| TASK-CLI-030 | Implement discovery-gated exposure so `/cmux` commands, menu items, and autocomplete/help entries are shown only when cmux is discovered in the active workspace environment; otherwise keep them suppressed by default. |           |      |
 
 ### Implementation Phase 3
 
 - GOAL-CLI-003: Cross-package integration and dogfood workflows.
 
-| Task         | Description                                                                                                                                      | Completed | Date |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-CLI-007 | Validate end-to-end flows across providers/core/runtime/renderers/session/memory.                                                                |           |      |
-| TASK-CLI-008 | Add integration tests for model/provider selection, tool approvals, resume, and retrieval commands.                                              |           |      |
-| TASK-CLI-009 | Add operator diagnostics (`status`, `trace`, events) with stable JSON schema output.                                                             |           |      |
-| TASK-CLI-016 | Validate oclif plugin loading/update/autocomplete flows and friendly not-found handling across packaged and user-installed plugins.              |           |      |
-| TASK-CLI-020 | Validate merged agent-mode discovery across bundled, user, and workspace plugin roots, including precedence, disablement, and fallback behavior. |           |      |
+| Task         | Description                                                                                                                                                                                    | Completed | Date |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CLI-007 | Validate end-to-end flows across providers/core/runtime/renderers/session/memory.                                                                                                              |           |      |
+| TASK-CLI-008 | Add integration tests for model/provider selection, tool approvals, resume, and retrieval commands.                                                                                            |           |      |
+| TASK-CLI-009 | Add operator diagnostics (`status`, `trace`, events) with stable JSON schema output.                                                                                                           |           |      |
+| TASK-CLI-016 | Validate oclif plugin loading/update/autocomplete flows and friendly not-found handling across packaged and user-installed plugins.                                                            |           |      |
+| TASK-CLI-020 | Validate merged agent-mode discovery across bundled, user, and workspace plugin roots, including precedence, disablement, and fallback behavior.                                               |           |      |
+| TASK-CLI-024 | Add integration tests for cmux detection and transport fallback (socket present, CLI-only, unavailable), plus JSON-contract validation for workspace/surface identify and sidebar updates.     |           |      |
+| TASK-CLI-028 | Add integration tests for cmux subagent pane lifecycle (spawn/focus/cleanup), idle-agent reap behavior, and retry queue drain when workspace capacity changes.                                 |           |      |
+| TASK-CLI-031 | Add tests for discovery gating across workspace states (cmux in Applications folder, cmux outside workspace scope, and no cmux) validating command visibility/help/autocomplete/menu behavior. |           |      |
+| TASK-CLI-032 | Integrate CLI command/workflow logging with tslog-backed observability logger factories and validate correlation propagation into trace/event views (`/trace`, `/events`, status JSON).        |           |      |
+| TASK-CLI-033 | Migrate CLI integration/e2e suites that mock HTTP to shared MSW handlers and lifecycle setup utilities from `@agentsy/testing`.                                                                |           |      |
 
 ### Implementation Phase 4
 
 - GOAL-CLI-004: Hardening and release gates for oclif distribution.
 
-| Task         | Description                                                                                        | Completed | Date |
-| ------------ | -------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-CLI-010 | Add performance and failure-mode tests for interactive and non-interactive paths.                  |           |      |
-| TASK-CLI-011 | Ensure package docs and examples match shipped behavior.                                           |           |      |
-| TASK-CLI-012 | Pass release gates (`pnpm check-types`, `pnpm test`) with CLI suites green.                        |           |      |
-| TASK-CLI-017 | Validate oclif packaging/release hooks, installer/update behavior, and plugin metadata generation. |           |      |
+| Task         | Description                                                                                                                                                                                                                         | Completed | Date |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CLI-010 | Add performance and failure-mode tests for interactive and non-interactive paths.                                                                                                                                                   |           |      |
+| TASK-CLI-011 | Ensure package docs and examples match shipped behavior.                                                                                                                                                                            |           |      |
+| TASK-CLI-012 | Pass release gates (`pnpm check-types`, `pnpm test`) with CLI suites green.                                                                                                                                                         |           |      |
+| TASK-CLI-017 | Validate oclif packaging/release hooks, installer/update behavior, and plugin metadata generation.                                                                                                                                  |           |      |
+| TASK-CLI-025 | Harden cmux failure modes (socket permission errors, stale socket path, unsupported methods, mode restrictions) with user-facing diagnostics and non-cmux fallback to standard terminal behavior.                                   |           |      |
+| TASK-CLI-029 | Document and validate interoperability behavior when launched from tmux-compat environments (`TMUX`, `TMUX_PANE`, and forwarded config directories), ensuring deterministic behavior without requiring shadow-config bootstrapping. |           |      |
 
 ## 3. Acceptance Criteria
 
@@ -89,6 +111,11 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - **ACC-CLI-002**: CLI integration tests covering core workflows pass in CI.
 - **ACC-CLI-003**: CLI docs/help output match implemented behavior.
 - **ACC-CLI-004**: Monorepo gates pass (`pnpm check-types`, `pnpm test`).
+- **ACC-CLI-005**: cmux-native flows pass integration tests, including capability probing, workspace/surface targeting, and sidebar metadata publish/clear behavior.
+- **ACC-CLI-006**: Parallel subagent pane orchestration in cmux is stable under resize/capacity pressure and cleans up idle panes according to documented policy.
+- **ACC-CLI-007**: cmux surfaces are only visible/enabled when discovery succeeds for the active workspace Applications-folder context; undiscovered states do not expose cmux by default.
+- **ACC-CLI-008**: CLI logs emitted through observability use the shared tslog-backed schema and carry correlation metadata compatible with cross-package diagnostics.
+- **ACC-CLI-009**: Network-bound CLI integration tests use MSW handlers with deterministic request/response fixtures across provider/retrieval flows.
 
 ## 4. Sources Synthesized
 
@@ -96,6 +123,10 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - `plan/IMPLEMENTATION-PRIORITY.md`
 - `plan/feature-cli-dogfood-production-order-1.md`
 - `https://github.com/oclif/core`
+- `https://cmux.com/docs/api`
+- `https://cmux.com/docs/agent-integrations/oh-my-opencode`
+- `https://mswjs.io/docs`
+- `https://tslog.js.org`
 - `https://www.npmjs.com/package/@rune-cli/rune`
 - `docs/packages/cli.md`
 - `packages/cli/README.md`
@@ -155,6 +186,7 @@ The package fulfills its role by providing:
   - `/help`: List available commands.
   - `/auth`: Manage provider authentication.
   - `/agent-mode`: Search and select installed agent modes.
+  - `/cmux ...` (discovery-gated): Inspect cmux capability state, target workspace/surface context, and publish notifications/status for active runs only when cmux is discovered for the active workspace.
   - `/model`: Switch between configured models.
   - `/status`: Show current agent and session state.
   - `/config`, `/settings`: Edit persistent configuration interactively.

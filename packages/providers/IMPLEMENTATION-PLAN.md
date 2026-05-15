@@ -21,9 +21,10 @@ This plan defines the production implementation order for `@agentsy/providers` a
 - **REQ-PROVIDERS-003**: Capability matrix is queryable by models/runtime/orchestrator.
 - **REQ-PROVIDERS-004**: Timeout/retry/circuit-breaker policies are configurable per provider.
 - **SEC-PROVIDERS-001**: Credentials are sourced via `@agentsy/secrets`; no plaintext embedding.
-- **SEC-PROVIDERS-002**: Request/response logging redacts secret-like fields.
+- **SEC-PROVIDERS-002**: Request/response logging redacts secret-like fields and emits through the shared tslog-backed observability logger contract.
 - **CON-PROVIDERS-001**: Core stream normalization contracts remain consistent with `@agentsy/core`.
 - **CON-PROVIDERS-002**: UI formatting and interaction concerns remain outside providers.
+- **CON-PROVIDERS-003**: Provider network mocking in tests should be MSW-first (shared handlers) instead of custom per-test HTTP monkeypatching.
 
 ## 2. Implementation Steps
 
@@ -41,21 +42,21 @@ This plan defines the production implementation order for `@agentsy/providers` a
 
 - GOAL-PROVIDERS-002: Core provider implementation completion.
 
-| Task               | Description                                                        | Completed | Date |
-| ------------------ | ------------------------------------------------------------------ | --------- | ---- |
-| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.       |           |      |
-| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes. |           |      |
-| TASK-PROVIDERS-006 | Implement mock providers for deterministic test harnesses.         |           |      |
+| Task               | Description                                                                            | Completed | Date |
+| ------------------ | -------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                           |           |      |
+| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                     |           |      |
+| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. |           |      |
 
 ### Implementation Phase 3
 
 - GOAL-PROVIDERS-003: Integration and observability wiring.
 
-| Task               | Description                                                     | Completed | Date |
-| ------------------ | --------------------------------------------------------------- | --------- | ---- |
-| TASK-PROVIDERS-007 | Integrate runtime/core streaming and models selection pathways. |           |      |
-| TASK-PROVIDERS-008 | Add integration tests for provider routing and failover.        |           |      |
-| TASK-PROVIDERS-009 | Emit provider telemetry with redaction-safe defaults.           |           |      |
+| Task               | Description                                                                                                            | Completed | Date |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-007 | Integrate runtime/core streaming and models selection pathways.                                                        |           |      |
+| TASK-PROVIDERS-008 | Add integration tests for provider routing and failover.                                                               |           |      |
+| TASK-PROVIDERS-009 | Emit provider telemetry with redaction-safe defaults through `@agentsy/observability` logger factories (tslog-backed). |           |      |
 
 ### Implementation Phase 4
 
@@ -77,6 +78,8 @@ This plan defines the production implementation order for `@agentsy/providers` a
 
 - `plan/MASTER-IMPLEMENTATION-PLAN.md`
 - `plan/feature-cli-dogfood-production-order-1.md`
+- `https://mswjs.io/docs`
+- `https://tslog.js.org`
 - `docs/packages/providers.md`
 - `packages/providers/README.md`
 - `packages/providers/IMPLEMENTATION-PLAN.md`

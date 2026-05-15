@@ -38,6 +38,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 - **CON-003**: Avoid hard dependency on cloud services for baseline functionality.
 - **GUD-001**: Prefer idempotent ingestion operations and resumable indexing jobs.
 - **GUD-002**: Keep ranking logic testable with deterministic fixtures and tunable weights.
+- **GUD-003**: Use MSW (`msw` v2) handlers for network-bound RAG client/source-connector tests to avoid bespoke HTTP stubs.
 - **PAT-001**: Local-first retrieval + optional external augmentation.
 - **PAT-002**: Evidence-backed retrieval with confidence/provenance tags.
 - **PAT-003**: Token-budget-aware context packing.
@@ -56,6 +57,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 | TASK-004 | Implement startup auto-ingest bootstrap in `packages/memory/src/retrieval/rag/bootstrap.ts`.                                                             |           |      |
 | TASK-005 | Create typed retrieval model contracts in `packages/memory/src/retrieval/rag/types.ts` (evidence, citation, score breakdown).                            |           |      |
 | TASK-006 | Add unit tests for client/config/bootstrap flows in `packages/memory/src/retrieval/rag/*.test.ts`.                                                       |           |      |
+| TASK-025 | Add shared MSW handler suites for RAG server/web connector endpoints and integrate them with test lifecycle setup for Node-based suites.                 |           |      |
 
 ### Implementation Phase 2
 
@@ -140,6 +142,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 - **TEST-001**: RAG client tests for health, search, and ingest API contracts.
 - **TEST-002**: Ingestion pipeline tests for chunking, deduplication, and idempotent updates.
 - **TEST-003**: Source connector tests for allowlist enforcement and failure isolation.
+- **TEST-011**: MSW handler contract tests for RAG server/web endpoint mocking and deterministic fallback behavior.
 - **TEST-004**: Hybrid retrieval tests for score composition and deterministic ordering.
 - **TEST-005**: Reranker tests validating explainable score breakdown and configured weight behavior.
 - **TEST-006**: Query planner tests for routing, expansion, and filter application.
@@ -170,3 +173,4 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 - `packages/runtime/IMPLEMENTATION-PLAN.md`
 - `packages/providers/IMPLEMENTATION-PLAN.md`
 - `packages/observability/IMPLEMENTATION-PLAN.md`
+- `https://mswjs.io/docs`

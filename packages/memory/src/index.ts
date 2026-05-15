@@ -11,42 +11,41 @@ export {
 } from './types.js';
 
 export {
+  createAtomicWorkflowCoordinator,
+  type AtomicWorkflowContext,
+  type AtomicWorkflowCoordinator,
+  type AtomicWorkflowResult,
+  type AtomicWorkflowStep
+} from './coordination/atomic-workflows.js';
+export {
   loadHonkerExtension,
   type HonkerLoadFeatures,
   type HonkerLoadOptions,
   type HonkerLoadResult
 } from './coordination/honker/loader.js';
-export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
 export {
   createInMemoryPubSubManager,
   type ChannelListener,
   type PubSubManager
 } from './coordination/pub-sub-manager.js';
-export {
-  createAtomicWorkflowCoordinator,
-  type AtomicWorkflowCoordinator,
-  type AtomicWorkflowContext,
-  type AtomicWorkflowResult,
-  type AtomicWorkflowStep
-} from './coordination/atomic-workflows.js';
 export { createInMemoryScheduler, type Scheduler } from './coordination/scheduler.js';
 export { createInMemoryTaskQueue, type CoordinationTask, type TaskQueue } from './coordination/task-queue.js';
 export {
-  createLocalEmbeddingEngine,
-  type LocalEmbeddingEngine,
-  type LocalEmbeddingEngineOptions
-} from './wiki/local-embedding-engine.js';
-export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
-export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
-export { createVersionTracker, type VersionTracker } from './wiki/version-tracker.js';
+  createMemoryMetrics,
+  redactSecretLikeValues,
+  type CoordinationLatencyStats,
+  type InjectionMetricsInput,
+  type MemoryMetrics,
+  type MemoryMetricsSnapshot,
+  type RetrievalMetricsInput
+} from './observability/metrics.js';
 export {
-  createEntityExtractor,
-  type EntityExtractor,
-  type EntityExtractionResult,
-  type EntityKind,
-  type EntityRelationship,
-  type ExtractedEntity
-} from './wiki/entity-extractor.js';
+  formatMemoryContextXml,
+  injectMemoryContext,
+  type FormatMemoryContextOptions,
+  type MemoryContextCandidate,
+  type XmlContextContracts
+} from './retrieval/injection.js';
 export {
   createMemoryRetriever,
   type MemoryRetriever,
@@ -55,13 +54,7 @@ export {
   type MemorySearchInput,
   type MemorySearchRecord
 } from './retrieval/retriever.js';
-export {
-  formatMemoryContextXml,
-  injectMemoryContext,
-  type FormatMemoryContextOptions,
-  type MemoryContextCandidate,
-  type XmlContextContracts
-} from './retrieval/injection.js';
+export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
 export {
   createScopeManager,
   type MemoryScope,
@@ -72,6 +65,68 @@ export {
   type ScopePolicy
 } from './scope/scope-manager.js';
 export {
+  collectConflicts,
+  computeSyncChecksum,
+  createBackupManager,
+  createBackupManifest,
+  createConflictStore,
+  createDefaultTursoClient,
+  createFileConflictStore,
+  createMemoryStateAdapter,
+  createNoopTursoClient,
+  createSecureSyncErrorEnvelope,
+  createSyncMetricsRegistry,
+  createSyncScheduler,
+  createTursoHttpClient,
+  createTursoManager,
+  createTursoSyncClient,
+  deserializeMemoryState,
+  redactSyncSecrets,
+  resolveConflict,
+  serializeMemoryState,
+  TursoManager,
+  validateCredentialSource,
+  validateRemoteSnapshot,
+  verifyBackupManifest,
+  verifySyncChecksum,
+  type BackupManager,
+  type BackupManagerOptions,
+  type BackupManifest,
+  type BackupSnapshot,
+  type ConflictRecord,
+  type ConflictResolutionResult,
+  type ConflictStore,
+  type CredentialSource,
+  type FileConflictStoreOptions,
+  type MemoryState,
+  type MemoryStateAdapter,
+  type MemoryStateAdapterOptions,
+  type MemorySyncTier,
+  type MergePolicy,
+  type RemoteValidationResult,
+  type RestoreResult,
+  type RestoreSnapshotOptions,
+  type SecureSyncErrorEnvelope,
+  type SecureSyncErrorOptions,
+  type SyncError,
+  type SyncManagerLike,
+  type SyncMetrics,
+  type SyncMetricsRegistry,
+  type SyncMetricsRegistrySnapshot,
+  type SyncMode,
+  type SyncRecord,
+  type SyncRunResult,
+  type SyncScheduler,
+  type SyncSchedulerOptions,
+  type SyncSnapshot,
+  type SyncStatus,
+  type TursoClient,
+  type TursoHttpClientConfig,
+  type TursoSyncClientConfig,
+  type TursoSyncConfig,
+  type TursoUploadResult
+} from './sync/index.js';
+export {
   createMemoryCaptureTool,
   type CapturedMemoryRecord,
   type MemoryCaptureInput,
@@ -79,6 +134,14 @@ export {
   type MemoryCaptureTool,
   type MemoryCaptureToolDeps
 } from './tools/memory-capture.js';
+export {
+  createMemoryLintTool,
+  type MemoryLintInput,
+  type MemoryLintIssue,
+  type MemoryLintResult,
+  type MemoryLintTool,
+  type MemoryLintToolDeps
+} from './tools/memory-lint.js';
 export {
   createMemoryListTool,
   type MemoryListInput,
@@ -99,30 +162,29 @@ export {
   type MemoryStatsTool,
   type MemoryStatsToolDeps
 } from './tools/memory-stats.js';
+export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
 export {
-  createMemoryLintTool,
-  type MemoryLintInput,
-  type MemoryLintIssue,
-  type MemoryLintResult,
-  type MemoryLintTool,
-  type MemoryLintToolDeps
-} from './tools/memory-lint.js';
+  createEntityExtractor,
+  type EntityExtractionResult,
+  type EntityExtractor,
+  type EntityKind,
+  type EntityRelationship,
+  type ExtractedEntity
+} from './wiki/entity-extractor.js';
 export {
-  createMemoryMetrics,
-  redactSecretLikeValues,
-  type CoordinationLatencyStats,
-  type InjectionMetricsInput,
-  type MemoryMetrics,
-  type MemoryMetricsSnapshot,
-  type RetrievalMetricsInput
-} from './observability/metrics.js';
+  createLocalEmbeddingEngine,
+  type LocalEmbeddingEngine,
+  type LocalEmbeddingEngineOptions
+} from './wiki/local-embedding-engine.js';
+export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
+export { createVersionTracker, type VersionTracker } from './wiki/version-tracker.js';
 export {
   createWikiManager,
+  type ConceptRelation,
+  type PageDiff,
   type RawCapture,
   type RawCaptureInput,
   type RawSourceType,
-  type ConceptRelation,
-  type PageDiff,
   type VectorEntry,
   type VectorSearchResult,
   type WikiManager,

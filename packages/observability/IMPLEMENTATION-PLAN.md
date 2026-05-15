@@ -17,6 +17,7 @@ This plan defines the production implementation order for `@agentsy/observabilit
 It should adapt the strongest OpenLLMetry-style patterns in a way that fits Agentsy's architecture:
 
 - **OpenTelemetry-first core** with semantic conventions for agent/model/tool events.
+- **tslog-backed universal logger layer** for cross-domain structured logs (CLI/runtime/orchestrator/providers/tools/memory/UI adapters).
 - **Redaction-first processing** so sensitive fields are scrubbed before any sink/export.
 - **Composable destination adapters** rather than a monolithic backend.
 - **Convenience SDK/bootstrap path** for quick local setup, plus direct instrumentation for already-instrumented callers.
@@ -31,11 +32,13 @@ It should adapt the strongest OpenLLMetry-style patterns in a way that fits Agen
 - **REQ-OBS-004**: Export paths support local logs, console/file sinks, and OTEL-compatible destinations.
 - **REQ-OBS-005**: The package exposes a lightweight bootstrap path (e.g. `createObservabilityEngine`/`getDefaultEngine`) plus direct composition for already-instrumented consumers.
 - **REQ-OBS-006**: Replay/debug artifacts preserve content-addressable linkage between traces, session snapshots, and incident review workflows.
+- **REQ-OBS-007**: Logging APIs expose a universal typed logger factory backed by `tslog` with sub-loggers, correlation metadata propagation, and consistent JSON log object shape across domains.
 - **SEC-OBS-001**: Redaction pipeline runs before persistence/export, at the span processor or sink boundary.
 - **SEC-OBS-002**: Retention defaults minimize sensitive-data exposure.
 - **SEC-OBS-003**: Telemetry collection is optional and anonymous; direct instrumentation should not require data collection.
 - **CON-OBS-001**: Observability records behavior; policy enforcement remains in guardrails/runtime.
 - **CON-OBS-002**: Trace contracts remain surface-agnostic (CLI/VS Code/web).
+- **CON-OBS-003**: Structured logging contracts are centralized in `@agentsy/observability`; production packages should not rely on raw `console.*` calls for operational logging.
 
 ## 2. Implementation Steps
 
@@ -49,18 +52,20 @@ It should adapt the strongest OpenLLMetry-style patterns in a way that fits Agen
 | TASK-OBS-002 | Add redaction contract tests and schema validation snapshots.                                                                                                             |           |      |
 | TASK-OBS-003 | Document ownership boundaries and package integration points.                                                                                                             |           |      |
 | TASK-OBS-013 | Define semantic conventions for AgentSpan, model calls, tool calls, retrieval, memory, session, and orchestration events so downstream dashboards get stable field names. |           |      |
+| TASK-OBS-019 | Define universal logger contracts (base logger + sub-logger taxonomy, required correlation fields, and redaction/masking defaults) for a tslog-backed implementation.     |           |      |
 
 ### Implementation Phase 2
 
 - GOAL-OBS-002: Core observability implementation with destination adapters and replay-friendly artifacts.
 
-| Task         | Description                                                                                                                      | Completed | Date |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-OBS-004 | Implement trace assembly, correlation IDs, and exporter abstraction layers.                                                      |           |      |
-| TASK-OBS-005 | Implement token/cost/latency metric aggregation and summaries.                                                                   |           |      |
-| TASK-OBS-006 | Finalize redaction and safe export pipelines.                                                                                    |           |      |
-| TASK-OBS-014 | Add first-class sink/adapters for console, file, OTLP-compatible export, and local debug capture.                                |           |      |
-| TASK-OBS-015 | Add replay-friendly record format (content-addressable trace/session artifacts) for deterministic debugging and incident review. |           |      |
+| Task         | Description                                                                                                                            | Completed | Date |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-OBS-004 | Implement trace assembly, correlation IDs, and exporter abstraction layers.                                                            |           |      |
+| TASK-OBS-005 | Implement token/cost/latency metric aggregation and summaries.                                                                         |           |      |
+| TASK-OBS-006 | Finalize redaction and safe export pipelines.                                                                                          |           |      |
+| TASK-OBS-014 | Add first-class sink/adapters for console, file, OTLP-compatible export, and local debug capture.                                      |           |      |
+| TASK-OBS-015 | Add replay-friendly record format (content-addressable trace/session artifacts) for deterministic debugging and incident review.       |           |      |
+| TASK-OBS-020 | Implement tslog-backed logger engine and adapter bridge (pretty/json/hidden modes, attached transports, and child logger inheritance). |           |      |
 
 ### Implementation Phase 3
 
@@ -73,17 +78,19 @@ It should adapt the strongest OpenLLMetry-style patterns in a way that fits Agen
 | TASK-OBS-009 | Add integration tests for trace completeness and redaction guarantees.                                                                                                                 |           |      |
 | TASK-OBS-016 | Add instrumentation modules or wrappers for framework surfaces (runtime, tools, memory, retrieval, providers, orchestrator, CLI, VS Code) using consistent semantic-convention naming. |           |      |
 | TASK-OBS-017 | Make direct instrumentation usable without the convenience bootstrap path for already OTEL-instrumented deployments.                                                                   |           |      |
+| TASK-OBS-021 | Integrate universal logger factories across runtime/tools/memory/retrieval/providers/orchestrator/CLI/VS Code with domain-specific sub-loggers and shared correlation IDs.             |           |      |
 
 ### Implementation Phase 4
 
 - GOAL-OBS-004: Hardening and release readiness.
 
-| Task         | Description                                                                                          | Completed | Date |
-| ------------ | ---------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-OBS-010 | Add performance and retention behavior regressions.                                                  |           |      |
-| TASK-OBS-011 | Align package docs and incident-debugging examples.                                                  |           |      |
-| TASK-OBS-012 | Pass package and monorepo release gates.                                                             |           |      |
-| TASK-OBS-018 | Validate no-telemetry defaults, anonymous-only collection boundaries, and sink redaction under load. |           |      |
+| Task         | Description                                                                                                                                  | Completed | Date |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-OBS-010 | Add performance and retention behavior regressions.                                                                                          |           |      |
+| TASK-OBS-011 | Align package docs and incident-debugging examples.                                                                                          |           |      |
+| TASK-OBS-012 | Pass package and monorepo release gates.                                                                                                     |           |      |
+| TASK-OBS-018 | Validate no-telemetry defaults, anonymous-only collection boundaries, and sink redaction under load.                                         |           |      |
+| TASK-OBS-022 | Add regression/performance tests for logger overhead, transport fan-out behavior, and redaction correctness under high-volume event streams. |           |      |
 
 ## 3. Acceptance Criteria
 
@@ -91,12 +98,14 @@ It should adapt the strongest OpenLLMetry-style patterns in a way that fits Agen
 - **ACC-OBS-002**: Redaction guarantees hold across all exporters.
 - **ACC-OBS-003**: CI/release gates pass.
 - **ACC-OBS-004**: Semantic conventions and replay-friendly artifacts support consistent downstream debugging across sessions and services.
+- **ACC-OBS-005**: Universal tslog-backed logger contracts are validated across domains with consistent field schemas, correlation propagation, and redaction guarantees.
 
 ## 4. Sources Synthesized
 
 - `plan/MASTER-IMPLEMENTATION-PLAN.md`
 - `plan/feature-cli-dogfood-production-order-1.md`
 - `https://github.com/traceloop/openllmetry`
+- `https://tslog.js.org`
 - `docs/packages/observability.md`
 - `packages/observability/README.md`
 - `packages/observability/IMPLEMENTATION-REVIEW.md`
