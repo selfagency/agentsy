@@ -358,3 +358,10 @@ export function createRuntimeWorkflowExecutor(options: RuntimeLoopOptions = {}):
     }
   };
 }
+
+// Phase 4 — Virtual sandbox
+export * from './sandbox/virtual/container-detector.js';
+export * from './sandbox/virtual/dynamic-trigger.js';
+export * from './sandbox/virtual/virtual-sandbox.js';
+export * from './sandbox/virtual/router.js';
+export * from './sandbox/policy/secrets-guard.js';

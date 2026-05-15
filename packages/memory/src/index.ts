@@ -273,3 +273,10 @@ export function createMemoryStore(): MemoryStore {
     }
   };
 }
+
+// Phase 4 — AgentFS, content-addressing
+export * from './filesystem/agentfs/manager.js';
+export * from './filesystem/agentfs/kv-store.js';
+export * from './filesystem/agentfs/audit-trail.js';
+export * from './filesystem/agentfs/snapshots.js';
+export * from './content-addressing/index.js';

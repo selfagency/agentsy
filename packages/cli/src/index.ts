@@ -195,7 +195,19 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     return 0;
   }
 
+  if (command === 'sandbox-diagnostics') {
+    const { runSandboxDiagnosticsCommand } = await import('./commands/sandbox-diagnostics.js');
+    return runSandboxDiagnosticsCommand(rest, io);
+  }
+
+  if (command === 'content-address-stats') {
+    const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
+    return runContentAddressStatsCommand(rest, io);
+  }
+
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
-  (io.stderr ?? DEFAULT_IO.stderr)('Supported commands: compress, compress-memory, memory-sync-dev');
+  (io.stderr ?? DEFAULT_IO.stderr)(
+    'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
+  );
   return 1;
 }

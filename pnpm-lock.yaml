@@ -48,6 +48,12 @@ importers:
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
+      '@agentsy/memory':
+        specifier: workspace:*
+        version: link:../memory
+      '@agentsy/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@agentsy/tokens':
         specifier: workspace:*
         version: link:../tokens
