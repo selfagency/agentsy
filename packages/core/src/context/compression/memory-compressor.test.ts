@@ -18,7 +18,7 @@ afterAll(async () => {
 
 describe('isSensitivePath', () => {
   it('detects known sensitive filenames and paths', () => {
-    expect(isSensitivePath('/tmp/.env')).toBe(true);
+    expect(isSensitivePath('/workspace/.env')).toBe(true);
     expect(isSensitivePath('/Users/me/.ssh/id_rsa')).toBe(true);
     expect(isSensitivePath('/workspace/credentials.yml')).toBe(true);
   });

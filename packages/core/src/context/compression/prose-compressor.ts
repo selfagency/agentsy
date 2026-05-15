@@ -31,8 +31,8 @@ export function getRemovalWords(level: CompressionLevel): readonly string[] {
 export function removeWordList(input: string, words: readonly string[]): string {
   let output = input;
   for (const word of words) {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    output = output.replace(new RegExp(`\\b${escaped}\\b`, 'gi'), '');
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+    output = output.replace(new RegExp(String.raw`\b${escaped}\b`, 'gi'), '');
   }
 
   return output;
