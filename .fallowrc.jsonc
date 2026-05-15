@@ -10,7 +10,7 @@
   "usedClassMembers": [],
   // Duplicate detection tuning (reduce noise for trivial/script duplication during cleanup).
   "duplicates": {
-    "threshold": 3
+    "threshold": 10
   },
   // Health threshold tuning (will be refined after regenerating coverage).
   "health": {

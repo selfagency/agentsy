@@ -7,6 +7,13 @@ export {
   type RuntimeContextReuse,
   type RuntimeReusableSegment
 } from './cache-aware-context.js';
+export {
+  buildRuntimeMemoryContextXml,
+  injectRuntimeMemoryContext,
+  type RuntimeCitation,
+  type RuntimeMemoryEvidence,
+  type RuntimeMemoryInjectionOptions
+} from './memory-injection.js';
 
 export interface RuntimeTask {
   id: string;

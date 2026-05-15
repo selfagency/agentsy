@@ -162,3 +162,49 @@ These are not required for local-only operation, but they are the canonical conf
 - `pnpm --filter @agentsy/memory test` ✅
 
 See `plan/PHASE-1-COMPLETION.md` and `plan/PHASE-2-COMPLETION.md` for detailed completion and verification notes.
+
+## Phase 3 RAG enhancement (current)
+
+Phase 3 retrieval capabilities are now implemented for local-first knowledge workflows.
+
+### RAG integration surface
+
+- `createRAGConfig()`
+- `createRAGServerClient()`
+- `createKnowledgeBaseManager()`
+- `createRAGBootstrapper()`
+- `createDocumentIngestor()`
+- `createSourceConnectors()`
+- `createIndexManager()`
+- `createReindexScheduler()`
+- `sanitizeIngestSource()`
+
+### Retrieval quality and context assembly
+
+- `createHybridRetriever()` (vector + lexical + entity + temporal)
+- `rerankResults()`
+- `createQueryPlanner()`
+- `packEvidenceForContext()`
+- typed evidence/citation contracts from `src/retrieval/rag/types.ts`
+
+### Retrieval observability
+
+- `createRAGMetrics()` for latency, hit-rate, source mix, and citation coverage
+
+### Runtime bridge
+
+Phase 3 also adds runtime-side citation-preserving context helpers in `@agentsy/runtime`:
+
+- `buildRuntimeMemoryContextXml()`
+- `injectRuntimeMemoryContext()`
+
+### Validation status (Phase 3)
+
+- `pnpm --filter @agentsy/memory check-types` ✅
+- `pnpm --filter @agentsy/memory test` ✅
+- `pnpm --filter @agentsy/runtime check-types` ✅
+- `pnpm --filter @agentsy/runtime test` ✅
+- `pnpm --filter @agentsy/testing check-types` ✅
+- `pnpm --filter @agentsy/testing test` ✅
+
+See `plan/PHASE-3-COMPLETION.md` for detailed evidence.

@@ -4,13 +4,13 @@ version: 1.0
 date_created: 2026-05-15
 last_updated: 2026-05-15
 owner: agentsy-core
-status: Planned
+status: Complete
 tags: [feature, memory, retrieval, rag, mcp, indexing, phase3]
 ---
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Complete](https://img.shields.io/badge/status-Complete-brightgreen)
 
 This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTATION-PRIORITY.md`: RAG enhancement through `mcp-rag-server` integration, knowledge base lifecycle management, document/web ingestion, hybrid ranking, and production retrieval quality controls.
 
@@ -49,54 +49,54 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 
 - GOAL-001: Build RAG client and knowledge base lifecycle foundation.
 
-| Task     | Description                                                                                                                                              | Completed | Date |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-001 | Create `packages/memory/src/retrieval/rag/server-client.ts` exposing typed `RAGServerClient` methods (`search`, `ingest`, `upsert`, `delete`, `health`). |           |      |
-| TASK-002 | Create `packages/memory/src/retrieval/rag/knowledge-base.ts` with collection lifecycle, index metadata, and synchronization cursors.                     |           |      |
-| TASK-003 | Create `packages/memory/src/retrieval/rag/config.ts` for local-only defaults, source gates, and weighting parameters.                                    |           |      |
-| TASK-004 | Implement startup auto-ingest bootstrap in `packages/memory/src/retrieval/rag/bootstrap.ts`.                                                             |           |      |
-| TASK-005 | Create typed retrieval model contracts in `packages/memory/src/retrieval/rag/types.ts` (evidence, citation, score breakdown).                            |           |      |
-| TASK-006 | Add unit tests for client/config/bootstrap flows in `packages/memory/src/retrieval/rag/*.test.ts`.                                                       |           |      |
-| TASK-025 | Add shared MSW handler suites for RAG server/web connector endpoints and integrate them with test lifecycle setup for Node-based suites.                 |           |      |
+| Task     | Description                                                                                                                                              | Completed | Date       |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-001 | Create `packages/memory/src/retrieval/rag/server-client.ts` exposing typed `RAGServerClient` methods (`search`, `ingest`, `upsert`, `delete`, `health`). | ✅        | 2026-05-15 |
+| TASK-002 | Create `packages/memory/src/retrieval/rag/knowledge-base.ts` with collection lifecycle, index metadata, and synchronization cursors.                     | ✅        | 2026-05-15 |
+| TASK-003 | Create `packages/memory/src/retrieval/rag/config.ts` for local-only defaults, source gates, and weighting parameters.                                    | ✅        | 2026-05-15 |
+| TASK-004 | Implement startup auto-ingest bootstrap in `packages/memory/src/retrieval/rag/bootstrap.ts`.                                                             | ✅        | 2026-05-15 |
+| TASK-005 | Create typed retrieval model contracts in `packages/memory/src/retrieval/rag/types.ts` (evidence, citation, score breakdown).                            | ✅        | 2026-05-15 |
+| TASK-006 | Add unit tests for client/config/bootstrap flows in `packages/memory/src/retrieval/rag/*.test.ts`.                                                       | ✅        | 2026-05-15 |
+| TASK-025 | Add shared MSW handler suites for RAG server/web connector endpoints and integrate them with test lifecycle setup for Node-based suites.                 |           |            |
 
 ### Implementation Phase 2
 
 - GOAL-002: Implement ingestion pipeline and index management.
 
-| Task     | Description                                                                                                                                    | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-007 | Create `packages/memory/src/retrieval/rag/document-ingest.ts` for markdown/text/code ingestion with deterministic chunking.                    |           |      |
-| TASK-008 | Create `packages/memory/src/retrieval/rag/source-connectors.ts` for local file sources and optional web connectors with allowlist enforcement. |           |      |
-| TASK-009 | Implement dedup/version tracking in `packages/memory/src/retrieval/rag/index-manager.ts` using content fingerprints.                           |           |      |
-| TASK-010 | Implement re-index scheduler in `packages/memory/src/retrieval/rag/reindex-scheduler.ts` with incremental update support.                      |           |      |
-| TASK-011 | Create ingestion validation and redaction hooks in `packages/memory/src/retrieval/rag/sanitization.ts`.                                        |           |      |
-| TASK-012 | Add ingestion/index tests including update/delete/reindex and idempotency scenarios.                                                           |           |      |
+| Task     | Description                                                                                                                                    | Completed | Date       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-007 | Create `packages/memory/src/retrieval/rag/document-ingest.ts` for markdown/text/code ingestion with deterministic chunking.                    | ✅        | 2026-05-15 |
+| TASK-008 | Create `packages/memory/src/retrieval/rag/source-connectors.ts` for local file sources and optional web connectors with allowlist enforcement. | ✅        | 2026-05-15 |
+| TASK-009 | Implement dedup/version tracking in `packages/memory/src/retrieval/rag/index-manager.ts` using content fingerprints.                           | ✅        | 2026-05-15 |
+| TASK-010 | Implement re-index scheduler in `packages/memory/src/retrieval/rag/reindex-scheduler.ts` with incremental update support.                      | ✅        | 2026-05-15 |
+| TASK-011 | Create ingestion validation and redaction hooks in `packages/memory/src/retrieval/rag/sanitization.ts`.                                        | ✅        | 2026-05-15 |
+| TASK-012 | Add ingestion/index tests including update/delete/reindex and idempotency scenarios.                                                           | ✅        | 2026-05-15 |
 
 ### Implementation Phase 3
 
 - GOAL-003: Implement advanced retrieval quality features and hybrid ranking.
 
-| Task     | Description                                                                                                                                                | Completed | Date |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-013 | Create `packages/memory/src/retrieval/rag/hybrid-retriever.ts` combining vector similarity, lexical match, entity overlap, and temporal recency.           |           |      |
-| TASK-014 | Create `packages/memory/src/retrieval/rag/reranker.ts` with explainable score composition and tunable weights.                                             |           |      |
-| TASK-015 | Implement query optimization in `packages/memory/src/retrieval/rag/query-planner.ts` (expansion, filters, intent routing).                                 |           |      |
-| TASK-016 | Implement evidence packing in `packages/memory/src/retrieval/rag/context-packer.ts` constrained by token budgets and citation requirements.                |           |      |
-| TASK-017 | Add retrieval quality fixtures and benchmark harness in `packages/testing/fixtures/retrieval/` and `packages/testing/src/benchmarks/retrieval-quality.ts`. |           |      |
-| TASK-018 | Add ranking/relevance tests and benchmark assertions versus vector-only baseline.                                                                          |           |      |
+| Task     | Description                                                                                                                                                | Completed | Date       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-013 | Create `packages/memory/src/retrieval/rag/hybrid-retriever.ts` combining vector similarity, lexical match, entity overlap, and temporal recency.           | ✅        | 2026-05-15 |
+| TASK-014 | Create `packages/memory/src/retrieval/rag/reranker.ts` with explainable score composition and tunable weights.                                             | ✅        | 2026-05-15 |
+| TASK-015 | Implement query optimization in `packages/memory/src/retrieval/rag/query-planner.ts` (expansion, filters, intent routing).                                 | ✅        | 2026-05-15 |
+| TASK-016 | Implement evidence packing in `packages/memory/src/retrieval/rag/context-packer.ts` constrained by token budgets and citation requirements.                | ✅        | 2026-05-15 |
+| TASK-017 | Add retrieval quality fixtures and benchmark harness in `packages/testing/fixtures/retrieval/` and `packages/testing/src/benchmarks/retrieval-quality.ts`. | ✅        | 2026-05-15 |
+| TASK-018 | Add ranking/relevance tests and benchmark assertions versus vector-only baseline.                                                                          | ✅        | 2026-05-15 |
 
 ### Implementation Phase 4
 
 - GOAL-004: Integrate with runtime and observability; finalize production gates.
 
-| Task     | Description                                                                                                                                  | Completed | Date |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-019 | Wire retrieval outputs into runtime memory injection path (`@agentsy/runtime`) with evidence/citation metadata preservation.                 |           |      |
-| TASK-020 | Add retrieval observability module `packages/memory/src/retrieval/rag/metrics.ts` with latency, hit-rate, source-mix, and citation counters. |           |      |
-| TASK-021 | Add end-to-end integration tests for local-only mode, hybrid mode, and degraded/offline mode fallback.                                       |           |      |
-| TASK-022 | Update docs in `packages/memory/README.md`, `docs/packages/memory.md`, and examples under `docs/examples/` for RAG flows.                    |           |      |
-| TASK-023 | Run `pnpm --filter @agentsy/memory check-types && pnpm --filter @agentsy/memory test` and retrieval benchmark suites.                        |           |      |
-| TASK-024 | Run monorepo `pnpm check-types && pnpm test`; record evidence in `plan/PHASE-3-COMPLETION.md`.                                               |           |      |
+| Task     | Description                                                                                                                                  | Completed | Date       |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-019 | Wire retrieval outputs into runtime memory injection path (`@agentsy/runtime`) with evidence/citation metadata preservation.                 | ✅        | 2026-05-15 |
+| TASK-020 | Add retrieval observability module `packages/memory/src/retrieval/rag/metrics.ts` with latency, hit-rate, source-mix, and citation counters. | ✅        | 2026-05-15 |
+| TASK-021 | Add end-to-end integration tests for local-only mode, hybrid mode, and degraded/offline mode fallback.                                       | ✅        | 2026-05-15 |
+| TASK-022 | Update docs in `packages/memory/README.md`, `docs/packages/memory.md`, and examples under `docs/examples/` for RAG flows.                    | ✅        | 2026-05-15 |
+| TASK-023 | Run `pnpm --filter @agentsy/memory check-types && pnpm --filter @agentsy/memory test` and retrieval benchmark suites.                        | ✅        | 2026-05-15 |
+| TASK-024 | Run monorepo `pnpm check-types && pnpm test`; record evidence in `plan/PHASE-3-COMPLETION.md`.                                               | ✅        | 2026-05-15 |
 
 ## 3. Alternatives
 

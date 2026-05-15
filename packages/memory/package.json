@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@agentsy/runtime": "workspace:*",
+    "@agentsy/tokens": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@tursodatabase/sync": "^0.6.0"
   },
