@@ -168,7 +168,7 @@ Critical Findings By Package
 - ❌ MISSING: Generic browser renderer missing
 - ❌ MISSING: 11 major Ink components (DiffViewer, WorktreeBrowser, TextEditor etc.)
 - Risk: VSCode and browser integrations will fail
-  @agentsy/scripts (~70%) - Solid但有结构问题
+  @agentsy/scripts (~70%) - Solid but with structural problems
 - ✅ Excellent: Release automation, version management, repo maintenance
 - ❌ Directory structure wrong (flat instead of ci/, release/, maintenance/)
 - ❌ Missing: CI/CD helpers for test aggregation, coverage, type safety

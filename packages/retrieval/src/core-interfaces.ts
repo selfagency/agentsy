@@ -34,7 +34,7 @@ export interface IndexingPipeline {
   removePage(id: string): Promise<void>;
 
   /**
-   * 遗留接口 (保留向后兼容)
+   * Legacy interface (preserved for backward compatibility)
    */
   legacyIndexPage?(page: Document): Promise<void>;
 }
@@ -56,7 +56,7 @@ export interface RetrievalEngine {
   removePage(id: string): Promise<void>;
 
   /**
-   * 遗产接口 (保留向后兼容)
+   * Legacy interface (preserved for backward compatibility)
    */
   legacyIndexPage?(page: Document): Promise<void>;
 }
@@ -102,7 +102,7 @@ export interface RetrievalEngineCustom {
   removePage(id: string): Promise<void>;
 
   /**
-   * 遗留接口 (保留向后兼容)
+   * Legacy interface (preserved for backward compatibility)
    */
   legacyIndexPage?(page: Document): Promise<void>;
 }
@@ -140,7 +140,7 @@ export interface RetrievalEngine {
   removePage(id: string): Promise<void>;
 
   /**
-   * 遗产接口 (保留向后兼容)
+   * Legacy interface (preserved for backward compatibility)
    */
   legacyIndexPage?(page: Document): Promise<void>;
 }

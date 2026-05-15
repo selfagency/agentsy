@@ -47,7 +47,7 @@
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │           Multi-Stage Liveness Coordination             │   │
 │  ├──────────────────────────────────────────────────────────┤   │
-│  │ • Compact Memory (具象 to 抽象)                         │   │
+│  │ • Compact Memory (concrete to abstract)                         │   │
 │  │ • Priority Segments (current > recent > historical)       │   │
 │  │ • Smart Truncation (preserve code/URLs/paths)             │   │
 │  │ • Honker Coordination (1-5ms pub/sub)                    │   │
@@ -274,7 +274,7 @@ export async function compressMemoryFile(
 - Security path detection validation
 - File type detection accuracy
 - Validation system correctness
-- Backup/restore可靠性测试
+- Backup/restore reliability testing
 
 ### Day 5-6: Validation System & Benchmarks
 
@@ -1198,52 +1198,52 @@ export async function computeBLAKE3(content: string): Promise<string> {
 ## Phase 5: Multi-Stage Liveness Coordination (Days 21-24)
 
 - **Target:** Keep only what's needed, Trinity repository patterns
-- **Proof of concept:** 具象→抽象 transition, priority segments
+- **Proof of concept:** concrete→abstract transition, priority segments
 
 ### Day 21-22: Compact Memory Implementation
 
-**Scope:** 具象 to 抽象 transition for multi-stage liveness
+**Scope:** concrete to abstract transition for multi-stage liveness
 
-**漫冷 (Cold Memory) - 具象完整度 100%:**
+**Cold Memory - concreteness 100%:**
 
 ```text
-保存完整的上下文和步骤，可随时恢复工作状态
-保留详细的文件路径和精确的步骤
-特定位置引用
+Save complete context and steps, restore work state at any time
+Retain detailed file paths and precise steps
+Specific location references
 ```
 
-**恰到好处 (Precise Warm Memory) - 具象完整度 70%:**
+**Precise Warm Memory - concreteness 70%:**
 
 ```text
-关键路径和必要技术细节
-提供技术细节的概括性总结
-综合性的片段
+Critical paths and necessary technical details
+Provide summary of technical details
+Comprehensive snippets
 ```
 
-**温热 (Warm Memory) - 具象完整度 50%:**
+**Warm Memory - concreteness 50%:**
 
 ```text
-高层策略和关键技术术语
-提供技术细节的总结，但无需详细定位信息
-使用关键词和概念
+High-level strategies and key technical terms
+Provide summary of technical details, but no detailed location information
+Use keywords and concepts
 ```
 
-**分阶段记忆精简 (Multi-stage liveness):**
+**分阶段记忆精简:**
 
 ```text
-→ 当前正在进行的任务: 漫冷 (Cold - 100%)
-→ 最近的上下文: 恰到好处 (Precise - 70%)
-→ 历史记录: 温热 (Warm - 50%)
-→ 重要决策: 结构化摘要或链接到漫冷记忆
-→ 可清除的内容: 删除或归档
+→ Currently active tasks: Cold Memory 100%)
+→ Recent context: Precise Warm Memory 70%)
+→ Historical records: Warm Memory 50%)
+→ Important decisions: Structured summary or links to Cold Memory
+→ Clearable content: Delete or archive
 ```
 
 **Multi-stage liveness priorities:**
 
-1. Active tasks: 漫冷
-2. Recent context (last ~10 messages): 恰到好处
-3. Historical context (older messages): 温热
-4. Important decisions: 具体摘要或链接
+1. Active tasks: Cold Memory
+2. Recent context (last ~10 messages): Precise Warm Memory
+3. Historical context (older messages): Warm Memory
+4. Important decisions: Specific summary or links
 5. Overflow: Delete or archive
 
 **Implementation:**
@@ -1268,14 +1268,14 @@ export class CompactMemoryManager {
   // Compact a stage's memory
   async compact(
     stage: CompactStage,
-    targetRatio: number, // Target 具象完整度 (0.0-1.0)
+    targetRatio: number, // Target concreteness (0.0-1.0)
   ): Promise<CompactResult>;
 }
 
 export enum CompactStage {
-  COLD = 'cold', // Active tasks, 100% 具象完整度
-  PRECISE = 'precise', // Recent context, 70% 具象完整度
-  WARM = 'warm', // Historical, 50% 具象完整度
+  COLD = 'cold', // Active tasks, 100% concreteness
+  PRECISE = 'precise', // Recent context, 70% concreteness
+  WARM = 'warm', // Historical, 50% concreteness
   ARCHIVE = 'archive', // Important decisions, structured summary
   OVERFLOW = 'overflow', // Overflow, delete or archive
 }
@@ -1285,27 +1285,27 @@ export interface CompactMemory {
   content: string;
   compressed: string;
   stage: CompactStage;
-  concreteness: number; // 具象完整度 0.0-1.0
+  concreteness: number; // Concreteness 0.0-1.0
   createdAt: Date;
   lastAccessed: Date;
   metadata: MemoryMetadata;
 }
 ```
 
-**Compaction rules (具象完整度 targets):**
+**Compaction rules (concreteness targets):**
 
 ```text
-COLD (漫冷): 1.0   - 100% 具象完整度 (保留完整上下文和步骤)
-PRECISE (恰到好处): 0.7 - 70% 具象完整度 (关键路径，技术细节概括)
-WARM (温热): 0.5   - 50% 具象完整度 (高层策略，关键术语)
-ARCHIVE (归档): 0.3  - 30% 具象完整度 (结构化摘要或链接)
-OVERFLOW: 0.0       - 0% 具象完整度 (删除或压缩到极端摘要)
+COLD: 1.0   - 100% concreteness (Retain complete context and steps)
+  PRECISE: 0.7 - 70% concreteness (Critical paths, summary of technical details)
+  WARM: 0.5   - 50% concreteness (High-level strategies, key terms)
+  ARCHIVE: 0.3  - 30% concreteness (Structured summary or links)
+  OVERFLOW: 0.0       - 0% concreteness (Delete or compress to extreme summary)
 ```
 
 **Implementation Tasks:**
 
 1. Multi-stage memory lifecycle management
-2. Compact phase detection (具象→ 抽象)
+2. Compact phase detection (concrete→abstract)
 3. Age-based transition: COLD → PRECISE → WARM → ARCHIVE → OVERFLOW
 4. Priority-based retention
 5. Smart truncation with preservation rules

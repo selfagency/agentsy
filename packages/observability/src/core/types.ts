@@ -205,13 +205,13 @@ export interface Histogram {
 
 /**
  * Gauge metric for point-in-time values
- * 可以上下变化的值
+ * Value that can go up or down
  */
 export interface Gauge {
   /**
    * Records a value to this gauge
    * @param amount - The value to record
-   * * 额外属性关联数据
+   * * Additional attributes for data association
    *
    * In English: Additional attributes to associate with this recording
    */
@@ -225,7 +225,7 @@ export interface Gauge {
   /**
    * Decrements the gauge by the specified amount
    * @param amount - Optional amount to decrement by
-   * @param attributes - 额外属性
+   * @param attributes - Optional attributes to add
    */
   decrement(amount?: number, attributes?: Record<string, string | number | boolean | string[]>): void;
 }
@@ -235,9 +235,9 @@ export interface Gauge {
  */
 export interface ObservableGauge {
   /**
-   * Records a single observation for this observable gauge
-   * @param amount - 值
-   * * 额外属性
+   * Records a single observation
+   * @param amount - The value to record
+   * * Additional attributes for data association
    *
    * In English: Additional attributes to associate with this recording
    */
@@ -373,8 +373,8 @@ export interface RedactionPolicy {
   readonly providerRules: ReadonlyMap<string, readonly RedactionRule[]>;
   /**
    * Redacts a value according to this policy
-   * @param value - 原始值
-   * @returns 红化后的值
+   * @param value - Original value
+   * @returns Redacted value
    */
   redact(value: string): string;
 }

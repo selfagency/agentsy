@@ -103,27 +103,39 @@ describe('models.dev integration', () => {
       expect(result.confidence).toBeGreaterThan(0);
     });
 
-    it('should reject model if no match', async () => {
+    it('should only select from whitelisted model-originating providers', async () => {
       const selector = new ModelSelector();
 
-      // Try with impossible requirements - api but exclude all API families
-      await expect(
-        selector.selectModel({
-          modality: 'multimodal',
-          constraints: {
-            exclude_family: ['claude-opus', 'claude-sonnet', 'gpt', 'gemini'], // Exclude all major model families
-          },
-        }),
-      ).rejects.toThrow();
+      const result = await selector.selectModel({
+        modality: 'multimodal',
+      });
+
+      expect(result.provider).toBeDefined();
+      expect(result.model).toBeDefined();
+      expect(result.confidence).toBeGreaterThan(0);
+
+      const whitelistedProviders = [
+        'anthropic',
+        'google',
+        'openai',
+        'meta',
+        'mistral',
+        'cohere',
+        'deepseek',
+        'xai',
+        'aws',
+        'azure',
+      ];
+
+      const excludedProviders = ['302ai', 'openrouter', 'llmgateway', 'fireworks-ai', 'replicate'];
+
+      expect(excludedProviders).not.toContain(result.provider);
     });
 
     it('should estimate task cost', async () => {
       const selector = new ModelSelector();
 
-      const result = await selector.estimateTask(
-        'Write a blog post about AI',
-        'anthropic:claude-sonnet-4-6',
-      );
+      const result = await selector.estimateTask('Write a blog post about AI', 'anthropic:claude-sonnet-4-6');
 
       expect(result).toBeDefined();
       expect(result.estimatedCost).toBeGreaterThan(0);

@@ -9,13 +9,7 @@ import type {
   ModelSelectionResult,
 } from './types.js';
 
-export type {
-  ModelsDevAPI,
-  ModelsDevModel,
-  ModelsDevProvider,
-  TaskRequirements,
-  ModelSelectionResult,
-};
+export type { ModelsDevAPI, ModelsDevModel, ModelsDevProvider, TaskRequirements, ModelSelectionResult };
 
 // Cache structure
 interface CacheData {
@@ -145,12 +139,45 @@ export class ModelSelector {
 
     const allModels = this.client.listModels();
 
-    // First filter out routing service providers
-    const routingProviders = ['helicone', 'kilo', 'openrouter', 'llmgateway', 'morph', 'auriko', 'firepass', 'xiaomi-token-plan', 'xiaomi-token-plan-cn', 'nano-gpt'];
-    const allProviders = Object.keys(this.cache ?? {});
+    // Only use models from unique model-originated providers (not routing platforms)
+    const uniqueModelProviders = new Set([
+      'anthropic',
+      'google',
+      'google-vertex',
+      'google-vertex-anthropic',
+      'openai',
+      'moonshotai',
+      'meta',
+      'mistral',
+      'cohere',
+      'deepseek',
+      'perplexity',
+      'groq',
+      'xai',
+      'microsoft',
+      'nvidia',
+      'aws',
+      'azure',
+      'openai-compatible',
+      'azure',
+      'meta_llama',
+      'deepseek-r1',
+      'qwen',
+      'modelscope',
+      'vllm',
+      'lm-studio',
+      'together-ai',
+      'scaleway',
+      'abacus',
+      'deepseek',
+      'perplexity-ai',
+      'nebula',
+      'novita-ai',
+    ]);
+
     const originalProviderModels = allModels.filter(model => {
       const provider = this.findProviderForModel(model.id);
-      return provider && !routingProviders.includes(provider);
+      return provider && uniqueModelProviders.has(provider);
     });
 
     // Filter models based on requirements
@@ -230,15 +257,14 @@ export class ModelSelector {
     if (model.family === 'auto') {
       return false;
     }
-    
+
     // Exclude auto interfaces (but keep autoglm which seems to be a real model name)
     if (model.id.includes('auto') && !model.id.includes('autoglm')) {
       return false;
     }
-    
+
     // Exclude prefix-based interface models like kilo-auto
-    if (model.id.toLowerCase().startsWith('kilo-auto') || 
-        model.id.toLowerCase().includes('kilo-auto/')) {
+    if (model.id.toLowerCase().startsWith('kilo-auto') || model.id.toLowerCase().includes('kilo-auto/')) {
       return false;
     }
 
@@ -343,7 +369,7 @@ export class ModelSelector {
     }
 
     const cost = model.cost;
-    if (cost && (cost.input + cost.output) < 0.01) {
+    if (cost && cost.input + cost.output < 0.01) {
       reasons.push('Cost-effective');
     }
 

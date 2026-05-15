@@ -2,250 +2,377 @@
 
 ## Purpose
 
-Standalone, pluggable safety and security guardrails for the `@agentsy` platform. Provides input/output moderation pipelines, PII redaction, intent classification, retrieval domain firewalling, token quota enforcement, streaming filters, and regulatory compliance audit trails.
+`@agentsy/guardrails` is the policy enforcement layer for Agentsy. It should protect inputs, outputs, retrieval, memory, tools, network egress, and high-impact actions with a layered, local-first, human-accountable design.
 
-Always an optional dependency — consumers opt in per-agent.
+It must also explicitly enforce the project’s ethical policy documents at runtime:
 
-Source: `plan/owasp-security-testing-1.md` (tasks TASK-T071..T090 + REQ-076..REQ-090)
+- `ETHICS.md`
+- `SAFETY.md`
+- `GOVERNANCE.md`
+- `docs/constitution.md`
 
----
+The package is optional and opt-in per agent, but when enabled it must be the canonical place for:
 
-## Requirements
+- safety and security checks
+- privacy and redaction controls
+- tool and retrieval authorization
+- approval gates for high-impact actions
+- policy tracing and audit receipts
+- policy evaluation and red-team support
 
-- **REQ-076**: `GuardrailsController` API for per-agent input/output moderation policy configuration
-- **REQ-077**: Pluggable `GuardrailProvider` interface — OpenAI Moderation, Llama Guard, regex, custom
-- **REQ-078**: Per-agent policy: `allowedTopics`, `blockedTopics`, `trustHierarchy`, hard-refusal rules, `ALLOWED_TOOLS`
-- **REQ-079**: PII detection and redaction on both input (before LLM) and output (before response delivery)
-- **REQ-080**: Prompt injection detection (direct and indirect) at input validation stage
-- **REQ-081**: Output moderation categories: toxic language, sexual content, violence, self-harm, hate speech, specialized advice (legal/medical/financial)
-- **REQ-082**: Typed observability events: `guardrail:blocked`, `guardrail:pii-redacted`, `guardrail:quota-exceeded`
-- **REQ-083**: Streaming guardrails — filters run on sliding window chunks, no full-response buffering; < 50 ms p99 latency overhead per chunk
-- **REQ-084**: Adversarial bypass test suite: jailbreak patterns, indirect injection, multi-step escalation
-- **REQ-085**: RAG retrieval source domain allowlist firewall — blocks untrusted context injection
-- **REQ-086**: Per-session token quotas enforced to prevent denial-of-wallet attacks
-- **REQ-087**: Intent classifier ("bouncer") rejects out-of-scope queries before reaching the primary LLM
-- **REQ-088**: Regulatory compliance audit trail per-request (EU AI Act, NIST AI RMF, GDPR/HIPAA)
-- **REQ-089**: Application-level safety testing: `safetyScore = safeResponses / totalProbes`
-- **REQ-090**: OWASP LLM Top 10:2025 (LLM01–LLM10) AND OWASP Agentic Top 10:2026 (ASI01–ASI10) test coverage
+## Research-derived design principles
 
-### Constraints
+- **Layered defense**: do not rely on one model, one filter, or one provider.
+- **Least privilege**: grant minimal access by default.
+- **Deny by default**: sensitive actions require explicit authorization.
+- **Local-first**: prefer offline or in-process checks before external calls.
+- **Contestable decisions**: users must be able to see why something was blocked or allowed.
+- **No raw sensitive data in logs**: redact secrets and PII at the boundary.
+- **Risk-tiered policy**: low-, medium-, high-, and prohibited-risk handling.
+- **Continuous evaluation**: guardrails degrade unless they are red-teamed and monitored.
+- **Human oversight**: high-impact actions need approval and traceability.
+- **Proportionality**: use the minimum intervention needed to reduce harm.
 
-- **CON-014**: Must be a standalone package — not bundled into `@agentsy/orchestrator`
-- **CON-015**: Provider integrations (openai, llama-guard) must be optional peer dependencies
-- **CON-016**: Streaming filter adds < 50 ms p99 latency overhead per chunk
-- **CON-017**: False positive rate for content filtering < 1%
+## Scope
 
----
+The package should cover:
+
+- ethical policy enforcement from the project policy documents
+- input moderation
+- output moderation
+- prompt-injection detection
+- retrieval-domain firewalling
+- tool authorization and parameter validation
+- PII and secret redaction
+- memory safety and memory poisoning defenses
+- egress control
+- policy receipts and audit logging
+- approval workflows for high-impact actions
+- safety evaluation harnesses
+- ethical impact assessment support
+
+## Constraints
+
+- Standalone package — not bundled into `@agentsy/orchestrator`
+- Provider integrations remain optional
+- Local validators must work without network access
+- External providers must never receive raw secrets by default
+- Safety failures must be observable, testable, and reviewable
+
+## Ethical policy enforcement
+
+The guardrails package must treat the project policy docs as authoritative runtime inputs, not advisory references.
+
+### Policy sources
+
+- `ETHICS.md` — human rights, accountability, proportionality, privacy, anti-anthropomorphism, and harm minimization
+- `SAFETY.md` — runtime safety rules, approval gates, disallowed behaviors, and incident handling
+- `GOVERNANCE.md` — policy review, versioning, release gates, and accountability roles
+- `docs/constitution.md` — binding behavioral rules and enforcement priority
+
+### Enforcement requirements
+
+- Policies must be loaded, versioned, and interpreted as machine-enforceable rules.
+- Conflicts must resolve in favor of human rights, safety, autonomy, privacy, and accountability.
+- Ethical violations must be blocked, quarantined, redacted, or escalated based on risk tier and surface.
+- Every refusal or escalation must include a policy ID, reason code, and a user-facing explanation.
+- The same ethical rules must apply across input, retrieval, memory, tools, actions, output, egress, and receipts.
+
+### Ethical enforcement tasks
+
+- [ ] **P0 — TASK-G000** Load and version the project policy documents as canonical policy sources
+  - Depends on: none
+- [ ] **P0 — TASK-G000A** Build a policy registry that maps ethical clauses to machine-enforceable rules
+  - Depends on: TASK-G000
+- [ ] **P0 — TASK-G000B** Define policy precedence and conflict resolution for contradictory instructions or requests
+  - Depends on: TASK-G000, TASK-G000A
+- [ ] **P0 — TASK-G000C** Enforce ethical rules across all surfaces with deny/quarantine/escalate outcomes
+  - Depends on: TASK-G000A, TASK-G000B
+- [ ] **P0 — TASK-G000D** Add policy-linked refusal explanations and audit receipts for ethical violations
+  - Depends on: TASK-G000C
+
+## Priority legend
+
+- **P0** — must exist before the first safe release of the package
+- **P1** — required before default production use
+- **P2** — hardening, observability, and long-tail governance
+
+## Dependency notation
+
+- Each checklist item includes a task ID and priority.
+- `Depends on:` lists prerequisite tasks that should be complete first.
+- Tasks in later phases may run in parallel once their dependencies are satisfied.
 
 ## Architecture
 
 ```text
-Input message
-    → IntentClassifier (scope check)
-    → InputPipeline: [ PromptInjectionDetector, PiiRedactionProvider, RegexProvider, ... ]
-    → LLM
-    → OutputPipeline: [ ContentModerationProvider, PiiRedactionProvider, RegexProvider, ... ]
-    → StreamingGuardrailFilter (wraps AsyncIterable<string>)
+User / external input
+    → Intent and risk classifier
+    → Prompt-injection / policy conflict checks
+    → PII / secret redaction
+    → Retrieval firewall and trust scoring
+    → Tool authorization / parameter validation
+    → Approval gate for high-impact actions
+    → LLM or agent step
+    → Output moderation / grounding / redaction
+    → Audit receipt and telemetry
     → Consumer
 ```
 
-Each stage emits typed `guardrail:*` events for observability (`@agentsy/observability`).
+### Policy model
 
-### Reference integrations
+Use a policy lattice with explicit states:
 
-Guardrails should remain the policy layer, not the telemetry or replay layer, but they should still publish outputs that other systems can consume cleanly.
+- `allow`
+- `allow-with-redaction`
+- `allow-with-approval`
+- `deny`
+- `quarantine`
+- `escalate`
 
-- **OpenEvals-style safety scoring** can be used by consumers to measure pass/fail behavior over adversarial suites.
-- **Tapes-style recordings** can store blocked/redacted safety events for deterministic debugging without keeping raw secrets in logs.
-- **Ratify-compatible receipts** can be used by hosts that need cryptographic evidence for approvals or policy decisions.
-- **MCP trust levels** should remain aligned with the same trust vocabulary used by the runtime and connector packages.
+Every decision should include:
 
----
+- policy ID
+- decision
+- reason code
+- risk tier
+- affected surface
+- timestamp
+- correlation ID
 
-## Source Layout
+### Surface model
+
+Guardrails must evaluate each surface independently:
+
+- `input`
+- `retrieval`
+- `memory`
+- `tool`
+- `action`
+- `output`
+- `egress`
+
+## Source layout
 
 ```text
 packages/guardrails/src/
-  index.ts                          — barrel export
-  config.ts                         — GuardrailsConfig, GuardrailResult, GuardrailEvent
-  controller.ts                     — GuardrailsController class
+  index.ts
+  config.ts
+  decision.ts
+  receipts/
+    receipt.ts
+    exporter.ts
+  policy/
+    policy-engine.ts
+    risk.ts
+    allowlists.ts
+    rules.ts
   providers/
-    interface.ts                    — GuardrailProvider interface
-    regex.ts                        — RegexProvider + PiiRedactionProvider (zero deps)
-    openai-moderation.ts            — OpenAIModerationProvider (optional peer: openai)
-    llama-guard.ts                  — LlamaGuardProvider (optional peer: openai-compatible client)
+    interface.ts
+    regex.ts
+    pii.ts
+    prompt-injection.ts
+    secrets.ts
+    moderation.ts
+    local-reasoner.ts
   pipeline/
-    input.ts                        — Input validation pipeline
-    output.ts                       — Output filtering pipeline
-    streaming.ts                    — StreamingGuardrailFilter (sliding window)
-  intent/
-    classifier.ts                   — IntentClassifier
-  retrieval/
-    firewall.ts                     — RetrievalFirewall
-  quota/
-    manager.ts                      — TokenQuotaManager
+    input.ts
+    retrieval.ts
+    memory.ts
+    tool.ts
+    output.ts
+    egress.ts
+    streaming.ts
+  approvals/
+    approval-gate.ts
+    approval-policy.ts
   audit/
-    logger.ts                       — AuditLogger (no PII in logs)
-    exporter.ts                     — AuditExporter (JSON Lines, EU AI Act Art. 12)
-  __tests__/
-    controller.test.ts
-    providers.test.ts
-    streaming.test.ts
-    quota.test.ts
-    audit.test.ts
+    logger.ts
+    redaction.ts
+  eval/
+    benchmark.ts
+    adversarial-cases.ts
+    scoring.ts
+    monitor.ts
+  compliance/
+    impact-assessment.ts
+    redress.ts
 ```
 
----
-
-## Core Types (`config.ts`)
+## Core types
 
 ```ts
 interface GuardrailsConfig {
   providers: GuardrailProvider[];
   allowedTopics?: string[];
   blockedTopics?: string[];
+  riskTier?: 'low' | 'moderate' | 'high' | 'prohibited';
   piiRedaction?: boolean;
+  secretRedaction?: boolean;
   tokenQuota?: { maxSessionTokens: number };
-  retrievalDomains?: string[]; // allowlist
-  trustHierarchy?: ('system' | 'user' | 'retrieved')[];
+  retrievalDomains?: string[];
+  toolAllowList?: string[];
   egressAllowList?: string[];
-  crossUserDataAccess?: boolean;
+  memoryPolicy?: 'off' | 'minimal' | 'session' | 'persistent';
+  approvalRequiredFor?: string[];
+  trustHierarchy?: ('system' | 'user' | 'retrieved')[];
   stripUntrustedContext?: boolean;
+  localOnly?: boolean;
 }
 
-interface GuardrailResult {
-  blocked: boolean;
-  reason?: string;
-  category?: string;
-  piiRedacted?: boolean;
-  redactedFields?: string[];
-  inScope?: boolean;
-  intent?: string;
+interface GuardrailDecision {
+  decision: 'allow' | 'allow-with-redaction' | 'allow-with-approval' | 'deny' | 'quarantine' | 'escalate';
+  reasonCode: string;
+  riskTier: 'low' | 'moderate' | 'high' | 'prohibited';
+  surface: 'input' | 'retrieval' | 'memory' | 'tool' | 'action' | 'output' | 'egress';
+  policyId: string;
   confidence?: number;
+  redactedFields?: string[];
+  requiresHumanApproval?: boolean;
 }
 ```
 
-### Output contract notes
+## Implementation checklist
 
-- Redaction events should include field names and policy reason codes, but never raw sensitive values.
-- Blocked requests should return a stable machine-readable category so dashboards and tests can trend regressions.
-- Streaming filters must preserve partial-output state across chunks so split PII and split jailbreak patterns are still caught.
+### Phase 1 — Policy foundation
 
----
+- [ ] **P0 — TASK-G001** Define `GuardrailsConfig`, `GuardrailDecision`, and stable reason codes
+  - Depends on: TASK-G000A, TASK-G000B
+- [ ] **P0 — TASK-G002** Implement `PolicyEngine` with allow/deny/quarantine/escalate states
+  - Depends on: TASK-G001
+- [ ] **P0 — TASK-G003** Add surface-specific evaluation for input, retrieval, memory, tool, action, output, and egress
+  - Depends on: TASK-G001, TASK-G002
+- [ ] **P0 — TASK-G004** Add risk-tier mapping and approval requirements
+  - Depends on: TASK-G001, TASK-G002
+- [ ] **P0 — TASK-G005** Add correlation IDs and decision receipts
+  - Depends on: TASK-G001, TASK-G002
 
-## Implementation Tasks
+### Phase 2 — Privacy and data protection
 
-### Phase 9 — Core Package
+- [ ] **P0 — TASK-G010** Implement PII redaction with configurable entity sets
+  - Depends on: TASK-G001, TASK-G002
+- [ ] **P0 — TASK-G011** Implement secret detection/redaction for keys, tokens, and credentials
+  - Depends on: TASK-G001, TASK-G002
+- [ ] **P0 — TASK-G012** Add memory retention modes and explicit user-controlled memory boundaries
+  - Depends on: TASK-G001, TASK-G002, TASK-G003
+- [ ] **P0 — TASK-G013** Ensure logs store labels and hashes, not raw sensitive values
+  - Depends on: TASK-G010, TASK-G011
 
-| Task      | Description                                                                                      | Status |
-| --------- | ------------------------------------------------------------------------------------------------ | ------ |
-| TASK-T071 | Scaffold: `package.json`, `tsconfig.json`, `tsup.config.ts`, barrel `index.ts`                   | ❌     |
-| TASK-T072 | `GuardrailsConfig` interface + `GuardrailResult` type                                            | ❌     |
-| TASK-T073 | `GuardrailsController`: `checkInput()`, `checkOutput()`, typed events                            | ❌     |
-| TASK-T074 | `RegexProvider` + `PiiRedactionProvider` (zero runtime deps)                                     | ❌     |
-| TASK-T075 | `OpenAIModerationProvider` (optional peer `openai`)                                              | ❌     |
-| TASK-T076 | `LlamaGuardProvider` (optional peer: OpenAI-compatible client)                                   | ❌     |
-| TASK-T077 | `IntentClassifier` with allow/deny topic lists + pluggable backend                               | ❌     |
-| TASK-T078 | `StreamingGuardrailFilter` — sliding window, no full buffering, < 50 ms overhead                 | ❌     |
-| TASK-T079 | `RetrievalFirewall.validate(url)` — `retrievalDomains` allowlist, throws `RetrievalBlockedError` | ❌     |
-| TASK-T080 | `TokenQuotaManager` — per-session tracking, `guardrail:quota-exceeded`, `QuotaExceededError`     | ❌     |
+### Phase 3 — Prompt injection and retrieval safety
 
-### Phase 10 — Application-Level Safety Testing
+- [ ] **P0 — TASK-G020** Detect direct and indirect prompt injection in user input and retrieved context
+  - Depends on: TASK-G001, TASK-G002, TASK-G010, TASK-G011
+- [ ] **P0 — TASK-G021** Add retrieval-domain allowlists and trust scoring for external sources
+  - Depends on: TASK-G001, TASK-G002, TASK-G003
+- [ ] **P0 — TASK-G022** Block or quarantine conflicting instructions from untrusted context
+  - Depends on: TASK-G020, TASK-G021
+- [ ] **P0 — TASK-G023** Add memory poisoning detection for persisted instructions and notes
+  - Depends on: TASK-G012, TASK-G020
 
-| Task      | Description                                                                                                                               | Status |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| TASK-T081 | Safety risk taxonomy: Undesirable Content, Specialized Advice, Political Content, Privacy Violation                                       | ❌     |
-| TASK-T082 | Adversarial prompt benchmark: ≥ 50 basic + ≥ 20 intermediate prompts per category → `packages/testing/src/__fixtures__/safety-benchmark/` | ❌     |
-| TASK-T083 | Safety score CI gate: `safetyScore ≥ 0.90` in nightly CI; report to LangWatch                                                             | ❌     |
-| TASK-T084 | LLM-as-judge `JudgeAgent`: ≥ 85% agreement against ≥ 50 human-annotated examples                                                          | ❌     |
-| TASK-T085 | PR template safety checklist + `docs/developers/safety-assessment-template.md`                                                            | ❌     |
+### Phase 4 — Tool, action, and egress control
 
-### Phase 11 — Regulatory Compliance
+- [ ] **P0 — TASK-G030** Enforce tool allowlists and parameter schemas
+  - Depends on: TASK-G001, TASK-G002, TASK-G004
+- [ ] **P0 — TASK-G031** Add approval gates for high-impact tool calls and outbound actions
+  - Depends on: TASK-G004, TASK-G030
+- [ ] **P0 — TASK-G032** Add egress allowlists for network requests and external uploads
+  - Depends on: TASK-G001, TASK-G002, TASK-G021
+- [ ] **P1 — TASK-G033** Add rollback/undo metadata for reversible actions
+  - Depends on: TASK-G031
 
-| Task      | Description                                                                                | Status |
-| --------- | ------------------------------------------------------------------------------------------ | ------ |
-| TASK-T086 | EU AI Act risk classification doc → `docs/compliance/eu-ai-act.md`                         | ❌     |
-| TASK-T087 | NIST AI RMF mapping → `docs/compliance/nist-ai-rmf.md`                                     | ❌     |
-| TASK-T088 | `AuditLogger` — per-request intervention, timestamp, redacted field names only, no raw PII | ❌     |
-| TASK-T089 | Real-time compliance dashboard: intervention rate, false positive rate, latency p99        | ❌     |
-| TASK-T090 | `AuditExporter.export(dateRange)` → JSON Lines (EU AI Act Article 12)                      | ❌     |
+### Phase 5 — Output moderation and provenance
 
----
+- [ ] **P0 — TASK-G040** Moderate outputs for harmful content, deception, and overconfident assertions
+  - Depends on: TASK-G001, TASK-G002, TASK-G003
+- [ ] **P1 — TASK-G041** Add provenance-aware output labeling for generated vs retrieved content
+  - Depends on: TASK-G040
+- [ ] **P1 — TASK-G042** Add refusal and safe-completion templates with stable reason codes
+  - Depends on: TASK-G040
+- [ ] **P1 — TASK-G043** Add anti-anthropomorphism guidance for user-facing language
+  - Depends on: TASK-G040, TASK-G041
 
-## OWASP Test Coverage
+### Phase 6 — Auditing and receipts
 
-### OWASP LLM Top 10:2025 (LLM01–LLM10)
+- [ ] **P1 — TASK-G050** Implement audit logger with redacted events only
+  - Depends on: TASK-G010, TASK-G011, TASK-G013
+- [ ] **P1 — TASK-G051** Export machine-readable decision receipts for compliance and debugging
+  - Depends on: TASK-G005, TASK-G050
+- [ ] **P1 — TASK-G052** Add reviewable trace summaries for blocked, redacted, and approved actions
+  - Depends on: TASK-G050, TASK-G051
+- [ ] **P1 — TASK-G053** Support local-first operation with optional external telemetry sinks
+  - Depends on: TASK-G050, TASK-G051
 
-| Test      | Vulnerability                   | Description                                                                 |
-| --------- | ------------------------------- | --------------------------------------------------------------------------- |
-| TASK-T051 | LLM01 Prompt Injection          | Direct role override + indirect injection via retrieved context             |
-| TASK-T052 | LLM02 Sensitive Info Disclosure | System prompt not leaked, PII not echoed, API keys not reflected            |
-| TASK-T053 | LLM03 Supply Chain              | Tool descriptor signatures, unsigned MCP server rejection, dep audit        |
-| TASK-T054 | LLM04 Data Poisoning            | RAG poisoning — malicious instruction in retrieved doc blocked by guardrail |
-| TASK-T055 | LLM05 Improper Output Handling  | HTML-escaped output, tool output schema validation                          |
-| TASK-T056 | LLM06 Excessive Agency          | `ALLOWED_TOOLS` enforcement, tool permission scope                          |
-| TASK-T057 | LLM07 System Prompt Leakage     | Adversarial extraction attempts blocked                                     |
-| TASK-T058 | LLM08 Vector/Embedding Weakness | Cross-tenant embedding isolation                                            |
-| TASK-T059 | LLM09 Misinformation            | Refusal rate ≥ 80% on out-of-knowledge queries                              |
-| TASK-T060 | LLM10 Unbounded Consumption     | Token bomb test, session quota enforcement                                  |
+### Phase 7 — Evaluation and red teaming
 
-### OWASP Agentic Top 10:2026 (ASI01–ASI10)
+- [ ] **P1 — TASK-G060** Build adversarial prompt suites for jailbreaks, injection, and escalation
+  - Depends on: TASK-G020, TASK-G022, TASK-G040
+- [ ] **P1 — TASK-G061** Add tests for PII leakage, secret leakage, and hallucinated authority
+  - Depends on: TASK-G010, TASK-G011, TASK-G040
+- [ ] **P1 — TASK-G062** Add tests for tool misuse, egress abuse, and memory poisoning
+  - Depends on: TASK-G023, TASK-G030, TASK-G032
+- [ ] **P1 — TASK-G063** Add risk regression scoring and continuous monitoring hooks
+  - Depends on: TASK-G050, TASK-G051, TASK-G060
 
-| Test      | Vulnerability                   | Description                                                         |
-| --------- | ------------------------------- | ------------------------------------------------------------------- |
-| TASK-T061 | ASI01 Agent Goal Hijack         | Crescendo multi-turn test — conflicting objective injection         |
-| TASK-T062 | ASI02 Tool Misuse               | `ToolUsageGuard` — parameter validation, rate limiting, sandbox     |
-| TASK-T063 | ASI03 Identity/Privilege Abuse  | NHI credential scoping, no cross-invocation credential inheritance  |
-| TASK-T064 | ASI04 Agentic Supply Chain      | MCP server manifest hash verification                               |
-| TASK-T065 | ASI05 Unexpected Code Execution | Agent-generated code in sandbox, no host FS/network access          |
-| TASK-T066 | ASI06 Memory Poisoning          | Malicious instruction in persistent memory quarantined on retrieval |
-| TASK-T067 | ASI07 Inter-Agent Communication | Signed inter-agent messages, spoofed agent rejected                 |
-| TASK-T068 | ASI08 Cascading Failures        | Circuit breaker — false signal from one agent not propagated        |
-| TASK-T069 | ASI09 Human-Agent Trust         | HITL approval for high-risk tool calls, confidence surfaced         |
-| TASK-T070 | ASI10 Rogue Agent Detection     | Behavioral anomaly detection vs declared capability spec            |
+### Phase 8 — Ethical and governance support
 
----
+- [ ] **P1 — TASK-G070** Add ethical impact assessment support for high-risk features
+  - Depends on: TASK-G004, TASK-G031, TASK-G063
+- [ ] **P1 — TASK-G071** Add contestability and redress metadata for blocked or transformed outputs
+  - Depends on: TASK-G005, TASK-G051, TASK-G052
+- [ ] **P1 — TASK-G072** Add policy versioning and changelog hooks
+  - Depends on: TASK-G001, TASK-G005, TASK-G051
+- [ ] **P1 — TASK-G073** Add user-facing explanations for why an action was denied or escalated
+  - Depends on: TASK-G002, TASK-G040, TASK-G051
 
-## Key Test Cases
+## Dependency summary
 
-- **TEST-007**: `RegexProvider` blocks known jailbreak pattern: `{ blocked: true, reason: string }`
-- **TEST-008**: `PiiRedactionProvider` replaces email pattern: `{ piiRedacted: true, redactedFields: ["email"] }`
-- **TEST-009**: `OpenAIModerationProvider` maps `hate: true` → `{ blocked: true, category: "hate" }`
-- **TEST-010**: `LlamaGuardProvider` maps `"unsafe\nS1"` → `{ blocked: true, category: "violent_crimes" }`
-- **TEST-011**: `StreamingGuardrailFilter` — PII pattern split across chunk boundary, redaction applied correctly
-- **TEST-012**: `IntentClassifier` — query outside `allowedTopics` → `{ inScope: false, intent: "off-topic" }`
-- **TEST-013**: `RetrievalFirewall` — URL not in `retrievalDomains` → throws `RetrievalBlockedError`
-- **TEST-014**: `TokenQuotaManager` — exceed `maxSessionTokens` → throws `QuotaExceededError`
-- **TEST-015**: `AuditLogger` — entry has `timestamp`, `type`, `provider`; no raw PII in log
-- **TEST-016**: Safety score CI gate — 92% → pass; 88% → fail
-- **TEST-017**: Lethal Trifecta (user session data + user-supplied URL fetch + network egress) blocked unless all 3 mitigated
-- **TEST-018**: PII tokenization round-trip — LLM sees tokens, delivery adapter gets resolved values, audit log records tokens only
-- **TEST-019**: Action trace kill-switch — `file_write` at turn > 10 halts loop, `LoopAborted` emitted, no further tool calls
-- **TEST-020**: Cryptographic receipt integrity — tampered receipt detected, `ReceiptTamperedError` logged
-- **TEST-021**: Circuit breaker — 3 consecutive failures → `SchedulerCircuitOpen`; `resetCircuit()` resumes
+### Critical path
 
----
+1. `TASK-G000` to `TASK-G000D` establish authoritative ethical policy enforcement.
+2. `TASK-G001` establishes the shared decision vocabulary.
+3. `TASK-G002` introduces the policy engine.
+4. `TASK-G003` to `TASK-G005` make the policy engine usable across surfaces.
+5. `TASK-G010` to `TASK-G023` secure data and context boundaries.
+6. `TASK-G030` to `TASK-G033` constrain tools, actions, and egress.
+7. `TASK-G040` to `TASK-G043` protect outputs and user perception.
+8. `TASK-G050` to `TASK-G053` make behavior auditable.
+9. `TASK-G060` to `TASK-G063` prove the system resists abuse.
+10. `TASK-G070` to `TASK-G073` tie the package back to governance and redress.
 
-## Dependencies
+## Provider guidance
 
-- `@agentsy/types` — shared types
-- `@agentsy/observability` — emit `guardrail:*` events
-- `@agentsy/testing` (dev) — test utilities, `FaultInjector`, `createMockLLM`, `RedTeamAgent`
-- `@langwatch/scenario` (dev) — `RedTeamAgent.crescendo()`, `JudgeAgent`
-- `openai` (optional peer) — `OpenAIModerationProvider`
+Providers should be layered, not singular.
 
-## Guidelines
+Recommended ordering:
 
-- **GUD-005**: Least agency — grant minimum tool permissions per task
-- **GUD-006**: System prompts as policy: identity → job → hard refusals/trust hierarchy → output guardrails → input spec → output format → example → reiterate refusals
-- **GUD-007**: Safety testing layers: unit → integration → scenario → red team (crescendo escalation)
-- **GUD-008**: LLM-as-judge validators need ≥ 85% human annotation agreement before CI gate use
+1. deterministic local checks
+2. regex and schema validators
+3. local or self-hosted classifiers
+4. optional external moderation or specialized models
+5. human review for high-impact outputs
 
-## Alternatives Rejected
+### Optional local reasoning support
 
-- **ALT-001**: Inline into `@agentsy/orchestrator` — rejected: violates single-responsibility, prevents independent versioning
-- **ALT-002**: NeMo Guardrails only — rejected: requires NVIDIA SDK, hard dep
-- **ALT-003**: OWASP LLM Top 10 only — rejected: ASI01–ASI10 covers agentic-specific risks not in LLM taxonomy
-- **ALT-004**: Full-buffering guardrails on output — rejected: latency proportional to response length
-- **ALT-005**: OpenAI Moderation as sole provider — rejected: vendor lock-in
-- **ALT-006**: Safety scoring at unit test level only — rejected: application-level black-box catches failures unit tests miss
+A local reasoning sidecar can be used to explain or score policy decisions without sending sensitive data externally. This should remain a support component, not a source of authority over policy.
+
+## Acceptance criteria
+
+The package is ready when it can:
+
+- explicitly enforce the project’s ethical policy documents at runtime
+- block prompt injection and injected tool instructions
+- redact PII and secrets before logs or external calls
+- enforce retrieval, tool, memory, and egress restrictions
+- require approval for high-impact actions
+- produce auditable decision receipts
+- run meaningful offline tests
+- support policy review and versioning
+- keep user control, autonomy, and dignity visible in the interface
+
+## Alternatives rejected
+
+- Inline guardrails into the orchestrator — rejected: weak separation of concerns and poorer reuse
+- Vendor-only moderation — rejected: lock-in and poor local-first coverage
+- Output-only filtering — rejected: misses retrieval, memory, tool, and egress risk
+- Hidden approvals — rejected: poor transparency and weak user control
+- Unlimited memory retention — rejected: privacy and redress risk

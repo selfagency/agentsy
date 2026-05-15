@@ -8,6 +8,17 @@ Standalone, pluggable safety and security guardrails for the `@agentsy` platform
 pnpm add @agentsy/guardrails
 ```
 
+## Policy and governance
+
+Before enabling this package in an agent, review the policy documents that define its operating rules:
+
+- [Ethics](../../ETHICS.md)
+- [Safety](../../SAFETY.md)
+- [Governance](../../GOVERNANCE.md)
+- [Agentsy Constitution](../../docs/constitution.md)
+
+These documents establish the human-rights, safety, privacy, accountability, and review requirements that the guardrails layer is expected to enforce.
+
 ## Usage
 
 ```typescript

@@ -70,6 +70,9 @@ importers:
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.8.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
       vitest:
         specifier: ^4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.7.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.7.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
@@ -210,16 +213,19 @@ importers:
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^20.14.0
         version: 20.19.41
       tsup:
         specifier: ^8.3.0
-        version: 8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.8.2)
       typescript:
-        specifier: ^5.6.2
-        version: 5.9.3
+        specifier: 6.0.3
+        version: 6.0.3
       vitest:
         specifier: ^2.0.5
         version: 2.1.9(@types/node@20.19.41)(lightningcss@1.32.0)
@@ -580,10 +586,10 @@ importers:
         version: 4.1.6(vitest@4.1.6)
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.8.2)
       typescript:
-        specifier: ^5.6.2
-        version: 5.9.3
+        specifier: 6.0.3
+        version: 6.0.3
       vitest:
         specifier: ^4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.7.0)(@vitest/coverage-v8@4.1.6)(vite@8.0.10(@types/node@25.7.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
@@ -3970,11 +3976,6 @@ packages:
 
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
-
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
 
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
@@ -7446,34 +7447,6 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
-  tsup@8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2):
-    dependencies:
-      bundle-require: 5.1.0(esbuild@0.27.3)
-      cac: 6.7.14
-      chokidar: 4.0.3
-      consola: 3.4.2
-      debug: 4.4.3
-      esbuild: 0.27.3
-      fix-dts-default-cjs-exports: 1.0.1
-      joycon: 3.1.1
-      picocolors: 1.1.1
-      postcss-load-config: 6.0.1(postcss@8.5.14)(tsx@4.21.0)(yaml@2.8.2)
-      resolve-from: 5.0.0
-      rollup: 4.60.1
-      source-map: 0.7.6
-      sucrase: 3.35.1
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.16
-      tree-kill: 1.2.2
-    optionalDependencies:
-      postcss: 8.5.14
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
-
   tsup@8.5.1(postcss@8.5.14)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.8.2):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.3)
@@ -7535,8 +7508,6 @@ snapshots:
 
   typedarray@0.0.6:
     optional: true
-
-  typescript@5.9.3: {}
 
   typescript@6.0.3: {}
 
