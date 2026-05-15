@@ -27,7 +27,7 @@ const SENSITIVE_NAME_TOKENS = [
   'apikey',
   'accesskey',
   'token',
-  'privatekey',
+  'privatekey'
 ];
 const SENSITIVE_PATH_SEGMENTS = ['/.ssh/', '/.aws/', '/.gnupg/', '/.kube/', '/.docker/'];
 const SENSITIVE_EXTENSIONS = new Set(['.pem', '.key', '.p12', '.pfx', '.crt', '.jks']);
@@ -73,7 +73,7 @@ export function isSensitivePath(filePath: string): boolean {
 
 export async function compressMemoryFile(
   filePath: string,
-  options: MemoryCompressionOptions = {},
+  options: MemoryCompressionOptions = {}
 ): Promise<MemoryCompressionResult> {
   if (isSensitivePath(filePath)) {
     throw new Error(`Refusing to compress sensitive path: ${filePath}`);
@@ -85,7 +85,7 @@ export async function compressMemoryFile(
 
   let backupPath: string | undefined;
   if (options.backup ?? true) {
-    backupPath = `${filePath}.original`;
+    backupPath = `${filePath}.original.md`;
     await copyFile(filePath, backupPath, constants.COPYFILE_EXCL);
   }
 
@@ -101,6 +101,6 @@ export async function compressMemoryFile(
     originalChars,
     compressedChars,
     savingsRatio,
-    ...(backupPath === undefined ? {} : { backupPath }),
+    ...(backupPath === undefined ? {} : { backupPath })
   };
 }

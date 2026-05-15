@@ -47,7 +47,7 @@ export function protectPattern(
   pattern: RegExp,
   placeholderMap: Map<string, string>,
   nextId: { value: number },
-  placeholderPrefix: string,
+  placeholderPrefix: string
 ): string {
   return input.replace(pattern, match => {
     const key = `${placeholderPrefix}${nextId.value}__`;
@@ -92,7 +92,7 @@ export function compressProse(input: string, level: CompressionLevel): string {
 
   output = output
     .replace(/[ \t]+/g, ' ')
-    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\s([,.;:!?])/g, '$1')
     .replace(/\n[ \t]+/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/ {2,}/g, ' ')
