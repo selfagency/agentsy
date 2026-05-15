@@ -15,11 +15,14 @@ Completed Phase 2 areas:
 - Turso sync contracts and manager surface
 - real Turso Sync transport integration via `@tursodatabase/sync`
 - conflict detection, resolution, and persistence hooks
+- persistent file-backed conflict storage for operator workflows
 - retry-aware sync scheduler with jitter/backoff
 - backup manifest, restore, and rollback helpers
 - integrity verification and checksum helpers
 - credential-source validation and secret redaction helpers
+- memory-state serialization adapters for raw/wiki/vector stores
 - sync observability registry
+- MSW-backed HTTP transport coverage and sync hardening fixes
 - package-level and integration validation gates
 
 ## What Was Implemented
@@ -72,6 +75,7 @@ Completed Phase 2 areas:
     - `fieldMerge`
     - `manualRequired`
   - pluggable manual-conflict persistence for unresolved records
+  - file-backed unresolved conflict persistence for production-style operator workflows
 
 ### 4) Scheduler and backup support
 
@@ -108,6 +112,11 @@ Completed Phase 2 areas:
 
 - Added:
   - `packages/memory/src/sync/sync.integration.test.ts`
+  - `packages/memory/src/sync/turso-client.test.ts`
+  - `packages/memory/src/sync/file-conflict-store.ts`
+  - `packages/memory/src/sync/file-conflict-store.test.ts`
+  - `packages/memory/src/sync/memory-state.ts`
+  - `packages/memory/src/sync/memory-state.test.ts`
 - Updated:
   - `packages/memory/src/sync/index.ts`
   - `packages/memory/src/index.ts`
@@ -115,6 +124,8 @@ Completed Phase 2 areas:
   - `docs/packages/memory.md`
 - Behavior:
   - end-to-end sync workflow validation across manager, conflict, scheduler, and backup layers
+  - dedicated Turso HTTP transport coverage using MSW-backed Node handlers
+  - state serialization/deserialization between sync snapshots and raw/wiki/vector memory tiers
   - public package exports for the full Phase 2 surface
 
 ## Validation Evidence
@@ -133,7 +144,7 @@ Completed Phase 2 areas:
 
 - Command: `cd packages/memory && pnpm test -- src/sync`
 - Result: ✅ pass
-- Summary: **32 test files, 145 tests passed**
+- Summary: **35 test files, 164 tests passed**
 
 ### Monorepo gates
 
@@ -163,4 +174,5 @@ Completed Phase 2 areas:
 
 - ✅ add a disk-backed conflict store implementation for production use
 - ✅ add a higher-level memory-state adapter so sync can serialize directly from wiki/raw/vector stores
+- ✅ add dedicated Turso client coverage and MSW-backed HTTP transport tests
 - add optional Turso partial sync / transform configuration once the package adopts those features intentionally
