@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { PacingController, compressConversation, createInMemoryTokenManager, createTokenLedger } from './index.js';
+import {
+  PacingController,
+  compressConversation,
+  compressOutput,
+  createInMemoryTokenManager,
+  createTokenLedger,
+} from './index.js';
 
 describe('createTokenLedger', () => {
   it('consumes tokens within budget', () => {
@@ -238,6 +244,28 @@ describe('compressConversation', () => {
     expect(result.messages).toEqual(['cccc', 'dddd']);
     expect(result.droppedCount).toBe(2);
     expect(result.estimatedTokens).toBe(8);
+  });
+});
+
+describe('compressOutput', () => {
+  it('reduces token estimate while preserving fenced code blocks', () => {
+    const source = [
+      'This is a very verbose explanation that repeats itself repeatedly and unnecessarily.',
+      '',
+      '```ts',
+      'const url = "https://example.com/a/b";',
+      '```',
+      '',
+      'This is a very verbose explanation that repeats itself repeatedly and unnecessarily.',
+    ].join('\n');
+
+    const result = compressOutput(source, { level: 'full' });
+
+    expect(result.original).toBe(source);
+    expect(result.compressed).toContain('```ts');
+    expect(result.compressed).toContain('const url = "https://example.com/a/b";');
+    expect(result.compressedTokens).toBeLessThan(result.originalTokens);
+    expect(result.savingsRatio).toBeGreaterThan(0);
   });
 });
 

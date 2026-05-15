@@ -130,6 +130,22 @@ export interface CompressionResult<TMessage> {
   compressed: boolean;
 }
 
+export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
+
+export interface OutputCompressionOptions {
+  level: OutputCompressionLevel;
+  preserve?: Array<'code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors'>;
+  intensity?: number;
+}
+
+export interface OutputCompressionResult {
+  original: string;
+  compressed: string;
+  originalTokens: number;
+  compressedTokens: number;
+  savingsRatio: number;
+}
+
 export interface RateLimit {
   windowMs: number;
   maxRequests: number;
@@ -348,6 +364,202 @@ export function compressConversation<TMessage>(
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
     compressed: droppedCount > 0,
+  };
+}
+
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
+const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths']);
+
+function estimateTextTokens(text: string): number {
+  return Math.max(1, Math.ceil(text.length / 4));
+}
+
+function compressNonCodeSegment(segment: string, level: OutputCompressionLevel): string {
+  // First pass: normalize whitespace and preserve structure
+  const lines = segment.split('\n');
+  const dedupedLines: string[] = [];
+  let lastComparable = '';
+  let previousWasBlank = false;
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+/g, ' ').trimEnd();
+    const isBlank = line.trim().length === 0;
+
+    if (isBlank) {
+      if (!previousWasBlank) {
+        dedupedLines.push('');
+      }
+      previousWasBlank = true;
+      continue;
+    }
+
+    previousWasBlank = false;
+
+    const comparable = line.trim().toLowerCase();
+    if (comparable === lastComparable) {
+      continue;
+    }
+
+    lastComparable = comparable;
+    dedupedLines.push(line);
+  }
+
+  let joined = dedupedLines.join('\n').trim();
+  if (joined.length === 0) {
+    return '';
+  }
+
+  // Filler words and intensifiers to remove
+  const fillerPattern =
+    /\b(really|very|just|actually|basically|simply|quite|definitely|certainly|absolutely|clearly|obviously|perhaps|maybe|apparently|evidently|fortunately|unfortunately|however|thus|therefore|moreover|furthermore|additionally|also|indeed|otherwise|meanwhile|basically|primarily|largely|mostly|thoroughly|remarkably|practically|exceptionally|notably|particularly|significantly|essentially|fundamentally|well|very|quite|rather|rather|somewhat|fairly|pretty|quite|rather|really|awfully|terribly|super|extremely)\b/gi;
+
+  const redundantPhrases = [
+    [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
+    [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
+    [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
+    [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
+    [/\bas\s+mentioned\b/gi, ''],
+    [/\bas\s+you\s+may\s+know\b/gi, ''],
+    [/\bin\s+conclusion/gi, 'Finally'],
+    [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
+    [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now'],
+  ];
+
+  const abbreviations: Array<[RegExp, string]> = [
+    [/\bapproximately\b/gi, 'approx'],
+    [/\bconfiguration\b/gi, 'config'],
+    [/\binformation\b/gi, 'info'],
+    [/\badministration\b/gi, 'admin'],
+    [/\bdocumentation\b/gi, 'docs'],
+    [/\bdirectory\b/gi, 'dir'],
+    [/\bnumber\b/gi, '#'],
+    [/\btechnology\b/gi, 'tech'],
+    [/\bimplementation\b/gi, 'impl'],
+    [/\boperation\b/gi, 'op'],
+    [/\bspecifically\b/gi, 'specifically'],
+    [/\bgeneral\b/gi, 'gen'],
+  ];
+
+  switch (level) {
+    case 'lite': {
+      // Minimal compression: remove filler words only
+      let result = joined;
+      // Remove only the strongest filler words
+      result = result.replace(/\b(really|very|just|basically|simply)\b/gi, ' ');
+      result = result.replace(/\s{2,}/g, ' ').trim();
+      return result;
+    }
+
+    case 'full': {
+      // Aggressive compression
+      let result = joined;
+
+      // Remove filler words
+      result = result.replace(fillerPattern, ' ');
+
+      // Remove redundant phrases
+      for (const [pattern, replacement] of redundantPhrases) {
+        result = result.replace(pattern as RegExp, replacement as string);
+      }
+
+      // Collapse multiple spaces and clean
+      result = result.replace(/\s{2,}/g, ' ').trim();
+
+      return result;
+    }
+
+    case 'ultra': {
+      // Maximum compression
+      let result = joined;
+
+      // Aggressive filler removal
+      result = result.replace(fillerPattern, ' ');
+
+      // Remove redundant phrases
+      for (const [pattern, replacement] of redundantPhrases) {
+        result = result.replace(pattern as RegExp, replacement as string);
+      }
+
+      // Remove common verbose patterns
+      result = result
+        .replace(/\b(and|or)\s+(and|or)\s+/gi, ' ')
+        .replace(/\b(is|are|was|were)\s+quite\s+/gi, '')
+        .replace(/,\s*which\s+[^,.]*(?=[,.])/gi, '')
+        .replace(/\s+(?=,|\.|\?|!)/g, '');
+
+      // Apply abbreviations
+      for (const [pattern, replacement] of abbreviations) {
+        result = result.replace(pattern as RegExp, replacement as string);
+      }
+
+      // Remove articles before adjectives
+      result = result.replace(/\b(the|a|an)\s+([a-z]+)\s+/gi, (m, article, adj) => {
+        return `${adj} `;
+      });
+
+      // Final cleanup
+      result = result
+        .replace(/\s{2,}/g, ' ')
+        .replace(/\s+(?=,|\.)/g, '')
+        .trim();
+
+      return result;
+    }
+  }
+}
+
+export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {
+  const preserve = new Set(options.preserve ?? [...DEFAULT_PRESERVATION_SET]);
+  const level = options.level;
+
+  if (!preserve.has('code')) {
+    const originalTokens = estimateTextTokens(response);
+    const compressed = compressNonCodeSegment(response, level);
+    const compressedTokens = estimateTextTokens(compressed);
+    return {
+      original: response,
+      compressed,
+      originalTokens,
+      compressedTokens,
+      savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens),
+    };
+  }
+
+  const segments: Array<{ kind: 'code' | 'text'; value: string }> = [];
+  let lastIndex = 0;
+
+  for (const match of response.matchAll(CODE_FENCE_PATTERN)) {
+    const full = match[0];
+    const start = match.index ?? lastIndex;
+    const end = start + full.length;
+
+    if (start > lastIndex) {
+      segments.push({ kind: 'text', value: response.slice(lastIndex, start) });
+    }
+
+    segments.push({ kind: 'code', value: full });
+    lastIndex = end;
+  }
+
+  if (lastIndex < response.length) {
+    segments.push({ kind: 'text', value: response.slice(lastIndex) });
+  }
+
+  const compressed = segments
+    .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level)))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const originalTokens = estimateTextTokens(response);
+  const compressedTokens = estimateTextTokens(compressed);
+
+  return {
+    original: response,
+    compressed,
+    originalTokens,
+    compressedTokens,
+    savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens),
   };
 }
 
