@@ -57,6 +57,12 @@ importers:
 
   packages/cli:
     dependencies:
+      '@agentsy/core':
+        specifier: workspace:*
+        version: link:../core
+      '@agentsy/tokens':
+        specifier: workspace:*
+        version: link:../tokens
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
