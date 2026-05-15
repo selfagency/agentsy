@@ -34,12 +34,13 @@
   "dependencies": {
     "@agentsy/runtime": "workspace:*",
     "@agentsy/tokens": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "@tursodatabase/sync": "^0.6.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
-    "msw": "^2.11.6",
+    "msw": "^2.14.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
     "vitest": "^4.1.6"

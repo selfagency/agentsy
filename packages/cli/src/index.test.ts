@@ -98,6 +98,79 @@ describe('cli package scaffold', () => {
     expect(stdout.join('\n')).toContain('Savings:');
   });
 
+  it('prints local memory sync dev wiring', async () => {
+    const stdout: string[] = [];
+
+    const code = await runCli(['memory-sync-dev'], {
+      stdout: message => {
+        stdout.push(message);
+      },
+      stderr: () => {
+        // no-op
+      }
+    });
+
+    expect(code).toBe(0);
+    expect(stdout.join('\n')).toContain('tursodb ./.agentsy/local-sync-server.db --sync-server 0.0.0.0:8080');
+    expect(stdout.join('\n')).toContain('TURSO_DATABASE_URL=http://localhost:8080');
+    expect(stdout.join('\n')).toContain("import { createTursoManager } from '@agentsy/memory';");
+  });
+
+  it('prints local memory sync dev wiring as JSON', async () => {
+    const stdout: string[] = [];
+
+    const code = await runCli(
+      [
+        'memory-sync-dev',
+        '--json',
+        '--server-db',
+        './tmp/server.db',
+        '--replica-db',
+        './tmp/replica.db',
+        '--server-url',
+        'http://localhost:9090',
+        '--bind',
+        '127.0.0.1:9090',
+        '--sync-interval-ms',
+        '1500'
+      ],
+      {
+        stdout: message => {
+          stdout.push(message);
+        },
+        stderr: () => {
+          // no-op
+        }
+      }
+    );
+
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout[0] ?? '{}')).toMatchObject({
+      serverDbPath: './tmp/server.db',
+      replicaDbPath: './tmp/replica.db',
+      bindAddress: '127.0.0.1:9090',
+      serverUrl: 'http://localhost:9090',
+      syncIntervalMs: 1500,
+      startCommand: 'tursodb ./tmp/server.db --sync-server 127.0.0.1:9090'
+    });
+  });
+
+  it('returns non-zero for invalid memory sync interval values', async () => {
+    const stderr: string[] = [];
+
+    const code = await runCli(['memory-sync-dev', '--sync-interval-ms', 'nope'], {
+      stdout: () => {
+        // no-op
+      },
+      stderr: message => {
+        stderr.push(message);
+      }
+    });
+
+    expect(code).toBe(1);
+    expect(stderr.join(' ')).toContain('Invalid --sync-interval-ms value');
+  });
+
   it('returns non-zero for unknown command', async () => {
     const stderr: string[] = [];
     const code = await runCli(['unknown-command'], {

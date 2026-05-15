@@ -23,6 +23,10 @@ This is the one current package in the repo that is intentionally not part of th
 
 Run integration tests from this package or from repo root.
 
+### Network mocking
+
+Use MSW (`msw` v2) for HTTP/network-bound tests. Prefer shared handlers and lifecycle setup in `@agentsy/testing` over ad hoc request stubs or per-test monkeypatches.
+
 ```bash
 cd packages/testing
 pnpm test

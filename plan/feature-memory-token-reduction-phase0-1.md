@@ -14,6 +14,8 @@ tags: [feature, tokens, compression, cli, benchmarks, phase0]
 
 This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTATION-PRIORITY.md`: output compression and memory-file compression as standalone utilities with CLI and benchmark-backed acceptance gates.
 
+> Reconciliation note (2026-05-15): completion evidence for the implemented Phase 0 scope is recorded in `plan/PHASE-0-COMPLETION.md`. The task matrix below has been updated only for items that are wholly verifiable in the current codebase; remaining unchecked items are legacy path-specific/deferred refinements.
+
 ## 1. Requirements & Constraints
 
 - **REQ-001**: Implement output compression APIs in `@agentsy/tokens` with deterministic behavior and intensity levels `lite|full|ultra`.
@@ -43,53 +45,53 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 
 - GOAL-001: Complete output compression module hardening in `@agentsy/tokens`.
 
-| Task     | Description                                                                                                                                   | Completed | Date                                          |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------------------------------------------- | --- | --- |
-| TASK-001 | Create/verify `packages/tokens/src/compression/compressor.ts` implementing `compressOutput(response, options)` with deterministic transforms. |           |                                               |
-| TASK-002 | Create/verify `packages/tokens/src/compression/levels.ts` defining `lite                                                                      | full      | ultra` strategy tables and fallback defaults. |     |     |
-| TASK-003 | Create/verify `packages/tokens/src/compression/config.ts` exposing typed defaults and preservation toggles.                                   |           |                                               |
-| TASK-004 | Implement preservation guards for fenced code blocks, inline code, URLs, file paths, and markdown headings/lists.                             |           |                                               |
-| TASK-005 | Add tests in `packages/tokens/src/compression/compressor.test.ts` for each level and preservation class.                                      |           |                                               |
-| TASK-006 | Add benchmark tests in `packages/tokens/src/compression/compressor.benchmark.test.ts` asserting ratio and latency thresholds.                 |           |                                               |
+| Task     | Description                                                                                                                                           | Completed | Date       |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-001 | Create/verify `packages/tokens/src/compression/compressor.ts` implementing `compressOutput(response, options)` with deterministic transforms.         | ✅        | 2026-05-15 |
+| TASK-002 | Create/verify `packages/tokens/src/compression/levels.ts` defining compression strategy tables and fallback defaults for `lite`, `full`, and `ultra`. |           |            |
+| TASK-003 | Create/verify `packages/tokens/src/compression/config.ts` exposing typed defaults and preservation toggles.                                           |           |            |
+| TASK-004 | Implement preservation guards for fenced code blocks, inline code, URLs, file paths, and markdown headings/lists.                                     | ✅        | 2026-05-15 |
+| TASK-005 | Add tests in `packages/tokens/src/compression/compressor.test.ts` for each level and preservation class.                                              | ✅        | 2026-05-15 |
+| TASK-006 | Add benchmark tests in `packages/tokens/src/compression/compressor.benchmark.test.ts` asserting ratio and latency thresholds.                         | ✅        | 2026-05-15 |
 
 ### Implementation Phase 2
 
 - GOAL-002: Complete memory-file compression module and backup safety in `@agentsy/core/context`.
 
-| Task     | Description                                                                                                                                | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-007 | Create/verify `packages/core/src/context/compression/memory/compressor.ts` implementing `compressMemoryFile(filePath, options)`.           |           |      |
-| TASK-008 | Create/verify `packages/core/src/context/compression/preservation/rules.ts` for byte-level preserve/restore rules.                         |           |      |
-| TASK-009 | Create/verify `packages/core/src/context/compression/backup/manager.ts` supporting `.original.md` snapshot creation and rollback metadata. |           |      |
-| TASK-010 | Implement batch mode `compressMemoryFiles(filePaths, options)` in `packages/core/src/context/compression/memory/batch.ts`.                 |           |      |
-| TASK-011 | Add tests `packages/core/src/context/compression/memory/compressor.test.ts` for single-file and backup workflows.                          |           |      |
-| TASK-012 | Add tests `packages/core/src/context/compression/memory/batch.test.ts` for multi-file operations and partial-failure handling.             |           |      |
+| Task     | Description                                                                                                                                | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-007 | Create/verify `packages/core/src/context/compression/memory/compressor.ts` implementing `compressMemoryFile(filePath, options)`.           | ✅        | 2026-05-15 |
+| TASK-008 | Create/verify `packages/core/src/context/compression/preservation/rules.ts` for byte-level preserve/restore rules.                         |           |            |
+| TASK-009 | Create/verify `packages/core/src/context/compression/backup/manager.ts` supporting `.original.md` snapshot creation and rollback metadata. |           |            |
+| TASK-010 | Implement batch mode `compressMemoryFiles(filePaths, options)` in `packages/core/src/context/compression/memory/batch.ts`.                 |           |            |
+| TASK-011 | Add tests `packages/core/src/context/compression/memory/compressor.test.ts` for single-file and backup workflows.                          | ✅        | 2026-05-15 |
+| TASK-012 | Add tests `packages/core/src/context/compression/memory/batch.test.ts` for multi-file operations and partial-failure handling.             |           |            |
 
 ### Implementation Phase 3
 
 - GOAL-003: Complete CLI wiring and user-facing contracts in `@agentsy/cli`.
 
-| Task     | Description                                                                                                                    | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-013 | Create/verify `packages/cli/src/commands/compress.ts` supporting `--level`, `--file`, `--stdin`, and JSON summary output.      |           |      |
-| TASK-014 | Create/verify `packages/cli/src/commands/compress-memory.ts` supporting `--file`, `--glob`, `--backup`, `--dry-run`, `--json`. |           |      |
-| TASK-015 | Wire commands into `packages/cli/src/index.ts` and command registry with consistent error codes.                               |           |      |
-| TASK-016 | Add CLI tests `packages/cli/src/commands/compress.test.ts` and `compress-memory.test.ts` including failure-paths.              |           |      |
-| TASK-017 | Add end-to-end command tests `packages/cli/src/e2e/compression.e2e.test.ts` for representative fixtures.                       |           |      |
-| TASK-018 | Update `packages/cli/README.md` with usage, flags, examples, and expected output schema.                                       |           |      |
+| Task     | Description                                                                                                                    | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-013 | Create/verify `packages/cli/src/commands/compress.ts` supporting `--level`, `--file`, `--stdin`, and JSON summary output.      |           |            |
+| TASK-014 | Create/verify `packages/cli/src/commands/compress-memory.ts` supporting `--file`, `--glob`, `--backup`, `--dry-run`, `--json`. |           |            |
+| TASK-015 | Wire commands into `packages/cli/src/index.ts` and command registry with consistent error codes.                               | ✅        | 2026-05-15 |
+| TASK-016 | Add CLI tests `packages/cli/src/commands/compress.test.ts` and `compress-memory.test.ts` including failure-paths.              | ✅        | 2026-05-15 |
+| TASK-017 | Add end-to-end command tests `packages/cli/src/e2e/compression.e2e.test.ts` for representative fixtures.                       |           |            |
+| TASK-018 | Update `packages/cli/README.md` with usage, flags, examples, and expected output schema.                                       | ✅        | 2026-05-15 |
 
 ### Implementation Phase 4
 
 - GOAL-004: Validate benchmarks, publish docs, and close Phase 0 gates.
 
-| Task     | Description                                                                                                                                                                     | Completed | Date |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-019 | Add fixture dataset under `packages/testing/fixtures/compression/` for technical-accuracy validation.                                                                           |           |      |
-| TASK-020 | Add shared benchmark helper `packages/testing/src/benchmarks/compression-metrics.ts` for repeatable measurement.                                                                |           |      |
-| TASK-021 | Update docs in `docs/packages/tokens.md`, `docs/packages/context.md`, and `docs/examples/` compression examples.                                                                |           |      |
-| TASK-022 | Run `pnpm --filter @agentsy/tokens check-types && pnpm --filter @agentsy/tokens test`.                                                                                          |           |      |
-| TASK-023 | Run `pnpm --filter @agentsy/core check-types && pnpm --filter @agentsy/core test`.                                                                                              |           |      |
-| TASK-024 | Run `pnpm --filter @agentsy/cli check-types && pnpm --filter @agentsy/cli test`, then monorepo `pnpm check-types && pnpm test`; store evidence in `plan/PHASE-0-COMPLETION.md`. |           |      |
+| Task     | Description                                                                                                                                                                     | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-019 | Add fixture dataset under `packages/testing/fixtures/compression/` for technical-accuracy validation.                                                                           |           |            |
+| TASK-020 | Add shared benchmark helper `packages/testing/src/benchmarks/compression-metrics.ts` for repeatable measurement.                                                                |           |            |
+| TASK-021 | Update docs in `docs/packages/tokens.md`, `docs/packages/context.md`, and `docs/examples/` compression examples.                                                                |           |            |
+| TASK-022 | Run `pnpm --filter @agentsy/tokens check-types && pnpm --filter @agentsy/tokens test`.                                                                                          | ✅        | 2026-05-15 |
+| TASK-023 | Run `pnpm --filter @agentsy/core check-types && pnpm --filter @agentsy/core test`.                                                                                              | ✅        | 2026-05-15 |
+| TASK-024 | Run `pnpm --filter @agentsy/cli check-types && pnpm --filter @agentsy/cli test`, then monorepo `pnpm check-types && pnpm test`; store evidence in `plan/PHASE-0-COMPLETION.md`. | ✅        | 2026-05-15 |
 
 ## 3. Alternatives
 

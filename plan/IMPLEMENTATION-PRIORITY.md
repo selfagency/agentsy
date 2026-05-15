@@ -33,22 +33,27 @@
   - Documentation: PHASE-0-COMPLETION.md with full evidence and design decisions
   - See `plan/PHASE-0-COMPLETION.md` for detailed metrics and test results
 
+- **Phase 2 status:** ✅ **COMPLETE for local-first Turso sync scope in `@agentsy/memory`**
+  - Turso sync manager, transport adapter, scheduler/backoff, conflict pipeline, backup/restore, integrity/security/metrics modules implemented
+  - Sync-focused integration and unit coverage in `packages/memory/src/sync/*.test.ts` and `sync.integration.test.ts`
+  - Validation: `packages/memory` tests/typecheck pass; monorepo gates validated and captured in `plan/PHASE-2-COMPLETION.md`
+
 ## Current State Analysis
 
 ### Available Components
 
 - ✅ `@agentsy/core/context` - Context management foundation for memory compression
 - ✅ `@agentsy/tokens` - Token budget and cost estimation foundation
-- ✅ `@agentsy/memory` - 6-tier architecture framework (1% complete)
-- ⚠️ Missing: Honker extension integration, Turso sync, local coordination
+- ✅ `@agentsy/memory` - local-first memory foundation + sync layer implemented for Phases 1-2 scope
+- ✅ Honker extension integration, local coordination primitives, and Turso sync modules are implemented
 - ⚠️ Missing: mcp-rag-server integration, AgentFS filesystem
-- ⚠️ Missing: Output compression implementation, virtual sandbox
+- ⚠️ Remaining focus: Phase 3 RAG enhancement and Phase 4 advanced capabilities
 
 ### Immediate Opportunities
 
-- **Token Savings:** Can implement output compression (75%) and memory compression (46%) as standalone utilities
-- **Memory Savings:** Can implement honker-based coordination (90% infrastructure savings) independently
-- **Integration:** Both systems have clear integration points for framework later
+- **Token Savings:** Phase 0 compression utilities are implemented and validated; next opportunity is deeper runtime integration and policy-driven usage defaults.
+- **Memory Savings:** Phase 1/2 local-first coordination + Turso sync are implemented; next opportunity is retrieval quality uplift in Phase 3.
+- **Integration:** Primary remaining integration work is runtime/session/retrieval orchestration and advanced package promotion across later phases.
 
 ## Phase 0: Token Reduction Foundation (Weeks 1-4) - CRITICAL FOR IMMEDIATE SAVINGS
 
@@ -788,6 +793,7 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 
 - Each component isolated testing
 - Mock dependencies for fast testing
+- Use MSW handler-based mocks for any network interactions instead of ad hoc request stubs
 - Edge case and error handling validation
 - Performance benchmark testing
 
@@ -797,6 +803,7 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 - AgentFS filesystem integration
 - Memory coordination verification
 - RAG system validation
+- Shared MSW server/handler setup across packages for deterministic HTTP request interception
 
 **Acceptance Tests:**
 

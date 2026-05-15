@@ -20,10 +20,12 @@ This plan defines the production implementation order for `@agentsy/testing` as 
 - **REQ-TESTING-002**: Harness supports deterministic and probabilistic scenario modes.
 - **REQ-TESTING-003**: E2E helpers support CLI and non-CLI surfaces with stable assertions.
 - **REQ-TESTING-004**: Golden/snapshot outputs are versioned and documented.
+- **REQ-TESTING-005**: Network-bound tests use MSW (`msw` v2) as the default request-interception layer in Node/browser test environments.
 - **SEC-TESTING-001**: Test data is synthetic/scrubbed and free of real secrets.
 - **SEC-TESTING-002**: Adversarial scenarios execute in isolated test boundaries.
 - **CON-TESTING-001**: Package-specific business logic assertions stay in owning packages.
 - **CON-TESTING-002**: Testing package exposes reusable primitives, not product runtime logic.
+- **CON-TESTING-003**: Prefer MSW handlers over ad hoc fetch/axios monkeypatches for HTTP mocking; keep fixture/replay mocks for non-network deterministic stream simulation.
 
 ## 2. Implementation Steps
 
@@ -31,52 +33,58 @@ This plan defines the production implementation order for `@agentsy/testing` as 
 
 - GOAL-TESTING-001: Harness contract stabilization.
 
-| Task             | Description                                                               | Completed | Date |
-| ---------------- | ------------------------------------------------------------------------- | --------- | ---- |
-| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                   |           |      |
-| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls. |           |      |
-| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                 |           |      |
+| Task             | Description                                                                                                                         | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                                                                             |           |      |
+| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls.                                                           |           |      |
+| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                                                                           |           |      |
+| TASK-TESTING-013 | Define shared MSW setup contracts (`setupServer`, lifecycle hooks, handler composition) for workspace-wide Node/browser test usage. |           |      |
 
 ### Implementation Phase 2
 
 - GOAL-TESTING-002: Core testing infrastructure completion.
 
-| Task             | Description                                                          | Completed | Date |
-| ---------------- | -------------------------------------------------------------------- | --------- | ---- |
-| TASK-TESTING-004 | Implement shared mock providers/tools and scenario runner utilities. |           |      |
-| TASK-TESTING-005 | Implement snapshot/golden management helpers and update workflow.    |           |      |
-| TASK-TESTING-006 | Implement red-team/adversarial fixture sets and safety checks.       |           |      |
+| Task             | Description                                                                                                                         | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TESTING-004 | Implement shared mock providers/tools and scenario runner utilities.                                                                |           |      |
+| TASK-TESTING-005 | Implement snapshot/golden management helpers and update workflow.                                                                   |           |      |
+| TASK-TESTING-006 | Implement red-team/adversarial fixture sets and safety checks.                                                                      |           |      |
+| TASK-TESTING-014 | Implement reusable MSW handler libraries for provider/model/memory/retrieval HTTP surfaces and document override patterns per test. |           |      |
 
 ### Implementation Phase 3
 
 - GOAL-TESTING-003: Cross-package integration.
 
-| Task             | Description                                                                   | Completed | Date |
-| ---------------- | ----------------------------------------------------------------------------- | --------- | ---- |
-| TASK-TESTING-007 | Integrate package-level suites for runtime/orchestrator/memory/retrieval/CLI. |           |      |
-| TASK-TESTING-008 | Add CI-focused deterministic pipelines and flake detection handling.          |           |      |
-| TASK-TESTING-009 | Validate multi-surface test parity outputs.                                   |           |      |
+| Task             | Description                                                                                                                    | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-TESTING-007 | Integrate package-level suites for runtime/orchestrator/memory/retrieval/CLI.                                                  |           |      |
+| TASK-TESTING-008 | Add CI-focused deterministic pipelines and flake detection handling.                                                           |           |      |
+| TASK-TESTING-009 | Validate multi-surface test parity outputs.                                                                                    |           |      |
+| TASK-TESTING-015 | Migrate integration suites that currently use custom network stubs to MSW-backed handlers with deterministic fixture payloads. |           |      |
 
 ### Implementation Phase 4
 
 - GOAL-TESTING-004: Hardening and release gates.
 
-| Task             | Description                                                        | Completed | Date |
-| ---------------- | ------------------------------------------------------------------ | --------- | ---- |
-| TASK-TESTING-010 | Add performance/stress harness support for long-running scenarios. |           |      |
-| TASK-TESTING-011 | Update docs for contributors and test-author workflows.            |           |      |
-| TASK-TESTING-012 | Pass package and monorepo release gates.                           |           |      |
+| Task             | Description                                                                                                                         | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TESTING-010 | Add performance/stress harness support for long-running scenarios.                                                                  |           |      |
+| TASK-TESTING-011 | Update docs for contributors and test-author workflows.                                                                             |           |      |
+| TASK-TESTING-012 | Pass package and monorepo release gates.                                                                                            |           |      |
+| TASK-TESTING-016 | Add guardrails/lints/checklist rules ensuring new networked tests declare MSW handlers (or explicit rationale when not applicable). |           |      |
 
 ## 3. Acceptance Criteria
 
 - **ACC-TESTING-001**: Shared harness behavior is stable and package-consumer validated.
 - **ACC-TESTING-002**: CI reliability and deterministic-mode requirements are met.
 - **ACC-TESTING-003**: Release gates pass.
+- **ACC-TESTING-004**: Network mocking is standardized on MSW across package integration/e2e tests with reproducible handler-driven fixtures.
 
 ## 4. Sources Synthesized
 
 - `plan/MASTER-IMPLEMENTATION-PLAN.md`
 - `plan/feature-cli-dogfood-production-order-1.md`
+- `https://mswjs.io/docs`
 - `docs/packages/testing.md`
 - `packages/testing/README.md`
 - `packages/testing/IMPLEMENTATION-PLAN.md`

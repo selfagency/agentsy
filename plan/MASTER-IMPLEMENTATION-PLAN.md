@@ -226,7 +226,7 @@ Harness decision:
 
 **Legacy Standards:**
 
-- **Observability** - Baseline on OpenTelemetry, optional Tapes/Opik workflows
+- **Observability** - Baseline on OpenTelemetry for traces/metrics + `tslog` as the universal cross-domain structured logger, optional Tapes/Opik workflows
 - **Durable execution** - Hatchet, Agentspan, Chidori patterns (document adapters)
 - **Prompt caching** - CacheLLM-middleware patterns
 - **Retrieval/memory backends** - Local-first with R2R/Mem0 adapter documentation

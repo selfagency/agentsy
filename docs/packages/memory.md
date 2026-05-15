@@ -24,6 +24,16 @@ Long-term memory and persistent state management.
   - token-budget-aware evidence packing and citation-preserving context assembly
   - retrieval metrics for latency, source mix, and citation coverage
   - integration hooks for runtime memory context injection with evidence/citations
+- Current implementation also includes the Phase 2 local-first sync scope:
+  - Turso-backed sync manager and transport adapters via `@tursodatabase/sync`
+  - conflict detection, conflict storage, and policy-based resolution
+  - file-backed unresolved conflict persistence for operator workflows
+  - sync scheduler with retry/backoff behavior
+  - backup manifest, restore, and rollback helpers
+  - memory-state serialization for raw/wiki/vector stores into sync snapshots
+  - checksum/integrity validation and sync security redaction helpers
+  - sync/backup/restore metrics registry
+  - integration coverage for end-to-end sync workflows
 
 ## Notes
 
@@ -33,7 +43,9 @@ This package is currently in active development. API surface is subject to chang
 
 - `pnpm --filter @agentsy/memory check-types` passes
 - `pnpm --filter @agentsy/memory test` passes
-- completion evidence is tracked in `plan/PHASE-1-COMPLETION.md`
+- completion evidence is tracked in:
+  - `plan/PHASE-1-COMPLETION.md`
 - completion evidence is tracked in:
   - `plan/PHASE-1-COMPLETION.md`
   - `plan/PHASE-3-COMPLETION.md`
+  - `plan/PHASE-2-COMPLETION.md`
