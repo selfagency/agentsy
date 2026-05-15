@@ -573,7 +573,7 @@ export class ModelSelector {
   private findProviderForModel(modelId: string): string {
     // Search all providers for this model
     for (const [providerId, provider] of Object.entries(this.cache ?? {})) {
-      if (provider.models[modelId]) {
+      if (Object.hasOwn(provider.models, modelId)) {
         return providerId;
       }
     }

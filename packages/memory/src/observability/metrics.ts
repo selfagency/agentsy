@@ -69,9 +69,8 @@ export function createMemoryMetrics(): MemoryMetrics {
       coordination.set(normalizedOperation, stat);
     },
 
-    recordRetrieval(query, input) {
-      // Query string is intentionally not stored verbatim to reduce accidental data exposure.
-      void redactSecretLikeValues(query);
+    recordRetrieval(_query, input) {
+      // Query string is intentionally not accepted to reduce accidental data exposure.
       retrievalQueries += 1;
       retrievalTotalHits += Math.max(0, input.hitCount);
       retrievalTotalLatency += Math.max(0, input.latencyMs);

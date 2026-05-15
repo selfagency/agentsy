@@ -334,7 +334,7 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
     },
 
     async searchHybrid(query, queryEmbedding, limit) {
-      const vectorScores = await this.searchVector(queryEmbedding, Number.MAX_SAFE_INTEGER);
+      const vectorScores = await this.searchVector(queryEmbedding, vectors.size);
       const vectorScoreMap = new Map<string, number>(vectorScores.map(item => [item.pageId, item.score]));
 
       const hybridScores = [...pages.values()]
