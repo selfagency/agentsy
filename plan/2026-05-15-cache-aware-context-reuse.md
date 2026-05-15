@@ -29,14 +29,14 @@ describe('cache-aware memory metadata', () => {
       value: 'sha256:abc123',
       modelFamily: 'qwen',
       templateVersion: 'v3',
-      schemaVersion: 1,
+      schemaVersion: 1
     };
 
     const hint: MemoryReuseHint = {
       reuseClass: 'hot',
       stablePrefix: true,
       toolSchema: true,
-      invalidationKeys: ['model-family:qwen', 'template:v3'],
+      invalidationKeys: ['model-family:qwen', 'template:v3']
     };
 
     expect(fingerprint.value).toBe('sha256:abc123');
@@ -102,7 +102,7 @@ describe('buildContextSegments', () => {
       toolSchema: { type: 'object', properties: { name: { type: 'string' } } },
       memorySummary: 'cached summary',
       modelFamily: 'qwen',
-      templateVersion: 'v3',
+      templateVersion: 'v3'
     });
 
     expect(segments[0]?.fingerprint.value).toContain('systemPrompt');
@@ -143,11 +143,11 @@ export function buildContextSegments(input: BuildContextSegmentsInput): ContextS
         value: `systemPrompt:${input.modelFamily}:${input.templateVersion}`,
         modelFamily: input.modelFamily,
         templateVersion: input.templateVersion,
-        schemaVersion: 1,
+        schemaVersion: 1
       },
       reuseClass: 'hot',
-      invalidations: [`model-family:${input.modelFamily}`, `template:${input.templateVersion}`],
-    },
+      invalidations: [`model-family:${input.modelFamily}`, `template:${input.templateVersion}`]
+    }
   ];
 }
 ```
@@ -187,9 +187,9 @@ describe('session cache metadata', () => {
         {
           fingerprint: 'systemPrompt:qwen:v3',
           reuseClass: 'hot',
-          invalidations: ['model-family:qwen', 'template:v3'],
-        },
-      ],
+          invalidations: ['model-family:qwen', 'template:v3']
+        }
+      ]
     });
 
     expect(snapshot.state.reusableSegments?.[0]?.reuseClass).toBe('hot');
@@ -230,8 +230,8 @@ export function createSessionSnapshot(input: {
     schemaVersion: 1,
     state: {
       modelFamily: input.modelFamily,
-      reusableSegments: input.reusableSegments,
-    },
+      reusableSegments: input.reusableSegments
+    }
   };
 }
 ```
@@ -266,9 +266,9 @@ describe('rankReusableMemoryBlocks', () => {
     const ranked = rankReusableMemoryBlocks(
       [
         { fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', hitCount: 9, invalidations: [] },
-        { fingerprint: 'systemPrompt:qwen:v2', reuseClass: 'cold', hitCount: 1, invalidations: ['template:v2'] },
+        { fingerprint: 'systemPrompt:qwen:v2', reuseClass: 'cold', hitCount: 1, invalidations: ['template:v2'] }
       ],
-      'systemPrompt:qwen:v3',
+      'systemPrompt:qwen:v3'
     );
 
     expect(ranked[0]?.fingerprint).toBe('systemPrompt:qwen:v3');
@@ -291,7 +291,7 @@ export function rankReusableMemoryBlocks(
     hitCount: number;
     invalidations: string[];
   }>,
-  fingerprint: string,
+  fingerprint: string
 ) {
   return [...blocks]
     .filter(block => !block.invalidations.includes(fingerprint))
@@ -333,7 +333,7 @@ describe('buildRuntimeContext', () => {
     const context = buildRuntimeContext({
       modelFamily: 'qwen',
       templateVersion: 'v3',
-      reusableSegments: [{ fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', invalidations: [] }],
+      reusableSegments: [{ fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', invalidations: [] }]
     });
 
     expect(context.reusedSegments).toContain('systemPrompt:qwen:v3');
@@ -357,7 +357,7 @@ export function buildRuntimeContext(input: {
   return {
     reusedSegments: input.reusableSegments
       .filter(segment => segment.reuseClass !== 'cold')
-      .map(segment => segment.fingerprint),
+      .map(segment => segment.fingerprint)
   };
 }
 ```

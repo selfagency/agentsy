@@ -22,6 +22,13 @@ export {
   type ChannelListener,
   type PubSubManager
 } from './coordination/pub-sub-manager.js';
+export {
+  createAtomicWorkflowCoordinator,
+  type AtomicWorkflowCoordinator,
+  type AtomicWorkflowContext,
+  type AtomicWorkflowResult,
+  type AtomicWorkflowStep
+} from './coordination/atomic-workflows.js';
 export { createInMemoryScheduler, type Scheduler } from './coordination/scheduler.js';
 export { createInMemoryTaskQueue, type CoordinationTask, type TaskQueue } from './coordination/task-queue.js';
 export {
@@ -32,6 +39,83 @@ export {
 export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
 export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
 export { createVersionTracker, type VersionTracker } from './wiki/version-tracker.js';
+export {
+  createEntityExtractor,
+  type EntityExtractor,
+  type EntityExtractionResult,
+  type EntityKind,
+  type EntityRelationship,
+  type ExtractedEntity
+} from './wiki/entity-extractor.js';
+export {
+  createMemoryRetriever,
+  type MemoryRetriever,
+  type MemoryRetrieverOptions,
+  type MemorySearchHit,
+  type MemorySearchInput,
+  type MemorySearchRecord
+} from './retrieval/retriever.js';
+export {
+  formatMemoryContextXml,
+  injectMemoryContext,
+  type FormatMemoryContextOptions,
+  type MemoryContextCandidate,
+  type XmlContextContracts
+} from './retrieval/injection.js';
+export {
+  createScopeManager,
+  type MemoryScope,
+  type ScopeAccessRequest,
+  type ScopeAction,
+  type ScopeGrant,
+  type ScopeManager,
+  type ScopePolicy
+} from './scope/scope-manager.js';
+export {
+  createMemoryCaptureTool,
+  type CapturedMemoryRecord,
+  type MemoryCaptureInput,
+  type MemoryCaptureResult,
+  type MemoryCaptureTool,
+  type MemoryCaptureToolDeps
+} from './tools/memory-capture.js';
+export {
+  createMemoryListTool,
+  type MemoryListInput,
+  type MemoryListResult,
+  type MemoryListTool,
+  type MemoryListToolDeps
+} from './tools/memory-list.js';
+export {
+  createMemorySearchTool,
+  type MemorySearchTool,
+  type MemorySearchToolDeps,
+  type MemorySearchToolInput,
+  type MemorySearchToolResult
+} from './tools/memory-search.js';
+export {
+  createMemoryStatsTool,
+  type MemoryStats,
+  type MemoryStatsTool,
+  type MemoryStatsToolDeps
+} from './tools/memory-stats.js';
+export {
+  createMemoryLintTool,
+  type MemoryLintInput,
+  type MemoryLintIssue,
+  type MemoryLintResult,
+  type MemoryLintTool,
+  type MemoryLintToolDeps
+} from './tools/memory-lint.js';
+export {
+  createMemoryMetrics,
+  redactSecretLikeValues,
+  type CoordinationLatencyStats,
+  type InjectionMetricsInput,
+  type MemoryMetrics,
+  type MemoryMetricsSnapshot,
+  type RetrievalMetricsInput
+} from './observability/metrics.js';
 export {
   createWikiManager,
   type RawCapture,

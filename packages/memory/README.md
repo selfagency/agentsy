@@ -8,17 +8,59 @@ Internal package; APIs may expand as memory features mature.
 
 ## Phase 1 foundation (current)
 
-This package now exposes a minimal Phase 1 slice for memory coordination and three-tier wiki flow scaffolding:
+Phase 1 is now fully implemented for the local-first foundation scope in this package.
 
-- Honker loader contract with fallback mode:
-- `loadHonkerExtension(...)`
+### Coordination and atomic safety
+
+- Honker extension loader + fallback mode:
+  - `loadHonkerExtension(...)`
 - In-memory coordination primitives:
-- `createInMemoryPubSubManager()`
-- `createInMemoryTaskQueue()`
-- Three-tier wiki primitives:
+  - `createInMemoryPubSubManager()`
+  - `createInMemoryTaskQueue()`
+  - `createInMemoryScheduler()`
+- Cross-layer atomic orchestration:
+  - `createAtomicWorkflowCoordinator()`
+
+### Wiki pipeline (`raw -> wiki -> vector`)
+
 - `createWikiManager()`
 - `createContentProcessor()`
 - `createVersionTracker()`
 - `createNavigationSystem()`
+- `createEntityExtractor()`
+- `createLocalEmbeddingEngine()`
 
-These APIs are intentionally small and in-memory by default so downstream packages can integrate now while native honker/sqlite/vector backends are implemented incrementally.
+### Retrieval and injection
+
+- Hybrid retriever (semantic + lexical + temporal):
+  - `createMemoryRetriever()`
+- XML context injection utilities:
+  - `formatMemoryContextXml(...)`
+  - `injectMemoryContext(...)`
+
+### Scope isolation
+
+- Deny-by-default scope policy manager:
+  - `createScopeManager()`
+- Supported scopes:
+  - `session | user | project | team | global`
+
+### Tool surface for loop integration
+
+- `createMemoryCaptureTool()`
+- `createMemorySearchTool()`
+- `createMemoryListTool()`
+- `createMemoryStatsTool()`
+- `createMemoryLintTool()`
+
+### Observability
+
+- `createMemoryMetrics()`
+- `redactSecretLikeValues(...)`
+
+## Validation status
+
+- `pnpm --filter @agentsy/memory check-types` ✅
+- `pnpm --filter @agentsy/memory test` ✅
+
+See `plan/PHASE-1-COMPLETION.md` for detailed completion and verification notes.

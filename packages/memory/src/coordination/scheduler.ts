@@ -17,7 +17,11 @@ export function createInMemoryScheduler(): Scheduler {
       const timeout = setTimeout(
         () => {
           jobs.delete(jobId);
-          callback();
+          try {
+            callback();
+          } catch {
+            // Keep scheduler resilient: callback failures should not crash the loop.
+          }
         },
         Math.max(0, delayMs)
       );

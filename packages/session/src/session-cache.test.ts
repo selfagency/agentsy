@@ -11,9 +11,9 @@ describe('createSessionSnapshot', () => {
         {
           fingerprint: 'systemPrompt:qwen:v3',
           reuseClass: 'hot',
-          invalidations: ['model-family:qwen', 'template:v3'],
-        },
-      ],
+          invalidations: ['model-family:qwen', 'template:v3']
+        }
+      ]
     });
 
     expect(snapshot.state.reusableSegments?.[0]?.reuseClass).toBe('hot');

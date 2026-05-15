@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { createContentProcessor, type ContentProcessor } from './content-processor.js';
+import { createEntityExtractor, type EntityExtractor } from './entity-extractor.js';
 import { createLocalEmbeddingEngine, type LocalEmbeddingEngine } from './local-embedding-engine.js';
 import { createNavigationSystem, type NavigationSystem } from './navigation-system.js';
 import { createVersionTracker, type VersionTracker } from './version-tracker.js';
@@ -94,6 +95,7 @@ export interface WikiManager {
 
 export interface WikiManagerDependencies {
   contentProcessor?: ContentProcessor;
+  entityExtractor?: EntityExtractor;
   embeddingEngine?: LocalEmbeddingEngine;
   versionTracker?: VersionTracker;
   navigation?: NavigationSystem;
@@ -167,6 +169,7 @@ function getHistoryBody(history: Map<string, WikiPageHistoryEntry[]>, pageId: st
 function resolveWikiDependencies(dependencies: WikiManagerDependencies) {
   return {
     contentProcessor: dependencies.contentProcessor ?? createContentProcessor(),
+    entityExtractor: dependencies.entityExtractor ?? createEntityExtractor(),
     embeddingEngine: dependencies.embeddingEngine ?? createLocalEmbeddingEngine(),
     versionTracker: dependencies.versionTracker ?? createVersionTracker(),
     navigation: dependencies.navigation ?? createNavigationSystem()
@@ -174,7 +177,8 @@ function resolveWikiDependencies(dependencies: WikiManagerDependencies) {
 }
 
 export function createWikiManager(dependencies: WikiManagerDependencies = {}): WikiManager {
-  const { contentProcessor, embeddingEngine, versionTracker, navigation } = resolveWikiDependencies(dependencies);
+  const { contentProcessor, entityExtractor, embeddingEngine, versionTracker, navigation } =
+    resolveWikiDependencies(dependencies);
 
   const pages = new Map<string, WikiPage>();
   const vectors = new Map<string, VectorEntry>();
@@ -352,7 +356,8 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
         return [];
       }
 
-      return contentProcessor.extractEntities(`${page.title}\n${page.body}`);
+      const extracted = entityExtractor.extract(`${page.title}\n${page.body}`);
+      return extracted.entities.map(entity => entity.name);
     },
 
     async linkConcepts(fromPageId, toPageId, relation) {
