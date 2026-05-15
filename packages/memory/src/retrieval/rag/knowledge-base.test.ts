@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createKnowledgeBaseManager } from './knowledge-base.js';
 
 describe('KnowledgeBaseManager', () => {
@@ -32,7 +32,11 @@ describe('KnowledgeBaseManager', () => {
     });
 
     expect(results.length).toBeGreaterThan(0);
-    expect(results[0]?.content).toContain('Paris');
+    const firstResult = results[0];
+    expect(firstResult).toBeDefined();
+    if (firstResult) {
+      expect(firstResult.content).toContain('Paris');
+    }
   });
 
   it('should ingest a document with metadata', async () => {
@@ -52,7 +56,11 @@ describe('KnowledgeBaseManager', () => {
       query: 'Metadata',
       weights: { vector: 1, lexical: 1, entity: 0, temporal: 0 }
     });
-    expect(results[0]?.metadata?.author).toBe('AI');
+    const firstResult = results[0];
+    expect(firstResult).toBeDefined();
+    if (firstResult) {
+      expect(firstResult.metadata?.author).toBe('AI');
+    }
   });
 
   it('should remove a document', async () => {
@@ -72,13 +80,15 @@ describe('KnowledgeBaseManager', () => {
     const docId = results[0]?.id;
     expect(docId).toBeDefined();
 
-    const removed = await kb.remove(docId!);
-    expect(removed).toBe(true);
+    if (docId) {
+      const removed = await kb.remove(docId);
+      expect(removed).toBe(true);
 
-    const resultsAfter = await kb.search({
-      query: 'removed',
-      weights: { vector: 1, lexical: 1, entity: 0, temporal: 0 }
-    });
-    expect(resultsAfter.find(r => r.id === docId)).toBeUndefined();
+      const resultsAfter = await kb.search({
+        query: 'removed',
+        weights: { vector: 1, lexical: 1, entity: 0, temporal: 0 }
+      });
+      expect(resultsAfter.find(r => r.id === docId)).toBeUndefined();
+    }
   });
 });
