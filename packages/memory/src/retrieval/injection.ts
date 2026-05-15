@@ -29,7 +29,17 @@ function escapeXml(value: string): string {
 }
 
 function sanitizeText(value: string): string {
-  return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  return [...value]
+    .filter(character => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      const isControl =
+        (codePoint >= 0x00 && codePoint <= 0x08) ||
+        (codePoint >= 0x0b && codePoint <= 0x0c) ||
+        (codePoint >= 0x0e && codePoint <= 0x1f) ||
+        codePoint === 0x7f;
+      return !isControl;
+    })
+    .join('');
 }
 
 function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string } {
@@ -38,8 +48,8 @@ function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[];
   const blockPattern = /^<(memory_context|[a-z_][a-z0-9_.-]{0,63})[^>]*>[\s\S]*?<\/\1>/iu;
 
   while (true) {
-    const match = remaining.match(blockPattern);
-    if (!match || match.index !== 0) {
+    const match = blockPattern.exec(remaining);
+    if (match?.index !== 0) {
       break;
     }
 
@@ -58,7 +68,7 @@ function dedupeXmlContextBlocksByTag(blocks: string[]): string[] {
   const latestByTag = new Map<string, string>();
 
   for (const block of blocks) {
-    const tagMatch = block.match(/^<([a-z_][a-z0-9_.-]{0,63})\b/iu);
+    const tagMatch = /^<([a-z_][a-z0-9_.-]{0,63})\b/iu.exec(block);
     const tag = tagMatch?.[1] ?? `__raw__:${Math.random().toString(36).slice(2)}`;
     latestByTag.set(tag, block.trim());
   }

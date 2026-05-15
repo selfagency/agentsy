@@ -68,9 +68,9 @@ describe('PubSubManager', () => {
       const listener2 = vi.fn();
       const listener3 = vi.fn();
 
-      const unsubscribe2 = manager.subscribe('channel1', listener1);
+      manager.subscribe('channel1', listener1);
       const unsubscribeListener2 = manager.subscribe('channel1', listener2);
-      const unsubscribe3 = manager.subscribe('channel1', listener3);
+      manager.subscribe('channel1', listener3);
 
       unsubscribeListener2();
 
@@ -252,7 +252,9 @@ describe('PubSubManager', () => {
       const manager = createInMemoryPubSubManager();
       const listeners = Array.from({ length: 100 }, () => vi.fn());
 
-      listeners.forEach(listener => manager.subscribe('broadcast', listener));
+      listeners.forEach(listener => {
+        manager.subscribe('broadcast', listener);
+      });
 
       const payload = { broadcast: true };
       await manager.publish('broadcast', payload);

@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { join } from 'node:path';
 import { loadHonkerExtension, type HonkerLoadOptions } from './loader.js';
+
+const SAFE_TEST_ROOT = join(process.cwd(), '.agentsy-test-artifacts');
+const SAFE_DB_PATH = join(SAFE_TEST_ROOT, 'test.db');
+const SAFE_ALT_DB_PATH = join(SAFE_TEST_ROOT, 'db.db');
+const SAFE_UNICODE_HONKER_PATH = join(SAFE_TEST_ROOT, '扩展', 'honker.so');
+const SAFE_UNICODE_BLAKE3_PATH = join(SAFE_TEST_ROOT, '扩展', 'blake3.so');
 
 describe('HonkerExtensionLoader', () => {
   describe('loadHonkerExtension', () => {
     it('should return result with detected mode', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent/honker.so',
         blake3ExtensionPath: '/nonexistent/blake3.so'
       };
@@ -31,7 +38,7 @@ describe('HonkerExtensionLoader', () => {
 
     it('should include features in result', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent/honker.so',
         blake3ExtensionPath: '/nonexistent/blake3.so'
       };
@@ -52,7 +59,7 @@ describe('HonkerExtensionLoader', () => {
 
     it('should return fallback mode when extensions do not exist', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/definitely/does/not/exist.so',
         blake3ExtensionPath: '/definitely/does/not/exist.so'
       };
@@ -64,33 +71,29 @@ describe('HonkerExtensionLoader', () => {
 
     it('should have reason field when in fallback mode', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent/honker.so',
         blake3ExtensionPath: '/nonexistent/blake3.so'
       };
 
       const result = await loadHonkerExtension(options);
-
-      if (result.mode === 'fallback') {
-        expect(result).toHaveProperty('reason');
-      }
+      expect(result.mode).toBe('fallback');
+      expect(result).toHaveProperty('reason');
     });
 
     it('should disable all features in fallback mode', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent/honker.so',
         blake3ExtensionPath: '/nonexistent/blake3.so'
       };
 
       const result = await loadHonkerExtension(options);
-
-      if (result.mode === 'fallback') {
-        expect(result.features.pubSub).toBe(false);
-        expect(result.features.taskQueue).toBe(false);
-        expect(result.features.scheduler).toBe(false);
-        expect(result.features.blake3).toBe(false);
-      }
+      expect(result.mode).toBe('fallback');
+      expect(result.features.pubSub).toBe(false);
+      expect(result.features.taskQueue).toBe(false);
+      expect(result.features.scheduler).toBe(false);
+      expect(result.features.blake3).toBe(false);
     });
 
     it('should handle various dbPath formats', async () => {
@@ -119,7 +122,7 @@ describe('HonkerExtensionLoader', () => {
       const blake3Path = '/path/to/blake3.so';
 
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath,
         blake3ExtensionPath: blake3Path
       };
@@ -135,7 +138,7 @@ describe('HonkerExtensionLoader', () => {
   describe('Interface contracts', () => {
     it('HonkerLoadOptions should have required properties', () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/db.db',
+        dbPath: SAFE_ALT_DB_PATH,
         extensionPath: '/path/to/honker.so',
         blake3ExtensionPath: '/path/to/blake3.so'
       };
@@ -147,7 +150,7 @@ describe('HonkerExtensionLoader', () => {
 
     it('HonkerLoadResult should include mode and dbPath', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent/honker.so',
         blake3ExtensionPath: '/nonexistent/blake3.so'
       };
@@ -162,7 +165,7 @@ describe('HonkerExtensionLoader', () => {
 
     it('HonkerLoadFeatures should match expected structure', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent.so',
         blake3ExtensionPath: '/nonexistent.so'
       };
@@ -198,9 +201,9 @@ describe('HonkerExtensionLoader', () => {
 
     it('should handle paths with unicode characters', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/数据库/db.db',
-        extensionPath: '/tmp/扩展/honker.so',
-        blake3ExtensionPath: '/tmp/扩展/blake3.so'
+        dbPath: join(SAFE_TEST_ROOT, '数据库', 'db.db'),
+        extensionPath: SAFE_UNICODE_HONKER_PATH,
+        blake3ExtensionPath: SAFE_UNICODE_BLAKE3_PATH
       };
 
       const result = await loadHonkerExtension(options);
@@ -210,7 +213,7 @@ describe('HonkerExtensionLoader', () => {
     });
 
     it('should handle very long paths', async () => {
-      const longPath = '/very/long/' + 'deep/'.repeat(50) + 'db.db';
+      const longPath = `/very/long/${'deep/'.repeat(50)}db.db`;
       const options: HonkerLoadOptions = {
         dbPath: longPath,
         extensionPath: '/nonexistent.so',
@@ -225,7 +228,7 @@ describe('HonkerExtensionLoader', () => {
 
     it('should not throw on missing file access', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/root/restricted/honker.so', // Likely no access
         blake3ExtensionPath: '/root/restricted/blake3.so'
       };
@@ -240,14 +243,14 @@ describe('HonkerExtensionLoader', () => {
     it('should return different results based on availability', async () => {
       // First check with nonexistent paths
       const result1 = await loadHonkerExtension({
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/definitely/not/here1.so',
         blake3ExtensionPath: '/definitely/not/here1.so'
       });
 
       // Then check with different nonexistent paths
       const result2 = await loadHonkerExtension({
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/definitely/not/here2.so',
         blake3ExtensionPath: '/definitely/not/here2.so'
       });
@@ -262,7 +265,7 @@ describe('HonkerExtensionLoader', () => {
 
     it('should have consistent fallback feature flags', async () => {
       const options: HonkerLoadOptions = {
-        dbPath: '/tmp/test.db',
+        dbPath: SAFE_DB_PATH,
         extensionPath: '/nonexistent/honker.so',
         blake3ExtensionPath: '/nonexistent/blake3.so'
       };

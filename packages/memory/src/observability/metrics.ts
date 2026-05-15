@@ -38,7 +38,7 @@ export interface MemoryMetrics {
   snapshot(): MemoryMetricsSnapshot;
 }
 
-const SECRET_REDACTION_PATTERN = /(sk_[a-z0-9_\-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._\-]{10,})/giu;
+const SECRET_REDACTION_PATTERN = /(sk_[a-z0-9_-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._-]{10,})/giu;
 
 export function redactSecretLikeValues(value: string): string {
   return value.replace(SECRET_REDACTION_PATTERN, '[REDACTED]');

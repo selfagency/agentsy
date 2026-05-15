@@ -198,7 +198,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   const costScore = clamp01(1 / (1 + rawCost * 50));
 
   const contextScore = clamp01(model.limit.context / 256000);
-  const capabilityScore = criteria.requireToolCalling ? (model.tool_call ? 1 : 0) : 0.8;
+  const capabilityScore = criteria.requireToolCalling ? Number(model.tool_call) : 0.8;
 
   const fitWeight = 0.4;
   const benchmarkWeight = 0.3;

@@ -23,7 +23,7 @@ export interface MemoryLintToolDeps {
   list(): CapturedMemoryRecord[] | Promise<CapturedMemoryRecord[]>;
 }
 
-const SECRET_LIKE_PATTERN = /(api[_-]?key\s*=\s*\S+|sk_[a-z0-9_\-]{8,}|bearer\s+[a-z0-9._\-]{10,})/iu;
+const SECRET_LIKE_PATTERN = /(api[_-]?key\s*=\s*\S+|sk_[a-z0-9_-]{8,}|bearer\s+[a-z0-9._-]{10,})/iu;
 
 export function createMemoryLintTool(deps: MemoryLintToolDeps): MemoryLintTool {
   return {

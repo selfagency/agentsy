@@ -87,7 +87,7 @@ function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
 }
 
 function temporalScore(record: MemorySearchRecord, now: Date): number {
-  const ageMs = Math.max(0, now.getTime() - record.createdAt.getTime());
+  const ageMs = Math.max(0, +now - +record.createdAt);
   const ageHours = ageMs / (1000 * 60 * 60);
   return 1 / (1 + ageHours / 24);
 }
@@ -103,8 +103,8 @@ function cloneRecord(record: MemorySearchRecord): MemorySearchRecord {
     content: record.content,
     ...(record.title === undefined ? {} : { title: record.title }),
     ...(record.tags === undefined ? {} : { tags: [...record.tags] }),
-    createdAt: new Date(record.createdAt.getTime()),
-    ...(record.updatedAt === undefined ? {} : { updatedAt: new Date(record.updatedAt.getTime()) })
+    createdAt: new Date(record.createdAt),
+    ...(record.updatedAt === undefined ? {} : { updatedAt: new Date(record.updatedAt) })
   };
 }
 

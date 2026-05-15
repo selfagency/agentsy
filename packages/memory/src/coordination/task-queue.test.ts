@@ -210,8 +210,12 @@ describe('TaskQueue', () => {
 
       // Consumer: dequeue all tasks
       const consumed = [];
-      let task: { id: string; type: string } | null;
-      while ((task = await queue.dequeue()) !== null) {
+      while (true) {
+        const task = await queue.dequeue();
+        if (task === null) {
+          break;
+        }
+
         consumed.push(task);
       }
 

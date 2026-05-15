@@ -22,7 +22,7 @@ export interface EntityExtractor {
   extract(content: string): EntityExtractionResult;
 }
 
-const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]{1,}|[A-Z]{2,})\b/g;
+const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/g;
 
 function classifyEntity(name: string): EntityKind {
   if (/(Inc|Corp|LLC|Ltd|Foundation)$/u.test(name)) {

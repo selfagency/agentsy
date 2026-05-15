@@ -342,14 +342,14 @@ describe('Scheduler', () => {
     });
 
     it('should manage lifecycle of many jobs', async () => {
-      const jobs: Array<{ id: string; fn: any }> = Array.from({ length: 50 }, (_, i) => ({
+      const jobs: Array<{ id: string; fn: ReturnType<typeof vi.fn> }> = Array.from({ length: 50 }, (_, i) => ({
         id: `job-${i}`,
         fn: vi.fn()
       }));
 
       // Schedule all jobs
       jobs.forEach(({ id, fn }) => {
-        scheduler.schedule(id, 100 + Math.random() * 50, fn);
+        scheduler.schedule(id, 100 + Math.random() * 50, fn as () => void);
       });
 
       expect(scheduler.pendingCount()).toBe(50);
@@ -373,8 +373,8 @@ describe('Scheduler', () => {
       jobs.forEach(({ fn }, index) => {
         if (index % 2 === 0) {
           if (fn.mock.calls.length === 0) cancelledCount++;
-        } else {
-          if (fn.mock.calls.length > 0) executedCount++;
+        } else if (fn.mock.calls.length > 0) {
+          executedCount++;
         }
       });
 

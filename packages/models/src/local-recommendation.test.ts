@@ -156,14 +156,23 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
   });
 
   it('enforces tool-calling requirement', () => {
+    const qwenProvider = modelsDevFixture['qwen'];
+    if (!qwenProvider) {
+      throw new Error('Expected qwen provider in fixture');
+    }
+    const qwen7bModel = qwenProvider.models['qwen2.5-coder-7b'];
+    if (!qwen7bModel) {
+      throw new Error('Expected qwen2.5-coder-7b model in fixture');
+    }
+
     const noToolModelData: ModelsDevAPI = {
       ...modelsDevFixture,
       qwen: {
-        ...modelsDevFixture.qwen!,
+        ...qwenProvider,
         models: {
-          ...modelsDevFixture.qwen!.models,
+          ...qwenProvider.models,
           'qwen2.5-coder-7b': {
-            ...modelsDevFixture.qwen!.models['qwen2.5-coder-7b']!,
+            ...qwen7bModel,
             tool_call: false
           }
         }
