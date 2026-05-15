@@ -40,9 +40,9 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
     errors.push('cursor must be a string');
   }
 
-  const records = payload.records;
+  const records = Array.isArray(payload.records) ? payload.records : null;
 
-  if (!Array.isArray(records)) {
+  if (records === null) {
     errors.push('records must be an array');
   } else {
     records.forEach((record, index) => {
