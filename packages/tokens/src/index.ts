@@ -2,6 +2,8 @@
 
 import { randomUUID } from 'node:crypto';
 
+export * from './compression/index.js';
+
 export interface TokenLedgerBudget {
   limit: number;
 }
