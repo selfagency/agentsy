@@ -48,7 +48,7 @@ function compressContent(input: string, level: MemoryCompressionLevel): string {
 }
 
 export function isSensitivePath(filePath: string): boolean {
-  const lowered = filePath.toLowerCase().replaceAll('\\\\', '/');
+  const lowered = filePath.toLowerCase().replaceAll('\\', '/');
   const name = basename(lowered);
   const extension = extname(lowered);
 
