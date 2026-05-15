@@ -1,4 +1,91 @@
-# @agentsy/secrets — Implementation Plan
+---
+goal: @agentsy/secrets production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: secrets-maintainers
+status: In progress
+tags: [feature, architecture, secrets, security, key-management]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/secrets` as secure credentials lifecycle authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-SECRETS-001**: Secret access supports keychain/env/encrypted backend strategies with deterministic precedence.
+- **REQ-SECRETS-002**: Setup/doctor flows provide safe diagnostics without exposing secret values.
+- **REQ-SECRETS-003**: Rotation/update workflows avoid downtime and stale credential use.
+- **REQ-SECRETS-004**: Access telemetry is auditable and redacted.
+- **SEC-SECRETS-001**: No plaintext credential persistence in user config or logs.
+- **SEC-SECRETS-002**: Secret retrieval requires scoped access context and least privilege.
+- **CON-SECRETS-001**: Provider transport/auth logic remains in providers package.
+- **CON-SECRETS-002**: UI prompting remains in CLI/surface packages.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-SECRETS-001: Contract and backend strategy stabilization.
+
+| Task             | Description                                                            | Completed | Date |
+| ---------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| TASK-SECRETS-001 | Stabilize secrets API contract and backend selection precedence model. |           |      |
+| TASK-SECRETS-002 | Add typed tests for backend fallback and access error taxonomy.        |           |      |
+| TASK-SECRETS-003 | Document security boundary ownership with CLI/providers/runtime.       |           |      |
+
+### Implementation Phase 2
+
+- GOAL-SECRETS-002: Core secrets subsystem completion.
+
+| Task             | Description                                                     | Completed | Date |
+| ---------------- | --------------------------------------------------------------- | --------- | ---- |
+| TASK-SECRETS-004 | Implement keychain/env/encrypted file adapters with validation. |           |      |
+| TASK-SECRETS-005 | Implement rotation/update and invalidation behavior.            |           |      |
+| TASK-SECRETS-006 | Implement safe diagnostics APIs for setup/doctor workflows.     |           |      |
+
+### Implementation Phase 3
+
+- GOAL-SECRETS-003: Integration and operations.
+
+| Task             | Description                                                               | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------- | --------- | ---- |
+| TASK-SECRETS-007 | Integrate provider/runtime/CLI secret flows and reference semantics.      |           |      |
+| TASK-SECRETS-008 | Add integration tests for secret lookup precedence and rotation behavior. |           |      |
+| TASK-SECRETS-009 | Emit redacted access telemetry for audit support.                         |           |      |
+
+### Implementation Phase 4
+
+- GOAL-SECRETS-004: Hardening and release gates.
+
+| Task             | Description                                                                   | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------- | --------- | ---- |
+| TASK-SECRETS-010 | Add failure-mode regressions for backend unavailability and corrupted stores. |           |      |
+| TASK-SECRETS-011 | Update docs and operator safety guidance.                                     |           |      |
+| TASK-SECRETS-012 | Pass package and monorepo release gates.                                      |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-SECRETS-001**: Secret handling behavior is deterministic and secure by default.
+- **ACC-SECRETS-002**: Provider/CLI integration flows pass with redaction guarantees.
+- **ACC-SECRETS-003**: Security and release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/secrets.md`
+- `packages/secrets/README.md`
+- `packages/secrets/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/secrets — Implementation Plan
 
 ## Role in Framework Ecosystem
 

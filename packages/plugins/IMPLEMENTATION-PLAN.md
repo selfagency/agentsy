@@ -1,8 +1,102 @@
-# @agentsy/plugins — Implementation Plan
+---
+goal: @agentsy/plugins production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: plugins-maintainers
+status: In progress
+tags: [feature, architecture, plugins, registry, commands]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/plugins` as the extension and slash-command registry authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-PLUGINS-001**: Plugin manifests define capabilities, permissions, aliases, and compatibility metadata.
+- **REQ-PLUGINS-002**: Registry discovery/loading/conflict behavior is deterministic.
+- **REQ-PLUGINS-003**: Slash-command registration supports help metadata and policy-aware interception.
+- **REQ-PLUGINS-004**: Lifecycle events are observable and test-covered.
+- **REQ-PLUGINS-005**: First-party plugins must be distributable and loadable through the exact same manifest/registry path as third-party plugins.
+- **REQ-PLUGINS-006**: The official superagents plugin must define reusable `research`, `plan`, and `agent` modes with provenance metadata and independently consumable APIs.
+- **REQ-PLUGINS-007**: Plugin discovery must merge bundled plugins with user/project plugin directories, including `~/.agents`, project `.agents`, and `~/.config/agentsy`.
+- **SEC-PLUGINS-001**: Privileged plugin capabilities are deny-by-default.
+- **SEC-PLUGINS-002**: Third-party plugin content is validated and sandboxed at activation boundaries.
+- **CON-PLUGINS-001**: CLI owns shell UX composition; plugins own manifests and registry.
+- **CON-PLUGINS-002**: Tool execution remains in runtime/tools despite plugin discovery.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-PLUGINS-001: Contract stabilization.
+
+| Task             | Description                                                                                                                                                   | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PLUGINS-001 | Finalize plugin manifest schema and capability model contracts.                                                                                               |           |      |
+| TASK-PLUGINS-002 | Stabilize slash-command registry/discovery APIs and alias resolution behavior.                                                                                |           |      |
+| TASK-PLUGINS-003 | Document package boundaries with CLI/orchestrator/runtime.                                                                                                    |           |      |
+| TASK-PLUGINS-013 | Extend manifest schema for official-plugin provenance, mode metadata, picker labels, and install-source markers (`bundled`, `user`, `workspace`, `external`). |           |      |
+
+### Implementation Phase 2
+
+- GOAL-PLUGINS-002: Core registry implementation.
+
+| Task             | Description                                                                                                                                | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-PLUGINS-004 | Implement plugin loading, activation filtering, and conflict resolution.                                                                   |           |      |
+| TASK-PLUGINS-005 | Implement command manifests, aliases, and discoverability/help metadata.                                                                   |           |      |
+| TASK-PLUGINS-006 | Add capability-scoped activation and policy negotiation hooks.                                                                             |           |      |
+| TASK-PLUGINS-014 | Implement official superagents plugin packaging so it can be installed independently but also shipped as a bundled default plugin for CLI. |           |      |
+| TASK-PLUGINS-015 | Add discovery loaders for bundled plugins plus user/project plugin roots (`~/.agents`, project `.agents`, `~/.config/agentsy`).            |           |      |
+
+### Implementation Phase 3
+
+- GOAL-PLUGINS-003: Integration and testing.
+
+| Task             | Description                                                                                                                     | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PLUGINS-007 | Integrate slash-command pathways with CLI input/help and orchestrator interception.                                             |           |      |
+| TASK-PLUGINS-008 | Add integration tests for command routing, plugin capability filtering, and rejection messaging.                                |           |      |
+| TASK-PLUGINS-009 | Emit plugin lifecycle telemetry via observability hooks.                                                                        |           |      |
+| TASK-PLUGINS-016 | Add tests for agent-mode manifest discovery, precedence, provenance labeling, and merged bundled/user/workspace picker results. |           |      |
+
+### Implementation Phase 4
+
+- GOAL-PLUGINS-004: Hardening and release gates.
+
+| Task             | Description                                                             | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------- | --------- | ---- |
+| TASK-PLUGINS-010 | Add regression suites for plugin compatibility and conflict edge cases. |           |      |
+| TASK-PLUGINS-011 | Align docs and plugin-author guidance.                                  |           |      |
+| TASK-PLUGINS-012 | Pass package and monorepo release gates.                                |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-PLUGINS-001**: Plugin manifest and registry behaviors are deterministic and test-validated.
+- **ACC-PLUGINS-002**: CLI/orchestrator/runtime integration paths are production-ready.
+- **ACC-PLUGINS-003**: Security and release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/plugins.md`
+- `packages/plugins/README.md`
+- `packages/plugins/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/plugins — Implementation Plan
 
 ## Role in Framework Ecosystem
 
-`@agentsy/plugins` is the **capability marketplace** of the framework. It provides a standardized integration point for tools, agent templates, and specialized execution modes (like Caveman or Superpowers). It allows the framework to grow its feature set without bloating the core packages.
+`@agentsy/plugins` is the **capability marketplace** of the framework. It provides a standardized integration point for tools, agent templates, and specialized execution modes. It allows the framework to grow its feature set without bloating the core packages.
 
 It is consumed by `@agentsy/runtime` (for tool discovery) and `@agentsy/orchestrator` (for workflow node templates).
 
@@ -17,8 +111,8 @@ It is consumed by `@agentsy/runtime` (for tool discovery) and `@agentsy/orchestr
              [ @agentsy/plugins ]
              /        |         \
             v         v          v
-   [ Tool Libs ] [ Agent Temp ] [ Custom Modes ]
-   (Slack, GitHub) (Researcher) (Caveman, etc.)
+  [ Tool Libs ] [ Agent Temp ] [ Official/3P Modes ]
+  (Slack, GitHub) (Researcher) (Superagents, etc.)
 ```
 
 ## Fulfillment of Role
@@ -30,6 +124,8 @@ The package fulfills its role by providing:
 3. **Agent Templates**: Reusable agent configurations (instructions, model settings, tool sets).
 4. **Feature Discovery**: Mechanisms for agents to discover available capabilities based on context signals.
 5. **Extension Provider Architecture**: Self-contained modules with `AGENTS.md` and standardized interfaces (OpenClaw pattern).
+6. **Workspace Skill Integration**: Discovery and activation of project-specific skills and instruction bundles alongside installed/global skills.
+7. **Slash command registry**: Canonical manifests, aliases, discovery metadata, and command registry for `/`-prefixed interactive behavior consumed by CLI and orchestrator.
 
 ## Detailed Functionality
 
@@ -48,10 +144,14 @@ The package fulfills its role by providing:
   - Discovering tools by name or capability description.
   - Managing tool versions and deprecations.
 
-### 3. Specialized Modes (`src/caveman/`, `src/superpowers/`)
+### 3. Official plugins and specialized modes
 
-- **Caveman Mode**: A bundled plugin that implements token-efficient communication patterns.
-- **Superpowers**: Methodology-driven skills like TDD, Plan-First Development, and Code Review.
+- **Official superagents plugin**: A first-party plugin distributed through the same registry path as external plugins and prepackaged with the CLI.
+- **Reusable mode set**:
+  - `research`: iterative research loops, citations, and source strategy selection
+  - `plan`: clarification, review, and implementation-plan generation
+  - `agent`: execution workflow with investigate/review/test/ship discipline
+- **Rule**: third-party inspirations inform these modes, but their original brand names are not the canonical product-facing modes in Agentsy.
 
 ### 4. Feature-Based Architecture
 
@@ -68,6 +168,12 @@ The package fulfills its role by providing:
 - **Skills Support**: Full support for `SKILL.md` files as defined in the Agent Skills open standard.
 - **Entry Points**: Features register themselves via package entry points or explicit manifests.
 
+### 6.1 Slash command manifests and discovery
+
+- **Canonical home**: `/` command manifests, aliases, help metadata, and command categories belong in `@agentsy/plugins`.
+- **Boundary**: CLI owns input parsing/completion and help presentation, while orchestrator/runtime own interception and execution semantics.
+- **Registry output**: expose command descriptors suitable for interactive help, keybinding surfaces, permission policy checks, and workspace-specific command enablement.
+
 ### 7. Skill Discovery and Activation (Agentspan-inspired)
 
 Agentspan-style skill management is a good fit for the plugin layer because it already owns capability discovery and activation.
@@ -83,6 +189,13 @@ Agentspan-style skill management is a good fit for the plugin layer because it a
 - Surface skills through the existing registry and manifest flow.
 - Let orchestrator/runtime decide activation; plugins should expose metadata and safe defaults.
 
+### 8. Project-Specific Skills and Workspace Extensions
+
+- **Workspace skill discovery**: discover project-local skills/manifests from repository-scoped locations and merge them with installed/global skills.
+- **Instruction/skill affinity**: attach project-specific instruction bundles to matching skills so CLI/runtime can activate them together.
+- **Interactive selection**: expose metadata required by CLI for skill search/select/refine UX.
+- **Policy scoping**: ensure project-specific skills inherit filesystem/tool restrictions from workspace policy and user configuration.
+
 ## Logic & Data Flow
 
 ### 1. Tool Discovery Flow
@@ -96,6 +209,13 @@ Agentspan-style skill management is a good fit for the plugin layer because it a
 1. An agent is initialized with a specific `mode` (e.g., `caveman`).
 2. The `PluginHost` looks up the corresponding `AgentModeFactory`.
 3. The factory wraps the standard agent loop with specialized instructions, filters, and event handlers.
+
+### 3. Workspace skill flow (new)
+
+1. CLI discovers project-local skills and instructions from the active repository.
+2. Plugin registry merges them with installed/global skills using explicit precedence and provenance markers.
+3. Orchestrator/runtime request context-relevant skills.
+4. CLI can present search/select/refine controls for skills and activate them interactively.
 
 ## Key Interfaces
 
@@ -133,11 +253,26 @@ export interface Extension {
 }
 ```
 
+### WorkspaceSkillManifest
+
+```typescript
+export interface WorkspaceSkillManifest {
+  id: string;
+  source: 'workspace' | 'user' | 'bundled';
+  path: string;
+  capabilities: string[];
+  instructionFiles: string[];
+  priority: number;
+}
+```
+
 ## Implementation Details
 
 ### Bundled Skills
 
 Specialized modes like `caveman` should ship their `SKILL.md` files as static assets within the package. The `PluginHost` must be able to parse these files and convert them into active tool/prompt context.
+
+The same host must also discover and validate project-local skill bundles so a repository can ship its own instructions, skills, and extension defaults without modifying the global installation.
 
 ### Coverage CI
 

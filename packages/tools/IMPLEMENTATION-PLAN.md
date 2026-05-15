@@ -1,4 +1,91 @@
-# @agentsy/tools — Implementation Plan
+---
+goal: @agentsy/tools production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: tools-maintainers
+status: In progress
+tags: [feature, architecture, tools, schemas, execution]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/tools` as the canonical tool definition and handler package.
+
+## 1. Requirements & Constraints
+
+- **REQ-TOOLS-001**: Tool definitions expose strong schemas, validation, and typed results.
+- **REQ-TOOLS-002**: Tool lifecycle emits deterministic start/progress/success/error states.
+- **REQ-TOOLS-003**: High-impact tool classes are approval-gated via runtime policy integration.
+- **REQ-TOOLS-004**: Tool registry supports discoverability and capability metadata.
+- **SEC-TOOLS-001**: Shell/file/network tools enforce allowlist/sandbox policy constraints.
+- **SEC-TOOLS-002**: Untrusted tool output is sanitized before downstream rendering.
+- **CON-TOOLS-001**: Orchestration strategy remains in orchestrator/runtime layers.
+- **CON-TOOLS-002**: UI layout concerns remain outside tools package.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-TOOLS-001: Contract stabilization.
+
+| Task           | Description                                                       | Completed | Date |
+| -------------- | ----------------------------------------------------------------- | --------- | ---- |
+| TASK-TOOLS-001 | Stabilize tool definition, schema, and lifecycle event contracts. |           |      |
+| TASK-TOOLS-002 | Add typed tests for validation and result envelope invariants.    |           |      |
+| TASK-TOOLS-003 | Document ownership boundaries with runtime/plugins/orchestrator.  |           |      |
+
+### Implementation Phase 2
+
+- GOAL-TOOLS-002: Core tool library completion.
+
+| Task           | Description                                                                      | Completed | Date |
+| -------------- | -------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TOOLS-004 | Implement baseline tool sets (repl/file/shell/web/mcp bridge) with policy hooks. |           |      |
+| TASK-TOOLS-005 | Implement deterministic error and retry behavior for tool handlers.              |           |      |
+| TASK-TOOLS-006 | Implement capability metadata and registry interfaces.                           |           |      |
+
+### Implementation Phase 3
+
+- GOAL-TOOLS-003: Runtime integration and quality validation.
+
+| Task           | Description                                                                | Completed | Date |
+| -------------- | -------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TOOLS-007 | Integrate runtime approval and guardrail pathways for high-impact actions. |           |      |
+| TASK-TOOLS-008 | Add integration tests for approve/reject/refusal flows and audit events.   |           |      |
+| TASK-TOOLS-009 | Emit observability lifecycle traces for tool execution.                    |           |      |
+
+### Implementation Phase 4
+
+- GOAL-TOOLS-004: Hardening and release gates.
+
+| Task           | Description                                                       | Completed | Date |
+| -------------- | ----------------------------------------------------------------- | --------- | ---- |
+| TASK-TOOLS-010 | Add regression/performance suites for tool execution reliability. |           |      |
+| TASK-TOOLS-011 | Align docs/examples and operator safety guidance.                 |           |      |
+| TASK-TOOLS-012 | Pass package and monorepo release gates.                          |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-TOOLS-001**: Tool contracts and safety behaviors are deterministic and test-validated.
+- **ACC-TOOLS-002**: Runtime/guardrail integration passes end-to-end tests.
+- **ACC-TOOLS-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/tools.md`
+- `packages/tools/README.md`
+- `packages/tools/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/tools — Implementation Plan
 
 ## Purpose
 

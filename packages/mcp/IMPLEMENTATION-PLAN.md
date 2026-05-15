@@ -1,4 +1,90 @@
-# @agentsy/mcp — Implementation Plan
+---
+goal: @agentsy/mcp production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: mcp-maintainers
+status: In progress
+tags: [feature, architecture, mcp, protocol, tools]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/mcp` as the protocol bridge for external tool/resource/prompt servers.
+
+## 1. Requirements & Constraints
+
+- **REQ-MCP-001**: MCP client/server integrations support stdio and HTTP/SSE transport lifecycles.
+- **REQ-MCP-002**: Capability negotiation and descriptor normalization are deterministic and cacheable.
+- **REQ-MCP-003**: Runtime/CLI/VS Code consumers share canonical MCP management APIs.
+- **REQ-MCP-004**: Connection health/restart/timeouts are configurable and observable.
+- **SEC-MCP-001**: Inbound MCP payloads are validated/sanitized at boundary ingress.
+- **SEC-MCP-002**: Stdio process spawning uses literal args and no shell interpolation.
+- **CON-MCP-001**: MCP protocol handling stays in this package, not duplicated in tools/runtime.
+- **CON-MCP-002**: Renderers consume duck-typed outputs, not direct runtime/editor dependencies.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-MCP-001: Contract stabilization.
+
+| Task         | Description                                                                    | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-MCP-001 | Stabilize tool/resource/prompt descriptor contracts and capability map schema. |           |      |
+| TASK-MCP-002 | Finalize transport abstraction boundaries for stdio and network channels.      |           |      |
+| TASK-MCP-003 | Document ownership boundaries and security posture.                            |           |      |
+
+### Implementation Phase 2
+
+- GOAL-MCP-002: Core protocol implementation.
+
+| Task         | Description                                                        | Completed | Date |
+| ------------ | ------------------------------------------------------------------ | --------- | ---- |
+| TASK-MCP-004 | Complete transport client/server lifecycle and reconnection logic. |           |      |
+| TASK-MCP-005 | Implement capability negotiation caching and invalidation policy.  |           |      |
+| TASK-MCP-006 | Add normalized adapter outputs for runtime/tool integration.       |           |      |
+
+### Implementation Phase 3
+
+- GOAL-MCP-003: Integration and management flows.
+
+| Task         | Description                                                                  | Completed | Date |
+| ------------ | ---------------------------------------------------------------------------- | --------- | ---- |
+| TASK-MCP-007 | Integrate runtime tool invocation and prompt/resource consumption paths.     |           |      |
+| TASK-MCP-008 | Add CLI/VS Code management/test flows for server add/remove/check lifecycle. |           |      |
+| TASK-MCP-009 | Emit observable MCP lifecycle events with redaction defaults.                |           |      |
+
+### Implementation Phase 4
+
+- GOAL-MCP-004: Hardening and release gates.
+
+| Task         | Description                                                        | Completed | Date |
+| ------------ | ------------------------------------------------------------------ | --------- | ---- |
+| TASK-MCP-010 | Add transport failure-mode and protocol compatibility regressions. |           |      |
+| TASK-MCP-011 | Update docs/examples for operational MCP usage.                    |           |      |
+| TASK-MCP-012 | Pass package and monorepo release gates.                           |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-MCP-001**: Protocol and transport contracts are stable and test-covered.
+- **ACC-MCP-002**: Runtime and surface integrations are validated end-to-end.
+- **ACC-MCP-003**: Security and release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `packages/mcp/README.md`
+- `packages/mcp/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/mcp — Implementation Plan
 
 ## Role in Framework Ecosystem
 

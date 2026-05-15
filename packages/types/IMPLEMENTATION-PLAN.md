@@ -1,4 +1,91 @@
-# @agentsy/types — Implementation Plan
+---
+goal: @agentsy/types production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: types-maintainers
+status: In progress
+tags: [feature, architecture, types, contracts, semver]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/types` as the cross-package contract anchor.
+
+## 1. Requirements & Constraints
+
+- **REQ-TYPES-001**: Types package remains a dependency leaf with no cross-package imports.
+- **REQ-TYPES-002**: Core event/chunk/tool/session contracts are explicitly versioned.
+- **REQ-TYPES-003**: Breaking type changes include compatibility notes and migration guidance.
+- **REQ-TYPES-004**: Discriminated unions and narrowing behavior are test-validated.
+- **SEC-TYPES-001**: Sensitive fields include redaction expectations in type docs/contracts.
+- **SEC-TYPES-002**: Type evolution avoids unsafe `any`/`unknown` leakage across boundaries.
+- **CON-TYPES-001**: Types package contains contracts only, no runtime implementation logic.
+- **CON-TYPES-002**: Policy semantics remain in runtime/guardrails/orchestrator layers.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-TYPES-001: Contract inventory and boundary stabilization.
+
+| Task           | Description                                                       | Completed | Date |
+| -------------- | ----------------------------------------------------------------- | --------- | ---- |
+| TASK-TYPES-001 | Audit and stabilize exported type surface and versioning markers. |           |      |
+| TASK-TYPES-002 | Add type-level tests for invariants and narrowing guarantees.     |           |      |
+| TASK-TYPES-003 | Document ownership boundaries and semver policy.                  |           |      |
+
+### Implementation Phase 2
+
+- GOAL-TYPES-002: Core contract completion.
+
+| Task           | Description                                                   | Completed | Date |
+| -------------- | ------------------------------------------------------------- | --------- | ---- |
+| TASK-TYPES-004 | Finalize chunk/event/tool/session/approval contract families. |           |      |
+| TASK-TYPES-005 | Implement compatibility helpers and deprecation markers.      |           |      |
+| TASK-TYPES-006 | Add redaction-oriented field annotations and docs.            |           |      |
+
+### Implementation Phase 3
+
+- GOAL-TYPES-003: Cross-package validation.
+
+| Task           | Description                                                                 | Completed | Date |
+| -------------- | --------------------------------------------------------------------------- | --------- | ---- |
+| TASK-TYPES-007 | Validate compatibility across core/runtime/providers/renderers/ui packages. |           |      |
+| TASK-TYPES-008 | Add integration checks for compile-time contract snapshots in CI.           |           |      |
+| TASK-TYPES-009 | Ensure migration notes for breaking changes are maintained.                 |           |      |
+
+### Implementation Phase 4
+
+- GOAL-TYPES-004: Hardening and release gates.
+
+| Task           | Description                                                            | Completed | Date |
+| -------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| TASK-TYPES-010 | Add regression checks for API drift and accidental contract expansion. |           |      |
+| TASK-TYPES-011 | Update docs/examples and package references.                           |           |      |
+| TASK-TYPES-012 | Pass package and monorepo release gates.                               |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-TYPES-001**: Type contracts are stable, test-validated, and semver-governed.
+- **ACC-TYPES-002**: Downstream package compile/test compatibility is green.
+- **ACC-TYPES-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/types.md`
+- `packages/types/README.md`
+- `packages/types/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/types — Implementation Plan
 
 ## Role in Framework Ecosystem
 

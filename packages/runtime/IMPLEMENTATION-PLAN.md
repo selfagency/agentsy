@@ -1,4 +1,92 @@
-# @agentsy/runtime — Implementation Plan
+---
+goal: @agentsy/runtime production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: runtime-maintainers
+status: In progress
+tags: [feature, architecture, runtime, execution, approvals]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/runtime` as the secure execution loop for agent turns and tool pathways.
+
+## 1. Requirements & Constraints
+
+- **REQ-RUNTIME-001**: Runtime loop supports streaming turns, tool lifecycle execution, and approval checkpoints.
+- **REQ-RUNTIME-002**: Deny-by-default policy applies to high-impact operations.
+- **REQ-RUNTIME-003**: Hook pipeline supports deterministic pre/post turn and tool lifecycle extension points.
+- **REQ-RUNTIME-004**: Session snapshot/resume integration preserves deterministic runtime continuity.
+- **REQ-RUNTIME-005**: Token budget enforcement fails closed on hard-limit breaches.
+- **SEC-RUNTIME-001**: Sandbox pathways isolate side effects according to policy profile.
+- **SEC-RUNTIME-002**: Approval and execution events are auditable with redacted payloads.
+- **CON-RUNTIME-001**: Multi-step planning remains in `@agentsy/orchestrator`.
+- **CON-RUNTIME-002**: Provider protocol mechanics remain in providers/core.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-RUNTIME-001: Contract and policy surface stabilization.
+
+| Task             | Description                                                                     | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-001 | Stabilize runtime loop interfaces, state envelope, and policy hook contracts.   |           |      |
+| TASK-RUNTIME-002 | Add compile-time and unit tests for approval and budget enforcement boundaries. |           |      |
+| TASK-RUNTIME-003 | Document ownership boundaries with orchestrator/tools/session/core.             |           |      |
+
+### Implementation Phase 2
+
+- GOAL-RUNTIME-002: Core runtime capability completion.
+
+| Task             | Description                                                                     | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-004 | Complete turn execution loop for model deltas, tool calls, and approval pauses. |           |      |
+| TASK-RUNTIME-005 | Finalize hook registry and policy evaluation pathways.                          |           |      |
+| TASK-RUNTIME-006 | Complete cache-aware context handling and token governance integration.         |           |      |
+
+### Implementation Phase 3
+
+- GOAL-RUNTIME-003: Cross-package integration.
+
+| Task             | Description                                                                         | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-007 | Integrate tools/guardrails/session/memory/retrieval orchestrations in runtime loop. |           |      |
+| TASK-RUNTIME-008 | Add integration tests for approval, policy refusal, and resume/replay paths.        |           |      |
+| TASK-RUNTIME-009 | Emit runtime lifecycle telemetry and ensure trace completeness.                     |           |      |
+
+### Implementation Phase 4
+
+- GOAL-RUNTIME-004: Hardening and release gates.
+
+| Task             | Description                                                                  | Completed | Date |
+| ---------------- | ---------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-010 | Add stress/failure-mode suites for streaming interruption and tool failures. |           |      |
+| TASK-RUNTIME-011 | Update docs/examples for operator-safe runtime behavior.                     |           |      |
+| TASK-RUNTIME-012 | Pass package and monorepo release gates.                                     |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-RUNTIME-001**: Runtime execution and policy behavior are deterministic and test-validated.
+- **ACC-RUNTIME-002**: Integration flows with tools/session/memory/orchestrator pass end-to-end tests.
+- **ACC-RUNTIME-003**: Safety and release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/runtime.md`
+- `packages/runtime/README.md`
+- `packages/runtime/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/runtime — Implementation Plan
 
 ## Role in Framework Ecosystem
 
@@ -589,8 +677,14 @@ healthCheck(): Promise<HealthStatus>;
 
 - **Rationale:** honker pub/sub for runtime events and coordination across processes
 - **Expected Benefits:** 1-5ms coordination latency vs polling, atomic queue operations
-- **Integration Pattern:** honker for cross-process events, task queues for background workflows
+- **Integration Pattern:** honker for cross-process events and runtime coordination; any queue/scheduling primitives consumed here are orchestrator-owned workflows exposed through runtime-safe adapters
 - **ROI:** 90% infrastructure savings vs custom broker, near-instant coordination
+
+**Ownership clarification:**
+
+- `@agentsy/runtime` does not own scheduler semantics, recurring job policy, or task-board state machines.
+- `@agentsy/orchestrator` owns task semantics and may use honker/SQLite, PostgreSQL, plaintext/file, and cron-compatible drivers beneath its scheduler abstraction.
+- `@agentsy/runtime` only participates as the execution environment for orchestrator-dispatched work and as the emitter/consumer of coordination events.
 
 **Runtime Coordination Architecture:**
 
@@ -603,18 +697,11 @@ healthCheck(): Promise<HealthStatus>;
         reliability: 'Atomic commits prevent lost events';
       };
 
-      // Task queues for background workflows
-      taskQueue: {
-        background: 'Orchestration workflows cleanup and optimization';
-        scheduling: 'Time-triggered background tasks';
-        reliability: 'Exponential backoff, dead-letter handling';
-      };
-
       // Integration with runtime
       integration: {
         lifecycle: 'Agent startup/shutdown events via pub/sub';
         updates: 'Real-time runtime state synchronization';
-        workflows: 'Background task orchestration';
+        workflows: 'Execution support for orchestrator-managed background workflows';
       };
     }
 
@@ -625,10 +712,7 @@ healthCheck(): Promise<HealthStatus>;
    - Real-time runtime state synchronization
    - Cross-process coordination
 
-2. **Task Queue Integration (Weeks 17-18):**
-   - honker task queues for background workflows
-   - Time-triggered scheduling
-   - Job cancellation and heartbeat support
+2. **Workflow Coordination Integration (Weeks 17-18):** runtime adapters for orchestrator-backed queue/scheduling workflows, job cancellation and heartbeat support at the execution boundary, and state synchronization for active background work.
 
 3. **Atomic Workflow Patterns (Weeks 19-20):**
    - Atomic commits with runtime operations

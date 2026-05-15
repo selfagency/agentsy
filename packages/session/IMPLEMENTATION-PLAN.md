@@ -1,4 +1,91 @@
-# @agentsy/session — Implementation Plan
+---
+goal: @agentsy/session production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: session-maintainers
+status: In progress
+tags: [feature, architecture, session, durability, resume]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/session` as session durability and deterministic resume authority.
+
+## 1. Requirements & Constraints
+
+- **REQ-SESSION-001**: Session snapshots preserve state required for deterministic resume/replay.
+- **REQ-SESSION-002**: Session stores support file/database backends with consistent semantics.
+- **REQ-SESSION-003**: Checkpoint APIs support explicit and automatic save pathways.
+- **REQ-SESSION-004**: Stale/crash detection and recovery guidance are available to operators.
+- **SEC-SESSION-001**: Session persistence redacts or references secrets, never stores raw credentials.
+- **SEC-SESSION-002**: Snapshot integrity/tamper checks run before restore.
+- **CON-SESSION-001**: Long-horizon knowledge remains in `@agentsy/memory`.
+- **CON-SESSION-002**: Runtime execution semantics remain in `@agentsy/runtime`.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-SESSION-001: Contract and store interface stabilization.
+
+| Task             | Description                                                          | Completed | Date |
+| ---------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-SESSION-001 | Stabilize snapshot schema and store interface contract.              |           |      |
+| TASK-SESSION-002 | Add typed tests for deterministic resume and metadata compatibility. |           |      |
+| TASK-SESSION-003 | Document boundaries with runtime/memory/CLI.                         |           |      |
+
+### Implementation Phase 2
+
+- GOAL-SESSION-002: Core durability implementation.
+
+| Task             | Description                                                   | Completed | Date |
+| ---------------- | ------------------------------------------------------------- | --------- | ---- |
+| TASK-SESSION-004 | Implement save/resume/checkpoint APIs and backend adapters.   |           |      |
+| TASK-SESSION-005 | Implement integrity checks and stale/crash detection signals. |           |      |
+| TASK-SESSION-006 | Implement metadata pathways for layout/context reuse fields.  |           |      |
+
+### Implementation Phase 3
+
+- GOAL-SESSION-003: Integration and replay validation.
+
+| Task             | Description                                                              | Completed | Date |
+| ---------------- | ------------------------------------------------------------------------ | --------- | ---- |
+| TASK-SESSION-007 | Integrate runtime loop persistence and CLI resume workflows.             |           |      |
+| TASK-SESSION-008 | Add integration tests for interruption/restart and deterministic replay. |           |      |
+| TASK-SESSION-009 | Validate memory/runtime boundary behavior across resume operations.      |           |      |
+
+### Implementation Phase 4
+
+- GOAL-SESSION-004: Hardening and release gates.
+
+| Task             | Description                                                                   | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------- | --------- | ---- |
+| TASK-SESSION-010 | Add regressions for corruption, compatibility upgrade, and concurrency edges. |           |      |
+| TASK-SESSION-011 | Align docs/examples for operational session workflows.                        |           |      |
+| TASK-SESSION-012 | Pass package and monorepo release gates.                                      |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-SESSION-001**: Deterministic resume and integrity checks are validated.
+- **ACC-SESSION-002**: Runtime/CLI integrations pass end-to-end tests.
+- **ACC-SESSION-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `docs/packages/session.md`
+- `packages/session/README.md`
+- `packages/session/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/session — Implementation Plan
 
 ## Role in Framework Ecosystem
 
@@ -41,6 +128,7 @@ The package fulfills its role by implementing a robust session lifecycle:
   - `history`: Full conversation history.
   - `toolState`: Current status of pending or executed tools.
   - `memory`: Working memory snapshot.
+  - `taskBoard`: Active task/checklist/todo state for the current run.
   - `status`: `active | paused | completed | crashed`.
 
 ### 2. Session Store (`src/store/`)
@@ -50,6 +138,14 @@ The package fulfills its role by implementing a robust session lifecycle:
   - `save`: Atomic persistence of a `SessionSnapshot`.
   - `load`: Retrieval and checksum verification.
   - `list`: Querying sessions by scope or agent ID.
+
+Session should prefer SQLite when available for active-session durability and fast resume, but it does **not** own background job queues or scheduler semantics.
+
+Consumer-selectable durability backends should include:
+
+- SQLite (preferred default)
+- plaintext/file snapshots for simple local installs and debugging
+- PostgreSQL for shared/distributed durability when explicitly configured
 
 ### 3. Manager (`src/manager/`)
 
@@ -73,6 +169,13 @@ Sessions should carry enough metadata for the runtime to reuse stable context se
 #### Why it matters
 
 This lets the runtime decide whether a resumed session can reuse previously assembled context blocks or should rebuild them from memory. The goal is not raw cache internals; it is to preserve reuse opportunities across snapshot/resume boundaries.
+
+### 5. Task-board persistence boundary
+
+- Session snapshots should store the active task board, checklist, pending plan steps, and UI-visible todos needed to resume an in-flight run.
+- Session is the durability layer for the **current** run's task state.
+- Session is not the owner of scheduler/job semantics; that remains in `@agentsy/orchestrator`.
+- If the SQLite backend is available, use it as the preferred backing store for task-board snapshots and resume metadata.
 
 ## Logic & Data Flow
 
@@ -282,17 +385,24 @@ packages/session/src/
 
 ---
 
-## Scheduled Task Persistence (migrated from `plan/agentsy-scheduler-v1.md`)
+## Scheduler/Task Durability Boundary
 
-Session storage will also host scheduler persistence concerns so we do not introduce a standalone scheduler package.
+Session persistence may be used to snapshot **active run state** associated with orchestrator-managed work, but it is not the owner of scheduler persistence semantics.
 
-### Planned additions
+### What session may store
 
-- `TaskStore` abstraction alongside existing session persistence.
-- `InMemoryTaskStore` for tests/ephemeral runs.
-- `FileTaskStore` default path: `~/.agentsy/tasks/<taskId>.json` (or `AGENTSY_TASK_STORE_PATH`).
-- Atomic writes (`temp + rename`) with file locking for concurrent writer safety.
-- Restore support: load pending/running tasks on process boot and hand back to orchestrator scheduler module.
+- active task-board/checklist state for the current run
+- resume metadata for in-flight orchestrator jobs
+- heartbeat/lease metadata needed to restore an interrupted local execution
+
+### What session does not own
+
+- recurring schedule definitions
+- queue semantics and dequeue/ack/retry behavior
+- cron driver selection
+- multi-run task registry ownership
+
+Those concerns remain in `@agentsy/orchestrator`, which may choose SQLite/honker, PostgreSQL, or plaintext/file backends beneath its own scheduler abstraction.
 
 ### Security constraints
 

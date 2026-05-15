@@ -1,4 +1,101 @@
-# @agentsy/memory — Implementation Plan
+---
+goal: @agentsy/memory production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: memory-maintainers
+status: In progress
+tags: [feature, architecture, memory, retrieval, knowledge]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/memory` with deterministic capture, retrieval, injection, and long-horizon knowledge behavior.
+
+## 1. Requirements & Constraints
+
+- **REQ-MEMORY-001**: Memory capture supports episodic, semantic, and procedural classes with clear promotion rules.
+- **REQ-MEMORY-002**: Retrieval/injection follows deterministic XML/tagged context contracts and budget-aware packing.
+- **REQ-MEMORY-003**: Scope isolation across user/workspace/project/session contexts is enforced.
+- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/tokens`.
+- **REQ-MEMORY-005**: Memory workflows are observable and auditable with redacted traces.
+- **SEC-MEMORY-001**: Sensitive memory fields support redaction/encryption and selective recall restrictions.
+- **SEC-MEMORY-002**: Imported/synced memory content requires provenance validation.
+- **CON-MEMORY-001**: Session durability remains in `@agentsy/session`; memory owns durable knowledge.
+- **CON-MEMORY-002**: Orchestration/planning strategy remains in `@agentsy/orchestrator`.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-MEMORY-001: Contract and scope stabilization.
+
+| Task            | Description                                                                       | Completed | Date |
+| --------------- | --------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-MEMORY-001 | Stabilize memory record schemas, scope manager contracts, and promotion taxonomy. |           |      |
+| TASK-MEMORY-002 | Finalize retrieval/injection envelope and XML context insertion contract.         |           |      |
+| TASK-MEMORY-003 | Document ownership boundaries vs session/retrieval/runtime packages.              |           |      |
+
+### Implementation Phase 2
+
+- GOAL-MEMORY-002: Core memory subsystem completion.
+
+| Task            | Description                                                                            | Completed | Date |
+| --------------- | -------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-MEMORY-004 | Complete capture/retrieval/reuse modules and scope-aware storage behavior.             |           |      |
+| TASK-MEMORY-005 | Implement cache-aware context segment reuse and invalidation logic.                    |           |      |
+| TASK-MEMORY-006 | Implement memory tools (`search`, `list`, `stats`, `lint`, capture) and policy checks. |           |      |
+
+### Implementation Phase 3
+
+- GOAL-MEMORY-003: Runtime/session/retrieval integration.
+
+| Task            | Description                                                                 | Completed | Date |
+| --------------- | --------------------------------------------------------------------------- | --------- | ---- |
+| TASK-MEMORY-007 | Integrate runtime post-turn capture and pre-turn retrieval injection hooks. |           |      |
+| TASK-MEMORY-008 | Validate session continuity and replay with memory-aware context behavior.  |           |      |
+| TASK-MEMORY-009 | Add integration and benchmark coverage for quality/cost improvements.       |           |      |
+
+### Implementation Phase 4
+
+- GOAL-MEMORY-004: Hardening and release gates.
+
+| Task            | Description                                                            | Completed | Date |
+| --------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| TASK-MEMORY-010 | Add failure-mode tests for corruption, stale cache, and scope leakage. |           |      |
+| TASK-MEMORY-011 | Align docs/examples with shipped memory workflows.                     |           |      |
+| TASK-MEMORY-012 | Pass monorepo release gates and package-quality thresholds.            |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-MEMORY-001**: Deterministic memory injection and scope isolation are test-validated.
+- **ACC-MEMORY-002**: Runtime/session/retrieval integrations pass end-to-end tests.
+- **ACC-MEMORY-003**: Performance/cost improvements and safety constraints are documented and reproducible.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/IMPLEMENTATION-PRIORITY.md`
+- `plan/feature-memory-token-reduction-phase0-1.md`
+- `plan/feature-memory-foundation-phase1-1.md`
+- `plan/feature-memory-turso-sync-phase2-1.md`
+- `plan/feature-memory-rag-enhancement-phase3-1.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `plan/2026-05-15-cache-aware-context-reuse.md`
+- `packages/memory/README.md`
+- `packages/memory/MEMORY-ARCHITECTURE.md`
+- `packages/memory/MEMORY-STRATEGY-SYNTHESIS.md`
+- `packages/memory/MEMORY-REVIEW.md`
+- `packages/memory/UPDATED-IMPLEMENTATION-PLAN.md`
+- `packages/memory/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/memory — Implementation Plan
 
 ## Role in Framework Ecosystem
 
@@ -57,6 +154,13 @@ The package fulfills its role by implementing a hierarchical memory model:
   - `project`: Shared across agents within a single codebase.
   - `team`: Shared across a declared group of agents (requires trust model).
   - `global`: Universally available.
+
+### Task and todo boundary clarification
+
+- `@agentsy/memory` is not the source of truth for the active task manager or current checklist state.
+- honker queue and time-trigger scheduling primitives may be used here as coordination infrastructure, but not as the domain owner of task semantics.
+- Memory should store only promoted durable task knowledge: completed-task summaries, learned procedures, explicit user-pinned backlog items, and long-lived project reminders.
+- Active per-run todos/checklists belong to orchestrator and are snapshotted by session.
 
 ### 4. Synthesis & Compression (`src/synthesis/`)
 

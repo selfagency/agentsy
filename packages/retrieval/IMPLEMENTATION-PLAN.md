@@ -1,4 +1,89 @@
-# @agentsy/retrieval — Implementation Plan
+---
+goal: @agentsy/retrieval production implementation plan
+version: 1.0
+date_created: 2026-05-15
+last_updated: 2026-05-15
+owner: retrieval-maintainers
+status: In progress
+tags: [feature, architecture, retrieval, indexing, rag]
+---
+
+# Introduction
+
+![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+
+This plan defines the production implementation order for `@agentsy/retrieval` as the local-first indexing and search subsystem.
+
+## 1. Requirements & Constraints
+
+- **REQ-RETRIEVAL-001**: Indexing supports file/document/web connectors through pluggable adapters.
+- **REQ-RETRIEVAL-002**: Search supports lexical/semantic/hybrid pathways with ranking fusion.
+- **REQ-RETRIEVAL-003**: Retrieval outputs preserve provenance and citation metadata.
+- **REQ-RETRIEVAL-004**: Runtime injection pathways remain budget-aware and deterministic.
+- **SEC-RETRIEVAL-001**: Ingestion enforces source allowlists and content sanitization.
+- **SEC-RETRIEVAL-002**: Retrieved content is treated as untrusted until sanitized by assembly boundaries.
+- **CON-RETRIEVAL-001**: Long-horizon durable knowledge remains in `@agentsy/memory`.
+- **CON-RETRIEVAL-002**: UI rendering concerns remain outside retrieval package.
+
+## 2. Implementation Steps
+
+### Implementation Phase 1
+
+- GOAL-RETRIEVAL-001: Contract stabilization.
+
+| Task               | Description                                                         | Completed | Date |
+| ------------------ | ------------------------------------------------------------------- | --------- | ---- |
+| TASK-RETRIEVAL-001 | Stabilize index/query/result schema and citation payload contracts. |           |      |
+| TASK-RETRIEVAL-002 | Add typed tests for deterministic ranking and filter behavior.      |           |      |
+| TASK-RETRIEVAL-003 | Document boundaries with memory/runtime/CLI.                        |           |      |
+
+### Implementation Phase 2
+
+- GOAL-RETRIEVAL-002: Core retrieval subsystem completion.
+
+| Task               | Description                                                        | Completed | Date |
+| ------------------ | ------------------------------------------------------------------ | --------- | ---- |
+| TASK-RETRIEVAL-004 | Finalize indexing pipelines and incremental invalidation behavior. |           |      |
+| TASK-RETRIEVAL-005 | Implement unified lexical+semantic query fusion and ranking.       |           |      |
+| TASK-RETRIEVAL-006 | Implement provenance tagging and source-policy enforcement.        |           |      |
+
+### Implementation Phase 3
+
+- GOAL-RETRIEVAL-003: Integration and CLI workflows.
+
+| Task               | Description                                                                       | Completed | Date |
+| ------------------ | --------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RETRIEVAL-007 | Integrate runtime context assembly and memory retrieval bridge pathways.          |           |      |
+| TASK-RETRIEVAL-008 | Add integration tests for `/index`, `/search`, `/sources`, and citation coverage. |           |      |
+| TASK-RETRIEVAL-009 | Add document/diff open workflows routed through renderer panes.                   |           |      |
+
+### Implementation Phase 4
+
+- GOAL-RETRIEVAL-004: Hardening and release gates.
+
+| Task               | Description                                                          | Completed | Date |
+| ------------------ | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-RETRIEVAL-010 | Add benchmark/regression tests for quality uplift and source recall. |           |      |
+| TASK-RETRIEVAL-011 | Update docs/examples with fallback mode guidance.                    |           |      |
+| TASK-RETRIEVAL-012 | Pass package and monorepo release gates.                             |           |      |
+
+## 3. Acceptance Criteria
+
+- **ACC-RETRIEVAL-001**: Retrieval quality, provenance, and determinism metrics meet thresholds.
+- **ACC-RETRIEVAL-002**: Runtime/CLI integration tests pass.
+- **ACC-RETRIEVAL-003**: Release gates pass.
+
+## 4. Sources Synthesized
+
+- `plan/MASTER-IMPLEMENTATION-PLAN.md`
+- `plan/feature-cli-dogfood-production-order-1.md`
+- `packages/retrieval/IMPLEMENTATION-PLAN.md`
+
+## 5. Existing Package Deep-Dive (Preserved)
+
+---
+
+## @agentsy/retrieval — Implementation Plan
 
 ## Role in Framework Ecosystem
 
