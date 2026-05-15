@@ -35,7 +35,8 @@
     "@agentsy/runtime": "workspace:*",
     "@agentsy/tokens": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "@tursodatabase/sync": "^0.6.0"
+    "@tursodatabase/sync": "^0.6.0",
+    "blake3-jit": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",

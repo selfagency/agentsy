@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { fingerprintContent, fingerprintsEqual } from './fingerprint.js';
 
 describe('fingerprintContent', () => {
-  it('returns sha256 algorithm', () => {
+  it('returns blake3 algorithm', () => {
     const fp = fingerprintContent('hello');
-    expect(fp.algorithm).toBe('sha256');
+    expect(fp.algorithm).toBe('blake3');
   });
 
-  it('value is prefixed with sha256:', () => {
+  it('value is prefixed with blake3:', () => {
     const fp = fingerprintContent('hello');
-    expect(fp.value).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
   });
 
   it('size equals byte length of string content', () => {
@@ -38,7 +38,7 @@ describe('fingerprintContent', () => {
 
   it('empty string has a valid fingerprint', () => {
     const fp = fingerprintContent('');
-    expect(fp.value).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
     expect(fp.size).toBe(0);
   });
 });

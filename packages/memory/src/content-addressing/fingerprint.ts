@@ -1,21 +1,18 @@
-import { createHash } from 'node:crypto';
+import { hash as blake3 } from 'blake3-jit';
 
 export interface ContentFingerprint {
-  readonly algorithm: 'sha256';
+  readonly algorithm: 'blake3';
   readonly value: string;
   readonly size: number;
 }
 
 export function fingerprintContent(content: string | Uint8Array): ContentFingerprint {
-  const hash = createHash('sha256');
-  if (typeof content === 'string') {
-    hash.update(content, 'utf8');
-  } else {
-    hash.update(content);
-  }
-  const value = 'sha256:' + hash.digest('hex');
-  const size = typeof content === 'string' ? Buffer.byteLength(content, 'utf8') : content.byteLength;
-  return { algorithm: 'sha256', value, size };
+  const enc = new TextEncoder();
+  const bytes = typeof content === 'string' ? enc.encode(content) : content;
+  const digest = blake3(bytes);
+  const value = 'blake3:' + Buffer.from(digest).toString('hex');
+  const size = bytes.byteLength;
+  return { algorithm: 'blake3', value, size };
 }
 
 export function fingerprintsEqual(a: ContentFingerprint, b: ContentFingerprint): boolean {

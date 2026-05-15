@@ -6,8 +6,8 @@ describe('createDedupStore', () => {
   it('interns content and returns a fingerprint', () => {
     const store = createDedupStore();
     const fp = store.intern('hello');
-    expect(fp.algorithm).toBe('sha256');
-    expect(fp.value).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(fp.algorithm).toBe('blake3');
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
   });
 
   it('increments refCount on duplicate intern', () => {
@@ -35,7 +35,7 @@ describe('createDedupStore', () => {
 
   it('retrieve() returns undefined for unknown fingerprint', () => {
     const store = createDedupStore();
-    expect(store.retrieve('sha256:nonexistent')).toBeUndefined();
+    expect(store.retrieve('blake3:nonexistent')).toBeUndefined();
   });
 
   it('release() removes entry when refCount reaches 0', () => {
@@ -58,7 +58,7 @@ describe('createDedupStore', () => {
 
   it('release() returns false for unknown fingerprint', () => {
     const store = createDedupStore();
-    expect(store.release('sha256:unknown')).toBe(false);
+    expect(store.release('blake3:unknown')).toBe(false);
   });
 
   it('purgeOrphans() removes entries with refCount <= 0', () => {
