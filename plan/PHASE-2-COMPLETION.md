@@ -161,6 +161,6 @@ Completed Phase 2 areas:
 
 ## Follow-up candidates
 
-- add a disk-backed conflict store implementation for production use
-- add a higher-level memory-state adapter so sync can serialize directly from wiki/raw/vector stores
+- ✅ add a disk-backed conflict store implementation for production use
+- ✅ add a higher-level memory-state adapter so sync can serialize directly from wiki/raw/vector stores
 - add optional Turso partial sync / transform configuration once the package adopts those features intentionally

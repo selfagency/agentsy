@@ -21,8 +21,10 @@ Long-term memory and persistent state management.
 - Current implementation also includes the Phase 2 local-first sync scope:
   - Turso-backed sync manager and transport adapters via `@tursodatabase/sync`
   - conflict detection, conflict storage, and policy-based resolution
+  - file-backed unresolved conflict persistence for operator workflows
   - sync scheduler with retry/backoff behavior
   - backup manifest, restore, and rollback helpers
+  - memory-state serialization for raw/wiki/vector stores into sync snapshots
   - checksum/integrity validation and sync security redaction helpers
   - sync/backup/restore metrics registry
   - integration coverage for end-to-end sync workflows

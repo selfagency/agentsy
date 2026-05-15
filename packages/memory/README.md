@@ -72,7 +72,9 @@ Phase 2 is now implemented for the local-first sync scope in this package. The p
 - `createBackupManager()`
 - `createBackupManifest()` / `verifyBackupManifest()`
 - `collectConflicts()` / `resolveConflict()` / `createConflictStore()`
+- `createFileConflictStore()`
 - `computeSyncChecksum()` / `verifySyncChecksum()` / `validateRemoteSnapshot()`
+- `serializeMemoryState()` / `deserializeMemoryState()` / `createMemoryStateAdapter()`
 - `createSyncMetricsRegistry()`
 - `createSecureSyncErrorEnvelope()` / `redactSyncSecrets()` / `validateCredentialSource()`
 
@@ -82,9 +84,11 @@ Phase 2 is now implemented for the local-first sync scope in this package. The p
 - Turso-backed local replica transport via `@tursodatabase/sync`
 - deterministic conflict collection and policy-based conflict resolution
 - manual-conflict persistence via pluggable `ConflictStore`
+- file-backed unresolved conflict persistence for production-style operator workflows
 - retry-aware sync scheduling with jitter and exponential backoff
 - backup manifest generation, verification, restore, and rollback helpers
 - checksum/integrity validation for snapshots
+- reusable raw/wiki/vector memory-state serialization into `SyncSnapshot`
 - credential-source validation and secret redaction for diagnostics
 - metrics registry for sync/backup/restore counters and latency summaries
 - integration coverage for manager + scheduler + backup workflows
@@ -111,6 +115,32 @@ const manager = createTursoManager({
 ```
 
 When `path` is provided, `createTursoManager()` will build a default Turso Sync transport using `createDefaultTursoClient()`, which delegates to `createTursoSyncClient()`.
+
+### Conflict store and memory-state adapter
+
+For persistent unresolved conflicts, use the file-backed store:
+
+```ts
+import { createFileConflictStore } from '@agentsy/memory';
+
+const conflictStore = createFileConflictStore({
+  filePath: './.agentsy/memory-conflicts.json'
+});
+```
+
+To bridge higher-level raw/wiki/vector state into sync and backup workflows:
+
+```ts
+import { createMemoryStateAdapter } from '@agentsy/memory';
+
+const adapter = createMemoryStateAdapter({
+  getState: async () => memoryState,
+  applyState: async nextState => {
+    memoryState = nextState;
+  },
+  getCursor: () => 'cursor-1'
+});
+```
 
 ### Local sync server development
 
