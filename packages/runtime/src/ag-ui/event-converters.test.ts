@@ -350,7 +350,7 @@ describe('toCustomUIEvent', () => {
     };
     const result = toCustomUIEvent(unknownEvent as unknown as RunStartedEvent);
     expect(result.eventType).toBe('UNKNOWN_EVENT_TYPE');
-    expect(result.payload['foo']).toBe('bar');
+    expect(result.payload.foo).toBe('bar');
   });
 
   it('should not include undefined threadId', () => {
@@ -434,7 +434,8 @@ describe('convertEventStream', () => {
     }
 
     expect(results).toHaveLength(2);
-    const firstEvent = results[0]!;
+    const firstEvent = results[0];
+    if (!firstEvent) throw new Error('Expected firstEvent');
     expect((firstEvent as CustomUIEvent).eventType).toBe(EventType.RUN_STARTED);
   });
 
@@ -454,9 +455,10 @@ describe('convertEventStream', () => {
     }
 
     expect(results).toHaveLength(3);
-    const first = results[0]!;
-    const second = results[1]!;
-    const third = results[2]!;
+    const first = results[0];
+    const second = results[1];
+    const third = results[2];
+    if (!first || !second || !third) throw new Error('Expected 3 results');
     expect((first as CustomUIEvent).runId).toBe('run_a');
     expect((second as CustomUIEvent).runId).toBe('run_b');
     expect((third as CustomUIEvent).runId).toBe('run_c');

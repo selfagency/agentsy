@@ -66,7 +66,8 @@ describe('createKvStore', () => {
     vi.advanceTimersByTime(51);
     const entries = store.entries();
     expect(entries.length).toBe(1);
-    expect(entries[0]!.key).toBe('a');
+    expect(entries[0]).toBeDefined();
+    expect(entries[0]?.key).toBe('a');
     expect(entries[0]!.value).toBe(1);
   });
 

@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { createAgentFsManager } from './manager.js';
+import { describe, expect, it, afterEach } from 'vitest';
+import { createAgentFsManager, __globalStoreForTests } from './manager.js';
 
 describe('createAgentFsManager', () => {
+  afterEach(() => {
+    __globalStoreForTests.clear();
+  });
+
   it('defaults namespace to "default"', () => {
     const mgr = createAgentFsManager();
     expect(mgr.namespace).toBe('default');

@@ -9,7 +9,9 @@ function hashContent(content: string): string {
   return `sha256:${createHash('sha256').update(content, 'utf8').digest('hex')}`;
 }
 
-const globalStore = new Map<string, Map<AgentFsPath, AgentFsEntry>>();
+/** @internal */
+export const __globalStoreForTests = new Map<string, Map<AgentFsPath, AgentFsEntry>>();
+const globalStore = __globalStoreForTests;
 
 export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
   const namespaceLabel = options?.namespace ?? 'default';
@@ -18,7 +20,10 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
     globalStore.set(namespaceLabel, new Map<AgentFsPath, AgentFsEntry>());
   }
 
-  const store = globalStore.get(namespaceLabel)!;
+  const store = globalStore.get(namespaceLabel);
+  if (!store) {
+    throw new Error(`Failed to initialize store for namespace: ${namespaceLabel}`);
+  }
 
   return {
     get namespace() {
