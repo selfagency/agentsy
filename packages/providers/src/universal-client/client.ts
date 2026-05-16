@@ -90,17 +90,20 @@ function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
     messages: request.messages.map((msg) => ({
       content: Array.isArray(msg.content)
         ? msg.content.map((part) => {
-            if (part.type === "text") {return part.text;}
-            if (part.type === "image")
-              {return {
+            if (part.type === "text") {
+              return part.text;
+            }
+            if (part.type === "image") {
+              return {
                 image_url: {
                   detail: part.detail ?? "auto",
                   url: part.imageUrl,
                 },
                 type: "image_url",
-              };}
-            if (part.type === "tool_call")
-              {return {
+              };
+            }
+            if (part.type === "tool_call") {
+              return {
                 tool_calls: [
                   {
                     function: {
@@ -112,13 +115,15 @@ function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
                   },
                 ],
                 type: "tool_calls" as const,
-              };}
-            if (part.type === "tool_result")
-              {return {
+              };
+            }
+            if (part.type === "tool_result") {
+              return {
                 content: part.content,
                 tool_call_id: part.toolCallId,
                 type: "tool_result" as const,
-              };}
+              };
+            }
             return part;
           })
         : msg.content,
