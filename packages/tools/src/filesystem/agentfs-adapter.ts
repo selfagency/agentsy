@@ -1,6 +1,6 @@
-/** Minimal structural interface matching AgentFsManager's shape — no import from @agentsy/memory. */
-export type AgentFsPath = string;
+import type { AgentFsPath } from '@agentsy/types';
 
+/** Minimal structural interface matching AgentFsManager's shape — no import from @agentsy/memory. */
 export interface AgentFsLike {
   read(path: AgentFsPath): { content: string; contentHash: string } | undefined;
   write(path: AgentFsPath, content: string): { contentHash: string };
