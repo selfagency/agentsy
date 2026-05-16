@@ -28,7 +28,9 @@
     "build": "tsup",
     "check-types": "tsc --noEmit",
     "test": "vitest --run --passWithNoTests",
-    "coverage": "vitest --run --coverage"
+    "coverage": "vitest --run --coverage",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write ."
   },
   "dependencies": {
     "@agentsy/types": "workspace:*"
