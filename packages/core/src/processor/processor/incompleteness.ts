@@ -10,7 +10,7 @@ import type { IncompletenessDetail } from './LLMStreamProcessor.js';
  * Cyclomatic complexity reduced from 9 to 8 by extracting early return.
  */
 function hasUnclosedXmlTags(content: string): boolean {
-  if (!content.includes('<')) return false;
+  if (content.includes('<') === false) return false;
 
   let depth = 0;
   // Security: Limit tag name length to 50 chars and attribute length to 100

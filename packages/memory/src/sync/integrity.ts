@@ -57,7 +57,7 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
 
       const tierIsValid = isValidTier(record.tier);
 
-      if (tierIsValid === false) {
+      if (!tierIsValid) {
         errors.push(`records[${index}].tier must be one of raw|wiki|vector`);
       }
 

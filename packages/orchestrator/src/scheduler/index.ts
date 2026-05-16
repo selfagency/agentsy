@@ -132,7 +132,7 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
 
       const schedulerTask = toSchedulerTaskInfo(task.taskInfo);
       const availableAgents = task.agents.filter(isSchedulableAgent);
-      const selectedAgent = availableAgents.find(agent => agent.available !== false) ?? availableAgents[0];
+      const selectedAgent = availableAgents.find(agent => agent.available) ?? availableAgents[0];
 
       if (!selectedAgent) {
         return null;

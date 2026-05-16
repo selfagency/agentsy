@@ -21,7 +21,8 @@
       "@agentsy/providers/pipeline": ["packages/providers/src/pipeline/index.ts"],
       "@agentsy/memory": ["packages/memory/src/index.ts"],
       "@agentsy/renderers": ["packages/renderers/src/index.ts"]
-    }
+    },
+    "strictNullChecks": true
   },
   "include": ["src/**/*"]
 }

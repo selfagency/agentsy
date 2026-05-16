@@ -5,7 +5,10 @@
     "declaration": true,
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0",
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "strictNullChecks": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.ts.bak*"]

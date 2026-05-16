@@ -69,7 +69,8 @@ describe('backup manifest', () => {
       createdAt: '2026-05-15T01:00:00.000Z'
     });
 
-    (source[0]?.metadata as { nested: { value: string } }).nested.value = 'mutated';
+    const record = source[0] as { metadata: { nested: { value: string } } };
+    record.metadata.nested.value = 'mutated';
 
     expect(manifest.records[0]?.metadata).toMatchObject({ nested: { value: 'original' } });
   });

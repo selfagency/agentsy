@@ -31,7 +31,7 @@ function isValidTagCharacter(char: string): boolean {
 
 function stripMarkdownCodeFence(text: string): string {
   const trimmed = text.trim();
-  if (!trimmed.startsWith('```')) {
+  if (trimmed.startsWith('```') === false) {
     return trimmed;
   }
 

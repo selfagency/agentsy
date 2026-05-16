@@ -38,16 +38,16 @@ export interface CustomUIEvent {
 export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
   // Map AG-UI event type to CopilotKit equivalents
   const copilotKitMapping: Record<string, string> = {
-    [EventType.RUN_STARTED]: 'runStarted',
-    [EventType.RUN_FINISHED]: 'runFinished',
-    [EventType.RUN_ERROR]: 'runError',
-    [EventType.STEP_STARTED]: 'stepStarted',
-    [EventType.STEP_FINISHED]: 'stepFinished',
-    [EventType.TEXT_MESSAGE_CONTENT]: 'textMessageContent',
-    [EventType.REASONING_MESSAGE_CONTENT]: 'reasoningMessageContent',
-    [EventType.TOOL_CALL_START]: 'toolCallStart',
-    [EventType.TOOL_CALL_ARGS]: 'toolCallArgs',
-    [EventType.TOOL_CALL_END]: 'toolCallEnd'
+    [EventType.RUN_STARTED]: 'run:started',
+    [EventType.RUN_FINISHED]: 'run:finished',
+    [EventType.RUN_ERROR]: 'run:error',
+    [EventType.STEP_STARTED]: 'step:started',
+    [EventType.STEP_FINISHED]: 'step:finished',
+    [EventType.TEXT_MESSAGE_CONTENT]: 'text_message:content',
+    [EventType.REASONING_MESSAGE_CONTENT]: 'reasoning_message:content',
+    [EventType.TOOL_CALL_START]: 'tool_call:start',
+    [EventType.TOOL_CALL_ARGS]: 'tool_call:args',
+    [EventType.TOOL_CALL_END]: 'tool_call:end'
   };
 
   const eventRec = event as unknown as Record<string, unknown>;
@@ -135,7 +135,8 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
 
     case EventType.TOOL_CALL_END:
       payload = {
-        toolCallId: agEvent.toolCallId
+        toolCallId: agEvent.toolCallId,
+        output: agEvent.output
       };
       break;
 

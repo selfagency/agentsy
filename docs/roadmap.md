@@ -2,6 +2,13 @@
 
 This roadmap tracks implementation direction against the canonical plan in `plan/MASTER-IMPLEMENTATION-PLAN.md`.
 
+## Status of sandbox isolation
+
+- [✅] `VirtualSandbox` moved to `worker_threads` to prevent main-thread hangs.
+- [✅] `VirtualSandbox` supports hard timeouts with automatic termination.
+- [🔄] `ContainerSandbox` (Rivet) promoted from 'Investigation' to 'Implementation'.
+- [🔄] Drafting `RivetSandbox` provider for the `SandboxRouter`.
+
 ## Snapshot (May 2026)
 
 ### Established package foundations

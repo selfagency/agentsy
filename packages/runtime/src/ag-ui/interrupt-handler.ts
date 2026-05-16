@@ -75,8 +75,8 @@ export class InterruptController {
    * @throws Error if interrupted
    */
   throwIfInterrupted(): void {
-    if (this.interrupted) {
-      throw new Error(this.interruptMessage || `Interrupted: ${this.interruptReason}`);
+    if (this.interrupted === true) {
+      throw new Error(this.interruptMessage ?? `Interrupted: ${this.interruptReason}`);
     }
   }
 }

@@ -104,7 +104,7 @@ export class SSEParser {
 
     for (const rawLine of fields) {
       const line = rawLine.trim();
-      if (!line || line.startsWith(':')) continue;
+      if (line === '' || line.startsWith(':')) continue;
 
       const colonIdx = line.indexOf(':');
       if (colonIdx === -1) continue;

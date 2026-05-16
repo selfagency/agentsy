@@ -262,7 +262,9 @@ function initializeLoopSnapshot(options: RuntimeLoopOptions, sessionId: string, 
   const persisted = options.sessionStore
     ? loadRuntimeSnapshotFromSession(options.sessionStore, options.snapshotKey)
     : null;
-  return options.snapshot ? cloneSnapshot(options.snapshot) : (persisted ?? createEmptySnapshot(sessionId, depth));
+  return options.snapshot !== undefined && options.snapshot !== null
+    ? cloneSnapshot(options.snapshot)
+    : (persisted ?? createEmptySnapshot(sessionId, depth));
 }
 
 export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop {
@@ -358,3 +360,10 @@ export function createRuntimeWorkflowExecutor(options: RuntimeLoopOptions = {}):
     }
   };
 }
+
+// Phase 4 — Virtual sandbox
+export * from './sandbox/policy/secrets-guard.js';
+export * from './sandbox/virtual/container-detector.js';
+export * from './sandbox/virtual/dynamic-trigger.js';
+export * from './sandbox/virtual/router.js';
+export * from './sandbox/virtual/virtual-sandbox.js';

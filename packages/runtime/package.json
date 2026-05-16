@@ -37,8 +37,10 @@
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
+    "@agentsy/memory": "workspace:*",
     "@agentsy/session": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "tsx": "^4.22.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",

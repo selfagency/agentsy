@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
+    "@agentsy/memory": "workspace:*",
+    "@agentsy/runtime": "workspace:*",
     "@agentsy/tokens": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
