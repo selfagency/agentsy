@@ -14,7 +14,6 @@ export enum WorkflowStatus {
   CANCELLED = "cancelled",
 }
 
-
 export interface TaskNode {
   type: NodeType.TASK;
   id: string;

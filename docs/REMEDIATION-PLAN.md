@@ -8,14 +8,14 @@
 
 ## Executive Summary
 
-| Category | Count | Severity |
-|---|---|---|
-| Build-blocking type errors | 5 (in 2 packages) | CRITICAL |
-| Failing tests | 18 (across 4 packages) | HIGH |
-| Cascade build failures (downstream of runtime) | 4 packages | HIGH |
-| Architectural gaps vs. plan | 3 items | MEDIUM |
-| Build warnings (unused imports) | 3 imports | LOW |
-| Packages with no tests | 3 packages | LOW |
+| Category                                       | Count                  | Severity |
+| ---------------------------------------------- | ---------------------- | -------- |
+| Build-blocking type errors                     | 5 (in 2 packages)      | CRITICAL |
+| Failing tests                                  | 18 (across 4 packages) | HIGH     |
+| Cascade build failures (downstream of runtime) | 4 packages             | HIGH     |
+| Architectural gaps vs. plan                    | 3 items                | MEDIUM   |
+| Build warnings (unused imports)                | 3 imports              | LOW      |
+| Packages with no tests                         | 3 packages             | LOW      |
 
 **Healthy packages** (build + tests pass): `@agentsy/types`, `@agentsy/tokens`, `@agentsy/providers`, `@agentsy/models`, `@agentsy/plugins`, `@agentsy/retrieval`, `@agentsy/ui`, `@agentsy/connectors`, `@agentsy/guardrails`, `@agentsy/mcp`  
 **Passing test total**: 280+ of ~298 tests
@@ -84,12 +84,12 @@ Root cause: TypeScript's built-in `AsyncGenerator` interface declares `return(va
 
 ```typescript
 // Before
-await generator.return?.();   // line 94
-void generator.return?.();    // line 103
+await generator.return?.(); // line 94
+void generator.return?.(); // line 103
 
 // After
-await generator.return?.(undefined);   // line 94
-void generator.return?.(undefined);    // line 103
+await generator.return?.(undefined); // line 94
+void generator.return?.(undefined); // line 103
 ```
 
 **Error C** — `src/sandbox/virtual/container-detector.test.ts:8` (TS2769)
@@ -128,13 +128,13 @@ Confirmed error message: `AssertionError: expected "vi.fn()" to be called with a
 
 **Affected files**:
 
-| Package | File | Count |
-|---|---|---|
-|---|---|---|
-| `@agentsy/core` | `src/processor/processor/LLMStreamProcessor.test.ts` | 1 |
-| `@agentsy/renderers` | `src/shared.test.ts:315` | 1 |
-| `@agentsy/renderers` | `src/cli/cli.test.ts` | 4 |
-| `@agentsy/memory` | `src/coordination/pub-sub-manager.test.ts` | 1 |
+| Package              | File                                                 | Count |
+| -------------------- | ---------------------------------------------------- | ----- |
+| ---                  | ---                                                  | ---   |
+| `@agentsy/core`      | `src/processor/processor/LLMStreamProcessor.test.ts` | 1     |
+| `@agentsy/renderers` | `src/shared.test.ts:315`                             | 1     |
+| `@agentsy/renderers` | `src/cli/cli.test.ts`                                | 4     |
+| `@agentsy/memory`    | `src/coordination/pub-sub-manager.test.ts`           | 1     |
 
 **Fix**: Replace `.toHaveBeenCalledWith()` (zero-args) with `.toHaveBeenCalled()` (any-args). Where the test should assert specific argument values, supply the correct expected arguments instead.
 
@@ -165,12 +165,12 @@ Confirmed error message: `AssertionError: expected { path: 'package.json' } to s
 
 **Affected files**:
 
-| Package | File | Failing tests |
-|---|---|---|
-| `@agentsy/core` | `src/processor/processor/LLMStreamProcessor.test.ts` | 2 |
-| `@agentsy/testing` | `src/thinking-and-tool-calls.test.ts` | 6 |
-| `@agentsy/testing` | `src/renderers.test.ts` | 1 |
-| `@agentsy/testing` | `src/sse-pipeline.test.ts` | 1 |
+| Package            | File                                                 | Failing tests |
+| ------------------ | ---------------------------------------------------- | ------------- |
+| `@agentsy/core`    | `src/processor/processor/LLMStreamProcessor.test.ts` | 2             |
+| `@agentsy/testing` | `src/thinking-and-tool-calls.test.ts`                | 6             |
+| `@agentsy/testing` | `src/renderers.test.ts`                              | 1             |
+| `@agentsy/testing` | `src/sse-pipeline.test.ts`                           | 1             |
 
 **Fix options** (choose one per test):
 
@@ -274,11 +274,11 @@ tsup emits warnings during build:
 
 Three packages currently pass only because of `--passWithNoTests`:
 
-| Package | Has source | Status |
-|---|---|---|
-| `@agentsy/connectors` | Yes (`discord.ts`, `slack.ts`, `telegram.ts`) | Real impl, zero tests |
-| `@agentsy/guardrails` | Stub only | Stub, zero tests |
-| `@agentsy/mcp` | Minimal (`index.ts`, `types.ts`) | Partial impl, zero tests |
+| Package               | Has source                                    | Status                   |
+| --------------------- | --------------------------------------------- | ------------------------ |
+| `@agentsy/connectors` | Yes (`discord.ts`, `slack.ts`, `telegram.ts`) | Real impl, zero tests    |
+| `@agentsy/guardrails` | Stub only                                     | Stub, zero tests         |
+| `@agentsy/mcp`        | Minimal (`index.ts`, `types.ts`)              | Partial impl, zero tests |
 
 **Recommendation**: Add at least smoke-level unit tests to `@agentsy/connectors` given it has real implementation code. Flag `@agentsy/guardrails` and `@agentsy/mcp` as stubs until Phase 3/4 work begins.
 
@@ -319,4 +319,4 @@ Expected final state:
 
 ---
 
-*End of remediation plan.*
+_End of remediation plan._

@@ -5,8 +5,7 @@
 /**
  * Status of an agent execution.
  */
-export enum AgentStatus {
-}
+export enum AgentStatus {}
 
 /**
  * Conditions under which an agent loop should stop execution.
