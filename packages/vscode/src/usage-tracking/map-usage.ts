@@ -1,4 +1,4 @@
-import type { UsageInfo } from '@agentsy/providers/normalizers';
+import type { UsageInfo } from '@agentsy/types';
 
 export interface VSCodeUsage {
   promptTokens: number;

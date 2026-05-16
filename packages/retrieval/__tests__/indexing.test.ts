@@ -84,7 +84,7 @@ describe(IndexingPipeline, () => {
     it("should split content into semantic chunks", async () => {
       const content =
         "First sentence. Second sentence. Third paragraph with more content here.";
-      const chunks = await pipeline.semanticChunk(content, sourcePath);
+      const chunks = pipeline.semanticChunk(content, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
       chunks.forEach((chunk) => {
@@ -93,9 +93,9 @@ describe(IndexingPipeline, () => {
       });
     });
 
-    it("should generate chunk IDs based on content hash", async () => {
+    it("should generate chunk IDs based on content hash", () => {
       const content = "Test content for hashing";
-      const chunks = await pipeline.semanticChunk(content, sourcePath);
+      const chunks = pipeline.semanticChunk(content, sourcePath);
 
       expect(chunks[0].id).toBeDefined();
       expectTypeOf(chunks[0].id).toBeString();
@@ -103,9 +103,9 @@ describe(IndexingPipeline, () => {
   });
 
   describe("fixedSizeChunk", () => {
-    it("should split content into fixed-size chunks with words not exceeding chunk size", async () => {
+    it("should split content into fixed-size chunks with words not exceeding chunk size", () => {
       const fiftyWordContent = "Word ".repeat(50);
-      const chunks = await pipeline.fixedSizeChunk(
+      const chunks = pipeline.fixedSizeChunk(
         fiftyWordContent,
         sourcePath
       );
@@ -113,7 +113,7 @@ describe(IndexingPipeline, () => {
       expect(chunks.length).toBeGreaterThan(0);
       chunks.forEach((chunk) => {
         expect(chunk.metadata.strategy).toBe("fixed");
-        const wordsInChunk = chunk.content.split(/\s+/);
+        const wordsInChunk = chunk.content.split(/\s+/u);
         expect(wordsInChunk.length).toBeLessThanOrEqual(100);
       });
     });
@@ -126,14 +126,13 @@ describe(IndexingPipeline, () => {
         chunkSize: 5,
       });
 
-      const chunks = await pipelineWithOverlap.fixedSizeChunk(
+      const chunks = pipelineWithOverlap.fixedSizeChunk(
         content,
         sourcePath
       );
 
       expect(chunks.length).toBeGreaterThan(1);
-      const firstChunk = chunks[0];
-      const secondChunk = chunks[1];
+      const [firstChunk, secondChunk] = chunks;
       expect(firstChunk).toBeDefined();
       expect(secondChunk).toBeDefined();
 
@@ -141,8 +140,8 @@ describe(IndexingPipeline, () => {
         return;
       }
 
-      const firstChunkWords = firstChunk.content.split(/\s+/);
-      const secondChunkWords = secondChunk.content.split(/\s+/);
+      const firstChunkWords = firstChunk.content.split(/\s+/u);
+      const secondChunkWords = secondChunk.content.split(/\s+/u);
       // With chunkSize=5 and overlap=2, consecutive chunks share the final 2 words
       // Chunk 1: words 0-4, Chunk 2: words 3-7
       const overlapRegionFirst = firstChunkWords.slice(-2);
@@ -164,7 +163,7 @@ function example() {
 export const result = example();
       `.trim();
 
-      const chunks = await pipeline.astChunk(tsCode, sourcePath);
+      const chunks = pipeline.astChunk(tsCode, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
       chunks.forEach((chunk) => {
@@ -172,7 +171,7 @@ export const result = example();
       });
     });
 
-    it("should preserve function boundaries when chunking multiple functions", async () => {
+    it("should preserve function boundaries when chunking multiple functions", () => {
       const codeWithTwoFunctions = `
 function first() {
   return 1;
@@ -183,7 +182,7 @@ function second() {
 }
       `.trim();
 
-      const chunks = await pipeline.astChunk(codeWithTwoFunctions, sourcePath);
+      const chunks = pipeline.astChunk(codeWithTwoFunctions, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
     });

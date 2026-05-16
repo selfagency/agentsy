@@ -28,10 +28,8 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
     clearScheduled();
     const clampedDelay = Math.max(0, delayMs);
     nextRunAt = new Date(now().getTime() + clampedDelay);
-    timeout = setTimeout(async () => {
-      timeout = null;
-      nextRunAt = null;
-      await executeRun();
+    timeout = setTimeout(() => {
+      void executeRun();
     }, clampedDelay);
   }
 
@@ -66,8 +64,8 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
       consecutiveErrors = 0;
     },
 
-    triggerNow() {
-      return executeRun();
+    async triggerNow() {
+      return await executeRun();
     }
   };
 }

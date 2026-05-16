@@ -34,26 +34,26 @@ export function compressOutput(input: string, options: OutputCompressionOptions 
   let working = input;
 
   if (!preserve.inlineCode) {
-    working = working.replaceAll(/`([^`\n]+)`/g, '$1');
+    working = working.replaceAll(/`([^`\n]+)`/gu, '$1');
   }
 
   if (!preserve.urls) {
-    working = working.replaceAll(/https?:\/\/\S+/gi, 'link');
+    working = working.replaceAll(/https?:\/\/\S+/giu, 'link');
   }
 
   const placeholderMap = new Map<string, string>();
   const nextId = { value: 0 };
 
   if (preserve.codeFences) {
-    working = protectPattern(working, /```[\s\S]*?```/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+    working = protectPattern(working, /```[\s\S]*?```/gu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
   }
 
   if (preserve.inlineCode) {
-    working = protectPattern(working, /`[^`\n]+`/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+    working = protectPattern(working, /`[^`\n]+`/gu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
   }
 
   if (preserve.urls) {
-    working = protectPattern(working, /https?:\/\/\S+/gi, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+    working = protectPattern(working, /https?:\/\/\S+/giu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
   }
 
   const compressed = compressProse(working, level);

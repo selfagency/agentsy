@@ -1,28 +1,28 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeAll, afterEach, afterAll } from 'vitest';
 
 import { createRAGServerClient } from './server-client.js';
 import { createMockRAGState, createRAGMockServer } from './test-msw.js';
 
-const BASE_URL = 'http://rag.local';
-const state = createMockRAGState();
-const server = createRAGMockServer(BASE_URL, state);
-
-beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
-});
-
-afterEach(() => {
-  server.resetHandlers();
-  state.healthy = true;
-  state.documents.clear();
-  state.searchResults = [];
-});
-
-afterAll(() => {
-  server.close();
-});
-
 describe('RAGServerClient', () => {
+  const BASE_URL = 'http://rag.local';
+  const state = createMockRAGState();
+  const server = createRAGMockServer(BASE_URL, state);
+
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'error' });
+  });
+
+  afterEach(() => {
+    server.resetHandlers();
+    state.healthy = true;
+    state.documents.clear();
+    state.searchResults = [];
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
   it('checks health, upserts documents, searches, and deletes documents', async () => {
     const client = createRAGServerClient({ baseUrl: BASE_URL, timeoutMs: 500 });
 

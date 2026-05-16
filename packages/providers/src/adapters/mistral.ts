@@ -49,7 +49,7 @@ interface CollectedMessageParts {
   toolResults: { callId: string; content: string }[];
 }
 
-const VALID_MISTRAL_TOOL_CALL_ID = /^[A-Za-z0-9]{9}$/;
+const VALID_MISTRAL_TOOL_CALL_ID = /^[A-Za-z0-9]{9}$/u;
 
 function defaultNormalizeToolCallIdFactory(): (originalId: string) => string {
   let next = 0;

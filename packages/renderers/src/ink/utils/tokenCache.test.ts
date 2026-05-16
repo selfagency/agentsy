@@ -9,7 +9,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('caches small strings without hashing', () => {
-    const renderFn = vi.fn((s: string) => `[rendered:${s}]`);
+    const renderFn = vi.fn<(s: string) => string>((s: string) => `[rendered:${s}]`);
     const content = 'small text';
 
     const result1 = getCachedAnsi(content, renderFn);
@@ -22,7 +22,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('hashes large strings (>1KB) to reduce memory overhead', () => {
-    const renderFn = vi.fn((s: string) => `[rendered:${s.length}]`);
+    const renderFn = vi.fn<(s: string) => string>((s: string) => `[rendered:${s.length}]`);
     // Create content larger than 1KB
     const largeContent = 'x'.repeat(2000);
 
@@ -36,7 +36,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('uses consistent hashes for large strings', () => {
-    const renderFn = vi.fn((_s: string) => `[cached]`);
+    const renderFn = vi.fn<(_s: string) => string>((_s: string) => `[cached]`);
     const largeContent = 'a'.repeat(2000);
 
     const result1 = getCachedAnsi(largeContent, renderFn);
@@ -48,7 +48,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('differentiates between different large strings', () => {
-    const renderFn = vi.fn((_: string) => `[rendered]`);
+    const renderFn = vi.fn<(_: string) => string>((_: string) => `[rendered]`);
     const content1 = 'a'.repeat(2000);
     const content2 = 'b'.repeat(2000);
 
@@ -60,7 +60,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('handles boundary case at exactly 1KB', () => {
-    const renderFn = vi.fn((_: string) => `[rendered]`);
+    const renderFn = vi.fn<(_: string) => string>((_: string) => `[rendered]`);
     const content1024 = 'x'.repeat(1024);
     const content1025 = 'x'.repeat(1025);
 
@@ -73,7 +73,7 @@ describe('Token Cache with Hashing', () => {
   });
 
   it('caches mixed small and large content independently', () => {
-    const renderFn = vi.fn((s: string) => `[rendered:${s.length}]`); // s is intentionally used for length calculation
+    const renderFn = vi.fn<(s: string) => string>((s: string) => `[rendered:${s.length}]`); // s is intentionally used for length calculation
     const smallContent = 'small';
     const largeContent = 'x'.repeat(2000);
 

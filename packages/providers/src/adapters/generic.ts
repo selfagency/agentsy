@@ -227,7 +227,7 @@ export function createGenericAdapter(
     async end(): Promise<void> {
       await emit(processor.flush());
       await safeCall(
-        () => callbacks.onDone?.() ?? Promise.resolve(),
+         async () => callbacks.onDone?.() ?? Promise.resolve(),
         undefined,
         error => {
           void callbacks.onError?.(error, { type: 'done' });

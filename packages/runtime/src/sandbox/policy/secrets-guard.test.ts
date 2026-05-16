@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { guardSecrets, assertSecretsGuard } from './secrets-guard.js';
+import { assertSecretsGuard, guardSecrets } from './secrets-guard.js';
 
 describe(guardSecrets, () => {
   it('safe: true when no secrets present', () => {
@@ -44,7 +44,7 @@ describe(guardSecrets, () => {
 
   it('respects custom patterns option', () => {
     const result = guardSecrets('my-custom-secret-abc', {
-      patterns: [/my-custom-[a-z]+/g]
+      patterns: [/my-custom-[a-z]+/gu]
     });
     expect(result.safe).toBeFalsy();
     expect(result.redacted).toContain('[SECRET_REDACTED]');

@@ -38,7 +38,7 @@ export function createSharedRendererHandle(
   const { processor, onFinish } = options;
 
   // Create processor if not provided (owns it internally)
-  const llmProcessor = processor || new LLMStreamProcessor();
+  const llmProcessor = processor ?? new LLMStreamProcessor();
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;

@@ -2,6 +2,24 @@ import { normalizeOpenAIChatChunk } from './openai.js';
 import type { NormalizerResult } from './types.js';
 
 /**
+ * Extracts thinking content from a nested thinking array.
+ */
+function extractThinkingContent(thinkingArray: unknown[]): string {
+  let result = '';
+
+  for (const t of thinkingArray) {
+    if (t && typeof t === 'object') {
+      const inner = t as Record<string, unknown>;
+      if (inner.type === 'text' && typeof inner.text === 'string') {
+        result += inner.text;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Extracts text and thinking content from a Mistral structured content block.
  * @returns [text, thinking] tuple
  */
@@ -22,24 +40,6 @@ function extractContentFromBlock(block: unknown): [string, string] {
   }
 
   return [text, thinking];
-}
-
-/**
- * Extracts thinking content from a nested thinking array.
- */
-function extractThinkingContent(thinkingArray: unknown[]): string {
-  let result = '';
-
-  for (const t of thinkingArray) {
-    if (t && typeof t === 'object') {
-      const inner = t as Record<string, unknown>;
-      if (typeof inner.text === 'string') {
-        result += inner.text;
-      }
-    }
-  }
-
-  return result;
 }
 
 /**

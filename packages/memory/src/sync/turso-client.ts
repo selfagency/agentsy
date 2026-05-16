@@ -29,7 +29,8 @@ export interface TursoHttpClientConfig {
 }
 
 async function resolveAuthToken(authToken: TursoHttpClientConfig['authToken']): Promise<string> {
-  return typeof authToken === 'function' ? authToken() : authToken;
+  const resolved = typeof authToken === 'function' ? await authToken() : authToken;
+  return resolved;
 }
 
 class TursoHttpClient implements TursoClient {
@@ -134,15 +135,13 @@ class TursoSyncClient implements TursoClient {
 
   constructor(private readonly config: TursoSyncClientConfig) {}
 
-  async #getDatabase(): Promise<TursoSyncDatabase> {
-    if (!this.#databasePromise) {
-      this.#databasePromise = (async () => {
-        const database = (await connect(toDatabaseOpts(this.config))) as unknown as TursoSyncDatabase;
-        await database.connect();
-        await database.run(SNAPSHOT_TABLE_SQL);
-        return database;
-      })();
-    }
+async #getDatabase(): Promise<TursoSyncDatabase> {
+    this.#databasePromise ??= (async () => {
+      const database = (await connect(toDatabaseOpts(this.config))) as unknown as TursoSyncDatabase;
+      await database.connect();
+      await database.run(SNAPSHOT_TABLE_SQL);
+      return database;
+    })();
 
     return this.#databasePromise;
   }
@@ -198,7 +197,13 @@ class TursoSyncClient implements TursoClient {
 
     return {
       cursor: remoteCursor,
-      records: JSON.parse(payload) as SyncSnapshot['records']
+      records: (() => {
+        try {
+          return JSON.parse(payload);
+        } catch {
+          return [];
+        }
+      })()
     };
   }
 

@@ -53,8 +53,7 @@ export function cancellationTokenToAbortSignal(token: CancellationTokenLike): Ab
   }
 
   try {
-    let cancellationListener: { dispose(): void } | undefined;
-    cancellationListener = token.onCancellationRequested(() => {
+    const cancellationListener: { dispose(): void } | undefined = token.onCancellationRequested(() => {
       controller.abort();
       cancellationListener?.dispose();
     });

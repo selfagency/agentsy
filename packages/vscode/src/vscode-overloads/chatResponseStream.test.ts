@@ -3,32 +3,31 @@ import type { CancellationToken, Event, Location, Uri } from 'vscode';
 
 import { createVSCodeChatResponseStream } from './chatResponseStream.js';
 
-function createMockCancellationToken(initiallyCancelled = false): {
-  token: CancellationToken;
+interface MockCancellationToken extends CancellationToken {
   cancel(): void;
-} {
+}
+
+function createMockCancellationToken(initiallyCancelled = false): MockCancellationToken {
   const listeners = new Set<(e: unknown) => unknown>();
   let cancelled = initiallyCancelled;
 
   return {
+    get isCancellationRequested() {
+      return cancelled;
+    },
+    onCancellationRequested: ((listener: (e: unknown) => unknown) => {
+      listeners.add(listener);
+      return {
+        dispose: () => {
+          listeners.delete(listener);
+        }
+      };
+    }) as unknown as Event<unknown>,
     cancel() {
       cancelled = true;
       for (const listener of listeners) {
-        listener();
+        listeners.delete(listener);
       }
-    },
-    token: {
-      get isCancellationRequested() {
-        return cancelled;
-      },
-      onCancellationRequested: ((listener: (e: unknown) => unknown) => {
-        listeners.add(listener);
-        return {
-          dispose: () => {
-            listeners.delete(listener);
-          }
-        };
-      }) as unknown as Event<unknown>
     }
   };
 }
@@ -100,7 +99,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
 
   it('treats the cancellation token as a no-op guard for the stubbed stream', () => {
     const cancellation = createMockCancellationToken();
-    const stream = createVSCodeChatResponseStream(cancellation.token);
+    const stream = createVSCodeChatResponseStream(cancellation);
 
     cancellation.cancel();
 

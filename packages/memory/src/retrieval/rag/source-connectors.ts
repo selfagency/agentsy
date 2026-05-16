@@ -36,10 +36,10 @@ export function createSourceConnectors(options: SourceConnectorOptions): SourceC
         throw new Error(`Web source request failed with status ${response.status}`);
       }
 
-      return response.text();
+      response.text();
     },
 
-    async readLocalFile(filePath) {
+    readLocalFile(filePath) {
       return readFile(filePath, 'utf-8');
     }
   };

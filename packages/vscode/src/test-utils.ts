@@ -3,7 +3,7 @@ import { expect } from 'vitest';
 export interface MockCancellationToken {
   cancel(): void;
   token: {
-    isCancellationRequested: () => boolean;
+    get isCancellationRequested(): boolean;
     onCancellationRequested(event: (e: unknown) => unknown): { dispose(): void };
   };
 }
@@ -22,14 +22,14 @@ export function createMockCancellationToken(initiallyCancelled = false): MockCan
     cancel() {
       cancelled = true;
       for (const listener of listeners) {
-        listener(undefined);
+        listener();
       }
     },
     token: {
       get isCancellationRequested() {
         return cancelled;
       },
-      onCancellationRequested(listener: (e: unknown) => unknown) => {
+      onCancellationRequested(listener: (e: unknown) => unknown) {
         listeners.add(listener);
         return {
           dispose: () => {

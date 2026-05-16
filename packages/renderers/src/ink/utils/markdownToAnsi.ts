@@ -13,22 +13,22 @@ export interface MarkdownOptions {
 export function hasMarkdownSyntax(s: string): boolean {
   const sample = s.slice(0, 500);
   // Atomic patterns: each character class is bounded and non-overlapping
-  if (/^#{1,6}\s/.test(sample)) {
+  if (/^#{1,6}\s/u.test(sample)) {
     return true;
   } // Headings
-  if (/^[-*]\s/.test(sample)) {
+  if (/^[-*]\s/u.test(sample)) {
     return true;
   } // Lists
-  if (/\*\*|__/.test(sample)) {
+  if (/\*\*|__/u.test(sample)) {
     return true;
   } // Bold emphasis
-  if (/```|`[^`]/.test(sample)) {
+  if (/```|`[^`]/u.test(sample)) {
     return true;
   } // Code blocks/inline
-  if (/\[[^\]]{0,200}\]\([^)]{0,200}\)/.test(sample)) {
+  if (/\[[^\]]{0,200}\]\([^)]{0,200}\)/u.test(sample)) {
     return true;
   } // Links with bounded length
-  if (/^\d+\./.test(sample)) {
+  if (/^\d+\./u.test(sample)) {
     return true;
   } // Ordered lists
   return false;

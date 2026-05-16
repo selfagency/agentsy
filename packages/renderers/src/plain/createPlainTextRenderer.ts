@@ -46,10 +46,10 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
   return createSharedRendererHandle(
     options,
     {
-      onText: async (text: string) => {
+      onText: (text: string) => {
         writeOutput(text);
       },
-      onThinking: async (text: string) => {
+      onThinking: (text: string) => {
         if (showThinking) {
           writeOutput(`${thinkingPrefix}${text}\n`);
         }
@@ -59,7 +59,7 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
           await onToolCall(part);
         }
       }),
-      onEnd: async () => {
+      onEnd: () => {
         // Call end() on stream if it has one (but not on process.stdout)
         if (
           typeof output === 'object' &&

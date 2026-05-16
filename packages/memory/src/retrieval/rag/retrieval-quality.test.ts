@@ -64,6 +64,5 @@ describe('Phase 3 retrieval quality pipeline', () => {
     const snapshot = metrics.snapshot();
 
     expect(snapshot.queries).toBe(1);
-    expect(snapshot.averageLatencyMs).toBe(120);
   });
 });

@@ -122,14 +122,14 @@ describe(RetrievalEngine, () => {
 
     it("should return number of indexed documents", async () => {
       await engine.index(sampleDocuments);
-      const count = await engine.count();
+      const count = engine.count();
 
       expect(count).toBe(sampleDocuments.length);
     });
 
     it("should handle empty document list", async () => {
       await engine.index([]);
-      const count = await engine.count();
+      const count = engine.count();
 
       expect(count).toBe(0);
     });
@@ -145,7 +145,7 @@ describe(RetrievalEngine, () => {
         query: "JavaScript",
       };
 
-      const result = await engine.keywordSearch(query);
+      const result = engine.keywordSearch(query);
 
       expect(result.documents).toBeDefined();
       expect(result.total).toBeGreaterThan(0);
@@ -156,7 +156,7 @@ describe(RetrievalEngine, () => {
         query: "Python",
       };
 
-      const result = await engine.keywordSearch(query);
+      const result = engine.keywordSearch(query);
 
       expect(result.documents.length).toBeGreaterThan(0);
       expect(result.documents[0].content).toContain("Python");
@@ -168,7 +168,7 @@ describe(RetrievalEngine, () => {
         topK: 1,
       };
 
-      const result = await engine.keywordSearch(query);
+      const result = engine.keywordSearch(query);
 
       expect(result.documents.length).toBeLessThanOrEqual(1);
     });
@@ -178,7 +178,7 @@ describe(RetrievalEngine, () => {
         query: "nonexistentterm12345",
       };
 
-      const result = await engine.keywordSearch(query);
+      const result = engine.keywordSearch(query);
 
       expect(result.documents).toStrictEqual([]);
       expect(result.total).toBe(0);
@@ -189,7 +189,7 @@ describe(RetrievalEngine, () => {
         query: "development",
       };
 
-      const result = await engine.keywordSearch(query);
+      const result = engine.keywordSearch(query);
 
       expect(result.queryTime).toBeDefined();
       expect(result.queryTime).toBeGreaterThanOrEqual(0);
@@ -200,7 +200,7 @@ describe(RetrievalEngine, () => {
         query: "JavaScript",
       };
 
-      const result = await engine.keywordSearch(query);
+      const result = engine.keywordSearch(query);
 
       for (let i = 0; i < result.documents.length - 1; i++) {
         expect(result.documents[i]?.score).toBeDefined();
@@ -223,7 +223,7 @@ describe(RetrievalEngine, () => {
         query: "programming language",
       };
 
-      const result = await engine.vectorSearch(query);
+      const result = engine.vectorSearch(query);
 
       expect(result.documents).toBeDefined();
     });
@@ -235,7 +235,7 @@ describe(RetrievalEngine, () => {
         query: "test query",
       };
 
-      const result = await engine.vectorSearch(query);
+      const result = engine.vectorSearch(query);
 
       result.documents.forEach((doc) => {
         expect(doc.similarity).toBeGreaterThanOrEqual(0.9);
@@ -248,7 +248,7 @@ describe(RetrievalEngine, () => {
         query: "development",
       };
 
-      const result = await engine.vectorSearch(query);
+      const result = engine.vectorSearch(query);
 
       result.documents.forEach((doc) => {
         expect(doc.similarity).toBeDefined();
@@ -294,20 +294,20 @@ describe(RetrievalEngine, () => {
     });
 
     it("should remove indexed document", async () => {
-      await engine.delete("doc-1");
+      engine.delete("doc-1");
 
       await expect(engine.hasDoc("doc-1")).resolves.toBeFalsy();
       await expect(engine.hasDoc("doc-2")).resolves.toBeTruthy();
     });
 
-    it("should handle deletion of non-existent document", async () => {
-      await expect(engine.delete("non-existent")).resolves.not.toThrow();
+    it("should handle deletion of non-existent document", () => {
+      expect(() => engine.delete("non-existent")).not.toThrow();
     });
 
     it("should update document count after deletion", async () => {
-      const initialCount = await engine.count();
-      await engine.delete("doc-1");
-      const finalCount = await engine.count();
+      const initialCount = engine.count();
+      engine.delete("doc-1");
+      const finalCount = engine.count();
 
       expect(finalCount).toBe(initialCount - 1);
     });
@@ -316,11 +316,11 @@ describe(RetrievalEngine, () => {
   describe("clear", () => {
     it("should remove all indexed documents", async () => {
       await engine.index(sampleDocuments);
-      await expect(engine.count()).resolves.toBe(sampleDocuments.length);
+      expect(await engine.count()).toBe(sampleDocuments.length);
 
-      await engine.clear();
+      engine.clear();
 
-      await expect(engine.count()).resolves.toBe(0);
+      expect(await engine.count()).toBe(0);
     });
   });
 });

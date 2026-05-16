@@ -10,7 +10,7 @@ describe(fingerprintContent, () => {
 
   it('value is prefixed with blake3:', () => {
     const fp = fingerprintContent('hello');
-    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/u);
   });
 
   it('size equals byte length of string content', () => {
@@ -39,7 +39,7 @@ describe(fingerprintContent, () => {
 
   it('empty string has a valid fingerprint', () => {
     const fp = fingerprintContent('');
-    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/u);
     expect(fp.size).toBe(0);
   });
 });

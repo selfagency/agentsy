@@ -18,6 +18,6 @@ describe(createSessionSnapshot, () => {
 
     expect(snapshot.state.reusableSegments?.[0]?.reuseClass).toBe('hot');
     expect(snapshot.state.modelFamily).toBe('qwen');
-    expect(snapshot.checksum).toMatch(/^sha256:/);
+    expect(snapshot.checksum).toMatch(/^sha256:/u);
   });
 });

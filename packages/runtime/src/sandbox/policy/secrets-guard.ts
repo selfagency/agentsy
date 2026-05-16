@@ -1,7 +1,7 @@
 const DEFAULT_SECRET_PATTERNS: readonly RegExp[] = [
-  /sk-[A-Za-z0-9]{20,}/g,
-  /gh[pousr]_[A-Za-z0-9]{36,}/g,
-  /(?:AKIA|ASIA)[A-Z0-9]{16}/g
+  /sk-[A-Za-z0-9]{20,}/gu,
+  /gh[pousr]_[A-Za-z0-9]{36,}/gu,
+  /(?:AKIA|ASIA)[A-Z0-9]{16}/gu
 ];
 
 export interface SecretsGuardOptions {
@@ -26,7 +26,7 @@ export function guardSecrets(input: string, options?: SecretsGuardOptions): Secr
     const re = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
     const matches = [...redacted.matchAll(re)];
     for (const match of matches) {
-      const matched = match[0];
+      const [matched] = match;
       violations.push(matched);
       redacted = redacted.split(matched).join('[SECRET_REDACTED]');
     }

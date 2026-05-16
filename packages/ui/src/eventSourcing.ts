@@ -10,6 +10,7 @@ function handleMessageStarted(state: UIConversation, messageId: string, role: st
     createdAt: now,
     id: messageId,
     parts: [],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     role: role as 'user' | 'assistant'
   };
 
@@ -76,6 +77,7 @@ function addStepPart(
  * @param event - Event to apply
  * @returns New conversation state with event applied
  */
+// eslint-disable-next-line complexity
 export function applyConversationEvent(state: UIConversation, event: ConversationEvent): UIConversation {
   const now = new Date();
 

@@ -1,10 +1,10 @@
 // fallow-ignore-file unused-file
 import type { Octokit as OctokitType } from '@octokit/rest';
-import { Ora } from 'ora';
+import type ora from 'ora';
 
 export type { Octokit as OctokitType };
 
-export function createReleaseShared(octokitConstructor: typeof OctokitType) {
+export function createReleaseShared(octokitConstructor: typeof OctokitType): typeof OctokitType {
   return octokitConstructor;
 }
 
@@ -55,7 +55,7 @@ export async function resolveGithubToken() {
     try {
       token = (await $`gh auth token`).stdout.trim();
     } catch {
-      console.error('❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login');
+      console.error('❌ No GitHub token found. Set GH_TOKEN/gitHUB_TOKEN or run: gh auth login');
       process.exit(1);
     }
   }
@@ -66,7 +66,7 @@ export function wrapBareUrls(text: string): string {
   // Wrap bare URLs in angle brackets for Markdown compliance.
   // Skip URLs already wrapped in < > or used as Markdown link destinations,
   // and avoid including common trailing punctuation in the wrapped URL.
-  return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/g, '<$1>');
+  return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/gu, '<$1>');
 }
 
 export function updateChangelogFile(

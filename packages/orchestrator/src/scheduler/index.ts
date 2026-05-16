@@ -126,7 +126,7 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
   return {
     async schedule<T>(task: SchedulerExecutionInput<T>): Promise<SchedulerAssignment | T | null> {
       if (typeof task === 'function') {
-        return task();
+        return await task();
       }
 
       const schedulerTask = toSchedulerTaskInfo(task.taskInfo);

@@ -19,8 +19,8 @@ describe(createSessionStore, () => {
       values: { enabled: true, retries: 2 }
     });
 
-    expect(store.getValue<number>('retries')).toBe(2);
-    expect(store.getValue<boolean>('enabled')).toBeTruthy();
+    expect(store.getValue('retries')).toBe(2);
+    expect(store.getValue('enabled')).toBeTruthy();
     expect(store.getValue('missing')).toBeUndefined();
   });
 

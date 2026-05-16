@@ -29,12 +29,13 @@ const WORKER_PATH = join(__dirname, 'sandbox-worker.js');
 
 export function createVirtualSandbox(): VirtualSandbox {
   return {
-    async execute(input): Promise<SandboxOutput> {
+    execute(input): Promise<SandboxOutput> {
       const start = Date.now();
       const timeoutMs = input.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
       const stdout: string[] = [];
       const stderr: string[] = [];
+      let resolved = false;
 
       return new Promise(resolve => {
         const worker = new Worker(WORKER_PATH, {
@@ -46,6 +47,8 @@ export function createVirtualSandbox(): VirtualSandbox {
         });
 
         const timeout = setTimeout(() => {
+          if (resolved) return;
+          resolved = true;
           worker.terminate();
           resolve({
             durationMs: Date.now() - start,
@@ -68,6 +71,8 @@ export function createVirtualSandbox(): VirtualSandbox {
             stderr.push(output);
 
             if (msg.type === 'runtime-error') {
+              if (resolved) return;
+              resolved = true;
               clearTimeout(timeout);
               worker.terminate();
               resolve({
@@ -79,6 +84,8 @@ export function createVirtualSandbox(): VirtualSandbox {
               });
             }
           } else if (msg.type === 'result') {
+            if (resolved) return;
+            resolved = true;
             clearTimeout(timeout);
             worker.terminate();
             resolve({
@@ -92,6 +99,8 @@ export function createVirtualSandbox(): VirtualSandbox {
         });
 
         worker.on('error', err => {
+          if (resolved) return;
+          resolved = true;
           clearTimeout(timeout);
           worker.terminate();
           resolve({
@@ -104,6 +113,8 @@ export function createVirtualSandbox(): VirtualSandbox {
         });
 
         worker.on('exit', code => {
+          if (resolved) return;
+          resolved = true;
           clearTimeout(timeout);
           if (code !== 0) {
             resolve({
@@ -111,6 +122,14 @@ export function createVirtualSandbox(): VirtualSandbox {
               exitCode: code,
               status: 'error',
               stderr: `Worker exited with code ${code}`,
+              stdout: stdout.join('\n')
+            });
+          } else {
+            resolve({
+              durationMs: Date.now() - start,
+              exitCode: 0,
+              status: 'ok',
+              stderr: stderr.join('\n'),
               stdout: stdout.join('\n')
             });
           }

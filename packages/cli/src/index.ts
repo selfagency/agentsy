@@ -134,81 +134,124 @@ function toCompressionLevel(value: string | null): OutputCompressionLevel | null
   return null;
 }
 
-export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
-  const [command, ...rest] = argv;
+async function handleCompressCommand(
+  rest: readonly string[],
+  io: CliIO
+): Promise<number> {
+  const filePath = getFlagValue(rest, '--file');
+  const text = getFlagValue(rest, '--text');
+  const level = toCompressionLevel(getFlagValue(rest, '--level'));
 
-  if (command === 'compress') {
-    const filePath = getFlagValue(rest, '--file');
-    const text = getFlagValue(rest, '--text');
-    const level = toCompressionLevel(getFlagValue(rest, '--level'));
+  if (level === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
+    return 1;
+  }
 
-    if (level === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
-      return 1;
-    }
+  if (filePath === null && text === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
+    return 1;
+  }
 
-    if (filePath === null && text === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
-      return 1;
-    }
+  const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf-8'));
+  const result = compressOutput(source, { level });
+  (io.stdout ?? DEFAULT_IO.stdout)(result.compressed);
+  (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+  return 0;
+}
 
-    const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf-8'));
-    const result = compressOutput(source, { level });
-    (io.stdout ?? DEFAULT_IO.stdout)(result.compressed);
-    (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+async function handleCompressMemoryCommand(
+  rest: readonly string[],
+  io: CliIO
+): Promise<number> {
+  const filePath = getFlagValue(rest, '--file');
+  if (filePath === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Missing --file for compress-memory command.');
+    return 1;
+  }
+
+  const backup = !hasFlag(rest, '--no-backup');
+  const result = await compressMemoryFile(filePath, { backup });
+  (io.stdout ?? DEFAULT_IO.stdout)(`Compressed ${filePath}`);
+  (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+  return 0;
+}
+
+function _handleMemorySyncDevCommand(
+  rest: readonly string[],
+  io: CliIO
+): number {
+  const example = createMemorySyncDevExample(rest);
+  if (example === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Invalid --sync-interval-ms value. Use a positive number.');
+    return 1;
+  }
+
+  const stdout = io.stdout ?? DEFAULT_IO.stdout;
+  if (hasFlag(rest, '--json')) {
+    stdout(JSON.stringify(example, null, 2));
     return 0;
   }
 
-  if (command === 'compress-memory') {
-    const filePath = getFlagValue(rest, '--file');
-    if (filePath === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Missing --file for compress-memory command.');
-      return 1;
-    }
-
-    const backup = !hasFlag(rest, '--no-backup');
-
-    const result = await compressMemoryFile(filePath, {
-      backup
-    });
-    (io.stdout ?? DEFAULT_IO.stdout)(`Compressed ${filePath}`);
-    (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
-    return 0;
+  for (const line of formatMemorySyncDevExample(example)) {
+    stdout(line);
   }
 
-  if (command === 'memory-sync-dev') {
-    const example = createMemorySyncDevExample(rest);
-    if (example === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Invalid --sync-interval-ms value. Use a positive number.');
-      return 1;
-    }
+  return 0;
+}
 
-    const stdout = io.stdout ?? DEFAULT_IO.stdout;
-    if (hasFlag(rest, '--json')) {
-      stdout(JSON.stringify(example, null, 2));
-      return 0;
-    }
+function handleMemorySyncDevCommand(
+  rest: readonly string[],
+  io: CliIO
+): number {
+  return _handleMemorySyncDevCommand(rest, io);
+}
 
-    for (const line of formatMemorySyncDevExample(example)) {
-      stdout(line);
-    }
+async function handleSandboxDiagnosticsCommand(
+  rest: readonly string[],
+  io: CliIO
+): Promise<number> {
+  const { runSandboxDiagnosticsCommand } = await import('./commands/sandbox-diagnostics.js');
+  return runSandboxDiagnosticsCommand(rest, io);
+}
 
-    return 0;
-  }
+async function handleContentAddressStatsCommand(
+  rest: readonly string[],
+  io: CliIO
+): Promise<number> {
+  const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
+  return runContentAddressStatsCommand(rest, io);
+}
 
-  if (command === 'sandbox-diagnostics') {
-    const { runSandboxDiagnosticsCommand } = await import('./commands/sandbox-diagnostics.js');
-    return runSandboxDiagnosticsCommand(rest, io);
-  }
-
-  if (command === 'content-address-stats') {
-    const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
-    return runContentAddressStatsCommand(rest, io);
-  }
-
+function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
     'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
   );
   return 1;
+}
+
+export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
+  const [command, ...rest] = argv;
+
+  if (command === 'compress') {
+    return await handleCompressCommand(rest, io);
+  }
+
+  if (command === 'compress-memory') {
+    return await handleCompressMemoryCommand(rest, io);
+  }
+
+  if (command === 'memory-sync-dev') {
+    return handleMemorySyncDevCommand(rest, io);
+  }
+
+  if (command === 'sandbox-diagnostics') {
+    return await handleSandboxDiagnosticsCommand(rest, io);
+  }
+
+  if (command === 'content-address-stats') {
+    return await handleContentAddressStatsCommand(rest, io);
+  }
+
+  return handleUnknownCommand(command, io);
 }

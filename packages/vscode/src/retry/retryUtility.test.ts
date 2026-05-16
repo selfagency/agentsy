@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRetryUtility, RetryUtility } from './retryUtility.js';
-import { createMockCancellationToken } from './test-utils.js';
+import { createMockCancellationToken } from './test-utils';
 
 describe('Retry Utility', () => {
-  const mockCancellationToken = createMockCancellationToken().token;
+  const mockCancellationToken = createMockCancellationToken();
 
   describe(RetryUtility, () => {
     it('should create retry utility instance', () => {

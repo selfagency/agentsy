@@ -1,6 +1,4 @@
 /**
- * @agentsy/providers/universal-client
- *
  * Unified client abstractions for provider integration.
  */
 
@@ -8,8 +6,8 @@ import { ReadableStream } from 'node:stream/web';
 
 import type { CompletionRequest, CompletionResponse, NormalizedChunk, UsageInfo } from '@agentsy/types';
 
-import { createPipeline } from '../pipeline/index.js';
 import type { NormalizerProvider } from '../pipeline/index.js';
+import { createPipeline } from '../pipeline/index.js';
 
 /**
  * Configuration options for a UniversalClient instance.
@@ -47,32 +45,6 @@ const PROVIDER_ENDPOINTS: Record<NormalizerProvider, string> = {
   openai: 'https://api.openai.com/v1/chat/completions',
   zai: 'https://api.zai.com/v1/chat'
 };
-
-/**
- * Convert CompletionRequest to provider-specific request format.
- */
-function toProviderRequest(request: CompletionRequest, provider: NormalizerProvider): Record<string, unknown> {
-  switch (provider) {
-    case 'openai':
-    case 'anthropic':
-    case 'gemini':
-    case 'mistral':
-    case 'ollama':
-    case 'cohere':
-    case 'zai': {
-      return toOpenAIFormat(request);
-    }
-    case 'bedrock': {
-      return toBedrockFormat(request);
-    }
-    case 'hugging-face': {
-      return toHuggingFaceFormat(request);
-    }
-    default: {
-      return toOpenAIFormat(request);
-    }
-  }
-}
 
 /**
  * Convert CompletionRequest to OpenAI-compatible format.
@@ -178,6 +150,73 @@ function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown
       top_p: request.topP
     }
   };
+}
+
+/**
+ * Convert CompletionRequest to provider-specific request format.
+ */
+function toProviderRequest(request: CompletionRequest, provider: NormalizerProvider): Record<string, unknown> {
+  switch (provider) {
+    case 'openai':
+    case 'anthropic':
+    case 'gemini':
+    case 'mistral':
+    case 'ollama':
+    case 'cohere':
+    case 'zai': {
+      return toOpenAIFormat(request);
+    }
+    case 'bedrock': {
+      return toBedrockFormat(request);
+    }
+    case 'hugging-face': {
+      return toHuggingFaceFormat(request);
+    }
+    default: {
+      return toOpenAIFormat(request);
+    }
+  }
+}
+
+function buildHeaders(
+  _provider: NormalizerProvider,
+  apiKey?: string,
+  organizationId?: string,
+  stream?: boolean
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+
+  if (apiKey) {
+    // oxlint-disable-next-line switch-exhaustiveness-check
+    switch (_provider) {
+      case 'openai': {
+        headers.Authorization = `Bearer ${apiKey}`;
+        if (organizationId) {
+          headers['OpenAI-Organization'] = organizationId;
+        }
+        break;
+      }
+      case 'anthropic': {
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        if (stream) {
+          headers.accept = 'text/event-stream';
+        }
+        break;
+      }
+      case 'gemini': {
+        headers.Authorization = `Bearer ${apiKey}`;
+        break;
+      }
+      default: {
+        headers.Authorization = `Bearer ${apiKey}`;
+      }
+    }
+  }
+
+  return headers;
 }
 
 function parseUsageInfo(usageData: Record<string, unknown>): UsageInfo | undefined {
@@ -343,7 +382,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       }
 
       const stream = new ReadableStream<NormalizedChunk>({
-        async start(controller) {
+        start(controller) {
           for (const chunk of chunks) {
             controller.enqueue(chunk);
           }
@@ -354,44 +393,4 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       return stream;
     }
   };
-}
-
-function buildHeaders(
-  _provider: NormalizerProvider,
-  apiKey?: string,
-  organizationId?: string,
-  stream?: boolean
-): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  };
-
-  if (apiKey) {
-    switch (_provider) {
-      case 'openai': {
-        headers.Authorization = `Bearer ${apiKey}`;
-        if (organizationId) {
-          headers['OpenAI-Organization'] = organizationId;
-        }
-        break;
-      }
-      case 'anthropic': {
-        headers['x-api-key'] = apiKey;
-        headers['anthropic-version'] = '2023-06-01';
-        if (stream) {
-          headers.accept = 'text/event-stream';
-        }
-        break;
-      }
-      case 'gemini': {
-        headers.Authorization = `Bearer ${apiKey}`;
-        break;
-      }
-      default: {
-        headers.Authorization = `Bearer ${apiKey}`;
-      }
-    }
-  }
-
-  return headers;
 }

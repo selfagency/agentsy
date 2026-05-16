@@ -372,7 +372,7 @@ export function compressConversation<TMessage>(
   };
 }
 
-const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/gu;
 const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths', 'markdown', 'errors']);
 const FILLER_WORDS = new Set([
   'really',
@@ -433,29 +433,29 @@ const STOP_WORDS = new Set(
 );
 
 const REDUNDANT_PHRASES: readonly [RegExp, string][] = [
-  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
-  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
-  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
-  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
-  [/\bas\s+mentioned\b/gi, ''],
-  [/\bas\s+you\s+may\s+know\b/gi, ''],
-  [/\bin\s+conclusion/gi, 'Finally'],
-  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
-  [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now']
+  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/giu, ''],
+  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/giu, 'that '],
+  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/giu, 'because '],
+  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/giu, ''],
+  [/\bas\s+mentioned\b/giu, ''],
+  [/\bas\s+you\s+may\s+know\b/giu, ''],
+  [/\bin\s+conclusion/giu, 'Finally'],
+  [/\bdue\s+to\s+the\s+fact\s+that\b/giu, 'because'],
+  [/\bat\s+this\s+point\s+in\s+time\b/giu, 'now']
 ];
 
 const ABBREVIATIONS: readonly [RegExp, string][] = [
-  [/\bapproximately\b/gi, 'approx'],
-  [/\bconfiguration\b/gi, 'config'],
-  [/\binformation\b/gi, 'info'],
-  [/\badministration\b/gi, 'admin'],
-  [/\bdocumentation\b/gi, 'docs'],
-  [/\bdirectory\b/gi, 'dir'],
-  [/\bnumber\b/gi, '#'],
-  [/\btechnology\b/gi, 'tech'],
-  [/\bimplementation\b/gi, 'impl'],
-  [/\boperation\b/gi, 'op'],
-  [/\bgeneral\b/gi, 'gen']
+  [/\bapproximately\b/giu, 'approx'],
+  [/\bconfiguration\b/giu, 'config'],
+  [/\binformation\b/giu, 'info'],
+  [/\badministration\b/giu, 'admin'],
+  [/\bdocumentation\b/giu, 'docs'],
+  [/\bdirectory\b/giu, 'dir'],
+  [/\bnumber\b/giu, '#'],
+  [/\btechnology\b/giu, 'tech'],
+  [/\bimplementation\b/giu, 'impl'],
+  [/\boperation\b/giu, 'op'],
+  [/\bgeneral\b/giu, 'gen']
 ];
 
 function estimateTextTokens(text: string): number {
@@ -478,7 +478,7 @@ function normalizeAndDedupeLines(segment: string): string {
   let previousWasBlank = false;
 
   for (const rawLine of lines) {
-    const line = rawLine.replaceAll(/\s+/g, ' ').trimEnd();
+    const line = rawLine.replaceAll(/\s+/gu, ' ').trimEnd();
     const isBlank = line.trim().length === 0;
 
     if (isBlank) {
@@ -516,31 +516,31 @@ function protectPreservedContent(
   let masked = source;
 
   if (preserve.has('urls')) {
-    masked = masked.replaceAll(/https?:\/\/[^\s)]+/g, stash);
+    masked = masked.replaceAll(/https?:\/\/[^\s)]+/gu, stash);
   }
 
   if (preserve.has('paths')) {
     masked = masked.replaceAll(
-      /(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/g,
+      /(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/gu,
       (_, prefix: string, path: string) => `${prefix}${stash(path)}`
     );
   }
 
   if (preserve.has('markdown')) {
-    masked = masked.replaceAll(/`[^`]+`/g, stash);
+    masked = masked.replaceAll(/`[^`]+`/gu, stash);
     masked = protectMarkdownLinks(masked, stash);
   }
 
   if (preserve.has('errors')) {
-    masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi, stash);
+    masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/giu, stash);
   }
 
   if (preserve.has('technical')) {
-    masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/g, stash);
+    masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/gu, stash);
   }
 
   const restore = (value: string): string =>
-    value.replaceAll(/__AGENTSY_PRESERVE_(\d+)__/g, (_, indexRaw: string) => {
+    value.replaceAll(/__AGENTSY_PRESERVE_(\d+)__/gu, (_, indexRaw: string) => {
       const index = Number(indexRaw);
       return preserved[index] ?? '';
     });
@@ -597,7 +597,7 @@ function stripFillerWords(source: string, strongOnly: boolean): string {
 }
 
 function finalizeWhitespace(source: string): string {
-  return source.replaceAll(/\s{2,}/g, ' ').trim();
+  return source.replaceAll(/\s{2,}/gu, ' ').trim();
 }
 
 function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, preserve: ReadonlySet<string>): string {
@@ -624,14 +624,14 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
       const withoutFiller = stripFillerWords(masked, false);
       const reduced = normalizeUltraText(applyReplacements(withoutFiller, REDUNDANT_PHRASES));
       const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replaceAll(
-        /\b(?:the|a|an)\s+([a-z]+)\b/gi,
+        /\b(?:the|a|an)\s+([a-z]+)\b/giu,
         (_, adjective: string) => `${adjective} `
       );
 
       return restore(
         abbreviated
-          .replaceAll(/\s{2,}/g, ' ')
-          .replaceAll(/ ([,.])/g, '$1')
+          .replaceAll(/\s{2,}/gu, ' ')
+          .replaceAll(/ ([,.])/gu, '$1')
           .trim()
       );
     }
@@ -639,10 +639,10 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
 }
 
 function normalizeUltraText(source: string): string {
-  let output = source.replaceAll(/\b(and|or)\s+\1\s+/gi, '$1 ').replaceAll(/\b(is|are|was|were)\s+quite\s+/gi, '');
+  let output = source.replaceAll(/\b(and|or)\s+\1\s+/giu, '$1 ').replaceAll(/\b(is|are|was|were)\s+quite\s+/giu, '');
 
   output = removeWhichClauses(output);
-  return output.replaceAll(/ ([,.?!])/g, '$1');
+  return output.replaceAll(/ ([,.?!])/gu, '$1');
 }
 
 function removeWhichClauses(source: string): string {
@@ -714,7 +714,7 @@ export function compressOutput(response: string, options: OutputCompressionOptio
   const compressed = segments
     .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level, preserve)))
     .join('\n')
-    .replaceAll(/\n{3,}/g, '\n\n')
+    .replaceAll(/\n{3,}/gu, '\n\n')
     .trim();
 
   const originalTokens = estimateTextTokens(response);

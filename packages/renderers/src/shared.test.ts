@@ -12,7 +12,7 @@ export interface StepAssertionRendererOptions {
 export const testOnStepCall = async (
   createRenderer: (options: StepAssertionRendererOptions) => ReturnType<typeof createSharedRendererHandle>
 ): Promise<void> => {
-  const onStep = vi.fn();
+  const onStep = vi.fn<(stepIndex: number, usage: unknown) => void>();
   const renderer = createRenderer({ onStep });
 
   await renderer.writeChunk({
@@ -49,24 +49,24 @@ describe(createSharedRendererHandle, () => {
 
   beforeEach(() => {
     mockHandlers = {
-      onEnd: vi.fn().mockResolvedValue(),
-      onText: vi.fn().mockResolvedValue(),
-      onThinking: vi.fn().mockResolvedValue(),
-      onToolCall: vi.fn().mockResolvedValue(),
-      onToolCallDelta: vi.fn().mockResolvedValue()
+      onEnd: vi.fn<() => Promise<void>>().mockResolvedValue(),
+      onText: vi.fn<() => Promise<void>>().mockResolvedValue(),
+      onThinking: vi.fn<() => Promise<void>>().mockResolvedValue(),
+      onToolCall: vi.fn<() => Promise<void>>().mockResolvedValue(),
+      onToolCallDelta: vi.fn<() => Promise<void>>().mockResolvedValue()
     };
 
-    mockOnFinish = vi.fn().mockResolvedValue();
-    mockOnError = vi.fn().mockResolvedValue();
+    mockOnFinish = vi.fn<(finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>>().mockResolvedValue();
+    mockOnError = vi.fn<(error: Error) => void | Promise<void>>().mockResolvedValue();
   });
 
   it('creates shared renderer handle with handlers', () => {
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     expect(renderer).toBeDefined();
-    expect(renderer.write).toBeDefined();
-    expect(renderer.writeChunk).toBeDefined();
-    expect(renderer.end).toBeDefined();
+    expect(typeof renderer.write).toBe('function');
+    expect(typeof renderer.writeChunk).toBe('function');
+    expect(typeof renderer.end).toBe('function');
   });
 
   it('accepts handlers and processes via write', async () => {
@@ -186,7 +186,7 @@ describe(createSharedRendererHandle, () => {
   });
 
   it('invokes onStep when stepIndex changes via writeChunk', async () => {
-    const onStep = vi.fn().mockResolvedValue();
+    const onStep = vi.fn<(stepIndex: number, usage: unknown) => void>().mockResolvedValue();
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
 
     await renderer.writeChunk({
@@ -211,7 +211,7 @@ describe(createSharedRendererHandle, () => {
   });
 
   it('falls back to usage when stepUsage is absent', async () => {
-    const onStep = vi.fn().mockResolvedValue();
+    const onStep = vi.fn<(stepIndex: number, usage: unknown) => void>().mockResolvedValue();
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
 
     await renderer.writeChunk({
@@ -261,7 +261,7 @@ describe(createSharedRendererHandle, () => {
 
     // Renderer should be created successfully with provided processor
     expect(renderer).toBeDefined();
-    expect(renderer.write).toBeDefined();
+    expect(typeof renderer.write).toBe('function');
   });
 
   it('creates internal processor when not provided', async () => {
@@ -269,7 +269,7 @@ describe(createSharedRendererHandle, () => {
 
     // Renderer should be created successfully with internal processor
     expect(renderer).toBeDefined();
-    expect(renderer.write).toBeDefined();
+    expect(typeof renderer.write).toBe('function');
   });
 
   it('processes parts through handlers via write', async () => {

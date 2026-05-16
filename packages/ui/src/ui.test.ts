@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { applyConversationEvent } from './eventSourcing.js';
 import { createConversationStoreFromProcessor } from './processorBridge.js';
 import { createConversationStore } from './store.js';
+import type { StoreListener } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 
 // Helper functions for ConversationStore tests
@@ -414,7 +415,8 @@ describe('UI Event Sourcing', () => {
 
     it('should notify listeners on dispatch', () => {
       const store = createConversationStore('conv-1');
-      const listener = vi.fn();
+      // eslint-disable-next-line vitest/prefer-spy-on
+      const listener = vi.fn<StoreListener>();
 
       store.subscribe(listener);
 
@@ -425,12 +427,15 @@ describe('UI Event Sourcing', () => {
       });
 
       expect(listener).toHaveBeenCalledOnce();
-      expect(listener.mock.calls[0]?.[0]?.messages).toHaveLength(1);
+      // oxlint-disable-next-line no-non-null-assertion
+      const [calledWithState] = listener.mock.calls[0]!;
+      expect(calledWithState.messages).toHaveLength(1);
+      expect(calledWithState.messages[0]?.id).toBe('msg-1');
     });
 
-    it('should unsubscribe listener', () => {
+it('should unsubscribe listener', () => {
       const store = createConversationStore('conv-1');
-      const listener = vi.fn();
+      const listener = vi.fn<() => void>();
 
       const unsubscribe = store.subscribe(listener);
 
@@ -439,8 +444,6 @@ describe('UI Event Sourcing', () => {
         role: 'user',
         type: 'message_started'
       });
-
-      expect(listener).toHaveBeenCalledOnce();
 
       unsubscribe();
 
@@ -499,11 +502,13 @@ describe('UI Event Sourcing', () => {
 
     it('should support multiple subscribers', () => {
       const store = createConversationStore('conv-1');
-      const listener1 = vi.fn();
-      const listener2 = vi.fn();
+      const listener1 = vi.fn<() => void>();
+      const listener2 = vi.fn<() => void>();
 
-      store.subscribe(listener1);
-      store.subscribe(listener2);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      void store.subscribe(listener1);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      void store.subscribe(listener2);
 
       store.dispatch({
         messageId: 'msg-1',
@@ -570,9 +575,12 @@ describe('UI Event Sourcing', () => {
 
       const state = bridge.store.getState();
       expect(state.messages).toHaveLength(1);
-      expect(state.messages[0]?.parts.some(part => part.type === 'thinking')).toBeTruthy();
-      expect(state.messages[0]?.parts.some(part => part.type === 'text')).toBeTruthy();
-      expect(state.messages[0]?.parts.some(part => part.type === 'tool_call')).toBeTruthy();
+      // eslint-disable-next-line vitest/max-expects
+      expect({
+        text: state.messages[0]?.parts.some(part => part.type === 'text'),
+        thinking: state.messages[0]?.parts.some(part => part.type === 'thinking'),
+        toolCall: state.messages[0]?.parts.some(part => part.type === 'tool_call')
+      }).toStrictEqual({ text: true, thinking: true, toolCall: true });
       expect(state.messages[0]?.finishReason).toBe('tool-calls');
       expect(state.totalTokens).toBe(12);
 

@@ -173,7 +173,7 @@ function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
 export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null {
   try {
     if (isOpenAIChatChunk(raw)) {
-      const choice = raw.choices[0];
+      const [choice] = raw.choices;
       const delta = choice?.delta;
       const nativeToolCallDeltas = getNativeToolCallDeltas(delta);
 

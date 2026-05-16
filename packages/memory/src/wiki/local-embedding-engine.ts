@@ -11,7 +11,7 @@ function normalizeToken(token: string): number {
   let hash = 0;
 
   for (let index = 0; index < token.length; index += 1) {
-    hash = (hash * 31 + (token.codePointAt(index) ?? 0)) >>> 0;
+    hash = Math.trunc(hash * 31 + (token.codePointAt(index) ?? 0));
   }
 
   return hash;
@@ -24,7 +24,7 @@ export function createLocalEmbeddingEngine(options: LocalEmbeddingEngineOptions 
     dimensions,
     embed(text: string) {
       const vector = Array.from<number>({ length: dimensions }).fill(0);
-      const tokens = text.toLowerCase().split(/\s+/).filter(Boolean);
+      const tokens = text.toLowerCase().split(/\s+/gu).filter(Boolean);
 
       for (const token of tokens) {
         const hash = normalizeToken(token);

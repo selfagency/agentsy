@@ -8,7 +8,7 @@ import { StreamingText } from './StreamingText.js';
 
 // Mock markdownToAnsi
 vi.mock(import('../utils/markdownToAnsi.js'), () => ({
-  markdownToAnsi: vi.fn(async (text: string) => `ANSI[${text}]`)
+  markdownToAnsi: vi.fn<(text: string) => Promise<string>>(async (text: string) => `ANSI[${text}]`)
 }));
 
 const mockTheme: Theme = {

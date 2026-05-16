@@ -134,7 +134,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
       return null;
     }
 
-    const candidate = raw.candidates[0];
+    const [candidate] = raw.candidates;
     if (!isObject(candidate)) {
       return null;
     }

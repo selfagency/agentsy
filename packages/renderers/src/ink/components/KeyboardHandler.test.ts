@@ -23,7 +23,7 @@ describe('KeyboardHandler Component Props', () => {
     });
 
     it('handles onInterrupt callback', () => {
-      const onInterrupt = vi.fn();
+      const onInterrupt = vi.fn<() => void>();
       const options = {
         enabled: true,
         onInterrupt
@@ -32,7 +32,7 @@ describe('KeyboardHandler Component Props', () => {
     });
 
     it('handles multiple keyboard configurations', () => {
-      const onInterrupt = vi.fn();
+      const onInterrupt = vi.fn<() => void>();
       const configs = [
         { enabled: true },
         { enabled: false },
@@ -65,7 +65,7 @@ describe('KeyboardHandler Component Props', () => {
     });
 
     it('executes interrupt callback when configured', () => {
-      const onInterrupt = vi.fn();
+      const onInterrupt = vi.fn<() => void>();
       const options = {
         enabled: true,
         onInterrupt
@@ -114,7 +114,7 @@ describe('KeyboardHandler Component Props', () => {
     });
 
     it('prevents duplicate interrupts', () => {
-      const onInterrupt = vi.fn();
+      const onInterrupt = vi.fn<() => void>();
       const options = {
         enabled: true,
         onInterrupt
@@ -175,7 +175,7 @@ describe('KeyboardHandler Component Props', () => {
     });
 
     it('works with concurrent interrupts', () => {
-      const onInterrupt = vi.fn();
+      const onInterrupt = vi.fn<() => void>();
       const options = [
         { enabled: true, onInterrupt },
         { enabled: true, onInterrupt },

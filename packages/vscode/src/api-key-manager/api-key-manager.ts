@@ -97,7 +97,7 @@ export class ApiKeyManager {
     // Update context and notify listeners
     await this.setupContextVariable();
     await this.setupHasKeyContext();
-    this.notifyListeners('deleted', undefined);
+    this.notifyListeners('deleted');
   }
 
   /**

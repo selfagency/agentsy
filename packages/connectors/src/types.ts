@@ -110,10 +110,10 @@ export function isBuiltInCommand(text: string): text is BuiltInCommandType {
  */
 export function stripXmlContextTags(text: string): string {
   return text
-    .replaceAll(/<SYSTEM>[\s\S]*?<\/SYSTEM>/gi, '')
-    .replaceAll(/<system>[\s\S]*?<\/system>/gi, '')
-    .replaceAll(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/gi, '')
-    .replaceAll(/<instruction>[\s\S]*?<\/instruction>/gi, '')
-    .replaceAll(/<THOUGHT>[\s\S]*?<\/THOUGHT>/gi, '')
-    .replaceAll(/<thought>[\s\S]*?<\/thought>/gi, '');
+    .replaceAll(/<SYSTEM>[\s\S]*?<\/SYSTEM>/giu, '')
+    .replaceAll(/<system>[\s\S]*?<\/system>/giu, '')
+    .replaceAll(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/giu, '')
+    .replaceAll(/<instruction>[\s\S]*?<\/instruction>/giu, '')
+    .replaceAll(/<THOUGHT>[\s\S]*?<\/THOUGHT>/giu, '')
+    .replaceAll(/<thought>[\s\S]*?<\/thought>/giu, '');
 }

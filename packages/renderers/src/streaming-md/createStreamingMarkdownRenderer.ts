@@ -105,7 +105,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   }
 
   // Create processor if not provided (owns it internally)
-  const llmProcessor = processor || new LLMStreamProcessor();
+  const llmProcessor = processor ?? new LLMStreamProcessor();
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;

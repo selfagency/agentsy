@@ -21,7 +21,7 @@ export const TimingUtils = {
   },
 
   async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return await new Promise(resolve => setTimeout(resolve, ms));
   },
 
   formatDuration(ms: number): string {
@@ -69,7 +69,7 @@ export const TimingUtils = {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs);
+      timeoutId = setTimeout(() =>{  reject(new Error(`Operation timed out after ${timeoutMs}ms`)); }, timeoutMs);
     });
 
     try {
@@ -123,15 +123,13 @@ export class Throttle {
 
     if (now - this.lastExecution >= this.interval) {
       this.execute(...args);
-    } else if (this.pendingExecution === null) {
-      this.pendingExecution = setTimeout(
+    } else this.pendingExecution ??= setTimeout(
         () => {
           this.execute(...args);
           this.pendingExecution = null;
         },
         this.interval - (now - this.lastExecution)
       );
-    }
   }
 
   private execute(...args: unknown[]): void {

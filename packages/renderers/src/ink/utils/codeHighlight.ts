@@ -11,7 +11,7 @@ async function highlightCode(code: string, lang?: string): Promise<string> {
   }
 }
 
-const CODE_FENCE_RE = /```(\w*)\n([\s\S]*?)```/g;
+const CODE_FENCE_RE = /```(\w*)\n([\s\S]*?)```/gu;
 
 export async function highlightCodeFences(content: string): Promise<string> {
   const matches: { full: string; lang: string; code: string }[] = [];

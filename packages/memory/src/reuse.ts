@@ -16,6 +16,9 @@ function reuseRank(reuseClass: ReusableMemoryBlock['reuseClass']): number {
     case 'cold': {
       return 2;
     }
+    default: {
+      return 2;
+    }
   }
 }
 

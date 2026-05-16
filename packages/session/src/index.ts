@@ -67,7 +67,7 @@ export function createSessionSnapshot(input: CreateSessionSnapshotInput): Sessio
 
 export interface SessionStore {
   getState(): SessionState;
-  getValue<T = unknown>(key: string): T | undefined;
+  getValue(key: string): unknown;
   setValue(key: string, value: unknown): void;
 }
 
@@ -81,8 +81,8 @@ export const createSessionStore = (state: SessionState): SessionStore => {
         values: { ...values }
       };
     },
-    getValue<T = unknown>(key: string) {
-      return values[key] as T | undefined;
+    getValue(key: string) {
+      return values[key];
     },
     setValue(key, value) {
       values[key] = value;

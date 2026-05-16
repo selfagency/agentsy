@@ -7,14 +7,14 @@ import { createStreamingMarkdownRenderer } from './createStreamingMarkdownRender
 (vi.mock as any)('streaming-markdown', () => ({
   default: {
     removed: [],
-    parser_create: vi.fn((opts: { target: unknown }) => ({ target: opts.target })),
-    parser_end: vi.fn(),
-    parser_write: vi.fn()
+    parser_create: vi.fn<{ target: unknown }, { target: unknown }>((opts: { target: unknown }) => ({ target: opts.target })),
+    parser_end: vi.fn<() => void>(),
+    parser_write: vi.fn<() => void>()
   }
 }));
 
 (vi.mock as any)('dompurify', () => {
-  const mockSanitize = vi.fn((html: string | Element) => html);
+  const mockSanitize = vi.fn<(html: string | Element) => string>((html: string | Element) => html);
   return {
     default: {
       removed: [],
@@ -32,7 +32,7 @@ describe('Streaming Markdown Renderer', () => {
     vi.clearAllMocks();
     // Mock DOM element
     mockTarget = {
-      appendChild: vi.fn(),
+      appendChild: vi.fn<() => void>(),
       id: 'content',
       innerHTML: ''
     };
@@ -50,8 +50,8 @@ describe('Streaming Markdown Renderer', () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
     expect(renderer).toBeDefined();
-    expect(renderer.write).toBeDefined();
-    expect(renderer.end).toBeDefined();
+    expect(typeof renderer.write).toBe('function');
+    expect(typeof renderer.end).toBe('function');
   });
 
   it('accumulates markdown content', async () => {
@@ -92,7 +92,7 @@ describe('Streaming Markdown Renderer', () => {
   });
 
   it('calls onSecurityViolation on sanitization failure', async () => {
-    const onSecurityViolation = vi.fn();
+    const onSecurityViolation = vi.fn<(message: string) => void>();
     const renderer = createStreamingMarkdownRenderer({
       onSecurityViolation,
       target: mockTarget
@@ -106,7 +106,7 @@ describe('Streaming Markdown Renderer', () => {
   });
 
   it('calls onError callback on processing errors', async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<(error: Error) => void>();
     const renderer = createStreamingMarkdownRenderer({
       onError,
       target: mockTarget
@@ -141,7 +141,7 @@ describe('Streaming Markdown Renderer', () => {
 
   describe('onFinish callback', () => {
     it('calls onFinish via writeChunk when done=true', async () => {
-      const onFinish = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
         target: mockTarget
@@ -157,7 +157,7 @@ describe('Streaming Markdown Renderer', () => {
     });
 
     it('passes usage data to onFinish', async () => {
-      const onFinish = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
         target: mockTarget
@@ -177,7 +177,7 @@ describe('Streaming Markdown Renderer', () => {
     });
 
     it('prevents double onFinish invocation', async () => {
-      const onFinish = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
         target: mockTarget
@@ -198,7 +198,7 @@ describe('Streaming Markdown Renderer', () => {
     });
 
     it('calls onFinish in end() if not already called', async () => {
-      const onFinish = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
         target: mockTarget
@@ -214,7 +214,7 @@ describe('Streaming Markdown Renderer', () => {
 
   describe('Tool call callbacks', () => {
     it('accepts onToolCall callback', async () => {
-      const onToolCall = vi.fn();
+      const onToolCall = vi.fn<(part: unknown) => void>();
       const renderer = createStreamingMarkdownRenderer({
         onToolCall,
         target: mockTarget
@@ -227,7 +227,7 @@ describe('Streaming Markdown Renderer', () => {
     });
 
     it('accepts onToolCallDelta callback', async () => {
-      const onToolCallDelta = vi.fn();
+      const onToolCallDelta = vi.fn<(part: unknown) => void>();
       const renderer = createStreamingMarkdownRenderer({
         onToolCallDelta,
         target: mockTarget

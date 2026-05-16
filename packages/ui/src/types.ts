@@ -1,5 +1,7 @@
 import type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
 
+export type { ConversationEvent };
+
 /**
  * Represents a single UI message in a conversation.
  * Messages are immutable and events are applied to create new states.

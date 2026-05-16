@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createAgentFsAdapter } from './agentfs-adapter.js';
 import type { AgentFsLike } from './agentfs-adapter.js';
+import { createAgentFsAdapter } from './agentfs-adapter.js';
 
 describe(createAgentFsAdapter, () => {
   const mockManager = (): AgentFsLike => ({
-    delete: vi.fn(),
-    list: vi.fn(),
-    read: vi.fn(),
-    write: vi.fn()
+    delete: vi.fn<(path: string) => boolean>(),
+    list: vi.fn<() => { path: string; contentHash: string }[]>(),
+    read: vi.fn<(path: string) => { content: string; contentHash: string } | undefined>(),
+    write: vi.fn<(path: string, content: string) => { contentHash: string }>()
   });
 
   it('should handle successful read', () => {
@@ -16,6 +16,7 @@ describe(createAgentFsAdapter, () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'test.txt';
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.read).mockReturnValue({
       content: 'hello',
       contentHash: 'h1'
@@ -35,7 +36,8 @@ describe(createAgentFsAdapter, () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'missing.txt';
 
-    vi.mocked(manager.read).mockReturnValue();
+    // oxlint-disable-next-line typescript/unbound-method
+    vi.mocked(manager.read).mockClear();
 
     const result = adapter.read({ path });
     expect(result.ok).toBeFalsy();
@@ -47,6 +49,7 @@ describe(createAgentFsAdapter, () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'new.txt';
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.write).mockReturnValue({ contentHash: 'h2' });
 
     const result = adapter.write({ content: 'world', path });
@@ -57,6 +60,7 @@ describe(createAgentFsAdapter, () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.write).mockImplementation(() => {
       throw new Error('write failed');
     });
@@ -65,6 +69,7 @@ describe(createAgentFsAdapter, () => {
     expect(result.ok).toBeFalsy();
     expect(result.error).toBe('write failed');
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.write).mockImplementation(() => {
       throw new Error('string error');
     });
@@ -77,6 +82,7 @@ describe(createAgentFsAdapter, () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'gone.txt';
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.delete).mockReturnValue(true);
 
     const result = adapter.delete({ path });
@@ -88,6 +94,7 @@ describe(createAgentFsAdapter, () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'nonexistent.txt';
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.delete).mockReturnValue(false);
 
     const result = adapter.delete({ path });
@@ -100,6 +107,7 @@ describe(createAgentFsAdapter, () => {
     const adapter = createAgentFsAdapter(manager);
     const entries = [{ contentHash: 'ha', path: 'a.txt' }];
 
+    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(manager.list).mockReturnValue(entries);
 
     const result = adapter.list();

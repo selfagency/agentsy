@@ -8,7 +8,7 @@ describe(createDedupStore, () => {
     const store = createDedupStore();
     const fp = store.intern('hello');
     expect(fp.algorithm).toBe('blake3');
-    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/u);
   });
 
   it('increments refCount on duplicate intern', () => {

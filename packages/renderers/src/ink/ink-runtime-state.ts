@@ -2,6 +2,9 @@ import { randomUUID } from 'node:crypto';
 
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
+// @ts-ignore ink has no default export, but we need it for type references
+import type typeInk from 'ink';
+import type typeReact from 'react';
 
 export interface InkToolCallState {
   id: string;
@@ -37,8 +40,8 @@ export interface InkRuntimeControllerOptions {
 }
 
 export interface InkRenderModules {
-  ink: typeof import('ink');
-  react: typeof import('react');
+  ink: typeof typeInk;
+  react: typeof typeReact;
 }
 
 export const createInkRuntimeController = (options: InkRuntimeControllerOptions): InkRuntimeController => {
@@ -69,7 +72,7 @@ export const createInkRuntimeController = (options: InkRuntimeControllerOptions)
       stateRef.toolCalls.push({
         arguments: part.parameters,
         done: true,
-        id: part.id || randomUUID(),
+        id: part.id ?? randomUUID(),
         name: part.name
       });
       forceUpdateRef.current();

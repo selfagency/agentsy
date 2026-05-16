@@ -22,7 +22,7 @@ export interface EntityExtractor {
   extract(content: string): EntityExtractionResult;
 }
 
-const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/g;
+const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/gu;
 
 function classifyEntity(name: string): EntityKind {
   if (/(Inc|Corp|LLC|Ltd|Foundation)$/u.test(name)) {
@@ -45,7 +45,7 @@ function toConfidence(occurrences: number): number {
 }
 
 function normalizeSentence(sentence: string): string {
-  return sentence.replaceAll(/\s+/g, ' ').trim();
+  return sentence.replaceAll(/\s+/gu, ' ').trim();
 }
 
 export function createEntityExtractor(): EntityExtractor {

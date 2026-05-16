@@ -46,9 +46,16 @@ function runDiagnostics(): SandboxDiagnosticsResult {
   };
 }
 
-const defaultIo = {
-  stderr: (msg: string) => console.error(msg),
-  stdout: (msg: string) => console.log(msg)
+const defaultIo: {
+  stderr: (msg: string) => void;
+  stdout: (msg: string) => void;
+} = {
+  stderr: (msg: string): void => {
+    console.error(msg);
+  },
+  stdout: (msg: string): void => {
+    console.log(msg);
+  }
 };
 
 export function runSandboxDiagnosticsCommand(argv: readonly string[], io: CliIO = defaultIo): number {

@@ -1,15 +1,15 @@
-import { createRequire } from 'node:module';
+import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
 export function isSlackAdapterAvailable(): boolean {
-  const DISCOVERED = Symbol.for('@agentsy/connectors/slack/discovered');
+  const DISCOVERED = Symbol.for("@agentsy/connectors/slack/discovered");
   if (Reflect.has(globalThis, DISCOVERED)) {
     return true;
   }
 
   try {
-    require.resolve('@slack/bolt');
+    require.resolve("@slack/bolt");
     Reflect.set(globalThis, DISCOVERED, true);
     return true;
   } catch {
@@ -18,30 +18,22 @@ export function isSlackAdapterAvailable(): boolean {
 }
 
 export class SlackAdapterNotAvailableError extends Error {
-  constructor() {
-    super('SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.');
-    Object.defineProperty(this, 'name', {
-      configurable: true,
-      value: 'SlackAdapterNotAvailableError'
-    });
-    Object.defineProperty(this, 'message', {
-      configurable: true,
-      value: 'SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.'
-    });
-  }
+  name = "SlackAdapterNotAvailableError";
+  message =
+    "SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.";
 }
 
 export const SlackAdapter = {
-  connect: async () => {
+  connect: () => {
     throw new SlackAdapterNotAvailableError();
   },
-  disconnect: async () => {
+  disconnect: () => {
     throw new SlackAdapterNotAvailableError();
   },
   onMessage: () => {
     throw new SlackAdapterNotAvailableError();
   },
-  send: async () => {
+  send: () => {
     throw new SlackAdapterNotAvailableError();
-  }
+  },
 };

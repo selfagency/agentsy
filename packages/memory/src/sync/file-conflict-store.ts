@@ -60,14 +60,20 @@ class FileConflictStore implements ConflictStore {
   async #readEnvelope(): Promise<StoredConflictEnvelope> {
     try {
       const content = await readFile(this.options.filePath, 'utf-8');
-      const parsed = JSON.parse(content) as Partial<StoredConflictEnvelope>;
+      const parsed: unknown = JSON.parse(content);
 
-      if (!Array.isArray(parsed.conflicts)) {
+      if (!isObject(parsed)) {
+        return createEmptyEnvelope();
+      }
+
+      const envelope = parsed as Partial<StoredConflictEnvelope>;
+
+      if (!Array.isArray(envelope.conflicts)) {
         return createEmptyEnvelope();
       }
 
       return {
-        conflicts: sortConflicts(parsed.conflicts).map(conflict => cloneConflict(conflict)),
+        conflicts: sortConflicts(envelope.conflicts).map(conflict => cloneConflict(conflict)),
         version: 1
       };
     } catch (error) {
@@ -77,6 +83,10 @@ class FileConflictStore implements ConflictStore {
 
       throw error;
     }
+  }
+
+  function isObject(value: unknown): value is Record<unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   async #writeEnvelope(envelope: StoredConflictEnvelope): Promise<void> {

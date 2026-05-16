@@ -13,7 +13,8 @@ export class AgentsyError extends Error {
     this.code = code;
     this.details = details ?? {};
 
-    // Maintains proper stack trace
+    // Maintains proper stack trace - error is intentional for custom error classes
+    // oxlint-disable-next-line unicorn/no-useless-error-capture-stack-trace
     Error.captureStackTrace(this, this.constructor);
   }
 

@@ -77,7 +77,7 @@ export class WorkflowMonitor {
     if (!this.context.startTime) {
       return null;
     }
-    const endTime = this.context.endTime || new Date();
+    const endTime = this.context.endTime ?? new Date();
     return endTime.getTime() - this.context.startTime.getTime();
   }
 
@@ -181,7 +181,7 @@ async function executeNode(
   return result;
 }
 
-function executeTaskNode(node: RuntimeTaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
+ async function executeTaskNode(node: RuntimeTaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
   // Find suitable agent
   const availableAgents = registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
 
@@ -244,9 +244,9 @@ async function executeDecisionNode(
   const decision =
     condition === 'true'
       ? true
-      : condition === 'false'
+      : (condition === 'false'
         ? false
-        : Boolean(nodeResults.get(condition.startsWith('result:') ? condition.slice('result:'.length) : condition));
+        : Boolean(nodeResults.get(condition.startsWith('result:') ? condition.slice('result:'.length) : condition)));
 
   const selectedBranch = decision ? node.trueBranch : node.falseBranch;
   const results: unknown[] = [];
@@ -312,7 +312,7 @@ async function executeParallelNode(
     await runNext();
   };
 
-  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) }, () => runNext());
+  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) },  async () => runNext());
   await Promise.all(workers);
 
   if (errors.length > 0) {

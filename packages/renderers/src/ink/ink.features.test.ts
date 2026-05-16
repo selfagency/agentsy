@@ -1,22 +1,23 @@
 import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type * as typeInk from 'ink';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createInkRenderer } from './createInkRenderer.js';
 import { darkTheme } from './themes/index.js';
 
 vi.mock(import('cli-markdown'), () => ({
-  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`)
+  default: vi.fn<(markdown: string) => string>((markdown: string) => `[ANSI:${markdown}]`)
 }));
 
 vi.mock(import('ink'), async () => {
-  const actual = await vi.importActual<typeof import('ink')>('ink');
+  const actual = await vi.importActual('ink');
   return {
     ...actual,
-    render: vi.fn((_component: React.ReactElement) => ({
-      clear: vi.fn(),
+    render: vi.fn<(component: React.ReactElement) => {}>((_component: React.ReactElement) => ({
+      clear: vi.fn<() => void>(),
       lastFrame: () => '[mock frame]',
-      rerender: vi.fn(),
-      unmount: vi.fn()
+      rerender: vi.fn<() => void>(),
+      unmount: vi.fn<() => void>()
     }))
   };
 });
@@ -28,8 +29,8 @@ describe('Ink Renderer features', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    onWarning = vi.fn();
-    onFinish = vi.fn();
+    onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
+    onFinish = vi.fn<() => void>();
     processor = new LLMStreamProcessor({
       enforcePrivacyTags: true,
       onWarning,
@@ -108,7 +109,7 @@ describe('Ink Renderer features', () => {
 
   describe('Keyboard callbacks', () => {
     it('onInterrupt callback is accepted when enabled', async () => {
-      const onInterrupt = vi.fn();
+      const onInterrupt = vi.fn<() => void>();
 
       const renderer = await createInkRenderer({
         keyboard: {
@@ -128,7 +129,7 @@ describe('Ink Renderer features', () => {
     });
 
     it('onCancel callback is accepted when enabled', async () => {
-      const onCancel = vi.fn();
+      const onCancel = vi.fn<() => void>();
 
       const renderer = await createInkRenderer({
         keyboard: {

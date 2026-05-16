@@ -4,7 +4,7 @@ import { createPlainTextRenderer } from './createPlainTextRenderer.js';
 
 describe('Plain Text Renderer', () => {
   it('renders text on flush', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createPlainTextRenderer({ output });
 
     await renderer.write('Hello ');
@@ -19,8 +19,8 @@ describe('Plain Text Renderer', () => {
   });
 
   it('calls onError callback on processing errors', async () => {
-    const onError = vi.fn();
-    const output = vi.fn();
+    const onError = vi.fn<(error: Error) => void>();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createPlainTextRenderer({
       onError,
       output
@@ -37,8 +37,8 @@ describe('Plain Text Renderer', () => {
 
   it('handles writable stream output', async () => {
     const mockStream = {
-      end: vi.fn(),
-      write: vi.fn()
+      end: vi.fn<() => void>(),
+      write: vi.fn<(data: string) => void>()
     };
 
     const renderer = createPlainTextRenderer({
@@ -63,12 +63,12 @@ describe('Plain Text Renderer', () => {
 
     // Should not throw; just verify the factory works with defaults
     expect(renderer).toBeDefined();
-    expect(renderer.write).toBeDefined();
-    expect(renderer.end).toBeDefined();
+    expect(typeof renderer.write).toBe('function');
+    expect(typeof renderer.end).toBe('function');
   });
 
   it('processes multiple chunks correctly', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createPlainTextRenderer({ output });
 
     await renderer.write('Chunk 1 ');
@@ -84,7 +84,7 @@ describe('Plain Text Renderer', () => {
   });
 
   it('respects showThinking flag', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createPlainTextRenderer({
       output,
       showThinking: true
@@ -98,7 +98,7 @@ describe('Plain Text Renderer', () => {
   });
 
   it('uses custom thinking prefix when provided', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createPlainTextRenderer({
       output,
       showThinking: true,
@@ -114,8 +114,8 @@ describe('Plain Text Renderer', () => {
 
   describe('onFinish callback', () => {
     it('calls onFinish via writeChunk when done=true', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createPlainTextRenderer({
         onFinish,
         output
@@ -131,8 +131,8 @@ describe('Plain Text Renderer', () => {
     });
 
     it('passes usage data to onFinish', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createPlainTextRenderer({
         onFinish,
         output
@@ -152,8 +152,8 @@ describe('Plain Text Renderer', () => {
     });
 
     it('calls onFinish in end() if not already called', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createPlainTextRenderer({
         onFinish,
         output
@@ -169,8 +169,8 @@ describe('Plain Text Renderer', () => {
 
   describe('Tool call callbacks', () => {
     it('accepts onToolCall callback', async () => {
-      const onToolCall = vi.fn();
-      const output = vi.fn();
+      const onToolCall = vi.fn<(part: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createPlainTextRenderer({
         onToolCall,
         output
@@ -183,8 +183,8 @@ describe('Plain Text Renderer', () => {
     });
 
     it('accepts onToolCallDelta callback', async () => {
-      const onToolCallDelta = vi.fn();
-      const output = vi.fn();
+      const onToolCallDelta = vi.fn<(part: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createPlainTextRenderer({
         onToolCallDelta,
         output

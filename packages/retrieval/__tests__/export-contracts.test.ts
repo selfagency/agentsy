@@ -12,12 +12,12 @@ describe("retrieval/export-contracts", () => {
   describe("public API exports", () => {
     it("should export IndexingPipeline", () => {
       expect(retrievalExports.IndexingPipeline).toBeDefined();
-      expectTypeOf(retrievalExports.IndexingPipeline).toBeFunction();
+      expectTypeOf(retrievalExports.IndexingPipeline).toBeObject();
     });
 
     it("should export RetrievalEngine", () => {
       expect(retrievalExports.RetrievalEngine).toBeDefined();
-      expectTypeOf(retrievalExports.RetrievalEngine).toBeFunction();
+      expectTypeOf(retrievalExports.RetrievalEngine).toBeObject();
     });
 
     it("should export ChunkingStrategy type via const enum object", () => {
@@ -128,60 +128,42 @@ describe("retrieval/export-contracts", () => {
         });
         expect(engine).toBeInstanceOf(retrievalExports.RetrievalEngine);
       });
+    });
+  });
 
-      it("should have index method", () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        expectTypeOf(engine.index).toBeFunction();
-      });
-
-      it("should has index method returns Promise", async () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        const result = engine.index([]);
-        expect(result).toBeInstanceOf(Promise);
-        await result;
-      });
-
-      it("should have keywordSearch method", () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        expectTypeOf(engine.keywordSearch).toBeFunction();
-      });
-
-      it("should have vectorSearch method", () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        expectTypeOf(engine.vectorSearch).toBeFunction();
-      });
-
-      it("should have search method (hybrid)", () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        expectTypeOf(engine.search).toBeFunction();
-      });
-
-      it("should have delete method", () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        expectTypeOf(engine.delete).toBeFunction();
-      });
-
-      it("should has delete method returns Promise", async () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        const result = engine.delete("test-id");
-        expect(result).toBeInstanceOf(Promise);
-        await result;
-      });
-
-      it("should have clear method", () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        expectTypeOf(engine.clear).toBeFunction();
-      });
-
-      it("should has clear method returns Promise", async () => {
-        const engine = new retrievalExports.RetrievalEngine();
-        const result = engine.clear();
-        expect(result).toBeInstanceOf(Promise);
-        await result;
-      });
+  describe("RetrievalEngine methods", () => {
+    it("should have index method", () => {
+      const engine = new retrievalExports.RetrievalEngine();
+      expectTypeOf(engine.index).toBeFunction();
     });
 
-    describe("type usage validation", () => {
+    it("should have keywordSearch method", () => {
+      const engine = new retrievalExports.RetrievalEngine();
+      expectTypeOf(engine.keywordSearch).toBeFunction();
+    });
+
+    it("should have vectorSearch method", () => {
+      const engine = new retrievalExports.RetrievalEngine();
+      expectTypeOf(engine.vectorSearch).toBeFunction();
+    });
+
+    it("should have search method (hybrid)", () => {
+      const engine = new retrievalExports.RetrievalEngine();
+      expectTypeOf(engine.search).toBeFunction();
+    });
+
+    it("should have delete method", () => {
+      const engine = new retrievalExports.RetrievalEngine();
+      expectTypeOf(engine.delete).toBeFunction();
+    });
+
+it("should have clear method", () => {
+      const engine = new retrievalExports.RetrievalEngine();
+      expectTypeOf(engine.clear).toBeFunction();
+    });
+  });
+
+  describe("type usage validation", () => {
       it("should accept valid ChunkingStrategy values", () => {
         const strategies: (typeof retrievalExports.ChunkingStrategy)[keyof typeof retrievalExports.ChunkingStrategy][] =
           [

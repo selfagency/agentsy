@@ -69,7 +69,7 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   const aKeys = aEntries.map(([key]) => key);
   const bKeys = bEntries.map(([key]) => key);
 
-  if (objectKeysMatch(aKeys, bKeys) === false) {
+  if (!objectKeysMatch(aKeys, bKeys)) {
     return false;
   }
 
@@ -504,7 +504,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           runId,
           stepIndex: state.steps.length,
           timestamp: new Date().toISOString(),
-          type: EventType.STEP_STARTED as const
+          type: EventType.STEP_STARTED
         },
         threadId
       ),
@@ -528,7 +528,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           runId,
           stepIndex: state.stepIndex,
           timestamp: new Date().toISOString(),
-          type: EventType.STEP_FINISHED as const
+          type: EventType.STEP_FINISHED
         },
         threadId
       ),
@@ -568,7 +568,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
           error: { message: errorMessage },
           runId,
           timestamp: new Date().toISOString(),
-          type: EventType.RUN_ERROR as const
+          type: EventType.RUN_ERROR
         },
         threadId
       ),
@@ -588,7 +588,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
-    const runId = options.runId || createRunId();
+    const runId = options.runId ?? createRunId();
     const { threadId, onAgUiEvent } = options;
 
     const state: AgentLoopState = {
@@ -620,7 +620,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
         {
           runId,
           timestamp: new Date().toISOString(),
-          type: EventType.RUN_STARTED as const
+          type: EventType.RUN_STARTED
         },
         threadId
       ),
@@ -673,7 +673,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
             runId,
             timestamp: new Date().toISOString(),
             type: EventType.RUN_FINISHED as const
-          } as const,
+          },
           threadId
         ),
         'RUN_FINISHED',

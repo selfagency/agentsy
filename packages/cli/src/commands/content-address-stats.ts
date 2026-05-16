@@ -3,8 +3,12 @@ import { createDedupStore, migrateContentToDedupStore } from '@agentsy/memory';
 import type { CliIO } from '../index.js';
 
 const defaultIo = {
-  stderr: (msg: string) => console.error(msg),
-  stdout: (msg: string) => console.log(msg)
+  stderr: (msg: string): void => {
+    console.error(msg);
+  },
+  stdout: (msg: string): void => {
+    console.log(msg);
+  }
 };
 
 export function runContentAddressStatsCommand(argv: readonly string[], io: CliIO = defaultIo): number {

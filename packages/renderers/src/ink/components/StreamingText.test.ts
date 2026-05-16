@@ -6,7 +6,7 @@ import { StreamingText } from './StreamingText.js';
 
 // Mock cli-markdown
 vi.mock(import('cli-markdown'), () => ({
-  default: vi.fn((text: string) => `[formatted:${text}]`)
+  default: vi.fn<(text: string) => string>((text: string) => `[formatted:${text}]`)
 }));
 
 describe('StreamingText Component', () => {

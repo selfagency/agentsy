@@ -5,7 +5,7 @@ import { createCliRenderer } from './createCliRenderer.js';
 
 // Mock cli-markdown module
 vi.mock(import('cli-markdown'), () => ({
-  default: vi.fn((markdown: string) => `[FORMATTED]\n${markdown}\n[/FORMATTED]`)
+  default: vi.fn<(markdown: string) => string>((markdown: string) => `[FORMATTED]\n${markdown}\n[/FORMATTED]`)
 }));
 
 describe('CLI Renderer', () => {
@@ -14,7 +14,7 @@ describe('CLI Renderer', () => {
   });
 
   it('formats markdown on end via cli-markdown', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createCliRenderer({ output });
 
     await renderer.write('# Heading\n\n');
@@ -29,7 +29,7 @@ describe('CLI Renderer', () => {
   });
 
   it('handles thinking blocks with blockquote style', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createCliRenderer({
       output,
       showThinking: true,
@@ -43,7 +43,7 @@ describe('CLI Renderer', () => {
   });
 
   it('suppresses thinking blocks with suppress style', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createCliRenderer({
       output,
       showThinking: true,
@@ -58,8 +58,8 @@ describe('CLI Renderer', () => {
 
   it('handles writable stream output', async () => {
     const mockStream = {
-      end: vi.fn(),
-      write: vi.fn()
+      end: vi.fn<() => void>(),
+      write: vi.fn<(data: string) => void>()
     };
 
     const renderer = createCliRenderer({
@@ -74,8 +74,8 @@ describe('CLI Renderer', () => {
   });
 
   it('calls onError callback on errors', async () => {
-    const onError = vi.fn();
-    const output = vi.fn();
+    const onError = vi.fn<(error: Error) => void>();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createCliRenderer({
       onError,
       output
@@ -89,7 +89,7 @@ describe('CLI Renderer', () => {
   });
 
   it('processes empty content gracefully', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createCliRenderer({ output });
 
     await renderer.write('');
@@ -100,7 +100,7 @@ describe('CLI Renderer', () => {
   });
 
   it('accumulates multiple write calls', async () => {
-    const output = vi.fn();
+    const output = vi.fn<(data: string) => void>();
     const renderer = createCliRenderer({ output });
 
     await renderer.write('## Section 1\n\n');
@@ -117,8 +117,8 @@ describe('CLI Renderer', () => {
 
   describe('onFinish callback', () => {
     it('calls onFinish via writeChunk when done=true', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createCliRenderer({
         onFinish,
         output
@@ -134,8 +134,8 @@ describe('CLI Renderer', () => {
     });
 
     it('passes usage data to onFinish', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createCliRenderer({
         onFinish,
         output
@@ -155,8 +155,8 @@ describe('CLI Renderer', () => {
     });
 
     it('prevents double onFinish invocation', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createCliRenderer({
         onFinish,
         output
@@ -177,8 +177,8 @@ describe('CLI Renderer', () => {
     });
 
     it('calls onFinish in end() if not already called', async () => {
-      const onFinish = vi.fn();
-      const output = vi.fn();
+      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createCliRenderer({
         onFinish,
         output
@@ -194,8 +194,8 @@ describe('CLI Renderer', () => {
 
   describe('Tool call callbacks', () => {
     it('accepts onToolCall callback', async () => {
-      const onToolCall = vi.fn();
-      const output = vi.fn();
+      const onToolCall = vi.fn<(part: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createCliRenderer({
         onToolCall,
         output
@@ -208,8 +208,8 @@ describe('CLI Renderer', () => {
     });
 
     it('accepts onToolCallDelta callback', async () => {
-      const onToolCallDelta = vi.fn();
-      const output = vi.fn();
+      const onToolCallDelta = vi.fn<(part: unknown) => void>();
+      const output = vi.fn<(data: string) => void>();
       const renderer = createCliRenderer({
         onToolCallDelta,
         output
@@ -225,7 +225,7 @@ describe('CLI Renderer', () => {
       await testOnStepCall(options =>
         createCliRenderer({
           ...options,
-          output: vi.fn() as unknown as (text: string) => void
+          output: vi.fn<(data: string) => void>()
         })
       );
     });

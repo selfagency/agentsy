@@ -57,7 +57,7 @@ function createScheduler(agentId: string): TaskScheduler {
   return {
     async schedule<T>(task: (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] }) {
       if (typeof task === 'function') {
-        return task();
+        return await task();
       }
 
       return {

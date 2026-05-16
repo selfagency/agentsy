@@ -6,8 +6,8 @@ export interface ContentProcessor {
   extractEntities(content: string): string[];
 }
 
-const CODE_BLOCK_PATTERN = /```[\s\S]*?```/g;
-const ENTITY_PATTERN = /\b[A-Z][A-Za-z0-9]*\b/g;
+const CODE_BLOCK_PATTERN = /```[\s\S]*?```/gu;
+const ENTITY_PATTERN = /\b[A-Z][A-Za-z0-9]*\b/gu;
 
 function normalizeWhitespace(content: string): string {
   return content.replaceAll('\r\n', '\n').trim();
@@ -70,7 +70,7 @@ export function createContentProcessor(): ContentProcessor {
 
       return normalizeWhitespace(content)
         .replace(CODE_BLOCK_PATTERN, ' ')
-        .replaceAll(/[`*_#>-]/g, ' ');
+        .replaceAll(/[`*_#>-]/gu, ' ');
     }
   };
 }

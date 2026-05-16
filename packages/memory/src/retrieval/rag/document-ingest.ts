@@ -11,7 +11,7 @@ function stableHash(input: string): string {
 }
 
 function splitIntoChunks(content: string, maxChunkSize = 280): string[] {
-  const normalized = content.replaceAll(/\s+/gu, ' ').trim();
+  const normalized = content.replaceAll(/\s+/giu, ' ').trim();
   if (normalized.length <= maxChunkSize) {
     return normalized.length === 0 ? [] : [normalized];
   }

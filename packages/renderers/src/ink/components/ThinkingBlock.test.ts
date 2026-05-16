@@ -1,19 +1,20 @@
 import React from 'react';
+import type * as typeInk from 'ink';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { darkTheme, defaultTheme } from '../themes/index.js';
 import { ThinkingBlock } from './ThinkingBlock.js';
 
 // Mock Ink render to avoid terminal setup in test environment
-vi.mock('ink', async () => {
+vi.mock(import('ink'), async () => {
   const actual = await vi.importActual('ink');
   return {
     ...actual,
-    render: vi.fn(() => ({
-      clear: vi.fn(),
+    render: vi.fn<() => {}>(() => ({
+      clear: vi.fn<() => void>(),
       lastFrame: () => '',
-      rerender: vi.fn(),
-      unmount: vi.fn()
+      rerender: vi.fn<() => void>(),
+      unmount: vi.fn<() => void>()
     }))
   };
 });

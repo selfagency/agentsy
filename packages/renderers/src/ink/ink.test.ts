@@ -1,23 +1,24 @@
 import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type * as typeInk from 'ink';
 import { afterEach, beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
 
 import { createInkRenderer } from './createInkRenderer.js';
 
 // Mock cli-markdown for consistent ANSI output in tests
 vi.mock(import('cli-markdown'), () => ({
-  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`)
+  default: vi.fn<(markdown: string) => string>((markdown: string) => `[ANSI:${markdown}]`)
 }));
 
 // Mock Ink's render to avoid terminal setup in test environment
 vi.mock(import('ink'), async () => {
-  const actual = await vi.importActual<typeof import('ink')>('ink');
+  const actual = await vi.importActual('ink');
   return {
     ...actual,
-    render: vi.fn((_component: React.ReactElement) => ({
-      clear: vi.fn(),
+    render: vi.fn<(component: React.ReactElement) => {}>((_component: React.ReactElement) => ({
+      clear: vi.fn<() => void>(),
       lastFrame: () => '[mock frame]',
-      rerender: vi.fn(),
-      unmount: vi.fn()
+      rerender: vi.fn<() => void>(),
+      unmount: vi.fn<() => void>()
     }))
   };
 });
@@ -29,8 +30,8 @@ describe('Ink Renderer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    onWarning = vi.fn();
-    onFinish = vi.fn();
+    onWarning = vi.fn<(message: string, context?: Record<string, unknown>) => void>();
+    onFinish = vi.fn<() => void>();
     processor = new LLMStreamProcessor({
       enforcePrivacyTags: true,
       onWarning,
