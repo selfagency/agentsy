@@ -156,25 +156,25 @@ From `@agentsy/cli commands.perf.test.ts`:
 ### Output Compression
 
 ```typescript
-import { compressOutput } from '@agentsy/tokens';
+import { compressOutput } from "@agentsy/tokens";
 
 // Full-level compression (12% reduction typical)
-const result = compressOutput(content, { level: 'full', preserve: ['code'] });
+const result = compressOutput(content, { level: "full", preserve: ["code"] });
 console.log(`${result.compressionRatio * 100}% reduced`);
 
 // Ultra-level compression (17% reduction typical)
-const aggressive = compressOutput(content, { level: 'ultra' });
+const aggressive = compressOutput(content, { level: "ultra" });
 ```
 
 ### Memory File Compression
 
 ```typescript
-import { compressMemoryFile } from '@agentsy/core/context';
+import { compressMemoryFile } from "@agentsy/core/context";
 
 // Compress memory file with backup
-const result = await compressMemoryFile('/path/to/file.md', {
+const result = await compressMemoryFile("/path/to/file.md", {
   backup: true, // Creates file.md.original.md
-  writeCompressed: true
+  writeCompressed: true,
 });
 console.log(`Saved ${result.savingsRatio * 100}%`);
 console.log(`Backup: ${result.backupPath}`);

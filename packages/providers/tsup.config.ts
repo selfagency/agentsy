@@ -1,27 +1,27 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    adapters: 'src/adapters/index.ts',
-    normalizers: 'src/normalizers/index.ts',
-    pipeline: 'src/pipeline/index.ts',
-    'universal-client': 'src/universal-client/index.ts'
-  },
-  format: ['esm', 'cjs'],
-  dts: true,
   clean: true,
-  sourcemap: true,
+  dts: true,
+  entry: {
+    adapters: "src/adapters/index.ts",
+    index: "src/index.ts",
+    normalizers: "src/normalizers/index.ts",
+    pipeline: "src/pipeline/index.ts",
+    "universal-client": "src/universal-client/index.ts",
+  },
   external: [
-    '@agentsy/core',
-    '@agentsy/core/processor',
-    '@agentsy/core/structured',
-    '@agentsy/core/tool-calls',
-    '@agentsy/types',
-    'zod'
+    "@agentsy/core",
+    "@agentsy/core/processor",
+    "@agentsy/core/structured",
+    "@agentsy/core/tool-calls",
+    "@agentsy/types",
+    "zod",
   ],
-  splitting: false,
-  treeshake: true,
+  format: ["esm", "cjs"],
   minify: false,
-  target: 'node18'
+  sourcemap: true,
+  splitting: false,
+  target: "node18",
+  treeshake: true,
 });

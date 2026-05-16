@@ -22,50 +22,56 @@ import {
   createQueryPlanner,
   createRAGConfig,
   packEvidenceForContext,
-  rerankResults
-} from '@agentsy/memory';
-import { buildRuntimeMemoryContextXml, injectRuntimeMemoryContext } from '@agentsy/runtime';
+  rerankResults,
+} from "@agentsy/memory";
+import {
+  buildRuntimeMemoryContextXml,
+  injectRuntimeMemoryContext,
+} from "@agentsy/runtime";
 
-export async function buildPromptWithMemory(query: string, promptBody: string): Promise<string> {
+export async function buildPromptWithMemory(
+  query: string,
+  promptBody: string
+): Promise<string> {
   const config = createRAGConfig({
     localOnly: true,
-    web: { enabled: false }
+    web: { enabled: false },
   });
 
   const kb = createKnowledgeBaseManager();
 
   await kb.ingest({
-    sourceId: 'wiki:oauth-policy',
-    sourceType: 'wiki',
-    title: 'OAuth policy',
-    content: 'Use short-lived access tokens and rotate refresh tokens.',
-    metadata: { entities: ['oauth', 'token', 'refresh'] }
+    sourceId: "wiki:oauth-policy",
+    sourceType: "wiki",
+    title: "OAuth policy",
+    content: "Use short-lived access tokens and rotate refresh tokens.",
+    metadata: { entities: ["oauth", "token", "refresh"] },
   });
 
   const planner = createQueryPlanner();
-  const planned = planner.plan({ query, scope: 'project', limit: 5 });
+  const planned = planner.plan({ query, scope: "project", limit: 5 });
 
   const retrieved = await kb.search({
     query: planned.query,
     scope: planned.scope,
     limit: planned.limit,
-    weights: config.weights
+    weights: config.weights,
   });
 
   const reranked = rerankResults(retrieved, config.weights);
   const packed = packEvidenceForContext(reranked, {
     maxTokens: 180,
-    includeCitations: true
+    includeCitations: true,
   });
 
   const contextXml = buildRuntimeMemoryContextXml(
-    packed.items.map(item => ({
+    packed.items.map((item) => ({
       id: item.id,
-      scope: 'project',
+      scope: "project",
       score: item.score,
       title: item.title,
       content: item.content,
-      citations: item.citations
+      citations: item.citations,
     }))
   );
 

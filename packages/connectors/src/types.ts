@@ -26,7 +26,7 @@ export interface OutboundMessage {
  */
 export interface Attachment {
   id: string;
-  type: 'image' | 'video' | 'audio' | 'document' | 'other';
+  type: "image" | "video" | "audio" | "document" | "other";
   url?: string;
   filename?: string;
   mimeType?: string;
@@ -84,25 +84,25 @@ export interface BuiltInCommand {
  * Built-in commands available via connector gateway
  */
 export const BUILT_IN_COMMANDS: readonly BuiltInCommand[] = [
-  { command: '/status', description: 'Show current session status' },
-  { command: '/new', description: 'Start a new conversation' },
-  { command: '/reset', description: 'Reset the current conversation' },
-  { command: '/compact', description: 'Compact conversation history' },
-  { command: '/think', description: 'Toggle verbose thinking' },
-  { command: '/verbose', description: 'Add verbose output' },
-  { command: '/usage', description: 'Show usage statistics' }
+  { command: "/status", description: "Show current session status" },
+  { command: "/new", description: "Start a new conversation" },
+  { command: "/reset", description: "Reset the current conversation" },
+  { command: "/compact", description: "Compact conversation history" },
+  { command: "/think", description: "Toggle verbose thinking" },
+  { command: "/verbose", description: "Add verbose output" },
+  { command: "/usage", description: "Show usage statistics" },
 ] as const;
 
 /**
  * Built-in command type
  */
-export type BuiltInCommandType = (typeof BUILT_IN_COMMANDS)[number]['command'];
+export type BuiltInCommandType = (typeof BUILT_IN_COMMANDS)[number]["command"];
 
 /**
  * Check if a message is a built-in command
  */
 export function isBuiltInCommand(text: string): text is BuiltInCommandType {
-  return BUILT_IN_COMMANDS.some(cmd => text.startsWith(cmd.command));
+  return BUILT_IN_COMMANDS.some((cmd) => text.startsWith(cmd.command));
 }
 
 /**
@@ -110,10 +110,10 @@ export function isBuiltInCommand(text: string): text is BuiltInCommandType {
  */
 export function stripXmlContextTags(text: string): string {
   return text
-    .replace(/<SYSTEM>[\s\S]*?<\/SYSTEM>/gi, '')
-    .replace(/<system>[\s\S]*?<\/system>/gi, '')
-    .replace(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/gi, '')
-    .replace(/<instruction>[\s\S]*?<\/instruction>/gi, '')
-    .replace(/<THOUGHT>[\s\S]*?<\/THOUGHT>/gi, '')
-    .replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+    .replaceAll(/<SYSTEM>[\s\S]*?<\/SYSTEM>/gi, "")
+    .replaceAll(/<system>[\s\S]*?<\/system>/gi, "")
+    .replaceAll(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/gi, "")
+    .replaceAll(/<instruction>[\s\S]*?<\/instruction>/gi, "")
+    .replaceAll(/<THOUGHT>[\s\S]*?<\/THOUGHT>/gi, "")
+    .replaceAll(/<thought>[\s\S]*?<\/thought>/gi, "");
 }

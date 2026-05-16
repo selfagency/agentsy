@@ -13,11 +13,12 @@ import type {
   ObservabilityEngine,
   ObservabilitySink,
   RedactionPolicy,
-  Span
-} from '../core/types.js';
-import { LoggerImpl, type LogLevel, type LoggerConfig } from './logger.js';
-import { MeterImpl } from './meter.js';
-import { TracerImpl } from './tracer.js';
+  Span,
+} from "../core/types.js";
+import { LoggerImpl } from "./logger.js";
+import type { LogLevel, LoggerConfig } from "./logger.js";
+import { MeterImpl } from "./meter.js";
+import { TracerImpl } from "./tracer.js";
 
 /**
  * Configuration for initializing the observability engine
@@ -30,7 +31,7 @@ export interface ObservabilityEngineConfig {
   /** Tracing configuration */
   tracing?: {
     /** Sampling strategy ('always_on', 'never', 'parentBased') */
-    sampling?: 'always_on' | 'never' | 'parentBased';
+    sampling?: "always_on" | "never" | "parentBased";
     /** Jaeger endpoint for distributed tracing */
     jaegerEndpoint?: string;
   };
@@ -44,7 +45,7 @@ export interface ObservabilityEngineConfig {
   /** Logging configuration */
   logging?: {
     /** Minimum log level to output (INFO, DEBUG, WARN, ERROR) */
-    minLevel?: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR';
+    minLevel?: "INFO" | "DEBUG" | "WARN" | "ERROR";
     /** Whether to include timestamps in logs */
     includeTimestamp?: boolean;
   };
@@ -52,9 +53,9 @@ export interface ObservabilityEngineConfig {
 
 const LOG_LEVEL_MAP: Record<string, LogLevel> = {
   DEBUG: 0,
+  ERROR: 3,
   INFO: 1,
   WARN: 2,
-  ERROR: 3
 };
 export { LOG_LEVEL_MAP };
 
@@ -74,9 +75,10 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     this.tracer = new TracerImpl();
     this.meter = new MeterImpl();
 
-    const minLevel = LOG_LEVEL_MAP[config.logging?.minLevel?.toUpperCase() ?? ''];
+    const minLevel =
+      LOG_LEVEL_MAP[config.logging?.minLevel?.toUpperCase() ?? ""];
     const loggerConfig: LoggerConfig = {
-      includeTimestamp: config.logging?.includeTimestamp ?? true
+      includeTimestamp: config.logging?.includeTimestamp ?? true,
     };
     if (minLevel !== undefined) {
       loggerConfig.minLevel = minLevel;
@@ -94,20 +96,22 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   }
 
   async shutdown(): Promise<void> {
-    if (this._isShutdown) return;
+    if (this._isShutdown) {
+      return;
+    }
     this._isShutdown = true;
 
-    this.logger.info('Shutting down observability engine...');
+    this.logger.info("Shutting down observability engine...");
 
     for (const sink of this._sinks) {
       try {
         await sink.flush();
       } catch (error) {
-        this.logger.error('Failed to flush sink during shutdown', { error });
+        this.logger.error("Failed to flush sink during shutdown", { error });
       }
     }
 
-    this.logger.info('Observability engine shut down complete');
+    this.logger.info("Observability engine shut down complete");
   }
 
   getCurrentSpan(): Span | null {
@@ -122,43 +126,78 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     return span;
   }
 
-  recordCounter(name: string, value: number, attributes?: Record<string, AttributeValue>): void {
+  recordCounter(
+    name: string,
+    value: number,
+    attributes?: Record<string, AttributeValue>
+  ): void {
     const counter = this.meter.createCounter(name);
     counter.record(value, attributes);
   }
 
-  recordHistogram(name: string, value: number, attributes?: Record<string, AttributeValue>): void {
+  recordHistogram(
+    name: string,
+    value: number,
+    attributes?: Record<string, AttributeValue>
+  ): void {
     const histogram = this.meter.createHistogram(name);
     histogram.record(value, attributes);
   }
 
-  recordGauge(name: string, value: number, attributes?: Record<string, AttributeValue>): void {
+  recordGauge(
+    name: string,
+    value: number,
+    attributes?: Record<string, AttributeValue>
+  ): void {
     const gauge = this.meter.createGauge(name);
     gauge.record(value, attributes);
   }
 
-  createCounter(name: string, options?: { description?: string; unit?: string }): Counter {
+  createCounter(
+    name: string,
+    options?: { description?: string; unit?: string }
+  ): Counter {
     const metricOptions: MetricOptions = {};
-    if (options?.description) metricOptions.description = options.description;
-    if (options?.unit) metricOptions.unit = options.unit;
+    if (options?.description) {
+      metricOptions.description = options.description;
+    }
+    if (options?.unit) {
+      metricOptions.unit = options.unit;
+    }
     return this.meter.createCounter(name, metricOptions);
   }
 
-  createHistogram(name: string, options?: { description?: string; unit?: string }): Histogram {
+  createHistogram(
+    name: string,
+    options?: { description?: string; unit?: string }
+  ): Histogram {
     const metricOptions: MetricOptions = {};
-    if (options?.description) metricOptions.description = options.description;
-    if (options?.unit) metricOptions.unit = options.unit;
+    if (options?.description) {
+      metricOptions.description = options.description;
+    }
+    if (options?.unit) {
+      metricOptions.unit = options.unit;
+    }
     return this.meter.createHistogram(name, metricOptions);
   }
 
-  createGauge(name: string, options?: { description?: string; unit?: string }): Gauge {
+  createGauge(
+    name: string,
+    options?: { description?: string; unit?: string }
+  ): Gauge {
     const metricOptions: MetricOptions = {};
-    if (options?.description) metricOptions.description = options.description;
-    if (options?.unit) metricOptions.unit = options.unit;
+    if (options?.description) {
+      metricOptions.description = options.description;
+    }
+    if (options?.unit) {
+      metricOptions.unit = options.unit;
+    }
     return this.meter.createGauge(name, metricOptions);
   }
 
-  applyRedaction(attributes: Record<string, AttributeValue>): Record<string, AttributeValue> {
+  applyRedaction(
+    attributes: Record<string, AttributeValue>
+  ): Record<string, AttributeValue> {
     if (!this._redactionPolicy) {
       return attributes;
     }
@@ -166,11 +205,13 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
     const result: Record<string, AttributeValue> = {};
 
     for (const [key, value] of Object.entries(attributes)) {
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         result[key] = this._redactionPolicy.redact(value);
       } else if (Array.isArray(value)) {
-        result[key] = value.map(item =>
-          this._redactionPolicy ? this._redactionPolicy.redact(String(item)) : String(item)
+        result[key] = value.map((item) =>
+          this._redactionPolicy
+            ? this._redactionPolicy.redact(String(item))
+            : String(item)
         );
       } else {
         result[key] = value;
@@ -181,16 +222,16 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   }
 }
 
-export const createObservabilityEngine = (config: ObservabilityEngineConfig): ObservabilityEngine => {
-  return new ObservabilityEngineImpl(config);
-};
+export const createObservabilityEngine = (
+  config: ObservabilityEngineConfig
+): ObservabilityEngine => new ObservabilityEngineImpl(config);
 
 let _defaultEngine: ObservabilityEngineImpl | null = null;
 
 export const getDefaultEngine = (): ObservabilityEngine => {
   _defaultEngine ??= new ObservabilityEngineImpl({
-    serviceName: 'agentsy-runtime',
-    serviceVersion: '0.0.0'
+    serviceName: "agentsy-runtime",
+    serviceVersion: "0.0.0",
   });
   return _defaultEngine;
 };
@@ -199,19 +240,23 @@ export const createSimpleEngine = (
   name: string,
   options?: {
     serviceName?: string;
-    sampling?: 'always_on' | 'never' | 'parentBased';
+    sampling?: "always_on" | "never" | "parentBased";
     jaegerEndpoint?: string;
   }
 ): ObservabilityEngine => {
   const config: ObservabilityEngineConfig = {
     serviceName: options?.serviceName ?? name,
-    serviceVersion: '0.0.0'
+    serviceVersion: "0.0.0",
   };
 
   if (options?.sampling || options?.jaegerEndpoint) {
     config.tracing = {};
-    if (options.sampling) config.tracing.sampling = options.sampling;
-    if (options.jaegerEndpoint) config.tracing.jaegerEndpoint = options.jaegerEndpoint;
+    if (options.sampling) {
+      config.tracing.sampling = options.sampling;
+    }
+    if (options.jaegerEndpoint) {
+      config.tracing.jaegerEndpoint = options.jaegerEndpoint;
+    }
   }
 
   return createObservabilityEngine(config);

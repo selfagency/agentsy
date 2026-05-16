@@ -1,5 +1,6 @@
-import { parseJson, type ParseJsonOptions } from './parseJson.js';
-import type { StreamingPartial } from './types.js';
+import { parseJson } from "./parseJson.js";
+import type { ParseJsonOptions } from "./parseJson.js";
+import type { StreamingPartial } from "./types.js";
 
 export interface StreamJsonOptions extends ParseJsonOptions {
   /**
@@ -47,7 +48,7 @@ export interface StreamJsonResult<T = unknown> {
   /** Whether the value was obtained from repaired (incomplete) JSON. */
   isPartial: boolean;
   /** `'partial'` while JSON is still being received; `'completed'` on the final complete parse. */
-  status: 'partial' | 'completed';
+  status: "partial" | "completed";
   /**
    * Fields that were newly added or whose value changed since the previous emission.
    * Always present; empty when `emitFields: false` (the default) or when no fields
@@ -76,10 +77,17 @@ interface StreamJsonEmission<T> {
  * Check if two arrays are deeply equal.
  */
 // #lizard forgives
-function deepEqualArrays(a: readonly unknown[], b: readonly unknown[]): boolean {
-  if (a.length !== b.length) return false;
+function deepEqualArrays(
+  a: readonly unknown[],
+  b: readonly unknown[]
+): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
   for (let i = 0; i < a.length; i++) {
-    if (!deepEqual(a[i], b[i])) return false;
+    if (!deepEqual(a[i], b[i])) {
+      return false;
+    }
   }
   return true;
 }
@@ -87,13 +95,22 @@ function deepEqualArrays(a: readonly unknown[], b: readonly unknown[]): boolean 
 /**
  * Check if two objects are deeply equal.
  */
-function deepEqualObjects(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
-  const keysA = Object.keys(a).sort((x, y) => x.localeCompare(y));
-  const keysB = Object.keys(b).sort((x, y) => x.localeCompare(y));
-  if (keysA.length !== keysB.length) return false;
-  if (!deepEqualArrays(keysA, keysB)) return false;
+function deepEqualObjects(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>
+): boolean {
+  const keysA = Object.keys(a).toSorted((x, y) => x.localeCompare(y));
+  const keysB = Object.keys(b).toSorted((x, y) => x.localeCompare(y));
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+  if (!deepEqualArrays(keysA, keysB)) {
+    return false;
+  }
   for (const key of keysA) {
-    if (!deepEqual(a[key], b[key])) return false;
+    if (!deepEqual(a[key], b[key])) {
+      return false;
+    }
   }
   return true;
 }
@@ -104,8 +121,17 @@ function deepEqualObjects(a: Record<string, unknown>, b: Record<string, unknown>
  */
 function deepEqual(a: unknown, b: unknown): boolean {
   // Fast path: same reference or both primitives
-  if (a === b) return true;
-  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (a === b) {
+    return true;
+  }
+  if (
+    typeof a !== "object" ||
+    typeof b !== "object" ||
+    a === null ||
+    b === null
+  ) {
+    return false;
+  }
 
   // Compare arrays
   if (Array.isArray(a) && Array.isArray(b)) {
@@ -114,7 +140,10 @@ function deepEqual(a: unknown, b: unknown): boolean {
 
   // Compare objects
   if (!Array.isArray(a) && !Array.isArray(b)) {
-    return deepEqualObjects(a as Record<string, unknown>, b as Record<string, unknown>);
+    return deepEqualObjects(
+      a as Record<string, unknown>,
+      b as Record<string, unknown>
+    );
   }
 
   return false;
@@ -124,8 +153,12 @@ function deepEqual(a: unknown, b: unknown): boolean {
  * Collect all leaf (and array-item) paths from a value and return them as
  * `{ path, value }` pairs suitable for diffing across successive parses.
  */
-function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>): void {
-  if (value === null || typeof value !== 'object') {
+function collectPaths(
+  value: unknown,
+  prefix: string,
+  out: Map<string, unknown>
+): void {
+  if (value === null || typeof value !== "object") {
     out.set(prefix, value);
     return;
   }
@@ -136,7 +169,7 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
       return;
     }
     for (let i = 0; i < value.length; i++) {
-      collectPaths(value[i], prefix === '' ? `[${i}]` : `${prefix}[${i}]`, out);
+      collectPaths(value[i], prefix === "" ? `[${i}]` : `${prefix}[${i}]`, out);
     }
     return;
   }
@@ -148,7 +181,7 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
   }
   for (const key of keys) {
     const child = (value as Record<string, unknown>)[key];
-    collectPaths(child, prefix === '' ? key : `${prefix}.${key}`, out);
+    collectPaths(child, prefix === "" ? key : `${prefix}.${key}`, out);
   }
 }
 
@@ -157,7 +190,10 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
  * paths that are new or have a changed value (using deep equality).
  * More efficient than serialization-based comparison.
  */
-function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): string[] {
+function diffPaths(
+  prev: Map<string, unknown>,
+  next: Map<string, unknown>
+): string[] {
   const changed: string[] = [];
   for (const [path, val] of next) {
     if (!prev.has(path) || !deepEqual(prev.get(path), val)) {
@@ -174,7 +210,10 @@ function getNextEmission<T>(
     emitPartials: boolean;
     stopAfterRoot: boolean;
     tryParse: (text: string, repair: boolean) => unknown;
-    computeNewFields: (parsed: unknown, isComplete: boolean) => StreamJsonField[];
+    computeNewFields: (
+      parsed: unknown,
+      isComplete: boolean
+    ) => StreamJsonField[];
   }
 ): StreamJsonEmission<T> {
   if (options.stopAfterRoot && state.rootComplete) {
@@ -187,13 +226,18 @@ function getNextEmission<T>(
     if (!deepEqual(complete, state.lastParsed) || state.lastWasPartial) {
       const newFields = options.computeNewFields(complete, true);
       return {
+        result: {
+          isPartial: false,
+          newFields,
+          status: "completed",
+          value: complete as StreamingPartial<T>,
+        },
         state: {
           accumulated,
           lastParsed: complete,
           lastWasPartial: false,
-          rootComplete: true
+          rootComplete: true,
         },
-        result: { value: complete as StreamingPartial<T>, isPartial: false, status: 'completed', newFields }
       };
     }
     return {
@@ -201,8 +245,8 @@ function getNextEmission<T>(
         accumulated,
         lastParsed: state.lastParsed,
         lastWasPartial: false,
-        rootComplete: true
-      }
+        rootComplete: true,
+      },
     };
   }
 
@@ -210,8 +254,8 @@ function getNextEmission<T>(
     return {
       state: {
         ...state,
-        accumulated
-      }
+        accumulated,
+      },
     };
   }
 
@@ -220,20 +264,25 @@ function getNextEmission<T>(
     return {
       state: {
         ...state,
-        accumulated
-      }
+        accumulated,
+      },
     };
   }
 
   const newFields = options.computeNewFields(partial, false);
   return {
+    result: {
+      isPartial: true,
+      newFields,
+      status: "partial",
+      value: partial as StreamingPartial<T>,
+    },
     state: {
       accumulated,
       lastParsed: partial,
       lastWasPartial: true,
-      rootComplete: false
+      rootComplete: false,
     },
-    result: { value: partial as StreamingPartial<T>, isPartial: true, status: 'partial', newFields }
   };
 }
 
@@ -263,36 +312,44 @@ export async function* streamJson<T = unknown>(
   }
 
   let loopState: StreamJsonLoopState = {
-    accumulated: '',
+    accumulated: "",
     lastParsed: undefined,
     lastWasPartial: false,
-    rootComplete: false
+    rootComplete: false,
   };
-  let prevPaths: Map<string, unknown> = new Map();
+  let prevPaths = new Map<string, unknown>();
 
   function tryParse(text: string, repair: boolean): unknown {
-    return parseJson(text, repair ? { ...parseOpts, repairIncomplete: true } : parseOpts);
+    return parseJson(
+      text,
+      repair ? { ...parseOpts, repairIncomplete: true } : parseOpts
+    );
   }
 
-  function computeNewFields(parsed: unknown, isComplete: boolean): StreamJsonField[] {
-    if (!trackFields) return [];
+  function computeNewFields(
+    parsed: unknown,
+    isComplete: boolean
+  ): StreamJsonField[] {
+    if (!trackFields) {
+      return [];
+    }
     const next = new Map<string, unknown>();
-    collectPaths(parsed, '', next);
+    collectPaths(parsed, "", next);
     const changedPaths = diffPaths(prevPaths, next);
     prevPaths = next;
-    return changedPaths.map(path => ({
+    return changedPaths.map((path) => ({
+      isComplete,
       path,
       value: next.get(path),
-      isComplete
     }));
   }
 
   for await (const chunk of source) {
     const { state, result } = getNextEmission<T>(chunk, loopState, {
+      computeNewFields,
       emitPartials,
       stopAfterRoot,
       tryParse,
-      computeNewFields
     });
     loopState = state;
 

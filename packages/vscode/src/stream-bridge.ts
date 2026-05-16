@@ -1,6 +1,7 @@
-import type { StreamChunk } from '@agentsy/core/processor';
-import { mapStreamChunkToVsCode } from './message-conversion/helpers.js';
-import type { LanguageModelChatResponseChunk } from './provider/index.js';
+import type { StreamChunk } from "@agentsy/core/processor";
+
+import { mapStreamChunkToVsCode } from "./message-conversion/helpers.js";
+import type { LanguageModelChatResponseChunk } from "./provider/index.js";
 
 export interface VSCodeStreamBridgeOptions {
   /**
@@ -41,7 +42,9 @@ export class VSCodeStreamBridge {
  * Utility to convert an @agentsy/processor AsyncIterable<StreamChunk> into a
  * VS Code-compatible AsyncIterable<LanguageModelChatResponseChunk>.
  */
-export async function* bridgeStream(source: AsyncIterable<StreamChunk>): AsyncIterable<LanguageModelChatResponseChunk> {
+export async function* bridgeStream(
+  source: AsyncIterable<StreamChunk>
+): AsyncIterable<LanguageModelChatResponseChunk> {
   for await (const chunk of source) {
     const vsChunks = mapStreamChunkToVsCode(chunk);
     for (const vsChunk of vsChunks) {

@@ -1,16 +1,17 @@
-import { Box, Text } from 'ink';
-import { useEffect, useState } from 'react';
-import type { Theme } from '../themes/types.js';
+import { Box, Text } from "ink";
+import { useEffect, useState } from "react";
+
+import type { Theme } from "../themes/types.js";
 
 interface ThinkingBlockProps {
   readonly text: string;
-  readonly style: 'blockquote' | 'inline' | 'suppress';
+  readonly style: "blockquote" | "inline" | "suppress";
   readonly isStreaming: boolean;
   readonly theme: Theme;
   readonly screenReader?: boolean;
 }
 
-const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 function SuppressedThinking(): null {
   return null;
@@ -24,7 +25,7 @@ function InlineThinking({
   text,
   isStreaming,
   theme,
-  screenReader
+  screenReader,
 }: {
   readonly text: string;
   readonly isStreaming: boolean;
@@ -37,9 +38,13 @@ function InlineThinking({
 
   const textColor = theme.thinking.textColor || undefined;
   return (
-    <Text italic dimColor={theme.text.dimColor} {...(textColor ? { color: textColor } : {})}>
+    <Text
+      italic
+      dimColor={theme.text.dimColor}
+      {...(textColor ? { color: textColor } : {})}
+    >
       [Thinking] {text}
-      {isStreaming && '…'}
+      {isStreaming && "…"}
     </Text>
   );
 }
@@ -49,7 +54,7 @@ function BlockquoteThinking({
   frame,
   isStreaming,
   theme,
-  screenReader
+  screenReader,
 }: {
   readonly text: string;
   readonly frame: number;
@@ -61,16 +66,25 @@ function BlockquoteThinking({
     return <ScreenReaderThinking text={text} />;
   }
 
-  const borderStyle: 'single' | 'double' | 'round' | undefined =
-    theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round'
+  const borderStyle: "single" | "double" | "round" | undefined =
+    theme.border.style === "single" ||
+    theme.border.style === "double" ||
+    theme.border.style === "round"
       ? theme.border.style
       : undefined;
   const borderColor = theme.border.color || undefined;
-  const spinnerSymbol = spinnerFrames.at(frame) ?? '⠋';
-  const spinnerColor = isStreaming ? theme.thinking.spinnerColor || undefined : theme.thinking.textColor || undefined;
+  const spinnerSymbol = spinnerFrames.at(frame) ?? "⠋";
+  const spinnerColor = isStreaming
+    ? theme.thinking.spinnerColor || undefined
+    : theme.thinking.textColor || undefined;
 
   return (
-    <Box borderStyle={borderStyle} {...(borderColor ? { borderColor } : {})} paddingLeft={1} marginBottom={1}>
+    <Box
+      borderStyle={borderStyle}
+      {...(borderColor ? { borderColor } : {})}
+      paddingLeft={1}
+      marginBottom={1}
+    >
       <Text {...(spinnerColor ? { color: spinnerColor } : {})}>
         {isStreaming ? `${spinnerSymbol} thinking…` : text}
       </Text>
@@ -78,28 +92,47 @@ function BlockquoteThinking({
   );
 }
 
-export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = false }: ThinkingBlockProps) {
+export function ThinkingBlock({
+  text,
+  style,
+  isStreaming,
+  theme,
+  screenReader = false,
+}: ThinkingBlockProps) {
   const [frame, setFrame] = useState(0);
   const spinnerInterval = theme.thinking.spinnerIntervalMs ?? 80;
 
   useEffect(() => {
-    if (style === 'blockquote' && isStreaming && !screenReader) {
+    if (style === "blockquote" && isStreaming && !screenReader) {
       const interval = setInterval(() => {
-        setFrame(f => (f + 1) % spinnerFrames.length);
+        setFrame((f) => (f + 1) % spinnerFrames.length);
       }, spinnerInterval);
       return () => clearInterval(interval);
     }
   }, [style, isStreaming, screenReader, spinnerInterval]);
 
-  if (style === 'suppress') {
+  if (style === "suppress") {
     return <SuppressedThinking />;
   }
 
-  if (style === 'inline') {
-    return <InlineThinking text={text} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />;
+  if (style === "inline") {
+    return (
+      <InlineThinking
+        text={text}
+        isStreaming={isStreaming}
+        theme={theme}
+        screenReader={screenReader}
+      />
+    );
   }
 
   return (
-    <BlockquoteThinking text={text} frame={frame} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />
+    <BlockquoteThinking
+      text={text}
+      frame={frame}
+      isStreaming={isStreaming}
+      theme={theme}
+      screenReader={screenReader}
+    />
   );
 }

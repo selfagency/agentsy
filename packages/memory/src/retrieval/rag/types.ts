@@ -1,4 +1,4 @@
-export type RAGSourceType = 'wiki' | 'file' | 'document' | 'web';
+export type RAGSourceType = "wiki" | "file" | "document" | "web";
 
 export interface RAGWeightConfig {
   vector: number;

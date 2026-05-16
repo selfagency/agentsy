@@ -1,21 +1,30 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpResponse, http } from 'msw';
-import { setupServer } from 'msw/node';
+import { HttpResponse, http } from "msw";
+import { setupServer } from "msw/node";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import {
   createDefaultTursoClient,
   createNoopTursoClient,
   createTursoHttpClient,
-  createTursoSyncClient
-} from './turso-client.js';
-import type { SyncSnapshot } from './types.js';
+  createTursoSyncClient,
+} from "./turso-client.js";
+import type { SyncSnapshot } from "./types.js";
 
 const { connectMock } = vi.hoisted(() => ({
-  connectMock: vi.fn()
+  connectMock: vi.fn(),
 }));
 
-vi.mock('@tursodatabase/sync', () => ({
-  connect: connectMock
+vi.mock(import("@tursodatabase/sync"), () => ({
+  connect: connectMock,
 }));
 
 interface FakeDatabase {
@@ -31,29 +40,36 @@ interface FakeDatabase {
 
 const server = setupServer();
 
-function createSnapshot(cursor = 'cursor-1'): SyncSnapshot {
+function createSnapshot(cursor = "cursor-1"): SyncSnapshot {
   return {
     cursor,
-    records: [{ id: 'page-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'hello' }]
+    records: [
+      {
+        content: "hello",
+        id: "page-1",
+        tier: "wiki",
+        updatedAt: "2026-05-15T00:00:00.000Z",
+      },
+    ],
   };
 }
 
 function createFakeDatabase(): FakeDatabase {
   return {
-    connect: vi.fn(async () => {}),
-    run: vi.fn(async () => ({ changes: 1, lastInsertRowid: 1 })),
-    get: vi.fn(async () => null),
-    push: vi.fn(async () => {}),
-    pull: vi.fn(async () => true),
     checkpoint: vi.fn(async () => {}),
+    close: vi.fn(async () => {}),
+    connect: vi.fn(async () => {}),
+    get: vi.fn(async () => null),
+    pull: vi.fn(async () => true),
+    push: vi.fn(async () => {}),
+    run: vi.fn(async () => ({ changes: 1, lastInsertRowid: 1 })),
     stats: vi.fn(async () => ({ pendingChanges: 0 })),
-    close: vi.fn(async () => {})
   };
 }
 
-describe('turso-client', () => {
+describe("turso-client", () => {
   beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'error' });
+    server.listen({ onUnhandledRequest: "error" });
   });
 
   beforeEach(() => {
@@ -69,190 +85,226 @@ describe('turso-client', () => {
     server.close();
   });
 
-  it('returns local snapshot semantics for noop client', async () => {
+  it("returns local snapshot semantics for noop client", async () => {
     const client = createNoopTursoClient();
     const snapshot = createSnapshot();
 
-    await expect(client.upload(snapshot)).resolves.toEqual({
+    await expect(client.upload(snapshot)).resolves.toStrictEqual({
+      nextCursor: "cursor-1",
       uploadedCount: 1,
-      nextCursor: 'cursor-1'
     });
-    await expect(client.download('cursor-2')).resolves.toEqual({
-      cursor: 'cursor-2',
-      records: []
+    await expect(client.download("cursor-2")).resolves.toStrictEqual({
+      cursor: "cursor-2",
+      records: [],
     });
   });
 
-  it('uploads and downloads over the HTTP transport', async () => {
+  it("uploads and downloads over the HTTP transport", async () => {
     server.use(
-      http.post('https://example.turso.io/sync/upload', async ({ request }) => {
+      http.post("https://example.turso.io/sync/upload", async ({ request }) => {
         const payload = (await request.json()) as SyncSnapshot;
-        expect(request.headers.get('authorization')).toBe('Bearer token-value');
+        expect(request.headers.get("authorization")).toBe("Bearer token-value");
 
-        expect(payload).toEqual(createSnapshot());
-        return HttpResponse.json({ uploadedCount: payload.records.length, nextCursor: 'cursor-2' });
+        expect(payload).toStrictEqual(createSnapshot());
+        return HttpResponse.json({
+          nextCursor: "cursor-2",
+          uploadedCount: payload.records.length,
+        });
       }),
-      http.get('https://example.turso.io/sync/download', ({ request }) => {
-        expect(request.headers.get('authorization')).toBe('Bearer token-value');
-        expect(request.url).toContain('cursor=cursor-2');
-        return HttpResponse.json(createSnapshot('cursor-3'));
+      http.get("https://example.turso.io/sync/download", ({ request }) => {
+        expect(request.headers.get("authorization")).toBe("Bearer token-value");
+        expect(request.url).toContain("cursor=cursor-2");
+        return HttpResponse.json(createSnapshot("cursor-3"));
       })
     );
 
     const client = createTursoHttpClient({
-      databaseUrl: 'https://example.turso.io',
-      authToken: 'token-value'
+      authToken: "token-value",
+      databaseUrl: "https://example.turso.io",
     });
 
-    await expect(client.upload(createSnapshot())).resolves.toEqual({
+    await expect(client.upload(createSnapshot())).resolves.toStrictEqual({
+      nextCursor: "cursor-2",
       uploadedCount: 1,
-      nextCursor: 'cursor-2'
     });
-    await expect(client.download('cursor-2')).resolves.toEqual(createSnapshot('cursor-3'));
+    await expect(client.download("cursor-2")).resolves.toStrictEqual(
+      createSnapshot("cursor-3")
+    );
   });
 
-  it('throws for HTTP upload and download failures', async () => {
-    server.use(http.post('https://example.turso.io/sync/upload', () => new HttpResponse(null, { status: 500 })));
-
-    const client = createTursoHttpClient({
-      databaseUrl: 'https://example.turso.io',
-      authToken: 'token-value'
-    });
-
-    await expect(client.upload(createSnapshot())).rejects.toThrow(/status 500/u);
-
-    server.use(http.get('https://example.turso.io/sync/download', () => new HttpResponse(null, { status: 404 })));
-
-    await expect(client.download('cursor-2')).rejects.toThrow(/status 404/u);
-  });
-
-  it('resolves auth token suppliers before issuing HTTP requests', async () => {
+  it("throws for HTTP upload and download failures", async () => {
     server.use(
-      http.post('https://example.turso.io/sync/upload', ({ request }) => {
-        expect(request.headers.get('authorization')).toBe('Bearer supplied-token');
-        return HttpResponse.json({ uploadedCount: 1, nextCursor: 'cursor-2' });
+      http.post(
+        "https://example.turso.io/sync/upload",
+        () => new HttpResponse(null, { status: 500 })
+      )
+    );
+
+    const client = createTursoHttpClient({
+      authToken: "token-value",
+      databaseUrl: "https://example.turso.io",
+    });
+
+    await expect(client.upload(createSnapshot())).rejects.toThrow(
+      /status 500/u
+    );
+
+    server.use(
+      http.get(
+        "https://example.turso.io/sync/download",
+        () => new HttpResponse(null, { status: 404 })
+      )
+    );
+
+    await expect(client.download("cursor-2")).rejects.toThrow(/status 404/u);
+  });
+
+  it("resolves auth token suppliers before issuing HTTP requests", async () => {
+    server.use(
+      http.post("https://example.turso.io/sync/upload", ({ request }) => {
+        expect(request.headers.get("authorization")).toBe(
+          "Bearer supplied-token"
+        );
+        return HttpResponse.json({ nextCursor: "cursor-2", uploadedCount: 1 });
       }),
-      http.get('https://example.turso.io/sync/download', ({ request }) => {
-        expect(request.headers.get('authorization')).toBe('Bearer supplied-token');
-        return HttpResponse.json(createSnapshot('cursor-3'));
+      http.get("https://example.turso.io/sync/download", ({ request }) => {
+        expect(request.headers.get("authorization")).toBe(
+          "Bearer supplied-token"
+        );
+        return HttpResponse.json(createSnapshot("cursor-3"));
       })
     );
 
     const client = createTursoHttpClient({
-      databaseUrl: 'https://example.turso.io',
-      authToken: async () => 'supplied-token'
+      authToken: async () => "supplied-token",
+      databaseUrl: "https://example.turso.io",
     });
 
-    await expect(client.upload(createSnapshot())).resolves.toEqual({
+    await expect(client.upload(createSnapshot())).resolves.toStrictEqual({
+      nextCursor: "cursor-2",
       uploadedCount: 1,
-      nextCursor: 'cursor-2'
     });
-    await expect(client.download('cursor-2')).resolves.toEqual(createSnapshot('cursor-3'));
+    await expect(client.download("cursor-2")).resolves.toStrictEqual(
+      createSnapshot("cursor-3")
+    );
   });
 
-  it('uses the Turso sync database for upload and download lifecycle', async () => {
+  it("uses the Turso sync database for upload and download lifecycle", async () => {
     const database = createFakeDatabase();
     database.get.mockResolvedValue({
-      cursor: 'remote-cursor',
-      payload: JSON.stringify(createSnapshot().records)
+      cursor: "remote-cursor",
+      payload: JSON.stringify(createSnapshot().records),
     });
     connectMock.mockResolvedValue(database);
 
     const client = createTursoSyncClient({
-      path: './tmp/memory.db',
-      url: 'libsql://agentsy-memory.turso.io',
-      authToken: 'token-value',
-      clientName: 'agentsy-memory',
-      longPollTimeoutMs: 5_000,
-      tracing: 'debug',
+      authToken: "token-value",
+      clientName: "agentsy-memory",
+      fetch,
+      longPollTimeoutMs: 5000,
+      path: "./tmp/memory.db",
       remoteWritesExperimental: true,
-      fetch
+      tracing: "debug",
+      url: "libsql://agentsy-memory.turso.io",
     });
 
-    await expect(client.upload(createSnapshot())).resolves.toEqual({
+    await expect(client.upload(createSnapshot())).resolves.toStrictEqual({
+      nextCursor: "cursor-1",
       uploadedCount: 1,
-      nextCursor: 'cursor-1'
     });
-    await expect(client.download('cursor-0')).resolves.toEqual({
-      cursor: 'remote-cursor',
-      records: createSnapshot().records
+    await expect(client.download("cursor-0")).resolves.toStrictEqual({
+      cursor: "remote-cursor",
+      records: createSnapshot().records,
     });
     await expect(client.checkpoint?.()).resolves.toBeUndefined();
-    await expect(client.stats?.()).resolves.toEqual({ pendingChanges: 0 });
+    await expect(client.stats?.()).resolves.toStrictEqual({
+      pendingChanges: 0,
+    });
     await expect(client.close?.()).resolves.toBeUndefined();
 
     expect(connectMock).toHaveBeenCalledWith({
-      path: './tmp/memory.db',
-      url: 'libsql://agentsy-memory.turso.io',
-      authToken: 'token-value',
-      clientName: 'agentsy-memory',
-      longPollTimeoutMs: 5_000,
-      tracing: 'debug',
+      authToken: "token-value",
+      clientName: "agentsy-memory",
+      fetch,
+      longPollTimeoutMs: 5000,
+      path: "./tmp/memory.db",
       remoteWritesExperimental: true,
-      fetch
+      tracing: "debug",
+      url: "libsql://agentsy-memory.turso.io",
     });
-    expect(database.connect).toHaveBeenCalledTimes(1);
+    expect(database.connect).toHaveBeenCalledOnce();
     expect(database.run).toHaveBeenCalledTimes(2);
-    expect(database.push).toHaveBeenCalledTimes(1);
-    expect(database.pull).toHaveBeenCalledTimes(1);
-    expect(database.checkpoint).toHaveBeenCalledTimes(1);
-    expect(database.stats).toHaveBeenCalledTimes(1);
-    expect(database.close).toHaveBeenCalledTimes(1);
+    expect(database.push).toHaveBeenCalledOnce();
+    expect(database.pull).toHaveBeenCalledOnce();
+    expect(database.checkpoint).toHaveBeenCalledOnce();
+    expect(database.stats).toHaveBeenCalledOnce();
+    expect(database.close).toHaveBeenCalledOnce();
   });
 
-  it('returns empty records when the sync row is missing or malformed', async () => {
+  it("returns empty records when the sync row is missing or malformed", async () => {
     const database = createFakeDatabase();
-    database.get.mockResolvedValueOnce(null).mockResolvedValueOnce({ cursor: 'remote-cursor', payload: null });
+    database.get
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ cursor: "remote-cursor", payload: null });
     connectMock.mockResolvedValue(database);
 
     const client = createTursoSyncClient({
-      path: './tmp/memory.db',
-      url: 'libsql://agentsy-memory.turso.io'
+      path: "./tmp/memory.db",
+      url: "libsql://agentsy-memory.turso.io",
     });
 
-    await expect(client.download('cursor-a')).resolves.toEqual({
-      cursor: 'cursor-a',
-      records: []
+    await expect(client.download("cursor-a")).resolves.toStrictEqual({
+      cursor: "cursor-a",
+      records: [],
     });
-    await expect(client.download('cursor-b')).resolves.toEqual({
-      cursor: 'remote-cursor',
-      records: []
+    await expect(client.download("cursor-b")).resolves.toStrictEqual({
+      cursor: "remote-cursor",
+      records: [],
     });
   });
 
-  it('creates a sync client when a path is configured and only falls back to noop in local-only mode', async () => {
+  it("creates a sync client when a path is configured and only falls back to noop in local-only mode", async () => {
     const database = createFakeDatabase();
-    database.get.mockResolvedValue({ cursor: 'remote-cursor', payload: JSON.stringify([]) });
+    database.get.mockResolvedValue({
+      cursor: "remote-cursor",
+      payload: JSON.stringify([]),
+    });
     connectMock.mockResolvedValue(database);
 
     const syncClient = createDefaultTursoClient({
-      path: './tmp/memory.db',
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
-      authToken: 'token-value',
-      syncIntervalMs: 5_000,
+      authToken: "token-value",
+      clientName: "agentsy-memory",
+      databaseUrl: "libsql://agentsy-memory.turso.io",
       maxRetries: 3,
-      clientName: 'agentsy-memory'
+      path: "./tmp/memory.db",
+      syncIntervalMs: 5000,
     });
     const noopClient = createDefaultTursoClient({
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
-      authToken: 'token-value',
-      syncIntervalMs: 5_000,
+      authToken: "token-value",
+      databaseUrl: "libsql://agentsy-memory.turso.io",
       maxRetries: 3,
-      mode: 'local-only'
+      mode: "local-only",
+      syncIntervalMs: 5000,
     });
 
-    await expect(syncClient.download('cursor-1')).resolves.toEqual({ cursor: 'remote-cursor', records: [] });
-    await expect(noopClient.download('cursor-2')).resolves.toEqual({ cursor: 'cursor-2', records: [] });
-    expect(connectMock).toHaveBeenCalledTimes(1);
+    await expect(syncClient.download("cursor-1")).resolves.toStrictEqual({
+      cursor: "remote-cursor",
+      records: [],
+    });
+    await expect(noopClient.download("cursor-2")).resolves.toStrictEqual({
+      cursor: "cursor-2",
+      records: [],
+    });
+    expect(connectMock).toHaveBeenCalledOnce();
   });
 
-  it('throws when remote sync is configured without a path', () => {
+  it("throws when remote sync is configured without a path", () => {
     expect(() =>
       createDefaultTursoClient({
-        databaseUrl: 'libsql://agentsy-memory.turso.io',
-        authToken: 'token-value',
-        syncIntervalMs: 5_000,
-        maxRetries: 3
+        authToken: "token-value",
+        databaseUrl: "libsql://agentsy-memory.turso.io",
+        maxRetries: 3,
+        syncIntervalMs: 5000,
       })
     ).toThrow(/path is required/u);
   });

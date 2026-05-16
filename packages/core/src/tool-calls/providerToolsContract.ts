@@ -1,4 +1,4 @@
-import type { JsonObject } from '@agentsy/types';
+import type { JsonObject } from "@agentsy/types";
 
 /**
  * Shared provider-facing tools payload contract that is interoperable with NativeTool[].
@@ -7,16 +7,16 @@ export interface ProviderTool {
   name: string;
   parameters: JsonObject;
   id?: string;
-  format?: 'bare-xml' | 'json-wrapped' | 'native-json';
+  format?: "bare-xml" | "json-wrapped" | "native-json";
   metadata?: Record<string, unknown>;
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim() !== '';
+  return typeof value === "string" && value.trim() !== "";
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isOptionalString(value: unknown): value is string | undefined {
@@ -27,14 +27,21 @@ function isOptionalJsonObject(value: unknown): value is JsonObject | undefined {
   return value === undefined || isJsonObject(value);
 }
 
-const VALID_FORMATS = ['bare-xml', 'json-wrapped', 'native-json'] as const;
+const VALID_FORMATS = ["bare-xml", "json-wrapped", "native-json"] as const;
 
-function isValidFormat(value: unknown): value is (typeof VALID_FORMATS)[number] | undefined {
-  return value === undefined || (typeof value === 'string' && VALID_FORMATS.includes(value as never));
+function isValidFormat(
+  value: unknown
+): value is (typeof VALID_FORMATS)[number] | undefined {
+  return (
+    value === undefined ||
+    (typeof value === "string" && VALID_FORMATS.includes(value as never))
+  );
 }
 
 export function isProviderTool(obj: unknown): obj is ProviderTool {
-  if (!obj || typeof obj !== 'object') return false;
+  if (!obj || typeof obj !== "object") {
+    return false;
+  }
 
   const tool = obj as Record<string, unknown>;
 
@@ -47,19 +54,27 @@ export function isProviderTool(obj: unknown): obj is ProviderTool {
   );
 }
 
-export function providerToolToNative(tool: ProviderTool): { name: string; arguments: JsonObject; id?: string } {
+export function providerToolToNative(tool: ProviderTool): {
+  name: string;
+  arguments: JsonObject;
+  id?: string;
+} {
   return {
-    name: tool.name,
     arguments: tool.parameters,
-    ...(tool.id !== undefined && { id: tool.id })
+    name: tool.name,
+    ...(tool.id !== undefined && { id: tool.id }),
   };
 }
 
-export function nativeToProviderTool(nativeTool: { name: string; arguments: JsonObject; id?: string }): ProviderTool {
+export function nativeToProviderTool(nativeTool: {
+  name: string;
+  arguments: JsonObject;
+  id?: string;
+}): ProviderTool {
   return {
     name: nativeTool.name,
     parameters: nativeTool.arguments,
     ...(nativeTool.id !== undefined && { id: nativeTool.id }),
-    format: 'native-json'
+    format: "native-json",
   };
 }

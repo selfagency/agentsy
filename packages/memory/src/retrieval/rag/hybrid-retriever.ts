@@ -1,11 +1,10 @@
-import { createLocalEmbeddingEngine } from '../../wiki/local-embedding-engine.js';
-
-import type { PlannedQuery, RAGEvidence, RAGSearchResult } from './types.js';
+import { createLocalEmbeddingEngine } from "../../wiki/local-embedding-engine.js";
+import type { PlannedQuery, RAGEvidence, RAGSearchResult } from "./types.js";
 
 interface HybridRecord {
   id: string;
   sourceId: string;
-  sourceType: RAGEvidence['sourceType'];
+  sourceType: RAGEvidence["sourceType"];
   title: string;
   content: string;
   updatedAt: string;
@@ -18,7 +17,11 @@ interface DotAndNorms {
   normB: number;
 }
 
-function computeDotAndNorms(a: readonly number[], b: readonly number[], length: number): DotAndNorms {
+function computeDotAndNorms(
+  a: readonly number[],
+  b: readonly number[],
+  length: number
+): DotAndNorms {
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -60,13 +63,18 @@ function lexicalScore(queryTerms: readonly string[], text: string): number {
   return hits / queryTerms.length;
 }
 
-function entityScore(entities: readonly string[], metadata: Record<string, unknown> | undefined): number {
+function entityScore(
+  entities: readonly string[],
+  metadata: Record<string, unknown> | undefined
+): number {
   const raw = metadata?.entities;
   if (!Array.isArray(raw) || entities.length === 0) {
     return 0;
   }
 
-  const normalized = raw.filter((value): value is string => typeof value === 'string').map(item => item.toLowerCase());
+  const normalized = raw
+    .filter((value): value is string => typeof value === "string")
+    .map((item) => item.toLowerCase());
   if (normalized.length === 0) {
     return 0;
   }
@@ -92,7 +100,7 @@ function temporalScore(updatedAtIso: string, now: Date): number {
 }
 
 export interface HybridRetriever {
-  upsert(result: Omit<RAGSearchResult, 'score'>): void;
+  upsert(result: Omit<RAGSearchResult, "score">): void;
   remove(id: string): void;
   search(query: PlannedQuery): Promise<RAGEvidence[]>;
 }
@@ -103,20 +111,6 @@ export function createHybridRetriever(): HybridRetriever {
   const vectors = new Map<string, number[]>();
 
   return {
-    upsert(result) {
-      const record: HybridRecord = {
-        id: result.id,
-        sourceId: result.sourceId,
-        sourceType: result.sourceType,
-        title: result.title,
-        content: result.content,
-        updatedAt: result.updatedAt,
-        ...(result.metadata === undefined ? {} : { metadata: { ...result.metadata } })
-      };
-      records.set(record.id, record);
-      vectors.set(record.id, engine.embed(`${record.title}\n${record.content}`));
-    },
-
     remove(id) {
       records.delete(id);
       vectors.delete(id);
@@ -125,47 +119,75 @@ export function createHybridRetriever(): HybridRetriever {
     async search(query) {
       const now = new Date();
       const queryVector = engine.embed(query.query);
-      const queryTerms = query.expandedTerms.length > 0 ? query.expandedTerms : query.query.toLowerCase().split(/\s+/u);
+      const queryTerms =
+        query.expandedTerms.length > 0
+          ? query.expandedTerms
+          : query.query.toLowerCase().split(/\s+/u);
 
       return [...records.values()]
-        .map(record => {
+        .map((record) => {
           const vector = vectors.get(record.id) ?? [];
           const vectorScore = cosineSimilarity(queryVector, vector);
-          const lexical = lexicalScore(queryTerms, `${record.title}\n${record.content}`);
+          const lexical = lexicalScore(
+            queryTerms,
+            `${record.title}\n${record.content}`
+          );
           const entity = entityScore(query.entities, record.metadata);
           const temporal = temporalScore(record.updatedAt, now);
-          const final = vectorScore * 0.4 + lexical * 0.3 + entity * 0.2 + temporal * 0.1;
+          const final =
+            vectorScore * 0.4 + lexical * 0.3 + entity * 0.2 + temporal * 0.1;
 
           const evidence: RAGEvidence = {
-            id: record.id,
-            sourceId: record.sourceId,
-            sourceType: record.sourceType,
-            title: record.title,
-            content: record.content,
-            score: final,
-            confidence: Math.max(0, Math.min(1, final)),
-            updatedAt: record.updatedAt,
-            scoreBreakdown: {
-              vector: vectorScore,
-              lexical,
-              entity,
-              temporal,
-              final
-            },
             citations: [
               {
                 sourceId: record.sourceId,
                 sourceType: record.sourceType,
-                title: record.title
-              }
+                title: record.title,
+              },
             ],
-            ...(record.metadata === undefined ? {} : { metadata: { ...record.metadata } })
+            confidence: Math.max(0, Math.min(1, final)),
+            content: record.content,
+            id: record.id,
+            score: final,
+            scoreBreakdown: {
+              entity,
+              final,
+              lexical,
+              temporal,
+              vector: vectorScore,
+            },
+            sourceId: record.sourceId,
+            sourceType: record.sourceType,
+            title: record.title,
+            updatedAt: record.updatedAt,
+            ...(record.metadata === undefined
+              ? {}
+              : { metadata: { ...record.metadata } }),
           };
 
           return evidence;
         })
-        .sort((left, right) => right.score - left.score)
+        .toSorted((left, right) => right.score - left.score)
         .slice(0, Math.max(1, query.limit));
-    }
+    },
+
+    upsert(result) {
+      const record: HybridRecord = {
+        content: result.content,
+        id: result.id,
+        sourceId: result.sourceId,
+        sourceType: result.sourceType,
+        title: result.title,
+        updatedAt: result.updatedAt,
+        ...(result.metadata === undefined
+          ? {}
+          : { metadata: { ...result.metadata } }),
+      };
+      records.set(record.id, record);
+      vectors.set(
+        record.id,
+        engine.embed(`${record.title}\n${record.content}`)
+      );
+    },
   };
 }

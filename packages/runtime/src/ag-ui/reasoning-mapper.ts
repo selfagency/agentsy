@@ -10,9 +10,9 @@ import type {
   ReasoningMessageContentEvent,
   ReasoningMessageEndEvent,
   ReasoningMessageStartEvent,
-  ReasoningStartEvent
-} from '@agentsy/types';
-import { EventType } from '@agentsy/types';
+  ReasoningStartEvent,
+} from "@agentsy/types";
+import { EventType } from "@agentsy/types";
 
 export interface ReasoningMapperOptions {
   runId: string;
@@ -31,22 +31,22 @@ export interface ReasoningMapperOptions {
 export function mapReasoningToEvents(
   reasoning: string | undefined,
   options: ReasoningMapperOptions
-): Array<
+): (
   | ReasoningStartEvent
   | ReasoningMessageStartEvent
   | ReasoningMessageContentEvent
   | ReasoningMessageEndEvent
   | ReasoningEndEvent
-> {
-  const events: Array<
+)[] {
+  const events: (
     | ReasoningStartEvent
     | ReasoningMessageStartEvent
     | ReasoningMessageContentEvent
     | ReasoningMessageEndEvent
     | ReasoningEndEvent
-  > = [];
+  )[] = [];
 
-  if (reasoning === undefined || reasoning === '') {
+  if (reasoning === undefined || reasoning === "") {
     return events;
   }
 
@@ -60,7 +60,7 @@ export function mapReasoningToEvents(
     runId,
     ...(threadId !== undefined && { threadId }),
     messageId,
-    timestamp
+    timestamp,
   } as ReasoningStartEvent;
   events.push(reasoningStart);
 
@@ -70,7 +70,7 @@ export function mapReasoningToEvents(
     runId,
     ...(threadId !== undefined && { threadId }),
     messageId,
-    timestamp
+    timestamp,
   } as ReasoningMessageStartEvent;
   events.push(msgStart);
 
@@ -81,8 +81,8 @@ export function mapReasoningToEvents(
     ...(threadId !== undefined && { threadId }),
     messageId,
     content: reasoning,
-    ...(encryptReasoning === true && { encryptedValue: 'encrypted' }),
-    timestamp
+    ...(encryptReasoning === true && { encryptedValue: "encrypted" }),
+    timestamp,
   } as ReasoningMessageContentEvent;
   events.push(contentEvent);
 
@@ -92,7 +92,7 @@ export function mapReasoningToEvents(
     runId,
     ...(threadId !== undefined && { threadId }),
     messageId,
-    timestamp
+    timestamp,
   } as ReasoningMessageEndEvent;
   events.push(msgEnd);
 
@@ -102,7 +102,7 @@ export function mapReasoningToEvents(
     runId,
     ...(threadId !== undefined && { threadId }),
     messageId,
-    timestamp
+    timestamp,
   } as ReasoningEndEvent;
   events.push(reasoningEnd);
 

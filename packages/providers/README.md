@@ -15,7 +15,11 @@ This package consolidates three previous packages into a unified providers API:
 
 ```typescript
 // Core provider pipeline
-import { createPipeline, type PipelineOptions, type PipelinedStream } from '@agentsy/providers/pipeline';
+import {
+  createPipeline,
+  type PipelineOptions,
+  type PipelinedStream,
+} from "@agentsy/providers/pipeline";
 
 // Normalized provider adapters
 import {
@@ -30,8 +34,8 @@ import {
   adaptToOllama,
   adaptOpenAIResponses,
   adaptToZai,
-  type GenericAdapterOptions
-} from '@agentsy/providers/adapters';
+  type GenericAdapterOptions,
+} from "@agentsy/providers/adapters";
 
 // Provider-specific normalizers
 import {
@@ -46,11 +50,14 @@ import {
   normalizeOllamaChunk,
   normalizeZaiChunk,
   type Normalizer,
-  type NormalizerProvider
-} from '@agentsy/providers/normalizers';
+  type NormalizerProvider,
+} from "@agentsy/providers/normalizers";
 
 // Universal client utilities
-import { createUniversalClient, type UniversalClientOptions } from '@agentsy/providers/universal-client';
+import {
+  createUniversalClient,
+  type UniversalClientOptions,
+} from "@agentsy/providers/universal-client";
 ```
 
 ## Quick Start
@@ -58,46 +65,49 @@ import { createUniversalClient, type UniversalClientOptions } from '@agentsy/pro
 ### Using the Pipeline
 
 ```typescript
-import { createPipeline, PipelinedStream } from '@agentsy/providers';
-import { normalizeOpenaiChunk } from '@agentsy/providers/normalizers';
+import { createPipeline, PipelinedStream } from "@agentsy/providers";
+import { normalizeOpenaiChunk } from "@agentsy/providers/normalizers";
 
-const stream = await fetch('/api/v1/chat/completions', {
+const stream = await fetch("/api/v1/chat/completions", {
   /* ... */
 });
 
 const pipelined = createPipeline(stream, {
-  provider: 'openai',
+  provider: "openai",
   maxJsonDepth: 64,
   maxJsonKeys: 10000,
 
   // Optional: Processor options passed through
   parseThinkTags: true,
   scrubContextTags: true,
-  knownTools: new Set(['weather', 'calculator']),
-  modelId: 'gpt-4'
+  knownTools: new Set(["weather", "calculator"]),
+  modelId: "gpt-4",
 });
 
-pipelined.addEventListener('delta', chunk => {
-  console.log('Text:', chunk.content);
+pipelined.addEventListener("delta", (chunk) => {
+  console.log("Text:", chunk.content);
 });
 
-pipelined.addEventListener('tool_call', call => {
-  console.log('Tool:', call.name, call.parameters);
+pipelined.addEventListener("tool_call", (call) => {
+  console.log("Tool:", call.name, call.parameters);
 });
 
-pipelined.addEventListener('thinking', content => {
-  console.log('Thinking:', content);
+pipelined.addEventListener("thinking", (content) => {
+  console.log("Thinking:", content);
 });
 ```
 
 ### Using Adapters Directly
 
 ```typescript
-import { adaptToGemini, type GenericAdapterOptions } from '@agentsy/providers/adapters';
+import {
+  adaptToGemini,
+  type GenericAdapterOptions,
+} from "@agentsy/providers/adapters";
 
 const adapter = adaptToGemini({
   maxInputLength: 262144,
-  maxToolCallsPerMessage: 64
+  maxToolCallsPerMessage: 64,
   // ... other ProcessorOptions
 });
 
@@ -107,9 +117,12 @@ const stream = adapter.transform(providerStream);
 ### Using Normalizers Only
 
 ```typescript
-import { normalizeAnthropicChunk, type NormalizerProvider } from '@agentsy/providers/normalizers';
+import {
+  normalizeAnthropicChunk,
+  type NormalizerProvider,
+} from "@agentsy/providers/normalizers";
 
-const normalizer: NormalizerProvider = 'anthropic';
+const normalizer: NormalizerProvider = "anthropic";
 const result = normalizeAnthropicChunk(rawChunk);
 ```
 
@@ -215,13 +228,13 @@ All normalizers are exported from `/normalizers` subpath.
 All adapters and normalizers throw `PipelineError` with contextual information:
 
 ```typescript
-import { createPipeline } from '@agentsy/providers/pipeline';
+import { createPipeline } from "@agentsy/providers/pipeline";
 
 try {
-  const pipeline = createPipeline(stream, { provider: 'openai' });
+  const pipeline = createPipeline(stream, { provider: "openai" });
 } catch (error) {
   if (error instanceof PipelineError) {
-    console.error('Pipeline error:', error.message, { cause: error.cause });
+    console.error("Pipeline error:", error.message, { cause: error.cause });
   }
 }
 ```
@@ -231,15 +244,15 @@ try {
 ### Custom Normalizers
 
 ```typescript
-import { type Normalizer } from '@agentsy/providers/normalizers';
+import { type Normalizer } from "@agentsy/providers/normalizers";
 
 const customNormalizer: Normalizer = (data): { chunk: StreamChunk } | null => {
-  if (typeof data !== 'object' || data === null) return null;
+  if (typeof data !== "object" || data === null) return null;
   // Custom normalization logic
   return {
     chunk: {
       /* ... */
-    }
+    },
   };
 };
 ```
@@ -247,18 +260,18 @@ const customNormalizer: Normalizer = (data): { chunk: StreamChunk } | null => {
 ### Pipeline Composition
 
 ```typescript
-import { createPipeline } from '@agentsy/providers/pipeline';
-import { TransformStream } from 'web/stream';
+import { createPipeline } from "@agentsy/providers/pipeline";
+import { TransformStream } from "web/stream";
 
 const customTransform = new TransformStream({
   transform(chunk, controller) {
     // Custom transformation
     controller.enqueue(chunk);
-  }
+  },
 });
 
 createPipeline(stream, {
-  provider: 'openai'
+  provider: "openai",
   // Note: transforms are not documented in current PipelineOptions interface
   // Add to interface if needed
 });

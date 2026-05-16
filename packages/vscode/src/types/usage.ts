@@ -1,11 +1,14 @@
 /**
  * Usage tracking events.
  */
-export type UsageEvent = 'quota_updated' | 'threshold_reached' | 'limit_exceeded';
+export type UsageEvent =
+  | "quota_updated"
+  | "threshold_reached"
+  | "limit_exceeded";
 
 /**
  * Usage event listener.
  */
 export type UsageEventListener = (event: UsageEvent, quota: unknown) => void;
 
-export type { IQuotaDataSource, UsageQuota } from './errors.js';
+export type { IQuotaDataSource, UsageQuota } from "./errors.js";

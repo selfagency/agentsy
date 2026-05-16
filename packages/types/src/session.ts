@@ -2,7 +2,7 @@
  * Session state management types.
  */
 
-import type { SessionId } from './brands.js';
+import type { SessionId } from "./brands.js";
 
 export type { SessionId };
 

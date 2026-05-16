@@ -1,15 +1,36 @@
-import type { FinishReason } from '@agentsy/types';
-import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
-import { isObject, toNumber } from './utils.js';
+import type { FinishReason } from "@agentsy/types";
 
-function mapGeminiFinishReason(reason: string | null): FinishReason | undefined {
-  if (!reason) return undefined;
-  if (reason === 'STOP') return 'stop';
-  if (reason === 'MAX_TOKENS') return 'length';
-  if (reason === 'SAFETY' || reason === 'RECITATION' || reason === 'PROHIBITED_CONTENT' || reason === 'SPII')
-    return 'content-filter';
-  if (reason === 'MALFORMED_FUNCTION_CALL') return 'other';
-  return 'other';
+import type {
+  NativeToolCallDelta,
+  NormalizerResult,
+  UsageInfo,
+} from "./types.js";
+import { isObject, toNumber } from "./utils.js";
+
+function mapGeminiFinishReason(
+  reason: string | null
+): FinishReason | undefined {
+  if (!reason) {
+    return undefined;
+  }
+  if (reason === "STOP") {
+    return "stop";
+  }
+  if (reason === "MAX_TOKENS") {
+    return "length";
+  }
+  if (
+    reason === "SAFETY" ||
+    reason === "RECITATION" ||
+    reason === "PROHIBITED_CONTENT" ||
+    reason === "SPII"
+  ) {
+    return "content-filter";
+  }
+  if (reason === "MALFORMED_FUNCTION_CALL") {
+    return "other";
+  }
+  return "other";
 }
 
 // ---------------------------------------------------------------------------
@@ -27,7 +48,13 @@ function mapGeminiFinishReason(reason: string | null): FinishReason | undefined 
 // usageMetadata → usage
 // ---------------------------------------------------------------------------
 
-const FINISH_REASONS_DONE = new Set(['STOP', 'MAX_TOKENS', 'SAFETY', 'RECITATION', 'OTHER']);
+const FINISH_REASONS_DONE = new Set([
+  "STOP",
+  "MAX_TOKENS",
+  "SAFETY",
+  "RECITATION",
+  "OTHER",
+]);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -40,12 +67,19 @@ interface GeminiPartsResult {
 }
 
 // #lizard forgives
-function buildFunctionCallDelta(fc: Record<string, unknown>, index: number): NativeToolCallDelta {
+function buildFunctionCallDelta(
+  fc: Record<string, unknown>,
+  index: number
+): NativeToolCallDelta {
   const delta: NativeToolCallDelta = { index };
-  const name = typeof fc.name === 'string' ? fc.name : undefined;
-  const args = fc.args;
-  if (name !== undefined) delta.name = name;
-  if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
+  const name = typeof fc.name === "string" ? fc.name : undefined;
+  const { args } = fc;
+  if (name !== undefined) {
+    delta.name = name;
+  }
+  if (args !== undefined) {
+    delta.argumentsDelta = JSON.stringify(args);
+  }
   return delta;
 }
 
@@ -56,15 +90,17 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
   let toolCallIndex = 0;
 
   for (const part of parts) {
-    if (!isObject(part)) continue;
-
-    if (part.thought === true && typeof part.text === 'string') {
-      thinking = (thinking ?? '') + part.text;
+    if (!isObject(part)) {
       continue;
     }
 
-    if (typeof part.text === 'string') {
-      textContent = (textContent ?? '') + part.text;
+    if (part.thought === true && typeof part.text === "string") {
+      thinking = (thinking ?? "") + part.text;
+      continue;
+    }
+
+    if (typeof part.text === "string") {
+      textContent = (textContent ?? "") + part.text;
       continue;
     }
 
@@ -74,19 +110,29 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
     }
   }
 
-  return { textContent, thinking, nativeToolCallList };
+  return { nativeToolCallList, textContent, thinking };
 }
 
-function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined {
-  const usageMetadata = raw.usageMetadata;
-  if (!isObject(usageMetadata)) return undefined;
+function extractGeminiUsage(
+  raw: Record<string, unknown>
+): UsageInfo | undefined {
+  const { usageMetadata } = raw;
+  if (!isObject(usageMetadata)) {
+    return undefined;
+  }
   const usage: UsageInfo = {};
   const input = toNumber(usageMetadata.promptTokenCount);
   const output = toNumber(usageMetadata.candidatesTokenCount);
   const total = toNumber(usageMetadata.totalTokenCount);
-  if (input !== undefined) usage.inputTokens = input;
-  if (output !== undefined) usage.outputTokens = output;
-  if (total !== undefined) usage.totalTokens = total;
+  if (input !== undefined) {
+    usage.inputTokens = input;
+  }
+  if (output !== undefined) {
+    usage.outputTokens = output;
+  }
+  if (total !== undefined) {
+    usage.totalTokens = total;
+  }
   return usage;
 }
 
@@ -103,28 +149,48 @@ function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined
  */
 export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!isObject(raw)) return null;
-    if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) return null;
+    if (!isObject(raw)) {
+      return null;
+    }
+    if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) {
+      return null;
+    }
 
     const candidate = raw.candidates[0];
-    if (!isObject(candidate)) return null;
+    if (!isObject(candidate)) {
+      return null;
+    }
 
-    const content = candidate.content;
-    const finishReason = typeof candidate.finishReason === 'string' ? candidate.finishReason : null;
-    const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
+    const { content } = candidate;
+    const finishReason =
+      typeof candidate.finishReason === "string"
+        ? candidate.finishReason
+        : null;
+    const done =
+      finishReason !== null && FINISH_REASONS_DONE.has(finishReason)
+        ? true
+        : undefined;
     const mappedFinishReason = mapGeminiFinishReason(finishReason);
 
-    const parts = isObject(content) && Array.isArray(content.parts) ? (content.parts as unknown[]) : [];
-    const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
+    const parts =
+      isObject(content) && Array.isArray(content.parts)
+        ? (content.parts as unknown[])
+        : [];
+    const { textContent, thinking, nativeToolCallList } =
+      processGeminiParts(parts);
     const usage = extractGeminiUsage(raw);
 
     const chunk = {
       ...(textContent !== undefined && { content: textContent }),
       ...(thinking !== undefined && { thinking }),
       ...(done !== undefined && { done }),
-      ...(nativeToolCallList.length > 0 && { nativeToolCallDeltas: nativeToolCallList }),
+      ...(nativeToolCallList.length > 0 && {
+        nativeToolCallDeltas: nativeToolCallList,
+      }),
       ...(usage !== undefined && { usage }),
-      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason })
+      ...(mappedFinishReason !== undefined && {
+        finishReason: mappedFinishReason,
+      }),
     };
 
     return { chunk, rawEvent: raw };

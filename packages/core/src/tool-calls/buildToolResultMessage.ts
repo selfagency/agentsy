@@ -1,8 +1,8 @@
-import type { XmlToolCall } from './extractXmlToolCalls.js';
+import type { XmlToolCall } from "./extractXmlToolCalls.js";
 
 /** Provider-agnostic tool result message. */
 export interface ToolResultMessage {
-  role: 'tool';
+  role: "tool";
   tool_call_id: string;
   name: string;
   content: string;
@@ -11,45 +11,47 @@ export interface ToolResultMessage {
 
 /** Anthropic-format tool result message (wrapped in a user turn). */
 export interface AnthropicToolResult {
-  role: 'user';
+  role: "user";
   content: [
     {
-      type: 'tool_result';
+      type: "tool_result";
       tool_use_id: string;
       content: string;
       is_error?: true;
-    }
+    },
   ];
 }
 
 /** OpenAI-format tool result message. */
 export interface OpenAIToolResult {
-  role: 'tool';
+  role: "tool";
   tool_call_id: string;
   content: string;
 }
 
 /** Gemini-format tool result message (wrapped in a user turn). */
 export interface GeminiToolResult {
-  role: 'user';
+  role: "user";
   parts: [
     {
       functionResponse: {
         name: string;
         response: { output?: string; error?: string };
       };
-    }
+    },
   ];
 }
 
 function normalizeContent(result: string | object): string {
-  if (typeof result === 'string') return result;
+  if (typeof result === "string") {
+    return result;
+  }
   try {
     return JSON.stringify(result);
   } catch {
     // Handle circular references, BigInt, or other non-serializable values
-    return typeof result === 'object'
-      ? `[object ${(result?.constructor as { name?: string })?.name ?? 'Object'}]`
+    return typeof result === "object"
+      ? `[object ${(result?.constructor as { name?: string })?.name ?? "Object"}]`
       : String(result);
   }
 }
@@ -69,10 +71,10 @@ export function buildToolResultMessage(
 ): ToolResultMessage {
   const id = toolCall.id ?? toolCall.name;
   const message: ToolResultMessage = {
-    role: 'tool',
-    tool_call_id: id,
+    content: normalizeContent(result),
     name: toolCall.name,
-    content: normalizeContent(result)
+    role: "tool",
+    tool_call_id: id,
   };
   if (options?.isError) {
     message.is_error = true;
@@ -94,15 +96,15 @@ export function buildAnthropicToolResult(
 ): AnthropicToolResult {
   const id = toolCall.id ?? toolCall.name;
   const content = normalizeContent(result);
-  const block: AnthropicToolResult['content'][0] = {
-    type: 'tool_result',
+  const block: AnthropicToolResult["content"][0] = {
+    content,
     tool_use_id: id,
-    content
+    type: "tool_result",
   };
   if (options?.isError) {
     block.is_error = true;
   }
-  return { role: 'user', content: [block] };
+  return { content: [block], role: "user" };
 }
 
 /**
@@ -111,12 +113,15 @@ export function buildAnthropicToolResult(
  * @param toolCall - The tool call to respond to.
  * @param result - The result content.
  */
-export function buildOpenAIToolResult(toolCall: XmlToolCall, result: string | object): OpenAIToolResult {
+export function buildOpenAIToolResult(
+  toolCall: XmlToolCall,
+  result: string | object
+): OpenAIToolResult {
   const id = toolCall.id ?? toolCall.name;
   return {
-    role: 'tool',
+    content: normalizeContent(result),
+    role: "tool",
     tool_call_id: id,
-    content: normalizeContent(result)
   };
 }
 
@@ -135,14 +140,14 @@ export function buildGeminiToolResult(
   const content = normalizeContent(result);
   const response = options?.isError ? { error: content } : { output: content };
   return {
-    role: 'user',
     parts: [
       {
         functionResponse: {
           name: toolCall.name,
-          response
-        }
-      }
-    ]
+          response,
+        },
+      },
+    ],
+    role: "user",
   };
 }

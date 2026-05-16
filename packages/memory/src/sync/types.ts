@@ -1,10 +1,15 @@
-export type SyncStatus = 'idle' | 'running' | 'error' | 'paused';
+export type SyncStatus = "idle" | "running" | "error" | "paused";
 
-export type SyncMode = 'local-only' | 'remote-shadow';
+export type SyncMode = "local-only" | "remote-shadow";
 
-export type MemorySyncTier = 'raw' | 'wiki' | 'vector';
+export type MemorySyncTier = "raw" | "wiki" | "vector";
 
-export type MergePolicy = 'lastWriteWins' | 'localWins' | 'remoteWins' | 'fieldMerge' | 'manualRequired';
+export type MergePolicy =
+  | "lastWriteWins"
+  | "localWins"
+  | "remoteWins"
+  | "fieldMerge"
+  | "manualRequired";
 
 export interface SyncMetrics {
   successes: number;
@@ -14,7 +19,7 @@ export interface SyncMetrics {
 }
 
 export interface ConflictResolutionResult {
-  status: 'resolved' | 'manual';
+  status: "resolved" | "manual";
   policy: MergePolicy;
   record: SyncRecord | null;
 }
@@ -85,7 +90,7 @@ export interface RemoteValidationResult {
 }
 
 export interface SyncRunResult {
-  status: 'success' | 'error' | 'paused';
+  status: "success" | "error" | "paused";
   uploaded: number;
   downloaded: number;
   resolvedConflicts: number;
@@ -111,13 +116,17 @@ export interface TursoSyncConfig {
   credentialSource?: CredentialSource;
   clientName?: string;
   longPollTimeoutMs?: number;
-  tracing?: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+  tracing?: "error" | "warn" | "info" | "debug" | "trace";
   remoteWritesExperimental?: boolean;
   fetch?: typeof fetch;
   client?: TursoClient;
 }
 
-export type CredentialSource = 'environment' | 'injected' | 'config-file' | 'source-code';
+export type CredentialSource =
+  | "environment"
+  | "injected"
+  | "config-file"
+  | "source-code";
 
 export interface SyncScheduler {
   start(): void;
@@ -150,7 +159,10 @@ export interface RestoreSnapshotOptions {
 export interface BackupManager {
   createSnapshot(): Promise<BackupManifest>;
   verifySnapshot(snapshotId: string): Promise<boolean>;
-  restoreSnapshot(snapshotId: string, options: RestoreSnapshotOptions): Promise<RestoreResult>;
+  restoreSnapshot(
+    snapshotId: string,
+    options: RestoreSnapshotOptions
+  ): Promise<RestoreResult>;
   rollback(restorePointId: string): Promise<RestoreResult>;
 }
 
@@ -206,7 +218,7 @@ export interface SyncMetricsRegistrySnapshot {
 
 export interface SyncMetricsRegistry {
   recordSyncRun(input: {
-    status: SyncRunResult['status'];
+    status: SyncRunResult["status"];
     durationMs: number;
     queueDepth: number;
     conflicts: number;

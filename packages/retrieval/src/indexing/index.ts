@@ -1,4 +1,9 @@
-import type { Chunk, ChunkingStrategy, DataSource, Document } from '../types.js';
+import type {
+  Chunk,
+  ChunkingStrategy,
+  DataSource,
+  Document,
+} from "../types.js";
 
 export interface IndexingPipelineOptions {
   chunkSize?: number;
@@ -11,7 +16,7 @@ function hashString(str: string): string {
   for (const char of str) {
     const charCode = char.codePointAt(0) || 0;
     hash = (hash << 5) - hash + charCode;
-    hash = hash & hash;
+    hash &= hash;
   }
   return Math.abs(hash).toString(16);
 }
@@ -26,29 +31,36 @@ export class IndexingPipeline {
     this.chunkSize = options.chunkSize ?? 100;
     this.chunkOverlap = options.chunkOverlap ?? 0;
     this.semanticThreshold = options.semanticThreshold ?? 0.7;
-    this.currentStrategy = 'semantic';
+    this.currentStrategy = "semantic";
   }
 
-  async chunk(source: DataSource, strategy: ChunkingStrategy = 'semantic'): Promise<Chunk[]> {
-    const sourcePath = source.path ?? 'unknown';
-    const content = source.content ?? '';
+  async chunk(
+    source: DataSource,
+    strategy: ChunkingStrategy = "semantic"
+  ): Promise<Chunk[]> {
+    const sourcePath = source.path ?? "unknown";
+    const content = source.content ?? "";
     switch (strategy) {
-      case 'semantic':
+      case "semantic": {
         return this.semanticChunk(content, sourcePath);
-      case 'fixed':
+      }
+      case "fixed": {
         return this.fixedSizeChunk(content, sourcePath);
-      case 'ast':
+      }
+      case "ast": {
         return this.astChunk(content, sourcePath);
-      default:
+      }
+      default: {
         throw new Error(`Unknown chunking strategy: ${String(strategy)}`);
+      }
     }
   }
 
   async semanticChunk(content: string, sourcePath: string): Promise<Chunk[]> {
-    this.currentStrategy = 'semantic';
+    this.currentStrategy = "semantic";
     const chunks: Chunk[] = [];
     const sentences = content.split(/(?<=[.!?])\s+/);
-    let currentChunk = '';
+    let currentChunk = "";
     let currentPosition = 0;
 
     for (const sentence of sentences) {
@@ -58,9 +70,12 @@ export class IndexingPipeline {
       } else {
         if (currentChunk) {
           chunks.push(
-            this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
-              return content.slice(0, pos).split('\n').length;
-            })
+            this.createChunk(
+              currentChunk,
+              sourcePath,
+              currentPosition,
+              (pos: number) => content.slice(0, pos).split("\n").length
+            )
           );
           currentPosition += currentChunk.length;
         }
@@ -70,20 +85,23 @@ export class IndexingPipeline {
 
     if (currentChunk) {
       chunks.push(
-        this.createChunk(currentChunk, sourcePath, currentPosition, (pos: number) => {
-          return content.slice(0, pos).split('\n').length;
-        })
+        this.createChunk(
+          currentChunk,
+          sourcePath,
+          currentPosition,
+          (pos: number) => content.slice(0, pos).split("\n").length
+        )
       );
     }
     return chunks;
   }
 
   async fixedSizeChunk(content: string, sourcePath: string): Promise<Chunk[]> {
-    this.currentStrategy = 'fixed';
+    this.currentStrategy = "fixed";
     const chunks: Chunk[] = [];
     const words = content
       .split(/\s+/)
-      .map(word => word.trim())
+      .map((word) => word.trim())
       .filter(Boolean);
 
     if (words.length === 0) {
@@ -102,7 +120,9 @@ export class IndexingPipeline {
         break;
       }
 
-      chunks.push(this.createChunk(chunkWords.join(' '), sourcePath, start + 1));
+      chunks.push(
+        this.createChunk(chunkWords.join(" "), sourcePath, start + 1)
+      );
 
       if (end >= words.length) {
         break;
@@ -113,7 +133,7 @@ export class IndexingPipeline {
   }
 
   async astChunk(content: string, sourcePath: string): Promise<Chunk[]> {
-    this.currentStrategy = 'ast';
+    this.currentStrategy = "ast";
     const chunks: Chunk[] = [];
     const blocks = this.splitByBlock(content);
     let position = 0;
@@ -121,9 +141,9 @@ export class IndexingPipeline {
     for (const block of blocks) {
       if (block.trim()) {
         chunks.push(
-          this.createChunk(block, sourcePath, position, (pos: number) => {
-            return this.getCodePosition(content, pos);
-          })
+          this.createChunk(block, sourcePath, position, (pos: number) =>
+            this.getCodePosition(content, pos)
+          )
         );
         position += block.length;
       }
@@ -133,33 +153,48 @@ export class IndexingPipeline {
 
   private splitByBlock(code: string): string[] {
     const blocks: string[] = [];
-    let currentBlock = '';
+    let currentBlock = "";
     let braceDepth = 0;
     let parenDepth = 0;
     let inFunction = false;
 
     for (let i = 0; i < code.length; i++) {
-      const char = code[i] ?? '';
-      const nextChar = code[i + 1] ?? '';
+      const char = code[i] ?? "";
+      const nextChar = code[i + 1] ?? "";
 
-      if (char === '{') braceDepth++;
-      else if (char === '}') braceDepth--;
-      else if (char === '(') parenDepth++;
-      else if (char === ')') parenDepth--;
+      if (char === "{") {
+        braceDepth++;
+      } else if (char === "}") {
+        braceDepth--;
+      } else if (char === "(") {
+        parenDepth++;
+      } else if (char === ")") {
+        parenDepth--;
+      }
 
       currentBlock += char;
 
-      const splitDecision = this.evaluateSplit(code, i, nextChar, braceDepth, parenDepth, inFunction, currentBlock);
+      const splitDecision = this.evaluateSplit(
+        code,
+        i,
+        nextChar,
+        braceDepth,
+        parenDepth,
+        inFunction,
+        currentBlock
+      );
       inFunction = splitDecision.newInFunction;
 
       if (splitDecision.shouldSplit) {
         blocks.push(currentBlock.trim());
-        currentBlock = '';
+        currentBlock = "";
         inFunction = false;
       }
     }
 
-    if (currentBlock.trim()) blocks.push(currentBlock.trim());
+    if (currentBlock.trim()) {
+      blocks.push(currentBlock.trim());
+    }
     return blocks.length > 0 ? blocks : [code];
   }
 
@@ -173,24 +208,25 @@ export class IndexingPipeline {
     currentBlock: string
   ): { shouldSplit: boolean; newInFunction: boolean } {
     const isFunction = /function\b/.test(code.slice(i - 8, i + 1));
-    const isAsync = code.slice(i - 5, i + 1).includes('async') && nextChar === ' ';
-    const isClass = code.slice(i - 5, i + 1).includes('class');
-    const isExport = code.slice(i - 6, i + 1).includes('export');
+    const isAsync =
+      code.slice(i - 5, i + 1).includes("async") && nextChar === " ";
+    const isClass = code.slice(i - 5, i + 1).includes("class");
+    const isExport = code.slice(i - 6, i + 1).includes("export");
 
     let newInFunction = inFunction;
     if ((isFunction || isAsync || isClass) && !inFunction) {
       newInFunction = true;
     }
 
-    const char = code[i] ?? '';
+    const char = code[i] ?? "";
     const shouldSplit =
       newInFunction &&
       braceDepth === 0 &&
       parenDepth === 0 &&
-      (char === '\n' || char === ';') &&
+      (char === "\n" || char === ";") &&
       (isExport || currentBlock.trim().length > 50);
 
-    return { shouldSplit, newInFunction };
+    return { newInFunction, shouldSplit };
   }
 
   private createChunk(
@@ -200,51 +236,57 @@ export class IndexingPipeline {
     calculateLine?: (pos: number) => number
   ): Chunk {
     const contentHash = hashString(content);
-    const startLine = calculateLine ? calculateLine(startIdxOrPosition) : Math.max(1, startIdxOrPosition);
+    const startLine = calculateLine
+      ? calculateLine(startIdxOrPosition)
+      : Math.max(1, startIdxOrPosition);
 
     return {
-      id: `chunk-${contentHash}`,
       content,
+      id: `chunk-${contentHash}`,
       metadata: {
+        endLine: startLine + content.split("\n").length - 1,
+        language: this.detectLanguage(sourcePath),
         source: sourcePath,
         startLine,
-        endLine: startLine + content.split('\n').length - 1,
         strategy: this.currentStrategy,
-        language: this.detectLanguage(sourcePath)
-      }
+      },
     };
   }
 
   private detectLanguage(filePath: string): string {
-    const ext = filePath.split('.').pop()?.toLowerCase();
+    const ext = filePath.split(".").pop()?.toLowerCase();
     switch (ext) {
-      case 'ts':
-      case 'tsx':
-        return 'typescript';
-      case 'js':
-      case 'jsx':
-        return 'javascript';
-      case 'py':
-        return 'python';
-      default:
-        return 'text';
+      case "ts":
+      case "tsx": {
+        return "typescript";
+      }
+      case "js":
+      case "jsx": {
+        return "javascript";
+      }
+      case "py": {
+        return "python";
+      }
+      default: {
+        return "text";
+      }
     }
   }
 
   private getCodePosition(text: string, position: number): number {
-    return position <= 0 ? 1 : text.slice(0, position).split('\n').length;
+    return position <= 0 ? 1 : text.slice(0, position).split("\n").length;
   }
 
   public index(chunks: Chunk[]): Document {
-    const content = chunks.map(c => c.content).join(' ');
+    const content = chunks.map((c) => c.content).join(" ");
     return {
-      id: `doc-${hashString(content)}`,
-      content,
       chunks,
+      content,
+      id: `doc-${hashString(content)}`,
       metadata: {
         chunkCount: chunks.length,
-        indexedAt: new Date().toISOString()
-      }
+        indexedAt: new Date().toISOString(),
+      },
     };
   }
 }

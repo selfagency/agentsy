@@ -34,29 +34,32 @@
 ## Example
 
 ```ts
-import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
+import { createAgentLoop, isStepCount } from "@agentsy/orchestrator/agent";
 
 const loop = createAgentLoop({
   execute,
   stopWhen: isStepCount(5),
-  buildToolResultMessages: async () => []
+  buildToolResultMessages: async () => [],
 });
 ```
 
 ## Implementation example with neighbors
 
 ```ts
-import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
-import { buildToolResultMessage } from '@agentsy/core/tool-calls';
+import { createAgentLoop, isStepCount } from "@agentsy/orchestrator/agent";
+import { buildToolResultMessage } from "@agentsy/core/tool-calls";
 
 const loop = createAgentLoop({
   stopWhen: [isStepCount(6)],
-  buildToolResultMessages: async toolCalls => toolCalls.map(call => buildToolResultMessage(call, { ok: true }))
+  buildToolResultMessages: async (toolCalls) =>
+    toolCalls.map((call) => buildToolResultMessage(call, { ok: true })),
 });
 
-for await (const part of loop.run([{ role: 'user', content: 'Summarize the repository status.' }])) {
-  if (part.type === 'tool_call') {
-    console.log('Tool requested:', part.call.name);
+for await (const part of loop.run([
+  { role: "user", content: "Summarize the repository status." },
+])) {
+  if (part.type === "tool_call") {
+    console.log("Tool requested:", part.call.name);
   }
 }
 ```

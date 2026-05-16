@@ -1,7 +1,7 @@
-import type { UsageQuota, UsageStatusBarConfig } from '../types/errors.js';
+import type { UsageQuota, UsageStatusBarConfig } from "../types/errors.js";
 
 const DEFAULT_REFRESH_INTERVAL = 60_000;
-const DEFAULT_TOOLTIP = '{{used}} / {{total}} {{unit}} used ({{percent}}%)';
+const DEFAULT_TOOLTIP = "{{used}} / {{total}} {{unit}} used ({{percent}}%)";
 const DEFAULT_WARNING_THRESHOLD = 0.8;
 const DEFAULT_ERROR_THRESHOLD = 0.95;
 
@@ -13,7 +13,7 @@ export class UsageStatusBar {
   // Use unknown to avoid type compatibility issues with VS Code's StatusBarItem
   private statusBarItem: unknown = undefined;
   private refreshTimer: ReturnType<typeof setTimeout> | undefined;
-  private readonly disposables: Array<{ dispose(): void }> = [];
+  private readonly disposables: { dispose(): void }[] = [];
 
   constructor(private readonly config: UsageStatusBarConfig) {}
 
@@ -23,13 +23,18 @@ export class UsageStatusBar {
    */
   async show(): Promise<void> {
     try {
-      const vscode = await import('vscode');
-      const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-      if (!item) return;
+      const vscode = await import("vscode");
+      const item = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right,
+        100
+      );
+      if (!item) {
+        return;
+      }
       this.statusBarItem = item;
       if (this.config.onClickRefresh) {
         const itemWithCommand = item as unknown as { command: string };
-        itemWithCommand.command = 'agentsy.refreshUsage';
+        itemWithCommand.command = "agentsy.refreshUsage";
       }
       this.disposables.push(item);
       await this.refresh();
@@ -57,7 +62,9 @@ export class UsageStatusBar {
    * Update the status bar display for a given quota.
    */
   updateDisplay(quota: UsageQuota): void {
-    if (!this.statusBarItem) return;
+    if (!this.statusBarItem) {
+      return;
+    }
 
     const item = this.statusBarItem as Record<string, unknown>;
     const percent = Math.round(quota.percentUsed * 100);
@@ -69,23 +76,23 @@ export class UsageStatusBar {
 
     const template = this.config.tooltipTemplate ?? DEFAULT_TOOLTIP;
     item.tooltip = template
-      .replace('{{used}}', quota.used.toLocaleString())
-      .replace('{{total}}', quota.total.toLocaleString())
-      .replace('{{unit}}', quota.unit)
-      .replace('{{percent}}', String(percent));
+      .replace("{{used}}", quota.used.toLocaleString())
+      .replace("{{total}}", quota.total.toLocaleString())
+      .replace("{{unit}}", quota.unit)
+      .replace("{{percent}}", String(percent));
 
     if (quota.percentUsed >= error) {
-      const colorScheme = this.config.colorScheme;
+      const { colorScheme } = this.config;
       if (colorScheme) {
         item.color = colorScheme.error;
       }
     } else if (quota.percentUsed >= warning) {
-      const colorScheme = this.config.colorScheme;
+      const { colorScheme } = this.config;
       if (colorScheme) {
         item.color = colorScheme.warning;
       }
     } else {
-      const colorScheme = this.config.colorScheme;
+      const { colorScheme } = this.config;
       if (colorScheme) {
         item.color = colorScheme.normal;
       }
@@ -105,7 +112,9 @@ export class UsageStatusBar {
 
   dispose(): void {
     this.stopAutoRefresh();
-    for (const d of this.disposables) d.dispose();
+    for (const d of this.disposables) {
+      d.dispose();
+    }
     this.disposables.length = 0;
     this.config.quotaDataSource.dispose?.();
   }
@@ -140,8 +149,12 @@ export function getQuotaStatus(
   percentUsed: number,
   warningThreshold = DEFAULT_WARNING_THRESHOLD,
   errorThreshold = DEFAULT_ERROR_THRESHOLD
-): 'normal' | 'warning' | 'error' {
-  if (percentUsed >= errorThreshold) return 'error';
-  if (percentUsed >= warningThreshold) return 'warning';
-  return 'normal';
+): "normal" | "warning" | "error" {
+  if (percentUsed >= errorThreshold) {
+    return "error";
+  }
+  if (percentUsed >= warningThreshold) {
+    return "warning";
+  }
+  return "normal";
 }

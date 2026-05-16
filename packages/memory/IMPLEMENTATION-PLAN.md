@@ -227,7 +227,7 @@ export interface MemoryStore {
 ```typescript
 export interface MemoryEntry {
   id: MemoryId;
-  type: 'semantic' | 'episodic' | 'procedural';
+  type: "semantic" | "episodic" | "procedural";
   scope: MemoryScope;
   content: string;
   embedding?: number[];
@@ -398,21 +398,21 @@ Following cognitive science research and Letta's agent memory insights:
 ```typescript
 // Memory hierarchy tiers (Enhanced with research insights)
 export enum MemoryTier {
-  SENSORY = 'sensory', // Raw input buffer (seconds to minutes)
-  WORKING = 'working', // Active context window (hours)
-  SHORT_TERM = 'short-term', // Message buffer + recent memories (days)
-  LONG_TERM = 'long-term', // Semantic + episodic consolidated (months)
-  PERMANENT = 'permanent', // Core procedural knowledge (years)
-  ARCHIVAL = 'archival' // External database storage (indefinite)
+  SENSORY = "sensory", // Raw input buffer (seconds to minutes)
+  WORKING = "working", // Active context window (hours)
+  SHORT_TERM = "short-term", // Message buffer + recent memories (days)
+  LONG_TERM = "long-term", // Semantic + episodic consolidated (months)
+  PERMANENT = "permanent", // Core procedural knowledge (years)
+  ARCHIVAL = "archival", // External database storage (indefinite)
 }
 
 // Memory types based on cognitive science research
 export enum MemoryType {
-  SEMANTIC = 'semantic', // Facts, concepts, relationships
-  EPISODIC = 'episodic', // Events, experiences, conversations
-  PROCEDURAL = 'procedural', // Skills, routines, processes
-  WORKING = 'working', // Active context window content
-  SENSORY = 'sensory' // Raw, unfiltered input
+  SEMANTIC = "semantic", // Facts, concepts, relationships
+  EPISODIC = "episodic", // Events, experiences, conversations
+  PROCEDURAL = "procedural", // Skills, routines, processes
+  WORKING = "working", // Active context window content
+  SENSORY = "sensory", // Raw, unfiltered input
 }
 
 // Memory entry with rich metadata (Enhanced)
@@ -432,7 +432,7 @@ export interface MemoryEntry {
   importance: number;
   decayRate: number;
   // New fields from research insights
-  temperature: 'hot' | 'warm' | 'cold'; // Access frequency indicator
+  temperature: "hot" | "warm" | "cold"; // Access frequency indicator
   compressionRatio?: number; // For summarized content
   consolidationLevel: number; // Processing depth (0-raw, 10-permanent)
   editHistory: MemoryEdit[]; // Track changes over time
@@ -443,7 +443,7 @@ export interface MemoryEntry {
 
 // Multi-modal content support
 export interface MultiModalContent {
-  type: 'text' | 'image' | 'audio' | 'code' | 'structured' | 'conversation';
+  type: "text" | "image" | "audio" | "code" | "structured" | "conversation";
   data: unknown;
   metadata: {
     mimeType?: string;
@@ -456,16 +456,35 @@ export interface MultiModalContent {
 // Memory manager (Enhanced with context engineering)
 export interface MemoryManager {
   // Storage and retrieval
-  store(content: MultiModalContent, options?: StorageOptions): Promise<MemoryEntry>;
-  retrieve(query: MemoryQuery, options?: RetrievalOptions): Promise<MemoryEntry[]>;
+  store(
+    content: MultiModalContent,
+    options?: StorageOptions
+  ): Promise<MemoryEntry>;
+  retrieve(
+    query: MemoryQuery,
+    options?: RetrievalOptions
+  ): Promise<MemoryEntry[]>;
 
   // Context engineering functions (NEW)
-  buildContext(task: TaskDescription, constraints: ContextConstraints): Promise<BuildContextResult>;
-  manageContextWindow(context: BuildContextResult, budget: TokenBudget): Promise<ManagedContext>;
-  optimizeContext(context: ManagedContext, feedback: QualityFeedback): Promise<OptimizedContext>;
+  buildContext(
+    task: TaskDescription,
+    constraints: ContextConstraints
+  ): Promise<BuildContextResult>;
+  manageContextWindow(
+    context: BuildContextResult,
+    budget: TokenBudget
+  ): Promise<ManagedContext>;
+  optimizeContext(
+    context: ManagedContext,
+    feedback: QualityFeedback
+  ): Promise<OptimizedContext>;
 
   // Memory block management (NEW)
-  createMemoryBlock(label: string, description: string, limit: number): Promise<MemoryBlock>;
+  createMemoryBlock(
+    label: string,
+    description: string,
+    limit: number
+  ): Promise<MemoryBlock>;
   updateMemoryBlock(blockId: string, content: string): Promise<void>;
   pinToContext(blockId: string, priority: number): Promise<void>;
   rewriteContext(criteria: RewriteCriteria): Promise<RewriteResult>;
@@ -477,25 +496,42 @@ export interface MemoryManager {
   evictFromContext(evictionPolicy: EvictionPolicy): Promise<EvictionResult>;
 
   // Search and exploration
-  semanticSearch(query: string, options?: SearchOptions): Promise<MemoryEntry[]>;
-  similaritySearch(embedding: VectorEmbedding, options?: SearchOptions): Promise<MemoryEntry[]>;
+  semanticSearch(
+    query: string,
+    options?: SearchOptions
+  ): Promise<MemoryEntry[]>;
+  similaritySearch(
+    embedding: VectorEmbedding,
+    options?: SearchOptions
+  ): Promise<MemoryEntry[]>;
   contextualSearch(context: ConversationContext): Promise<MemoryEntry[]>;
   typeSearch(memoryType: MemoryType, query: string): Promise<MemoryEntry[]>;
   temperatureSearch(temperature: MemoryTemperature): Promise<MemoryEntry[]>;
 
   // Memory relationships
-  addRelationship(from: string, to: string, type: RelationshipType): Promise<void>;
-  findRelated(memoryId: string, options?: RelatedOptions): Promise<MemoryEntry[]>;
+  addRelationship(
+    from: string,
+    to: string,
+    type: RelationshipType
+  ): Promise<void>;
+  findRelated(
+    memoryId: string,
+    options?: RelatedOptions
+  ): Promise<MemoryEntry[]>;
   exploreGraph(startId: string, options?: GraphOptions): Promise<MemoryGraph>;
 
   // Learning and adaptation
   learn(interaction: LearningInteraction): Promise<void>;
-  getRecommendations(context: ConversationContext): Promise<MemoryRecommendation[]>;
+  getRecommendations(
+    context: ConversationContext
+  ): Promise<MemoryRecommendation[]>;
   optimize(criteria: OptimizationCriteria): Promise<OptimizationResult>;
 
   // Sleep-time compute (NEW)
   scheduleSleepProcessing(schedule: SleepSchedule): Promise<void>;
-  optimizeMemoryDuringSleep(criteria: SleepOptimizationCriteria): Promise<SleepResult>;
+  optimizeMemoryDuringSleep(
+    criteria: SleepOptimizationCriteria
+  ): Promise<SleepResult>;
   consolidateDuringSleep(timeBudget: TimeBudget): Promise<ConsolidationResult>;
 }
 
@@ -510,8 +546,13 @@ export interface MemoryCompressor {
 // Context-aware retrieval
 export interface ContextualRetriever {
   retrieveByContext(context: ConversationContext): Promise<ContextualResult>;
-  getRelevanceScore(memory: MemoryEntry, context: ConversationContext): Promise<number>;
-  buildRetrievalProfile(context: ConversationContext): Promise<RetrievalProfile>;
+  getRelevanceScore(
+    memory: MemoryEntry,
+    context: ConversationContext
+  ): Promise<number>;
+  buildRetrievalProfile(
+    context: ConversationContext
+  ): Promise<RetrievalProfile>;
 }
 
 // Continuous learning system (Enhanced)
@@ -528,8 +569,12 @@ export interface LearningEngine {
 
   // Sleep-time learning (NEW)
   scheduleSleepProcessing(schedule: SleepSchedule): Promise<void>;
-  optimizeMemoryDuringSleep(criteria: SleepOptimizationCriteria): Promise<SleepResult>;
-  performMemoryMaintenance(maintenanceTasks: MaintenanceTask[]): Promise<MaintenanceResult>;
+  optimizeMemoryDuringSleep(
+    criteria: SleepOptimizationCriteria
+  ): Promise<SleepResult>;
+  performMemoryMaintenance(
+    maintenanceTasks: MaintenanceTask[]
+  ): Promise<MaintenanceResult>;
 }
 
 // New interfaces from research insights
@@ -570,12 +615,12 @@ export interface TokenBudget {
 }
 
 export interface EvictionPolicy {
-  strategy: 'importance' | 'temperature' | 'recency' | 'hybrid';
+  strategy: "importance" | "temperature" | "recency" | "hybrid";
   preservePercentage: number;
   targetReduction: number;
 }
 
-export type MemoryTemperature = 'hot' | 'warm' | 'cold';
+export type MemoryTemperature = "hot" | "warm" | "cold";
 
 export interface SleepOptimizationCriteria {
   timeBudget: number;
@@ -594,51 +639,51 @@ export interface SleepOptimizationCriteria {
 const memoryTiers = {
   // Sensory memory - raw input buffer
   sensory: {
-    store: new InMemoryStore({ maxSize: 100, ttl: '5m' }),
-    evictionPolicy: 'fifo',
-    compression: false
+    store: new InMemoryStore({ maxSize: 100, ttl: "5m" }),
+    evictionPolicy: "fifo",
+    compression: false,
   },
 
   // Working memory - active context window
   working: {
-    store: new InMemoryStore({ maxSize: 10000, ttl: '4h' }),
+    store: new InMemoryStore({ maxSize: 10000, ttl: "4h" }),
     blockManagement: new MemoryBlockManager(),
     contextWindowAware: true,
-    smartEviction: new IntelligentEviction()
+    smartEviction: new IntelligentEviction(),
   },
 
   // Short-term memory - message buffer + recent
   shortTerm: {
-    store: new SQLiteStore({ path: './short-term.db', maxSize: '50MB' }),
-    includes: ['message_buffer', 'recent_experiences'],
+    store: new SQLiteStore({ path: "./short-term.db", maxSize: "50MB" }),
+    includes: ["message_buffer", "recent_experiences"],
     vectorSearch: true,
-    temperatureTracking: true
+    temperatureTracking: true,
   },
 
   // Long-term memory - semantic + episodic consolidated
   longTerm: {
-    store: new SQLiteStore({ path: './long-term.db', maxSize: '500MB' }),
-    includes: ['semantic_knowledge', 'episodic_memories'],
+    store: new SQLiteStore({ path: "./long-term.db", maxSize: "500MB" }),
+    includes: ["semantic_knowledge", "episodic_memories"],
     vectorIndex: true,
     relationshipGraph: true,
-    compression: 'automatic'
+    compression: "automatic",
   },
 
   // Permanent memory - procedural knowledge
   permanent: {
-    store: new SQLiteStore({ path: './permanent.db', maxSize: '2GB' }),
-    includes: ['procedural_skills', 'core_facts'],
+    store: new SQLiteStore({ path: "./permanent.db", maxSize: "2GB" }),
+    includes: ["procedural_skills", "core_facts"],
     versioned: true,
-    backupRequired: true
+    backupRequired: true,
   },
 
   // Archival memory - external database
   archival: {
     store: new VectorDBStore({ connectionString: process.env.VECTOR_DB }),
-    includes: ['processed_knowledge', 'indexed_content'],
+    includes: ["processed_knowledge", "indexed_content"],
     searchOptimized: true,
-    scalable: true
-  }
+    scalable: true,
+  },
 };
 
 // Context engineering system (NEW)
@@ -646,36 +691,36 @@ const contextEngineering = {
   builder: new ContextBuilder({
     informationGatherer: new RichContextGatherer(),
     formatter: new ContextFormatter(),
-    validator: new ContextValidator()
+    validator: new ContextValidator(),
   }),
   windowManager: new ContextWindowManager({
     budgetManager: new TokenBudgetManager(),
     evictionStrategy: new SmartEvictionStrategy({ preservePercentage: 30 }),
-    optimizer: new ContextOptimizer()
+    optimizer: new ContextOptimizer(),
   }),
   qualityAssurance: new ContextQualityAssurance({
     completenessChecker: new CompletenessChecker(),
     relevanceScorer: new RelevanceScorer(),
-    formatOptimizer: new FormatOptimizer()
-  })
+    formatOptimizer: new FormatOptimizer(),
+  }),
 };
 
 // Sleep-time compute system (NEW)
 const sleepTimeSystem = {
   scheduler: new SleepScheduler({
     idleDetection: new IdleDetector(),
-    timeBudgetManager: new TimeBudgetManager()
+    timeBudgetManager: new TimeBudgetManager(),
   }),
   memoryOptimizer: new MemoryOptimizer({
     consolidationEngine: new ConsolidationEngine(),
     relationshipRefiner: new RelationshipRefiner(),
-    compressionEngine: new AdvancedCompressionEngine()
+    compressionEngine: new AdvancedCompressionEngine(),
   }),
   learningEngine: new SleepLearningEngine({
     patternDetector: new PatternDetector(),
     preferenceLearner: new PreferenceLearner(),
-    feedbackProcessor: new FeedbackProcessor()
-  })
+    feedbackProcessor: new FeedbackProcessor(),
+  }),
 };
 ```
 
@@ -685,10 +730,10 @@ const sleepTimeSystem = {
 // Git-backed memory with automatic sync
 const gitIntegration = {
   autoCommit: true,
-  hookType: ['pre-commit', 'post-merge', 'post-checkout'],
+  hookType: ["pre-commit", "post-merge", "post-checkout"],
   conflictResolution: true,
   branchTracking: true,
-  decisionLogging: true
+  decisionLogging: true,
 };
 ```
 
@@ -1219,12 +1264,18 @@ interface LearningEnhancements {
 
   // Context circulation
   learnFromContextFailures: (failures: ContextFailure[]) => Promise<void>;
-  optimizeContextBuilding: (usage: ContextUsage[]) => Promise<OptimizationResult>;
-  learnContentPreference: (feedback: ContentFeedback) => Promise<PreferenceProfile>;
+  optimizeContextBuilding: (
+    usage: ContextUsage[]
+  ) => Promise<OptimizationResult>;
+  learnContentPreference: (
+    feedback: ContentFeedback
+  ) => Promise<PreferenceProfile>;
 
   // Sleep-time compute
   scheduleSleepProcessing: (schedule: SleepSchedule) => Promise<void>;
-  optimizeDuringSleep: (criteria: SleepOptimizationCriteria) => Promise<SleepResult>;
+  optimizeDuringSleep: (
+    criteria: SleepOptimizationCriteria
+  ) => Promise<SleepResult>;
   consolidateDuringSleep: (timeBudget: number) => Promise<ConsolidationResult>;
 }
 ```

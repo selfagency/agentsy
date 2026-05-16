@@ -100,19 +100,19 @@ The recommended remote-sync transport for this package is Turso Sync, not the le
 For integration tests that exercise sync endpoints, use MSW (`msw` v2) handlers to keep HTTP behavior deterministic and reusable across suites.
 
 ```ts
-import { createTursoManager } from '@agentsy/memory';
+import { createTursoManager } from "@agentsy/memory";
 
 const manager = createTursoManager({
-  path: './.agentsy/memory-sync.db',
-  databaseUrl: process.env.TURSO_DATABASE_URL ?? 'http://localhost:8080',
-  authToken: process.env.TURSO_AUTH_TOKEN ?? '',
+  path: "./.agentsy/memory-sync.db",
+  databaseUrl: process.env.TURSO_DATABASE_URL ?? "http://localhost:8080",
+  authToken: process.env.TURSO_AUTH_TOKEN ?? "",
   syncIntervalMs: Number(process.env.AGENTSY_MEMORY_SYNC_INTERVAL_MS ?? 5_000),
   maxRetries: 3,
-  clientName: 'agentsy-memory',
-  tracing: 'warn',
-  mergePolicy: 'lastWriteWins',
-  mode: 'remote-shadow',
-  credentialSource: 'environment'
+  clientName: "agentsy-memory",
+  tracing: "warn",
+  mergePolicy: "lastWriteWins",
+  mode: "remote-shadow",
+  credentialSource: "environment",
 });
 ```
 
@@ -123,24 +123,24 @@ When `path` is provided, `createTursoManager()` will build a default Turso Sync 
 For persistent unresolved conflicts, use the file-backed store:
 
 ```ts
-import { createFileConflictStore } from '@agentsy/memory';
+import { createFileConflictStore } from "@agentsy/memory";
 
 const conflictStore = createFileConflictStore({
-  filePath: './.agentsy/memory-conflicts.json'
+  filePath: "./.agentsy/memory-conflicts.json",
 });
 ```
 
 To bridge higher-level raw/wiki/vector state into sync and backup workflows:
 
 ```ts
-import { createMemoryStateAdapter } from '@agentsy/memory';
+import { createMemoryStateAdapter } from "@agentsy/memory";
 
 const adapter = createMemoryStateAdapter({
   getState: async () => memoryState,
-  applyState: async nextState => {
+  applyState: async (nextState) => {
     memoryState = nextState;
   },
-  getCursor: () => 'cursor-1'
+  getCursor: () => "cursor-1",
 });
 ```
 

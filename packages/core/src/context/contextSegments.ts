@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
 export interface ContextFingerprint {
   value: string;
@@ -10,7 +10,7 @@ export interface ContextFingerprint {
 export interface ContextSegment {
   content: string;
   fingerprint: ContextFingerprint;
-  reuseClass: 'hot' | 'warm' | 'cold';
+  reuseClass: "hot" | "warm" | "cold";
   invalidations: string[];
 }
 
@@ -22,9 +22,11 @@ export interface BuildContextSegmentsInput {
   templateVersion: string;
 }
 
-function fingerprintValue(parts: Array<string | undefined>): string {
-  const source = parts.filter((part): part is string => part !== undefined).join('|');
-  return `sha256:${createHash('sha256').update(source).digest('hex')}`;
+function fingerprintValue(parts: (string | undefined)[]): string {
+  const source = parts
+    .filter((part): part is string => part !== undefined)
+    .join("|");
+  return `sha256:${createHash("sha256").update(source).digest("hex")}`;
 }
 
 function buildFingerprint(
@@ -34,22 +36,37 @@ function buildFingerprint(
   content: string
 ): ContextFingerprint {
   return {
-    value: fingerprintValue([modelFamily, templateVersion, String(schemaVersion), content]),
     modelFamily,
+    schemaVersion,
     templateVersion,
-    schemaVersion
+    value: fingerprintValue([
+      modelFamily,
+      templateVersion,
+      String(schemaVersion),
+      content,
+    ]),
   };
 }
 
-export function buildContextSegments(input: BuildContextSegmentsInput): ContextSegment[] {
-  const invalidations = [`model-family:${input.modelFamily}`, `template:${input.templateVersion}`];
+export function buildContextSegments(
+  input: BuildContextSegmentsInput
+): ContextSegment[] {
+  const invalidations = [
+    `model-family:${input.modelFamily}`,
+    `template:${input.templateVersion}`,
+  ];
   const segments: ContextSegment[] = [
     {
       content: input.systemPrompt,
-      fingerprint: buildFingerprint(input.modelFamily, input.templateVersion, 1, `system:${input.systemPrompt}`),
-      reuseClass: 'hot',
-      invalidations
-    }
+      fingerprint: buildFingerprint(
+        input.modelFamily,
+        input.templateVersion,
+        1,
+        `system:${input.systemPrompt}`
+      ),
+      invalidations,
+      reuseClass: "hot",
+    },
   ];
 
   if (input.toolSchema !== undefined) {
@@ -61,17 +78,22 @@ export function buildContextSegments(input: BuildContextSegmentsInput): ContextS
         1,
         `toolSchema:${JSON.stringify(input.toolSchema)}`
       ),
-      reuseClass: 'warm',
-      invalidations: [...invalidations, 'tool-schema']
+      invalidations: [...invalidations, "tool-schema"],
+      reuseClass: "warm",
     });
   }
 
   if (input.memorySummary !== undefined) {
     segments.push({
       content: input.memorySummary,
-      fingerprint: buildFingerprint(input.modelFamily, input.templateVersion, 1, `memory:${input.memorySummary}`),
-      reuseClass: 'warm',
-      invalidations: [...invalidations, 'memory-summary']
+      fingerprint: buildFingerprint(
+        input.modelFamily,
+        input.templateVersion,
+        1,
+        `memory:${input.memorySummary}`
+      ),
+      invalidations: [...invalidations, "memory-summary"],
+      reuseClass: "warm",
     });
   }
 

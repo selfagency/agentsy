@@ -28,10 +28,16 @@ Use `@agentsy/core/context` when you need lightweight utilities for shaping prom
 ## Implementation example with neighbors
 
 ```ts
-import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/core/context';
+import {
+  dedupeXmlContextBlocksByTag,
+  splitLeadingXmlContextBlocks,
+  stripXmlContextTags,
+} from "@agentsy/core/context";
 
 const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(modelOutput);
-const mergedContext = dedupeXmlContextBlocksByTag([existingContext, ...contextBlocks].filter(Boolean));
+const mergedContext = dedupeXmlContextBlocksByTag(
+  [existingContext, ...contextBlocks].filter(Boolean)
+);
 const cleanBody = stripXmlContextTags(remaining);
 
 console.log({ mergedContext, cleanBody });

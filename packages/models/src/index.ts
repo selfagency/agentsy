@@ -1,5 +1,5 @@
-import os from 'node:os';
-import path from 'node:path';
+import os from "node:os";
+import path from "node:path";
 
 import type {
   LLMStatsLocalModel,
@@ -10,8 +10,8 @@ import type {
   ModelsDevProvider,
   ModelSelectionResult,
   SystemCapabilities,
-  TaskRequirements
-} from './types.js';
+  TaskRequirements,
+} from "./types.js";
 
 export type {
   LLMStatsLocalModel,
@@ -22,7 +22,7 @@ export type {
   ModelsDevProvider,
   ModelSelectionResult,
   SystemCapabilities,
-  TaskRequirements
+  TaskRequirements,
 };
 
 // Cache structure
@@ -33,14 +33,18 @@ interface CacheData {
 
 const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/i;
 
-const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+const FORBIDDEN_OBJECT_KEYS = new Set([
+  "__proto__",
+  "prototype",
+  "constructor",
+]);
 
 function isSafeLookupKey(key: string): boolean {
   return key.length > 0 && !FORBIDDEN_OBJECT_KEYS.has(key);
 }
 
 function normalizeModelId(id: string): string {
-  return id.trim().toLowerCase().replace('/', ':');
+  return id.trim().toLowerCase().replace("/", ":");
 }
 
 function clamp01(value: number): number {
@@ -67,13 +71,27 @@ function quantizationFactor(quantization?: string): number {
 
   const q = quantization.toLowerCase();
 
-  if (q.includes('q2')) return 0.2;
-  if (q.includes('q3')) return 0.28;
-  if (q.includes('q4')) return 0.36;
-  if (q.includes('q5')) return 0.45;
-  if (q.includes('q6')) return 0.56;
-  if (q.includes('q8')) return 0.7;
-  if (q.includes('f16')) return 1;
+  if (q.includes("q2")) {
+    return 0.2;
+  }
+  if (q.includes("q3")) {
+    return 0.28;
+  }
+  if (q.includes("q4")) {
+    return 0.36;
+  }
+  if (q.includes("q5")) {
+    return 0.45;
+  }
+  if (q.includes("q6")) {
+    return 0.56;
+  }
+  if (q.includes("q8")) {
+    return 0.7;
+  }
+  if (q.includes("f16")) {
+    return 1;
+  }
 
   return 0.5;
 }
@@ -104,11 +122,17 @@ function resolveModelsDevModel(
     for (const [modelKey, model] of Object.entries(provider.models)) {
       const normalizedModelKey = normalizeModelId(modelKey);
       const normalizedModelId = normalizeModelId(model.id);
-      const normalizedProviderModel = normalizeModelId(`${providerId}:${modelKey}`);
+      const normalizedProviderModel = normalizeModelId(
+        `${providerId}:${modelKey}`
+      );
 
-      const candidateIds = [normalizedModelId, normalizedModelKey, normalizedProviderModel];
+      const candidateIds = [
+        normalizedModelId,
+        normalizedModelKey,
+        normalizedProviderModel,
+      ];
       if (candidateIds.includes(normalizedTarget)) {
-        return { provider: providerId, model };
+        return { model, provider: providerId };
       }
     }
   }
@@ -118,14 +142,14 @@ function resolveModelsDevModel(
 
 function getCategoryBenchmarkScore(
   entry: LLMStatsLocalModel,
-  category: NonNullable<LocalRecommendationCriteria['taskCategory']>
+  category: NonNullable<LocalRecommendationCriteria["taskCategory"]>
 ): number {
   const categoryValue = entry.categoryScores?.[category];
-  if (typeof categoryValue === 'number') {
+  if (typeof categoryValue === "number") {
     return clamp01(categoryValue / 100);
   }
 
-  if (typeof entry.rankingScore === 'number') {
+  if (typeof entry.rankingScore === "number") {
     return clamp01(entry.rankingScore / 100);
   }
 
@@ -143,24 +167,39 @@ function getAvailableVram(systemCapabilities: SystemCapabilities): number {
 interface RecommendationInputs {
   entry: LLMStatsLocalModel;
   criteria: LocalRecommendationCriteria;
-  category: NonNullable<LocalRecommendationCriteria['taskCategory']>;
+  category: NonNullable<LocalRecommendationCriteria["taskCategory"]>;
   modelsDevData: ModelsDevAPI;
   systemCapabilities: SystemCapabilities;
   availableVram: number;
 }
 
-function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendationCriteria): boolean {
+function isEligibleForCriteria(
+  model: ModelsDevModel,
+  criteria: LocalRecommendationCriteria
+): boolean {
   if (criteria.requireToolCalling && !model.tool_call) {
     return false;
   }
-  if (criteria.minContext !== undefined && model.limit.context < criteria.minContext) {
+  if (
+    criteria.minContext !== undefined &&
+    model.limit.context < criteria.minContext
+  ) {
     return false;
   }
   return true;
 }
 
-function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommendation | null {
-  const { entry, criteria, category, modelsDevData, systemCapabilities, availableVram } = inputs;
+function buildRecommendation(
+  inputs: RecommendationInputs
+): LocalModelRecommendation | null {
+  const {
+    entry,
+    criteria,
+    category,
+    modelsDevData,
+    systemCapabilities,
+    availableVram,
+  } = inputs;
 
   if (!entry.isLocalCompatible) {
     return null;
@@ -168,7 +207,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
 
   const resolved = resolveModelsDevModel(modelsDevData, entry.modelId);
   const model = resolved?.model;
-  const provider = resolved?.provider ?? 'unknown';
+  const provider = resolved?.provider ?? "unknown";
 
   if (!model) {
     return null;
@@ -186,8 +225,10 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
     return null;
   }
 
-  const ramUtilization = requiredRamGb / Math.max(systemCapabilities.ramGb, 0.1);
-  const vramUtilization = requiredVramGb / Math.max(availableVram || requiredVramGb || 1, 0.1);
+  const ramUtilization =
+    requiredRamGb / Math.max(systemCapabilities.ramGb, 0.1);
+  const vramUtilization =
+    requiredVramGb / Math.max(availableVram || requiredVramGb || 1, 0.1);
   const utilization = Math.max(ramUtilization, vramUtilization);
 
   const fitScore = clamp01(1 - Math.abs(utilization - 0.65));
@@ -197,8 +238,10 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   const rawCost = (model.cost.input ?? 0) + (model.cost.output ?? 0);
   const costScore = clamp01(1 / (1 + rawCost * 50));
 
-  const contextScore = clamp01(model.limit.context / 256000);
-  const capabilityScore = criteria.requireToolCalling ? Number(model.tool_call) : 0.8;
+  const contextScore = clamp01(model.limit.context / 256_000);
+  const capabilityScore = criteria.requireToolCalling
+    ? Number(model.tool_call)
+    : 0.8;
 
   const fitWeight = 0.4;
   const benchmarkWeight = 0.3;
@@ -216,22 +259,22 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
     costWeight * costScore;
 
   const recommendation: LocalModelRecommendation = {
+    benchmarkScore,
+    capabilities: {
+      reasoning: model.reasoning,
+      tool_calling: model.tool_call,
+    },
+    compositeScore,
+    confidence: clamp01(compositeScore),
+    costScore,
+    estimatedCost: rawCost,
+    fitScore,
     model: model.id,
     provider,
-    confidence: clamp01(compositeScore),
-    estimatedCost: rawCost,
-    capabilities: {
-      tool_calling: model.tool_call,
-      reasoning: model.reasoning
-    },
     reasoning: `Fit ${fitScore.toFixed(2)}, benchmark ${benchmarkScore.toFixed(2)}, cost ${costScore.toFixed(2)} for ${category}`,
-    fitScore,
-    benchmarkScore,
-    speedScore,
-    costScore,
-    compositeScore,
     requiredRamGb,
-    requiredVramGb
+    requiredVramGb,
+    speedScore,
   };
 
   if (entry.runtime !== undefined) {
@@ -245,15 +288,21 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   return recommendation;
 }
 
-function getMemoryRequirements(entry: LLMStatsLocalModel): { requiredRamGb: number; requiredVramGb: number } {
+function getMemoryRequirements(entry: LLMStatsLocalModel): {
+  requiredRamGb: number;
+  requiredVramGb: number;
+} {
   if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
     return {
       requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
-      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0
+      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0,
     };
   }
 
-  return estimateMemoryRequirementsFromModelId(entry.modelId, entry.quantization);
+  return estimateMemoryRequirementsFromModelId(
+    entry.modelId,
+    entry.quantization
+  );
 }
 
 /**
@@ -266,19 +315,19 @@ export function recommendLocalModelsBySystemCapabilities(
   systemCapabilities: SystemCapabilities,
   criteria: LocalRecommendationCriteria = {}
 ): LocalModelRecommendation[] {
-  const category = criteria.taskCategory ?? 'general';
+  const category = criteria.taskCategory ?? "general";
   const availableVram = getAvailableVram(systemCapabilities);
 
   const recommendations: LocalModelRecommendation[] = [];
 
   for (const entry of llmStatsLocalModels) {
     const recommendation = buildRecommendation({
-      entry,
-      criteria,
+      availableVram,
       category,
+      criteria,
+      entry,
       modelsDevData,
       systemCapabilities,
-      availableVram
     });
 
     if (recommendation) {
@@ -300,18 +349,23 @@ export class ModelsDevClient {
   private cache?: ModelsDevAPI;
   private lastFetched?: Date;
   private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-  private readonly CACHE_FILE = path.join(os.tmpdir(), 'models.dev-cache.json');
+  private readonly CACHE_FILE = path.join(os.tmpdir(), "models.dev-cache.json");
 
   async fetchModelsDevData(force = false): Promise<ModelsDevAPI> {
     // Check cache first
-    if (!force && this.cache && this.lastFetched && Date.now() - this.lastFetched.getTime() < this.CACHE_TTL) {
+    if (
+      !force &&
+      this.cache &&
+      this.lastFetched &&
+      Date.now() - this.lastFetched.getTime() < this.CACHE_TTL
+    ) {
       return this.cache;
     }
 
     // Try to load from file cache
     try {
-      const fs = await import('node:fs/promises');
-      const cacheData = await fs.readFile(this.CACHE_FILE, 'utf-8');
+      const fs = await import("node:fs/promises");
+      const cacheData = await fs.readFile(this.CACHE_FILE, "utf-8");
       const cached = JSON.parse(cacheData) as CacheData;
       if (cached.timestamp && Date.now() - cached.timestamp < this.CACHE_TTL) {
         this.cache = cached.data;
@@ -323,15 +377,19 @@ export class ModelsDevClient {
     }
 
     // Fetch from API
-    const response = await fetch('https://models.dev/api.json');
+    const response = await fetch("https://models.dev/api.json");
     const data = (await response.json()) as ModelsDevAPI;
 
     // Save to cache
     try {
-      const fs = await import('node:fs/promises');
+      const fs = await import("node:fs/promises");
       const cacheDir = os.tmpdir();
       await fs.mkdir(cacheDir, { recursive: true });
-      await fs.writeFile(this.CACHE_FILE, JSON.stringify({ timestamp: Date.now(), data }), 'utf-8');
+      await fs.writeFile(
+        this.CACHE_FILE,
+        JSON.stringify({ data, timestamp: Date.now() }),
+        "utf-8"
+      );
     } catch {
       // Failed to save cache, ignore
     }
@@ -353,7 +411,7 @@ export class ModelsDevClient {
       return undefined;
     }
 
-    const cache = this.cache;
+    const { cache } = this;
     if (!cache || !Object.hasOwn(cache, providerId)) {
       return undefined;
     }
@@ -366,15 +424,15 @@ export class ModelsDevClient {
    */
   getModel(modelId: string): ModelsDevModel | undefined {
     // Try parsing as provider:model format
-    if (modelId.includes(':')) {
-      const [providerId, modelName] = modelId.split(':');
+    if (modelId.includes(":")) {
+      const [providerId, modelName] = modelId.split(":");
       if (providerId && modelName) {
         return this.getModelFromProvider(providerId, modelName);
       }
     }
 
-    if (modelId.includes('/')) {
-      const [providerId, modelName] = modelId.split('/');
+    if (modelId.includes("/")) {
+      const [providerId, modelName] = modelId.split("/");
       if (providerId && modelName) {
         return this.getModelFromProvider(providerId, modelName);
       }
@@ -393,7 +451,10 @@ export class ModelsDevClient {
     return undefined;
   }
 
-  private getModelFromProvider(providerId: string, modelName: string): ModelsDevModel | undefined {
+  private getModelFromProvider(
+    providerId: string,
+    modelName: string
+  ): ModelsDevModel | undefined {
     if (!isSafeLookupKey(providerId) || !isSafeLookupKey(modelName)) {
       return undefined;
     }
@@ -421,7 +482,9 @@ export class ModelsDevClient {
       const provider = this.getProvider(providerId);
       return Object.values(provider?.models ?? {});
     }
-    return Object.values(this.cache ?? {}).flatMap(provider => Object.values(provider.models));
+    return Object.values(this.cache ?? {}).flatMap((provider) =>
+      Object.values(provider.models)
+    );
   }
 }
 
@@ -448,7 +511,9 @@ export class ModelSelector {
   /**
    * Select the best model for a given set of task requirements
    */
-  async selectModel(requirements: TaskRequirements): Promise<ModelSelectionResult> {
+  async selectModel(
+    requirements: TaskRequirements
+  ): Promise<ModelSelectionResult> {
     await this.getClient().fetchModelsDevData();
 
     const suitableModels = this.getModelsMatchingRequirements(requirements);
@@ -465,18 +530,29 @@ export class ModelSelector {
     criteria: LocalRecommendationCriteria = {}
   ): Promise<LocalModelRecommendation[]> {
     const data = await this.getClient().fetchModelsDevData();
-    return recommendLocalModelsBySystemCapabilities(data, llmStatsLocalModels, systemCapabilities, criteria);
+    return recommendLocalModelsBySystemCapabilities(
+      data,
+      llmStatsLocalModels,
+      systemCapabilities,
+      criteria
+    );
   }
 
-  private getModelsMatchingRequirements(requirements: TaskRequirements): ModelsDevModel[] {
+  private getModelsMatchingRequirements(
+    requirements: TaskRequirements
+  ): ModelsDevModel[] {
     const allModels = this.getClient().listModels();
     const providerModels = this.filterUniqueProviderModels(allModels);
-    return providerModels.filter(model => this.meetsRequirements(model, requirements));
+    return providerModels.filter((model) =>
+      this.meetsRequirements(model, requirements)
+    );
   }
 
-  private filterUniqueProviderModels(allModels: ModelsDevModel[]): ModelsDevModel[] {
+  private filterUniqueProviderModels(
+    allModels: ModelsDevModel[]
+  ): ModelsDevModel[] {
     const uniqueModelProviders = this.getUniqueProviderSet();
-    return allModels.filter(model => {
+    return allModels.filter((model) => {
       const provider = this.findProviderForModel(model.id);
       return provider && uniqueModelProviders.has(provider);
     });
@@ -484,59 +560,67 @@ export class ModelSelector {
 
   private getUniqueProviderSet(): Set<string> {
     return new Set([
-      'anthropic',
-      'google',
-      'google-vertex',
-      'google-vertex-anthropic',
-      'openai',
-      'moonshotai',
-      'meta',
-      'mistral',
-      'cohere',
-      'deepseek',
-      'groq',
-      'xai',
-      'microsoft',
-      'nvidia',
-      'aws',
-      'azure',
-      'openai-compatible',
-      'meta_llama',
-      'deepseek-r1',
-      'qwen',
-      'modelscope',
-      'vllm',
-      'lm-studio',
-      'together-ai',
-      'scaleway',
-      'abacus',
-      'perplexity-ai',
-      'nebula',
-      'novita-ai'
+      "anthropic",
+      "google",
+      "google-vertex",
+      "google-vertex-anthropic",
+      "openai",
+      "moonshotai",
+      "meta",
+      "mistral",
+      "cohere",
+      "deepseek",
+      "groq",
+      "xai",
+      "microsoft",
+      "nvidia",
+      "aws",
+      "azure",
+      "openai-compatible",
+      "meta_llama",
+      "deepseek-r1",
+      "qwen",
+      "modelscope",
+      "vllm",
+      "lm-studio",
+      "together-ai",
+      "scaleway",
+      "abacus",
+      "perplexity-ai",
+      "nebula",
+      "novita-ai",
     ]);
   }
 
-  private scoreModels(models: ModelsDevModel[], requirements: TaskRequirements): ModelSelectionResult[] {
-    return models.map(model => ({
-      model: model.id,
-      provider: this.findProviderForModel(model.id),
+  private scoreModels(
+    models: ModelsDevModel[],
+    requirements: TaskRequirements
+  ): ModelSelectionResult[] {
+    return models.map((model) => ({
+      capabilities: requirements.capabilities ?? {},
       confidence: this.calculateConfidence(model, requirements),
       estimatedCost: this.estimateModelCost(model),
-      capabilities: requirements.capabilities ?? {},
-      reasoning: this.generateReasoning(model, requirements)
+      model: model.id,
+      provider: this.findProviderForModel(model.id),
+      reasoning: this.generateReasoning(model, requirements),
     }));
   }
 
-  private pickBestModel(scoredModels: ModelSelectionResult[]): ModelSelectionResult {
+  private pickBestModel(
+    scoredModels: ModelSelectionResult[]
+  ): ModelSelectionResult {
     if (scoredModels.length === 0) {
-      throw new Error('No models found that meet the requirements');
+      throw new Error("No models found that meet the requirements");
     }
 
-    scoredModels.sort((a: ModelSelectionResult, b: ModelSelectionResult) => b.confidence - a.confidence);
+    scoredModels.sort(
+      (a: ModelSelectionResult, b: ModelSelectionResult) =>
+        b.confidence - a.confidence
+    );
     const bestModel = scoredModels[0];
 
     if (!bestModel) {
-      throw new Error('No model could be ranked after filtering');
+      throw new Error("No model could be ranked after filtering");
     }
 
     return bestModel;
@@ -558,20 +642,23 @@ export class ModelSelector {
     }
 
     // Simple estimation: assume 2 tokens per word for input, 1 per word for output
-    const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
-    const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/).length * 0.5);
+    const inputTokens =
+      options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
+    const outputTokens =
+      options?.estimatedOutputTokens ??
+      Math.floor(prompt.split(/\s+/).length * 0.5);
 
-    const cost = model.cost;
+    const { cost } = model;
     const inputCost = (inputTokens / 1000) * cost.input;
     const outputCost = (outputTokens / 1000) * cost.output;
 
     return {
-      model: modelId,
-      provider: this.findProviderForModel(model.id),
+      capabilities: {},
       confidence: 0.8,
       estimatedCost: inputCost + outputCost,
-      capabilities: {},
-      reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`
+      model: modelId,
+      provider: this.findProviderForModel(model.id),
+      reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`,
     };
   }
 
@@ -580,18 +667,23 @@ export class ModelSelector {
    */
   private findProviderForModel(modelId: string): string {
     // Search all providers for this model
-    for (const [providerId, provider] of Object.entries(this.getClient().getCachedData() ?? {})) {
+    for (const [providerId, provider] of Object.entries(
+      this.getClient().getCachedData() ?? {}
+    )) {
       if (Object.hasOwn(provider.models, modelId)) {
         return providerId;
       }
     }
-    return 'unknown';
+    return "unknown";
   }
 
   /**
    * Check if a model meets the given requirements
    */
-  private meetsRequirements(model: ModelsDevModel, requirements: TaskRequirements): boolean {
+  private meetsRequirements(
+    model: ModelsDevModel,
+    requirements: TaskRequirements
+  ): boolean {
     if (this.isInterfaceModel(model)) {
       return false;
     }
@@ -612,19 +704,25 @@ export class ModelSelector {
   }
 
   private isInterfaceModel(model: ModelsDevModel): boolean {
-    if (model.family === 'auto') {
+    if (model.family === "auto") {
       return true;
     }
 
-    if (model.id.includes('auto') && !model.id.includes('autoglm')) {
+    if (model.id.includes("auto") && !model.id.includes("autoglm")) {
       return true;
     }
 
     const modelIdLower = model.id.toLowerCase();
-    return modelIdLower.startsWith('kilo-auto') || modelIdLower.includes('kilo-auto/');
+    return (
+      modelIdLower.startsWith("kilo-auto") ||
+      modelIdLower.includes("kilo-auto/")
+    );
   }
 
-  private matchesModalityRequirements(model: ModelsDevModel, modality?: TaskRequirements['modality']): boolean {
+  private matchesModalityRequirements(
+    model: ModelsDevModel,
+    modality?: TaskRequirements["modality"]
+  ): boolean {
     if (!modality) {
       return true;
     }
@@ -632,20 +730,27 @@ export class ModelSelector {
     const inputModalities = model.modalities?.input ?? [];
     const outputModalities = model.modalities?.output ?? [];
 
-    if (modality === 'multimodal') {
+    if (modality === "multimodal") {
       return (
-        inputModalities.includes('image') || inputModalities.includes('audio') || inputModalities.includes('video')
+        inputModalities.includes("image") ||
+        inputModalities.includes("audio") ||
+        inputModalities.includes("video")
       );
     }
 
-    if (modality === 'code') {
-      return inputModalities.includes('text') && outputModalities.includes('text');
+    if (modality === "code") {
+      return (
+        inputModalities.includes("text") && outputModalities.includes("text")
+      );
     }
 
     return true;
   }
 
-  private matchesCapabilityRequirements(model: ModelsDevModel, requirements: TaskRequirements): boolean {
+  private matchesCapabilityRequirements(
+    model: ModelsDevModel,
+    requirements: TaskRequirements
+  ): boolean {
     if (requirements.capabilities?.tool_calling && !model.tool_call) {
       return false;
     }
@@ -653,7 +758,10 @@ export class ModelSelector {
     return true;
   }
 
-  private matchesConstraints(model: ModelsDevModel, constraints?: TaskRequirements['constraints']): boolean {
+  private matchesConstraints(
+    model: ModelsDevModel,
+    constraints?: TaskRequirements["constraints"]
+  ): boolean {
     if (!constraints) {
       return true;
     }
@@ -682,7 +790,10 @@ export class ModelSelector {
   /**
    * Calculate confidence score for a model
    */
-  private calculateConfidence(model: ModelsDevModel, requirements: TaskRequirements): number {
+  private calculateConfidence(
+    model: ModelsDevModel,
+    requirements: TaskRequirements
+  ): number {
     let confidence = 0.5;
 
     // Boost confidence for models with requested features
@@ -697,8 +808,12 @@ export class ModelSelector {
 
     // Consider specialization
     if (requirements.specialization && model.knowledge) {
-      const knowledge = model.knowledge;
-      if (knowledge.toLowerCase().includes(requirements.specialization.toLowerCase())) {
+      const { knowledge } = model;
+      if (
+        knowledge
+          .toLowerCase()
+          .includes(requirements.specialization.toLowerCase())
+      ) {
         confidence += 0.2;
       }
     }
@@ -710,7 +825,7 @@ export class ModelSelector {
    * Estimate model cost based on cost per thousand tokens
    */
   private estimateModelCost(model: ModelsDevModel): number {
-    const cost = model.cost;
+    const { cost } = model;
     // Rough estimate assuming 1000 input and 1000 output tokens
     return (cost?.input ?? 0) + (cost?.output ?? 0) * 10;
   }
@@ -718,24 +833,27 @@ export class ModelSelector {
   /**
    * Generate reasoning for model selection
    */
-  private generateReasoning(model: ModelsDevModel, requirements: TaskRequirements): string {
+  private generateReasoning(
+    model: ModelsDevModel,
+    requirements: TaskRequirements
+  ): string {
     const reasons: string[] = [];
 
     if (model.tool_call && requirements.capabilities?.tool_calling) {
-      reasons.push('Supports tool calling');
+      reasons.push("Supports tool calling");
     }
 
-    const limit = model.limit;
-    if (limit?.context && limit.context > 200000) {
-      reasons.push('Large context window');
+    const { limit } = model;
+    if (limit?.context && limit.context > 200_000) {
+      reasons.push("Large context window");
     }
 
-    const cost = model.cost;
+    const { cost } = model;
     if (cost && cost.input + cost.output < 0.01) {
-      reasons.push('Cost-effective');
+      reasons.push("Cost-effective");
     }
 
-    return reasons.join(', ') || 'Selected based on requirements';
+    return reasons.join(", ") || "Selected based on requirements";
   }
 
   // Helper method to get cache for findProviderForModel

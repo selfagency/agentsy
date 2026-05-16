@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
 export interface ContextFingerprint {
   value: string;
@@ -15,36 +15,45 @@ export interface CreateContextFingerprintInput {
 }
 
 export interface MemoryReuseHint {
-  reuseClass: 'hot' | 'warm' | 'cold';
+  reuseClass: "hot" | "warm" | "cold";
   stablePrefix: boolean;
   toolSchema: boolean;
   invalidationKeys: string[];
 }
 
 export interface CreateMemoryReuseHintInput {
-  reuseClass: 'hot' | 'warm' | 'cold';
+  reuseClass: "hot" | "warm" | "cold";
   stablePrefix: boolean;
   toolSchema: boolean;
   invalidationKeys: string[];
 }
 
-export function createContextFingerprint(input: CreateContextFingerprintInput): ContextFingerprint {
-  const source = [input.modelFamily, input.templateVersion, String(input.schemaVersion), input.content].join('|');
-  const value = `sha256:${createHash('sha256').update(source).digest('hex')}`;
+export function createContextFingerprint(
+  input: CreateContextFingerprintInput
+): ContextFingerprint {
+  const source = [
+    input.modelFamily,
+    input.templateVersion,
+    String(input.schemaVersion),
+    input.content,
+  ].join("|");
+  const value = `sha256:${createHash("sha256").update(source).digest("hex")}`;
 
   return {
-    value,
     modelFamily: input.modelFamily,
+    schemaVersion: input.schemaVersion,
     templateVersion: input.templateVersion,
-    schemaVersion: input.schemaVersion
+    value,
   };
 }
 
-export function createMemoryReuseHint(input: CreateMemoryReuseHintInput): MemoryReuseHint {
+export function createMemoryReuseHint(
+  input: CreateMemoryReuseHintInput
+): MemoryReuseHint {
   return {
+    invalidationKeys: [...input.invalidationKeys],
     reuseClass: input.reuseClass,
     stablePrefix: input.stablePrefix,
     toolSchema: input.toolSchema,
-    invalidationKeys: [...input.invalidationKeys]
   };
 }

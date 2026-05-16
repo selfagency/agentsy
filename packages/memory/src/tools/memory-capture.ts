@@ -1,6 +1,6 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
 
-import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
+import type { MemoryScope, ScopeManager } from "../scope/scope-manager.js";
 
 export interface CapturedMemoryRecord {
   id: string;
@@ -35,10 +35,16 @@ export interface MemoryCaptureToolDeps {
   now?: () => Date;
 }
 
-export function createMemoryCaptureTool(deps: MemoryCaptureToolDeps): MemoryCaptureTool {
+export function createMemoryCaptureTool(
+  deps: MemoryCaptureToolDeps
+): MemoryCaptureTool {
   return {
     async execute(input) {
-      deps.scopeManager?.assertAccess({ actorId: input.actorId, action: 'write', scope: input.scope });
+      deps.scopeManager?.assertAccess({
+        action: "write",
+        actorId: input.actorId,
+        scope: input.scope,
+      });
 
       const record: CapturedMemoryRecord = {
         id: deps.idFactory?.() ?? randomUUID(),
@@ -47,11 +53,11 @@ export function createMemoryCaptureTool(deps: MemoryCaptureToolDeps): MemoryCapt
         content: input.content,
         ...(input.title === undefined ? {} : { title: input.title }),
         ...(input.tags === undefined ? {} : { tags: [...input.tags] }),
-        createdAt: deps.now?.() ?? new Date()
+        createdAt: deps.now?.() ?? new Date(),
       };
 
       await deps.save(record);
       return { record };
-    }
+    },
   };
 }

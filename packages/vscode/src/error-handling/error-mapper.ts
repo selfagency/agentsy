@@ -1,4 +1,4 @@
-import { ErrorCodeToMessage, ProviderErrorCode } from '../types/errors.js';
+import { ErrorCodeToMessage, ProviderErrorCode } from "../types/errors.js";
 
 const STATUS_TO_ERROR_CODE = new Map<number, ProviderErrorCode>([
   [401, ProviderErrorCode.InvalidApiKey],
@@ -7,7 +7,7 @@ const STATUS_TO_ERROR_CODE = new Map<number, ProviderErrorCode>([
   [404, ProviderErrorCode.ModelNotFound],
   [408, ProviderErrorCode.Timeout],
   [504, ProviderErrorCode.Timeout],
-  [400, ProviderErrorCode.InvalidRequest]
+  [400, ProviderErrorCode.InvalidRequest],
 ]);
 
 /**
@@ -25,17 +25,17 @@ function extractErrorString(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  if (typeof error === 'string') {
+  if (typeof error === "string") {
     return error;
   }
-  if (typeof error === 'object' && error !== null && 'message' in error) {
+  if (typeof error === "object" && error !== null && "message" in error) {
     return String((error as Record<string, unknown>).message);
   }
-  if (error && typeof error === 'object') {
+  if (error && typeof error === "object") {
     try {
       return JSON.stringify(error);
     } catch {
-      return 'Unknown error';
+      return "Unknown error";
     }
   }
   return String(error);
@@ -46,29 +46,44 @@ function extractErrorString(error: unknown): string {
  * Inspects error messages for common patterns.
  */
 export function errorToProviderCode(error: unknown): ProviderErrorCode {
-  if (error == null) return ProviderErrorCode.InternalError;
+  if (error == null) {
+    return ProviderErrorCode.InternalError;
+  }
 
-  if (typeof error === 'object' && 'status' in error) {
-    const status = (error as { status: unknown }).status;
-    if (typeof status === 'number') return httpStatusToErrorCode(status);
+  if (typeof error === "object" && "status" in error) {
+    const { status } = error as { status: unknown };
+    if (typeof status === "number") {
+      return httpStatusToErrorCode(status);
+    }
   }
 
   const message = extractErrorString(error).toLowerCase();
 
   // Pattern-based error matching with early returns to reduce complexity
-  const patterns: Array<[string[], ProviderErrorCode]> = [
-    [['invalid api key', 'unauthorized', 'authentication'], ProviderErrorCode.InvalidApiKey],
-    [['rate limit', 'too many requests', '429'], ProviderErrorCode.RateLimited],
-    [['model not found', 'no such model'], ProviderErrorCode.ModelNotFound],
-    [['context length', 'token limit', 'too long'], ProviderErrorCode.ContextLengthExceeded],
-    [['econnrefused', 'connection refused', 'network', 'fetch failed'], ProviderErrorCode.ConnectionError],
-    [['timeout', 'timed out', 'etimedout'], ProviderErrorCode.Timeout],
-    [['cancelled', 'aborted'], ProviderErrorCode.Cancelled],
-    [['invalid request', 'bad request'], ProviderErrorCode.InvalidRequest]
+  const patterns: [string[], ProviderErrorCode][] = [
+    [
+      ["invalid api key", "unauthorized", "authentication"],
+      ProviderErrorCode.InvalidApiKey,
+    ],
+    [["rate limit", "too many requests", "429"], ProviderErrorCode.RateLimited],
+    [["model not found", "no such model"], ProviderErrorCode.ModelNotFound],
+    [
+      ["context length", "token limit", "too long"],
+      ProviderErrorCode.ContextLengthExceeded,
+    ],
+    [
+      ["econnrefused", "connection refused", "network", "fetch failed"],
+      ProviderErrorCode.ConnectionError,
+    ],
+    [["timeout", "timed out", "etimedout"], ProviderErrorCode.Timeout],
+    [["cancelled", "aborted"], ProviderErrorCode.Cancelled],
+    [["invalid request", "bad request"], ProviderErrorCode.InvalidRequest],
   ];
 
   for (const [keywords, code] of patterns) {
-    if (keywords.some(kw => message.includes(kw))) return code;
+    if (keywords.some((kw) => message.includes(kw))) {
+      return code;
+    }
   }
 
   return ProviderErrorCode.InternalError;
@@ -78,7 +93,10 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
  * Get user-friendly message for an error code.
  */
 export function errorCodeToMessage(code: ProviderErrorCode): string {
-  return ErrorCodeToMessage[code] ?? ErrorCodeToMessage[ProviderErrorCode.InternalError];
+  return (
+    ErrorCodeToMessage[code] ??
+    ErrorCodeToMessage[ProviderErrorCode.InternalError]
+  );
 }
 
 export interface CreateProviderErrorOptions {
@@ -98,10 +116,16 @@ export function createProviderError(
 ): Error {
   const baseMessage = errorCodeToMessage(code);
   const originalMessage =
-    options.preserveOriginalMessage && originalError != null ? extractErrorString(originalError) : null;
+    options.preserveOriginalMessage && originalError != null
+      ? extractErrorString(originalError)
+      : null;
   const messageWithOriginal =
-    originalMessage && originalMessage.length > 0 ? `${baseMessage} (original: ${originalMessage})` : baseMessage;
-  const message = options.attachCode ? `[${code}] ${messageWithOriginal}` : messageWithOriginal;
+    originalMessage && originalMessage.length > 0
+      ? `${baseMessage} (original: ${originalMessage})`
+      : baseMessage;
+  const message = options.attachCode
+    ? `[${code}] ${messageWithOriginal}`
+    : messageWithOriginal;
   const error = new Error(message);
   error.name = `ProviderError[${code}]`;
   if (options.attachCode) {

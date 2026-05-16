@@ -1,4 +1,4 @@
-import type { AgentLoopState, FinishReason, StopCondition } from './types.js';
+import type { AgentLoopState, FinishReason, StopCondition } from "./types.js";
 
 /**
  * Stop after a fixed number of steps.
@@ -12,9 +12,13 @@ export function isStepCount(maxSteps: number): StopCondition {
  */
 export function hasNoToolCalls(): StopCondition {
   return (state: AgentLoopState): boolean => {
-    if (state.steps.length === 0) return false;
+    if (state.steps.length === 0) {
+      return false;
+    }
     const lastStep = state.steps.at(-1);
-    if (!lastStep) return false;
+    if (!lastStep) {
+      return false;
+    }
     return lastStep.toolCalls.length === 0;
   };
 }
@@ -25,9 +29,13 @@ export function hasNoToolCalls(): StopCondition {
 export function hasToolCall(name?: string): StopCondition {
   return (state: AgentLoopState): boolean => {
     const lastStep = state.steps.at(-1);
-    if (!lastStep) return false;
-    if (name === undefined) return lastStep.toolCalls.length > 0;
-    return lastStep.toolCalls.some(toolCall => toolCall.name === name);
+    if (!lastStep) {
+      return false;
+    }
+    if (name === undefined) {
+      return lastStep.toolCalls.length > 0;
+    }
+    return lastStep.toolCalls.some((toolCall) => toolCall.name === name);
   };
 }
 
@@ -36,9 +44,14 @@ export function hasToolCall(name?: string): StopCondition {
  */
 export function finishReasonIs(...reasons: FinishReason[]): StopCondition {
   return (state: AgentLoopState): boolean => {
-    if (state.steps.length === 0) return false;
+    if (state.steps.length === 0) {
+      return false;
+    }
     const lastStep = state.steps.at(-1);
-    return lastStep?.finishReason !== undefined && reasons.includes(lastStep.finishReason);
+    return (
+      lastStep?.finishReason !== undefined &&
+      reasons.includes(lastStep.finishReason)
+    );
   };
 }
 
@@ -48,8 +61,12 @@ export function finishReasonIs(...reasons: FinishReason[]): StopCondition {
 export function isLoopFinished(): StopCondition {
   return (state: AgentLoopState): boolean => {
     const lastStep = state.steps.at(-1);
-    if (!lastStep) return false;
-    return lastStep.toolCalls.length === 0 && lastStep.finishReason !== undefined;
+    if (!lastStep) {
+      return false;
+    }
+    return (
+      lastStep.toolCalls.length === 0 && lastStep.finishReason !== undefined
+    );
   };
 }
 
@@ -59,9 +76,6 @@ export function isLoopFinished(): StopCondition {
  * Defaults to 3 consecutive identical calls.
  */
 export function detectDoomLoop(threshold: number = 3): StopCondition {
-  return (state: AgentLoopState): boolean => {
-    // Use the loop's maintained counter which tracks consecutive identical calls
-    // via deep-equality comparison (not fragile JSON.stringify)
-    return state.consecutiveIdenticalCalls >= threshold;
-  };
+  return (state: AgentLoopState): boolean =>
+    state.consecutiveIdenticalCalls >= threshold;
 }

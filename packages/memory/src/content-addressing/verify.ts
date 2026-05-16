@@ -1,5 +1,5 @@
-import type { ContentFingerprint } from './fingerprint.js';
-import { fingerprintContent } from './fingerprint.js';
+import type { ContentFingerprint } from "./fingerprint.js";
+import { fingerprintContent } from "./fingerprint.js";
 
 export interface VerifyResult {
   readonly ok: boolean;
@@ -7,19 +7,28 @@ export interface VerifyResult {
   readonly actual: string;
 }
 
-export function verifyContent(content: string | Uint8Array, expected: ContentFingerprint | string): VerifyResult {
+export function verifyContent(
+  content: string | Uint8Array,
+  expected: ContentFingerprint | string
+): VerifyResult {
   const actual = fingerprintContent(content);
-  const expectedValue = typeof expected === 'string' ? expected : expected.value;
+  const expectedValue =
+    typeof expected === "string" ? expected : expected.value;
   return {
-    ok: actual.value === expectedValue,
+    actual: actual.value,
     expected: expectedValue,
-    actual: actual.value
+    ok: actual.value === expectedValue,
   };
 }
 
-export function assertContent(content: string | Uint8Array, expected: ContentFingerprint | string): void {
+export function assertContent(
+  content: string | Uint8Array,
+  expected: ContentFingerprint | string
+): void {
   const result = verifyContent(content, expected);
   if (!result.ok) {
-    throw new Error(`Content integrity check failed: expected ${result.expected}, got ${result.actual}`);
+    throw new Error(
+      `Content integrity check failed: expected ${result.expected}, got ${result.actual}`
+    );
   }
 }

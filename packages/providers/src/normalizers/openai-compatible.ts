@@ -1,12 +1,23 @@
-import { normalizeOpenAIChatChunk } from './openai.js';
-import type { NormalizerResult } from './types.js';
+import { normalizeOpenAIChatChunk } from "./openai.js";
+import type { NormalizerResult } from "./types.js";
 
-export const OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS = ['openai', 'kimi', 'qwen', 'llama', 'granite'] as const;
+export const OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS = [
+  "openai",
+  "kimi",
+  "qwen",
+  "llama",
+  "granite",
+] as const;
 
-export type OpenAICompatibleNormalizerProvider = (typeof OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS)[number];
+export type OpenAICompatibleNormalizerProvider =
+  (typeof OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS)[number];
 
-export function isOpenAICompatibleNormalizerProvider(value: string): value is OpenAICompatibleNormalizerProvider {
-  return (OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS as readonly string[]).includes(value);
+export function isOpenAICompatibleNormalizerProvider(
+  value: string
+): value is OpenAICompatibleNormalizerProvider {
+  return (OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS as readonly string[]).includes(
+    value
+  );
 }
 
 /**

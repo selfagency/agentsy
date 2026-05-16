@@ -29,7 +29,7 @@ export interface RuntimeTaskResult {
   taskId: string;
 
   /** Execution status. */
-  status: 'completed' | 'failed' | 'skipped';
+  status: "completed" | "failed" | "skipped";
 
   /** Start timestamp. */
   startedAt: number;
@@ -75,7 +75,11 @@ export interface RuntimeTaskContext {
   depth: number;
 
   /** Spawn child tasks for parallel execution. */
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+  spawn(
+    tasks: RuntimeTask[],
+    signal?: AbortSignal,
+    sessionId?: string
+  ): Promise<RuntimeSnapshot>;
 }
 
 /**
@@ -103,7 +107,10 @@ export interface RuntimeExecutor {
   execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<void>;
 
   /** Execute tasks and return results. */
-  executeWithResults(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeTaskResult[]>;
+  executeWithResults(
+    tasks: RuntimeTask[],
+    signal?: AbortSignal
+  ): Promise<RuntimeTaskResult[]>;
 }
 
 /**
@@ -137,7 +144,11 @@ export interface RuntimeLoop {
   execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
 
   /** Spawn child tasks in a new execution context. */
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+  spawn(
+    tasks: RuntimeTask[],
+    signal?: AbortSignal,
+    sessionId?: string
+  ): Promise<RuntimeSnapshot>;
 
   /** Get current snapshot. */
   getSnapshot(): RuntimeSnapshot;
@@ -151,5 +162,8 @@ export interface RuntimeLoop {
  */
 export interface RuntimeWorkflowExecutor {
   /** Execute workflow tasks respecting dependency order. */
-  execute(tasks: RuntimeWorkflowTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
+  execute(
+    tasks: RuntimeWorkflowTask[],
+    signal?: AbortSignal
+  ): Promise<RuntimeSnapshot>;
 }

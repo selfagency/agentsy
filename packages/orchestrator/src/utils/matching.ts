@@ -1,23 +1,27 @@
-import type { Skill } from '../types/index.js';
+import type { Skill } from "../types/index.js";
 
 export interface SkillMatchResult {
   score: number;
   matchedSkills: string[];
   missingSkills: string[];
-  proficiencyGaps: Array<{
+  proficiencyGaps: {
     skill: string;
     required: string;
     available: string;
-  }>;
+  }[];
 }
 
-export type ProficiencyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ProficiencyLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "expert";
 
 export const SkillProfiler: Record<ProficiencyLevel, number> = {
-  beginner: 1,
-  intermediate: 2,
   advanced: 3,
-  expert: 4
+  beginner: 1,
+  expert: 4,
+  intermediate: 2,
 };
 
 function compareProficiency(required: string, available: string): number {
@@ -31,15 +35,18 @@ function getProficiencyLevel(proficiency: string): number {
   return SkillProfiler[prof] || 0;
 }
 
-export function matchRequirements(required: Skill[], available: Skill[]): SkillMatchResult {
-  const skillMap = new Map(available.map(skill => [skill.name, skill]));
+export function matchRequirements(
+  required: Skill[],
+  available: Skill[]
+): SkillMatchResult {
+  const skillMap = new Map(available.map((skill) => [skill.name, skill]));
   const matchedSkills: string[] = [];
   const missingSkills: string[] = [];
-  const proficiencyGaps: Array<{
+  const proficiencyGaps: {
     skill: string;
     required: string;
     available: string;
-  }> = [];
+  }[] = [];
 
   let totalScore = 0;
 
@@ -48,12 +55,15 @@ export function matchRequirements(required: Skill[], available: Skill[]): SkillM
     if (availableSkill) {
       matchedSkills.push(req.name);
 
-      const proficiencyGap = compareProficiency(req.proficiency, availableSkill.proficiency);
+      const proficiencyGap = compareProficiency(
+        req.proficiency,
+        availableSkill.proficiency
+      );
       if (proficiencyGap < 0) {
         proficiencyGaps.push({
-          skill: req.name,
+          available: availableSkill.proficiency,
           required: req.proficiency,
-          available: availableSkill.proficiency
+          skill: req.name,
         });
       }
 
@@ -70,27 +80,27 @@ export function matchRequirements(required: Skill[], available: Skill[]): SkillM
   const averageScore = required.length > 0 ? totalScore / required.length : 0;
 
   return {
-    score: averageScore,
     matchedSkills,
     missingSkills,
-    proficiencyGaps
+    proficiencyGaps,
+    score: averageScore,
   };
 }
 
 export function findBestMatches(
   requirements: Skill[],
-  candidates: Array<{ id: string; skills: Skill[]; score?: number }>
-): Array<{ id: string; score: number; match: SkillMatchResult }> {
+  candidates: { id: string; skills: Skill[]; score?: number }[]
+): { id: string; score: number; match: SkillMatchResult }[] {
   return candidates
-    .map(candidate => ({
+    .map((candidate) => ({
       id: candidate.id,
+      match: matchRequirements(requirements, candidate.skills),
       score: 0,
-      match: matchRequirements(requirements, candidate.skills)
     }))
-    .map(item => ({
+    .map((item) => ({
       ...item,
-      score: item.match.score
+      score: item.match.score,
     }))
-    .filter(item => item.score > 0)
-    .sort((a, b) => b.score - a.score);
+    .filter((item) => item.score > 0)
+    .toSorted((a, b) => b.score - a.score);
 }

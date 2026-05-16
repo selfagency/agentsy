@@ -11,37 +11,50 @@
 // otherwise fall back to local workspace source so this script works during dev
 // without requiring a build step. This reduces duplicate source files and
 // allows CI and local tooling to run the preview command in either state.
-type ThemeConfig = {
+interface ThemeConfig {
   thinking?: { textColor?: string; spinnerColor?: string };
-  toolCall?: { pendingColor?: string; doneColor?: string; pendingSymbol?: string; doneSymbol?: string };
+  toolCall?: {
+    pendingColor?: string;
+    doneColor?: string;
+    pendingSymbol?: string;
+    doneSymbol?: string;
+  };
   border?: { style?: string };
-};
+}
 
 let themesModule: Record<string, unknown>;
 try {
-  const distThemesPath = '../dist/renderers/ink/themes/index.js';
+  const distThemesPath = "../dist/renderers/ink/themes/index.js";
   themesModule = await import(distThemesPath);
 } catch {
   // Fallback to local source so contributors can run the script before building
-  themesModule = await import('../../renderers/src/ink/themes/index.ts');
+  themesModule = await import("../../renderers/src/ink/themes/index.ts");
 }
 
-const entries = Object.entries(themesModule).map(([name, value]) => ({ name, value }));
+const entries = Object.entries(themesModule).map(([name, value]) => ({
+  name,
+  value,
+}));
 
 const ANSI = {
-  reset: '\u001B[0m',
-  bold: '\u001B[1m',
-  cyan: '\u001B[36m',
-  green: '\u001B[32m',
-  white: '\u001B[37m',
-  yellow: '\u001B[33m',
-  dim: '\u001B[2m'
+  bold: "\u001B[1m",
+  cyan: "\u001B[36m",
+  dim: "\u001B[2m",
+  green: "\u001B[32m",
+  reset: "\u001B[0m",
+  white: "\u001B[37m",
+  yellow: "\u001B[33m",
 } as const;
 
-console.log('Available themes:');
-for (const e of entries) console.log('-', e.name);
+console.log("Available themes:");
+for (const e of entries) {
+  console.log("-", e.name);
+}
 
-const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, theme: theme as ThemeConfig }));
+const THEMES = Object.entries(themesModule).map(([name, theme]) => ({
+  name,
+  theme: theme as ThemeConfig,
+}));
 
 /**
  * Apply color to text using chalk. JSDoc types avoid implicit any in strict typechecks.
@@ -49,8 +62,10 @@ const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, them
  * @param {string | undefined} color
  */
 function applyColor(text: string, color: string | undefined): string {
-  if (!color) return text;
-  if (color.startsWith('#')) {
+  if (!color) {
+    return text;
+  }
+  if (color.startsWith("#")) {
     return text;
   }
 
@@ -59,25 +74,33 @@ function applyColor(text: string, color: string | undefined): string {
 }
 
 function displayThemePreview() {
-  console.log(`\n${ANSI.bold}${ANSI.cyan}═══════════════════════════════════${ANSI.reset}`);
-  console.log(`${ANSI.bold}${ANSI.cyan}  Available Ink Renderer Themes${ANSI.reset}`);
-  console.log(`${ANSI.bold}${ANSI.cyan}═══════════════════════════════════${ANSI.reset}\n`);
+  console.log(
+    `\n${ANSI.bold}${ANSI.cyan}═══════════════════════════════════${ANSI.reset}`
+  );
+  console.log(
+    `${ANSI.bold}${ANSI.cyan}  Available Ink Renderer Themes${ANSI.reset}`
+  );
+  console.log(
+    `${ANSI.bold}${ANSI.cyan}═══════════════════════════════════${ANSI.reset}\n`
+  );
 
   for (const { name, theme } of THEMES) {
     console.log(`${ANSI.bold}${ANSI.white}${name.padEnd(25)}${ANSI.reset}`);
 
     if (theme.thinking) {
-      const textColor = theme.thinking.textColor || 'cyan';
-      const spinnerColor = theme.thinking.spinnerColor || 'cyan';
+      const textColor = theme.thinking.textColor || "cyan";
+      const spinnerColor = theme.thinking.spinnerColor || "cyan";
       const thinkingText = `text=${textColor}, spinner=${spinnerColor}`;
-      console.log(`  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`);
+      console.log(
+        `  ${applyColor("├─ Thinking:", textColor)} ${applyColor(thinkingText, spinnerColor)}`
+      );
     }
 
     if (theme.toolCall) {
-      const pendingColor = theme.toolCall.pendingColor || 'yellow';
-      const doneColor = theme.toolCall.doneColor || 'green';
-      const pendingSymbol = theme.toolCall.pendingSymbol || '⠋';
-      const doneSymbol = theme.toolCall.doneSymbol || '✓';
+      const pendingColor = theme.toolCall.pendingColor || "yellow";
+      const doneColor = theme.toolCall.doneColor || "green";
+      const pendingSymbol = theme.toolCall.pendingSymbol || "⠋";
+      const doneSymbol = theme.toolCall.doneSymbol || "✓";
       const toolsPending = `Tools: ${pendingSymbol}`;
       const toolsPreview = `pending`;
       const toolsDone = `${doneSymbol} done`;
@@ -97,7 +120,9 @@ function displayThemePreview() {
 
   console.log(`${ANSI.dim}═══════════════════════════════════${ANSI.reset}`);
   console.log(`${ANSI.dim}\nUsage:${ANSI.reset}`);
-  console.log(`${ANSI.dim}  createInkRenderer({ theme: "theme-name" })${ANSI.reset}`);
+  console.log(
+    `${ANSI.dim}  createInkRenderer({ theme: "theme-name" })${ANSI.reset}`
+  );
   const usageExample = String.raw`  import { draculaTheme } from "../src/ink/themes/index.js"\n`;
   console.log(`${ANSI.dim}${usageExample}${ANSI.reset}`);
 }

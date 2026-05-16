@@ -1,5 +1,5 @@
-import type { MemoryScope } from '../scope/scope-manager.js';
-import type { CapturedMemoryRecord } from './memory-capture.js';
+import type { MemoryScope } from "../scope/scope-manager.js";
+import type { CapturedMemoryRecord } from "./memory-capture.js";
 
 export interface MemoryStats {
   totalRecords: number;
@@ -17,15 +17,17 @@ export interface MemoryStatsToolDeps {
 
 function emptyByScope(): Record<MemoryScope, number> {
   return {
-    session: 0,
-    user: 0,
+    global: 0,
     project: 0,
+    session: 0,
     team: 0,
-    global: 0
+    user: 0,
   };
 }
 
-export function createMemoryStatsTool(deps: MemoryStatsToolDeps): MemoryStatsTool {
+export function createMemoryStatsTool(
+  deps: MemoryStatsToolDeps
+): MemoryStatsTool {
   return {
     async execute() {
       const records = await deps.list();
@@ -38,10 +40,11 @@ export function createMemoryStatsTool(deps: MemoryStatsToolDeps): MemoryStatsToo
       }
 
       return {
-        totalRecords: records.length,
+        averageContentLength:
+          records.length === 0 ? 0 : totalContentLength / records.length,
         byScope,
-        averageContentLength: records.length === 0 ? 0 : totalContentLength / records.length
+        totalRecords: records.length,
       };
-    }
+    },
   };
 }

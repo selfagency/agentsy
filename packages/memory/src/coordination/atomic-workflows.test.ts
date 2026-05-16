@@ -1,78 +1,84 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import { createAtomicWorkflowCoordinator } from './atomic-workflows.js';
+import { createAtomicWorkflowCoordinator } from "./atomic-workflows.js";
 
-describe('AtomicWorkflowCoordinator', () => {
-  it('executes steps in order and commits successfully', async () => {
+describe("AtomicWorkflowCoordinator", () => {
+  it("executes steps in order and commits successfully", async () => {
     const events: string[] = [];
     const coordinator = createAtomicWorkflowCoordinator();
 
-    const result = await coordinator.runWorkflow('wf-1', [
+    const result = await coordinator.runWorkflow("wf-1", [
       {
-        name: 'raw',
+        name: "raw",
         run: async () => {
-          events.push('run:raw');
-        }
+          events.push("run:raw");
+        },
       },
       {
-        name: 'wiki',
+        name: "wiki",
         run: async () => {
-          events.push('run:wiki');
-        }
+          events.push("run:wiki");
+        },
       },
       {
-        name: 'vector',
+        name: "vector",
         run: async () => {
-          events.push('run:vector');
-        }
-      }
+          events.push("run:vector");
+        },
+      },
     ]);
 
-    expect(events).toEqual(['run:raw', 'run:wiki', 'run:vector']);
-    expect(result.status).toBe('committed');
-    expect(result.executedSteps).toEqual(['raw', 'wiki', 'vector']);
-    expect(result.rolledBackSteps).toEqual([]);
+    expect(events).toStrictEqual(["run:raw", "run:wiki", "run:vector"]);
+    expect(result.status).toBe("committed");
+    expect(result.executedSteps).toStrictEqual(["raw", "wiki", "vector"]);
+    expect(result.rolledBackSteps).toStrictEqual([]);
   });
 
-  it('rolls back already executed steps in reverse order when a step fails', async () => {
+  it("rolls back already executed steps in reverse order when a step fails", async () => {
     const events: string[] = [];
     const coordinator = createAtomicWorkflowCoordinator();
 
-    const result = await coordinator.runWorkflow('wf-rollback', [
+    const result = await coordinator.runWorkflow("wf-rollback", [
       {
-        name: 'raw',
-        run: async () => {
-          events.push('run:raw');
-        },
+        name: "raw",
         rollback: async () => {
-          events.push('rollback:raw');
-        }
+          events.push("rollback:raw");
+        },
+        run: async () => {
+          events.push("run:raw");
+        },
       },
       {
-        name: 'wiki',
-        run: async () => {
-          events.push('run:wiki');
-        },
+        name: "wiki",
         rollback: async () => {
-          events.push('rollback:wiki');
-        }
+          events.push("rollback:wiki");
+        },
+        run: async () => {
+          events.push("run:wiki");
+        },
       },
       {
-        name: 'vector',
-        run: async () => {
-          events.push('run:vector');
-          throw new Error('vector write failed');
-        },
+        name: "vector",
         rollback: async () => {
-          events.push('rollback:vector');
-        }
-      }
+          events.push("rollback:vector");
+        },
+        run: async () => {
+          events.push("run:vector");
+          throw new Error("vector write failed");
+        },
+      },
     ]);
 
-    expect(result.status).toBe('rolled_back');
-    expect(result.executedSteps).toEqual(['raw', 'wiki']);
-    expect(result.rolledBackSteps).toEqual(['wiki', 'raw']);
-    expect(events).toEqual(['run:raw', 'run:wiki', 'run:vector', 'rollback:wiki', 'rollback:raw']);
-    expect(result.error?.message).toContain('vector write failed');
+    expect(result.status).toBe("rolled_back");
+    expect(result.executedSteps).toStrictEqual(["raw", "wiki"]);
+    expect(result.rolledBackSteps).toStrictEqual(["wiki", "raw"]);
+    expect(events).toStrictEqual([
+      "run:raw",
+      "run:wiki",
+      "run:vector",
+      "rollback:wiki",
+      "rollback:raw",
+    ]);
+    expect(result.error?.message).toContain("vector write failed");
   });
 });

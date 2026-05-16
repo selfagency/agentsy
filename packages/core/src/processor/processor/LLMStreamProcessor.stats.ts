@@ -1,9 +1,14 @@
-import type { StreamChunk } from '@agentsy/types';
-import type { ProcessedOutput } from './LLMStreamProcessor.types.js';
-import type { ProcessorStats } from './ProcessorStats.js';
-import { estimateChunkSize } from './chunkUtils.js';
+import type { StreamChunk } from "@agentsy/types";
 
-export function recordChunkStats(stats: ProcessorStats, chunk: StreamChunk, encoder: TextEncoder): void {
+import { estimateChunkSize } from "./chunkUtils.js";
+import type { ProcessedOutput } from "./LLMStreamProcessor.types.js";
+import type { ProcessorStats } from "./ProcessorStats.js";
+
+export function recordChunkStats(
+  stats: ProcessorStats,
+  chunk: StreamChunk,
+  encoder: TextEncoder
+): void {
   const chunkSize = estimateChunkSize(chunk, encoder);
   stats.chunksProcessed++;
   stats.bytesProcessed += chunkSize;
@@ -11,10 +16,15 @@ export function recordChunkStats(stats: ProcessorStats, chunk: StreamChunk, enco
   stats.lastChunkAt = new Date();
 }
 
-export function getChunkInputFlags(chunk: StreamChunk): { hasContentInput: boolean; hasThinkingInput: boolean } {
+export function getChunkInputFlags(chunk: StreamChunk): {
+  hasContentInput: boolean;
+  hasThinkingInput: boolean;
+} {
   return {
-    hasContentInput: typeof chunk.content === 'string' && chunk.content.length > 0,
-    hasThinkingInput: typeof chunk.thinking === 'string' && chunk.thinking.length > 0
+    hasContentInput:
+      typeof chunk.content === "string" && chunk.content.length > 0,
+    hasThinkingInput:
+      typeof chunk.thinking === "string" && chunk.thinking.length > 0,
   };
 }
 
@@ -26,10 +36,21 @@ export function updatePostProcessStats(params: {
   bufferSize: number;
   output: ProcessedOutput;
 }): void {
-  const { stats, startTime, hasThinkingInput, hasContentInput, bufferSize, output } = params;
+  const {
+    stats,
+    startTime,
+    hasThinkingInput,
+    hasContentInput,
+    bufferSize,
+    output,
+  } = params;
   stats.parseTimeMs += performance.now() - startTime;
-  if (hasThinkingInput) stats.thinkingBlocksCount++;
-  if (hasContentInput) stats.contentDeltasCount++;
+  if (hasThinkingInput) {
+    stats.thinkingBlocksCount++;
+  }
+  if (hasContentInput) {
+    stats.contentDeltasCount++;
+  }
   stats.toolCallsCount += output.toolCalls.length;
 
   stats.currentBufferSize = bufferSize;

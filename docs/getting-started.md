@@ -34,15 +34,15 @@ yarn add @agentsy/vscode vscode
 ### Extract thinking from streaming response
 
 ```typescript
-import { ThinkingParser } from '@agentsy/core/thinking';
+import { ThinkingParser } from "@agentsy/core/thinking";
 
 const parser = new ThinkingParser();
 
 for await (const chunk of llmStream) {
   const [thinking, content] = parser.addContent(chunk);
 
-  if (thinking) console.log('[thinking]', thinking);
-  if (content) console.log('[output]', content);
+  if (thinking) console.log("[thinking]", thinking);
+  if (content) console.log("[output]", content);
 }
 
 // Finalize to get any remaining buffered content
@@ -52,7 +52,7 @@ const [finalThinking, finalContent] = parser.flush();
 ### Parse JSON from response
 
 ```typescript
-import { parseJson } from '@agentsy/core/structured';
+import { parseJson } from "@agentsy/core/structured";
 
 const response = await llm.complete('Return JSON: {key: "value"}');
 const data = parseJson(response);
@@ -60,55 +60,58 @@ const data = parseJson(response);
 if (data !== null) {
   console.log(data); // { key: "value" }
 } else {
-  console.error('Failed to parse JSON');
+  console.error("Failed to parse JSON");
 }
 ```
 
 ### Validate JSON against schema
 
 ```typescript
-import { validateJsonSchema } from '@agentsy/core/structured';
+import { validateJsonSchema } from "@agentsy/core/structured";
 
 const schema = {
-  type: 'object',
+  type: "object",
   properties: {
-    name: { type: 'string' },
-    items: { type: 'array', items: { type: 'string' } }
-  }
+    name: { type: "string" },
+    items: { type: "array", items: { type: "string" } },
+  },
 };
 
 const result = validateJsonSchema(response, schema);
 
 if (result.success) {
-  console.log('Valid:', result.data);
+  console.log("Valid:", result.data);
 } else {
-  console.error('Invalid:', result.errors);
+  console.error("Invalid:", result.errors);
 }
 ```
 
 ### Extract tool calls
 
 ```typescript
-import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
+import { extractXmlToolCalls } from "@agentsy/core/tool-calls";
 
-const response = await llm.complete('Use tools to search the codebase');
+const response = await llm.complete("Use tools to search the codebase");
 
-const toolCalls = extractXmlToolCalls(response, new Set(['search_codebase', 'edit_file']));
+const toolCalls = extractXmlToolCalls(
+  response,
+  new Set(["search_codebase", "edit_file"])
+);
 
 for (const call of toolCalls) {
   console.log(`Executing: ${call.name}`);
   const result = await executeTool(call.name, call.parameters);
-  console.log('Result:', result);
+  console.log("Result:", result);
 }
 ```
 
 ### Filter context blocks
 
 ```typescript
-import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
+import { createXmlStreamFilter } from "@agentsy/core/xml-filter";
 
 const filter = createXmlStreamFilter({
-  enforcePrivacyTags: true
+  enforcePrivacyTags: true,
 });
 
 for await (const chunk of llmStream) {
@@ -122,46 +125,46 @@ output.write(filter.end());
 ### Process complete stream response
 
 ```typescript
-import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from "@agentsy/core/processor";
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
-  knownTools: new Set(['search', 'edit']),
-  modelId: 'claude-opus'
+  knownTools: new Set(["search", "edit"]),
+  modelId: "claude-opus",
 });
 
 // Subscribe to events
-processor.on('thinking', delta => displayThinking(delta));
-processor.on('text', delta => displayText(delta));
-processor.on('tool_call', call => executeToolCall(call));
+processor.on("thinking", (delta) => displayThinking(delta));
+processor.on("text", (delta) => displayText(delta));
+processor.on("tool_call", (call) => executeToolCall(call));
 
 // Process streaming response
 for await (const chunk of apiStream) {
   processor.process({
     content: chunk.content,
     thinking: chunk.thinking,
-    done: chunk.done
+    done: chunk.done,
   });
 }
 
 // Final accumulated message
 const message = processor.accumulatedMessage;
-console.log('Thinking:', message.thinking);
-console.log('Content:', message.content);
-console.log('Tool calls:', message.toolCalls);
+console.log("Thinking:", message.thinking);
+console.log("Content:", message.content);
+console.log("Tool calls:", message.toolCalls);
 ```
 
 ### Run a multi-step agent loop
 
 ```typescript
-import { createAgentLoop } from '@agentsy/orchestrator/agent';
+import { createAgentLoop } from "@agentsy/orchestrator/agent";
 
 const agent = createAgentLoop({
   // Your LLM invocation function
   execute: async function* (messages) {
-    const response = await fetch('https://api.example.com/chat', {
-      method: 'POST',
-      body: JSON.stringify({ messages })
+    const response = await fetch("https://api.example.com/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages }),
     });
 
     for await (const chunk of response.body) {
@@ -171,47 +174,47 @@ const agent = createAgentLoop({
 
   // Stop when we have a final answer or after 5 steps
   stopWhen: [
-    state => state.lastOutput.toolCalls.length === 0, // No more tool calls
-    state => state.steps.length >= 5 // Max steps reached
+    (state) => state.lastOutput.toolCalls.length === 0, // No more tool calls
+    (state) => state.steps.length >= 5, // Max steps reached
   ],
 
   // Convert tool results back to messages
-  buildToolResultMessages: async toolCalls => {
-    return toolCalls.map(call => ({
-      role: 'user',
-      content: `Tool "${call.name}" executed successfully`
+  buildToolResultMessages: async (toolCalls) => {
+    return toolCalls.map((call) => ({
+      role: "user",
+      content: `Tool "${call.name}" executed successfully`,
     }));
-  }
+  },
 });
 
 // Execute the agent
-const messages = [{ role: 'user', content: 'Search for the latest AI news' }];
+const messages = [{ role: "user", content: "Search for the latest AI news" }];
 
 for await (const part of agent.run(messages)) {
-  if (part.type === 'text') console.log('Content:', part.text);
-  if (part.type === 'thinking') console.log('Thinking:', part.text);
-  if (part.type === 'tool_call') console.log('Tool call:', part.call.name);
+  if (part.type === "text") console.log("Content:", part.text);
+  if (part.type === "thinking") console.log("Thinking:", part.text);
+  if (part.type === "tool_call") console.log("Tool call:", part.call.name);
 }
 ```
 
 ### Render to VS Code Chat
 
 ```typescript
-import { createVSCodeChatRenderer } from '@agentsy/vscode';
+import { createVSCodeChatRenderer } from "@agentsy/vscode";
 
 // In your VS Code extension command
 export async function chatCommand(stream: vscode.ChatResponseStream) {
   const renderer = createVSCodeChatRenderer({
     stream,
     showThinking: true,
-    thinkingStyle: 'blockquote', // Thinking appears as blockquote
-    onToolCall: async call => {
+    thinkingStyle: "blockquote", // Thinking appears as blockquote
+    onToolCall: async (call) => {
       console.log(`Tool called: ${call.name}`);
       // Execute tool and return results
     },
     onFinish: (finishReason, usage) => {
-      console.log('Chat finished. Reason:', finishReason, 'Usage:', usage);
-    }
+      console.log("Chat finished. Reason:", finishReason, "Usage:", usage);
+    },
   });
 
   // Stream LLM response
@@ -232,16 +235,16 @@ export async function chatCommand(stream: vscode.ChatResponseStream) {
 ### Use generic adapter for simpler integration
 
 ```typescript
-import { processStream } from '@agentsy/providers/adapters';
+import { processStream } from "@agentsy/providers/adapters";
 
 for await (const output of processStream(apiStream, {
   parseThinkTags: true,
-  knownTools: new Set(['search'])
+  knownTools: new Set(["search"]),
 })) {
-  console.log('Thinking:', output.thinking);
-  console.log('Content:', output.content);
-  console.log('Tool calls:', output.toolCalls);
-  console.log('Done:', output.done);
+  console.log("Thinking:", output.thinking);
+  console.log("Content:", output.content);
+  console.log("Tool calls:", output.toolCalls);
+  console.log("Done:", output.done);
 }
 ```
 
@@ -251,8 +254,8 @@ for await (const output of processStream(apiStream, {
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'claude-opus', // Auto-detects thinking tags
-  parseThinkTags: true
+  modelId: "claude-opus", // Auto-detects thinking tags
+  parseThinkTags: true,
 });
 ```
 
@@ -260,8 +263,8 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'deepseek', // Uses <think></think>
-  parseThinkTags: true
+  modelId: "deepseek", // Uses <think></think>
+  parseThinkTags: true,
 });
 ```
 
@@ -269,8 +272,8 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: 'granite', // Uses <|thinking|></|thinking|>
-  parseThinkTags: true
+  modelId: "granite", // Uses <|thinking|></|thinking|>
+  parseThinkTags: true,
 });
 ```
 
@@ -278,9 +281,9 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  thinkingOpenTag: '<reasoning>',
-  thinkingCloseTag: '</reasoning>',
-  parseThinkTags: true
+  thinkingOpenTag: "<reasoning>",
+  thinkingCloseTag: "</reasoning>",
+  parseThinkTags: true,
 });
 ```
 
@@ -293,18 +296,18 @@ const data = parseJson(response);
 if (data === null) {
   // Retry or use default
   const schema = {
-    type: 'object',
-    properties: { key: { type: 'string' } }
+    type: "object",
+    properties: { key: { type: "string" } },
   };
   const validated = validateJsonSchema(response, schema);
 
   if (!validated.success) {
-    console.error('Schema validation failed:', validated.errors);
+    console.error("Schema validation failed:", validated.errors);
     // Build repair prompt
     const repairPrompt = buildRepairPrompt({
       failedOutput: response,
       error: validated.errors[0],
-      schema
+      schema,
     });
     // Ask model to fix...
   }
@@ -332,8 +335,8 @@ for (const call of toolCalls) {
 ```typescript
 const processor = new LLMStreamProcessor({
   onWarning: (message, context) => {
-    console.warn('[warning]', message, context);
-  }
+    console.warn("[warning]", message, context);
+  },
 });
 ```
 
@@ -344,8 +347,8 @@ const processor = new LLMStreamProcessor({
   Prefer focused package imports that match the capability you need:
 
   ```typescript
-  import { ThinkingParser } from '@agentsy/core/thinking';
-  import { parseJson } from '@agentsy/core/structured';
+  import { ThinkingParser } from "@agentsy/core/thinking";
+  import { parseJson } from "@agentsy/core/structured";
   ```
 
 - **Stream processing** instead of buffering:
@@ -366,7 +369,7 @@ const processor = new LLMStreamProcessor({
   ```typescript
   parseJson(response, {
     maxJsonDepth: 10,
-    maxJsonKeys: 100
+    maxJsonKeys: 100,
   });
   ```
 
@@ -375,7 +378,7 @@ const processor = new LLMStreamProcessor({
   ```typescript
   const processor = new LLMStreamProcessor({
     scrubContextTags: true,
-    enforcePrivacyTags: true
+    enforcePrivacyTags: true,
   });
   ```
 
@@ -392,7 +395,7 @@ const processor = new LLMStreamProcessor({
 - Verify tag names match the model output:
 
   ```typescript
-  parser = ThinkingParser.forModel('deepseek'); // Auto-detect
+  parser = ThinkingParser.forModel("deepseek"); // Auto-detect
   ```
 
 **Q: JSON parsing returns null**
@@ -408,7 +411,7 @@ const processor = new LLMStreamProcessor({
 - Ensure tool names are in the known tools set:
 
   ```typescript
-  extractXmlToolCalls(response, new Set(['search', 'edit_file']));
+  extractXmlToolCalls(response, new Set(["search", "edit_file"]));
   ```
 
 **Q: Performance issues with large responses**

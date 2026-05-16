@@ -20,8 +20,8 @@ This package handles low-level SSE parsing concerns before provider normalizatio
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
-import { parseSSEStream } from '@agentsy/core/sse';
+import { normalizeOpenAIResponseEvent } from "@agentsy/providers/normalizers";
+import { parseSSEStream } from "@agentsy/core/sse";
 
 for await (const event of parseSSEStream(response.body)) {
   const normalized = normalizeOpenAIResponseEvent(event);

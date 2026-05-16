@@ -19,15 +19,6 @@ export function createNavigationSystem(): NavigationSystem {
   }
 
   return {
-    linkPages(fromPageId: string, toPageId: string) {
-      getOrCreate(fromPageId).add(toPageId);
-      getOrCreate(toPageId);
-    },
-
-    getOutgoing(pageId: string) {
-      return [...(outgoing.get(pageId) ?? new Set<string>())];
-    },
-
     getBacklinks(pageId: string) {
       const backlinks: string[] = [];
 
@@ -38,6 +29,15 @@ export function createNavigationSystem(): NavigationSystem {
       }
 
       return backlinks;
-    }
+    },
+
+    getOutgoing(pageId: string) {
+      return [...(outgoing.get(pageId) ?? new Set<string>())];
+    },
+
+    linkPages(fromPageId: string, toPageId: string) {
+      getOrCreate(fromPageId).add(toPageId);
+      getOrCreate(toPageId);
+    },
   };
 }

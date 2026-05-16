@@ -1,4 +1,5 @@
-import { SSEParser, type SSEEvent } from './SSEParser.js';
+import { SSEParser } from "./SSEParser.js";
+import type { SSEEvent } from "./SSEParser.js";
 
 /**
  * Parse a stream of SSE frames as an async generator.
@@ -24,15 +25,16 @@ export async function* parseSSEStream(
   const parser = new SSEParser({
     onEvent: (event: SSEEvent) => {
       eventQueue.push(event);
-    }
+    },
   });
 
   // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
-  const isReadableStream = (obj: unknown): obj is ReadableStream<string> => {
-    return obj != null && typeof obj === 'object' && 'getReader' in obj;
-  };
+  const isReadableStream = (obj: unknown): obj is ReadableStream<string> =>
+    obj != null && typeof obj === "object" && "getReader" in obj;
 
-  async function* iterateReadableStream(stream: ReadableStream<string>): AsyncGenerator<string> {
+  async function* iterateReadableStream(
+    stream: ReadableStream<string>
+  ): AsyncGenerator<string> {
     const reader = stream.getReader();
 
     try {
@@ -41,14 +43,16 @@ export async function* parseSSEStream(
         if (done) {
           return;
         }
-        yield value ?? '';
+        yield value ?? "";
       }
     } finally {
       reader.releaseLock();
     }
   }
 
-  async function* iterateAsyncIterable(iterable: AsyncIterable<string>): AsyncGenerator<string> {
+  async function* iterateAsyncIterable(
+    iterable: AsyncIterable<string>
+  ): AsyncGenerator<string> {
     yield* iterable;
   }
 
@@ -70,7 +74,9 @@ export async function* parseSSEStream(
     // Yield all queued events.
     while (eventQueue.length > 0) {
       const event = eventQueue.shift();
-      if (event) yield event;
+      if (event) {
+        yield event;
+      }
     }
   }
 
@@ -80,6 +86,8 @@ export async function* parseSSEStream(
   // Yield any final queued events.
   while (eventQueue.length > 0) {
     const event = eventQueue.shift();
-    if (event) yield event;
+    if (event) {
+      yield event;
+    }
   }
 }

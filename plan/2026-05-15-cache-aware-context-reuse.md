@@ -20,28 +20,28 @@
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-import { describe, expect, it } from 'vitest';
-import type { ContextFingerprint, MemoryReuseHint } from './types.js';
+import { describe, expect, it } from "vitest";
+import type { ContextFingerprint, MemoryReuseHint } from "./types.js";
 
-describe('cache-aware memory metadata', () => {
-  it('represents a stable fingerprint and reuse hints', () => {
+describe("cache-aware memory metadata", () => {
+  it("represents a stable fingerprint and reuse hints", () => {
     const fingerprint: ContextFingerprint = {
-      value: 'sha256:abc123',
-      modelFamily: 'qwen',
-      templateVersion: 'v3',
-      schemaVersion: 1
+      value: "sha256:abc123",
+      modelFamily: "qwen",
+      templateVersion: "v3",
+      schemaVersion: 1,
     };
 
     const hint: MemoryReuseHint = {
-      reuseClass: 'hot',
+      reuseClass: "hot",
       stablePrefix: true,
       toolSchema: true,
-      invalidationKeys: ['model-family:qwen', 'template:v3']
+      invalidationKeys: ["model-family:qwen", "template:v3"],
     };
 
-    expect(fingerprint.value).toBe('sha256:abc123');
-    expect(hint.reuseClass).toBe('hot');
-    expect(hint.invalidationKeys).toContain('template:v3');
+    expect(fingerprint.value).toBe("sha256:abc123");
+    expect(hint.reuseClass).toBe("hot");
+    expect(hint.invalidationKeys).toContain("template:v3");
   });
 });
 ```
@@ -62,7 +62,7 @@ export interface ContextFingerprint {
 }
 
 export interface MemoryReuseHint {
-  reuseClass: 'hot' | 'warm' | 'cold';
+  reuseClass: "hot" | "warm" | "cold";
   stablePrefix: boolean;
   toolSchema: boolean;
   invalidationKeys: string[];
@@ -92,22 +92,24 @@ git commit -m "feat(memory): add cache-aware context metadata"
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-import { describe, expect, it } from 'vitest';
-import { buildContextSegments } from './contextSegments.js';
+import { describe, expect, it } from "vitest";
+import { buildContextSegments } from "./contextSegments.js";
 
-describe('buildContextSegments', () => {
-  it('preserves stable segments and marks invalidations', () => {
+describe("buildContextSegments", () => {
+  it("preserves stable segments and marks invalidations", () => {
     const segments = buildContextSegments({
-      systemPrompt: 'You are helpful',
-      toolSchema: { type: 'object', properties: { name: { type: 'string' } } },
-      memorySummary: 'cached summary',
-      modelFamily: 'qwen',
-      templateVersion: 'v3'
+      systemPrompt: "You are helpful",
+      toolSchema: { type: "object", properties: { name: { type: "string" } } },
+      memorySummary: "cached summary",
+      modelFamily: "qwen",
+      templateVersion: "v3",
     });
 
-    expect(segments[0]?.fingerprint.value).toContain('systemPrompt');
-    expect(segments.some(segment => segment.reuseClass === 'hot')).toBe(true);
-    expect(segments.some(segment => segment.invalidations.includes('template:v3'))).toBe(true);
+    expect(segments[0]?.fingerprint.value).toContain("systemPrompt");
+    expect(segments.some((segment) => segment.reuseClass === "hot")).toBe(true);
+    expect(
+      segments.some((segment) => segment.invalidations.includes("template:v3"))
+    ).toBe(true);
   });
 });
 ```
@@ -122,8 +124,13 @@ Expected: FAIL because `buildContextSegments` does not exist yet.
 ```ts
 export interface ContextSegment {
   content: string;
-  fingerprint: { value: string; modelFamily: string; templateVersion: string; schemaVersion: number };
-  reuseClass: 'hot' | 'warm' | 'cold';
+  fingerprint: {
+    value: string;
+    modelFamily: string;
+    templateVersion: string;
+    schemaVersion: number;
+  };
+  reuseClass: "hot" | "warm" | "cold";
   invalidations: string[];
 }
 
@@ -135,7 +142,9 @@ export interface BuildContextSegmentsInput {
   templateVersion: string;
 }
 
-export function buildContextSegments(input: BuildContextSegmentsInput): ContextSegment[] {
+export function buildContextSegments(
+  input: BuildContextSegmentsInput
+): ContextSegment[] {
   return [
     {
       content: input.systemPrompt,
@@ -143,11 +152,14 @@ export function buildContextSegments(input: BuildContextSegmentsInput): ContextS
         value: `systemPrompt:${input.modelFamily}:${input.templateVersion}`,
         modelFamily: input.modelFamily,
         templateVersion: input.templateVersion,
-        schemaVersion: 1
+        schemaVersion: 1,
       },
-      reuseClass: 'hot',
-      invalidations: [`model-family:${input.modelFamily}`, `template:${input.templateVersion}`]
-    }
+      reuseClass: "hot",
+      invalidations: [
+        `model-family:${input.modelFamily}`,
+        `template:${input.templateVersion}`,
+      ],
+    },
   ];
 }
 ```
@@ -175,25 +187,25 @@ git commit -m "feat(core): add cache-aware context segments"
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-import { describe, expect, it } from 'vitest';
-import { createSessionSnapshot } from './session.js';
+import { describe, expect, it } from "vitest";
+import { createSessionSnapshot } from "./session.js";
 
-describe('session cache metadata', () => {
-  it('stores reusable context fingerprints and invalidation keys', () => {
+describe("session cache metadata", () => {
+  it("stores reusable context fingerprints and invalidation keys", () => {
     const snapshot = createSessionSnapshot({
-      sessionId: 'session-1',
-      modelFamily: 'qwen',
+      sessionId: "session-1",
+      modelFamily: "qwen",
       reusableSegments: [
         {
-          fingerprint: 'systemPrompt:qwen:v3',
-          reuseClass: 'hot',
-          invalidations: ['model-family:qwen', 'template:v3']
-        }
-      ]
+          fingerprint: "systemPrompt:qwen:v3",
+          reuseClass: "hot",
+          invalidations: ["model-family:qwen", "template:v3"],
+        },
+      ],
     });
 
-    expect(snapshot.state.reusableSegments?.[0]?.reuseClass).toBe('hot');
-    expect(snapshot.state.modelFamily).toBe('qwen');
+    expect(snapshot.state.reusableSegments?.[0]?.reuseClass).toBe("hot");
+    expect(snapshot.state.modelFamily).toBe("qwen");
   });
 });
 ```
@@ -208,7 +220,7 @@ Expected: FAIL because `createSessionSnapshot` does not accept reusable segment 
 ```ts
 export interface ReusableSessionSegment {
   fingerprint: string;
-  reuseClass: 'hot' | 'warm' | 'cold';
+  reuseClass: "hot" | "warm" | "cold";
   invalidations: string[];
 }
 
@@ -226,12 +238,12 @@ export function createSessionSnapshot(input: {
   return {
     sessionId: input.sessionId,
     timestamp: new Date(),
-    checksum: 'placeholder',
+    checksum: "placeholder",
     schemaVersion: 1,
     state: {
       modelFamily: input.modelFamily,
-      reusableSegments: input.reusableSegments
-    }
+      reusableSegments: input.reusableSegments,
+    },
   };
 }
 ```
@@ -258,20 +270,30 @@ git commit -m "feat(session): persist reusable context metadata"
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-import { describe, expect, it } from 'vitest';
-import { rankReusableMemoryBlocks } from './index.js';
+import { describe, expect, it } from "vitest";
+import { rankReusableMemoryBlocks } from "./index.js";
 
-describe('rankReusableMemoryBlocks', () => {
-  it('prefers hot reusable blocks with matching fingerprints', () => {
+describe("rankReusableMemoryBlocks", () => {
+  it("prefers hot reusable blocks with matching fingerprints", () => {
     const ranked = rankReusableMemoryBlocks(
       [
-        { fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', hitCount: 9, invalidations: [] },
-        { fingerprint: 'systemPrompt:qwen:v2', reuseClass: 'cold', hitCount: 1, invalidations: ['template:v2'] }
+        {
+          fingerprint: "systemPrompt:qwen:v3",
+          reuseClass: "hot",
+          hitCount: 9,
+          invalidations: [],
+        },
+        {
+          fingerprint: "systemPrompt:qwen:v2",
+          reuseClass: "cold",
+          hitCount: 1,
+          invalidations: ["template:v2"],
+        },
       ],
-      'systemPrompt:qwen:v3'
+      "systemPrompt:qwen:v3"
     );
 
-    expect(ranked[0]?.fingerprint).toBe('systemPrompt:qwen:v3');
+    expect(ranked[0]?.fingerprint).toBe("systemPrompt:qwen:v3");
   });
 });
 ```
@@ -287,17 +309,19 @@ Expected: FAIL because `rankReusableMemoryBlocks` does not exist yet.
 export function rankReusableMemoryBlocks(
   blocks: Array<{
     fingerprint: string;
-    reuseClass: 'hot' | 'warm' | 'cold';
+    reuseClass: "hot" | "warm" | "cold";
     hitCount: number;
     invalidations: string[];
   }>,
   fingerprint: string
 ) {
   return [...blocks]
-    .filter(block => !block.invalidations.includes(fingerprint))
+    .filter((block) => !block.invalidations.includes(fingerprint))
     .sort((a, b) => {
-      if (a.fingerprint === fingerprint && b.fingerprint !== fingerprint) return -1;
-      if (b.fingerprint === fingerprint && a.fingerprint !== fingerprint) return 1;
+      if (a.fingerprint === fingerprint && b.fingerprint !== fingerprint)
+        return -1;
+      if (b.fingerprint === fingerprint && a.fingerprint !== fingerprint)
+        return 1;
       return b.hitCount - a.hitCount;
     });
 }
@@ -325,18 +349,24 @@ git commit -m "feat(memory): add cache-aware reuse ranking"
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-import { describe, expect, it } from 'vitest';
-import { buildRuntimeContext } from './cache-aware-context.js';
+import { describe, expect, it } from "vitest";
+import { buildRuntimeContext } from "./cache-aware-context.js";
 
-describe('buildRuntimeContext', () => {
-  it('reuses cached segments when fingerprints still match', () => {
+describe("buildRuntimeContext", () => {
+  it("reuses cached segments when fingerprints still match", () => {
     const context = buildRuntimeContext({
-      modelFamily: 'qwen',
-      templateVersion: 'v3',
-      reusableSegments: [{ fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', invalidations: [] }]
+      modelFamily: "qwen",
+      templateVersion: "v3",
+      reusableSegments: [
+        {
+          fingerprint: "systemPrompt:qwen:v3",
+          reuseClass: "hot",
+          invalidations: [],
+        },
+      ],
     });
 
-    expect(context.reusedSegments).toContain('systemPrompt:qwen:v3');
+    expect(context.reusedSegments).toContain("systemPrompt:qwen:v3");
   });
 });
 ```
@@ -352,12 +382,16 @@ Expected: FAIL because `buildRuntimeContext` does not exist yet.
 export function buildRuntimeContext(input: {
   modelFamily: string;
   templateVersion: string;
-  reusableSegments: Array<{ fingerprint: string; reuseClass: 'hot' | 'warm' | 'cold'; invalidations: string[] }>;
+  reusableSegments: Array<{
+    fingerprint: string;
+    reuseClass: "hot" | "warm" | "cold";
+    invalidations: string[];
+  }>;
 }) {
   return {
     reusedSegments: input.reusableSegments
-      .filter(segment => segment.reuseClass !== 'cold')
-      .map(segment => segment.fingerprint)
+      .filter((segment) => segment.reuseClass !== "cold")
+      .map((segment) => segment.fingerprint),
   };
 }
 ```

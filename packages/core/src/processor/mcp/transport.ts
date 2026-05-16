@@ -1,4 +1,4 @@
-import { ReadableStream } from 'node:stream/web';
+import { ReadableStream } from "node:stream/web";
 
 /**
  * Typed union representing the two supported MCP transport modes.
@@ -6,25 +6,33 @@ import { ReadableStream } from 'node:stream/web';
  * - 'stdio': Direct stdio pipe transport for local/embedded MCP servers.
  */
 export type MCPTransport =
-  | { type: 'http'; stream: ReadableStream<string> }
-  | { type: 'stdio'; readable: NodeJS.ReadableStream; writable: NodeJS.WritableStream };
+  | { type: "http"; stream: ReadableStream<string> }
+  | {
+      type: "stdio";
+      readable: NodeJS.ReadableStream;
+      writable: NodeJS.WritableStream;
+    };
 
-import { Readable } from 'node:stream';
+import { Readable } from "node:stream";
 
 /**
  * Adapts any MCPTransport to a unified ReadableStream<string> interface
  * for use with existing SSE/stream processors.
  * Uses Readable.toWeb() for native backpressure support (Node.js 22+).
  */
-export function adaptTransportToStream(transport: MCPTransport): ReadableStream<string> {
-  if (transport.type === 'http') {
+export function adaptTransportToStream(
+  transport: MCPTransport
+): ReadableStream<string> {
+  if (transport.type === "http") {
     return transport.stream;
   }
 
   // For stdio transport, use Readable.toWeb() for native backpressure support
   // This is available in Node.js 22+ and properly handles backpressure
-  if (typeof Readable.toWeb === 'function') {
-    const webStream = Readable.toWeb(transport.readable) as ReadableStream<Uint8Array>;
+  if (typeof Readable.toWeb === "function") {
+    const webStream = Readable.toWeb(
+      transport.readable
+    ) as ReadableStream<Uint8Array>;
     // Decode Uint8Array to string
     return new ReadableStream({
       async start(controller) {
@@ -34,7 +42,9 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              break;
+            }
             controller.enqueue(decoder.decode(value, { stream: true }));
           }
           const flushed = decoder.decode();
@@ -42,12 +52,12 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
             controller.enqueue(flushed);
           }
           controller.close();
-        } catch (err) {
-          controller.error(err);
+        } catch (error) {
+          controller.error(error);
         } finally {
           reader.releaseLock();
         }
-      }
+      },
     });
   }
 
@@ -60,11 +70,11 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
 
   // Helper function to convert chunk to string
   function convertChunkToString(chunk: unknown): string {
-    if (typeof chunk === 'string') {
+    if (typeof chunk === "string") {
       return chunk;
     }
     if (Buffer.isBuffer(chunk)) {
-      return chunk.toString('utf-8');
+      return chunk.toString("utf-8");
     }
     if (chunk instanceof Uint8Array) {
       return decoder.decode(chunk, { stream: true });
@@ -73,6 +83,11 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
   }
 
   return new ReadableStream<string>({
+    async cancel() {
+      finished = true;
+      await iterator.return?.();
+      readableStream.destroy();
+    },
     async pull(controller) {
       if (finished) {
         return;
@@ -85,15 +100,10 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
           return;
         }
         controller.enqueue(convertChunkToString(value));
-      } catch (err) {
+      } catch (error) {
         finished = true;
-        controller.error(err);
+        controller.error(error);
       }
     },
-    async cancel() {
-      finished = true;
-      await iterator.return?.();
-      readableStream.destroy();
-    }
   });
 }

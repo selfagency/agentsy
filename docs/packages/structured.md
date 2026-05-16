@@ -35,9 +35,9 @@ This package handles the part where model output almost looks like structured da
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { parseJson, validateJsonSchema } from '@agentsy/core/structured';
+import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { LLMStreamProcessor } from "@agentsy/core/processor";
+import { parseJson, validateJsonSchema } from "@agentsy/core/structured";
 
 const processor = new LLMStreamProcessor();
 

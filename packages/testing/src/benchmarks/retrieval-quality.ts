@@ -1,7 +1,7 @@
 export interface RetrievalBenchmarkDocument {
   id: string;
   sourceId: string;
-  sourceType: 'wiki' | 'file' | 'document' | 'web';
+  sourceType: "wiki" | "file" | "document" | "web";
   title: string;
   content: string;
   updatedAt: string;
@@ -22,7 +22,10 @@ function tokenize(input: string): string[] {
     .filter(Boolean);
 }
 
-function lexicalScore(queryTokens: readonly string[], document: RetrievalBenchmarkDocument): number {
+function lexicalScore(
+  queryTokens: readonly string[],
+  document: RetrievalBenchmarkDocument
+): number {
   if (queryTokens.length === 0) {
     return 0;
   }
@@ -38,14 +41,23 @@ function lexicalScore(queryTokens: readonly string[], document: RetrievalBenchma
   return hits / queryTokens.length;
 }
 
-function entityScore(queryTokens: readonly string[], document: RetrievalBenchmarkDocument): number {
+function entityScore(
+  queryTokens: readonly string[],
+  document: RetrievalBenchmarkDocument
+): number {
   const entities = document.metadata?.entities;
-  if (!Array.isArray(entities) || entities.length === 0 || queryTokens.length === 0) {
+  if (
+    !Array.isArray(entities) ||
+    entities.length === 0 ||
+    queryTokens.length === 0
+  ) {
     return 0;
   }
 
   const normalized = new Set(
-    entities.filter((item): item is string => typeof item === 'string').map(item => item.toLowerCase())
+    entities
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.toLowerCase())
   );
   let hits = 0;
   for (const token of queryTokens) {
@@ -80,18 +92,18 @@ export async function runRetrievalBenchmark(
 
   const start = performance.now();
   const ranked = [...documents]
-    .map(document => {
+    .map((document) => {
       const lexical = lexicalScore(queryTokens, document);
       const entity = entityScore(queryTokens, document);
       const temporal = temporalScore(document.updatedAt);
       const score = lexical * 0.7 + entity * 0.2 + temporal * 0.1;
       return { ...document, score };
     })
-    .sort((left, right) => right.score - left.score)
+    .toSorted((left, right) => right.score - left.score)
     .slice(0, limit);
 
   let budget = 120;
-  const packed = ranked.filter(document => {
+  const packed = ranked.filter((document) => {
     const tokens = estimateTokens(`${document.title}\n${document.content}`);
     if (tokens > budget) {
       return false;
@@ -106,12 +118,13 @@ export async function runRetrievalBenchmark(
     const entities = item.metadata?.entities;
     return sum + (Array.isArray(entities) && entities.length > 0 ? 1 : 0);
   }, 0);
-  const citationCoverage = packed.length === 0 ? 0 : totalCitations / packed.length;
+  const citationCoverage =
+    packed.length === 0 ? 0 : totalCitations / packed.length;
 
   return {
+    citationCoverage,
+    hitCount: ranked.length,
     latencyMs,
     topId: ranked[0]?.id ?? null,
-    hitCount: ranked.length,
-    citationCoverage
   };
 }

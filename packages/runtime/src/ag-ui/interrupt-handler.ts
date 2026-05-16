@@ -5,18 +5,18 @@
  * Emits INTERRUPT events to notify frontends of interruption requests.
  */
 
-import type { RunInterruptedEvent } from '@agentsy/types';
-import { EventType } from '@agentsy/types';
+import type { RunInterruptedEvent } from "@agentsy/types";
+import { EventType } from "@agentsy/types";
 
 /**
  * Interrupt reason codes.
  */
 export enum InterruptReason {
-  USER_REQUEST = 'user_request',
-  RESOURCE_LIMIT = 'resource_limit',
-  SAFETY_CHECK = 'safety_check',
-  TIMEOUT = 'timeout',
-  ERROR = 'error'
+  USER_REQUEST = "user_request",
+  RESOURCE_LIMIT = "resource_limit",
+  SAFETY_CHECK = "safety_check",
+  TIMEOUT = "timeout",
+  ERROR = "error",
 }
 
 /**
@@ -54,7 +54,10 @@ export class InterruptController {
    * @param reason - Reason for the interrupt
    * @param message - Optional message
    */
-  interrupt(reason: InterruptReason | string = InterruptReason.USER_REQUEST, message?: string): void {
+  interrupt(
+    reason: InterruptReason | string = InterruptReason.USER_REQUEST,
+    message?: string
+  ): void {
     this.interrupted = true;
     this.interruptReason = reason;
     this.interruptMessage = message;
@@ -76,7 +79,9 @@ export class InterruptController {
    */
   throwIfInterrupted(): void {
     if (this.interrupted === true) {
-      throw new Error(this.interruptMessage ?? `Interrupted: ${this.interruptReason}`);
+      throw new Error(
+        this.interruptMessage ?? `Interrupted: ${this.interruptReason}`
+      );
     }
   }
 }
@@ -96,19 +101,23 @@ export function createInterruptEvent(
   message?: string,
   threadId?: string
 ): RunInterruptedEvent {
-  const interrupt: { id: string; reason: string; options?: { message: string } } = {
+  const interrupt: {
+    id: string;
+    reason: string;
+    options?: { message: string };
+  } = {
     id: `interrupt_${Math.random().toString(36).slice(2, 11)}`,
-    reason: String(reason)
+    reason: String(reason),
   };
   if (message !== undefined) {
     interrupt.options = { message };
   }
 
   const event: RunInterruptedEvent = {
-    type: EventType.RUN_INTERRUPTED,
+    interrupts: [interrupt],
     runId,
     timestamp: new Date().toISOString(),
-    interrupts: [interrupt]
+    type: EventType.RUN_INTERRUPTED,
   };
 
   if (threadId !== undefined) {
@@ -134,7 +143,7 @@ export function createInterruptAbortController(): {
     interrupt: (_reason?: InterruptReason | string, _message?: string) => {
       controller.abort();
     },
-    isInterrupted: () => controller.signal.aborted
+    isInterrupted: () => controller.signal.aborted,
   };
 }
 
@@ -155,7 +164,10 @@ export class TimeoutInterrupt {
    */
   start(): void {
     this.timeoutId = setTimeout(() => {
-      this.interruptController.interrupt(InterruptReason.TIMEOUT, `Operation exceeded timeout of ${this.timeoutMs}ms`);
+      this.interruptController.interrupt(
+        InterruptReason.TIMEOUT,
+        `Operation exceeded timeout of ${this.timeoutMs}ms`
+      );
     }, this.timeoutMs);
   }
 

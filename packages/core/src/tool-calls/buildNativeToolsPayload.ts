@@ -1,4 +1,7 @@
-import type { JsonSchemaProperty, XmlToolInfo } from './buildXmlToolSystemPrompt.js';
+import type {
+  JsonSchemaProperty,
+  XmlToolInfo,
+} from "./buildXmlToolSystemPrompt.js";
 
 /** Options for {@link buildNativeToolsArray}. */
 export interface BuildNativeToolsOptions {
@@ -17,14 +20,14 @@ export interface BuildNativeToolsOptions {
 
 /** OpenAI-compatible tool definition used by any OpenAI-compatible `/chat/completions` endpoint. */
 export interface NativeTool {
-  type: 'function';
+  type: "function";
   function: {
     name: string;
     description?: string;
     /** Set by `buildNativeToolsArray` when `options.strict` is `true`. */
     strict?: true;
     parameters: {
-      type: 'object';
+      type: "object";
       properties: Record<string, JsonSchemaProperty>;
       required?: string[];
       additionalProperties: false;
@@ -37,14 +40,20 @@ export interface NativeTool {
  * as required by DeepSeek strict mode and OpenAI structured outputs.
  */
 function enforceStrictOnSchema(schema: JsonSchemaProperty): JsonSchemaProperty {
-  if (schema.type !== 'object' || !schema.properties) return schema;
+  if (schema.type !== "object" || !schema.properties) {
+    return schema;
+  }
   // Security: Use Map instead of dynamic object construction to prevent
   // prototype pollution attacks from malicious schema definitions.
   const strictProperties = new Map<string, JsonSchemaProperty>();
   for (const [key, prop] of Object.entries(schema.properties)) {
     strictProperties.set(key, enforceStrictOnSchema(prop));
   }
-  return { ...schema, additionalProperties: false, properties: Object.fromEntries(strictProperties.entries()) };
+  return {
+    ...schema,
+    additionalProperties: false,
+    properties: Object.fromEntries(strictProperties.entries()),
+  };
 }
 
 /**
@@ -87,7 +96,7 @@ export function buildNativeToolsArray(
 ): NativeTool[] {
   const strict = options.strict ?? false;
 
-  return tools.map(tool => {
+  return tools.map((tool) => {
     if (!VALID_TOOL_NAME.test(tool.name)) {
       throw new Error(
         `Invalid tool name "${tool.name}" for native tool payload: tool names must start with a letter or underscore and contain only letters, digits, underscores, colons, or hyphens.`
@@ -100,26 +109,35 @@ export function buildNativeToolsArray(
     // prototype pollution attacks from malicious schema definitions.
     const properties = new Map<string, JsonSchemaProperty>();
     for (const [paramName, schema] of Object.entries(props)) {
-      properties.set(paramName, strict ? enforceStrictOnSchema(schema) : schema);
+      properties.set(
+        paramName,
+        strict ? enforceStrictOnSchema(schema) : schema
+      );
     }
 
-    const fn: NativeTool['function'] = {
+    const fn: NativeTool["function"] = {
       name: tool.name,
       parameters: {
-        type: 'object',
+        additionalProperties: false,
         properties: Object.fromEntries(properties.entries()),
-        additionalProperties: false
-      }
+        type: "object",
+      },
     };
 
-    if (tool.description) fn.description = tool.description;
-    if (strict) fn.strict = true;
+    if (tool.description) {
+      fn.description = tool.description;
+    }
+    if (strict) {
+      fn.strict = true;
+    }
     if (required && required.length > 0) {
       // Ensure `required` only contains names present in the `properties` Map.
-      const filtered = required.filter(name => properties.has(name));
-      if (filtered.length > 0) fn.parameters.required = filtered;
+      const filtered = required.filter((name) => properties.has(name));
+      if (filtered.length > 0) {
+        fn.parameters.required = filtered;
+      }
     }
 
-    return { type: 'function', function: fn };
+    return { function: fn, type: "function" };
   });
 }

@@ -5,14 +5,14 @@
  */
 
 export class QuotaExceededError extends Error {
-  constructor(message = 'Token quota exceeded') {
+  constructor(message = "Token quota exceeded") {
     super(message);
-    this.name = 'QuotaExceededError';
+    this.name = "QuotaExceededError";
   }
 }
 export class RetrievalBlockedError extends Error {
-  constructor(message = 'Retrieval request blocked by firewall') {
+  constructor(message = "Retrieval request blocked by firewall") {
     super(message);
-    this.name = 'RetrievalBlockedError';
+    this.name = "RetrievalBlockedError";
   }
 }

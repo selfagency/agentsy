@@ -1,19 +1,20 @@
-import type { SessionStore } from '@agentsy/session';
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
+
+import type { SessionStore } from "@agentsy/session";
 
 export {
   buildRuntimeContext,
   type BuildRuntimeContextInput,
   type RuntimeContextReuse,
-  type RuntimeReusableSegment
-} from './cache-aware-context.js';
+  type RuntimeReusableSegment,
+} from "./cache-aware-context.js";
 export {
   buildRuntimeMemoryContextXml,
   injectRuntimeMemoryContext,
   type RuntimeCitation,
   type RuntimeMemoryEvidence,
-  type RuntimeMemoryInjectionOptions
-} from './memory-injection.js';
+  type RuntimeMemoryInjectionOptions,
+} from "./memory-injection.js";
 
 export interface RuntimeTask {
   id: string;
@@ -26,7 +27,7 @@ export interface RuntimeWorkflowTask extends RuntimeTask {
 
 export interface RuntimeTaskResult {
   taskId: string;
-  status: 'completed' | 'failed' | 'skipped';
+  status: "completed" | "failed" | "skipped";
   startedAt: number;
   finishedAt: number;
   error?: Error;
@@ -44,7 +45,11 @@ export interface RuntimeSnapshot {
 export interface RuntimeTaskContext {
   sessionId: string;
   depth: number;
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+  spawn(
+    tasks: RuntimeTask[],
+    signal?: AbortSignal,
+    sessionId?: string
+  ): Promise<RuntimeSnapshot>;
 }
 
 export interface RuntimeOptions {
@@ -55,8 +60,16 @@ export interface RuntimeOptions {
 }
 
 export interface RuntimeExecutor {
-  execute(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<void>;
-  executeWithResults(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeTaskResult[]>;
+  execute(
+    this: void,
+    tasks: RuntimeTask[],
+    signal?: AbortSignal
+  ): Promise<void>;
+  executeWithResults(
+    this: void,
+    tasks: RuntimeTask[],
+    signal?: AbortSignal
+  ): Promise<RuntimeTaskResult[]>;
 }
 
 export interface RuntimeLoopOptions extends RuntimeOptions {
@@ -70,27 +83,37 @@ export interface RuntimeLoopOptions extends RuntimeOptions {
 
 export interface RuntimeLoop {
   execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+  spawn(
+    tasks: RuntimeTask[],
+    signal?: AbortSignal,
+    sessionId?: string
+  ): Promise<RuntimeSnapshot>;
   getSnapshot(): RuntimeSnapshot;
   getDepth(): number;
 }
 
 export interface RuntimeWorkflowExecutor {
-  execute(tasks: RuntimeWorkflowTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
+  execute(
+    tasks: RuntimeWorkflowTask[],
+    signal?: AbortSignal
+  ): Promise<RuntimeSnapshot>;
 }
 
 function toError(error: unknown): Error {
-  return error instanceof Error ? error : new Error('Runtime task failed');
+  return error instanceof Error ? error : new Error("Runtime task failed");
 }
 
-function createEmptySnapshot(sessionId: string, depth: number): RuntimeSnapshot {
+function createEmptySnapshot(
+  sessionId: string,
+  depth: number
+): RuntimeSnapshot {
   return {
-    sessionId,
-    depth,
-    completedTaskIds: [],
-    results: [],
     childSnapshots: [],
-    updatedAt: Date.now()
+    completedTaskIds: [],
+    depth,
+    results: [],
+    sessionId,
+    updatedAt: Date.now(),
   };
 }
 
@@ -99,67 +122,71 @@ function createRuntimeId(prefix: string): string {
 }
 
 function isRuntimeTaskResult(value: unknown): value is RuntimeTaskResult {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
   const candidate = value as Record<string, unknown>;
   return (
-    typeof candidate.taskId === 'string' &&
-    (candidate.status === 'completed' || candidate.status === 'failed' || candidate.status === 'skipped') &&
-    typeof candidate.startedAt === 'number' &&
-    typeof candidate.finishedAt === 'number'
+    typeof candidate.taskId === "string" &&
+    (candidate.status === "completed" ||
+      candidate.status === "failed" ||
+      candidate.status === "skipped") &&
+    typeof candidate.startedAt === "number" &&
+    typeof candidate.finishedAt === "number"
   );
 }
 
 function isRuntimeSnapshot(value: unknown): value is RuntimeSnapshot {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
   const candidate = value as Record<string, unknown>;
   return (
-    typeof candidate.sessionId === 'string' &&
-    typeof candidate.depth === 'number' &&
+    typeof candidate.sessionId === "string" &&
+    typeof candidate.depth === "number" &&
     Array.isArray(candidate.completedTaskIds) &&
-    candidate.completedTaskIds.every(taskId => typeof taskId === 'string') &&
+    candidate.completedTaskIds.every((taskId) => typeof taskId === "string") &&
     Array.isArray(candidate.results) &&
     candidate.results.every(isRuntimeTaskResult) &&
     Array.isArray(candidate.childSnapshots) &&
     candidate.childSnapshots.every(isRuntimeSnapshot) &&
-    typeof candidate.updatedAt === 'number'
+    typeof candidate.updatedAt === "number"
   );
 }
 
 function cloneSnapshot(snapshot: RuntimeSnapshot): RuntimeSnapshot {
   return {
-    sessionId: snapshot.sessionId,
-    depth: snapshot.depth,
-    completedTaskIds: [...snapshot.completedTaskIds],
-    results: snapshot.results.map(result => ({ ...result })),
     childSnapshots: snapshot.childSnapshots.map(cloneSnapshot),
-    updatedAt: snapshot.updatedAt
+    completedTaskIds: [...snapshot.completedTaskIds],
+    depth: snapshot.depth,
+    results: snapshot.results.map((result) => ({ ...result })),
+    sessionId: snapshot.sessionId,
+    updatedAt: snapshot.updatedAt,
   };
 }
 
 export function loadRuntimeSnapshotFromSession(
-  sessionStore: Pick<SessionStore, 'getValue'>,
-  snapshotKey: string = 'runtimeSnapshot'
+  sessionStore: Pick<SessionStore, "getValue">,
+  snapshotKey: string = "runtimeSnapshot"
 ): RuntimeSnapshot | null {
   const snapshot = sessionStore.getValue(snapshotKey);
   return isRuntimeSnapshot(snapshot) ? cloneSnapshot(snapshot) : null;
 }
 
 export function saveRuntimeSnapshotToSession(
-  sessionStore: Pick<SessionStore, 'setValue'>,
+  sessionStore: Pick<SessionStore, "setValue">,
   snapshot: RuntimeSnapshot,
-  snapshotKey: string = 'runtimeSnapshot'
+  snapshotKey: string = "runtimeSnapshot"
 ): void {
   sessionStore.setValue(snapshotKey, cloneSnapshot(snapshot));
 }
 
-function getExecutionOrder(tasks: RuntimeWorkflowTask[]): RuntimeWorkflowTask[] {
-  const taskMap = new Map(tasks.map(task => [task.id, task]));
+function getExecutionOrder(
+  tasks: RuntimeWorkflowTask[]
+): RuntimeWorkflowTask[] {
+  const taskMap = new Map(tasks.map((task) => [task.id, task]));
   const ordered: RuntimeWorkflowTask[] = [];
   const temporary = new Set<string>();
   const permanent = new Set<string>();
@@ -178,7 +205,9 @@ function getExecutionOrder(tasks: RuntimeWorkflowTask[]): RuntimeWorkflowTask[] 
     for (const dependencyId of task.dependsOn ?? []) {
       const dependency = taskMap.get(dependencyId);
       if (!dependency) {
-        throw new Error(`Runtime workflow task "${task.id}" depends on missing task "${dependencyId}"`);
+        throw new Error(
+          `Runtime workflow task "${task.id}" depends on missing task "${dependencyId}"`
+        );
       }
       visit(dependency);
     }
@@ -195,7 +224,9 @@ function getExecutionOrder(tasks: RuntimeWorkflowTask[]): RuntimeWorkflowTask[] 
   return ordered;
 }
 
-export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExecutor => {
+export const createRuntimeExecutor = (
+  options: RuntimeOptions = {}
+): RuntimeExecutor => {
   const executeWithResults = async (
     tasks: RuntimeTask[],
     signal: AbortSignal = new AbortController().signal
@@ -211,12 +242,15 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
       options.onTaskStart?.(task);
 
       try {
-        await task.run(signal, options.taskContext ?? createDetachedRuntimeTaskContext());
+        await task.run(
+          signal,
+          options.taskContext ?? createDetachedRuntimeTaskContext()
+        );
         const result: RuntimeTaskResult = {
-          taskId: task.id,
-          status: 'completed',
+          finishedAt: Date.now(),
           startedAt,
-          finishedAt: Date.now()
+          status: "completed",
+          taskId: task.id,
         };
         results.push(result);
         options.onTaskComplete?.(result, task);
@@ -224,11 +258,11 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
         const runtimeError = toError(error);
         options.onError?.(runtimeError, task);
         const result: RuntimeTaskResult = {
-          taskId: task.id,
-          status: 'failed',
-          startedAt,
+          error: runtimeError,
           finishedAt: Date.now(),
-          error: runtimeError
+          startedAt,
+          status: "failed",
+          taskId: task.id,
         };
         results.push(result);
         options.onTaskComplete?.(result, task);
@@ -238,27 +272,36 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
     return results;
   };
 
-  const execute = async (tasks: RuntimeTask[], signal: AbortSignal = new AbortController().signal): Promise<void> => {
+  const execute = async (
+    tasks: RuntimeTask[],
+    signal: AbortSignal = new AbortController().signal
+  ): Promise<void> => {
     await executeWithResults(tasks, signal);
   };
 
   return {
     execute,
-    executeWithResults
+    executeWithResults,
   };
 };
 
 function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
   return {
-    sessionId: 'runtime-detached',
     depth: 0,
+    sessionId: "runtime-detached",
     async spawn() {
-      throw new Error('Runtime spawning is unavailable without an attached runtime loop context');
-    }
+      throw new Error(
+        "Runtime spawning is unavailable without an attached runtime loop context"
+      );
+    },
   };
 }
 
-function initializeLoopSnapshot(options: RuntimeLoopOptions, sessionId: string, depth: number): RuntimeSnapshot {
+function initializeLoopSnapshot(
+  options: RuntimeLoopOptions,
+  sessionId: string,
+  depth: number
+): RuntimeSnapshot {
   const persisted = options.sessionStore
     ? loadRuntimeSnapshotFromSession(options.sessionStore, options.snapshotKey)
     : null;
@@ -267,33 +310,45 @@ function initializeLoopSnapshot(options: RuntimeLoopOptions, sessionId: string, 
     : (persisted ?? createEmptySnapshot(sessionId, depth));
 }
 
-export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop {
-  const sessionId = options.sessionId ?? createRuntimeId('runtime');
+export function createRuntimeLoop(
+  options: RuntimeLoopOptions = {}
+): RuntimeLoop {
+  const sessionId = options.sessionId ?? createRuntimeId("runtime");
   const depth = options.depth ?? 0;
   const maxDepth = options.maxDepth ?? 3;
   let snapshot = initializeLoopSnapshot(options, sessionId, depth);
 
-  const spawn = async (tasks: RuntimeTask[], signal = new AbortController().signal, childSessionId?: string) => {
+  const spawn = async (
+    tasks: RuntimeTask[],
+    signal = new AbortController().signal,
+    childSessionId?: string
+  ) => {
     if (depth + 1 > maxDepth) {
       throw new Error(`Runtime spawn depth exceeded maxDepth (${maxDepth})`);
     }
 
-    const nextChildSessionId = childSessionId ?? `${sessionId}:child:${snapshot.childSnapshots.length + 1}`;
+    const nextChildSessionId =
+      childSessionId ??
+      `${sessionId}:child:${snapshot.childSnapshots.length + 1}`;
     const childLoop = createRuntimeLoop({
       ...options,
-      sessionId: nextChildSessionId,
       depth: depth + 1,
-      maxDepth
+      maxDepth,
+      sessionId: nextChildSessionId,
     });
     const childSnapshot = await childLoop.execute(tasks, signal);
     snapshot = {
       ...snapshot,
       childSnapshots: [...snapshot.childSnapshots, childSnapshot],
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
     if (options.sessionStore) {
-      saveRuntimeSnapshotToSession(options.sessionStore, snapshot, options.snapshotKey);
+      saveRuntimeSnapshotToSession(
+        options.sessionStore,
+        snapshot,
+        options.snapshotKey
+      );
     }
 
     return cloneSnapshot(childSnapshot);
@@ -302,68 +357,79 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
   const executor = createRuntimeExecutor({
     ...options,
     taskContext: {
-      sessionId,
       depth,
-      spawn
-    }
+      sessionId,
+      spawn,
+    },
   });
 
   return {
     async execute(tasks, signal = new AbortController().signal) {
       const completedTaskIds = new Set(snapshot.completedTaskIds);
-      const pendingTasks = tasks.filter(task => !completedTaskIds.has(task.id));
+      const pendingTasks = tasks.filter(
+        (task) => !completedTaskIds.has(task.id)
+      );
       const results = await executor.executeWithResults(pendingTasks, signal);
 
       const nextCompletedTaskIds = [...snapshot.completedTaskIds];
       for (const result of results) {
-        if (result.status === 'completed' && !completedTaskIds.has(result.taskId)) {
+        if (
+          result.status === "completed" &&
+          !completedTaskIds.has(result.taskId)
+        ) {
           nextCompletedTaskIds.push(result.taskId);
           completedTaskIds.add(result.taskId);
         }
       }
 
       snapshot = {
-        sessionId,
-        depth,
-        completedTaskIds: nextCompletedTaskIds,
-        results: [...snapshot.results, ...results],
         childSnapshots: snapshot.childSnapshots,
-        updatedAt: Date.now()
+        completedTaskIds: nextCompletedTaskIds,
+        depth,
+        results: [...snapshot.results, ...results],
+        sessionId,
+        updatedAt: Date.now(),
       };
 
       if (options.sessionStore) {
-        saveRuntimeSnapshotToSession(options.sessionStore, snapshot, options.snapshotKey);
+        saveRuntimeSnapshotToSession(
+          options.sessionStore,
+          snapshot,
+          options.snapshotKey
+        );
       }
 
       return cloneSnapshot(snapshot);
     },
 
-    spawn,
+    getDepth() {
+      return depth;
+    },
 
     getSnapshot() {
       return cloneSnapshot(snapshot);
     },
 
-    getDepth() {
-      return depth;
-    }
+    spawn,
   };
 }
 
-export function createRuntimeWorkflowExecutor(options: RuntimeLoopOptions = {}): RuntimeWorkflowExecutor {
+export function createRuntimeWorkflowExecutor(
+  options: RuntimeLoopOptions = {}
+): RuntimeWorkflowExecutor {
   const loop = createRuntimeLoop(options);
 
   return {
     async execute(tasks, signal) {
       const orderedTasks = getExecutionOrder(tasks);
       return loop.execute(orderedTasks, signal);
-    }
+    },
   };
 }
 
 // Phase 4 — Virtual sandbox
-export * from './sandbox/policy/secrets-guard.js';
-export * from './sandbox/virtual/container-detector.js';
-export * from './sandbox/virtual/dynamic-trigger.js';
-export * from './sandbox/virtual/router.js';
-export * from './sandbox/virtual/virtual-sandbox.js';
+export * from "./sandbox/policy/secrets-guard.js";
+export * from "./sandbox/virtual/container-detector.js";
+export * from "./sandbox/virtual/dynamic-trigger.js";
+export * from "./sandbox/virtual/router.js";
+export * from "./sandbox/virtual/virtual-sandbox.js";

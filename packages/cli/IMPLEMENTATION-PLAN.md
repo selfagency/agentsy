@@ -298,16 +298,16 @@ The CLI must handle ANSI sequences correctly, ensuring that streaming output doe
 interface HybridSearchEngine {
   // SQL queries for precise filtering
   sqlQueries: {
-    byProject: 'SELECT * FROM documents WHERE project_root = ?';
-    byFileType: 'SELECT * FROM documents WHERE file_type = ?';
-    byDependencies: 'SELECT * FROM documents WHERE JSON_search(dependencies, ?, ?)';
-    byAccessPattern: 'SELECT * FROM documents ORDER BY access_count DESC';
-    byRecency: 'SELECT * FROM documents WHERE updated_at > ?';
+    byProject: "SELECT * FROM documents WHERE project_root = ?";
+    byFileType: "SELECT * FROM documents WHERE file_type = ?";
+    byDependencies: "SELECT * FROM documents WHERE JSON_search(dependencies, ?, ?)";
+    byAccessPattern: "SELECT * FROM documents ORDER BY access_count DESC";
+    byRecency: "SELECT * FROM documents WHERE updated_at > ?";
   };
 
   // Vector search for semantic similarity
   vectorSearch: {
-    embeddingModel: 'text-embedding-3-small' | 'local-embeddings';
+    embeddingModel: "text-embedding-3-small" | "local-embeddings";
     similarityThreshold: 0.7;
     maxResults: 10;
     rerankByRecency: boolean;
@@ -316,10 +316,10 @@ interface HybridSearchEngine {
 
   // Combined query optimization
   hybridQueries: {
-    semanticPrecise: 'Vector + SQL by project/file type';
-    contextualAware: 'Vector + conversation history + recent access';
-    dependencyAware: 'Vector + import graph + package structure';
-    trending: 'Vector + access frequency + recency';
+    semanticPrecise: "Vector + SQL by project/file type";
+    contextualAware: "Vector + conversation history + recent access";
+    dependencyAware: "Vector + import graph + package structure";
+    trending: "Vector + access frequency + recency";
   };
 }
 ```

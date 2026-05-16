@@ -4,7 +4,8 @@
  * OpenTelemetry-based meter implementation for metrics collection
  */
 
-import * as api from '@opentelemetry/api';
+import * as api from "@opentelemetry/api";
+
 import type {
   AttributeValue,
   Counter,
@@ -12,14 +13,16 @@ import type {
   Histogram,
   Meter,
   MetricOptions,
-  ObservableGauge
-} from '../core/types.js';
+  ObservableGauge,
+} from "../core/types.js";
 
 /**
  * Base implementation for shared utility methods
  */
 abstract class BaseMetric {
-  protected _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): api.Attributes {
+  protected _otelAttributesToAttributes(
+    attributes: Record<string, AttributeValue>
+  ): api.Attributes {
     return attributes;
   }
 }
@@ -35,9 +38,14 @@ class CounterImpl extends BaseMetric implements Counter {
     this._otelCounter = otelCounter;
   }
 
-  increment(amount?: number, attributes?: Record<string, AttributeValue>): void {
+  increment(
+    amount?: number,
+    attributes?: Record<string, AttributeValue>
+  ): void {
     const amt = amount ?? 1;
-    const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
+    const attrs = attributes
+      ? this._otelAttributesToAttributes(attributes)
+      : {};
     this._otelCounter.add(amt, attrs);
   }
 
@@ -58,7 +66,9 @@ class HistogramImpl extends BaseMetric implements Histogram {
   }
 
   record(amount: number, attributes?: Record<string, AttributeValue>): void {
-    const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
+    const attrs = attributes
+      ? this._otelAttributesToAttributes(attributes)
+      : {};
     this._otelHistogram.record(amount, attrs);
   }
 }
@@ -75,22 +85,34 @@ class GaugeImpl extends BaseMetric implements Gauge {
   }
 
   record(amount: number, attributes?: Record<string, AttributeValue>): void {
-    const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
+    const attrs = attributes
+      ? this._otelAttributesToAttributes(attributes)
+      : {};
     this._otelGauge.record(amount, attrs);
   }
 
-  increment(amount?: number, attributes?: Record<string, AttributeValue>): void {
+  increment(
+    amount?: number,
+    attributes?: Record<string, AttributeValue>
+  ): void {
     const amt = amount ?? 1;
-    const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
-    if ('add' in this._otelGauge && typeof this._otelGauge.add === 'function') {
+    const attrs = attributes
+      ? this._otelAttributesToAttributes(attributes)
+      : {};
+    if ("add" in this._otelGauge && typeof this._otelGauge.add === "function") {
       (this._otelGauge as unknown as api.Counter).add(amt, attrs);
     }
   }
 
-  decrement(amount?: number, attributes?: Record<string, AttributeValue>): void {
+  decrement(
+    amount?: number,
+    attributes?: Record<string, AttributeValue>
+  ): void {
     const amt = amount ?? 1;
-    const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
-    if ('add' in this._otelGauge && typeof this._otelGauge.add === 'function') {
+    const attrs = attributes
+      ? this._otelAttributesToAttributes(attributes)
+      : {};
+    if ("add" in this._otelGauge && typeof this._otelGauge.add === "function") {
       (this._otelGauge as unknown as api.Counter).add(-amt, attrs);
     }
   }
@@ -108,7 +130,9 @@ class ObservableGaugeImpl extends BaseMetric implements ObservableGauge {
   }
 
   record(amount: number, attributes?: Record<string, AttributeValue>): void {
-    const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
+    const attrs = attributes
+      ? this._otelAttributesToAttributes(attributes)
+      : {};
     this._observableResult.observe(amount, attrs);
   }
 }
@@ -120,13 +144,17 @@ export class MeterImpl implements Meter {
   private readonly _otelMeter: api.Meter;
 
   constructor() {
-    this._otelMeter = api.metrics.getMeter('agentsy');
+    this._otelMeter = api.metrics.getMeter("agentsy");
   }
 
   createCounter(name: string, options?: MetricOptions): Counter {
     const otelOptions: api.MetricOptions = {};
-    if (options?.description) otelOptions.description = options.description;
-    if (options?.unit) otelOptions.unit = options.unit;
+    if (options?.description) {
+      otelOptions.description = options.description;
+    }
+    if (options?.unit) {
+      otelOptions.unit = options.unit;
+    }
 
     const otelCounter = this._otelMeter.createCounter(name, otelOptions);
     return new CounterImpl(otelCounter);
@@ -134,8 +162,12 @@ export class MeterImpl implements Meter {
 
   createHistogram(name: string, options?: MetricOptions): Histogram {
     const otelOptions: api.MetricOptions = {};
-    if (options?.description) otelOptions.description = options.description;
-    if (options?.unit) otelOptions.unit = options.unit;
+    if (options?.description) {
+      otelOptions.description = options.description;
+    }
+    if (options?.unit) {
+      otelOptions.unit = options.unit;
+    }
 
     const otelHistogram = this._otelMeter.createHistogram(name, otelOptions);
     return new HistogramImpl(otelHistogram);
@@ -143,8 +175,12 @@ export class MeterImpl implements Meter {
 
   createGauge(name: string, options?: MetricOptions): Gauge {
     const otelOptions: api.MetricOptions = {};
-    if (options?.description) otelOptions.description = options.description;
-    if (options?.unit) otelOptions.unit = options.unit;
+    if (options?.description) {
+      otelOptions.description = options.description;
+    }
+    if (options?.unit) {
+      otelOptions.unit = options.unit;
+    }
 
     const otelGauge = this._otelMeter.createGauge(name, otelOptions);
     return new GaugeImpl(otelGauge);
@@ -156,14 +192,24 @@ export class MeterImpl implements Meter {
     options?: MetricOptions
   ): ObservableGauge {
     const otelOptions: api.MetricOptions = {};
-    if (options?.description) otelOptions.description = options.description;
-    if (options?.unit) otelOptions.unit = options.unit;
+    if (options?.description) {
+      otelOptions.description = options.description;
+    }
+    if (options?.unit) {
+      otelOptions.unit = options.unit;
+    }
 
-    this._otelMeter.addBatchObservableCallback(async (_batch: api.BatchObservableResult) => {
-      // Real implementation would be more complex.
-    }, []);
+    this._otelMeter.addBatchObservableCallback(
+      async (_batch: api.BatchObservableResult) => {
+        // Real implementation would be more complex.
+      },
+      []
+    );
 
-    const otelObservable = this._otelMeter.createObservableGauge(name, otelOptions);
+    const otelObservable = this._otelMeter.createObservableGauge(
+      name,
+      otelOptions
+    );
     otelObservable.addCallback((result: api.ObservableResult) => {
       callback(new ObservableGaugeImpl(result));
     });
@@ -171,7 +217,10 @@ export class MeterImpl implements Meter {
     // We need to return a dummy ObservableGauge that doesn't actually do anything
     // since the real recording happens in the callback.
     return {
-      record: (_amount: number, _attributes?: Record<string, AttributeValue>) => {}
+      record: (
+        _amount: number,
+        _attributes?: Record<string, AttributeValue>
+      ) => {},
     };
   }
 }

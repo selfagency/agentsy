@@ -34,9 +34,9 @@ Typical neighbors:
 ## Usage
 
 ```ts
-import { createConversationStore, applyConversationEvent } from '@agentsy/ui';
+import { createConversationStore, applyConversationEvent } from "@agentsy/ui";
 
-const store = createConversationStore('conversation-1');
+const store = createConversationStore("conversation-1");
 store.dispatch(event);
 ```
 

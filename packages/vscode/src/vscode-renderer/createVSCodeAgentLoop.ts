@@ -1,6 +1,7 @@
-import type { BaseRendererOptions, ThinkingStyle } from '@agentsy/renderers';
-import type { MinimalChatResponseStream } from './createVSCodeChatRenderer.js';
-import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
+import type { BaseRendererOptions, ThinkingStyle } from "@agentsy/renderers";
+
+import type { MinimalChatResponseStream } from "./createVSCodeChatRenderer.js";
+import { createVSCodeChatRenderer } from "./createVSCodeChatRenderer.js";
 
 /**
  * Options for VS Code agent loop renderer.
@@ -67,7 +68,7 @@ export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
 export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   const mergedOptions = {
     ...options,
-    showThinking: options.showThinking !== false
+    showThinking: options.showThinking !== false,
   };
 
   const renderer = createVSCodeChatRenderer(mergedOptions);
@@ -91,13 +92,19 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
     return endPromise;
   };
 
-  const abortSignal = options.abortSignal;
+  const { abortSignal } = options;
   if (abortSignal) {
     const onAbort = () => {
-      endOnce().catch(err => {
-        console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', err);
-        if (err instanceof Error && err.stack) {
-          console.warn('[VS Code Agent Loop] Cleanup error stack:', err.stack);
+      endOnce().catch((error) => {
+        console.warn(
+          "[VS Code Agent Loop] Error during cancellation cleanup:",
+          error
+        );
+        if (error instanceof Error && error.stack) {
+          console.warn(
+            "[VS Code Agent Loop] Cleanup error stack:",
+            error.stack
+          );
         }
       });
     };
@@ -105,16 +112,16 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
     if (abortSignal.aborted) {
       onAbort();
     } else {
-      abortSignal.addEventListener('abort', onAbort, { once: true });
+      abortSignal.addEventListener("abort", onAbort, { once: true });
       detachAbortListener = () => {
-        abortSignal.removeEventListener('abort', onAbort);
+        abortSignal.removeEventListener("abort", onAbort);
       };
     }
   }
 
   return {
+    end: endOnce,
     write: renderer.write,
     writeChunk: renderer.writeChunk,
-    end: endOnce
   };
 }

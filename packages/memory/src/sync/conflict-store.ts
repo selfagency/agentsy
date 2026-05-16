@@ -1,4 +1,4 @@
-import type { ConflictRecord, ConflictStore } from './types.js';
+import type { ConflictRecord, ConflictStore } from "./types.js";
 
 class InMemoryConflictStore implements ConflictStore {
   readonly #conflicts = new Map<string, ConflictRecord>();

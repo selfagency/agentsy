@@ -9,8 +9,10 @@
  * ```
  */
 
-import { validateJsonSchema, type ValidateJsonSchemaOptions } from './validateJsonSchema.js';
-import type { JsonObject } from '@agentsy/types';
+import type { JsonObject } from "@agentsy/types";
+
+import { validateJsonSchema } from "./validateJsonSchema.js";
+import type { ValidateJsonSchemaOptions } from "./validateJsonSchema.js";
 
 // Use dynamic imports so consumers without Zod don't pay a load-time penalty.
 // The types below cover the minimal surface we use from Zod.
@@ -30,10 +32,13 @@ export async function zodToJsonSchema(zodSchema: ZodLike): Promise<JsonObject> {
   let zodToJsonSchemaFn: (schema: ZodLike) => JsonObject;
   try {
     // Dynamic import — zod-to-json-schema is an optional peer dependency.
-    const mod = await import('zod-to-json-schema');
-    zodToJsonSchemaFn = (mod.default ?? mod) as unknown as typeof zodToJsonSchemaFn;
+    const mod = await import("zod-to-json-schema");
+    zodToJsonSchemaFn = (mod.default ??
+      mod) as unknown as typeof zodToJsonSchemaFn;
   } catch {
-    throw new Error('zod-to-json-schema is required for Zod integration. Install it: pnpm add zod-to-json-schema');
+    throw new Error(
+      "zod-to-json-schema is required for Zod integration. Install it: pnpm add zod-to-json-schema"
+    );
   }
 
   return zodToJsonSchemaFn(zodSchema);

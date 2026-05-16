@@ -1,5 +1,5 @@
-import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
-import type { MemorySearchHit } from '../retrieval/retriever.js';
+import type { MemorySearchHit } from "../retrieval/retriever.js";
+import type { MemoryScope, ScopeManager } from "../scope/scope-manager.js";
 
 export interface MemorySearchToolInput {
   actorId?: string;
@@ -17,15 +17,26 @@ export interface MemorySearchTool {
 }
 
 export interface MemorySearchToolDeps {
-  search(input: { query: string; scope?: MemoryScope; actorId?: string; limit?: number }): Promise<MemorySearchHit[]>;
+  search(input: {
+    query: string;
+    scope?: MemoryScope;
+    actorId?: string;
+    limit?: number;
+  }): Promise<MemorySearchHit[]>;
   scopeManager?: ScopeManager;
 }
 
-export function createMemorySearchTool(deps: MemorySearchToolDeps): MemorySearchTool {
+export function createMemorySearchTool(
+  deps: MemorySearchToolDeps
+): MemorySearchTool {
   return {
     async execute(input) {
       if (input.scope && input.actorId && deps.scopeManager) {
-        const allowed = deps.scopeManager.canAccess({ actorId: input.actorId, action: 'read', scope: input.scope });
+        const allowed = deps.scopeManager.canAccess({
+          action: "read",
+          actorId: input.actorId,
+          scope: input.scope,
+        });
         if (!allowed) {
           return { results: [] };
         }
@@ -35,10 +46,10 @@ export function createMemorySearchTool(deps: MemorySearchToolDeps): MemorySearch
         query: input.query,
         ...(input.scope === undefined ? {} : { scope: input.scope }),
         ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
-        ...(input.limit === undefined ? {} : { limit: input.limit })
+        ...(input.limit === undefined ? {} : { limit: input.limit }),
       });
 
       return { results };
-    }
+    },
   };
 }

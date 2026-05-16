@@ -28,11 +28,14 @@ This package is for presentation-safe string shaping after parsing but before re
 ## Implementation example with neighbors
 
 ```ts
-import { appendToBlockquote, sanitizeNonStreamingModelOutput } from '@agentsy/core/formatting';
-import { createPlainTextRenderer } from '@agentsy/renderers';
+import {
+  appendToBlockquote,
+  sanitizeNonStreamingModelOutput,
+} from "@agentsy/core/formatting";
+import { createPlainTextRenderer } from "@agentsy/renderers";
 
 const renderer = createPlainTextRenderer({
-  output: text => process.stdout.write(text)
+  output: (text) => process.stdout.write(text),
 });
 const cleanText = sanitizeNonStreamingModelOutput(rawModelOutput);
 

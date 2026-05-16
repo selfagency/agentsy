@@ -1,14 +1,18 @@
-import { EventEmitter } from 'node:events';
-import type { AgentCapabilities } from '../types/index.js';
+import { EventEmitter } from "node:events";
+
+import type { AgentCapabilities } from "../types/index.js";
 
 export class AgentRegistry extends EventEmitter {
   private readonly agents = new Map<string, AgentCapabilities>();
   private readonly skillMap = new Map<string, Set<string>>();
-  private readonly proficiencyLevels = new Map<RequiredSkills['proficiency'], number>([
-    ['beginner', 0],
-    ['intermediate', 1],
-    ['advanced', 2],
-    ['expert', 3]
+  private readonly proficiencyLevels = new Map<
+    RequiredSkills["proficiency"],
+    number
+  >([
+    ["beginner", 0],
+    ["intermediate", 1],
+    ["advanced", 2],
+    ["expert", 3],
   ]);
 
   register(agent: AgentCapabilities): void {
@@ -21,7 +25,7 @@ export class AgentRegistry extends EventEmitter {
     this.agents.set(agent.id, agent);
 
     // Update skill mapping
-    agent.skills.forEach(skill => {
+    agent.skills.forEach((skill) => {
       if (!this.skillMap.has(skill.name)) {
         this.skillMap.set(skill.name, new Set());
       }
@@ -34,7 +38,7 @@ export class AgentRegistry extends EventEmitter {
     // Update resource mapping
     agent.maxConcurrency = agent.maxConcurrency || 1;
 
-    this.emit('agent:registered', agent);
+    this.emit("agent:registered", agent);
   }
 
   unregister(agentId: string): void {
@@ -43,7 +47,7 @@ export class AgentRegistry extends EventEmitter {
       this.agents.delete(agentId);
 
       // Update skill mapping
-      agent.skills.forEach(skill => {
+      agent.skills.forEach((skill) => {
         const agents = this.skillMap.get(skill.name);
         if (agents) {
           agents.delete(agentId);
@@ -53,7 +57,7 @@ export class AgentRegistry extends EventEmitter {
         }
       });
 
-      this.emit('agent:unregistered', agentId);
+      this.emit("agent:unregistered", agentId);
     }
   }
 
@@ -62,34 +66,43 @@ export class AgentRegistry extends EventEmitter {
   }
 
   getAllAgents(): AgentCapabilities[] {
-    return Array.from(this.agents.values());
+    return [...this.agents.values()];
   }
 
   findAgentsBySkill(skillName: string): AgentCapabilities[] {
     const agentIds = this.skillMap.get(skillName);
-    if (!agentIds) return [];
+    if (!agentIds) {
+      return [];
+    }
 
-    return Array.from(agentIds)
-      .map(id => this.agents.get(id))
+    return [...agentIds]
+      .map((id) => this.agents.get(id))
       .filter((agent): agent is AgentCapabilities => !!agent?.available);
   }
 
   findAgentsBySkills(requiredSkills: RequiredSkills[]): AgentCapabilities[] {
     if (requiredSkills.length === 0) {
-      return this.getAllAgents().filter(agent => agent.available);
+      return this.getAllAgents().filter((agent) => agent.available);
     }
 
     const firstSkill = requiredSkills[0];
-    if (!firstSkill) return [];
+    if (!firstSkill) {
+      return [];
+    }
 
     const candidateAgents = this.findAgentsBySkill(firstSkill.name);
 
-    return candidateAgents.filter(agent => {
-      const agentSkills = new Map(agent.skills.map(skill => [skill.name, skill.proficiency]));
+    return candidateAgents.filter((agent) => {
+      const agentSkills = new Map(
+        agent.skills.map((skill) => [skill.name, skill.proficiency])
+      );
 
-      return requiredSkills.every(requiredSkill => {
+      return requiredSkills.every((requiredSkill) => {
         const agentSkill = agentSkills.get(requiredSkill.name);
-        return agentSkill !== undefined && this.isProficientEnough(agentSkill, requiredSkill.proficiency);
+        return (
+          agentSkill !== undefined &&
+          this.isProficientEnough(agentSkill, requiredSkill.proficiency)
+        );
       });
     });
   }
@@ -99,19 +112,30 @@ export class AgentRegistry extends EventEmitter {
     if (agent) {
       agent.available = available;
       agent.lastSeen = new Date();
-      this.emit('agent:updated', agent);
+      this.emit("agent:updated", agent);
     }
   }
 
-  private isProficientEnough(agentProficiency: string, requiredProficiency: string): boolean {
-    const agentIndex = this.proficiencyLevels.get(agentProficiency as RequiredSkills['proficiency']);
-    const requiredIndex = this.proficiencyLevels.get(requiredProficiency as RequiredSkills['proficiency']);
+  private isProficientEnough(
+    agentProficiency: string,
+    requiredProficiency: string
+  ): boolean {
+    const agentIndex = this.proficiencyLevels.get(
+      agentProficiency as RequiredSkills["proficiency"]
+    );
+    const requiredIndex = this.proficiencyLevels.get(
+      requiredProficiency as RequiredSkills["proficiency"]
+    );
 
-    return agentIndex !== undefined && requiredIndex !== undefined && agentIndex >= requiredIndex;
+    return (
+      agentIndex !== undefined &&
+      requiredIndex !== undefined &&
+      agentIndex >= requiredIndex
+    );
   }
 }
 
 interface RequiredSkills {
   name: string;
-  proficiency: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  proficiency: "beginner" | "intermediate" | "advanced" | "expert";
 }

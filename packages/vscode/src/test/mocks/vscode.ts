@@ -6,21 +6,27 @@
  */
 
 export class Uri {
-  public scheme = 'file';
-  public authority = '';
-  public path = '';
-  public query = '';
-  public fragment = '';
-  public fsPath = '';
+  public scheme = "file";
+  public authority = "";
+  public path = "";
+  public query = "";
+  public fragment = "";
+  public fsPath = "";
 
-  constructor(schemeOrValue?: string, authority?: string, path?: string, query?: string, fragment?: string) {
+  constructor(
+    schemeOrValue?: string,
+    authority?: string,
+    path?: string,
+    query?: string,
+    fragment?: string
+  ) {
     if (schemeOrValue && authority && path) {
       // Full constructor with all parameters
       this.scheme = schemeOrValue;
-      this.authority = authority ?? '';
-      this.path = path ?? '';
-      this.query = query ?? '';
-      this.fragment = fragment ?? '';
+      this.authority = authority ?? "";
+      this.path = path ?? "";
+      this.query = query ?? "";
+      this.fragment = fragment ?? "";
     } else if (schemeOrValue) {
       // Single string parameter - treating as value to parse
       this.path = schemeOrValue;
@@ -35,7 +41,7 @@ export class Uri {
 
   static file(_path: string): Uri {
     const uri = new Uri();
-    uri.scheme = 'file';
+    uri.scheme = "file";
     uri.path = _path;
     uri.fsPath = _path;
     return uri;
@@ -53,7 +59,10 @@ export class ChatResponseProgressPart {
 export class Location {
   constructor(
     public uri: Uri,
-    public range: { start: { line: number; character: number }; end: { line: number; character: number } }
+    public range: {
+      start: { line: number; character: number };
+      end: { line: number; character: number };
+    }
   ) {}
 }
 

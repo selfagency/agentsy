@@ -54,17 +54,20 @@ pnpm lint
 ### 1. Create a Custom Provider
 
 ```typescript
-import { BaseLanguageModelChatProvider, type ProviderConfig } from '@agentsy/vscode';
+import {
+  BaseLanguageModelChatProvider,
+  type ProviderConfig,
+} from "@agentsy/vscode";
 
 export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
   constructor(context: ExtensionContext) {
     super(context, {
-      providerId: 'my-provider',
-      vendor: 'MyVendor',
-      family: 'MyFamily',
-      displayName: 'My Provider',
+      providerId: "my-provider",
+      vendor: "MyVendor",
+      family: "MyFamily",
+      displayName: "My Provider",
       maxInputTokens: 4096,
-      supportedCapabilities: ['thinking', 'tool-calls']
+      supportedCapabilities: ["thinking", "tool-calls"],
     });
   }
 
@@ -74,17 +77,17 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
   ): Promise<ProviderApiRequest> {
     // Convert VS Code messages to your provider's API format
     return {
-      url: 'https://api.example.com/v1/chat/completions',
-      method: 'POST',
+      url: "https://api.example.com/v1/chat/completions",
+      method: "POST",
       headers: {
         Authorization: `Bearer ${await this.getApiKey()}`,
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: {
         model: request.model?.id,
         messages,
-        stream: true
-      }
+        stream: true,
+      },
     };
   }
 
@@ -95,7 +98,7 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
       const text = extractText(chunk); // provider-specific extraction
       if (!text) continue;
       yield {
-        part: { value: text }
+        part: { value: text },
       } as LanguageModelChatResponseChunk;
     }
   }
@@ -103,10 +106,10 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
   protected mapErrorToCode(error: unknown): string {
     // Map provider-specific errors to standard codes
     if (error instanceof MyProviderError) {
-      if (error.code === 'AUTH_FAILED') return 'invalid_api_key';
-      if (error.code === 'RATE_LIMIT') return 'rate_limited';
+      if (error.code === "AUTH_FAILED") return "invalid_api_key";
+      if (error.code === "RATE_LIMIT") return "rate_limited";
     }
-    return 'internal_error';
+    return "internal_error";
   }
 }
 ```
@@ -116,26 +119,28 @@ export class MyLanguageModelChatProvider extends BaseLanguageModelChatProvider {
 Normalizers convert provider-specific streaming chunks to the standard StreamChunk format:
 
 ```typescript
-import { type StreamChunk } from '@agentsy/processor';
+import { type StreamChunk } from "@agentsy/processor";
 
-export async function* normalizeMyProviderStream(response: AsyncIterable<MyProviderChunk>): AsyncIterable<StreamChunk> {
+export async function* normalizeMyProviderStream(
+  response: AsyncIterable<MyProviderChunk>
+): AsyncIterable<StreamChunk> {
   for await (const chunk of response) {
     yield {
       content: chunk.text,
       thinking: chunk.thinking,
-      tool_calls: chunk.tool_calls?.map(tc => ({
+      tool_calls: chunk.tool_calls?.map((tc) => ({
         function: {
           name: tc.name,
-          arguments: tc.arguments
-        }
+          arguments: tc.arguments,
+        },
       })),
       done: chunk.finish_reason !== null,
       usage: chunk.usage && {
         inputTokens: chunk.usage.prompt_tokens,
         outputTokens: chunk.usage.completion_tokens,
-        totalTokens: chunk.usage.total_tokens
+        totalTokens: chunk.usage.total_tokens,
       },
-      finishReason: chunk.finish_reason
+      finishReason: chunk.finish_reason,
     };
   }
 }
@@ -146,21 +151,21 @@ export async function* normalizeMyProviderStream(response: AsyncIterable<MyProvi
 Use `LLMStreamProcessor` to handle tool accumulation and thinking parsing:
 
 ```typescript
-import { LLMStreamProcessor } from '@agentsy/processor';
+import { LLMStreamProcessor } from "@agentsy/processor";
 
 const processor = new LLMStreamProcessor({
   accumulateNativeToolCalls: true,
   parseThinkTags: true,
-  onWarning: message => {
-    console.warn('Warning:', message);
-  }
+  onWarning: (message) => {
+    console.warn("Warning:", message);
+  },
 });
 
-processor.on('tool_call', call => {
-  console.log('Tool called:', call);
+processor.on("tool_call", (call) => {
+  console.log("Tool called:", call);
 });
-processor.on('tool_call_delta', delta => {
-  console.log('Tool delta:', delta);
+processor.on("tool_call_delta", (delta) => {
+  console.log("Tool delta:", delta);
 });
 
 for await (const chunk of normalizeMyProviderStream(response)) {
@@ -172,23 +177,25 @@ for await (const chunk of normalizeMyProviderStream(response)) {
 ### 4. Setup API Key Management
 
 ```typescript
-import { ApiKeyManager } from '@agentsy/vscode';
+import { ApiKeyManager } from "@agentsy/vscode";
 
 const apiKeyManager = new ApiKeyManager(context, {
-  secretKey: 'MY_PROVIDER_API_KEY',
-  contextKey: 'myProvider.hasApiKey',
-  displayName: 'My Provider API Key'
+  secretKey: "MY_PROVIDER_API_KEY",
+  contextKey: "myProvider.hasApiKey",
+  displayName: "My Provider API Key",
 });
 
 // Register command to set API key
-commands.registerCommand('myProvider.setApiKey', () => apiKeyManager.setApiKey());
+commands.registerCommand("myProvider.setApiKey", () =>
+  apiKeyManager.setApiKey()
+);
 
 // Get API key when needed
 const key = await apiKeyManager.getApiKey();
 
 // Listen for changes
 const apiKeySubscription = apiKeyManager.onDidChangeApiKey((event, newKey) => {
-  if (event !== 'updated') return;
+  if (event !== "updated") return;
   // Reconnect provider with new key
 });
 
@@ -199,24 +206,24 @@ context.subscriptions.push(apiKeySubscription);
 ### 5. Track Usage with Status Bar
 
 ```typescript
-import { UsageStatusBar } from '@agentsy/vscode';
+import { UsageStatusBar } from "@agentsy/vscode";
 
 const statusBar = new UsageStatusBar(context, {
-  displayName: 'My Provider Usage',
+  displayName: "My Provider Usage",
   quotaDataSource: {
     async getQuota() {
       const usage = await myProvider.getUsage();
       return {
         used: usage.tokens_used,
         total: usage.limit,
-        unit: 'tokens',
-        window: 'hourly',
-        percentUsed: usage.tokens_used / usage.limit
+        unit: "tokens",
+        window: "hourly",
+        percentUsed: usage.tokens_used / usage.limit,
       };
-    }
+    },
   },
   warningThreshold: 0.8,
-  errorThreshold: 0.95
+  errorThreshold: 0.95,
 });
 
 await statusBar.show();
@@ -225,7 +232,7 @@ await statusBar.show();
 Map core usage into VS Code usage shape with `mapUsageToVSCode`:
 
 ```typescript
-import { mapUsageToVSCode } from '@agentsy/vscode';
+import { mapUsageToVSCode } from "@agentsy/vscode";
 
 const usage = mapUsageToVSCode({ inputTokens: 120, outputTokens: 45 });
 // => { promptTokens: 120, completionTokens: 45 }
@@ -234,7 +241,11 @@ const usage = mapUsageToVSCode({ inputTokens: 120, outputTokens: 45 });
 Tool-call lifecycle helpers for provider integrations:
 
 ```typescript
-import { ToolCallDeltaAccumulator, accumulateToolCallDeltas, toVSCodeToolCallPart } from '@agentsy/vscode';
+import {
+  ToolCallDeltaAccumulator,
+  accumulateToolCallDeltas,
+  toVSCodeToolCallPart,
+} from "@agentsy/vscode";
 
 const accumulator = new ToolCallDeltaAccumulator();
 accumulateToolCallDeltas(accumulator, deltaPart);
@@ -260,9 +271,9 @@ export async function* normalizeOllamaChatChunk(
           ? {
               inputTokens: chunk.prompt_eval_count,
               outputTokens: chunk.eval_count,
-              totalTokens: chunk.prompt_eval_count + (chunk.eval_count || 0)
+              totalTokens: chunk.prompt_eval_count + (chunk.eval_count || 0),
             }
-          : undefined
+          : undefined,
     };
   }
 }
@@ -271,11 +282,14 @@ export async function* normalizeOllamaChatChunk(
 ### Z.ai
 
 ```typescript
-import { normalizeZAiChunk } from '@agentsy/normalizers';
-import { createZAiInlineToolCallParser, LLMStreamProcessor } from '@agentsy/processor';
+import { normalizeZAiChunk } from "@agentsy/normalizers";
+import {
+  createZAiInlineToolCallParser,
+  LLMStreamProcessor,
+} from "@agentsy/processor";
 
 const processor = new LLMStreamProcessor({
-  toolCallParsers: [createZAiInlineToolCallParser()]
+  toolCallParsers: [createZAiInlineToolCallParser()],
 });
 
 for await (const raw of zaiStream) {
@@ -287,27 +301,27 @@ for await (const raw of zaiStream) {
 
 const final = processor.flush();
 if (final.done) {
-  console.log('Stream complete');
+  console.log("Stream complete");
 }
 ```
 
 ### MCP provider helper
 
 ```typescript
-import { createMcpServerDefinitionProvider } from '@agentsy/vscode';
+import { createMcpServerDefinitionProvider } from "@agentsy/vscode";
 
 const provider = createMcpServerDefinitionProvider({
   servers: [
     {
-      name: 'zai-mcp',
-      command: 'node',
-      args: ['dist/server.js'],
-      enabledSettingKey: 'mcp.zai.enabled',
-      apiKeyEnvVar: 'ZAI_API_KEY'
-    }
+      name: "zai-mcp",
+      command: "node",
+      args: ["dist/server.js"],
+      enabledSettingKey: "mcp.zai.enabled",
+      apiKeyEnvVar: "ZAI_API_KEY",
+    },
   ],
   settings: settingsLoader,
-  getApiKey: async () => apiKeyManager.getApiKey()
+  getApiKey: async () => apiKeyManager.getApiKey(),
 });
 
 const servers = await provider.provide();
@@ -319,7 +333,7 @@ for (const server of servers) {
 ### Mistral
 
 ```typescript
-import { normalizeMistralChunk } from '@agentsy/normalizers';
+import { normalizeMistralChunk } from "@agentsy/normalizers";
 
 for await (const chunk of mistralStream) {
   const normalized = normalizeMistralChunk(chunk);
@@ -387,11 +401,17 @@ Provider Extensions (Opilot, Z.ai, Mistral)
 The library includes test fixtures for mocking VS Code APIs:
 
 ```typescript
-import { createChunkNormalizerStub, createMockApiKeyManager, createMockRendererHandle } from '@agentsy/vscode';
+import {
+  createChunkNormalizerStub,
+  createMockApiKeyManager,
+  createMockRendererHandle,
+} from "@agentsy/vscode";
 
-const apiKeyManager = createMockApiKeyManager('demo-key');
+const apiKeyManager = createMockApiKeyManager("demo-key");
 const renderer = createMockRendererHandle();
-const normalize = createChunkNormalizerStub<{ text: string }>(event => ({ content: event.text }));
+const normalize = createChunkNormalizerStub<{ text: string }>((event) => ({
+  content: event.text,
+}));
 ```
 
 ## License

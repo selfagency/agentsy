@@ -1,7 +1,8 @@
-import type { ProcessedOutput } from '@agentsy/core/processor';
-import type { XmlToolCall } from '@agentsy/core/tool-calls';
-import { describe, expect, it, vi } from 'vitest';
-import type { AgentLoopState, OutputPart, StepResult } from './index.js';
+import type { ProcessedOutput } from "@agentsy/core/processor";
+import type { XmlToolCall } from "@agentsy/core/tool-calls";
+import { describe, expect, it, vi } from "vitest";
+
+import type { AgentLoopState, OutputPart, StepResult } from "./index.js";
 import {
   createAgentLoop,
   detectDoomLoop,
@@ -10,432 +11,456 @@ import {
   hasToolCall,
   isLoopFinished,
   isStepCount,
-  mergeCallbacks
-} from './index.js';
+  mergeCallbacks,
+} from "./index.js";
 
 // Helper functions for doom loop tests
 function createMockOutput(toolCalls: XmlToolCall[]): ProcessedOutput {
   return {
-    thinking: '',
-    content: '',
-    toolCalls,
+    content: "",
     done: false,
-    parts: [],
     incomplete: false,
-    incompleteness: []
+    incompleteness: [],
+    parts: [],
+    thinking: "",
+    toolCalls,
   };
 }
 
 function createMockStep(toolCall: XmlToolCall): StepResult {
   return {
+    finishReason: undefined,
     output: createMockOutput([toolCall]),
     toolCalls: [toolCall],
-    finishReason: undefined,
-    usage: undefined
+    usage: undefined,
   };
 }
 
-function createMockState(steps: StepResult[], lastToolCalls: XmlToolCall[], consecutiveCount: number): AgentLoopState {
+function createMockState(
+  steps: StepResult[],
+  lastToolCalls: XmlToolCall[],
+  consecutiveCount: number
+): AgentLoopState {
   return {
-    steps,
-    stepIndex: steps.length - 1,
+    consecutiveIdenticalCalls: consecutiveCount,
     lastOutput: createMockOutput(lastToolCalls),
+    stepIndex: steps.length - 1,
+    steps,
     toolCallCount: steps.length,
-    consecutiveIdenticalCalls: consecutiveCount
   };
 }
 
-describe('Stop Conditions', () => {
-  describe('isStepCount', () => {
-    it('should stop after reaching max steps', () => {
+describe("Stop Conditions", () => {
+  describe(isStepCount, () => {
+    it("should stop after reaching max steps", () => {
       const condition = isStepCount(2);
       const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: 'step 1',
-              toolCalls: [],
-              done: false,
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [],
-            finishReason: undefined,
-            usage: undefined
-          },
-          {
-            output: {
-              thinking: '',
-              content: 'step 2',
-              toolCalls: [],
-              done: true,
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [],
-            finishReason: undefined,
-            usage: undefined
-          }
-        ],
-        stepIndex: 1,
+        consecutiveIdenticalCalls: 0,
         lastOutput: {
-          thinking: '',
-          content: 'step 2',
-          toolCalls: [],
+          content: "step 2",
           done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: []
-        },
-        toolCallCount: 0,
-        consecutiveIdenticalCalls: 0
-      };
-
-      expect(condition(state)).toBe(true);
-    });
-
-    it('should not stop before reaching max steps', () => {
-      const condition = isStepCount(3);
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: 'step 1',
-              toolCalls: [],
-              done: false,
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [],
-            finishReason: undefined,
-            usage: undefined
-          }
-        ],
-        stepIndex: 0,
-        lastOutput: {
-          thinking: '',
-          content: 'step 1',
-          toolCalls: [],
-          done: false,
-          parts: [],
-          incomplete: false,
-          incompleteness: []
-        },
-        toolCallCount: 0,
-        consecutiveIdenticalCalls: 0
-      };
-
-      expect(condition(state)).toBe(false);
-    });
-  });
-
-  describe('hasNoToolCalls', () => {
-    it('should stop when last step has no tool calls', () => {
-      const condition = hasNoToolCalls();
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: 'final response',
-              toolCalls: [],
-              done: true,
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [],
-            finishReason: undefined,
-            usage: undefined
-          }
-        ],
-        stepIndex: 0,
-        lastOutput: {
-          thinking: '',
-          content: 'final response',
-          toolCalls: [],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: []
-        },
-        toolCallCount: 0,
-        consecutiveIdenticalCalls: 0
-      };
-
-      expect(condition(state)).toBe(true);
-    });
-
-    it('should not stop when last step has tool calls', () => {
-      const condition = hasNoToolCalls();
-      const toolCall: XmlToolCall = {
-        name: 'test_fn',
-        parameters: {},
-        format: 'bare-xml',
-        id: '1'
-      };
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: '',
-              toolCalls: [toolCall],
-              done: true,
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [toolCall],
-            finishReason: undefined,
-            usage: undefined
-          }
-        ],
-        stepIndex: 0,
-        lastOutput: {
-          thinking: '',
-          content: '',
-          toolCalls: [toolCall],
-          done: true,
-          parts: [],
-          incomplete: false,
-          incompleteness: []
-        },
-        toolCallCount: 1,
-        consecutiveIdenticalCalls: 0
-      };
-
-      expect(condition(state)).toBe(false);
-    });
-  });
-
-  describe('hasToolCall', () => {
-    it('should stop when the last step contains any tool call', () => {
-      const condition = hasToolCall();
-      const toolCall: XmlToolCall = { name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' };
-
-      expect(condition(createMockState([createMockStep(toolCall)], [toolCall], 0))).toBe(true);
-    });
-
-    it('should only stop for a matching tool name when one is provided', () => {
-      const condition = hasToolCall('fetch');
-      const toolCall: XmlToolCall = { name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' };
-
-      expect(condition(createMockState([createMockStep(toolCall)], [toolCall], 0))).toBe(false);
-    });
-  });
-
-  describe('finishReasonIs', () => {
-    it('should stop when finishReason matches', () => {
-      const condition = finishReasonIs('stop', 'length');
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: 'done',
-              toolCalls: [],
-              done: true,
-              finishReason: 'stop',
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [],
-            finishReason: 'stop',
-            usage: undefined
-          }
-        ],
-        stepIndex: 0,
-        lastOutput: {
-          thinking: '',
-          content: 'done',
-          toolCalls: [],
-          done: true,
-          finishReason: 'stop',
-          parts: [],
-          incomplete: false,
-          incompleteness: []
-        },
-        toolCallCount: 0,
-        consecutiveIdenticalCalls: 0
-      };
-
-      expect(condition(state)).toBe(true);
-    });
-
-    it('should not stop when finishReason does not match', () => {
-      const condition = finishReasonIs('stop');
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: 'more',
-              toolCalls: [],
-              done: false,
-              finishReason: 'length',
-              parts: [],
-              incomplete: false,
-              incompleteness: []
-            },
-            toolCalls: [],
-            finishReason: 'length',
-            usage: undefined
-          }
-        ],
-        stepIndex: 0,
-        lastOutput: {
-          thinking: '',
-          content: 'more',
-          toolCalls: [],
-          done: false,
-          finishReason: 'length',
-          parts: [],
-          incomplete: false,
-          incompleteness: []
-        },
-        toolCallCount: 0,
-        consecutiveIdenticalCalls: 0
-      };
-
-      expect(condition(state)).toBe(false);
-    });
-  });
-
-  describe('isLoopFinished', () => {
-    it('should stop when the last step has a finish reason and no tool calls', () => {
-      const condition = isLoopFinished();
-      const state: AgentLoopState = {
-        steps: [
-          {
-            output: {
-              thinking: '',
-              content: 'done',
-              toolCalls: [],
-              done: true,
-              parts: [],
-              incomplete: false,
-              incompleteness: [],
-              finishReason: 'stop'
-            },
-            toolCalls: [],
-            finishReason: 'stop',
-            usage: undefined
-          }
-        ],
-        stepIndex: 0,
-        lastOutput: {
-          thinking: '',
-          content: 'done',
-          toolCalls: [],
-          done: true,
-          parts: [],
           incomplete: false,
           incompleteness: [],
-          finishReason: 'stop'
+          parts: [],
+          thinking: "",
+          toolCalls: [],
         },
+        stepIndex: 1,
+        steps: [
+          {
+            finishReason: undefined,
+            output: {
+              content: "step 1",
+              done: false,
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+          {
+            finishReason: undefined,
+            output: {
+              content: "step 2",
+              done: true,
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+        ],
         toolCallCount: 0,
-        consecutiveIdenticalCalls: 0
       };
 
-      expect(condition(state)).toBe(true);
+      expect(condition(state)).toBeTruthy();
+    });
+
+    it("should not stop before reaching max steps", () => {
+      const condition = isStepCount(3);
+      const state: AgentLoopState = {
+        consecutiveIdenticalCalls: 0,
+        lastOutput: {
+          content: "step 1",
+          done: false,
+          incomplete: false,
+          incompleteness: [],
+          parts: [],
+          thinking: "",
+          toolCalls: [],
+        },
+        stepIndex: 0,
+        steps: [
+          {
+            finishReason: undefined,
+            output: {
+              content: "step 1",
+              done: false,
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+        ],
+        toolCallCount: 0,
+      };
+
+      expect(condition(state)).toBeFalsy();
     });
   });
 
-  describe('detectDoomLoop', () => {
-    it('should detect identical tool calls repeated n times', () => {
+  describe(hasNoToolCalls, () => {
+    it("should stop when last step has no tool calls", () => {
+      const condition = hasNoToolCalls();
+      const state: AgentLoopState = {
+        consecutiveIdenticalCalls: 0,
+        lastOutput: {
+          content: "final response",
+          done: true,
+          incomplete: false,
+          incompleteness: [],
+          parts: [],
+          thinking: "",
+          toolCalls: [],
+        },
+        stepIndex: 0,
+        steps: [
+          {
+            finishReason: undefined,
+            output: {
+              content: "final response",
+              done: true,
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+        ],
+        toolCallCount: 0,
+      };
+
+      expect(condition(state)).toBeTruthy();
+    });
+
+    it("should not stop when last step has tool calls", () => {
+      const condition = hasNoToolCalls();
+      const toolCall: XmlToolCall = {
+        format: "bare-xml",
+        id: "1",
+        name: "test_fn",
+        parameters: {},
+      };
+      const state: AgentLoopState = {
+        consecutiveIdenticalCalls: 0,
+        lastOutput: {
+          content: "",
+          done: true,
+          incomplete: false,
+          incompleteness: [],
+          parts: [],
+          thinking: "",
+          toolCalls: [toolCall],
+        },
+        stepIndex: 0,
+        steps: [
+          {
+            finishReason: undefined,
+            output: {
+              content: "",
+              done: true,
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [toolCall],
+            },
+            toolCalls: [toolCall],
+            usage: undefined,
+          },
+        ],
+        toolCallCount: 1,
+      };
+
+      expect(condition(state)).toBeFalsy();
+    });
+  });
+
+  describe(hasToolCall, () => {
+    it("should stop when the last step contains any tool call", () => {
+      const condition = hasToolCall();
+      const toolCall: XmlToolCall = {
+        format: "bare-xml",
+        name: "search",
+        parameters: { query: "docs" },
+      };
+
+      expect(
+        condition(createMockState([createMockStep(toolCall)], [toolCall], 0))
+      ).toBeTruthy();
+    });
+
+    it("should only stop for a matching tool name when one is provided", () => {
+      const condition = hasToolCall("fetch");
+      const toolCall: XmlToolCall = {
+        format: "bare-xml",
+        name: "search",
+        parameters: { query: "docs" },
+      };
+
+      expect(
+        condition(createMockState([createMockStep(toolCall)], [toolCall], 0))
+      ).toBeFalsy();
+    });
+  });
+
+  describe(finishReasonIs, () => {
+    it("should stop when finishReason matches", () => {
+      const condition = finishReasonIs("stop", "length");
+      const state: AgentLoopState = {
+        consecutiveIdenticalCalls: 0,
+        lastOutput: {
+          content: "done",
+          done: true,
+          finishReason: "stop",
+          incomplete: false,
+          incompleteness: [],
+          parts: [],
+          thinking: "",
+          toolCalls: [],
+        },
+        stepIndex: 0,
+        steps: [
+          {
+            finishReason: "stop",
+            output: {
+              content: "done",
+              done: true,
+              finishReason: "stop",
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+        ],
+        toolCallCount: 0,
+      };
+
+      expect(condition(state)).toBeTruthy();
+    });
+
+    it("should not stop when finishReason does not match", () => {
+      const condition = finishReasonIs("stop");
+      const state: AgentLoopState = {
+        consecutiveIdenticalCalls: 0,
+        lastOutput: {
+          content: "more",
+          done: false,
+          finishReason: "length",
+          incomplete: false,
+          incompleteness: [],
+          parts: [],
+          thinking: "",
+          toolCalls: [],
+        },
+        stepIndex: 0,
+        steps: [
+          {
+            finishReason: "length",
+            output: {
+              content: "more",
+              done: false,
+              finishReason: "length",
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+        ],
+        toolCallCount: 0,
+      };
+
+      expect(condition(state)).toBeFalsy();
+    });
+  });
+
+  describe(isLoopFinished, () => {
+    it("should stop when the last step has a finish reason and no tool calls", () => {
+      const condition = isLoopFinished();
+      const state: AgentLoopState = {
+        consecutiveIdenticalCalls: 0,
+        lastOutput: {
+          content: "done",
+          done: true,
+          finishReason: "stop",
+          incomplete: false,
+          incompleteness: [],
+          parts: [],
+          thinking: "",
+          toolCalls: [],
+        },
+        stepIndex: 0,
+        steps: [
+          {
+            finishReason: "stop",
+            output: {
+              content: "done",
+              done: true,
+              finishReason: "stop",
+              incomplete: false,
+              incompleteness: [],
+              parts: [],
+              thinking: "",
+              toolCalls: [],
+            },
+            toolCalls: [],
+            usage: undefined,
+          },
+        ],
+        toolCallCount: 0,
+      };
+
+      expect(condition(state)).toBeTruthy();
+    });
+  });
+
+  describe(detectDoomLoop, () => {
+    it("should detect identical tool calls repeated n times", () => {
       const condition = detectDoomLoop(2);
       const toolCall: XmlToolCall = {
-        name: 'search',
-        parameters: { query: 'test' },
-        format: 'bare-xml',
-        id: '1'
+        format: "bare-xml",
+        id: "1",
+        name: "search",
+        parameters: { query: "test" },
       };
       const step1 = createMockStep(toolCall);
       const step2 = createMockStep(toolCall);
-      const state: AgentLoopState = createMockState([step1, step2], [toolCall], 2);
+      const state: AgentLoopState = createMockState(
+        [step1, step2],
+        [toolCall],
+        2
+      );
 
-      expect(condition(state)).toBe(true);
+      expect(condition(state)).toBeTruthy();
     });
 
-    it('should not trigger doom loop for different tool calls', () => {
+    it("should not trigger doom loop for different tool calls", () => {
       const condition = detectDoomLoop(2);
       const call1: XmlToolCall = {
-        name: 'search',
-        parameters: { query: 'first' },
-        format: 'bare-xml',
-        id: '1'
+        format: "bare-xml",
+        id: "1",
+        name: "search",
+        parameters: { query: "first" },
       };
       const call2: XmlToolCall = {
-        name: 'search',
-        parameters: { query: 'second' },
-        format: 'bare-xml',
-        id: '2'
+        format: "bare-xml",
+        id: "2",
+        name: "search",
+        parameters: { query: "second" },
       };
       const step1 = createMockStep(call1);
       const step2 = createMockStep(call2);
       const state: AgentLoopState = createMockState([step1, step2], [call2], 0);
 
-      expect(condition(state)).toBe(false);
+      expect(condition(state)).toBeFalsy();
     });
 
-    it('should detect identical tool calls despite parameter key order variations', async () => {
+    it("should detect identical tool calls despite parameter key order variations", async () => {
       const condition = detectDoomLoop(1);
       // Create two identical tool calls with parameters in different order
       const call1: XmlToolCall = {
-        name: 'search',
-        parameters: { query: 'test', limit: 10 },
-        format: 'bare-xml',
-        id: '1'
+        format: "bare-xml",
+        id: "1",
+        name: "search",
+        parameters: { limit: 10, query: "test" },
       };
       const call2: XmlToolCall = {
-        name: 'search',
-        parameters: { limit: 10, query: 'test' }, // Same params, different order
-        format: 'bare-xml',
-        id: '2'
+        format: "bare-xml",
+        id: "2",
+        name: "search",
+        parameters: { limit: 10, query: "test" }, // Same params, different order
       };
       const step1 = createMockStep(call1);
       const step2 = createMockStep(call2);
       const state: AgentLoopState = createMockState([step1, step2], [call2], 1);
 
       // Should detect as identical despite key order difference
-      expect(condition(state)).toBe(true);
+      expect(condition(state)).toBeTruthy();
     });
   });
 });
 
-describe('createAgentLoop', () => {
-  it('mergeCallbacks should invoke both callbacks in order', async () => {
+describe(createAgentLoop, () => {
+  it("mergeCallbacks should invoke both callbacks in order", async () => {
     const calls: string[] = [];
     const merged = mergeCallbacks(
       async () => {
-        calls.push('a');
+        calls.push("a");
       },
       async () => {
-        calls.push('b');
+        calls.push("b");
       }
     );
 
     await merged?.();
 
-    expect(calls).toEqual(['a', 'b']);
+    expect(calls).toStrictEqual(["a", "b"]);
   });
 
-  it('should call execute and accumulate steps', async () => {
+  it("should call execute and accumulate steps", async () => {
     let executeCount = 0;
     const loop = createAgentLoop({
-      execute: async function* () {
+      buildToolResultMessages: async () => [],
+      async *execute() {
         executeCount += 1;
-        yield { content: 'Response', done: true, finishReason: 'stop' as const };
+        yield {
+          content: "Response",
+          done: true,
+          finishReason: "stop" as const,
+        };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
@@ -445,16 +470,20 @@ describe('createAgentLoop', () => {
     expect(executeCount).toBeGreaterThan(0);
   });
 
-  it('should stop when isStepCount condition is met', async () => {
+  it("should stop when isStepCount condition is met", async () => {
     let executeCount = 0;
     const loop = createAgentLoop({
-      execute: async function* () {
+      buildToolResultMessages: async () => [],
+      async *execute() {
         executeCount += 1;
-        yield { content: 'Response', done: true, finishReason: 'stop' as const };
+        yield {
+          content: "Response",
+          done: true,
+          finishReason: "stop" as const,
+        };
       },
-      stopWhen: isStepCount(1),
       maxSteps: 10,
-      buildToolResultMessages: async () => []
+      stopWhen: isStepCount(1),
     });
 
     for await (const _part of loop.run([])) {
@@ -464,16 +493,20 @@ describe('createAgentLoop', () => {
     expect(executeCount).toBe(1);
   });
 
-  it('should respect maxSteps limit', async () => {
+  it("should respect maxSteps limit", async () => {
     let executeCount = 0;
     const loop = createAgentLoop({
-      execute: async function* () {
+      buildToolResultMessages: async () => [],
+      async *execute() {
         executeCount += 1;
-        yield { content: 'Response', done: true, finishReason: 'stop' as const };
+        yield {
+          content: "Response",
+          done: true,
+          finishReason: "stop" as const,
+        };
       },
-      stopWhen: [],
       maxSteps: 1,
-      buildToolResultMessages: async () => []
+      stopWhen: [],
     });
 
     for await (const _part of loop.run([])) {
@@ -483,174 +516,194 @@ describe('createAgentLoop', () => {
     expect(executeCount).toBe(1);
   });
 
-  it('should call onStep callback for each step', async () => {
+  it("should call onStep callback for each step", async () => {
     const onStepSpy = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'result', done: true, finishReason: 'stop' as const };
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "result", done: true, finishReason: "stop" as const };
       },
-      stopWhen: isStepCount(1),
       onStep: onStepSpy,
-      buildToolResultMessages: async () => []
+      stopWhen: isStepCount(1),
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(onStepSpy).toHaveBeenCalled();
+    expect(onStepSpy).toHaveBeenCalledWith();
   });
 
-  it('should call beforeInit and afterInit hooks around run startup', async () => {
+  it("should call beforeInit and afterInit hooks around run startup", async () => {
     const beforeInit = vi.fn();
     const afterInit = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'result', done: true, finishReason: 'stop' as const };
+      afterInit,
+      beforeInit,
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "result", done: true, finishReason: "stop" as const };
       },
       stopWhen: isStepCount(1),
-      beforeInit,
-      afterInit,
-      buildToolResultMessages: async () => []
     });
 
-    for await (const _part of loop.run([{ role: 'user', content: 'hello' }])) {
+    for await (const _part of loop.run([{ content: "hello", role: "user" }])) {
       // consume loop
     }
 
-    expect(beforeInit).toHaveBeenCalledTimes(1);
-    expect(afterInit).toHaveBeenCalledTimes(1);
-    expect(beforeInit.mock.calls[0]?.[0].messages).toEqual([{ role: 'user', content: 'hello' }]);
-    expect(afterInit.mock.calls[0]?.[0].messages).toEqual([{ role: 'user', content: 'hello' }]);
+    expect(beforeInit).toHaveBeenCalledOnce();
+    expect(afterInit).toHaveBeenCalledOnce();
+    expect(beforeInit.mock.calls[0]?.[0].messages).toStrictEqual([
+      { content: "hello", role: "user" },
+    ]);
+    expect(afterInit.mock.calls[0]?.[0].messages).toStrictEqual([
+      { content: "hello", role: "user" },
+    ]);
   });
 
-  it('should call beforeStep and afterStep hooks with loop context', async () => {
+  it("should call beforeStep and afterStep hooks with loop context", async () => {
     const beforeStep = vi.fn();
     const afterStep = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'result', done: true, finishReason: 'stop' as const };
+      afterStep,
+      beforeStep,
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "result", done: true, finishReason: "stop" as const };
       },
       stopWhen: isStepCount(1),
-      beforeStep,
-      afterStep,
-      buildToolResultMessages: async () => []
     });
 
-    for await (const _part of loop.run([{ role: 'user', content: 'hello' }])) {
+    for await (const _part of loop.run([{ content: "hello", role: "user" }])) {
       // consume loop
     }
 
-    expect(beforeStep).toHaveBeenCalledTimes(1);
-    expect(afterStep).toHaveBeenCalledTimes(1);
+    expect(beforeStep).toHaveBeenCalledOnce();
+    expect(afterStep).toHaveBeenCalledOnce();
 
     const beforeContext = beforeStep.mock.calls[0]?.[0];
     const afterContext = afterStep.mock.calls[0]?.[0];
 
     expect(beforeContext?.stepIndex).toBe(0);
-    expect(beforeContext?.messages).toEqual([{ role: 'user', content: 'hello' }]);
+    expect(beforeContext?.messages).toStrictEqual([
+      { content: "hello", role: "user" },
+    ]);
     expect(afterContext?.stepIndex).toBe(0);
-    expect(afterContext?.stepResult.output.content).toBe('result');
+    expect(afterContext?.stepResult.output.content).toBe("result");
   });
 
-  it('should allow prepareStep to override messages for a specific step', async () => {
+  it("should allow prepareStep to override messages for a specific step", async () => {
     const seenMessages: unknown[][] = [];
 
     const loop = createAgentLoop({
-      execute: async function* (messages) {
+      buildToolResultMessages: async () => [],
+      async *execute(messages) {
         seenMessages.push(messages);
-        yield { content: 'prepared', done: true, finishReason: 'stop' as const };
+        yield {
+          content: "prepared",
+          done: true,
+          finishReason: "stop" as const,
+        };
       },
+      prepareStep: () => ({
+        messages: [{ content: "prepared message", role: "system" }],
+      }),
       stopWhen: isStepCount(1),
-      prepareStep: () => ({ messages: [{ role: 'system', content: 'prepared message' }] }),
-      buildToolResultMessages: async () => []
     });
 
-    for await (const _part of loop.run([{ role: 'user', content: 'original' }])) {
+    for await (const _part of loop.run([
+      { content: "original", role: "user" },
+    ])) {
       // consume loop
     }
 
-    expect(seenMessages).toEqual([[{ role: 'system', content: 'prepared message' }]]);
+    expect(seenMessages).toStrictEqual([
+      [{ content: "prepared message", role: "system" }],
+    ]);
   });
 
-  it('should call beforeToolCall and afterToolCall hooks around tool results', async () => {
+  it("should call beforeToolCall and afterToolCall hooks around tool results", async () => {
     const toolCall: XmlToolCall = {
-      name: 'search',
-      parameters: { query: 'docs' },
-      format: 'bare-xml',
-      id: 'tool-1'
+      format: "bare-xml",
+      id: "tool-1",
+      name: "search",
+      parameters: { query: "docs" },
     };
     const beforeToolCall = vi.fn();
     const afterToolCall = vi.fn();
-    const toolResultMessages = [{ role: 'tool', content: 'found docs' }];
+    const toolResultMessages = [{ content: "found docs", role: "tool" }];
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      afterToolCall,
+      beforeToolCall,
+      buildToolResultMessages: async () => toolResultMessages,
+      async *execute() {
         yield {
           tool_calls: [
             {
               function: {
+                arguments: toolCall.parameters,
                 name: toolCall.name,
-                arguments: toolCall.parameters
-              }
-            }
-          ]
+              },
+            },
+          ],
         };
         yield {
           done: true,
-          finishReason: 'tool-calls' as const
+          finishReason: "tool-calls" as const,
         };
       },
       stopWhen: isStepCount(2),
-      beforeToolCall,
-      afterToolCall,
-      buildToolResultMessages: async () => toolResultMessages
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(beforeToolCall).toHaveBeenCalledTimes(1);
-    expect(afterToolCall).toHaveBeenCalledTimes(1);
+    expect(beforeToolCall).toHaveBeenCalledOnce();
+    expect(afterToolCall).toHaveBeenCalledOnce();
     expect(beforeToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
       {
         name: toolCall.name,
-        parameters: toolCall.parameters
-      }
+        parameters: toolCall.parameters,
+      },
     ]);
     expect(afterToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
       {
         name: toolCall.name,
-        parameters: toolCall.parameters
-      }
+        parameters: toolCall.parameters,
+      },
     ]);
-    expect(afterToolCall.mock.calls[0]?.[0].toolResultMessages).toEqual(toolResultMessages);
+    expect(afterToolCall.mock.calls[0]?.[0].toolResultMessages).toStrictEqual(
+      toolResultMessages
+    );
   });
 
-  it('should deny tool calls without building tool results when approval mode is deny', async () => {
-    const buildToolResultMessages = vi.fn(async () => [{ role: 'tool', content: 'should not happen' }]);
+  it("should deny tool calls without building tool results when approval mode is deny", async () => {
+    const buildToolResultMessages = vi.fn(async () => [
+      { content: "should not happen", role: "tool" },
+    ]);
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      buildToolResultMessages,
+      async *execute() {
         yield {
           tool_calls: [
             {
               function: {
-                name: 'search',
-                arguments: { query: 'docs' }
-              }
-            }
-          ]
+                arguments: { query: "docs" },
+                name: "search",
+              },
+            },
+          ],
         };
-        yield { done: true, finishReason: 'tool-calls' as const };
+        yield { done: true, finishReason: "tool-calls" as const };
       },
       stopWhen: isStepCount(3),
-      toolApprovalMode: 'deny',
-      buildToolResultMessages
+      toolApprovalMode: "deny",
     });
 
     for await (const _part of loop.run([])) {
@@ -660,192 +713,214 @@ describe('createAgentLoop', () => {
     expect(buildToolResultMessages).not.toHaveBeenCalled();
   });
 
-  it('should use ask mode approval callback before building tool results', async () => {
-    const approveToolCalls = vi.fn(async () => 'allow' as const);
-    const buildToolResultMessages = vi.fn(async () => [{ role: 'tool', content: 'approved' }]);
+  it("should use ask mode approval callback before building tool results", async () => {
+    const approveToolCalls = vi.fn(async () => "allow" as const);
+    const buildToolResultMessages = vi.fn(async () => [
+      { content: "approved", role: "tool" },
+    ]);
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      approveToolCalls,
+      buildToolResultMessages,
+      async *execute() {
         yield {
           tool_calls: [
             {
               function: {
-                name: 'search',
-                arguments: { query: 'docs' }
-              }
-            }
-          ]
+                arguments: { query: "docs" },
+                name: "search",
+              },
+            },
+          ],
         };
-        yield { done: true, finishReason: 'tool-calls' as const };
+        yield { done: true, finishReason: "tool-calls" as const };
       },
       stopWhen: isStepCount(2),
-      toolApprovalMode: 'ask',
-      approveToolCalls,
-      buildToolResultMessages
+      toolApprovalMode: "ask",
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(approveToolCalls).toHaveBeenCalledTimes(1);
-    const approvalCalls = approveToolCalls.mock.calls as unknown as Array<[{ mode?: string }]>;
-    expect(approvalCalls[0]?.[0]?.mode).toBe('ask');
-    expect(buildToolResultMessages).toHaveBeenCalledTimes(1);
-    const buildToolResultCalls = buildToolResultMessages.mock.calls as unknown as Array<[unknown[]]>;
+    expect(approveToolCalls).toHaveBeenCalledOnce();
+    const approvalCalls = approveToolCalls.mock.calls as unknown as [
+      { mode?: string },
+    ][];
+    expect(approvalCalls[0]?.[0]?.mode).toBe("ask");
+    expect(buildToolResultMessages).toHaveBeenCalledOnce();
+    const buildToolResultCalls = buildToolResultMessages.mock
+      .calls as unknown as [unknown[]][];
     expect(buildToolResultCalls[0]?.[0]).toMatchObject([
       {
-        name: 'search',
-        parameters: { query: 'docs' }
-      }
+        name: "search",
+        parameters: { query: "docs" },
+      },
     ]);
   });
 
-  it('should pass approved and denied tool calls to afterToolCall when approval filters them', async () => {
+  it("should pass approved and denied tool calls to afterToolCall when approval filters them", async () => {
     const afterToolCall = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      afterToolCall,
+      approveToolCalls: async (context) => ({
+        approvedToolCalls: context.toolCalls.filter(
+          (toolCall) => toolCall.name === "search"
+        ),
+      }),
+      buildToolResultMessages: async () => [
+        { content: "approved", role: "tool" },
+      ],
+      async *execute() {
         yield {
           tool_calls: [
             {
               function: {
-                name: 'search',
-                arguments: { query: 'docs' }
-              }
+                arguments: { query: "docs" },
+                name: "search",
+              },
             },
             {
               function: {
-                name: 'fetch',
-                arguments: { url: 'https://example.com' }
-              }
-            }
-          ]
+                arguments: { url: "https://example.com" },
+                name: "fetch",
+              },
+            },
+          ],
         };
-        yield { done: true, finishReason: 'tool-calls' as const };
+        yield { done: true, finishReason: "tool-calls" as const };
       },
       stopWhen: isStepCount(2),
-      toolApprovalMode: 'ask',
-      approveToolCalls: async context => ({
-        approvedToolCalls: context.toolCalls.filter(toolCall => toolCall.name === 'search')
-      }),
-      afterToolCall,
-      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }]
+      toolApprovalMode: "ask",
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(afterToolCall).toHaveBeenCalledTimes(1);
+    expect(afterToolCall).toHaveBeenCalledOnce();
     expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toMatchObject([
-      { name: 'search', parameters: { query: 'docs' } }
+      { name: "search", parameters: { query: "docs" } },
     ]);
     expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toMatchObject([
-      { name: 'fetch', parameters: { url: 'https://example.com' } }
+      { name: "fetch", parameters: { url: "https://example.com" } },
     ]);
   });
 
-  it('should treat approved tool calls without ids as matches when name and parameters match', async () => {
+  it("should treat approved tool calls without ids as matches when name and parameters match", async () => {
     const afterToolCall = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      afterToolCall,
+      approveToolCalls: async () => ({
+        approvedToolCalls: [
+          { format: "bare-xml", name: "search", parameters: { query: "docs" } },
+        ],
+      }),
+      buildToolResultMessages: async (toolCalls) =>
+        toolCalls.map((toolCall) => ({ content: toolCall.name, role: "tool" })),
+      async *execute() {
         yield {
           tool_calls: [
             {
-              id: 'tool-1',
               function: {
-                name: 'search',
-                arguments: { query: 'docs' }
-              }
-            }
-          ]
+                arguments: { query: "docs" },
+                name: "search",
+              },
+              id: "tool-1",
+            },
+          ],
         };
-        yield { done: true, finishReason: 'tool-calls' as const };
+        yield { done: true, finishReason: "tool-calls" as const };
       },
       stopWhen: isStepCount(2),
-      toolApprovalMode: 'ask',
-      approveToolCalls: async () => ({
-        approvedToolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' }]
-      }),
-      afterToolCall,
-      buildToolResultMessages: async toolCalls => toolCalls.map(toolCall => ({ role: 'tool', content: toolCall.name }))
+      toolApprovalMode: "ask",
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(afterToolCall).toHaveBeenCalledTimes(1);
+    expect(afterToolCall).toHaveBeenCalledOnce();
     expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toHaveLength(1);
     expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toHaveLength(0);
   });
 
-  it('should merge step override hooks and approval callbacks with base options', async () => {
+  it("should merge step override hooks and approval callbacks with base options", async () => {
     const callOrder: string[] = [];
     const loop = createAgentLoop({
-      execute: async function* () {
+      afterToolCall: async () => {
+        callOrder.push("base-afterToolCall");
+      },
+      beforeStep: async () => {
+        callOrder.push("base-beforeStep");
+      },
+      buildToolResultMessages: async () => [
+        { content: "approved", role: "tool" },
+      ],
+      async *execute() {
         yield {
           tool_calls: [
             {
               function: {
-                name: 'search',
-                arguments: { query: 'docs' }
-              }
-            }
-          ]
+                arguments: { query: "docs" },
+                name: "search",
+              },
+            },
+          ],
         };
-        yield { done: true, finishReason: 'tool-calls' as const };
-      },
-      stopWhen: isStepCount(2),
-      toolApprovalMode: 'deny',
-      beforeStep: async () => {
-        callOrder.push('base-beforeStep');
-      },
-      afterToolCall: async () => {
-        callOrder.push('base-afterToolCall');
+        yield { done: true, finishReason: "tool-calls" as const };
       },
       prepareStep: () => ({
-        toolApprovalMode: 'ask',
-        beforeStep: async () => {
-          callOrder.push('override-beforeStep');
-        },
-        approveToolCalls: async (context): Promise<'allow'> => {
-          callOrder.push(`override-approve:${context.mode}`);
-          return 'allow';
-        },
         afterToolCall: async () => {
-          callOrder.push('override-afterToolCall');
-        }
+          callOrder.push("override-afterToolCall");
+        },
+        approveToolCalls: async (context): Promise<"allow"> => {
+          callOrder.push(`override-approve:${context.mode}`);
+          return "allow";
+        },
+        beforeStep: async () => {
+          callOrder.push("override-beforeStep");
+        },
+        toolApprovalMode: "ask",
       }),
-      buildToolResultMessages: async () => [{ role: 'tool', content: 'approved' }]
+      stopWhen: isStepCount(2),
+      toolApprovalMode: "deny",
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(callOrder).toContain('base-beforeStep');
-    expect(callOrder).toContain('override-beforeStep');
-    expect(callOrder).toContain('override-approve:ask');
-    expect(callOrder).toContain('base-afterToolCall');
-    expect(callOrder).toContain('override-afterToolCall');
-    expect(callOrder.indexOf('base-beforeStep')).toBeLessThan(callOrder.indexOf('override-beforeStep'));
-    expect(callOrder.indexOf('override-beforeStep')).toBeLessThan(callOrder.indexOf('override-approve:ask'));
-    expect(callOrder.indexOf('override-approve:ask')).toBeLessThan(callOrder.indexOf('base-afterToolCall'));
-    expect(callOrder.indexOf('base-afterToolCall')).toBeLessThan(callOrder.indexOf('override-afterToolCall'));
+    expect(callOrder).toContain("base-beforeStep");
+    expect(callOrder).toContain("override-beforeStep");
+    expect(callOrder).toContain("override-approve:ask");
+    expect(callOrder).toContain("base-afterToolCall");
+    expect(callOrder).toContain("override-afterToolCall");
+    expect(callOrder.indexOf("base-beforeStep")).toBeLessThan(
+      callOrder.indexOf("override-beforeStep")
+    );
+    expect(callOrder.indexOf("override-beforeStep")).toBeLessThan(
+      callOrder.indexOf("override-approve:ask")
+    );
+    expect(callOrder.indexOf("override-approve:ask")).toBeLessThan(
+      callOrder.indexOf("base-afterToolCall")
+    );
+    expect(callOrder.indexOf("base-afterToolCall")).toBeLessThan(
+      callOrder.indexOf("override-afterToolCall")
+    );
   });
 
-  it('should abort the loop', async () => {
+  it("should abort the loop", async () => {
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'chunk', done: false };
-        yield { done: true, finishReason: 'stop' as const };
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "chunk", done: false };
+        yield { done: true, finishReason: "stop" as const };
       },
-      stopWhen: [],
       maxSteps: 10,
-      buildToolResultMessages: async () => []
+      stopWhen: [],
     });
 
     const gen = loop.run([]);
@@ -853,21 +928,21 @@ describe('createAgentLoop', () => {
     loop.abort();
 
     const result = await gen.next();
-    expect(result.done).toBe(true);
+    expect(result.done).toBeTruthy();
   });
 
-  it('should call onAbort when abort() is invoked', async () => {
+  it("should call onAbort when abort() is invoked", async () => {
     const onAbort = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'chunk', done: false };
-        yield { done: true, finishReason: 'stop' as const };
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "chunk", done: false };
+        yield { done: true, finishReason: "stop" as const };
       },
-      stopWhen: [],
       maxSteps: 10,
       onAbort,
-      buildToolResultMessages: async () => []
+      stopWhen: [],
     });
 
     const gen = loop.run([]);
@@ -875,69 +950,69 @@ describe('createAgentLoop', () => {
     loop.abort();
     await gen.next();
 
-    expect(onAbort).toHaveBeenCalledTimes(1);
-    expect(onAbort.mock.calls[0]?.[0]).toBe('abort');
+    expect(onAbort).toHaveBeenCalledOnce();
+    expect(onAbort.mock.calls[0]?.[0]).toBe("abort");
   });
 
-  it('should call onError when execute throws', async () => {
+  it("should call onError when execute throws", async () => {
     const onError = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      buildToolResultMessages: async () => [],
+      async *execute() {
         yield* [];
-        throw new Error('step failed');
+        throw new Error("step failed");
       },
-      stopWhen: isStepCount(1),
       onError,
-      buildToolResultMessages: async () => []
+      stopWhen: isStepCount(1),
     });
 
     await expect(async () => {
       for await (const _part of loop.run([])) {
         // consume loop
       }
-    }).rejects.toThrow('step failed');
+    }).rejects.toThrow("step failed");
 
-    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
-    expect(onError.mock.calls[0]?.[0].message).toBe('step failed');
+    expect(onError.mock.calls[0]?.[0].message).toBe("step failed");
   });
 
-  it('should call beforeFinal and afterFinal with terminal outcome', async () => {
+  it("should call beforeFinal and afterFinal with terminal outcome", async () => {
     const beforeFinal = vi.fn();
     const afterFinal = vi.fn();
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'done', done: true, finishReason: 'stop' as const };
+      afterFinal,
+      beforeFinal,
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "done", done: true, finishReason: "stop" as const };
       },
       stopWhen: isStepCount(1),
-      beforeFinal,
-      afterFinal,
-      buildToolResultMessages: async () => []
     });
 
     for await (const _part of loop.run([])) {
       // consume loop
     }
 
-    expect(beforeFinal).toHaveBeenCalledTimes(1);
-    expect(afterFinal).toHaveBeenCalledTimes(1);
-    expect(beforeFinal.mock.calls[0]?.[0].outcome).toBe('success');
-    expect(beforeFinal.mock.calls[0]?.[0].finalOutput.content).toBe('done');
-    expect(afterFinal.mock.calls[0]?.[0].outcome).toBe('success');
+    expect(beforeFinal).toHaveBeenCalledOnce();
+    expect(afterFinal).toHaveBeenCalledOnce();
+    expect(beforeFinal.mock.calls[0]?.[0].outcome).toBe("success");
+    expect(beforeFinal.mock.calls[0]?.[0].finalOutput.content).toBe("done");
+    expect(afterFinal.mock.calls[0]?.[0].outcome).toBe("success");
   });
 
-  it('should process and emit output parts from execute function', async () => {
+  it("should process and emit output parts from execute function", async () => {
     const parts: OutputPart[] = [];
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'Part 1', done: false };
-        yield { content: ' Part 2', done: true, finishReason: 'stop' as const };
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "Part 1", done: false };
+        yield { content: " Part 2", done: true, finishReason: "stop" as const };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => []
     });
 
     for await (const part of loop.run([])) {
@@ -947,30 +1022,34 @@ describe('createAgentLoop', () => {
     // Should have accumulated and emitted output parts
     expect(parts.length).toBeGreaterThan(0);
     // Should contain text parts from the yields
-    const textParts = parts.filter(p => p.type === 'text');
+    const textParts = parts.filter((p) => p.type === "text");
     expect(textParts.length).toBeGreaterThan(0);
   });
 
-  it('should trim conversation history when maxConversationMessages is set', async () => {
+  it("should trim conversation history when maxConversationMessages is set", async () => {
     let messagesInSecondCall: unknown[] | undefined;
 
     const loop = createAgentLoop({
-      execute: async function* (messages) {
+      buildToolResultMessages: async () => [],
+      async *execute(messages) {
         // Capture messages from any call where we have tool calls
         if (Array.isArray(messages) && messages.length >= 5) {
           messagesInSecondCall = messages;
         }
         // Always yield a simple response
-        yield { content: 'Response', done: true, finishReason: 'stop' as const };
+        yield {
+          content: "Response",
+          done: true,
+          finishReason: "stop" as const,
+        };
       },
-      stopWhen: isStepCount(1),
       maxConversationMessages: 4,
-      buildToolResultMessages: async () => []
+      stopWhen: isStepCount(1),
     });
 
     const initialMessages = Array.from({ length: 5 }, (_, i) => ({
-      role: 'user' as const,
-      content: `Message ${i}`
+      content: `Message ${i}`,
+      role: "user" as const,
     }));
 
     for await (const _part of loop.run(initialMessages)) {
@@ -982,16 +1061,16 @@ describe('createAgentLoop', () => {
     expect(messagesInSecondCall?.length).toBe(5);
   });
 
-  it('should produce output parts during execution', async () => {
+  it("should produce output parts during execution", async () => {
     const outputParts: OutputPart[] = [];
 
     const loop = createAgentLoop({
-      execute: async function* () {
-        yield { content: 'chunk1', done: false };
-        yield { content: 'chunk2', done: true, finishReason: 'stop' as const };
+      buildToolResultMessages: async () => [],
+      async *execute() {
+        yield { content: "chunk1", done: false };
+        yield { content: "chunk2", done: true, finishReason: "stop" as const };
       },
       stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => []
     });
 
     for await (const part of loop.run([])) {
@@ -1002,17 +1081,21 @@ describe('createAgentLoop', () => {
     expect(outputParts.length).toBeGreaterThan(0);
   });
 
-  it('should handle state updates from multiple steps', async () => {
+  it("should handle state updates from multiple steps", async () => {
     let stepCount = 0;
 
     const loop = createAgentLoop({
-      execute: async function* () {
+      buildToolResultMessages: async () => [],
+      async *execute() {
         yield { content: `step ${stepCount++}`, done: false };
-        yield { content: `step ${stepCount++}`, done: true, finishReason: 'stop' as const };
+        yield {
+          content: `step ${stepCount++}`,
+          done: true,
+          finishReason: "stop" as const,
+        };
       },
-      stopWhen: isStepCount(2),
       maxSteps: 5,
-      buildToolResultMessages: async () => []
+      stopWhen: isStepCount(2),
     });
 
     let partCount = 0;

@@ -24,15 +24,16 @@ Use this package when you need focused handling of model-specific `<think>` or r
 ## Implementation example with neighbors
 
 ```ts
-import { sanitizeNonStreamingModelOutput } from '@agentsy/core/formatting';
-import { ThinkingParser } from '@agentsy/core/thinking';
+import { sanitizeNonStreamingModelOutput } from "@agentsy/core/formatting";
+import { ThinkingParser } from "@agentsy/core/thinking";
 
 const parser = new ThinkingParser();
 
 for await (const chunk of stream) {
   const [thinking, content] = parser.addContent(chunk);
 
-  if (thinking) console.log('thinking:', thinking);
-  if (content) console.log('content:', sanitizeNonStreamingModelOutput(content));
+  if (thinking) console.log("thinking:", thinking);
+  if (content)
+    console.log("content:", sanitizeNonStreamingModelOutput(content));
 }
 ```

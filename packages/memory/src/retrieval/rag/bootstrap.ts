@@ -1,4 +1,4 @@
-import type { BootstrapSummary, IngestSource, IngestSummary } from './types.js';
+import type { BootstrapSummary, IngestSource, IngestSummary } from "./types.js";
 
 export interface RAGBootstrapperDeps {
   collectSources: () => Promise<IngestSource[]>;
@@ -9,7 +9,9 @@ export interface RAGBootstrapper {
   initialize(): Promise<BootstrapSummary>;
 }
 
-export function createRAGBootstrapper(deps: RAGBootstrapperDeps): RAGBootstrapper {
+export function createRAGBootstrapper(
+  deps: RAGBootstrapperDeps
+): RAGBootstrapper {
   return {
     async initialize() {
       const sources = await deps.collectSources();
@@ -26,11 +28,11 @@ export function createRAGBootstrapper(deps: RAGBootstrapperDeps): RAGBootstrappe
       }
 
       return {
-        totalSources: sources.length,
         totalInserted,
+        totalSkipped,
+        totalSources: sources.length,
         totalUpdated,
-        totalSkipped
       };
-    }
+    },
   };
 }

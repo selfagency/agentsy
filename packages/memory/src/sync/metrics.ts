@@ -1,4 +1,7 @@
-import type { SyncMetricsRegistry, SyncMetricsRegistrySnapshot } from './types.js';
+import type {
+  SyncMetricsRegistry,
+  SyncMetricsRegistrySnapshot,
+} from "./types.js";
 
 interface DurationAccumulator {
   total: number;
@@ -7,7 +10,7 @@ interface DurationAccumulator {
 }
 
 function createAccumulator(): DurationAccumulator {
-  return { total: 0, count: 0, max: 0 };
+  return { count: 0, max: 0, total: 0 };
 }
 
 function toAverage(accumulator: DurationAccumulator): number {
@@ -27,22 +30,6 @@ export function createSyncMetricsRegistry(): SyncMetricsRegistry {
   const queueDepth = createAccumulator();
 
   return {
-    recordSyncRun(input) {
-      syncRuns += 1;
-      if (input.status === 'error') {
-        syncFailures += 1;
-      }
-
-      syncConflicts += Math.max(0, input.conflicts);
-      retriesTotal += Math.max(0, input.retries);
-      syncDurations.total += Math.max(0, input.durationMs);
-      syncDurations.count += 1;
-      syncDurations.max = Math.max(syncDurations.max, input.durationMs);
-      queueDepth.total += Math.max(0, input.queueDepth);
-      queueDepth.count += 1;
-      queueDepth.max = Math.max(queueDepth.max, input.queueDepth);
-    },
-
     recordBackupRun(input) {
       backupRuns += 1;
       if (input.success) {
@@ -57,25 +44,43 @@ export function createSyncMetricsRegistry(): SyncMetricsRegistry {
       }
     },
 
+    recordSyncRun(input) {
+      syncRuns += 1;
+      if (input.status === "error") {
+        syncFailures += 1;
+      }
+
+      syncConflicts += Math.max(0, input.conflicts);
+      retriesTotal += Math.max(0, input.retries);
+      syncDurations.total += Math.max(0, input.durationMs);
+      syncDurations.count += 1;
+      syncDurations.max = Math.max(syncDurations.max, input.durationMs);
+      queueDepth.total += Math.max(0, input.queueDepth);
+      queueDepth.count += 1;
+      queueDepth.max = Math.max(queueDepth.max, input.queueDepth);
+    },
+
     snapshot(): SyncMetricsRegistrySnapshot {
       return {
-        sync_runs_total: syncRuns,
-        sync_failures_total: syncFailures,
-        sync_conflicts_total: syncConflicts,
-        backup_runs_total: backupRuns,
         backup_restore_total: restoreRuns,
-        sync_duration_ms: {
-          average: toAverage(syncDurations),
-          max: syncDurations.max
-        },
+        backup_runs_total: backupRuns,
+        backup_success_rate:
+          backupRuns === 0 ? 0 : backupSuccesses / backupRuns,
         queue_depth: {
           average: toAverage(queueDepth),
-          max: queueDepth.max
+          max: queueDepth.max,
         },
+        restore_success_rate:
+          restoreRuns === 0 ? 0 : restoreSuccesses / restoreRuns,
         retries_total: retriesTotal,
-        backup_success_rate: backupRuns === 0 ? 0 : backupSuccesses / backupRuns,
-        restore_success_rate: restoreRuns === 0 ? 0 : restoreSuccesses / restoreRuns
+        sync_conflicts_total: syncConflicts,
+        sync_duration_ms: {
+          average: toAverage(syncDurations),
+          max: syncDurations.max,
+        },
+        sync_failures_total: syncFailures,
+        sync_runs_total: syncRuns,
       };
-    }
+    },
   };
 }

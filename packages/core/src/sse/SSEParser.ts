@@ -39,7 +39,7 @@ export interface SSEParserOptions {
  * ```
  */
 export class SSEParser {
-  private buffer = '';
+  private buffer = "";
   private readonly onEventCallback: ((_event: SSEEvent) => void) | undefined;
 
   constructor(options?: SSEParserOptions) {
@@ -51,7 +51,9 @@ export class SSEParser {
    * May parse zero or more complete events depending on chunk boundaries.
    */
   write(chunk: string): void {
-    if (!chunk) return;
+    if (!chunk) {
+      return;
+    }
 
     this.buffer += chunk;
     this.parseBuffer();
@@ -63,30 +65,30 @@ export class SSEParser {
   end(): void {
     if (this.buffer.trim()) {
       // Process remaining buffer as final event fields.
-      const fields = this.buffer.split('\n');
+      const fields = this.buffer.split("\n");
       const event = this.fieldsToEvent(fields);
       if (event && this.isValidEvent(event)) {
         this.onEventCallback?.(event);
       }
     }
-    this.buffer = '';
+    this.buffer = "";
   }
 
   /**
    * Reset parser state and buffer.
    */
   reset(): void {
-    this.buffer = '';
+    this.buffer = "";
   }
 
   private parseBuffer(): void {
     // Split by double newline to find event boundaries.
-    const parts = this.buffer.split('\n\n');
+    const parts = this.buffer.split("\n\n");
 
     // Keep the last part in the buffer (incomplete event).
     for (const eventText of parts.slice(0, -1)) {
       if (eventText.trim()) {
-        const fields = eventText.split('\n');
+        const fields = eventText.split("\n");
         const event = this.fieldsToEvent(fields);
         if (event && this.isValidEvent(event)) {
           this.onEventCallback?.(event);
@@ -95,7 +97,7 @@ export class SSEParser {
     }
 
     // Keep incomplete part in buffer.
-    this.buffer = parts.at(-1) ?? '';
+    this.buffer = parts.at(-1) ?? "";
   }
 
   private fieldsToEvent(fields: string[]): SSEEvent {
@@ -104,21 +106,25 @@ export class SSEParser {
 
     for (const rawLine of fields) {
       const line = rawLine.trim();
-      if (line === '' || line.startsWith(':')) continue;
+      if (line === "" || line.startsWith(":")) {
+        continue;
+      }
 
-      const colonIdx = line.indexOf(':');
-      if (colonIdx === -1) continue;
+      const colonIdx = line.indexOf(":");
+      if (colonIdx === -1) {
+        continue;
+      }
 
       const field = line.substring(0, colonIdx);
       let value = line.substring(colonIdx + 1);
 
       // Strip leading space after colon (if present).
-      if (value.startsWith(' ')) {
-        value = value.substring(1);
+      if (value.startsWith(" ")) {
+        value = value.slice(1);
       }
 
       this.parseField(field, value, event, dataInitialized);
-      if (field === 'data') {
+      if (field === "data") {
         dataInitialized = true;
       }
     }
@@ -126,24 +132,32 @@ export class SSEParser {
     return event;
   }
 
-  private parseField(field: string, value: string, event: SSEEvent, dataInitialized: boolean): void {
+  private parseField(
+    field: string,
+    value: string,
+    event: SSEEvent,
+    dataInitialized: boolean
+  ): void {
     switch (field) {
-      case 'event':
+      case "event": {
         event.event = value;
         break;
-      case 'data':
+      }
+      case "data": {
         // RFC 8895: multiple data: lines must be concatenated with newlines
         // Use dataInitialized flag (not truthiness of event.data) to handle empty first line
         if (dataInitialized) {
-          event.data = `${event.data ?? ''}\n${value}`;
+          event.data = `${event.data ?? ""}\n${value}`;
         } else {
           event.data = value;
         }
         break;
-      case 'id':
+      }
+      case "id": {
         event.id = value;
         break;
-      case 'retry': {
+      }
+      case "retry": {
         const retryNum = Number.parseInt(value, 10);
         if (!Number.isNaN(retryNum) && retryNum > 0) {
           event.retry = retryNum;

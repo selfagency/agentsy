@@ -3,8 +3,8 @@ import type {
   RAGHealthResult,
   RAGSearchRequest,
   RAGSearchResult,
-  RAGServerDocument
-} from './types.js';
+  RAGServerDocument,
+} from "./types.js";
 
 export interface RAGServerClientOptions {
   baseUrl: string;
@@ -34,46 +34,78 @@ async function requestJson<T>(
     const response = await fetch(`${baseUrl}${path}`, {
       ...init,
       headers: {
-        'content-type': 'application/json',
-        ...init.headers
+        "content-type": "application/json",
+        ...init.headers,
       },
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     const data = (await response.json().catch(() => null)) as T | null;
-    return { ok: response.ok, status: response.status, data };
+    return { data, ok: response.ok, status: response.status };
   } catch {
-    return { ok: false, status: 0, data: null };
+    return { data: null, ok: false, status: 0 };
   } finally {
     clearTimeout(timeoutHandle);
   }
 }
 
-export function createRAGServerClient(options: RAGServerClientOptions): RAGServerClient {
-  const baseUrl = options.baseUrl.replace(/\/$/u, '');
-  const timeoutMs = Math.max(200, options.timeoutMs ?? 3_000);
+export function createRAGServerClient(
+  options: RAGServerClientOptions
+): RAGServerClient {
+  const baseUrl = options.baseUrl.replace(/\/$/u, "");
+  const timeoutMs = Math.max(200, options.timeoutMs ?? 3000);
 
   return {
+    async delete(documentId) {
+      const result = await requestJson<{ id?: string; deleted?: boolean }>(
+        baseUrl,
+        timeoutMs,
+        `/documents/${encodeURIComponent(documentId)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      return {
+        deleted: result.data?.deleted ?? false,
+        id: result.data?.id ?? documentId,
+      };
+    },
+
     async health() {
-      const result = await requestJson<{ status?: string }>(baseUrl, timeoutMs, '/health', {
-        method: 'GET'
-      });
+      const result = await requestJson<{ status?: string }>(
+        baseUrl,
+        timeoutMs,
+        "/health",
+        {
+          method: "GET",
+        }
+      );
 
       if (!result.ok) {
-        return { ok: false, status: 'degraded' };
+        return { ok: false, status: "degraded" };
       }
 
       return {
         ok: true,
-        status: result.data?.status ?? 'ok'
+        status: result.data?.status ?? "ok",
       };
     },
 
+    async ingest(document) {
+      await this.upsert(document);
+    },
+
     async search(request) {
-      const result = await requestJson<{ results?: RAGSearchResult[] }>(baseUrl, timeoutMs, '/search', {
-        method: 'POST',
-        body: JSON.stringify(request)
-      });
+      const result = await requestJson<{ results?: RAGSearchResult[] }>(
+        baseUrl,
+        timeoutMs,
+        "/search",
+        {
+          body: JSON.stringify(request),
+          method: "POST",
+        }
+      );
 
       if (!result.ok) {
         return [];
@@ -82,35 +114,20 @@ export function createRAGServerClient(options: RAGServerClientOptions): RAGServe
       return [...(result.data?.results ?? [])];
     },
 
-    async ingest(document) {
-      await this.upsert(document);
-    },
-
     async upsert(document) {
-      const result = await requestJson<Record<string, unknown>>(baseUrl, timeoutMs, '/documents', {
-        method: 'POST',
-        body: JSON.stringify(document)
-      });
+      const result = await requestJson<Record<string, unknown>>(
+        baseUrl,
+        timeoutMs,
+        "/documents",
+        {
+          body: JSON.stringify(document),
+          method: "POST",
+        }
+      );
 
       if (!result.ok) {
         throw new Error(`Failed to upsert document ${document.id}`);
       }
     },
-
-    async delete(documentId) {
-      const result = await requestJson<{ id?: string; deleted?: boolean }>(
-        baseUrl,
-        timeoutMs,
-        `/documents/${encodeURIComponent(documentId)}`,
-        {
-          method: 'DELETE'
-        }
-      );
-
-      return {
-        id: result.data?.id ?? documentId,
-        deleted: result.data?.deleted ?? false
-      };
-    }
   };
 }

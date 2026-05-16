@@ -1,4 +1,10 @@
-import type { Event, ExtensionContext, Memento, SecretStorage, SecretStorageChangeEvent } from 'vscode';
+import type {
+  Event,
+  ExtensionContext,
+  Memento,
+  SecretStorage,
+  SecretStorageChangeEvent,
+} from "vscode";
 
 /**
  * Mock Event implementation for testing.
@@ -11,7 +17,7 @@ function createMockEvent<T>(): Event<T> {
  * Mock SecretStorage for testing.
  */
 export class MockSecretStorage implements SecretStorage {
-  private readonly storage: Map<string, string> = new Map();
+  private readonly storage = new Map<string, string>();
 
   async get(key: string): Promise<string | undefined> {
     return this.storage.get(key);
@@ -26,7 +32,7 @@ export class MockSecretStorage implements SecretStorage {
   }
 
   async keys(): Promise<string[]> {
-    return Array.from(this.storage.keys());
+    return [...this.storage.keys()];
   }
 
   onDidChange: Event<SecretStorageChangeEvent> = createMockEvent();
@@ -41,10 +47,10 @@ export class MockSecretStorage implements SecretStorage {
  * Mock Memento for testing.
  */
 export class MockMemento implements Memento {
-  private readonly storage: Map<string, unknown> = new Map();
+  private readonly storage = new Map<string, unknown>();
 
   keys(): readonly string[] {
-    return Array.from(this.storage.keys());
+    return [...this.storage.keys()];
   }
 
   get<T>(key: string): T | undefined;
@@ -68,57 +74,57 @@ export class MockMemento implements Memento {
  */
 export function createMockExtensionContext(): ExtensionContext {
   const mockUri = {
-    scheme: 'file',
-    authority: '',
-    path: '/mock/path',
-    query: '',
-    fragment: '',
-    fsPath: '/mock/path',
+    authority: "",
+    fragment: "",
+    fsPath: "/mock/path",
+    path: "/mock/path",
+    query: "",
+    scheme: "file",
+    toJSON: () => ({}),
     with: () =>
       ({
-        scheme: 'file',
-        authority: '',
-        path: '/mock/path',
-        query: '',
-        fragment: '',
-        fsPath: '/mock/path',
+        authority: "",
+        fragment: "",
+        fsPath: "/mock/path",
+        path: "/mock/path",
+        query: "",
+        scheme: "file",
+        toJSON: () => ({}),
         with: () => ({}),
-        toJSON: () => ({})
       }) as unknown,
-    toJSON: () => ({})
   } as unknown;
 
   return {
-    subscriptions: [],
-    extensionPath: '/mock/path',
-    extensionUri: mockUri,
-    globalStoragePath: '/mock/global',
-    globalStorageUri: mockUri,
-    workspaceStoragePath: '/mock/workspace',
-    workspaceStorageUri: mockUri,
-    logPath: '/mock/log',
-    logUri: mockUri,
-    logsPath: '/mock/logs',
-    secrets: new MockSecretStorage(),
-    globalState: new MockMemento(),
-    workspaceState: new MockMemento(),
-    extensionMode: 0 as unknown,
-    environmentVariableCollection: {} as unknown,
     asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
-    storageUri: mockUri,
-    storagePath: '/mock/storage',
+    environmentVariableCollection: {} as unknown,
     extension: {
-      id: 'mock-extension',
-      extensionPath: '/mock/path',
-      extensionUri: mockUri,
-      packageJSON: {},
-      isActive: true,
+      activate: async () => {},
       exports: undefined,
-      activate: async () => undefined
+      extensionPath: "/mock/path",
+      extensionUri: mockUri,
+      id: "mock-extension",
+      isActive: true,
+      packageJSON: {},
     } as unknown,
+    extensionMode: 0 as unknown,
+    extensionPath: "/mock/path",
+    extensionUri: mockUri,
+    globalState: new MockMemento(),
+    globalStoragePath: "/mock/global",
+    globalStorageUri: mockUri,
     languageModelAccessInformation: {
       models: [],
-      onDidChange: createMockEvent()
-    } as unknown
+      onDidChange: createMockEvent(),
+    } as unknown,
+    logPath: "/mock/log",
+    logUri: mockUri,
+    logsPath: "/mock/logs",
+    secrets: new MockSecretStorage(),
+    storagePath: "/mock/storage",
+    storageUri: mockUri,
+    subscriptions: [],
+    workspaceState: new MockMemento(),
+    workspaceStoragePath: "/mock/workspace",
+    workspaceStorageUri: mockUri,
   } as unknown as ExtensionContext;
 }

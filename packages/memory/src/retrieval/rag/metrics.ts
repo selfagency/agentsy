@@ -45,12 +45,12 @@ export function createRAGMetrics(): RAGMetrics {
       }
 
       return {
-        queries,
-        totalHits,
         averageLatencyMs: queries === 0 ? 0 : totalLatency / queries,
         citationCoverage: totalHits === 0 ? 0 : totalCited / totalHits,
-        sourceMix: normalizedSourceMix
+        queries,
+        sourceMix: normalizedSourceMix,
+        totalHits,
       };
-    }
+    },
   };
 }

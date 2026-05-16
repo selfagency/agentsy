@@ -1,11 +1,11 @@
 // @agentsy/session — Session persistence, serialization, and branching
 // Initial API scaffold. For broader roadmap context, see plan/MASTER-IMPLEMENTATION-PLAN.md.
 
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
 export interface ReusableSessionSegment {
   fingerprint: string;
-  reuseClass: 'hot' | 'warm' | 'cold';
+  reuseClass: "hot" | "warm" | "cold";
   invalidations: string[];
 }
 
@@ -31,37 +31,44 @@ export interface CreateSessionSnapshotInput {
   reusableSegments?: ReusableSessionSegment[];
 }
 
-export function createSessionSnapshot(input: CreateSessionSnapshotInput): SessionSnapshot {
+export function createSessionSnapshot(
+  input: CreateSessionSnapshotInput
+): SessionSnapshot {
   const inferredModelFamily =
-    input.modelFamily ?? (typeof input.values.modelFamily === 'string' ? input.values.modelFamily : undefined);
+    input.modelFamily ??
+    (typeof input.values.modelFamily === "string"
+      ? input.values.modelFamily
+      : undefined);
   const snapshotState: SessionState = {
     id: input.id,
     values: { ...input.values },
-    ...(inferredModelFamily === undefined ? {} : { modelFamily: inferredModelFamily }),
+    ...(inferredModelFamily === undefined
+      ? {}
+      : { modelFamily: inferredModelFamily }),
     ...(input.reusableSegments === undefined
       ? {}
       : {
-          reusableSegments: input.reusableSegments.map(segment => ({
+          reusableSegments: input.reusableSegments.map((segment) => ({
             fingerprint: segment.fingerprint,
+            invalidations: [...segment.invalidations],
             reuseClass: segment.reuseClass,
-            invalidations: [...segment.invalidations]
-          }))
-        })
+          })),
+        }),
   };
 
   const checksumSource = JSON.stringify({
     id: snapshotState.id,
-    values: snapshotState.values,
     modelFamily: snapshotState.modelFamily ?? null,
-    reusableSegments: snapshotState.reusableSegments ?? null
+    reusableSegments: snapshotState.reusableSegments ?? null,
+    values: snapshotState.values,
   });
 
   return {
+    checksum: `sha256:${createHash("sha256").update(checksumSource).digest("hex")}`,
+    schemaVersion: 1,
     sessionId: input.id,
-    timestamp: new Date(),
-    checksum: `sha256:${createHash('sha256').update(checksumSource).digest('hex')}`,
     state: snapshotState,
-    schemaVersion: 1
+    timestamp: new Date(),
   };
 }
 
@@ -78,7 +85,7 @@ export const createSessionStore = (state: SessionState): SessionStore => {
     getState() {
       return {
         id: state.id,
-        values: { ...values }
+        values: { ...values },
       };
     },
     getValue<T = unknown>(key: string) {
@@ -86,6 +93,6 @@ export const createSessionStore = (state: SessionState): SessionStore => {
     },
     setValue(key, value) {
       values[key] = value;
-    }
+    },
   };
 };

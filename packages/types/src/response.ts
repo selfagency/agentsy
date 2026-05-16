@@ -2,9 +2,9 @@
  * LLM response types.
  */
 
-import type { UsageInfo, NativeToolCallDelta } from './usage.js';
-import type { FinishReason } from './tool-calls.js';
-import type { StreamChunk } from './stream.js';
+import type { StreamChunk } from "./stream.js";
+import type { FinishReason } from "./tool-calls.js";
+import type { UsageInfo, NativeToolCallDelta } from "./usage.js";
 
 /**
  * Standardized non-streaming result from any LLM.
@@ -40,7 +40,7 @@ export interface CompletionResponse {
  * Standardized streaming chunk from any LLM.
  * Built on top of StreamChunk but simplifies the interface to the essential fields.
  */
-export type NormalizedChunk = Omit<StreamChunk, 'finishReason'> & {
+export type NormalizedChunk = Omit<StreamChunk, "finishReason"> & {
   /** Finish reason for generation stopping, populated on the final chunk. */
   finishReason?: FinishReason;
 };

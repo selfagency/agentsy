@@ -1,5 +1,10 @@
-import type { JsonObject, NativeToolCallDelta, ToolCallState } from '@agentsy/types';
-import { parseJson } from '../structured/index.js';
+import type {
+  JsonObject,
+  NativeToolCallDelta,
+  ToolCallState,
+} from "@agentsy/types";
+
+import { parseJson } from "../structured/index.js";
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */
 export interface NativeToolCall {
@@ -44,9 +49,15 @@ export class ToolCallAccumulator {
         existing.argumentsBuffer += delta.argumentsDelta;
       }
     } else {
-      const pending: PendingCall = { argumentsBuffer: delta.argumentsDelta ?? '' };
-      if (delta.id !== undefined) pending.id = delta.id;
-      if (delta.name !== undefined) pending.name = delta.name;
+      const pending: PendingCall = {
+        argumentsBuffer: delta.argumentsDelta ?? "",
+      };
+      if (delta.id !== undefined) {
+        pending.id = delta.id;
+      }
+      if (delta.name !== undefined) {
+        pending.name = delta.name;
+      }
       this.calls.set(delta.index, pending);
     }
   }
@@ -67,9 +78,18 @@ export class ToolCallAccumulator {
       }
       try {
         const parsed = JSON.parse(pending.argumentsBuffer);
-        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          const call: NativeToolCall = { name: pending.name, arguments: parsed as JsonObject };
-          if (pending.id !== undefined) call.id = pending.id;
+        if (
+          parsed !== null &&
+          typeof parsed === "object" &&
+          !Array.isArray(parsed)
+        ) {
+          const call: NativeToolCall = {
+            arguments: parsed as JsonObject,
+            name: pending.name,
+          };
+          if (pending.id !== undefined) {
+            call.id = pending.id;
+          }
           result.push(call);
         }
       } catch {
@@ -85,16 +105,30 @@ export class ToolCallAccumulator {
    * — call `removeCall(index)` on each one after emitting mid-stream to prevent
    * double-emission at `flush()` time.
    */
-  public getCompletedCallsWithIndices(): Array<{ index: number; call: NativeToolCall }> {
-    const result: Array<{ index: number; call: NativeToolCall }> = [];
+  public getCompletedCallsWithIndices(): {
+    index: number;
+    call: NativeToolCall;
+  }[] {
+    const result: { index: number; call: NativeToolCall }[] = [];
     for (const [index, pending] of this.calls.entries()) {
-      if (!pending.name) continue;
+      if (!pending.name) {
+        continue;
+      }
       try {
         const parsed = JSON.parse(pending.argumentsBuffer);
-        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          const call: NativeToolCall = { name: pending.name, arguments: parsed as JsonObject };
-          if (pending.id !== undefined) call.id = pending.id;
-          result.push({ index, call });
+        if (
+          parsed !== null &&
+          typeof parsed === "object" &&
+          !Array.isArray(parsed)
+        ) {
+          const call: NativeToolCall = {
+            arguments: parsed as JsonObject,
+            name: pending.name,
+          };
+          if (pending.id !== undefined) {
+            call.id = pending.id;
+          }
+          result.push({ call, index });
         }
       } catch {
         // Not yet complete.
@@ -116,12 +150,20 @@ export class ToolCallAccumulator {
    * Useful for building `tool_call_delta` OutputParts for deltas that arrive after
    * the initial header delta (which carries the name/id).
    */
-  public getPendingCallInfo(index: number): { name?: string; id?: string } | undefined {
+  public getPendingCallInfo(
+    index: number
+  ): { name?: string; id?: string } | undefined {
     const pending = this.calls.get(index);
-    if (pending === undefined) return undefined;
+    if (pending === undefined) {
+      return undefined;
+    }
     const result: { name?: string; id?: string } = {};
-    if (pending.name !== undefined) result.name = pending.name;
-    if (pending.id !== undefined) result.id = pending.id;
+    if (pending.name !== undefined) {
+      result.name = pending.name;
+    }
+    if (pending.id !== undefined) {
+      result.id = pending.id;
+    }
     return result;
   }
 
@@ -135,42 +177,65 @@ export class ToolCallAccumulator {
     }
 
     if (pending.argumentsBuffer.length === 0) {
-      return 'awaiting-input';
+      return "awaiting-input";
     }
 
     try {
       const parsed = JSON.parse(pending.argumentsBuffer);
-      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        return 'input-complete';
+      if (
+        parsed !== null &&
+        typeof parsed === "object" &&
+        !Array.isArray(parsed)
+      ) {
+        return "input-complete";
       }
     } catch {
       // Still streaming.
     }
 
-    return 'input-streaming';
+    return "input-streaming";
   }
 
   private _flushPendingCall(pending: PendingCall): NativeToolCall | null {
-    if (!pending.name) return null;
+    if (!pending.name) {
+      return null;
+    }
 
     try {
       const parsed = JSON.parse(pending.argumentsBuffer);
-      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        const call: NativeToolCall = { name: pending.name, arguments: parsed as JsonObject };
-        if (pending.id !== undefined) call.id = pending.id;
+      if (
+        parsed !== null &&
+        typeof parsed === "object" &&
+        !Array.isArray(parsed)
+      ) {
+        const call: NativeToolCall = {
+          arguments: parsed as JsonObject,
+          name: pending.name,
+        };
+        if (pending.id !== undefined) {
+          call.id = pending.id;
+        }
         return call;
       }
     } catch {
       // Fall through to repair.
     }
 
-    const repaired = parseJson(pending.argumentsBuffer, { repairIncomplete: true });
+    const repaired = parseJson(pending.argumentsBuffer, {
+      repairIncomplete: true,
+    });
     const flushedCall: NativeToolCall = {
-      name: pending.name,
       arguments:
-        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired) ? (repaired as JsonObject) : {}
+        repaired !== null &&
+        typeof repaired === "object" &&
+        !Array.isArray(repaired)
+          ? (repaired as JsonObject)
+          : {},
+      name: pending.name,
     };
-    if (pending.id !== undefined) flushedCall.id = pending.id;
+    if (pending.id !== undefined) {
+      flushedCall.id = pending.id;
+    }
     return flushedCall;
   }
 
@@ -191,7 +256,9 @@ export class ToolCallAccumulator {
     const result: NativeToolCall[] = [];
     for (const pending of this.calls.values()) {
       const call = this._flushPendingCall(pending);
-      if (call !== null) result.push(call);
+      if (call !== null) {
+        result.push(call);
+      }
     }
     this.calls.clear();
     return result;
@@ -201,12 +268,12 @@ export class ToolCallAccumulator {
    * Like `flush()`, but preserves each call's accumulator index for consumers
    * that need stable synthetic IDs derived from index.
    */
-  public flushWithIndices(): Array<{ index: number; call: NativeToolCall }> {
-    const result: Array<{ index: number; call: NativeToolCall }> = [];
+  public flushWithIndices(): { index: number; call: NativeToolCall }[] {
+    const result: { index: number; call: NativeToolCall }[] = [];
     for (const [index, pending] of this.calls.entries()) {
       const call = this._flushPendingCall(pending);
       if (call !== null) {
-        result.push({ index, call });
+        result.push({ call, index });
       }
     }
     this.calls.clear();

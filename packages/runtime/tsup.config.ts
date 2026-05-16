@@ -1,11 +1,11 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/ag-ui/index.ts'],
-  format: ['esm', 'cjs'],
-  dts: true,
-  sourcemap: true,
   clean: true,
+  dts: true,
+  entry: ["src/index.ts", "src/ag-ui/index.ts"],
+  format: ["esm", "cjs"],
+  sourcemap: true,
   splitting: false,
-  target: 'es2022'
+  target: "es2022",
 });

@@ -1,7 +1,8 @@
 // fallow-ignore-file unused-file
 
-import { expect } from 'vitest';
-import type { NormalizerResult } from './types.js';
+import { expect } from "vitest";
+
+import type { NormalizerResult } from "./types.js";
 
 /**
  * Test helper for normalizer finish reason mappings.
@@ -10,7 +11,11 @@ import type { NormalizerResult } from './types.js';
 export function createFinishReasonTest(
   normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
   createInput: (finishReason: string | null) => Record<string, unknown>,
-  testCases: Array<{ input: string | null; expectedFinishReason: string | undefined; expectedDone: boolean }>
+  testCases: {
+    input: string | null;
+    expectedFinishReason: string | undefined;
+    expectedDone: boolean;
+  }[]
 ): void {
   for (const { input, expectedFinishReason, expectedDone } of testCases) {
     const result = normalizer(createInput(input));
@@ -26,11 +31,13 @@ export function createFinishReasonTest(
 export function testContentMapping(
   normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
   setupInput: (content: string) => Record<string, unknown>,
-  expectedField: 'content' | 'thinking',
+  expectedField: "content" | "thinking",
   expectedValue: string
 ): void {
   const result = normalizer(setupInput(expectedValue));
-  expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(expectedValue);
+  expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(
+    expectedValue
+  );
   expect(result?.chunk.done).toBeFalsy();
 }
 

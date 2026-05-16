@@ -1,5 +1,6 @@
-import { createLocalEmbeddingEngine, type LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
-import type { MemoryScope } from '../scope/scope-manager.js';
+import type { MemoryScope } from "../scope/scope-manager.js";
+import { createLocalEmbeddingEngine } from "../wiki/local-embedding-engine.js";
+import type { LocalEmbeddingEngine } from "../wiki/local-embedding-engine.js";
 
 export interface MemorySearchRecord {
   id: string;
@@ -41,16 +42,19 @@ function normalizeQueryTerms(query: string): string[] {
   return query
     .toLowerCase()
     .split(/\s+/u)
-    .map(item => item.trim())
+    .map((item) => item.trim())
     .filter(Boolean);
 }
 
-function lexicalScore(queryTerms: string[], record: MemorySearchRecord): number {
+function lexicalScore(
+  queryTerms: string[],
+  record: MemorySearchRecord
+): number {
   if (queryTerms.length === 0) {
     return 0;
   }
 
-  const haystack = `${record.title ?? ''}\n${record.content}`.toLowerCase();
+  const haystack = `${record.title ?? ""}\n${record.content}`.toLowerCase();
   let hits = 0;
   for (const term of queryTerms) {
     if (haystack.includes(term)) {
@@ -92,7 +96,11 @@ function temporalScore(record: MemorySearchRecord, now: Date): number {
   return 1 / (1 + ageHours / 24);
 }
 
-function weightedScore(semantic: number, lexical: number, temporal: number): number {
+function weightedScore(
+  semantic: number,
+  lexical: number,
+  temporal: number
+): number {
   return semantic * 0.45 + lexical * 0.4 + temporal * 0.15;
 }
 
@@ -104,29 +112,28 @@ function cloneRecord(record: MemorySearchRecord): MemorySearchRecord {
     ...(record.title === undefined ? {} : { title: record.title }),
     ...(record.tags === undefined ? {} : { tags: [...record.tags] }),
     createdAt: new Date(record.createdAt),
-    ...(record.updatedAt === undefined ? {} : { updatedAt: new Date(record.updatedAt) })
+    ...(record.updatedAt === undefined
+      ? {}
+      : { updatedAt: new Date(record.updatedAt) }),
   };
 }
 
-export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): MemoryRetriever {
-  const embeddingEngine = options.embeddingEngine ?? createLocalEmbeddingEngine({ dimensions: 64 });
+export function createMemoryRetriever(
+  options: MemoryRetrieverOptions = {}
+): MemoryRetriever {
+  const embeddingEngine =
+    options.embeddingEngine ?? createLocalEmbeddingEngine({ dimensions: 64 });
   const records = new Map<string, MemorySearchRecord>();
   const embeddings = new Map<string, number[]>();
 
   return {
-    upsert(record) {
-      const normalized = cloneRecord(record);
-      records.set(record.id, normalized);
-      embeddings.set(record.id, embeddingEngine.embed(`${normalized.title ?? ''}\n${normalized.content}`));
+    list() {
+      return [...records.values()].map(cloneRecord);
     },
 
     remove(recordId) {
       records.delete(recordId);
       embeddings.delete(recordId);
-    },
-
-    list() {
-      return [...records.values()].map(cloneRecord);
     },
 
     async search(input) {
@@ -135,12 +142,16 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
       const now = input.now ?? new Date();
       const limit = Math.max(1, input.limit ?? 8);
 
-      const candidates = [...records.values()].filter(record => {
+      const candidates = [...records.values()].filter((record) => {
         if (input.scope && record.scope !== input.scope) {
           return false;
         }
 
-        if (input.actorId && options.canReadScope && !options.canReadScope(input.actorId, record.scope)) {
+        if (
+          input.actorId &&
+          options.canReadScope &&
+          !options.canReadScope(input.actorId, record.scope)
+        ) {
           return false;
         }
 
@@ -148,7 +159,7 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
       });
 
       return candidates
-        .map(record => {
+        .map((record) => {
           const embedding = embeddings.get(record.id) ?? [];
           const semantic = cosineSimilarity(queryEmbedding, embedding);
           const lexical = lexicalScore(queryTerms, record);
@@ -158,17 +169,28 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
           const reasons = [
             `semantic:${semantic.toFixed(3)}`,
             `lexical:${lexical.toFixed(3)}`,
-            `temporal:${temporal.toFixed(3)}`
+            `temporal:${temporal.toFixed(3)}`,
           ];
 
           return {
+            reasons,
             record: cloneRecord(record),
             score,
-            reasons
           };
         })
-        .sort((left, right) => right.score - left.score)
+        .toSorted((left, right) => right.score - left.score)
         .slice(0, limit);
-    }
+    },
+
+    upsert(record) {
+      const normalized = cloneRecord(record);
+      records.set(record.id, normalized);
+      embeddings.set(
+        record.id,
+        embeddingEngine.embed(
+          `${normalized.title ?? ""}\n${normalized.content}`
+        )
+      );
+    },
   };
 }

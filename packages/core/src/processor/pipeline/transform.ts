@@ -1,4 +1,4 @@
-import type { OutputPart } from '../processor/LLMStreamProcessor.js';
+import type { OutputPart } from "../processor/LLMStreamProcessor.js";
 
 /**
  * A `TransformStream` that accepts and emits `OutputPart` values.
@@ -15,13 +15,16 @@ export type PipelineTransform = TransformStream<OutputPart, OutputPart>;
  * @param options.chunkSize - Maximum characters per emitted text chunk (default: 8).
  * @param options.delayMs - Optional delay in milliseconds between emitted sub-chunks (default: 0).
  */
-export function createSmoothStream(options?: { chunkSize?: number; delayMs?: number }): PipelineTransform {
+export function createSmoothStream(options?: {
+  chunkSize?: number;
+  delayMs?: number;
+}): PipelineTransform {
   const chunkSize = Math.max(1, options?.chunkSize ?? 8);
   const delayMs = Math.max(0, options?.delayMs ?? 0);
 
   return new TransformStream<OutputPart, OutputPart>({
     async transform(part, controller) {
-      if (part.type !== 'text') {
+      if (part.type !== "text") {
         controller.enqueue(part);
         return;
       }
@@ -29,14 +32,17 @@ export function createSmoothStream(options?: { chunkSize?: number; delayMs?: num
       let offset = 0;
       while (offset < text.length) {
         if (delayMs > 0 && offset > 0) {
-          await new Promise(resolve => {
+          await new Promise((resolve) => {
             setTimeout(resolve, delayMs);
           });
         }
-        controller.enqueue({ type: 'text', text: text.slice(offset, offset + chunkSize) });
+        controller.enqueue({
+          text: text.slice(offset, offset + chunkSize),
+          type: "text",
+        });
         offset += chunkSize;
       }
-    }
+    },
   });
 }
 
@@ -49,10 +55,10 @@ export function createSmoothStream(options?: { chunkSize?: number; delayMs?: num
 export function createThinkingFilter(): PipelineTransform {
   return new TransformStream<OutputPart, OutputPart>({
     transform(part, controller) {
-      if (part.type !== 'thinking') {
+      if (part.type !== "thinking") {
         controller.enqueue(part);
       }
-    }
+    },
   });
 }
 
@@ -70,10 +76,10 @@ export function createToolCallFilter(toolNames: string[]): PipelineTransform {
 
   return new TransformStream<OutputPart, OutputPart>({
     transform(part, controller) {
-      if (part.type === 'tool_call' && !allowed.has(part.call.name)) {
+      if (part.type === "tool_call" && !allowed.has(part.call.name)) {
         return;
       }
       controller.enqueue(part);
-    }
+    },
   });
 }

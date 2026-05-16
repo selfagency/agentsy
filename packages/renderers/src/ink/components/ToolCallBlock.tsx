@@ -1,6 +1,7 @@
-import { Text } from 'ink';
-import { useEffect, useState } from 'react';
-import type { Theme } from '../themes/types.js';
+import { Text } from "ink";
+import { useEffect, useState } from "react";
+
+import type { Theme } from "../themes/types.js";
 
 interface ToolCallBlockProps {
   readonly call: {
@@ -13,9 +14,13 @@ interface ToolCallBlockProps {
   readonly screenReader?: boolean;
 }
 
-const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
-export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlockProps) {
+export function ToolCallBlock({
+  call,
+  theme,
+  screenReader = false,
+}: ToolCallBlockProps) {
   const [frame, setFrame] = useState(0);
   const spinnerInterval = theme.toolCall.spinnerIntervalMs ?? 80;
 
@@ -24,7 +29,7 @@ export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlo
   useEffect(() => {
     if (!call.done && shouldAnimate) {
       const interval = setInterval(() => {
-        setFrame(f => (f + 1) % spinnerFrames.length);
+        setFrame((f) => (f + 1) % spinnerFrames.length);
       }, spinnerInterval);
       return () => clearInterval(interval);
     }
@@ -46,7 +51,9 @@ export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlo
     return <Text>Calling: {call.name}(...)</Text>;
   }
 
-  const symbol = shouldAnimate ? (spinnerFrames.at(frame) ?? '⠋') : theme.toolCall.pendingSymbol;
+  const symbol = shouldAnimate
+    ? (spinnerFrames.at(frame) ?? "⠋")
+    : theme.toolCall.pendingSymbol;
   const pendingColor = theme.toolCall.pendingColor || undefined;
   return (
     <Text {...(pendingColor ? { color: pendingColor } : {})}>

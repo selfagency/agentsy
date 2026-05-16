@@ -233,7 +233,9 @@ export interface UniversalClient {
   stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>>;
 }
 
-export function createUniversalClient(config: UniversalClientConfig): UniversalClient;
+export function createUniversalClient(
+  config: UniversalClientConfig
+): UniversalClient;
 ```
 
 ### LLMStreamProcessor
@@ -360,23 +362,23 @@ Stale map entries are informational only and must not drive new package creation
 interface MemoryCompressionArchitecture {
   // Command-based compression
   compression: {
-    command: 'caveman-compress FILEPATH for memory files';
-    preservation: 'Byte-level preservation of code/URLs/paths';
-    reduction: '46% average reduction (36-60% range)';
+    command: "caveman-compress FILEPATH for memory files";
+    preservation: "Byte-level preservation of code/URLs/paths";
+    reduction: "46% average reduction (36-60% range)";
   };
 
   // Context integration
   context: {
-    targetFiles: ['CLAUDE.md', 'project-notes.md', 'preferences.md'];
-    validation: 'Byte-level structure data preservation';
-    reversible: 'Original files preserved as .original.md backup';
+    targetFiles: ["CLAUDE.md", "project-notes.md", "preferences.md"];
+    validation: "Byte-level structure data preservation";
+    reversible: "Original files preserved as .original.md backup";
   };
 
   // Expected benefits
   benefits: {
-    cost: '46% context token cost reduction';
-    efficiency: 'Longer effective context windows';
-    accuracy: '100% technical accuracy maintained';
+    cost: "46% context token cost reduction";
+    efficiency: "Longer effective context windows";
+    accuracy: "100% technical accuracy maintained";
   };
 }
 ```
@@ -414,23 +416,23 @@ interface MemoryCompressionArchitecture {
 interface CoreCoordinationArchitecture {
   // honker pub/sub for streaming coordination
   pubSub: {
-    channels: ['stream-start', 'stream-error', 'coordination-events'];
-    latency: '1-5ms for cross-process streaming coordination';
-    reliability: 'Atomic operations prevent lost streams';
+    channels: ["stream-start", "stream-error", "coordination-events"];
+    latency: "1-5ms for cross-process streaming coordination";
+    reliability: "Atomic operations prevent lost streams";
   };
 
   // Integration with streaming layers
   integration: {
-    sse: 'SSE parsing coordination across processes';
-    normalization: 'Normalizer coordination and updates';
-    processor: 'Processor state synchronization';
+    sse: "SSE parsing coordination across processes";
+    normalization: "Normalizer coordination and updates";
+    processor: "Processor state synchronization";
   };
 
   // Expected benefits
   benefits: {
-    latency: 'Near-instant coordination vs current polling';
-    reliability: 'Atomic stream operations prevent failures';
-    efficiency: 'Zero-downtime streaming coordination';
+    latency: "Near-instant coordination vs current polling";
+    reliability: "Atomic stream operations prevent failures";
+    efficiency: "Zero-downtime streaming coordination";
   };
 }
 ```
@@ -450,23 +452,23 @@ interface CoreCoordinationArchitecture {
 interface ContextManagement {
   // Automatic triggers
   triggers: {
-    compression: 'Automatic compression when approaching limits';
-    monitoring: 'Continuous context window monitoring';
-    optimization: 'Token budget optimization';
+    compression: "Automatic compression when approaching limits";
+    monitoring: "Continuous context window monitoring";
+    optimization: "Token budget optimization";
   };
 
   // Compression integration
   integration: {
-    memoryFiles: 'Memory file compression for context reduction';
-    streaming: 'Stream compression for output reduction';
-    combined: 'Combined 60% token cost reduction (output + memory)';
+    memoryFiles: "Memory file compression for context reduction";
+    streaming: "Stream compression for output reduction";
+    combined: "Combined 60% token cost reduction (output + memory)";
   };
 
   // Monitoring and optimization
   monitoring: {
-    metrics: 'Context window usage tracking';
-    alerts: 'Approaching limit warnings';
-    optimization: 'Proactive optimization suggestions';
+    metrics: "Context window usage tracking";
+    alerts: "Approaching limit warnings";
+    optimization: "Proactive optimization suggestions";
   };
 }
 ```

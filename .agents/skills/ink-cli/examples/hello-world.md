@@ -8,23 +8,23 @@ Basic Ink CLI application structure.
 
 ```json
 {
-	"name": "hello-ink",
-	"version": "1.0.0",
-	"type": "module",
-	"bin": "dist/cli.js",
-	"scripts": {
-		"build": "tsc",
-		"dev": "tsc --watch",
-		"start": "node dist/cli.js"
-	},
-	"dependencies": {
-		"ink": "^4.1.0",
-		"react": "^18.2.0"
-	},
-	"devDependencies": {
-		"@types/react": "^18.0.32",
-		"typescript": "^5.0.0"
-	}
+  "name": "hello-ink",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": "dist/cli.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "ink": "^4.1.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.32",
+    "typescript": "^5.0.0"
+  }
 }
 ```
 
@@ -32,19 +32,19 @@ Basic Ink CLI application structure.
 
 ```json
 {
-	"compilerOptions": {
-		"target": "ES2022",
-		"module": "Node16",
-		"lib": ["ES2022"],
-		"moduleResolution": "Node16",
-		"esModuleInterop": true,
-		"strict": true,
-		"outDir": "dist",
-		"rootDir": "source",
-		"jsx": "react-jsx",
-		"skipLibCheck": true
-	},
-	"include": ["source"]
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "lib": ["ES2022"],
+    "moduleResolution": "Node16",
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "dist",
+    "rootDir": "source",
+    "jsx": "react-jsx",
+    "skipLibCheck": true
+  },
+  "include": ["source"]
 }
 ```
 
@@ -52,9 +52,9 @@ Basic Ink CLI application structure.
 
 ```tsx
 #!/usr/bin/env node
-import React from 'react';
-import {render} from 'ink';
-import App from './app.js';
+import React from "react";
+import { render } from "ink";
+import App from "./app.js";
 
 render(<App />);
 ```
@@ -62,15 +62,15 @@ render(<App />);
 **source/app.tsx:**
 
 ```tsx
-import React from 'react';
-import {Box, Text} from 'ink';
+import React from "react";
+import { Box, Text } from "ink";
 
 export default function App() {
-	return (
-		<Box>
-			<Text color="green">Hello, World!</Text>
-		</Box>
-	);
+  return (
+    <Box>
+      <Text color="green">Hello, World!</Text>
+    </Box>
+  );
 }
 ```
 
@@ -124,18 +124,18 @@ import {Text} from 'ink';
 Add keyboard handling to exit the app:
 
 ```tsx
-import {useInput, useApp} from 'ink';
+import { useInput, useApp } from "ink";
 
 function App() {
-	const {exit} = useApp();
+  const { exit } = useApp();
 
-	useInput((input, key) => {
-		if (input === 'q' || (key.ctrl && input === 'c')) {
-			exit();
-		}
-	});
+  useInput((input, key) => {
+    if (input === "q" || (key.ctrl && input === "c")) {
+      exit();
+    }
+  });
 
-	return <Text>Press 'q' to quit</Text>;
+  return <Text>Press 'q' to quit</Text>;
 }
 ```
 
@@ -144,21 +144,21 @@ function App() {
 Demonstrating state updates:
 
 ```tsx
-import React, {useState, useEffect} from 'react';
-import {Text} from 'ink';
+import React, { useState, useEffect } from "react";
+import { Text } from "ink";
 
 function App() {
-	const [count, setCount] = useState(0);
+  const [count, setCount] = useState(0);
 
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setCount(c => c + 1);
-		}, 1000);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCount((c) => c + 1);
+    }, 1000);
 
-		return () => clearInterval(timer);
-	}, []);
+    return () => clearInterval(timer);
+  }, []);
 
-	return <Text>Count: {count}</Text>;
+  return <Text>Count: {count}</Text>;
 }
 ```
 
@@ -171,10 +171,10 @@ npm install meow
 ```
 
 ```tsx
-import meow from 'meow';
+import meow from "meow";
 
 const cli = meow(
-	`
+  `
   Usage
     $ hello-ink
 
@@ -184,15 +184,15 @@ const cli = meow(
   Examples
     $ hello-ink --name=John
 `,
-	{
-		importMeta: import.meta,
-		flags: {
-			name: {
-				type: 'string',
-				default: 'World',
-			},
-		},
-	},
+  {
+    importMeta: import.meta,
+    flags: {
+      name: {
+        type: "string",
+        default: "World",
+      },
+    },
+  }
 );
 
 render(<App name={cli.flags.name} />);
@@ -200,10 +200,10 @@ render(<App name={cli.flags.name} />);
 
 ```tsx
 interface AppProps {
-	name: string;
+  name: string;
 }
 
-export default function App({name}: AppProps) {
-	return <Text>Hello, {name}!</Text>;
+export default function App({ name }: AppProps) {
+  return <Text>Hello, {name}!</Text>;
 }
 ```

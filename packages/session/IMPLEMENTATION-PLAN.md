@@ -228,8 +228,8 @@ export interface SessionSnapshot {
 async function atomicWrite(path: string, content: string) {
   const tmpPath = `${path}.tmp`;
   await fs.writeFile(tmpPath, content);
-  const verify = await fs.readFile(tmpPath, 'utf-8');
-  if (verify !== content) throw new Error('Write verification failed');
+  const verify = await fs.readFile(tmpPath, "utf-8");
+  if (verify !== content) throw new Error("Write verification failed");
   await fs.rename(tmpPath, path);
 }
 ```
@@ -422,7 +422,9 @@ interface SessionStore {
   saveAssistant(sessionId: string, message: ModelMessage): void;
   save(sessionId: string, snapshot: StreamSnapshot): Promise<void>;
   load(sessionId: string): Promise<StreamSnapshot | null>;
-  loadAsSnapshot(sessionId: string): Promise<{ messages: ModelMessage[] } | null>;
+  loadAsSnapshot(
+    sessionId: string
+  ): Promise<{ messages: ModelMessage[] } | null>;
 }
 ```
 

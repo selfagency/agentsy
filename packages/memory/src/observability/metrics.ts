@@ -38,10 +38,11 @@ export interface MemoryMetrics {
   snapshot(): MemoryMetricsSnapshot;
 }
 
-const SECRET_REDACTION_PATTERN = /(sk_[a-z0-9_-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._-]{10,})/giu;
+const SECRET_REDACTION_PATTERN =
+  /(sk_[a-z0-9_-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._-]{10,})/giu;
 
 export function redactSecretLikeValues(value: string): string {
-  return value.replace(SECRET_REDACTION_PATTERN, '[REDACTED]');
+  return value.replace(SECRET_REDACTION_PATTERN, "[REDACTED]");
 }
 
 interface MutableCoordinationStat {
@@ -62,11 +63,20 @@ export function createMemoryMetrics(): MemoryMetrics {
   return {
     recordCoordinationLatency(operation, latencyMs) {
       const normalizedOperation = redactSecretLikeValues(operation);
-      const stat = coordination.get(normalizedOperation) ?? { count: 0, totalMs: 0, maxMs: 0 };
+      const stat = coordination.get(normalizedOperation) ?? {
+        count: 0,
+        maxMs: 0,
+        totalMs: 0,
+      };
       stat.count += 1;
       stat.totalMs += latencyMs;
       stat.maxMs = Math.max(stat.maxMs, latencyMs);
       coordination.set(normalizedOperation, stat);
+    },
+
+    recordInjection(input) {
+      injectionUsedTokens += Math.max(0, input.usedTokens);
+      injectionBudgetTokens += Math.max(0, input.budgetTokens);
     },
 
     recordRetrieval(_query, input) {
@@ -77,36 +87,40 @@ export function createMemoryMetrics(): MemoryMetrics {
       retrievalTopScoreSum += Math.max(0, Math.min(1, input.topScore ?? 0));
     },
 
-    recordInjection(input) {
-      injectionUsedTokens += Math.max(0, input.usedTokens);
-      injectionBudgetTokens += Math.max(0, input.budgetTokens);
-    },
-
     snapshot() {
       const coordinationSnapshot: Record<string, CoordinationLatencyStats> = {};
       for (const [operation, stat] of coordination.entries()) {
         coordinationSnapshot[operation] = {
-          count: stat.count,
-          totalMs: stat.totalMs,
           avgMs: stat.count === 0 ? 0 : stat.totalMs / stat.count,
-          maxMs: stat.maxMs
+          count: stat.count,
+          maxMs: stat.maxMs,
+          totalMs: stat.totalMs,
         };
       }
 
       return {
         coordination: coordinationSnapshot,
+        injection: {
+          budgetRatio:
+            injectionBudgetTokens === 0
+              ? 0
+              : injectionUsedTokens / injectionBudgetTokens,
+          budgetTokens: injectionBudgetTokens,
+          usedTokens: injectionUsedTokens,
+        },
         retrieval: {
+          averageLatencyMs:
+            retrievalQueries === 0
+              ? 0
+              : retrievalTotalLatency / retrievalQueries,
+          averageTopScore:
+            retrievalQueries === 0
+              ? 0
+              : retrievalTopScoreSum / retrievalQueries,
           queries: retrievalQueries,
           totalHits: retrievalTotalHits,
-          averageLatencyMs: retrievalQueries === 0 ? 0 : retrievalTotalLatency / retrievalQueries,
-          averageTopScore: retrievalQueries === 0 ? 0 : retrievalTopScoreSum / retrievalQueries
         },
-        injection: {
-          usedTokens: injectionUsedTokens,
-          budgetTokens: injectionBudgetTokens,
-          budgetRatio: injectionBudgetTokens === 0 ? 0 : injectionUsedTokens / injectionBudgetTokens
-        }
       };
-    }
+    },
   };
 }

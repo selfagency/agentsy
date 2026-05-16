@@ -1,99 +1,121 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import { createBackupManager } from './backup-manager.js';
-import type { SyncRecord } from './types.js';
+import { createBackupManager } from "./backup-manager.js";
+import type { SyncRecord } from "./types.js";
 
 function createState(records: SyncRecord[]) {
   return {
-    cursor: 'cursor-1',
-    records
+    cursor: "cursor-1",
+    records,
   };
 }
 
-describe('createBackupManager', () => {
-  it('creates and verifies snapshots', async () => {
+describe(createBackupManager, () => {
+  it("creates and verifies snapshots", async () => {
     const state = createState([
-      { id: 'record-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'value-1' }
+      {
+        content: "value-1",
+        id: "record-1",
+        tier: "wiki",
+        updatedAt: "2026-05-15T00:00:00.000Z",
+      },
     ]);
     const manager = createBackupManager({
-      databaseId: 'agentsy-memory',
-      schemaVersion: 1,
+      applySnapshot: async () => {},
+      databaseId: "agentsy-memory",
       getCurrentState: async () => state,
-      applySnapshot: async () => {}
+      schemaVersion: 1,
     });
 
     const snapshot = await manager.createSnapshot();
 
-    expect(await manager.verifySnapshot(snapshot.id)).toBe(true);
+    await expect(manager.verifySnapshot(snapshot.id)).resolves.toBeTruthy();
     expect(snapshot.recordCount).toBe(1);
   });
 
-  it('requires explicit force for mismatched restore targets', async () => {
+  it("requires explicit force for mismatched restore targets", async () => {
     let restored = createState([]);
     const initial = createState([
-      { id: 'record-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'value-1' }
+      {
+        content: "value-1",
+        id: "record-1",
+        tier: "wiki",
+        updatedAt: "2026-05-15T00:00:00.000Z",
+      },
     ]);
     const manager = createBackupManager({
-      databaseId: 'agentsy-memory',
-      schemaVersion: 1,
-      getCurrentState: async () => initial,
-      applySnapshot: async snapshot => {
+      applySnapshot: async (snapshot) => {
         restored = snapshot;
-      }
+      },
+      databaseId: "agentsy-memory",
+      getCurrentState: async () => initial,
+      schemaVersion: 1,
     });
 
     const snapshot = await manager.createSnapshot();
 
     await expect(
       manager.restoreSnapshot(snapshot.id, {
-        targetDatabaseId: 'other-memory',
-        schemaVersion: 1
+        schemaVersion: 1,
+        targetDatabaseId: "other-memory",
       })
     ).rejects.toThrow(/target database identity/u);
 
     await expect(
       manager.restoreSnapshot(snapshot.id, {
-        targetDatabaseId: 'other-memory',
+        force: true,
         schemaVersion: 1,
-        force: true
+        targetDatabaseId: "other-memory",
       })
     ).resolves.toMatchObject({
+      restoredCount: 1,
       snapshotId: snapshot.id,
-      restoredCount: 1
     });
     expect(restored.records).toHaveLength(1);
   });
 
-  it('creates rollback restore points', async () => {
+  it("creates rollback restore points", async () => {
     let current = createState([
-      { id: 'record-old', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'old' }
+      {
+        content: "old",
+        id: "record-old",
+        tier: "wiki",
+        updatedAt: "2026-05-15T00:00:00.000Z",
+      },
     ]);
     const manager = createBackupManager({
-      databaseId: 'agentsy-memory',
-      schemaVersion: 1,
-      getCurrentState: async () => current,
-      applySnapshot: async snapshot => {
+      applySnapshot: async (snapshot) => {
         current = snapshot;
-      }
+      },
+      databaseId: "agentsy-memory",
+      getCurrentState: async () => current,
+      schemaVersion: 1,
     });
 
     const freshSnapshot = await manager.createSnapshot();
-    current = createState([{ id: 'record-new', tier: 'wiki', updatedAt: '2026-05-16T00:00:00.000Z', content: 'new' }]);
+    current = createState([
+      {
+        content: "new",
+        id: "record-new",
+        tier: "wiki",
+        updatedAt: "2026-05-16T00:00:00.000Z",
+      },
+    ]);
 
     const restore = await manager.restoreSnapshot(freshSnapshot.id, {
-      targetDatabaseId: 'agentsy-memory',
-      schemaVersion: 1
+      schemaVersion: 1,
+      targetDatabaseId: "agentsy-memory",
     });
-    const rollbackSnapshotId = restore.rollbackSnapshotId;
+    const { rollbackSnapshotId } = restore;
 
-    expect(current.records[0]?.id).toBe('record-old');
+    expect(current.records[0]?.id).toBe("record-old");
     expect(rollbackSnapshotId).toBeDefined();
 
     if (!rollbackSnapshotId) {
-      throw new Error('Expected restore to include rollback snapshot id');
+      throw new Error("Expected restore to include rollback snapshot id");
     }
 
     await manager.rollback(rollbackSnapshotId);
-    expect(current.records[0]?.id).toBe('record-new');
+    expect(current.records[0]?.id).toBe("record-new");
   });
 });

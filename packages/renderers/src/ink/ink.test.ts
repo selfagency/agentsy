@@ -1,33 +1,36 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createInkRenderer } from './createInkRenderer.js';
+import { LLMStreamProcessor } from "@agentsy/core/processor";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  expectTypeOf,
+} from "vitest";
+
+import { createInkRenderer } from "./createInkRenderer.js";
 
 // Mock cli-markdown for consistent ANSI output in tests
-vi.mock('cli-markdown', () => ({
-  default: vi.fn((markdown: string) => {
-    // Simple mock: wrap markdown text with brackets to simulate formatting
-    return `[ANSI:${markdown}]`;
-  })
+vi.mock(import("cli-markdown"), () => ({
+  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`),
 }));
 
 // Mock Ink's render to avoid terminal setup in test environment
-vi.mock('ink', async () => {
-  const actual = await vi.importActual<typeof import('ink')>('ink');
+vi.mock(import("ink"), async () => {
+  const actual = await vi.importActual<typeof import("ink")>("ink");
   return {
     ...actual,
-    render: vi.fn((_component: React.ReactElement) => {
-      // Return a mock instance without invoking terminal setup
-      return {
-        lastFrame: () => '[mock frame]',
-        rerender: vi.fn(),
-        clear: vi.fn(),
-        unmount: vi.fn()
-      };
-    })
+    render: vi.fn((_component: React.ReactElement) => ({
+      clear: vi.fn(),
+      lastFrame: () => "[mock frame]",
+      rerender: vi.fn(),
+      unmount: vi.fn(),
+    })),
   };
 });
 
-describe('Ink Renderer', () => {
+describe("Ink Renderer", () => {
   let processor: LLMStreamProcessor;
   let onWarning: (message: string, context?: Record<string, unknown>) => void;
   let onFinish: () => void;
@@ -37,10 +40,10 @@ describe('Ink Renderer', () => {
     onWarning = vi.fn();
     onFinish = vi.fn();
     processor = new LLMStreamProcessor({
+      enforcePrivacyTags: true,
+      onWarning,
       parseThinkTags: true,
       scrubContextTags: true,
-      enforcePrivacyTags: true,
-      onWarning
     });
   });
 
@@ -48,66 +51,66 @@ describe('Ink Renderer', () => {
     vi.clearAllMocks();
   });
 
-  it('creates a renderer with processor', async () => {
+  it("creates a renderer with processor", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
     expect(renderer).toBeDefined();
     expect(renderer.instance).toBeDefined();
-    expect(typeof renderer.unmount).toBe('function');
-    expect(typeof renderer.write).toBe('function');
-    expect(typeof renderer.end).toBe('function');
+    expectTypeOf(renderer.unmount).toBeFunction();
+    expectTypeOf(renderer.write).toBeFunction();
+    expectTypeOf(renderer.end).toBeFunction();
 
     renderer.unmount();
   });
 
-  it('handles text chunks from processor', async () => {
+  it("handles text chunks from processor", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
-    processor.process({ content: 'Hello ' });
-    processor.process({ content: 'World' });
+    processor.process({ content: "Hello " });
+    processor.process({ content: "World" });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith();
 
     renderer.unmount();
   });
 
-  it('processes thinking tags when parseThinkTags is enabled', async () => {
+  it("processes thinking tags when parseThinkTags is enabled", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
+      onWarning,
+      processor,
       showThinking: true,
-      thinkingStyle: 'blockquote'
+      thinkingStyle: "blockquote",
     });
 
-    processor.process({ content: '<thinking>Deep thought</thinking>' });
-    processor.process({ content: 'Main text' });
+    processor.process({ content: "<thinking>Deep thought</thinking>" });
+    processor.process({ content: "Main text" });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith();
 
     renderer.unmount();
   });
 
-  it('respects thinkingStyle: blockquote', async () => {
+  it("respects thinkingStyle: blockquote", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
+      onWarning,
+      processor,
       showThinking: true,
-      thinkingStyle: 'blockquote'
+      thinkingStyle: "blockquote",
     });
 
-    processor.process({ content: '<thinking>Blockquote thought</thinking>' });
+    processor.process({ content: "<thinking>Blockquote thought</thinking>" });
     processor.process({ done: true });
 
     // If no error, the blockquote style is being handled correctly
@@ -116,16 +119,16 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('respects thinkingStyle: inline', async () => {
+  it("respects thinkingStyle: inline", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
+      onWarning,
+      processor,
       showThinking: true,
-      thinkingStyle: 'inline'
+      thinkingStyle: "inline",
     });
 
-    processor.process({ content: '<thinking>Inline thought</thinking>' });
+    processor.process({ content: "<thinking>Inline thought</thinking>" });
     processor.process({ done: true });
 
     expect(renderer.instance).toBeDefined();
@@ -133,17 +136,17 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('respects thinkingStyle: suppress', async () => {
+  it("respects thinkingStyle: suppress", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
+      onWarning,
+      processor,
       showThinking: true,
-      thinkingStyle: 'suppress'
+      thinkingStyle: "suppress",
     });
 
-    processor.process({ content: '<thinking>Hidden thought</thinking>' });
-    processor.process({ content: 'Main text' });
+    processor.process({ content: "<thinking>Hidden thought</thinking>" });
+    processor.process({ content: "Main text" });
     processor.process({ done: true });
 
     expect(renderer.instance).toBeDefined();
@@ -151,15 +154,15 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('shows tool calls when showToolCalls is true', async () => {
+  it("shows tool calls when showToolCalls is true", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
-      showToolCalls: true
+      onWarning,
+      processor,
+      showToolCalls: true,
     });
 
-    processor.process({ content: 'Calling search' });
+    processor.process({ content: "Calling search" });
     processor.process({ done: true });
 
     expect(renderer.instance).toBeDefined();
@@ -167,15 +170,15 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('hides tool calls when showToolCalls is false', async () => {
+  it("hides tool calls when showToolCalls is false", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
-      showToolCalls: false
+      onWarning,
+      processor,
+      showToolCalls: false,
     });
 
-    processor.process({ content: 'Calling search' });
+    processor.process({ content: "Calling search" });
     processor.process({ done: true });
 
     expect(renderer.instance).toBeDefined();
@@ -183,15 +186,15 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('handles markdown: false option', async () => {
+  it("handles markdown: false option", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
+      markdown: false,
       onFinish,
-      markdown: false
+      onWarning,
+      processor,
     });
 
-    processor.process({ content: '# Heading\n**bold**' });
+    processor.process({ content: "# Heading\n**bold**" });
     processor.process({ done: true });
 
     expect(renderer.instance).toBeDefined();
@@ -199,14 +202,14 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('handle.end() sets isStreaming to false', async () => {
+  it("handle.end() sets isStreaming to false", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
-    processor.process({ content: 'Content' });
+    processor.process({ content: "Content" });
 
     // Call handle's end() method
     renderer.end();
@@ -216,47 +219,47 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('handle.write() is a no-op (event-driven)', async () => {
+  it("handle.write() is a no-op (event-driven)", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
     // write() should not throw or cause issues
-    renderer.write('This is ignored');
-    processor.process({ content: 'This comes from processor' });
+    renderer.write("This is ignored");
+    processor.process({ content: "This comes from processor" });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith();
 
     renderer.unmount();
   });
 
-  it('calls onFinish callback when processor ends', async () => {
+  it("calls onFinish callback when processor ends", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
-    processor.process({ content: 'Text' });
+    processor.process({ content: "Text" });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith();
 
     renderer.unmount();
   });
 
-  it('calls onWarning on processor warnings', async () => {
+  it("calls onWarning on processor warnings", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
     // Processor will emit warning for certain conditions
-    processor.process({ content: '' });
+    processor.process({ content: "" });
     processor.process({ done: true });
 
     // At minimum, renderer shouldn't error
@@ -265,32 +268,32 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('combines thinking, tool calls, and text', async () => {
+  it("combines thinking, tool calls, and text", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
+      onWarning,
+      processor,
       showThinking: true,
-      thinkingStyle: 'blockquote',
-      showToolCalls: true
+      showToolCalls: true,
+      thinkingStyle: "blockquote",
     });
 
-    processor.process({ content: '<thinking>Planning...</thinking>' });
-    processor.process({ content: '\nResult is 42' });
+    processor.process({ content: "<thinking>Planning...</thinking>" });
+    processor.process({ content: "\nResult is 42" });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith();
 
     renderer.unmount();
   });
 
-  it('renders with default options', async () => {
+  it("renders with default options", async () => {
     const renderer = await createInkRenderer({
+      onWarning,
       processor,
-      onWarning
     });
 
-    processor.process({ content: 'Default rendering' });
+    processor.process({ content: "Default rendering" });
     processor.process({ done: true });
 
     expect(renderer.instance).toBeDefined();
@@ -298,46 +301,46 @@ describe('Ink Renderer', () => {
     renderer.unmount();
   });
 
-  it('handles empty write sequence', async () => {
+  it("handles empty write sequence", async () => {
     const renderer = await createInkRenderer({
-      processor,
-      onWarning,
-      onFinish
-    });
-
-    processor.process({ done: true });
-
-    expect(onFinish).toHaveBeenCalled();
-
-    renderer.unmount();
-  });
-
-  it('handles multiple text chunks', async () => {
-    const renderer = await createInkRenderer({
-      processor,
-      onWarning,
       onFinish,
-      markdown: false
+      onWarning,
+      processor,
     });
 
-    processor.process({ content: 'Chunk 1\n' });
-    processor.process({ content: 'Chunk 2\n' });
-    processor.process({ content: 'Chunk 3' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith();
 
     renderer.unmount();
   });
 
-  it('unmount() cleanly closes renderer', async () => {
+  it("handles multiple text chunks", async () => {
     const renderer = await createInkRenderer({
-      processor,
+      markdown: false,
+      onFinish,
       onWarning,
-      onFinish
+      processor,
     });
 
-    processor.process({ content: 'Text' });
+    processor.process({ content: "Chunk 1\n" });
+    processor.process({ content: "Chunk 2\n" });
+    processor.process({ content: "Chunk 3" });
+    processor.process({ done: true });
+
+    expect(onFinish).toHaveBeenCalledWith();
+
+    renderer.unmount();
+  });
+
+  it("unmount() cleanly closes renderer", async () => {
+    const renderer = await createInkRenderer({
+      onFinish,
+      onWarning,
+      processor,
+    });
+
+    processor.process({ content: "Text" });
 
     // Unmount should not throw
     expect(() => {
@@ -345,73 +348,82 @@ describe('Ink Renderer', () => {
     }).not.toThrow();
   });
 
-  describe('Theme Resolution', () => {
+  describe("Theme Resolution", () => {
     const themeNames = [
-      'default',
-      'dark',
-      'light',
-      'minimal',
-      'dracula',
-      'catppuccin-mocha',
-      'catppuccin-latte',
-      'catppuccin-macchiato',
-      'catppuccin-frappe',
-      'ayu-mirage',
-      'houston',
-      'one-dark',
-      'one-candy',
-      'github-dark'
+      "default",
+      "dark",
+      "light",
+      "minimal",
+      "dracula",
+      "catppuccin-mocha",
+      "catppuccin-latte",
+      "catppuccin-macchiato",
+      "catppuccin-frappe",
+      "ayu-mirage",
+      "houston",
+      "one-dark",
+      "one-candy",
+      "github-dark",
     ] as const;
 
-    it.each(themeNames)('resolves %s theme correctly', async themeName => {
+    it.each(themeNames)("resolves %s theme correctly", async (themeName) => {
       const renderer = await createInkRenderer({
-        processor,
-        onWarning,
         onFinish,
-        theme: themeName
+        onWarning,
+        processor,
+        theme: themeName,
       });
 
-      processor.process({ content: 'Test content' });
+      processor.process({ content: "Test content" });
       processor.process({ done: true });
 
-      expect(onFinish).toHaveBeenCalled();
+      expect(onFinish).toHaveBeenCalledWith();
       expect(renderer.instance).toBeDefined();
 
       renderer.unmount();
     });
 
-    it('resolves all theme names without throwing', async () => {
-      const { resolveTheme } = await import('./themes/index.js');
+    it("resolves all theme names without throwing", async () => {
+      const { resolveTheme } = await import("./themes/index.js");
 
       expect(() => {
         for (const themeName of themeNames) {
           const theme = resolveTheme(themeName);
           expect(theme).toBeDefined();
-          expect(theme).toHaveProperty('thinking');
-          expect(theme).toHaveProperty('toolCall');
-          expect(theme).toHaveProperty('text');
-          expect(theme).toHaveProperty('border');
-          expect(theme).toHaveProperty('highlight');
+          expect(theme).toHaveProperty("thinking");
+          expect(theme).toHaveProperty("toolCall");
+          expect(theme).toHaveProperty("text");
+          expect(theme).toHaveProperty("border");
+          expect(theme).toHaveProperty("highlight");
         }
       }).not.toThrow();
     });
 
-    it('returns default theme for undefined', async () => {
-      const { resolveTheme } = await import('./themes/index.js');
-      const { defaultTheme } = await import('./themes/index.js');
+    it("returns default theme for undefined", async () => {
+      const { resolveTheme } = await import("./themes/index.js");
+      const { defaultTheme } = await import("./themes/index.js");
 
       const theme = resolveTheme();
-      expect(theme).toEqual(defaultTheme);
+      expect(theme).toStrictEqual(defaultTheme);
     });
 
-    it('returns custom Theme object as-is', async () => {
-      const { resolveTheme } = await import('./themes/index.js');
+    it("returns custom Theme object as-is", async () => {
+      const { resolveTheme } = await import("./themes/index.js");
       const customTheme = {
-        thinking: { borderColor: 'magenta', textColor: 'magenta', spinnerColor: 'magenta' },
-        toolCall: { pendingColor: 'yellow', doneColor: 'green', pendingSymbol: '?', doneSymbol: '✓' },
-        text: { cursorSymbol: '|', dimColor: false },
-        border: { style: 'single' as const, color: 'gray' },
-        highlight: {}
+        border: { color: "gray", style: "single" as const },
+        highlight: {},
+        text: { cursorSymbol: "|", dimColor: false },
+        thinking: {
+          borderColor: "magenta",
+          spinnerColor: "magenta",
+          textColor: "magenta",
+        },
+        toolCall: {
+          doneColor: "green",
+          doneSymbol: "✓",
+          pendingColor: "yellow",
+          pendingSymbol: "?",
+        },
       };
 
       const theme = resolveTheme(customTheme);

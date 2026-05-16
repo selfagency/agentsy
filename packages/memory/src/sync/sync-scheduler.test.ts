@@ -1,84 +1,90 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSyncScheduler } from './sync-scheduler.js';
-import type { SyncRunResult, SyncSnapshot } from './types.js';
+import { createSyncScheduler } from "./sync-scheduler.js";
+import type { SyncRunResult, SyncSnapshot } from "./types.js";
 
-describe('createSyncScheduler', () => {
+describe(createSyncScheduler, () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-15T00:00:00.000Z'));
+    vi.setSystemTime(new Date("2026-05-15T00:00:00.000Z"));
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('starts periodic sync runs and exposes the next run time', async () => {
+  it("starts periodic sync runs and exposes the next run time", async () => {
     const sync = vi.fn<() => Promise<SyncRunResult>>().mockResolvedValue({
-      status: 'success',
-      uploaded: 1,
       downloaded: 1,
+      nextCursor: "cursor-2",
       resolvedConflicts: 0,
+      status: "success",
       unresolvedConflicts: 0,
-      nextCursor: 'cursor-2'
+      uploaded: 1,
     });
     const scheduler = createSyncScheduler(
       { sync },
       {
-        intervalMs: 1_000,
+        getLocalState: () =>
+          ({ cursor: "cursor-1", records: [] }) satisfies SyncSnapshot,
         initialDelayMs: 100,
-        maxDelayMs: 5_000,
-        maxRetries: 2,
+        intervalMs: 1000,
         jitterRatio: 0,
-        getLocalState: () => ({ cursor: 'cursor-1', records: [] }) satisfies SyncSnapshot
+        maxDelayMs: 5000,
+        maxRetries: 2,
       }
     );
 
     scheduler.start();
-    expect(scheduler.getNextRunAt()?.toISOString()).toBe('2026-05-15T00:00:00.100Z');
+    expect(scheduler.getNextRunAt()?.toISOString()).toBe(
+      "2026-05-15T00:00:00.100Z"
+    );
 
     await vi.advanceTimersByTimeAsync(100);
-    expect(sync).toHaveBeenCalledTimes(1);
+    expect(sync).toHaveBeenCalledOnce();
   });
 
-  it('backs off after errors and respects triggerNow', async () => {
+  it("backs off after errors and respects triggerNow", async () => {
     const sync = vi
       .fn<() => Promise<SyncRunResult>>()
       .mockResolvedValueOnce({
-        status: 'error',
-        uploaded: 0,
         downloaded: 0,
+        error: { code: "SYNC_FAILED", message: "offline", retryable: true },
+        nextCursor: "cursor-1",
         resolvedConflicts: 0,
+        status: "error",
         unresolvedConflicts: 0,
-        nextCursor: 'cursor-1',
-        error: { code: 'SYNC_FAILED', message: 'offline', retryable: true }
+        uploaded: 0,
       })
       .mockResolvedValue({
-        status: 'success',
-        uploaded: 1,
         downloaded: 0,
+        nextCursor: "cursor-2",
         resolvedConflicts: 0,
+        status: "success",
         unresolvedConflicts: 0,
-        nextCursor: 'cursor-2'
+        uploaded: 1,
       });
 
     const scheduler = createSyncScheduler(
       { sync },
       {
-        intervalMs: 1_000,
+        getLocalState: () =>
+          ({ cursor: "cursor-1", records: [] }) satisfies SyncSnapshot,
         initialDelayMs: 100,
-        maxDelayMs: 5_000,
-        maxRetries: 2,
+        intervalMs: 1000,
         jitterRatio: 0,
-        getLocalState: () => ({ cursor: 'cursor-1', records: [] }) satisfies SyncSnapshot
+        maxDelayMs: 5000,
+        maxRetries: 2,
       }
     );
 
     scheduler.start();
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(sync).toHaveBeenCalledTimes(1);
-    expect(scheduler.getNextRunAt()?.toISOString()).toBe('2026-05-15T00:00:01.300Z');
+    expect(sync).toHaveBeenCalledOnce();
+    expect(scheduler.getNextRunAt()?.toISOString()).toBe(
+      "2026-05-15T00:00:01.300Z"
+    );
 
     await scheduler.triggerNow();
     expect(sync).toHaveBeenCalledTimes(2);

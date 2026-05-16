@@ -1,5 +1,6 @@
-import type { XmlToolCall } from '../../tool-calls/index.js';
-import type { UsageInfo } from '@agentsy/types';
+import type { UsageInfo } from "@agentsy/types";
+
+import type { XmlToolCall } from "../../tool-calls/index.js";
 
 export interface AccumulatedMessage {
   thinking: string;

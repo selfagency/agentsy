@@ -28,13 +28,17 @@
  * ```
  */
 
-export { applyConversationEvent } from './eventSourcing.js';
+export { applyConversationEvent } from "./eventSourcing.js";
 export {
   bindProcessorToConversationStore,
   createConversationStoreFromProcessor,
-  type ConversationStoreBridge
-} from './processorBridge.js';
-export { createConversationStore, type ConversationStore, type StoreListener } from './store.js';
+  type ConversationStoreBridge,
+} from "./processorBridge.js";
+export {
+  createConversationStore,
+  type ConversationStore,
+  type StoreListener,
+} from "./store.js";
 export type {
   ConversationEvent,
   UIConversation,
@@ -44,5 +48,5 @@ export type {
   UIStepPart,
   UITextPart,
   UIThinkingPart,
-  UIToolCallPart
-} from './types.js';
+  UIToolCallPart,
+} from "./types.js";

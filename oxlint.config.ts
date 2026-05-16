@@ -1,13 +1,8 @@
 import { defineConfig } from "oxlint";
-
 import core from "ultracite/oxlint/core";
-import vitest from "ultracite/oxlint/vitest";
 import react from "ultracite/oxlint/react";
+import vitest from "ultracite/oxlint/vitest";
 
 export default defineConfig({
-  extends: [
-    core,
-    vitest,
-    react,
-  ],
+  extends: [core, vitest, react],
 });

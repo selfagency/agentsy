@@ -1,12 +1,12 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts'
-  },
-  format: ['esm'],
-  dts: true,
   clean: true,
-  external: ['@agentsy/types'],
-  treeshake: true
+  dts: true,
+  entry: {
+    index: "src/index.ts",
+  },
+  external: ["@agentsy/types"],
+  format: ["esm"],
+  treeshake: true,
 });

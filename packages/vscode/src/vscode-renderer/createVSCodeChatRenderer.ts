@@ -1,9 +1,14 @@
-import { appendToBlockquote } from '@agentsy/core/formatting';
-import type { OutputPart } from '@agentsy/core/processor';
-import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/renderers';
-import { createSharedRendererHandle } from '@agentsy/renderers';
-import { mapUsageToVSCode } from '../usage-tracking/map-usage.js';
-import { toVSCodeToolCallPart } from './tool-call-lifecycle.js';
+import { appendToBlockquote } from "@agentsy/core/formatting";
+import type { OutputPart } from "@agentsy/core/processor";
+import type {
+  BaseRendererOptions,
+  RendererHandle,
+  ThinkingStyle,
+} from "@agentsy/renderers";
+import { createSharedRendererHandle } from "@agentsy/renderers";
+
+import { mapUsageToVSCode } from "../usage-tracking/map-usage.js";
+import { toVSCodeToolCallPart } from "./tool-call-lifecycle.js";
 
 /** Module-level counter for generating unique fallback tool call IDs. */
 let _toolCallCounter = 0;
@@ -21,16 +26,28 @@ export interface MinimalChatResponseStream {
   progress?(content: string): void;
 
   /** Emit thinking progress (proposed API). */
-  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
+  thinkingProgress?(delta: {
+    text?: string | string[];
+    id?: string;
+    metadata?: Record<string, unknown>;
+  }): void;
 
   /** Begin a tool invocation (proposed API). */
-  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
+  beginToolInvocation?(
+    toolCallId: string,
+    toolName: string,
+    streamData?: unknown
+  ): void;
 
   /** Update a tool invocation (proposed API). */
   updateToolInvocation?(toolCallId: string, streamData: unknown): void;
 
   /** Report token usage (proposed API). */
-  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
+  usage?(usage: {
+    promptTokens: number;
+    completionTokens: number;
+    outputBuffer?: number;
+  }): void;
 }
 
 /**
@@ -44,7 +61,10 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
       | { scheme: string; path: string }
       | {
           uri: { scheme: string; path: string };
-          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+          range: {
+            start: { line: number; character: number };
+            end: { line: number; character: number };
+          };
         },
     title?: string
   ): void;
@@ -55,19 +75,32 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
       | { scheme: string; path: string }
       | {
           uri: { scheme: string; path: string };
-          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+          range: {
+            start: { line: number; character: number };
+            end: { line: number; character: number };
+          };
         }
       | { variableName: string; value?: { scheme: string; path: string } },
     iconPath?:
       | { scheme: string; path: string }
-      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } }
+      | {
+          light: { scheme: string; path: string };
+          dark: { scheme: string; path: string };
+        }
   ): void;
 
   /** Emit a button that runs a command. */
-  button(command: { command: string; title: string; arguments?: unknown[] }): void;
+  button(command: {
+    command: string;
+    title: string;
+    arguments?: unknown[];
+  }): void;
 
   /** Emit a file tree. */
-  filetree(value: Array<{ name: string; children?: unknown[] }>, baseUri: { scheme: string; path: string }): void;
+  filetree(
+    value: { name: string; children?: unknown[] }[],
+    baseUri: { scheme: string; path: string }
+  ): void;
 
   /** Push a response part (stable or proposed). */
   push?(part: unknown): void;
@@ -75,16 +108,28 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
   // Proposed API methods (optional, capability-detection pattern)
 
   /** Emit thinking progress (proposed API). */
-  thinkingProgress?(delta: { text?: string | string[]; id?: string; metadata?: Record<string, unknown> }): void;
+  thinkingProgress?(delta: {
+    text?: string | string[];
+    id?: string;
+    metadata?: Record<string, unknown>;
+  }): void;
 
   /** Begin a tool invocation (proposed API). */
-  beginToolInvocation?(toolCallId: string, toolName: string, streamData?: unknown): void;
+  beginToolInvocation?(
+    toolCallId: string,
+    toolName: string,
+    streamData?: unknown
+  ): void;
 
   /** Update a tool invocation (proposed API). */
   updateToolInvocation?(toolCallId: string, streamData: unknown): void;
 
   /** Report token usage (proposed API). */
-  usage?(usage: { promptTokens: number; completionTokens: number; outputBuffer?: number }): void;
+  usage?(usage: {
+    promptTokens: number;
+    completionTokens: number;
+    outputBuffer?: number;
+  }): void;
 }
 
 /**
@@ -124,56 +169,61 @@ export interface VSCodeChatRendererOptions extends BaseRendererOptions {
  * await renderer.end();
  * ```
  */
-export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): RendererHandle {
+export function createVSCodeChatRenderer(
+  options: VSCodeChatRendererOptions
+): RendererHandle {
   const {
     stream,
     showThinking = false,
-    thinkingStyle = 'blockquote',
+    thinkingStyle = "blockquote",
     onError,
     onToolCall,
     onToolCallDelta,
-    onFinish
+    onFinish,
   } = options;
 
   if (!stream) {
-    throw new Error('ChatResponseStream is required for VS Code chat renderer');
+    throw new Error("ChatResponseStream is required for VS Code chat renderer");
   }
 
   let blockquoteThinkingStarted = false; // Track if blockquote header already emitted
   let blockquoteNeedsPrefix = true; // Track if next chunk needs blockquote prefix
 
   function handleThinkingPart(text: string): void {
-    if (!showThinking || thinkingStyle === 'suppress') {
+    if (!showThinking || thinkingStyle === "suppress") {
       return;
     }
 
     if (stream.thinkingProgress) {
-      stream.thinkingProgress({ text, id: 'thinking' });
-    } else if (thinkingStyle === 'progress') {
+      stream.thinkingProgress({ id: "thinking", text });
+    } else if (thinkingStyle === "progress") {
       stream.progress?.(text);
     } else {
       // Blockquote style with proper multi-line support
       if (!blockquoteThinkingStarted) {
-        stream.markdown('\n\n> 💭 **Thinking**\n>\n');
+        stream.markdown("\n\n> 💭 **Thinking**\n>\n");
         blockquoteThinkingStarted = true;
         blockquoteNeedsPrefix = true;
       }
 
       const blockquoteContent = appendToBlockquote(text, blockquoteNeedsPrefix);
       stream.markdown(blockquoteContent);
-      blockquoteNeedsPrefix = text.endsWith('\n');
+      blockquoteNeedsPrefix = text.endsWith("\n");
     }
   }
 
   // codacy: disable-line
-  const sharedOnFinish: BaseRendererOptions['onFinish'] = async (finishReason, usage) => {
+  const sharedOnFinish: BaseRendererOptions["onFinish"] = async (
+    finishReason,
+    usage
+  ) => {
     const mappedUsage = mapUsageToVSCode(usage);
     if (mappedUsage && stream.usage) {
       stream.usage(mappedUsage);
     }
 
-    if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
-      stream.markdown('\n\n');
+    if (blockquoteThinkingStarted && thinkingStyle === "blockquote") {
+      stream.markdown("\n\n");
       blockquoteThinkingStarted = false;
     }
 
@@ -183,7 +233,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   };
 
   const sharedOptions: BaseRendererOptions = {
-    onFinish: sharedOnFinish
+    onFinish: sharedOnFinish,
   };
 
   if (options.processor) {
@@ -197,38 +247,42 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   return createSharedRendererHandle(
     sharedOptions,
     {
+      onEnd: async () => {
+        if (blockquoteThinkingStarted && thinkingStyle === "blockquote") {
+          stream.markdown("\n\n");
+          blockquoteThinkingStarted = false;
+        }
+      },
       onText: async (text: string) => {
         stream.markdown(text);
       },
       onThinking: async (text: string) => {
         handleThinkingPart(text);
       },
-      onToolCall: async part => {
+      onToolCall: async (part) => {
         if (onToolCall) {
           await onToolCall(part);
         }
 
-        if (stream.beginToolInvocation && typeof part.call?.name === 'string') {
+        if (stream.beginToolInvocation && typeof part.call?.name === "string") {
           const vscodePart = toVSCodeToolCallPart(part, {
-            fallbackCallId: `tool_call_${part.call.name}_${++_toolCallCounter}`
+            fallbackCallId: `tool_call_${part.call.name}_${++_toolCallCounter}`,
           });
-          stream.beginToolInvocation(vscodePart.callId, vscodePart.name, vscodePart.input);
+          stream.beginToolInvocation(
+            vscodePart.callId,
+            vscodePart.name,
+            vscodePart.input
+          );
         }
       },
-      onToolCallDelta: async part => {
+      onToolCallDelta: async (part) => {
         if (onToolCallDelta) {
           onToolCallDelta(part);
         }
-        if (stream.updateToolInvocation && typeof part.id === 'string') {
+        if (stream.updateToolInvocation && typeof part.id === "string") {
           stream.updateToolInvocation(part.id, part as OutputPart);
         }
       },
-      onEnd: async () => {
-        if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
-          stream.markdown('\n\n');
-          blockquoteThinkingStarted = false;
-        }
-      }
     },
     onError
   );

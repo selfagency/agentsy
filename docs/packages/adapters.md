@@ -38,10 +38,10 @@
 ## Example
 
 ```ts
-import { createGenericAdapter } from '@agentsy/providers/adapters';
+import { createGenericAdapter } from "@agentsy/providers/adapters";
 
 const adapter = createGenericAdapter({
-  onContent: text => process.stdout.write(text)
+  onContent: (text) => process.stdout.write(text),
 });
 ```
 
@@ -51,45 +51,48 @@ const adapter = createGenericAdapter({
 import {
   applyDecisionAction,
   createGenericAdapter,
-  runStructuredDecisionFromRawStream
-} from '@agentsy/providers/adapters';
-import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+  runStructuredDecisionFromRawStream,
+} from "@agentsy/providers/adapters";
+import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
 
 const schema = {
-  type: 'object',
-  required: ['shouldBlock', 'targetIp', 'reason', 'ttlSeconds', 'evidence'],
+  type: "object",
+  required: ["shouldBlock", "targetIp", "reason", "ttlSeconds", "evidence"],
   properties: {
-    shouldBlock: { type: 'boolean' },
-    targetIp: { type: 'string' },
-    reason: { type: 'string' },
-    ttlSeconds: { type: 'number' },
-    evidence: { type: 'array', items: { type: 'string' } }
-  }
+    shouldBlock: { type: "boolean" },
+    targetIp: { type: "string" },
+    reason: { type: "string" },
+    ttlSeconds: { type: "number" },
+    evidence: { type: "array", items: { type: "string" } },
+  },
 } as const;
 
-const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
+const decision = await runStructuredDecisionFromRawStream<
+  unknown,
+  { shouldBlock: boolean }
+>({
   source: rawProviderStream,
-  normalize: raw => {
+  normalize: (raw) => {
     const normalized = normalizeOpenAIChatChunk(raw);
     return normalized ? normalized.chunk : null;
   },
   schema,
-  processorOptions: { parseThinkTags: true }
+  processorOptions: { parseThinkTags: true },
 });
 
 if (decision.success) {
   await applyDecisionAction(decision.decision, {
-    shouldAct: value => value.shouldBlock,
-    action: async value => {
+    shouldAct: (value) => value.shouldBlock,
+    action: async (value) => {
       await updateRemoteDns(value);
-    }
+    },
   });
 }
 
 const adapter = createGenericAdapter(
   {
-    onContent: text => process.stdout.write(text),
-    onDone: () => console.log('\nDone')
+    onContent: (text) => process.stdout.write(text),
+    onDone: () => console.log("\nDone"),
   },
   { parseThinkTags: true, scrubContextTags: false }
 );

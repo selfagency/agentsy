@@ -25,33 +25,35 @@ export function createKvStore<T = string>(): KvStore<T> {
   }
 
   return {
-    get(key) {
-      const entry = store.get(key);
-      if (entry === undefined) return undefined;
-      if (isExpired(entry)) {
-        store.delete(key);
-        return undefined;
-      }
-      return entry.value;
-    },
-
-    set(key, value, ttlMs) {
-      const entry: KvEntry<T> = {
-        key,
-        value,
-        setAt: Date.now(),
-        ...(ttlMs ? { expiresAt: Date.now() + ttlMs } : {})
-      };
-      store.set(key, entry);
+    clear() {
+      store.clear();
     },
 
     delete(key) {
       return store.delete(key);
     },
 
+    entries() {
+      return [...store.values()].filter((e) => !isExpired(e));
+    },
+
+    get(key) {
+      const entry = store.get(key);
+      if (entry === undefined) {
+        return;
+      }
+      if (isExpired(entry)) {
+        store.delete(key);
+        return;
+      }
+      return entry.value;
+    },
+
     has(key) {
       const entry = store.get(key);
-      if (entry === undefined) return false;
+      if (entry === undefined) {
+        return false;
+      }
       if (isExpired(entry)) {
         store.delete(key);
         return false;
@@ -60,18 +62,10 @@ export function createKvStore<T = string>(): KvStore<T> {
     },
 
     keys() {
-      return [...store.keys()].filter(k => {
+      return [...store.keys()].filter((k) => {
         const entry = store.get(k);
         return entry !== undefined && !isExpired(entry);
       });
-    },
-
-    entries() {
-      return [...store.values()].filter(e => !isExpired(e));
-    },
-
-    clear() {
-      store.clear();
     },
 
     purgeExpired() {
@@ -83,6 +77,16 @@ export function createKvStore<T = string>(): KvStore<T> {
         }
       }
       return count;
-    }
+    },
+
+    set(key, value, ttlMs) {
+      const entry: KvEntry<T> = {
+        key,
+        setAt: Date.now(),
+        value,
+        ...(ttlMs ? { expiresAt: Date.now() + ttlMs } : {}),
+      };
+      store.set(key, entry);
+    },
   };
 }

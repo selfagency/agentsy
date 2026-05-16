@@ -34,16 +34,16 @@ The package source also contains CLI, Ink, and streaming Markdown implementation
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createPlainTextRenderer } from '@agentsy/renderers';
+import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { LLMStreamProcessor } from "@agentsy/core/processor";
+import { createPlainTextRenderer } from "@agentsy/renderers";
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 const renderer = createPlainTextRenderer({
-  output: text => process.stdout.write(text)
+  output: (text) => process.stdout.write(text),
 });
 
-processor.on('text', text => void renderer.write(text));
+processor.on("text", (text) => void renderer.write(text));
 
 for await (const rawChunk of openAiStream) {
   processor.process(normalizeOpenAIChatChunk(rawChunk));

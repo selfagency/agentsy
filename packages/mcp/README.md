@@ -13,57 +13,62 @@ pnpm add @agentsy/mcp
 ### Server Configuration
 
 ```typescript
-import type { McpServerConfig, McpServer } from '@agentsy/mcp';
+import type { McpServerConfig, McpServer } from "@agentsy/mcp";
 
 const serverConfig: McpServerConfig = {
-  name: 'my-mcp-server',
-  version: '1.0.0',
+  name: "my-mcp-server",
+  version: "1.0.0",
   tools: [
     {
-      name: 'summarize',
-      description: 'Summarizes the provided text',
+      name: "summarize",
+      description: "Summarizes the provided text",
       inputSchema: {
-        type: 'object',
+        type: "object",
         properties: {
-          text: { type: 'string' }
-        }
-      }
-    }
+          text: { type: "string" },
+        },
+      },
+    },
   ],
   resources: [
     {
-      uri: 'file:///data/documents/summary',
-      name: 'Document summaries',
-      description: 'Cached document summaries'
-    }
+      uri: "file:///data/documents/summary",
+      name: "Document summaries",
+      description: "Cached document summaries",
+    },
   ],
   prompts: [
     {
-      name: 'code-review',
-      description: 'Prompt template for code review',
+      name: "code-review",
+      description: "Prompt template for code review",
       arguments: {
-        language: 'typescript',
-        focus: 'security'
-      }
-    }
+        language: "typescript",
+        focus: "security",
+      },
+    },
   ],
   capabilities: {
     tools: true,
     resources: true,
     prompts: true,
-    streaming: true
-  }
+    streaming: true,
+  },
 };
 ```
 
 ### Tool Invocation
 
 ```typescript
-import type { McpToolInvocation, McpToolResult } from '@agentsy/mcp';
+import type { McpToolInvocation, McpToolResult } from "@agentsy/mcp";
 
-async function invokeTool(invocation: McpToolInvocation): Promise<McpToolResult> {
+async function invokeTool(
+  invocation: McpToolInvocation
+): Promise<McpToolResult> {
   // Invokes tool with server tools and returns result
-  const result = await mcpServer.invokeTool(invocation.toolName, invocation.arguments);
+  const result = await mcpServer.invokeTool(
+    invocation.toolName,
+    invocation.arguments
+  );
   return result;
 }
 ```
@@ -71,7 +76,7 @@ async function invokeTool(invocation: McpToolInvocation): Promise<McpToolResult>
 ### Resource Access
 
 ```typescript
-import type { McpResourceResult } from '@agentsy/mcp';
+import type { McpResourceResult } from "@agentsy/mcp";
 
 async function readResource(uri: string): Promise<McpResourceResult> {
   // Reads resource from server and returns content with MIME type

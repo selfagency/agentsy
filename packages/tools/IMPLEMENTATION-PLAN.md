@@ -251,11 +251,11 @@ Each tool should have a dedicated test file:
 
 ```ts
 // packages/tools/src/index.ts
-export * from './tools/repl/index.js';
-export * from './tools/fileops/index.js'; // future
-export * from './tools/shell/index.js'; // future
-export * from './tools/fetch/index.js'; // future
-export * from './tools/search/index.js'; // future
+export * from "./tools/repl/index.js";
+export * from "./tools/fileops/index.js"; // future
+export * from "./tools/shell/index.js"; // future
+export * from "./tools/fetch/index.js"; // future
+export * from "./tools/search/index.js"; // future
 ```
 
 ## Security Notes

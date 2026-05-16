@@ -1,6 +1,7 @@
-import type { ChatResponseStream, CancellationToken } from 'vscode';
-import { VSCodeMCPBridgeHelper } from '../mcp/vscodeBridgeHelper.js';
-import type { MCPTransport } from '@agentsy/core/processor';
+import type { MCPTransport } from "@agentsy/core/processor";
+import type { ChatResponseStream, CancellationToken } from "vscode";
+
+import { VSCodeMCPBridgeHelper } from "../mcp/vscodeBridgeHelper.js";
 
 /**
  * MCPChatBridge bridges an MCP transport to VS Code's ChatResponseStream.
@@ -41,6 +42,9 @@ export class MCPChatBridge {
 /**
  * Factory that creates an MCPChatBridge for the given transport and cancellation token.
  */
-export function createMCPChatBridge(transport: MCPTransport, cancellationToken: CancellationToken): MCPChatBridge {
+export function createMCPChatBridge(
+  transport: MCPTransport,
+  cancellationToken: CancellationToken
+): MCPChatBridge {
   return new MCPChatBridge(transport, cancellationToken);
 }

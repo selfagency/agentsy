@@ -2,7 +2,7 @@
  * Provider integration types.
  */
 
-import type { ToolId } from './brands.js';
+import type { ToolId } from "./brands.js";
 
 /**
  * Capabilities offered by a model provider.
@@ -41,7 +41,7 @@ export interface ProviderRetryPolicy {
   attempts: number;
 
   /** Backoff strategy: 'fixed', 'exponential', 'exponential_with_jitter'. */
-  backoff: 'fixed' | 'exponential' | 'exponential_with_jitter';
+  backoff: "fixed" | "exponential" | "exponential_with_jitter";
 
   /** Initial backoff delay in milliseconds. */
   initialMs: number;

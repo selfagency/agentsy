@@ -1,51 +1,66 @@
-import type { BackupManifest, BackupManifestInput, SyncRecord } from './types.js';
-
-import { computeSyncChecksum } from './integrity.js';
+import { computeSyncChecksum } from "./integrity.js";
+import type {
+  BackupManifest,
+  BackupManifestInput,
+  SyncRecord,
+} from "./types.js";
 
 function cloneJsonMetadata<T>(metadata: T): T {
   return structuredClone(metadata);
 }
 
 function cloneRecords(records: SyncRecord[]): SyncRecord[] {
-  return records.map(record => ({
+  return records.map((record) => ({
     ...record,
-    ...(record.metadata === undefined ? {} : { metadata: cloneJsonMetadata(record.metadata) }),
-    ...(record.relationships === undefined ? {} : { relationships: [...record.relationships] })
+    ...(record.metadata === undefined
+      ? {}
+      : { metadata: cloneJsonMetadata(record.metadata) }),
+    ...(record.relationships === undefined
+      ? {}
+      : { relationships: [...record.relationships] }),
   }));
 }
 
-export function createBackupManifest(input: BackupManifestInput): BackupManifest {
+export function createBackupManifest(
+  input: BackupManifestInput
+): BackupManifest {
   const records = cloneRecords(input.records);
   const checksum = computeSyncChecksum({
+    createdAt: input.createdAt,
+    records,
+    schemaVersion: input.schemaVersion,
     snapshotId: input.snapshotId,
     sourceVersion: input.sourceVersion,
-    schemaVersion: input.schemaVersion,
     targetDatabaseId: input.targetDatabaseId,
-    createdAt: input.createdAt,
-    records
   });
 
   return {
-    id: input.snapshotId,
-    createdAt: input.createdAt,
     checksum,
-    sourceVersion: input.sourceVersion,
-    schemaVersion: input.schemaVersion,
-    targetDatabaseId: input.targetDatabaseId,
+    createdAt: input.createdAt,
+    id: input.snapshotId,
     recordCount: records.length,
-    records
+    records,
+    schemaVersion: input.schemaVersion,
+    sourceVersion: input.sourceVersion,
+    targetDatabaseId: input.targetDatabaseId,
   };
 }
 
-export function verifyBackupManifest(manifest: BackupManifest, records: SyncRecord[] = manifest.records): boolean {
+export function verifyBackupManifest(
+  manifest: BackupManifest,
+  records: SyncRecord[] = manifest.records
+): boolean {
   const expected = createBackupManifest({
+    createdAt: manifest.createdAt,
+    records,
+    schemaVersion: manifest.schemaVersion,
     snapshotId: manifest.id,
     sourceVersion: manifest.sourceVersion,
-    schemaVersion: manifest.schemaVersion,
     targetDatabaseId: manifest.targetDatabaseId,
-    records,
-    createdAt: manifest.createdAt
   });
 
-  return expected.checksum === manifest.checksum && expected.recordCount === manifest.recordCount;
+  return (
+    expected.checksum === manifest.checksum &&
+    expected.recordCount === manifest.recordCount
+  );
 }

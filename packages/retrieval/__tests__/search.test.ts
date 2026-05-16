@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { RetrievalEngine } from '../src/search';
-import type { RetrievalQuery, Document } from '../src/types';
+import { describe, it, expect, beforeEach } from "vitest";
 
-describe('RetrievalEngine', () => {
+import { RetrievalEngine } from "../src/search";
+import type { RetrievalQuery, Document } from "../src/types";
+
+describe(RetrievalEngine, () => {
   let engine: RetrievalEngine;
   let sampleDocuments: Document[];
 
@@ -11,89 +12,122 @@ describe('RetrievalEngine', () => {
 
     sampleDocuments = [
       {
-        id: 'doc-1',
-        content: 'JavaScript is a versatile programming language used for web development.',
         chunks: [
           {
-            id: 'chunk-1',
-            content: 'JavaScript is a versatile programming language',
-            metadata: { source: 'doc-1', startLine: 1, endLine: 5, strategy: 'semantic' }
+            content: "JavaScript is a versatile programming language",
+            id: "chunk-1",
+            metadata: {
+              endLine: 5,
+              source: "doc-1",
+              startLine: 1,
+              strategy: "semantic",
+            },
           },
           {
-            id: 'chunk-2',
-            content: 'used for web development',
-            metadata: { source: 'doc-1', startLine: 6, endLine: 10, strategy: 'semantic' }
-          }
-        ]
+            content: "used for web development",
+            id: "chunk-2",
+            metadata: {
+              endLine: 10,
+              source: "doc-1",
+              startLine: 6,
+              strategy: "semantic",
+            },
+          },
+        ],
+        content:
+          "JavaScript is a versatile programming language used for web development.",
+        id: "doc-1",
       },
       {
-        id: 'doc-2',
-        content: 'Python is popular for data science and machine learning applications.',
         chunks: [
           {
-            id: 'chunk-3',
-            content: 'Python is popular for data science',
-            metadata: { source: 'doc-2', startLine: 1, endLine: 5, strategy: 'semantic' }
+            content: "Python is popular for data science",
+            id: "chunk-3",
+            metadata: {
+              endLine: 5,
+              source: "doc-2",
+              startLine: 1,
+              strategy: "semantic",
+            },
           },
           {
-            id: 'chunk-4',
-            content: 'and machine learning applications',
-            metadata: { source: 'doc-2', startLine: 6, endLine: 10, strategy: 'semantic' }
-          }
-        ]
+            content: "and machine learning applications",
+            id: "chunk-4",
+            metadata: {
+              endLine: 10,
+              source: "doc-2",
+              startLine: 6,
+              strategy: "semantic",
+            },
+          },
+        ],
+        content:
+          "Python is popular for data science and machine learning applications.",
+        id: "doc-2",
       },
       {
-        id: 'doc-3',
-        content: 'TypeScript adds static typing to JavaScript for better tooling.',
         chunks: [
           {
-            id: 'chunk-5',
-            content: 'TypeScript adds static typing to JavaScript',
-            metadata: { source: 'doc-3', startLine: 1, endLine: 5, strategy: 'semantic' }
+            content: "TypeScript adds static typing to JavaScript",
+            id: "chunk-5",
+            metadata: {
+              endLine: 5,
+              source: "doc-3",
+              startLine: 1,
+              strategy: "semantic",
+            },
           },
           {
-            id: 'chunk-6',
-            content: 'for better tooling',
-            metadata: { source: 'doc-3', startLine: 6, endLine: 10, strategy: 'semantic' }
-          }
-        ]
-      }
+            content: "for better tooling",
+            id: "chunk-6",
+            metadata: {
+              endLine: 10,
+              source: "doc-3",
+              startLine: 6,
+              strategy: "semantic",
+            },
+          },
+        ],
+        content:
+          "TypeScript adds static typing to JavaScript for better tooling.",
+        id: "doc-3",
+      },
     ];
   });
 
-  describe('constructor', () => {
-    it('should create engine with default options', () => {
+  describe("constructor", () => {
+    it("should create engine with default options", () => {
       const defaultEngine = new RetrievalEngine();
       expect(defaultEngine).toBeInstanceOf(RetrievalEngine);
     });
 
-    it('should create engine with custom options', () => {
+    it("should create engine with custom options", () => {
       const customEngine = new RetrievalEngine({
+        minSimilarity: 0.75,
         topK: 20,
-        minSimilarity: 0.75
       });
 
       expect(customEngine).toBeInstanceOf(RetrievalEngine);
     });
   });
 
-  describe('index', () => {
-    it('should index documents successfully', async () => {
+  describe("index", () => {
+    it("should index documents successfully", async () => {
       await engine.index(sampleDocuments);
 
-      expect(await engine.hasDoc('doc-1')).toBe(true);
-      expect(await engine.hasDoc('doc-2')).toBe(true);
-      expect(await engine.hasDoc('doc-3')).toBe(true);
+      await expect(engine.hasDoc("doc-1")).resolves.toBeTruthy();
+      await expect(engine.hasDoc("doc-2")).resolves.toBeTruthy();
+      await expect(engine.hasDoc("doc-3")).resolves.toBeTruthy();
     });
 
-    it('should return number of indexed documents', async () => {
+    it("should return number of indexed documents", async () => {
       await engine.index(sampleDocuments);
       const count = await engine.count();
 
       expect(count).toBe(sampleDocuments.length);
     });
 
-    it('should handle empty document list', async () => {
+    it("should handle empty document list", async () => {
       await engine.index([]);
       const count = await engine.count();
 
@@ -101,14 +135,14 @@ describe('RetrievalEngine', () => {
     });
   });
 
-  describe('keywordSearch', () => {
+  describe("keywordSearch", () => {
     beforeEach(async () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should search documents by keyword', async () => {
+    it("should search documents by keyword", async () => {
       const query: RetrievalQuery = {
-        query: 'JavaScript'
+        query: "JavaScript",
       };
 
       const result = await engine.keywordSearch(query);
@@ -117,21 +151,21 @@ describe('RetrievalEngine', () => {
       expect(result.total).toBeGreaterThan(0);
     });
 
-    it('should return documents matching search query', async () => {
+    it("should return documents matching search query", async () => {
       const query: RetrievalQuery = {
-        query: 'Python'
+        query: "Python",
       };
 
       const result = await engine.keywordSearch(query);
 
       expect(result.documents.length).toBeGreaterThan(0);
-      expect(result.documents[0].content).toContain('Python');
+      expect(result.documents[0].content).toContain("Python");
     });
 
-    it('should respect topK parameter', async () => {
+    it("should respect topK parameter", async () => {
       const query: RetrievalQuery = {
-        query: 'language',
-        topK: 1
+        query: "language",
+        topK: 1,
       };
 
       const result = await engine.keywordSearch(query);
@@ -139,20 +173,20 @@ describe('RetrievalEngine', () => {
       expect(result.documents.length).toBeLessThanOrEqual(1);
     });
 
-    it('should return empty results for non-existent query', async () => {
+    it("should return empty results for non-existent query", async () => {
       const query: RetrievalQuery = {
-        query: 'nonexistentterm12345'
+        query: "nonexistentterm12345",
       };
 
       const result = await engine.keywordSearch(query);
 
-      expect(result.documents).toEqual([]);
+      expect(result.documents).toStrictEqual([]);
       expect(result.total).toBe(0);
     });
 
-    it('should include query time in results', async () => {
+    it("should include query time in results", async () => {
       const query: RetrievalQuery = {
-        query: 'development'
+        query: "development",
       };
 
       const result = await engine.keywordSearch(query);
@@ -161,9 +195,9 @@ describe('RetrievalEngine', () => {
       expect(result.queryTime).toBeGreaterThanOrEqual(0);
     });
 
-    it('should sort results by relevance', async () => {
+    it("should sort results by relevance", async () => {
       const query: RetrievalQuery = {
-        query: 'JavaScript'
+        query: "JavaScript",
       };
 
       const result = await engine.keywordSearch(query);
@@ -171,20 +205,22 @@ describe('RetrievalEngine', () => {
       for (let i = 0; i < result.documents.length - 1; i++) {
         expect(result.documents[i]?.score).toBeDefined();
         expect(result.documents[i + 1]?.score).toBeDefined();
-        expect(result.documents[i]?.score).toBeGreaterThanOrEqual(result.documents[i + 1]?.score);
+        expect(result.documents[i]?.score).toBeGreaterThanOrEqual(
+          result.documents[i + 1]?.score
+        );
       }
     });
   });
 
-  describe('vectorSearch', () => {
+  describe("vectorSearch", () => {
     beforeEach(async () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should perform vector search when embeddings provided', async () => {
+    it("should perform vector search when embeddings provided", async () => {
       const query: RetrievalQuery = {
-        query: 'programming language',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        query: "programming language",
       };
 
       const result = await engine.vectorSearch(query);
@@ -192,29 +228,29 @@ describe('RetrievalEngine', () => {
       expect(result.documents).toBeDefined();
     });
 
-    it('should filter by minimum similarity threshold', async () => {
+    it("should filter by minimum similarity threshold", async () => {
       const query: RetrievalQuery = {
-        query: 'test query',
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
-        minSimilarity: 0.9
+        minSimilarity: 0.9,
+        query: "test query",
       };
 
       const result = await engine.vectorSearch(query);
 
-      result.documents.forEach(doc => {
+      result.documents.forEach((doc) => {
         expect(doc.similarity).toBeGreaterThanOrEqual(0.9);
       });
     });
 
-    it('should return results with similarity scores', async () => {
+    it("should return results with similarity scores", async () => {
       const query: RetrievalQuery = {
-        query: 'development',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        query: "development",
       };
 
       const result = await engine.vectorSearch(query);
 
-      result.documents.forEach(doc => {
+      result.documents.forEach((doc) => {
         expect(doc.similarity).toBeDefined();
         expect(doc.similarity).toBeGreaterThanOrEqual(0);
         expect(doc.similarity).toBeLessThanOrEqual(1);
@@ -222,15 +258,15 @@ describe('RetrievalEngine', () => {
     });
   });
 
-  describe('search with hybrid approach', () => {
+  describe("search with hybrid approach", () => {
     beforeEach(async () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should combine keyword and vector search results', async () => {
+    it("should combine keyword and vector search results", async () => {
       const query: RetrievalQuery = {
-        query: 'JavaScript code',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        query: "JavaScript code",
       };
 
       const result = await engine.search(query);
@@ -239,10 +275,10 @@ describe('RetrievalEngine', () => {
       expect(result.total).toBeGreaterThanOrEqual(0);
     });
 
-    it('should return query time for hybrid search', async () => {
+    it("should return query time for hybrid search", async () => {
       const query: RetrievalQuery = {
-        query: 'data science',
-        embedding: [0.1, 0.2, 0.3, 0.4, 0.5]
+        embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
+        query: "data science",
       };
 
       const result = await engine.search(query);
@@ -252,39 +288,39 @@ describe('RetrievalEngine', () => {
     });
   });
 
-  describe('delete', () => {
+  describe("delete", () => {
     beforeEach(async () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should remove indexed document', async () => {
-      await engine.delete('doc-1');
+    it("should remove indexed document", async () => {
+      await engine.delete("doc-1");
 
-      expect(await engine.hasDoc('doc-1')).toBe(false);
-      expect(await engine.hasDoc('doc-2')).toBe(true);
+      await expect(engine.hasDoc("doc-1")).resolves.toBeFalsy();
+      await expect(engine.hasDoc("doc-2")).resolves.toBeTruthy();
     });
 
-    it('should handle deletion of non-existent document', async () => {
-      await expect(engine.delete('non-existent')).resolves.not.toThrow();
+    it("should handle deletion of non-existent document", async () => {
+      await expect(engine.delete("non-existent")).resolves.not.toThrow();
     });
 
-    it('should update document count after deletion', async () => {
+    it("should update document count after deletion", async () => {
       const initialCount = await engine.count();
-      await engine.delete('doc-1');
+      await engine.delete("doc-1");
       const finalCount = await engine.count();
 
       expect(finalCount).toBe(initialCount - 1);
     });
   });
 
-  describe('clear', () => {
-    it('should remove all indexed documents', async () => {
+  describe("clear", () => {
+    it("should remove all indexed documents", async () => {
       await engine.index(sampleDocuments);
-      expect(await engine.count()).toBe(sampleDocuments.length);
+      await expect(engine.count()).resolves.toBe(sampleDocuments.length);
 
       await engine.clear();
 
-      expect(await engine.count()).toBe(0);
+      await expect(engine.count()).resolves.toBe(0);
     });
   });
 });

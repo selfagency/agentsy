@@ -10,15 +10,15 @@
   "usedClassMembers": [],
   // Duplicate detection tuning (reduce noise for trivial/script duplication during cleanup).
   "duplicates": {
-    "threshold": 10
+    "threshold": 10,
   },
   // Health threshold tuning (will be refined after regenerating coverage).
   "health": {
-    "threshold": 15
+    "threshold": 15,
   },
   // Prevent gating on current baseline during remediation; switch to stronger gate after cleanup.
   "audit": {
-    "gate": "new-only"
+    "gate": "new-only",
   },
   // Common workspace aliases and packages we intentionally keep as dev/build
   // references across packages (monorepo layout). These are safe to ignore in
@@ -31,6 +31,6 @@
     "@agentsy/memory",
     "@agentsy/providers",
     "@agentsy/session",
-    "@agentsy/tokens"
-  ]
+    "@agentsy/tokens",
+  ],
 }

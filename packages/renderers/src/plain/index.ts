@@ -1,1 +1,4 @@
-export { createPlainTextRenderer, type PlainTextRendererOptions } from './createPlainTextRenderer.js';
+export {
+  createPlainTextRenderer,
+  type PlainTextRendererOptions,
+} from "./createPlainTextRenderer.js";

@@ -1,5 +1,5 @@
-import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
-import type { CapturedMemoryRecord } from './memory-capture.js';
+import type { MemoryScope, ScopeManager } from "../scope/scope-manager.js";
+import type { CapturedMemoryRecord } from "./memory-capture.js";
 
 export interface MemoryListInput {
   actorId?: string;
@@ -27,7 +27,7 @@ function cloneRecord(record: CapturedMemoryRecord): CapturedMemoryRecord {
     content: record.content,
     ...(record.title === undefined ? {} : { title: record.title }),
     ...(record.tags === undefined ? {} : { tags: [...record.tags] }),
-    createdAt: new Date(record.createdAt)
+    createdAt: new Date(record.createdAt),
   };
 }
 
@@ -35,7 +35,7 @@ export function createMemoryListTool(deps: MemoryListToolDeps): MemoryListTool {
   return {
     async execute(input = {}) {
       const rows = await deps.list();
-      const filtered = rows.filter(record => {
+      const filtered = rows.filter((record) => {
         if (input.scope && record.scope !== input.scope) {
           return false;
         }
@@ -44,12 +44,16 @@ export function createMemoryListTool(deps: MemoryListToolDeps): MemoryListTool {
           return true;
         }
 
-        return deps.scopeManager.canAccess({ actorId: input.actorId, action: 'read', scope: record.scope });
+        return deps.scopeManager.canAccess({
+          action: "read",
+          actorId: input.actorId,
+          scope: record.scope,
+        });
       });
 
       return {
-        records: filtered.map(cloneRecord)
+        records: filtered.map(cloneRecord),
       };
-    }
+    },
   };
 }

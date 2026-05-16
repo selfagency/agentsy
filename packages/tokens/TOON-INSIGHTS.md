@@ -104,7 +104,8 @@ context:
 friends[3]: ana,luis,sam
 
 # Tabular array (fields declared once)
-users[5]{id,name,email,department,salary}: 1,Alice,alice@example.com,Engineering,75000
+users[5]{id,name,email,department,salary}:
+  1,Alice,alice@example.com,Engineering,75000
   2,Bob,bob@example.com,Marketing,62000
   3,Charlie,charlie@example.com,Engineering,81000
   4,Diana,diana@example.com,Sales,72000
@@ -122,13 +123,13 @@ npm install @toon-format/toon
 **Basic usage:**
 
 ```typescript
-import { encode, decode } from '@toon-format/toon';
+import { encode, decode } from "@toon-format/toon";
 
 const data = {
   users: [
-    { id: 1, name: 'Alice', role: 'admin' },
-    { id: 2, name: 'Bob', role: 'user' }
-  ]
+    { id: 1, name: "Alice", role: "admin" },
+    { id: 2, name: "Bob", role: "user" },
+  ],
 };
 
 // Encode to TOON
@@ -145,7 +146,7 @@ const json = decode(toon);
 **Streaming for large datasets:**
 
 ```typescript
-import { encodeLines } from '@toon-format/toon';
+import { encodeLines } from "@toon-format/toon";
 
 const largeData = await fetchThousandsOfRecords();
 
@@ -158,7 +159,7 @@ for (const line of encodeLines(largeData)) {
 **Stream encoding write to file:**
 
 ```typescript
-const writableStream = fs.createWriteStream('output.toon');
+const writableStream = fs.createWriteStream("output.toon");
 
 const lines = encodeLines(largeData);
 for (const line of lines) {
@@ -169,10 +170,10 @@ for (const line of lines) {
 **Stream decoding read from file:**
 
 ```typescript
-import { decodeStream } from '@toon-format/toon';
+import { decodeStream } from "@toon-format/toon";
 
-const toonFile = fs.createReadStream('input.toon');
-const jsonFile = fs.createWriteStream('output.json');
+const toonFile = fs.createReadStream("input.toon");
+const jsonFile = fs.createWriteStream("output.json");
 const writer = jsonFile.getWriter();
 
 for await (const value of decodeStream(toonFile)) {
@@ -189,9 +190,9 @@ await writer.close();
 **With replacer:**
 
 ```typescript
-const user = { name: 'Alice', password: 'secret', email: 'alice@example.com' };
+const user = { name: "Alice", password: "secret", email: "alice@example.com" };
 const safe = encode(user, {
-  replacer: (key, value) => (key === 'password' ? undefined : value)
+  replacer: (key, value) => (key === "password" ? undefined : value),
 });
 ```
 
@@ -253,7 +254,7 @@ const safe = encode(user, {
 **Example integration:**
 
 ```typescript
-import { encode, decode, encodeLines } from '@toon-format/toon';
+import { encode, decode, encodeLines } from "@toon-format/toon";
 
 // Detect tabular eligibility
 function detectTabularEligibility(data: any): number {
@@ -267,8 +268,13 @@ function detectTabularEligibility(data: any): number {
     const itemKeys = Object.keys(item);
     if (
       itemKeys.length === keys.length &&
-      itemKeys.every(k => keys.includes(k)) &&
-      Object.values(item).every(v => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')
+      itemKeys.every((k) => keys.includes(k)) &&
+      Object.values(item).every(
+        (v) =>
+          typeof v === "string" ||
+          typeof v === "number" ||
+          typeof v === "boolean"
+      )
     ) {
       uniformCount++;
     }
@@ -278,7 +284,10 @@ function detectTabularEligibility(data: any): number {
 }
 
 // Smart encoding based on structure
-export function encodeSmart(data: unknown, options?: { preferToON?: boolean }): string {
+export function encodeSmart(
+  data: unknown,
+  options?: { preferToON?: boolean }
+): string {
   if (Array.isArray(data) && data.length > 0) {
     const eligibility = detectTabularEligibility(data);
 
@@ -293,7 +302,10 @@ export function encodeSmart(data: unknown, options?: { preferToON?: boolean }): 
 }
 
 // Encode large datasets with streaming
-export async function encodeLargeDataset(data: unknown[], outputPath: string): Promise<void> {
+export async function encodeLargeDataset(
+  data: unknown[],
+  outputPath: string
+): Promise<void> {
   const fileStream = fs.createWriteStream(outputPath);
   const lines = encodeLines(data);
 
@@ -313,14 +325,18 @@ export async function encodeLargeDataset(data: unknown[], outputPath: string): P
 
    ```typescript
    export interface EncodingFormat {
-     type: 'json' | 'json-compact' | 'toon' | 'yaml';
+     type: "json" | "json-compact" | "toon" | "yaml";
    }
 
-   export function encodeData(data: unknown, format: EncodingFormat, options?: EncodingOptions): string {
+   export function encodeData(
+     data: unknown,
+     format: EncodingFormat,
+     options?: EncodingOptions
+   ): string {
      switch (format.type) {
-       case 'toon':
+       case "toon":
          return encode(data, options);
-       case 'json-compact':
+       case "json-compact":
          return JSON.stringify(data);
        default:
          return JSON.stringify(data, null, 2);
@@ -331,21 +347,24 @@ export async function encodeLargeDataset(data: unknown[], outputPath: string): P
 2. **Auto-detect optimal format:**
 
    ```typescript
-   function selectOptimalFormat(data: unknown, context: EncodingContext): EncodingFormat {
+   function selectOptimalFormat(
+     data: unknown,
+     context: EncodingContext
+   ): EncodingFormat {
      const eligibility = detectTabularEligibility(data);
 
      if (eligibility > 60 && context.tokenBudget < 50000) {
        // Use TOON for uniform arrays when token budget tight
-       return { type: 'toon' };
+       return { type: "toon" };
      }
 
      if (context.tokenBudget < 20000) {
        // Use JSON-compact for tight budgets on nested data
-       return { type: 'json-compact' };
+       return { type: "json-compact" };
      }
 
      // Default to pretty JSON for readability
-     return { type: 'json' };
+     return { type: "json" };
    }
    ```
 

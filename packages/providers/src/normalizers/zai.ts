@@ -1,18 +1,27 @@
-import type { FinishReason } from '@agentsy/types';
-import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import type { FinishReason } from "@agentsy/types";
+
+import type {
+  NativeToolCallDelta,
+  NormalizerResult,
+  UsageInfo,
+} from "./types.js";
 
 const ZAI_FINISH_REASON_MAP: Record<string, FinishReason> = {
-  stop: 'stop',
-  tool_calls: 'tool-calls',
-  length: 'length',
-  sensitive: 'content-filter',
-  model_context_window_exceeded: 'error',
-  network_error: 'error'
+  length: "length",
+  model_context_window_exceeded: "error",
+  network_error: "error",
+  sensitive: "content-filter",
+  stop: "stop",
+  tool_calls: "tool-calls",
 };
 
-function mapZAiFinishReason(reason: string | null | undefined): FinishReason | undefined {
-  if (!reason) return undefined;
-  return ZAI_FINISH_REASON_MAP[reason] ?? 'other';
+function mapZAiFinishReason(
+  reason: string | null | undefined
+): FinishReason | undefined {
+  if (!reason) {
+    return undefined;
+  }
+  return ZAI_FINISH_REASON_MAP[reason] ?? "other";
 }
 
 interface ZAiToolCallDelta {
@@ -32,16 +41,16 @@ interface ZAiChoice {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object';
+  return value !== null && typeof value === "object";
 }
 
 function nonEmptyString(value: string | null | undefined): string | undefined {
-  return typeof value === 'string' && value.length > 0 ? value : undefined;
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
 function mapToolCallDelta(delta: ZAiToolCallDelta): NativeToolCallDelta {
   const mapped: NativeToolCallDelta = {
-    index: delta.index
+    index: delta.index,
   };
 
   const id = nonEmptyString(delta.id);
@@ -63,15 +72,19 @@ function mapToolCallDelta(delta: ZAiToolCallDelta): NativeToolCallDelta {
 }
 
 function isZAiToolCallDelta(value: unknown): value is ZAiToolCallDelta {
-  return isRecord(value) && typeof value.index === 'number';
+  return isRecord(value) && typeof value.index === "number";
 }
 
-function extractNativeToolCallDeltas(delta: ZAiChoice['delta']): NativeToolCallDelta[] | undefined {
+function extractNativeToolCallDeltas(
+  delta: ZAiChoice["delta"]
+): NativeToolCallDelta[] | undefined {
   if (!Array.isArray(delta?.tool_calls) || delta.tool_calls.length === 0) {
     return undefined;
   }
 
-  const mapped = delta.tool_calls.filter(isZAiToolCallDelta).map(mapToolCallDelta);
+  const mapped = delta.tool_calls
+    .filter(isZAiToolCallDelta)
+    .map(mapToolCallDelta);
   return mapped.length > 0 ? mapped : undefined;
 }
 
@@ -82,32 +95,56 @@ function buildChunkFromParts(parts: {
   done?: boolean;
   finishReason?: FinishReason;
   usage?: UsageInfo;
-}): NormalizerResult['chunk'] {
-  const chunk: NormalizerResult['chunk'] = {};
-  if (parts.content !== undefined) chunk.content = parts.content;
-  if (parts.thinking !== undefined) chunk.thinking = parts.thinking;
-  if (parts.nativeToolCallDeltas !== undefined) chunk.nativeToolCallDeltas = parts.nativeToolCallDeltas;
-  if (parts.done !== undefined) chunk.done = parts.done;
-  if (parts.finishReason !== undefined) chunk.finishReason = parts.finishReason;
-  if (parts.usage !== undefined) chunk.usage = parts.usage;
+}): NormalizerResult["chunk"] {
+  const chunk: NormalizerResult["chunk"] = {};
+  if (parts.content !== undefined) {
+    chunk.content = parts.content;
+  }
+  if (parts.thinking !== undefined) {
+    chunk.thinking = parts.thinking;
+  }
+  if (parts.nativeToolCallDeltas !== undefined) {
+    chunk.nativeToolCallDeltas = parts.nativeToolCallDeltas;
+  }
+  if (parts.done !== undefined) {
+    chunk.done = parts.done;
+  }
+  if (parts.finishReason !== undefined) {
+    chunk.finishReason = parts.finishReason;
+  }
+  if (parts.usage !== undefined) {
+    chunk.usage = parts.usage;
+  }
   return chunk;
 }
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
-  if (!isRecord(raw)) return undefined;
+  if (!isRecord(raw)) {
+    return undefined;
+  }
 
   const usage: UsageInfo = {};
 
-  if (typeof raw.prompt_tokens === 'number') usage.inputTokens = raw.prompt_tokens;
-  if (typeof raw.completion_tokens === 'number') usage.outputTokens = raw.completion_tokens;
-  if (typeof raw.total_tokens === 'number') usage.totalTokens = raw.total_tokens;
+  if (typeof raw.prompt_tokens === "number") {
+    usage.inputTokens = raw.prompt_tokens;
+  }
+  if (typeof raw.completion_tokens === "number") {
+    usage.outputTokens = raw.completion_tokens;
+  }
+  if (typeof raw.total_tokens === "number") {
+    usage.totalTokens = raw.total_tokens;
+  }
 
-  if (typeof raw.input_tokens === 'number') usage.inputTokens = raw.input_tokens;
-  if (typeof raw.output_tokens === 'number') usage.outputTokens = raw.output_tokens;
+  if (typeof raw.input_tokens === "number") {
+    usage.inputTokens = raw.input_tokens;
+  }
+  if (typeof raw.output_tokens === "number") {
+    usage.outputTokens = raw.output_tokens;
+  }
 
   if (
-    typeof usage.inputTokens === 'number' &&
-    typeof usage.outputTokens === 'number' &&
+    typeof usage.inputTokens === "number" &&
+    typeof usage.outputTokens === "number" &&
     usage.totalTokens === undefined
   ) {
     usage.totalTokens = usage.inputTokens + usage.outputTokens;
@@ -124,15 +161,23 @@ function normalizeUsage(raw: unknown): UsageInfo | undefined {
  */
 export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!isRecord(raw)) return null;
+    if (!isRecord(raw)) {
+      return null;
+    }
     const choicesUnknown = raw.choices;
-    if (!Array.isArray(choicesUnknown) || choicesUnknown.length === 0) return null;
+    if (!Array.isArray(choicesUnknown) || choicesUnknown.length === 0) {
+      return null;
+    }
 
     const choice = choicesUnknown[0] as ZAiChoice;
     const delta = isRecord(choice.delta) ? choice.delta : undefined;
 
-    const content = typeof delta?.content === 'string' ? delta.content : undefined;
-    const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
+    const content =
+      typeof delta?.content === "string" ? delta.content : undefined;
+    const thinking =
+      typeof delta?.reasoning_content === "string"
+        ? delta.reasoning_content
+        : undefined;
 
     const nativeToolCallDeltas = extractNativeToolCallDeltas(delta);
 
@@ -145,11 +190,15 @@ export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
       ...(thinking === undefined ? {} : { thinking }),
       ...(nativeToolCallDeltas === undefined ? {} : { nativeToolCallDeltas }),
       ...(done === undefined ? {} : { done }),
-      ...(mappedFinishReason === undefined ? {} : { finishReason: mappedFinishReason }),
-      ...(usage === undefined ? {} : { usage })
+      ...(mappedFinishReason === undefined
+        ? {}
+        : { finishReason: mappedFinishReason }),
+      ...(usage === undefined ? {} : { usage }),
     });
 
-    if (Object.keys(chunk).length === 0) return null;
+    if (Object.keys(chunk).length === 0) {
+      return null;
+    }
     return { chunk, rawEvent: raw };
   } catch {
     return null;

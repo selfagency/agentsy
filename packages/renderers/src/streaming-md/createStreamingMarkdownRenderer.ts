@@ -1,7 +1,8 @@
-import type { StreamChunk } from '@agentsy/core/processor';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createStepChangeEmitter } from '../shared.js';
-import type { BaseRendererOptions, RendererHandle } from '../types.js';
+import type { StreamChunk } from "@agentsy/core/processor";
+import { LLMStreamProcessor } from "@agentsy/core/processor";
+
+import { createStepChangeEmitter } from "../shared.js";
+import type { BaseRendererOptions, RendererHandle } from "../types.js";
 
 /**
  * Structural interface for browser DOM elements.
@@ -30,7 +31,7 @@ interface StreamingMarkdownModule {
  */
 interface DOMPurifyModule {
   sanitize: (content: string) => string | DOMElement;
-  removed?: Array<unknown>;
+  removed?: unknown[];
 }
 
 /**
@@ -75,14 +76,22 @@ export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
  * ```
  */
 // Lazily load streaming-markdown and dompurify with clear error messages
-async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModule; DOMPurify: DOMPurifyModule }> {
+async function getStreamingMarkdownDeps(): Promise<{
+  smd: StreamingMarkdownModule;
+  DOMPurify: DOMPurifyModule;
+}> {
   try {
-    const smdImported = await import('streaming-markdown');
-    const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
-    const dompurifyImported = await import('dompurify');
-    const dompurifyModule = (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
+    const smdImported = await import("streaming-markdown");
+    const smdModule =
+      (smdImported as { default: unknown }).default ?? smdImported;
+    const dompurifyImported = await import("dompurify");
+    const dompurifyModule =
+      (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
 
-    return { smd: smdModule as StreamingMarkdownModule, DOMPurify: dompurifyModule as DOMPurifyModule };
+    return {
+      DOMPurify: dompurifyModule as DOMPurifyModule,
+      smd: smdModule as StreamingMarkdownModule,
+    };
   } catch {
     throw new Error(
       'Streaming markdown renderer requires "streaming-markdown" and "dompurify" peer dependencies. Install with: npm install streaming-markdown dompurify'
@@ -90,11 +99,22 @@ async function getStreamingMarkdownDeps(): Promise<{ smd: StreamingMarkdownModul
   }
 }
 
-export function createStreamingMarkdownRenderer(options: StreamingMarkdownRendererOptions): RendererHandle {
-  const { target, showThinking = false, onSecurityViolation, processor, onError, onFinish } = options;
+export function createStreamingMarkdownRenderer(
+  options: StreamingMarkdownRendererOptions
+): RendererHandle {
+  const {
+    target,
+    showThinking = false,
+    onSecurityViolation,
+    processor,
+    onError,
+    onFinish,
+  } = options;
 
   if (!target) {
-    throw new Error('Target element is required for streaming markdown renderer');
+    throw new Error(
+      "Target element is required for streaming markdown renderer"
+    );
   }
 
   // Create processor if not provided (owns it internally)
@@ -105,7 +125,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   const emitStepChange = createStepChangeEmitter(options.onStep);
 
   // Accumulator for markdown content
-  let accumulatedMarkdown = '';
+  let accumulatedMarkdown = "";
   let parser: unknown = null;
 
   // Initialize parser lazily on first write
@@ -122,11 +142,11 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
    * Process parts from output, accumulating markdown content.
    * @internal
    */
-  function processParts(parts: Array<{ type: string; text?: string }>): void {
+  function processParts(parts: { type: string; text?: string }[]): void {
     for (const part of parts) {
-      if (part.type === 'text' && part.text) {
+      if (part.type === "text" && part.text) {
         accumulatedMarkdown += part.text;
-      } else if (part.type === 'thinking' && showThinking && part.text) {
+      } else if (part.type === "thinking" && showThinking && part.text) {
         accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
       }
     }
@@ -137,7 +157,9 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
    * @internal
    */
   async function renderAccumulatedMarkdown(chunk: string): Promise<void> {
-    if (!accumulatedMarkdown || !parser) return;
+    if (!accumulatedMarkdown || !parser) {
+      return;
+    }
 
     const { smd, DOMPurify } = await getStreamingMarkdownDeps();
 
@@ -166,43 +188,6 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   }
 
   return {
-    async write(chunk: string): Promise<void> {
-      try {
-        const result = llmProcessor.process({ content: chunk });
-        processParts(result.parts);
-
-        // Initialize parser on first write and render accumulated markdown
-        await ensureParser();
-        await renderAccumulatedMarkdown(chunk);
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
-    async writeChunk(chunk: StreamChunk): Promise<void> {
-      try {
-        const result = llmProcessor.process(chunk);
-        processParts(result.parts);
-        await emitStepChange(result);
-
-        // Fire onFinish callback if stream is done (guard against double invocation)
-        if (chunk.done === true && !finished && onFinish) {
-          finished = true;
-          await onFinish(chunk.finishReason, chunk.usage);
-        }
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
     async end(): Promise<void> {
       let result: ReturnType<typeof llmProcessor.flush> | undefined;
       try {
@@ -243,6 +228,43 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
         finished = true;
         await onFinish(result.finishReason, result.usage);
       }
-    }
+    },
+
+    async write(chunk: string): Promise<void> {
+      try {
+        const result = llmProcessor.process({ content: chunk });
+        processParts(result.parts);
+
+        // Initialize parser on first write and render accumulated markdown
+        await ensureParser();
+        await renderAccumulatedMarkdown(chunk);
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async writeChunk(chunk: StreamChunk): Promise<void> {
+      try {
+        const result = llmProcessor.process(chunk);
+        processParts(result.parts);
+        await emitStepChange(result);
+
+        // Fire onFinish callback if stream is done (guard against double invocation)
+        if (chunk.done === true && !finished && onFinish) {
+          finished = true;
+          await onFinish(chunk.finishReason, chunk.usage);
+        }
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
   };
 }

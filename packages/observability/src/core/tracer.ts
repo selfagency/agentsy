@@ -4,9 +4,16 @@
  * OpenTelemetry-based tracer implementation for distributed tracing
  */
 
-import type { SpanId, TraceId } from '@agentsy/types';
-import * as api from '@opentelemetry/api';
-import type { AttributeValue, Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
+import type { SpanId, TraceId } from "@agentsy/types";
+import * as api from "@opentelemetry/api";
+
+import type {
+  AttributeValue,
+  Span,
+  SpanEvent,
+  SpanOptions,
+  Tracer,
+} from "../core/types.js";
 
 /**
  * Internal span implementation
@@ -18,7 +25,7 @@ export class InternalSpan implements Span {
   readonly name: string;
 
   private readonly _attributes: Record<string, AttributeValue> = {};
-  private _status: 'ok' | 'error' = 'ok';
+  private _status: "ok" | "error" = "ok";
   private readonly _events: SpanEvent[] = [];
   private readonly _startTime: number;
   private _endTime?: number;
@@ -28,7 +35,12 @@ export class InternalSpan implements Span {
   readonly _isRoot: boolean;
   readonly _contextKey: string;
 
-  constructor(name: string, options?: SpanOptions, parent?: InternalSpan, contextKey?: string) {
+  constructor(
+    name: string,
+    options?: SpanOptions,
+    parent?: InternalSpan,
+    contextKey?: string
+  ) {
     this.name = name;
     this._startTime = options?.startTime ?? Date.now();
     if (parent) {
@@ -38,19 +50,28 @@ export class InternalSpan implements Span {
     this._contextKey = contextKey ?? crypto.randomUUID();
 
     const parentContext = parent?._context;
-    const otelTracer = api.trace.getTracer('agentsy');
+    const otelTracer = api.trace.getTracer("agentsy");
 
     const startSpanOptions: api.SpanOptions = {};
     if (options?.attributes) {
-      startSpanOptions.attributes = this._otelAttributesToAttributes(options.attributes);
+      startSpanOptions.attributes = this._otelAttributesToAttributes(
+        options.attributes
+      );
     }
     if (options?.startTime) {
       startSpanOptions.startTime = options.startTime;
     }
 
-    this._otelSpan = otelTracer.startSpan(name, startSpanOptions, parentContext);
+    this._otelSpan = otelTracer.startSpan(
+      name,
+      startSpanOptions,
+      parentContext
+    );
 
-    this._context = api.trace.setSpan(parentContext ?? api.ROOT_CONTEXT, this._otelSpan);
+    this._context = api.trace.setSpan(
+      parentContext ?? api.ROOT_CONTEXT,
+      this._otelSpan
+    );
 
     const otelSpanContext = this._otelSpan.spanContext();
     this.traceId = otelSpanContext.traceId as TraceId;
@@ -68,7 +89,7 @@ export class InternalSpan implements Span {
     return { ...this._attributes };
   }
 
-  get status(): 'ok' | 'error' {
+  get status(): "ok" | "error" {
     return this._status;
   }
 
@@ -92,8 +113,8 @@ export class InternalSpan implements Span {
     this._attributes[key] = value;
     this._otelSpan.setAttribute(key, value);
 
-    if (key === 'error.type' || key === 'error.message') {
-      this._status = 'error';
+    if (key === "error.type" || key === "error.message") {
+      this._status = "error";
     }
   }
 
@@ -103,25 +124,28 @@ export class InternalSpan implements Span {
     }
   }
 
-  recordException(exception: unknown, attributes?: Record<string, AttributeValue>): void {
-    this._status = 'error';
+  recordException(
+    exception: unknown,
+    attributes?: Record<string, AttributeValue>
+  ): void {
+    this._status = "error";
 
     const errorInfo = this._extractErrorInfo(exception);
     const timestamp = Date.now();
 
-    if (exception instanceof Error || typeof exception === 'string') {
+    if (exception instanceof Error || typeof exception === "string") {
       this._otelSpan.recordException(exception);
     } else {
       this._otelSpan.recordException(new Error(String(exception)));
     }
 
     this._events.push({
-      name: 'exception',
-      timestamp,
       attributes: {
         ...errorInfo,
-        ...attributes
-      }
+        ...attributes,
+      },
+      name: "exception",
+      timestamp,
     });
   }
 
@@ -133,9 +157,9 @@ export class InternalSpan implements Span {
     }
 
     this._events.push({
+      attributes: attributes ?? {},
       name,
       timestamp: Date.now(),
-      attributes: attributes ?? {}
     });
   }
 
@@ -158,40 +182,42 @@ export class InternalSpan implements Span {
     return new InternalSpan(name, options, this);
   }
 
-  private _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): api.Attributes {
+  private _otelAttributesToAttributes(
+    attributes: Record<string, AttributeValue>
+  ): api.Attributes {
     return attributes;
   }
 
   private _extractErrorInfo(exception: unknown): Record<string, string> {
     if (exception instanceof Error) {
       return {
-        'error.type': exception.constructor.name,
-        'error.message': exception.message,
-        'error.stack': exception.stack ?? '(no stack trace)'
+        "error.message": exception.message,
+        "error.stack": exception.stack ?? "(no stack trace)",
+        "error.type": exception.constructor.name,
       };
-    } else if (typeof exception === 'string') {
+    } else if (typeof exception === "string") {
       return {
-        'error.type': 'stringError',
-        'error.message': exception
+        "error.message": exception,
+        "error.type": "stringError",
       };
-    } else if (exception !== null && typeof exception === 'object') {
-      if ('name' in exception && typeof exception.name === 'string') {
+    } else if (exception !== null && typeof exception === "object") {
+      if ("name" in exception && typeof exception.name === "string") {
         const info: Record<string, string> = {
-          'error.type': exception.name
+          "error.type": exception.name,
         };
-        if ('message' in exception && typeof exception.message === 'string') {
-          info['error.message'] = exception.message;
+        if ("message" in exception && typeof exception.message === "string") {
+          info["error.message"] = exception.message;
         }
-        if ('stack' in exception && typeof exception.stack === 'string') {
-          info['error.stack'] = exception.stack;
+        if ("stack" in exception && typeof exception.stack === "string") {
+          info["error.stack"] = exception.stack;
         }
         return info;
       }
     }
 
     return {
-      'error.type': 'unknown',
-      'error.message': String(exception)
+      "error.message": String(exception),
+      "error.type": "unknown",
     };
   }
 }
@@ -200,13 +226,19 @@ export class InternalSpan implements Span {
  * Tracer implementation wrapping OpenTelemetry tracer
  */
 export class TracerImpl implements Tracer {
-  private readonly _currentTimeContextId: string = 'default';
+  private readonly _currentTimeContextId: string = "default";
 
   startSpan(name: string, options?: SpanOptions): Span {
     const currentSpan = api.trace.getSpan(api.context.active());
-    const parentImpl = currentSpan instanceof InternalSpan ? currentSpan : undefined;
+    const parentImpl =
+      currentSpan instanceof InternalSpan ? currentSpan : undefined;
 
-    return new InternalSpan(name, options, parentImpl, this._currentTimeContextId);
+    return new InternalSpan(
+      name,
+      options,
+      parentImpl,
+      this._currentTimeContextId
+    );
   }
 
   getCurrentSpan(): Span | null {

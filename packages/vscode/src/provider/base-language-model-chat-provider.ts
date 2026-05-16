@@ -1,6 +1,14 @@
-import { errorCodeToMessage, errorToProviderCode } from '../error-handling/error-mapper.js';
-import { convertMessages, type ChatMessage } from '../message-conversion/index.js';
-import type { ProviderApiRequest, ProviderConfig, ProviderStreamChunk } from '../types/errors.js';
+import {
+  errorCodeToMessage,
+  errorToProviderCode,
+} from "../error-handling/error-mapper.js";
+import { convertMessages } from "../message-conversion/index.js";
+import type { ChatMessage } from "../message-conversion/index.js";
+import type {
+  ProviderApiRequest,
+  ProviderConfig,
+  ProviderStreamChunk,
+} from "../types/errors.js";
 
 /**
  * Empty async generator for error responses.
@@ -92,9 +100,15 @@ export abstract class BaseLanguageModelChatProvider {
   }
 
   // fallow-ignore-next-line unused-class-member
-  async makeRequest(request: LanguageModelChatRequest, token: CancellationToken): Promise<LanguageModelChatResponse> {
+  async makeRequest(
+    request: LanguageModelChatRequest,
+    token: CancellationToken
+  ): Promise<LanguageModelChatResponse> {
     if (token.isCancellationRequested) {
-      return this.createErrorResponse(new Error('Cancelled'), 'Request was cancelled.');
+      return this.createErrorResponse(
+        new Error("Cancelled"),
+        "Request was cancelled."
+      );
     }
 
     let abortController: AbortController | undefined;
@@ -108,36 +122,45 @@ export abstract class BaseLanguageModelChatProvider {
       const providerRequest = await this.buildRequest(messages, request);
 
       // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
-      const rawStream = await this.streamChat({ ...providerRequest, signal: abortController.signal }, token);
+      const rawStream = await this.streamChat(
+        { ...providerRequest, signal: abortController.signal },
+        token
+      );
       const normalizedStream = this.normalizeStream(rawStream);
 
-      let fullText = '';
+      let fullText = "";
       let resolveText: (value: string) => void;
-      const textPromise = new Promise<string>(resolve => {
+      const textPromise = new Promise<string>((resolve) => {
         resolveText = resolve;
       });
 
-      const generateStream = async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
-        try {
-          for await (const chunk of normalizedStream) {
-            if (chunk.part && typeof chunk.part === 'object') {
-              const p = chunk.part as Record<string, unknown>;
-              if (typeof p.value === 'string') fullText += String(p.value);
+      const generateStream =
+        async function* generateStream(): AsyncIterable<LanguageModelChatResponseChunk> {
+          try {
+            for await (const chunk of normalizedStream) {
+              if (chunk.part && typeof chunk.part === "object") {
+                const p = chunk.part as Record<string, unknown>;
+                if (typeof p.value === "string") {
+                  fullText += String(p.value);
+                }
+              }
+              yield chunk;
             }
-            yield chunk;
+          } finally {
+            resolveText(fullText);
           }
-        } finally {
-          resolveText(fullText);
-        }
-      };
+        };
 
       return {
         stream: generateStream(),
-        text: textPromise
+        text: textPromise,
       };
     } catch (error) {
       abortController?.abort();
-      return this.createErrorResponse(error, errorCodeToMessage(errorToProviderCode(error)));
+      return this.createErrorResponse(
+        error,
+        errorCodeToMessage(errorToProviderCode(error))
+      );
     } finally {
       onCancel?.dispose();
     }
@@ -153,38 +176,44 @@ export abstract class BaseLanguageModelChatProvider {
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const { url, method, headers, body, signal } = request;
     if (url === undefined || url === null) {
-      throw new Error('Provider API request URL is required');
+      throw new Error("Provider API request URL is required");
     }
 
     const response = await fetch(url, {
-      method: method ?? 'POST',
-      headers: headers as NonNullable<RequestInit['headers']>,
       body: body !== undefined ? JSON.stringify(body) : null,
-      ...(signal && { signal })
+      headers: headers as NonNullable<RequestInit["headers"]>,
+      method: method ?? "POST",
+      ...(signal && { signal }),
     });
 
     if (response.ok) {
-      const body = response.body;
+      const { body } = response;
       if (body === null) {
-        throw new Error('HTTP response has no body');
+        throw new Error("HTTP response has no body");
       }
       return (async function* (): AsyncIterable<ProviderStreamChunk> {
         // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
         const reader = (body as ReadableStream<Uint8Array>).getReader();
         const decoder = new TextDecoder();
-        let buffer = '';
+        let buffer = "";
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              break;
+            }
             buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() ?? '';
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
 
             for (const line of lines) {
               const trimmed = line.trim();
-              if (!trimmed || trimmed === 'data: [DONE]') continue;
-              const data = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
+              if (!trimmed || trimmed === "data: [DONE]") {
+                continue;
+              }
+              const data = trimmed.startsWith("data: ")
+                ? trimmed.slice(6)
+                : trimmed;
               try {
                 yield JSON.parse(data) as ProviderStreamChunk;
               } catch {
@@ -201,18 +230,23 @@ export abstract class BaseLanguageModelChatProvider {
     }
 
     // Handle error response
-    const text = await response.text().catch(() => '');
-    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & { status: number };
+    const text = await response.text().catch(() => "");
+    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & {
+      status: number;
+    };
     err.status = response.status;
     throw err;
   }
 
-  protected createErrorResponse(error: unknown, userMessage: string): LanguageModelChatResponse {
+  protected createErrorResponse(
+    error: unknown,
+    userMessage: string
+  ): LanguageModelChatResponse {
     const msg = userMessage || errorCodeToMessage(errorToProviderCode(error));
 
     return {
       stream: emptyStream(),
-      text: Promise.resolve(msg)
+      text: Promise.resolve(msg),
     };
   }
 

@@ -30,10 +30,13 @@ Use this package when your application needs reliable tool-call handling across 
 ## Implementation example with neighbors
 
 ```ts
-import { parseJson } from '@agentsy/core/structured';
-import { buildToolResultMessage, extractXmlToolCalls } from '@agentsy/core/tool-calls';
+import { parseJson } from "@agentsy/core/structured";
+import {
+  buildToolResultMessage,
+  extractXmlToolCalls,
+} from "@agentsy/core/tool-calls";
 
-const calls = extractXmlToolCalls(responseText, new Set(['search']));
+const calls = extractXmlToolCalls(responseText, new Set(["search"]));
 
 for (const call of calls) {
   const args = parseJson(call.input);

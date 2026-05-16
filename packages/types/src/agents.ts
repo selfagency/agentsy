@@ -6,22 +6,22 @@
  * Status of an agent execution.
  */
 export enum AgentStatus {
-  IDLE = 'idle',
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  STOPPED = 'stopped'
+  IDLE = "idle",
+  RUNNING = "running",
+  PAUSED = "paused",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  STOPPED = "stopped",
 }
 
 /**
  * Conditions under which an agent loop should stop execution.
  */
 export type StopCondition =
-  | { type: 'max_steps'; limit: number }
-  | { type: 'max_tokens'; limit: number }
-  | { type: 'time_budget'; ms: number }
-  | { type: 'manual' };
+  | { type: "max_steps"; limit: number }
+  | { type: "max_tokens"; limit: number }
+  | { type: "time_budget"; ms: number }
+  | { type: "manual" };
 
 /**
  * Result metadata for a single agent loop step.
@@ -31,7 +31,7 @@ export interface StepResult {
   stepIndex: number;
 
   /** Status of the step. */
-  status: 'success' | 'error' | 'stopped';
+  status: "success" | "error" | "stopped";
 
   /** Output from the step (message, tool calls, etc.). */
   output?: unknown;
@@ -83,6 +83,10 @@ export interface AgentLoopContext {
   runtimeContext?: {
     sessionId: string;
     depth: number;
-    spawn(tasks: unknown[], signal?: AbortSignal, sessionId?: string): Promise<unknown>;
+    spawn(
+      tasks: unknown[],
+      signal?: AbortSignal,
+      sessionId?: string
+    ): Promise<unknown>;
   };
 }

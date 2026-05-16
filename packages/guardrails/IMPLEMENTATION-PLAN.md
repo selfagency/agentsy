@@ -293,25 +293,38 @@ interface GuardrailsConfig {
   providers: GuardrailProvider[];
   allowedTopics?: string[];
   blockedTopics?: string[];
-  riskTier?: 'low' | 'moderate' | 'high' | 'prohibited';
+  riskTier?: "low" | "moderate" | "high" | "prohibited";
   piiRedaction?: boolean;
   secretRedaction?: boolean;
   tokenQuota?: { maxSessionTokens: number };
   retrievalDomains?: string[];
   toolAllowList?: string[];
   egressAllowList?: string[];
-  memoryPolicy?: 'off' | 'minimal' | 'session' | 'persistent';
+  memoryPolicy?: "off" | "minimal" | "session" | "persistent";
   approvalRequiredFor?: string[];
-  trustHierarchy?: ('system' | 'user' | 'retrieved')[];
+  trustHierarchy?: ("system" | "user" | "retrieved")[];
   stripUntrustedContext?: boolean;
   localOnly?: boolean;
 }
 
 interface GuardrailDecision {
-  decision: 'allow' | 'allow-with-redaction' | 'allow-with-approval' | 'deny' | 'quarantine' | 'escalate';
+  decision:
+    | "allow"
+    | "allow-with-redaction"
+    | "allow-with-approval"
+    | "deny"
+    | "quarantine"
+    | "escalate";
   reasonCode: string;
-  riskTier: 'low' | 'moderate' | 'high' | 'prohibited';
-  surface: 'input' | 'retrieval' | 'memory' | 'tool' | 'action' | 'output' | 'egress';
+  riskTier: "low" | "moderate" | "high" | "prohibited";
+  surface:
+    | "input"
+    | "retrieval"
+    | "memory"
+    | "tool"
+    | "action"
+    | "output"
+    | "egress";
   policyId: string;
   confidence?: number;
   redactedFields?: string[];

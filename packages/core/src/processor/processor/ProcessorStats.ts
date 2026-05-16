@@ -55,17 +55,17 @@ export interface ProcessorStats {
 export function createEmptyStats(): ProcessorStats {
   const now = new Date();
   return {
-    chunksProcessed: 0,
-    bytesProcessed: 0,
-    currentBufferSize: 0,
-    peakBufferSize: 0,
     averageChunkSize: 0,
+    bytesProcessed: 0,
+    chunksProcessed: 0,
+    contentDeltasCount: 0,
+    currentBufferSize: 0,
+    errorsCount: 0,
     parseTimeMs: 0,
+    peakBufferSize: 0,
+    resetAt: now,
     thinkingBlocksCount: 0,
     toolCallsCount: 0,
-    contentDeltasCount: 0,
-    errorsCount: 0,
     warningsCount: 0,
-    resetAt: now
   };
 }

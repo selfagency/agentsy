@@ -1,12 +1,15 @@
 /**
  * MCP server registry events.
  */
-export type McpServerEvent = 'registered' | 'unregistered' | 'updated';
+export type McpServerEvent = "registered" | "unregistered" | "updated";
 
 /**
  * MCP server event listener.
  */
-export type McpServerEventListener = (event: McpServerEvent, server: unknown) => void;
+export type McpServerEventListener = (
+  event: McpServerEvent,
+  server: unknown
+) => void;
 
 /**
  * MCP server configuration options.

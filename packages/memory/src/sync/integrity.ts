@@ -1,49 +1,58 @@
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
-import type { RemoteValidationResult, SyncRecord, SyncSnapshot } from './types.js';
+import type {
+  RemoteValidationResult,
+  SyncRecord,
+  SyncSnapshot,
+} from "./types.js";
 
 function cloneJsonValue<T>(value: T): T {
   return structuredClone(value);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isValidTier(tier: unknown): boolean {
-  return tier === 'raw' || tier === 'wiki' || tier === 'vector';
+  return tier === "raw" || tier === "wiki" || tier === "vector";
 }
 
 function isIsoDate(value: unknown): value is string {
-  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+  return typeof value === "string" && !Number.isNaN(Date.parse(value));
 }
 
 export function computeSyncChecksum(payload: unknown): string {
-  return `sha256:${createHash('sha256').update(JSON.stringify(payload)).digest('hex')}`;
+  return `sha256:${createHash("sha256").update(JSON.stringify(payload)).digest("hex")}`;
 }
 
-export function verifySyncChecksum(payload: unknown, checksum: string): boolean {
+export function verifySyncChecksum(
+  payload: unknown,
+  checksum: string
+): boolean {
   return computeSyncChecksum(payload) === checksum;
 }
 
-export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult {
+export function validateRemoteSnapshot(
+  payload: unknown
+): RemoteValidationResult {
   const errors: string[] = [];
 
   if (!isPlainObject(payload)) {
     return {
+      errors: ["payload must be an object"],
       valid: false,
-      errors: ['payload must be an object']
     };
   }
 
-  if (typeof payload.cursor !== 'string') {
-    errors.push('cursor must be a string');
+  if (typeof payload.cursor !== "string") {
+    errors.push("cursor must be a string");
   }
 
   const records = Array.isArray(payload.records) ? payload.records : null;
 
   if (records === null) {
-    errors.push('records must be an array');
+    errors.push("records must be an array");
   } else {
     records.forEach((record, index) => {
       if (!isPlainObject(record)) {
@@ -51,7 +60,7 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
         return;
       }
 
-      if (typeof record.id !== 'string' || record.id.length === 0) {
+      if (typeof record.id !== "string" || record.id.length === 0) {
         errors.push(`records[${index}].id must be a non-empty string`);
       }
 
@@ -62,18 +71,20 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
       }
 
       if (!isIsoDate(record.updatedAt)) {
-        errors.push(`records[${index}].updatedAt must be a valid ISO date string`);
+        errors.push(
+          `records[${index}].updatedAt must be a valid ISO date string`
+        );
       }
 
-      if (typeof record.content !== 'string') {
+      if (typeof record.content !== "string") {
         errors.push(`records[${index}].content must be a string`);
       }
     });
   }
 
   return {
+    errors,
     valid: errors.length === 0,
-    errors
   };
 }
 
@@ -82,8 +93,12 @@ export function cloneSyncSnapshot(snapshot: SyncSnapshot): SyncSnapshot {
     cursor: snapshot.cursor,
     records: snapshot.records.map((record: SyncRecord) => ({
       ...record,
-      ...(record.metadata === undefined ? {} : { metadata: cloneJsonValue(record.metadata) }),
-      ...(record.relationships === undefined ? {} : { relationships: [...record.relationships] })
-    }))
+      ...(record.metadata === undefined
+        ? {}
+        : { metadata: cloneJsonValue(record.metadata) }),
+      ...(record.relationships === undefined
+        ? {}
+        : { relationships: [...record.relationships] }),
+    })),
   };
 }

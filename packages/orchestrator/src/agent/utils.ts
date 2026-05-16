@@ -1,4 +1,6 @@
-export type MergeableCallback<TArgs extends unknown[]> = (...args: TArgs) => void | Promise<void>;
+export type MergeableCallback<TArgs extends unknown[]> = (
+  ...args: TArgs
+) => void | Promise<void>;
 
 export function mergeCallbacks<TArgs extends unknown[]>(
   a?: MergeableCallback<TArgs>,

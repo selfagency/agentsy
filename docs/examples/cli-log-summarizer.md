@@ -16,20 +16,20 @@ npm install @agentsy/core @agentsy/providers @agentsy/renderers
 ## Illustrative implementation
 
 ```ts
-import { processRawStream } from '@agentsy/providers/adapters';
-import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
-import { createPlainTextRenderer } from '@agentsy/renderers';
-import { parseSSEStream } from '@agentsy/core/sse';
+import { processRawStream } from "@agentsy/providers/adapters";
+import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { createPlainTextRenderer } from "@agentsy/renderers";
+import { parseSSEStream } from "@agentsy/core/sse";
 
 async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
-  const response = await fetch('https://api.example.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
+  const response = await fetch("https://api.example.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      model: 'gpt-4.1-mini',
+      model: "gpt-4.1-mini",
       stream: true,
-      messages: [{ role: 'user', content: prompt }]
-    })
+      messages: [{ role: "user", content: prompt }],
+    }),
   });
 
   const textStream = response.body?.pipeThrough(new TextDecoderStream());
@@ -38,7 +38,7 @@ async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
   }
 
   for await (const event of parseSSEStream(textStream)) {
-    if (event.data === '[DONE]') {
+    if (event.data === "[DONE]") {
       return;
     }
 
@@ -53,8 +53,12 @@ async function* streamProviderLogs(prompt: string): AsyncGenerator<unknown> {
 async function runCliSummary(): Promise<void> {
   const renderer = createPlainTextRenderer({ showThinking: false });
 
-  const prompt = 'Summarize the latest application logs into key issues and probable causes.';
-  for await (const output of processRawStream(streamProviderLogs(prompt), normalizeOpenAIChatChunk)) {
+  const prompt =
+    "Summarize the latest application logs into key issues and probable causes.";
+  for await (const output of processRawStream(
+    streamProviderLogs(prompt),
+    normalizeOpenAIChatChunk
+  )) {
     renderer.write(output);
   }
 }

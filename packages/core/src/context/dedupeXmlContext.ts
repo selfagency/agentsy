@@ -17,14 +17,14 @@ const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
 function isTagBoundary(character: string): boolean {
   return (
-    character === '' ||
-    character === '>' ||
-    character === '/' ||
-    character === ' ' ||
-    character === '\t' ||
-    character === '\n' ||
-    character === '\r' ||
-    character === '\f'
+    character === "" ||
+    character === ">" ||
+    character === "/" ||
+    character === " " ||
+    character === "\t" ||
+    character === "\n" ||
+    character === "\r" ||
+    character === "\f"
   );
 }
 
@@ -43,8 +43,8 @@ function findNextTagOccurrence(
     let index = -1;
     let isClose = false;
 
-    const hasClose = nextClose >= 0;
-    const hasOpen = nextOpen >= 0;
+    const hasClose = nextClose !== -1;
+    const hasOpen = nextOpen !== -1;
     const closeComesFirst = hasClose && (!hasOpen || nextClose < nextOpen);
 
     if (closeComesFirst) {
@@ -56,15 +56,18 @@ function findNextTagOccurrence(
       return null;
     }
 
-    const afterTagName = index + (isClose ? closeNeedle.length : openNeedle.length);
+    const afterTagName =
+      index + (isClose ? closeNeedle.length : openNeedle.length);
     const nextChar = part.charAt(afterTagName);
 
-    const isBoundary = nextChar === '' || isTagBoundary(nextChar);
+    const isBoundary = nextChar === "" || isTagBoundary(nextChar);
     if (isBoundary) {
-      const end = part.indexOf('>', afterTagName);
-      if (end === -1) return null;
+      const end = part.indexOf(">", afterTagName);
+      if (end === -1) {
+        return null;
+      }
 
-      return { index, isClose, end: end + 1 };
+      return { end: end + 1, index, isClose };
     }
 
     searchIndex = afterTagName;
@@ -73,7 +76,11 @@ function findNextTagOccurrence(
   return null;
 }
 
-function findMatchingCloseTag(part: string, tagName: string, searchStart: number): number | null {
+function findMatchingCloseTag(
+  part: string,
+  tagName: string,
+  searchStart: number
+): number | null {
   let depth = 1;
   let searchIndex = searchStart;
 
@@ -96,26 +103,37 @@ function findMatchingCloseTag(part: string, tagName: string, searchStart: number
 }
 
 function collectTagMatches(part: string): TagMatch[] {
-  if (part.length > XML_CONTEXT_MAX_PART_LENGTH) return [];
+  if (part.length > XML_CONTEXT_MAX_PART_LENGTH) {
+    return [];
+  }
   OPEN_TAG_RE.lastIndex = 0;
   const results: TagMatch[] = [];
   for (let m = OPEN_TAG_RE.exec(part); m !== null; m = OPEN_TAG_RE.exec(part)) {
     const tagName = m[1];
-    if (!tagName) continue;
+    if (!tagName) {
+      continue;
+    }
     const openEnd = OPEN_TAG_RE.lastIndex;
 
     // Security: Validate tagName against whitelist before using in RegExp.
     // This prevents ReDoS attacks by ensuring only safe characters are used.
-    if (!VALID_TAG_NAME.test(tagName)) continue;
+    if (!VALID_TAG_NAME.test(tagName)) {
+      continue;
+    }
 
     const matchEnd = findMatchingCloseTag(part, tagName, openEnd);
-    if (matchEnd === null) continue;
-    results.push({ tagName, fullMatch: part.slice(m.index, matchEnd) });
+    if (matchEnd === null) {
+      continue;
+    }
+    results.push({ fullMatch: part.slice(m.index, matchEnd), tagName });
   }
   return results;
 }
 
-function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, string>): void {
+function dedupeMatchesIntoMap(
+  matches: TagMatch[],
+  latestByTag: Map<string, string>
+): void {
   // For the current block, pick the longest (outermost) match for each tag
   // and only set it if an entry for that tag hasn't already been recorded
   // by a later block (we iterate blocks from last to first elsewhere).
@@ -137,9 +155,9 @@ function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, stri
 export function dedupeXmlContextBlocksByTag(blocks: string[]): string[] {
   const latestByTag = new Map<string, string>();
 
-  for (const block of blocks.slice().reverse()) {
+  for (const block of [...blocks].toReversed()) {
     dedupeMatchesIntoMap(collectTagMatches(block), latestByTag);
   }
 
-  return [...latestByTag.values()].reverse();
+  return [...latestByTag.values()].toReversed();
 }

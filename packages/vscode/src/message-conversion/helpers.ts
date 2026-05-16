@@ -1,20 +1,23 @@
-import type { StreamChunk } from '@agentsy/core/processor';
-import type { LanguageModelChatResponseChunk } from '../provider/index.js';
+import type { StreamChunk } from "@agentsy/core/processor";
+
+import type { LanguageModelChatResponseChunk } from "../provider/index.js";
 
 /**
  * Maps a canonical @agentsy/processor StreamChunk to a VS Code-compatible delta.
  * Handles text, reasoning (as text/think tags), and native tool calls.
  */
-export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatResponseChunk[] {
+export function mapStreamChunkToVsCode(
+  chunk: StreamChunk
+): LanguageModelChatResponseChunk[] {
   const parts: LanguageModelChatResponseChunk[] = [];
 
   // Add text content if present
   if (chunk.content) {
     parts.push({
       part: {
-        type: 'text',
-        value: chunk.content
-      }
+        type: "text",
+        value: chunk.content,
+      },
     });
   }
 
@@ -23,9 +26,9 @@ export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatRes
   if (chunk.thinking) {
     parts.push({
       part: {
-        type: 'text',
-        value: `<think>${chunk.thinking}</think>\n`
-      }
+        type: "text",
+        value: `<think>${chunk.thinking}</think>\n`,
+      },
     });
   }
 
@@ -34,12 +37,12 @@ export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatRes
     for (const delta of chunk.nativeToolCallDeltas) {
       parts.push({
         part: {
-          type: 'tool-call',
-          index: delta.index,
           callId: delta.id,
+          index: delta.index,
+          input: delta.argumentsDelta,
           name: delta.name,
-          input: delta.argumentsDelta
-        }
+          type: "tool-call",
+        },
       });
     }
   }

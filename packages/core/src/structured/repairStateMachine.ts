@@ -33,10 +33,10 @@ export interface RepairStateMachineOptions {}
 export function createRepairState(): RepairState {
   return {
     bracketStack: [],
-    inString: false,
+    buffer: "",
     escaped: false,
+    inString: false,
     lastSafeEnd: -1,
-    buffer: ''
   };
 }
 
@@ -45,7 +45,10 @@ export function createRepairState(): RepairState {
  * Returns the character that should be added to output (may differ from input).
  */
 // #lizard forgives
-export function feedCharToStateMachine(char: string, state: RepairState): string {
+export function feedCharToStateMachine(
+  char: string,
+  state: RepairState
+): string {
   // Handle escape sequences within strings
   if (state.escaped) {
     state.escaped = false;
@@ -53,7 +56,7 @@ export function feedCharToStateMachine(char: string, state: RepairState): string
     return char;
   }
 
-  if (state.inString && char === '\\') {
+  if (state.inString && char === "\\") {
     state.escaped = true;
     state.buffer += char;
     return char;
@@ -73,13 +76,13 @@ export function feedCharToStateMachine(char: string, state: RepairState): string
   }
 
   // Outside string: handle structural characters
-  if (char === '{' || char === '[') {
-    state.bracketStack.push(char === '{' ? '}' : ']');
+  if (char === "{" || char === "[") {
+    state.bracketStack.push(char === "{" ? "}" : "]");
     state.buffer += char;
     return char;
   }
 
-  if (char === '}' || char === ']') {
+  if (char === "}" || char === "]") {
     if (state.bracketStack.length > 0 && state.bracketStack.at(-1) === char) {
       state.bracketStack.pop();
       state.buffer += char;
@@ -90,7 +93,7 @@ export function feedCharToStateMachine(char: string, state: RepairState): string
       return char;
     }
     // Mismatched closing delimiter: skip it
-    return '';
+    return "";
   }
 
   // For all other characters, just accumulate

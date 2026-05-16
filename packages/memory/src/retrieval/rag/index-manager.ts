@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
-import type { IngestSummary, RAGServerDocument } from './types.js';
+import type { IngestSummary, RAGServerDocument } from "./types.js";
 
 export interface IndexedDocumentRecord {
   document: RAGServerDocument;
@@ -16,23 +16,39 @@ export interface IndexManager {
 }
 
 function fingerprintOf(document: RAGServerDocument): string {
-  return createHash('sha256')
+  return createHash("sha256")
     .update(
       JSON.stringify({
-        title: document.title,
+        chunkIndex: document.chunkIndex,
         content: document.content,
         metadata: document.metadata,
+        title: document.title,
         updatedAt: document.updatedAt,
-        chunkIndex: document.chunkIndex
       })
     )
-    .digest('hex');
+    .digest("hex");
 }
 
 export function createIndexManager(): IndexManager {
   const records = new Map<string, IndexedDocumentRecord>();
 
   return {
+    get(documentId) {
+      return records.get(documentId) ?? null;
+    },
+
+    list() {
+      return [...records.values()].map((record) => ({
+        document: record.document,
+        fingerprint: record.fingerprint,
+        version: record.version,
+      }));
+    },
+
+    remove(documentId) {
+      return records.delete(documentId);
+    },
+
     upsertMany(documents) {
       let inserted = 0;
       let updated = 0;
@@ -45,7 +61,7 @@ export function createIndexManager(): IndexManager {
           records.set(document.id, {
             document,
             fingerprint: nextFingerprint,
-            version: 1
+            version: 1,
           });
           inserted += 1;
           continue;
@@ -59,28 +75,12 @@ export function createIndexManager(): IndexManager {
         records.set(document.id, {
           document,
           fingerprint: nextFingerprint,
-          version: existing.version + 1
+          version: existing.version + 1,
         });
         updated += 1;
       }
 
-      return { inserted, updated, skipped };
+      return { inserted, skipped, updated };
     },
-
-    remove(documentId) {
-      return records.delete(documentId);
-    },
-
-    get(documentId) {
-      return records.get(documentId) ?? null;
-    },
-
-    list() {
-      return [...records.values()].map(record => ({
-        document: record.document,
-        fingerprint: record.fingerprint,
-        version: record.version
-      }));
-    }
   };
 }

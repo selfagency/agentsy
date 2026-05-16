@@ -3,7 +3,7 @@
  * Rivet integration is currently disabled due to security vulnerabilities in its dependencies.
  */
 export interface ContainerSandbox {
-  readonly mode: 'container';
+  readonly mode: "container";
   execute(input: unknown, files?: unknown[]): Promise<unknown>;
   destroy(): Promise<void>;
 }
@@ -14,7 +14,9 @@ export interface ContainerSandbox {
  */
 export function createRivetSandbox(): ContainerSandbox {
   return {
-    mode: 'container',
+    async destroy(): Promise<void> {
+      // No-op
+    },
 
     async execute() {
       throw new Error(
@@ -22,8 +24,6 @@ export function createRivetSandbox(): ContainerSandbox {
       );
     },
 
-    async destroy(): Promise<void> {
-      // No-op
-    }
+    mode: "container",
   };
 }

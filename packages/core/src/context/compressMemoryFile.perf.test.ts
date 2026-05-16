@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { join } from 'node:path';
-import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'node:fs';
-import { compressMemoryFile } from './compressMemoryFile.js';
+import { writeFileSync, unlinkSync, existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+
+import { compressMemoryFile } from "./compressMemoryFile.js";
 
 /**
  * Phase 0 Memory File Compression Validation
@@ -50,30 +52,32 @@ These are really just additional notes that provide context about the project. T
 and really cover all the important aspects. There is really quite a lot of verbose content here that could be compressed.
 `;
 
-describe('Phase 0: Memory File Compression Validation', () => {
+describe("Phase 0: Memory File Compression Validation", () => {
   let testFile: string;
 
   beforeEach(() => {
-    testFile = join('/tmp', `test-memory-${Date.now()}.md`);
-    writeFileSync(testFile, SAMPLE_MEMORY_FILE, 'utf-8');
+    testFile = join("/tmp", `test-memory-${Date.now()}.md`);
+    writeFileSync(testFile, SAMPLE_MEMORY_FILE, "utf-8");
   });
 
   afterEach(() => {
     if (existsSync(testFile)) {
       unlinkSync(testFile);
     }
-    const backupFile = testFile.replace('.md', '.original.md');
+    const backupFile = testFile.replace(".md", ".original.md");
     if (existsSync(backupFile)) {
       unlinkSync(backupFile);
     }
   });
 
-  it('achieves 5%+ compression on memory file', async () => {
+  it("achieves 5%+ compression on memory file", async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
 
-    const compressionRatio = (result.original.length - result.compressed.length) / result.original.length;
+    const compressionRatio =
+      (result.original.length - result.compressed.length) /
+      result.original.length;
     console.log(`
       Original size: ${result.original.length} bytes
       Compressed size: ${result.compressed.length} bytes
@@ -86,14 +90,14 @@ describe('Phase 0: Memory File Compression Validation', () => {
     expect(compressionRatio).toBeGreaterThanOrEqual(0.001);
   });
 
-  it('creates backup file when enabled', async () => {
+  it("creates backup file when enabled", async () => {
     await compressMemoryFile(testFile, {
-      backup: true
+      backup: true,
     });
 
     // Backup is created with .original.md appended to the full filename
     const backupFile = `${testFile}.original.md`;
-    expect(existsSync(backupFile)).toBe(true);
+    expect(existsSync(backupFile)).toBeTruthy();
 
     // Cleanup backup if it exists
     if (existsSync(backupFile)) {
@@ -101,55 +105,55 @@ describe('Phase 0: Memory File Compression Validation', () => {
     }
   });
 
-  it('preserves code blocks in memory files', async () => {
+  it("preserves code blocks in memory files", async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
 
     // Code should be preserved
-    expect(result.compressed).toContain('export function processData');
-    expect(result.compressed).toContain('```typescript');
+    expect(result.compressed).toContain("export function processData");
+    expect(result.compressed).toContain("```typescript");
   });
 
-  it('preserves URLs in memory files', async () => {
+  it("preserves URLs in memory files", async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
 
     // URLs should be preserved
-    expect(result.compressed).toContain('https://example.com/docs');
-    expect(result.compressed).toContain('https://api.example.com/v1');
-    expect(result.compressed).toContain('https://github.com/example/repo');
+    expect(result.compressed).toContain("https://example.com/docs");
+    expect(result.compressed).toContain("https://api.example.com/v1");
+    expect(result.compressed).toContain("https://github.com/example/repo");
   });
 
-  it('preserves markdown structure', async () => {
+  it("preserves markdown structure", async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
 
     // Markdown structure should be preserved
-    expect(result.compressed).toContain('# Personal Development Notes');
-    expect(result.compressed).toContain('## Project Status');
-    expect(result.compressed).toContain('## Task List');
+    expect(result.compressed).toContain("# Personal Development Notes");
+    expect(result.compressed).toContain("## Project Status");
+    expect(result.compressed).toContain("## Task List");
   });
 
-  it('reduces verbose filler text', async () => {
+  it("reduces verbose filler text", async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
 
     // Should achieve some reduction compared to original
     expect(result.compressed.length).toBeLessThan(result.original.length);
 
     // But critical content should remain
-    expect(result.compressed).toContain('export function');
-    expect(result.compressed).toContain('https://');
+    expect(result.compressed).toContain("export function");
+    expect(result.compressed).toContain("https://");
   });
 
-  it('completes compression in <10ms for medium files', async () => {
+  it("completes compression in <10ms for medium files", async () => {
     const startTime = performance.now();
     await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
     const endTime = performance.now();
     const elapsed = endTime - startTime;
@@ -158,31 +162,33 @@ describe('Phase 0: Memory File Compression Validation', () => {
     expect(elapsed).toBeLessThan(20); // File I/O may take time
   });
 
-  it('maintains data integrity of structured content', async () => {
+  it("maintains data integrity of structured content", async () => {
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
 
     // Checklist items should be preserved
-    expect(result.compressed).toContain('Complete feature A');
-    expect(result.compressed).toContain('Review code B');
+    expect(result.compressed).toContain("Complete feature A");
+    expect(result.compressed).toContain("Review code B");
 
     // Bullet points should be preserved
-    expect(result.compressed).toContain('Point 1');
+    expect(result.compressed).toContain("Point 1");
   });
 
-  it('handles large memory files efficiently', async () => {
+  it("handles large memory files efficiently", async () => {
     // Create a larger test file
     const largeContent = `${SAMPLE_MEMORY_FILE}\n\n${SAMPLE_MEMORY_FILE.repeat(5)}`;
-    writeFileSync(testFile, largeContent, 'utf-8');
+    writeFileSync(testFile, largeContent, "utf-8");
 
     const startTime = performance.now();
     const result = await compressMemoryFile(testFile, {
-      backup: false
+      backup: false,
     });
     const endTime = performance.now();
 
-    const compressionRatio = (result.original.length - result.compressed.length) / result.original.length;
+    const compressionRatio =
+      (result.original.length - result.compressed.length) /
+      result.original.length;
     const elapsed = endTime - startTime;
 
     console.log(`
@@ -199,20 +205,20 @@ describe('Phase 0: Memory File Compression Validation', () => {
     expect(elapsed).toBeLessThan(50);
   });
 
-  it('backup preserves original content exactly', async () => {
+  it("backup preserves original content exactly", async () => {
     // Use a temp directory to avoid file conflicts
     const uniqueName = `test-memory-${Date.now()}.md`;
     const uniqueFile = `/tmp/${uniqueName}`;
-    writeFileSync(uniqueFile, SAMPLE_MEMORY_FILE, 'utf-8');
+    writeFileSync(uniqueFile, SAMPLE_MEMORY_FILE, "utf-8");
 
     try {
       await compressMemoryFile(uniqueFile, {
-        backup: true
+        backup: true,
       });
 
       const backupFile = `${uniqueFile}.original.md`;
-      expect(existsSync(backupFile)).toBe(true);
-      const backupContent = readFileSync(backupFile, 'utf-8');
+      expect(existsSync(backupFile)).toBeTruthy();
+      const backupContent = readFileSync(backupFile, "utf-8");
       expect(backupContent).toBe(SAMPLE_MEMORY_FILE);
       unlinkSync(backupFile);
     } finally {

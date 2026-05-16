@@ -4,4 +4,4 @@
  * Unified client abstractions for provider integration.
  */
 
-export * from './client.js';
+export * from "./client.js";

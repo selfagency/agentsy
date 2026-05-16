@@ -40,8 +40,8 @@ npm install --save-dev @types/react
 ### Basic Example
 
 ```tsx
-import React from 'react';
-import {render, Text} from 'ink';
+import React from "react";
+import { render, Text } from "ink";
 
 const App = () => <Text color="green">Hello World</Text>;
 
@@ -102,9 +102,9 @@ See [layouts.md](references/layouts.md) for common patterns.
 
 ```tsx
 #!/usr/bin/env node
-import React from 'react';
-import {render} from 'ink';
-import App from './app.js';
+import React from "react";
+import { render } from "ink";
+import App from "./app.js";
 
 render(<App />);
 ```
@@ -112,11 +112,11 @@ render(<App />);
 ### 2. Main Component (app.tsx)
 
 ```tsx
-import React from 'react';
-import {Text} from 'ink';
+import React from "react";
+import { Text } from "ink";
 
 export default function App() {
-	return <Text>Hello from Ink!</Text>;
+  return <Text>Hello from Ink!</Text>;
 }
 ```
 
@@ -126,16 +126,16 @@ export default function App() {
 
 ```json
 {
-	"compilerOptions": {
-		"module": "Node16",
-		"target": "ES2022",
-		"lib": ["ES2022"],
-		"moduleResolution": "Node16",
-		"esModuleInterop": true,
-		"strict": true,
-		"outDir": "dist",
-		"jsx": "react-jsx"
-	}
+  "compilerOptions": {
+    "module": "Node16",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "Node16",
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "dist",
+    "jsx": "react-jsx"
+  }
 }
 ```
 
@@ -143,13 +143,13 @@ export default function App() {
 
 ```json
 {
-	"type": "module",
-	"bin": "dist/cli.js",
-	"scripts": {
-		"build": "tsc",
-		"dev": "tsc --watch",
-		"start": "node dist/cli.js"
-	}
+  "type": "module",
+  "bin": "dist/cli.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  }
 }
 ```
 

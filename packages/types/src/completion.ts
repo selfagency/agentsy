@@ -52,7 +52,7 @@ export interface CompletionRequest {
  */
 export interface CompletionMessage {
   /** Message role. */
-  role: 'system' | 'user' | 'assistant' | 'tool';
+  role: "system" | "user" | "assistant" | "tool";
 
   /** Message content or parts. */
   content: string | ContentPart[];
@@ -74,22 +74,22 @@ export type ContentPart = TextPart | ImagePart | ToolCallPart | ToolResultPart;
 
 /** Plain text content. */
 export interface TextPart {
-  type: 'text';
+  type: "text";
   text: string;
 }
 
 /** Image content (for multimodal models). */
 export interface ImagePart {
-  type: 'image';
+  type: "image";
   /** Image data as URL or base64-encoded string. */
   imageUrl: string;
   /** Optional alternative text for accessibility. */
-  detail?: 'auto' | 'low' | 'high';
+  detail?: "auto" | "low" | "high";
 }
 
 /** Tool/function call content. */
 export interface ToolCallPart {
-  type: 'tool_call';
+  type: "tool_call";
   /** Tool call ID for associating with responses. */
   id: string;
   /** Name of the tool to call. */
@@ -100,7 +100,7 @@ export interface ToolCallPart {
 
 /** Tool/function result content. */
 export interface ToolResultPart {
-  type: 'tool_result';
+  type: "tool_result";
   /** Tool call ID this result corresponds to. */
   toolCallId: string;
   /** The result content from the tool. */

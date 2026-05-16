@@ -1,15 +1,15 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    agents: 'src/agents/index.ts'
-  },
-  format: ['esm', 'cjs'],
-  dts: true,
-  sourcemap: true,
   clean: true,
+  dts: true,
+  entry: {
+    agents: "src/agents/index.ts",
+    index: "src/index.ts",
+  },
+  external: ["@agentsy/types"],
+  format: ["esm", "cjs"],
+  sourcemap: true,
   splitting: false,
-  target: 'es2022',
-  external: ['@agentsy/types']
+  target: "es2022",
 });

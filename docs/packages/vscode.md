@@ -37,7 +37,7 @@
 ## Example
 
 ```ts
-import { createVSCodeChatRenderer } from '@agentsy/vscode';
+import { createVSCodeChatRenderer } from "@agentsy/vscode";
 
 const renderer = createVSCodeChatRenderer({ stream: responseStream });
 ```
@@ -45,14 +45,17 @@ const renderer = createVSCodeChatRenderer({ stream: responseStream });
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createVSCodeChatRenderer } from '@agentsy/vscode';
+import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { LLMStreamProcessor } from "@agentsy/core/processor";
+import { createVSCodeChatRenderer } from "@agentsy/vscode";
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
-const renderer = createVSCodeChatRenderer({ stream: responseStream, showThinking: true });
+const renderer = createVSCodeChatRenderer({
+  stream: responseStream,
+  showThinking: true,
+});
 
-processor.on('text', text => void renderer.markdown(text));
+processor.on("text", (text) => void renderer.markdown(text));
 
 for await (const rawChunk of providerStream) {
   processor.process(normalizeOpenAIChatChunk(rawChunk));
