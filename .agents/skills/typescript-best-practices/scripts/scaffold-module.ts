@@ -34,7 +34,7 @@ interface ScaffoldOptions {
 // === Name Utilities ===
 function toPascalCase(str: string): string {
   return str
-    .replace(/[_-](.)/g, (_, char) => char.toUpperCase())
+    .replace(/[_-](.)/ug, (_, char) => char.toUpperCase())
     .replace(/^(.)/, (_, char) => char.toUpperCase());
 }
 
@@ -45,8 +45,8 @@ function toCamelCase(str: string): string {
 
 function toKebabCase(str: string): string {
   return str
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/[_\s]+/g, "-")
+    .replace(/([a-z])([A-Z])/ug, "$1-$2")
+    .replace(/[_\s]+/ug, "-")
     .toLowerCase();
 }
 

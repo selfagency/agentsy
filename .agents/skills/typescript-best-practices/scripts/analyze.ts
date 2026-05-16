@@ -62,7 +62,7 @@ const PATTERNS: Array<{
 }> = [
   {
     name: "any-type",
-    pattern: /:\s*any\b(?!\s*\[)/g,
+    pattern: /:\s*any\b(?!\s*\[)/ug,
     severity: "critical",
     category: "Type Safety",
     message: "Avoid using 'any' type - it disables type checking",
@@ -70,7 +70,7 @@ const PATTERNS: Array<{
   },
   {
     name: "any-array",
-    pattern: /:\s*any\s*\[\]/g,
+    pattern: /:\s*any\s*\[\]/ug,
     severity: "critical",
     category: "Type Safety",
     message: "Avoid using 'any[]' type",
@@ -78,7 +78,7 @@ const PATTERNS: Array<{
   },
   {
     name: "non-null-assertion",
-    pattern: /\w+!/g,
+    pattern: /\w+!/ug,
     severity: "high",
     category: "Type Safety",
     message: "Non-null assertion (!) can cause runtime errors",
@@ -86,7 +86,7 @@ const PATTERNS: Array<{
   },
   {
     name: "type-assertion-as",
-    pattern: /\bas\s+(?!const\b)\w+/g,
+    pattern: /\bas\s+(?!const\b)\w+/ug,
     severity: "medium",
     category: "Type Safety",
     message: "Type assertions with 'as' bypass type checking",
@@ -94,7 +94,7 @@ const PATTERNS: Array<{
   },
   {
     name: "object-any",
-    pattern: /:\s*object\b/g,
+    pattern: /:\s*object\b/ug,
     severity: "medium",
     category: "Type Safety",
     message: "The 'object' type is too broad",
@@ -102,7 +102,7 @@ const PATTERNS: Array<{
   },
   {
     name: "Function-type",
-    pattern: /:\s*Function\b/g,
+    pattern: /:\s*Function\b/ug,
     severity: "medium",
     category: "Type Safety",
     message: "The 'Function' type is too broad",
@@ -110,7 +110,7 @@ const PATTERNS: Array<{
   },
   {
     name: "implicit-any-param",
-    pattern: /\(\s*\w+\s*\)\s*=>/g,
+    pattern: /\(\s*\w+\s*\)\s*=>/ug,
     severity: "medium",
     category: "Type Safety",
     message: "Arrow function parameter may have implicit 'any'",
@@ -118,7 +118,7 @@ const PATTERNS: Array<{
   },
   {
     name: "ts-ignore",
-    pattern: /@ts-ignore/g,
+    pattern: /@ts-ignore/ug,
     severity: "high",
     category: "Type Safety",
     message: "@ts-ignore suppresses all errors on the next line",
@@ -126,7 +126,7 @@ const PATTERNS: Array<{
   },
   {
     name: "ts-nocheck",
-    pattern: /@ts-nocheck/g,
+    pattern: /@ts-nocheck/ug,
     severity: "critical",
     category: "Type Safety",
     message: "@ts-nocheck disables type checking for entire file",
@@ -134,7 +134,7 @@ const PATTERNS: Array<{
   },
   {
     name: "console-log",
-    pattern: /console\.(log|debug|info)\(/g,
+    pattern: /console\.(log|debug|info)\(/ug,
     severity: "low",
     category: "Code Quality",
     message: "Console statements should be removed in production",
@@ -142,7 +142,7 @@ const PATTERNS: Array<{
   },
   {
     name: "todo-comment",
-    pattern: /\/\/\s*(TODO|FIXME|HACK|XXX):/gi,
+    pattern: /\/\/\s*(TODO|FIXME|HACK|XXX):/ugi,
     severity: "low",
     category: "Code Quality",
     message: "Unresolved TODO/FIXME comment",
@@ -150,7 +150,7 @@ const PATTERNS: Array<{
   },
   {
     name: "var-keyword",
-    pattern: /\bvar\s+\w+/g,
+    pattern: /\bvar\s+\w+/ug,
     severity: "medium",
     category: "Code Quality",
     message: "'var' has function scope which can cause bugs",
@@ -158,7 +158,7 @@ const PATTERNS: Array<{
   },
   {
     name: "triple-slash",
-    pattern: /\/\/\/\s*<reference/g,
+    pattern: /\/\/\/\s*<reference/ug,
     severity: "low",
     category: "Code Quality",
     message: "Triple-slash references are outdated",
@@ -166,7 +166,7 @@ const PATTERNS: Array<{
   },
   {
     name: "eval-usage",
-    pattern: /\beval\s*\(/g,
+    pattern: /\beval\s*\(/ug,
     severity: "critical",
     category: "Security",
     message: "eval() is a security risk and prevents optimization",
@@ -174,7 +174,7 @@ const PATTERNS: Array<{
   },
   {
     name: "new-Function",
-    pattern: /new\s+Function\s*\(/g,
+    pattern: /new\s+Function\s*\(/ug,
     severity: "high",
     category: "Security",
     message: "new Function() is similar to eval() - security risk",
@@ -182,7 +182,7 @@ const PATTERNS: Array<{
   },
   {
     name: "innerHTML",
-    pattern: /\.innerHTML\s*=/g,
+    pattern: /\.innerHTML\s*=/ug,
     severity: "high",
     category: "Security",
     message: "innerHTML can introduce XSS vulnerabilities",
@@ -190,7 +190,7 @@ const PATTERNS: Array<{
   },
   {
     name: "async-no-await",
-    pattern: /async\s+(?:function\s+\w+|\w+\s*=\s*async)\s*\([^)]*\)\s*(?::\s*\w+)?\s*\{[^}]*\}/g,
+    pattern: /async\s+(?:function\s+\w+|\w+\s*=\s*async)\s*\([^)]*\)\s*(?::\s*\w+)?\s*\{[^}]*\}/ug,
     severity: "medium",
     category: "Async",
     message: "Async function may not contain await",
@@ -198,7 +198,7 @@ const PATTERNS: Array<{
   },
   {
     name: "promise-constructor",
-    pattern: /new\s+Promise\s*\(\s*(?:async|function)/g,
+    pattern: /new\s+Promise\s*\(\s*(?:async|function)/ug,
     severity: "medium",
     category: "Async",
     message: "Unnecessary Promise constructor (async executor or can be simplified)",
@@ -206,7 +206,7 @@ const PATTERNS: Array<{
   },
   {
     name: "for-in-array",
-    pattern: /for\s*\(\s*(?:const|let|var)\s+\w+\s+in\s+\w+\)/g,
+    pattern: /for\s*\(\s*(?:const|let|var)\s+\w+\s+in\s+\w+\)/ug,
     severity: "medium",
     category: "Iteration",
     message: "for...in iterates over all enumerable properties, not just indices",
@@ -214,7 +214,7 @@ const PATTERNS: Array<{
   },
   {
     name: "delete-operator",
-    pattern: /\bdelete\s+\w+(\.\w+|\[\w+\])/g,
+    pattern: /\bdelete\s+\w+(\.\w+|\[\w+\])/ug,
     severity: "low",
     category: "Performance",
     message: "delete operator can deoptimize objects",
@@ -222,7 +222,7 @@ const PATTERNS: Array<{
   },
   {
     name: "magic-number",
-    pattern: /(?<![\w.])(?:0|[1-9]\d{2,})(?!\d)/g,
+    pattern: /(?<![\w.])(?:0|[1-9]\d{2,})(?!\d)/ug,
     severity: "low",
     category: "Code Quality",
     message: "Magic numbers reduce code readability",
@@ -311,8 +311,8 @@ function analyzeFile(
             continue;
           }
           // Check if inside string
-          const beforeQuotes = (before.match(/"/g) || []).length;
-          const beforeSingleQuotes = (before.match(/'/g) || []).length;
+          const beforeQuotes = (before.match(/"/ug) || []).length;
+          const beforeSingleQuotes = (before.match(/'/ug) || []).length;
           if (beforeQuotes % 2 === 1 || beforeSingleQuotes % 2 === 1) {
             continue;
           }

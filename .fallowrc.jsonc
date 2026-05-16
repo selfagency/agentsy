@@ -10,17 +10,21 @@
   "usedClassMembers": [],
   // Duplicate detection tuning (reduce noise for trivial/script duplication during cleanup).
   "duplicates": {
-    "threshold": 10,
+    "threshold": 8,
+    "ignoreDefaults": false,
+    "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.jsx", "**/*.test.js", "**/*.spec.ts", "**/*.spec.tsx"],
+    "minLines": 8,
+    "minTokens": 70
   },
   // Health threshold tuning (will be refined after regenerating coverage).
   "health": {
-    "threshold": 15,
+    "threshold": 15
   },
   // Prevent gating on current baseline during remediation; switch to stronger gate after cleanup.
   "audit": {
-    "gate": "new-only",
+    "gate": "new-only"
   },
-// Common workspace aliases and packages we intentionally keep as dev/build
+  // Common workspace aliases and packages we intentionally keep as dev/build
   // references across packages (monorepo layout). These are safe to ignore in
   // fallow's unused-dependencies check.
   "ignoreDependencies": [
@@ -31,21 +35,6 @@
     "@agentsy/memory",
     "@agentsy/providers",
     "@agentsy/session",
-    "@agentsy/tokens",
-  ],
-  // Ignore test boilerplate and small complexity duplications
-  "duplicates": {
-    "threshold": 10,
-    "ignoreDefaults": false,
-    "ignore": [
-      "**/*.test.ts",
-      "**/*.test.tsx",
-      "**/*.test.jsx",
-      "**/*.test.js",
-      "**/*.spec.ts",
-      "**/*.spec.tsx"
-    ],
-    "minLines": 8,
-    "minTokens": 70,
-  },
+    "@agentsy/tokens"
+  ]
 }

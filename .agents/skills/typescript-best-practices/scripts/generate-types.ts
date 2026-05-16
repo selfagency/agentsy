@@ -114,13 +114,13 @@ function inferArrayType(arr: JsonArray, propertyName: string, options: GenerateO
 // === Name Utilities ===
 function toPascalCase(str: string): string {
   return str
-    .replace(/[_-](.)/g, (_, char) => char.toUpperCase())
+    .replace(/[_-](.)/ug, (_, char) => char.toUpperCase())
     .replace(/^(.)/, (_, char) => char.toUpperCase());
 }
 
 function toCamelCase(str: string): string {
   return str
-    .replace(/[_-](.)/g, (_, char) => char.toUpperCase())
+    .replace(/[_-](.)/ug, (_, char) => char.toUpperCase())
     .replace(/^(.)/, (_, char) => char.toLowerCase());
 }
 

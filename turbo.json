@@ -1,9 +1,10 @@
 {
-  "$schema": "https://turbo.build/json-schema.json",
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "stream",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "*.tgz"],
+      "outputs": ["dist/**", "*.tgz"],
       "cache": true
     },
     "test": {

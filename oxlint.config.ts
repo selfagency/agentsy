@@ -5,27 +5,33 @@ import vitest from 'ultracite/oxlint/vitest';
 
 export default defineConfig({
   extends: [core, vitest, react],
-  plugins: ['unicorn', 'typescript', 'oxc', 'import', 'promise', 'node', 'vitest'],
-  categories: {},
+  categories: {
+    correctness: 'warn'
+  },
   rules: {
-    'vitest/require-mock-type-parameters': 'warn',
-    'func-style': 'warn',
-    'no-inline-comments': 'off',
-    'unicorn/no-array-for-each': 'off',
-    'promise/avoid-new': 'off',
-    'no-promise-executor-return': 'off',
-    'jsdoc/require-yields': 'off',
-    'sort-keys': 'off',
-    'max-classes-per-file': 'off',
+    'class-methods-use-this': 'off',
     'default-case': 'off',
-    'unicorn/no-array-reduce': 'off',
-    'vitest/prefer-called-exactly-once-with': 'off',
+    'eslint/no-plusplus': 'off',
+    'func-style': 'off',
+    'jsdoc/require-yields': 'off',
+    'max-classes-per-file': 'off',
+    'no-empty-function': 'off',
+    'no-inline-comments': 'off',
+    'no-promise-executor-return': 'off',
+    'prefer-const': 'off',
+    'promise/avoid-new': 'off',
     'promise/prefer-await-to-callbacks': 'off',
-    'class-methods-use-this': 'warn',
-    'no-empty-function': 'warn',
-    'unicorn/consistent-function-scoping': 'warn',
+    'sort-keys': 'off',
+    'typescript/no-dynamic-delete': 'off',
+    'typescript/strict-boolean-expressions': 'off',
+    'unicorn/consistent-function-scoping': 'off',
+    'unicorn/filename-case': 'off',
+    'unicorn/no-array-for-each': 'off',
+    'unicorn/no-array-reduce': 'off',
     'vitest/max-expects': 'off',
-    'vitest/prefer-describe-function-title': 'off'
+    'vitest/prefer-called-exactly-once-with': 'off',
+    'vitest/prefer-describe-function-title': 'off',
+    'vitest/require-mock-type-parameters': 'off'
   },
   settings: {
     jsdoc: {
@@ -54,5 +60,9 @@ export default defineConfig({
     '.codacy',
     '.agents',
     '.beans'
-  ]
+  ],
+  options: {
+    typeAware: true,
+    typeCheck: true
+  }
 });

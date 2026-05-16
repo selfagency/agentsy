@@ -433,6 +433,12 @@
       "skillPath": "skills/.curated/terminal-ui/SKILL.md",
       "computedHash": "693f8dec7160be453466e41d50623279e5f3b129fd310aec7d18a518fcce6a6a"
     },
+    "turborepo": {
+      "source": "vercel/turborepo",
+      "sourceType": "github",
+      "skillPath": "skills/turborepo/SKILL.md",
+      "computedHash": "86321159df24738b6482c4872b06a0a63fafcf9c393da6bccc32538a4e6393c5"
+    },
     "typescript": {
       "source": "pproenca/dot-skills",
       "sourceType": "github",
