@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createVirtualSandbox } from './virtual-sandbox.js';
 import { Worker } from 'node:worker_threads';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createVirtualSandbox } from './virtual-sandbox.js';
 
 // We need to mock node:worker_threads to test the Worker lifecycle without actual threads failing in CI
 vi.mock('node:worker_threads', () => {
@@ -10,7 +10,11 @@ vi.mock('node:worker_threads', () => {
 });
 
 describe('VirtualSandbox', () => {
-  let mockWorkerInstance: any;
+  let mockWorkerInstance: {
+    on: ReturnType<typeof vi.fn>;
+    terminate: ReturnType<typeof vi.fn>;
+    postMessage: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     mockWorkerInstance = {
@@ -19,8 +23,8 @@ describe('VirtualSandbox', () => {
       postMessage: vi.fn()
     };
     vi.mocked(Worker).mockImplementation(function () {
-      return mockWorkerInstance;
-    } as any);
+      return mockWorkerInstance as any;
+    });
     vi.useFakeTimers();
   });
 
@@ -34,7 +38,9 @@ describe('VirtualSandbox', () => {
     const executePromise = sandbox.execute({ code: 'console.log("hi");' });
 
     // Extract the 'message' listener
-    const onMessage = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'message')[1];
+    const messageCall = mockWorkerInstance.on.mock.calls.find(c => c[0] === 'message');
+    if (!messageCall) throw new Error('message listener not found');
+    const onMessage = messageCall[1];
 
     // Simulate log
     onMessage({ type: 'log', args: ['hi'] });
@@ -64,7 +70,9 @@ describe('VirtualSandbox', () => {
     const sandbox = createVirtualSandbox();
     const executePromise = sandbox.execute({ code: 'throw new Error("boom");' });
 
-    const onError = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'error')[1];
+    const errorCall = mockWorkerInstance.on.mock.calls.find(c => c[0] === 'error');
+    if (!errorCall) throw new Error('error listener not found');
+    const onError = errorCall[1];
     onError(new Error('boom'));
 
     const result = await executePromise;
@@ -76,7 +84,9 @@ describe('VirtualSandbox', () => {
     const sandbox = createVirtualSandbox();
     const executePromise = sandbox.execute({ code: 'process.exit(1);' });
 
-    const onExit = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'exit')[1];
+    const exitCall = mockWorkerInstance.on.mock.calls.find(c => c[0] === 'exit');
+    if (!exitCall) throw new Error('exit listener not found');
+    const onExit = exitCall[1];
     onExit(1);
 
     const result = await executePromise;
@@ -88,7 +98,9 @@ describe('VirtualSandbox', () => {
     const sandbox = createVirtualSandbox();
     const executePromise = sandbox.execute({ code: 'console.warn("w"); console.error("e");' });
 
-    const onMessage = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'message')[1];
+    const messageCall = mockWorkerInstance.on.mock.calls.find(c => c[0] === 'message');
+    if (!messageCall) throw new Error('message listener not found');
+    const onMessage = messageCall[1];
     onMessage({ type: 'warn', args: ['w'] });
     onMessage({ type: 'error', args: ['e'] });
     onMessage({ type: 'info', args: ['i'] });

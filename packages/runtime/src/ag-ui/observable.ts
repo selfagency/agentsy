@@ -80,11 +80,11 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
             if (isCancelled) break;
             observer.next?.(value);
           }
-          if (!isCancelled) {
+          if (isCancelled === false) {
             observer.complete?.();
           }
         } catch (err) {
-          if (!isCancelled) {
+          if (isCancelled === false) {
             observer.error?.(err);
           }
         } finally {

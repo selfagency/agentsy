@@ -12,11 +12,11 @@ const DOCKER_SOCKETS = () =>
   [
     '/var/run/docker.sock',
     '/run/docker.sock',
-    `${process.env['HOME']}/Library/Containers/com.docker.docker/Data/docker.raw.sock`
+    `${process.env.HOME}/Library/Containers/com.docker.docker/Data/docker.raw.sock`
   ] as const;
 
 const PODMAN_SOCKETS = () =>
-  ['/run/podman/podman.sock', `${process.env['XDG_RUNTIME_DIR'] ?? '/run/user/1000'}/podman/podman.sock`] as const;
+  ['/run/podman/podman.sock', `${process.env.XDG_RUNTIME_DIR ?? '/run/user/1000'}/podman/podman.sock`] as const;
 
 function isAccessible(path: string): boolean {
   try {
@@ -29,13 +29,13 @@ function isAccessible(path: string): boolean {
 
 export function detectContainerRuntime(): ContainerDetection {
   for (const socketPath of DOCKER_SOCKETS()) {
-    if (socketPath && isAccessible(socketPath)) {
+    if (socketPath !== undefined && isAccessible(socketPath) === true) {
       return { available: true, runtime: 'docker', socketPath };
     }
   }
 
   for (const socketPath of PODMAN_SOCKETS()) {
-    if (socketPath && isAccessible(socketPath)) {
+    if (socketPath !== undefined && isAccessible(socketPath) === true) {
       return { available: true, runtime: 'podman', socketPath };
     }
   }

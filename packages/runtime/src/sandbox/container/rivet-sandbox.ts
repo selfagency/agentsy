@@ -21,7 +21,7 @@ export function createRivetSandbox(): ContainerSandbox {
   let os: AgentOs | null = null;
 
   async function ensureOs() {
-    if (!os) {
+    if (os === null) {
       os = await AgentOs.create({
         software: [common]
       });
@@ -40,7 +40,9 @@ export function createRivetSandbox(): ContainerSandbox {
         // 1. Synchronize AgentFS files to Rivet session
         for (const file of files) {
           // AgentFS entries are currently all files with path and content
-          await vm.writeFile(file.path, file.content);
+          if (file.path !== undefined && file.content !== undefined) {
+            await vm.writeFile(file.path, file.content);
+          }
         }
 
         // 2. Write the code to execute to a temporary file
@@ -52,7 +54,7 @@ export function createRivetSandbox(): ContainerSandbox {
         // The Kernel.exec takes a single string command.
         const result = await vm.exec(`tsx ${tempFile}`, {
           // Add environment variables if provided in input (extending for future)
-          env: (input as { env?: Record<string, string> }).env || {}
+          env: (input as { env?: Record<string, string> }).env ?? {}
         });
 
         // 4. Cleanup temp file
@@ -79,7 +81,7 @@ export function createRivetSandbox(): ContainerSandbox {
     },
 
     async destroy(): Promise<void> {
-      if (os) {
+      if (os !== null) {
         // AgentOs doesn't have a direct 'dispose' but we can null it
         // and let GC handle the kernel instance.
         os = null;

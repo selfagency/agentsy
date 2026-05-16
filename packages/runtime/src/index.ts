@@ -262,7 +262,9 @@ function initializeLoopSnapshot(options: RuntimeLoopOptions, sessionId: string, 
   const persisted = options.sessionStore
     ? loadRuntimeSnapshotFromSession(options.sessionStore, options.snapshotKey)
     : null;
-  return options.snapshot ? cloneSnapshot(options.snapshot) : (persisted ?? createEmptySnapshot(sessionId, depth));
+  return options.snapshot !== undefined && options.snapshot !== null
+    ? cloneSnapshot(options.snapshot)
+    : (persisted ?? createEmptySnapshot(sessionId, depth));
 }
 
 export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop {

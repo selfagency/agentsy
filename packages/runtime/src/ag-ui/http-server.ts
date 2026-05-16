@@ -106,7 +106,7 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done === true) break;
           yield value;
         }
       } finally {

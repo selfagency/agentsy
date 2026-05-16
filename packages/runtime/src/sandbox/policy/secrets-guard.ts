@@ -23,7 +23,7 @@ export function guardSecrets(input: string, options?: SecretsGuardOptions): Secr
 
   for (const pattern of patterns) {
     // Reset lastIndex for global regexes to ensure full-string scanning.
-    const re = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g');
+    const re = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
     const matches = [...redacted.matchAll(re)];
     for (const match of matches) {
       const matched = match[0];
@@ -37,7 +37,7 @@ export function guardSecrets(input: string, options?: SecretsGuardOptions): Secr
 
 export function assertSecretsGuard(input: string, options?: SecretsGuardOptions): string {
   const result = guardSecrets(input, options);
-  if (!result.safe && options?.strict !== false) {
+  if (result.safe === false && options?.strict !== false) {
     throw new Error(
       `Secrets detected in sandbox input (${result.violations.length} violation(s)). Use environment variables instead.`
     );

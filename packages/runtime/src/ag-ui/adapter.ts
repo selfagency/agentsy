@@ -111,7 +111,7 @@ async function* handleThinking(
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null }
 ): AsyncGenerator<AgUiEvent> {
-  if (!inReasoning.value) {
+  if (inReasoning.value === false) {
     currentReasoningMessageId.value = generateMessageId();
     inReasoning.value = true;
 
@@ -329,7 +329,7 @@ export async function* toAgUiStream(
             event,
             runId,
             threadId,
-            encryptReasoning || false,
+            encryptReasoning === true,
             inReasoning,
             currentReasoningMessageId
           );

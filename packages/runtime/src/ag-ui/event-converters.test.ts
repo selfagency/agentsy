@@ -125,7 +125,7 @@ describe('toCopilotKitEvent', () => {
       type: 'EXTREMELY_UNKNOWN_TYPE',
       payload: 'data'
     };
-    const result = toCopilotKitEvent(unknownEvent as any);
+    const result = toCopilotKitEvent(unknownEvent as unknown as RunStartedEvent);
     expect(result.type).toBe('EXTREMELY_UNKNOWN_TYPE');
   });
 
@@ -133,7 +133,7 @@ describe('toCopilotKitEvent', () => {
     const missingTypeEvent = {
       payload: 'data'
     };
-    const result = toCopilotKitEvent(missingTypeEvent as any);
+    const result = toCopilotKitEvent(missingTypeEvent as unknown as RunStartedEvent);
     expect(result.type).toBe('unknown');
   });
 
@@ -348,9 +348,9 @@ describe('toCustomUIEvent', () => {
       foo: 'bar',
       timestamp: '2024-01-01T00:00:00Z'
     };
-    const result = toCustomUIEvent(unknownEvent as any);
+    const result = toCustomUIEvent(unknownEvent as unknown as RunStartedEvent);
     expect(result.eventType).toBe('UNKNOWN_EVENT_TYPE');
-    expect(result.payload.foo).toBe('bar');
+    expect(result.payload['foo']).toBe('bar');
   });
 
   it('should not include undefined threadId', () => {

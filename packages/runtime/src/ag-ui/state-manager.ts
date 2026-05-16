@@ -94,7 +94,7 @@ export function createStateSnapshotEvent(
     state: structuredClone(state),
     timestamp: new Date().toISOString()
   };
-  if (threadId) event.threadId = threadId;
+  if (threadId !== undefined) event.threadId = threadId;
   return event;
 }
 
@@ -125,7 +125,7 @@ function computeStateDeltaForRemovedAndModified(
     const escapedKey = escapePathSegment(key);
     const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
 
-    if (!(key in to)) {
+    if (key in to === false) {
       patches.push({ op: 'remove', path });
     } else if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {
       const fromVal = from[key];
@@ -180,7 +180,7 @@ export function computeStateDelta(
   // Handle added properties
   const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
-    if (!(key in from) && !dangerousKeys.has(key)) {
+    if (key in from === false && dangerousKeys.has(key) === false) {
       const escapedKey = escapePathSegment(key);
       const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
       patches.push({ op: 'add', path, value: to[key] });
@@ -205,7 +205,7 @@ export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, thr
     delta: patches,
     timestamp: new Date().toISOString()
   };
-  if (threadId) deltaEvent.threadId = threadId;
+  if (threadId !== undefined) deltaEvent.threadId = threadId;
   return deltaEvent;
 }
 

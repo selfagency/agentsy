@@ -1,7 +1,7 @@
 import { createContext, runInContext } from 'node:vm';
 import { parentPort, workerData } from 'node:worker_threads';
 
-if (!parentPort) {
+if (parentPort === null) {
   process.exit(1);
 }
 
@@ -14,13 +14,13 @@ const { code, env, timeout } = workerData as {
 // Create a safe realm
 const context = createContext({
   console: {
-    log: (...args: any[]) => parentPort?.postMessage({ type: 'log', args }),
-    error: (...args: any[]) => parentPort?.postMessage({ type: 'error', args }),
-    warn: (...args: any[]) => parentPort?.postMessage({ type: 'warn', args }),
-    info: (...args: any[]) => parentPort?.postMessage({ type: 'info', args })
+    log: (...args: unknown[]) => parentPort?.postMessage({ type: 'log', args }),
+    error: (...args: unknown[]) => parentPort?.postMessage({ type: 'error', args }),
+    warn: (...args: unknown[]) => parentPort?.postMessage({ type: 'warn', args }),
+    info: (...args: unknown[]) => parentPort?.postMessage({ type: 'info', args })
   },
   process: {
-    env: { ...env }
+    env: Object.freeze({ ...env })
   },
   // Add other primitives if needed, but keep it minimal for security
   URL,
@@ -28,6 +28,7 @@ const context = createContext({
   TextDecoder,
   Buffer
 });
+Object.freeze(context);
 
 try {
   // Wrap code to support implicit return if it's a simple expression,

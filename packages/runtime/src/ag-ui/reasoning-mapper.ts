@@ -46,7 +46,7 @@ export function mapReasoningToEvents(
     | ReasoningEndEvent
   > = [];
 
-  if (!reasoning) {
+  if (reasoning === undefined || reasoning === '') {
     return events;
   }
 
@@ -81,7 +81,7 @@ export function mapReasoningToEvents(
     ...(threadId !== undefined && { threadId }),
     messageId,
     content: reasoning,
-    ...(encryptReasoning && { encryptedValue: 'encrypted' }),
+    ...(encryptReasoning === true && { encryptedValue: 'encrypted' }),
     timestamp
   } as ReasoningMessageContentEvent;
   events.push(contentEvent);

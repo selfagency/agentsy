@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { detectContainerRuntime } from './container-detector.js';
 import { accessSync } from 'node:fs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { detectContainerRuntime } from './container-detector.js';
 
 vi.mock('node:fs', () => ({
   accessSync: vi.fn(),
@@ -17,7 +17,7 @@ describe('detectContainerRuntime', () => {
   });
 
   it('should detect docker socket in standard path', () => {
-    vi.mocked(accessSync).mockImplementation((path: any) => {
+    vi.mocked(accessSync).mockImplementation((path: string | Buffer | URL) => {
       if (path === '/var/run/docker.sock') return;
       throw new Error('Not found');
     });
@@ -29,7 +29,7 @@ describe('detectContainerRuntime', () => {
   });
 
   it('should detect podman socket', () => {
-    vi.mocked(accessSync).mockImplementation((path: any) => {
+    vi.mocked(accessSync).mockImplementation((path: string | Buffer | URL) => {
       if (path === '/run/podman/podman.sock') return;
       throw new Error('Not found');
     });
@@ -52,7 +52,7 @@ describe('detectContainerRuntime', () => {
 
   it('should handle mac-specific docker socket path', () => {
     vi.stubEnv('HOME', '/home/user');
-    vi.mocked(accessSync).mockImplementation((path: any) => {
+    vi.mocked(accessSync).mockImplementation((path: string | Buffer | URL) => {
       // In container-detector.ts, the path is built as:
       // `${process.env['HOME']}/Library/Containers/com.docker.docker/Data/docker.raw.sock`
       if (path === '/home/user/Library/Containers/com.docker.docker/Data/docker.raw.sock') return;
