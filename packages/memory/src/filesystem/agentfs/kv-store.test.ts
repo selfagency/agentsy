@@ -25,7 +25,6 @@ describe('createKvStore', () => {
 
   it('should handle expiration with ttlMs', () => {
     const store = createKvStore<string>();
-    const now = Date.now();
 
     store.set('ephemeral', 'val', 100);
     expect(store.get('ephemeral')).toBe('val');

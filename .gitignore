@@ -249,3 +249,4 @@ package-lock.json
 test-report.junit.xml
 .rumdl_cache
 build-log*
+coverage_output*

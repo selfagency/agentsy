@@ -12,7 +12,7 @@ describe('createAgentFsAdapter', () => {
   it('should handle successful read', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const path = 'test.txt' as any;
+    const path = 'test.txt';
 
     vi.mocked(manager.read).mockReturnValue({ content: 'hello', contentHash: 'h1' });
 
@@ -23,7 +23,7 @@ describe('createAgentFsAdapter', () => {
   it('should handle read failure for missing path', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const path = 'missing.txt' as any;
+    const path = 'missing.txt';
 
     vi.mocked(manager.read).mockReturnValue(undefined);
 
@@ -35,7 +35,7 @@ describe('createAgentFsAdapter', () => {
   it('should handle successful write', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const path = 'new.txt' as any;
+    const path = 'new.txt';
 
     vi.mocked(manager.write).mockReturnValue({ contentHash: 'h2' });
 
@@ -51,21 +51,21 @@ describe('createAgentFsAdapter', () => {
       throw new Error('write failed');
     });
 
-    const result = adapter.write({ path: 'fail.txt' as any, content: '...' });
+    const result = adapter.write({ path: 'fail.txt', content: '...' });
     expect(result.ok).toBe(false);
     expect(result.error).toBe('write failed');
 
     vi.mocked(manager.write).mockImplementation(() => {
       throw 'string error';
     });
-    const result2 = adapter.write({ path: 'fail2.txt' as any, content: '...' });
+    const result2 = adapter.write({ path: 'fail2.txt', content: '...' });
     expect(result2.error).toBe('string error');
   });
 
   it('should handle successful delete', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const path = 'gone.txt' as any;
+    const path = 'gone.txt';
 
     vi.mocked(manager.delete).mockReturnValue(true);
 
@@ -76,7 +76,7 @@ describe('createAgentFsAdapter', () => {
   it('should handle delete failure', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const path = 'nonexistent.txt' as any;
+    const path = 'nonexistent.txt';
 
     vi.mocked(manager.delete).mockReturnValue(false);
 
@@ -88,7 +88,7 @@ describe('createAgentFsAdapter', () => {
   it('should handle list', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const entries = [{ path: 'a.txt' as any, contentHash: 'ha' }];
+    const entries = [{ path: 'a.txt', contentHash: 'ha' }];
 
     vi.mocked(manager.list).mockReturnValue(entries);
 

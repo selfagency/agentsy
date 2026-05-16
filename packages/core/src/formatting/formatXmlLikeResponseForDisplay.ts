@@ -20,7 +20,7 @@ function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | 
   }
 
   const firstTagChar = text[startIndex + 1];
-  if (firstTagChar === undefined || (!isAsciiLetter(firstTagChar) && firstTagChar !== '_')) {
+  if (firstTagChar === undefined || (firstTagChar !== '_' && !isAsciiLetter(firstTagChar))) {
     return null;
   }
 
@@ -48,7 +48,12 @@ function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | 
 }
 
 export function formatXmlLikeResponseForDisplay(text: string): string {
-  if (!text || !text.includes('<') || !text.includes('>') || text.length > MAX_XML_DISPLAY_INPUT_LENGTH) {
+  if (
+    text === '' ||
+    text.includes('<') === false ||
+    text.includes('>') === false ||
+    text.length > MAX_XML_DISPLAY_INPUT_LENGTH
+  ) {
     return text;
   }
 

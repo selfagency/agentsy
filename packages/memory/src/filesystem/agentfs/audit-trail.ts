@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 export type AuditOperation = 'read' | 'write' | 'delete' | 'snapshot' | 'restore';
 
@@ -46,7 +46,10 @@ let counter = 0;
 function generateId(): string {
   const ts = Date.now().toString(36);
   const seq = (++counter).toString(36).padStart(4, '0');
-  const rand = createHash('sha256').update(`${ts}${seq}${Math.random()}`).digest('hex').slice(0, 8);
+  const rand = createHash('sha256')
+    .update(`${ts}${seq}${randomBytes(16).toString('hex')}`)
+    .digest('hex')
+    .slice(0, 8);
   return `${ts}-${seq}-${rand}`;
 }
 

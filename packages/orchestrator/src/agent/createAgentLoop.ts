@@ -52,7 +52,7 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
 
   // Check if both are objects
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') {
     return false;
   }
 
@@ -62,7 +62,7 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   const aKeys = aEntries.map(([key]) => key);
   const bKeys = bEntries.map(([key]) => key);
 
-  if (!objectKeysMatch(aKeys, bKeys)) return false;
+  if (objectKeysMatch(aKeys, bKeys) === false) return false;
 
   return aEntries.every(([, aValue], index) => {
     const bEntry = bEntries[index];

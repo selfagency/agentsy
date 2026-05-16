@@ -33,8 +33,8 @@ describe('KnowledgeBaseManager', () => {
 
     expect(results.length).toBeGreaterThan(0);
     const firstResult = results[0];
-    expect(firstResult).toBeDefined();
-    expect(firstResult!.content).toContain('Paris');
+    if (!firstResult) throw new Error('Search result should exist');
+    expect(firstResult.content).toContain('Paris');
   });
 
   it('should ingest a document with metadata', async () => {
@@ -55,8 +55,8 @@ describe('KnowledgeBaseManager', () => {
       weights: { vector: 1, lexical: 1, entity: 0, temporal: 0 }
     });
     const firstResult = results[0];
-    expect(firstResult).toBeDefined();
-    expect(firstResult!.metadata?.author).toBe('AI');
+    if (!firstResult) throw new Error('Search result should exist');
+    expect(firstResult.metadata?.author).toBe('AI');
   });
 
   it('should remove a document', async () => {
@@ -74,9 +74,9 @@ describe('KnowledgeBaseManager', () => {
     });
 
     const docId = results[0]?.id;
-    expect(docId).toBeDefined();
+    if (!docId) throw new Error('Document ID should exist');
 
-    const removed = await kb.remove(docId!);
+    const removed = await kb.remove(docId);
     expect(removed).toBe(true);
 
     const resultsAfter = await kb.search({
