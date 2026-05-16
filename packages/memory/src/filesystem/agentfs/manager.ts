@@ -3,17 +3,26 @@ import { createHash } from 'node:crypto';
 
 export type { AgentFsEntry, AgentFsManager, AgentFsOptions, AgentFsPath };
 
+// SHA-256 is used for legacy compatibility; PHASE 4 implementation switched to BLAKE3/SHA-256
+// but we'll stick to a stable hash function for now as documented in types.
 function hashContent(content: string): string {
   return `sha256:${createHash('sha256').update(content, 'utf8').digest('hex')}`;
 }
 
+const globalStore = new Map<string, Map<AgentFsPath, AgentFsEntry>>();
+
 export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
-  const namespace = options?.namespace ?? 'default';
-  const store = new Map<AgentFsPath, AgentFsEntry>();
+  const namespaceLabel = options?.namespace ?? 'default';
+
+  if (!globalStore.has(namespaceLabel)) {
+    globalStore.set(namespaceLabel, new Map<AgentFsPath, AgentFsEntry>());
+  }
+
+  const store = globalStore.get(namespaceLabel)!;
 
   return {
     get namespace() {
-      return namespace;
+      return namespaceLabel;
     },
 
     read(path: AgentFsPath) {

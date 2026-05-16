@@ -1,6 +1,6 @@
 # Phase 4 Completion — Advanced Capabilities
 
-**Branch:** `feature/phase-4-advanced-capabilities`  
+**Branch:** `feature/phase-4-advanced-capabilities`
 **Status:** ✅ Complete — all type checks and tests green
 
 ---
@@ -10,7 +10,7 @@
 Phase 4 implements three advanced capability areas across `@agentsy/memory`, `@agentsy/runtime`, and `@agentsy/tools`:
 
 1. **AgentFS** — namespace-aware virtual filesystem with audit trail and snapshot support
-2. **Content Addressing** — SHA-256 fingerprinting, dedup store, and verification utilities
+2. **Content Addressing** — BLAKE3 fingerprinting, dedup store, and verification utilities
 3. **Virtual Sandbox** — container-aware sandbox execution with secrets guard and policy routing
 
 ---
@@ -19,17 +19,17 @@ Phase 4 implements three advanced capability areas across `@agentsy/memory`, `@a
 
 ### `@agentsy/memory`
 
-| File                                    | Description                                                                      |
-| --------------------------------------- | -------------------------------------------------------------------------------- |
-| `src/filesystem/agentfs/manager.ts`     | `AgentFsManager` — namespace-scoped virtual filesystem with SHA-256 path hashing |
-| `src/filesystem/agentfs/kv-store.ts`    | `KvStore<T>` — TTL-aware key-value store with expiry and orphan purge            |
-| `src/filesystem/agentfs/audit-trail.ts` | `AuditTrail` — tamper-evident event log with secret pattern redaction            |
-| `src/filesystem/agentfs/snapshots.ts`   | `SnapshotStore` — point-in-time capture and restore of AgentFS state             |
-| `src/content-addressing/fingerprint.ts` | `fingerprintContent()` — SHA-256 fingerprint with algorithm/size metadata        |
-| `src/content-addressing/dedup-store.ts` | `DedupStore` — reference-counted content deduplication store                     |
-| `src/content-addressing/verify.ts`      | `verifyContent()` / `assertContent()` — fingerprint integrity verification       |
-| `src/content-addressing/migrate.ts`     | `migrateContentToDedupStore()` — batch migration with dedup stats                |
-| `src/content-addressing/index.ts`       | Barrel re-export for content-addressing                                          |
+| File                                    | Description                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------- |
+| `src/filesystem/agentfs/manager.ts`     | `AgentFsManager` — namespace-scoped virtual filesystem with file content hashes |
+| `src/filesystem/agentfs/kv-store.ts`    | `KvStore<T>` — TTL-aware key-value store with expiry and orphan purge           |
+| `src/filesystem/agentfs/audit-trail.ts` | `AuditTrail` — tamper-evident event log with secret pattern redaction           |
+| `src/filesystem/agentfs/snapshots.ts`   | `SnapshotStore` — point-in-time capture and restore of AgentFS state            |
+| `src/content-addressing/fingerprint.ts` | `fingerprintContent()` — BLAKE3 fingerprint with algorithm/size metadata        |
+| `src/content-addressing/dedup-store.ts` | `DedupStore` — reference-counted content deduplication store                    |
+| `src/content-addressing/verify.ts`      | `verifyContent()` / `assertContent()` — fingerprint integrity verification      |
+| `src/content-addressing/migrate.ts`     | `migrateContentToDedupStore()` — batch migration with dedup stats               |
+| `src/content-addressing/index.ts`       | Barrel re-export for content-addressing                                         |
 
 ### `@agentsy/runtime`
 

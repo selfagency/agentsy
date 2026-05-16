@@ -40,8 +40,15 @@ export function createSnapshotStore(): SnapshotStore {
       const snapshot = snapshots.get(snapshotId);
       if (snapshot === undefined) return false;
       manager.clear();
-      for (const entry of snapshot.entries) {
-        manager.write(entry.path, entry.content);
+
+      // Use manager.import() if available to preserve full entry metadata (timestamps)
+      if (typeof manager.import === 'function') {
+        manager.import(snapshot.entries.map(e => ({ ...e })));
+      } else {
+        // Fallback for simple manager implementations
+        for (const entry of snapshot.entries) {
+          manager.write(entry.path, entry.content);
+        }
       }
       return true;
     },
