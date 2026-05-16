@@ -23,7 +23,7 @@ describe('VirtualSandbox', () => {
       postMessage: vi.fn()
     };
     vi.mocked(Worker).mockImplementation(function () {
-      return mockWorkerInstance as any;
+      return mockWorkerInstance as unknown as Worker;
     });
     vi.useFakeTimers();
   });

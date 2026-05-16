@@ -41,10 +41,9 @@ describe('createSandboxRouter', () => {
     expect((sandbox as { mode?: string }).mode).not.toBe('container');
   });
 
-  it('routes none decision to VirtualSandbox (fallback)', () => {
+  it('throws on none decision', () => {
     const router = createSandboxRouter();
-    const sandbox = router.route(makeDecision('none'));
-    expect(typeof sandbox.execute).toBe('function');
+    expect(() => router.route(makeDecision('none'))).toThrow('Sandbox execution explicitly disabled by policy');
   });
 
   it('virtual sandbox execute() runs simple code', async () => {

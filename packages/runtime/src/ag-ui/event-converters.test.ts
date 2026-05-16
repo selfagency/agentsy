@@ -434,9 +434,7 @@ describe('convertEventStream', () => {
     }
 
     expect(results).toHaveLength(2);
-    const firstEvent = results[0];
-    expect(firstEvent).toBeDefined();
-    if (!firstEvent) return;
+    const firstEvent = results[0]!;
     expect((firstEvent as CustomUIEvent).eventType).toBe(EventType.RUN_STARTED);
   });
 
@@ -456,13 +454,9 @@ describe('convertEventStream', () => {
     }
 
     expect(results).toHaveLength(3);
-    const first = results[0];
-    const second = results[1];
-    const third = results[2];
-    expect(first).toBeDefined();
-    expect(second).toBeDefined();
-    expect(third).toBeDefined();
-    if (!first || !second || !third) return;
+    const first = results[0]!;
+    const second = results[1]!;
+    const third = results[2]!;
     expect((first as CustomUIEvent).runId).toBe('run_a');
     expect((second as CustomUIEvent).runId).toBe('run_b');
     expect((third as CustomUIEvent).runId).toBe('run_c');

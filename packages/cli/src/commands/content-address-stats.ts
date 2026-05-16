@@ -9,9 +9,9 @@ const defaultIo = {
 export function runContentAddressStatsCommand(argv: readonly string[], io: CliIO = defaultIo): number {
   const sampleArg = argv.find(a => a.startsWith('--sample='));
   const sampleContents =
-    sampleArg !== undefined
-      ? sampleArg.replace('--sample=', '').split(',').filter(Boolean)
-      : ['Hello, world!', 'Hello, world!', 'Unique content A', 'Unique content B', 'Unique content A'];
+    sampleArg === undefined
+      ? ['Hello, world!', 'Hello, world!', 'Unique content A', 'Unique content B', 'Unique content A']
+      : sampleArg.replace('--sample=', '').split(',').filter(Boolean);
 
   const asJson = argv.includes('--json');
   const stdout = io.stdout ?? defaultIo.stdout;

@@ -63,10 +63,10 @@ export function createAuditTrail(): AuditTrail {
         correlationId: options?.correlationId ?? generateId(),
         operation,
         path: redactSecrets(path),
-        ...(options?.contentHash !== undefined ? { contentHash: options.contentHash } : {}),
-        ...(options?.actor !== undefined ? { actor: options.actor } : {}),
+        ...(options?.contentHash === undefined ? {} : { contentHash: options.contentHash }),
+        ...(options?.actor === undefined ? {} : { actor: options.actor }),
         timestamp: Date.now(),
-        ...(options?.metadata !== undefined ? { metadata: options.metadata } : {})
+        ...(options?.metadata === undefined ? {} : { metadata: options.metadata })
       };
       events.push(event);
       return event;

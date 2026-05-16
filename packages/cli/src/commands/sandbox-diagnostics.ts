@@ -30,7 +30,7 @@ function runDiagnostics(): SandboxDiagnosticsResult {
     containerRuntime: {
       available: detection.available,
       runtime: detection.runtime,
-      ...(detection.socketPath !== undefined ? { socketPath: detection.socketPath } : {})
+      ...(detection.socketPath === undefined ? {} : { socketPath: detection.socketPath })
     },
     defaultTrigger: { mode: defaultTrigger.mode, reason: defaultTrigger.reason },
     untrustedTrigger: { mode: untrustedTrigger.mode, reason: untrustedTrigger.reason }

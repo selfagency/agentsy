@@ -28,7 +28,7 @@ export function createSnapshotStore(): SnapshotStore {
     capture(manager, label) {
       const snapshot: Snapshot = {
         id: generateSnapshotId(),
-        ...(label !== undefined ? { label } : {}),
+        ...(label === undefined ? {} : { label }),
         timestamp: Date.now(),
         entries: manager.list().map(e => ({ ...e }))
       };
