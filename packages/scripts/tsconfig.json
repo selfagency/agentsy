@@ -4,7 +4,8 @@
     "outDir": "dist",
     "rootDir": "..",
     "composite": false,
-    "noEmit": false
+    "noEmit": false,
+    "strictNullChecks": true
   },
   "include": ["src/**/*"]
 }
