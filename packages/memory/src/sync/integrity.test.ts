@@ -56,7 +56,8 @@ describe('sync integrity helpers', () => {
     };
 
     const clone = cloneSyncSnapshot(snapshot);
-    (snapshot.records[0]?.metadata as { nested: { value: string } }).nested.value = 'mutated';
+    const record = snapshot.records[0] as { metadata: { nested: { value: string } } };
+    record.metadata.nested.value = 'mutated';
 
     expect(clone.records[0]?.metadata).toMatchObject({ nested: { value: 'original' } });
   });

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 export type { AgentFsEntry, AgentFsManager, AgentFsOptions, AgentFsPath };
 
 function hashContent(content: string): string {
-  return 'sha256:' + createHash('sha256').update(content, 'utf8').digest('hex');
+  return `sha256:${createHash('sha256').update(content, 'utf8').digest('hex')}`;
 }
 
 export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {

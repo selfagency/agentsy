@@ -52,7 +52,7 @@ export function createRivetSandbox(): ContainerSandbox {
         // The Kernel.exec takes a single string command.
         const result = await vm.exec(`tsx ${tempFile}`, {
           // Add environment variables if provided in input (extending for future)
-          env: (input as any).env || {}
+          env: (input as { env?: Record<string, string> }).env || {}
         });
 
         // 4. Cleanup temp file
@@ -67,11 +67,11 @@ export function createRivetSandbox(): ContainerSandbox {
           durationMs: Date.now() - start,
           exitCode
         };
-      } catch (error: any) {
+      } catch (error) {
         return {
           status: 'error',
           stdout: '',
-          stderr: error.message || String(error),
+          stderr: error instanceof Error ? error.message : String(error),
           durationMs: Date.now() - start,
           exitCode: 1
         };

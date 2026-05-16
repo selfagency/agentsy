@@ -72,16 +72,6 @@ export function createVirtualSandbox(): VirtualSandbox {
               durationMs: Date.now() - start,
               exitCode: 0
             });
-          } else if (msg.type === 'error') {
-            clearTimeout(timeout);
-            worker.terminate();
-            resolve({
-              status: 'error',
-              stdout: stdout.join('\n'),
-              stderr: msg.value.message || String(msg.value),
-              durationMs: Date.now() - start,
-              exitCode: 1
-            });
           }
         });
 

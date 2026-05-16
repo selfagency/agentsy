@@ -1,0 +1,102 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createVirtualSandbox } from './virtual-sandbox.js';
+import { Worker } from 'node:worker_threads';
+
+// We need to mock node:worker_threads to test the Worker lifecycle without actual threads failing in CI
+vi.mock('node:worker_threads', () => {
+  return {
+    Worker: vi.fn()
+  };
+});
+
+describe('VirtualSandbox', () => {
+  let mockWorkerInstance: any;
+
+  beforeEach(() => {
+    mockWorkerInstance = {
+      on: vi.fn(),
+      terminate: vi.fn(),
+      postMessage: vi.fn()
+    };
+    vi.mocked(Worker).mockImplementation(function () {
+      return mockWorkerInstance;
+    } as any);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
+  it('should execute code and return ok status', async () => {
+    const sandbox = createVirtualSandbox();
+    const executePromise = sandbox.execute({ code: 'console.log("hi");' });
+
+    // Extract the 'message' listener
+    const onMessage = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'message')[1];
+
+    // Simulate log
+    onMessage({ type: 'log', args: ['hi'] });
+    // Simulate result
+    onMessage({ type: 'result', value: undefined });
+
+    const result = await executePromise;
+    expect(result.status).toBe('ok');
+    expect(result.stdout).toBe('hi');
+    expect(mockWorkerInstance.terminate).toHaveBeenCalled();
+  });
+
+  it('should handle timeout', async () => {
+    const sandbox = createVirtualSandbox();
+    const executePromise = sandbox.execute({ code: 'while(true);', timeoutMs: 100 });
+
+    // Fast-forward time
+    vi.advanceTimersByTime(150);
+
+    const result = await executePromise;
+    expect(result.status).toBe('timeout');
+    expect(result.stderr).toContain('timed out');
+    expect(mockWorkerInstance.terminate).toHaveBeenCalled();
+  });
+
+  it('should handle worker error', async () => {
+    const sandbox = createVirtualSandbox();
+    const executePromise = sandbox.execute({ code: 'throw new Error("boom");' });
+
+    const onError = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'error')[1];
+    onError(new Error('boom'));
+
+    const result = await executePromise;
+    expect(result.status).toBe('error');
+    expect(result.stderr).toBe('boom');
+  });
+
+  it('should handle non-zero exit code', async () => {
+    const sandbox = createVirtualSandbox();
+    const executePromise = sandbox.execute({ code: 'process.exit(1);' });
+
+    const onExit = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'exit')[1];
+    onExit(1);
+
+    const result = await executePromise;
+    expect(result.status).toBe('error');
+    expect(result.exitCode).toBe(1);
+  });
+
+  it('should handle worker messages for warn, error, info', async () => {
+    const sandbox = createVirtualSandbox();
+    const executePromise = sandbox.execute({ code: 'console.warn("w"); console.error("e");' });
+
+    const onMessage = mockWorkerInstance.on.mock.calls.find((c: any) => c[0] === 'message')[1];
+    onMessage({ type: 'warn', args: ['w'] });
+    onMessage({ type: 'error', args: ['e'] });
+    onMessage({ type: 'info', args: ['i'] });
+    onMessage({ type: 'result', value: null });
+
+    const result = await executePromise;
+    expect(result.stderr).toContain('w');
+    expect(result.stderr).toContain('e');
+    expect(result.stderr).toContain('i');
+  });
+});

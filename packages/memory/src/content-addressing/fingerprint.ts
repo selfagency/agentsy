@@ -10,7 +10,7 @@ export function fingerprintContent(content: string | Uint8Array): ContentFingerp
   const enc = new TextEncoder();
   const bytes = typeof content === 'string' ? enc.encode(content) : content;
   const digest = blake3(bytes);
-  const value = 'blake3:' + Buffer.from(digest).toString('hex');
+  const value = `blake3:${Buffer.from(digest).toString('hex')}`;
   const size = bytes.byteLength;
   return { algorithm: 'blake3', value, size };
 }

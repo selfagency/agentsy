@@ -40,7 +40,7 @@ export function createKvStore<T = string>(): KvStore<T> {
         key,
         value,
         setAt: Date.now(),
-        ...(ttlMs !== undefined ? { expiresAt: Date.now() + ttlMs } : {})
+        ...(ttlMs ? { expiresAt: Date.now() + ttlMs } : {})
       };
       store.set(key, entry);
     },

@@ -162,7 +162,7 @@ function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendat
 function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommendation | null {
   const { entry, criteria, category, modelsDevData, systemCapabilities, availableVram } = inputs;
 
-  if (entry.isLocalCompatible === false) {
+  if (!entry.isLocalCompatible) {
     return null;
   }
 

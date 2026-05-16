@@ -4,7 +4,18 @@
  * Verifies conversion to CopilotKit and custom UI event formats
  */
 
-import type { RunStartedEvent, TextMessageContentEvent, ToolCallStartEvent } from '@agentsy/types';
+import type {
+  ReasoningMessageContentEvent,
+  RunErrorEvent,
+  RunFinishedEvent,
+  RunStartedEvent,
+  StepFinishedEvent,
+  StepStartedEvent,
+  TextMessageContentEvent,
+  ToolCallArgsEvent,
+  ToolCallEndEvent,
+  ToolCallStartEvent
+} from '@agentsy/types';
 import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
 import {
@@ -109,6 +120,23 @@ describe('toCopilotKitEvent', () => {
     expect(result.toolName).toBe('search');
   });
 
+  it('should fallback to original type if not in mapping', () => {
+    const unknownEvent = {
+      type: 'EXTREMELY_UNKNOWN_TYPE',
+      payload: 'data'
+    };
+    const result = toCopilotKitEvent(unknownEvent as any);
+    expect(result.type).toBe('EXTREMELY_UNKNOWN_TYPE');
+  });
+
+  it('should default to "unknown" if type is missing', () => {
+    const missingTypeEvent = {
+      payload: 'data'
+    };
+    const result = toCopilotKitEvent(missingTypeEvent as any);
+    expect(result.type).toBe('unknown');
+  });
+
   it('should convert all event types to their mapped values', () => {
     const testCases = [
       { eventType: EventType.RUN_STARTED, expected: 'run:started' },
@@ -210,6 +238,119 @@ describe('toCustomUIEvent', () => {
 
     expect(result.payload.toolCallId).toBe('call_123');
     expect(result.payload.toolName).toBe('search');
+  });
+
+  it('should build payload for REASONING_MESSAGE_CONTENT', () => {
+    const event: ReasoningMessageContentEvent = {
+      type: EventType.REASONING_MESSAGE_CONTENT,
+      runId: 'run_123',
+      messageId: 'msg_123',
+      content: 'Thinking...',
+      timestamp: '2024-01-01T00:00:00Z',
+      encryptedValue: 'secret'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.messageId).toBe('msg_123');
+    expect(result.payload.content).toBe('Thinking...');
+    expect(result.payload.encrypted).toBe(true);
+  });
+
+  it('should build payload for TOOL_CALL_ARGS', () => {
+    const event: ToolCallArgsEvent = {
+      type: EventType.TOOL_CALL_ARGS,
+      runId: 'run_123',
+      toolCallId: 'call_123',
+      args: '{"query": "test"}',
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.toolCallId).toBe('call_123');
+    expect(result.payload.args).toBe('{"query": "test"}');
+  });
+
+  it('should build payload for TOOL_CALL_END', () => {
+    const event: ToolCallEndEvent = {
+      type: EventType.TOOL_CALL_END,
+      runId: 'run_123',
+      toolCallId: 'call_123',
+      output: 'Success',
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.toolCallId).toBe('call_123');
+    expect(result.payload.output).toBe('Success');
+  });
+
+  it('should build payload for RUN_FINISHED', () => {
+    const event: RunFinishedEvent = {
+      type: EventType.RUN_FINISHED,
+      runId: 'run_123',
+      outcome: { type: 'success' },
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.outcome).toEqual({ type: 'success' });
+  });
+
+  it('should build payload for RUN_ERROR', () => {
+    const event: RunErrorEvent = {
+      type: EventType.RUN_ERROR,
+      runId: 'run_123',
+      error: { message: 'Something went wrong' },
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.error).toEqual({ message: 'Something went wrong' });
+  });
+
+  it('should build payload for STEP_STARTED', () => {
+    const event: StepStartedEvent = {
+      type: EventType.STEP_STARTED,
+      runId: 'run_123',
+      stepIndex: 1,
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.stepIndex).toBe(1);
+  });
+
+  it('should build payload for STEP_FINISHED', () => {
+    const event: StepFinishedEvent = {
+      type: EventType.STEP_FINISHED,
+      runId: 'run_123',
+      stepIndex: 1,
+      outputLength: 100,
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+
+    const result = toCustomUIEvent(event);
+
+    expect(result.payload.stepIndex).toBe(1);
+    expect(result.payload.outputLength).toBe(100);
+  });
+
+  it('should handle unmapped event types via default case', () => {
+    const unknownEvent = {
+      type: 'UNKNOWN_EVENT_TYPE',
+      runId: 'run_123',
+      foo: 'bar',
+      timestamp: '2024-01-01T00:00:00Z'
+    };
+    const result = toCustomUIEvent(unknownEvent as any);
+    expect(result.eventType).toBe('UNKNOWN_EVENT_TYPE');
+    expect(result.payload.foo).toBe('bar');
   });
 
   it('should not include undefined threadId', () => {

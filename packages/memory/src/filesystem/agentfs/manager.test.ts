@@ -61,7 +61,7 @@ describe('createAgentFsManager', () => {
     const paths = mgr
       .list()
       .map(e => e.path)
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
     expect(paths).toEqual(['/a', '/b']);
   });
 

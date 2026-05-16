@@ -1,5 +1,4 @@
-import { detectContainerRuntime } from '@agentsy/runtime';
-import { decideSandboxTrigger } from '@agentsy/runtime';
+import { decideSandboxTrigger, detectContainerRuntime } from '@agentsy/runtime';
 import type { CliIO } from '../index.js';
 
 interface SandboxDiagnosticsResult {
