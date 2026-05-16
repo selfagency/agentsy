@@ -420,32 +420,32 @@ const TIER_CONFIGS: Record<MemoryTier, TierConfig> = {
     bufferSize: 200, // tokens
     duration: 5000, // 5 seconds
     capacity: 200,
-    compression: { target: 75 }, // 75% output reduction
+    compression: { target: 75 } // 75% output reduction
   },
   SENSORY_REGISTER: {
     bufferSize: 300,
     duration: 2000, // 2 seconds
     capacity: 4, // 3-4 items
-    compression: { target: 75 },
+    compression: { target: 75 }
   },
   WORKING_MEMORY: {
     bufferSize: 500,
     duration: 30000, // 30 seconds
     capacity: 7, // 4-7 chunks
-    compression: { target: 46 }, // 46% memory reduction
+    compression: { target: 46 } // 46% memory reduction
   },
   SHORT_TERM_MEMORY: {
     bufferSize: 1000,
     duration: 3600000, // 1 hour
     capacity: 12, // 6-12 projections
-    compression: { target: 46 },
+    compression: { target: 46 }
   },
   LONG_TERM_MEMORY: {
     bufferSize: Infinity,
     duration: Infinity,
     capacity: Infinity,
-    compression: { target: 46 },
-  },
+    compression: { target: 46 }
+  }
 };
 ```
 
@@ -467,15 +467,15 @@ const TOKEN_BUDGET_CONFIG: TokenBudgetConfig = {
     SENSORY_REGISTER: 400,
     WORKING_MEMORY: 1000,
     SHORT_TERM_MEMORY: 2000,
-    LONG_TERM_MEMORY: 0, // unlimited
+    LONG_TERM_MEMORY: 0 // unlimited
   },
   reclamationThresholds: {
     SENSORY_BUFFER: 180,
     SENSORY_REGISTER: 360,
     WORKING_MEMORY: 900,
     SHORT_TERM_MEMORY: 1800,
-    LONG_TERM_MEMORY: 0,
-  },
+    LONG_TERM_MEMORY: 0
+  }
 };
 ```
 

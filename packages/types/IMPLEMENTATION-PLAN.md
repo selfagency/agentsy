@@ -122,9 +122,9 @@ To prevent "primitive obsession" and accidental mixing of IDs (e.g., passing a `
 
 ```typescript
 export type Brand<K, T> = K & { __brand: T };
-export type SessionId = Brand<string, "SessionId">;
-export type AgentId = Brand<string, "AgentId">;
-export type TraceId = Brand<string, "TraceId">;
+export type SessionId = Brand<string, 'SessionId'>;
+export type AgentId = Brand<string, 'AgentId'>;
+export type TraceId = Brand<string, 'TraceId'>;
 ```
 
 This forces developers to use explicit factories or type guards, significantly reducing ID-related bugs in complex multi-agent workflows.
@@ -135,14 +135,14 @@ Instead of complex class hierarchies, we use discriminated unions for message co
 
 ```typescript
 export type ContentPart =
-  | { type: "text"; text: string }
-  | { type: "image"; image: { data: string; mimeType: string } }
-  | { type: "tool_call"; toolCall: NormalizedToolCall }
-  | { type: "tool_result"; toolResult: ToolResult }
-  | { type: "thought"; thought: string; internal?: boolean };
+  | { type: 'text'; text: string }
+  | { type: 'image'; image: { data: string; mimeType: string } }
+  | { type: 'tool_call'; toolCall: NormalizedToolCall }
+  | { type: 'tool_result'; toolResult: ToolResult }
+  | { type: 'thought'; thought: string; internal?: boolean };
 
 export interface AgentMessage {
-  role: "user" | "assistant" | "system" | "tool";
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: ContentPart[];
 }
 ```
@@ -175,7 +175,7 @@ export interface NormalizedChunk {
     thought?: string;
     toolCall?: Partial<NormalizedToolCall>;
   };
-  finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "error";
+  finishReason?: 'stop' | 'length' | 'tool_calls' | 'content_filter' | 'error';
   usage?: TokenUsage;
 }
 ```

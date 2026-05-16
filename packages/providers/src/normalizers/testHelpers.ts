@@ -1,8 +1,8 @@
 // fallow-ignore-file unused-file
 
-import { expect } from "vitest";
+import { expect } from 'vitest';
 
-import type { NormalizerResult } from "./types.js";
+import type { NormalizerResult } from './types.js';
 
 /**
  * Test helper for normalizer finish reason mappings.
@@ -31,13 +31,11 @@ export function createFinishReasonTest(
 export function testContentMapping(
   normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
   setupInput: (content: string) => Record<string, unknown>,
-  expectedField: "content" | "thinking",
+  expectedField: 'content' | 'thinking',
   expectedValue: string
 ): void {
   const result = normalizer(setupInput(expectedValue));
-  expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(
-    expectedValue
-  );
+  expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(expectedValue);
   expect(result?.chunk.done).toBeFalsy();
 }
 

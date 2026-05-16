@@ -1,7 +1,7 @@
-import type { UsageQuota, UsageStatusBarConfig } from "../types/errors.js";
+import type { UsageQuota, UsageStatusBarConfig } from '../types/errors.js';
 
 const DEFAULT_REFRESH_INTERVAL = 60_000;
-const DEFAULT_TOOLTIP = "{{used}} / {{total}} {{unit}} used ({{percent}}%)";
+const DEFAULT_TOOLTIP = '{{used}} / {{total}} {{unit}} used ({{percent}}%)';
 const DEFAULT_WARNING_THRESHOLD = 0.8;
 const DEFAULT_ERROR_THRESHOLD = 0.95;
 
@@ -23,18 +23,15 @@ export class UsageStatusBar {
    */
   async show(): Promise<void> {
     try {
-      const vscode = await import("vscode");
-      const item = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Right,
-        100
-      );
+      const vscode = await import('vscode');
+      const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
       if (!item) {
         return;
       }
       this.statusBarItem = item;
       if (this.config.onClickRefresh) {
         const itemWithCommand = item as unknown as { command: string };
-        itemWithCommand.command = "agentsy.refreshUsage";
+        itemWithCommand.command = 'agentsy.refreshUsage';
       }
       this.disposables.push(item);
       await this.refresh();
@@ -76,10 +73,10 @@ export class UsageStatusBar {
 
     const template = this.config.tooltipTemplate ?? DEFAULT_TOOLTIP;
     item.tooltip = template
-      .replace("{{used}}", quota.used.toLocaleString())
-      .replace("{{total}}", quota.total.toLocaleString())
-      .replace("{{unit}}", quota.unit)
-      .replace("{{percent}}", String(percent));
+      .replace('{{used}}', quota.used.toLocaleString())
+      .replace('{{total}}', quota.total.toLocaleString())
+      .replace('{{unit}}', quota.unit)
+      .replace('{{percent}}', String(percent));
 
     if (quota.percentUsed >= error) {
       const { colorScheme } = this.config;
@@ -149,12 +146,12 @@ export function getQuotaStatus(
   percentUsed: number,
   warningThreshold = DEFAULT_WARNING_THRESHOLD,
   errorThreshold = DEFAULT_ERROR_THRESHOLD
-): "normal" | "warning" | "error" {
+): 'normal' | 'warning' | 'error' {
   if (percentUsed >= errorThreshold) {
-    return "error";
+    return 'error';
   }
   if (percentUsed >= warningThreshold) {
-    return "warning";
+    return 'warning';
   }
-  return "normal";
+  return 'normal';
 }

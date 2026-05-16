@@ -1,7 +1,4 @@
-import type {
-  McpServerDefinition,
-  McpServerRegistryConfig,
-} from "../types/errors.js";
+import type { McpServerDefinition, McpServerRegistryConfig } from '../types/errors.js';
 
 /**
  * Manages registration and lifecycle of MCP (Model Context Protocol) servers.
@@ -87,14 +84,11 @@ export class McpServerRegistry {
    */
   async registerWithVscode(): Promise<void> {
     try {
-      const vscode = await import("vscode");
+      const vscode = await import('vscode');
       const config = vscode.workspace.getConfiguration();
 
       const existing: Record<string, unknown> =
-        (config.get<Record<string, unknown>>(this.config.namespace) as Record<
-          string,
-          unknown
-        >) ?? {};
+        (config.get<Record<string, unknown>>(this.config.namespace) as Record<string, unknown>) ?? {};
 
       const merged: Record<string, unknown> = { ...existing };
 
@@ -105,21 +99,15 @@ export class McpServerRegistry {
         merged[server.name] = this.toWorkspaceServerConfig(server);
       }
 
-      await config.update(
-        this.config.namespace,
-        merged,
-        vscode.ConfigurationTarget.Workspace
-      );
+      await config.update(this.config.namespace, merged, vscode.ConfigurationTarget.Workspace);
     } catch {
       // VS Code not available
     }
   }
 
-  private toWorkspaceServerConfig(
-    server: McpServerDefinition
-  ): Record<string, unknown> {
+  private toWorkspaceServerConfig(server: McpServerDefinition): Record<string, unknown> {
     const config: Record<string, unknown> = {
-      command: server.command,
+      command: server.command
     };
 
     if (server.args?.length) {

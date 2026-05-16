@@ -1,10 +1,10 @@
-import { getCachedAnsi } from "./tokenCache.js";
+import { getCachedAnsi } from './tokenCache.js';
 
 async function highlightCode(code: string, lang?: string): Promise<string> {
   try {
-    const { highlight, supportsLanguage } = await import("cli-highlight");
+    const { highlight, supportsLanguage } = await import('cli-highlight');
     const options = lang && supportsLanguage(lang) ? { language: lang } : {};
-    const cacheKey = `${lang ?? ""}::${code}`;
+    const cacheKey = `${lang ?? ''}::${code}`;
     return getCachedAnsi(cacheKey, () => highlight(code, options));
   } catch {
     return code;
@@ -20,9 +20,9 @@ export async function highlightCodeFences(content: string): Promise<string> {
   let match = CODE_FENCE_RE.exec(content);
   while (match !== null) {
     matches.push({
-      code: match[2] ?? "",
-      full: match[0] ?? "",
-      lang: match[1] ?? "",
+      code: match[2] ?? '',
+      full: match[0] ?? '',
+      lang: match[1] ?? ''
     });
     match = CODE_FENCE_RE.exec(content);
   }

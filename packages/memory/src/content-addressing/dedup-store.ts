@@ -1,5 +1,5 @@
-import type { ContentFingerprint } from "./fingerprint.js";
-import { fingerprintContent } from "./fingerprint.js";
+import type { ContentFingerprint } from './fingerprint.js';
+import { fingerprintContent } from './fingerprint.js';
 
 export interface DedupEntry {
   readonly fingerprint: ContentFingerprint;
@@ -69,6 +69,6 @@ export function createDedupStore(): DedupStore {
 
     size() {
       return store.size;
-    },
+    }
   };
 }

@@ -1,7 +1,7 @@
-import type { BaseRendererOptions, ThinkingStyle } from "@agentsy/renderers";
+import type { BaseRendererOptions, ThinkingStyle } from '@agentsy/renderers';
 
-import type { MinimalChatResponseStream } from "./createVSCodeChatRenderer.js";
-import { createVSCodeChatRenderer } from "./createVSCodeChatRenderer.js";
+import type { MinimalChatResponseStream } from './createVSCodeChatRenderer.js';
+import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
 /**
  * Options for VS Code agent loop renderer.
@@ -68,7 +68,7 @@ export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
 export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   const mergedOptions = {
     ...options,
-    showThinking: options.showThinking !== false,
+    showThinking: options.showThinking !== false
   };
 
   const renderer = createVSCodeChatRenderer(mergedOptions);
@@ -95,16 +95,10 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   const { abortSignal } = options;
   if (abortSignal) {
     const onAbort = () => {
-      endOnce().catch((error) => {
-        console.warn(
-          "[VS Code Agent Loop] Error during cancellation cleanup:",
-          error
-        );
+      endOnce().catch(error => {
+        console.warn('[VS Code Agent Loop] Error during cancellation cleanup:', error);
         if (error instanceof Error && error.stack) {
-          console.warn(
-            "[VS Code Agent Loop] Cleanup error stack:",
-            error.stack
-          );
+          console.warn('[VS Code Agent Loop] Cleanup error stack:', error.stack);
         }
       });
     };
@@ -112,9 +106,9 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
     if (abortSignal.aborted) {
       onAbort();
     } else {
-      abortSignal.addEventListener("abort", onAbort, { once: true });
+      abortSignal.addEventListener('abort', onAbort, { once: true });
       detachAbortListener = () => {
-        abortSignal.removeEventListener("abort", onAbort);
+        abortSignal.removeEventListener('abort', onAbort);
       };
     }
   }
@@ -122,6 +116,6 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
   return {
     end: endOnce,
     write: renderer.write,
-    writeChunk: renderer.writeChunk,
+    writeChunk: renderer.writeChunk
   };
 }

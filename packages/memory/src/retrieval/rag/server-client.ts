@@ -3,8 +3,8 @@ import type {
   RAGHealthResult,
   RAGSearchRequest,
   RAGSearchResult,
-  RAGServerDocument,
-} from "./types.js";
+  RAGServerDocument
+} from './types.js';
 
 export interface RAGServerClientOptions {
   baseUrl: string;
@@ -34,10 +34,10 @@ async function requestJson<T>(
     const response = await fetch(`${baseUrl}${path}`, {
       ...init,
       headers: {
-        "content-type": "application/json",
-        ...init.headers,
+        'content-type': 'application/json',
+        ...init.headers
       },
-      signal: controller.signal,
+      signal: controller.signal
     });
 
     const data = (await response.json().catch(() => null)) as T | null;
@@ -49,10 +49,8 @@ async function requestJson<T>(
   }
 }
 
-export function createRAGServerClient(
-  options: RAGServerClientOptions
-): RAGServerClient {
-  const baseUrl = options.baseUrl.replace(/\/$/u, "");
+export function createRAGServerClient(options: RAGServerClientOptions): RAGServerClient {
+  const baseUrl = options.baseUrl.replace(/\/$/u, '');
   const timeoutMs = Math.max(200, options.timeoutMs ?? 3000);
 
   return {
@@ -62,33 +60,28 @@ export function createRAGServerClient(
         timeoutMs,
         `/documents/${encodeURIComponent(documentId)}`,
         {
-          method: "DELETE",
+          method: 'DELETE'
         }
       );
 
       return {
         deleted: result.data?.deleted ?? false,
-        id: result.data?.id ?? documentId,
+        id: result.data?.id ?? documentId
       };
     },
 
     async health() {
-      const result = await requestJson<{ status?: string }>(
-        baseUrl,
-        timeoutMs,
-        "/health",
-        {
-          method: "GET",
-        }
-      );
+      const result = await requestJson<{ status?: string }>(baseUrl, timeoutMs, '/health', {
+        method: 'GET'
+      });
 
       if (!result.ok) {
-        return { ok: false, status: "degraded" };
+        return { ok: false, status: 'degraded' };
       }
 
       return {
         ok: true,
-        status: result.data?.status ?? "ok",
+        status: result.data?.status ?? 'ok'
       };
     },
 
@@ -97,15 +90,10 @@ export function createRAGServerClient(
     },
 
     async search(request) {
-      const result = await requestJson<{ results?: RAGSearchResult[] }>(
-        baseUrl,
-        timeoutMs,
-        "/search",
-        {
-          body: JSON.stringify(request),
-          method: "POST",
-        }
-      );
+      const result = await requestJson<{ results?: RAGSearchResult[] }>(baseUrl, timeoutMs, '/search', {
+        body: JSON.stringify(request),
+        method: 'POST'
+      });
 
       if (!result.ok) {
         return [];
@@ -115,19 +103,14 @@ export function createRAGServerClient(
     },
 
     async upsert(document) {
-      const result = await requestJson<Record<string, unknown>>(
-        baseUrl,
-        timeoutMs,
-        "/documents",
-        {
-          body: JSON.stringify(document),
-          method: "POST",
-        }
-      );
+      const result = await requestJson<Record<string, unknown>>(baseUrl, timeoutMs, '/documents', {
+        body: JSON.stringify(document),
+        method: 'POST'
+      });
 
       if (!result.ok) {
         throw new Error(`Failed to upsert document ${document.id}`);
       }
-    },
+    }
   };
 }

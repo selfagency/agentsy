@@ -2,20 +2,16 @@ export interface TimingOptions {
   timeout?: number;
   delay?: number;
   retries?: number;
-  backoff?: "linear" | "exponential";
+  backoff?: 'linear' | 'exponential';
 }
 
 export const TimingUtils = {
-  calculateBackoffDelay(
-    attempt: number,
-    baseDelay: number,
-    strategy: "linear" | "exponential"
-  ): number {
+  calculateBackoffDelay(attempt: number, baseDelay: number, strategy: 'linear' | 'exponential'): number {
     switch (strategy) {
-      case "linear": {
+      case 'linear': {
         return baseDelay * (attempt + 1);
       }
-      case "exponential": {
+      case 'exponential': {
         return baseDelay * 2 ** attempt;
       }
       default: {
@@ -25,7 +21,7 @@ export const TimingUtils = {
   },
 
   async delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   },
 
   formatDuration(ms: number): string {
@@ -47,44 +43,33 @@ export const TimingUtils = {
     return `${hours}h ${minutes % 60}m`;
   },
 
-  async retry<T>(
-    operation: () => Promise<T>,
-    options: TimingOptions = {}
-  ): Promise<T> {
-    const { retries = 3, backoff = "exponential", delay = 1000 } = options;
+  async retry<T>(operation: () => Promise<T>, options: TimingOptions = {}): Promise<T> {
+    const { retries = 3, backoff = 'exponential', delay = 1000 } = options;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        const errorObj =
-          error instanceof Error ? error : new Error(String(error));
+        const errorObj = error instanceof Error ? error : new Error(String(error));
 
         if (attempt === retries) {
           throw errorObj;
         }
 
-        const backoffDelay = this.calculateBackoffDelay(
-          attempt,
-          delay,
-          backoff
-        );
+        const backoffDelay = this.calculateBackoffDelay(attempt, delay, backoff);
         await this.delay(backoffDelay);
       }
     }
 
     // This should never be reached, but TypeScript needs it
-    throw new Error("Retry operation failed unexpectedly");
+    throw new Error('Retry operation failed unexpectedly');
   },
 
   async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(
-        () => reject(new Error(`Operation timed out after ${timeoutMs}ms`)),
-        timeoutMs
-      );
+      timeoutId = setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs);
     });
 
     try {
@@ -94,7 +79,7 @@ export const TimingUtils = {
         clearTimeout(timeoutId);
       }
     }
-  },
+  }
 };
 
 export class Debouncer {

@@ -61,11 +61,11 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
       // Normalize observer
       let observer: Partial<Observer<T>>;
 
-      if (typeof observerOrNext === "function") {
+      if (typeof observerOrNext === 'function') {
         observer = {
           next: observerOrNext,
           ...(error !== null && error !== undefined && { error }),
-          ...(complete !== null && complete !== undefined && { complete }),
+          ...(complete !== null && complete !== undefined && { complete })
         };
       } else {
         observer = observerOrNext || {};
@@ -101,8 +101,8 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
           isCancelled = true;
           // Also clean up generator on early unsubscribe
           void generator.return?.();
-        },
+        }
       };
-    },
+    }
   };
 }

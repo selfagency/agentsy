@@ -1,7 +1,7 @@
 export interface ContentProcessor {
   normalize(content: string): string;
   extractCodeBlocks(content: string): string[];
-  detectFormat(content: string): "markdown" | "text" | "code" | "json";
+  detectFormat(content: string): 'markdown' | 'text' | 'code' | 'json';
   toSearchableText(content: string): string;
   extractEntities(content: string): string[];
 }
@@ -10,21 +10,18 @@ const CODE_BLOCK_PATTERN = /```[\s\S]*?```/g;
 const ENTITY_PATTERN = /\b[A-Z][A-Za-z0-9]*\b/g;
 
 function normalizeWhitespace(content: string): string {
-  return content.replaceAll("\r\n", "\n").trim();
+  return content.replaceAll('\r\n', '\n').trim();
 }
 
 function looksLikeJson(content: string): boolean {
   const normalized = normalizeWhitespace(content);
   return (
-    (normalized.startsWith("{") && normalized.endsWith("}")) ||
-    (normalized.startsWith("[") && normalized.endsWith("]"))
+    (normalized.startsWith('{') && normalized.endsWith('}')) || (normalized.startsWith('[') && normalized.endsWith(']'))
   );
 }
 
 function looksLikeCode(content: string): boolean {
-  return /\b(function|const|let|class|interface|return|import|export)\b/.test(
-    content
-  );
+  return /\b(function|const|let|class|interface|return|import|export)\b/.test(content);
 }
 
 function looksLikeMarkdown(content: string): boolean {
@@ -35,18 +32,18 @@ export function createContentProcessor(): ContentProcessor {
   return {
     detectFormat(content: string) {
       if (looksLikeJson(content)) {
-        return "json";
+        return 'json';
       }
 
       if (looksLikeMarkdown(content)) {
-        return "markdown";
+        return 'markdown';
       }
 
       if (looksLikeCode(content)) {
-        return "code";
+        return 'code';
       }
 
-      return "text";
+      return 'text';
     },
 
     extractCodeBlocks(content: string) {
@@ -55,7 +52,7 @@ export function createContentProcessor(): ContentProcessor {
 
     extractEntities(content: string) {
       const candidates = content.match(ENTITY_PATTERN) ?? [];
-      return [...new Set(candidates.filter((entity) => entity.length >= 3))];
+      return [...new Set(candidates.filter(entity => entity.length >= 3))];
     },
 
     normalize(content: string) {
@@ -72,8 +69,8 @@ export function createContentProcessor(): ContentProcessor {
       }
 
       return normalizeWhitespace(content)
-        .replace(CODE_BLOCK_PATTERN, " ")
-        .replaceAll(/[`*_#>-]/g, " ");
-    },
+        .replace(CODE_BLOCK_PATTERN, ' ')
+        .replaceAll(/[`*_#>-]/g, ' ');
+    }
   };
 }

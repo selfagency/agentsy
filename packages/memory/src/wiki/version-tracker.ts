@@ -26,6 +26,6 @@ export function createVersionTracker(): VersionTracker {
 
     history(pageId: string) {
       return [...(versionHistory.get(pageId) ?? [])];
-    },
+    }
   };
 }

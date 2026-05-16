@@ -1,11 +1,11 @@
-import type { SettingsValidationResult } from "../types/settings.js";
+import type { SettingsValidationResult } from '../types/settings.js';
 
 /**
  * JSON Schema subset for settings validation.
  * Supports type, required, properties, minimum, maximum, and enum.
  */
 export interface SchemaProperty {
-  type?: "string" | "number" | "boolean" | "object" | "array";
+  type?: 'string' | 'number' | 'boolean' | 'object' | 'array';
   required?: string[];
   properties?: Record<string, SchemaProperty>;
   minimum?: number;
@@ -20,19 +20,12 @@ export type SettingsSchema = SchemaProperty;
 /**
  * Validates settings against a JSON Schema subset.
  */
-export function validateSettings(
-  settings: Record<string, unknown>,
-  schema: SettingsSchema
-): SettingsValidationResult {
+export function validateSettings(settings: Record<string, unknown>, schema: SettingsSchema): SettingsValidationResult {
   const errors: string[] = [];
 
   if (schema.required) {
     for (const key of schema.required) {
-      if (
-        !(key in settings) ||
-        settings[key] === undefined ||
-        settings[key] === null
-      ) {
+      if (!(key in settings) || settings[key] === undefined || settings[key] === null) {
         errors.push(`Missing required setting: '${key}'`);
       }
     }
@@ -54,12 +47,7 @@ export function validateSettings(
 /**
  * Validates a numeric value against schema constraints.
  */
-function validateNumber(
-  value: number,
-  schema: SchemaProperty,
-  path: string,
-  errors: string[]
-): void {
+function validateNumber(value: number, schema: SchemaProperty, path: string, errors: string[]): void {
   if (schema.minimum !== undefined && value < schema.minimum) {
     errors.push(`Setting '${path}' must be >= ${schema.minimum}`);
   }
@@ -71,13 +59,8 @@ function validateNumber(
 /**
  * Validates an object value against schema properties.
  */
-function validateObject(
-  value: unknown,
-  schema: SchemaProperty,
-  path: string,
-  errors: string[]
-): void {
-  if (typeof value !== "object" || Array.isArray(value) || !schema.properties) {
+function validateObject(value: unknown, schema: SchemaProperty, path: string, errors: string[]): void {
+  if (typeof value !== 'object' || Array.isArray(value) || !schema.properties) {
     return;
   }
 
@@ -90,33 +73,24 @@ function validateObject(
   }
 }
 
-function validateValue(
-  path: string,
-  value: unknown,
-  schema: SchemaProperty,
-  errors: string[]
-): void {
+function validateValue(path: string, value: unknown, schema: SchemaProperty, errors: string[]): void {
   if (value === undefined || value === null) {
     return;
   }
 
   if (schema.type) {
-    const actualType = Array.isArray(value) ? "array" : typeof value;
+    const actualType = Array.isArray(value) ? 'array' : typeof value;
     if (actualType !== schema.type) {
-      errors.push(
-        `Setting '${path}' must be of type '${schema.type}', got '${actualType}'`
-      );
+      errors.push(`Setting '${path}' must be of type '${schema.type}', got '${actualType}'`);
       return;
     }
   }
 
   if (schema.enum && !schema.enum.includes(value)) {
-    errors.push(
-      `Setting '${path}' must be one of: ${schema.enum.map(String).join(", ")}`
-    );
+    errors.push(`Setting '${path}' must be one of: ${schema.enum.map(String).join(', ')}`);
   }
 
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     validateNumber(value, schema, path, errors);
   }
 

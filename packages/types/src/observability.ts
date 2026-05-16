@@ -3,23 +3,23 @@
  */
 
 export enum EventType {
-  RUN_STARTED = "run:started",
-  RUN_FINISHED = "run:finished",
-  RUN_ERROR = "run:error",
-  RUN_INTERRUPTED = "run:interrupted",
-  STEP_STARTED = "step:started",
-  STEP_FINISHED = "step:finished",
-  TEXT_MESSAGE_CONTENT = "text_message:content",
-  REASONING_START = "reasoning:start",
-  REASONING_END = "reasoning:end",
-  REASONING_MESSAGE_START = "reasoning_message:start",
-  REASONING_MESSAGE_CONTENT = "reasoning_message:content",
-  REASONING_MESSAGE_END = "reasoning_message:end",
-  TOOL_CALL_START = "tool_call:start",
-  TOOL_CALL_ARGS = "tool_call:args",
-  TOOL_CALL_END = "tool_call:end",
-  STATE_SNAPSHOT = "state:snapshot",
-  STATE_DELTA = "state:delta",
+  RUN_STARTED = 'run:started',
+  RUN_FINISHED = 'run:finished',
+  RUN_ERROR = 'run:error',
+  RUN_INTERRUPTED = 'run:interrupted',
+  STEP_STARTED = 'step:started',
+  STEP_FINISHED = 'step:finished',
+  TEXT_MESSAGE_CONTENT = 'text_message:content',
+  REASONING_START = 'reasoning:start',
+  REASONING_END = 'reasoning:end',
+  REASONING_MESSAGE_START = 'reasoning_message:start',
+  REASONING_MESSAGE_CONTENT = 'reasoning_message:content',
+  REASONING_MESSAGE_END = 'reasoning_message:end',
+  TOOL_CALL_START = 'tool_call:start',
+  TOOL_CALL_ARGS = 'tool_call:args',
+  TOOL_CALL_END = 'tool_call:end',
+  STATE_SNAPSHOT = 'state:snapshot',
+  STATE_DELTA = 'state:delta'
 }
 
 /**
@@ -47,7 +47,7 @@ export interface RunStartedEvent extends BaseAgUiEvent {
 export interface RunFinishedEvent extends BaseAgUiEvent {
   type: EventType.RUN_FINISHED;
   outcome: {
-    type: "success" | "failure" | "interrupted" | "interrupt";
+    type: 'success' | 'failure' | 'interrupted' | 'interrupt';
   };
   usage?: unknown;
 }
@@ -191,7 +191,7 @@ export interface StateDeltaEvent extends BaseAgUiEvent {
  * Simplified JSON Patch operation for AG-UI state synchronization.
  */
 export interface JsonPatchOperation {
-  op: "add" | "remove" | "replace" | "move" | "copy" | "test";
+  op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
   path: string;
   value?: unknown;
   from?: string;

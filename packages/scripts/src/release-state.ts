@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
-export const DEFAULT_RELEASE_STATE = "bootstrap-required";
+export const DEFAULT_RELEASE_STATE = 'bootstrap-required';
 
 /**
  * @param {string} releaseStatePath
@@ -13,20 +13,14 @@ export function readReleaseState(releaseStatePath: string) {
 
   let raw;
   try {
-    raw = JSON.parse(readFileSync(releaseStatePath, "utf-8"));
+    raw = JSON.parse(readFileSync(releaseStatePath, 'utf-8'));
   } catch {
     return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
   }
   const defaultState =
-    raw && typeof raw === "object" && typeof raw.defaultState === "string"
-      ? raw.defaultState
-      : DEFAULT_RELEASE_STATE;
+    raw && typeof raw === 'object' && typeof raw.defaultState === 'string' ? raw.defaultState : DEFAULT_RELEASE_STATE;
   const packages =
-    raw &&
-    typeof raw === "object" &&
-    raw.packages &&
-    typeof raw.packages === "object" &&
-    !Array.isArray(raw.packages)
+    raw && typeof raw === 'object' && raw.packages && typeof raw.packages === 'object' && !Array.isArray(raw.packages)
       ? raw.packages
       : {};
 
@@ -53,9 +47,7 @@ export function writeReleaseState(
   releaseStatePath: string,
   state: { defaultState: string; packages: Record<string, string> }
 ) {
-  const sortedPackages = Object.fromEntries(
-    Object.entries(state.packages).toSorted(([a], [b]) => a.localeCompare(b))
-  );
+  const sortedPackages = Object.fromEntries(Object.entries(state.packages).toSorted(([a], [b]) => a.localeCompare(b)));
   writeFileSync(
     releaseStatePath,
     `${JSON.stringify({ defaultState: state.defaultState, packages: sortedPackages }, null, 2)}\n`

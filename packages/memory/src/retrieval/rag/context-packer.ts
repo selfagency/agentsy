@@ -1,6 +1,6 @@
-import { compressOutput, createTokenLedger } from "@agentsy/tokens";
+import { compressOutput, createTokenLedger } from '@agentsy/tokens';
 
-import type { ContextPackResult, RAGEvidence } from "./types.js";
+import type { ContextPackResult, RAGEvidence } from './types.js';
 
 export interface ContextPackerOptions {
   maxTokens: number;
@@ -17,14 +17,14 @@ export function packEvidenceForContext(
 ): ContextPackResult {
   const maxTokens = Math.max(1, options.maxTokens);
   const ledger = createTokenLedger({ limit: maxTokens });
-  const packed: ContextPackResult["items"] = [];
+  const packed: ContextPackResult['items'] = [];
   let usedTokens = 0;
 
   for (const item of evidence) {
     const citations = options.includeCitations ? item.citations : [];
     const compressedContent = compressOutput(item.content, {
-      level: "lite",
-      preserve: ["code", "technical", "urls", "paths", "markdown", "errors"],
+      level: 'lite',
+      preserve: ['code', 'technical', 'urls', 'paths', 'markdown', 'errors']
     }).compressed;
     const payload = `${item.title}\n${compressedContent}\n${JSON.stringify(citations)}`;
     const cost = estimateTokens(payload);
@@ -38,13 +38,13 @@ export function packEvidenceForContext(
       content: compressedContent,
       id: item.id,
       score: item.score,
-      title: item.title,
+      title: item.title
     });
   }
 
   return {
     items: packed,
     maxTokens,
-    usedTokens,
+    usedTokens
   };
 }

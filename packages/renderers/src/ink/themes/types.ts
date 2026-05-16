@@ -19,7 +19,7 @@ export interface TextTheme {
 }
 
 export interface BorderTheme {
-  style: "single" | "double" | "round" | "none";
+  style: 'single' | 'double' | 'round' | 'none';
   color: string;
 }
 
@@ -36,17 +36,17 @@ export interface Theme {
 }
 
 export type ThemeName =
-  | "default"
-  | "dark"
-  | "light"
-  | "minimal"
-  | "dracula"
-  | "catppuccin-mocha"
-  | "catppuccin-latte"
-  | "catppuccin-macchiato"
-  | "catppuccin-frappe"
-  | "ayu-mirage"
-  | "houston"
-  | "one-dark"
-  | "one-candy"
-  | "github-dark";
+  | 'default'
+  | 'dark'
+  | 'light'
+  | 'minimal'
+  | 'dracula'
+  | 'catppuccin-mocha'
+  | 'catppuccin-latte'
+  | 'catppuccin-macchiato'
+  | 'catppuccin-frappe'
+  | 'ayu-mirage'
+  | 'houston'
+  | 'one-dark'
+  | 'one-candy'
+  | 'github-dark';

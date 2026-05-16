@@ -1,8 +1,8 @@
-import { Box, Text } from "ink";
-import { useEffect, useMemo, useState } from "react";
+import { Box, Text } from 'ink';
+import { useEffect, useMemo, useState } from 'react';
 
-import type { Theme } from "../themes/types.js";
-import { markdownToAnsi } from "../utils/markdownToAnsi.js";
+import type { Theme } from '../themes/types.js';
+import { markdownToAnsi } from '../utils/markdownToAnsi.js';
 
 interface StreamingTextProps {
   readonly text: string;
@@ -19,28 +19,28 @@ export function StreamingText({
   isStreaming,
   theme,
   screenReader = false,
-  syntaxHighlight = false,
+  syntaxHighlight = false
 }: StreamingTextProps) {
   const [_tick, setTick] = useState(0); // tick triggers re-renders for cursor animation
 
   const { stablePrefix, unstableSuffix } = useMemo(() => {
     if (!isStreaming) {
-      return { stablePrefix: text, unstableSuffix: "" };
+      return { stablePrefix: text, unstableSuffix: '' };
     }
 
-    const lastBlockBoundary = text.lastIndexOf("\n\n");
+    const lastBlockBoundary = text.lastIndexOf('\n\n');
     if (lastBlockBoundary === -1) {
-      return { stablePrefix: "", unstableSuffix: text };
+      return { stablePrefix: '', unstableSuffix: text };
     }
 
     return {
       stablePrefix: text.slice(0, lastBlockBoundary + 2),
-      unstableSuffix: text.slice(lastBlockBoundary + 2),
+      unstableSuffix: text.slice(lastBlockBoundary + 2)
     };
   }, [text, isStreaming]);
 
-  const [ansiPrefix, setAnsiPrefix] = useState("");
-  const [ansiSuffix, setAnsiSuffix] = useState("");
+  const [ansiPrefix, setAnsiPrefix] = useState('');
+  const [ansiSuffix, setAnsiSuffix] = useState('');
 
   const effectiveMarkdown = screenReader ? false : markdown;
 
@@ -48,12 +48,8 @@ export function StreamingText({
     let canceled = false;
 
     async function render() {
-      const prefix = effectiveMarkdown
-        ? await markdownToAnsi(stablePrefix, { syntaxHighlight })
-        : stablePrefix;
-      const suffix = effectiveMarkdown
-        ? await markdownToAnsi(unstableSuffix, { syntaxHighlight })
-        : unstableSuffix;
+      const prefix = effectiveMarkdown ? await markdownToAnsi(stablePrefix, { syntaxHighlight }) : stablePrefix;
+      const suffix = effectiveMarkdown ? await markdownToAnsi(unstableSuffix, { syntaxHighlight }) : unstableSuffix;
 
       if (!canceled) {
         setAnsiPrefix(prefix);
@@ -70,7 +66,7 @@ export function StreamingText({
 
   useEffect(() => {
     if (isStreaming) {
-      const interval = setInterval(() => setTick((t) => t + 1), 100);
+      const interval = setInterval(() => setTick(t => t + 1), 100);
       return () => clearInterval(interval);
     }
   }, [isStreaming]);

@@ -1,8 +1,8 @@
-import type { JsonObject } from "@agentsy/types";
+import type { JsonObject } from '@agentsy/types';
 
-import { buildRepairPrompt } from "./buildRepairPrompt.js";
-import { validateJsonSchema } from "./validateJsonSchema.js";
-import type { ValidateJsonSchemaOptions } from "./validateJsonSchema.js";
+import { buildRepairPrompt } from './buildRepairPrompt.js';
+import { validateJsonSchema } from './validateJsonSchema.js';
+import type { ValidateJsonSchemaOptions } from './validateJsonSchema.js';
 
 export interface AutoRepairOptions extends ValidateJsonSchemaOptions {
   /** Maximum number of repair attempts. Defaults to 3. */
@@ -59,12 +59,10 @@ export async function repairWithLLM<T = unknown>(
     }
 
     const repairPrompt = buildRepairPrompt({
-      error: result.errors.join("\n"),
+      error: result.errors.join('\n'),
       failedOutput: currentOutput,
       schema,
-      ...(options.originalPrompt === undefined
-        ? {}
-        : { originalPrompt: options.originalPrompt }),
+      ...(options.originalPrompt === undefined ? {} : { originalPrompt: options.originalPrompt })
     });
 
     currentOutput = await callLLM(repairPrompt);
@@ -73,7 +71,7 @@ export async function repairWithLLM<T = unknown>(
   // Unreachable, but TypeScript needs it
   return {
     attempts: maxAttempts,
-    errors: ["$: max attempts reached"],
-    success: false,
+    errors: ['$: max attempts reached'],
+    success: false
   };
 }

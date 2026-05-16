@@ -4,17 +4,12 @@
  * Unified client abstractions for provider integration.
  */
 
-import { ReadableStream } from "node:stream/web";
+import { ReadableStream } from 'node:stream/web';
 
-import type {
-  CompletionRequest,
-  CompletionResponse,
-  NormalizedChunk,
-  UsageInfo,
-} from "@agentsy/types";
+import type { CompletionRequest, CompletionResponse, NormalizedChunk, UsageInfo } from '@agentsy/types';
 
-import { createPipeline } from "../pipeline/index.js";
-import type { NormalizerProvider } from "../pipeline/index.js";
+import { createPipeline } from '../pipeline/index.js';
+import type { NormalizerProvider } from '../pipeline/index.js';
 
 /**
  * Configuration options for a UniversalClient instance.
@@ -33,7 +28,7 @@ export interface UniversalClientConfig {
   /** Maximum number of retry attempts */
   maxAttempts?: number;
   /** Retry policy for network errors */
-  retryPolicy?: "exponential" | "linear" | "none";
+  retryPolicy?: 'exponential' | 'linear' | 'none';
   /** Initial delay between retries in milliseconds */
   initialDelayMs?: number;
 }
@@ -42,38 +37,35 @@ export interface UniversalClientConfig {
  * Provider endpoint URLs.
  */
 const PROVIDER_ENDPOINTS: Record<NormalizerProvider, string> = {
-  anthropic: "https://api.anthropic.com/v1/messages",
-  bedrock: "https://bedrock-runtime.amazonaws.com",
-  cohere: "https://api.cohere.com/v1/chat",
-  gemini: "https://generativelanguage.googleapis.com/v1beta/models",
-  "hugging-face": "https://api-inference.huggingface.co/models",
-  mistral: "https://api.mistral.ai/v1/chat/completions",
-  ollama: "http://localhost:11434/api/chat",
-  openai: "https://api.openai.com/v1/chat/completions",
-  zai: "https://api.zai.com/v1/chat",
+  anthropic: 'https://api.anthropic.com/v1/messages',
+  bedrock: 'https://bedrock-runtime.amazonaws.com',
+  cohere: 'https://api.cohere.com/v1/chat',
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/models',
+  'hugging-face': 'https://api-inference.huggingface.co/models',
+  mistral: 'https://api.mistral.ai/v1/chat/completions',
+  ollama: 'http://localhost:11434/api/chat',
+  openai: 'https://api.openai.com/v1/chat/completions',
+  zai: 'https://api.zai.com/v1/chat'
 };
 
 /**
  * Convert CompletionRequest to provider-specific request format.
  */
-function toProviderRequest(
-  request: CompletionRequest,
-  provider: NormalizerProvider
-): Record<string, unknown> {
+function toProviderRequest(request: CompletionRequest, provider: NormalizerProvider): Record<string, unknown> {
   switch (provider) {
-    case "openai":
-    case "anthropic":
-    case "gemini":
-    case "mistral":
-    case "ollama":
-    case "cohere":
-    case "zai": {
+    case 'openai':
+    case 'anthropic':
+    case 'gemini':
+    case 'mistral':
+    case 'ollama':
+    case 'cohere':
+    case 'zai': {
       return toOpenAIFormat(request);
     }
-    case "bedrock": {
+    case 'bedrock': {
       return toBedrockFormat(request);
     }
-    case "hugging-face": {
+    case 'hugging-face': {
       return toHuggingFaceFormat(request);
     }
     default: {
@@ -87,50 +79,50 @@ function toProviderRequest(
  */
 function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
   const req: Record<string, unknown> = {
-    messages: request.messages.map((msg) => ({
+    messages: request.messages.map(msg => ({
       content: Array.isArray(msg.content)
-        ? msg.content.map((part) => {
-            if (part.type === "text") {
+        ? msg.content.map(part => {
+            if (part.type === 'text') {
               return part.text;
             }
-            if (part.type === "image") {
+            if (part.type === 'image') {
               return {
                 image_url: {
-                  detail: part.detail ?? "auto",
-                  url: part.imageUrl,
+                  detail: part.detail ?? 'auto',
+                  url: part.imageUrl
                 },
-                type: "image_url",
+                type: 'image_url'
               };
             }
-            if (part.type === "tool_call") {
+            if (part.type === 'tool_call') {
               return {
                 tool_calls: [
                   {
                     function: {
                       arguments: JSON.stringify(part.input),
-                      name: part.name,
+                      name: part.name
                     },
                     id: part.id,
-                    type: "function" as const,
-                  },
+                    type: 'function' as const
+                  }
                 ],
-                type: "tool_calls" as const,
+                type: 'tool_calls' as const
               };
             }
-            if (part.type === "tool_result") {
+            if (part.type === 'tool_result') {
               return {
                 content: part.content,
                 tool_call_id: part.toolCallId,
-                type: "tool_result" as const,
+                type: 'tool_result' as const
               };
             }
             return part;
           })
         : msg.content,
       role: msg.role,
-      ...(msg.toolCallId && { tool_call_id: msg.toolCallId }),
+      ...(msg.toolCallId && { tool_call_id: msg.toolCallId })
     })),
-    model: request.model,
+    model: request.model
   };
 
   if (request.temperature !== undefined) {
@@ -167,16 +159,14 @@ function toBedrockFormat(request: CompletionRequest): Record<string, unknown> {
     maxTokens: request.maxTokens ?? 2048,
     messages: request.messages,
     modelId: request.model,
-    temperature: request.temperature ?? 0.7,
+    temperature: request.temperature ?? 0.7
   };
 }
 
 /**
  * Convert CompletionRequest to HuggingFace text generation format.
  */
-function toHuggingFaceFormat(
-  request: CompletionRequest
-): Record<string, unknown> {
+function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown> {
   return {
     inputs: request.messages,
     model: request.model,
@@ -185,76 +175,60 @@ function toHuggingFaceFormat(
       max_new_tokens: request.maxTokens,
       temperature: request.temperature,
       top_k: request.topK,
-      top_p: request.topP,
-    },
+      top_p: request.topP
+    }
   };
 }
 
-function parseUsageInfo(
-  usageData: Record<string, unknown>
-): UsageInfo | undefined {
+function parseUsageInfo(usageData: Record<string, unknown>): UsageInfo | undefined {
   const usage: UsageInfo = {};
-  if (typeof usageData.inputTokens === "number") {
+  if (typeof usageData.inputTokens === 'number') {
     usage.inputTokens = usageData.inputTokens;
   }
-  if (typeof usageData.outputTokens === "number") {
+  if (typeof usageData.outputTokens === 'number') {
     usage.outputTokens = usageData.outputTokens;
   }
-  if (typeof usageData.totalTokens === "number") {
+  if (typeof usageData.totalTokens === 'number') {
     usage.totalTokens = usageData.totalTokens;
   }
   return Object.keys(usage).length > 0 ? usage : undefined;
 }
 
-function parseContentFromChoice(
-  content: { content: string } | { content?: { parts?: { text?: string }[] } }
-): string {
-  if (typeof content.content === "string") {
+function parseContentFromChoice(content: { content: string } | { content?: { parts?: { text?: string }[] } }): string {
+  if (typeof content.content === 'string') {
     return content.content;
   }
-  return content.content?.parts?.map((p) => p.text).join("") ?? "";
+  return content.content?.parts?.map(p => p.text).join('') ?? '';
 }
 
-function parseProviderResponse(
-  response: unknown,
-  _provider: NormalizerProvider
-): CompletionResponse {
+function parseProviderResponse(response: unknown, _provider: NormalizerProvider): CompletionResponse {
   const data = response as Record<string, unknown>;
 
-  if (
-    !("choices" in data) ||
-    !Array.isArray(data.choices) ||
-    data.choices.length === 0
-  ) {
+  if (!('choices' in data) || !Array.isArray(data.choices) || data.choices.length === 0) {
     return {
-      content:
-        typeof data.content === "string" ? data.content : JSON.stringify(data),
+      content: typeof data.content === 'string' ? data.content : JSON.stringify(data)
     };
   }
 
   const choice = data.choices[0] as Record<string, unknown>;
-  const content = choice.message as
-    | { content: string }
-    | { content?: { parts?: { text?: string }[] } };
+  const content = choice.message as { content: string } | { content?: { parts?: { text?: string }[] } };
 
   const usage: UsageInfo | undefined =
-    data.usage && typeof data.usage === "object"
-      ? parseUsageInfo(data.usage as Record<string, unknown>)
-      : undefined;
+    data.usage && typeof data.usage === 'object' ? parseUsageInfo(data.usage as Record<string, unknown>) : undefined;
 
   const result: CompletionResponse = {
-    content: parseContentFromChoice(content),
+    content: parseContentFromChoice(content)
   };
 
   if (usage) {
     result.usage = usage;
   }
 
-  if (data.model && typeof data.model === "string") {
+  if (data.model && typeof data.model === 'string') {
     result.model = data.model;
   }
 
-  if (data.id && typeof data.id === "string") {
+  if (data.id && typeof data.id === 'string') {
     result.id = data.id;
   }
 
@@ -303,9 +277,7 @@ export interface UniversalClient {
  * @param config - Configuration options including provider, apiKey, baseUrl, and retry settings
  * @returns A new UniversalClient instance
  */
-export function createUniversalClient(
-  config: UniversalClientConfig
-): UniversalClient {
+export function createUniversalClient(config: UniversalClientConfig): UniversalClient {
   const { provider, apiKey, baseUrl } = config;
   const endpoint = baseUrl ?? PROVIDER_ENDPOINTS[provider];
 
@@ -315,66 +287,57 @@ export function createUniversalClient(
       const response = await fetch(endpoint, {
         body: JSON.stringify(providerRequest),
         headers: buildHeaders(provider, apiKey, config.organizationId),
-        method: "POST",
-        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null,
+        method: 'POST',
+        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Provider request failed: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Provider request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       return parseProviderResponse(data, provider);
     },
 
-    async stream(
-      request: CompletionRequest
-    ): Promise<ReadableStream<NormalizedChunk>> {
-      const providerRequest = toProviderRequest(
-        { ...request, stream: true },
-        provider
-      );
+    async stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
+      const providerRequest = toProviderRequest({ ...request, stream: true }, provider);
       const response = await fetch(endpoint, {
         body: JSON.stringify(providerRequest),
         headers: buildHeaders(provider, apiKey, config.organizationId, true),
-        method: "POST",
-        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null,
+        method: 'POST',
+        signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Provider stream request failed: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Provider stream request failed: ${response.status} ${response.statusText}`);
       }
 
       if (!response.body) {
-        throw new Error("Provider stream response did not include a body");
+        throw new Error('Provider stream response did not include a body');
       }
 
       const pipeline = createPipeline(response.body, {
         maxJsonDepth: 64,
         maxJsonKeys: 10_000,
-        provider,
+        provider
       });
 
       const chunks: NormalizedChunk[] = [];
       for await (const event of pipeline) {
-        if (event.type === "delta" && event.content) {
+        if (event.type === 'delta' && event.content) {
           chunks.push({ content: event.content });
-        } else if (event.type === "tool_call" && event.tool_call) {
+        } else if (event.type === 'tool_call' && event.tool_call) {
           chunks.push({
             tool_calls: [
               {
                 function: {
                   arguments: event.tool_call.parameters,
-                  name: event.tool_call.name,
-                },
-              },
-            ],
+                  name: event.tool_call.name
+                }
+              }
+            ]
           });
-        } else if (event.type === "thinking" && event.thinking) {
+        } else if (event.type === 'thinking' && event.thinking) {
           chunks.push({ thinking: event.thinking });
         }
       }
@@ -385,11 +348,11 @@ export function createUniversalClient(
             controller.enqueue(chunk);
           }
           controller.close();
-        },
+        }
       });
 
       return stream;
-    },
+    }
   };
 }
 
@@ -400,27 +363,27 @@ function buildHeaders(
   stream?: boolean
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json'
   };
 
   if (apiKey) {
     switch (_provider) {
-      case "openai": {
+      case 'openai': {
         headers.Authorization = `Bearer ${apiKey}`;
         if (organizationId) {
-          headers["OpenAI-Organization"] = organizationId;
+          headers['OpenAI-Organization'] = organizationId;
         }
         break;
       }
-      case "anthropic": {
-        headers["x-api-key"] = apiKey;
-        headers["anthropic-version"] = "2023-06-01";
+      case 'anthropic': {
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
         if (stream) {
-          headers.accept = "text/event-stream";
+          headers.accept = 'text/event-stream';
         }
         break;
       }
-      case "gemini": {
+      case 'gemini': {
         headers.Authorization = `Bearer ${apiKey}`;
         break;
       }

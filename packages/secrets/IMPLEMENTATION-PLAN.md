@@ -298,30 +298,30 @@ packages/secrets/src/
 interface VarlockIntegration {
   // Schema-first approach
   schemaFirst: {
-    design: "Agents receive schema, never secrets";
-    typesafety: "Type-safe secret access patterns";
-    runtime: "Runtime validation and leak prevention";
+    design: 'Agents receive schema, never secrets';
+    typesafety: 'Type-safe secret access patterns';
+    runtime: 'Runtime validation and leak prevention';
   };
 
   // Plugin architecture
   plugins: {
-    backends: "Plugin architecture for secret backends";
-    frameworks: "Framework integrations (Next.js, Vite, Astro)";
-    multiEnv: "Multi-environment .env.* loading";
+    backends: 'Plugin architecture for secret backends';
+    frameworks: 'Framework integrations (Next.js, Vite, Astro)';
+    multiEnv: 'Multi-environment .env.* loading';
   };
 
   // Security features
   security: {
-    leakScanning: "Runtime leak scanning and prevention";
-    validation: "Schema-driven secret validation";
-    runtime: "Runtime leak prevention enhanced";
+    leakScanning: 'Runtime leak scanning and prevention';
+    validation: 'Schema-driven secret validation';
+    runtime: 'Runtime leak prevention enhanced';
   };
 
   // Integration strategy
   integration: {
-    complement: "Complement existing @agentsy/secrets";
-    enhance: "Schema-driven validation and leak prevention";
-    backwardsCompatible: "Compatibility layer with current system";
+    complement: 'Complement existing @agentsy/secrets';
+    enhance: 'Schema-driven validation and leak prevention';
+    backwardsCompatible: 'Compatibility layer with current system';
   };
 }
 ```
@@ -355,38 +355,38 @@ interface VarlockIntegration {
 interface EnhancedSecretsArchitecture {
   // Schema-driven design
   schemaFirst: {
-    definition: "Type-safe secret schemas";
-    access: "Agents receive schema, not raw secrets";
-    validation: "Design-time and runtime validation";
+    definition: 'Type-safe secret schemas';
+    access: 'Agents receive schema, not raw secrets';
+    validation: 'Design-time and runtime validation';
   };
 
   // Multi-environment support
   environments: {
-    loading: ".env.* multi-environment loading";
-    validation: "Per-environment schema validation";
-    isolation: "Environment-specific secret separation";
+    loading: '.env.* multi-environment loading';
+    validation: 'Per-environment schema validation';
+    isolation: 'Environment-specific secret separation';
   };
 
   // Runtime protection
   runtime: {
-    leakScanning: "Runtime leak scanning and prevention";
-    validation: "Schema-driven validation";
-    enforcement: "Runtime leak prevention enhanced";
+    leakScanning: 'Runtime leak scanning and prevention';
+    validation: 'Schema-driven validation';
+    enforcement: 'Runtime leak prevention enhanced';
   };
 
   // Plugin extensibility
   plugins: {
-    backends: "Plugin architecture for secret backends";
-    integrations: "Framework and platform integrations";
-    customization: "Custom secret handling logic";
+    backends: 'Plugin architecture for secret backends';
+    integrations: 'Framework and platform integrations';
+    customization: 'Custom secret handling logic';
   };
 
   // Expected combined benefits
   benefits: {
-    typesafety: "Design-time type safety for all secrets";
-    prevention: "Automatic leak prevention via scanning";
-    flexibility: "Multi-environment and plugin support";
-    integration: "Comprehensive framework integrations";
+    typesafety: 'Design-time type safety for all secrets';
+    prevention: 'Automatic leak prevention via scanning';
+    flexibility: 'Multi-environment and plugin support';
+    integration: 'Comprehensive framework integrations';
   };
 }
 ```

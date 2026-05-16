@@ -2,7 +2,7 @@
  * Memory storage types.
  */
 
-import type { MemoryId } from "./brands.js";
+import type { MemoryId } from './brands.js';
 
 /**
  * Memory record with content and metadata.

@@ -4,13 +4,13 @@
  * Structured logger with multiple severity levels
  */
 
-import type { Logger } from "../core/types.js";
+import type { Logger } from '../core/types.js';
 
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
   WARN = 2,
-  ERROR = 3,
+  ERROR = 3
 }
 
 /**
@@ -44,17 +44,17 @@ export class LoggerImpl implements Logger {
   private readonly config: Required<LoggerConfig>;
   private _buffer: LogEntry[] = [];
   private readonly DEFAULT_LEVEL_NAMES: Record<LogLevel, string> = {
-    [LogLevel.DEBUG]: "DEBUG",
-    [LogLevel.INFO]: "INFO",
-    [LogLevel.WARN]: "WARN",
-    [LogLevel.ERROR]: "ERROR",
+    [LogLevel.DEBUG]: 'DEBUG',
+    [LogLevel.INFO]: 'INFO',
+    [LogLevel.WARN]: 'WARN',
+    [LogLevel.ERROR]: 'ERROR'
   };
 
   constructor(config?: LoggerConfig) {
     this.config = {
       includeTimestamp: config?.includeTimestamp ?? true,
       levelNames: { ...this.DEFAULT_LEVEL_NAMES, ...config?.levelNames },
-      minLevel: config?.minLevel ?? LogLevel.INFO,
+      minLevel: config?.minLevel ?? LogLevel.INFO
     };
   }
 
@@ -70,33 +70,23 @@ export class LoggerImpl implements Logger {
     this.log(LogLevel.WARN, message, attributes);
   }
 
-  error(
-    message: string,
-    attributes?: Record<string, unknown>,
-    error?: unknown
-  ): void {
+  error(message: string, attributes?: Record<string, unknown>, error?: unknown): void {
     this.log(LogLevel.ERROR, message, attributes, error);
   }
 
-  private log(
-    level: LogLevel,
-    message: string,
-    attributes?: Record<string, unknown>,
-    error?: unknown
-  ): void {
+  private log(level: LogLevel, message: string, attributes?: Record<string, unknown>, error?: unknown): void {
     if (level < this.config.minLevel) {
       return; // Below minimum level, skip
     }
 
-    const levelName =
-      this.config.levelNames[level] ?? this.DEFAULT_LEVEL_NAMES[level];
+    const levelName = this.config.levelNames[level] ?? this.DEFAULT_LEVEL_NAMES[level];
     const timestamp = this.config.includeTimestamp ? Date.now() : 0;
 
     const entry: LogEntry = {
       level,
       levelName,
       message,
-      timestamp,
+      timestamp
     };
 
     if (attributes) {
@@ -109,15 +99,9 @@ export class LoggerImpl implements Logger {
     this._buffer.push(entry);
 
     // For now, just output to console
-    const timestampStr = this.config.includeTimestamp
-      ? new Date(timestamp).toISOString()
-      : "";
+    const timestampStr = this.config.includeTimestamp ? new Date(timestamp).toISOString() : '';
     const prefix = levelName.padEnd(5);
-    console.log(
-      `[${prefix}${timestampStr ? ` ${timestampStr}` : ""}] ${message}`,
-      attributes ?? "",
-      entry.error ?? ""
-    );
+    console.log(`[${prefix}${timestampStr ? ` ${timestampStr}` : ''}] ${message}`, attributes ?? '', entry.error ?? '');
   }
 
   /**

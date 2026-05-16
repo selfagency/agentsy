@@ -49,8 +49,8 @@ export function createRAGMetrics(): RAGMetrics {
         citationCoverage: totalHits === 0 ? 0 : totalCited / totalHits,
         queries,
         sourceMix: normalizedSourceMix,
-        totalHits,
+        totalHits
       };
-    },
+    }
   };
 }

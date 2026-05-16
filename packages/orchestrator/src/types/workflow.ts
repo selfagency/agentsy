@@ -1,17 +1,17 @@
 export enum NodeType {
-  TASK = "task",
-  DECISION = "decision",
-  PARALLEL = "parallel",
-  SEQUENCE = "sequence",
-  MERGE = "merge",
+  TASK = 'task',
+  DECISION = 'decision',
+  PARALLEL = 'parallel',
+  SEQUENCE = 'sequence',
+  MERGE = 'merge'
 }
 
 export enum WorkflowStatus {
-  PENDING = "pending",
-  RUNNING = "running",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  CANCELLED = "cancelled",
+  PENDING = 'pending',
+  RUNNING = 'running',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled'
 }
 
 export interface TaskNode {
@@ -59,29 +59,24 @@ export interface MergeNode {
   strategy: MergeStrategy;
 }
 
-export type WorkflowNode =
-  | TaskNode
-  | DecisionNode
-  | ParallelNode
-  | SequenceNode
-  | MergeNode;
+export type WorkflowNode = TaskNode | DecisionNode | ParallelNode | SequenceNode | MergeNode;
 
-export type MergeStrategy = "join" | "first" | "all" | "majority";
+export type MergeStrategy = 'join' | 'first' | 'all' | 'majority';
 
 export interface RetryPolicy {
   maxAttempts: number;
-  backoffStrategy: "linear" | "exponential" | "fixed";
+  backoffStrategy: 'linear' | 'exponential' | 'fixed';
   baseDelay: number;
   maxDelay: number;
 }
 
 export interface Dependency {
   node: string;
-  type: "sequential" | "data" | "resource";
+  type: 'sequential' | 'data' | 'resource';
 }
 
 export interface Constraint {
-  type: "timing" | "resource" | "skill" | "cost";
+  type: 'timing' | 'resource' | 'skill' | 'cost';
   value: unknown;
 }
 

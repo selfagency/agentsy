@@ -8,13 +8,7 @@
  * - `'other'`          — provider-specific reason with no canonical mapping
  * - `'error'`          — stream ended due to an error
  */
-export type FinishReason =
-  | "stop"
-  | "length"
-  | "tool-calls"
-  | "content-filter"
-  | "other"
-  | "error";
+export type FinishReason = 'stop' | 'length' | 'tool-calls' | 'content-filter' | 'other' | 'error';
 
 /**
  * Lifecycle state of a single tool call as it passes through the streaming
@@ -25,8 +19,8 @@ export type FinishReason =
  *                                      → `output-error`     (if result failed)
  */
 export type ToolCallState =
-  | "awaiting-input"
-  | "input-streaming"
-  | "input-complete"
-  | "output-available"
-  | "output-error";
+  | 'awaiting-input'
+  | 'input-streaming'
+  | 'input-complete'
+  | 'output-available'
+  | 'output-error';

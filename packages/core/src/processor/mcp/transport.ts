@@ -1,4 +1,4 @@
-import { ReadableStream } from "node:stream/web";
+import { ReadableStream } from 'node:stream/web';
 
 /**
  * Typed union representing the two supported MCP transport modes.
@@ -6,33 +6,29 @@ import { ReadableStream } from "node:stream/web";
  * - 'stdio': Direct stdio pipe transport for local/embedded MCP servers.
  */
 export type MCPTransport =
-  | { type: "http"; stream: ReadableStream<string> }
+  | { type: 'http'; stream: ReadableStream<string> }
   | {
-      type: "stdio";
+      type: 'stdio';
       readable: NodeJS.ReadableStream;
       writable: NodeJS.WritableStream;
     };
 
-import { Readable } from "node:stream";
+import { Readable } from 'node:stream';
 
 /**
  * Adapts any MCPTransport to a unified ReadableStream<string> interface
  * for use with existing SSE/stream processors.
  * Uses Readable.toWeb() for native backpressure support (Node.js 22+).
  */
-export function adaptTransportToStream(
-  transport: MCPTransport
-): ReadableStream<string> {
-  if (transport.type === "http") {
+export function adaptTransportToStream(transport: MCPTransport): ReadableStream<string> {
+  if (transport.type === 'http') {
     return transport.stream;
   }
 
   // For stdio transport, use Readable.toWeb() for native backpressure support
   // This is available in Node.js 22+ and properly handles backpressure
-  if (typeof Readable.toWeb === "function") {
-    const webStream = Readable.toWeb(
-      transport.readable
-    ) as ReadableStream<Uint8Array>;
+  if (typeof Readable.toWeb === 'function') {
+    const webStream = Readable.toWeb(transport.readable) as ReadableStream<Uint8Array>;
     // Decode Uint8Array to string
     return new ReadableStream({
       async start(controller) {
@@ -57,7 +53,7 @@ export function adaptTransportToStream(
         } finally {
           reader.releaseLock();
         }
-      },
+      }
     });
   }
 
@@ -70,11 +66,11 @@ export function adaptTransportToStream(
 
   // Helper function to convert chunk to string
   function convertChunkToString(chunk: unknown): string {
-    if (typeof chunk === "string") {
+    if (typeof chunk === 'string') {
       return chunk;
     }
     if (Buffer.isBuffer(chunk)) {
-      return chunk.toString("utf-8");
+      return chunk.toString('utf-8');
     }
     if (chunk instanceof Uint8Array) {
       return decoder.decode(chunk, { stream: true });
@@ -104,6 +100,6 @@ export function adaptTransportToStream(
         finished = true;
         controller.error(error);
       }
-    },
+    }
   });
 }

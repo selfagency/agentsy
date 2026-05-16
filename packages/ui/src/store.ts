@@ -1,5 +1,5 @@
-import { applyConversationEvent } from "./eventSourcing.js";
-import type { ConversationEvent, UIConversation } from "./types.js";
+import { applyConversationEvent } from './eventSourcing.js';
+import type { ConversationEvent, UIConversation } from './types.js';
 
 /**
  * Listener callback type for store changes.
@@ -56,18 +56,16 @@ export interface ConversationStore {
  * unsubscribe();
  * ```
  */
-export function createConversationStore(
-  conversationId: string
-): ConversationStore {
+export function createConversationStore(conversationId: string): ConversationStore {
   let state: UIConversation = {
     id: conversationId,
     lastEventAt: new Date(),
     messages: [],
     metadata: undefined,
-    status: "idle",
+    status: 'idle',
     stepIndex: 0,
     totalTokens: 0,
-    totalUsage: {},
+    totalUsage: {}
   };
 
   const listeners = new Set<StoreListener>();
@@ -100,7 +98,7 @@ export function createConversationStore(
       // Return a shallow copy to prevent external mutations
       return {
         ...state,
-        messages: [...state.messages],
+        messages: [...state.messages]
       };
     },
 
@@ -111,6 +109,6 @@ export function createConversationStore(
       return () => {
         listeners.delete(listener);
       };
-    },
+    }
   };
 }

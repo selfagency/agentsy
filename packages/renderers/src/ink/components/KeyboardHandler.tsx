@@ -1,5 +1,5 @@
-import type { Key } from "ink";
-import { useInput } from "ink";
+import type { Key } from 'ink';
+import { useInput } from 'ink';
 
 export interface KeyboardOptions {
   enabled?: boolean;
@@ -14,7 +14,7 @@ interface KeyboardHandlerProps {
 
 export function KeyboardHandler({ keyboard }: KeyboardHandlerProps) {
   useInput((input, key) => {
-    if (key.ctrl && input === "c") {
+    if (key.ctrl && input === 'c') {
       keyboard.onInterrupt?.();
     } else if (key.escape) {
       keyboard.onCancel?.();

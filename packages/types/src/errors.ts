@@ -7,13 +7,9 @@ export class AgentsyError extends Error {
   public readonly code: string;
   public details: Record<string, unknown>;
 
-  constructor(
-    message: string,
-    code: string,
-    details?: Record<string, unknown>
-  ) {
+  constructor(message: string, code: string, details?: Record<string, unknown>) {
     super(message);
-    this.name = "AgentsyError";
+    this.name = 'AgentsyError';
     this.code = code;
     this.details = details ?? {};
 
@@ -31,7 +27,7 @@ export class AgentsyError extends Error {
       code: this.code,
       details: this.details,
       message: this.message,
-      name: this.name,
+      name: this.name
     };
   }
 }

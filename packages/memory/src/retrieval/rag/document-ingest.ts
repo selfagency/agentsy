@@ -1,17 +1,17 @@
-import { createHash } from "node:crypto";
+import { createHash } from 'node:crypto';
 
-import type { IngestOutput, IngestSource, RAGServerDocument } from "./types.js";
+import type { IngestOutput, IngestSource, RAGServerDocument } from './types.js';
 
 export interface DocumentIngestor {
   ingest(source: IngestSource): Promise<IngestOutput>;
 }
 
 function stableHash(input: string): string {
-  return createHash("sha256").update(input).digest("hex").slice(0, 24);
+  return createHash('sha256').update(input).digest('hex').slice(0, 24);
 }
 
 function splitIntoChunks(content: string, maxChunkSize = 280): string[] {
-  const normalized = content.replaceAll(/\s+/gu, " ").trim();
+  const normalized = content.replaceAll(/\s+/gu, ' ').trim();
   if (normalized.length <= maxChunkSize) {
     return normalized.length === 0 ? [] : [normalized];
   }
@@ -37,27 +37,21 @@ export function createDocumentIngestor(): DocumentIngestor {
       const chunks = splitIntoChunks(source.content);
       const updatedAt = source.updatedAt ?? new Date().toISOString();
 
-      const documents: RAGServerDocument[] = chunks.map(
-        (content, chunkIndex) => {
-          const stableId = stableHash(
-            `${source.sourceId}:${chunkIndex}:${content}`
-          );
-          return {
-            chunkIndex,
-            content,
-            id: `${source.sourceId}:${stableId}`,
-            sourceId: source.sourceId,
-            sourceType: source.sourceType,
-            title: source.title ?? source.sourceId,
-            updatedAt,
-            ...(source.metadata === undefined
-              ? {}
-              : { metadata: { ...source.metadata } }),
-          };
-        }
-      );
+      const documents: RAGServerDocument[] = chunks.map((content, chunkIndex) => {
+        const stableId = stableHash(`${source.sourceId}:${chunkIndex}:${content}`);
+        return {
+          chunkIndex,
+          content,
+          id: `${source.sourceId}:${stableId}`,
+          sourceId: source.sourceId,
+          sourceType: source.sourceType,
+          title: source.title ?? source.sourceId,
+          updatedAt,
+          ...(source.metadata === undefined ? {} : { metadata: { ...source.metadata } })
+        };
+      });
 
       return { documents };
-    },
+    }
   };
 }

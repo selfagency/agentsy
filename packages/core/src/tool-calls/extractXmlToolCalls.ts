@@ -1,21 +1,19 @@
-import type { JsonObject } from "@agentsy/types";
+import type { JsonObject } from '@agentsy/types';
 
 export interface XmlToolCall {
   name: string;
   parameters: JsonObject;
   /** How this tool call was encoded in the stream. */
-  format: "bare-xml" | "json-wrapped" | "native-json";
+  format: 'bare-xml' | 'json-wrapped' | 'native-json';
   /** Provider-assigned call ID, present when the provider supplies one (e.g. OpenAI, Anthropic, Bedrock). */
   id?: string;
 }
 
 const MAX_XML_TOOL_CALL_INPUT_LENGTH = 1_000_000;
 
-const VALID_TAG_START_CHARACTERS =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+const VALID_TAG_START_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
 
-const VALID_TAG_CHARACTERS =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_:-";
+const VALID_TAG_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_:-';
 
 interface ParsedXmlElement {
   name: string;
@@ -33,25 +31,21 @@ function isValidTagCharacter(char: string): boolean {
 
 function stripMarkdownCodeFence(text: string): string {
   const trimmed = text.trim();
-  if (trimmed.startsWith("```") === false) {
+  if (trimmed.startsWith('```') === false) {
     return trimmed;
   }
 
-  const firstLineEnd = trimmed.indexOf("\n");
+  const firstLineEnd = trimmed.indexOf('\n');
   if (firstLineEnd === -1) {
-    return trimmed.replaceAll("```", "").trim();
+    return trimmed.replaceAll('```', '').trim();
   }
 
   const openingFence = trimmed.slice(0, firstLineEnd).trim().toLowerCase();
-  if (
-    openingFence !== "```" &&
-    openingFence !== "```json" &&
-    openingFence !== "```xml"
-  ) {
+  if (openingFence !== '```' && openingFence !== '```json' && openingFence !== '```xml') {
     return trimmed;
   }
 
-  const closingFenceIndex = trimmed.lastIndexOf("```");
+  const closingFenceIndex = trimmed.lastIndexOf('```');
   if (closingFenceIndex <= firstLineEnd) {
     return trimmed.slice(firstLineEnd + 1).trim();
   }
@@ -59,11 +53,8 @@ function stripMarkdownCodeFence(text: string): string {
   return trimmed.slice(firstLineEnd + 1, closingFenceIndex).trim();
 }
 
-function parseXmlElement(
-  text: string,
-  startIndex: number
-): ParsedXmlElement | null {
-  if (text[startIndex] !== "<") {
+function parseXmlElement(text: string, startIndex: number): ParsedXmlElement | null {
+  if (text[startIndex] !== '<') {
     return null;
   }
 
@@ -73,7 +64,7 @@ function parseXmlElement(
   }
 
   let tagEnd = startIndex + 2;
-  while (tagEnd < text.length && isValidTagCharacter(text[tagEnd] ?? "")) {
+  while (tagEnd < text.length && isValidTagCharacter(text[tagEnd] ?? '')) {
     tagEnd += 1;
   }
 
@@ -82,7 +73,7 @@ function parseXmlElement(
     return null;
   }
 
-  const openEnd = text.indexOf(">", tagEnd);
+  const openEnd = text.indexOf('>', tagEnd);
   if (openEnd === -1) {
     return null;
   }
@@ -93,14 +84,12 @@ function parseXmlElement(
     return null;
   }
 
-  const closeEnd = text.indexOf(">", closeStart + closingPrefix.length);
+  const closeEnd = text.indexOf('>', closeStart + closingPrefix.length);
   if (closeEnd === -1) {
     return null;
   }
 
-  const closeSuffix = text
-    .slice(closeStart + closingPrefix.length, closeEnd)
-    .trim();
+  const closeSuffix = text.slice(closeStart + closingPrefix.length, closeEnd).trim();
   if (closeSuffix.length > 0) {
     return null;
   }
@@ -108,7 +97,7 @@ function parseXmlElement(
   return {
     endIndex: closeEnd + 1,
     inner: text.slice(openEnd + 1, closeStart),
-    name: tagName,
+    name: tagName
   };
 }
 
@@ -118,7 +107,7 @@ function extractBareXmlParams(inner: string): JsonObject {
   let cursor = 0;
 
   while (cursor < inner.length) {
-    const nextOpen = inner.indexOf("<", cursor);
+    const nextOpen = inner.indexOf('<', cursor);
     if (nextOpen === -1) {
       break;
     }
@@ -144,16 +133,13 @@ function cleanXml(text: string): string {
     return text;
   }
 
-  let cleaned = text
-    .replaceAll("```xml", "")
-    .replaceAll("```XML", "")
-    .replaceAll("```", "");
-  const firstTagIndex = cleaned.indexOf("<");
+  let cleaned = text.replaceAll('```xml', '').replaceAll('```XML', '').replaceAll('```', '');
+  const firstTagIndex = cleaned.indexOf('<');
   if (firstTagIndex > 0) {
     cleaned = cleaned.slice(firstTagIndex);
   }
 
-  const lastTagIndex = cleaned.lastIndexOf(">");
+  const lastTagIndex = cleaned.lastIndexOf('>');
   if (lastTagIndex !== -1 && lastTagIndex < cleaned.length - 1) {
     cleaned = cleaned.slice(0, lastTagIndex + 1);
   }
@@ -168,10 +154,7 @@ function cleanXml(text: string): string {
  * or the OpenAI-style array variant:
  *   [{"name": "fn_name", "arguments": {...}}]
  */
-function extractBareJsonToolCalls(
-  text: string,
-  knownTools: Set<string>
-): XmlToolCall[] {
+function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
   if (text.length > MAX_XML_TOOL_CALL_INPUT_LENGTH) {
     return [];
   }
@@ -198,35 +181,27 @@ function extractBareJsonToolCalls(
   const results: XmlToolCall[] = [];
 
   for (const candidate of candidates) {
-    if (
-      !candidate ||
-      typeof candidate !== "object" ||
-      Array.isArray(candidate)
-    ) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
       continue;
     }
     const obj = candidate as Record<string, unknown>;
-    const name = typeof obj.name === "string" ? obj.name : null;
+    const name = typeof obj.name === 'string' ? obj.name : null;
     if (!name || !knownTools.has(name)) {
       continue;
     }
     const args = obj.arguments ?? obj.parameters ?? {};
     const parameters =
-      typeof args === "object" && !Array.isArray(args)
+      typeof args === 'object' && !Array.isArray(args)
         ? (Object.assign(Object.create(null), args) as JsonObject)
         : (Object.create(null) as JsonObject);
 
-    results.push({ format: "json-wrapped", name, parameters });
+    results.push({ format: 'json-wrapped', name, parameters });
   }
 
   return results;
 }
 
-function extractJsonWrappedToolCall(
-  rawTag: string,
-  inner: string,
-  knownTools: Set<string>
-): XmlToolCall | null {
+function extractJsonWrappedToolCall(rawTag: string, inner: string, knownTools: Set<string>): XmlToolCall | null {
   if (!isJsonToolCallWrapper(rawTag)) {
     return null;
   }
@@ -242,20 +217,18 @@ function extractJsonWrappedToolCall(
   }
 
   return {
-    format: "json-wrapped",
+    format: 'json-wrapped',
     name,
-    parameters: normalizeWrappedToolCallArguments(parsed),
+    parameters: normalizeWrappedToolCallArguments(parsed)
   };
 }
 
 function isJsonToolCallWrapper(rawTag: string): boolean {
   const wrapperName = rawTag.toLowerCase();
-  return wrapperName === "toolcall" || wrapperName === "tool_call";
+  return wrapperName === 'toolcall' || wrapperName === 'tool_call';
 }
 
-function parseJsonToolCallPayload(
-  inner: string
-): { name?: unknown; arguments?: unknown; parameters?: unknown } | null {
+function parseJsonToolCallPayload(inner: string): { name?: unknown; arguments?: unknown; parameters?: unknown } | null {
   try {
     return JSON.parse(inner.trim()) as {
       name?: unknown;
@@ -267,20 +240,14 @@ function parseJsonToolCallPayload(
   }
 }
 
-function parseKnownToolName(
-  name: unknown,
-  knownTools: Set<string>
-): string | null {
-  if (typeof name !== "string") {
+function parseKnownToolName(name: unknown, knownTools: Set<string>): string | null {
+  if (typeof name !== 'string') {
     return null;
   }
   return knownTools.has(name) ? name : null;
 }
 
-function normalizeWrappedToolCallArguments(parsed: {
-  arguments?: unknown;
-  parameters?: unknown;
-}): JsonObject {
+function normalizeWrappedToolCallArguments(parsed: { arguments?: unknown; parameters?: unknown }): JsonObject {
   const args = pickFirstObjectValue(parsed.arguments, parsed.parameters);
   if (args === null) {
     return Object.create(null) as JsonObject;
@@ -288,11 +255,9 @@ function normalizeWrappedToolCallArguments(parsed: {
   return Object.assign(Object.create(null), args) as JsonObject;
 }
 
-function pickFirstObjectValue(
-  ...values: unknown[]
-): Record<string, unknown> | null {
+function pickFirstObjectValue(...values: unknown[]): Record<string, unknown> | null {
   for (const value of values) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
       return value as Record<string, unknown>;
     }
   }
@@ -312,10 +277,7 @@ function pickFirstObjectValue(
  *          tool calls are silently skipped — the function never throws.
  */
 
-export function extractXmlToolCalls(
-  text: string,
-  knownTools: Set<string>
-): XmlToolCall[] {
+export function extractXmlToolCalls(text: string, knownTools: Set<string>): XmlToolCall[] {
   if (knownTools.size === 0 || text.length > MAX_XML_TOOL_CALL_INPUT_LENGTH) {
     return [];
   }
@@ -325,7 +287,7 @@ export function extractXmlToolCalls(
 
   let cursor = 0;
   while (cursor < cleaned.length) {
-    const nextOpen = cleaned.indexOf("<", cursor);
+    const nextOpen = cleaned.indexOf('<', cursor);
     if (nextOpen === -1) {
       break;
     }
@@ -336,11 +298,7 @@ export function extractXmlToolCalls(
       continue;
     }
 
-    const parsed = parseXmlToolCallMatch(
-      element.name,
-      element.inner,
-      knownTools
-    );
+    const parsed = parseXmlToolCallMatch(element.name, element.inner, knownTools);
     if (parsed !== null) {
       results.push(parsed);
     }
@@ -357,12 +315,8 @@ export function extractXmlToolCalls(
   return results;
 }
 
-function parseXmlToolCallMatch(
-  toolName: string,
-  inner: string,
-  knownTools: Set<string>
-): XmlToolCall | null {
-  if (toolName.toLowerCase() === "think") {
+function parseXmlToolCallMatch(toolName: string, inner: string, knownTools: Set<string>): XmlToolCall | null {
+  if (toolName.toLowerCase() === 'think') {
     return null;
   }
 
@@ -376,8 +330,8 @@ function parseXmlToolCallMatch(
   }
 
   return {
-    format: "bare-xml",
+    format: 'bare-xml',
     name: toolName,
-    parameters: extractBareXmlParams(inner),
+    parameters: extractBareXmlParams(inner)
   };
 }

@@ -1,16 +1,6 @@
-import type {
-  SyncManagerLike,
-  SyncRunResult,
-  SyncScheduler,
-  SyncSchedulerOptions,
-  SyncSnapshot,
-} from "./types.js";
+import type { SyncManagerLike, SyncRunResult, SyncScheduler, SyncSchedulerOptions, SyncSnapshot } from './types.js';
 
-function withJitter(
-  delayMs: number,
-  jitterRatio: number,
-  random: () => number
-): number {
+function withJitter(delayMs: number, jitterRatio: number, random: () => number): number {
   if (jitterRatio <= 0) {
     return delayMs;
   }
@@ -19,10 +9,7 @@ function withJitter(
   return delayMs + jitter;
 }
 
-export function createSyncScheduler(
-  manager: SyncManagerLike,
-  options: SyncSchedulerOptions
-): SyncScheduler {
+export function createSyncScheduler(manager: SyncManagerLike, options: SyncSchedulerOptions): SyncScheduler {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let nextRunAt: Date | null = null;
   let consecutiveErrors = 0;
@@ -51,24 +38,15 @@ export function createSyncScheduler(
   async function executeRun(localState?: SyncSnapshot): Promise<SyncRunResult> {
     const state = localState ?? (await options.getLocalState());
     const result = await manager.sync(state);
-    const shouldRetry =
-      result.status === "error" && consecutiveErrors < options.maxRetries;
+    const shouldRetry = result.status === 'error' && consecutiveErrors < options.maxRetries;
 
     if (shouldRetry) {
       consecutiveErrors += 1;
-      const retryDelay = Math.min(
-        options.maxDelayMs,
-        options.initialDelayMs * 2 ** consecutiveErrors
-      );
-      schedule(
-        options.intervalMs +
-          withJitter(retryDelay, options.jitterRatio ?? 0, random)
-      );
+      const retryDelay = Math.min(options.maxDelayMs, options.initialDelayMs * 2 ** consecutiveErrors);
+      schedule(options.intervalMs + withJitter(retryDelay, options.jitterRatio ?? 0, random));
     } else {
       consecutiveErrors = 0;
-      schedule(
-        withJitter(options.intervalMs, options.jitterRatio ?? 0, random)
-      );
+      schedule(withJitter(options.intervalMs, options.jitterRatio ?? 0, random));
     }
 
     return result;
@@ -90,6 +68,6 @@ export function createSyncScheduler(
 
     triggerNow() {
       return executeRun();
-    },
+    }
   };
 }

@@ -1,9 +1,6 @@
-import type { ExtensionContext } from "vscode";
+import type { ExtensionContext } from 'vscode';
 
-import type {
-  ApiKeyChangeListener,
-  ApiKeyManagerConfig,
-} from "../types/index.js";
+import type { ApiKeyChangeListener, ApiKeyManagerConfig } from '../types/index.js';
 
 /**
  * Centralized API key management with VS Code SecretStorage.
@@ -69,7 +66,7 @@ export class ApiKeyManager {
       try {
         const isValid = await this.config.validateBeforeStore(newKey);
         if (!isValid) {
-          const error = new Error("API key validation failed");
+          const error = new Error('API key validation failed');
           this.config.onError?.(error);
           throw error;
         }
@@ -87,7 +84,7 @@ export class ApiKeyManager {
     // Update context and notify listeners
     await this.setupContextVariable();
     await this.setupHasKeyContext();
-    this.notifyListeners("updated", newKey);
+    this.notifyListeners('updated', newKey);
   }
 
   /**
@@ -100,7 +97,7 @@ export class ApiKeyManager {
     // Update context and notify listeners
     await this.setupContextVariable();
     await this.setupHasKeyContext();
-    this.notifyListeners("deleted");
+    this.notifyListeners('deleted');
   }
 
   /**
@@ -109,12 +106,8 @@ export class ApiKeyManager {
   async setupHasKeyContext(): Promise<void> {
     const hasKey = await this.hasApiKey();
     try {
-      const { commands } = await import("vscode");
-      await commands.executeCommand(
-        "setContext",
-        this.config.contextKey,
-        hasKey
-      );
+      const { commands } = await import('vscode');
+      await commands.executeCommand('setContext', this.config.contextKey, hasKey);
     } catch {
       // Gracefully ignore when vscode is unavailable (e.g., during tests)
     }
@@ -135,7 +128,7 @@ export class ApiKeyManager {
     return {
       dispose: () => {
         this.listeners.delete(listener);
-      },
+      }
     };
   }
 
@@ -152,10 +145,7 @@ export class ApiKeyManager {
   async _debugShowStoredKey(): Promise<string | undefined> {
     const key = await this.getApiKey();
     if (key) {
-      const masked =
-        key.slice(0, 4) +
-        "*".repeat(Math.max(0, key.length - 8)) +
-        key.substring(key.length - 4);
+      const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.substring(key.length - 4);
       return masked;
     }
     return undefined;
@@ -176,17 +166,13 @@ export class ApiKeyManager {
   /**
    * Show input prompt.
    */
-  private async promptForInput(
-    _title: string,
-    prompt: string,
-    password: boolean
-  ): Promise<string | undefined> {
+  private async promptForInput(_title: string, prompt: string, password: boolean): Promise<string | undefined> {
     try {
-      const { window } = await import("vscode");
+      const { window } = await import('vscode');
       return await window.showInputBox({
         ignoreFocusOut: true,
         password,
-        prompt,
+        prompt
       });
     } catch {
       // Gracefully ignore when vscode is unavailable (e.g., during tests)
@@ -197,16 +183,13 @@ export class ApiKeyManager {
   /**
    * Notify all listeners of API key changes.
    */
-  private notifyListeners(
-    event: "changed" | "deleted" | "updated",
-    newKey: string | undefined
-  ): void {
+  private notifyListeners(event: 'changed' | 'deleted' | 'updated', newKey: string | undefined): void {
     for (const listener of this.listeners) {
       try {
         listener(event, newKey);
       } catch (error) {
         // Log but don't throw - other listeners should still be called
-        console.error("Error in ApiKeyManager listener:", error);
+        console.error('Error in ApiKeyManager listener:', error);
       }
     }
   }

@@ -1,18 +1,10 @@
-import type {
-  OutputPart,
-  ProcessedOutput,
-  StreamChunk,
-} from "@agentsy/core/processor";
-import type { XmlToolCall } from "@agentsy/core/tool-calls";
-import type { AgUiEvent, InterruptController } from "@agentsy/runtime/ag-ui";
-import type { FinishReason, UsageInfo } from "@agentsy/types";
+import type { OutputPart, ProcessedOutput, StreamChunk } from '@agentsy/core/processor';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { AgUiEvent, InterruptController } from '@agentsy/runtime/ag-ui';
+import type { FinishReason, UsageInfo } from '@agentsy/types';
 
-export type {
-  OutputPart,
-  ProcessedOutput,
-  StreamChunk,
-} from "@agentsy/core/processor";
-export type { FinishReason } from "@agentsy/types";
+export type { OutputPart, ProcessedOutput, StreamChunk } from '@agentsy/core/processor';
+export type { FinishReason } from '@agentsy/types';
 
 export type StopCondition = (state: AgentLoopState) => boolean;
 
@@ -52,9 +44,9 @@ export interface AgentLoopToolContext extends AgentLoopStepContext {
   toolResultMessages?: unknown[];
 }
 
-export type AgentLoopAbortReason = "abort" | "interrupt";
-export type ToolApprovalMode = "allow" | "ask" | "deny" | "auto";
-export type ToolApprovalDecision = "allow" | "deny";
+export type AgentLoopAbortReason = 'abort' | 'interrupt';
+export type ToolApprovalMode = 'allow' | 'ask' | 'deny' | 'auto';
+export type ToolApprovalDecision = 'allow' | 'deny';
 
 export interface ToolApprovalContext extends AgentLoopToolContext {
   mode: ToolApprovalMode;
@@ -67,7 +59,7 @@ export interface ToolApprovalResult {
   reason?: string;
 }
 
-export type AgentLoopOutcome = "success" | "interrupt" | "error" | "abort";
+export type AgentLoopOutcome = 'success' | 'interrupt' | 'error' | 'abort';
 
 export interface AgentLoopFinalContext extends AgentLoopContext {
   outcome: AgentLoopOutcome;
@@ -79,17 +71,17 @@ export interface AgentLoopStepOverrides {
   stopWhen?: StopCondition | StopCondition[];
   maxConversationMessages?: number;
   toolApprovalMode?: ToolApprovalMode;
-  buildToolResultMessages?: AgentLoopOptions["buildToolResultMessages"];
-  approveToolCalls?: AgentLoopOptions["approveToolCalls"];
-  beforeStep?: AgentLoopOptions["beforeStep"];
-  onStep?: AgentLoopOptions["onStep"];
-  afterStep?: AgentLoopOptions["afterStep"];
-  beforeToolCall?: AgentLoopOptions["beforeToolCall"];
-  afterToolCall?: AgentLoopOptions["afterToolCall"];
-  onAbort?: AgentLoopOptions["onAbort"];
-  onError?: AgentLoopOptions["onError"];
-  beforeFinal?: AgentLoopOptions["beforeFinal"];
-  afterFinal?: AgentLoopOptions["afterFinal"];
+  buildToolResultMessages?: AgentLoopOptions['buildToolResultMessages'];
+  approveToolCalls?: AgentLoopOptions['approveToolCalls'];
+  beforeStep?: AgentLoopOptions['beforeStep'];
+  onStep?: AgentLoopOptions['onStep'];
+  afterStep?: AgentLoopOptions['afterStep'];
+  beforeToolCall?: AgentLoopOptions['beforeToolCall'];
+  afterToolCall?: AgentLoopOptions['afterToolCall'];
+  onAbort?: AgentLoopOptions['onAbort'];
+  onError?: AgentLoopOptions['onError'];
+  beforeFinal?: AgentLoopOptions['beforeFinal'];
+  afterFinal?: AgentLoopOptions['afterFinal'];
 }
 
 export interface AgentLoopOptions {
@@ -106,10 +98,7 @@ export interface AgentLoopOptions {
   /** Optional hook for per-step message/callback/tool configuration overrides. */
   prepareStep?: (
     context: AgentLoopContext
-  ) =>
-    | AgentLoopStepOverrides
-    | undefined
-    | Promise<AgentLoopStepOverrides | undefined>;
+  ) => AgentLoopStepOverrides | undefined | Promise<AgentLoopStepOverrides | undefined>;
   /** Optional callback fired after each completed step. */
   onStep?: (result: StepResult) => void | Promise<void>;
   /** Optional hook fired after state has been updated for a completed step. */
@@ -129,10 +118,7 @@ export interface AgentLoopOptions {
     | ToolApprovalResult
     | Promise<boolean | ToolApprovalDecision | ToolApprovalResult>;
   /** Optional callback fired when the loop aborts via explicit abort() or interrupt controller. */
-  onAbort?: (
-    reason: AgentLoopAbortReason,
-    context: AgentLoopContext
-  ) => void | Promise<void>;
+  onAbort?: (reason: AgentLoopAbortReason, context: AgentLoopContext) => void | Promise<void>;
   /** Optional callback fired when execute/process logic throws. */
   onError?: (error: Error, context: AgentLoopContext) => void | Promise<void>;
   /** Optional hook fired before terminal run events are emitted/returned. */

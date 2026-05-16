@@ -1,30 +1,24 @@
-import type { FinishReason } from "@agentsy/types";
+import type { FinishReason } from '@agentsy/types';
 
-import type {
-  NativeToolCallDelta,
-  NormalizerResult,
-  UsageInfo,
-} from "./types.js";
+import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
-function mapCohereFinishReason(
-  reason: string | undefined
-): FinishReason | undefined {
+function mapCohereFinishReason(reason: string | undefined): FinishReason | undefined {
   if (!reason) {
     return undefined;
   }
-  if (reason === "COMPLETE" || reason === "STOP_SEQUENCE") {
-    return "stop";
+  if (reason === 'COMPLETE' || reason === 'STOP_SEQUENCE') {
+    return 'stop';
   }
-  if (reason === "MAX_TOKENS") {
-    return "length";
+  if (reason === 'MAX_TOKENS') {
+    return 'length';
   }
-  if (reason === "TOOL_CALL") {
-    return "tool-calls";
+  if (reason === 'TOOL_CALL') {
+    return 'tool-calls';
   }
-  if (reason === "ERROR" || reason === "ERROR_LIMIT") {
-    return "error";
+  if (reason === 'ERROR' || reason === 'ERROR_LIMIT') {
+    return 'error';
   }
-  return "other";
+  return 'other';
 }
 
 // ---------------------------------------------------------------------------
@@ -61,51 +55,43 @@ interface CohereEvent {
 // ---------------------------------------------------------------------------
 
 function isCohereEvent(value: unknown): value is CohereEvent {
-  if (!value || typeof value !== "object") {
+  if (!value || typeof value !== 'object') {
     return false;
   }
   const v = value as Record<string, unknown>;
-  return typeof v.type === "string";
+  return typeof v.type === 'string';
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function buildCohereUsage(
-  delta: CohereDelta | undefined
-): UsageInfo | undefined {
+function buildCohereUsage(delta: CohereDelta | undefined): UsageInfo | undefined {
   const tokens = delta?.usage?.tokens;
   if (!tokens) {
     return undefined;
   }
   const usage: UsageInfo = {};
-  if (typeof tokens.input_tokens === "number") {
+  if (typeof tokens.input_tokens === 'number') {
     usage.inputTokens = tokens.input_tokens;
   }
-  if (typeof tokens.output_tokens === "number") {
+  if (typeof tokens.output_tokens === 'number') {
     usage.outputTokens = tokens.output_tokens;
   }
   return usage;
 }
 
-function normalizeCohereContentDelta(
-  raw: unknown,
-  delta: CohereDelta | undefined
-): NormalizerResult | null {
+function normalizeCohereContentDelta(raw: unknown, delta: CohereDelta | undefined): NormalizerResult | null {
   const text = delta?.message?.content?.text;
-  if (typeof text !== "string") {
+  if (typeof text !== 'string') {
     return null;
   }
   return { chunk: { content: text }, rawEvent: raw };
 }
 
-function normalizeCohereToolPlanDelta(
-  raw: unknown,
-  delta: CohereDelta | undefined
-): NormalizerResult | null {
+function normalizeCohereToolPlanDelta(raw: unknown, delta: CohereDelta | undefined): NormalizerResult | null {
   const toolPlan = delta?.message?.tool_plan;
-  if (typeof toolPlan !== "string") {
+  if (typeof toolPlan !== 'string') {
     return null;
   }
   return { chunk: { thinking: toolPlan }, rawEvent: raw };
@@ -117,14 +103,14 @@ function normalizeCohereToolCallStart(
   index: number
 ): NormalizerResult | null {
   const tc = delta?.message?.tool_calls;
-  if (!tc || typeof tc !== "object") {
+  if (!tc || typeof tc !== 'object') {
     return null;
   }
   const normalizedDelta: NativeToolCallDelta = { index };
-  if (typeof tc.id === "string" && tc.id) {
+  if (typeof tc.id === 'string' && tc.id) {
     normalizedDelta.id = tc.id;
   }
-  if (typeof tc.function?.name === "string" && tc.function.name) {
+  if (typeof tc.function?.name === 'string' && tc.function.name) {
     normalizedDelta.name = tc.function.name;
   }
   return { chunk: { nativeToolCallDeltas: [normalizedDelta] }, rawEvent: raw };
@@ -136,19 +122,15 @@ function normalizeCohereToolCallDelta(
   index: number
 ): NormalizerResult | null {
   const args = delta?.message?.tool_calls?.function?.arguments;
-  if (typeof args !== "string" || args === "") {
+  if (typeof args !== 'string' || args === '') {
     return null;
   }
   const normalizedDelta: NativeToolCallDelta = { argumentsDelta: args, index };
   return { chunk: { nativeToolCallDeltas: [normalizedDelta] }, rawEvent: raw };
 }
 
-function normalizeCohereMessageEnd(
-  raw: unknown,
-  delta: CohereDelta | undefined
-): NormalizerResult {
-  const finishReasonStr =
-    typeof delta?.finish_reason === "string" ? delta.finish_reason : undefined;
+function normalizeCohereMessageEnd(raw: unknown, delta: CohereDelta | undefined): NormalizerResult {
+  const finishReasonStr = typeof delta?.finish_reason === 'string' ? delta.finish_reason : undefined;
   const done = finishReasonStr === undefined ? undefined : true;
   const finishReason = mapCohereFinishReason(finishReasonStr);
   const usage = buildCohereUsage(delta);
@@ -156,31 +138,28 @@ function normalizeCohereMessageEnd(
     chunk: {
       ...(done !== undefined && { done }),
       ...(usage !== undefined && { usage }),
-      ...(finishReason !== undefined && { finishReason }),
+      ...(finishReason !== undefined && { finishReason })
     },
-    rawEvent: raw,
+    rawEvent: raw
   };
 }
 
-function normalizeCohereByType(
-  raw: unknown,
-  event: CohereEvent
-): NormalizerResult | null {
+function normalizeCohereByType(raw: unknown, event: CohereEvent): NormalizerResult | null {
   const { type, index = 0, delta } = event;
 
-  if (type === "content-delta") {
+  if (type === 'content-delta') {
     return normalizeCohereContentDelta(raw, delta);
   }
-  if (type === "tool-plan-delta") {
+  if (type === 'tool-plan-delta') {
     return normalizeCohereToolPlanDelta(raw, delta);
   }
-  if (type === "tool-call-start") {
+  if (type === 'tool-call-start') {
     return normalizeCohereToolCallStart(raw, delta, index);
   }
-  if (type === "tool-call-delta") {
+  if (type === 'tool-call-delta') {
     return normalizeCohereToolCallDelta(raw, delta, index);
   }
-  if (type === "message-end") {
+  if (type === 'message-end') {
     return normalizeCohereMessageEnd(raw, delta);
   }
   return null;

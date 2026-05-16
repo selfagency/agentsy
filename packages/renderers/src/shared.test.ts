@@ -1,9 +1,9 @@
-import type { OutputPart } from "@agentsy/core/processor";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import type { FinishReason, UsageInfo } from "@agentsy/types";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { OutputPart } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { FinishReason, UsageInfo } from '@agentsy/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createSharedRendererHandle } from "./shared.js";
+import { createSharedRendererHandle } from './shared.js';
 
 describe(createSharedRendererHandle, () => {
   let mockHandlers: {
@@ -14,10 +14,7 @@ describe(createSharedRendererHandle, () => {
     onEnd?: () => Promise<void>;
   };
 
-  let mockOnFinish: (
-    finishReason: FinishReason | undefined,
-    usage: UsageInfo | undefined
-  ) => void | Promise<void>;
+  let mockOnFinish: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
   let mockOnError: (error: Error) => void;
 
   beforeEach(() => {
@@ -26,18 +23,15 @@ describe(createSharedRendererHandle, () => {
       onText: vi.fn().mockResolvedValue(),
       onThinking: vi.fn().mockResolvedValue(),
       onToolCall: vi.fn().mockResolvedValue(),
-      onToolCallDelta: vi.fn().mockResolvedValue(),
+      onToolCallDelta: vi.fn().mockResolvedValue()
     };
 
     mockOnFinish = vi.fn().mockResolvedValue();
     mockOnError = vi.fn().mockResolvedValue();
   });
 
-  it("creates shared renderer handle with handlers", () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('creates shared renderer handle with handlers', () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     expect(renderer).toBeDefined();
     expect(renderer.write).toBeDefined();
@@ -45,74 +39,59 @@ describe(createSharedRendererHandle, () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it("accepts handlers and processes via write", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('accepts handlers and processes via write', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
-    await renderer.write("Hello world");
+    await renderer.write('Hello world');
 
     // Verify write completes without error
     expect(renderer).toBeDefined();
   });
 
-  it("processes multiple chunks via write", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('processes multiple chunks via write', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
-    await renderer.write("Hello ");
-    await renderer.write("world");
+    await renderer.write('Hello ');
+    await renderer.write('world');
 
     // Verify multiple writes complete without error
     expect(renderer).toBeDefined();
   });
 
-  it("invokes onFinish callback via writeChunk when done=true", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('invokes onFinish callback via writeChunk when done=true', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     await renderer.writeChunk({
-      content: "Test",
+      content: 'Test',
       done: true,
-      finishReason: "stop",
+      finishReason: 'stop'
     });
 
-    expect(mockOnFinish).toHaveBeenCalledWith("stop", undefined);
+    expect(mockOnFinish).toHaveBeenCalledWith('stop', undefined);
   });
 
-  it("passes usage data to onFinish", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('passes usage data to onFinish', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     await renderer.writeChunk({
-      content: "Test",
+      content: 'Test',
       done: true,
-      usage: { inputTokens: 10, outputTokens: 20 },
+      usage: { inputTokens: 10, outputTokens: 20 }
     });
 
     expect(mockOnFinish).toHaveBeenCalledWith(undefined, {
       inputTokens: 10,
-      outputTokens: 20,
+      outputTokens: 20
     });
   });
 
-  it("prevents double onFinish invocation", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('prevents double onFinish invocation', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     await renderer.writeChunk({
-      content: "Test",
+      content: 'Test',
       done: true,
-      finishReason: "stop",
+      finishReason: 'stop'
     });
 
     await renderer.end();
@@ -121,36 +100,27 @@ describe(createSharedRendererHandle, () => {
     expect(mockOnFinish).toHaveBeenCalledOnce();
   });
 
-  it("invokes onFinish via end when not already called", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('invokes onFinish via end when not already called', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
-    await renderer.write("Content");
+    await renderer.write('Content');
     await renderer.end();
 
     // Should be called once in end()
     expect(mockOnFinish).toHaveBeenCalledOnce();
   });
 
-  it("calls onEnd handler when provided", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('calls onEnd handler when provided', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     await renderer.end();
 
     expect(mockHandlers.onEnd).toHaveBeenCalledWith();
   });
 
-  it("does not call onEnd when not provided", async () => {
+  it('does not call onEnd when not provided', async () => {
     const { onEnd: _, ...handlersWithoutEnd } = mockHandlers;
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      handlersWithoutEnd
-    );
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, handlersWithoutEnd);
 
     await renderer.end();
 
@@ -158,38 +128,26 @@ describe(createSharedRendererHandle, () => {
     expect(renderer).toBeDefined();
   });
 
-  it("accepts onError callback on write() method", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers,
-      mockOnError
-    );
+  it('accepts onError callback on write() method', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers, mockOnError);
 
-    await renderer.write("Content");
+    await renderer.write('Content');
 
     // Should not throw
     expect(renderer).toBeDefined();
   });
 
-  it("accepts onError callback on writeChunk() method", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers,
-      mockOnError
-    );
+  it('accepts onError callback on writeChunk() method', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers, mockOnError);
 
-    await renderer.writeChunk({ content: "Content", done: false });
+    await renderer.writeChunk({ content: 'Content', done: false });
 
     // Should not throw
     expect(renderer).toBeDefined();
   });
 
-  it("accepts onError callback on end() method", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers,
-      mockOnError
-    );
+  it('accepts onError callback on end() method', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers, mockOnError);
 
     await renderer.end();
 
@@ -197,27 +155,24 @@ describe(createSharedRendererHandle, () => {
     expect(renderer).toBeDefined();
   });
 
-  it("invokes onStep when stepIndex changes via writeChunk", async () => {
+  it('invokes onStep when stepIndex changes via writeChunk', async () => {
     const onStep = vi.fn().mockResolvedValue();
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish, onStep },
-      mockHandlers
-    );
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
 
     await renderer.writeChunk({
-      content: "Step 0",
+      content: 'Step 0',
       stepIndex: 0,
-      stepUsage: { outputTokens: 3 },
+      stepUsage: { outputTokens: 3 }
     });
     await renderer.writeChunk({
-      content: "Still step 0",
+      content: 'Still step 0',
       stepIndex: 0,
-      stepUsage: { outputTokens: 4 },
+      stepUsage: { outputTokens: 4 }
     });
     await renderer.writeChunk({
-      content: "Step 1",
+      content: 'Step 1',
       stepIndex: 1,
-      stepUsage: { outputTokens: 5 },
+      stepUsage: { outputTokens: 5 }
     });
 
     expect(onStep).toHaveBeenCalledTimes(2);
@@ -225,32 +180,26 @@ describe(createSharedRendererHandle, () => {
     expect(onStep).toHaveBeenNthCalledWith(2, 1, { outputTokens: 5 });
   });
 
-  it("falls back to usage when stepUsage is absent", async () => {
+  it('falls back to usage when stepUsage is absent', async () => {
     const onStep = vi.fn().mockResolvedValue();
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish, onStep },
-      mockHandlers
-    );
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
 
     await renderer.writeChunk({
-      content: "Step 2",
+      content: 'Step 2',
       stepIndex: 2,
-      usage: { inputTokens: 9, outputTokens: 6 },
+      usage: { inputTokens: 9, outputTokens: 6 }
     });
 
     expect(onStep).toHaveBeenCalledWith(2, { inputTokens: 9, outputTokens: 6 });
   });
 
-  it("skips onToolCall handler when not provided", async () => {
+  it('skips onToolCall handler when not provided', async () => {
     const handlersWithoutToolCall = {
       onText: mockHandlers.onText,
-      onThinking: mockHandlers.onThinking,
+      onThinking: mockHandlers.onThinking
     };
     const processor = new LLMStreamProcessor();
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish, processor },
-      handlersWithoutToolCall
-    );
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, processor }, handlersWithoutToolCall);
 
     // Process XML tool call
     await renderer.write(
@@ -261,54 +210,42 @@ describe(createSharedRendererHandle, () => {
     expect(renderer).toBeDefined();
   });
 
-  it("skips onToolCallDelta handler when not provided", async () => {
+  it('skips onToolCallDelta handler when not provided', async () => {
     const handlersWithoutDelta = {
       onText: mockHandlers.onText,
-      onThinking: mockHandlers.onThinking,
+      onThinking: mockHandlers.onThinking
     };
 
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      handlersWithoutDelta
-    );
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, handlersWithoutDelta);
 
     // Process via writeChunk
-    await renderer.writeChunk({ content: "Content", done: false });
+    await renderer.writeChunk({ content: 'Content', done: false });
     await renderer.end();
 
     expect(renderer).toBeDefined();
   });
 
-  it("uses provided processor instead of creating internal one", async () => {
+  it('uses provided processor instead of creating internal one', async () => {
     const processor = new LLMStreamProcessor();
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish, processor },
-      mockHandlers
-    );
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, processor }, mockHandlers);
 
     // Renderer should be created successfully with provided processor
     expect(renderer).toBeDefined();
     expect(renderer.write).toBeDefined();
   });
 
-  it("creates internal processor when not provided", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('creates internal processor when not provided', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     // Renderer should be created successfully with internal processor
     expect(renderer).toBeDefined();
     expect(renderer.write).toBeDefined();
   });
 
-  it("processes parts through handlers via write", async () => {
-    const renderer = createSharedRendererHandle(
-      { onFinish: mockOnFinish },
-      mockHandlers
-    );
+  it('processes parts through handlers via write', async () => {
+    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
-    await renderer.write("Test content");
+    await renderer.write('Test content');
     await renderer.end();
 
     // Verify handlers were called (processor connects parts to handlers)

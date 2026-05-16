@@ -1,18 +1,15 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID } from 'node:crypto';
 
-import type { XmlToolCall } from "@agentsy/core/tool-calls";
-import type { JsonObject } from "@agentsy/types";
-import type { Instance, RenderOptions } from "ink";
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { JsonObject } from '@agentsy/types';
+import type { Instance, RenderOptions } from 'ink';
 
-import type {
-  InkRendererHandle,
-  InkRendererOptions,
-} from "./createInkRenderer.js";
-import { resolveTheme } from "./themes/index.js";
+import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';
+import { resolveTheme } from './themes/index.js';
 
 export interface ConversationTurn {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   text: string;
   thinking?: string | undefined;
   toolCalls: {
@@ -29,7 +26,7 @@ export interface InkConversationRendererOptions extends InkRendererOptions {
 }
 
 export interface InkConversationRendererHandle extends InkRendererHandle {
-  newTurn(role?: "assistant"): void;
+  newTurn(role?: 'assistant'): void;
   addUserTurn(text: string): void;
   getHistory(): readonly ConversationTurn[];
 }
@@ -38,15 +35,13 @@ export interface InkConversationRendererHandle extends InkRendererHandle {
 export async function createInkConversationRenderer(
   options: InkConversationRendererOptions
 ): Promise<InkConversationRendererHandle> {
-  let ink: typeof import("ink");
-  let react: typeof import("react");
+  let ink: typeof import('ink');
+  let react: typeof import('react');
   try {
-    ink = await import("ink");
-    react = await import("react");
+    ink = await import('ink');
+    react = await import('react');
   } catch {
-    throw new Error(
-      "ink and react are required peer dependencies. Install them with: pnpm add ink react"
-    );
+    throw new Error('ink and react are required peer dependencies. Install them with: pnpm add ink react');
   }
 
   const { createElement: h, Fragment } = react;
@@ -56,18 +51,18 @@ export async function createInkConversationRenderer(
 
   const stateRef = {
     isStreaming: true,
-    text: "",
-    thinking: "",
+    text: '',
+    thinking: '',
     toolCalls: [] as {
       id: string;
       name: string;
       arguments: JsonObject;
       done: boolean;
-    }[],
+    }[]
   };
 
   const historyRef: { current: ConversationTurn[] } = {
-    current: options.initialHistory ? [...options.initialHistory] : [],
+    current: options.initialHistory ? [...options.initialHistory] : []
   };
 
   const forceUpdateRef = { current: () => {} };
@@ -94,24 +89,23 @@ export async function createInkConversationRenderer(
         arguments: part.parameters,
         done: true,
         id: part.id || randomUUID(),
-        name: part.name,
+        name: part.name
       });
       forceUpdateRef.current();
     },
     warning: (error: string) => {
       options.onWarning?.(error);
-    },
+    }
   };
 
-  processor.on("text", listeners.text);
-  processor.on("thinking", listeners.thinking);
-  processor.on("tool_call", listeners.tool_call);
-  processor.on("done", listeners.done);
-  processor.on("warning", listeners.warning);
+  processor.on('text', listeners.text);
+  processor.on('thinking', listeners.thinking);
+  processor.on('tool_call', listeners.tool_call);
+  processor.on('done', listeners.done);
+  processor.on('warning', listeners.warning);
 
-  const InkStreamRenderer = (await import("./InkStreamRenderer.js")).default;
-  const { ConversationHistory } =
-    await import("./components/ConversationHistory.js");
+  const InkStreamRenderer = (await import('./InkStreamRenderer.js')).default;
+  const { ConversationHistory } = await import('./components/ConversationHistory.js');
 
   const rendererOptions = {
     keyboard: options.keyboard,
@@ -121,7 +115,7 @@ export async function createInkConversationRenderer(
     showToolCalls: options.showToolCalls,
     syntaxHighlight: options.syntaxHighlight,
     theme: resolvedTheme,
-    thinkingStyle: options.thinkingStyle,
+    thinkingStyle: options.thinkingStyle
   };
 
   const instance: Instance = render(
@@ -132,7 +126,7 @@ export async function createInkConversationRenderer(
         options: rendererOptions,
         screenReader: options.screenReader,
         theme: resolvedTheme,
-        turns: historyRef.current,
+        turns: historyRef.current
       }),
       h(InkStreamRenderer, {
         forceUpdateRef,
@@ -140,7 +134,7 @@ export async function createInkConversationRenderer(
         setForceUpdate: (fn: () => void) => {
           forceUpdateRef.current = fn;
         },
-        stateRef,
+        stateRef
       })
     ),
     options.inkOptions as Partial<RenderOptions>
@@ -150,10 +144,10 @@ export async function createInkConversationRenderer(
     addUserTurn(text: string): void {
       historyRef.current.push({
         id: randomUUID(),
-        role: "user",
+        role: 'user',
         text,
         timestamp: Date.now(),
-        toolCalls: [],
+        toolCalls: []
       });
       forceUpdateRef.current();
     },
@@ -165,32 +159,32 @@ export async function createInkConversationRenderer(
       return historyRef.current;
     },
     instance,
-    newTurn(role: "assistant" | "user" = "assistant"): void {
+    newTurn(role: 'assistant' | 'user' = 'assistant'): void {
       historyRef.current.push({
         id: randomUUID(),
         role,
         text: stateRef.text,
         thinking: stateRef.thinking || undefined,
         timestamp: Date.now(),
-        toolCalls: [...stateRef.toolCalls],
+        toolCalls: [...stateRef.toolCalls]
       });
-      stateRef.text = "";
-      stateRef.thinking = "";
+      stateRef.text = '';
+      stateRef.thinking = '';
       stateRef.toolCalls = [];
       stateRef.isStreaming = true;
       forceUpdateRef.current();
     },
     unmount(): void {
       // Clean up processor listeners to prevent memory leaks
-      processor.off("text", listeners.text);
-      processor.off("thinking", listeners.thinking);
-      processor.off("tool_call", listeners.tool_call);
-      processor.off("done", listeners.done);
-      processor.off("warning", listeners.warning);
+      processor.off('text', listeners.text);
+      processor.off('thinking', listeners.thinking);
+      processor.off('tool_call', listeners.tool_call);
+      processor.off('done', listeners.done);
+      processor.off('warning', listeners.warning);
       instance.unmount();
     },
     write(_chunk: string): void {
       // No-op; driven by processor events
-    },
+    }
   };
 }

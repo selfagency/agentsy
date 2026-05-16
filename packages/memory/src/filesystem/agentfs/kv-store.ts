@@ -34,7 +34,7 @@ export function createKvStore<T = string>(): KvStore<T> {
     },
 
     entries() {
-      return [...store.values()].filter((e) => !isExpired(e));
+      return [...store.values()].filter(e => !isExpired(e));
     },
 
     get(key) {
@@ -62,7 +62,7 @@ export function createKvStore<T = string>(): KvStore<T> {
     },
 
     keys() {
-      return [...store.keys()].filter((k) => {
+      return [...store.keys()].filter(k => {
         const entry = store.get(k);
         return entry !== undefined && !isExpired(entry);
       });
@@ -84,9 +84,9 @@ export function createKvStore<T = string>(): KvStore<T> {
         key,
         setAt: Date.now(),
         value,
-        ...(ttlMs ? { expiresAt: Date.now() + ttlMs } : {}),
+        ...(ttlMs ? { expiresAt: Date.now() + ttlMs } : {})
       };
       store.set(key, entry);
-    },
+    }
   };
 }

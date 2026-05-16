@@ -1,33 +1,20 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID } from 'node:crypto';
 
-import {
-  createBackupManifest,
-  verifyBackupManifest,
-} from "./backup-manifest.js";
-import { cloneSyncSnapshot } from "./integrity.js";
-import type {
-  BackupManager,
-  BackupManagerOptions,
-  BackupManifest,
-  RestoreResult,
-  SyncSnapshot,
-} from "./types.js";
+import { createBackupManifest, verifyBackupManifest } from './backup-manifest.js';
+import { cloneSyncSnapshot } from './integrity.js';
+import type { BackupManager, BackupManagerOptions, BackupManifest, RestoreResult, SyncSnapshot } from './types.js';
 
 interface StoredSnapshot {
   manifest: BackupManifest;
   snapshot: SyncSnapshot;
 }
 
-function createRestoreResult(
-  snapshotId: string,
-  restoredCount: number,
-  rollbackSnapshotId?: string
-): RestoreResult {
+function createRestoreResult(snapshotId: string, restoredCount: number, rollbackSnapshotId?: string): RestoreResult {
   return {
     restoredAt: new Date().toISOString(),
     restoredCount,
     snapshotId,
-    ...(rollbackSnapshotId === undefined ? {} : { rollbackSnapshotId }),
+    ...(rollbackSnapshotId === undefined ? {} : { rollbackSnapshotId })
   };
 }
 
@@ -47,12 +34,12 @@ class InMemoryBackupManager implements BackupManager {
       schemaVersion: this.options.schemaVersion,
       snapshotId,
       sourceVersion: 1,
-      targetDatabaseId: this.options.databaseId,
+      targetDatabaseId: this.options.databaseId
     });
 
     this.#snapshots.set(snapshotId, {
       manifest,
-      snapshot: current,
+      snapshot: current
     });
 
     return manifest;
@@ -80,35 +67,22 @@ class InMemoryBackupManager implements BackupManager {
       throw new Error(`Unknown snapshot ${snapshotId}`);
     }
 
-    const targetMatches =
-      stored.manifest.targetDatabaseId === options.targetDatabaseId;
-    const schemaMatches =
-      stored.manifest.schemaVersion === options.schemaVersion;
+    const targetMatches = stored.manifest.targetDatabaseId === options.targetDatabaseId;
+    const schemaMatches = stored.manifest.schemaVersion === options.schemaVersion;
 
     if ((!targetMatches || !schemaMatches) && !options.force) {
       if (!targetMatches) {
-        throw new Error(
-          "Restore target database identity does not match the snapshot target database identity."
-        );
+        throw new Error('Restore target database identity does not match the snapshot target database identity.');
       }
 
-      throw new Error(
-        "Restore schema version is incompatible with the snapshot schema version."
-      );
+      throw new Error('Restore schema version is incompatible with the snapshot schema version.');
     }
 
     const restorePointId = (this.options.createId ?? randomUUID)();
-    this.#restorePoints.set(
-      restorePointId,
-      cloneSyncSnapshot(await this.options.getCurrentState())
-    );
+    this.#restorePoints.set(restorePointId, cloneSyncSnapshot(await this.options.getCurrentState()));
     await this.options.applySnapshot(cloneSyncSnapshot(stored.snapshot));
 
-    return createRestoreResult(
-      snapshotId,
-      stored.snapshot.records.length,
-      restorePointId
-    );
+    return createRestoreResult(snapshotId, stored.snapshot.records.length, restorePointId);
   }
 
   async rollback(restorePointId: string): Promise<RestoreResult> {
@@ -124,8 +98,6 @@ class InMemoryBackupManager implements BackupManager {
   }
 }
 
-export function createBackupManager(
-  options: BackupManagerOptions
-): BackupManager {
+export function createBackupManager(options: BackupManagerOptions): BackupManager {
   return new InMemoryBackupManager(options);
 }

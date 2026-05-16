@@ -1,14 +1,10 @@
-import type { StreamChunk } from "@agentsy/types";
+import type { StreamChunk } from '@agentsy/types';
 
-import { estimateChunkSize } from "./chunkUtils.js";
-import type { ProcessedOutput } from "./LLMStreamProcessor.types.js";
-import type { ProcessorStats } from "./ProcessorStats.js";
+import { estimateChunkSize } from './chunkUtils.js';
+import type { ProcessedOutput } from './LLMStreamProcessor.types.js';
+import type { ProcessorStats } from './ProcessorStats.js';
 
-export function recordChunkStats(
-  stats: ProcessorStats,
-  chunk: StreamChunk,
-  encoder: TextEncoder
-): void {
+export function recordChunkStats(stats: ProcessorStats, chunk: StreamChunk, encoder: TextEncoder): void {
   const chunkSize = estimateChunkSize(chunk, encoder);
   stats.chunksProcessed++;
   stats.bytesProcessed += chunkSize;
@@ -21,10 +17,8 @@ export function getChunkInputFlags(chunk: StreamChunk): {
   hasThinkingInput: boolean;
 } {
   return {
-    hasContentInput:
-      typeof chunk.content === "string" && chunk.content.length > 0,
-    hasThinkingInput:
-      typeof chunk.thinking === "string" && chunk.thinking.length > 0,
+    hasContentInput: typeof chunk.content === 'string' && chunk.content.length > 0,
+    hasThinkingInput: typeof chunk.thinking === 'string' && chunk.thinking.length > 0
   };
 }
 
@@ -36,14 +30,7 @@ export function updatePostProcessStats(params: {
   bufferSize: number;
   output: ProcessedOutput;
 }): void {
-  const {
-    stats,
-    startTime,
-    hasThinkingInput,
-    hasContentInput,
-    bufferSize,
-    output,
-  } = params;
+  const { stats, startTime, hasThinkingInput, hasContentInput, bufferSize, output } = params;
   stats.parseTimeMs += performance.now() - startTime;
   if (hasThinkingInput) {
     stats.thinkingBlocksCount++;

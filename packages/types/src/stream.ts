@@ -1,13 +1,11 @@
-import type { FinishReason } from "./tool-calls.js";
-import type { NativeToolCallDelta, UsageInfo } from "./usage.js";
+import type { FinishReason } from './tool-calls.js';
+import type { NativeToolCallDelta, UsageInfo } from './usage.js';
 
 /** A single chunk of output from a normalised LLM stream. */
 export interface StreamChunk {
   content?: string | undefined;
   thinking?: string | undefined;
-  tool_calls?:
-    | { function?: { name?: string | undefined; arguments?: unknown } }[]
-    | undefined;
+  tool_calls?: { function?: { name?: string | undefined; arguments?: unknown } }[] | undefined;
   done?: boolean | undefined;
   /** Optional step index supplied by higher-level agent loops or callers. */
   stepIndex?: number | undefined;

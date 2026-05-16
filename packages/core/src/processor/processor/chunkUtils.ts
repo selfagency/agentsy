@@ -1,22 +1,19 @@
-import type { JsonObject, StreamChunk } from "@agentsy/types";
+import type { JsonObject, StreamChunk } from '@agentsy/types';
 
-import type { XmlToolCall } from "../../tool-calls/index.js";
+import type { XmlToolCall } from '../../tool-calls/index.js';
 
 const SHARED_TEXT_ENCODER = new TextEncoder();
 
 export function ensureText(value: unknown): string {
-  return typeof value === "string" ? value : "";
+  return typeof value === 'string' ? value : '';
 }
 
-export function estimateChunkSize(
-  chunk: StreamChunk,
-  encoder: TextEncoder
-): number {
+export function estimateChunkSize(chunk: StreamChunk, encoder: TextEncoder): number {
   let size = 0;
-  if (typeof chunk.content === "string") {
+  if (typeof chunk.content === 'string') {
     size += encoder.encode(chunk.content).length;
   }
-  if (typeof chunk.thinking === "string") {
+  if (typeof chunk.thinking === 'string') {
     size += encoder.encode(chunk.thinking).length;
   }
   if (Array.isArray(chunk.tool_calls)) {
@@ -41,14 +38,14 @@ export function estimateChunkSize(
 }
 
 export function normalizeToolArguments(value: unknown): JsonObject {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
     return value as JsonObject;
   }
 
-  if (typeof value === "string" && value.trim()) {
+  if (typeof value === 'string' && value.trim()) {
     try {
       const parsed = JSON.parse(value);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         return parsed as JsonObject;
       }
     } catch {
@@ -59,9 +56,7 @@ export function normalizeToolArguments(value: unknown): JsonObject {
   return {};
 }
 
-export function mapNativeToolCalls(
-  calls: StreamChunk["tool_calls"]
-): XmlToolCall[] {
+export function mapNativeToolCalls(calls: StreamChunk['tool_calls']): XmlToolCall[] {
   if (!Array.isArray(calls) || calls.length === 0) {
     return [];
   }
@@ -69,16 +64,15 @@ export function mapNativeToolCalls(
   const mapped: XmlToolCall[] = [];
 
   for (const call of calls) {
-    const name =
-      typeof call?.function?.name === "string" ? call.function.name : null;
+    const name = typeof call?.function?.name === 'string' ? call.function.name : null;
     if (!name) {
       continue;
     }
 
     mapped.push({
-      format: "native-json",
+      format: 'native-json',
       name,
-      parameters: normalizeToolArguments(call.function?.arguments),
+      parameters: normalizeToolArguments(call.function?.arguments)
     });
   }
 
@@ -87,7 +81,7 @@ export function mapNativeToolCalls(
 
 export function enforceMaxLength(
   value: string,
-  field: "content" | "thinking",
+  field: 'content' | 'thinking',
   maxInputLength: number,
   onWarning: (message: string, context?: Record<string, unknown>) => void
 ): string {
@@ -99,7 +93,7 @@ export function enforceMaxLength(
   onWarning(`Chunk ${field} exceeded maxInputLength and was truncated`, {
     field,
     maxInputLength,
-    originalLength: valueBytes,
+    originalLength: valueBytes
   });
 
   const charIndexForByteLimit = (() => {
@@ -120,16 +114,13 @@ export function enforceMaxLength(
   // to the XML parser. Walk back from the cut point to the last `<` that has
   // no matching `>` after it within the kept region.
   let cut = charIndexForByteLimit;
-  const openIdx = value.lastIndexOf("<", charIndexForByteLimit - 1);
+  const openIdx = value.lastIndexOf('<', charIndexForByteLimit - 1);
   if (openIdx !== -1) {
-    const nextChar = value[openIdx + 1] ?? "";
+    const nextChar = value[openIdx + 1] ?? '';
     const looksLikeTagStart = /[A-Za-z_/:!?]/.test(nextChar);
-    const closeIdx = value.indexOf(">", openIdx);
+    const closeIdx = value.indexOf('>', openIdx);
     // If the closing `>` is beyond the cut (or absent), the tag is partial.
-    if (
-      looksLikeTagStart &&
-      (closeIdx === -1 || closeIdx >= charIndexForByteLimit)
-    ) {
+    if (looksLikeTagStart && (closeIdx === -1 || closeIdx >= charIndexForByteLimit)) {
       cut = openIdx;
     }
   }

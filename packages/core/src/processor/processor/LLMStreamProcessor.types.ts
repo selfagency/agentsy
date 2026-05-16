@@ -1,13 +1,8 @@
-import type {
-  ConversationEvent,
-  FinishReason,
-  ToolCallState,
-  UsageInfo,
-} from "@agentsy/types";
+import type { ConversationEvent, FinishReason, ToolCallState, UsageInfo } from '@agentsy/types';
 
-import type { ThinkingTagPair } from "../../thinking/index.js";
-import type { XmlToolCall } from "../../tool-calls/index.js";
-import type { ToolCallParser } from "./ToolCallParser.js";
+import type { ThinkingTagPair } from '../../thinking/index.js';
+import type { XmlToolCall } from '../../tool-calls/index.js';
+import type { ToolCallParser } from './ToolCallParser.js';
 
 /** Configuration options for `LLMStreamProcessor`. */
 export interface ProcessorOptions {
@@ -79,11 +74,11 @@ export interface ProcessorOptions {
 
 /** A discriminated-union part of a `ProcessedOutput`, enabling structured iteration over output. */
 export type OutputPart =
-  | { type: "text"; text: string }
-  | { type: "thinking"; text: string }
-  | { type: "tool_call"; call: XmlToolCall; state: ToolCallState }
+  | { type: 'text'; text: string }
+  | { type: 'thinking'; text: string }
+  | { type: 'tool_call'; call: XmlToolCall; state: ToolCallState }
   | {
-      type: "tool_call_delta";
+      type: 'tool_call_delta';
       id?: string;
       name: string;
       argumentsDelta: string;
@@ -91,7 +86,7 @@ export type OutputPart =
     };
 
 /** Category of an incompleteness condition detected at stream end. */
-export type IncompletenessType = "thinking" | "xml" | "tool_calls";
+export type IncompletenessType = 'thinking' | 'xml' | 'tool_calls';
 
 /** Describes a single incompleteness condition found after stream flush. */
 export interface IncompletenessDetail {
@@ -124,11 +119,9 @@ export interface StreamEventMap {
   text: (delta: string) => void;
   thinking: (delta: string) => void;
   tool_call: (call: XmlToolCall) => void;
-  tool_call_part: (part: Extract<OutputPart, { type: "tool_call" }>) => void;
+  tool_call_part: (part: Extract<OutputPart, { type: 'tool_call' }>) => void;
   /** Emitted for each streaming argument delta while a native tool call is assembling. */
-  tool_call_delta: (
-    delta: Extract<OutputPart, { type: "tool_call_delta" }>
-  ) => void;
+  tool_call_delta: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
   /** Emits reducer-friendly conversation events derived from processor output. */
   conversation_event: (event: ConversationEvent) => void;
   done: () => void;

@@ -9,7 +9,7 @@ export interface OpenAIResponseFormatOptions {
 }
 
 export interface OpenAIResponseFormat {
-  type: "json_schema";
+  type: 'json_schema';
   json_schema: {
     name: string;
     strict: boolean;
@@ -18,7 +18,7 @@ export interface OpenAIResponseFormat {
 }
 
 export interface GeminiResponseSchema {
-  responseMimeType: "application/json";
+  responseMimeType: 'application/json';
   responseSchema: Record<string, unknown>;
 }
 
@@ -35,11 +35,11 @@ export function buildOpenAIResponseFormat(
 ): OpenAIResponseFormat {
   return {
     json_schema: {
-      name: options?.name ?? "response",
+      name: options?.name ?? 'response',
       schema,
-      strict: options?.strict ?? true,
+      strict: options?.strict ?? true
     },
-    type: "json_schema",
+    type: 'json_schema'
   };
 }
 
@@ -51,9 +51,7 @@ export function buildOpenAIResponseFormat(
  * const format = buildOllamaFormat(mySchema);
  * // mySchema (pass-through)
  */
-export function buildOllamaFormat(
-  schema: Record<string, unknown>
-): Record<string, unknown> {
+export function buildOllamaFormat(schema: Record<string, unknown>): Record<string, unknown> {
   return schema;
 }
 
@@ -64,11 +62,9 @@ export function buildOllamaFormat(
  * const config = buildGeminiResponseSchema(mySchema);
  * // { responseMimeType: 'application/json', responseSchema: mySchema }
  */
-export function buildGeminiResponseSchema(
-  schema: Record<string, unknown>
-): GeminiResponseSchema {
+export function buildGeminiResponseSchema(schema: Record<string, unknown>): GeminiResponseSchema {
   return {
-    responseMimeType: "application/json",
-    responseSchema: schema,
+    responseMimeType: 'application/json',
+    responseSchema: schema
   };
 }

@@ -1,30 +1,24 @@
 #!/usr/bin/env zx
-import { spawnSync } from "node:child_process";
-import type { SpawnSyncOptions, SpawnSyncReturns } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { spawnSync } from 'node:child_process';
+import type { SpawnSyncOptions, SpawnSyncReturns } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // fallow-ignore-file unused-file
-import { Octokit } from "@octokit/rest";
-import ora from "ora";
-import { $, argv, cd, ProcessOutput, sleep } from "zx";
+import { Octokit } from '@octokit/rest';
+import ora from 'ora';
+import { $, argv, cd, ProcessOutput, sleep } from 'zx';
 
 $.verbose = false;
 
-type ReleaseNotesOptions = Parameters<
-  Octokit["repos"]["generateReleaseNotes"]
->[0] & {
+type ReleaseNotesOptions = Parameters<Octokit['repos']['generateReleaseNotes']>[0] & {
   previous_tag_name?: string;
 };
 
-type GitHubWorkflow = Awaited<
-  ReturnType<Octokit["actions"]["listRepoWorkflows"]>
->["data"]["workflows"][number];
-type GitHubWorkflowRun = Awaited<
-  ReturnType<Octokit["actions"]["listWorkflowRuns"]>
->["data"]["workflow_runs"][number];
+type GitHubWorkflow = Awaited<ReturnType<Octokit['actions']['listRepoWorkflows']>>['data']['workflows'][number];
+type GitHubWorkflowRun = Awaited<ReturnType<Octokit['actions']['listWorkflowRuns']>>['data']['workflow_runs'][number];
 type WorkflowSpinner = ReturnType<typeof ora>;
 interface WaitForWorkflowOptions {
   timeoutMs?: number;
@@ -33,7 +27,7 @@ interface WaitForWorkflowOptions {
   branch?: string | undefined;
 }
 
-const ROOT = resolve(import.meta.dirname, "..");
+const ROOT = resolve(import.meta.dirname, '..');
 cd(ROOT);
 
 // Defensive filesystem helpers — ensure we only read/write files inside the
@@ -43,13 +37,13 @@ function isPathInsideRoot(p: string): boolean {
   try {
     const resolved = resolve(p);
     const rel = relative(ROOT, resolved);
-    return rel === "" || (!rel.startsWith("..") && !rel.startsWith("../"));
+    return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
   } catch {
     return false;
   }
 }
 
-function safeRead(p: string, enc: BufferEncoding = "utf-8"): string {
+function safeRead(p: string, enc: BufferEncoding = 'utf-8'): string {
   if (!isPathInsideRoot(p)) {
     throw new Error(`Refusing to read outside repository root: ${p}`);
   }
@@ -69,16 +63,14 @@ function safeWrite(p: string, data: string): void {
 
 function parseVersionArg(versionArg: string | undefined): string {
   if (!versionArg || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(versionArg)) {
-    console.error("Usage: pnpm release <version>   (e.g. pnpm release 1.0.5)");
+    console.error('Usage: pnpm release <version>   (e.g. pnpm release 1.0.5)');
     process.exit(1);
   }
 
   return versionArg;
 }
 
-const version = parseVersionArg(
-  typeof argv._[0] === "string" ? argv._[0] : undefined
-);
+const version = parseVersionArg(typeof argv._[0] === 'string' ? argv._[0] : undefined);
 
 const tag = `v${version}`;
 
@@ -94,31 +86,25 @@ let commitLocal = false;
 let commitPushed = false;
 let tagPushed = false;
 let releaseDone = false;
-let gitCmd = "git";
-const SAFE_PATH = ["/usr/bin", "/bin", "/usr/sbin", "/sbin"].join(":");
+let gitCmd = 'git';
+const SAFE_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(':');
 
 function withSafePathEnv(): NodeJS.ProcessEnv {
   return { ...process.env, PATH: SAFE_PATH };
 }
 
-function runGit(
-  args: readonly string[],
-  options: SpawnSyncOptions = {}
-): SpawnSyncReturns<string> {
+function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnSyncReturns<string> {
   const result = spawnSync(gitCmd, args, {
     cwd: ROOT,
-    encoding: "utf-8",
+    encoding: 'utf-8',
     shell: false,
-    ...options,
+    ...options
   }) as SpawnSyncReturns<string>;
 
   if (result.status !== 0) {
-    const stderr = (result.stderr || "").trim();
-    const stdout = (result.stdout || "").trim();
-    const details =
-      stderr ||
-      stdout ||
-      `git ${args.join(" ")} failed with exit code ${result.status}`;
+    const stderr = (result.stderr || '').trim();
+    const stdout = (result.stdout || '').trim();
+    const details = stderr || stdout || `git ${args.join(' ')} failed with exit code ${result.status}`;
     throw new Error(details);
   }
 
@@ -126,25 +112,25 @@ function runGit(
 }
 
 function resolveGitExecutable() {
-  const direct = spawnSync("git", ["--version"], {
+  const direct = spawnSync('git', ['--version'], {
     env: withSafePathEnv(),
     shell: false,
-    stdio: "ignore",
+    stdio: 'ignore'
   });
   if (direct.status === 0) {
-    return "git";
+    return 'git';
   }
 
-  const locatorCommand = process.platform === "win32" ? "where" : "which";
-  const located = spawnSync(locatorCommand, ["git"], {
-    encoding: "utf-8",
+  const locatorCommand = process.platform === 'win32' ? 'where' : 'which';
+  const located = spawnSync(locatorCommand, ['git'], {
+    encoding: 'utf-8',
     env: withSafePathEnv(),
-    shell: false,
+    shell: false
   });
   if (located.status === 0) {
     const candidate = located.stdout
       .split(/\r?\n/)
-      .map((line) => line.trim())
+      .map(line => line.trim())
       .find(Boolean);
     if (candidate) {
       return candidate;
@@ -161,41 +147,33 @@ async function rollback() {
   $.verbose = false;
   try {
     if (tagPushed) {
-      console.log(
-        `\n⚠️  Release workflow failed or was interrupted. Deleting remote tag ${tag}...`
-      );
+      console.log(`\n⚠️  Release workflow failed or was interrupted. Deleting remote tag ${tag}...`);
       try {
-        runGit(["push", "origin", "--delete", tag]);
-        runGit(["tag", "-d", tag]);
+        runGit(['push', 'origin', '--delete', tag]);
+        runGit(['tag', '-d', tag]);
         console.log(`↩️  Tag ${tag} deleted from remote and local.`);
       } catch {
         console.error(`❌ Could not delete tag. Manually run:`);
-        console.error(
-          `   git push origin --delete ${tag} && git tag -d ${tag}`
-        );
+        console.error(`   git push origin --delete ${tag} && git tag -d ${tag}`);
       }
     }
     if (commitPushed) {
-      console.log("\n⚠️  Reverting release commit on origin/main...");
+      console.log('\n⚠️  Reverting release commit on origin/main...');
       try {
-        runGit(["revert", "--no-edit", "HEAD"]);
-        runGit(["push", "origin", "main"]);
-        console.log(
-          "↩️  Release commit reverted and pushed. Working tree is clean."
-        );
+        runGit(['revert', '--no-edit', 'HEAD']);
+        runGit(['push', 'origin', 'main']);
+        console.log('↩️  Release commit reverted and pushed. Working tree is clean.');
       } catch {
-        console.error("❌ Automatic revert failed. Manually run:");
-        console.error("   git revert HEAD && git push origin main");
+        console.error('❌ Automatic revert failed. Manually run:');
+        console.error('   git revert HEAD && git push origin main');
       }
     } else if (commitLocal) {
-      console.log(
-        "\n⚠️  Release aborted before push. Resetting local release commit..."
-      );
+      console.log('\n⚠️  Release aborted before push. Resetting local release commit...');
       try {
-        runGit(["reset", "--hard", "HEAD~1"]);
-        console.log("↩️  Local release commit removed. Working tree restored.");
+        runGit(['reset', '--hard', 'HEAD~1']);
+        console.log('↩️  Local release commit removed. Working tree restored.');
       } catch {
-        console.error("❌ Reset failed. Manually run: git reset --hard HEAD~1");
+        console.error('❌ Reset failed. Manually run: git reset --hard HEAD~1');
       }
     }
   } catch {
@@ -203,11 +181,11 @@ async function rollback() {
   }
 }
 
-process.on("SIGINT", async () => {
+process.on('SIGINT', async () => {
   await rollback();
   process.exit(130);
 });
-process.on("SIGTERM", async () => {
+process.on('SIGTERM', async () => {
   await rollback();
   process.exit(143);
 });
@@ -221,32 +199,22 @@ async function checkNpmCredentials(npmRegistry: string): Promise<void> {
     await $`npm whoami --registry=${npmRegistry}`;
   } catch {
     console.error(`❌ Not logged in to npm (registry: ${npmRegistry}).`);
-    console.error("   Tips:");
-    console.error(
-      `   - Ensure your token is in ${process.env.NPM_CONFIG_USERCONFIG}`
-    );
-    console.error(
-      "   - File should contain a line like: //registry.npmjs.org/:_authToken=<YOUR_TOKEN>"
-    );
-    console.error(
-      "   - Or export NPM_TOKEN in your environment before running the release script"
-    );
-    console.error(
-      "   - To log in interactively: npm login --registry=https://registry.npmjs.org/"
-    );
+    console.error('   Tips:');
+    console.error(`   - Ensure your token is in ${process.env.NPM_CONFIG_USERCONFIG}`);
+    console.error('   - File should contain a line like: //registry.npmjs.org/:_authToken=<YOUR_TOKEN>');
+    console.error('   - Or export NPM_TOKEN in your environment before running the release script');
+    console.error('   - To log in interactively: npm login --registry=https://registry.npmjs.org/');
     process.exit(1);
   }
 }
 
 async function resolveGithubToken() {
-  let token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? "";
+  let token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
   if (!token) {
     try {
       token = (await $`gh auth token`).stdout.trim();
     } catch {
-      console.error(
-        "❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login"
-      );
+      console.error('❌ No GitHub token found. Set GH_TOKEN/GITHUB_TOKEN or run: gh auth login');
       process.exit(1);
     }
   }
@@ -257,7 +225,7 @@ function wrapBareUrls(text: string): string {
   // Wrap bare URLs in angle brackets for Markdown compliance.
   // Skip URLs already wrapped in < > or used as Markdown link destinations,
   // and avoid including common trailing punctuation in the wrapped URL.
-  return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/g, "<$1>");
+  return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/g, '<$1>');
 }
 
 function updateChangelogFile(
@@ -272,24 +240,20 @@ function updateChangelogFile(
 
   let original;
   try {
-    original = safeRead(changelogPath, "utf-8");
+    original = safeRead(changelogPath, 'utf-8');
   } catch {
-    original = "# Change Log\n\n## [Unreleased]\n";
+    original = '# Change Log\n\n## [Unreleased]\n';
   }
 
   if (original.includes(heading)) {
-    console.log(
-      "ℹ️  CHANGELOG already contains this release heading; skipping."
-    );
+    console.log('ℹ️  CHANGELOG already contains this release heading; skipping.');
     return;
   }
 
-  const sourceLine = previousTag
-    ? `\n\n_Source: changes from ${previousTag} to ${tag}._`
-    : "";
+  const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
   const wrappedReleaseNotes = wrapBareUrls(releaseNotes);
   const section = `\n${heading}\n\n${wrappedReleaseNotes}${sourceLine}\n`;
-  const marker = "## [Unreleased]";
+  const marker = '## [Unreleased]';
   const idx = original.indexOf(marker);
   const updated =
     idx !== -1
@@ -299,69 +263,67 @@ function updateChangelogFile(
 }
 
 function ensureCleanMainBranch(): void {
-  const dirty = runGit(["status", "--porcelain"]).stdout.trim();
+  const dirty = runGit(['status', '--porcelain']).stdout.trim();
   if (dirty) {
-    console.error(
-      "❌ Working tree is not clean. Commit or stash changes first."
-    );
+    console.error('❌ Working tree is not clean. Commit or stash changes first.');
     process.exit(1);
   }
 
-  const branch = runGit(["rev-parse", "--abbrev-ref", "HEAD"]).stdout.trim();
-  if (branch !== "main") {
+  const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
+  if (branch !== 'main') {
     console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
     process.exit(1);
   }
 }
 
 function syncMainBranch(): void {
-  console.log("🔄 Fetching latest refs...");
-  runGit(["fetch", "origin", "main"]);
-  runGit(["pull", "--ff-only", "origin", "main"]);
+  console.log('🔄 Fetching latest refs...');
+  runGit(['fetch', 'origin', 'main']);
+  runGit(['pull', '--ff-only', 'origin', 'main']);
 }
 
 function parseOwnerRepoFromRemoteUrl(remoteUrl: string): {
   owner: string;
   repo: string;
 } {
-  const normalized = remoteUrl.trim().replace(/\.git$/, "");
+  const normalized = remoteUrl.trim().replace(/\.git$/, '');
 
-  if (normalized.startsWith("git@")) {
-    const colonIndex = normalized.indexOf(":");
+  if (normalized.startsWith('git@')) {
+    const colonIndex = normalized.indexOf(':');
     if (colonIndex === -1) {
-      return { owner: "", repo: "" };
+      return { owner: '', repo: '' };
     }
 
     const path = normalized.slice(colonIndex + 1);
-    const slashIndex = path.indexOf("/");
+    const slashIndex = path.indexOf('/');
     if (slashIndex === -1) {
-      return { owner: "", repo: "" };
+      return { owner: '', repo: '' };
     }
 
     return {
       owner: path.slice(0, slashIndex),
-      repo: path.slice(slashIndex + 1),
+      repo: path.slice(slashIndex + 1)
     };
   }
 
   try {
     const parsed = new URL(normalized);
-    const parts = parsed.pathname.split("/").filter(Boolean);
+    const parts = parsed.pathname.split('/').filter(Boolean);
     if (parts.length < 2) {
-      return { owner: "", repo: "" };
+      return { owner: '', repo: '' };
     }
 
     return {
-      owner: parts[0] ?? "",
-      repo: parts[1] ?? "",
+      owner: parts[0] ?? '',
+      repo: parts[1] ?? ''
     };
   } catch {
-    return { owner: "", repo: "" };
+    return { owner: '', repo: '' };
   }
 }
 
 function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
-  const remoteUrl = runGit(["remote", "get-url", "origin"]).stdout.trim();
+  const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const { owner, repo } = parseOwnerRepoFromRemoteUrl(remoteUrl);
   if (!owner || !repo) {
     console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
@@ -372,27 +334,23 @@ function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
 }
 
 function ensureLocalTagDoesNotExist() {
-  const localTag = runGit(["tag", "-l", tag]).stdout.trim();
+  const localTag = runGit(['tag', '-l', tag]).stdout.trim();
   if (localTag) {
     console.error(`❌ Local tag ${tag} already exists.`);
     process.exit(1);
   }
 }
 
-async function ensureRemoteTagDoesNotExist(
-  octokit: Octokit,
-  owner: string,
-  repo: string
-): Promise<void> {
+async function ensureRemoteTagDoesNotExist(octokit: Octokit, owner: string, repo: string): Promise<void> {
   try {
     await octokit.git.getRef({ owner, ref: `tags/${tag}`, repo });
     console.error(`❌ Remote tag ${tag} already exists.`);
     process.exit(1);
   } catch (error: unknown) {
     if (
-      typeof error !== "object" ||
+      typeof error !== 'object' ||
       error === null ||
-      !("status" in error) ||
+      !('status' in error) ||
       (error as { status?: unknown }).status !== 404
     ) {
       throw error;
@@ -415,16 +373,14 @@ async function main() {
   gitCmd = resolvedGit;
 
   // Ensure npm uses the user's ~/.npmrc (tokens) and the public npm registry.
-  process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), ".npmrc");
-  const NPM_REGISTRY =
-    process.env.NPM_CONFIG_REGISTRY || "https://registry.npmjs.org/";
+  process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
+  const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
 
   // If NPM_TOKEN is provided in the environment, set the npm auth config.
   if (process.env.NPM_TOKEN) {
     const registryUrl = new URL(NPM_REGISTRY);
     const registryHost = registryUrl.hostname;
-    process.env[`npm_config__${registryHost}_:_authToken`] =
-      process.env.NPM_TOKEN;
+    process.env[`npm_config__${registryHost}_:_authToken`] = process.env.NPM_TOKEN;
   }
 
   await checkNpmCredentials(NPM_REGISTRY);
@@ -450,25 +406,25 @@ async function main() {
   const tagsResp = await octokit.paginate(octokit.git.listMatchingRefs, {
     owner,
     per_page: 100,
-    ref: "tags/v",
-    repo,
+    ref: 'tags/v',
+    repo
   });
 
   const previousTag =
     tagsResp
-      .map((r) => r.ref.replace("refs/tags/", ""))
-      .filter((t) => t !== tag)
+      .map(r => r.ref.replace('refs/tags/', ''))
+      .filter(t => t !== tag)
       .toSorted((a, b) => {
         // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
         const parse = (v: string): [number, number, number] => {
-          const parts = v.replace(/^v/, "").split(".").map(Number);
+          const parts = v.replace(/^v/, '').split('.').map(Number);
           return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
         };
         const [aMaj, aMin, aPatch] = parse(a);
         const [bMaj, bMin, bPatch] = parse(b);
         return aMaj - bMaj || aMin - bMin || aPatch - bPatch;
       })
-      .at(-1) ?? "";
+      .at(-1) ?? '';
 
   // --- Release notes --------------------------------------------------------
 
@@ -478,60 +434,48 @@ async function main() {
     owner,
     repo,
     tag_name: tag,
-    target_commitish: "main",
+    target_commitish: 'main'
   };
   if (previousTag) {
     releaseNotesOpts.previous_tag_name = previousTag;
   }
 
   const notesResp = await octokit.repos.generateReleaseNotes(releaseNotesOpts);
-  const releaseNotes = notesResp.data.body?.trim() || "- No notable changes.";
+  const releaseNotes = notesResp.data.body?.trim() || '- No notable changes.';
 
   // --- Update package.json --------------------------------------------------
   console.log(`🧩 Updating package.json to ${version}...`);
-  const pkgPath = resolve(ROOT, "package.json");
-  const pkg = JSON.parse(safeRead(pkgPath, "utf-8"));
+  const pkgPath = resolve(ROOT, 'package.json');
+  const pkg = JSON.parse(safeRead(pkgPath, 'utf-8'));
   pkg.version = version;
   safeWrite(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
 
   // --- Update CHANGELOG.md --------------------------------------------------
 
-  console.log("🧩 Updating CHANGELOG.md...");
-  const changelogPath = resolve(ROOT, "CHANGELOG.md");
+  console.log('🧩 Updating CHANGELOG.md...');
+  const changelogPath = resolve(ROOT, 'CHANGELOG.md');
   const date = new Date().toISOString().slice(0, 10);
   const heading = `## [${version}] - ${date}`;
   updateChangelogFile(changelogPath, heading, releaseNotes, previousTag, tag);
 
   // --- Commit + push --------------------------------------------------------
 
-  const hasChanges = runGit([
-    "diff",
-    "--name-only",
-    "--",
-    "package.json",
-    "CHANGELOG.md",
-  ]).stdout.trim();
+  const hasChanges = runGit(['diff', '--name-only', '--', 'package.json', 'CHANGELOG.md']).stdout.trim();
   if (hasChanges) {
-    console.log("📦 Committing release metadata changes...");
-    runGit(["add", "package.json", "CHANGELOG.md"]);
-    runGit([
-      "commit",
-      "-m",
-      `chore(release): update version and changelog for ${tag}`,
-    ]);
+    console.log('📦 Committing release metadata changes...');
+    runGit(['add', 'package.json', 'CHANGELOG.md']);
+    runGit(['commit', '-m', `chore(release): update version and changelog for ${tag}`]);
     commitLocal = true;
   } else {
-    console.log(
-      "ℹ️  No version/changelog changes detected; nothing to commit."
-    );
+    console.log('ℹ️  No version/changelog changes detected; nothing to commit.');
   }
 
-  console.log("🚀 Pushing main...");
-  runGit(["push", "origin", "main"]);
+  console.log('🚀 Pushing main...');
+  runGit(['push', 'origin', 'main']);
   commitPushed = true;
   commitLocal = false;
 
-  const headSha = runGit(["rev-parse", "HEAD"]).stdout.trim();
+  const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
 
   // --- Wait for required workflows (sequential to avoid concurrent-spinner visual corruption) ------
 
@@ -540,8 +484,8 @@ async function main() {
   // Give GitHub a moment to register the push before we start polling.
   await sleep(10_000);
 
-  const spinner = ora({ text: "Tests: queued" }).start();
-  for (const name of ["Test & Build"]) {
+  const spinner = ora({ text: 'Tests: queued' }).start();
+  for (const name of ['Test & Build']) {
     spinner.text = `${name}: queued`;
     spinner.start();
     await waitForWorkflow(octokit, name, owner, repo, headSha, spinner);
@@ -554,60 +498,51 @@ async function main() {
   const tagMessage = [
     `Release ${tag}`,
     releaseNotes,
-    previousTag ? `Source: changes from ${previousTag} to ${tag}.` : "",
-    `Target commit: ${headSha}`,
+    previousTag ? `Source: changes from ${previousTag} to ${tag}.` : '',
+    `Target commit: ${headSha}`
   ]
     .filter(Boolean)
-    .join("\n\n");
+    .join('\n\n');
 
-  runGit(["tag", "-a", tag, headSha, "-m", tagMessage]);
+  runGit(['tag', '-a', tag, headSha, '-m', tagMessage]);
 
   console.log(`🚀 Pushing tag ${tag}...`);
-  runGit(["push", "origin", tag]);
+  runGit(['push', 'origin', tag]);
   tagPushed = true;
 
   // --- Watch the release workflow ------------------------------------------
 
-  spinner.text = "Release: waiting for workflow to trigger...";
+  spinner.text = 'Release: waiting for workflow to trigger...';
   spinner.start();
-  await waitForWorkflow(octokit, "Release", owner, repo, headSha, spinner, {
-    autoDispatch: false,
+  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, spinner, {
+    autoDispatch: false
   });
 
   console.log(`✅ GitHub release complete: ${tag} → ${headSha}`);
 
   // --- npm publish ----------------------------------------------------------
 
-  console.log("📦 Building package...");
+  console.log('📦 Building package...');
   $.verbose = true;
   await $`pnpm build`;
   await $`node scripts/write-dist-package.js`;
   $.verbose = false;
 
-  const distTag = version.includes("-") ? "next" : "latest";
+  const distTag = version.includes('-') ? 'next' : 'latest';
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   try {
     // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
-    const accessFlag = (
-      JSON.parse(safeRead(resolve(ROOT, "package.json"), "utf-8")).name || ""
-    ).startsWith("@")
-      ? ["--access", "public"]
+    const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf-8')).name || '').startsWith('@')
+      ? ['--access', 'public']
       : [];
     // Use spawn for interactive npm publish (required for 2FA/OTP prompts)
-    const { spawnSync } = await import("node:child_process");
+    const { spawnSync } = await import('node:child_process');
     const result = spawnSync(
-      "npm",
-      [
-        "publish",
-        "./dist",
-        "--tag",
-        distTag,
-        `--registry=${NPM_REGISTRY}`,
-        ...accessFlag,
-      ],
+      'npm',
+      ['publish', './dist', '--tag', distTag, `--registry=${NPM_REGISTRY}`, ...accessFlag],
       {
         cwd: process.cwd(),
-        stdio: "inherit",
+        stdio: 'inherit'
       }
     );
     if (result.status !== 0) {
@@ -634,22 +569,15 @@ async function waitForWorkflow(
   repo: string,
   headSha: string,
   spinner: WorkflowSpinner,
-  {
-    timeoutMs = 3_600_000,
-    pollMs = 15_000,
-    autoDispatch = true,
-    branch = "main",
-  }: WaitForWorkflowOptions = {}
+  { timeoutMs = 3_600_000, pollMs = 15_000, autoDispatch = true, branch = 'main' }: WaitForWorkflowOptions = {}
 ) {
   // Resolve the workflow ID by name.
   const workflowsResp = await octokit.actions.listRepoWorkflows({
     owner,
     per_page: 100,
-    repo,
+    repo
   });
-  const workflow = workflowsResp.data.workflows.find(
-    (w: GitHubWorkflow) => w.name === name
-  );
+  const workflow = workflowsResp.data.workflows.find((w: GitHubWorkflow) => w.name === name);
   if (!workflow) {
     spinner.fail(`${name}: workflow not found in ${owner}/${repo}`);
     throw new Error(`[${name}] workflow not found in ${owner}/${repo}`);
@@ -668,37 +596,33 @@ async function waitForWorkflow(
       workflow_id: workflow.id,
       ...(branch ? { branch } : {}),
       head_sha: headSha,
-      per_page: 10,
+      per_page: 10
     });
 
     // Find the latest run that isn't one we already marked as cancelled.
-    const run = runsResp.data.workflow_runs.find(
-      (r: GitHubWorkflowRun) => !cancelledRunIds.has(r.id)
-    );
+    const run = runsResp.data.workflow_runs.find((r: GitHubWorkflowRun) => !cancelledRunIds.has(r.id));
 
     if (!run) {
       if (autoDispatch && !triggered) {
         spinner.text = `${name}: no run found — triggering workflow_dispatch...`;
         await octokit.actions.createWorkflowDispatch({
           owner,
-          ref: "main",
+          ref: 'main',
           repo,
-          workflow_id: workflow.id,
+          workflow_id: workflow.id
         });
         triggered = true;
         spinner.text = `${name}: waiting for run to appear...`;
       } else {
         spinner.text = `${name}: waiting for run to appear...`;
       }
-    } else if (run.status !== "completed") {
-      const elapsed = Math.round(
-        (Date.now() - new Date(run.created_at).getTime()) / 1000
-      );
+    } else if (run.status !== 'completed') {
+      const elapsed = Math.round((Date.now() - new Date(run.created_at).getTime()) / 1000);
       spinner.text = `${name}: ${run.status} (${elapsed}s elapsed)`;
-    } else if (run.conclusion === "success") {
+    } else if (run.conclusion === 'success') {
       spinner.succeed(`${name}: passed`);
       return;
-    } else if (run.conclusion === "cancelled") {
+    } else if (run.conclusion === 'cancelled') {
       // Cancelled runs are often caused by a concurrent push racing with CI startup.
       // Record this run so we skip it on future polls, then re-dispatch.
       cancelledRunIds.add(run.id);
@@ -706,9 +630,7 @@ async function waitForWorkflow(
       triggered = false;
     } else {
       spinner.fail(`${name}: ${run.conclusion}`);
-      throw new Error(
-        `[${name}] conclusion=${run.conclusion}\n   Run: ${run.html_url}`
-      );
+      throw new Error(`[${name}] conclusion=${run.conclusion}\n   Run: ${run.html_url}`);
     }
 
     await sleep(pollMs);
@@ -733,7 +655,7 @@ try {
   }
   await rollback();
   process.exit(
-    typeof error === "object" && error !== null && "exitCode" in error
+    typeof error === 'object' && error !== null && 'exitCode' in error
       ? ((error as { exitCode?: number }).exitCode ?? 1)
       : 1
   );

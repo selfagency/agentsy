@@ -1,4 +1,4 @@
-import type { CancellationToken } from "vscode";
+import type { CancellationToken } from 'vscode';
 
 /**
  * Retry ownership guidance and utility for managing retry operations
@@ -10,12 +10,7 @@ export class RetryUtility {
   private readonly cancellationToken: CancellationToken;
   private readonly backoffFactor: number;
 
-  constructor(
-    maxRetries: number,
-    delayMs: number,
-    cancellationToken: CancellationToken,
-    backoffFactor = 1
-  ) {
+  constructor(maxRetries: number, delayMs: number, cancellationToken: CancellationToken, backoffFactor = 1) {
     this.maxRetries = maxRetries;
     this.delayMs = delayMs;
     this.cancellationToken = cancellationToken;
@@ -53,15 +48,12 @@ export class RetryUtility {
 
   private throwIfCancelled(): void {
     if (this.cancellationToken.isCancellationRequested) {
-      throw new Error("Operation cancelled");
+      throw new Error('Operation cancelled');
     }
   }
 
   private getDelayForAttempt(attempt: number): number {
-    return Math.max(
-      0,
-      this.delayMs * this.backoffFactor ** Math.max(0, attempt - 1)
-    );
+    return Math.max(0, this.delayMs * this.backoffFactor ** Math.max(0, attempt - 1));
   }
 
   private async waitForDelay(delayMs: number): Promise<void> {
@@ -71,26 +63,24 @@ export class RetryUtility {
 
     await new Promise<void>((resolve, reject) => {
       if (this.cancellationToken.isCancellationRequested) {
-        reject(new Error("Operation cancelled"));
+        reject(new Error('Operation cancelled'));
         return;
       }
 
       let settled = false;
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      const subscription = this.cancellationToken.onCancellationRequested(
-        () => {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-          if (timeoutId !== undefined) {
-            clearTimeout(timeoutId);
-          }
-          subscription.dispose();
-          reject(new Error("Operation cancelled"));
+      const subscription = this.cancellationToken.onCancellationRequested(() => {
+        if (settled) {
+          return;
         }
-      );
+
+        settled = true;
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
+        subscription.dispose();
+        reject(new Error('Operation cancelled'));
+      });
 
       timeoutId = setTimeout(() => {
         if (settled) {
@@ -137,10 +127,5 @@ export function createRetryUtility(
   cancellationToken: CancellationToken,
   backoffFactor = 1
 ): RetryUtility {
-  return new RetryUtility(
-    maxRetries,
-    delayMs,
-    cancellationToken,
-    backoffFactor
-  );
+  return new RetryUtility(maxRetries, delayMs, cancellationToken, backoffFactor);
 }

@@ -69,7 +69,7 @@ interface MemoryStore {
 
 interface MemoryEntry {
   id: MemoryId;
-  type: "semantic" | "episodic" | "procedural";
+  type: 'semantic' | 'episodic' | 'procedural';
   scope: MemoryScope;
   content: string;
   embedding?: number[];

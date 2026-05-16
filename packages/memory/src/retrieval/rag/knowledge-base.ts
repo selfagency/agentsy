@@ -1,25 +1,15 @@
-import { createDocumentIngestor } from "./document-ingest.js";
-import { createHybridRetriever } from "./hybrid-retriever.js";
-import { createIndexManager } from "./index-manager.js";
-import { createQueryPlanner } from "./query-planner.js";
-import { rerankResults } from "./reranker.js";
-import { sanitizeIngestSource } from "./sanitization.js";
-import type {
-  IngestSource,
-  IngestSummary,
-  RAGWeightConfig,
-  RAGEvidence,
-} from "./types.js";
+import { createDocumentIngestor } from './document-ingest.js';
+import { createHybridRetriever } from './hybrid-retriever.js';
+import { createIndexManager } from './index-manager.js';
+import { createQueryPlanner } from './query-planner.js';
+import { rerankResults } from './reranker.js';
+import { sanitizeIngestSource } from './sanitization.js';
+import type { IngestSource, IngestSummary, RAGWeightConfig, RAGEvidence } from './types.js';
 
 export interface KnowledgeBaseManager {
   ingest(source: IngestSource): Promise<IngestSummary>;
   remove(documentId: string): Promise<boolean>;
-  search(input: {
-    query: string;
-    scope?: string;
-    limit?: number;
-    weights: RAGWeightConfig;
-  }): Promise<RAGEvidence[]>;
+  search(input: { query: string; scope?: string; limit?: number; weights: RAGWeightConfig }): Promise<RAGEvidence[]>;
 }
 
 export function createKnowledgeBaseManager(): KnowledgeBaseManager {
@@ -42,9 +32,7 @@ export function createKnowledgeBaseManager(): KnowledgeBaseManager {
           sourceType: document.sourceType,
           title: document.title,
           updatedAt: document.updatedAt,
-          ...(document.metadata === undefined
-            ? {}
-            : { metadata: { ...document.metadata } }),
+          ...(document.metadata === undefined ? {} : { metadata: { ...document.metadata } })
         });
       }
 
@@ -60,10 +48,10 @@ export function createKnowledgeBaseManager(): KnowledgeBaseManager {
       const planned = planner.plan({
         query: input.query,
         ...(input.scope === undefined ? {} : { scope: input.scope }),
-        ...(input.limit === undefined ? {} : { limit: input.limit }),
+        ...(input.limit === undefined ? {} : { limit: input.limit })
       });
       const results = await retriever.search(planned);
       return rerankResults(results, input.weights);
-    },
+    }
   };
 }

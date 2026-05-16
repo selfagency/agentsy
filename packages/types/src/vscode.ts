@@ -2,7 +2,7 @@
  * VSCode extension integration types.
  */
 
-import type { AgentId, SessionId } from "./brands.js";
+import type { AgentId, SessionId } from './brands.js';
 
 /**
  * Extension provider configuration.

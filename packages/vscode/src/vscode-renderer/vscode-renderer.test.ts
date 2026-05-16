@@ -1,42 +1,39 @@
-import type { LLMStreamProcessor } from "@agentsy/core/processor";
-import type { CancellationToken } from "@agentsy/renderers";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { CancellationToken } from '@agentsy/renderers';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cancellationTokenToAbortSignal } from "./cancellationTokenToAbortSignal.js";
-import { createVSCodeAgentLoop } from "./createVSCodeAgentLoop.js";
-import type { ChatResponseStream } from "./createVSCodeChatRenderer.js";
-import { createVSCodeChatRenderer } from "./createVSCodeChatRenderer.js";
+import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
+import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
+import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
+import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 
 /** Factory function to create a mock LLMStreamProcessor for testing */
-function createFakeProcessor(
-  processParts: Record<string, unknown>[] = [],
-  customFlush?: ReturnType<typeof vi.fn>
-) {
+function createFakeProcessor(processParts: Record<string, unknown>[] = [], customFlush?: ReturnType<typeof vi.fn>) {
   return {
     flush:
       customFlush ||
       vi.fn(() => ({
-        content: "",
+        content: '',
         done: true,
         incomplete: false,
         incompleteness: [],
         parts: [],
-        thinking: "",
-        toolCalls: [],
+        thinking: '',
+        toolCalls: []
       })),
     process: vi.fn(() => ({
-      content: "",
+      content: '',
       done: false,
       incomplete: false,
       incompleteness: [],
       parts: processParts,
-      thinking: "",
-      toolCalls: [],
-    })),
+      thinking: '',
+      toolCalls: []
+    }))
   } as unknown as LLMStreamProcessor;
 }
 
-describe("VS Code Chat Renderer", () => {
+describe('VS Code Chat Renderer', () => {
   let mockStream: ChatResponseStream;
 
   beforeEach(() => {
@@ -52,19 +49,19 @@ describe("VS Code Chat Renderer", () => {
       thinkingProgress: vi.fn(),
       beginToolInvocation: vi.fn(),
       updateToolInvocation: vi.fn(),
-      usage: vi.fn(),
+      usage: vi.fn()
     };
   });
 
-  it("requires ChatResponseStream", () => {
+  it('requires ChatResponseStream', () => {
     expect(() => {
       createVSCodeChatRenderer({
-        stream: null as unknown as ChatResponseStream,
+        stream: null as unknown as ChatResponseStream
       });
-    }).toThrow("ChatResponseStream is required");
+    }).toThrow('ChatResponseStream is required');
   });
 
-  it("creates renderer with stream", async () => {
+  it('creates renderer with stream', async () => {
     const renderer = createVSCodeChatRenderer({ stream: mockStream });
 
     expect(renderer).toBeDefined();
@@ -73,237 +70,233 @@ describe("VS Code Chat Renderer", () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it("sends markdown to stream on write", async () => {
+  it('sends markdown to stream on write', async () => {
     const renderer = createVSCodeChatRenderer({ stream: mockStream });
 
-    await renderer.write("# Title\n\nContent");
+    await renderer.write('# Title\n\nContent');
     await renderer.end();
 
     expect(mockStream.markdown).toHaveBeenCalledWith();
   });
 
-  it("sends multiple chunks to stream", async () => {
+  it('sends multiple chunks to stream', async () => {
     const renderer = createVSCodeChatRenderer({ stream: mockStream });
 
-    await renderer.write("Part 1");
-    await renderer.write("Part 2");
-    await renderer.write("Part 3");
+    await renderer.write('Part 1');
+    await renderer.write('Part 2');
+    await renderer.write('Part 3');
     await renderer.end();
 
     expect(mockStream.markdown).toHaveBeenCalledWith();
   });
 
-  describe("Thinking Blocks", () => {
-    it("handles thinking blocks as blockquote style by default", async () => {
+  describe('Thinking Blocks', () => {
+    it('handles thinking blocks as blockquote style by default', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: true,
         stream: mockStream,
-        thinkingStyle: "blockquote",
+        thinkingStyle: 'blockquote'
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(mockStream.markdown).toHaveBeenCalledWith();
     });
 
-    it("handles thinking blocks as progress style", async () => {
+    it('handles thinking blocks as progress style', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: true,
         stream: {
           ...mockStream,
-          thinkingProgress: undefined, // Test fallback to progress()
+          thinkingProgress: undefined // Test fallback to progress()
         } as unknown as ChatResponseStream,
-        thinkingStyle: "progress",
+        thinkingStyle: 'progress'
       });
 
       await renderer.writeChunk({
-        content: "Content",
+        content: 'Content',
         done: true,
-        thinking: "Internal reasoning",
+        thinking: 'Internal reasoning'
       });
 
       expect(mockStream.progress).toHaveBeenCalledWith();
     });
 
-    it("uses thinkingProgress when available", async () => {
+    it('uses thinkingProgress when available', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: true,
         stream: mockStream,
-        thinkingStyle: "blockquote",
+        thinkingStyle: 'blockquote'
       });
 
       await renderer.writeChunk({
-        content: "Visible content",
-        thinking: "Internal reasoning",
+        content: 'Visible content',
+        thinking: 'Internal reasoning'
       });
       await renderer.end();
 
       expect(mockStream.thinkingProgress).toHaveBeenCalledWith({
-        id: "thinking",
-        text: "Internal reasoning",
+        id: 'thinking',
+        text: 'Internal reasoning'
       });
       expect(mockStream.progress).not.toHaveBeenCalled();
     });
 
-    it("suppresses thinking when style is suppress", async () => {
+    it('suppresses thinking when style is suppress', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: true,
         stream: mockStream,
-        thinkingStyle: "suppress",
+        thinkingStyle: 'suppress'
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(mockStream.progress).not.toHaveBeenCalled();
     });
 
-    it("suppresses thinking when showThinking is false", async () => {
+    it('suppresses thinking when showThinking is false', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: false,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(mockStream.progress).not.toHaveBeenCalled();
     });
   });
 
-  describe("Tool Call Feedback", () => {
-    it("fires onToolCall callback", async () => {
+  describe('Tool Call Feedback', () => {
+    it('fires onToolCall callback', async () => {
       const onToolCall = vi.fn();
       const fakeProcessor = createFakeProcessor([
         {
           call: {
-            format: "bare-xml",
-            id: "tc_callback",
-            name: "search",
-            parameters: { query: "docs" },
+            format: 'bare-xml',
+            id: 'tc_callback',
+            name: 'search',
+            parameters: { query: 'docs' }
           },
-          state: "pending",
-          type: "tool_call",
-        },
+          state: 'pending',
+          type: 'tool_call'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         onToolCall,
         processor: fakeProcessor,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.writeChunk({ content: "Tool use call" });
+      await renderer.writeChunk({ content: 'Tool use call' });
       await renderer.end();
 
       expect(onToolCall).toHaveBeenCalledOnce();
       expect(onToolCall).toHaveBeenCalledWith(
         expect.objectContaining({
-          call: expect.objectContaining({ id: "tc_callback", name: "search" }),
-          state: "pending",
-          type: "tool_call",
+          call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
+          state: 'pending',
+          type: 'tool_call'
         })
       );
     });
 
-    it("invokes beginToolInvocation when available", async () => {
+    it('invokes beginToolInvocation when available', async () => {
       const fakeProcessor = createFakeProcessor([
         {
           call: {
-            format: "bare-xml",
-            id: "tc_begin",
-            name: "weather",
-            parameters: { city: "NYC" },
+            format: 'bare-xml',
+            id: 'tc_begin',
+            name: 'weather',
+            parameters: { city: 'NYC' }
           },
-          state: "pending",
-          type: "tool_call",
-        },
+          state: 'pending',
+          type: 'tool_call'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         processor: fakeProcessor,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.writeChunk({ content: "invoke tool" });
+      await renderer.writeChunk({ content: 'invoke tool' });
       await renderer.end();
 
       expect(mockStream.beginToolInvocation).toHaveBeenCalledOnce();
-      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith(
-        "tc_begin",
-        "weather",
-        { city: "NYC" }
-      );
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', { city: 'NYC' });
     });
 
-    it("fires onToolCallDelta callback", async () => {
+    it('fires onToolCallDelta callback', async () => {
       const onToolCallDelta = vi.fn();
       const fakeProcessor = createFakeProcessor([
         {
           argumentsDelta: '{"query":',
-          id: "tc_delta",
+          id: 'tc_delta',
           index: 0,
-          name: "search",
-          type: "tool_call_delta",
-        },
+          name: 'search',
+          type: 'tool_call_delta'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         onToolCallDelta,
         processor: fakeProcessor,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.writeChunk({ content: "Tool delta" });
+      await renderer.writeChunk({ content: 'Tool delta' });
       await renderer.end();
 
       expect(onToolCallDelta).toHaveBeenCalledOnce();
       expect(onToolCallDelta).toHaveBeenCalledWith(
         expect.objectContaining({
           argumentsDelta: '{"query":',
-          id: "tc_delta",
-          name: "search",
-          type: "tool_call_delta",
+          id: 'tc_delta',
+          name: 'search',
+          type: 'tool_call_delta'
         })
       );
     });
 
-    it("calls updateToolInvocation when tool_call_delta received", async () => {
+    it('calls updateToolInvocation when tool_call_delta received', async () => {
       const fakeProcessor = createFakeProcessor([
         {
           argumentsDelta: '"docs"}',
-          id: "tc_update",
+          id: 'tc_update',
           index: 1,
-          name: "search",
-          type: "tool_call_delta",
-        },
+          name: 'search',
+          type: 'tool_call_delta'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         processor: fakeProcessor,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.writeChunk({ content: "delta content" });
+      await renderer.writeChunk({ content: 'delta content' });
       await renderer.end();
 
       expect(mockStream.updateToolInvocation).toHaveBeenCalledOnce();
       expect(mockStream.updateToolInvocation).toHaveBeenCalledWith(
-        "tc_update",
+        'tc_update',
         expect.objectContaining({
           argumentsDelta: '"docs"}',
-          id: "tc_update",
-          name: "search",
-          type: "tool_call_delta",
+          id: 'tc_update',
+          name: 'search',
+          type: 'tool_call_delta'
         })
       );
     });
 
-    it("awaits async onToolCall callback before writeChunk resolves", async () => {
+    it('awaits async onToolCall callback before writeChunk resolves', async () => {
       let releaseCallback: (() => void) | undefined;
       let callbackCompleted = false;
-      const callbackGate = new Promise<void>((resolve) => {
+      const callbackGate = new Promise<void>(resolve => {
         releaseCallback = resolve;
       });
 
@@ -314,19 +307,19 @@ describe("VS Code Chat Renderer", () => {
 
       const fakeProcessor = createFakeProcessor([
         {
-          call: { arguments: {}, id: "tc1", name: "search" },
-          state: "pending",
-          type: "tool_call",
-        },
+          call: { arguments: {}, id: 'tc1', name: 'search' },
+          state: 'pending',
+          type: 'tool_call'
+        }
       ]);
 
       const renderer = createVSCodeChatRenderer({
         onToolCall,
         processor: fakeProcessor,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      const writePromise = renderer.writeChunk({ content: "chunk" });
+      const writePromise = renderer.writeChunk({ content: 'chunk' });
 
       // If writeChunk correctly awaits onToolCall, callback should still be pending here.
       await Promise.resolve();
@@ -340,79 +333,79 @@ describe("VS Code Chat Renderer", () => {
     });
   });
 
-  describe("Usage Reporting", () => {
-    it("reports usage when available", async () => {
+  describe('Usage Reporting', () => {
+    it('reports usage when available', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        usage: { inputTokens: 10, outputTokens: 20 },
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
       expect(mockStream.usage).toHaveBeenCalledWith({
         completionTokens: 20,
-        promptTokens: 10,
+        promptTokens: 10
       });
     });
 
-    it("handles missing usage data gracefully", async () => {
+    it('handles missing usage data gracefully', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "Test",
-        done: true,
+        content: 'Test',
+        done: true
       });
 
       expect(renderer).toBeDefined();
     });
   });
 
-  describe("Error Handling", () => {
-    it("calls onError for processing errors", async () => {
+  describe('Error Handling', () => {
+    it('calls onError for processing errors', async () => {
       const onError = vi.fn();
       const renderer = createVSCodeChatRenderer({
         onError,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(onError).toBeDefined();
     });
 
-    it("calls onFinish callback", async () => {
+    it('calls onFinish callback', async () => {
       const onFinish = vi.fn();
       const renderer = createVSCodeChatRenderer({
         onFinish,
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "stop",
+        finishReason: 'stop'
       });
 
-      expect(onFinish).toHaveBeenCalledWith("stop", undefined);
+      expect(onFinish).toHaveBeenCalledWith('stop', undefined);
     });
 
-    it("prevents double onFinish invocation", async () => {
+    it('prevents double onFinish invocation', async () => {
       const onFinish = vi.fn();
       const renderer = createVSCodeChatRenderer({
         onFinish,
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "stop",
+        finishReason: 'stop'
       });
 
       await renderer.end();
@@ -420,61 +413,61 @@ describe("VS Code Chat Renderer", () => {
       expect(onFinish).toHaveBeenCalledOnce();
     });
 
-    it("calls onFinish in end() if not already called", async () => {
+    it('calls onFinish in end() if not already called', async () => {
       const onFinish = vi.fn();
       const renderer = createVSCodeChatRenderer({
         onFinish,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(onFinish).toHaveBeenCalledOnce();
     });
 
-    it("calls onStep when stepIndex changes in writeChunk", async () => {
+    it('calls onStep when stepIndex changes in writeChunk', async () => {
       const onStep = vi.fn();
       const renderer = createVSCodeChatRenderer({
         onStep,
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "Step 0",
+        content: 'Step 0',
         stepIndex: 0,
-        stepUsage: { outputTokens: 2 },
+        stepUsage: { outputTokens: 2 }
       });
       await renderer.writeChunk({
-        content: "Still step 0",
+        content: 'Still step 0',
         stepIndex: 0,
-        stepUsage: { outputTokens: 3 },
+        stepUsage: { outputTokens: 3 }
       });
       await renderer.writeChunk({
-        content: "Step 1",
+        content: 'Step 1',
         stepIndex: 1,
-        usage: { inputTokens: 1, outputTokens: 4 },
+        usage: { inputTokens: 1, outputTokens: 4 }
       });
 
       expect(onStep).toHaveBeenCalledTimes(2);
       expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
       expect(onStep).toHaveBeenNthCalledWith(2, 1, {
         inputTokens: 1,
-        outputTokens: 4,
+        outputTokens: 4
       });
     });
   });
 
-  describe("writeChunk vs write", () => {
-    it("writeChunk processes StreamChunk objects", async () => {
+  describe('writeChunk vs write', () => {
+    it('writeChunk processes StreamChunk objects', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "Streamed content",
+        content: 'Streamed content',
         done: false,
-        thinking: "Internal reasoning",
+        thinking: 'Internal reasoning'
       });
 
       await renderer.end();
@@ -482,65 +475,65 @@ describe("VS Code Chat Renderer", () => {
       expect(mockStream.markdown).toHaveBeenCalledWith();
     });
 
-    it("write processes string chunks", async () => {
+    it('write processes string chunks', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.write("String content");
+      await renderer.write('String content');
       await renderer.end();
 
       expect(mockStream.markdown).toHaveBeenCalledWith();
     });
   });
 
-  describe("Blockquote Thinking Blocks", () => {
-    it("emits blockquote header when thinking content processed with blockquote style", async () => {
+  describe('Blockquote Thinking Blocks', () => {
+    it('emits blockquote header when thinking content processed with blockquote style', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: true,
         stream: mockStream,
-        thinkingStyle: "blockquote",
+        thinkingStyle: 'blockquote'
       });
 
-      await renderer.write("Let me think about this");
+      await renderer.write('Let me think about this');
       await renderer.end();
 
       expect(mockStream.markdown).toHaveBeenCalledWith();
     });
 
-    it("suppresses thinking blocks when showThinking is false", async () => {
+    it('suppresses thinking blocks when showThinking is false', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: false,
-        stream: mockStream,
+        stream: mockStream
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(mockStream.progress).not.toHaveBeenCalled();
     });
 
-    it("accepts custom thinkingStyle options", async () => {
+    it('accepts custom thinkingStyle options', async () => {
       const renderer = createVSCodeChatRenderer({
         showThinking: true,
         stream: mockStream,
-        thinkingStyle: "blockquote",
+        thinkingStyle: 'blockquote'
       });
 
-      await renderer.write("content");
+      await renderer.write('content');
       await renderer.end();
 
       expect(renderer).toBeDefined();
     });
 
-    it("should handle structured chunk output with tool calls", async () => {
+    it('should handle structured chunk output with tool calls', async () => {
       const renderer = createVSCodeChatRenderer({
-        stream: mockStream,
+        stream: mockStream
       });
 
       await renderer.writeChunk({
-        content: "I will call a tool",
-        done: false,
+        content: 'I will call a tool',
+        done: false
       });
 
       await renderer.end();
@@ -550,7 +543,7 @@ describe("VS Code Chat Renderer", () => {
   });
 });
 
-describe("VS Code Agent Loop", () => {
+describe('VS Code Agent Loop', () => {
   let mockStream: ChatResponseStream;
 
   beforeEach(() => {
@@ -561,13 +554,13 @@ describe("VS Code Agent Loop", () => {
       filetree: vi.fn(),
       markdown: vi.fn(),
       progress: vi.fn(),
-      reference: vi.fn(),
+      reference: vi.fn()
     };
   });
 
-  it("creates agent loop renderer", () => {
+  it('creates agent loop renderer', () => {
     const renderer = createVSCodeAgentLoop({
-      stream: mockStream,
+      stream: mockStream
     });
 
     expect(renderer).toBeDefined();
@@ -575,35 +568,35 @@ describe("VS Code Agent Loop", () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it("defaults showThinking to true for agent loops", async () => {
+  it('defaults showThinking to true for agent loops', async () => {
     const renderer = createVSCodeAgentLoop({
-      stream: mockStream,
+      stream: mockStream
     });
 
     expect(renderer).toBeDefined();
   });
 
-  it("allows overriding thinking style", async () => {
+  it('allows overriding thinking style', async () => {
     const renderer = createVSCodeAgentLoop({
       showThinking: true,
       stream: mockStream,
-      thinkingStyle: "progress",
+      thinkingStyle: 'progress'
     });
 
-    await renderer.write("Agent step");
+    await renderer.write('Agent step');
     await renderer.end();
 
     expect(mockStream.markdown).toHaveBeenCalledWith();
   });
 
-  it("handles abort signal gracefully", async () => {
+  it('handles abort signal gracefully', async () => {
     const abortController = new AbortController();
     const renderer = createVSCodeAgentLoop({
       abortSignal: abortController.signal,
-      stream: mockStream,
+      stream: mockStream
     });
 
-    await renderer.write("Content");
+    await renderer.write('Content');
     await renderer.end();
 
     expect(renderer).toBeDefined();
@@ -611,16 +604,16 @@ describe("VS Code Agent Loop", () => {
     abortController.abort();
   });
 
-  it("prevents double flush when abort and end are both triggered", async () => {
+  it('prevents double flush when abort and end are both triggered', async () => {
     const abortController = new AbortController();
     const flush = vi.fn(() => ({
-      content: "",
+      content: '',
       done: true,
       incomplete: false,
       incompleteness: [],
       parts: [],
-      thinking: "",
-      toolCalls: [],
+      thinking: '',
+      toolCalls: []
     }));
 
     const fakeProcessor = createFakeProcessor([], flush);
@@ -628,7 +621,7 @@ describe("VS Code Agent Loop", () => {
     const renderer = createVSCodeAgentLoop({
       abortSignal: abortController.signal,
       processor: fakeProcessor,
-      stream: mockStream,
+      stream: mockStream
     });
 
     abortController.abort();
@@ -638,42 +631,33 @@ describe("VS Code Agent Loop", () => {
     expect(flush).toHaveBeenCalledOnce();
   });
 
-  it("detaches abort listener when end() is called before cancellation", async () => {
+  it('detaches abort listener when end() is called before cancellation', async () => {
     const addEventListener = vi.fn();
     const removeEventListener = vi.fn();
 
     const fakeAbortSignal = {
       aborted: false,
       addEventListener,
-      removeEventListener,
+      removeEventListener
     } as unknown as AbortSignal;
 
     const renderer = createVSCodeAgentLoop({
       abortSignal: fakeAbortSignal,
-      stream: mockStream,
+      stream: mockStream
     });
 
     await renderer.end();
 
     expect(addEventListener).toHaveBeenCalledOnce();
-    expect(addEventListener).toHaveBeenCalledWith(
-      "abort",
-      expect.any(Function),
-      { once: true }
-    );
+    expect(addEventListener).toHaveBeenCalledWith('abort', expect.any(Function), { once: true });
     expect(removeEventListener).toHaveBeenCalledOnce();
-    expect(removeEventListener).toHaveBeenCalledWith(
-      "abort",
-      expect.any(Function)
-    );
+    expect(removeEventListener).toHaveBeenCalledWith('abort', expect.any(Function));
   });
 
-  it("logs error stack when abort cleanup fails", async () => {
-    const consoleWarnSpy = vi
-      .spyOn(console, "warn")
-      .mockImplementation(() => {});
-    const testError = new Error("Renderer end failed");
-    testError.stack = "Error: Renderer end failed\n  at test (test.ts:1:1)";
+  it('logs error stack when abort cleanup fails', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const testError = new Error('Renderer end failed');
+    testError.stack = 'Error: Renderer end failed\n  at test (test.ts:1:1)';
 
     const failingStream = {
       anchor: vi.fn(),
@@ -683,16 +667,16 @@ describe("VS Code Agent Loop", () => {
         throw testError;
       }),
       progress: vi.fn(),
-      reference: vi.fn(),
+      reference: vi.fn()
     } as unknown as ChatResponseStream;
 
     const abortController = new AbortController();
     const renderer = createVSCodeAgentLoop({
       abortSignal: abortController.signal,
-      stream: failingStream,
+      stream: failingStream
     });
 
-    await renderer.write("test content");
+    await renderer.write('test content');
 
     abortController.abort();
 
@@ -701,20 +685,20 @@ describe("VS Code Agent Loop", () => {
     });
 
     expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[VS Code Agent Loop] Error"),
+      expect.stringContaining('[VS Code Agent Loop] Error'),
       expect.any(Error)
     );
 
     consoleWarnSpy.mockRestore();
   });
 
-  it("calls endOnce only once when abort signal is already aborted", async () => {
+  it('calls endOnce only once when abort signal is already aborted', async () => {
     const abortController = new AbortController();
     abortController.abort();
 
     const renderer = createVSCodeAgentLoop({
       abortSignal: abortController.signal,
-      stream: mockStream,
+      stream: mockStream
     });
 
     await Promise.resolve();
@@ -724,13 +708,13 @@ describe("VS Code Agent Loop", () => {
   });
 });
 
-describe("Cancellation Token Bridge", () => {
-  it("converts CancellationToken to AbortSignal", () => {
+describe('Cancellation Token Bridge', () => {
+  it('converts CancellationToken to AbortSignal', () => {
     const mockToken: CancellationToken = {
       isCancellationRequested: false,
       onCancellationRequested: vi.fn(() => ({
-        dispose: vi.fn(),
-      })),
+        dispose: vi.fn()
+      }))
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);
@@ -739,12 +723,12 @@ describe("Cancellation Token Bridge", () => {
     expect(signal.aborted).toBeFalsy();
   });
 
-  it("returns aborted signal when token is already cancelled", () => {
+  it('returns aborted signal when token is already cancelled', () => {
     const mockToken: CancellationToken = {
       isCancellationRequested: true,
       onCancellationRequested: vi.fn(() => ({
-        dispose: vi.fn(),
-      })),
+        dispose: vi.fn()
+      }))
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);
@@ -752,7 +736,7 @@ describe("Cancellation Token Bridge", () => {
     expect(signal.aborted).toBeTruthy();
   });
 
-  it("aborts signal when token fires cancellation", async () => {
+  it('aborts signal when token fires cancellation', async () => {
     const listeners: ((e: unknown) => void)[] = [];
 
     const mockToken: CancellationToken = {
@@ -760,7 +744,7 @@ describe("Cancellation Token Bridge", () => {
       onCancellationRequested: vi.fn((listener: (e: unknown) => void) => {
         listeners.push(listener);
         return { dispose: vi.fn() };
-      }),
+      })
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);
@@ -774,23 +758,23 @@ describe("Cancellation Token Bridge", () => {
     expect(signal.aborted).toBeTruthy();
   });
 
-  it("returns a non-aborted signal for partial tokens without onCancellationRequested", () => {
+  it('returns a non-aborted signal for partial tokens without onCancellationRequested', () => {
     const signal = cancellationTokenToAbortSignal({
-      isCancellationRequested: false,
+      isCancellationRequested: false
     });
 
     expect(signal).toBeDefined();
     expect(signal.aborted).toBeFalsy();
   });
 
-  it("does not throw when cancellation callback fires synchronously during registration", () => {
+  it('does not throw when cancellation callback fires synchronously during registration', () => {
     const dispose = vi.fn();
     const mockToken: CancellationToken = {
       isCancellationRequested: false,
-      onCancellationRequested: vi.fn((listener) => {
+      onCancellationRequested: vi.fn(listener => {
         listener();
         return { dispose };
-      }),
+      })
     };
 
     const signal = cancellationTokenToAbortSignal(mockToken);

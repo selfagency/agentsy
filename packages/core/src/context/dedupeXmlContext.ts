@@ -17,14 +17,14 @@ const VALID_TAG_NAME = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
 function isTagBoundary(character: string): boolean {
   return (
-    character === "" ||
-    character === ">" ||
-    character === "/" ||
-    character === " " ||
-    character === "\t" ||
-    character === "\n" ||
-    character === "\r" ||
-    character === "\f"
+    character === '' ||
+    character === '>' ||
+    character === '/' ||
+    character === ' ' ||
+    character === '\t' ||
+    character === '\n' ||
+    character === '\r' ||
+    character === '\f'
   );
 }
 
@@ -56,13 +56,12 @@ function findNextTagOccurrence(
       return null;
     }
 
-    const afterTagName =
-      index + (isClose ? closeNeedle.length : openNeedle.length);
+    const afterTagName = index + (isClose ? closeNeedle.length : openNeedle.length);
     const nextChar = part.charAt(afterTagName);
 
-    const isBoundary = nextChar === "" || isTagBoundary(nextChar);
+    const isBoundary = nextChar === '' || isTagBoundary(nextChar);
     if (isBoundary) {
-      const end = part.indexOf(">", afterTagName);
+      const end = part.indexOf('>', afterTagName);
       if (end === -1) {
         return null;
       }
@@ -76,11 +75,7 @@ function findNextTagOccurrence(
   return null;
 }
 
-function findMatchingCloseTag(
-  part: string,
-  tagName: string,
-  searchStart: number
-): number | null {
+function findMatchingCloseTag(part: string, tagName: string, searchStart: number): number | null {
   let depth = 1;
   let searchIndex = searchStart;
 
@@ -130,10 +125,7 @@ function collectTagMatches(part: string): TagMatch[] {
   return results;
 }
 
-function dedupeMatchesIntoMap(
-  matches: TagMatch[],
-  latestByTag: Map<string, string>
-): void {
+function dedupeMatchesIntoMap(matches: TagMatch[], latestByTag: Map<string, string>): void {
   // For the current block, pick the longest (outermost) match for each tag
   // and only set it if an entry for that tag hasn't already been recorded
   // by a later block (we iterate blocks from last to first elsewhere).

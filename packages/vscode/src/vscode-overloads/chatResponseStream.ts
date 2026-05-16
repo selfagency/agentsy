@@ -1,9 +1,4 @@
-import type {
-  CancellationToken,
-  ChatResponseStream,
-  Location,
-  Uri,
-} from "vscode";
+import type { CancellationToken, ChatResponseStream, Location, Uri } from 'vscode';
 
 export interface FileTreeEntry {
   name: string;
@@ -17,14 +12,8 @@ export interface FileTreeEntry {
 export interface VSCodeChatResponseStream extends ChatResponseStream {
   markdown(value: string, metadata?: Record<string, unknown>): void;
   anchor(value: Uri | Location, title?: string): void;
-  button(
-    command: string | { command: string; title: string; arguments?: unknown[] }
-  ): void;
-  filetree(
-    value: FileTreeEntry[],
-    baseUri: Uri,
-    options?: { showRoot?: boolean }
-  ): void;
+  button(command: string | { command: string; title: string; arguments?: unknown[] }): void;
+  filetree(value: FileTreeEntry[], baseUri: Uri, options?: { showRoot?: boolean }): void;
   progress(value: string, context?: { step?: number; total?: number }): void;
   reference(value: Uri | Location, iconPath?: Uri): void;
   push(part: unknown, options?: { validate?: boolean }): void;
@@ -33,9 +22,7 @@ export interface VSCodeChatResponseStream extends ChatResponseStream {
 /**
  * Creates a VS Code ChatResponseStream with extended overload capabilities.
  */
-export function createVSCodeChatResponseStream(
-  cancellationToken: CancellationToken
-): VSCodeChatResponseStream {
+export function createVSCodeChatResponseStream(cancellationToken: CancellationToken): VSCodeChatResponseStream {
   let cancelled = cancellationToken.isCancellationRequested;
   const subscription = cancellationToken.onCancellationRequested(() => {
     cancelled = true;
@@ -54,27 +41,16 @@ export function createVSCodeChatResponseStream(
     anchor: (_value: Uri | Location, _title?: string) => {
       runIfActive(() => {});
     },
-    button: (
-      _command:
-        | string
-        | { command: string; title: string; arguments?: unknown[] }
-    ) => {
+    button: (_command: string | { command: string; title: string; arguments?: unknown[] }) => {
       runIfActive(() => {});
     },
-    filetree: (
-      _value: FileTreeEntry[],
-      _baseUri: Uri,
-      _options?: { showRoot?: boolean }
-    ) => {
+    filetree: (_value: FileTreeEntry[], _baseUri: Uri, _options?: { showRoot?: boolean }) => {
       runIfActive(() => {});
     },
     markdown: (_value: string, _metadata?: Record<string, unknown>) => {
       runIfActive(() => {});
     },
-    progress: (
-      _value: string,
-      _context?: { step?: number; total?: number }
-    ) => {
+    progress: (_value: string, _context?: { step?: number; total?: number }) => {
       runIfActive(() => {});
     },
     push: (_part: unknown, _options?: { validate?: boolean }) => {
@@ -82,7 +58,7 @@ export function createVSCodeChatResponseStream(
     },
     reference: (_value: Uri | Location, _iconPath?: Uri) => {
       runIfActive(() => {});
-    },
+    }
   };
 
   return stream;

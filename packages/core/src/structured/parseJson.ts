@@ -9,7 +9,7 @@ export const DEFAULT_MAX_JSON_DEPTH = 64;
 export const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function stripCodeFences(text: string): string {
-  return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, "$1").trim();
+  return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
 }
 
 function processBracketChar(
@@ -20,13 +20,13 @@ function processBracketChar(
   text: string,
   candidates: string[]
 ): number {
-  if (char === "{" || char === "[") {
+  if (char === '{' || char === '[') {
     const newStart = stack.length === 0 ? i : start;
-    stack.push(char === "{" ? "}" : "]");
+    stack.push(char === '{' ? '}' : ']');
     return newStart;
   }
 
-  if ((char === "}" || char === "]") && stack.length > 0) {
+  if ((char === '}' || char === ']') && stack.length > 0) {
     if (stack.at(-1) === char) {
       stack.pop();
       if (stack.length === 0 && start >= 0) {
@@ -52,7 +52,7 @@ function extractJsonCandidates(text: string): string[] {
       i++;
       continue;
     }
-    if (inString && char === "\\") {
+    if (inString && char === '\\') {
       escaped = true;
       i++;
       continue;
@@ -72,19 +72,19 @@ function extractJsonCandidates(text: string): string[] {
 }
 
 function processRepairBracket(char: string, stack: string[]): string | null {
-  if (char === "{") {
-    stack.push("}");
+  if (char === '{') {
+    stack.push('}');
     return char;
   }
-  if (char === "[") {
-    stack.push("]");
+  if (char === '[') {
+    stack.push(']');
     return char;
   }
   if (stack.length === 0) {
     return null;
   }
 
-  let result = "";
+  let result = '';
   while (stack.length > 0 && stack.at(-1) !== char) {
     result += stack.pop();
   }
@@ -104,7 +104,7 @@ function consumeRepairChar(
     return { append: char, skip: false };
   }
 
-  if (char === "\\") {
+  if (char === '\\') {
     state.escaped = true;
     return { append: char, skip: false };
   }
@@ -118,11 +118,9 @@ function consumeRepairChar(
     return { append: char, skip: false };
   }
 
-  if (char === "{" || char === "[" || char === "}" || char === "]") {
+  if (char === '{' || char === '[' || char === '}' || char === ']') {
     const addition = processRepairBracket(char, state.stack);
-    return addition === null
-      ? { append: "", skip: true }
-      : { append: addition, skip: false };
+    return addition === null ? { append: '', skip: true } : { append: addition, skip: false };
   }
 
   return { append: char, skip: false };
@@ -136,7 +134,7 @@ function tryRepairCandidate(text: string): string | null {
 
   const trimmed = text.slice(start).trim();
   const stack: string[] = [];
-  let repaired = "";
+  let repaired = '';
   const state = { escaped: false, inString: false, stack };
 
   for (const char of trimmed) {
@@ -159,11 +157,7 @@ function tryRepairCandidate(text: string): string | null {
 }
 
 // #lizard forgives
-function tryParseRepaired(
-  normalized: string,
-  maxJsonDepth: number,
-  maxJsonKeys: number
-): unknown {
+function tryParseRepaired(normalized: string, maxJsonDepth: number, maxJsonKeys: number): unknown {
   const repaired = tryRepairCandidate(normalized);
   if (!repaired) {
     return null;
@@ -188,7 +182,7 @@ function measureComprehensiveness(value: unknown): number {
       }
       return;
     }
-    if (node && typeof node === "object") {
+    if (node && typeof node === 'object') {
       const entries = Object.entries(node as Record<string, unknown>);
       keyCount += entries.length;
       for (const [, val] of entries) {
@@ -201,11 +195,7 @@ function measureComprehensiveness(value: unknown): number {
   return keyCount * 100 + depth;
 }
 
-function exceedsJsonLimits(
-  value: unknown,
-  maxDepth: number,
-  maxKeys: number
-): boolean {
+function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): boolean {
   if (maxDepth <= 0 && maxKeys <= 0) {
     return false;
   }
@@ -230,7 +220,7 @@ function exceedsJsonLimits(
       return;
     }
 
-    if (node && typeof node === "object") {
+    if (node && typeof node === 'object') {
       const entries = Object.entries(node as Record<string, unknown>);
       keyCount += entries.length;
       if (maxKeys > 0 && keyCount > maxKeys) {
@@ -248,11 +238,7 @@ function exceedsJsonLimits(
   return exceeded;
 }
 
-function collectParsedCandidates(
-  normalized: string,
-  maxJsonDepth: number,
-  maxJsonKeys: number
-): unknown[] {
+function collectParsedCandidates(normalized: string, maxJsonDepth: number, maxJsonKeys: number): unknown[] {
   const parsedValues: unknown[] = [];
   for (const candidate of extractJsonCandidates(normalized)) {
     try {
@@ -267,18 +253,11 @@ function collectParsedCandidates(
   return parsedValues;
 }
 
-function selectBestCandidate(
-  parsedValues: unknown[],
-  selectMostComprehensive: boolean
-): unknown {
+function selectBestCandidate(parsedValues: unknown[], selectMostComprehensive: boolean): unknown {
   if (!selectMostComprehensive || parsedValues.length === 1) {
     return parsedValues[0] ?? null;
   }
-  return (
-    [...parsedValues].toSorted(
-      (a, b) => measureComprehensiveness(b) - measureComprehensiveness(a)
-    )[0] ?? null
-  );
+  return [...parsedValues].toSorted((a, b) => measureComprehensiveness(b) - measureComprehensiveness(a))[0] ?? null;
 }
 
 /**
@@ -289,20 +268,13 @@ function selectBestCandidate(
  * @returns The parsed value, or `null` if no valid JSON is found.
  *          Never throws — malformed candidates are silently skipped.
  */
-export function parseJson<T = unknown>(
-  text: string,
-  options: ParseJsonOptions = {}
-): T | null {
+export function parseJson<T = unknown>(text: string, options: ParseJsonOptions = {}): T | null {
   const normalized = stripCodeFences(text);
   const selectMostComprehensive = options.selectMostComprehensive ?? true;
   const maxJsonDepth = options.maxJsonDepth ?? DEFAULT_MAX_JSON_DEPTH;
   const maxJsonKeys = options.maxJsonKeys ?? DEFAULT_MAX_JSON_KEYS;
 
-  const parsedValues = collectParsedCandidates(
-    normalized,
-    maxJsonDepth,
-    maxJsonKeys
-  );
+  const parsedValues = collectParsedCandidates(normalized, maxJsonDepth, maxJsonKeys);
 
   if (parsedValues.length > 0) {
     return selectBestCandidate(parsedValues, selectMostComprehensive) as T;

@@ -1,7 +1,7 @@
-import type { StreamChunk } from "@agentsy/core/processor";
-import type { RendererHandle } from "@agentsy/renderers";
+import type { StreamChunk } from '@agentsy/core/processor';
+import type { RendererHandle } from '@agentsy/renderers';
 
-import type { ApiKeyChangeListener } from "../types/index.js";
+import type { ApiKeyChangeListener } from '../types/index.js';
 
 export interface MockApiKeyManager {
   initialize(): Promise<void>;
@@ -15,16 +15,11 @@ export interface MockApiKeyManager {
 /**
  * Create a lightweight in-memory API key manager stub for integration tests.
  */
-export function createMockApiKeyManager(
-  initialKey?: string
-): MockApiKeyManager {
+export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager {
   let key = initialKey;
   const listeners = new Set<ApiKeyChangeListener>();
 
-  function emit(
-    event: "updated" | "deleted",
-    nextKey: string | undefined
-  ): void {
+  function emit(event: 'updated' | 'deleted', nextKey: string | undefined): void {
     for (const listener of listeners) {
       listener(event, nextKey);
     }
@@ -33,7 +28,7 @@ export function createMockApiKeyManager(
   return {
     async deleteApiKey(): Promise<void> {
       key = undefined;
-      emit("deleted");
+      emit('deleted');
     },
     async getApiKey(): Promise<string | undefined> {
       return key;
@@ -49,13 +44,13 @@ export function createMockApiKeyManager(
       return {
         dispose(): void {
           listeners.delete(listener);
-        },
+        }
       };
     },
     async setApiKey(nextKey?: string): Promise<void> {
       key = nextKey;
-      emit("updated", key);
-    },
+      emit('updated', key);
+    }
   };
 }
 
@@ -87,7 +82,7 @@ export function createMockRendererHandle(): MockRendererHandle {
     async writeChunk(chunk: StreamChunk): Promise<void> {
       chunks.push(chunk);
     },
-    writes,
+    writes
   };
 }
 
@@ -97,9 +92,7 @@ export function createMockRendererHandle(): MockRendererHandle {
 export function createChunkNormalizerStub<TEvent>(
   mapper: (event: TEvent) => StreamChunk | null
 ): (source: AsyncIterable<TEvent>) => AsyncIterable<StreamChunk> {
-  return async function* normalize(
-    source: AsyncIterable<TEvent>
-  ): AsyncIterable<StreamChunk> {
+  return async function* normalize(source: AsyncIterable<TEvent>): AsyncIterable<StreamChunk> {
     for await (const event of source) {
       const chunk = mapper(event);
       if (chunk !== null) {

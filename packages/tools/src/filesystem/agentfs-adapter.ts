@@ -33,7 +33,7 @@ export interface AgentFsListResult {
 }
 
 export interface AgentFsAdapter {
-  readonly name: "agentfs";
+  readonly name: 'agentfs';
   read(input: AgentFsReadInput): AgentFsToolResult;
   write(input: AgentFsWriteInput): AgentFsToolResult;
   delete(input: AgentFsDeleteInput): AgentFsToolResult;
@@ -48,7 +48,7 @@ export function createAgentFsAdapter(manager: AgentFsLike): AgentFsAdapter {
         return {
           error: `Path not found or already deleted: ${path}`,
           ok: false,
-          path,
+          path
         };
       }
       return { ok: true, path };
@@ -58,7 +58,7 @@ export function createAgentFsAdapter(manager: AgentFsLike): AgentFsAdapter {
       return { entries: manager.list(), ok: true };
     },
 
-    name: "agentfs",
+    name: 'agentfs',
 
     read({ path }) {
       const entry = manager.read(path);
@@ -69,7 +69,7 @@ export function createAgentFsAdapter(manager: AgentFsLike): AgentFsAdapter {
         content: entry.content,
         contentHash: entry.contentHash,
         ok: true,
-        path,
+        path
       };
     },
 
@@ -81,9 +81,9 @@ export function createAgentFsAdapter(manager: AgentFsLike): AgentFsAdapter {
         return {
           error: error instanceof Error ? error.message : String(error),
           ok: false,
-          path,
+          path
         };
       }
-    },
+    }
   };
 }

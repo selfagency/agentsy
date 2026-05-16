@@ -1,30 +1,24 @@
-import type { FinishReason } from "@agentsy/types";
+import type { FinishReason } from '@agentsy/types';
 
-import type {
-  NativeToolCallDelta,
-  NormalizerResult,
-  UsageInfo,
-} from "./types.js";
+import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
-function mapOpenAIFinishReason(
-  reason: string | null | undefined
-): FinishReason | undefined {
+function mapOpenAIFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) {
     return undefined;
   }
-  if (reason === "stop") {
-    return "stop";
+  if (reason === 'stop') {
+    return 'stop';
   }
-  if (reason === "length") {
-    return "length";
+  if (reason === 'length') {
+    return 'length';
   }
-  if (reason === "tool_calls" || reason === "function_call") {
-    return "tool-calls";
+  if (reason === 'tool_calls' || reason === 'function_call') {
+    return 'tool-calls';
   }
-  if (reason === "content_filter") {
-    return "content-filter";
+  if (reason === 'content_filter') {
+    return 'content-filter';
   }
-  return "other";
+  return 'other';
 }
 
 // ---------------------------------------------------------------------------
@@ -71,13 +65,13 @@ interface OpenAIChatChunk {
 // ---------------------------------------------------------------------------
 
 function isOpenAIChatChunk(value: unknown): value is OpenAIChatChunk {
-  if (!value || typeof value !== "object") {
+  if (!value || typeof value !== 'object') {
     return false;
   }
   const v = value as Record<string, unknown>;
   // Accept if object field matches, or if there's a choices array (permissive
   // for providers that use OpenAI-compatible formats without the object field).
-  if (v.object !== undefined && v.object !== "chat.completion.chunk") {
+  if (v.object !== undefined && v.object !== 'chat.completion.chunk') {
     return false;
   }
   if (!Array.isArray(v.choices)) {
@@ -98,10 +92,7 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
   if (tc.function?.name) {
     result.name = tc.function.name;
   }
-  if (
-    typeof tc.function?.arguments === "string" &&
-    tc.function.arguments !== ""
-  ) {
+  if (typeof tc.function?.arguments === 'string' && tc.function.arguments !== '') {
     result.argumentsDelta = tc.function.arguments;
   }
   return result;
@@ -111,12 +102,8 @@ function getContentParts(delta: OpenAIDelta | undefined): {
   content?: string;
   thinking?: string;
 } {
-  const content =
-    typeof delta?.content === "string" ? delta.content : undefined;
-  const thinking =
-    typeof delta?.reasoning_content === "string"
-      ? delta.reasoning_content
-      : undefined;
+  const content = typeof delta?.content === 'string' ? delta.content : undefined;
+  const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
   const out: { content?: string; thinking?: string } = {};
   if (content !== undefined) {
     out.content = content;
@@ -143,13 +130,11 @@ function getFinishReasonParts(choice: OpenAIChoice | undefined): {
   return out;
 }
 
-function getNativeToolCallDeltas(
-  delta: OpenAIDelta | undefined
-): NativeToolCallDelta[] | undefined {
+function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCallDelta[] | undefined {
   const toolCalls = delta?.tool_calls;
   if (Array.isArray(toolCalls) && toolCalls.length > 0) {
     return toolCalls
-      .filter((tc): tc is OpenAIToolCallDelta => tc && typeof tc === "object")
+      .filter((tc): tc is OpenAIToolCallDelta => tc && typeof tc === 'object')
       .map(mapOpenAIToolCallDelta);
   }
 
@@ -159,13 +144,13 @@ function getNativeToolCallDeltas(
 function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
   if (raw.usage) {
     const usage: UsageInfo = {};
-    if (typeof raw.usage.prompt_tokens === "number") {
+    if (typeof raw.usage.prompt_tokens === 'number') {
       usage.inputTokens = raw.usage.prompt_tokens;
     }
-    if (typeof raw.usage.completion_tokens === "number") {
+    if (typeof raw.usage.completion_tokens === 'number') {
       usage.outputTokens = raw.usage.completion_tokens;
     }
-    if (typeof raw.usage.total_tokens === "number") {
+    if (typeof raw.usage.total_tokens === 'number') {
       usage.totalTokens = raw.usage.total_tokens;
     }
     return { usage };
@@ -185,9 +170,7 @@ function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
  *
  * Never throws — malformed or adversarial input is silently skipped.
  */
-export function normalizeOpenAIChatChunk(
-  raw: unknown
-): NormalizerResult | null {
+export function normalizeOpenAIChatChunk(raw: unknown): NormalizerResult | null {
   try {
     if (isOpenAIChatChunk(raw)) {
       const choice = raw.choices[0];
@@ -197,7 +180,7 @@ export function normalizeOpenAIChatChunk(
       const chunk: Record<string, unknown> = {
         ...getContentParts(delta),
         ...getFinishReasonParts(choice),
-        ...getUsageParts(raw),
+        ...getUsageParts(raw)
       };
       if (nativeToolCallDeltas !== undefined) {
         chunk.nativeToolCallDeltas = nativeToolCallDeltas;

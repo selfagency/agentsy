@@ -1,11 +1,6 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes } from 'node:crypto';
 
-export type AuditOperation =
-  | "read"
-  | "write"
-  | "delete"
-  | "snapshot"
-  | "restore";
+export type AuditOperation = 'read' | 'write' | 'delete' | 'snapshot' | 'restore';
 
 /**
  * Pattern for identifying secrets in strings (e.g., config values, command output).
@@ -13,11 +8,10 @@ export type AuditOperation =
  * Uses a negative lookbehind (or alternative approach since lookbehind support varies)
  * to avoid matching common file or list names like 'author-list' or 'key-count'.
  */
-const SECRET_PATTERN =
-  /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/gi;
+const SECRET_PATTERN = /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/gi;
 
 function redactSecrets(value: string): string {
-  return value.replace(SECRET_PATTERN, "[REDACTED]");
+  return value.replace(SECRET_PATTERN, '[REDACTED]');
 }
 
 export interface AuditEvent {
@@ -51,10 +45,10 @@ let counter = 0;
 
 function generateId(): string {
   const ts = Date.now().toString(36);
-  const seq = (++counter).toString(36).padStart(4, "0");
-  const rand = createHash("sha256")
-    .update(`${ts}${seq}${randomBytes(16).toString("hex")}`)
-    .digest("hex")
+  const seq = (++counter).toString(36).padStart(4, '0');
+  const rand = createHash('sha256')
+    .update(`${ts}${seq}${randomBytes(16).toString('hex')}`)
+    .digest('hex')
     .slice(0, 8);
   return `${ts}-${seq}-${rand}`;
 }
@@ -64,7 +58,7 @@ export function createAuditTrail(): AuditTrail {
 
   return {
     byCorrelation(correlationId) {
-      return events.filter((e) => e.correlationId === correlationId);
+      return events.filter(e => e.correlationId === correlationId);
     },
 
     clear() {
@@ -75,7 +69,7 @@ export function createAuditTrail(): AuditTrail {
       if (path === undefined) {
         return [...events];
       }
-      return events.filter((e) => e.path === path);
+      return events.filter(e => e.path === path);
     },
 
     record(operation, path, options) {
@@ -84,17 +78,13 @@ export function createAuditTrail(): AuditTrail {
         correlationId: options?.correlationId ?? generateId(),
         operation,
         path: redactSecrets(path),
-        ...(options?.contentHash === undefined
-          ? {}
-          : { contentHash: options.contentHash }),
+        ...(options?.contentHash === undefined ? {} : { contentHash: options.contentHash }),
         ...(options?.actor === undefined ? {} : { actor: options.actor }),
         timestamp: Date.now(),
-        ...(options?.metadata === undefined
-          ? {}
-          : { metadata: options.metadata }),
+        ...(options?.metadata === undefined ? {} : { metadata: options.metadata })
       };
       events.push(event);
       return event;
-    },
+    }
   };
 }

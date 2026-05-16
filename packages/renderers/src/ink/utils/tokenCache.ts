@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash } from 'node:crypto';
 
 // Module-level LRU cache for ANSI output (500 entries)
 const tokenCache = new Map<string, string>();
@@ -11,15 +11,12 @@ const HASH_THRESHOLD = 1024; // Hash keys larger than 1KB
  */
 function getCacheKey(content: string): string {
   if (content.length > HASH_THRESHOLD) {
-    return `hash::${createHash("sha256").update(content).digest("hex").slice(0, 16)}`;
+    return `hash::${createHash('sha256').update(content).digest('hex').slice(0, 16)}`;
   }
   return content;
 }
 
-export function getCachedAnsi(
-  content: string,
-  render: (s: string) => string
-): string {
+export function getCachedAnsi(content: string, render: (s: string) => string): string {
   const key = getCacheKey(content);
   const cached = tokenCache.get(key);
   if (cached !== undefined) {

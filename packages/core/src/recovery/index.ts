@@ -1,10 +1,7 @@
-import type { UsageInfo } from "@agentsy/types";
+import type { UsageInfo } from '@agentsy/types';
 
-import type {
-  LLMStreamProcessor,
-  ProcessorOptions,
-} from "../processor/index.js";
-import type { XmlToolCall } from "../tool-calls/index.js";
+import type { LLMStreamProcessor, ProcessorOptions } from '../processor/index.js';
+import type { XmlToolCall } from '../tool-calls/index.js';
 
 export interface StreamSnapshot {
   /** Accumulated assistant content at the time the snapshot was taken. */
@@ -29,38 +26,30 @@ export interface ContinuationOptions {
    * - `'ollama'`: Same format as OpenAI.
    * Defaults to `'openai'`.
    */
-  provider?: "openai" | "anthropic" | "ollama";
+  provider?: 'openai' | 'anthropic' | 'ollama';
 }
 
 /** A generic message object compatible with OpenAI / Anthropic / Ollama chat APIs. */
 export interface ContinuationMessage {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
 }
 
-function formatToolCallParameters(
-  parameters: XmlToolCall["parameters"]
-): string {
+function formatToolCallParameters(parameters: XmlToolCall['parameters']): string {
   try {
     return JSON.stringify(parameters);
   } catch {
-    return "{}";
+    return '{}';
   }
 }
 
-function buildCompletedToolCallsContext(
-  toolCalls: readonly XmlToolCall[]
-): string | null {
+function buildCompletedToolCallsContext(toolCalls: readonly XmlToolCall[]): string | null {
   if (toolCalls.length > 0) {
     const serializedCalls = toolCalls.map(
-      (toolCall) =>
-        `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`
+      toolCall => `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`
     );
 
-    return [
-      "The following tool calls already completed before the interruption:",
-      ...serializedCalls,
-    ].join("\n");
+    return ['The following tool calls already completed before the interruption:', ...serializedCalls].join('\n');
   }
 
   return null;
@@ -70,10 +59,7 @@ function buildCompletedToolCallsContext(
  * Capture the current accumulated state of a `LLMStreamProcessor` for later
  * stream resumption or retry.
  */
-export function captureStreamState(
-  processor: LLMStreamProcessor,
-  options?: ProcessorOptions
-): StreamSnapshot {
+export function captureStreamState(processor: LLMStreamProcessor, options?: ProcessorOptions): StreamSnapshot {
   const msg = processor.accumulatedMessage;
   return {
     content: msg.content,
@@ -81,7 +67,7 @@ export function captureStreamState(
     toolCalls: msg.toolCalls,
     ...(msg.usage != null ? { usage: msg.usage } : {}),
     options: options ?? {},
-    timestamp: Date.now(),
+    timestamp: Date.now()
   };
 }
 
@@ -96,41 +82,39 @@ export function buildContinuationPrompt(
   snapshot: StreamSnapshot,
   options?: ContinuationOptions
 ): ContinuationMessage[] {
-  const provider = options?.provider ?? "openai";
+  const provider = options?.provider ?? 'openai';
 
   const partialContent = snapshot.content.trim();
-  const completedToolCallsContext = buildCompletedToolCallsContext(
-    snapshot.toolCalls
-  );
+  const completedToolCallsContext = buildCompletedToolCallsContext(snapshot.toolCalls);
 
   if (partialContent.length > 0) {
-    if (provider === "anthropic") {
+    if (provider === 'anthropic') {
       if (completedToolCallsContext !== null) {
         return [
           {
             content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
-            role: "user",
+            role: 'user'
           },
-          { content: partialContent, role: "assistant" },
+          { content: partialContent, role: 'assistant' }
         ];
       }
 
-      return [{ content: partialContent, role: "assistant" }];
+      return [{ content: partialContent, role: 'assistant' }];
     }
 
     const userContent = completedToolCallsContext
       ? `${completedToolCallsContext}\n\nPlease continue from exactly where you left off without repeating the completed tool calls.`
-      : "Please continue from exactly where you left off.";
+      : 'Please continue from exactly where you left off.';
 
     return [
-      { content: partialContent, role: "assistant" },
-      { content: userContent, role: "user" },
+      { content: partialContent, role: 'assistant' },
+      { content: userContent, role: 'user' }
     ];
   }
 
   const userContent = completedToolCallsContext
     ? `${completedToolCallsContext}\n\nPlease continue without repeating the completed tool calls.`
-    : "Please continue.";
+    : 'Please continue.';
 
-  return [{ content: userContent, role: "user" }];
+  return [{ content: userContent, role: 'user' }];
 }

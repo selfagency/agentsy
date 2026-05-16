@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from 'vitest';
 
-import { compressOutput } from "./index.js";
+import { compressOutput } from './index.js';
 
 /**
  * Phase 0 Performance & Compression Validation
@@ -77,15 +77,14 @@ are really well justified and well-thought-out, and they basically lead to a sys
 robust, and it is basically ready for production deployment and usage.
 `.trim();
 
-describe("Phase 0: Output Compression Performance Validation", () => {
-  it("achieves 10%+ token reduction on large response (full level)", () => {
+describe('Phase 0: Output Compression Performance Validation', () => {
+  it('achieves 10%+ token reduction on large response (full level)', () => {
     const result = compressOutput(LARGE_RESPONSE, {
-      level: "full",
-      preserve: ["code"],
+      level: 'full',
+      preserve: ['code']
     });
 
-    const reductionRatio =
-      (result.originalTokens - result.compressedTokens) / result.originalTokens;
+    const reductionRatio = (result.originalTokens - result.compressedTokens) / result.originalTokens;
     console.log(`
       Original tokens: ${result.originalTokens}
       Compressed tokens: ${result.compressedTokens}
@@ -97,14 +96,13 @@ describe("Phase 0: Output Compression Performance Validation", () => {
     expect(reductionRatio).toBeGreaterThanOrEqual(0.1);
   });
 
-  it("achieves 15%+ token reduction on large response (ultra level)", () => {
+  it('achieves 15%+ token reduction on large response (ultra level)', () => {
     const result = compressOutput(LARGE_RESPONSE, {
-      level: "ultra",
-      preserve: ["code"],
+      level: 'ultra',
+      preserve: ['code']
     });
 
-    const reductionRatio =
-      (result.originalTokens - result.compressedTokens) / result.originalTokens;
+    const reductionRatio = (result.originalTokens - result.compressedTokens) / result.originalTokens;
     console.log(`
       Original tokens: ${result.originalTokens}
       Compressed tokens: ${result.compressedTokens}
@@ -116,24 +114,22 @@ describe("Phase 0: Output Compression Performance Validation", () => {
     expect(reductionRatio).toBeGreaterThanOrEqual(0.15);
   });
 
-  it("completes full compression in <10ms", () => {
+  it('completes full compression in <10ms', () => {
     const startTime = performance.now();
     for (let i = 0; i < 100; i++) {
       compressOutput(LARGE_RESPONSE, {
-        level: "full",
-        preserve: ["code"],
+        level: 'full',
+        preserve: ['code']
       });
     }
     const endTime = performance.now();
     const avgTime = (endTime - startTime) / 100;
 
-    console.log(
-      `Average compression time: ${avgTime.toFixed(2)}ms (target: <10ms)`
-    );
+    console.log(`Average compression time: ${avgTime.toFixed(2)}ms (target: <10ms)`);
     expect(avgTime).toBeLessThan(10);
   });
 
-  it("preserves code blocks accurately", () => {
+  it('preserves code blocks accurately', () => {
     const codeContent = `
 Here is important text.
 
@@ -147,16 +143,16 @@ More text that should be compressed.
     `.trim();
 
     const result = compressOutput(codeContent, {
-      level: "full",
-      preserve: ["code"],
+      level: 'full',
+      preserve: ['code']
     });
 
     // Code block should be preserved verbatim
-    expect(result.compressed).toContain("export function criticalFunction");
-    expect(result.compressed).toContain("```typescript");
+    expect(result.compressed).toContain('export function criticalFunction');
+    expect(result.compressed).toContain('```typescript');
   });
 
-  it("preserves URLs accurately", () => {
+  it('preserves URLs accurately', () => {
     const urlContent = `
 This is verbose text that should be compressed really effectively.
 
@@ -166,17 +162,15 @@ More verbose text that is basically just filler content here.
     `.trim();
 
     const result = compressOutput(urlContent, {
-      level: "full",
-      preserve: ["code", "urls", "paths"],
+      level: 'full',
+      preserve: ['code', 'urls', 'paths']
     });
 
     // URL should be preserved
-    expect(result.compressed).toContain(
-      "https://example.com/docs/critical-api"
-    );
+    expect(result.compressed).toContain('https://example.com/docs/critical-api');
   });
 
-  it("maintains technical accuracy with full compression", () => {
+  it('maintains technical accuracy with full compression', () => {
     const technicalContent = `
 ## Algorithm Analysis
 
@@ -188,17 +182,17 @@ sophisticated but basically follows the standard pattern for this type of algori
     `.trim();
 
     const result = compressOutput(technicalContent, {
-      level: "full",
-      preserve: ["code"],
+      level: 'full',
+      preserve: ['code']
     });
 
     // Technical details should be preserved
-    expect(result.compressed).toContain("O(n²)");
-    expect(result.compressed).toContain("O(n)");
-    expect(result.compressed).toContain("dynamic programming");
+    expect(result.compressed).toContain('O(n²)');
+    expect(result.compressed).toContain('O(n)');
+    expect(result.compressed).toContain('dynamic programming');
   });
 
-  it("reduces redundancy effectively", () => {
+  it('reduces redundancy effectively', () => {
     const redundantContent = `
 This is important information. This is important information. This is important information.
 
@@ -208,19 +202,17 @@ Another key point. Another key point. Another key point.
     `.trim();
 
     const result = compressOutput(redundantContent, {
-      level: "full",
-      preserve: ["code"],
+      level: 'full',
+      preserve: ['code']
     });
 
     // Should remove duplicate lines
-    const compressedLines = result.compressed
-      .split("\n")
-      .filter((l) => l.trim());
+    const compressedLines = result.compressed.split('\n').filter(l => l.trim());
     const expectedLines = 3; // One line for each unique statement
     expect(compressedLines.length).toBeLessThanOrEqual(expectedLines + 1);
   });
 
-  it("handles mixed content appropriately", () => {
+  it('handles mixed content appropriately', () => {
     const mixedContent = `
 # Architecture
 
@@ -237,13 +229,13 @@ Additional explanation that is basically just verbose filler text.
     `.trim();
 
     const result = compressOutput(mixedContent, {
-      level: "full",
-      preserve: ["code"],
+      level: 'full',
+      preserve: ['code']
     });
 
     // Code and heading should be preserved, verbose text should be reduced
-    expect(result.compressed).toContain("Architecture");
-    expect(result.compressed).toContain("maxRetries");
+    expect(result.compressed).toContain('Architecture');
+    expect(result.compressed).toContain('maxRetries');
     expect(result.originalTokens).toBeGreaterThan(result.compressedTokens);
   });
 });

@@ -5,7 +5,7 @@
  * ObservabilityEngine, AgentSpan, and supporting types.
  */
 
-import type { SpanId, TraceId } from "@agentsy/types";
+import type { SpanId, TraceId } from '@agentsy/types';
 
 /**
  * Attribute value type for span attributes
@@ -265,11 +265,7 @@ export interface Logger {
   /**
    * Logs an error message about a failure or critical condition
    */
-  error(
-    message: string,
-    attributes?: Record<string, unknown>,
-    error?: unknown
-  ): void;
+  error(message: string, attributes?: Record<string, unknown>, error?: unknown): void;
 }
 
 /**
@@ -312,11 +308,11 @@ export interface SpanData {
   /** Span name */
   readonly name: string;
   /** Span type (agent, tool, model, internal) */
-  readonly type?: "agent" | "tool" | "model" | "internal";
+  readonly type?: 'agent' | 'tool' | 'model' | 'internal';
   /** Span attributes */
   readonly attributes: Attributes;
   /** Span status */
-  readonly status: "ok" | "error";
+  readonly status: 'ok' | 'error';
   /** Events recorded on the span */
   readonly events: SpanEvent[];
   /** Links to other spans */
@@ -348,7 +344,7 @@ export interface MetricData {
   /** Metric name */
   readonly name: string;
   /** Metric instrument type */
-  readonly type: "counter" | "histogram" | "gauge";
+  readonly type: 'counter' | 'histogram' | 'gauge';
   /** Metric value */
   readonly value: number;
   /** Metric unit (e.g., 'ms', 'bytes', '1') */
@@ -400,7 +396,7 @@ export interface RedactionRule {
    * Indicates severity/match confidence
    * Values: "high", "medium", "low"
    */
-  readonly severity: "high" | "medium" | "low";
+  readonly severity: 'high' | 'medium' | 'low';
   /**
    * Whether this rule is currently enabled
    */

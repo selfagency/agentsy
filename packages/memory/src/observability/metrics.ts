@@ -38,11 +38,10 @@ export interface MemoryMetrics {
   snapshot(): MemoryMetricsSnapshot;
 }
 
-const SECRET_REDACTION_PATTERN =
-  /(sk_[a-z0-9_-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._-]{10,})/giu;
+const SECRET_REDACTION_PATTERN = /(sk_[a-z0-9_-]{8,}|api[_-]?key\s*=\s*\S+|bearer\s+[a-z0-9._-]{10,})/giu;
 
 export function redactSecretLikeValues(value: string): string {
-  return value.replace(SECRET_REDACTION_PATTERN, "[REDACTED]");
+  return value.replace(SECRET_REDACTION_PATTERN, '[REDACTED]');
 }
 
 interface MutableCoordinationStat {
@@ -66,7 +65,7 @@ export function createMemoryMetrics(): MemoryMetrics {
       const stat = coordination.get(normalizedOperation) ?? {
         count: 0,
         maxMs: 0,
-        totalMs: 0,
+        totalMs: 0
       };
       stat.count += 1;
       stat.totalMs += latencyMs;
@@ -94,33 +93,24 @@ export function createMemoryMetrics(): MemoryMetrics {
           avgMs: stat.count === 0 ? 0 : stat.totalMs / stat.count,
           count: stat.count,
           maxMs: stat.maxMs,
-          totalMs: stat.totalMs,
+          totalMs: stat.totalMs
         };
       }
 
       return {
         coordination: coordinationSnapshot,
         injection: {
-          budgetRatio:
-            injectionBudgetTokens === 0
-              ? 0
-              : injectionUsedTokens / injectionBudgetTokens,
+          budgetRatio: injectionBudgetTokens === 0 ? 0 : injectionUsedTokens / injectionBudgetTokens,
           budgetTokens: injectionBudgetTokens,
-          usedTokens: injectionUsedTokens,
+          usedTokens: injectionUsedTokens
         },
         retrieval: {
-          averageLatencyMs:
-            retrievalQueries === 0
-              ? 0
-              : retrievalTotalLatency / retrievalQueries,
-          averageTopScore:
-            retrievalQueries === 0
-              ? 0
-              : retrievalTopScoreSum / retrievalQueries,
+          averageLatencyMs: retrievalQueries === 0 ? 0 : retrievalTotalLatency / retrievalQueries,
+          averageTopScore: retrievalQueries === 0 ? 0 : retrievalTopScoreSum / retrievalQueries,
           queries: retrievalQueries,
-          totalHits: retrievalTotalHits,
-        },
+          totalHits: retrievalTotalHits
+        }
       };
-    },
+    }
   };
 }

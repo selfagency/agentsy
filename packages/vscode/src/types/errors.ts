@@ -1,43 +1,37 @@
-import type { LanguageModelChatProvider } from "vscode";
+import type { LanguageModelChatProvider } from 'vscode';
 
 /**
  * Error codes standardized across all providers.
  * Maps to VS Code LanguageModelError codes.
  */
 export enum ProviderErrorCode {
-  InvalidApiKey = "invalid_api_key",
-  RateLimited = "rate_limited",
-  ModelNotFound = "model_not_found",
-  ContextLengthExceeded = "context_length_exceeded",
-  ConnectionError = "connection_error",
-  Timeout = "timeout",
-  InvalidRequest = "invalid_request",
-  InternalError = "internal_error",
-  NotImplemented = "not_implemented",
-  Cancelled = "cancelled",
+  InvalidApiKey = 'invalid_api_key',
+  RateLimited = 'rate_limited',
+  ModelNotFound = 'model_not_found',
+  ContextLengthExceeded = 'context_length_exceeded',
+  ConnectionError = 'connection_error',
+  Timeout = 'timeout',
+  InvalidRequest = 'invalid_request',
+  InternalError = 'internal_error',
+  NotImplemented = 'not_implemented',
+  Cancelled = 'cancelled'
 }
 
 /**
  * User-friendly messages for each error code.
  */
 export const ErrorCodeToMessage: Record<ProviderErrorCode, string> = {
-  [ProviderErrorCode.InvalidApiKey]:
-    "Invalid API key. Please check your credentials in settings.",
-  [ProviderErrorCode.RateLimited]:
-    "Rate limited. Please wait a moment and try again.",
-  [ProviderErrorCode.ModelNotFound]:
-    "Model not found. Please check your model configuration.",
+  [ProviderErrorCode.InvalidApiKey]: 'Invalid API key. Please check your credentials in settings.',
+  [ProviderErrorCode.RateLimited]: 'Rate limited. Please wait a moment and try again.',
+  [ProviderErrorCode.ModelNotFound]: 'Model not found. Please check your model configuration.',
   [ProviderErrorCode.ContextLengthExceeded]:
-    "Context length exceeded. Please reduce your message length or use a model with more context.",
-  [ProviderErrorCode.ConnectionError]:
-    "Connection failed. Please check your network and provider URL.",
-  [ProviderErrorCode.Timeout]: "Request timed out. Please try again.",
-  [ProviderErrorCode.InvalidRequest]:
-    "Invalid request. Please check your input format.",
-  [ProviderErrorCode.InternalError]: "Internal server error. Please try again.",
-  [ProviderErrorCode.NotImplemented]:
-    "Feature not implemented by this provider.",
-  [ProviderErrorCode.Cancelled]: "Request was cancelled.",
+    'Context length exceeded. Please reduce your message length or use a model with more context.',
+  [ProviderErrorCode.ConnectionError]: 'Connection failed. Please check your network and provider URL.',
+  [ProviderErrorCode.Timeout]: 'Request timed out. Please try again.',
+  [ProviderErrorCode.InvalidRequest]: 'Invalid request. Please check your input format.',
+  [ProviderErrorCode.InternalError]: 'Internal server error. Please try again.',
+  [ProviderErrorCode.NotImplemented]: 'Feature not implemented by this provider.',
+  [ProviderErrorCode.Cancelled]: 'Request was cancelled.'
 };
 
 /**
@@ -60,7 +54,7 @@ export interface ProviderConfig {
   maxInputTokens: number;
 
   /** Supported capabilities */
-  supportedCapabilities?: ("thinking" | "vision" | "tool-calls")[];
+  supportedCapabilities?: ('thinking' | 'vision' | 'tool-calls')[];
 
   /** Optional API key secret name for ApiKeyManager */
   apiKeySecretName?: string;
@@ -75,7 +69,7 @@ export interface ProviderApiRequest {
   url?: string;
 
   /** HTTP method */
-  method: "POST" | "GET" | "PUT" | "DELETE";
+  method: 'POST' | 'GET' | 'PUT' | 'DELETE';
 
   /** Request headers */
   headers: Record<string, string>;
@@ -127,10 +121,10 @@ export interface UsageQuota {
   total: number;
 
   /** Unit of measurement */
-  unit: "tokens" | "credits" | "requests";
+  unit: 'tokens' | 'credits' | 'requests';
 
   /** Time window */
-  window: "hourly" | "daily" | "weekly" | "monthly";
+  window: 'hourly' | 'daily' | 'weekly' | 'monthly';
 
   /** Percentage used (0-1) */
   percentUsed: number;

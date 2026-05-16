@@ -1,7 +1,4 @@
-import type {
-  McpServerDefinition,
-  McpServerProvider,
-} from "../types/errors.js";
+import type { McpServerDefinition, McpServerProvider } from '../types/errors.js';
 
 /** Minimal settings-reader contract compatible with SettingsLoader#get. */
 export interface McpProviderSettingsReader {
@@ -23,9 +20,7 @@ export interface CreateMcpServerDefinitionProviderOptions {
   /** Static list or dynamic resolver for MCP servers. */
   servers:
     | McpProviderServerDefinition[]
-    | (() =>
-        | Promise<McpProviderServerDefinition[]>
-        | McpProviderServerDefinition[]);
+    | (() => Promise<McpProviderServerDefinition[]> | McpProviderServerDefinition[]);
   /** Optional settings reader for per-server enable/disable toggles. */
   settings?: McpProviderSettingsReader;
   /** Optional API key provider for dynamic auth injection. */
@@ -49,11 +44,8 @@ function resolveEnabled(
     return server.disabled !== true;
   }
 
-  const settingValue = settings.get<boolean>(
-    server.enabledSettingKey,
-    defaultEnabled
-  );
-  if (typeof settingValue === "boolean") {
+  const settingValue = settings.get<boolean>(server.enabledSettingKey, defaultEnabled);
+  if (typeof settingValue === 'boolean') {
     return settingValue;
   }
 
@@ -67,34 +59,27 @@ export function createMcpServerDefinitionProvider(
   options: CreateMcpServerDefinitionProviderOptions
 ): McpServerProvider {
   const defaultEnabled = options.defaultEnabled ?? true;
-  const formatHeader = options.formatApiKeyHeaderValue ?? ((apiKey) => apiKey);
+  const formatHeader = options.formatApiKeyHeaderValue ?? (apiKey => apiKey);
 
   return {
     async provide(): Promise<McpServerDefinition[]> {
-      const rawServers =
-        typeof options.servers === "function"
-          ? await options.servers()
-          : options.servers;
+      const rawServers = typeof options.servers === 'function' ? await options.servers() : options.servers;
       const apiKey = await options.getApiKey?.();
 
-      return rawServers.map((server) => {
-        const enabled = resolveEnabled(
-          server,
-          options.settings,
-          defaultEnabled
-        );
+      return rawServers.map(server => {
+        const enabled = resolveEnabled(server, options.settings, defaultEnabled);
 
         const env = { ...server.env };
         const headers = { ...server.headers };
 
-        if (typeof apiKey === "string" && apiKey.length > 0) {
+        if (typeof apiKey === 'string' && apiKey.length > 0) {
           const envKey = server.apiKeyEnvVar ?? options.defaultApiKeyEnvVar;
-          if (typeof envKey === "string" && envKey.length > 0) {
+          if (typeof envKey === 'string' && envKey.length > 0) {
             env[envKey] = apiKey;
           }
 
           const headerKey = server.apiKeyHeader ?? options.defaultApiKeyHeader;
-          if (typeof headerKey === "string" && headerKey.length > 0) {
+          if (typeof headerKey === 'string' && headerKey.length > 0) {
             headers[headerKey] = formatHeader(apiKey);
           }
         }
@@ -106,11 +91,11 @@ export function createMcpServerDefinitionProvider(
           ...(Object.keys(env).length > 0 ? { env } : {}),
           ...(Object.keys(headers).length > 0 ? { headers } : {}),
           ...(server.alwaysAllow ? { alwaysAllow: true } : {}),
-          ...(enabled ? {} : { disabled: true }),
+          ...(enabled ? {} : { disabled: true })
         };
 
         return enriched;
       });
-    },
+    }
   };
 }

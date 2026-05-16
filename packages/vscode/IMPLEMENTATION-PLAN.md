@@ -153,9 +153,7 @@ The package fulfills its role by implementing a VS Code Language Model Chat Prov
 
 ```typescript
 export interface VSCodeBridge {
-  adaptStream(
-    vsStream: vscode.LanguageModelResponseStream
-  ): ReadableStream<NormalizedChunk>;
+  adaptStream(vsStream: vscode.LanguageModelResponseStream): ReadableStream<NormalizedChunk>;
   handleMCPRequest(request: MCPRequest): Promise<MCPResponse>;
 }
 ```

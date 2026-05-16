@@ -1,5 +1,5 @@
-export type MemoryScope = "session" | "user" | "project" | "team" | "global";
-export type ScopeAction = "read" | "write";
+export type MemoryScope = 'session' | 'user' | 'project' | 'team' | 'global';
+export type ScopeAction = 'read' | 'write';
 
 export interface ScopeGrant {
   scope: MemoryScope;
@@ -23,25 +23,18 @@ export interface ScopeManager {
   removePolicy(actorId: string): void;
   canAccess(request: ScopeAccessRequest): boolean;
   assertAccess(request: ScopeAccessRequest): void;
-  filterAccessibleScopes(
-    actorId: string,
-    action: ScopeAction,
-    scopes: MemoryScope[]
-  ): MemoryScope[];
+  filterAccessibleScopes(actorId: string, action: ScopeAction, scopes: MemoryScope[]): MemoryScope[];
 }
 
 const SCOPE_DESCENDANTS: Record<MemoryScope, readonly MemoryScope[]> = {
-  global: ["team", "project", "user", "session"],
-  project: ["user", "session"],
+  global: ['team', 'project', 'user', 'session'],
+  project: ['user', 'session'],
   session: [],
-  team: ["project", "user", "session"],
-  user: ["session"],
+  team: ['project', 'user', 'session'],
+  user: ['session']
 };
 
-function grantMatchesScope(
-  grant: ScopeGrant,
-  requestedScope: MemoryScope
-): boolean {
+function grantMatchesScope(grant: ScopeGrant, requestedScope: MemoryScope): boolean {
   if (grant.scope === requestedScope) {
     return true;
   }
@@ -72,16 +65,12 @@ export function createScopeManager(): ScopeManager {
       }
 
       return policy.grants.some(
-        (grant) =>
-          grant.actions.includes(request.action) &&
-          grantMatchesScope(grant, request.scope)
+        grant => grant.actions.includes(request.action) && grantMatchesScope(grant, request.scope)
       );
     },
 
     filterAccessibleScopes(actorId, action, scopes) {
-      return scopes.filter((scope) =>
-        this.canAccess({ action, actorId, scope })
-      );
+      return scopes.filter(scope => this.canAccess({ action, actorId, scope }));
     },
 
     removePolicy(actorId) {
@@ -91,12 +80,12 @@ export function createScopeManager(): ScopeManager {
     setPolicy(policy) {
       policies.set(policy.actorId, {
         actorId: policy.actorId,
-        grants: policy.grants.map((grant) => ({
+        grants: policy.grants.map(grant => ({
           actions: [...grant.actions],
           includeDescendants: grant.includeDescendants ?? false,
-          scope: grant.scope,
-        })),
+          scope: grant.scope
+        }))
       });
-    },
+    }
   };
 }

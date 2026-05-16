@@ -1,11 +1,7 @@
-import type { FinishReason } from "@agentsy/types";
+import type { FinishReason } from '@agentsy/types';
 
-import type {
-  NativeToolCallDelta,
-  NormalizerResult,
-  UsageInfo,
-} from "./types.js";
-import { isObject, toNumber } from "./utils.js";
+import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
 // Normalizer for Ollama NDJSON streaming chunks
@@ -45,9 +41,7 @@ function extractUsage(raw: Record<string, unknown>): UsageInfo | undefined {
  *
  * Never throws — malformed or adversarial input is silently ignored.
  */
-export function normalizeOllamaChatChunk(
-  raw: unknown
-): NormalizerResult | null {
+export function normalizeOllamaChatChunk(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) {
       return null;
@@ -57,12 +51,10 @@ export function normalizeOllamaChatChunk(
     }
 
     const { message } = raw;
-    const content =
-      typeof message.content === "string" ? message.content : undefined;
+    const content = typeof message.content === 'string' ? message.content : undefined;
     const done = raw.done === true ? true : undefined;
     const usage = done === undefined ? undefined : extractUsage(raw);
-    const finishReason: FinishReason | undefined =
-      done === undefined ? undefined : "stop";
+    const finishReason: FinishReason | undefined = done === undefined ? undefined : 'stop';
 
     // Tool calls — Ollama delivers them as a single complete array (not
     // streamed as argument deltas).  Arguments is a parsed object; we
@@ -77,7 +69,7 @@ export function normalizeOllamaChatChunk(
         if (!isObject(fn)) {
           return [];
         }
-        const name = typeof fn.name === "string" ? fn.name : undefined;
+        const name = typeof fn.name === 'string' ? fn.name : undefined;
         const args = fn.arguments;
         const delta: NativeToolCallDelta = { index: i };
         if (name !== undefined) {
@@ -98,7 +90,7 @@ export function normalizeOllamaChatChunk(
       ...(done !== undefined && { done }),
       ...(nativeToolCallDeltas !== undefined && { nativeToolCallDeltas }),
       ...(usage !== undefined && { usage }),
-      ...(finishReason !== undefined && { finishReason }),
+      ...(finishReason !== undefined && { finishReason })
     };
 
     return { chunk, rawEvent: raw };
@@ -114,28 +106,25 @@ export function normalizeOllamaChatChunk(
  *
  * Never throws — malformed or adversarial input is silently ignored.
  */
-export function normalizeOllamaGenerateChunk(
-  raw: unknown
-): NormalizerResult | null {
+export function normalizeOllamaGenerateChunk(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) {
       return null;
     }
-    if (typeof raw.response !== "string") {
+    if (typeof raw.response !== 'string') {
       return null;
     }
 
     const content = raw.response;
     const done = raw.done === true ? true : undefined;
     const usage = done === undefined ? undefined : extractUsage(raw);
-    const finishReason: FinishReason | undefined =
-      done === undefined ? undefined : "stop";
+    const finishReason: FinishReason | undefined = done === undefined ? undefined : 'stop';
 
     const chunk = {
       content,
       ...(done !== undefined && { done }),
       ...(usage !== undefined && { usage }),
-      ...(finishReason !== undefined && { finishReason }),
+      ...(finishReason !== undefined && { finishReason })
     };
 
     return { chunk, rawEvent: raw };

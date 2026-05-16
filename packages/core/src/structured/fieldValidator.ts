@@ -50,7 +50,7 @@ export function validateField(
 ): { valid: boolean; error?: string } {
   try {
     const result = validator(value);
-    if (typeof result === "string") {
+    if (typeof result === 'string') {
       return { error: result, valid: false };
     }
     return { valid: result };
@@ -67,25 +67,18 @@ export function createFieldValidator(options: FieldValidatorOptions): {
   validateFieldAtPath: (path: string, value: unknown) => FieldValidationEvent;
   validateObject: (obj: Record<string, unknown>) => FieldValidationEvent[];
 } {
-  const {
-    schema,
-    onFieldValidation,
-    continueOnError = true,
-    startTime = Date.now(),
-  } = options;
+  const { schema, onFieldValidation, continueOnError = true, startTime = Date.now() } = options;
 
   return {
     validateFieldAtPath(_path: string, value: unknown): FieldValidationEvent {
-      const fieldValidator = Object.hasOwn(schema, _path)
-        ? schema[_path]
-        : undefined;
+      const fieldValidator = Object.hasOwn(schema, _path) ? schema[_path] : undefined;
       if (!fieldValidator) {
         // No validator defined for this field, skip validation
         return {
           path: _path,
           timestamp: Date.now() - startTime,
           valid: true,
-          value,
+          value
         };
       }
 
@@ -95,7 +88,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
         value,
         valid,
         ...(error !== undefined && { error }),
-        timestamp: Date.now() - startTime,
+        timestamp: Date.now() - startTime
       };
 
       if (onFieldValidation) {
@@ -117,7 +110,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
       }
 
       return events;
-    },
+    }
   };
 }
 
@@ -126,88 +119,77 @@ export function createFieldValidator(options: FieldValidatorOptions): {
  */
 export const validators = {
   /** Validates array type */
-  array: (value: unknown): boolean | string =>
-    Array.isArray(value) || "must be an array",
+  array: (value: unknown): boolean | string => Array.isArray(value) || 'must be an array',
 
   /** Validates boolean type */
-  boolean: (value: unknown): boolean | string =>
-    typeof value === "boolean" || "must be a boolean",
+  boolean: (value: unknown): boolean | string => typeof value === 'boolean' || 'must be a boolean',
 
   /** Validates email format */
   email: (value: unknown): boolean | string => {
-    if (typeof value !== "string") {
-      return "must be a string";
+    if (typeof value !== 'string') {
+      return 'must be a string';
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(value) || "must be a valid email";
+    return emailRegex.test(value) || 'must be a valid email';
   },
 
   /** Validates value matches enum (renamed from 'enum' to avoid reserved keyword) */
   enumValues:
     (allowedValues: unknown[]) =>
     (value: unknown): boolean | string =>
-      allowedValues.includes(value) ||
-      `must be one of: ${allowedValues.join(", ")}`,
+      allowedValues.includes(value) || `must be one of: ${allowedValues.join(', ')}`,
 
   /** Validates integer */
   integer: (value: unknown): boolean | string =>
-    (typeof value === "number" && Number.isInteger(value)) ||
-    "must be an integer",
+    (typeof value === 'number' && Number.isInteger(value)) || 'must be an integer',
 
   /** Validates string maximum length */
   maxLength:
     (max: number) =>
     (value: unknown): boolean | string =>
-      (typeof value === "string" && value.length <= max) ||
-      `must be at most ${max} characters`,
+      (typeof value === 'string' && value.length <= max) || `must be at most ${max} characters`,
 
   /** Validates string minimum length */
   minLength:
     (min: number) =>
     (value: unknown): boolean | string =>
-      (typeof value === "string" && value.length >= min) ||
-      `must be at least ${min} characters`,
+      (typeof value === 'string' && value.length >= min) || `must be at least ${min} characters`,
 
   /** Validates number type */
-  number: (value: unknown): boolean | string =>
-    typeof value === "number" || "must be a number",
+  number: (value: unknown): boolean | string => typeof value === 'number' || 'must be a number',
 
   /** Validates object type */
   object: (value: unknown): boolean | string =>
-    (typeof value === "object" && value !== null && !Array.isArray(value)) ||
-    "must be an object",
+    (typeof value === 'object' && value !== null && !Array.isArray(value)) || 'must be an object',
 
   /** Validates positive number */
-  positive: (value: unknown): boolean | string =>
-    (typeof value === "number" && value > 0) || "must be positive",
+  positive: (value: unknown): boolean | string => (typeof value === 'number' && value > 0) || 'must be positive',
 
   /** Validates number is within range */
   range:
     (min: number, max: number) =>
     (value: unknown): boolean | string =>
-      (typeof value === "number" && value >= min && value <= max) ||
-      `must be between ${min} and ${max}`,
+      (typeof value === 'number' && value >= min && value <= max) || `must be between ${min} and ${max}`,
 
   /** Validates non-null value */
   required: (value: unknown): boolean | string =>
-    (value !== null && value !== undefined) || "must not be null or undefined",
+    (value !== null && value !== undefined) || 'must not be null or undefined',
 
   /** Validates string type */
-  string: (value: unknown): boolean | string =>
-    typeof value === "string" || "must be a string",
+  string: (value: unknown): boolean | string => typeof value === 'string' || 'must be a string',
 
   /** Validates URL format */
   url: (value: unknown): boolean | string => {
-    if (typeof value !== "string") {
-      return "must be a string";
+    if (typeof value !== 'string') {
+      return 'must be a string';
     }
     try {
       new URL(value);
       return true;
     } catch {
-      return "must be a valid URL";
+      return 'must be a valid URL';
     }
-  },
+  }
 };
 
 /**
@@ -236,13 +218,11 @@ export function oneOf(...validators_: FieldValidator[]): FieldValidator {
       if (result === true) {
         return true;
       }
-      if (typeof result === "string") {
+      if (typeof result === 'string') {
         errors.push(result);
       }
     }
-    return errors.length > 0
-      ? `failed all alternatives: ${errors.join("; ")}`
-      : false;
+    return errors.length > 0 ? `failed all alternatives: ${errors.join('; ')}` : false;
   };
 }
 
@@ -260,10 +240,10 @@ export function validateObject(
 } {
   const validator = createFieldValidator({ schema });
   const events = validator.validateObject(obj);
-  const errors = events.filter((e) => !e.valid);
+  const errors = events.filter(e => !e.valid);
   return {
     errors,
     events,
-    valid: errors.length === 0,
+    valid: errors.length === 0
   };
 }

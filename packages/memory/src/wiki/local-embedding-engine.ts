@@ -17,9 +17,7 @@ function normalizeToken(token: string): number {
   return hash;
 }
 
-export function createLocalEmbeddingEngine(
-  options: LocalEmbeddingEngineOptions = {}
-): LocalEmbeddingEngine {
+export function createLocalEmbeddingEngine(options: LocalEmbeddingEngineOptions = {}): LocalEmbeddingEngine {
   const dimensions = Math.max(4, options.dimensions ?? 32);
 
   return {
@@ -37,14 +35,12 @@ export function createLocalEmbeddingEngine(
         }
       }
 
-      const magnitude = Math.sqrt(
-        vector.reduce((sum, value) => sum + value * value, 0)
-      );
+      const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
       if (magnitude === 0) {
         return vector;
       }
 
-      return vector.map((value) => value / magnitude);
-    },
+      return vector.map(value => value / magnitude);
+    }
   };
 }

@@ -1,29 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { createStreamingMarkdownRenderer } from "./createStreamingMarkdownRenderer.js";
+import { createStreamingMarkdownRenderer } from './createStreamingMarkdownRenderer.js';
 
 // Mock streaming-markdown and dompurify
-vi.mock(import("streaming-markdown"), () => ({
+vi.mock(import('streaming-markdown'), () => ({
   default: {
-    parser_create: vi.fn((opts) => ({ target: opts.target })),
+    parser_create: vi.fn(opts => ({ target: opts.target })),
     parser_end: vi.fn(),
-    parser_write: vi.fn(),
-  },
+    parser_write: vi.fn()
+  }
 }));
 
-vi.mock(import("dompurify"), () => {
+vi.mock(import('dompurify'), () => {
   const mockSanitize = vi.fn((html: string) => html);
   return {
     default: {
       removed: [],
-      sanitize: mockSanitize,
+      sanitize: mockSanitize
     },
     removed: [],
-    sanitize: mockSanitize,
+    sanitize: mockSanitize
   };
 });
 
-describe("Streaming Markdown Renderer", () => {
+describe('Streaming Markdown Renderer', () => {
   let mockTarget: Record<string, unknown>;
 
   beforeEach(() => {
@@ -31,20 +31,20 @@ describe("Streaming Markdown Renderer", () => {
     // Mock DOM element
     mockTarget = {
       appendChild: vi.fn(),
-      id: "content",
-      innerHTML: "",
+      id: 'content',
+      innerHTML: ''
     };
   });
 
-  it("requires target element", () => {
+  it('requires target element', () => {
     expect(() => {
       createStreamingMarkdownRenderer({
-        target: null as unknown as Record<string, unknown>,
+        target: null as unknown as Record<string, unknown>
       });
-    }).toThrow("Target element is required");
+    }).toThrow('Target element is required');
   });
 
-  it("creates renderer with target", async () => {
+  it('creates renderer with target', async () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
     expect(renderer).toBeDefined();
@@ -52,140 +52,140 @@ describe("Streaming Markdown Renderer", () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it("accumulates markdown content", async () => {
+  it('accumulates markdown content', async () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
-    await renderer.write("# Title\n\n");
-    await renderer.write("Content");
+    await renderer.write('# Title\n\n');
+    await renderer.write('Content');
     await renderer.end();
 
     // Just verify no errors were thrown
     expect(renderer).toBeDefined();
   });
 
-  it("handles thinking blocks when showThinking is true", async () => {
+  it('handles thinking blocks when showThinking is true', async () => {
     const renderer = createStreamingMarkdownRenderer({
       showThinking: true,
-      target: mockTarget,
+      target: mockTarget
     });
 
-    await renderer.write("Content");
+    await renderer.write('Content');
     await renderer.end();
 
     expect(renderer).toBeDefined();
   });
 
-  it("supports separate thinking container", async () => {
-    const thinkingContainer = { id: "thinking" };
+  it('supports separate thinking container', async () => {
+    const thinkingContainer = { id: 'thinking' };
     const renderer = createStreamingMarkdownRenderer({
       showThinking: true,
       target: mockTarget,
-      thinkingContainer,
+      thinkingContainer
     });
 
-    await renderer.write("Content");
+    await renderer.write('Content');
     await renderer.end();
 
     expect(renderer).toBeDefined();
   });
 
-  it("calls onSecurityViolation on sanitization failure", async () => {
+  it('calls onSecurityViolation on sanitization failure', async () => {
     const onSecurityViolation = vi.fn();
     const renderer = createStreamingMarkdownRenderer({
       onSecurityViolation,
-      target: mockTarget,
+      target: mockTarget
     });
 
-    await renderer.write("Content");
+    await renderer.write('Content');
     await renderer.end();
 
     // Mock would have called onSecurityViolation if there were violations
     expect(onSecurityViolation).not.toHaveBeenCalled(); // No violations in clean content
   });
 
-  it("calls onError callback on processing errors", async () => {
+  it('calls onError callback on processing errors', async () => {
     const onError = vi.fn();
     const renderer = createStreamingMarkdownRenderer({
       onError,
-      target: mockTarget,
+      target: mockTarget
     });
 
-    await renderer.write("test");
+    await renderer.write('test');
     await renderer.end();
 
     expect(onError).not.toHaveBeenCalled();
   });
 
-  it("processes multiple chunks", async () => {
+  it('processes multiple chunks', async () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
-    await renderer.write("## Section 1\n\n");
-    await renderer.write("Content for section 1\n\n");
-    await renderer.write("## Section 2\n\n");
-    await renderer.write("Content for section 2");
+    await renderer.write('## Section 1\n\n');
+    await renderer.write('Content for section 1\n\n');
+    await renderer.write('## Section 2\n\n');
+    await renderer.write('Content for section 2');
     await renderer.end();
 
     expect(renderer).toBeDefined();
   });
 
-  it("handles empty content gracefully", async () => {
+  it('handles empty content gracefully', async () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
-    await renderer.write("");
+    await renderer.write('');
     await renderer.end();
 
     expect(renderer).toBeDefined();
   });
 
-  describe("onFinish callback", () => {
-    it("calls onFinish via writeChunk when done=true", async () => {
+  describe('onFinish callback', () => {
+    it('calls onFinish via writeChunk when done=true', async () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
-        target: mockTarget,
+        target: mockTarget
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "stop",
+        finishReason: 'stop'
       });
 
-      expect(onFinish).toHaveBeenCalledWith("stop", undefined);
+      expect(onFinish).toHaveBeenCalledWith('stop', undefined);
     });
 
-    it("passes usage data to onFinish", async () => {
+    it('passes usage data to onFinish', async () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
-        target: mockTarget,
+        target: mockTarget
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "length",
-        usage: { inputTokens: 10, outputTokens: 20 },
+        finishReason: 'length',
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
-      expect(onFinish).toHaveBeenCalledWith("length", {
+      expect(onFinish).toHaveBeenCalledWith('length', {
         inputTokens: 10,
-        outputTokens: 20,
+        outputTokens: 20
       });
     });
 
-    it("prevents double onFinish invocation", async () => {
+    it('prevents double onFinish invocation', async () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
-        target: mockTarget,
+        target: mockTarget
       });
 
       // First call with done=true
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "stop",
+        finishReason: 'stop'
       });
 
       // Then call end()
@@ -195,14 +195,14 @@ describe("Streaming Markdown Renderer", () => {
       expect(onFinish).toHaveBeenCalledOnce();
     });
 
-    it("calls onFinish in end() if not already called", async () => {
+    it('calls onFinish in end() if not already called', async () => {
       const onFinish = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onFinish,
-        target: mockTarget,
+        target: mockTarget
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       // Should be called once in end()
@@ -210,49 +210,49 @@ describe("Streaming Markdown Renderer", () => {
     });
   });
 
-  describe("Tool call callbacks", () => {
-    it("accepts onToolCall callback", async () => {
+  describe('Tool call callbacks', () => {
+    it('accepts onToolCall callback', async () => {
       const onToolCall = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onToolCall,
-        target: mockTarget,
+        target: mockTarget
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(renderer).toBeDefined();
     });
 
-    it("accepts onToolCallDelta callback", async () => {
+    it('accepts onToolCallDelta callback', async () => {
       const onToolCallDelta = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onToolCallDelta,
-        target: mockTarget,
+        target: mockTarget
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(renderer).toBeDefined();
     });
 
-    it("calls onStep when stepIndex changes via writeChunk", async () => {
+    it('calls onStep when stepIndex changes via writeChunk', async () => {
       const onStep = vi.fn();
       const renderer = createStreamingMarkdownRenderer({
         onStep,
-        target: mockTarget,
+        target: mockTarget
       });
 
       await renderer.writeChunk({
-        content: "step 0",
+        content: 'step 0',
         stepIndex: 0,
-        stepUsage: { outputTokens: 2 },
+        stepUsage: { outputTokens: 2 }
       });
       await renderer.writeChunk({
-        content: "step 1",
+        content: 'step 1',
         stepIndex: 1,
-        usage: { inputTokens: 1, outputTokens: 3 },
+        usage: { inputTokens: 1, outputTokens: 3 }
       });
       await renderer.end();
 
@@ -260,7 +260,7 @@ describe("Streaming Markdown Renderer", () => {
       expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
       expect(onStep).toHaveBeenNthCalledWith(2, 1, {
         inputTokens: 1,
-        outputTokens: 3,
+        outputTokens: 3
       });
     });
   });

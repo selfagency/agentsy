@@ -1,10 +1,6 @@
-import type {
-  JsonObject,
-  NativeToolCallDelta,
-  ToolCallState,
-} from "@agentsy/types";
+import type { JsonObject, NativeToolCallDelta, ToolCallState } from '@agentsy/types';
 
-import { parseJson } from "../structured/index.js";
+import { parseJson } from '../structured/index.js';
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */
 export interface NativeToolCall {
@@ -50,7 +46,7 @@ export class ToolCallAccumulator {
       }
     } else {
       const pending: PendingCall = {
-        argumentsBuffer: delta.argumentsDelta ?? "",
+        argumentsBuffer: delta.argumentsDelta ?? ''
       };
       if (delta.id !== undefined) {
         pending.id = delta.id;
@@ -78,14 +74,10 @@ export class ToolCallAccumulator {
       }
       try {
         const parsed = JSON.parse(pending.argumentsBuffer);
-        if (
-          parsed !== null &&
-          typeof parsed === "object" &&
-          !Array.isArray(parsed)
-        ) {
+        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
           const call: NativeToolCall = {
             arguments: parsed as JsonObject,
-            name: pending.name,
+            name: pending.name
           };
           if (pending.id !== undefined) {
             call.id = pending.id;
@@ -116,14 +108,10 @@ export class ToolCallAccumulator {
       }
       try {
         const parsed = JSON.parse(pending.argumentsBuffer);
-        if (
-          parsed !== null &&
-          typeof parsed === "object" &&
-          !Array.isArray(parsed)
-        ) {
+        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
           const call: NativeToolCall = {
             arguments: parsed as JsonObject,
-            name: pending.name,
+            name: pending.name
           };
           if (pending.id !== undefined) {
             call.id = pending.id;
@@ -150,9 +138,7 @@ export class ToolCallAccumulator {
    * Useful for building `tool_call_delta` OutputParts for deltas that arrive after
    * the initial header delta (which carries the name/id).
    */
-  public getPendingCallInfo(
-    index: number
-  ): { name?: string; id?: string } | undefined {
+  public getPendingCallInfo(index: number): { name?: string; id?: string } | undefined {
     const pending = this.calls.get(index);
     if (pending === undefined) {
       return undefined;
@@ -177,23 +163,19 @@ export class ToolCallAccumulator {
     }
 
     if (pending.argumentsBuffer.length === 0) {
-      return "awaiting-input";
+      return 'awaiting-input';
     }
 
     try {
       const parsed = JSON.parse(pending.argumentsBuffer);
-      if (
-        parsed !== null &&
-        typeof parsed === "object" &&
-        !Array.isArray(parsed)
-      ) {
-        return "input-complete";
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return 'input-complete';
       }
     } catch {
       // Still streaming.
     }
 
-    return "input-streaming";
+    return 'input-streaming';
   }
 
   private _flushPendingCall(pending: PendingCall): NativeToolCall | null {
@@ -203,14 +185,10 @@ export class ToolCallAccumulator {
 
     try {
       const parsed = JSON.parse(pending.argumentsBuffer);
-      if (
-        parsed !== null &&
-        typeof parsed === "object" &&
-        !Array.isArray(parsed)
-      ) {
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
         const call: NativeToolCall = {
           arguments: parsed as JsonObject,
-          name: pending.name,
+          name: pending.name
         };
         if (pending.id !== undefined) {
           call.id = pending.id;
@@ -222,16 +200,12 @@ export class ToolCallAccumulator {
     }
 
     const repaired = parseJson(pending.argumentsBuffer, {
-      repairIncomplete: true,
+      repairIncomplete: true
     });
     const flushedCall: NativeToolCall = {
       arguments:
-        repaired !== null &&
-        typeof repaired === "object" &&
-        !Array.isArray(repaired)
-          ? (repaired as JsonObject)
-          : {},
-      name: pending.name,
+        repaired !== null && typeof repaired === 'object' && !Array.isArray(repaired) ? (repaired as JsonObject) : {},
+      name: pending.name
     };
     if (pending.id !== undefined) {
       flushedCall.id = pending.id;

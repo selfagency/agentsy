@@ -1,10 +1,4 @@
-import type {
-  Event,
-  ExtensionContext,
-  Memento,
-  SecretStorage,
-  SecretStorageChangeEvent,
-} from "vscode";
+import type { Event, ExtensionContext, Memento, SecretStorage, SecretStorageChangeEvent } from 'vscode';
 
 /**
  * Mock Event implementation for testing.
@@ -74,24 +68,24 @@ export class MockMemento implements Memento {
  */
 export function createMockExtensionContext(): ExtensionContext {
   const mockUri = {
-    authority: "",
-    fragment: "",
-    fsPath: "/mock/path",
-    path: "/mock/path",
-    query: "",
-    scheme: "file",
+    authority: '',
+    fragment: '',
+    fsPath: '/mock/path',
+    path: '/mock/path',
+    query: '',
+    scheme: 'file',
     toJSON: () => ({}),
     with: () =>
       ({
-        authority: "",
-        fragment: "",
-        fsPath: "/mock/path",
-        path: "/mock/path",
-        query: "",
-        scheme: "file",
+        authority: '',
+        fragment: '',
+        fsPath: '/mock/path',
+        path: '/mock/path',
+        query: '',
+        scheme: 'file',
         toJSON: () => ({}),
-        with: () => ({}),
-      }) as unknown,
+        with: () => ({})
+      }) as unknown
   } as unknown;
 
   return {
@@ -100,31 +94,31 @@ export function createMockExtensionContext(): ExtensionContext {
     extension: {
       activate: async () => {},
       exports: undefined,
-      extensionPath: "/mock/path",
+      extensionPath: '/mock/path',
       extensionUri: mockUri,
-      id: "mock-extension",
+      id: 'mock-extension',
       isActive: true,
-      packageJSON: {},
+      packageJSON: {}
     } as unknown,
     extensionMode: 0 as unknown,
-    extensionPath: "/mock/path",
+    extensionPath: '/mock/path',
     extensionUri: mockUri,
     globalState: new MockMemento(),
-    globalStoragePath: "/mock/global",
+    globalStoragePath: '/mock/global',
     globalStorageUri: mockUri,
     languageModelAccessInformation: {
       models: [],
-      onDidChange: createMockEvent(),
+      onDidChange: createMockEvent()
     } as unknown,
-    logPath: "/mock/log",
+    logPath: '/mock/log',
     logUri: mockUri,
-    logsPath: "/mock/logs",
+    logsPath: '/mock/logs',
     secrets: new MockSecretStorage(),
-    storagePath: "/mock/storage",
+    storagePath: '/mock/storage',
     storageUri: mockUri,
     subscriptions: [],
     workspaceState: new MockMemento(),
-    workspaceStoragePath: "/mock/workspace",
-    workspaceStorageUri: mockUri,
+    workspaceStoragePath: '/mock/workspace',
+    workspaceStorageUri: mockUri
   } as unknown as ExtensionContext;
 }

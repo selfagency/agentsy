@@ -1,5 +1,5 @@
-import { ProviderErrorCode } from "../types/errors.js";
-import { errorToProviderCode } from "./error-mapper.js";
+import { ProviderErrorCode } from '../types/errors.js';
+import { errorToProviderCode } from './error-mapper.js';
 
 /**
  * Options for retryable operations.
@@ -28,7 +28,7 @@ const RETRYABLE_CODES = new Set<ProviderErrorCode>([
   ProviderErrorCode.RateLimited,
   ProviderErrorCode.Timeout,
   ProviderErrorCode.ConnectionError,
-  ProviderErrorCode.InternalError,
+  ProviderErrorCode.InternalError
 ]);
 
 /**
@@ -44,9 +44,7 @@ export function isRetryableError(error: unknown): boolean {
  */
 export function calculateRetryDelay(
   attempt: number,
-  options: Required<
-    Pick<RetryOptions, "initialDelayMs" | "backoffMultiplier" | "maxDelayMs">
-  >
+  options: Required<Pick<RetryOptions, 'initialDelayMs' | 'backoffMultiplier' | 'maxDelayMs'>>
 ): number {
   const delay = options.initialDelayMs * options.backoffMultiplier ** attempt;
   return Math.min(delay, options.maxDelayMs);
@@ -55,23 +53,14 @@ export function calculateRetryDelay(
 /**
  * Executes an operation with automatic retry on retryable errors.
  */
-export async function withRetry<T>(
-  operation: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
-  const {
-    maxAttempts = 3,
-    initialDelayMs = 1000,
-    backoffMultiplier = 2,
-    maxDelayMs = 30_000,
-    signal,
-  } = options;
+export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+  const { maxAttempts = 3, initialDelayMs = 1000, backoffMultiplier = 2, maxDelayMs = 30_000, signal } = options;
 
   let lastError: unknown;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (signal?.aborted) {
-      throw new Error("Operation aborted");
+      throw new Error('Operation aborted');
     }
 
     try {
@@ -87,7 +76,7 @@ export async function withRetry<T>(
       const delay = calculateRetryDelay(attempt, {
         backoffMultiplier,
         initialDelayMs,
-        maxDelayMs,
+        maxDelayMs
       });
       await sleep(delay, signal);
     }
@@ -105,9 +94,9 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
 
     const abortHandler = () => {
       clearTimeout(timer);
-      signal.removeEventListener("abort", abortHandler);
-      reject(new Error("Operation aborted"));
+      signal.removeEventListener('abort', abortHandler);
+      reject(new Error('Operation aborted'));
     };
-    signal.addEventListener("abort", abortHandler, { once: true });
+    signal.addEventListener('abort', abortHandler, { once: true });
   });
 }

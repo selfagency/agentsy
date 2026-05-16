@@ -1,28 +1,21 @@
-import { createHash } from "node:crypto";
+import { createHash } from 'node:crypto';
 
-import type {
-  AgentFsEntry,
-  AgentFsManager,
-  AgentFsOptions,
-} from "@agentsy/types";
+import type { AgentFsEntry, AgentFsManager, AgentFsOptions } from '@agentsy/types';
 
 export type { AgentFsEntry, AgentFsManager, AgentFsOptions };
 
 // SHA-256 is used for legacy compatibility; PHASE 4 implementation switched to BLAKE3/SHA-256
 // but we'll stick to a stable hash function for now as documented in types.
 function hashContent(content: string): string {
-  return `sha256:${createHash("sha256").update(content, "utf-8").digest("hex")}`;
+  return `sha256:${createHash('sha256').update(content, 'utf-8').digest('hex')}`;
 }
 
 /** @internal */
-export const __globalStoreForTests = new Map<
-  string,
-  Map<string, AgentFsEntry>
->();
+export const __globalStoreForTests = new Map<string, Map<string, AgentFsEntry>>();
 const globalStore = __globalStoreForTests;
 
 export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
-  const namespaceLabel = options?.namespace ?? "default";
+  const namespaceLabel = options?.namespace ?? 'default';
 
   if (!globalStore.has(namespaceLabel)) {
     globalStore.set(namespaceLabel, new Map<string, AgentFsEntry>());
@@ -30,9 +23,7 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
 
   const store = globalStore.get(namespaceLabel);
   if (!store) {
-    throw new Error(
-      `Failed to initialize store for namespace: ${namespaceLabel}`
-    );
+    throw new Error(`Failed to initialize store for namespace: ${namespaceLabel}`);
   }
 
   return {
@@ -74,10 +65,10 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
         contentHash: hashContent(content),
         createdAt: existing?.createdAt ?? now,
         path,
-        updatedAt: now,
+        updatedAt: now
       };
       store.set(path, entry);
       return entry;
-    },
+    }
   };
 }

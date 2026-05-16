@@ -1,10 +1,10 @@
-import type { ReadableStream } from "node:stream/web";
+import type { ReadableStream } from 'node:stream/web';
 
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import type { ProcessorOptions, StreamChunk } from "@agentsy/core/processor";
-import { parseSSEStream } from "@agentsy/core/sse";
-import { parseJson } from "@agentsy/core/structured";
-import type { JsonObject } from "@agentsy/types";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { ProcessorOptions, StreamChunk } from '@agentsy/core/processor';
+import { parseSSEStream } from '@agentsy/core/sse';
+import { parseJson } from '@agentsy/core/structured';
+import type { JsonObject } from '@agentsy/types';
 
 import {
   normalizeAnthropicEvent,
@@ -15,19 +15,19 @@ import {
   normalizeMistralChunk,
   normalizeOllamaChatChunk,
   normalizeOpenAIChatChunk,
-  normalizeZAiChunk,
-} from "../normalizers/index.js";
+  normalizeZAiChunk
+} from '../normalizers/index.js';
 
 export type NormalizerProvider =
-  | "openai"
-  | "anthropic"
-  | "gemini"
-  | "bedrock"
-  | "mistral"
-  | "ollama"
-  | "cohere"
-  | "hugging-face"
-  | "zai";
+  | 'openai'
+  | 'anthropic'
+  | 'gemini'
+  | 'bedrock'
+  | 'mistral'
+  | 'ollama'
+  | 'cohere'
+  | 'hugging-face'
+  | 'zai';
 
 export interface PipelineOptions extends ProcessorOptions {
   provider: NormalizerProvider;
@@ -38,7 +38,7 @@ export interface PipelineOptions extends ProcessorOptions {
 }
 
 export interface PipelineEvent {
-  type: "delta" | "thinking" | "tool_call" | "message_done" | "error";
+  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   content?: string;
   thinking?: string;
   tool_call?: { name: string; parameters: JsonObject };
@@ -46,20 +46,18 @@ export interface PipelineEvent {
   provider: NormalizerProvider;
 }
 
-type Normalizer = (
-  data: unknown
-) => { chunk: StreamChunk; rawEvent?: unknown } | null;
+type Normalizer = (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null;
 
 const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   anthropic: normalizeAnthropicEvent,
   bedrock: normalizeBedrockConverseEvent,
   cohere: normalizeCohereEvent,
   gemini: normalizeGeminiChunk,
-  "hugging-face": normalizeHuggingFaceTGIChunk,
+  'hugging-face': normalizeHuggingFaceTGIChunk,
   mistral: normalizeMistralChunk,
   ollama: normalizeOllamaChatChunk,
   openai: normalizeOpenAIChatChunk,
-  zai: normalizeZAiChunk,
+  zai: normalizeZAiChunk
 };
 
 async function* processSSEEvent(
@@ -69,7 +67,7 @@ async function* processSSEEvent(
   provider: NormalizerProvider,
   jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number }
 ): AsyncGenerator<PipelineEvent> {
-  if (!sseEvent.data || sseEvent.data === "[DONE]") {
+  if (!sseEvent.data || sseEvent.data === '[DONE]') {
     return;
   }
 
@@ -78,18 +76,14 @@ async function* processSSEEvent(
     yield {
       message: `Failed to parse JSON from SSE data: ${sseEvent.data.slice(0, 50)}...`,
       provider,
-      type: "error",
+      type: 'error'
     };
     return;
   }
 
   const normalized = normalizer(parsed);
 
-  if (
-    !normalized ||
-    typeof normalized !== "object" ||
-    !("chunk" in normalized)
-  ) {
+  if (!normalized || typeof normalized !== 'object' || !('chunk' in normalized)) {
     return;
   }
 
@@ -97,11 +91,11 @@ async function* processSSEEvent(
   const output = processor.process(chunk);
 
   if (output.thinking) {
-    yield { provider, thinking: output.thinking, type: "thinking" };
+    yield { provider, thinking: output.thinking, type: 'thinking' };
   }
 
   if (output.content) {
-    yield { content: output.content, provider, type: "delta" };
+    yield { content: output.content, provider, type: 'delta' };
   }
 
   for (const toolCall of output.toolCalls) {
@@ -109,20 +103,20 @@ async function* processSSEEvent(
       provider,
       tool_call: {
         name: toolCall.name,
-        parameters: toolCall.parameters,
+        parameters: toolCall.parameters
       },
-      type: "tool_call",
+      type: 'tool_call'
     };
   }
 
   if (output.done) {
-    yield { provider, type: "message_done" };
+    yield { provider, type: 'message_done' };
   }
 }
 
 function buildProcessorOptions(options: PipelineOptions): ProcessorOptions {
   const processorOpts: ProcessorOptions = {
-    scrubContextTags: options.scrubContextTags ?? false,
+    scrubContextTags: options.scrubContextTags ?? false
   };
 
   if (options.parseThinkTags !== undefined) {
@@ -183,7 +177,7 @@ export async function* createPipeline(
         yield {
           message: _error instanceof Error ? _error.message : String(_error),
           provider: options.provider,
-          type: "error",
+          type: 'error'
         };
       }
     }
@@ -191,7 +185,7 @@ export async function* createPipeline(
     yield {
       message: _error instanceof Error ? _error.message : String(_error),
       provider: options.provider,
-      type: "error",
+      type: 'error'
     };
   }
 }

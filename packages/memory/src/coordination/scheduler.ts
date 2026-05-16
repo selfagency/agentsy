@@ -41,6 +41,6 @@ export function createInMemoryScheduler(): Scheduler {
       );
 
       jobs.set(jobId, timeout);
-    },
+    }
   };
 }

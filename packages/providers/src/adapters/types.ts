@@ -3,21 +3,21 @@
  * Modelled after VS Code's LanguageModelChatResponsePart but generic.
  */
 export type OutboundPart =
-  | { type: "text"; text: string }
-  | { type: "image"; mimeType: string; data: Uint8Array | string }
+  | { type: 'text'; text: string }
+  | { type: 'image'; mimeType: string; data: Uint8Array | string }
   | {
-      type: "tool-call";
+      type: 'tool-call';
       callId: string;
       name: string;
       input?: Record<string, unknown>;
     }
-  | { type: "tool-result"; callId: string; content: string };
+  | { type: 'tool-result'; callId: string; content: string };
 
 /**
  * Common message type for outbound messages across adapters.
  */
 export interface OutboundMessage {
-  role: "system" | "user" | "assistant";
+  role: 'system' | 'user' | 'assistant';
   parts: OutboundPart[];
 }
 

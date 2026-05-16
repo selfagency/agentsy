@@ -1,9 +1,4 @@
-import type {
-  FinishReason,
-  JsonObject,
-  ToolCallState,
-  UsageInfo,
-} from "@agentsy/types";
+import type { FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
 
 /**
  * Represents a single UI message in a conversation.
@@ -14,7 +9,7 @@ export interface UIMessage {
   id: string;
 
   /** Message role: 'user' or 'assistant'. */
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
 
   /** Message parts (text, thinking, tool calls). */
   parts: UIMessagePart[];
@@ -35,29 +30,24 @@ export interface UIMessage {
 /**
  * Union type for all possible message parts.
  */
-export type UIMessagePart =
-  | UITextPart
-  | UIThinkingPart
-  | UIToolCallPart
-  | UIStepPart
-  | UIErrorPart;
+export type UIMessagePart = UITextPart | UIThinkingPart | UIToolCallPart | UIStepPart | UIErrorPart;
 
 /**
  * Message part types without createdAt (for event handlers that auto-add timestamps).
  * @internal
  */
 export type UIMessagePartWithoutCreatedAt =
-  | Omit<UITextPart, "createdAt">
-  | Omit<UIThinkingPart, "createdAt">
-  | Omit<UIToolCallPart, "createdAt">
-  | Omit<UIStepPart, "createdAt">
-  | Omit<UIErrorPart, "createdAt">;
+  | Omit<UITextPart, 'createdAt'>
+  | Omit<UIThinkingPart, 'createdAt'>
+  | Omit<UIToolCallPart, 'createdAt'>
+  | Omit<UIStepPart, 'createdAt'>
+  | Omit<UIErrorPart, 'createdAt'>;
 
 /**
  * Text content part.
  */
 export interface UITextPart {
-  type: "text";
+  type: 'text';
   text: string;
   createdAt: Date;
 }
@@ -66,7 +56,7 @@ export interface UITextPart {
  * Thinking block part (Claude model internals).
  */
 export interface UIThinkingPart {
-  type: "thinking";
+  type: 'thinking';
   text: string;
   createdAt: Date;
 }
@@ -75,7 +65,7 @@ export interface UIThinkingPart {
  * Tool call part (function invocation).
  */
 export interface UIToolCallPart {
-  type: "tool_call";
+  type: 'tool_call';
   id: string;
   name: string;
   parameters: JsonObject;
@@ -90,9 +80,9 @@ export interface UIToolCallPart {
  * Step lifecycle marker for agent-loop aware UIs.
  */
 export interface UIStepPart {
-  type: "step";
+  type: 'step';
   stepIndex: number;
-  status: "started" | "finished";
+  status: 'started' | 'finished';
   usage?: UsageInfo;
   createdAt: Date;
 }
@@ -101,7 +91,7 @@ export interface UIStepPart {
  * Error part associated with a message.
  */
 export interface UIErrorPart {
-  type: "error";
+  type: 'error';
   message: string;
   code?: string;
   createdAt: Date;
@@ -121,7 +111,7 @@ export interface UIConversation {
   stepIndex: number;
 
   /** Current streaming status for the conversation. */
-  status: "idle" | "streaming" | "error";
+  status: 'idle' | 'streaming' | 'error';
 
   /** Last applied event timestamp. */
   lastEventAt: Date;
@@ -140,11 +130,11 @@ export interface UIConversation {
  * Events that drive conversation state transitions.
  */
 export type ConversationEvent =
-  | { type: "message_started"; role: "user" | "assistant"; messageId: string }
-  | { type: "text_part_added"; messageId: string; text: string }
-  | { type: "thinking_part_added"; messageId: string; text: string }
+  | { type: 'message_started'; role: 'user' | 'assistant'; messageId: string }
+  | { type: 'text_part_added'; messageId: string; text: string }
+  | { type: 'thinking_part_added'; messageId: string; text: string }
   | {
-      type: "tool_call_part_added";
+      type: 'tool_call_part_added';
       messageId: string;
       toolCall: {
         id: string;
@@ -155,7 +145,7 @@ export type ConversationEvent =
       };
     }
   | {
-      type: "tool_call_updated";
+      type: 'tool_call_updated';
       messageId: string;
       toolCallId: string;
       state?: ToolCallState;
@@ -163,35 +153,35 @@ export type ConversationEvent =
       parameters?: JsonObject;
     }
   | {
-      type: "tool_call_result_added";
+      type: 'tool_call_result_added';
       messageId: string;
       toolCallId: string;
       result: unknown;
       isError?: boolean;
     }
   | {
-      type: "message_finished";
+      type: 'message_finished';
       messageId: string;
       finishReason?: FinishReason;
       usage?: UsageInfo;
     }
   | {
-      type: "step_started";
+      type: 'step_started';
       stepIndex: number;
       messageId?: string;
       usage?: UsageInfo;
     }
   | {
-      type: "step_finished";
+      type: 'step_finished';
       stepIndex: number;
       messageId?: string;
       usage?: UsageInfo;
     }
-  | { type: "step_updated"; stepIndex: number }
+  | { type: 'step_updated'; stepIndex: number }
   | {
-      type: "error_part_added";
+      type: 'error_part_added';
       messageId: string;
       message: string;
       code?: string;
     }
-  | { type: "conversation_reset" };
+  | { type: 'conversation_reset' };

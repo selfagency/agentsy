@@ -1,57 +1,57 @@
-import type { MCPTransport } from "@agentsy/core/processor";
-import { describe, it, expect, vi } from "vitest";
-import type { CancellationToken } from "vscode";
+import type { MCPTransport } from '@agentsy/core/processor';
+import { describe, it, expect, vi } from 'vitest';
+import type { CancellationToken } from 'vscode';
 
-import { MCPChatBridge, createMCPChatBridge } from "./mcpChatBridge.js";
+import { MCPChatBridge, createMCPChatBridge } from './mcpChatBridge.js';
 
-describe("VSCode Stream Bridge", () => {
+describe('VSCode Stream Bridge', () => {
   const mockTransport: MCPTransport = {
     stream: new ReadableStream<string>({
       start(controller) {
-        controller.enqueue("data: test\n\n");
+        controller.enqueue('data: test\n\n');
         controller.close();
-      },
+      }
     }),
-    type: "http",
+    type: 'http'
   };
 
   const mockCancellationToken: CancellationToken = {
     isCancellationRequested: false,
-    onCancellationRequested: vi.fn(),
+    onCancellationRequested: vi.fn()
   };
 
   describe(MCPChatBridge, () => {
-    it("should create bridge instance", () => {
+    it('should create bridge instance', () => {
       const bridge = new MCPChatBridge(mockTransport, mockCancellationToken);
       expect(bridge).toBeInstanceOf(MCPChatBridge);
     });
 
-    it("should create chat response stream", () => {
+    it('should create chat response stream', () => {
       const bridge = new MCPChatBridge(mockTransport, mockCancellationToken);
       const stream = bridge.createStream();
       expect(stream).toBeDefined();
-      expect(stream).toHaveProperty("markdown");
-      expect(stream).toHaveProperty("anchor");
-      expect(stream).toHaveProperty("button");
-      expect(stream).toHaveProperty("filetree");
-      expect(stream).toHaveProperty("progress");
-      expect(stream).toHaveProperty("reference");
-      expect(stream).toHaveProperty("push");
+      expect(stream).toHaveProperty('markdown');
+      expect(stream).toHaveProperty('anchor');
+      expect(stream).toHaveProperty('button');
+      expect(stream).toHaveProperty('filetree');
+      expect(stream).toHaveProperty('progress');
+      expect(stream).toHaveProperty('reference');
+      expect(stream).toHaveProperty('push');
     });
 
-    it("should return transport", () => {
+    it('should return transport', () => {
       const bridge = new MCPChatBridge(mockTransport, mockCancellationToken);
       expect(bridge.getTransport()).toBe(mockTransport);
     });
 
-    it("should return cancellation token", () => {
+    it('should return cancellation token', () => {
       const bridge = new MCPChatBridge(mockTransport, mockCancellationToken);
       expect(bridge.getCancellationToken()).toBe(mockCancellationToken);
     });
   });
 
   describe(createMCPChatBridge, () => {
-    it("should create bridge via factory", () => {
+    it('should create bridge via factory', () => {
       const bridge = createMCPChatBridge(mockTransport, mockCancellationToken);
       expect(bridge).toBeInstanceOf(MCPChatBridge);
       expect(bridge.getTransport()).toBe(mockTransport);

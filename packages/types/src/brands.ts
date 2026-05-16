@@ -81,25 +81,25 @@ export function createMemoryId(): MemoryId {
  * Type guard for branded IDs.
  */
 export function isAgentId(value: unknown): value is AgentId {
-  return typeof value === "string" && value.startsWith("agent_");
+  return typeof value === 'string' && value.startsWith('agent_');
 }
 
 export function isSessionId(value: unknown): value is SessionId {
-  return typeof value === "string" && value.startsWith("session_");
+  return typeof value === 'string' && value.startsWith('session_');
 }
 
 export function isTraceId(value: unknown): value is TraceId {
-  return typeof value === "string" && value.startsWith("trace_");
+  return typeof value === 'string' && value.startsWith('trace_');
 }
 
 export function isSpanId(value: unknown): value is SpanId {
-  return typeof value === "string" && value.startsWith("span_");
+  return typeof value === 'string' && value.startsWith('span_');
 }
 
 export function isToolId(value: unknown): value is ToolId {
-  return typeof value === "string" && value.startsWith("tool_");
+  return typeof value === 'string' && value.startsWith('tool_');
 }
 
 export function isMemoryId(value: unknown): value is MemoryId {
-  return typeof value === "string" && value.startsWith("memory_");
+  return typeof value === 'string' && value.startsWith('memory_');
 }

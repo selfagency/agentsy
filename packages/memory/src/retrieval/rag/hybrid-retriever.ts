@@ -1,10 +1,10 @@
-import { createLocalEmbeddingEngine } from "../../wiki/local-embedding-engine.js";
-import type { PlannedQuery, RAGEvidence, RAGSearchResult } from "./types.js";
+import { createLocalEmbeddingEngine } from '../../wiki/local-embedding-engine.js';
+import type { PlannedQuery, RAGEvidence, RAGSearchResult } from './types.js';
 
 interface HybridRecord {
   id: string;
   sourceId: string;
-  sourceType: RAGEvidence["sourceType"];
+  sourceType: RAGEvidence['sourceType'];
   title: string;
   content: string;
   updatedAt: string;
@@ -17,11 +17,7 @@ interface DotAndNorms {
   normB: number;
 }
 
-function computeDotAndNorms(
-  a: readonly number[],
-  b: readonly number[],
-  length: number
-): DotAndNorms {
+function computeDotAndNorms(a: readonly number[], b: readonly number[], length: number): DotAndNorms {
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -63,18 +59,13 @@ function lexicalScore(queryTerms: readonly string[], text: string): number {
   return hits / queryTerms.length;
 }
 
-function entityScore(
-  entities: readonly string[],
-  metadata: Record<string, unknown> | undefined
-): number {
+function entityScore(entities: readonly string[], metadata: Record<string, unknown> | undefined): number {
   const raw = metadata?.entities;
   if (!Array.isArray(raw) || entities.length === 0) {
     return 0;
   }
 
-  const normalized = raw
-    .filter((value): value is string => typeof value === "string")
-    .map((item) => item.toLowerCase());
+  const normalized = raw.filter((value): value is string => typeof value === 'string').map(item => item.toLowerCase());
   if (normalized.length === 0) {
     return 0;
   }
@@ -100,7 +91,7 @@ function temporalScore(updatedAtIso: string, now: Date): number {
 }
 
 export interface HybridRetriever {
-  upsert(result: Omit<RAGSearchResult, "score">): void;
+  upsert(result: Omit<RAGSearchResult, 'score'>): void;
   remove(id: string): void;
   search(query: PlannedQuery): Promise<RAGEvidence[]>;
 }
@@ -119,31 +110,24 @@ export function createHybridRetriever(): HybridRetriever {
     async search(query) {
       const now = new Date();
       const queryVector = engine.embed(query.query);
-      const queryTerms =
-        query.expandedTerms.length > 0
-          ? query.expandedTerms
-          : query.query.toLowerCase().split(/\s+/u);
+      const queryTerms = query.expandedTerms.length > 0 ? query.expandedTerms : query.query.toLowerCase().split(/\s+/u);
 
       return [...records.values()]
-        .map((record) => {
+        .map(record => {
           const vector = vectors.get(record.id) ?? [];
           const vectorScore = cosineSimilarity(queryVector, vector);
-          const lexical = lexicalScore(
-            queryTerms,
-            `${record.title}\n${record.content}`
-          );
+          const lexical = lexicalScore(queryTerms, `${record.title}\n${record.content}`);
           const entity = entityScore(query.entities, record.metadata);
           const temporal = temporalScore(record.updatedAt, now);
-          const final =
-            vectorScore * 0.4 + lexical * 0.3 + entity * 0.2 + temporal * 0.1;
+          const final = vectorScore * 0.4 + lexical * 0.3 + entity * 0.2 + temporal * 0.1;
 
           const evidence: RAGEvidence = {
             citations: [
               {
                 sourceId: record.sourceId,
                 sourceType: record.sourceType,
-                title: record.title,
-              },
+                title: record.title
+              }
             ],
             confidence: Math.max(0, Math.min(1, final)),
             content: record.content,
@@ -154,15 +138,13 @@ export function createHybridRetriever(): HybridRetriever {
               final,
               lexical,
               temporal,
-              vector: vectorScore,
+              vector: vectorScore
             },
             sourceId: record.sourceId,
             sourceType: record.sourceType,
             title: record.title,
             updatedAt: record.updatedAt,
-            ...(record.metadata === undefined
-              ? {}
-              : { metadata: { ...record.metadata } }),
+            ...(record.metadata === undefined ? {} : { metadata: { ...record.metadata } })
           };
 
           return evidence;
@@ -179,15 +161,10 @@ export function createHybridRetriever(): HybridRetriever {
         sourceType: result.sourceType,
         title: result.title,
         updatedAt: result.updatedAt,
-        ...(result.metadata === undefined
-          ? {}
-          : { metadata: { ...result.metadata } }),
+        ...(result.metadata === undefined ? {} : { metadata: { ...result.metadata } })
       };
       records.set(record.id, record);
-      vectors.set(
-        record.id,
-        engine.embed(`${record.title}\n${record.content}`)
-      );
-    },
+      vectors.set(record.id, engine.embed(`${record.title}\n${record.content}`));
+    }
   };
 }

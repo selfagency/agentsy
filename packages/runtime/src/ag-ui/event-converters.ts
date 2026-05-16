@@ -5,8 +5,8 @@
  * Allows the same event stream to be consumed by different UI frameworks.
  */
 
-import type { AgUiEvent } from "@agentsy/types";
-import { EventType } from "@agentsy/types";
+import type { AgUiEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 
 /**
  * CopilotKit event format (simplified).
@@ -38,26 +38,25 @@ export interface CustomUIEvent {
 export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
   // Map AG-UI event type to CopilotKit equivalents
   const copilotKitMapping: Record<string, string> = {
-    [EventType.RUN_STARTED]: "run:started",
-    [EventType.RUN_FINISHED]: "run:finished",
-    [EventType.RUN_ERROR]: "run:error",
-    [EventType.STEP_STARTED]: "step:started",
-    [EventType.STEP_FINISHED]: "step:finished",
-    [EventType.TEXT_MESSAGE_CONTENT]: "text_message:content",
-    [EventType.REASONING_MESSAGE_CONTENT]: "reasoning_message:content",
-    [EventType.TOOL_CALL_START]: "tool_call:start",
-    [EventType.TOOL_CALL_ARGS]: "tool_call:args",
-    [EventType.TOOL_CALL_END]: "tool_call:end",
+    [EventType.RUN_STARTED]: 'run:started',
+    [EventType.RUN_FINISHED]: 'run:finished',
+    [EventType.RUN_ERROR]: 'run:error',
+    [EventType.STEP_STARTED]: 'step:started',
+    [EventType.STEP_FINISHED]: 'step:finished',
+    [EventType.TEXT_MESSAGE_CONTENT]: 'text_message:content',
+    [EventType.REASONING_MESSAGE_CONTENT]: 'reasoning_message:content',
+    [EventType.TOOL_CALL_START]: 'tool_call:start',
+    [EventType.TOOL_CALL_ARGS]: 'tool_call:args',
+    [EventType.TOOL_CALL_END]: 'tool_call:end'
   };
 
   const eventRec = event as unknown as Record<string, unknown>;
   const eventType = eventRec.type as string | undefined;
-  const copilotKitType =
-    (eventType && copilotKitMapping[eventType]) || eventType || "unknown";
+  const copilotKitType = (eventType && copilotKitMapping[eventType]) || eventType || 'unknown';
 
   return {
     type: copilotKitType,
-    ...eventRec,
+    ...eventRec
   };
 }
 
@@ -71,7 +70,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
   const agEvent = event as unknown as Record<string, unknown>;
 
   // Extract common fields
-  const runId = (agEvent.runId as string) || "";
+  const runId = (agEvent.runId as string) || '';
   const threadId = agEvent.threadId as string | undefined;
   const timestamp = (agEvent.timestamp as string) || new Date().toISOString();
 
@@ -105,7 +104,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
         duration: agEvent.duration,
         outputLength: agEvent.outputLength,
         stepId: agEvent.stepId,
-        stepIndex: agEvent.stepIndex,
+        stepIndex: agEvent.stepIndex
       };
       break;
     }
@@ -113,7 +112,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
     case EventType.TEXT_MESSAGE_CONTENT: {
       payload = {
         content: agEvent.content,
-        messageId: agEvent.messageId,
+        messageId: agEvent.messageId
       };
       break;
     }
@@ -122,7 +121,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
       payload = {
         content: agEvent.content,
         encrypted: !!agEvent.encryptedValue,
-        messageId: agEvent.messageId,
+        messageId: agEvent.messageId
       };
       break;
     }
@@ -130,7 +129,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
     case EventType.TOOL_CALL_START: {
       payload = {
         toolCallId: agEvent.toolCallId,
-        toolName: agEvent.toolName,
+        toolName: agEvent.toolName
       };
       break;
     }
@@ -138,7 +137,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
     case EventType.TOOL_CALL_ARGS: {
       payload = {
         args: agEvent.args,
-        toolCallId: agEvent.toolCallId,
+        toolCallId: agEvent.toolCallId
       };
       break;
     }
@@ -146,7 +145,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
     case EventType.TOOL_CALL_END: {
       payload = {
         output: agEvent.output,
-        toolCallId: agEvent.toolCallId,
+        toolCallId: agEvent.toolCallId
       };
       break;
     }
@@ -163,7 +162,7 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
     runId,
     ...(threadId !== undefined && { threadId }),
     timestamp,
-    payload,
+    payload
   };
 }
 
@@ -174,11 +173,11 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
  * @returns Converter function
  */
 export function createEventConverter(
-  format: "copilot-kit" | "custom"
+  format: 'copilot-kit' | 'custom'
 ): (event: AgUiEvent) => CopilotKitEvent | CustomUIEvent {
-  if (format === "copilot-kit") {
+  if (format === 'copilot-kit') {
     return toCopilotKitEvent;
-  } else if (format === "custom") {
+  } else if (format === 'custom') {
     return toCustomUIEvent;
   }
   throw new Error(`Unknown format: ${String(format)}`);
@@ -193,7 +192,7 @@ export function createEventConverter(
  */
 export async function* convertEventStream(
   source: AsyncGenerator<AgUiEvent>,
-  format: "copilot-kit" | "custom"
+  format: 'copilot-kit' | 'custom'
 ): AsyncGenerator<CopilotKitEvent | CustomUIEvent> {
   const converter = createEventConverter(format);
   for await (const event of source) {

@@ -1,30 +1,16 @@
-import type {
-  OutboundAdapterOptions,
-  OutboundMessage,
-  OutboundPart,
-} from "./types.js";
+import type { OutboundAdapterOptions, OutboundMessage, OutboundPart } from './types.js';
 
-export const OPENAI_COMPATIBLE_PROVIDERS = [
-  "openai",
-  "deepseek",
-  "kimi",
-  "qwen",
-  "llama",
-  "granite",
-] as const;
+export const OPENAI_COMPATIBLE_PROVIDERS = ['openai', 'deepseek', 'kimi', 'qwen', 'llama', 'granite'] as const;
 
-export type OpenAICompatibleProvider =
-  (typeof OPENAI_COMPATIBLE_PROVIDERS)[number];
+export type OpenAICompatibleProvider = (typeof OPENAI_COMPATIBLE_PROVIDERS)[number];
 
-export function isOpenAICompatibleProvider(
-  value: string
-): value is OpenAICompatibleProvider {
+export function isOpenAICompatibleProvider(value: string): value is OpenAICompatibleProvider {
   return (OPENAI_COMPATIBLE_PROVIDERS as readonly string[]).includes(value);
 }
 
 export interface OpenAICompatibleToolCall {
   id: string;
-  type: "function";
+  type: 'function';
   function: {
     name: string;
     arguments: string;
@@ -32,14 +18,14 @@ export interface OpenAICompatibleToolCall {
 }
 
 export type OpenAICompatibleMessage =
-  | { role: "system"; content: string }
-  | { role: "user"; content: string }
+  | { role: 'system'; content: string }
+  | { role: 'user'; content: string }
   | {
-      role: "assistant";
+      role: 'assistant';
       content: string | null;
       tool_calls?: OpenAICompatibleToolCall[];
     }
-  | { role: "tool"; content: string; tool_call_id: string };
+  | { role: 'tool'; content: string; tool_call_id: string };
 
 /**
  * Shared outbound mapper for OpenAI-compatible chat APIs.
@@ -48,51 +34,48 @@ export function toOpenAICompatibleMessages(
   messages: readonly OutboundMessage[],
   _options: OutboundAdapterOptions = {}
 ): OpenAICompatibleMessage[] {
-  return messages.map((msg) => {
+  return messages.map(msg => {
     const text = msg.parts
-      .filter(
-        (p: OutboundPart): p is { type: "text"; text: string } =>
-          p.type === "text"
-      )
-      .map((p) => p.text)
-      .join("\n");
+      .filter((p: OutboundPart): p is { type: 'text'; text: string } => p.type === 'text')
+      .map(p => p.text)
+      .join('\n');
 
-    const toolCallPart = msg.parts.find((p) => p.type === "tool-call");
-    const toolResultPart = msg.parts.find((p) => p.type === "tool-result");
+    const toolCallPart = msg.parts.find(p => p.type === 'tool-call');
+    const toolResultPart = msg.parts.find(p => p.type === 'tool-result');
 
-    if (toolResultPart?.type === "tool-result") {
+    if (toolResultPart?.type === 'tool-result') {
       return {
         content: toolResultPart.content,
-        role: "tool",
-        tool_call_id: toolResultPart.callId,
+        role: 'tool',
+        tool_call_id: toolResultPart.callId
       };
     }
 
-    if (msg.role === "system") {
-      return { content: text, role: "system" };
+    if (msg.role === 'system') {
+      return { content: text, role: 'system' };
     }
-    if (msg.role === "user") {
-      return { content: text, role: "user" };
+    if (msg.role === 'user') {
+      return { content: text, role: 'user' };
     }
 
-    if (toolCallPart?.type === "tool-call") {
+    if (toolCallPart?.type === 'tool-call') {
       return {
         content: text || null,
-        role: "assistant",
+        role: 'assistant',
         tool_calls: [
           {
             function: {
               arguments: JSON.stringify(toolCallPart.input ?? {}),
-              name: toolCallPart.name,
+              name: toolCallPart.name
             },
             id: toolCallPart.callId,
-            type: "function",
-          },
-        ],
+            type: 'function'
+          }
+        ]
       };
     }
 
-    return { content: text, role: "assistant" };
+    return { content: text, role: 'assistant' };
   });
 }
 

@@ -1,13 +1,9 @@
-import { expect, expectTypeOf, test } from "vitest";
+import { expect, expectTypeOf, test } from 'vitest';
 
-import {
-  ItemDoneStreaming,
-  isStreamingDone,
-  markStreamingDone,
-} from "./types.js";
-import type { DeepPartial, StreamingPartial } from "./types.js";
+import { ItemDoneStreaming, isStreamingDone, markStreamingDone } from './types.js';
+import type { DeepPartial, StreamingPartial } from './types.js';
 
-test("DeepPartial preserves nested array partials", () => {
+test('DeepPartial preserves nested array partials', () => {
   interface Input {
     items: {
       id: string;
@@ -20,9 +16,9 @@ test("DeepPartial preserves nested array partials", () => {
   const partial: DeepPartial<Input> = {
     items: [
       {
-        nested: {},
-      },
-    ],
+        nested: {}
+      }
+    ]
   };
 
   expectTypeOf(partial.items?.[0]?.id).toEqualTypeOf<string | undefined>();
@@ -34,7 +30,7 @@ test("DeepPartial preserves nested array partials", () => {
   >();
 });
 
-test("streaming completion marker is preserved", () => {
+test('streaming completion marker is preserved', () => {
   const partial: StreamingPartial<{ value: string }> = {};
 
   expect(isStreamingDone(partial)).toBeFalsy();

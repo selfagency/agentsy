@@ -1,11 +1,11 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { createFileConflictStore } from "./file-conflict-store.js";
-import type { ConflictRecord } from "./types.js";
+import { createFileConflictStore } from './file-conflict-store.js';
+import type { ConflictRecord } from './types.js';
 
 const temporaryDirectories: string[] = [];
 
@@ -14,84 +14,77 @@ function createConflict(id: string, detectedAt: string): ConflictRecord {
     detectedAt,
     id,
     local: {
-      content: "local",
-      id: "record-1",
-      tier: "wiki",
-      updatedAt: "2026-05-15T10:00:00.000Z",
+      content: 'local',
+      id: 'record-1',
+      tier: 'wiki',
+      updatedAt: '2026-05-15T10:00:00.000Z'
     },
-    policy: "manualRequired",
-    recordId: "record-1",
+    policy: 'manualRequired',
+    recordId: 'record-1',
     remote: {
-      content: "remote",
-      id: "record-1",
-      tier: "wiki",
-      updatedAt: "2026-05-15T10:05:00.000Z",
+      content: 'remote',
+      id: 'record-1',
+      tier: 'wiki',
+      updatedAt: '2026-05-15T10:05:00.000Z'
     },
-    tier: "wiki",
+    tier: 'wiki'
   };
 }
 
 async function createStorePath(): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), "agentsy-memory-conflicts-"));
+  const directory = await mkdtemp(join(tmpdir(), 'agentsy-memory-conflicts-'));
   temporaryDirectories.push(directory);
-  return join(directory, "nested", "conflicts.json");
+  return join(directory, 'nested', 'conflicts.json');
 }
 
 afterEach(async () => {
-  await Promise.all(
-    temporaryDirectories
-      .splice(0)
-      .map((directory) => rm(directory, { force: true, recursive: true }))
-  );
+  await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { force: true, recursive: true })));
 });
 
 describe(createFileConflictStore, () => {
-  it("persists conflicts across store instances", async () => {
+  it('persists conflicts across store instances', async () => {
     const filePath = await createStorePath();
     const first = createFileConflictStore({ filePath });
     const second = createFileConflictStore({ filePath });
 
-    await first.save(createConflict("conflict-2", "2026-05-15T10:02:00.000Z"));
-    await first.save(createConflict("conflict-1", "2026-05-15T10:01:00.000Z"));
+    await first.save(createConflict('conflict-2', '2026-05-15T10:02:00.000Z'));
+    await first.save(createConflict('conflict-1', '2026-05-15T10:01:00.000Z'));
 
     await expect(second.pendingCount()).resolves.toBe(2);
-    await expect(second.list()).resolves.toMatchObject([
-      { id: "conflict-1" },
-      { id: "conflict-2" },
-    ]);
+    await expect(second.list()).resolves.toMatchObject([{ id: 'conflict-1' }, { id: 'conflict-2' }]);
   });
 
-  it("removes resolved conflicts from disk", async () => {
+  it('removes resolved conflicts from disk', async () => {
     const filePath = await createStorePath();
     const store = createFileConflictStore({ filePath });
 
-    await store.save(createConflict("conflict-1", "2026-05-15T10:01:00.000Z"));
-    await store.resolve("conflict-1");
+    await store.save(createConflict('conflict-1', '2026-05-15T10:01:00.000Z'));
+    await store.resolve('conflict-1');
 
-    await expect(store.get("conflict-1")).resolves.toBeNull();
+    await expect(store.get('conflict-1')).resolves.toBeNull();
     await expect(store.pendingCount()).resolves.toBe(0);
   });
 
-  it("writes a versioned json envelope", async () => {
+  it('writes a versioned json envelope', async () => {
     const filePath = await createStorePath();
     const store = createFileConflictStore({ filePath });
 
-    await store.save(createConflict("conflict-1", "2026-05-15T10:01:00.000Z"));
+    await store.save(createConflict('conflict-1', '2026-05-15T10:01:00.000Z'));
 
-    const content = await readFile(filePath, "utf-8");
+    const content = await readFile(filePath, 'utf-8');
     expect(JSON.parse(content)).toMatchObject({
-      conflicts: [{ id: "conflict-1" }],
-      version: 1,
+      conflicts: [{ id: 'conflict-1' }],
+      version: 1
     });
   });
 
-  it("serializes concurrent saves without losing conflicts", async () => {
+  it('serializes concurrent saves without losing conflicts', async () => {
     const filePath = await createStorePath();
     const store = createFileConflictStore({ filePath });
 
     await Promise.all([
-      store.save(createConflict("conflict-1", "2026-05-15T10:01:00.000Z")),
-      store.save(createConflict("conflict-2", "2026-05-15T10:02:00.000Z")),
+      store.save(createConflict('conflict-1', '2026-05-15T10:01:00.000Z')),
+      store.save(createConflict('conflict-2', '2026-05-15T10:02:00.000Z'))
     ]);
 
     await expect(store.list()).resolves.toHaveLength(2);

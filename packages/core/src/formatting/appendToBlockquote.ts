@@ -1,7 +1,7 @@
 export function appendToBlockquote(text: string, atLineStart: boolean): string {
   if (!text) {
-    return "";
+    return '';
   }
 
-  return `${atLineStart ? "> " : ""}${text.replaceAll("\n", "\n> ")}`;
+  return `${atLineStart ? '> ' : ''}${text.replaceAll('\n', '\n> ')}`;
 }

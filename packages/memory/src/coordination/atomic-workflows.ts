@@ -12,7 +12,7 @@ export interface AtomicWorkflowStep {
 
 export interface AtomicWorkflowResult {
   workflowId: string;
-  status: "committed" | "rolled_back";
+  status: 'committed' | 'rolled_back';
   startedAt: number;
   finishedAt: number;
   executedSteps: string[];
@@ -62,7 +62,7 @@ export function createAtomicWorkflowCoordinator(): AtomicWorkflowCoordinator {
       const context: AtomicWorkflowContext = {
         metadata: { ...metadata },
         startedAt,
-        workflowId,
+        workflowId
       };
 
       const executedStepDefinitions: AtomicWorkflowStep[] = [];
@@ -80,24 +80,21 @@ export function createAtomicWorkflowCoordinator(): AtomicWorkflowCoordinator {
           finishedAt: Date.now(),
           rolledBackSteps: [],
           startedAt,
-          status: "committed",
-          workflowId,
+          status: 'committed',
+          workflowId
         };
       } catch (error) {
-        const rolledBackSteps = await rollbackExecutedSteps(
-          context,
-          executedStepDefinitions
-        );
+        const rolledBackSteps = await rollbackExecutedSteps(context, executedStepDefinitions);
         return {
           error: toError(error),
           executedSteps,
           finishedAt: Date.now(),
           rolledBackSteps,
           startedAt,
-          status: "rolled_back",
-          workflowId,
+          status: 'rolled_back',
+          workflowId
         };
       }
-    },
+    }
   };
 }

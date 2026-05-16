@@ -1,10 +1,6 @@
-import type {
-  RawCapture,
-  VectorEntry,
-  WikiPage,
-} from "../wiki/wiki-manager.js";
-import { computeSyncChecksum, verifySyncChecksum } from "./integrity.js";
-import type { MemorySyncTier, SyncRecord, SyncSnapshot } from "./types.js";
+import type { RawCapture, VectorEntry, WikiPage } from '../wiki/wiki-manager.js';
+import { computeSyncChecksum, verifySyncChecksum } from './integrity.js';
+import type { MemorySyncTier, SyncRecord, SyncSnapshot } from './types.js';
 
 export interface MemoryState {
   rawCaptures: RawCapture[];
@@ -26,7 +22,7 @@ export interface MemoryStateAdapterOptions {
 function cloneRawCapture(capture: RawCapture): RawCapture {
   return {
     ...capture,
-    createdAt: new Date(capture.createdAt),
+    createdAt: new Date(capture.createdAt)
   };
 }
 
@@ -35,14 +31,14 @@ function cloneWikiPage(page: WikiPage): WikiPage {
     ...page,
     tags: [...page.tags],
     updatedAt: new Date(page.updatedAt),
-    writerIds: [...page.writerIds],
+    writerIds: [...page.writerIds]
   };
 }
 
 function cloneVector(vector: VectorEntry): VectorEntry {
   return {
     ...vector,
-    embedding: [...vector.embedding],
+    embedding: [...vector.embedding]
   };
 }
 
@@ -53,10 +49,10 @@ function serializeRawCapture(capture: RawCapture): SyncRecord {
     metadata: {
       normalizedContent: capture.normalizedContent,
       sourceId: capture.sourceId,
-      sourceType: capture.sourceType,
+      sourceType: capture.sourceType
     },
-    tier: "raw",
-    updatedAt: capture.createdAt.toISOString(),
+    tier: 'raw',
+    updatedAt: capture.createdAt.toISOString()
   };
 }
 
@@ -69,39 +65,32 @@ function serializeWikiPage(page: WikiPage): SyncRecord {
       tags: [...page.tags],
       title: page.title,
       version: page.version,
-      writerIds: [...page.writerIds],
+      writerIds: [...page.writerIds]
     },
-    tier: "wiki",
-    updatedAt: page.updatedAt.toISOString(),
+    tier: 'wiki',
+    updatedAt: page.updatedAt.toISOString()
   };
 }
 
-function serializeVectorEntry(
-  vector: VectorEntry,
-  updatedAt: string
-): SyncRecord {
+function serializeVectorEntry(vector: VectorEntry, updatedAt: string): SyncRecord {
   return {
     content: JSON.stringify(vector.embedding),
     id: vector.pageId,
     metadata: {
-      dimensions: vector.embedding.length,
+      dimensions: vector.embedding.length
     },
-    tier: "vector",
+    tier: 'vector',
     updatedAt,
-    vectorFingerprint: computeSyncChecksum(vector.embedding),
+    vectorFingerprint: computeSyncChecksum(vector.embedding)
   };
 }
 
 function isStringArray(value: unknown): value is string[] {
-  return (
-    Array.isArray(value) && value.every((item) => typeof item === "string")
-  );
+  return Array.isArray(value) && value.every(item => typeof item === 'string');
 }
 
 function isNumberArray(value: unknown): value is number[] {
-  return (
-    Array.isArray(value) && value.every((item) => typeof item === "number")
-  );
+  return Array.isArray(value) && value.every(item => typeof item === 'number');
 }
 
 function readMetadata(record: SyncRecord): Record<string, unknown> {
@@ -115,18 +104,12 @@ function deserializeRawCapture(record: SyncRecord): RawCapture {
     content: record.content,
     createdAt: new Date(record.updatedAt),
     id: record.id,
-    normalizedContent:
-      typeof metadata.normalizedContent === "string"
-        ? metadata.normalizedContent
-        : record.content,
-    sourceId:
-      typeof metadata.sourceId === "string" ? metadata.sourceId : record.id,
+    normalizedContent: typeof metadata.normalizedContent === 'string' ? metadata.normalizedContent : record.content,
+    sourceId: typeof metadata.sourceId === 'string' ? metadata.sourceId : record.id,
     sourceType:
-      metadata.sourceType === "document" ||
-      metadata.sourceType === "conversation" ||
-      metadata.sourceType === "capture"
+      metadata.sourceType === 'document' || metadata.sourceType === 'conversation' || metadata.sourceType === 'capture'
         ? metadata.sourceType
-        : "capture",
+        : 'capture'
   };
 }
 
@@ -136,18 +119,18 @@ function deserializeWikiPage(record: SyncRecord): WikiPage {
   return {
     body: record.content,
     format:
-      metadata.format === "markdown" ||
-      metadata.format === "text" ||
-      metadata.format === "code" ||
-      metadata.format === "json"
+      metadata.format === 'markdown' ||
+      metadata.format === 'text' ||
+      metadata.format === 'code' ||
+      metadata.format === 'json'
         ? metadata.format
-        : "markdown",
+        : 'markdown',
     pageId: record.id,
     tags: isStringArray(metadata.tags) ? [...metadata.tags] : [],
-    title: typeof metadata.title === "string" ? metadata.title : record.id,
+    title: typeof metadata.title === 'string' ? metadata.title : record.id,
     updatedAt: new Date(record.updatedAt),
-    version: typeof metadata.version === "number" ? metadata.version : 1,
-    writerIds: isStringArray(metadata.writerIds) ? [...metadata.writerIds] : [],
+    version: typeof metadata.version === 'number' ? metadata.version : 1,
+    writerIds: isStringArray(metadata.writerIds) ? [...metadata.writerIds] : []
   };
 }
 
@@ -155,25 +138,22 @@ function deserializeVectorEntry(record: SyncRecord): VectorEntry {
   const parsed = JSON.parse(record.content) as unknown;
   const embedding = isNumberArray(parsed) ? parsed : [];
 
-  if (
-    record.vectorFingerprint &&
-    !verifySyncChecksum(embedding, record.vectorFingerprint)
-  ) {
+  if (record.vectorFingerprint && !verifySyncChecksum(embedding, record.vectorFingerprint)) {
     throw new Error(`Vector fingerprint mismatch for ${record.id}`);
   }
 
   return {
     embedding,
-    pageId: record.id,
+    pageId: record.id
   };
 }
 
 function tierRank(tier: MemorySyncTier): number {
-  if (tier === "raw") {
+  if (tier === 'raw') {
     return 0;
   }
 
-  if (tier === "wiki") {
+  if (tier === 'wiki') {
     return 1;
   }
 
@@ -199,31 +179,23 @@ function cloneMemoryState(state: MemoryState): MemoryState {
   return {
     pages: state.pages.map(cloneWikiPage),
     rawCaptures: state.rawCaptures.map(cloneRawCapture),
-    vectors: state.vectors.map(cloneVector),
+    vectors: state.vectors.map(cloneVector)
   };
 }
 
-export function serializeMemoryState(
-  state: MemoryState,
-  cursor = ""
-): SyncSnapshot {
-  const updatedAtByPageId = new Map(
-    state.pages.map((page) => [page.pageId, page.updatedAt.toISOString()])
-  );
+export function serializeMemoryState(state: MemoryState, cursor = ''): SyncSnapshot {
+  const updatedAtByPageId = new Map(state.pages.map(page => [page.pageId, page.updatedAt.toISOString()]));
   const records = sortRecords([
     ...state.rawCaptures.map(serializeRawCapture),
     ...state.pages.map(serializeWikiPage),
-    ...state.vectors.map((vector) =>
-      serializeVectorEntry(
-        vector,
-        updatedAtByPageId.get(vector.pageId) ?? "1970-01-01T00:00:00.000Z"
-      )
-    ),
+    ...state.vectors.map(vector =>
+      serializeVectorEntry(vector, updatedAtByPageId.get(vector.pageId) ?? '1970-01-01T00:00:00.000Z')
+    )
   ]);
 
   return {
     cursor,
-    records,
+    records
   };
 }
 
@@ -233,12 +205,12 @@ export function deserializeMemoryState(snapshot: SyncSnapshot): MemoryState {
   const vectors: VectorEntry[] = [];
 
   for (const record of snapshot.records) {
-    if (record.tier === "raw") {
+    if (record.tier === 'raw') {
       rawCaptures.push(deserializeRawCapture(record));
       continue;
     }
 
-    if (record.tier === "wiki") {
+    if (record.tier === 'wiki') {
       pages.push(deserializeWikiPage(record));
       continue;
     }
@@ -249,13 +221,11 @@ export function deserializeMemoryState(snapshot: SyncSnapshot): MemoryState {
   return {
     pages,
     rawCaptures,
-    vectors,
+    vectors
   };
 }
 
-export function createMemoryStateAdapter(
-  options: MemoryStateAdapterOptions
-): MemoryStateAdapter {
+export function createMemoryStateAdapter(options: MemoryStateAdapterOptions): MemoryStateAdapter {
   return {
     async applySnapshot(snapshot: SyncSnapshot) {
       await options.applyState(deserializeMemoryState(snapshot));
@@ -265,7 +235,7 @@ export function createMemoryStateAdapter(
       const state = cloneMemoryState(await options.getState());
       const cursor = await options.getCursor?.();
 
-      return serializeMemoryState(state, cursor ?? "");
-    },
+      return serializeMemoryState(state, cursor ?? '');
+    }
   };
 }

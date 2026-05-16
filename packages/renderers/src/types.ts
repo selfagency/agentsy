@@ -1,16 +1,12 @@
-import type {
-  LLMStreamProcessor,
-  OutputPart,
-  StreamChunk,
-} from "@agentsy/core/processor";
-import type { XmlToolCall } from "@agentsy/core/tool-calls";
-import type { FinishReason, ToolCallState, UsageInfo } from "@agentsy/types";
+import type { LLMStreamProcessor, OutputPart, StreamChunk } from '@agentsy/core/processor';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { FinishReason, ToolCallState, UsageInfo } from '@agentsy/types';
 
 /**
  * Tool call output part (not rendered, only passed to callbacks).
  */
 export interface ToolCallPart {
-  type: "tool_call";
+  type: 'tool_call';
   call: XmlToolCall;
   state: ToolCallState;
 }
@@ -37,21 +33,13 @@ export interface BaseRendererOptions {
   onToolCall?: OnToolCall;
 
   /** Optional callback fired for each streaming argument delta while a native tool call is assembling. */
-  onToolCallDelta?: (
-    delta: Extract<OutputPart, { type: "tool_call_delta" }>
-  ) => void;
+  onToolCallDelta?: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
 
   /** Optional callback fired when the stream finishes with a finish reason and optional usage info. */
-  onFinish?: (
-    finishReason: FinishReason | undefined,
-    usage: UsageInfo | undefined
-  ) => void | Promise<void>;
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
 
   /** Optional callback fired when the step index changes (e.g., between tool calls in an agent loop). */
-  onStep?: (
-    stepIndex: number,
-    usage: UsageInfo | undefined
-  ) => void | Promise<void>;
+  onStep?: (stepIndex: number, usage: UsageInfo | undefined) => void | Promise<void>;
 }
 
 /**
@@ -60,7 +48,7 @@ export interface BaseRendererOptions {
  * - 'progress': render thinking as a progress indicator
  * - 'suppress': do not render thinking even if showThinking is true
  */
-export type ThinkingStyle = "blockquote" | "progress" | "suppress";
+export type ThinkingStyle = 'blockquote' | 'progress' | 'suppress';
 
 /**
  * Structural interface matching VS Code's CancellationToken.

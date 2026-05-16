@@ -5,12 +5,8 @@
  * Enables STATE_SNAPSHOT and STATE_DELTA events for incremental state updates.
  */
 
-import type {
-  JsonPatchOperation,
-  StateDeltaEvent,
-  StateSnapshotEvent,
-} from "@agentsy/types";
-import { EventType } from "@agentsy/types";
+import type { JsonPatchOperation, StateDeltaEvent, StateSnapshotEvent } from '@agentsy/types';
+import { EventType } from '@agentsy/types';
 
 /**
  * Represents a JSON Patch operation per RFC 6902.
@@ -21,11 +17,8 @@ export type JsonPatchOp = JsonPatchOperation;
  * Detects circular references in an object.
  * @internal
  */
-function hasCircularReference(
-  obj: unknown,
-  visited = new WeakSet<object>()
-): boolean {
-  if (obj === null || typeof obj !== "object") {
+function hasCircularReference(obj: unknown, visited = new WeakSet<object>()): boolean {
+  if (obj === null || typeof obj !== 'object') {
     return false;
   }
 
@@ -51,12 +44,10 @@ function hasCircularReference(
  * @internal
  */
 function validatePathParts(parts: string[]): void {
-  const dangerousKeys = new Set(["__proto__", "constructor", "prototype"]);
+  const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const part of parts) {
     if (dangerousKeys.has(part)) {
-      throw new Error(
-        `Invalid path segment: "${part}" is not allowed (prototype pollution protection)`
-      );
+      throw new Error(`Invalid path segment: "${part}" is not allowed (prototype pollution protection)`);
     }
   }
 }
@@ -67,7 +58,7 @@ function validatePathParts(parts: string[]): void {
  * @internal
  */
 function escapePathSegment(segment: string): string {
-  return segment.replaceAll("~", "~0").replaceAll("/", "~1");
+  return segment.replaceAll('~', '~0').replaceAll('/', '~1');
 }
 
 /**
@@ -76,7 +67,7 @@ function escapePathSegment(segment: string): string {
  * @internal
  */
 function unescapePathSegment(segment: string): string {
-  return segment.replaceAll("~1", "/").replaceAll("~0", "~");
+  return segment.replaceAll('~1', '/').replaceAll('~0', '~');
 }
 
 /**
@@ -94,16 +85,14 @@ export function createStateSnapshotEvent(
   threadId?: string
 ): StateSnapshotEvent {
   if (hasCircularReference(state)) {
-    throw new Error(
-      "State object contains circular references and cannot be serialized"
-    );
+    throw new Error('State object contains circular references and cannot be serialized');
   }
 
   const event: StateSnapshotEvent = {
     runId,
     state: structuredClone(state),
     timestamp: new Date().toISOString(),
-    type: EventType.STATE_SNAPSHOT,
+    type: EventType.STATE_SNAPSHOT
   };
   if (threadId !== undefined) {
     event.threadId = threadId;
@@ -127,7 +116,7 @@ function computeStateDeltaForRemovedAndModified(
   basePathPrefix: string
 ): JsonPatchOp[] {
   const patches: JsonPatchOp[] = [];
-  const dangerousKeys = new Set(["__proto__", "constructor", "prototype"]);
+  const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
 
   for (const key of Object.keys(from)) {
     // Skip dangerous keys to prevent prototype pollution
@@ -136,12 +125,10 @@ function computeStateDeltaForRemovedAndModified(
     }
 
     const escapedKey = escapePathSegment(key);
-    const path = basePathPrefix
-      ? `${basePathPrefix}/${escapedKey}`
-      : `/${escapedKey}`;
+    const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
 
     if (key in to === false) {
-      patches.push({ op: "remove", path });
+      patches.push({ op: 'remove', path });
     } else if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {
       const fromVal = from[key];
       const toVal = to[key];
@@ -150,7 +137,7 @@ function computeStateDeltaForRemovedAndModified(
       if (isPlainObject(fromVal) && isPlainObject(toVal)) {
         patches.push(...computeStateDelta(fromVal, toVal, path));
       } else {
-        patches.push({ op: "replace", path, value: toVal });
+        patches.push({ op: 'replace', path, value: toVal });
       }
     }
   }
@@ -162,7 +149,7 @@ function computeStateDeltaForRemovedAndModified(
  * Check if value is a plain object (not array, not null).
  */
 function isPlainObject(val: unknown): val is Record<string, unknown> {
-  return typeof val === "object" && val !== null && !Array.isArray(val);
+  return typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
 /**
@@ -178,35 +165,27 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
 export function computeStateDelta(
   from: Record<string, unknown>,
   to: Record<string, unknown>,
-  basePathPrefix = ""
+  basePathPrefix = ''
 ): JsonPatchOp[] {
   if (hasCircularReference(from)) {
-    throw new Error(
-      "Previous state contains circular references and cannot be processed"
-    );
+    throw new Error('Previous state contains circular references and cannot be processed');
   }
   if (hasCircularReference(to)) {
-    throw new Error(
-      "New state contains circular references and cannot be processed"
-    );
+    throw new Error('New state contains circular references and cannot be processed');
   }
 
   const patches: JsonPatchOp[] = [];
 
   // Handle removed and modified properties
-  patches.push(
-    ...computeStateDeltaForRemovedAndModified(from, to, basePathPrefix)
-  );
+  patches.push(...computeStateDeltaForRemovedAndModified(from, to, basePathPrefix));
 
   // Handle added properties
-  const dangerousKeys = new Set(["__proto__", "constructor", "prototype"]);
+  const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
     if (key in from === false && dangerousKeys.has(key) === false) {
       const escapedKey = escapePathSegment(key);
-      const path = basePathPrefix
-        ? `${basePathPrefix}/${escapedKey}`
-        : `/${escapedKey}`;
-      patches.push({ op: "add", path, value: to[key] });
+      const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
+      patches.push({ op: 'add', path, value: to[key] });
     }
   }
 
@@ -221,16 +200,12 @@ export function computeStateDelta(
  * @param threadId - Optional thread ID
  * @returns State delta event
  */
-export function createStateDeltaEvent(
-  patches: JsonPatchOp[],
-  runId: string,
-  threadId?: string
-): StateDeltaEvent {
+export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, threadId?: string): StateDeltaEvent {
   const deltaEvent: StateDeltaEvent = {
     delta: patches,
     runId,
     timestamp: new Date().toISOString(),
-    type: EventType.STATE_DELTA,
+    type: EventType.STATE_DELTA
   };
   if (threadId !== undefined) {
     deltaEvent.threadId = threadId;
@@ -242,7 +217,7 @@ function resolvePatchTarget(
   state: Record<string, unknown>,
   parts: string[],
   createMissing: boolean,
-  rootErrorMessage = "Cannot operate on root"
+  rootErrorMessage = 'Cannot operate on root'
 ): { target: Record<string, unknown>; key: string } {
   if (parts.length === 0) {
     throw new Error(rootErrorMessage);
@@ -250,7 +225,7 @@ function resolvePatchTarget(
 
   const key = parts.at(-1);
   if (key === undefined) {
-    throw new Error("Invalid path");
+    throw new Error('Invalid path');
   }
 
   let target: Record<string, unknown> = state;
@@ -271,51 +246,30 @@ function setPatchValue(
   createMissing: boolean,
   rootErrorMessage: string
 ): void {
-  const { target, key } = resolvePatchTarget(
-    state,
-    parts,
-    createMissing,
-    rootErrorMessage
-  );
+  const { target, key } = resolvePatchTarget(state, parts, createMissing, rootErrorMessage);
   target[key] = patch.value;
 }
 
 /**
  * Apply an add operation to a state object.
  */
-function applyAddPatch(
-  state: Record<string, unknown>,
-  parts: string[],
-  patch: JsonPatchOp
-): void {
-  setPatchValue(state, parts, patch, true, "Cannot add to root");
+function applyAddPatch(state: Record<string, unknown>, parts: string[], patch: JsonPatchOp): void {
+  setPatchValue(state, parts, patch, true, 'Cannot add to root');
 }
 
 /**
  * Apply a remove operation to a state object.
  */
-function applyRemovePatch(
-  state: Record<string, unknown>,
-  parts: string[]
-): void {
-  const { target, key } = resolvePatchTarget(
-    state,
-    parts,
-    false,
-    "Cannot remove root"
-  );
+function applyRemovePatch(state: Record<string, unknown>, parts: string[]): void {
+  const { target, key } = resolvePatchTarget(state, parts, false, 'Cannot remove root');
   delete target[key];
 }
 
 /**
  * Apply a replace operation to a state object.
  */
-function applyReplacePatch(
-  state: Record<string, unknown>,
-  parts: string[],
-  patch: JsonPatchOp
-): void {
-  setPatchValue(state, parts, patch, false, "Cannot replace root");
+function applyReplacePatch(state: Record<string, unknown>, parts: string[], patch: JsonPatchOp): void {
+  setPatchValue(state, parts, patch, false, 'Cannot replace root');
 }
 
 /**
@@ -326,31 +280,25 @@ function applyReplacePatch(
  * @param patches - JSON Patch operations to apply
  * @throws Error if patch operations are invalid or contain dangerous keys
  */
-export function applyJsonPatches(
-  state: Record<string, unknown>,
-  patches: JsonPatchOp[]
-): void {
+export function applyJsonPatches(state: Record<string, unknown>, patches: JsonPatchOp[]): void {
   for (const patch of patches) {
-    const parts = patch.path
-      .split("/")
-      .filter(Boolean)
-      .map(unescapePathSegment);
+    const parts = patch.path.split('/').filter(Boolean).map(unescapePathSegment);
 
     // Validate path to prevent prototype pollution
     validatePathParts(parts);
 
     switch (patch.op) {
-      case "add": {
+      case 'add': {
         applyAddPatch(state, parts, patch);
         break;
       }
 
-      case "remove": {
+      case 'remove': {
         applyRemovePatch(state, parts);
         break;
       }
 
-      case "replace": {
+      case 'replace': {
         applyReplacePatch(state, parts, patch);
         break;
       }
@@ -370,9 +318,7 @@ export class StateManager {
 
   constructor(initialState: Record<string, unknown> = {}) {
     if (hasCircularReference(initialState)) {
-      throw new Error(
-        "Initial state contains circular references and cannot be processed"
-      );
+      throw new Error('Initial state contains circular references and cannot be processed');
     }
     this.currentState = initialState ? structuredClone(initialState) : {};
   }
@@ -394,11 +340,7 @@ export class StateManager {
   /**
    * Updates state with a new object and returns a delta event.
    */
-  updateState(
-    newState: Record<string, unknown>,
-    runId: string,
-    threadId?: string
-  ): StateDeltaEvent | undefined {
+  updateState(newState: Record<string, unknown>, runId: string, threadId?: string): StateDeltaEvent | undefined {
     const patches = computeStateDelta(this.currentState, newState);
     this.currentState = structuredClone(newState);
 
@@ -417,11 +359,7 @@ export class StateManager {
    * @param threadId - Optional thread ID
    * @returns State delta event
    */
-  applyPatches(
-    patches: JsonPatchOp[],
-    runId: string,
-    threadId?: string
-  ): StateDeltaEvent {
+  applyPatches(patches: JsonPatchOp[], runId: string, threadId?: string): StateDeltaEvent {
     applyJsonPatches(this.currentState, patches);
     return createStateDeltaEvent(patches, runId, threadId);
   }
@@ -432,9 +370,7 @@ export class StateManager {
    */
   reset(initialState: Record<string, unknown> = {}): void {
     if (hasCircularReference(initialState)) {
-      throw new Error(
-        "Initial state contains circular references and cannot be processed"
-      );
+      throw new Error('Initial state contains circular references and cannot be processed');
     }
     this.currentState = structuredClone(initialState);
   }

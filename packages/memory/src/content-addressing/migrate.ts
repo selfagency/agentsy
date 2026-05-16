@@ -1,5 +1,5 @@
-import type { DedupStore } from "./dedup-store.js";
-import { fingerprintContent } from "./fingerprint.js";
+import type { DedupStore } from './dedup-store.js';
+import { fingerprintContent } from './fingerprint.js';
 
 export interface MigrateStats {
   readonly total: number;
@@ -11,10 +11,7 @@ export interface MigrateStats {
  * Migrates a collection of raw content strings into a dedup store.
  * Returns stats indicating how many were duplicate.
  */
-export function migrateContentToDedupStore(
-  contents: readonly string[],
-  store: DedupStore
-): MigrateStats {
+export function migrateContentToDedupStore(contents: readonly string[], store: DedupStore): MigrateStats {
   const seen = new Map<string, number>();
   let deduped = 0;
 
@@ -31,6 +28,6 @@ export function migrateContentToDedupStore(
   return {
     deduped,
     total: contents.length,
-    unique: store.size(),
+    unique: store.size()
   };
 }

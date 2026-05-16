@@ -1,35 +1,27 @@
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import type { FinishReason, JsonObject } from "@agentsy/types";
-import { describe, expect, it, vi } from "vitest";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { FinishReason, JsonObject } from '@agentsy/types';
+import { describe, expect, it, vi } from 'vitest';
 
-import { applyConversationEvent } from "./eventSourcing.js";
-import { createConversationStoreFromProcessor } from "./processorBridge.js";
-import { createConversationStore } from "./store.js";
-import type { ConversationEvent, UIConversation } from "./types.js";
+import { applyConversationEvent } from './eventSourcing.js';
+import { createConversationStoreFromProcessor } from './processorBridge.js';
+import { createConversationStore } from './store.js';
+import type { ConversationEvent, UIConversation } from './types.js';
 
 // Helper functions for ConversationStore tests
 function startMessage(
   store: ReturnType<typeof createConversationStore>,
-  role: "user" | "assistant",
+  role: 'user' | 'assistant',
   messageId: string
 ): void {
-  store.dispatch({ messageId, role, type: "message_started" });
+  store.dispatch({ messageId, role, type: 'message_started' });
 }
 
-function addTextPart(
-  store: ReturnType<typeof createConversationStore>,
-  messageId: string,
-  text: string
-): void {
-  store.dispatch({ messageId, text, type: "text_part_added" });
+function addTextPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
+  store.dispatch({ messageId, text, type: 'text_part_added' });
 }
 
-function addThinkingPart(
-  store: ReturnType<typeof createConversationStore>,
-  messageId: string,
-  text: string
-): void {
-  store.dispatch({ messageId, text, type: "thinking_part_added" });
+function addThinkingPart(store: ReturnType<typeof createConversationStore>, messageId: string, text: string): void {
+  store.dispatch({ messageId, text, type: 'thinking_part_added' });
 }
 
 function addToolCallPart(
@@ -37,7 +29,7 @@ function addToolCallPart(
   messageId: string,
   toolCall: { id: string; name: string; parameters: JsonObject }
 ): void {
-  store.dispatch({ messageId, toolCall, type: "tool_call_part_added" });
+  store.dispatch({ messageId, toolCall, type: 'tool_call_part_added' });
 }
 
 function finishMessage(
@@ -50,241 +42,237 @@ function finishMessage(
     store.dispatch({
       finishReason,
       messageId,
-      type: "message_finished",
-      usage,
+      type: 'message_finished',
+      usage
     });
   } else if (finishReason) {
-    store.dispatch({ finishReason, messageId, type: "message_finished" });
+    store.dispatch({ finishReason, messageId, type: 'message_finished' });
   } else {
-    store.dispatch({ messageId, type: "message_finished" });
+    store.dispatch({ messageId, type: 'message_finished' });
   }
 }
 
-describe("UI Event Sourcing", () => {
+describe('UI Event Sourcing', () => {
   describe(applyConversationEvent, () => {
     const initialState: UIConversation = {
-      id: "conv-1",
-      lastEventAt: new Date("2025-01-01"),
+      id: 'conv-1',
+      lastEventAt: new Date('2025-01-01'),
       messages: [],
       metadata: undefined,
-      status: "idle",
+      status: 'idle',
       stepIndex: 0,
       totalTokens: 0,
-      totalUsage: {},
+      totalUsage: {}
     };
 
-    it("should add a new message on message_started event", () => {
+    it('should add a new message on message_started event', () => {
       const event: ConversationEvent = {
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       };
 
       const newState = applyConversationEvent(initialState, event);
 
       expect(newState.messages).toHaveLength(1);
-      expect(newState.messages[0]?.id).toBe("msg-1");
-      expect(newState.messages[0]?.role).toBe("user");
+      expect(newState.messages[0]?.id).toBe('msg-1');
+      expect(newState.messages[0]?.role).toBe('user');
       expect(newState.messages[0]?.parts).toHaveLength(0);
     });
 
-    it("should add text part to message on text_part_added event", () => {
+    it('should add text part to message on text_part_added event', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        text: "Hello, world!",
-        type: "text_part_added",
+        messageId: 'msg-1',
+        text: 'Hello, world!',
+        type: 'text_part_added'
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
-      expect(state.messages[0]?.parts?.[0]?.type).toBe("text");
-      expect(
-        state.messages[0]?.parts?.[0]?.type === "text" &&
-          state.messages[0]?.parts[0]?.text
-      ).toBe("Hello, world!");
+      expect(state.messages[0]?.parts?.[0]?.type).toBe('text');
+      expect(state.messages[0]?.parts?.[0]?.type === 'text' && state.messages[0]?.parts[0]?.text).toBe('Hello, world!');
     });
 
-    it("should add thinking part to message on thinking_part_added event", () => {
+    it('should add thinking part to message on thinking_part_added event', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        text: "Let me think about this...",
-        type: "thinking_part_added",
+        messageId: 'msg-1',
+        text: 'Let me think about this...',
+        type: 'thinking_part_added'
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
-      expect(state.messages[0]?.parts?.[0]?.type).toBe("thinking");
-      expect(
-        state.messages[0]?.parts?.[0]?.type === "thinking" &&
-          state.messages[0]?.parts[0]?.text
-      ).toBe("Let me think about this...");
+      expect(state.messages[0]?.parts?.[0]?.type).toBe('thinking');
+      expect(state.messages[0]?.parts?.[0]?.type === 'thinking' && state.messages[0]?.parts[0]?.text).toBe(
+        'Let me think about this...'
+      );
     });
 
-    it("should add tool call part to message on tool_call_part_added event", () => {
+    it('should add tool call part to message on tool_call_part_added event', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
+        messageId: 'msg-1',
         toolCall: {
-          id: "call-1",
-          name: "search",
-          parameters: { query: "TypeScript best practices" },
+          id: 'call-1',
+          name: 'search',
+          parameters: { query: 'TypeScript best practices' }
         },
-        type: "tool_call_part_added",
+        type: 'tool_call_part_added'
       });
 
       expect(state.messages[0]?.parts).toHaveLength(1);
       const part = state.messages[0]?.parts?.[0];
 
       // Type guard to narrow type
-      if (part?.type !== "tool_call") {
-        throw new Error("Expected tool_call part");
+      if (part?.type !== 'tool_call') {
+        throw new Error('Expected tool_call part');
       }
 
-      expect(part.name).toBe("search");
+      expect(part.name).toBe('search');
       expect(part.parameters).toStrictEqual({
-        query: "TypeScript best practices",
+        query: 'TypeScript best practices'
       });
-      expect(part.state).toBe("input-complete");
+      expect(part.state).toBe('input-complete');
     });
 
-    it("should update tool call state and argument text incrementally", () => {
+    it('should update tool call state and argument text incrementally', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
+        messageId: 'msg-1',
         toolCall: {
-          id: "call-1",
-          name: "search",
+          id: 'call-1',
+          name: 'search',
           parameters: {},
-          state: "awaiting-input",
+          state: 'awaiting-input'
         },
-        type: "tool_call_part_added",
+        type: 'tool_call_part_added'
       });
 
       state = applyConversationEvent(state, {
         argumentsTextDelta: '{"q":',
-        messageId: "msg-1",
-        state: "input-streaming",
-        toolCallId: "call-1",
-        type: "tool_call_updated",
+        messageId: 'msg-1',
+        state: 'input-streaming',
+        toolCallId: 'call-1',
+        type: 'tool_call_updated'
       });
 
       const part = state.messages[0]?.parts?.[0];
-      if (part?.type !== "tool_call") {
-        throw new Error("Expected tool_call part");
+      if (part?.type !== 'tool_call') {
+        throw new Error('Expected tool_call part');
       }
 
-      expect(part.state).toBe("input-streaming");
+      expect(part.state).toBe('input-streaming');
       expect(part.argumentsText).toBe('{"q":');
     });
 
-    it("should store tool call results and move state to output-available", () => {
+    it('should store tool call results and move state to output-available', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
+        messageId: 'msg-1',
         toolCall: {
-          id: "call-1",
-          name: "search",
-          parameters: { q: "ts" },
+          id: 'call-1',
+          name: 'search',
+          parameters: { q: 'ts' }
         },
-        type: "tool_call_part_added",
+        type: 'tool_call_part_added'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
+        messageId: 'msg-1',
         result: { ok: true },
-        toolCallId: "call-1",
-        type: "tool_call_result_added",
+        toolCallId: 'call-1',
+        type: 'tool_call_result_added'
       });
 
       const part = state.messages[0]?.parts?.[0];
-      if (part?.type !== "tool_call") {
-        throw new Error("Expected tool_call part");
+      if (part?.type !== 'tool_call') {
+        throw new Error('Expected tool_call part');
       }
 
-      expect(part.state).toBe("output-available");
+      expect(part.state).toBe('output-available');
       expect(part.result).toStrictEqual({ ok: true });
     });
 
-    it("should set finishReason and usage on message_finished event", () => {
+    it('should set finishReason and usage on message_finished event', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        finishReason: "stop",
-        messageId: "msg-1",
-        type: "message_finished",
-        usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+        finishReason: 'stop',
+        messageId: 'msg-1',
+        type: 'message_finished',
+        usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 }
       });
 
-      expect(state.messages[0]?.finishReason).toBe("stop");
+      expect(state.messages[0]?.finishReason).toBe('stop');
       expect(state.messages[0]?.usage).toStrictEqual({
         inputTokens: 10,
         outputTokens: 20,
-        totalTokens: 30,
+        totalTokens: 30
       });
       expect(state.totalTokens).toBe(30);
     });
 
-    it("should accumulate totalTokens across multiple messages", () => {
+    it('should accumulate totalTokens across multiple messages', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        type: "message_finished",
-        usage: { totalTokens: 30 },
+        messageId: 'msg-1',
+        type: 'message_finished',
+        usage: { totalTokens: 30 }
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-2",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-2',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-2",
-        type: "message_finished",
-        usage: { totalTokens: 20 },
+        messageId: 'msg-2',
+        type: 'message_finished',
+        usage: { totalTokens: 20 }
       });
 
       expect(state.totalTokens).toBe(50);
     });
 
-    it("should update stepIndex on step_updated event", () => {
+    it('should update stepIndex on step_updated event', () => {
       const event: ConversationEvent = {
         stepIndex: 3,
-        type: "step_updated",
+        type: 'step_updated'
       };
 
       const newState = applyConversationEvent(initialState, event);
@@ -292,52 +280,52 @@ describe("UI Event Sourcing", () => {
       expect(newState.stepIndex).toBe(3);
     });
 
-    it("should track status and total usage across step and message lifecycle", () => {
+    it('should track status and total usage across step and message lifecycle', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
+        messageId: 'msg-1',
         stepIndex: 1,
-        type: "step_started",
-        usage: { inputTokens: 3 },
+        type: 'step_started',
+        usage: { inputTokens: 3 }
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        type: "message_finished",
-        usage: { inputTokens: 3, outputTokens: 7, totalTokens: 10 },
+        messageId: 'msg-1',
+        type: 'message_finished',
+        usage: { inputTokens: 3, outputTokens: 7, totalTokens: 10 }
       });
 
-      expect(state.status).toBe("idle");
+      expect(state.status).toBe('idle');
       expect(state.totalUsage).toStrictEqual({
         inputTokens: 3,
         outputTokens: 7,
-        totalTokens: 10,
+        totalTokens: 10
       });
       expect(state.totalTokens).toBe(10);
     });
 
-    it("should reset conversation on conversation_reset event", () => {
+    it('should reset conversation on conversation_reset event', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        text: "Hello",
-        type: "text_part_added",
+        messageId: 'msg-1',
+        text: 'Hello',
+        type: 'text_part_added'
       });
 
       expect(state.messages).toHaveLength(1);
 
       state = applyConversationEvent(state, {
-        type: "conversation_reset",
+        type: 'conversation_reset'
       });
 
       expect(state.messages).toHaveLength(0);
@@ -345,111 +333,111 @@ describe("UI Event Sourcing", () => {
       expect(state.totalTokens).toBe(0);
     });
 
-    it("should never mutate original state", () => {
+    it('should never mutate original state', () => {
       const originalState = JSON.stringify(initialState);
 
       applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       expect(JSON.stringify(initialState)).toBe(originalState);
     });
 
-    it("should build complex multi-part message", () => {
+    it('should build complex multi-part message', () => {
       let state = applyConversationEvent(initialState, {
-        messageId: "msg-1",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        text: "Processing request...",
-        type: "thinking_part_added",
+        messageId: 'msg-1',
+        text: 'Processing request...',
+        type: 'thinking_part_added'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
-        text: "I found something relevant.",
-        type: "text_part_added",
+        messageId: 'msg-1',
+        text: 'I found something relevant.',
+        type: 'text_part_added'
       });
 
       state = applyConversationEvent(state, {
-        messageId: "msg-1",
+        messageId: 'msg-1',
         toolCall: {
-          id: "call-1",
-          name: "verify",
-          parameters: { data: "test" },
+          id: 'call-1',
+          name: 'verify',
+          parameters: { data: 'test' }
         },
-        type: "tool_call_part_added",
+        type: 'tool_call_part_added'
       });
 
       state = applyConversationEvent(state, {
-        finishReason: "tool-calls",
-        messageId: "msg-1",
-        type: "message_finished",
-        usage: { totalTokens: 100 },
+        finishReason: 'tool-calls',
+        messageId: 'msg-1',
+        type: 'message_finished',
+        usage: { totalTokens: 100 }
       });
 
       expect(state.messages[0]?.parts).toHaveLength(3);
-      expect(state.messages[0]?.finishReason).toBe("tool-calls");
+      expect(state.messages[0]?.finishReason).toBe('tool-calls');
       expect(state.totalTokens).toBe(100);
     });
   });
 
-  describe("ConversationStore", () => {
-    it("should initialize with empty state", () => {
-      const store = createConversationStore("conv-1");
+  describe('ConversationStore', () => {
+    it('should initialize with empty state', () => {
+      const store = createConversationStore('conv-1');
       const state = store.getState();
 
-      expect(state.id).toBe("conv-1");
+      expect(state.id).toBe('conv-1');
       expect(state.messages).toHaveLength(0);
       expect(state.stepIndex).toBe(0);
       expect(state.totalTokens).toBe(0);
     });
 
-    it("should dispatch events and update state", () => {
-      const store = createConversationStore("conv-1");
+    it('should dispatch events and update state', () => {
+      const store = createConversationStore('conv-1');
 
       store.dispatch({
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       const state = store.getState();
       expect(state.messages).toHaveLength(1);
-      expect(state.messages[0]?.id).toBe("msg-1");
+      expect(state.messages[0]?.id).toBe('msg-1');
     });
 
-    it("should notify listeners on dispatch", () => {
-      const store = createConversationStore("conv-1");
+    it('should notify listeners on dispatch', () => {
+      const store = createConversationStore('conv-1');
       const listener = vi.fn();
 
       store.subscribe(listener);
 
       store.dispatch({
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       expect(listener).toHaveBeenCalledOnce();
       expect(listener.mock.calls[0]?.[0]?.messages).toHaveLength(1);
     });
 
-    it("should unsubscribe listener", () => {
-      const store = createConversationStore("conv-1");
+    it('should unsubscribe listener', () => {
+      const store = createConversationStore('conv-1');
       const listener = vi.fn();
 
       const unsubscribe = store.subscribe(listener);
 
       store.dispatch({
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       expect(listener).toHaveBeenCalledOnce();
@@ -457,27 +445,27 @@ describe("UI Event Sourcing", () => {
       unsubscribe();
 
       store.dispatch({
-        messageId: "msg-2",
-        role: "assistant",
-        type: "message_started",
+        messageId: 'msg-2',
+        role: 'assistant',
+        type: 'message_started'
       });
 
       expect(listener).toHaveBeenCalledOnce(); // Still only 1 call
     });
 
-    it("should track event log for audit trail", () => {
-      const store = createConversationStore("conv-1");
+    it('should track event log for audit trail', () => {
+      const store = createConversationStore('conv-1');
 
       const event1: ConversationEvent = {
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       };
 
       const event2: ConversationEvent = {
-        messageId: "msg-1",
-        text: "Hello",
-        type: "text_part_added",
+        messageId: 'msg-1',
+        text: 'Hello',
+        type: 'text_part_added'
       };
 
       store.dispatch(event1);
@@ -489,13 +477,13 @@ describe("UI Event Sourcing", () => {
       expect(eventLog[1]).toStrictEqual(event2);
     });
 
-    it("should return shallow copy of state to prevent mutations", () => {
-      const store = createConversationStore("conv-1");
+    it('should return shallow copy of state to prevent mutations', () => {
+      const store = createConversationStore('conv-1');
 
       store.dispatch({
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       const state1 = store.getState();
@@ -509,8 +497,8 @@ describe("UI Event Sourcing", () => {
       expect(state1).toStrictEqual(state2);
     });
 
-    it("should support multiple subscribers", () => {
-      const store = createConversationStore("conv-1");
+    it('should support multiple subscribers', () => {
+      const store = createConversationStore('conv-1');
       const listener1 = vi.fn();
       const listener2 = vi.fn();
 
@@ -518,84 +506,74 @@ describe("UI Event Sourcing", () => {
       store.subscribe(listener2);
 
       store.dispatch({
-        messageId: "msg-1",
-        role: "user",
-        type: "message_started",
+        messageId: 'msg-1',
+        role: 'user',
+        type: 'message_started'
       });
 
       expect(listener1).toHaveBeenCalledOnce();
       expect(listener2).toHaveBeenCalledOnce();
     });
 
-    it("should handle complex conversation flow", () => {
-      const store = createConversationStore("conv-1");
+    it('should handle complex conversation flow', () => {
+      const store = createConversationStore('conv-1');
 
       // User message
-      startMessage(store, "user", "msg-1");
-      addTextPart(store, "msg-1", "What is TypeScript?");
-      finishMessage(store, "msg-1");
+      startMessage(store, 'user', 'msg-1');
+      addTextPart(store, 'msg-1', 'What is TypeScript?');
+      finishMessage(store, 'msg-1');
 
       // Assistant message with thinking, text, and tool call
-      startMessage(store, "assistant", "msg-2");
-      addThinkingPart(store, "msg-2", "The user is asking about TypeScript...");
-      addTextPart(
-        store,
-        "msg-2",
-        "TypeScript is a typed superset of JavaScript."
-      );
-      addToolCallPart(store, "msg-2", {
-        id: "call-1",
-        name: "search_docs",
-        parameters: { query: "TypeScript documentation" },
+      startMessage(store, 'assistant', 'msg-2');
+      addThinkingPart(store, 'msg-2', 'The user is asking about TypeScript...');
+      addTextPart(store, 'msg-2', 'TypeScript is a typed superset of JavaScript.');
+      addToolCallPart(store, 'msg-2', {
+        id: 'call-1',
+        name: 'search_docs',
+        parameters: { query: 'TypeScript documentation' }
       });
-      finishMessage(store, "msg-2", "tool-calls", {
+      finishMessage(store, 'msg-2', 'tool-calls', {
         inputTokens: 20,
         outputTokens: 50,
-        totalTokens: 70,
+        totalTokens: 70
       });
 
       const state = store.getState();
       expect(state.messages).toHaveLength(2);
       expect(state.messages[1]?.parts).toHaveLength(3); // thinking, text, tool_call
       expect(state.totalTokens).toBe(70);
-      expect(state.messages[1]?.finishReason).toBe("tool-calls");
+      expect(state.messages[1]?.finishReason).toBe('tool-calls');
     });
 
-    it("should bridge processor conversation events into the store automatically", () => {
+    it('should bridge processor conversation events into the store automatically', () => {
       const processor = new LLMStreamProcessor({
         accumulateNativeToolCalls: true,
-        scrubContextTags: false,
+        scrubContextTags: false
       });
       const bridge = createConversationStoreFromProcessor(processor, {
-        conversationId: "conv-processor",
+        conversationId: 'conv-processor'
       });
 
-      processor.process({ stepIndex: 0, thinking: "plan" });
-      processor.process({ content: "hello" });
+      processor.process({ stepIndex: 0, thinking: 'plan' });
+      processor.process({ content: 'hello' });
       processor.process({
-        nativeToolCallDeltas: [{ id: "call_1", index: 0, name: "lookup" }],
+        nativeToolCallDeltas: [{ id: 'call_1', index: 0, name: 'lookup' }]
       });
       processor.process({
-        nativeToolCallDeltas: [{ argumentsDelta: '{"q":"ts"}', index: 0 }],
+        nativeToolCallDeltas: [{ argumentsDelta: '{"q":"ts"}', index: 0 }]
       });
       processor.process({
         done: true,
-        finishReason: "tool-calls",
-        usage: { totalTokens: 12 },
+        finishReason: 'tool-calls',
+        usage: { totalTokens: 12 }
       });
 
       const state = bridge.store.getState();
       expect(state.messages).toHaveLength(1);
-      expect(
-        state.messages[0]?.parts.some((part) => part.type === "thinking")
-      ).toBeTruthy();
-      expect(
-        state.messages[0]?.parts.some((part) => part.type === "text")
-      ).toBeTruthy();
-      expect(
-        state.messages[0]?.parts.some((part) => part.type === "tool_call")
-      ).toBeTruthy();
-      expect(state.messages[0]?.finishReason).toBe("tool-calls");
+      expect(state.messages[0]?.parts.some(part => part.type === 'thinking')).toBeTruthy();
+      expect(state.messages[0]?.parts.some(part => part.type === 'text')).toBeTruthy();
+      expect(state.messages[0]?.parts.some(part => part.type === 'tool_call')).toBeTruthy();
+      expect(state.messages[0]?.finishReason).toBe('tool-calls');
       expect(state.totalTokens).toBe(12);
 
       bridge.dispose();

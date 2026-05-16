@@ -1,84 +1,80 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { AgentRegistry } from "../agents/registry.js";
-import type { AgentCapabilities, WorkflowSpec } from "../types/index.js";
-import { NodeType, WorkflowStatus } from "../types/index.js";
-import { OrchestrationEngine } from "./engine.js";
-import type { TaskScheduler } from "./engine.js";
+import { AgentRegistry } from '../agents/registry.js';
+import type { AgentCapabilities, WorkflowSpec } from '../types/index.js';
+import { NodeType, WorkflowStatus } from '../types/index.js';
+import { OrchestrationEngine } from './engine.js';
+import type { TaskScheduler } from './engine.js';
 
-function createAgent(
-  overrides: Partial<AgentCapabilities> = {}
-): AgentCapabilities {
+function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilities {
   return {
     available: overrides.available ?? true,
     costPerTask: overrides.costPerTask ?? 0.1,
-    id: overrides.id ?? "agent-1",
-    lastSeen: overrides.lastSeen ?? new Date("2026-01-01T00:00:00.000Z"),
+    id: overrides.id ?? 'agent-1',
+    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z'),
     maxConcurrency: overrides.maxConcurrency ?? 1,
-    name: overrides.name ?? "Agent 1",
+    name: overrides.name ?? 'Agent 1',
     skills: overrides.skills ?? [
       {
-        capabilities: ["execute"],
-        category: "general",
-        id: "skill-1",
-        name: "general",
-        proficiency: "advanced",
-      },
-    ],
+        capabilities: ['execute'],
+        category: 'general',
+        id: 'skill-1',
+        name: 'general',
+        proficiency: 'advanced'
+      }
+    ]
   };
 }
 
 function createBaseSpec(overrides: Partial<WorkflowSpec>): WorkflowSpec {
   return {
-    description: overrides.description ?? "test workflow",
+    description: overrides.description ?? 'test workflow',
     events: overrides.events ?? {
       filters: [],
       handlers: [],
-      triggers: [],
+      triggers: []
     },
-    id: overrides.id ?? "wf-1",
-    name: overrides.name ?? "Workflow 1",
+    id: overrides.id ?? 'wf-1',
+    name: overrides.name ?? 'Workflow 1',
     nodes: overrides.nodes ?? [],
     requirements: overrides.requirements ?? {
       constraints: [],
       dependencies: [],
       resources: [],
-      skills: [],
+      skills: []
     },
     timing: overrides.timing ?? {
       priorities: {},
       retries: 0,
-      scheduling: "immediate",
-      timeout: 10_000,
+      scheduling: 'immediate',
+      timeout: 10_000
     },
-    version: overrides.version ?? "1.0.0",
+    version: overrides.version ?? '1.0.0'
   };
 }
 
 function createScheduler(agentId: string): TaskScheduler {
   return {
-    async schedule<T>(
-      task: (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] }
-    ) {
-      if (typeof task === "function") {
+    async schedule<T>(task: (() => Promise<T>) | { taskInfo: unknown; agents: unknown[] }) {
+      if (typeof task === 'function') {
         return task();
       }
 
       return {
         agentId,
         assigned: true as const,
-        status: "scheduled" as const,
+        status: 'scheduled' as const
       };
-    },
+    }
   };
 }
 
 describe(OrchestrationEngine, () => {
-  it("uses the engine registry/scheduler when execute options are not provided", async () => {
+  it('uses the engine registry/scheduler when execute options are not provided', async () => {
     const registry = new AgentRegistry();
-    registry.register(createAgent({ id: "agent-available" }));
+    registry.register(createAgent({ id: 'agent-available' }));
 
-    const scheduler = createScheduler("agent-available");
+    const scheduler = createScheduler('agent-available');
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
@@ -86,14 +82,14 @@ describe(OrchestrationEngine, () => {
       createBaseSpec({
         nodes: [
           {
-            agent: "agent-available",
-            id: "task-1",
+            agent: 'agent-available',
+            id: 'task-1',
             input: {},
-            name: "Task 1",
+            name: 'Task 1',
             output: {},
-            type: NodeType.TASK,
-          },
-        ],
+            type: NodeType.TASK
+          }
+        ]
       })
     );
 
@@ -101,29 +97,29 @@ describe(OrchestrationEngine, () => {
 
     expect(result.status).toBe(WorkflowStatus.COMPLETED);
     expect(result.results).toStrictEqual({
-      result: "Task task-1 executed by agent agent-available",
+      result: 'Task task-1 executed by agent agent-available'
     });
   });
 
-  it("creates workflows with the default scheduler when one is not provided", async () => {
+  it('creates workflows with the default scheduler when one is not provided', async () => {
     const registry = new AgentRegistry();
-    registry.register(createAgent({ id: "agent-default" }));
+    registry.register(createAgent({ id: 'agent-default' }));
 
     const engine = new OrchestrationEngine(registry);
 
     const workflow = await engine.create(
       createBaseSpec({
-        id: "wf-default-scheduler",
+        id: 'wf-default-scheduler',
         nodes: [
           {
-            agent: "agent-default",
-            id: "task-default",
+            agent: 'agent-default',
+            id: 'task-default',
             input: {},
-            name: "Task default",
+            name: 'Task default',
             output: {},
-            type: NodeType.TASK,
-          },
-        ],
+            type: NodeType.TASK
+          }
+        ]
       })
     );
 
@@ -131,59 +127,59 @@ describe(OrchestrationEngine, () => {
 
     expect(result.status).toBe(WorkflowStatus.COMPLETED);
     expect(result.results).toStrictEqual({
-      result: "Task task-default executed by agent agent-default",
+      result: 'Task task-default executed by agent agent-default'
     });
   });
 
-  it("executes parallel and merge nodes inside a sequence", async () => {
+  it('executes parallel and merge nodes inside a sequence', async () => {
     const registry = new AgentRegistry();
-    registry.register(createAgent({ id: "agent-seq" }));
+    registry.register(createAgent({ id: 'agent-seq' }));
 
-    const scheduler = createScheduler("agent-seq");
+    const scheduler = createScheduler('agent-seq');
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
     const workflow = await engine.create(
       createBaseSpec({
-        id: "wf-sequence",
+        id: 'wf-sequence',
         nodes: [
           {
-            id: "sequence-1",
-            name: "Sequence 1",
-            steps: ["parallel-1", "merge-1"],
-            type: NodeType.SEQUENCE,
+            id: 'sequence-1',
+            name: 'Sequence 1',
+            steps: ['parallel-1', 'merge-1'],
+            type: NodeType.SEQUENCE
           },
           {
-            branches: ["task-a", "task-b"],
+            branches: ['task-a', 'task-b'],
             failFast: true,
-            id: "parallel-1",
-            name: "Parallel 1",
-            type: NodeType.PARALLEL,
+            id: 'parallel-1',
+            name: 'Parallel 1',
+            type: NodeType.PARALLEL
           },
           {
-            agent: "agent-seq",
-            id: "task-a",
+            agent: 'agent-seq',
+            id: 'task-a',
             input: {},
-            name: "Task A",
+            name: 'Task A',
             output: {},
-            type: NodeType.TASK,
+            type: NodeType.TASK
           },
           {
-            agent: "agent-seq",
-            id: "task-b",
+            agent: 'agent-seq',
+            id: 'task-b',
             input: {},
-            name: "Task B",
+            name: 'Task B',
             output: {},
-            type: NodeType.TASK,
+            type: NodeType.TASK
           },
           {
-            id: "merge-1",
-            inputs: ["task-a", "task-b"],
-            name: "Merge 1",
-            strategy: "all",
-            type: NodeType.MERGE,
-          },
-        ],
+            id: 'merge-1',
+            inputs: ['task-a', 'task-b'],
+            name: 'Merge 1',
+            strategy: 'all',
+            type: NodeType.MERGE
+          }
+        ]
       })
     );
 
@@ -193,7 +189,7 @@ describe(OrchestrationEngine, () => {
     expect(result.status).toBe(WorkflowStatus.COMPLETED);
     expect(Array.isArray(sequenceCandidate)).toBeTruthy();
     if (!Array.isArray(sequenceCandidate)) {
-      throw new TypeError("Expected sequence result to be an array");
+      throw new TypeError('Expected sequence result to be an array');
     }
 
     const sequenceResult = sequenceCandidate;
@@ -201,47 +197,47 @@ describe(OrchestrationEngine, () => {
 
     const mergeResult = sequenceResult[1] as { result: string }[];
     expect(mergeResult).toHaveLength(2);
-    expect(mergeResult[0]?.result).toContain("task-a");
-    expect(mergeResult[1]?.result).toContain("task-b");
+    expect(mergeResult[0]?.result).toContain('task-a');
+    expect(mergeResult[1]?.result).toContain('task-b');
   });
 
-  it("executes decision nodes and follows the true branch", async () => {
+  it('executes decision nodes and follows the true branch', async () => {
     const registry = new AgentRegistry();
-    registry.register(createAgent({ id: "agent-decision" }));
+    registry.register(createAgent({ id: 'agent-decision' }));
 
-    const scheduler = createScheduler("agent-decision");
+    const scheduler = createScheduler('agent-decision');
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
     const workflow = await engine.create(
       createBaseSpec({
-        id: "wf-decision",
+        id: 'wf-decision',
         nodes: [
           {
-            condition: "true",
-            falseBranch: ["task-false"],
-            id: "decision-1",
-            name: "Decision 1",
-            trueBranch: ["task-true"],
-            type: NodeType.DECISION,
+            condition: 'true',
+            falseBranch: ['task-false'],
+            id: 'decision-1',
+            name: 'Decision 1',
+            trueBranch: ['task-true'],
+            type: NodeType.DECISION
           },
           {
-            agent: "agent-decision",
-            id: "task-true",
+            agent: 'agent-decision',
+            id: 'task-true',
             input: {},
-            name: "Task True",
+            name: 'Task True',
             output: {},
-            type: NodeType.TASK,
+            type: NodeType.TASK
           },
           {
-            agent: "agent-decision",
-            id: "task-false",
+            agent: 'agent-decision',
+            id: 'task-false',
             input: {},
-            name: "Task False",
+            name: 'Task False',
             output: {},
-            type: NodeType.TASK,
-          },
-        ],
+            type: NodeType.TASK
+          }
+        ]
       })
     );
 
@@ -249,34 +245,32 @@ describe(OrchestrationEngine, () => {
 
     expect(result.status).toBe(WorkflowStatus.COMPLETED);
     expect(result.results).toStrictEqual({
-      branch: "true",
+      branch: 'true',
       decision: true,
-      results: [{ result: "Task task-true executed by agent agent-decision" }],
+      results: [{ result: 'Task task-true executed by agent agent-decision' }]
     });
   });
 
-  it("rejects workflows that reference unknown nodes", async () => {
+  it('rejects workflows that reference unknown nodes', async () => {
     const registry = new AgentRegistry();
-    const scheduler = createScheduler("unused");
+    const scheduler = createScheduler('unused');
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
     await expect(
       engine.create(
         createBaseSpec({
-          id: "wf-invalid",
+          id: 'wf-invalid',
           nodes: [
             {
-              id: "sequence-invalid",
-              name: "Invalid Sequence",
-              steps: ["missing-node"],
-              type: NodeType.SEQUENCE,
-            },
-          ],
+              id: 'sequence-invalid',
+              name: 'Invalid Sequence',
+              steps: ['missing-node'],
+              type: NodeType.SEQUENCE
+            }
+          ]
         })
       )
-    ).rejects.toThrow(
-      "Sequence node sequence-invalid references unknown node: missing-node"
-    );
+    ).rejects.toThrow('Sequence node sequence-invalid references unknown node: missing-node');
   });
 });

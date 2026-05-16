@@ -1,26 +1,26 @@
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createInkRenderer } from "./createInkRenderer.js";
+import { createInkRenderer } from './createInkRenderer.js';
 
-vi.mock(import("cli-markdown"), () => ({
-  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`),
+vi.mock(import('cli-markdown'), () => ({
+  default: vi.fn((markdown: string) => `[ANSI:${markdown}]`)
 }));
 
-vi.mock(import("ink"), async () => {
-  const actual = await vi.importActual<typeof import("ink")>("ink");
+vi.mock(import('ink'), async () => {
+  const actual = await vi.importActual<typeof import('ink')>('ink');
   return {
     ...actual,
     render: vi.fn((_component: React.ReactElement) => ({
       clear: vi.fn(),
-      lastFrame: () => "[mock frame]",
+      lastFrame: () => '[mock frame]',
       rerender: vi.fn(),
-      unmount: vi.fn(),
-    })),
+      unmount: vi.fn()
+    }))
   };
 });
 
-describe("Ink Renderer behavior", () => {
+describe('Ink Renderer behavior', () => {
   let processor: LLMStreamProcessor;
   let onWarning: (message: string, context?: Record<string, unknown>) => void;
   let onFinish: () => void;
@@ -33,7 +33,7 @@ describe("Ink Renderer behavior", () => {
       enforcePrivacyTags: true,
       onWarning,
       parseThinkTags: true,
-      scrubContextTags: true,
+      scrubContextTags: true
     });
   });
 
@@ -41,31 +41,31 @@ describe("Ink Renderer behavior", () => {
     vi.clearAllMocks();
   });
 
-  describe("Keyboard handling options", () => {
-    it("enables keyboard support when specified", async () => {
+  describe('Keyboard handling options', () => {
+    it('enables keyboard support when specified', async () => {
       const renderer = await createInkRenderer({
         keyboard: {
-          enabled: true,
+          enabled: true
         },
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("configures keyboard with custom handlers", async () => {
+    it('configures keyboard with custom handlers', async () => {
       const onInterrupt = vi.fn();
       const renderer = await createInkRenderer({
         keyboard: {
           enabled: true,
-          onInterrupt,
+          onInterrupt
         },
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
       expect(renderer.instance).toBeDefined();
@@ -73,28 +73,28 @@ describe("Ink Renderer behavior", () => {
     });
   });
 
-  describe("Renderer methods", () => {
-    it("write method accepts content", async () => {
+  describe('Renderer methods', () => {
+    it('write method accepts content', async () => {
       const renderer = await createInkRenderer({
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
-      renderer.write("Test content");
+      renderer.write('Test content');
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("end method closes rendering", async () => {
+    it('end method closes rendering', async () => {
       const renderer = await createInkRenderer({
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
-      renderer.write("Content");
+      renderer.write('Content');
       renderer.end();
 
       expect(renderer.instance).toBeDefined();
@@ -102,32 +102,31 @@ describe("Ink Renderer behavior", () => {
     });
   });
 
-  describe("Error handling", () => {
-    it("warns when processing invalid XML", async () => {
+  describe('Error handling', () => {
+    it('warns when processing invalid XML', async () => {
       const renderer = await createInkRenderer({
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
-      processor.process({ content: "<invalid>" });
+      processor.process({ content: '<invalid>' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("handles malformed JSON in tool calls gracefully", async () => {
+    it('handles malformed JSON in tool calls gracefully', async () => {
       const renderer = await createInkRenderer({
         onFinish,
         onWarning,
         processor,
-        showToolCalls: true,
+        showToolCalls: true
       });
 
       processor.process({
-        content:
-          '<tool_call id="1" name="test"><arguments>{invalid json}</arguments></tool_call>',
+        content: '<tool_call id="1" name="test"><arguments>{invalid json}</arguments></tool_call>'
       });
       processor.process({ done: true });
 
@@ -136,31 +135,31 @@ describe("Ink Renderer behavior", () => {
     });
   });
 
-  describe("Screen reader accessibility", () => {
-    it("enables screen reader mode", async () => {
+  describe('Screen reader accessibility', () => {
+    it('enables screen reader mode', async () => {
       const renderer = await createInkRenderer({
         onFinish,
         onWarning,
         processor,
-        screenReader: true,
+        screenReader: true
       });
 
-      processor.process({ content: "Accessible content" });
+      processor.process({ content: 'Accessible content' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("disables screen reader mode", async () => {
+    it('disables screen reader mode', async () => {
       const renderer = await createInkRenderer({
         onFinish,
         onWarning,
         processor,
-        screenReader: false,
+        screenReader: false
       });
 
-      processor.process({ content: "Regular content" });
+      processor.process({ content: 'Regular content' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
@@ -168,46 +167,46 @@ describe("Ink Renderer behavior", () => {
     });
   });
 
-  describe("Markdown rendering", () => {
-    it("renders markdown when enabled", async () => {
+  describe('Markdown rendering', () => {
+    it('renders markdown when enabled', async () => {
       const renderer = await createInkRenderer({
         markdown: true,
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
-      processor.process({ content: "# Heading\n\n**Bold** text" });
+      processor.process({ content: '# Heading\n\n**Bold** text' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("renders plain text when markdown disabled", async () => {
+    it('renders plain text when markdown disabled', async () => {
       const renderer = await createInkRenderer({
         markdown: false,
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
-      processor.process({ content: "# Not a heading\n\n**Not bold**" });
+      processor.process({ content: '# Not a heading\n\n**Not bold**' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("handles code fences with markdown", async () => {
+    it('handles code fences with markdown', async () => {
       const renderer = await createInkRenderer({
         markdown: true,
         onFinish,
         onWarning,
-        processor,
+        processor
       });
 
-      processor.process({ content: "```typescript\nconst x = 42;\n```" });
+      processor.process({ content: '```typescript\nconst x = 42;\n```' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
@@ -215,33 +214,33 @@ describe("Ink Renderer behavior", () => {
     });
   });
 
-  describe("Syntax highlighting", () => {
-    it("enables syntax highlighting", async () => {
+  describe('Syntax highlighting', () => {
+    it('enables syntax highlighting', async () => {
       const renderer = await createInkRenderer({
         markdown: true,
         onFinish,
         onWarning,
         processor,
-        syntaxHighlight: true,
+        syntaxHighlight: true
       });
 
-      processor.process({ content: "```js\nconst fn = () => {};\n```" });
+      processor.process({ content: '```js\nconst fn = () => {};\n```' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();
       renderer.unmount();
     });
 
-    it("disables syntax highlighting", async () => {
+    it('disables syntax highlighting', async () => {
       const renderer = await createInkRenderer({
         markdown: true,
         onFinish,
         onWarning,
         processor,
-        syntaxHighlight: false,
+        syntaxHighlight: false
       });
 
-      processor.process({ content: "```js\nconst fn = () => {};\n```" });
+      processor.process({ content: '```js\nconst fn = () => {};\n```' });
       processor.process({ done: true });
 
       expect(renderer.instance).toBeDefined();

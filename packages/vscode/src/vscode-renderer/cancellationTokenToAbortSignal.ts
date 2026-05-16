@@ -1,4 +1,4 @@
-import type { CancellationToken } from "@agentsy/renderers";
+import type { CancellationToken } from '@agentsy/renderers';
 
 type CancellationListener = () => void;
 
@@ -40,9 +40,7 @@ type CancellationTokenLike = Partial<CancellationToken> & {
  * }
  * ```
  */
-export function cancellationTokenToAbortSignal(
-  token: CancellationTokenLike
-): AbortSignal {
+export function cancellationTokenToAbortSignal(token: CancellationTokenLike): AbortSignal {
   if (token.isCancellationRequested === true) {
     const controller = new AbortController();
     controller.abort();
@@ -50,7 +48,7 @@ export function cancellationTokenToAbortSignal(
   }
 
   const controller = new AbortController();
-  if (typeof token.onCancellationRequested !== "function") {
+  if (typeof token.onCancellationRequested !== 'function') {
     return controller.signal;
   }
 

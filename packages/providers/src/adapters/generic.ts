@@ -1,13 +1,9 @@
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import type {
-  ProcessedOutput,
-  ProcessorOptions,
-  StreamChunk,
-} from "@agentsy/core/processor";
-import { validateJsonSchema } from "@agentsy/core/structured";
-import type { ValidateJsonSchemaOptions } from "@agentsy/core/structured";
-import type { XmlToolCall } from "@agentsy/core/tool-calls";
-import type { JsonObject } from "@agentsy/types";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { ProcessedOutput, ProcessorOptions, StreamChunk } from '@agentsy/core/processor';
+import { validateJsonSchema } from '@agentsy/core/structured';
+import type { ValidateJsonSchemaOptions } from '@agentsy/core/structured';
+import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { JsonObject } from '@agentsy/types';
 
 /**
  * Async generator that processes every chunk from a normalised LLM stream
@@ -31,9 +27,7 @@ export async function* processStream(
  */
 export async function* processRawStream<TRawChunk>(
   source: AsyncIterable<TRawChunk>,
-  normalize: (
-    _chunk: TRawChunk
-  ) => StreamChunk | { chunk: StreamChunk } | null | undefined,
+  normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined,
   options: ProcessorOptions = {}
 ): AsyncGenerator<ProcessedOutput> {
   const processor = new LLMStreamProcessor(options);
@@ -44,7 +38,7 @@ export async function* processRawStream<TRawChunk>(
       continue;
     }
 
-    const chunk = "chunk" in normalized ? normalized.chunk : normalized;
+    const chunk = 'chunk' in normalized ? normalized.chunk : normalized;
     yield processor.process(chunk);
   }
 
@@ -53,17 +47,12 @@ export async function* processRawStream<TRawChunk>(
 
 export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk> {
   source: AsyncIterable<TRawChunk>;
-  normalize: (
-    _chunk: TRawChunk
-  ) => StreamChunk | { chunk: StreamChunk } | null | undefined;
+  normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined;
   schema: JsonObject;
   processorOptions?: ProcessorOptions;
   validationOptions?: ValidateJsonSchemaOptions;
   onOutput?: (_output: ProcessedOutput) => void | Promise<void>;
-  selectValidationText?: (_context: {
-    processor: LLMStreamProcessor;
-    finalOutput: ProcessedOutput;
-  }) => string;
+  selectValidationText?: (_context: { processor: LLMStreamProcessor; finalOutput: ProcessedOutput }) => string;
 }
 
 export type StructuredDecisionResult<TDecision> =
@@ -80,10 +69,7 @@ export type StructuredDecisionResult<TDecision> =
       validationText: string;
     };
 
-export async function runStructuredDecisionFromRawStream<
-  TRawChunk,
-  TDecision = unknown,
->(
+export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = unknown>(
   options: RunStructuredDecisionFromRawStreamOptions<TRawChunk>
 ): Promise<StructuredDecisionResult<TDecision>> {
   const processor = new LLMStreamProcessor(options.processorOptions);
@@ -94,7 +80,7 @@ export async function runStructuredDecisionFromRawStream<
       continue;
     }
 
-    const chunk = "chunk" in normalized ? normalized.chunk : normalized;
+    const chunk = 'chunk' in normalized ? normalized.chunk : normalized;
     const output = processor.process(chunk);
     if (options.onOutput !== undefined) {
       await options.onOutput(output);
@@ -107,20 +93,15 @@ export async function runStructuredDecisionFromRawStream<
   }
 
   const validationText =
-    options.selectValidationText?.({ finalOutput, processor }) ??
-    processor.accumulatedMessage.content;
+    options.selectValidationText?.({ finalOutput, processor }) ?? processor.accumulatedMessage.content;
 
-  const validated = validateJsonSchema<TDecision>(
-    validationText,
-    options.schema,
-    options.validationOptions
-  );
+  const validated = validateJsonSchema<TDecision>(validationText, options.schema, options.validationOptions);
   if (!validated.success) {
     return {
       errors: validated.errors,
       finalOutput,
       success: false,
-      validationText,
+      validationText
     };
   }
 
@@ -128,7 +109,7 @@ export async function runStructuredDecisionFromRawStream<
     decision: validated.data,
     finalOutput,
     success: true,
-    validationText,
+    validationText
   };
 }
 
@@ -167,10 +148,7 @@ export interface GenericAdapterCallbacks {
   onContent?: (_text: string) => void | Promise<void>;
   onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
   onDone?: () => void | Promise<void>;
-  onError?: (
-    _error: Error,
-    _context: { type: string; chunk?: StreamChunk }
-  ) => void | Promise<void>;
+  onError?: (_error: Error, _context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
@@ -204,18 +182,15 @@ export function createGenericAdapter(
   const processor = new LLMStreamProcessor(options);
   const showThinking = options.showThinking ?? true;
 
-  async function emit(
-    output: ProcessedOutput,
-    chunk?: StreamChunk
-  ): Promise<void> {
+  async function emit(output: ProcessedOutput, chunk?: StreamChunk): Promise<void> {
     if (output.thinking && showThinking) {
       await safeCall(
         () => callbacks.onThinking?.(output.thinking) ?? Promise.resolve(),
         undefined,
-        (error) => {
+        error => {
           void callbacks.onError?.(error, {
-            type: "thinking",
-            ...(chunk !== undefined && { chunk }),
+            type: 'thinking',
+            ...(chunk !== undefined && { chunk })
           });
         }
       );
@@ -225,10 +200,10 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onContent?.(output.content) ?? Promise.resolve(),
         undefined,
-        (error) => {
+        error => {
           void callbacks.onError?.(error, {
-            type: "content",
-            ...(chunk !== undefined && { chunk }),
+            type: 'content',
+            ...(chunk !== undefined && { chunk })
           });
         }
       );
@@ -238,10 +213,10 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onToolCall?.(toolCall) ?? Promise.resolve(),
         undefined,
-        (error) => {
+        error => {
           void callbacks.onError?.(error, {
-            type: "tool_call",
-            ...(chunk !== undefined && { chunk }),
+            type: 'tool_call',
+            ...(chunk !== undefined && { chunk })
           });
         }
       );
@@ -254,13 +229,13 @@ export function createGenericAdapter(
       await safeCall(
         () => callbacks.onDone?.() ?? Promise.resolve(),
         undefined,
-        (error) => {
-          void callbacks.onError?.(error, { type: "done" });
+        error => {
+          void callbacks.onError?.(error, { type: 'done' });
         }
       );
     },
     async write(chunk: StreamChunk): Promise<void> {
       await emit(processor.process(chunk), chunk);
-    },
+    }
   };
 }

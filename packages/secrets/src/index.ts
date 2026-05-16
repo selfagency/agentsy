@@ -19,6 +19,6 @@ export const createSecretStore = (): SecretStore => {
     },
     setSecret(key, value) {
       secrets.set(key, value);
-    },
+    }
   };
 };

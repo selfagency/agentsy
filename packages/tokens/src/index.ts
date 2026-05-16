@@ -1,8 +1,8 @@
 // @agentsy/tokens — Token budgets, context reduction, and output shaping.
 
-import { randomUUID } from "node:crypto";
+import { randomUUID } from 'node:crypto';
 
-import stopwords from "./stopwords.json" with { type: "json" };
+import stopwords from './stopwords.json' with { type: 'json' };
 
 export interface TokenLedgerBudget {
   limit: number;
@@ -13,9 +13,9 @@ export interface TokenLedger {
   remaining(): number;
 }
 
-export type BudgetResetStrategy = "fixed" | "rolling" | "manual";
-export type BudgetPriority = "high" | "medium" | "low";
-export type RequestType = "completion" | "embedding" | "fine-tuning";
+export type BudgetResetStrategy = 'fixed' | 'rolling' | 'manual';
+export type BudgetPriority = 'high' | 'medium' | 'low';
+export type RequestType = 'completion' | 'embedding' | 'fine-tuning';
 
 export interface TokenBudget {
   id: string;
@@ -30,7 +30,7 @@ export interface TokenBudget {
   metadata?: Record<string, unknown>;
 }
 
-export interface TokenBudgetConfig extends Omit<TokenBudget, "id"> {
+export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
   id?: string;
 }
 
@@ -72,7 +72,7 @@ export interface TokenRequest {
 }
 
 export interface AllocationCondition {
-  kind: "budget" | "rate-limit";
+  kind: 'budget' | 'rate-limit';
   message: string;
 }
 
@@ -101,31 +101,22 @@ export interface CostAnalysis {
 
 export interface OptimizationSuggestion {
   budgetId: string;
-  type: "reduce-tokens" | "reduce-cost" | "rate-limit";
+  type: 'reduce-tokens' | 'reduce-cost' | 'rate-limit';
   message: string;
 }
 
 export interface TokenManager {
   createBudget(config: TokenBudgetConfig): Promise<TokenBudget>;
   getBudget(id: string): Promise<TokenBudget | null>;
-  updateBudget(
-    id: string,
-    updates: Partial<Omit<TokenBudget, "id">>
-  ): Promise<TokenBudget>;
+  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
   deleteBudget(id: string): Promise<void>;
   listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
   requestTokens(request: TokenRequest): Promise<TokenAllocation>;
-  releaseTokens(
-    allocationId: string,
-    actualUsage: number,
-    actualCost?: number
-  ): Promise<void>;
+  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
   recordUsage(usage: TokenUsage): Promise<void>;
   getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
   getCostAnalysis(periodMs: number): Promise<CostAnalysis>;
-  getOptimizationSuggestions(
-    budgetId: string
-  ): Promise<OptimizationSuggestion[]>;
+  getOptimizationSuggestions(budgetId: string): Promise<OptimizationSuggestion[]>;
 }
 
 export interface CompressionOptions<TMessage> {
@@ -141,18 +132,11 @@ export interface CompressionResult<TMessage> {
   compressed: boolean;
 }
 
-export type OutputCompressionLevel = "lite" | "full" | "ultra";
+export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
 
 export interface OutputCompressionOptions {
   level: OutputCompressionLevel;
-  preserve?: (
-    | "code"
-    | "technical"
-    | "urls"
-    | "paths"
-    | "markdown"
-    | "errors"
-  )[];
+  preserve?: ('code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors')[];
   intensity?: number;
 }
 
@@ -191,20 +175,20 @@ interface AllocationRecord {
 
 function getBudgetPriorityRank(priority: BudgetPriority): number {
   switch (priority) {
-    case "high": {
+    case 'high': {
       return 2;
     }
-    case "medium": {
+    case 'medium': {
       return 1;
     }
-    case "low": {
+    case 'low': {
       return 0;
     }
   }
 }
 
 const DEFAULT_ESTIMATE_TOKENS = <TMessage>(message: TMessage): number => {
-  if (typeof message === "string") {
+  if (typeof message === 'string') {
     return Math.max(1, Math.ceil(message.length / 4));
   }
 
@@ -218,9 +202,7 @@ function createId(prefix: string): string {
 function cloneBudget(budget: TokenBudget): TokenBudget {
   return {
     ...budget,
-    ...(budget.metadata === undefined
-      ? {}
-      : { metadata: { ...budget.metadata } }),
+    ...(budget.metadata === undefined ? {} : { metadata: { ...budget.metadata } })
   };
 }
 
@@ -228,9 +210,7 @@ function cloneUsage(usage: TokenUsage): TokenUsage {
   return {
     ...usage,
     timestamp: new Date(usage.timestamp),
-    ...(usage.metadata === undefined
-      ? {}
-      : { metadata: { ...usage.metadata } }),
+    ...(usage.metadata === undefined ? {} : { metadata: { ...usage.metadata } })
   };
 }
 
@@ -238,17 +218,11 @@ function cloneAllocation(allocation: TokenAllocation): TokenAllocation {
   return {
     ...allocation,
     expiresAt: new Date(allocation.expiresAt),
-    ...(allocation.conditions === undefined
-      ? {}
-      : { conditions: [...allocation.conditions] }),
+    ...(allocation.conditions === undefined ? {} : { conditions: [...allocation.conditions] })
   };
 }
 
-function isWithinWindow(
-  timestamp: Date,
-  now: number,
-  periodMs: number
-): boolean {
+function isWithinWindow(timestamp: Date, now: number, periodMs: number): boolean {
   return now - timestamp.getTime() <= periodMs;
 }
 
@@ -265,8 +239,7 @@ function filterUsage(usage: TokenUsage, filter: UsageFilter): boolean {
     (filter.budgetId === undefined || usage.budgetId === filter.budgetId) &&
     (filter.provider === undefined || usage.provider === filter.provider) &&
     (filter.model === undefined || usage.model === filter.model) &&
-    (filter.requestType === undefined ||
-      usage.requestType === filter.requestType) &&
+    (filter.requestType === undefined || usage.requestType === filter.requestType) &&
     (filter.from === undefined || usage.timestamp >= filter.from) &&
     (filter.to === undefined || usage.timestamp <= filter.to)
   );
@@ -276,38 +249,24 @@ function getAllocationCost(request: TokenRequest): number {
   return request.estimatedCost ?? 0;
 }
 
-function selectBudget(
-  budgets: TokenBudget[],
-  request: TokenRequest
-): TokenBudget | null {
+function selectBudget(budgets: TokenBudget[], request: TokenRequest): TokenBudget | null {
   const matching = budgets.filter(
-    (budget) =>
-      budget.provider === request.provider &&
-      (budget.model === request.model || budget.model === "*")
+    budget => budget.provider === request.provider && (budget.model === request.model || budget.model === '*')
   );
-  const candidates =
-    matching.length > 0
-      ? matching
-      : budgets.filter((budget) => budget.provider === request.provider);
+  const candidates = matching.length > 0 ? matching : budgets.filter(budget => budget.provider === request.provider);
   if (candidates.length === 0) {
     return null;
   }
 
   return (
     [...candidates].toSorted(
-      (left, right) =>
-        getBudgetPriorityRank(right.priority) -
-        getBudgetPriorityRank(left.priority)
+      (left, right) => getBudgetPriorityRank(right.priority) - getBudgetPriorityRank(left.priority)
     )[0] ?? null
   );
 }
 
-function pruneTimestampsForWindow(
-  timestamps: readonly number[],
-  now: number,
-  windowMs: number
-): number[] {
-  return timestamps.filter((timestamp) => now - timestamp < windowMs);
+function pruneTimestampsForWindow(timestamps: readonly number[], now: number, windowMs: number): number[] {
+  return timestamps.filter(timestamp => now - timestamp < windowMs);
 }
 
 function getRetryAfterMs(
@@ -328,15 +287,11 @@ function getRetryAfterMs(
   return Math.max(1, windowMs - (now - oldestTimestamp));
 }
 
-function sumUsageForBudget(
-  budget: TokenBudget,
-  usage: TokenUsage[],
-  now: number
-): { tokens: number; cost: number } {
+function sumUsageForBudget(budget: TokenBudget, usage: TokenUsage[], now: number): { tokens: number; cost: number } {
   return usage
-    .filter((entry) => entry.budgetId === budget.id)
-    .filter((entry) => {
-      if (budget.resetStrategy === "manual") {
+    .filter(entry => entry.budgetId === budget.id)
+    .filter(entry => {
+      if (budget.resetStrategy === 'manual') {
         return true;
       }
 
@@ -345,7 +300,7 @@ function sumUsageForBudget(
     .reduce(
       (totals, entry) => ({
         cost: totals.cost + entry.cost,
-        tokens: totals.tokens + entry.tokensUsed,
+        tokens: totals.tokens + entry.tokensUsed
       }),
       { cost: 0, tokens: 0 }
     );
@@ -356,19 +311,17 @@ function sumReservedForBudget(
   allocations: Map<string, AllocationRecord>
 ): { tokens: number; cost: number } {
   return [...allocations.values()]
-    .filter((record) => record.allocation.budgetId === budgetId)
+    .filter(record => record.allocation.budgetId === budgetId)
     .reduce(
       (totals, record) => ({
         cost: totals.cost + record.allocation.allocatedCost,
-        tokens: totals.tokens + record.allocation.allocatedTokens,
+        tokens: totals.tokens + record.allocation.allocatedTokens
       }),
       { cost: 0, tokens: 0 }
     );
 }
 
-export const createTokenLedger = ({
-  limit,
-}: TokenLedgerBudget): TokenLedger => {
+export const createTokenLedger = ({ limit }: TokenLedgerBudget): TokenLedger => {
   let consumed = 0;
 
   return {
@@ -386,7 +339,7 @@ export const createTokenLedger = ({
     },
     remaining() {
       return Math.max(0, limit - consumed);
-    },
+    }
   };
 };
 
@@ -394,21 +347,14 @@ export function compressConversation<TMessage>(
   messages: readonly TMessage[],
   options: CompressionOptions<TMessage>
 ): CompressionResult<TMessage> {
-  const estimateTokens =
-    options.estimateTokens ?? DEFAULT_ESTIMATE_TOKENS<TMessage>;
+  const estimateTokens = options.estimateTokens ?? DEFAULT_ESTIMATE_TOKENS<TMessage>;
   const preserveLast = Math.max(0, options.preserveLast ?? 0);
   const retained = [...messages];
 
-  let estimatedTokens = retained.reduce(
-    (total, message) => total + estimateTokens(message),
-    0
-  );
+  let estimatedTokens = retained.reduce((total, message) => total + estimateTokens(message), 0);
   let droppedCount = 0;
 
-  while (
-    retained.length > preserveLast &&
-    estimatedTokens > options.maxTokens
-  ) {
+  while (retained.length > preserveLast && estimatedTokens > options.maxTokens) {
     const removed = retained.shift();
     if (removed === undefined) {
       break;
@@ -422,116 +368,101 @@ export function compressConversation<TMessage>(
     compressed: droppedCount > 0,
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
-    messages: retained,
+    messages: retained
   };
 }
 
 const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
-const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set([
-  "code",
-  "urls",
-  "paths",
-  "markdown",
-  "errors",
-]);
+const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths', 'markdown', 'errors']);
 const FILLER_WORDS = new Set([
-  "really",
-  "very",
-  "just",
-  "actually",
-  "basically",
-  "simply",
-  "quite",
-  "definitely",
-  "certainly",
-  "absolutely",
-  "clearly",
-  "obviously",
-  "perhaps",
-  "maybe",
-  "apparently",
-  "evidently",
-  "fortunately",
-  "unfortunately",
-  "however",
-  "thus",
-  "therefore",
-  "moreover",
-  "furthermore",
-  "additionally",
-  "also",
-  "indeed",
-  "otherwise",
-  "meanwhile",
-  "primarily",
-  "largely",
-  "mostly",
-  "thoroughly",
-  "remarkably",
-  "practically",
-  "exceptionally",
-  "notably",
-  "particularly",
-  "significantly",
-  "essentially",
-  "fundamentally",
-  "well",
-  "rather",
-  "somewhat",
-  "fairly",
-  "pretty",
-  "awfully",
-  "terribly",
-  "super",
-  "extremely",
+  'really',
+  'very',
+  'just',
+  'actually',
+  'basically',
+  'simply',
+  'quite',
+  'definitely',
+  'certainly',
+  'absolutely',
+  'clearly',
+  'obviously',
+  'perhaps',
+  'maybe',
+  'apparently',
+  'evidently',
+  'fortunately',
+  'unfortunately',
+  'however',
+  'thus',
+  'therefore',
+  'moreover',
+  'furthermore',
+  'additionally',
+  'also',
+  'indeed',
+  'otherwise',
+  'meanwhile',
+  'primarily',
+  'largely',
+  'mostly',
+  'thoroughly',
+  'remarkably',
+  'practically',
+  'exceptionally',
+  'notably',
+  'particularly',
+  'significantly',
+  'essentially',
+  'fundamentally',
+  'well',
+  'rather',
+  'somewhat',
+  'fairly',
+  'pretty',
+  'awfully',
+  'terribly',
+  'super',
+  'extremely'
 ]);
 const STOP_WORDS = new Set(
   stopwords
-    .filter((item): item is string => typeof item === "string")
-    .map((item) => item.trim().toLowerCase())
-    .filter((item) => item.length > 0)
+    .filter((item): item is string => typeof item === 'string')
+    .map(item => item.trim().toLowerCase())
+    .filter(item => item.length > 0)
 );
 
 const REDUNDANT_PHRASES: readonly [RegExp, string][] = [
-  [
-    /\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi,
-    "",
-  ],
-  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, "that "],
-  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, "because "],
-  [
-    /\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi,
-    "",
-  ],
-  [/\bas\s+mentioned\b/gi, ""],
-  [/\bas\s+you\s+may\s+know\b/gi, ""],
-  [/\bin\s+conclusion/gi, "Finally"],
-  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, "because"],
-  [/\bat\s+this\s+point\s+in\s+time\b/gi, "now"],
+  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
+  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
+  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
+  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
+  [/\bas\s+mentioned\b/gi, ''],
+  [/\bas\s+you\s+may\s+know\b/gi, ''],
+  [/\bin\s+conclusion/gi, 'Finally'],
+  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
+  [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now']
 ];
 
 const ABBREVIATIONS: readonly [RegExp, string][] = [
-  [/\bapproximately\b/gi, "approx"],
-  [/\bconfiguration\b/gi, "config"],
-  [/\binformation\b/gi, "info"],
-  [/\badministration\b/gi, "admin"],
-  [/\bdocumentation\b/gi, "docs"],
-  [/\bdirectory\b/gi, "dir"],
-  [/\bnumber\b/gi, "#"],
-  [/\btechnology\b/gi, "tech"],
-  [/\bimplementation\b/gi, "impl"],
-  [/\boperation\b/gi, "op"],
-  [/\bgeneral\b/gi, "gen"],
+  [/\bapproximately\b/gi, 'approx'],
+  [/\bconfiguration\b/gi, 'config'],
+  [/\binformation\b/gi, 'info'],
+  [/\badministration\b/gi, 'admin'],
+  [/\bdocumentation\b/gi, 'docs'],
+  [/\bdirectory\b/gi, 'dir'],
+  [/\bnumber\b/gi, '#'],
+  [/\btechnology\b/gi, 'tech'],
+  [/\bimplementation\b/gi, 'impl'],
+  [/\boperation\b/gi, 'op'],
+  [/\bgeneral\b/gi, 'gen']
 ];
 
 function estimateTextTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-function applyReplacements(
-  source: string,
-  replacements: readonly [RegExp, string][]
-): string {
+function applyReplacements(source: string, replacements: readonly [RegExp, string][]): string {
   let result = source;
   for (const [pattern, replacement] of replacements) {
     result = result.replace(pattern, replacement);
@@ -541,18 +472,18 @@ function applyReplacements(
 }
 
 function normalizeAndDedupeLines(segment: string): string {
-  const lines = segment.split("\n");
+  const lines = segment.split('\n');
   const dedupedLines: string[] = [];
-  let lastComparable = "";
+  let lastComparable = '';
   let previousWasBlank = false;
 
   for (const rawLine of lines) {
-    const line = rawLine.replaceAll(/\s+/g, " ").trimEnd();
+    const line = rawLine.replaceAll(/\s+/g, ' ').trimEnd();
     const isBlank = line.trim().length === 0;
 
     if (isBlank) {
       if (!previousWasBlank) {
-        dedupedLines.push("");
+        dedupedLines.push('');
       }
       previousWasBlank = true;
       continue;
@@ -569,7 +500,7 @@ function normalizeAndDedupeLines(segment: string): string {
     dedupedLines.push(line);
   }
 
-  return dedupedLines.join("\n").trim();
+  return dedupedLines.join('\n').trim();
 }
 
 function protectPreservedContent(
@@ -584,66 +515,54 @@ function protectPreservedContent(
 
   let masked = source;
 
-  if (preserve.has("urls")) {
+  if (preserve.has('urls')) {
     masked = masked.replaceAll(/https?:\/\/[^\s)]+/g, stash);
   }
 
-  if (preserve.has("paths")) {
+  if (preserve.has('paths')) {
     masked = masked.replaceAll(
       /(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/g,
       (_, prefix: string, path: string) => `${prefix}${stash(path)}`
     );
   }
 
-  if (preserve.has("markdown")) {
+  if (preserve.has('markdown')) {
     masked = masked.replaceAll(/`[^`]+`/g, stash);
     masked = protectMarkdownLinks(masked, stash);
   }
 
-  if (preserve.has("errors")) {
-    masked = masked.replaceAll(
-      /\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi,
-      stash
-    );
+  if (preserve.has('errors')) {
+    masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi, stash);
   }
 
-  if (preserve.has("technical")) {
+  if (preserve.has('technical')) {
     masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/g, stash);
   }
 
   const restore = (value: string): string =>
     value.replaceAll(/__AGENTSY_PRESERVE_(\d+)__/g, (_, indexRaw: string) => {
       const index = Number(indexRaw);
-      return preserved[index] ?? "";
+      return preserved[index] ?? '';
     });
 
   return { masked, restore };
 }
 
-function protectMarkdownLinks(
-  source: string,
-  stash: (value: string) => string
-): string {
-  let result = "";
+function protectMarkdownLinks(source: string, stash: (value: string) => string): string {
+  let result = '';
   let index = 0;
 
   while (index < source.length) {
-    const start = source.indexOf("[", index);
+    const start = source.indexOf('[', index);
     if (start === -1) {
       return result + source.slice(index);
     }
 
-    const closeBracket = source.indexOf("]", start + 1);
-    const openParen =
-      closeBracket === -1 ? -1 : source.indexOf("(", closeBracket + 1);
-    const closeParen =
-      openParen === -1 ? -1 : source.indexOf(")", openParen + 1);
+    const closeBracket = source.indexOf(']', start + 1);
+    const openParen = closeBracket === -1 ? -1 : source.indexOf('(', closeBracket + 1);
+    const closeParen = openParen === -1 ? -1 : source.indexOf(')', openParen + 1);
 
-    if (
-      closeBracket === -1 ||
-      openParen !== closeBracket + 1 ||
-      closeParen === -1
-    ) {
+    if (closeBracket === -1 || openParen !== closeBracket + 1 || closeParen === -1) {
       result += source.slice(index, start + 1);
       index = start + 1;
       continue;
@@ -658,16 +577,10 @@ function protectMarkdownLinks(
 }
 
 function stripFillerWords(source: string, strongOnly: boolean): string {
-  const strongWords = new Set([
-    "really",
-    "very",
-    "just",
-    "basically",
-    "simply",
-  ]);
+  const strongWords = new Set(['really', 'very', 'just', 'basically', 'simply']);
   return source
     .split(/(\s+)/u)
-    .map((segment) => {
+    .map(segment => {
       if (/^\s+$/u.test(segment) || segment.length === 0) {
         return segment;
       }
@@ -676,47 +589,40 @@ function stripFillerWords(source: string, strongOnly: boolean): string {
       const isShortToken = normalized.length <= 2;
       const shouldRemove = strongOnly
         ? strongWords.has(normalized)
-        : FILLER_WORDS.has(normalized) ||
-          (!isShortToken && STOP_WORDS.has(normalized));
+        : FILLER_WORDS.has(normalized) || (!isShortToken && STOP_WORDS.has(normalized));
 
-      return shouldRemove ? "" : segment;
+      return shouldRemove ? '' : segment;
     })
-    .join("");
+    .join('');
 }
 
 function finalizeWhitespace(source: string): string {
-  return source.replaceAll(/\s{2,}/g, " ").trim();
+  return source.replaceAll(/\s{2,}/g, ' ').trim();
 }
 
-function compressNonCodeSegment(
-  segment: string,
-  level: OutputCompressionLevel,
-  preserve: ReadonlySet<string>
-): string {
+function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, preserve: ReadonlySet<string>): string {
   const joined = normalizeAndDedupeLines(segment);
   if (joined.length === 0) {
-    return "";
+    return '';
   }
 
   const { masked, restore } = protectPreservedContent(joined, preserve);
 
   switch (level) {
-    case "lite": {
+    case 'lite': {
       const result = finalizeWhitespace(stripFillerWords(masked, true));
       return restore(result);
     }
 
-    case "full": {
+    case 'full': {
       const withoutFiller = stripFillerWords(masked, false);
       const reduced = applyReplacements(withoutFiller, REDUNDANT_PHRASES);
       return restore(finalizeWhitespace(reduced));
     }
 
-    case "ultra": {
+    case 'ultra': {
       const withoutFiller = stripFillerWords(masked, false);
-      const reduced = normalizeUltraText(
-        applyReplacements(withoutFiller, REDUNDANT_PHRASES)
-      );
+      const reduced = normalizeUltraText(applyReplacements(withoutFiller, REDUNDANT_PHRASES));
       const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replaceAll(
         /\b(?:the|a|an)\s+([a-z]+)\b/gi,
         (_, adjective: string) => `${adjective} `
@@ -724,8 +630,8 @@ function compressNonCodeSegment(
 
       return restore(
         abbreviated
-          .replaceAll(/\s{2,}/g, " ")
-          .replaceAll(/ ([,.])/g, "$1")
+          .replaceAll(/\s{2,}/g, ' ')
+          .replaceAll(/ ([,.])/g, '$1')
           .trim()
       );
     }
@@ -733,18 +639,16 @@ function compressNonCodeSegment(
 }
 
 function normalizeUltraText(source: string): string {
-  let output = source
-    .replaceAll(/\b(and|or)\s+\1\s+/gi, "$1 ")
-    .replaceAll(/\b(is|are|was|were)\s+quite\s+/gi, "");
+  let output = source.replaceAll(/\b(and|or)\s+\1\s+/gi, '$1 ').replaceAll(/\b(is|are|was|were)\s+quite\s+/gi, '');
 
   output = removeWhichClauses(output);
-  return output.replaceAll(/ ([,.?!])/g, "$1");
+  return output.replaceAll(/ ([,.?!])/g, '$1');
 }
 
 function removeWhichClauses(source: string): string {
-  const needle = ", which ";
+  const needle = ', which ';
   let index = 0;
-  let output = "";
+  let output = '';
 
   while (index < source.length) {
     const matchIndex = source.toLowerCase().indexOf(needle, index);
@@ -755,10 +659,7 @@ function removeWhichClauses(source: string): string {
     output += source.slice(index, matchIndex);
 
     let clauseEnd = matchIndex + needle.length;
-    while (
-      clauseEnd < source.length &&
-      !",.?!".includes(source[clauseEnd] ?? "")
-    ) {
+    while (clauseEnd < source.length && !',.?!'.includes(source[clauseEnd] ?? '')) {
       clauseEnd += 1;
     }
 
@@ -773,14 +674,11 @@ function removeWhichClauses(source: string): string {
   return output;
 }
 
-export function compressOutput(
-  response: string,
-  options: OutputCompressionOptions
-): OutputCompressionResult {
+export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {
   const preserve = new Set(options.preserve ?? [...DEFAULT_PRESERVATION_SET]);
   const { level } = options;
 
-  if (!preserve.has("code")) {
+  if (!preserve.has('code')) {
     const originalTokens = estimateTextTokens(response);
     const compressed = compressNonCodeSegment(response, level, preserve);
     const compressedTokens = estimateTextTokens(compressed);
@@ -789,14 +687,11 @@ export function compressOutput(
       compressedTokens,
       original: response,
       originalTokens,
-      savingsRatio:
-        originalTokens === 0
-          ? 0
-          : Math.max(0, (originalTokens - compressedTokens) / originalTokens),
+      savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
     };
   }
 
-  const segments: { kind: "code" | "text"; value: string }[] = [];
+  const segments: { kind: 'code' | 'text'; value: string }[] = [];
   let lastIndex = 0;
 
   for (const match of response.matchAll(CODE_FENCE_PATTERN)) {
@@ -805,25 +700,21 @@ export function compressOutput(
     const end = start + full.length;
 
     if (start > lastIndex) {
-      segments.push({ kind: "text", value: response.slice(lastIndex, start) });
+      segments.push({ kind: 'text', value: response.slice(lastIndex, start) });
     }
 
-    segments.push({ kind: "code", value: full });
+    segments.push({ kind: 'code', value: full });
     lastIndex = end;
   }
 
   if (lastIndex < response.length) {
-    segments.push({ kind: "text", value: response.slice(lastIndex) });
+    segments.push({ kind: 'text', value: response.slice(lastIndex) });
   }
 
   const compressed = segments
-    .map((segment) =>
-      segment.kind === "code"
-        ? segment.value
-        : compressNonCodeSegment(segment.value, level, preserve)
-    )
-    .join("\n")
-    .replaceAll(/\n{3,}/g, "\n\n")
+    .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level, preserve)))
+    .join('\n')
+    .replaceAll(/\n{3,}/g, '\n\n')
     .trim();
 
   const originalTokens = estimateTextTokens(response);
@@ -834,10 +725,7 @@ export function compressOutput(
     compressedTokens,
     original: response,
     originalTokens,
-    savingsRatio:
-      originalTokens === 0
-        ? 0
-        : Math.max(0, (originalTokens - compressedTokens) / originalTokens),
+    savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
   };
 }
 
@@ -848,7 +736,7 @@ export function createInMemoryTokenManager(): TokenManager {
 
   return {
     async createBudget(config) {
-      const id = config.id ?? createId("budget");
+      const id = config.id ?? createId('budget');
       const budget: TokenBudget = {
         id,
         maxCost: config.maxCost,
@@ -859,9 +747,7 @@ export function createInMemoryTokenManager(): TokenManager {
         priority: config.priority,
         provider: config.provider,
         resetStrategy: config.resetStrategy,
-        ...(config.metadata === undefined
-          ? {}
-          : { metadata: { ...config.metadata } }),
+        ...(config.metadata === undefined ? {} : { metadata: { ...config.metadata } })
       };
       budgets.set(id, budget);
       return cloneBudget(budget);
@@ -883,9 +769,7 @@ export function createInMemoryTokenManager(): TokenManager {
 
     async getCostAnalysis(periodMs) {
       const now = Date.now();
-      const inWindow = usage.filter((entry) =>
-        isWithinWindow(entry.timestamp, now, periodMs)
-      );
+      const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
       const budgetSummaries = new Map<string, CostAnalysisBudgetSummary>();
 
       for (const entry of inWindow) {
@@ -893,7 +777,7 @@ export function createInMemoryTokenManager(): TokenManager {
           budgetId: entry.budgetId,
           requestCount: 0,
           totalCost: 0,
-          totalTokens: 0,
+          totalTokens: 0
         };
         existing.totalTokens += entry.tokensUsed;
         existing.totalCost += entry.cost;
@@ -902,15 +786,10 @@ export function createInMemoryTokenManager(): TokenManager {
       }
 
       return {
-        budgets: [...budgetSummaries.values()].toSorted((left, right) =>
-          left.budgetId.localeCompare(right.budgetId)
-        ),
+        budgets: [...budgetSummaries.values()].toSorted((left, right) => left.budgetId.localeCompare(right.budgetId)),
         requestCount: inWindow.length,
         totalCost: inWindow.reduce((total, entry) => total + entry.cost, 0),
-        totalTokens: inWindow.reduce(
-          (total, entry) => total + entry.tokensUsed,
-          0
-        ),
+        totalTokens: inWindow.reduce((total, entry) => total + entry.tokensUsed, 0)
       };
     },
 
@@ -923,34 +802,30 @@ export function createInMemoryTokenManager(): TokenManager {
       const now = Date.now();
       const spent = sumUsageForBudget(budget, usage, now);
       const suggestions: OptimizationSuggestion[] = [];
-      const tokenRatio =
-        budget.maxTokens === 0 ? 0 : spent.tokens / budget.maxTokens;
+      const tokenRatio = budget.maxTokens === 0 ? 0 : spent.tokens / budget.maxTokens;
       const costRatio = budget.maxCost === 0 ? 0 : spent.cost / budget.maxCost;
 
       if (tokenRatio >= 0.8) {
         suggestions.push({
           budgetId,
-          message:
-            "Budget is above 80% token usage; compress conversation history or shorten prompts.",
-          type: "reduce-tokens",
+          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.',
+          type: 'reduce-tokens'
         });
       }
 
       if (costRatio >= 0.8) {
         suggestions.push({
           budgetId,
-          message:
-            "Budget is above 80% cost usage; consider a lower-cost model or shorter completions.",
-          type: "reduce-cost",
+          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.',
+          type: 'reduce-cost'
         });
       }
 
       if (suggestions.length === 0) {
         suggestions.push({
           budgetId,
-          message:
-            "Budget usage is healthy; keep monitoring burst traffic before raising limits.",
-          type: "rate-limit",
+          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.',
+          type: 'rate-limit'
         });
       }
 
@@ -958,15 +833,11 @@ export function createInMemoryTokenManager(): TokenManager {
     },
 
     async getUsage(filter = {}) {
-      return usage
-        .filter((entry) => filterUsage(entry, filter))
-        .map(cloneUsage);
+      return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
     },
 
     async listBudgets(filter = {}) {
-      return [...budgets.values()]
-        .filter((budget) => filterBudget(budget, filter))
-        .map(cloneBudget);
+      return [...budgets.values()].filter(budget => filterBudget(budget, filter)).map(cloneBudget);
     },
 
     async recordUsage(entry) {
@@ -988,9 +859,7 @@ export function createInMemoryTokenManager(): TokenManager {
         requestType: record.request.requestType,
         timestamp: new Date(record.createdAt),
         tokensUsed: actualUsage,
-        ...(record.request.metadata === undefined
-          ? {}
-          : { metadata: { ...record.request.metadata } }),
+        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } })
       });
     },
 
@@ -999,26 +868,21 @@ export function createInMemoryTokenManager(): TokenManager {
         ? (budgets.get(request.budgetId) ?? null)
         : selectBudget([...budgets.values()], request);
       if (!budget) {
-        throw new Error("No matching token budget found for the request");
+        throw new Error('No matching token budget found for the request');
       }
 
       const now = Date.now();
       const spent = sumUsageForBudget(budget, usage, now);
       const reserved = sumReservedForBudget(budget.id, allocations);
-      const nextTokens =
-        spent.tokens + reserved.tokens + request.estimatedTokens;
+      const nextTokens = spent.tokens + reserved.tokens + request.estimatedTokens;
       const nextCost = spent.cost + reserved.cost + getAllocationCost(request);
 
       if (nextTokens > budget.maxTokens) {
-        throw new Error(
-          `Token request exceeds the remaining token budget for ${budget.id}`
-        );
+        throw new Error(`Token request exceeds the remaining token budget for ${budget.id}`);
       }
 
       if (nextCost > budget.maxCost) {
-        throw new Error(
-          `Token request exceeds the remaining cost budget for ${budget.id}`
-        );
+        throw new Error(`Token request exceeds the remaining cost budget for ${budget.id}`);
       }
 
       const allocation: TokenAllocation = {
@@ -1026,7 +890,7 @@ export function createInMemoryTokenManager(): TokenManager {
         allocatedTokens: request.estimatedTokens,
         budgetId: budget.id,
         expiresAt: new Date(now + budget.periodMs),
-        id: createId("allocation"),
+        id: createId('allocation')
       };
 
       allocations.set(allocation.id, {
@@ -1034,10 +898,8 @@ export function createInMemoryTokenManager(): TokenManager {
         createdAt: now,
         request: {
           ...request,
-          ...(request.metadata === undefined
-            ? {}
-            : { metadata: { ...request.metadata } }),
-        },
+          ...(request.metadata === undefined ? {} : { metadata: { ...request.metadata } })
+        }
       });
 
       return cloneAllocation(allocation);
@@ -1052,13 +914,11 @@ export function createInMemoryTokenManager(): TokenManager {
       const next: TokenBudget = {
         ...current,
         ...updates,
-        ...(updates.metadata === undefined
-          ? {}
-          : { metadata: { ...updates.metadata } }),
+        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } })
       };
       budgets.set(id, next);
       return cloneBudget(next);
-    },
+    }
   };
 }
 
@@ -1087,8 +947,7 @@ export class PacingController {
   async getWaitTime(request: TokenRequest): Promise<number> {
     const providerCooldown = this.#cooldowns.get(request.provider);
     const now = Date.now();
-    const cooldownWait =
-      providerCooldown === undefined ? 0 : Math.max(0, providerCooldown - now);
+    const cooldownWait = providerCooldown === undefined ? 0 : Math.max(0, providerCooldown - now);
     const rateLimitStatus = await this.checkRateLimit(request.provider);
     return Math.max(cooldownWait, rateLimitStatus.retryAfterMs);
   }
@@ -1096,7 +955,7 @@ export class PacingController {
   async updateRateLimits(provider: string, limits: RateLimit[]): Promise<void> {
     this.#limits.set(
       provider,
-      limits.map((limit) => ({ ...limit }))
+      limits.map(limit => ({ ...limit }))
     );
   }
 
@@ -1108,39 +967,31 @@ export class PacingController {
         limit: 0,
         remaining: Number.MAX_SAFE_INTEGER,
         retryAfterMs: 0,
-        windowMs: 0,
+        windowMs: 0
       };
     }
 
     const now = Date.now();
     const timestamps = this.#requestTimestamps.get(provider) ?? [];
-    const maxWindowMs = limits.reduce(
-      (maxWindow, limit) => Math.max(maxWindow, limit.windowMs),
-      0
-    );
+    const maxWindowMs = limits.reduce((maxWindow, limit) => Math.max(maxWindow, limit.windowMs), 0);
     let strictest: RateLimitStatus = {
       allowed: true,
       limit: 0,
       remaining: Number.MAX_SAFE_INTEGER,
       retryAfterMs: 0,
-      windowMs: 0,
+      windowMs: 0
     };
 
     for (const limit of limits) {
       const recent = pruneTimestampsForWindow(timestamps, now, limit.windowMs);
       const remaining = Math.max(0, limit.maxRequests - recent.length);
-      const retryAfterMs = getRetryAfterMs(
-        recent,
-        now,
-        limit.windowMs,
-        limit.maxRequests
-      );
+      const retryAfterMs = getRetryAfterMs(recent, now, limit.windowMs, limit.maxRequests);
       const candidate: RateLimitStatus = {
         allowed: retryAfterMs === 0,
         limit: limit.maxRequests,
         remaining,
         retryAfterMs,
-        windowMs: limit.windowMs,
+        windowMs: limit.windowMs
       };
 
       if (!candidate.allowed) {
@@ -1152,23 +1003,14 @@ export class PacingController {
       }
     }
 
-    this.#requestTimestamps.set(
-      provider,
-      pruneTimestampsForWindow(timestamps, now, maxWindowMs)
-    );
+    this.#requestTimestamps.set(provider, pruneTimestampsForWindow(timestamps, now, maxWindowMs));
 
     return strictest;
   }
 
   async adjustPacing(feedback: PacingFeedback): Promise<void> {
-    if (
-      feedback.overloaded === true &&
-      typeof feedback.retryAfterMs === "number"
-    ) {
-      this.#cooldowns.set(
-        feedback.provider,
-        Date.now() + Math.max(0, feedback.retryAfterMs)
-      );
+    if (feedback.overloaded === true && typeof feedback.retryAfterMs === 'number') {
+      this.#cooldowns.set(feedback.provider, Date.now() + Math.max(0, feedback.retryAfterMs));
       return;
     }
 

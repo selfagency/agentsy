@@ -66,6 +66,6 @@ export function createEmptyStats(): ProcessorStats {
     resetAt: now,
     thinkingBlocksCount: 0,
     toolCallsCount: 0,
-    warningsCount: 0,
+    warningsCount: 0
   };
 }

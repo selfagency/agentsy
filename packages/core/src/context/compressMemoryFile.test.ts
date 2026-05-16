@@ -1,39 +1,39 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { compressMemoryFile } from "./index.js";
+import { compressMemoryFile } from './index.js';
 
 describe(compressMemoryFile, () => {
-  it("creates a backup and preserves fenced code blocks", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "agentsy-memory-compress-"));
+  it('creates a backup and preserves fenced code blocks', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'agentsy-memory-compress-'));
 
     try {
-      const filePath = join(dir, "CLAUDE.md");
+      const filePath = join(dir, 'CLAUDE.md');
       const source = [
-        "# Memory Notes",
-        "",
-        "This is intentionally verbose text that should be compressed.",
-        "This is intentionally verbose text that should be compressed.",
-        "",
-        "```json",
+        '# Memory Notes',
+        '',
+        'This is intentionally verbose text that should be compressed.',
+        'This is intentionally verbose text that should be compressed.',
+        '',
+        '```json',
         '{"a":1}',
-        "```",
-      ].join("\n");
+        '```'
+      ].join('\n');
 
-      await writeFile(filePath, source, "utf-8");
+      await writeFile(filePath, source, 'utf-8');
 
       const result = await compressMemoryFile(filePath, {
-        backup: true,
+        backup: true
       });
 
-      const rewritten = await readFile(filePath, "utf-8");
-      const backup = await readFile(`${filePath}.original.md`, "utf-8");
+      const rewritten = await readFile(filePath, 'utf-8');
+      const backup = await readFile(`${filePath}.original.md`, 'utf-8');
 
       expect(result.original).toBe(source);
-      expect(result.compressed).toContain("```json");
+      expect(result.compressed).toContain('```json');
       expect(result.compressed).toContain('{"a":1}');
       expect(result.savingsRatio).toBeGreaterThanOrEqual(0);
       expect(rewritten).toBe(result.compressed);

@@ -1,11 +1,7 @@
-import type { JsonObject } from "@agentsy/types";
+import type { JsonObject } from '@agentsy/types';
 
-import {
-  DEFAULT_MAX_JSON_DEPTH,
-  DEFAULT_MAX_JSON_KEYS,
-  parseJson,
-} from "./parseJson.js";
-import type { ParseJsonOptions } from "./parseJson.js";
+import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson } from './parseJson.js';
+import type { ParseJsonOptions } from './parseJson.js';
 
 type JsonSchema = JsonObject;
 
@@ -24,11 +20,7 @@ function getCachedRegex(pattern: string): RegExp {
   try {
     // Security: Validate pattern length and characters to prevent ReDoS attacks.
     // JSON Schema patterns should be relatively simple; overly complex patterns are rejected.
-    if (
-      typeof pattern !== "string" ||
-      pattern.length > 1000 ||
-      /[*+?]{3,}/.test(pattern)
-    ) {
+    if (typeof pattern !== 'string' || pattern.length > 1000 || /[*+?]{3,}/.test(pattern)) {
       // Pattern is too long, too complex, or not a string: use safe match-nothing regex
       regex = /(?!)/;
     } else {
@@ -76,10 +68,10 @@ export interface ValidateJsonSchemaOptions extends ParseJsonOptions {
 
 function typeOf(value: unknown): string {
   if (Array.isArray(value)) {
-    return "array";
+    return 'array';
   }
   if (value === null) {
-    return "null";
+    return 'null';
   }
   return typeof value;
 }
@@ -101,10 +93,7 @@ function areArraysEqual(a: unknown[], b: unknown[]): boolean {
   }
 }
 
-function areObjectsEqual(
-  aObj: Record<string, unknown>,
-  bObj: Record<string, unknown>
-): boolean {
+function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unknown>): boolean {
   try {
     return JSON.stringify(aObj) === JSON.stringify(bObj);
   } catch {
@@ -113,11 +102,11 @@ function areObjectsEqual(
     if (keysA.length !== keysB.length) {
       return false;
     }
-    return keysA.every((k) => {
+    return keysA.every(k => {
       // Reject keys that could be used for prototype pollution or accessing
       // dangerous builtins. These keys should not appear on plain JSON objects
       // produced by parsing untrusted input; if they do, treat as mismatch.
-      if (k === "__proto__" || k === "constructor") {
+      if (k === '__proto__' || k === 'constructor') {
         return false;
       }
       if (!Object.hasOwn(bObj, k)) {
@@ -145,11 +134,8 @@ function deepEqual(a: unknown, b: unknown): boolean {
   if (Array.isArray(a) || Array.isArray(b)) {
     return false;
   }
-  if (typeof a === "object" && typeof b === "object") {
-    return areObjectsEqual(
-      a as Record<string, unknown>,
-      b as Record<string, unknown>
-    );
+  if (typeof a === 'object' && typeof b === 'object') {
+    return areObjectsEqual(a as Record<string, unknown>, b as Record<string, unknown>);
   }
   return false;
 }
@@ -157,7 +143,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
 // Simple format validation patterns (pragmatic; not full RFC compliance).
 const FORMAT_PATTERNS: Record<string, string> = {
   date: String.raw`^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$`,
-  "date-time": String.raw`^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$`,
+  'date-time': String.raw`^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$`,
   email: String.raw`^[^\s@]+@[^\s@]+\.[^\s@]{2,}$`,
   ipv4: String.raw`^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(?:\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$`,
   ipv6:
@@ -172,7 +158,7 @@ const FORMAT_PATTERNS: Record<string, string> = {
     `|^:(:[0-9a-fA-F]{1,4}){1,7}$` +
     `|^::$`,
   uri: String.raw`^[a-zA-Z][a-zA-Z0-9+\-.]*:`,
-  uuid: `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`,
+  uuid: `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`
 };
 
 function checkRef(
@@ -182,16 +168,14 @@ function checkRef(
   errors: string[],
   context?: ResolveContext
 ): boolean {
-  if (typeof schema.$ref !== "string") {
+  if (typeof schema.$ref !== 'string') {
     return false;
   }
 
   const ref = schema.$ref;
   const match = /^#\/\$defs\/([^/]+)$/.exec(ref);
   if (match === null || match[1] === undefined) {
-    errors.push(
-      `${path}: unsupported $ref (only local #/$defs/... references are supported): ${ref}`
-    );
+    errors.push(`${path}: unsupported $ref (only local #/$defs/... references are supported): ${ref}`);
     return true;
   }
   const defName = match[1];
@@ -200,9 +184,7 @@ function checkRef(
     return true;
   }
   const defSchema =
-    context?.defs !== undefined && Object.hasOwn(context.defs, defName)
-      ? context.defs[defName]
-      : undefined;
+    context?.defs !== undefined && Object.hasOwn(context.defs, defName) ? context.defs[defName] : undefined;
   if (defSchema === undefined) {
     errors.push(`${path}: $ref not found in $defs: ${ref}`);
     return true;
@@ -215,20 +197,20 @@ function checkRef(
   newResolving.add(defName);
   validateNode(value, defSchema, path, errors, {
     defs: context.defs,
-    resolving: newResolving,
+    resolving: newResolving
   });
   return true;
 }
 
 function isValueTypeMatch(value: unknown, schemaType: string): boolean {
-  if (schemaType === "object") {
-    return value !== null && typeof value === "object" && !Array.isArray(value);
+  if (schemaType === 'object') {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
   }
-  if (schemaType === "array") {
+  if (schemaType === 'array') {
     return Array.isArray(value);
   }
-  if (schemaType === "integer") {
-    return typeof value === "number" && Number.isInteger(value);
+  if (schemaType === 'integer') {
+    return typeof value === 'number' && Number.isInteger(value);
   }
   return typeof value === schemaType;
 }
@@ -254,12 +236,8 @@ function checkAnyOf(
   errors: string[],
   context?: ResolveContext
 ): void {
-  const matched = subSchemas.some((subSchema) => {
-    if (
-      !subSchema ||
-      typeof subSchema !== "object" ||
-      Array.isArray(subSchema)
-    ) {
+  const matched = subSchemas.some(subSchema => {
+    if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) {
       return false;
     }
     const subErrors: string[] = [];
@@ -279,11 +257,7 @@ function checkOneOf(
   context?: ResolveContext
 ): void {
   const matchCount = subSchemas.reduce((count: number, subSchema) => {
-    if (
-      !subSchema ||
-      typeof subSchema !== "object" ||
-      Array.isArray(subSchema)
-    ) {
+    if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) {
       return count;
     }
     const subErrors: string[] = [];
@@ -291,9 +265,7 @@ function checkOneOf(
     return subErrors.length === 0 ? count + 1 : count;
   }, 0);
   if (matchCount !== 1) {
-    errors.push(
-      `${path}: value must match exactly one of the 'oneOf' schemas (matched ${String(matchCount)})`
-    );
+    errors.push(`${path}: value must match exactly one of the 'oneOf' schemas (matched ${String(matchCount)})`);
   }
 }
 
@@ -306,11 +278,7 @@ function checkAllOf(
   context?: ResolveContext
 ): void {
   for (const subSchema of subSchemas) {
-    if (
-      !subSchema ||
-      typeof subSchema !== "object" ||
-      Array.isArray(subSchema)
-    ) {
+    if (!subSchema || typeof subSchema !== 'object' || Array.isArray(subSchema)) {
       continue;
     }
     validateNode(value, subSchema as JsonSchema, path, errors, context);
@@ -324,22 +292,15 @@ function checkCompositeKeywords(
   errors: string[],
   context?: ResolveContext
 ): void {
-  if (
-    Array.isArray(schema.enum) &&
-    !schema.enum.some((item) => deepEqual(item, value))
-  ) {
+  if (Array.isArray(schema.enum) && !schema.enum.some(item => deepEqual(item, value))) {
     errors.push(`${path}: value is not in enum`);
   }
 
-  if ("const" in schema && !deepEqual(value, schema.const)) {
+  if ('const' in schema && !deepEqual(value, schema.const)) {
     errors.push(`${path}: value does not match const`);
   }
 
-  if (
-    schema.not &&
-    typeof schema.not === "object" &&
-    !Array.isArray(schema.not)
-  ) {
+  if (schema.not && typeof schema.not === 'object' && !Array.isArray(schema.not)) {
     const notErrors: string[] = [];
     validateNode(value, schema.not as JsonSchema, path, notErrors, context);
     if (notErrors.length === 0) {
@@ -358,17 +319,10 @@ function checkCompositeKeywords(
   }
 }
 
-function checkPatternConstraint(
-  value: string,
-  pattern: string,
-  path: string,
-  errors: string[]
-): void {
+function checkPatternConstraint(value: string, pattern: string, path: string, errors: string[]): void {
   const MAX_PATTERN_LENGTH = 1024;
   if (pattern.length > MAX_PATTERN_LENGTH) {
-    errors.push(
-      `${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`
-    );
+    errors.push(`${path}: schema pattern exceeds maximum length (${MAX_PATTERN_LENGTH}); skipping validation`);
     return;
   }
   try {
@@ -377,32 +331,23 @@ function checkPatternConstraint(
       errors.push(`${path}: string does not match pattern ${pattern}`);
     }
   } catch {
-    errors.push(
-      `${path}: schema pattern is not a valid regular expression: ${pattern}`
-    );
+    errors.push(`${path}: schema pattern is not a valid regular expression: ${pattern}`);
   }
 }
 
-function checkStringConstraints(
-  value: string,
-  schema: JsonSchema,
-  path: string,
-  errors: string[]
-): void {
-  if (typeof schema.minLength === "number" && value.length < schema.minLength) {
-    errors.push(
-      `${path}: string is shorter than minLength ${schema.minLength}`
-    );
+function checkStringConstraints(value: string, schema: JsonSchema, path: string, errors: string[]): void {
+  if (typeof schema.minLength === 'number' && value.length < schema.minLength) {
+    errors.push(`${path}: string is shorter than minLength ${schema.minLength}`);
   }
-  if (typeof schema.maxLength === "number" && value.length > schema.maxLength) {
+  if (typeof schema.maxLength === 'number' && value.length > schema.maxLength) {
     errors.push(`${path}: string is longer than maxLength ${schema.maxLength}`);
   }
 
-  if (typeof schema.pattern === "string") {
+  if (typeof schema.pattern === 'string') {
     checkPatternConstraint(value, schema.pattern, path, errors);
   }
 
-  if (typeof schema.format === "string") {
+  if (typeof schema.format === 'string') {
     const formatPattern = FORMAT_PATTERNS[schema.format];
     if (formatPattern !== undefined) {
       const regex = getCachedRegex(formatPattern);
@@ -413,33 +358,18 @@ function checkStringConstraints(
   }
 }
 
-function checkNumberConstraints(
-  value: number,
-  schema: JsonSchema,
-  path: string,
-  errors: string[]
-): void {
-  if (typeof schema.minimum === "number" && value < schema.minimum) {
+function checkNumberConstraints(value: number, schema: JsonSchema, path: string, errors: string[]): void {
+  if (typeof schema.minimum === 'number' && value < schema.minimum) {
     errors.push(`${path}: number is below minimum ${schema.minimum}`);
   }
-  if (typeof schema.maximum === "number" && value > schema.maximum) {
+  if (typeof schema.maximum === 'number' && value > schema.maximum) {
     errors.push(`${path}: number is above maximum ${schema.maximum}`);
   }
-  if (
-    typeof schema.exclusiveMinimum === "number" &&
-    value <= schema.exclusiveMinimum
-  ) {
-    errors.push(
-      `${path}: number is not above exclusiveMinimum ${schema.exclusiveMinimum}`
-    );
+  if (typeof schema.exclusiveMinimum === 'number' && value <= schema.exclusiveMinimum) {
+    errors.push(`${path}: number is not above exclusiveMinimum ${schema.exclusiveMinimum}`);
   }
-  if (
-    typeof schema.exclusiveMaximum === "number" &&
-    value >= schema.exclusiveMaximum
-  ) {
-    errors.push(
-      `${path}: number is not below exclusiveMaximum ${schema.exclusiveMaximum}`
-    );
+  if (typeof schema.exclusiveMaximum === 'number' && value >= schema.exclusiveMaximum) {
+    errors.push(`${path}: number is not below exclusiveMaximum ${schema.exclusiveMaximum}`);
   }
 }
 
@@ -450,27 +380,17 @@ function checkArrayConstraints(
   errors: string[],
   context?: ResolveContext
 ): void {
-  if (typeof schema.minItems === "number" && value.length < schema.minItems) {
+  if (typeof schema.minItems === 'number' && value.length < schema.minItems) {
     errors.push(`${path}: array has fewer than ${schema.minItems} items`);
   }
-  if (typeof schema.maxItems === "number" && value.length > schema.maxItems) {
+  if (typeof schema.maxItems === 'number' && value.length > schema.maxItems) {
     errors.push(`${path}: array has more than ${schema.maxItems} items`);
   }
 
   const itemSchema = schema.items;
-  if (
-    itemSchema &&
-    typeof itemSchema === "object" &&
-    !Array.isArray(itemSchema)
-  ) {
+  if (itemSchema && typeof itemSchema === 'object' && !Array.isArray(itemSchema)) {
     for (let i = 0; i < value.length; i++) {
-      validateNode(
-        value[i],
-        itemSchema as JsonSchema,
-        `${path}[${i}]`,
-        errors,
-        context
-      );
+      validateNode(value[i], itemSchema as JsonSchema, `${path}[${i}]`, errors, context);
     }
   }
 }
@@ -499,9 +419,7 @@ function checkObjectConstraints(
   errors: string[],
   context?: ResolveContext
 ): void {
-  const required = Array.isArray(schema.required)
-    ? schema.required.filter((item) => typeof item === "string")
-    : [];
+  const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
   for (const key of required) {
     if (!Object.hasOwn(value, key)) {
       errors.push(`${path}.${key}: missing required property`);
@@ -509,36 +427,17 @@ function checkObjectConstraints(
   }
 
   const properties =
-    schema.properties &&
-    typeof schema.properties === "object" &&
-    !Array.isArray(schema.properties)
+    schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)
       ? (schema.properties as Record<string, unknown>)
       : {};
 
   for (const [key, childSchema] of Object.entries(properties)) {
-    if (
-      Object.hasOwn(value, key) &&
-      childSchema &&
-      typeof childSchema === "object" &&
-      !Array.isArray(childSchema)
-    ) {
-      validateNode(
-        value[key],
-        childSchema as JsonSchema,
-        `${path}.${key}`,
-        errors,
-        context
-      );
+    if (Object.hasOwn(value, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
+      validateNode(value[key], childSchema as JsonSchema, `${path}.${key}`, errors, context);
     }
   }
 
-  checkAdditionalProperties(
-    value,
-    properties,
-    schema.additionalProperties,
-    path,
-    errors
-  );
+  checkAdditionalProperties(value, properties, schema.additionalProperties, path, errors);
 }
 
 // #lizard forgives
@@ -549,23 +448,17 @@ function checkValueTypeConstraints(
   errors: string[],
   context?: ResolveContext
 ): void {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     checkStringConstraints(value, schema, path, errors);
   }
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     checkNumberConstraints(value, schema, path, errors);
   }
   if (Array.isArray(value)) {
     checkArrayConstraints(value, schema, path, errors, context);
   }
-  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-    checkObjectConstraints(
-      value as Record<string, unknown>,
-      schema,
-      path,
-      errors,
-      context
-    );
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    checkObjectConstraints(value as Record<string, unknown>, schema, path, errors, context);
   }
 }
 
@@ -580,13 +473,10 @@ function validateNode(
     return;
   }
 
-  const schemaType = typeof schema.type === "string" ? schema.type : undefined;
+  const schemaType = typeof schema.type === 'string' ? schema.type : undefined;
   const valueType = typeOf(value);
 
-  if (
-    schemaType &&
-    checkTypeConstraint(value, schemaType, valueType, path, errors)
-  ) {
+  if (schemaType && checkTypeConstraint(value, schemaType, valueType, path, errors)) {
     return;
   }
 
@@ -617,13 +507,7 @@ function walkObjectNode(
   }
 }
 
-function walkForLimits(
-  node: unknown,
-  depth: number,
-  maxDepth: number,
-  maxKeys: number,
-  state: WalkLimitsState
-): void {
+function walkForLimits(node: unknown, depth: number, maxDepth: number, maxKeys: number, state: WalkLimitsState): void {
   if (state.errors.length > 0) {
     return;
   }
@@ -640,14 +524,8 @@ function walkForLimits(
     return;
   }
 
-  if (node && typeof node === "object") {
-    walkObjectNode(
-      node as Record<string, unknown>,
-      depth,
-      maxDepth,
-      maxKeys,
-      state
-    );
+  if (node && typeof node === 'object') {
+    walkObjectNode(node as Record<string, unknown>, depth, maxDepth, maxKeys, state);
   }
 }
 
@@ -660,7 +538,7 @@ function parseWithLimits(
   const parsedWithLimits = parseJson(text, {
     ...options,
     maxJsonDepth,
-    maxJsonKeys,
+    maxJsonKeys
   });
   if (parsedWithLimits !== null) {
     return parsedWithLimits;
@@ -679,20 +557,17 @@ function runExternalValidator(
 
   try {
     const validated = options.validator(parsed, schema);
-    if (typeof validated === "boolean") {
+    if (typeof validated === 'boolean') {
       if (!validated) {
-        return { errors: ["$: external validator failed"], success: false };
+        return { errors: ['$: external validator failed'], success: false };
       }
       return null;
     }
 
     if (!validated.valid) {
       return {
-        errors:
-          validated.errors && validated.errors.length > 0
-            ? validated.errors
-            : ["$: external validator failed"],
-        success: false,
+        errors: validated.errors && validated.errors.length > 0 ? validated.errors : ['$: external validator failed'],
+        success: false
       };
     }
     return null;
@@ -700,7 +575,7 @@ function runExternalValidator(
     const message = error instanceof Error ? error.message : String(error);
     return {
       errors: [`$: external validator threw: ${message}`],
-      success: false,
+      success: false
     };
   }
 }
@@ -723,7 +598,7 @@ export function validateJsonSchema<T = unknown>(
   const parsed = parseWithLimits(text, options, maxJsonDepth, maxJsonKeys);
 
   if (parsed === null) {
-    return { errors: ["$: no valid JSON found in input"], success: false };
+    return { errors: ['$: no valid JSON found in input'], success: false };
   }
 
   const limitsState: WalkLimitsState = { errors: [], keyCount: 0 };
@@ -734,15 +609,13 @@ export function validateJsonSchema<T = unknown>(
 
   // Extract $defs for local $ref resolution.
   const defs =
-    schema.$defs &&
-    typeof schema.$defs === "object" &&
-    !Array.isArray(schema.$defs)
+    schema.$defs && typeof schema.$defs === 'object' && !Array.isArray(schema.$defs)
       ? (schema.$defs as Record<string, JsonSchema>)
       : {};
   const context: ResolveContext = { defs, resolving: new Set<string>() };
 
   const errors: string[] = [];
-  validateNode(parsed, schema, "$", errors, context);
+  validateNode(parsed, schema, '$', errors, context);
 
   const externalResult = runExternalValidator(parsed, schema, options);
   if (externalResult !== null) {

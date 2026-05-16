@@ -1,10 +1,6 @@
-import type { SettingsLoaderConfig, LoadedSettings } from "../types/errors.js";
-import type {
-  SettingsChangeListener,
-  SettingsChangeEvent,
-  SettingsValidationResult,
-} from "../types/settings.js";
-import { validateSettings, applyDefaults } from "./schema-validator.js";
+import type { SettingsLoaderConfig, LoadedSettings } from '../types/errors.js';
+import type { SettingsChangeListener, SettingsChangeEvent, SettingsValidationResult } from '../types/settings.js';
+import { validateSettings, applyDefaults } from './schema-validator.js';
 
 /**
  * Loads, validates, and watches VS Code workspace configuration.
@@ -23,9 +19,7 @@ export class SettingsLoader {
    */
   async load(): Promise<LoadedSettings> {
     const raw = await this.readRawSettings();
-    const merged = this.config.defaults
-      ? applyDefaults(raw, this.config.defaults)
-      : raw;
+    const merged = this.config.defaults ? applyDefaults(raw, this.config.defaults) : raw;
 
     if (this.config.schema && Object.keys(this.config.schema).length > 0) {
       validateSettings(merged, this.config.schema);
@@ -64,7 +58,7 @@ export class SettingsLoader {
   onDidChange(listener: SettingsChangeListener): { dispose(): void } {
     this.listeners.add(listener);
     return {
-      dispose: () => this.listeners.delete(listener),
+      dispose: () => this.listeners.delete(listener)
     };
   }
 
@@ -74,16 +68,14 @@ export class SettingsLoader {
    */
   async watch(): Promise<void> {
     try {
-      const vscode = await import("vscode");
-      const disposable = vscode.workspace.onDidChangeConfiguration(
-        async (e) => {
-          if (e.affectsConfiguration(this.config.namespace)) {
-            const oldSettings = { ...this.cachedSettings };
-            const newSettings = await this.load();
-            this.notifyListeners(oldSettings, newSettings);
-          }
+      const vscode = await import('vscode');
+      const disposable = vscode.workspace.onDidChangeConfiguration(async e => {
+        if (e.affectsConfiguration(this.config.namespace)) {
+          const oldSettings = { ...this.cachedSettings };
+          const newSettings = await this.load();
+          this.notifyListeners(oldSettings, newSettings);
         }
-      );
+      });
       this.disposables.push(disposable);
     } catch {
       // VS Code not available — watch is a no-op
@@ -100,7 +92,7 @@ export class SettingsLoader {
 
   private async readRawSettings(): Promise<Record<string, unknown>> {
     try {
-      const vscode = await import("vscode");
+      const vscode = await import('vscode');
       const cfg = vscode.workspace.getConfiguration(this.config.namespace);
       const result: Record<string, unknown> = {};
 
@@ -119,14 +111,8 @@ export class SettingsLoader {
     }
   }
 
-  private notifyListeners(
-    oldSettings: LoadedSettings,
-    newSettings: LoadedSettings
-  ): void {
-    const allKeys = new Set([
-      ...Object.keys(oldSettings),
-      ...Object.keys(newSettings),
-    ]);
+  private notifyListeners(oldSettings: LoadedSettings, newSettings: LoadedSettings): void {
+    const allKeys = new Set([...Object.keys(oldSettings), ...Object.keys(newSettings)]);
 
     for (const key of allKeys) {
       const oldValue = oldSettings[key];

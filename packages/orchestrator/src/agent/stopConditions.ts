@@ -1,4 +1,4 @@
-import type { AgentLoopState, FinishReason, StopCondition } from "./types.js";
+import type { AgentLoopState, FinishReason, StopCondition } from './types.js';
 
 /**
  * Stop after a fixed number of steps.
@@ -35,7 +35,7 @@ export function hasToolCall(name?: string): StopCondition {
     if (name === undefined) {
       return lastStep.toolCalls.length > 0;
     }
-    return lastStep.toolCalls.some((toolCall) => toolCall.name === name);
+    return lastStep.toolCalls.some(toolCall => toolCall.name === name);
   };
 }
 
@@ -48,10 +48,7 @@ export function finishReasonIs(...reasons: FinishReason[]): StopCondition {
       return false;
     }
     const lastStep = state.steps.at(-1);
-    return (
-      lastStep?.finishReason !== undefined &&
-      reasons.includes(lastStep.finishReason)
-    );
+    return lastStep?.finishReason !== undefined && reasons.includes(lastStep.finishReason);
   };
 }
 
@@ -64,9 +61,7 @@ export function isLoopFinished(): StopCondition {
     if (!lastStep) {
       return false;
     }
-    return (
-      lastStep.toolCalls.length === 0 && lastStep.finishReason !== undefined
-    );
+    return lastStep.toolCalls.length === 0 && lastStep.finishReason !== undefined;
   };
 }
 
@@ -76,6 +71,5 @@ export function isLoopFinished(): StopCondition {
  * Defaults to 3 consecutive identical calls.
  */
 export function detectDoomLoop(threshold: number = 3): StopCondition {
-  return (state: AgentLoopState): boolean =>
-    state.consecutiveIdenticalCalls >= threshold;
+  return (state: AgentLoopState): boolean => state.consecutiveIdenticalCalls >= threshold;
 }

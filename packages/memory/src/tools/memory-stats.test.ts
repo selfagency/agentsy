@@ -1,33 +1,33 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { createMemoryStatsTool } from "./memory-stats.js";
+import { createMemoryStatsTool } from './memory-stats.js';
 
-describe("memory_stats tool", () => {
-  it("returns aggregated counts by scope", async () => {
+describe('memory_stats tool', () => {
+  it('returns aggregated counts by scope', async () => {
     const tool = createMemoryStatsTool({
       list: () => [
         {
-          actorId: "u1",
-          content: "a",
-          createdAt: new Date("2026-01-01T00:00:00Z"),
-          id: "1",
-          scope: "session",
+          actorId: 'u1',
+          content: 'a',
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          id: '1',
+          scope: 'session'
         },
         {
-          actorId: "u1",
-          content: "b",
-          createdAt: new Date("2026-01-01T00:00:00Z"),
-          id: "2",
-          scope: "project",
+          actorId: 'u1',
+          content: 'b',
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          id: '2',
+          scope: 'project'
         },
         {
-          actorId: "u1",
-          content: "c",
-          createdAt: new Date("2026-01-01T00:00:00Z"),
-          id: "3",
-          scope: "project",
-        },
-      ],
+          actorId: 'u1',
+          content: 'c',
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          id: '3',
+          scope: 'project'
+        }
+      ]
     });
 
     const result = await tool.execute();

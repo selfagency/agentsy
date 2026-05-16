@@ -1,5 +1,5 @@
-import type { OutputPart } from "@agentsy/core/processor";
-import { parseJson } from "@agentsy/core/structured";
+import type { OutputPart } from '@agentsy/core/processor';
+import { parseJson } from '@agentsy/core/structured';
 
 export interface VSCodeToolCallPartLike {
   callId: string;
@@ -17,18 +17,18 @@ interface PendingDeltaCall {
  * Converts a processor `tool_call` output part into a VS Code-like tool-call payload.
  */
 export function toVSCodeToolCallPart(
-  part: Extract<OutputPart, { type: "tool_call" }>,
+  part: Extract<OutputPart, { type: 'tool_call' }>,
   options?: { fallbackCallId?: string | (() => string) }
 ): VSCodeToolCallPartLike {
   const fallbackCallId =
-    typeof options?.fallbackCallId === "function"
+    typeof options?.fallbackCallId === 'function'
       ? options.fallbackCallId()
       : (options?.fallbackCallId ?? `${part.call.name}_call`);
 
   return {
     callId: part.call.id ?? fallbackCallId,
     input: part.call.parameters,
-    name: part.call.name,
+    name: part.call.name
   };
 }
 
@@ -38,7 +38,7 @@ export function toVSCodeToolCallPart(
 export class ToolCallDeltaAccumulator {
   private readonly calls = new Map<number, PendingDeltaCall>();
 
-  add(delta: Extract<OutputPart, { type: "tool_call_delta" }>): void {
+  add(delta: Extract<OutputPart, { type: 'tool_call_delta' }>): void {
     const existing = this.calls.get(delta.index);
     if (existing !== undefined) {
       if (delta.id !== undefined) {
@@ -52,7 +52,7 @@ export class ToolCallDeltaAccumulator {
     this.calls.set(delta.index, {
       ...(delta.id === undefined ? {} : { id: delta.id }),
       argumentsBuffer: delta.argumentsDelta,
-      name: delta.name,
+      name: delta.name
     });
   }
 
@@ -65,18 +65,13 @@ export class ToolCallDeltaAccumulator {
 
     for (const [index, call] of this.calls.entries()) {
       const fallbackId = call.id ?? `native_${index}`;
-      const fallbackName = call.name ?? "tool_call";
-      const parsed = this.parseArgumentsBuffer(
-        call.argumentsBuffer,
-        index,
-        repairIncomplete,
-        options?.onWarning
-      );
+      const fallbackName = call.name ?? 'tool_call';
+      const parsed = this.parseArgumentsBuffer(call.argumentsBuffer, index, repairIncomplete, options?.onWarning);
 
       parts.push({
         callId: fallbackId,
         input: parsed,
-        name: fallbackName,
+        name: fallbackName
       });
     }
 
@@ -105,8 +100,8 @@ export class ToolCallDeltaAccumulator {
     }
 
     if (!repairIncomplete) {
-      onWarning?.("Malformed tool_call_delta arguments; using empty input.", {
-        index,
+      onWarning?.('Malformed tool_call_delta arguments; using empty input.', {
+        index
       });
       return {};
     }
@@ -116,10 +111,7 @@ export class ToolCallDeltaAccumulator {
       return repaired;
     }
 
-    onWarning?.(
-      "Unable to repair malformed tool_call_delta arguments; using empty input.",
-      { index }
-    );
+    onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', { index });
     return {};
   }
 
@@ -132,15 +124,13 @@ export class ToolCallDeltaAccumulator {
     }
   }
 
-  private parseRepairedJsonObject(
-    value: string
-  ): Record<string, unknown> | null {
+  private parseRepairedJsonObject(value: string): Record<string, unknown> | null {
     const repaired = parseJson(value, { repairIncomplete: true });
     return this.asObjectRecord(repaired);
   }
 
   private asObjectRecord(value: unknown): Record<string, unknown> | null {
-    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
       return null;
     }
     return value as Record<string, unknown>;
@@ -150,7 +140,7 @@ export class ToolCallDeltaAccumulator {
 /** Convenience function wrapper around ToolCallDeltaAccumulator#add. */
 export function accumulateToolCallDeltas(
   accumulator: ToolCallDeltaAccumulator,
-  delta: Extract<OutputPart, { type: "tool_call_delta" }>
+  delta: Extract<OutputPart, { type: 'tool_call_delta' }>
 ): void {
   accumulator.add(delta);
 }

@@ -1,8 +1,8 @@
-import type { StreamChunk } from "@agentsy/core/processor";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
+import type { StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
-import { createStepChangeEmitter } from "../shared.js";
-import type { BaseRendererOptions, RendererHandle } from "../types.js";
+import { createStepChangeEmitter } from '../shared.js';
+import type { BaseRendererOptions, RendererHandle } from '../types.js';
 
 /**
  * Structural interface for browser DOM elements.
@@ -81,16 +81,14 @@ async function getStreamingMarkdownDeps(): Promise<{
   DOMPurify: DOMPurifyModule;
 }> {
   try {
-    const smdImported = await import("streaming-markdown");
-    const smdModule =
-      (smdImported as { default: unknown }).default ?? smdImported;
-    const dompurifyImported = await import("dompurify");
-    const dompurifyModule =
-      (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
+    const smdImported = await import('streaming-markdown');
+    const smdModule = (smdImported as { default: unknown }).default ?? smdImported;
+    const dompurifyImported = await import('dompurify');
+    const dompurifyModule = (dompurifyImported as { default: unknown }).default ?? dompurifyImported;
 
     return {
       DOMPurify: dompurifyModule as DOMPurifyModule,
-      smd: smdModule as StreamingMarkdownModule,
+      smd: smdModule as StreamingMarkdownModule
     };
   } catch {
     throw new Error(
@@ -99,22 +97,11 @@ async function getStreamingMarkdownDeps(): Promise<{
   }
 }
 
-export function createStreamingMarkdownRenderer(
-  options: StreamingMarkdownRendererOptions
-): RendererHandle {
-  const {
-    target,
-    showThinking = false,
-    onSecurityViolation,
-    processor,
-    onError,
-    onFinish,
-  } = options;
+export function createStreamingMarkdownRenderer(options: StreamingMarkdownRendererOptions): RendererHandle {
+  const { target, showThinking = false, onSecurityViolation, processor, onError, onFinish } = options;
 
   if (!target) {
-    throw new Error(
-      "Target element is required for streaming markdown renderer"
-    );
+    throw new Error('Target element is required for streaming markdown renderer');
   }
 
   // Create processor if not provided (owns it internally)
@@ -125,7 +112,7 @@ export function createStreamingMarkdownRenderer(
   const emitStepChange = createStepChangeEmitter(options.onStep);
 
   // Accumulator for markdown content
-  let accumulatedMarkdown = "";
+  let accumulatedMarkdown = '';
   let parser: unknown = null;
 
   // Initialize parser lazily on first write
@@ -144,9 +131,9 @@ export function createStreamingMarkdownRenderer(
    */
   function processParts(parts: { type: string; text?: string }[]): void {
     for (const part of parts) {
-      if (part.type === "text" && part.text) {
+      if (part.type === 'text' && part.text) {
         accumulatedMarkdown += part.text;
-      } else if (part.type === "thinking" && showThinking && part.text) {
+      } else if (part.type === 'thinking' && showThinking && part.text) {
         accumulatedMarkdown += `\n> **💭 Thinking:** ${part.text}\n`;
       }
     }
@@ -265,6 +252,6 @@ export function createStreamingMarkdownRenderer(
           throw error;
         }
       }
-    },
+    }
   };
 }

@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access } from 'node:fs/promises';
 
 export interface HonkerLoadOptions {
   dbPath: string;
@@ -14,7 +14,7 @@ export interface HonkerLoadFeatures {
 }
 
 export interface HonkerLoadResult {
-  mode: "native" | "fallback";
+  mode: 'native' | 'fallback';
   dbPath: string;
   features: HonkerLoadFeatures;
   reason?: string;
@@ -29,9 +29,7 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-export async function loadHonkerExtension(
-  options: HonkerLoadOptions
-): Promise<HonkerLoadResult> {
+export async function loadHonkerExtension(options: HonkerLoadOptions): Promise<HonkerLoadResult> {
   const hasHonker = await fileExists(options.extensionPath);
   const hasBlake3 = await fileExists(options.blake3ExtensionPath);
 
@@ -42,9 +40,9 @@ export async function loadHonkerExtension(
         blake3: true,
         pubSub: true,
         scheduler: true,
-        taskQueue: true,
+        taskQueue: true
       },
-      mode: "native",
+      mode: 'native'
     };
   }
 
@@ -54,9 +52,9 @@ export async function loadHonkerExtension(
       blake3: false,
       pubSub: false,
       scheduler: false,
-      taskQueue: false,
+      taskQueue: false
     },
-    mode: "fallback",
-    reason: "Required native extensions were not found on disk.",
+    mode: 'fallback',
+    reason: 'Required native extensions were not found on disk.'
   };
 }

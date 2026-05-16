@@ -35,16 +35,16 @@ Source contains additional CLI, Ink, and streaming Markdown implementations, but
 ## Usage
 
 ```ts
-import { normalizeOpenAIChatChunk } from "@agentsy/normalizers";
-import { LLMStreamProcessor } from "@agentsy/processor";
-import { createPlainTextRenderer } from "@agentsy/renderers";
+import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
+import { LLMStreamProcessor } from '@agentsy/processor';
+import { createPlainTextRenderer } from '@agentsy/renderers';
 
 const processor = new LLMStreamProcessor();
 const renderer = createPlainTextRenderer({
-  output: (text) => process.stdout.write(text),
+  output: text => process.stdout.write(text)
 });
 
-processor.on("text", (text) => void renderer.write(text));
+processor.on('text', text => void renderer.write(text));
 
 for await (const rawChunk of openAiStream) {
   processor.process(normalizeOpenAIChatChunk(rawChunk));

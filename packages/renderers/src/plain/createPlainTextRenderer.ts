@@ -1,9 +1,5 @@
-import { createOutputWriter, createSharedRendererHandle } from "../shared.js";
-import type {
-  BaseRendererOptions,
-  RendererHandle,
-  TextOutput,
-} from "../types.js";
+import { createOutputWriter, createSharedRendererHandle } from '../shared.js';
+import type { BaseRendererOptions, RendererHandle, TextOutput } from '../types.js';
 
 /**
  * Options for the plain text renderer.
@@ -41,14 +37,8 @@ export interface PlainTextRendererOptions extends BaseRendererOptions {
  * await renderer.end();
  * ```
  */
-export function createPlainTextRenderer(
-  options: PlainTextRendererOptions = {}
-): RendererHandle {
-  const {
-    output = process.stdout,
-    showThinking = false,
-    thinkingPrefix = "[Thinking] ",
-  } = options;
+export function createPlainTextRenderer(options: PlainTextRendererOptions = {}): RendererHandle {
+  const { output = process.stdout, showThinking = false, thinkingPrefix = '[Thinking] ' } = options;
   const { onToolCall } = options;
 
   const writeOutput = createOutputWriter(output);
@@ -65,23 +55,21 @@ export function createPlainTextRenderer(
         }
       },
       ...(onToolCall !== undefined && {
-        onToolCall: async (
-          part: Parameters<NonNullable<typeof options.onToolCall>>[0]
-        ) => {
+        onToolCall: async (part: Parameters<NonNullable<typeof options.onToolCall>>[0]) => {
           await onToolCall(part);
-        },
+        }
       }),
       onEnd: async () => {
         // Call end() on stream if it has one (but not on process.stdout)
         if (
-          typeof output === "object" &&
+          typeof output === 'object' &&
           output !== process.stdout &&
-          "end" in output &&
-          typeof output.end === "function"
+          'end' in output &&
+          typeof output.end === 'function'
         ) {
           output.end();
         }
-      },
+      }
     },
     options.onError
   );

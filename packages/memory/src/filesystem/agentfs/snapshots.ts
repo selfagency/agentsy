@@ -1,4 +1,4 @@
-import type { AgentFsEntry, AgentFsManager } from "./manager.js";
+import type { AgentFsEntry, AgentFsManager } from './manager.js';
 
 export interface Snapshot {
   readonly id: string;
@@ -18,7 +18,7 @@ export interface SnapshotStore {
 let snapCounter = 0;
 
 function generateSnapshotId(): string {
-  return `snap-${Date.now().toString(36)}-${(++snapCounter).toString(36).padStart(4, "0")}`;
+  return `snap-${Date.now().toString(36)}-${(++snapCounter).toString(36).padStart(4, '0')}`;
 }
 
 export function createSnapshotStore(): SnapshotStore {
@@ -30,7 +30,7 @@ export function createSnapshotStore(): SnapshotStore {
         id: generateSnapshotId(),
         ...(label === undefined ? {} : { label }),
         timestamp: Date.now(),
-        entries: manager.list().map((e) => ({ ...e })),
+        entries: manager.list().map(e => ({ ...e }))
       };
       snapshots.set(snapshot.id, snapshot);
       return snapshot;
@@ -45,9 +45,7 @@ export function createSnapshotStore(): SnapshotStore {
     },
 
     list() {
-      return [...snapshots.values()].toSorted(
-        (a, b) => b.timestamp - a.timestamp
-      );
+      return [...snapshots.values()].toSorted((a, b) => b.timestamp - a.timestamp);
     },
 
     restore(snapshotId, manager) {
@@ -58,8 +56,8 @@ export function createSnapshotStore(): SnapshotStore {
       manager.clear();
 
       // Use manager.import() if available to preserve full entry metadata (timestamps)
-      if (typeof manager.import === "function") {
-        manager.import(snapshot.entries.map((e) => ({ ...e })));
+      if (typeof manager.import === 'function') {
+        manager.import(snapshot.entries.map(e => ({ ...e })));
       } else {
         // Fallback for simple manager implementations
         for (const entry of snapshot.entries) {
@@ -67,6 +65,6 @@ export function createSnapshotStore(): SnapshotStore {
         }
       }
       return true;
-    },
+    }
   };
 }

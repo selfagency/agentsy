@@ -1,68 +1,61 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
 
-import { retry } from "./index.js";
+import { retry } from './index.js';
 
 describe(retry, () => {
-  it("returns the operation result when it succeeds on the first attempt", async () => {
-    await expect(retry(async () => "ok")).resolves.toBe("ok");
+  it('returns the operation result when it succeeds on the first attempt', async () => {
+    await expect(retry(async () => 'ok')).resolves.toBe('ok');
   });
 
-  it("retries after a failure and eventually resolves", async () => {
-    const fn = vi
-      .fn<() => Promise<string>>()
-      .mockRejectedValueOnce(new Error("temporary"))
-      .mockResolvedValueOnce("ok");
+  it('retries after a failure and eventually resolves', async () => {
+    const fn = vi.fn<() => Promise<string>>().mockRejectedValueOnce(new Error('temporary')).mockResolvedValueOnce('ok');
     const operation = retry(fn, {
       backoffFactor: 2,
       initialDelay: 0,
       maxAttempts: 3,
-      maxDelay: 0,
+      maxDelay: 0
     });
 
-    await expect(operation).resolves.toBe("ok");
+    await expect(operation).resolves.toBe('ok');
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
-  it("rejects after max attempts are exhausted", async () => {
-    const error = new Error("failed");
+  it('rejects after max attempts are exhausted', async () => {
+    const error = new Error('failed');
     const fn = vi.fn<() => Promise<string>>().mockRejectedValue(error);
     const operation = retry(fn, {
       backoffFactor: 2,
       initialDelay: 0,
       maxAttempts: 2,
-      maxDelay: 0,
+      maxDelay: 0
     });
 
     await expect(operation).rejects.toBe(error);
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
-  it("rejects with a standard AbortError when already aborted", async () => {
+  it('rejects with a standard AbortError when already aborted', async () => {
     const controller = new AbortController();
     controller.abort();
 
-    await expect(
-      retry(async () => "ok", { signal: controller.signal })
-    ).rejects.toMatchObject({
-      message: "Retry aborted",
-      name: "AbortError",
+    await expect(retry(async () => 'ok', { signal: controller.signal })).rejects.toMatchObject({
+      message: 'Retry aborted',
+      name: 'AbortError'
     });
   });
 
-  it("stops waiting immediately when aborted during the retry delay", async () => {
+  it('stops waiting immediately when aborted during the retry delay', async () => {
     vi.useFakeTimers();
 
     try {
       const controller = new AbortController();
-      const fn = vi
-        .fn<() => Promise<string>>()
-        .mockRejectedValue(new Error("temporary"));
+      const fn = vi.fn<() => Promise<string>>().mockRejectedValue(new Error('temporary'));
       const operation = retry(fn, {
         backoffFactor: 2,
         initialDelay: 1000,
         maxAttempts: 3,
         maxDelay: 1000,
-        signal: controller.signal,
+        signal: controller.signal
       });
 
       await Promise.resolve();
@@ -71,8 +64,8 @@ describe(retry, () => {
       controller.abort();
 
       await expect(operation).rejects.toMatchObject({
-        message: "Retry aborted",
-        name: "AbortError",
+        message: 'Retry aborted',
+        name: 'AbortError'
       });
 
       vi.advanceTimersByTime(1000);
@@ -82,21 +75,21 @@ describe(retry, () => {
     }
   });
 
-  it("caps exponential backoff at maxDelay", async () => {
+  it('caps exponential backoff at maxDelay', async () => {
     vi.useFakeTimers();
 
     try {
       const fn = vi
         .fn<() => Promise<string>>()
-        .mockRejectedValueOnce(new Error("temporary-1"))
-        .mockRejectedValueOnce(new Error("temporary-2"))
-        .mockResolvedValueOnce("ok");
+        .mockRejectedValueOnce(new Error('temporary-1'))
+        .mockRejectedValueOnce(new Error('temporary-2'))
+        .mockResolvedValueOnce('ok');
 
       const operation = retry(fn, {
         backoffFactor: 3,
         initialDelay: 100,
         maxAttempts: 4,
-        maxDelay: 150,
+        maxDelay: 150
       });
 
       await Promise.resolve();
@@ -111,7 +104,7 @@ describe(retry, () => {
       expect(fn).toHaveBeenCalledTimes(2);
 
       vi.advanceTimersByTime(1);
-      await expect(operation).resolves.toBe("ok");
+      await expect(operation).resolves.toBe('ok');
       expect(fn).toHaveBeenCalledTimes(3);
     } finally {
       vi.useRealTimers();

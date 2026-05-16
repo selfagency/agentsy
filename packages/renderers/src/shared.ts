@@ -1,23 +1,15 @@
-import type { OutputPart, StreamChunk } from "@agentsy/core/processor";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
+import type { OutputPart, StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
-import type { BaseRendererOptions, RendererHandle } from "./types.js";
+import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 export function createStepChangeEmitter(
-  onStep: BaseRendererOptions["onStep"] | undefined
-): (
-  chunk: StreamChunk | ReturnType<LLMStreamProcessor["flush"]>
-) => Promise<void> {
+  onStep: BaseRendererOptions['onStep'] | undefined
+): (chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>) => Promise<void> {
   let lastReportedStepIndex: number | undefined;
 
-  return async (
-    chunk: StreamChunk | ReturnType<LLMStreamProcessor["flush"]>
-  ): Promise<void> => {
-    if (
-      onStep === undefined ||
-      chunk.stepIndex === undefined ||
-      chunk.stepIndex === lastReportedStepIndex
-    ) {
+  return async (chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>): Promise<void> => {
+    if (onStep === undefined || chunk.stepIndex === undefined || chunk.stepIndex === lastReportedStepIndex) {
       return;
     }
 
@@ -37,10 +29,8 @@ export function createSharedRendererHandle(
   handlers: {
     onText: (text: string) => Promise<void>;
     onThinking: (text: string) => Promise<void>;
-    onToolCall?: (part: OutputPart & { type: "tool_call" }) => Promise<void>;
-    onToolCallDelta?: (
-      part: OutputPart & { type: "tool_call_delta" }
-    ) => Promise<void>;
+    onToolCall?: (part: OutputPart & { type: 'tool_call' }) => Promise<void>;
+    onToolCallDelta?: (part: OutputPart & { type: 'tool_call_delta' }) => Promise<void>;
     onEnd?: () => Promise<void>;
   },
   onError?: (error: Error) => void
@@ -60,21 +50,21 @@ export function createSharedRendererHandle(
   async function processParts(parts: OutputPart[]): Promise<void> {
     for (const part of parts) {
       switch (part.type) {
-        case "text": {
+        case 'text': {
           await handlers.onText(part.text);
           break;
         }
-        case "thinking": {
+        case 'thinking': {
           await handlers.onThinking(part.text);
           break;
         }
-        case "tool_call": {
+        case 'tool_call': {
           if (handlers.onToolCall) {
             await handlers.onToolCall(part);
           }
           break;
         }
-        case "tool_call_delta": {
+        case 'tool_call_delta': {
           if (handlers.onToolCallDelta) {
             await handlers.onToolCallDelta(part);
           }
@@ -141,7 +131,7 @@ export function createSharedRendererHandle(
           throw error;
         }
       }
-    },
+    }
   };
 }
 
@@ -150,15 +140,12 @@ export function createSharedRendererHandle(
  * @internal
  */
 export function createOutputWriter(
-  output:
-    | NodeJS.WritableStream
-    | ((text: string) => void)
-    | { write: (text: string) => void }
+  output: NodeJS.WritableStream | ((text: string) => void) | { write: (text: string) => void }
 ): (text: string) => void {
   return (text: string): void => {
-    if (typeof output === "function") {
+    if (typeof output === 'function') {
       output(text);
-    } else if ("write" in output && typeof output.write === "function") {
+    } else if ('write' in output && typeof output.write === 'function') {
       output.write(text);
     }
   };

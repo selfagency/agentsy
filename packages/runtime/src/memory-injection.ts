@@ -21,11 +21,11 @@ export interface RuntimeMemoryInjectionOptions {
 
 function escapeXml(value: string): string {
   return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
 }
 
 export function buildRuntimeMemoryContextXml(
@@ -37,46 +37,39 @@ export function buildRuntimeMemoryContextXml(
 
   const body = evidence
     .slice(0, maxItems)
-    .map((item) => {
+    .map(item => {
       const citationXml = item.citations
-        .map((citation) => {
-          const urlAttr = citation.url
-            ? ` url="${escapeXml(citation.url)}"`
-            : "";
+        .map(citation => {
+          const urlAttr = citation.url ? ` url="${escapeXml(citation.url)}"` : '';
           return `<citation source_id="${escapeXml(citation.sourceId)}" source_type="${escapeXml(citation.sourceType)}"${urlAttr}>${escapeXml(citation.title ?? citation.sourceId)}</citation>`;
         })
-        .join("");
+        .join('');
 
       return [
         `<memory_item id="${escapeXml(item.id)}" scope="${escapeXml(item.scope)}" score="${item.score.toFixed(3)}">`,
         `<title>${escapeXml(item.title)}</title>`,
         `<content>${escapeXml(item.content.slice(0, maxContentChars))}</content>`,
         `<citations>${citationXml}</citations>`,
-        "</memory_item>",
-      ].join("");
+        '</memory_item>'
+      ].join('');
     })
-    .join("");
+    .join('');
 
   return `<memory_context>${body}</memory_context>`;
 }
 
-export function injectRuntimeMemoryContext(
-  existingPrompt: string,
-  memoryContextXml: string
-): string {
+export function injectRuntimeMemoryContext(existingPrompt: string, memoryContextXml: string): string {
   const trimmedExisting = existingPrompt.trimStart();
-  if (trimmedExisting.startsWith("<memory_context>") === false) {
+  if (trimmedExisting.startsWith('<memory_context>') === false) {
     return `${memoryContextXml}\n${existingPrompt}`;
   }
 
-  const endIndex = trimmedExisting.indexOf("</memory_context>");
+  const endIndex = trimmedExisting.indexOf('</memory_context>');
   if (endIndex === -1) {
     return `${memoryContextXml}\n${existingPrompt}`;
   }
 
-  const remainder = trimmedExisting
-    .slice(endIndex + "</memory_context>".length)
-    .trimStart();
-  const separator = remainder.length > 0 ? "\n" : "";
+  const remainder = trimmedExisting.slice(endIndex + '</memory_context>'.length).trimStart();
+  const separator = remainder.length > 0 ? '\n' : '';
   return `${memoryContextXml}${separator}${remainder}`;
 }

@@ -1,33 +1,33 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from 'vitest';
 
-import { createPlainTextRenderer } from "./createPlainTextRenderer.js";
+import { createPlainTextRenderer } from './createPlainTextRenderer.js';
 
-describe("Plain Text Renderer", () => {
-  it("renders text on flush", async () => {
+describe('Plain Text Renderer', () => {
+  it('renders text on flush', async () => {
     const output = vi.fn();
     const renderer = createPlainTextRenderer({ output });
 
-    await renderer.write("Hello ");
-    await renderer.write("World");
+    await renderer.write('Hello ');
+    await renderer.write('World');
     await renderer.end();
 
     // Processor accumulates and emits on end/flush
     expect(output).toHaveBeenCalledWith();
-    const allCalls = output.mock.calls.map((c) => c[0]).join("");
-    expect(allCalls).toContain("Hello");
-    expect(allCalls).toContain("World");
+    const allCalls = output.mock.calls.map(c => c[0]).join('');
+    expect(allCalls).toContain('Hello');
+    expect(allCalls).toContain('World');
   });
 
-  it("calls onError callback on processing errors", async () => {
+  it('calls onError callback on processing errors', async () => {
     const onError = vi.fn();
     const output = vi.fn();
     const renderer = createPlainTextRenderer({
       onError,
-      output,
+      output
     });
 
     // Process normal data first
-    await renderer.write("normal text");
+    await renderer.write('normal text');
     expect(onError).not.toHaveBeenCalled();
 
     // End successfully
@@ -35,30 +35,30 @@ describe("Plain Text Renderer", () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
-  it("handles writable stream output", async () => {
+  it('handles writable stream output', async () => {
     const mockStream = {
       end: vi.fn(),
-      write: vi.fn(),
+      write: vi.fn()
     };
 
     const renderer = createPlainTextRenderer({
-      output: mockStream as unknown as NodeJS.WritableStream,
+      output: mockStream as unknown as NodeJS.WritableStream
     });
 
-    await renderer.write("Test ");
-    await renderer.write("stream");
+    await renderer.write('Test ');
+    await renderer.write('stream');
     await renderer.end();
 
     expect(mockStream.write).toHaveBeenCalledWith();
     expect(mockStream.end).toHaveBeenCalledWith();
 
     // Verify content was written
-    const allContent = mockStream.write.mock.calls.map((c) => c[0]).join("");
-    expect(allContent).toContain("Test");
-    expect(allContent).toContain("stream");
+    const allContent = mockStream.write.mock.calls.map(c => c[0]).join('');
+    expect(allContent).toContain('Test');
+    expect(allContent).toContain('stream');
   });
 
-  it("defaults to process.stdout when no output specified", async () => {
+  it('defaults to process.stdout when no output specified', async () => {
     const renderer = createPlainTextRenderer();
 
     // Should not throw; just verify the factory works with defaults
@@ -67,99 +67,99 @@ describe("Plain Text Renderer", () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it("processes multiple chunks correctly", async () => {
+  it('processes multiple chunks correctly', async () => {
     const output = vi.fn();
     const renderer = createPlainTextRenderer({ output });
 
-    await renderer.write("Chunk 1 ");
-    await renderer.write("Chunk 2 ");
-    await renderer.write("Chunk 3");
+    await renderer.write('Chunk 1 ');
+    await renderer.write('Chunk 2 ');
+    await renderer.write('Chunk 3');
     await renderer.end();
 
     // Verify all chunks were processed
-    const allContent = output.mock.calls.map((c) => c[0]).join("");
-    expect(allContent).toContain("Chunk 1");
-    expect(allContent).toContain("Chunk 2");
-    expect(allContent).toContain("Chunk 3");
+    const allContent = output.mock.calls.map(c => c[0]).join('');
+    expect(allContent).toContain('Chunk 1');
+    expect(allContent).toContain('Chunk 2');
+    expect(allContent).toContain('Chunk 3');
   });
 
-  it("respects showThinking flag", async () => {
+  it('respects showThinking flag', async () => {
     const output = vi.fn();
     const renderer = createPlainTextRenderer({
       output,
-      showThinking: true,
+      showThinking: true
     });
 
-    await renderer.write("Some text");
+    await renderer.write('Some text');
     await renderer.end();
 
     // Just verify it doesn't error with showThinking enabled
     expect(output).toHaveBeenCalledWith();
   });
 
-  it("uses custom thinking prefix when provided", async () => {
+  it('uses custom thinking prefix when provided', async () => {
     const output = vi.fn();
     const renderer = createPlainTextRenderer({
       output,
       showThinking: true,
-      thinkingPrefix: "💭 Custom: ",
+      thinkingPrefix: '💭 Custom: '
     });
 
-    await renderer.write("Text content");
+    await renderer.write('Text content');
     await renderer.end();
 
     // Just verify it doesn't error with custom prefix
     expect(output).toHaveBeenCalledWith();
   });
 
-  describe("onFinish callback", () => {
-    it("calls onFinish via writeChunk when done=true", async () => {
+  describe('onFinish callback', () => {
+    it('calls onFinish via writeChunk when done=true', async () => {
       const onFinish = vi.fn();
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         onFinish,
-        output,
+        output
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "stop",
+        finishReason: 'stop'
       });
 
-      expect(onFinish).toHaveBeenCalledWith("stop", undefined);
+      expect(onFinish).toHaveBeenCalledWith('stop', undefined);
     });
 
-    it("passes usage data to onFinish", async () => {
+    it('passes usage data to onFinish', async () => {
       const onFinish = vi.fn();
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         onFinish,
-        output,
+        output
       });
 
       await renderer.writeChunk({
-        content: "Test",
+        content: 'Test',
         done: true,
-        finishReason: "length",
-        usage: { inputTokens: 10, outputTokens: 20 },
+        finishReason: 'length',
+        usage: { inputTokens: 10, outputTokens: 20 }
       });
 
-      expect(onFinish).toHaveBeenCalledWith("length", {
+      expect(onFinish).toHaveBeenCalledWith('length', {
         inputTokens: 10,
-        outputTokens: 20,
+        outputTokens: 20
       });
     });
 
-    it("calls onFinish in end() if not already called", async () => {
+    it('calls onFinish in end() if not already called', async () => {
       const onFinish = vi.fn();
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         onFinish,
-        output,
+        output
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       // Should be called once in end()
@@ -167,30 +167,30 @@ describe("Plain Text Renderer", () => {
     });
   });
 
-  describe("Tool call callbacks", () => {
-    it("accepts onToolCall callback", async () => {
+  describe('Tool call callbacks', () => {
+    it('accepts onToolCall callback', async () => {
       const onToolCall = vi.fn();
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         onToolCall,
-        output,
+        output
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(renderer).toBeDefined();
     });
 
-    it("accepts onToolCallDelta callback", async () => {
+    it('accepts onToolCallDelta callback', async () => {
       const onToolCallDelta = vi.fn();
       const output = vi.fn();
       const renderer = createPlainTextRenderer({
         onToolCallDelta,
-        output,
+        output
       });
 
-      await renderer.write("Content");
+      await renderer.write('Content');
       await renderer.end();
 
       expect(renderer).toBeDefined();

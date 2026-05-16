@@ -1,11 +1,8 @@
-import type { RAGEvidence, RAGWeightConfig } from "./types.js";
+import type { RAGEvidence, RAGWeightConfig } from './types.js';
 
-export function rerankResults(
-  results: readonly RAGEvidence[],
-  weights: RAGWeightConfig
-): RAGEvidence[] {
+export function rerankResults(results: readonly RAGEvidence[], weights: RAGWeightConfig): RAGEvidence[] {
   return [...results]
-    .map((item) => {
+    .map(item => {
       const final =
         item.scoreBreakdown.vector * weights.vector +
         item.scoreBreakdown.lexical * weights.lexical +
@@ -18,8 +15,8 @@ export function rerankResults(
         score: final,
         scoreBreakdown: {
           ...item.scoreBreakdown,
-          final,
-        },
+          final
+        }
       };
     })
     .toSorted((left, right) => right.score - left.score);

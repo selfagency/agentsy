@@ -28,19 +28,13 @@
  * ```
  */
 
-export {
-  createPlainTextRenderer,
-  type PlainTextRendererOptions,
-} from "./plain/index.js";
-export {
-  createSharedRendererHandle,
-  createStepChangeEmitter,
-} from "./shared.js";
+export { createPlainTextRenderer, type PlainTextRendererOptions } from './plain/index.js';
+export { createSharedRendererHandle, createStepChangeEmitter } from './shared.js';
 export type {
   BaseRendererOptions,
   CancellationToken,
   OnToolCall,
   RendererHandle,
   TextOutput,
-  ThinkingStyle,
-} from "./types.js";
+  ThinkingStyle
+} from './types.js';

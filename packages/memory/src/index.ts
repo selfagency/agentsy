@@ -7,36 +7,29 @@ export {
   type ContextFingerprint,
   type CreateContextFingerprintInput,
   type CreateMemoryReuseHintInput,
-  type MemoryReuseHint,
-} from "./types.js";
+  type MemoryReuseHint
+} from './types.js';
 
 export {
   createAtomicWorkflowCoordinator,
   type AtomicWorkflowContext,
   type AtomicWorkflowCoordinator,
   type AtomicWorkflowResult,
-  type AtomicWorkflowStep,
-} from "./coordination/atomic-workflows.js";
+  type AtomicWorkflowStep
+} from './coordination/atomic-workflows.js';
 export {
   loadHonkerExtension,
   type HonkerLoadFeatures,
   type HonkerLoadOptions,
-  type HonkerLoadResult,
-} from "./coordination/honker/loader.js";
+  type HonkerLoadResult
+} from './coordination/honker/loader.js';
 export {
   createInMemoryPubSubManager,
   type ChannelListener,
-  type PubSubManager,
-} from "./coordination/pub-sub-manager.js";
-export {
-  createInMemoryScheduler,
-  type Scheduler,
-} from "./coordination/scheduler.js";
-export {
-  createInMemoryTaskQueue,
-  type CoordinationTask,
-  type TaskQueue,
-} from "./coordination/task-queue.js";
+  type PubSubManager
+} from './coordination/pub-sub-manager.js';
+export { createInMemoryScheduler, type Scheduler } from './coordination/scheduler.js';
+export { createInMemoryTaskQueue, type CoordinationTask, type TaskQueue } from './coordination/task-queue.js';
 export {
   createMemoryMetrics,
   redactSecretLikeValues,
@@ -44,15 +37,15 @@ export {
   type InjectionMetricsInput,
   type MemoryMetrics,
   type MemoryMetricsSnapshot,
-  type RetrievalMetricsInput,
-} from "./observability/metrics.js";
+  type RetrievalMetricsInput
+} from './observability/metrics.js';
 export {
   formatMemoryContextXml,
   injectMemoryContext,
   type FormatMemoryContextOptions,
   type MemoryContextCandidate,
-  type XmlContextContracts,
-} from "./retrieval/injection.js";
+  type XmlContextContracts
+} from './retrieval/injection.js';
 export {
   createDocumentIngestor,
   createHybridRetriever,
@@ -103,24 +96,24 @@ export {
   type ReindexScheduler,
   type ReindexSchedulerOptions,
   type SourceConnectorOptions,
-  type SourceConnectors,
-} from "./retrieval/rag/index.js";
+  type SourceConnectors
+} from './retrieval/rag/index.js';
 export {
   createMemoryRetriever,
   type MemoryRetriever,
   type MemoryRetrieverOptions,
   type MemorySearchHit,
   type MemorySearchInput,
-  type MemorySearchRecord,
-} from "./retrieval/retriever.js";
-export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from "./reuse.js";
+  type MemorySearchRecord
+} from './retrieval/retriever.js';
+export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
 
 export {
   createAgentFsManager,
   type AgentFsEntry,
   type AgentFsManager,
-  type AgentFsOptions,
-} from "./filesystem/agentfs/manager.js";
+  type AgentFsOptions
+} from './filesystem/agentfs/manager.js';
 
 export {
   createScopeManager,
@@ -129,8 +122,8 @@ export {
   type ScopeAction,
   type ScopeGrant,
   type ScopeManager,
-  type ScopePolicy,
-} from "./scope/scope-manager.js";
+  type ScopePolicy
+} from './scope/scope-manager.js';
 export {
   collectConflicts,
   computeSyncChecksum,
@@ -191,69 +184,60 @@ export {
   type TursoHttpClientConfig,
   type TursoSyncClientConfig,
   type TursoSyncConfig,
-  type TursoUploadResult,
-} from "./sync/index.js";
+  type TursoUploadResult
+} from './sync/index.js';
 export {
   createMemoryCaptureTool,
   type CapturedMemoryRecord,
   type MemoryCaptureInput,
   type MemoryCaptureResult,
   type MemoryCaptureTool,
-  type MemoryCaptureToolDeps,
-} from "./tools/memory-capture.js";
+  type MemoryCaptureToolDeps
+} from './tools/memory-capture.js';
 export {
   createMemoryLintTool,
   type MemoryLintInput,
   type MemoryLintIssue,
   type MemoryLintResult,
   type MemoryLintTool,
-  type MemoryLintToolDeps,
-} from "./tools/memory-lint.js";
+  type MemoryLintToolDeps
+} from './tools/memory-lint.js';
 export {
   createMemoryListTool,
   type MemoryListInput,
   type MemoryListResult,
   type MemoryListTool,
-  type MemoryListToolDeps,
-} from "./tools/memory-list.js";
+  type MemoryListToolDeps
+} from './tools/memory-list.js';
 export {
   createMemorySearchTool,
   type MemorySearchTool,
   type MemorySearchToolDeps,
   type MemorySearchToolInput,
-  type MemorySearchToolResult,
-} from "./tools/memory-search.js";
+  type MemorySearchToolResult
+} from './tools/memory-search.js';
 export {
   createMemoryStatsTool,
   type MemoryStats,
   type MemoryStatsTool,
-  type MemoryStatsToolDeps,
-} from "./tools/memory-stats.js";
-export {
-  createContentProcessor,
-  type ContentProcessor,
-} from "./wiki/content-processor.js";
+  type MemoryStatsToolDeps
+} from './tools/memory-stats.js';
+export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
 export {
   createEntityExtractor,
   type EntityExtractionResult,
   type EntityExtractor,
   type EntityKind,
   type EntityRelationship,
-  type ExtractedEntity,
-} from "./wiki/entity-extractor.js";
+  type ExtractedEntity
+} from './wiki/entity-extractor.js';
 export {
   createLocalEmbeddingEngine,
   type LocalEmbeddingEngine,
-  type LocalEmbeddingEngineOptions,
-} from "./wiki/local-embedding-engine.js";
-export {
-  createNavigationSystem,
-  type NavigationSystem,
-} from "./wiki/navigation-system.js";
-export {
-  createVersionTracker,
-  type VersionTracker,
-} from "./wiki/version-tracker.js";
+  type LocalEmbeddingEngineOptions
+} from './wiki/local-embedding-engine.js';
+export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
+export { createVersionTracker, type VersionTracker } from './wiki/version-tracker.js';
 export {
   createWikiManager,
   type ConceptRelation,
@@ -267,8 +251,8 @@ export {
   type WikiManagerDependencies,
   type WikiPage,
   type WikiPageHistoryEntry,
-  type WikiPageInput,
-} from "./wiki/wiki-manager.js";
+  type WikiPageInput
+} from './wiki/wiki-manager.js';
 
 export interface MemoryRecord {
   id: string;
@@ -294,13 +278,13 @@ export function createMemoryStore(): MemoryStore {
     },
     put(record) {
       records.set(record.id, record);
-    },
+    }
   };
 }
 
 // Phase 4 — AgentFS, content-addressing
-export * from "./content-addressing/index.js";
-export * from "./filesystem/agentfs/audit-trail.js";
-export * from "./filesystem/agentfs/kv-store.js";
-export * from "./filesystem/agentfs/manager.js";
-export * from "./filesystem/agentfs/snapshots.js";
+export * from './content-addressing/index.js';
+export * from './filesystem/agentfs/audit-trail.js';
+export * from './filesystem/agentfs/kv-store.js';
+export * from './filesystem/agentfs/manager.js';
+export * from './filesystem/agentfs/snapshots.js';

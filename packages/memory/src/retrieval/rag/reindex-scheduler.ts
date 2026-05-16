@@ -10,9 +10,7 @@ export interface ReindexScheduler {
   isRunning(): boolean;
 }
 
-export function createReindexScheduler(
-  options: ReindexSchedulerOptions
-): ReindexScheduler {
+export function createReindexScheduler(options: ReindexSchedulerOptions): ReindexScheduler {
   let timer: NodeJS.Timeout | null = null;
 
   const runSafely = async () => {
@@ -52,6 +50,6 @@ export function createReindexScheduler(
 
     async triggerNow() {
       await runSafely();
-    },
+    }
   };
 }

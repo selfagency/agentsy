@@ -1,7 +1,4 @@
-import type {
-  SyncMetricsRegistry,
-  SyncMetricsRegistrySnapshot,
-} from "./types.js";
+import type { SyncMetricsRegistry, SyncMetricsRegistrySnapshot } from './types.js';
 
 interface DurationAccumulator {
   total: number;
@@ -46,7 +43,7 @@ export function createSyncMetricsRegistry(): SyncMetricsRegistry {
 
     recordSyncRun(input) {
       syncRuns += 1;
-      if (input.status === "error") {
+      if (input.status === 'error') {
         syncFailures += 1;
       }
 
@@ -64,23 +61,21 @@ export function createSyncMetricsRegistry(): SyncMetricsRegistry {
       return {
         backup_restore_total: restoreRuns,
         backup_runs_total: backupRuns,
-        backup_success_rate:
-          backupRuns === 0 ? 0 : backupSuccesses / backupRuns,
+        backup_success_rate: backupRuns === 0 ? 0 : backupSuccesses / backupRuns,
         queue_depth: {
           average: toAverage(queueDepth),
-          max: queueDepth.max,
+          max: queueDepth.max
         },
-        restore_success_rate:
-          restoreRuns === 0 ? 0 : restoreSuccesses / restoreRuns,
+        restore_success_rate: restoreRuns === 0 ? 0 : restoreSuccesses / restoreRuns,
         retries_total: retriesTotal,
         sync_conflicts_total: syncConflicts,
         sync_duration_ms: {
           average: toAverage(syncDurations),
-          max: syncDurations.max,
+          max: syncDurations.max
         },
         sync_failures_total: syncFailures,
-        sync_runs_total: syncRuns,
+        sync_runs_total: syncRuns
       };
-    },
+    }
   };
 }

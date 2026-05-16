@@ -223,16 +223,10 @@ Agentspan-style skill management is a good fit for the plugin layer because it a
 
 ```typescript
 export interface ToolRegistry {
-  register(
-    name: string,
-    definition: ToolDefinition,
-    handler: ToolHandler
-  ): void;
+  register(name: string, definition: ToolDefinition, handler: ToolHandler): void;
   unregister(name: string): void;
   list(): ToolDefinition[];
-  get(
-    name: string
-  ): { definition: ToolDefinition; handler: ToolHandler } | undefined;
+  get(name: string): { definition: ToolDefinition; handler: ToolHandler } | undefined;
 }
 ```
 
@@ -264,7 +258,7 @@ export interface Extension {
 ```typescript
 export interface WorkspaceSkillManifest {
   id: string;
-  source: "workspace" | "user" | "bundled";
+  source: 'workspace' | 'user' | 'bundled';
   path: string;
   capabilities: string[];
   instructionFiles: string[];
@@ -306,14 +300,8 @@ Every plugin or scaffold must have at least one minimal test (`src/index.test.ts
 ### Types (`src/types.ts`)
 
 ```ts
-type CavemanMode =
-  | "lite"
-  | "full"
-  | "ultra"
-  | "wenyan-lite"
-  | "wenyan-full"
-  | "wenyan-ultra";
-const DEFAULT_CAVEMAN_MODE: CavemanMode = "full";
+type CavemanMode = 'lite' | 'full' | 'ultra' | 'wenyan-lite' | 'wenyan-full' | 'wenyan-ultra';
+const DEFAULT_CAVEMAN_MODE: CavemanMode = 'full';
 ```
 
 ### Implementation Tasks

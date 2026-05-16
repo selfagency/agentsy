@@ -1,11 +1,7 @@
-import type { FinishReason } from "@agentsy/types";
+import type { FinishReason } from '@agentsy/types';
 
-import type {
-  NativeToolCallDelta,
-  NormalizerResult,
-  UsageInfo,
-} from "./types.js";
-import { isObject, toNumber } from "./utils.js";
+import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
+import { isObject, toNumber } from './utils.js';
 
 // ---------------------------------------------------------------------------
 // Normalizer for OpenAI Responses API streaming events
@@ -24,30 +20,26 @@ import { isObject, toNumber } from "./utils.js";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function handleResponsesTextDelta(
-  raw: Record<string, unknown>
-): NormalizerResult | null {
+function handleResponsesTextDelta(raw: Record<string, unknown>): NormalizerResult | null {
   const { delta } = raw;
-  if (typeof delta !== "string") {
+  if (typeof delta !== 'string') {
     return null;
   }
   return { chunk: { content: delta }, rawEvent: raw };
 }
 
-function handleResponsesOutputItemAdded(
-  raw: Record<string, unknown>
-): NormalizerResult | null {
+function handleResponsesOutputItemAdded(raw: Record<string, unknown>): NormalizerResult | null {
   const { item } = raw;
   if (!isObject(item)) {
     return null;
   }
-  if (item.type !== "function_call") {
+  if (item.type !== 'function_call') {
     return null;
   }
 
   const outputIndex = toNumber(raw.output_index) ?? 0;
-  const callId = typeof item.call_id === "string" ? item.call_id : undefined;
-  const name = typeof item.name === "string" ? item.name : undefined;
+  const callId = typeof item.call_id === 'string' ? item.call_id : undefined;
+  const name = typeof item.name === 'string' ? item.name : undefined;
 
   const delta: NativeToolCallDelta = { index: outputIndex };
   if (callId !== undefined) {
@@ -60,20 +52,18 @@ function handleResponsesOutputItemAdded(
   return { chunk: { nativeToolCallDeltas: [delta] }, rawEvent: raw };
 }
 
-function handleResponsesFunctionCallArgumentsDelta(
-  raw: Record<string, unknown>
-): NormalizerResult | null {
+function handleResponsesFunctionCallArgumentsDelta(raw: Record<string, unknown>): NormalizerResult | null {
   const argsDelta = raw.delta;
-  if (typeof argsDelta !== "string") {
+  if (typeof argsDelta !== 'string') {
     return null;
   }
 
   const outputIndex = toNumber(raw.output_index) ?? 0;
-  const callId = typeof raw.call_id === "string" ? raw.call_id : undefined;
+  const callId = typeof raw.call_id === 'string' ? raw.call_id : undefined;
 
   const delta: NativeToolCallDelta = {
     argumentsDelta: argsDelta,
-    index: outputIndex,
+    index: outputIndex
   };
   if (callId !== undefined) {
     delta.id = callId;
@@ -82,9 +72,7 @@ function handleResponsesFunctionCallArgumentsDelta(
   return { chunk: { nativeToolCallDeltas: [delta] }, rawEvent: raw };
 }
 
-function handleResponsesCompleted(
-  raw: Record<string, unknown>
-): NormalizerResult | null {
+function handleResponsesCompleted(raw: Record<string, unknown>): NormalizerResult | null {
   const { response } = raw;
   let usage: UsageInfo | undefined;
 
@@ -109,9 +97,9 @@ function handleResponsesCompleted(
     chunk: {
       done: true,
       ...(usage !== undefined && { usage }),
-      finishReason: "stop" as FinishReason,
+      finishReason: 'stop' as FinishReason
     },
-    rawEvent: raw,
+    rawEvent: raw
   };
 }
 
@@ -126,31 +114,26 @@ function handleResponsesCompleted(
  *
  * Never throws — malformed or adversarial input is silently ignored.
  */
-export function normalizeOpenAIResponseEvent(
-  raw: unknown
-): NormalizerResult | null {
+export function normalizeOpenAIResponseEvent(raw: unknown): NormalizerResult | null {
   try {
     if (!isObject(raw)) {
       return null;
     }
     const { type } = raw;
-    if (typeof type !== "string") {
+    if (typeof type !== 'string') {
       return null;
     }
 
-    if (
-      type === "response.output_text.delta" ||
-      type === "response.refusal.delta"
-    ) {
+    if (type === 'response.output_text.delta' || type === 'response.refusal.delta') {
       return handleResponsesTextDelta(raw);
     }
-    if (type === "response.output_item.added") {
+    if (type === 'response.output_item.added') {
       return handleResponsesOutputItemAdded(raw);
     }
-    if (type === "response.function_call_arguments.delta") {
+    if (type === 'response.function_call_arguments.delta') {
       return handleResponsesFunctionCallArgumentsDelta(raw);
     }
-    if (type === "response.completed") {
+    if (type === 'response.completed') {
       return handleResponsesCompleted(raw);
     }
 

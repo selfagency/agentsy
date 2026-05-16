@@ -38,6 +38,6 @@ export function createNavigationSystem(): NavigationSystem {
     linkPages(fromPageId: string, toPageId: string) {
       getOrCreate(fromPageId).add(toPageId);
       getOrCreate(toPageId);
-    },
+    }
   };
 }

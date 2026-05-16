@@ -1,6 +1,6 @@
-import { bench, describe } from "vitest";
+import { bench, describe } from 'vitest';
 
-import { compressOutput } from "./index.js";
+import { compressOutput } from './index.js';
 
 const BENCHMARK_SAMPLES = {
   codeOutput: `# Code Documentation
@@ -62,92 +62,91 @@ The analysis simply shows that the implementation is basically working correctly
 More analysis here that is quite redundant and repetitive with previously stated information.
 
 Some additional comments and observations that basically reiterate earlier points in a verbose manner.`,
-  shortOutput:
-    "This is a simple response that should be compressed effectively and efficiently.",
+  shortOutput: 'This is a simple response that should be compressed effectively and efficiently.'
 };
 
-describe("Phase 0: Output Compression Benchmarks", () => {
-  describe("Lite compression level", () => {
-    bench("short text (<100 chars)", () => {
+describe('Phase 0: Output Compression Benchmarks', () => {
+  describe('Lite compression level', () => {
+    bench('short text (<100 chars)', () => {
       compressOutput(BENCHMARK_SAMPLES.shortOutput, {
-        level: "lite",
-        preserve: ["code"],
+        level: 'lite',
+        preserve: ['code']
       });
     });
 
-    bench("medium text (~500 chars)", () => {
+    bench('medium text (~500 chars)', () => {
       compressOutput(BENCHMARK_SAMPLES.mediumOutput, {
-        level: "lite",
-        preserve: ["code"],
+        level: 'lite',
+        preserve: ['code']
       });
     });
 
-    bench("large text (~2000 chars)", () => {
+    bench('large text (~2000 chars)', () => {
       compressOutput(BENCHMARK_SAMPLES.largeOutput, {
-        level: "lite",
-        preserve: ["code"],
+        level: 'lite',
+        preserve: ['code']
       });
     });
   });
 
-  describe("Full compression level", () => {
-    bench("short text", () => {
+  describe('Full compression level', () => {
+    bench('short text', () => {
       compressOutput(BENCHMARK_SAMPLES.shortOutput, {
-        level: "full",
-        preserve: ["code"],
+        level: 'full',
+        preserve: ['code']
       });
     });
 
-    bench("medium text", () => {
+    bench('medium text', () => {
       compressOutput(BENCHMARK_SAMPLES.mediumOutput, {
-        level: "full",
-        preserve: ["code"],
+        level: 'full',
+        preserve: ['code']
       });
     });
 
-    bench("large text", () => {
+    bench('large text', () => {
       compressOutput(BENCHMARK_SAMPLES.largeOutput, {
-        level: "full",
-        preserve: ["code"],
+        level: 'full',
+        preserve: ['code']
       });
     });
   });
 
-  describe("Ultra compression level", () => {
-    bench("short text", () => {
+  describe('Ultra compression level', () => {
+    bench('short text', () => {
       compressOutput(BENCHMARK_SAMPLES.shortOutput, {
-        level: "ultra",
-        preserve: ["code"],
+        level: 'ultra',
+        preserve: ['code']
       });
     });
 
-    bench("medium text", () => {
+    bench('medium text', () => {
       compressOutput(BENCHMARK_SAMPLES.mediumOutput, {
-        level: "ultra",
-        preserve: ["code"],
+        level: 'ultra',
+        preserve: ['code']
       });
     });
 
-    bench("large text", () => {
+    bench('large text', () => {
       compressOutput(BENCHMARK_SAMPLES.largeOutput, {
-        level: "ultra",
-        preserve: ["code"],
+        level: 'ultra',
+        preserve: ['code']
       });
     });
   });
 
-  describe("With code preservation", () => {
-    bench("text with code blocks (full)", () => {
+  describe('With code preservation', () => {
+    bench('text with code blocks (full)', () => {
       compressOutput(BENCHMARK_SAMPLES.codeOutput, {
-        level: "full",
-        preserve: ["code"],
+        level: 'full',
+        preserve: ['code']
       });
     });
 
-    bench("text with code blocks (ultra)", () => {
+    bench('text with code blocks (ultra)', () => {
       compressOutput(BENCHMARK_SAMPLES.codeOutput, {
-        level: "ultra",
-        preserve: ["code"],
+        level: 'ultra',
+        preserve: ['code']
       });
     });
   });
