@@ -1,16 +1,12 @@
+import type { ContainerSandbox } from '../container/rivet-sandbox.js';
 import type { SandboxTriggerDecision } from './dynamic-trigger.js';
-import type { SandboxInput, SandboxOutput, VirtualSandbox } from './virtual-sandbox.js';
+import type { VirtualSandbox } from './virtual-sandbox.js';
 import { createVirtualSandbox } from './virtual-sandbox.js';
 
-export interface ContainerSandboxStub {
-  readonly mode: 'container';
-  execute(input: SandboxInput): Promise<SandboxOutput>;
-}
-
-export type AnySandbox = VirtualSandbox | ContainerSandboxStub;
+export type AnySandbox = VirtualSandbox | ContainerSandbox;
 
 export interface SandboxRouter {
-  route(decision: SandboxTriggerDecision, containerSandbox?: ContainerSandboxStub): AnySandbox;
+  route(decision: SandboxTriggerDecision, containerSandbox?: ContainerSandbox): AnySandbox;
 }
 
 export function createSandboxRouter(): SandboxRouter {

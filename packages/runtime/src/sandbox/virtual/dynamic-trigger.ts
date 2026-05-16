@@ -27,9 +27,13 @@ export function decideSandboxTrigger(ctx: SandboxTriggerContext): SandboxTrigger
 
   if (ctx.trustLevel === 'untrusted') {
     if (ctx.containerAvailable === true) {
-      return { mode: 'container', reason: 'untrusted input with container runtime available' };
+      return { mode: 'container', reason: 'untrusted input correctly isolated in container' };
     }
-    return { mode: 'virtual', reason: 'untrusted input — falling back to virtual sandbox (no container)' };
+    // Block unless container is available for untrusted input
+    return {
+      mode: 'none',
+      reason: 'REFUSED: Untrusted input requires a container sandbox but none is available'
+    };
   }
 
   return { mode: 'virtual', reason: 'default: virtual-first sandbox' };

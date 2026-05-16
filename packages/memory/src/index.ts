@@ -47,15 +47,6 @@ export {
   type XmlContextContracts
 } from './retrieval/injection.js';
 export {
-  createMemoryRetriever,
-  type MemoryRetriever,
-  type MemoryRetrieverOptions,
-  type MemorySearchHit,
-  type MemorySearchInput,
-  type MemorySearchRecord
-} from './retrieval/retriever.js';
-export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
-export {
   createDocumentIngestor,
   createHybridRetriever,
   createIndexManager,
@@ -72,16 +63,16 @@ export {
   sanitizeIngestSource,
   type BootstrapSummary,
   type ContextPackedEvidence,
-  type ContextPackResult,
   type ContextPackerOptions,
+  type ContextPackResult,
   type CreateRAGConfigInput,
   type DocumentIngestor,
-  type IngestOutput,
-  type IngestSource,
-  type IngestSummary,
   type HybridRetriever,
   type IndexedDocumentRecord,
   type IndexManager,
+  type IngestOutput,
+  type IngestSource,
+  type IngestSummary,
   type KnowledgeBaseManager,
   type PlannedQuery,
   type QueryPlanner,
@@ -100,13 +91,31 @@ export {
   type RAGServerClientOptions,
   type RAGServerDocument,
   type RAGSourceType,
-  type RAGWeightConfig,
   type RAGWebConfig,
+  type RAGWeightConfig,
   type ReindexScheduler,
   type ReindexSchedulerOptions,
   type SourceConnectorOptions,
   type SourceConnectors
 } from './retrieval/rag/index.js';
+export {
+  createMemoryRetriever,
+  type MemoryRetriever,
+  type MemoryRetrieverOptions,
+  type MemorySearchHit,
+  type MemorySearchInput,
+  type MemorySearchRecord
+} from './retrieval/retriever.js';
+export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
+
+export {
+  createAgentFsManager,
+  type AgentFsEntry,
+  type AgentFsManager,
+  type AgentFsOptions,
+  type AgentFsPath
+} from './filesystem/agentfs/manager.js';
+
 export {
   createScopeManager,
   type MemoryScope,
@@ -275,8 +284,8 @@ export function createMemoryStore(): MemoryStore {
 }
 
 // Phase 4 — AgentFS, content-addressing
-export * from './filesystem/agentfs/manager.js';
-export * from './filesystem/agentfs/kv-store.js';
-export * from './filesystem/agentfs/audit-trail.js';
-export * from './filesystem/agentfs/snapshots.js';
 export * from './content-addressing/index.js';
+export * from './filesystem/agentfs/audit-trail.js';
+export * from './filesystem/agentfs/kv-store.js';
+export * from './filesystem/agentfs/manager.js';
+export * from './filesystem/agentfs/snapshots.js';

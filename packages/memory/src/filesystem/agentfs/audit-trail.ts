@@ -2,7 +2,13 @@ import { createHash } from 'node:crypto';
 
 export type AuditOperation = 'read' | 'write' | 'delete' | 'snapshot' | 'restore';
 
-const SECRET_PATTERN = /(?:key|token|secret|password|credential|auth)[^\s]*\s*[:=]\s*\S+/gi;
+/**
+ * Pattern for identifying secrets in strings (e.g., config values, command output).
+ * Matches patterns like 'api_token: sk-123' or 'apiKey = abc'.
+ * Uses a negative lookbehind (or alternative approach since lookbehind support varies)
+ * to avoid matching common file or list names like 'author-list' or 'key-count'.
+ */
+const SECRET_PATTERN = /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/gi;
 
 function redactSecrets(value: string): string {
   return value.replace(SECRET_PATTERN, '[REDACTED]');

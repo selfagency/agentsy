@@ -1,19 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { createSandboxRouter } from './router.js';
+import type { ContainerSandbox } from '../container/rivet-sandbox.js';
 import type { SandboxTriggerDecision } from './dynamic-trigger.js';
-import type { ContainerSandboxStub } from './router.js';
+import { createSandboxRouter } from './router.js';
 import type { SandboxInput, SandboxOutput } from './virtual-sandbox.js';
 
 function makeDecision(mode: SandboxTriggerDecision['mode']): SandboxTriggerDecision {
   return { mode, reason: 'test' };
 }
 
-function makeContainerStub(): ContainerSandboxStub {
+function makeContainerStub(): ContainerSandbox {
   return {
     mode: 'container',
     async execute(_input: SandboxInput): Promise<SandboxOutput> {
       return { status: 'ok', stdout: 'container ran', stderr: '', durationMs: 0 };
-    }
+    },
+    async destroy(): Promise<void> {}
   };
 }
 

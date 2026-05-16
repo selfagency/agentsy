@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fingerprintContent } from './fingerprint.js';
 import { createDedupStore } from './dedup-store.js';
+import { fingerprintContent } from './fingerprint.js';
 
 describe('createDedupStore', () => {
   it('interns content and returns a fingerprint', () => {

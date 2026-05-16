@@ -1,28 +1,7 @@
+import type { AgentFsEntry, AgentFsManager, AgentFsOptions, AgentFsPath } from '@agentsy/types';
 import { createHash } from 'node:crypto';
 
-export type AgentFsPath = string;
-
-export interface AgentFsEntry {
-  readonly path: AgentFsPath;
-  readonly content: string;
-  readonly contentHash: string;
-  readonly createdAt: number;
-  readonly updatedAt: number;
-}
-
-export interface AgentFsOptions {
-  readonly namespace?: string;
-}
-
-export interface AgentFsManager {
-  readonly namespace: string;
-  read(path: AgentFsPath): AgentFsEntry | undefined;
-  write(path: AgentFsPath, content: string): AgentFsEntry;
-  delete(path: AgentFsPath): boolean;
-  list(): AgentFsEntry[];
-  has(path: AgentFsPath): boolean;
-  clear(): void;
-}
+export type { AgentFsEntry, AgentFsManager, AgentFsOptions, AgentFsPath };
 
 function hashContent(content: string): string {
   return 'sha256:' + createHash('sha256').update(content, 'utf8').digest('hex');
@@ -37,11 +16,11 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
       return namespace;
     },
 
-    read(path) {
+    read(path: AgentFsPath) {
       return store.get(path);
     },
 
-    write(path, content) {
+    write(path: AgentFsPath, content: string) {
       const now = Date.now();
       const existing = store.get(path);
       const entry: AgentFsEntry = {
@@ -55,7 +34,7 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
       return entry;
     },
 
-    delete(path) {
+    delete(path: AgentFsPath) {
       return store.delete(path);
     },
 
@@ -63,12 +42,18 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
       return [...store.values()];
     },
 
-    has(path) {
+    has(path: AgentFsPath) {
       return store.has(path);
     },
 
     clear() {
       store.clear();
+    },
+
+    import(entries: AgentFsEntry[]) {
+      for (const entry of entries) {
+        store.set(entry.path, entry);
+      }
     }
   };
 }
