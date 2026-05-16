@@ -17,7 +17,7 @@ export function createMockRAGState(): MockRAGState {
   };
 }
 
-export function createRAGHandlers(baseUrl: string, state: MockRAGState) {
+function createRAGHandlers(baseUrl: string, state: MockRAGState) {
   return [
     http.get(`${baseUrl}/health`, () => {
       if (!state.healthy) {

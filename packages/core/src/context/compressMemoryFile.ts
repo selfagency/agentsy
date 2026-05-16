@@ -63,7 +63,7 @@ function compressPlainSegment(segment: string): string {
     .trim();
 }
 
-export function compressMemoryContent(content: string): string {
+function compressMemoryContent(content: string): string {
   const chunks: { kind: "text" | "code"; value: string }[] = [];
   let lastIndex = 0;
 

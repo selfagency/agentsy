@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",
-    "node-fetch": "^3.3.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

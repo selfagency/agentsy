@@ -12,7 +12,7 @@ export interface ContainerSandbox {
  * Placeholder for the Rivet implementation.
  * Throws an error when usage is attempted.
  */
-export function createRivetSandbox(): ContainerSandbox {
+function createRivetSandbox(): ContainerSandbox {
   return {
     async destroy(): Promise<void> {
       // No-op
