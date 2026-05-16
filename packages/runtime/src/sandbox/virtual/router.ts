@@ -14,10 +14,13 @@ export function createSandboxRouter(): SandboxRouter {
 
   return {
     route(decision, containerSandbox) {
+      if (decision.mode === 'none') {
+        throw new Error('Sandbox execution explicitly disabled by policy');
+      }
       if (decision.mode === 'container' && containerSandbox !== undefined) {
         return containerSandbox;
       }
-      // Fall back to virtual for 'virtual', 'none', or missing container.
+      // Fall back to virtual for 'virtual' or missing container.
       return virtualSandbox;
     }
   };

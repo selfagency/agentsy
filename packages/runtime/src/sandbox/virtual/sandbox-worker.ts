@@ -40,8 +40,11 @@ try {
 
   parentPort.postMessage({ type: 'result', value: result });
 } catch (error) {
+  const errorPayload =
+    error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
+
   parentPort.postMessage({
-    type: 'error',
-    value: error instanceof Error ? { message: error.message, stack: error.stack } : error
+    type: 'runtime-error',
+    args: [errorPayload.message]
   });
 }

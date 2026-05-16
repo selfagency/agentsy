@@ -60,8 +60,21 @@ export function createVirtualSandbox(): VirtualSandbox {
 
         worker.on('message', msg => {
           if (msg.type === 'log') stdout.push(msg.args.map(String).join(' '));
-          else if (msg.type === 'error' || msg.type === 'warn' || msg.type === 'info') {
-            stderr.push(msg.args.map(String).join(' '));
+          else if (msg.type === 'error' || msg.type === 'runtime-error' || msg.type === 'warn' || msg.type === 'info') {
+            const output = Array.isArray(msg.args) ? msg.args.map(String).join(' ') : String(msg.args ?? '');
+            stderr.push(output);
+
+            if (msg.type === 'runtime-error') {
+              clearTimeout(timeout);
+              worker.terminate();
+              resolve({
+                status: 'error',
+                stdout: stdout.join('\n'),
+                stderr: stderr.join('\n'),
+                durationMs: Date.now() - start,
+                exitCode: 1
+              });
+            }
           } else if (msg.type === 'result') {
             clearTimeout(timeout);
             worker.terminate();
