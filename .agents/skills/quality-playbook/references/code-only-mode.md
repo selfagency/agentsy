@@ -27,7 +27,7 @@ The bug counts in code-only mode are still useful — they reflect what's discov
 
 Place plaintext documentation files in the target repo's `reference_docs/` tree before re-running Phase 1:
 
-```
+```text
 <target-repo>/
   reference_docs/
     project_notes.md         # Tier 4 — informal notes, AI chats

@@ -19,7 +19,7 @@ Evaluate AI agent systems against the OWASP Agentic Security Initiative (ASI) To
 
 The OWASP ASI Top 10 defines the critical security risks specific to autonomous AI agents — not LLMs, not chatbots, but agents that call tools, access systems, and act on behalf of users. This skill checks whether your agent implementation addresses each risk.
 
-```
+```text
 Codebase → Scan for each ASI control:
   ASI-01: Prompt Injection Protection
   ASI-02: Tool Use Governance
@@ -99,6 +99,7 @@ def check_asi_01(project_path: str) -> dict:
 ```
 
 **What passing looks like:**
+
 ```python
 # GOOD: Validate before tool execution
 result = policy_engine.evaluate(user_input)
@@ -108,6 +109,7 @@ tool_result = await execute_tool(validated_input)
 ```
 
 **What failing looks like:**
+
 ```python
 # BAD: User input goes directly to tool
 tool_result = await execute_tool(user_input)  # No validation
@@ -120,12 +122,14 @@ tool_result = await execute_tool(user_input)  # No validation
 Verify tools have allowlists, argument validation, and no unrestricted execution.
 
 **What to search for:**
+
 - Tool registration with explicit allowlists (not open-ended)
 - Argument validation before tool execution
 - No `subprocess.run(shell=True)` with user-controlled input
 - No `eval()` or `exec()` on agent-generated code without sandbox
 
 **Passing example:**
+
 ```python
 ALLOWED_TOOLS = {"search", "read_file", "create_ticket"}
 
@@ -143,6 +147,7 @@ def execute_tool(name: str, args: dict):
 Verify agent capabilities are bounded — not open-ended.
 
 **What to search for:**
+
 - Explicit capability lists or execution rings
 - Scope limits on what the agent can access
 - Principle of least privilege applied to tool access
@@ -157,6 +162,7 @@ Verify agent capabilities are bounded — not open-ended.
 Verify agents cannot promote their own privileges.
 
 **What to search for:**
+
 - Privilege level checks before sensitive operations
 - No self-promotion patterns (agent changing its own trust score or role)
 - Escalation requires external attestation (human or SRE witness)
@@ -171,12 +177,14 @@ Verify agents cannot promote their own privileges.
 In multi-agent systems, verify that agents verify each other's identity before accepting instructions.
 
 **What to search for:**
+
 - Agent identity verification (DIDs, signed tokens, API keys)
 - Trust score checks before accepting delegated tasks
 - No blind trust of inter-agent messages
 - Delegation narrowing (child scope <= parent scope)
 
 **Passing example:**
+
 ```python
 def accept_task(sender_id: str, task: dict):
     trust = trust_registry.get_trust(sender_id)
@@ -194,6 +202,7 @@ def accept_task(sender_id: str, task: dict):
 Verify all agent actions produce structured, tamper-evident audit entries.
 
 **What to search for:**
+
 - Structured logging for every tool call (not just print statements)
 - Audit entries include: timestamp, agent ID, tool name, args, result, policy decision
 - Append-only or hash-chained log format
@@ -209,11 +218,13 @@ Verify all agent actions produce structured, tamper-evident audit entries.
 Verify agents have cryptographic identity, not just string names.
 
 **Failing indicators:**
+
 - Agent identified by `agent_name = "my-agent"` (string only)
 - No authentication between agents
 - Shared credentials across agents
 
 **Passing indicators:**
+
 - DID-based identity (`did:web:`, `did:key:`)
 - Ed25519 or similar cryptographic signing
 - Per-agent credentials with rotation
@@ -226,6 +237,7 @@ Verify agents have cryptographic identity, not just string names.
 Verify policy enforcement is deterministic — not LLM-based.
 
 **What to search for:**
+
 - Policy evaluation uses deterministic logic (YAML rules, code predicates)
 - No LLM calls in the enforcement path
 - Policy checks cannot be skipped or overridden by the agent
@@ -241,6 +253,7 @@ Verify policy enforcement is deterministic — not LLM-based.
 Verify agent plugins and tools have integrity verification.
 
 **What to search for:**
+
 - `INTEGRITY.json` or manifest files with SHA-256 hashes
 - Signature verification on plugin installation
 - Dependency pinning (no `@latest`, `>=` without upper bound)
@@ -253,6 +266,7 @@ Verify agent plugins and tools have integrity verification.
 Verify the system can detect and respond to agent behavioral drift.
 
 **What to search for:**
+
 - Circuit breakers that trip on repeated failures
 - Trust score decay over time (temporal decay)
 - Kill switch or emergency stop capability
@@ -267,6 +281,7 @@ Verify the system can detect and respond to agent behavioral drift.
 
 ```markdown
 # OWASP ASI Compliance Report
+
 Generated: 2026-04-01
 Project: my-agent-system
 
@@ -286,11 +301,13 @@ Project: my-agent-system
 | ASI-10 Behavioral Anomaly | PASS | Circuit breakers and trust decay active |
 
 ## Critical Gaps
+
 - ASI-05: Add agent identity verification using DIDs or signed tokens
 - ASI-07: Replace string agent names with cryptographic identity
 - ASI-09: Generate INTEGRITY.json manifests for all plugins
 
 ## Recommendation
+
 Install agent-governance-toolkit for reference implementations of all 10 controls:
 pip install agent-governance-toolkit
 ```

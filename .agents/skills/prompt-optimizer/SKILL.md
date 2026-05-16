@@ -13,19 +13,20 @@ This is for **chat interfaces** (Claude, Codex, Copilot, or any other tool/LLM m
 
 These two rules override everything else in this skill. Read them, then re-read them.
 
-### Rule 1 — No placeholders. Ever.
+### Rule 1 — No placeholders. Ever
 
 Never produce a prompt that contains `[paste X here]`, `[your content]`, `{topic}`, `<your_input_here>`, `[INSERT Y]`, `___`, or any other template variable the user is expected to fill in. The user must be able to copy your output, paste it into chat, hit send, and have a working interaction. If the prompt requires content the user hasn't provided yet, the prompt itself must handle that — see Rule 2.
 
 If you catch yourself typing square brackets around a noun, stop. That's a placeholder. Rewrite.
 
-### Rule 2 — Ship a finished prompt no matter what the user gave you.
+### Rule 2 — Ship a finished prompt no matter what the user gave you
 
 Two cases:
 
 **Case A — the user gave you real content** (a draft they wrote, code, a document, a list of items, a specific question, an actual product description). Bake that content directly into the optimized prompt. The whole thing — content and instructions — goes inside the code block. The user copies, pastes, sends. Done.
 
 **Case B — the user only described a class of task** ("I want a prompt to triage my emails", "help me prompt an LLM model to review my code", "give me a prompt for writing LinkedIn posts about my launches"). Write the prompt as a complete, self-contained instruction that works on its own. End the instruction by either:
+
 - Asking the LLM model to ask the user for the specific inputs it needs ("Before drafting, ask me to share the product name, audience, and a link."), or
 - Phrasing the task so the user will naturally provide the input in their next chat turn ("I'm going to paste a batch of emails next. For each one, do the following...").
 
@@ -38,12 +39,14 @@ A single fenced code block containing the optimized prompt. Nothing else. No pre
 The prompt should end with a closing instruction that signals depth of reasoning. Choose one that matches your target model:
 
 For models with reasoning capabilities (like Claude with extended thinking):
-```
+
+```text
 Think before answering (maximum reasoning)
 ```
 
 For general-purpose LLM models:
-```
+
+```text
 Take time to think through this carefully before responding.
 ```
 
@@ -70,39 +73,51 @@ Work through these in your head before writing the prompt. You don't need to sur
 ## Core principles to apply
 
 ### Be clear and direct
+
 State the task explicitly. Specify the desired output format and any hard constraints up front. If you want above-and-beyond effort, say so — LLM models won't infer it from a vague brief. "Create an analytics dashboard" is weaker than "Create an analytics dashboard with as many relevant features and interactions as possible — go beyond the basics for a fully-featured implementation."
 
 ### Explain the why
+
 When you give an instruction, briefly explain the reason. "Avoid ellipses, because the output will be read aloud by a TTS engine that mispronounces them" lands far better than "Never use ellipses." LLM models generalize well from explanations and follow reasoned instructions more faithfully.
 
 ### Tell the LLM model what to do, not what to avoid
+
 Positive framing outperforms negative framing. "Write in flowing prose paragraphs" beats "don't use bullet points."
 
 ### Match prompt style to desired output style
+
 If you want prose, write the prompt in prose. If you want minimal markdown in the output, use minimal markdown in the prompt. Style leaks through.
 
 ### Use XML tags when sections multiply
+
 When the prompt mixes instructions, context, examples, and input, wrap each in its own descriptive tag — `<instructions>`, `<context>`, `<examples>`, `<input>`. Nest naturally where there's hierarchy. This is the single highest-leverage structuring move for complex prompts. For simple one-shot prompts, skip it; XML on a haiku request is overkill.
 
 ### Give the LLM model a role when it sharpens behavior
+
 A one-line role assignment ("You are a senior product strategist at a B2B SaaS company") tightens tone and frame. Don't force a role onto every prompt — only when it meaningfully steers the output.
 
 ### Use examples for format, tone, or structure
+
 If the user has any preference about *how* the output should look, include 2–4 examples in `<example>` tags (or wrap multiple in `<examples>`). Examples beat description for steering format. Make them relevant, diverse, and structured. Skip examples when the task is so generic that examples would over-constrain.
 
 ### Put long inputs on top, the question on the bottom
+
 If the prompt includes a long document, transcript, or data dump that the user provided, place it at the top. Research in LLM prompt optimization shows up to ~30% quality lift from this ordering on long-context tasks.
 
 ### Ask for grounding in long-document tasks
+
 For analysis or Q&A over long inputs, instruct the LLM model to first pull relevant quotes into `<quotes>` tags, then answer based on those quotes. This dramatically reduces drift and hallucination.
 
 ### Be literal about scope
+
 LLM models don't always silently generalize. If you want an instruction applied broadly, say "apply this to every section, not just the first one." If you want the LLM model to take action rather than suggest, use imperative verbs ("Edit the function to..." not "Could you suggest improvements to..."). Suggestion-flavored phrasing produces suggestions.
 
 ### Trigger deeper reasoning deliberately
+
 LLM models decide when to allocate reasoning depth. Closing-line instructions nudge them toward deeper engagement with complex problems. Don't add competing thinking instructions earlier in the prompt; they create noise. Let the closing line do its job.
 
 ### Self-check for high-stakes outputs
+
 For code, math, claims, or anything where errors matter, append a verification instruction near the end: "Before you finish, re-read your answer and check it against the criteria above." This catches errors reliably.
 
 ## Domain-specific moves
@@ -123,7 +138,7 @@ These are sharp tools for specific task types. Apply only when relevant.
 
 Always exactly this:
 
-````
+````text
 ```
 You are helping with the user's request. If the request is missing essential information, ask a concise clarifying question first. Otherwise, complete the task directly and clearly.
 
@@ -146,7 +161,7 @@ These show the no-placeholder rule in action. Notice none of them contain `[past
 
 **Your output:**
 
-````
+````text
 ```
 You are an executive assistant helping me triage email. I'm about to share a batch of emails with you in my next message.
 
@@ -175,7 +190,7 @@ The prompt ends by inviting the user to paste content in the next turn. No `[pas
 
 **Your output:**
 
-````
+````text
 ```
 You are writing a LinkedIn post for me announcing a product launch. The audience is mid-to-senior B2B operators on LinkedIn — they've seen every launch post template and are skeptical of marketing language.
 
@@ -208,7 +223,7 @@ Instead of a `<product_details>` block with `[paste details here]`, the prompt e
 
 **Your output:**
 
-````
+````text
 ```
 You're going to review Python code I share with you. Your job at the finding stage is coverage, not filtering — assume a separate pass will rank findings later.
 
@@ -239,7 +254,7 @@ Think before answering (take time to reason through this carefully).
 
 **Your output:**
 
-````
+````text
 ```
 I'm deciding between two job offers and want your help thinking it through carefully.
 
@@ -281,7 +296,7 @@ The user gave the actual numbers and constraints. They're baked in. No `[insert 
 
 **Your output:**
 
-````
+````text
 ```
 Write a haiku about coffee. Follow the traditional 5-7-5 syllable structure. Aim for a single concrete image rather than a general statement about coffee — something a reader could picture. Avoid clichés like "morning steam" and "liquid gold".
 

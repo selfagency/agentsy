@@ -51,7 +51,7 @@ GitHub will automatically merge the PR once all required CI checks pass.
 
 ### Ignore a Major Version Bump
 
-```
+```text
 @dependabot ignore this major version
 ```
 
@@ -59,7 +59,7 @@ Useful when a major version has breaking changes and migration is not yet planne
 
 ### Check Active Ignore Conditions
 
-```
+```text
 @dependabot show express ignore conditions
 ```
 
@@ -67,7 +67,7 @@ Displays a table showing all ignore conditions currently stored for the `express
 
 ### Unignore a Dependency in a Group
 
-```
+```text
 @dependabot unignore lodash
 ```
 
@@ -75,7 +75,7 @@ Closes the current grouped PR, clears all ignore conditions for `lodash`, and op
 
 ### Unignore a Specific Condition
 
-```
+```text
 @dependabot unignore express [< 1.9, > 1.8.0]
 ```
 

@@ -6,6 +6,7 @@ description: 'Refactor given method `${input:methodName}` to reduce its cognitiv
 # Refactor Method to Reduce Cognitive Complexity
 
 ## Objective
+
 Refactor the method `${input:methodName}`, to reduce its cognitive complexity to `${input:complexityThreshold}` or below, by extracting logic into focused helper methods.
 
 ## Instructions
@@ -60,6 +61,7 @@ Refactor the method `${input:methodName}`, to reduce its cognitive complexity to
 ## Result
 
 The refactored method should:
+
 - Have cognitive complexity reduced to the target threshold of `${input:complexityThreshold}` or below
 - Be more readable and maintainable
 - Have clear separation of concerns
@@ -90,6 +92,7 @@ The refactored method should:
 5. **Check cognitive complexity** - Confirm the metric is at or below the target threshold of `${input:complexityThreshold}`
 
 ## Confirmation Checklist
+
 - [ ] Code compiles without errors
 - [ ] **Test results explicitly state "failed=0"** (verified by reading the output)
 - [ ] All test failures analyzed and corrected (if any occurred)

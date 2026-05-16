@@ -56,6 +56,7 @@ Run the test suite using the project's test runner:
 **Expected-failure (xfail) tests do not count against this benchmark.** Regression tests in `quality/test_regression.*` use expected-failure markers (`@pytest.mark.xfail(strict=True)`, `@Disabled`, `t.Skip`, `#[ignore]`) to confirm that known bugs are still present. These tests are *supposed* to fail — that's the point. The "zero failures and zero errors" benchmark applies to `quality/test_functional.*` (the functional test suite), not to `quality/test_regression.*` (the bug confirmation suite). If your test runner reports failures from xfail-marked regression tests, that's correct behavior, not a benchmark violation. If an xfail test unexpectedly *passes*, that means the bug was fixed and the xfail marker should be removed — treat that as a finding to investigate, not a test failure.
 
 After running, check:
+
 - All tests passed — count must equal total test count
 - Zero failures
 - Zero errors/setup failures
@@ -98,10 +99,12 @@ The definitive audit prompt should work when pasted into Claude Code, Cursor, an
 ### 14. Structured Output Schemas Are Valid and Conformant
 
 Verify that `RUN_TDD_TESTS.md` and `RUN_INTEGRATION_TESTS.md` both instruct the agent to produce:
+
 - JUnit XML output using the framework's native reporter (pytest `--junitxml`, gotestsum `--junitxml`, Maven Surefire reports, `jest-junit`, `cargo2junit`)
 - A sidecar JSON file (`tdd-results.json` or `integration-results.json`) in `quality/results/`
 
 Check that each protocol's JSON schema includes all mandatory fields:
+
 - **tdd-results.json:** `schema_version`, `skill_version`, `date`, `project`, `bugs`, `summary`. Per-bug: `id`, `requirement`, `red_phase`, `green_phase`, `verdict`, `fix_patch_present`, `writeup_path`.
 - **integration-results.json:** `schema_version`, `skill_version`, `date`, `project`, `recommendation`, `groups`, `summary`, `uc_coverage`. Per-group: `group`, `name`, `use_cases`, `result`.
 
@@ -112,6 +115,7 @@ Both sidecar JSON templates must use `schema_version: "1.1"` (v1.1 change: `verd
 ### 15. Patch Validation Gate Is Executable
 
 For each confirmed bug with patches, verify:
+
 1. The `git apply --check` commands specified in the patch validation gate use the correct patch paths (`quality/patches/BUG-NNN-*.patch`)
 2. The compile/syntax check command matches the project's actual build system — not a generic placeholder
 3. For interpreted languages (Python, JavaScript), the gate specifies the appropriate syntax check (`python -m py_compile`, `node --check`, `pytest --collect-only`, or equivalent)
@@ -120,6 +124,7 @@ For each confirmed bug with patches, verify:
 ### 16. Regression Test Skip Guards Are Present
 
 Grep `quality/test_regression.*` for the language-appropriate skip/xfail mechanism. Every test function must have a guard:
+
 - Python: `@pytest.mark.xfail` or `@unittest.expectedFailure`
 - Go: `t.Skip(`
 - Java: `@Disabled`
@@ -163,7 +168,6 @@ For every contract or requirement that asserts a function handles/preserves/disp
 Grep `quality/test_regression.*` for `run=False` (Python), `t.Skip` with a source-inspection comment, or equivalent skip mechanisms. Any regression test whose purpose is source-structure verification (string presence in function bodies, case label existence, enum extraction) must execute — it must NOT use `run=False`. These tests are safe, deterministic string-match operations. An `xfail(strict=True)` test that actually fails reports as XFAIL (expected), which is correct behavior. A source-inspection test with `run=False` is the worst possible state: the correct check exists but never fires.
 
 ### 25. Contradiction Gate Passed (Executed Evidence vs. Prose)
-
 
 Verify that no executed artifact contradicts a prose artifact at closure. Specifically: (a) if any `quality/mechanical/*` file shows a constant as absent, no prose artifact (`CONTRACTS.md`, `REQUIREMENTS.md`, code review, triage) may claim it is present; (b) if any regression test with `xfail` actually fails (XFAIL), `BUGS.md` may not claim that bug is "fixed in working tree" without a commit reference; (c) if TDD traceability shows a red-phase failure, the triage may not claim the corresponding code is compliant. Any contradiction must be resolved before closure.
 

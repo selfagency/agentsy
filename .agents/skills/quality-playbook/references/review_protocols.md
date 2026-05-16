@@ -10,6 +10,7 @@
 ## Bootstrap (Read First)
 
 Before reviewing, read these files for context:
+
 1. `quality/QUALITY.md` — Quality constitution and fitness-to-purpose scenarios
 2. `quality/REQUIREMENTS.md` — Testable requirements derived during playbook generation
 3. [Main architectural doc]
@@ -33,6 +34,7 @@ Read the code and report anything that looks wrong. No requirements, no focus ar
 For each file reviewed:
 
 #### filename.ext
+
 - **Line NNN:** [BUG / QUESTION / INCOMPLETE] Description. Expected vs. actual. Why it matters.
 
 ## Pass 2: Requirement Verification
@@ -42,6 +44,7 @@ Read `quality/REQUIREMENTS.md`. For each requirement, check whether the code sat
 Do NOT also do a general code review. Do NOT look for other bugs. Do NOT evaluate code quality. Just check each requirement.
 
 For each requirement, report one of:
+
 - **SATISFIED**: The code implements this requirement. Quote the specific code.
 - **VIOLATED**: The code does NOT satisfy this requirement. Explain what the code does vs. what the requirement says. Quote the code.
 - **PARTIALLY SATISFIED**: Some aspects implemented, others missing. Explain both.
@@ -52,6 +55,7 @@ For each requirement, report one of:
 For each requirement:
 
 #### REQ-N: [requirement text]
+
 **Status**: SATISFIED / VIOLATED / PARTIALLY SATISFIED / NOT ASSESSABLE
 **Evidence**: [file:line] — [code quote]
 **Analysis**: [explanation]
@@ -62,6 +66,7 @@ For each requirement:
 Compare pairs of requirements from `quality/REQUIREMENTS.md` that reference the same field, constant, range, or security policy. For each pair, check whether their constraints are mutually consistent.
 
 What to look for:
+
 - **Numeric range vs bit width**: If one requirement says the valid range is [0, N) and another says the field is M bits wide, does N = 2^M?
 - **Security policy propagation**: If one requirement says a CA file is configured, do all requirements about connections that should use it actually reference using it?
 - **Validation bounds vs encoding limits**: Does a validation check in one file agree with the storage capacity in another?
@@ -74,6 +79,7 @@ For each pair that shares a concept, verify consistency against the actual code.
 For each shared concept:
 
 #### Shared Concept: [name]
+
 **Requirements**: REQ-X, REQ-Y
 **What REQ-X claims**: [summary]
 **What REQ-Y claims**: [summary]
@@ -123,6 +129,7 @@ The failure mode this addresses: when models have access to documentation, they 
 For each regression test that claims to reproduce a specific finding, verify that the test actually exercises the cited code path. A test that targets a different function, a different branch, or a different failure mode than the finding it claims to reproduce is worse than no test — it creates false confidence.
 
 **Verification procedure:** For each regression test:
+
 1. Read the finding: note the specific file, line number, function, and failure condition
 2. Read the test: identify which function it calls and what condition it asserts
 3. Confirm alignment: the test must call the function cited in the finding, trigger the specific condition the finding describes, and assert on the behavior the finding says is wrong
@@ -149,6 +156,7 @@ Every guard must reference the bug ID (BUG-NNN format) and the fix patch path so
 These patterns ensure every bug has an executable test that can be enabled when the fix lands, without polluting CI with expected failures.
 
 **TDD red/green interaction with skip guards.** During TDD verification, the red and green phases must temporarily bypass the skip guard:
+
 - **Red phase (NEVER SKIPPED):** Remove or disable the guard, run against unpatched code. Must fail. Re-enable guard after recording result. **The red phase is mandatory for every confirmed bug, even when no fix patch exists.** Record `verdict: "confirmed open"` with `red_phase: "fail"` and `green_phase: "skipped"`. Do not use `verdict: "skipped"` — that value is deprecated.
 - **Green phase:** Remove or disable the guard, apply fix patch, run. Must pass. Re-enable guard if fix will be reverted. If no fix patch exists, record `green_phase: "skipped"`.
 - **After successful red→green:** Generate a per-bug writeup at `quality/writeups/BUG-NNN.md` (see SKILL.md File 7, "Bug writeup generation"). Record the path in `tdd-results.json` as `writeup_path`. After writing `tdd-results.json`, reopen it and verify all required fields, enum values, and no extra undocumented root keys (see SKILL.md post-write validation step). Both sidecar JSON files must use `schema_version: "1.1"`.
@@ -187,6 +195,7 @@ The closure mandate applies to spec-audit confirmed code bugs, not just code rev
 **Why this is a separate step:** Code review regression tests are written immediately after the code review, before the spec audit runs. This means spec-audit bugs are systematically orphaned — they appear in the triage report but never enter the regression test file. Across v1.3.4 runs on 8 repos, spec-audit bugs accounted for ~30% of all findings, and only 1 of 8 repos (httpx) wrote regression tests for them.
 
 **Procedure:**
+
 1. After spec audit triage, read the triage summary for findings classified as "Real code bug."
 2. For each, write a regression test in `quality/test_regression.*` using the same format as code review regression tests. Use the spec audit report as the source citation: `[BUG from spec_audits/YYYY-MM-DD-triage.md]`.
 3. Run the test to confirm it fails (expected) or passes (needs investigation).
@@ -205,6 +214,7 @@ After spec audit triage, check: does any test in `quality/test_regression.*` cor
 Previous experiments (the QPB NSQ benchmark) showed that focus areas don't reliably improve AI code review. A generic "review for bugs" prompt scored 65.5%, while a playbook with 7 named focus areas scored 48.3% — the focus areas narrowed the model's attention and suppressed detections.
 
 The three-pass pipeline works because each pass does one thing well with no cross-contamination:
+
 - **Pass 1** lets the model do what it's already good at (structural review, ~65% of defects)
 - **Pass 2** catches individual requirement violations that structural review misses (absence bugs, spec deviations)
 - **Pass 3** catches contradictions between individually-correct pieces of code (cross-file arithmetic bugs, security policy gaps)
@@ -233,7 +243,8 @@ After the code review produces findings, write regression tests that reproduce e
    - TypeScript: `quality/regression.test.ts`
 
 3. **Each test should document its origin:**
-   ```
+
+   ```text
    # Python example
    def test_webhook_signature_raises_on_malformed_input():
        """[BUG from 2026-03-26-reviewer.md, line 47]
@@ -248,7 +259,8 @@ After the code review produces findings, write regression tests that reproduce e
    ```
 
 4. **Run the tests and report results** as a confirmation table:
-   ```
+
+   ```text
    | Finding | Test | Result | Confirmed? |
    |---------|------|--------|------------|
    | Webhook signature raises on malformed input | test_webhook_signature_... | FAILED (expected) | YES — bug confirmed |
@@ -294,6 +306,7 @@ All commands in this protocol use **relative paths from the project root.** Run 
 ## Safety Constraints
 
 [If this protocol runs with elevated permissions:]
+
 - DO NOT modify source code
 - DO NOT delete files
 - ONLY create files in the test results directory
@@ -302,6 +315,7 @@ All commands in this protocol use **relative paths from the project root.** Run 
 ## Pre-Flight Check
 
 Before running integration tests, verify:
+
 - [ ] [Dependencies installed — specific command]
 - [ ] [API keys / external services available — specific checks]
 - [ ] [Test fixtures exist — specific paths]
@@ -331,6 +345,7 @@ Where possible, encode checks as automated tests:
 ```bash
 [test runner] [integration test file] --verbose
 ```
+```
 
 ## Manual Verification Steps
 
@@ -344,7 +359,7 @@ When an AI agent runs this protocol, it should communicate in three phases so th
 
 Before running anything, show the user what's about to happen:
 
-```
+```text
 ## Integration Test Plan
 
 **Pre-flight:** Checking dependencies, API keys, and environment
@@ -365,7 +380,7 @@ This gives the user a chance to say "skip test 4" or "actually, don't run the li
 
 As each test runs, report a one-line status update. Keep it compact — the user wants a heartbeat, not a log dump:
 
-```
+```text
 ✓ Test 1: Expression evaluation — PASS (0.3s)
 ✓ Test 2: Schema validation — PASS (0.1s)
 ⧗ Test 3: Live pipeline (Gemini, realtime)... running
@@ -377,7 +392,7 @@ Use `✓` for pass, `✗` for fail, `⧗` for in-progress. If a test fails, show
 
 After all tests complete, show a summary table and a recommendation:
 
-```
+```text
 ## Results
 
 | # | Test | Result | Time | Notes |
@@ -399,16 +414,20 @@ Then save the detailed results to `quality/results/YYYY-MM-DD-integration.md`.
 Save results to `quality/results/YYYY-MM-DD-integration.md`
 
 ### Summary Table
+
 | Check | Result | Notes |
 |-------|--------|-------|
 | ... | PASS/FAIL | ... |
 
 ### Detailed Findings
+
 [Specific failures, unexpected behavior, performance observations]
 
 ### Recommendation
+
 [SHIP / FIX BEFORE MERGE / BLOCK]
-```
+
+```text
 
 ### Tips for Writing Good Integration Checks
 
@@ -449,10 +468,12 @@ Sequential integration runs waste time. Group runs so that independent runs exec
 Example grouping for a project with 3 pipelines and 3 providers (9+ runs):
 
 ```
+
 Group 1 (parallel): Pipeline_A × Provider_1 | Pipeline_B × Provider_2 | Pipeline_C × Provider_3
 Group 2 (parallel): Pipeline_A × Provider_2 | Pipeline_B × Provider_3 | Pipeline_C × Provider_1
 Group 3 (parallel): Pipeline_A × Provider_3 | Pipeline_B × Provider_1 | Pipeline_C × Provider_2
-```
+
+```text
 
 This pattern maximizes throughput while never hitting the same provider with concurrent requests. Adapt the grouping to the project's actual pipeline and provider count.
 
@@ -481,10 +502,13 @@ For each pipeline in the project, the integration protocol should have a dedicat
 Before writing any quality gate that references output field names, build a **Field Reference Table** by re-reading each schema file:
 
 ```
+
 ## Field Reference Table (built from schemas, not memory)
 
 ### Pipeline: WeatherForecast
+
 Schema: pipelines/WeatherForecast/schemas/analyze.json
+
 | Field | Type | Constraints |
 |-------|------|-------------|
 | region_name | string | — |
@@ -492,14 +516,18 @@ Schema: pipelines/WeatherForecast/schemas/analyze.json
 | condition | string | enum: ["sunny", "cloudy", "rain", "snow"] |
 
 ### Pipeline: SentimentAnalysis
+
 Schema: pipelines/SentimentAnalysis/schemas/evaluate.json
+
 | Field | Type | Constraints |
 |-------|------|-------------|
 | document_id | string | — |
 | sentiment_score | number | min: -1.0, max: 1.0 |
 | classification | string | enum: ["positive", "negative", "neutral"] |
+
 ...
-```
+
+```text
 
 **The process:**
 1. **Re-read each schema file IMMEDIATELY before writing each table row.** Do not write any row from memory. The file read and the table row must be adjacent — read the file, write the row, read the next file, write the next row. If you read all schemas earlier in the conversation, that doesn't count — you must read them AGAIN here because your memory of field names drifts over thousands of tokens.
@@ -591,7 +619,8 @@ grep -c '^| [0-9]' quality/PROGRESS.md
 find quality/code_reviews -name "*.md" -size +500c | wc -l  # should be >= 1
 find quality/spec_audits -name "*triage*" -size +500c | wc -l  # should be >= 1
 ```
-```
+
+```text
 
 **Baseline vs with-docs comparison pattern:** Run the skill twice on the same repo — once without supplemental docs, once with a `reference_docs/` folder containing project history. Compare: requirement count, scenario count, bug count, and pipeline completion. The with-docs run should produce equal or more requirements and equal or more bugs. If the baseline outperforms the with-docs run on bug detection, that's a finding about the docs quality, not a skill failure.
 

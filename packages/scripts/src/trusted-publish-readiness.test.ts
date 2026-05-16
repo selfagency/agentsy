@@ -26,6 +26,28 @@ function setupBase() {
   return { base, pkgDir, releaseStatePath };
 }
 
+function setupOidcReadyPackage() {
+  const { base, pkgDir, releaseStatePath } = setupBase();
+
+  writeFileSync(
+    join(pkgDir, 'package.json'),
+    JSON.stringify({
+      name: '@agentsy/testpkg',
+      repository: { url: 'https://github.com/selfagency/agentsy.git' }
+    })
+  );
+
+  writeFileSync(
+    releaseStatePath,
+    JSON.stringify({
+      defaultState: 'bootstrap-required',
+      packages: { '@agentsy/testpkg': 'oidc-ready' }
+    })
+  );
+
+  return { base, pkgDir, releaseStatePath };
+}
+
 describe('trusted-publish-readiness', () => {
   it('normalizeRepositoryValue handles common git URL forms', () => {
     expect(normalizeRepositoryValue('https://github.com/selfagency/agentsy.git')).toBe('selfagency/agentsy');
@@ -49,23 +71,7 @@ describe('trusted-publish-readiness', () => {
   });
 
   it('checkTrustedPublishReadiness passes for oidc-ready package with matching repo', () => {
-    const { base, pkgDir, releaseStatePath } = setupBase();
-
-    writeFileSync(
-      join(pkgDir, 'package.json'),
-      JSON.stringify({
-        name: '@agentsy/testpkg',
-        repository: { url: 'https://github.com/selfagency/agentsy.git' }
-      })
-    );
-
-    writeFileSync(
-      releaseStatePath,
-      JSON.stringify({
-        defaultState: 'bootstrap-required',
-        packages: { '@agentsy/testpkg': 'oidc-ready' }
-      })
-    );
+    const { base, pkgDir, releaseStatePath } = setupOidcReadyPackage();
 
     const result = checkTrustedPublishReadiness({
       expectedRepo: 'selfagency/agentsy',
@@ -105,23 +111,7 @@ describe('trusted-publish-readiness', () => {
   });
 
   it('checkTrustedPublishReadiness fails when workflow file is missing under provided rootDir', () => {
-    const { base, pkgDir, releaseStatePath } = setupBase();
-
-    writeFileSync(
-      join(pkgDir, 'package.json'),
-      JSON.stringify({
-        name: '@agentsy/testpkg',
-        repository: { url: 'https://github.com/selfagency/agentsy.git' }
-      })
-    );
-
-    writeFileSync(
-      releaseStatePath,
-      JSON.stringify({
-        defaultState: 'bootstrap-required',
-        packages: { '@agentsy/testpkg': 'oidc-ready' }
-      })
-    );
+    const { base, pkgDir, releaseStatePath } = setupOidcReadyPackage();
 
     const result = checkTrustedPublishReadiness({
       expectedRepo: 'selfagency/agentsy',

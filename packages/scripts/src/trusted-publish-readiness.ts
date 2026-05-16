@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
 
 import { getPackageReleaseState, readReleaseState } from './release-state.js';

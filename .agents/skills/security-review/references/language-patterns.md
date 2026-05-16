@@ -7,6 +7,7 @@ Load the relevant section during Step 1 (Scope Resolution) after identifying lan
 ## JavaScript / TypeScript (Node.js, React, Next.js, Express)
 
 ### Critical APIs/calls to flag
+
 ```js
 eval()                    // arbitrary code execution
 Function('return ...')   // same as eval
@@ -16,6 +17,7 @@ fs.writeFile             // path traversal if user controls path
 ```
 
 ### Express.js specific
+
 ```js
 // Missing helmet (security headers)
 const app = express()
@@ -34,12 +36,14 @@ app.set('trust proxy', true)  // only safe behind known proxy
 ```
 
 ### React specific
+
 ```jsx
 <div dangerouslySetInnerHTML={{ __html: userContent }} />  // XSS
 <a href={userUrl}>link</a>  // javascript: URL injection
 ```
 
 ### Next.js specific
+
 ```js
 // Server Actions without auth
 export async function deleteUser(id) {   // missing: auth check
@@ -58,6 +62,7 @@ export default function handler(req, res) {
 ## Python (Django, Flask, FastAPI)
 
 ### Django specific
+
 ```python
 # Raw SQL
 User.objects.raw(f"SELECT * FROM users WHERE name = '{name}'")  # SQLi
@@ -76,6 +81,7 @@ ALLOWED_HOSTS = ['*']  # too permissive
 ```
 
 ### Flask specific
+
 ```python
 # Debug mode
 app.run(debug=True)  # never in production
@@ -91,6 +97,7 @@ render_template_string(f"Hello {name}")  # Server-Side Template Injection
 ```
 
 ### FastAPI specific
+
 ```python
 # Missing auth dependency
 @app.delete("/users/{user_id}")  # No Depends(get_current_user)
@@ -108,6 +115,7 @@ async def read_file(filename: str):
 ## Java (Spring Boot)
 
 ### Spring Boot specific
+
 ```java
 // SQL Injection
 String query = "SELECT * FROM users WHERE name = '" + name + "'";

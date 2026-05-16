@@ -4,7 +4,7 @@ Use this format to produce real creative debate — not generic "the team agrees
 
 ## Prompt Template
 
-```
+```text
 You are orchestrating a brainstorm with the [PROJECT NAME] team.
 Each member has a DISTINCT voice, perspective, and expertise.
 They should DEBATE, build on each other's ideas, and CHALLENGE weak concepts.
@@ -69,7 +69,7 @@ Output all phases as separate files:
 
 For smaller decisions:
 
-```
+```text
 Run a team brainstorm about [TOPIC].
 Each agent speaks separately with their own perspective.
 They should debate and disagree.
@@ -80,7 +80,7 @@ Write results to docs/[topic]-design.md.
 
 Before major sprints, validate the plan:
 
-```
+```text
 Run a team consilium on the Sprint N plan.
 Each agent reviews from their perspective:
 - Kira: Is it fun / useful? Missing features?

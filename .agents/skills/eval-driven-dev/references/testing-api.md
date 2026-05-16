@@ -34,7 +34,7 @@ The dataset is a JSON object with these top-level fields:
 
 All fields are top-level on each entry (flat structure — no nesting):
 
-```
+```text
 entry:
   ├── input_data    (required) — args for Runnable.run()
   ├── eval_input      (optional) — list of {"name": ..., "value": ...} objects (default: [])

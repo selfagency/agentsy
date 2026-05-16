@@ -65,7 +65,7 @@ Iterate — fix errors, re-run, fix the next error — until `pixie test` runs t
 
 After `pixie test` completes successfully, results are stored in the per-entry directory structure:
 
-```
+```text
 {PIXIE_ROOT}/results/<test_id>/
   meta.json                           # test run metadata
   dataset-{idx}/

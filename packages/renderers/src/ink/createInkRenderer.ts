@@ -56,9 +56,10 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     }[]
   };
 
-  const forceUpdateRef = { current: () => {} };
-
   const { processor } = options;
+
+  // Ref to store for updates
+  const forceUpdateRef = { current: () => {} };
 
   // Store listener functions for cleanup on unmount
   const listeners = {
@@ -83,15 +84,9 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
         name: part.name
       });
       forceUpdateRef.current();
-    },
-    warning: (error: string) => {
-      options.onWarning?.(error);
     }
   };
 
-  processor.on('text', listeners.text);
-  processor.on('thinking', listeners.thinking);
-  processor.on('tool_call', listeners.tool_call);
   processor.on('done', listeners.done);
   processor.on('warning', listeners.warning);
 

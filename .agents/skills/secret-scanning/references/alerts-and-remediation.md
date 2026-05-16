@@ -42,16 +42,19 @@ Generated when GitHub detects a leaked secret matching a partner's pattern.
 ### Default Alerts List
 
 The primary view showing alerts for:
+
 - Supported provider patterns (e.g., GitHub PATs, AWS keys, Stripe keys)
 - Custom patterns defined at repo/org/enterprise level
 
 ### Generic Alerts List
 
 Separate view (toggle from default list) showing:
+
 - Non-provider patterns (private keys, connection strings)
 - AI-detected generic secrets (passwords)
 
 **Limitations:**
+
 - Maximum 5,000 alerts per repository (open + closed)
 - Only first 5 detected locations shown for non-provider patterns
 - Only first detected location shown for AI-detected secrets
@@ -60,6 +63,7 @@ Separate view (toggle from default list) showing:
 ## Paired Credentials
 
 When a resource requires paired credentials (e.g., access key + secret key):
+
 - Alert is only created when BOTH parts are detected in the same file
 - Prevents noise from partial leaks
 - Reduces false positives
@@ -97,6 +101,7 @@ Provides additional context about detected secrets when validity checks are enab
 ### Available Metadata
 
 Depends on what the service provider shares:
+
 - Secret owner information
 - Scope and permissions of the secret
 - Creation date and expiration
@@ -164,6 +169,7 @@ Add a dismissal comment for audit trail.
 ## Alert Notifications
 
 Alerts generate notifications via:
+
 - **Email** — to repository admins, organization owners, security managers
 - **Webhooks** — `secret_scanning_alert` event
 - **GitHub Actions** — `secret_scanning_alert` event trigger
@@ -173,7 +179,7 @@ Alerts generate notifications via:
 
 ### List Alerts
 
-```
+```text
 GET /repos/{owner}/{repo}/secret-scanning/alerts
 ```
 
@@ -181,7 +187,7 @@ Query parameters: `state` (open/resolved), `secret_type`, `resolution`, `sort`, 
 
 ### Get Alert Details
 
-```
+```text
 GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}
 ```
 
@@ -189,7 +195,7 @@ Returns: secret type, secret value (if permitted), locations, validity, resoluti
 
 ### Update Alert
 
-```
+```text
 PATCH /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}
 ```
 
@@ -197,7 +203,7 @@ Body: `state` (open/resolved), `resolution` (false_positive/revoked/used_in_test
 
 ### List Alert Locations
 
-```
+```text
 GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}/locations
 ```
 
@@ -205,7 +211,7 @@ Returns: file path, line numbers, commit SHA, blob SHA
 
 ### Organization-Level Endpoints
 
-```
+```text
 GET /orgs/{org}/secret-scanning/alerts
 ```
 
@@ -216,6 +222,7 @@ Lists alerts across all repositories in the organization.
 ### `secret_scanning_alert`
 
 Triggered when a secret scanning alert is:
+
 - Created
 - Resolved
 - Reopened
@@ -238,6 +245,7 @@ paths-ignore:
 ```
 
 **Limits:**
+
 - Maximum 1,000 entries
 - File must be under 1 MB
 - Excluded paths are also excluded from push protection

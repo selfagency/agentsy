@@ -8,22 +8,7 @@ export interface ContainerSandbox {
   destroy(): Promise<void>;
 }
 
-/**
- * Placeholder for the Rivet implementation.
- * Throws an error when usage is attempted.
- */
-function createRivetSandbox(): ContainerSandbox {
-  return {
-    async destroy(): Promise<void> {
-      // No-op
-    },
-
-    async execute() {
-      throw new Error(
-        'Rivet container sandbox is currently disabled due to security vulnerabilities in its transitive dependencies (CVE-2024-10086, etc.). Please use "virtual" mode instead.'
-      );
-    },
-
-    mode: 'container'
-  };
-}
+// Re-enable when Rivet is safe to use
+// function createRivetSandbox(): ContainerSandbox {
+//   throw new Error('Rivet container sandbox is currently disabled due to security vulnerabilities in its transitive dependencies (CVE-2024-10086, etc.). Please use "virtual" mode instead.');
+// }

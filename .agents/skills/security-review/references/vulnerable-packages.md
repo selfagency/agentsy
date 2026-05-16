@@ -27,7 +27,8 @@ Load this during Step 2 (Dependency Audit). Check versions in the project's lock
 | serialize-javascript | < 3.1.0 | XSS | >= 3.1.0 |
 | node-fetch | < 2.6.7 | Open redirect | >= 2.6.7 or 3.x |
 
-### Patterns to flag (regardless of version):
+### Patterns to flag (regardless of version)
+
 - `eval` or `vm.runInContext` in dependencies
 - Any package pulling in `node-gyp` native addons from unknown publishers
 - Packages with < 1000 weekly downloads but required in production code (supply chain risk)
@@ -72,7 +73,7 @@ Load this during Step 2 (Dependency Audit). Check versions in the project's lock
 
 | Gem | Vulnerable Versions | Issue |
 |-----|-------------------|-------|
-| rails | < 7.1.3 | Various | 
+| rails | < 7.1.3 | Various |
 | nokogiri | < 1.16.2 | XXE, various |
 | rexml | < 3.2.7 | ReDoS |
 | rack | < 3.0.9 | Various |
@@ -87,15 +88,16 @@ Load this during Step 2 (Dependency Audit). Check versions in the project's lock
 | openssl | Check advisory db for current version |
 | hyper | Check advisory db for current version |
 
-Reference: https://rustsec.org/advisories/
+Reference: <https://rustsec.org/advisories/>
 
 ---
 
 ## Go
 
-Reference: https://pkg.go.dev/vuln/ and https://vuln.go.dev
+Reference: <https://pkg.go.dev/vuln/> and <https://vuln.go.dev>
 
 Common risky patterns:
+
 - `golang.org/x/crypto` — check if version is within 6 months of current
 - Any dependency using `syscall` package directly — review carefully
 
@@ -104,6 +106,7 @@ Common risky patterns:
 ## General Red Flags (Any Ecosystem)
 
 Flag any dependency that:
+
 1. Has not been updated in > 2 years AND has > 10 open security issues
 2. Has been deprecated by its maintainer with a security advisory
 3. Is a fork of a known package from an unknown publisher (typosquatting)

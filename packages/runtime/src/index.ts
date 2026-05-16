@@ -1,6 +1,30 @@
 import { randomUUID } from 'node:crypto';
 
 import type { SessionStore } from '@agentsy/session';
+import type {
+  RuntimeExecutor,
+  RuntimeLoop,
+  RuntimeLoopOptions as BaseRuntimeLoopOptions,
+  RuntimeOptions,
+  RuntimeSnapshot,
+  RuntimeTask,
+  RuntimeTaskContext,
+  RuntimeTaskResult,
+  RuntimeWorkflowExecutor,
+  RuntimeWorkflowTask
+} from '@agentsy/types';
+
+export type {
+  RuntimeExecutor,
+  RuntimeLoop,
+  RuntimeOptions,
+  RuntimeSnapshot,
+  RuntimeTask,
+  RuntimeTaskContext,
+  RuntimeTaskResult,
+  RuntimeWorkflowExecutor,
+  RuntimeWorkflowTask
+} from '@agentsy/types';
 
 export {
   buildRuntimeContext,
@@ -16,69 +40,9 @@ export {
   type RuntimeMemoryInjectionOptions
 } from './memory-injection.js';
 
-export interface RuntimeTask {
-  id: string;
-  run(signal: AbortSignal, context: RuntimeTaskContext): Promise<void>;
-}
-
-export interface RuntimeWorkflowTask extends RuntimeTask {
-  dependsOn?: string[];
-}
-
-export interface RuntimeTaskResult {
-  taskId: string;
-  status: 'completed' | 'failed' | 'skipped';
-  startedAt: number;
-  finishedAt: number;
-  error?: Error;
-}
-
-export interface RuntimeSnapshot {
-  sessionId: string;
-  depth: number;
-  completedTaskIds: string[];
-  results: RuntimeTaskResult[];
-  childSnapshots: RuntimeSnapshot[];
-  updatedAt: number;
-}
-
-export interface RuntimeTaskContext {
-  sessionId: string;
-  depth: number;
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
-}
-
-export interface RuntimeOptions {
-  onError?: (error: Error, task: RuntimeTask) => void;
-  onTaskStart?: (task: RuntimeTask) => void;
-  onTaskComplete?: (result: RuntimeTaskResult, task: RuntimeTask) => void;
-  taskContext?: RuntimeTaskContext;
-}
-
-export interface RuntimeExecutor {
-  execute(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<void>;
-  executeWithResults(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeTaskResult[]>;
-}
-
-export interface RuntimeLoopOptions extends RuntimeOptions {
-  sessionId?: string;
-  snapshot?: RuntimeSnapshot;
+export type RuntimeLoopOptions = Omit<BaseRuntimeLoopOptions, 'sessionStore'> & {
   sessionStore?: SessionStore;
-  snapshotKey?: string;
-  depth?: number;
-  maxDepth?: number;
-}
-
-export interface RuntimeLoop {
-  execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
-  getSnapshot(): RuntimeSnapshot;
-  getDepth(): number;
-}
-
-export interface RuntimeWorkflowExecutor {
-  execute(tasks: RuntimeWorkflowTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
-}
+};
 
 function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error('Runtime task failed');

@@ -26,7 +26,7 @@ A meta-skill for creating new Agent Skills. Use this skill when you need to scaf
 
 Create a new folder with a lowercase, hyphenated name:
 
-```
+```text
 skills/<skill-name>/
 └── SKILL.md          # Required
 ```
@@ -97,7 +97,7 @@ After the frontmatter, add markdown instructions. Recommended sections:
 
 ## Example: Complete Skill Structure
 
-```
+```text
 my-awesome-skill/
 ├── SKILL.md                    # Required instructions
 ├── LICENSE.txt                 # Optional license file

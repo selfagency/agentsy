@@ -1,37 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { CancellationToken, Event } from 'vscode';
 
 import { createRetryUtility, RetryUtility } from './retryUtility.js';
-
-function createMockCancellationToken(initiallyCancelled = false): {
-  token: CancellationToken;
-  cancel(): void;
-} {
-  const listeners = new Set<(e: unknown) => unknown>();
-  let cancelled = initiallyCancelled;
-
-  return {
-    cancel() {
-      cancelled = true;
-      for (const listener of listeners) {
-        listener();
-      }
-    },
-    token: {
-      get isCancellationRequested() {
-        return cancelled;
-      },
-      onCancellationRequested: ((listener: (e: unknown) => unknown) => {
-        listeners.add(listener);
-        return {
-          dispose: () => {
-            listeners.delete(listener);
-          }
-        };
-      }) as unknown as Event<unknown>
-    }
-  };
-}
+import { createMockCancellationToken } from './test-utils.js';
 
 describe('Retry Utility', () => {
   const mockCancellationToken = createMockCancellationToken().token;

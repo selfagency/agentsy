@@ -43,6 +43,120 @@
       "skillPath": "skills/ai-team-orchestration/SKILL.md",
       "computedHash": "8e2bc361f72d0616417883dd7fb9846824c93c3ce7c068e17dd5dbb4fb1584ad"
     },
+    "architecture-decision": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tech/development/architecture/architecture-decision/SKILL.md",
+      "computedHash": "fe6d3963ba9ac3ed64713c37e31813fba46e6db9fb9486c4f0693fbf1fbee3e8"
+    },
+    "build-mcp-server": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/build-mcp-server/SKILL.md",
+      "computedHash": "c82bc2de61ebfcdce564487a6af7f91e5606c4bc333cc4fb774a725e4d8c65f1"
+    },
+    "cavecrew": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/cavecrew/SKILL.md",
+      "computedHash": "505d836228d1c5e14834ff5d62aad72390c7d27f79c6aa7f9a7a55ed6606d6a2"
+    },
+    "caveman": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman/SKILL.md",
+      "computedHash": "dfbf85749fd474feeb0bbe60c779795ecd5dbec0083299b56e68916bc3ddd8c9"
+    },
+    "caveman-commit": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman-commit/SKILL.md",
+      "computedHash": "f456ea0564875e46858890ac39ee701ecb9c601c72a2da1e6ce6bd5f9fc5d817"
+    },
+    "caveman-compress": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman-compress/SKILL.md",
+      "computedHash": "f61268bc137909b25053b018de45d90afc3a856569088a9ef9e1d0fdc8147b35"
+    },
+    "caveman-help": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman-help/SKILL.md",
+      "computedHash": "2c21437427e98df1eacabaa0b055b5256a308b2191feea3ca2df6a9418e76cb1"
+    },
+    "caveman-review": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman-review/SKILL.md",
+      "computedHash": "fb7214a1c5793bae6ba8b1be4329e2e6f40dbec6dd911dfb335ad29f09c316a1"
+    },
+    "caveman-stats": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman-stats/SKILL.md",
+      "computedHash": "47ce2de3d6cb39a75047b5c962e4eb3da15594e7397c94103e9a104d42626553"
+    },
+    "cli-creator": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/cli-creator/SKILL.md",
+      "computedHash": "bd8f6db9268abf0483e17215ae6a39852a8780429c54b65658780c6f94bb4f61"
+    },
+    "cli-for-agents": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/cli-for-agents/SKILL.md",
+      "computedHash": "5f007b32f6ee4fbb950d708fa3bcf3e98bfd8f597409fc1ecf028ced80001e3d"
+    },
+    "cli-review-runner": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/cli-review-runner/SKILL.md",
+      "computedHash": "0d6362223be25b2cb03908d44955eb01997d9acb136bc48508ed9708461a1ca4"
+    },
+    "cmux": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux/SKILL.md",
+      "computedHash": "f83a74295fb40f6c0f0abad386b9fa7e0305aed6789c1a94e635b367f206d94c"
+    },
+    "cmux-browser": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-browser/SKILL.md",
+      "computedHash": "7206737c08f3ce8efd87fcf450b6bfe4ed69dfb8c8861ab8d7d9e078732136d3"
+    },
+    "cmux-customization": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-customization/SKILL.md",
+      "computedHash": "2c0c7a754a738742da6b62735a5d56197bc971074a1a492a80293b058be1c7a2"
+    },
+    "cmux-diagnostics": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-diagnostics/SKILL.md",
+      "computedHash": "f308f1ef2f3d65a1a0fd57797a0b31caa8c788798be023151033a2a20c8926cc"
+    },
+    "cmux-markdown": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-markdown/SKILL.md",
+      "computedHash": "5cd75e51d5d576dffcce54abf391165005e6b0f70ab89133f4fe432cc8a00f63"
+    },
+    "cmux-settings": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-settings/SKILL.md",
+      "computedHash": "34ce8f25ace9a73e7b87bbb38da148eedf17e07bedca14d1691b5c79a616a94b"
+    },
+    "cmux-workspace": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-workspace/SKILL.md",
+      "computedHash": "92aafcdb32fa2f410f7a669cbd7c9a5caf765d4a01595c35a3bf08823409fd41"
+    },
     "conventional-commit": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
@@ -90,6 +204,18 @@
       "sourceType": "github",
       "skillPath": "skills/finalize-agent-prompt/SKILL.md",
       "computedHash": "a72bea0359d7f69295a28e9f4b94c5dc6fc093930dae663d8c7bab294ea287d3"
+    },
+    "gh-address-comments": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/gh-address-comments/SKILL.md",
+      "computedHash": "0a480d4fe8deb31852cd47ec8708e66b66b94875a23ba7679b17cf11ae9255a0"
+    },
+    "gh-fix-ci": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/gh-fix-ci/SKILL.md",
+      "computedHash": "1b1ce4eeeae2bfc175d05f1b69e07b17dfa1fddf99a96c22b6dcae7e5fb4e550"
     },
     "git-commit": {
       "source": "github/awesome-copilot",
@@ -163,6 +289,12 @@
       "skillPath": "skills/model-recommendation/SKILL.md",
       "computedHash": "d300d9c634bba27fbaa908c6769a24cc54b8bce09beebd9c8eeb958261d3f338"
     },
+    "msw": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/msw/SKILL.md",
+      "computedHash": "2a8ef7934bbda4992bd1ee44e521922768e55ae7134dfc668efd5cf88bfe4b40"
+    },
     "prd": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
@@ -186,6 +318,36 @@
       "sourceType": "github",
       "skillPath": "skills/publish-to-pages/SKILL.md",
       "computedHash": "2ff8e5ae1ce51c04c3817dfc3107c9626d09276a66289b2ca9f88041192764be"
+    },
+    "qiaomu-opencli-autofix": {
+      "source": "joeseesun/opencli-skill",
+      "sourceType": "github",
+      "skillPath": "qiaomu-opencli-autofix/SKILL.md",
+      "computedHash": "f6a1a73ea6c3964764b2830bf7a715def15183f708e74dee8f8fe90c36160082"
+    },
+    "qiaomu-opencli-browser": {
+      "source": "joeseesun/opencli-skill",
+      "sourceType": "github",
+      "skillPath": "qiaomu-opencli-browser/SKILL.md",
+      "computedHash": "e5f9db274bf150592a1c08ce714a08ceb057061724535f2a8790c33d45afe1a2"
+    },
+    "qiaomu-opencli-explorer": {
+      "source": "joeseesun/opencli-skill",
+      "sourceType": "github",
+      "skillPath": "qiaomu-opencli-explorer/SKILL.md",
+      "computedHash": "481c7ed49bc1cdc554a30a220aa0e7de7a943f373d0ce796d0707015bd7b9be1"
+    },
+    "qiaomu-opencli-oneshot": {
+      "source": "joeseesun/opencli-skill",
+      "sourceType": "github",
+      "skillPath": "qiaomu-opencli-oneshot/SKILL.md",
+      "computedHash": "dc13d787341e12db30031de69a58c9508f6ab3a262343c68f865881246fabc97"
+    },
+    "qiaomu-opencli-usage": {
+      "source": "joeseesun/opencli-skill",
+      "sourceType": "github",
+      "skillPath": "qiaomu-opencli-usage/SKILL.md",
+      "computedHash": "ee5e6493be73a22483136753431db7a5f72993674e9e3ba7a3bfda80fd48fc91"
     },
     "quality-playbook": {
       "source": "github/awesome-copilot",
@@ -235,6 +397,12 @@
       "skillPath": "skills/security-review/SKILL.md",
       "computedHash": "9b1791054c648b84ca424fc1342dede2e04759dc73436bb91d21675d5a4c13ea"
     },
+    "skill-authoring": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/skill-authoring/SKILL.md",
+      "computedHash": "44404fdaeaead003f811190ffee431a591dc12e0e9ba07e0ef618348f0096d8d"
+    },
     "structured-autonomy-generate": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
@@ -253,17 +421,53 @@
       "skillPath": "skills/structured-autonomy-plan/SKILL.md",
       "computedHash": "a23272e52745d64fdc2469ccbe8f0d3ec7edb52e8f056ee5504a5982829e8463"
     },
+    "tdd": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/tdd/SKILL.md",
+      "computedHash": "7f3c216a330a5473509c9d8eb98445896c0f9e065d0b67b2bc6e61d828e74e7e"
+    },
+    "terminal-ui": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/terminal-ui/SKILL.md",
+      "computedHash": "693f8dec7160be453466e41d50623279e5f3b129fd310aec7d18a518fcce6a6a"
+    },
+    "typescript": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/typescript/SKILL.md",
+      "computedHash": "a6abc7c40a305f4f15d1167a36931d97ac5271893924dc101ba945f0aaf241ce"
+    },
+    "typescript-best-practices": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tech/development/tooling/typescript-best-practices/SKILL.md",
+      "computedHash": "db4675b9948beee1b029809ac861474048ac334c80f6dea60435a96afc122d38"
+    },
     "typescript-mcp-server-generator": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
       "skillPath": "skills/typescript-mcp-server-generator/SKILL.md",
       "computedHash": "d7add3c0bf0b16006283fcb77748eb7025d574c5e2d15306d767fb901d47ad37"
     },
+    "typescript-refactor": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/typescript-refactor/SKILL.md",
+      "computedHash": "c5297c4ad2ab21fcee60ec86588ddc5a3f38d8be5cf4158abb6b6045e1912624"
+    },
     "ultracite": {
       "source": "haydenbleasel/ultracite",
       "sourceType": "github",
       "skillPath": "skills/ultracite/SKILL.md",
       "computedHash": "5efa7db1bc960b8beda708e3a6a4f633bf592e68b9d720524d17a300e091ac0e"
+    },
+    "unix-cli": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/unix-cli/SKILL.md",
+      "computedHash": "dcd006b12120cf085859c9930b54389667b0293b618b2245f1c1d44ba4434f6b"
     },
     "update-implementation-plan": {
       "source": "github/awesome-copilot",
@@ -282,6 +486,12 @@
       "sourceType": "github",
       "skillPath": "skills/update-specification/SKILL.md",
       "computedHash": "56832dcff10483e3b9755c73d8d88286e5ae4274b3ae75092b9a6aa245a943cb"
+    },
+    "vitest": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/vitest/SKILL.md",
+      "computedHash": "2432cb7f9099423fb3768a925fa95d7f8a6dc56c76eaded47472f558bff7139e"
     },
     "vscode-ext-commands": {
       "source": "github/awesome-copilot",

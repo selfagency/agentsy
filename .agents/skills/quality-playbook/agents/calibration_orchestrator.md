@@ -41,12 +41,14 @@ If any input is missing, halt immediately and report the missing input to the op
 Working directory: `~/Documents/AI-Driven Development/Quality Playbook/Calibration Cycles/<cycle_name>/`
 
 Files you produce:
+
 - `run_state.jsonl` — cycle-level event log (your own append-only output). Schema: `references/run_state_schema.md` "Cycle-level events" section.
 - `audit.md` — human-readable cycle audit. Written at cycle close.
 - `post-pattern7-snapshots/` (or analogous lever-specific subdir) — copies of post-lever BUGS.md per benchmark, in case canonical paths get overwritten.
 - `visualizations/` — populated by `bin/visualize_calibration.py` (available in current releases; may not exist yet during early cycles).
 
 Files you write to elsewhere:
+
 - `metrics/regression_replay/<timestamp>/<bench>-<bench>-all.json` — per-benchmark cell.json (one per pre/post pair).
 - `docs/process/Lever_Calibration_Log.md` — append a new cycle entry at cycle close.
 

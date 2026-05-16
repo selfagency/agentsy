@@ -36,18 +36,22 @@ Your role is to refine and create the core mechanisms that make the project work
 Accurately assess the collaborator's technical expertise to determine how much interpretation and correction is needed:
 
 ### High Confidence (90%+)
+
 The collaborator has a good understanding of the tools, languages, and best practices.
 
 **Your Approach:**
+
 - Trust their approach if technically sound
 - Make minor corrections for typos or syntax
 - Implement as described with professional polish
 - Suggest optimizations only when clearly beneficial
 
 ### Medium Confidence (30-90%)
+
 The collaborator has intermediate knowledge but may miss edge cases or best practices.
 
 **Your Approach:**
+
 - Evaluate their approach critically
 - Suggest better alternatives when appropriate
 - Fill in missing error handling or validation
@@ -55,9 +59,11 @@ The collaborator has intermediate knowledge but may miss edge cases or best prac
 - Educate gently on improvements
 
 ### Low Confidence (<30%)
+
 The collaborator has limited or no professional knowledge of the tools being used.
 
 **Your Approach:**
+
 - Compensate for terminology errors or misconceptions
 - Find the best approach to achieve their stated goal
 - Translate their description into proper technical implementation
@@ -82,10 +88,12 @@ The quasi-coder skill recognizes and processes special shorthand notation:
 ### Markers and Boundaries
 
 Shorthand sections are typically bounded by markers:
+
 - **Open Marker**: `${language:comment} start-shorthand`
 - **Close Marker**: `${language:comment} end-shorthand`
 
 For example:
+
 ```javascript
 // start-shorthand
 ()=> add validation for email field
@@ -96,6 +104,7 @@ For example:
 ### Shorthand Indicators
 
 Lines starting with `()=>` indicate shorthand that requires interpretation:
+
 - 90% comment-like (describing intent)
 - 10% pseudo-code (showing structure)
 - Must be converted to actual functional code
@@ -136,6 +145,7 @@ Collaborators may provide additional tools and reference files to support your w
 ### Types of Resources
 
 **Persistent Resources** - Used consistently throughout the project:
+
 - Project-specific coding standards and style guides
 - Architecture documentation and design patterns
 - Core library documentation and API references
@@ -146,6 +156,7 @@ Collaborators may provide additional tools and reference files to support your w
 These resources should be referenced regularly to maintain consistency across all implementations.
 
 **Temporary Resources** - Needed for specific updates or short-term goals:
+
 - Feature-specific API documentation
 - One-time data migration scripts
 - Prototype code samples for reference
@@ -167,6 +178,7 @@ These resources are relevant for immediate work but may not apply to future impl
 ### Examples
 
 **Persistent Resource Usage**:
+
 ```javascript
 // Collaborator provides: "Use our logging utility from utils/logger.js"
 // This is a persistent resource - use it consistently
@@ -179,6 +191,7 @@ function processData(data) {
 ```
 
 **Temporary Resource Usage**:
+
 ```javascript
 // Collaborator provides: "For this migration, use this data mapping from migration-map.json"
 // This is temporary - use only for current task
@@ -196,7 +209,7 @@ When collaborators provide tools and references, treat them as valuable context 
 
 Quick reference for shorthand notation:
 
-```
+```text
 ()=>        90% comment, 10% pseudo-code - interpret and implement
             ALWAYS remove these lines when editing
 
@@ -243,6 +256,7 @@ closeMarker = "${language:comment} end-shorthand"
 ### Scenario: Collaborator Provides Shorthand
 
 **Input from Collaborator** (JavaScript file):
+
 ```javascript
 // start-shorthand
 ()=> create function that validates user input
@@ -253,11 +267,13 @@ closeMarker = "${language:comment} end-shorthand"
 ```
 
 ### Step 1: Assess Expertise Level
+
 - Collaborator knows they need validation
 - Using general terms, not specific library names
 - **Assessment**: Medium confidence (30-90%)
 
 ### Step 2: Interpret Intent
+
 - Goal: Create input validation function
 - Needs: Email format check, password length check
 - Output: Boolean return value
@@ -265,6 +281,7 @@ closeMarker = "${language:comment} end-shorthand"
 ### Step 3: Apply Expert Implementation
 
 **Output (Production Code)**:
+
 ```javascript
 /**
  * Validates user registration input
@@ -288,7 +305,8 @@ function validateUserInput(email, password) {
 }
 ```
 
-### Expert Decisions Made:
+### Expert Decisions Made
+
 1. Created function with proper parameters (email and password separate)
 2. Used standard email regex pattern (best practice)
 3. Added JSDoc comments for clarity
@@ -333,6 +351,7 @@ When shorthand mixes languages or uses pseudo-code:
 ```
 
 **Expert Translation** (Python doesn't have forEach, use appropriate Python pattern):
+
 ```python
 # Filter adult users from the users list
 adults = [user for user in users if user.get('age', 0) > 18]

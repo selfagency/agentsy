@@ -28,7 +28,7 @@ Custom patterns extend secret scanning to detect organization-specific secrets n
 
 Custom patterns use standard regular expressions. Common patterns:
 
-```
+```text
 # API key with prefix
 MYAPP_[A-Za-z0-9]{32}
 
@@ -70,6 +70,7 @@ Use filter patterns similar to GitHub Actions workflow syntax for glob-style mat
 6. Optionally enable push protection
 
 **Notes:**
+
 - Push protection for org-level custom patterns only applies to repos with push protection enabled
 - Organization owners and repo admins receive alerts
 
@@ -83,6 +84,7 @@ Use filter patterns similar to GitHub Actions workflow syntax for glob-style mat
 6. Optionally enable push protection
 
 **Notes:**
+
 - Only the pattern creator can edit or dry-run enterprise-level patterns
 - Dry runs require admin access to the selected repositories
 - Push protection requires enterprise-level secret scanning push protection to be enabled
@@ -106,6 +108,7 @@ Dry runs test patterns against repository content without creating alerts.
 ### Editing Patterns
 
 After publishing, patterns can be edited:
+
 1. Navigate to the custom pattern
 2. Modify the regex or optional fields
 3. Save and dry run to validate changes
@@ -114,6 +117,7 @@ After publishing, patterns can be edited:
 ### Enabling Push Protection
 
 Push protection can only be enabled after a pattern is published:
+
 1. Navigate to the published pattern
 2. Click **Enable** next to push protection
 

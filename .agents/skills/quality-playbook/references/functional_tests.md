@@ -6,7 +6,7 @@ This is the most important deliverable. The Markdown files are documentation. Th
 
 Organize tests into three logical groups using whatever structure the test framework provides — classes (Python/Java), describe blocks (TypeScript/Jest), traits (Scala), or subtests (Go):
 
-```
+```text
 Spec Requirements
     — One test per testable spec section
     — Each test's documentation cites the spec requirement
@@ -79,13 +79,12 @@ Before writing a single test, build a function call map. For every function you 
 Walk each spec document section by section. For each section, ask: "What testable requirement does this state?" Then write a test.
 
 Each test should:
+
 1. **Set up** — Load a fixture, create test data, configure the system
 2. **Execute** — Call the function, run the pipeline, make the request
 3. **Assert specific properties** the spec requires
 
 Each test should include a traceability annotation (via docstring, display name, or comment) citing the spec section it verifies, e.g., `[Req: formal — Design Doc §N] X should produce Y`.
-
-
 
 ## What Makes a Good Functional Test
 
@@ -100,8 +99,6 @@ Each test should include a traceability annotation (via docstring, display name,
 If the project handles multiple input types, cross-variant coverage is where silent bugs hide. Aim for roughly 30% of tests exercising all variants — the exact percentage matters less than ensuring every cross-cutting property is tested across all variants.
 
 Use your framework's parametrization mechanism (e.g., `@pytest.mark.parametrize`, `@ParameterizedTest`, `test.each`, table-driven tests, iterating over cases) to run the same assertion logic across all variants.
-
-
 
 If parametrization doesn't fit, loop explicitly within a single test.
 
@@ -140,8 +137,6 @@ def test_bad_value_not_in_output(fixture):
 
 The pattern is the same in every language: don't test that the validation mechanism rejects bad input — test that the system produces correct output when given edge-case input the schema accepts. The WRONG approach tests the implementation (the validator); the RIGHT approach tests the requirement (the output).
 
-
-
 Always check your Step 5b schema map before choosing mutation values.
 
 ## Testing at the Right Layer
@@ -154,22 +149,20 @@ Ask: "What does the *spec* say should happen?" The spec says "invalid data shoul
 
 For each scenario in QUALITY.md, write a test. This is a 1:1 mapping. Each test should include a traceability annotation citing the scenario, e.g., `[Req: formal — QUALITY.md Scenario 1]`, and be named to match the scenario's memorable name.
 
-
-
 ## Boundary and Negative Tests
 
 One test per defensive pattern from Step 5. Each test should include a traceability annotation citing the defensive pattern, e.g., `[Req: inferred — from function_name() guard] guards against X`.
 
 For each boundary test:
+
 1. Mutate input to trigger the defensive code path (using a value the schema accepts)
 2. Process the mutated input
 3. Assert graceful handling — the result is valid despite the edge-case input
 
-
-
 Use your Step 5b schema map when choosing mutation values. Every mutation must use a value the schema accepts.
 
 Systematic approach:
+
 - **Missing fields** — Optional field absent? Set to null.
 - **Wrong types** — Field gets different type? Use schema-valid alternative.
 - **Empty values** — Empty list? Empty string? Empty dict?

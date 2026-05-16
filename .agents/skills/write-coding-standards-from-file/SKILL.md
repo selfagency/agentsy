@@ -18,18 +18,18 @@ Parameters for the prompt have a text definition. There is one required paramete
 * addStandardsTest = false;
 * addToREADME = false;
 * addToREADMEInsertions = ["atBegin", "middle", "beforeEnd", "bestFitUsingContext"];
-  - Default to **beforeEnd**.
+  * Default to **beforeEnd**.
 * createNewFile = true;
 * fetchStyleURL = true;
 * findInconsistencies = true;
 * fixInconsistencies = true;
 * newFileName = ["CONTRIBUTING.md", "STYLE.md", "CODE_OF_CONDUCT.md", "CODING_STANDARDS.md", "DEVELOPING.md", "CONTRIBUTION_GUIDE.md", "GUIDELINES.md", "PROJECT_STANDARDS.md", "BEST_PRACTICES.md", "HACKING.md"];
-  - For each file in `${newFileName}`, if file does not exist, use that file name and `break`, else continue to next file name of `${newFileName}`.
+  * For each file in `${newFileName}`, if file does not exist, use that file name and `break`, else continue to next file name of `${newFileName}`.
 * outputSpecToPrompt = false;
 * useTemplate = "verbose"; // or "v"
-  - Possible values are `[["v", "verbose"], ["m", "minimal"], ["b", "best fit"], ["custom"]]`.
-  - Selects one of the two example templates at the bottom of prompt file under the level two heading `## Coding Standards Templates`, or use another composition that is a better fit.
-  - If **custom**, then apply per request.
+  * Possible values are `[["v", "verbose"], ["m", "minimal"], ["b", "best fit"], ["custom"]]`.
+  * Selects one of the two example templates at the bottom of prompt file under the level two heading `## Coding Standards Templates`, or use another composition that is a better fit.
+  * If **custom**, then apply per request.
 
 ### Configuration Variables as Prompt Parameters
 
@@ -41,7 +41,7 @@ If any of the variable names are passed to prompt as-is, or as a similar but cle
 * folderName = The name of the folder that will be used to extract data from multiple files into one aggregated dataset that will be analyzed in terms of: indentation, variable naming, commenting, conditional procedures, functional procedures, and other syntax related data for the coding language of the files.
 * instructions = Additional instructions, rules, and procedures that will be provided for unique cases.
 * [configVariableAsParameter] = If passed will override the default state of the configuration variable. Example:
-  - useTemplate = If passed will override the configuration `${useTemplate}` default. Values are `[["v", "verbose"], ["m", "minimal"], ["b", "best fit"]]`.
+  * useTemplate = If passed will override the configuration `${useTemplate}` default. Values are `[["v", "verbose"], ["m", "minimal"], ["b", "best fit"]]`.
 
 #### Required and Optional Parameters
 
@@ -108,7 +108,7 @@ If any of the variable names are passed to prompt as-is, or as a similar but cle
 ### `typeof ${newFileName} != "string"`
 
 * If **NOT** specifically defined as a `string`, but instead an `object` or an array, create a new file using a value from `${newFileName}` by applying this rule:
-  - For each file name in `${newFileName}`, if file does not exist, use that file name and `break`, else continue to the next.
+  * For each file name in `${newFileName}`, if file does not exist, use that file name and `break`, else continue to the next.
 
 ### `${outputSpecToPrompt} == true`
 
@@ -137,38 +137,38 @@ Depending on the programming language, for each link in list below, run `#fetch 
 
 ### Fetch Links
 
-- [C Style Guide](https://users.ece.cmu.edu/~eno/coding/CCodingStandard.html)
-- [C# Style Guide](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
-- [C++ Style Guide](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
-- [Go Style Guide](https://github.com/golang-standards/project-layout)
-- [Java Style Guide](https://coderanch.com/wiki/718799/Style)
-- [AngularJS App Style Guide](https://github.com/mgechev/angularjs-style-guide)
-- [jQuery Style Guide](https://contribute.jquery.org/style-guide/js/)
-- [JavaScript Style Guide](https://www.w3schools.com/js/js_conventions.asp)
-- [JSON Style Guide](https://google.github.io/styleguide/jsoncstyleguide.xml)
-- [Kotlin Style Guide](https://kotlinlang.org/docs/coding-conventions.html)
-- [Markdown Style Guide](https://cirosantilli.com/markdown-style-guide/)
-- [Perl Style Guide](https://perldoc.perl.org/perlstyle)
-- [PHP Style Guide](https://phptherightway.com/)
-- [Python Style Guide](https://peps.python.org/pep-0008/)
-- [Ruby Style Guide](https://rubystyle.guide/)
-- [Rust Style Guide](https://github.com/rust-lang/rust/tree/HEAD/src/doc/style-guide/src)
-- [Swift Style Guide](https://www.swift.org/documentation/api-design-guidelines/)
-- [TypeScript Style Guide](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html)
-- [Visual Basic Style Guide](https://en.wikibooks.org/wiki/Visual_Basic/Coding_Standards)
-- [Shell Script Style Guide](https://google.github.io/styleguide/shellguide.html)
-- [Git Usage Style Guide](https://github.com/agis/git-style-guide)
-- [PowerShell Style Guide](https://github.com/PoshCode/PowerShellPracticeAndStyle)
-- [CSS](https://cssguidelin.es/)
-- [Sass Style Guide](https://sass-guidelin.es/)
-- [HTML Style Guide](https://github.com/marcobiedermann/html-style-guide)
-- [Linux kernel Style Guide](https://www.kernel.org/doc/html/latest/process/coding-style.html)
-- [Node.js Style Guide](https://github.com/felixge/node-style-guide)
-- [SQL Style Guide](https://www.sqlstyle.guide/)
-- [Angular Style Guide](https://angular.dev/style-guide)
-- [Vue Style Guide](https://vuejs.org/style-guide/rules-strongly-recommended.html)
-- [Django Style Guide](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/)
-- [SystemVerilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
+* [C Style Guide](https://users.ece.cmu.edu/~eno/coding/CCodingStandard.html)
+* [C# Style Guide](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+* [C++ Style Guide](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
+* [Go Style Guide](https://github.com/golang-standards/project-layout)
+* [Java Style Guide](https://coderanch.com/wiki/718799/Style)
+* [AngularJS App Style Guide](https://github.com/mgechev/angularjs-style-guide)
+* [jQuery Style Guide](https://contribute.jquery.org/style-guide/js/)
+* [JavaScript Style Guide](https://www.w3schools.com/js/js_conventions.asp)
+* [JSON Style Guide](https://google.github.io/styleguide/jsoncstyleguide.xml)
+* [Kotlin Style Guide](https://kotlinlang.org/docs/coding-conventions.html)
+* [Markdown Style Guide](https://cirosantilli.com/markdown-style-guide/)
+* [Perl Style Guide](https://perldoc.perl.org/perlstyle)
+* [PHP Style Guide](https://phptherightway.com/)
+* [Python Style Guide](https://peps.python.org/pep-0008/)
+* [Ruby Style Guide](https://rubystyle.guide/)
+* [Rust Style Guide](https://github.com/rust-lang/rust/tree/HEAD/src/doc/style-guide/src)
+* [Swift Style Guide](https://www.swift.org/documentation/api-design-guidelines/)
+* [TypeScript Style Guide](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html)
+* [Visual Basic Style Guide](https://en.wikibooks.org/wiki/Visual_Basic/Coding_Standards)
+* [Shell Script Style Guide](https://google.github.io/styleguide/shellguide.html)
+* [Git Usage Style Guide](https://github.com/agis/git-style-guide)
+* [PowerShell Style Guide](https://github.com/PoshCode/PowerShellPracticeAndStyle)
+* [CSS](https://cssguidelin.es/)
+* [Sass Style Guide](https://sass-guidelin.es/)
+* [HTML Style Guide](https://github.com/marcobiedermann/html-style-guide)
+* [Linux kernel Style Guide](https://www.kernel.org/doc/html/latest/process/coding-style.html)
+* [Node.js Style Guide](https://github.com/felixge/node-style-guide)
+* [SQL Style Guide](https://www.sqlstyle.guide/)
+* [Angular Style Guide](https://angular.dev/style-guide)
+* [Vue Style Guide](https://vuejs.org/style-guide/rules-strongly-recommended.html)
+* [Django Style Guide](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/)
+* [SystemVerilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
 
 ## Coding Standards Templates
 

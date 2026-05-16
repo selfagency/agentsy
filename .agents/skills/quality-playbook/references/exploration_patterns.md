@@ -33,13 +33,14 @@ Fallback paths are written later, tested less, and reviewed with less scrutiny t
 For each core module, look for: conditional chains that try one approach then fall through to another, strategy/adapter patterns where multiple implementations are selected at runtime, retry logic with different strategies per attempt, feature-negotiation cascades where capabilities determine which code path runs, HTTP redirect/retry logic that must preserve or strip headers.
 
 For each cascade found:
+
 1. List the primary path and every fallback.
 2. For each fallback, check whether it performs the same critical operations as the primary (validation, resource setup, index assignment, cleanup, error reporting, header stripping, resource release).
 3. Any operation present in the primary but missing in a fallback is a candidate requirement.
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## Fallback Path Analysis
 
 ### [Name of cascade]
@@ -75,13 +76,14 @@ Dispatchers are typically written and tested for the common case. The return val
 For each core module, look for: functions with switch/case or if-else chains that return a status, interrupt/event handlers that handle multiple event types, request dispatchers that check multiple conditions before returning, state machine transition functions, middleware chains where multiple handlers write to the same response status.
 
 For each dispatcher found:
+
 1. Enumerate all input combinations (not just the ones with explicit case labels — also the implicit "else" and "default" paths).
 2. For each combination, trace the return value through the entire handler chain (not just the immediate function).
 3. Any combination where the return value doesn't match the expected semantics is a candidate requirement.
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## Dispatcher Return-Value Analysis
 
 ### [Function name] at [file:line]
@@ -119,6 +121,7 @@ When the same operation is implemented in multiple places, each implementation i
 For each core module, look for: the same operation name implemented in multiple files or classes, interface/trait implementations across different backends, protocol-version-specific implementations of the same message, transport-specific implementations of the same lifecycle operation, constructor vs. mutation implementations of the same logical operation.
 
 For each pair (or set) of implementations:
+
 1. Identify the specification requirement they share.
 2. List the mandatory steps from the spec.
 3. Check each implementation for each step.
@@ -128,7 +131,7 @@ For each pair (or set) of implementations:
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## Cross-Implementation Consistency
 
 ### [Operation name] — [spec reference]
@@ -165,6 +168,7 @@ This pattern also covers **internal representations** that must mirror a public 
 For each core module, look for: switch/case statements with explicit case labels and a default that drops/clears/rejects, arrays or sets of accepted values used for filtering or validation, registration functions where new entries must be added manually, enum/tagged-union definitions that mirror a specification or public API, trait/visitor method families where each method handles one variant, schema importers that must handle every keyword the spec defines, internal representations (buffers, IR, AST) that must cover the full range of the public interface.
 
 For each closed set found:
+
 1. Identify the authoritative source that defines what values should be valid. This could be: a spec, a header file, an upstream enum, a protocol definition, **or the library's own public API surface** (trait methods, function signatures, type definitions).
 2. Extract the closed set mechanically (save the case labels, enum variants, visitor methods, array entries, or schema keywords to a file).
 3. Compare the extracted set against the authoritative source. Every value in the authoritative source that is absent from the closed set is a candidate requirement.
@@ -173,7 +177,7 @@ For each closed set found:
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## Enumeration/Representation Completeness
 
 ### [Function/type name] at [file:line]
@@ -209,13 +213,14 @@ Libraries often expose the same underlying data through multiple interfaces: a d
 For each core module, look for: view/wrapper objects returned by methods like `asList()`, `asMap()`, `unmodifiableView()`, `stream()`, `iterator()`; constructor vs. mutation method pairs; sync vs. async variants of the same operation; convenience aliases that delegate to a primary implementation; methods that accept options/configuration objects.
 
 For each pair of surfaces:
+
 1. Identify the logical operation they share.
 2. Test the same edge-case inputs on both surfaces (null, empty, boundary values, special characters, ordering-sensitive data).
 3. Any divergence in behavior (different exceptions, different encoding, different ordering, one succeeds and the other fails) is a candidate requirement.
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## API Surface Consistency
 
 ### [Operation name] — [two surfaces compared]
@@ -250,13 +255,14 @@ Developers frequently implement "good enough" parsers that handle the common cas
 For each core module, look for: string comparisons on values defined by RFCs or specs (headers, URLs, MIME types, encoding names), `contains()` / `indexOf()` / `startsWith()` / `endsWith()` on structured values, case-sensitive comparisons where the spec requires case-insensitive, splitting on the wrong delimiter or not splitting at all, prefix/suffix matching without path-segment or token boundaries.
 
 For each parser found:
+
 1. Identify the spec that defines the grammar (RFC, ABNF, JSON Schema spec, POSIX, etc.).
 2. Check whether the implementation handles: token lists (comma-separated), quoted strings, parameters (semicolon-separated), case folding, whitespace trimming, boundary conditions.
 3. Construct an input that is valid per the spec but would fail the implementation's shortcut parser. That input is a candidate test case and the parsing gap is a candidate requirement.
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## Spec-Structured Parsing
 
 ### [Parser location] at [file:line]
@@ -311,7 +317,7 @@ Common composition seams worth checking explicitly:
 
 ### EXPLORATION.md output format
 
-```
+```text
 ## Composition and Mount-Context Analysis
 
 ### [Function/component name] at [file:line]
@@ -330,6 +336,7 @@ Common composition seams worth checking explicitly:
 These patterns were derived from analyzing 56 confirmed bugs across 11 open-source repositories spanning 7 languages. Each pattern represents a class of requirements that broad architectural summaries consistently miss.
 
 To add a new pattern:
+
 1. Identify a confirmed bug that was missed by exploration but would have been found with a specific analysis technique.
 2. Generalize the technique: what question should the explorer have asked about the code?
 3. Provide at least 5 diverse examples from different domains (not all from the same project).

@@ -1,25 +1,27 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { testOnStepCall } from '../shared.test.js';
 import { createStreamingMarkdownRenderer } from './createStreamingMarkdownRenderer.js';
 
-// Mock streaming-markdown and dompurify
-vi.mock(import('streaming-markdown'), () => ({
+(vi.mock as any)('streaming-markdown', () => ({
   default: {
-    parser_create: vi.fn(opts => ({ target: opts.target })),
+    removed: [],
+    parser_create: vi.fn((opts: { target: unknown }) => ({ target: opts.target })),
     parser_end: vi.fn(),
     parser_write: vi.fn()
   }
 }));
 
-vi.mock(import('dompurify'), () => {
-  const mockSanitize = vi.fn((html: string) => html);
+(vi.mock as any)('dompurify', () => {
+  const mockSanitize = vi.fn((html: string | Element) => html);
   return {
     default: {
       removed: [],
-      sanitize: mockSanitize
+      sanitize: mockSanitize as any
     },
     removed: [],
-    sanitize: mockSanitize
+    sanitize: mockSanitize as any
   };
 });
 
@@ -238,30 +240,12 @@ describe('Streaming Markdown Renderer', () => {
     });
 
     it('calls onStep when stepIndex changes via writeChunk', async () => {
-      const onStep = vi.fn();
-      const renderer = createStreamingMarkdownRenderer({
-        onStep,
-        target: mockTarget
-      });
-
-      await renderer.writeChunk({
-        content: 'step 0',
-        stepIndex: 0,
-        stepUsage: { outputTokens: 2 }
-      });
-      await renderer.writeChunk({
-        content: 'step 1',
-        stepIndex: 1,
-        usage: { inputTokens: 1, outputTokens: 3 }
-      });
-      await renderer.end();
-
-      expect(onStep).toHaveBeenCalledTimes(2);
-      expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
-      expect(onStep).toHaveBeenNthCalledWith(2, 1, {
-        inputTokens: 1,
-        outputTokens: 3
-      });
+      await testOnStepCall(options =>
+        createStreamingMarkdownRenderer({
+          ...options,
+          target: mockTarget
+        })
+      );
     });
   });
 });

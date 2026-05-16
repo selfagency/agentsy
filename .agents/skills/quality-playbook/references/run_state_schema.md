@@ -324,8 +324,8 @@ Atomically rewritten on every event. Markdown.
 ```markdown
 # QPB Run Progress
 
-**Started:** 2026-05-15T14:32:01Z  **Benchmark:** chi-1.5.1  **Lever:** post-pattern7
-**Runner:** claude  **Playbook version:** 1.5.6
+**Started:** 2026-05-15T14:32:01Z **Benchmark:** chi-1.5.1 **Lever:** post-pattern7
+**Runner:** claude **Playbook version:** 1.5.6
 
 ## Phases
 

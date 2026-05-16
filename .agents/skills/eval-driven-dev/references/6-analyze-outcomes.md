@@ -282,7 +282,7 @@ This file is for **agent consumption** — it provides specific, implementable i
 - **How**: [concrete implementation steps with file paths and line numbers]
 - **Verification**: [how to verify the fix worked — which entries to re-run, what scores to expect]
 
-## Priority 2: ...
+## Priority 2
 
 ...
 ```

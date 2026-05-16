@@ -1,4 +1,4 @@
-import { describe, expect, it, expectTypeOf } from 'vitest';
+import { describe, it, expectTypeOf } from 'vitest';
 
 import * as vscodePackage from './index.js';
 

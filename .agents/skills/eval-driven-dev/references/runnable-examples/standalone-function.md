@@ -38,7 +38,7 @@ async def run(self, args: AppArgs) -> None:
 
 If the function depends on an external service (e.g., a vector store), the `wrap(purpose="input")` calls you added in Step 2a handle it automatically — the registry injects test data in eval mode.
 
-### When to use `setup()` / `teardown()`
+## When to use `setup()` / `teardown()`
 
 Most standalone functions don't need lifecycle methods. Use them only when the function requires a shared resource (e.g., a pre-loaded embedding model, a database connection):
 

@@ -34,7 +34,7 @@ Use this skill when:
 
 ### When NOT to Refactor
 
-```
+```text
 - Code that works and won't change again (if it ain't broke...)
 - Critical production code without tests (add tests first)
 - When you're under a tight deadline
@@ -560,7 +560,7 @@ Use this skill when:
 
 ### Safe Refactoring Process
 
-```
+```text
 1. PREPARE
    - Ensure tests exist (write them if missing)
    - Commit current state

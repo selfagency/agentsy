@@ -37,6 +37,7 @@ the target is arbitrary.
 [Define what constitutes a fake test for this project.]
 
 Generic examples that apply to most projects:
+
 - Asserting a function returned *something* without checking what
 - Testing with synthetic data that lacks the quirks of real data
 - Asserting an import succeeded
@@ -81,6 +82,7 @@ Include exact commands, test names, or assertions.]
 ## The Human Gate
 
 [List things that require human judgment:]
+
 - Output that "looks right" (requires domain knowledge)
 - UX and responsiveness
 - Documentation accuracy

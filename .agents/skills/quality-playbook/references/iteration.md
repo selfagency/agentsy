@@ -8,7 +8,7 @@
 
 The recommended iteration order is: **gap → unfiltered → parity → adversarial**. Each strategy finds different bug classes, and running them in this order maximizes cumulative yield. After each iteration, the skill prints a suggested prompt for the next strategy — follow the cycle until you hit diminishing returns or decide to stop.
 
-```
+```text
 Baseline run                                          # structured three-stage exploration
 → gap         scan previous coverage, explore gaps    # finds bugs in uncovered subsystems
 → unfiltered  pure domain-driven, no structure        # finds bugs that structure suppresses
@@ -30,7 +30,7 @@ These rules apply to every iteration strategy:
 
    **Demoted Candidates Manifest (mandatory in EXPLORATION_MERGED.md).** After re-consolidating the Candidate Bugs section, add or update a `## Demoted Candidates` section at the end of EXPLORATION_MERGED.md. This section tracks findings that were dismissed, demoted, or deprioritized during any iteration — they are the raw material for the adversarial strategy. For each demoted candidate, record:
 
-   ```
+   ```text
    ### DC-NNN: [short title]
    - **Source:** [which iteration and strategy first surfaced this]
    - **Dismissal reason:** [why it was demoted — e.g., "classified as design choice," "insufficient evidence," "needs runtime confirmation"]
@@ -60,7 +60,8 @@ These rules apply to every iteration strategy:
    - **baseline (no strategy)** → suggest: `Run the next iteration of the quality playbook using the gap strategy.`
 
    Format the suggestion clearly so the user can copy-paste it:
-   ```
+
+   ```text
    ────────────────────────────────────────────────────────
    Next iteration suggestion:
    "Run the next iteration of the quality playbook using the [strategy] strategy."

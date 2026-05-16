@@ -20,7 +20,7 @@
   "audit": {
     "gate": "new-only",
   },
-  // Common workspace aliases and packages we intentionally keep as dev/build
+// Common workspace aliases and packages we intentionally keep as dev/build
   // references across packages (monorepo layout). These are safe to ignore in
   // fallow's unused-dependencies check.
   "ignoreDependencies": [
@@ -33,4 +33,19 @@
     "@agentsy/session",
     "@agentsy/tokens",
   ],
+  // Ignore test boilerplate and small complexity duplications
+  "duplicates": {
+    "threshold": 10,
+    "ignoreDefaults": false,
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.test.jsx",
+      "**/*.test.js",
+      "**/*.spec.ts",
+      "**/*.spec.tsx"
+    ],
+    "minLines": 8,
+    "minTokens": 70,
+  },
 }

@@ -6,7 +6,7 @@
 > When a commit message contradicts the diff, trust the diff.
 
 When reading `git log` output, map each commit to one of the categories below.
-Repos that follow Conventional Commits (https://www.conventionalcommits.org/) will
+Repos that follow Conventional Commits (<https://www.conventionalcommits.org/>) will
 have explicit prefixes — use them directly. For freeform commit messages, use the
 heuristics.
 
@@ -34,30 +34,38 @@ heuristics.
 ## Freeform commit message heuristics
 
 **Breaking:**
+
 - Contains words: *breaking*, *incompatible*, *remove*, *rename*, *drop support*
 - Phrase patterns: *no longer*, *was removed*, *has been deleted*, *breaking change*
 
 **Feat (new feature):**
+
 - Starts with: *add*, *implement*, *introduce*, *support*, *new*
 - Contains: *now supports*, *ability to*, *can now*
 
 **Fix:**
+
 - Starts with: *fix*, *patch*, *resolve*, *correct*, *handle*
 - Contains: *bug*, *regression*, *crash*, *error*, *wrong*, *incorrect*, *broken*
 
 **Perf:**
+
 - Contains: *speed up*, *faster*, *reduce memory*, *optimize*, *performance*
 
 **Refactor:**
+
 - Contains: *refactor*, *clean up*, *reorganize*, *restructure*, *simplify*, *extract*
 
 **Docs:**
+
 - Contains: *docs*, *readme*, *comment*, *example*, *typo*
 
 **Chore:**
+
 - Contains: *bump*, *upgrade dependencies*, *update deps*, *version bump*, *ci*, *lint*
 
 **Test:**
+
 - Contains: *test*, *spec*, *coverage*, *fixture*
 
 ---

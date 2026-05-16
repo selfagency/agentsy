@@ -16,6 +16,7 @@ For each bug under review, run exactly two rounds. Each round uses a fresh sub-a
 ### Round 1: "Does this strike you as a real bug?"
 
 Provide the sub-agent with:
+
 - The bug writeup (or BUGS.md entry if no writeup yet)
 - The actual source code at the cited file:line (read it fresh — do not trust the writeup's code snippet)
 - All comments within 10 lines above and below the cited location
@@ -28,6 +29,7 @@ Prompt the sub-agent:
 > **Before analyzing anything, apply common sense.** Step back from the details and ask yourself: if you showed this code and this bug report to a senior developer who has never seen either before, would they say "yes, that's a bug" — or would they say "that's obviously not a bug"? If the answer is obviously not a bug, say so immediately and explain why. Do not rationalize your way past a common-sense answer. The goal of this review is to catch findings where pattern-matching overrode judgment.
 >
 > Then consider:
+>
 > - Is the developer aware of this behavior? (Look for comments, TODO markers, design decision notes, WHY annotations, OODA references.)
 > - Is this a documented limitation or intentional trade-off? (Check if other code paths handle this differently by design, not by accident.)
 > - Would the project maintainer respond "that's not a bug, that's how it works" or "that's a known limitation we documented"?
@@ -93,7 +95,8 @@ When invoked standalone (not during a playbook run), the challenge gate:
 5. If the verdict is REJECTED, suggests removing the bug from BUGS.md and tdd-results.json
 
 Example prompt for standalone use:
-```
+
+```text
 Read the quality playbook skill at .github/skills/SKILL.md and .github/skills/references/challenge_gate.md.
 Run the challenge gate on BUG-042 using the writeup at quality/writeups/BUG-042.md
 and the source code in this repo.

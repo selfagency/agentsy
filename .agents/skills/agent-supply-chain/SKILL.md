@@ -18,7 +18,7 @@ Generate and verify integrity manifests for AI agent plugins and tools. Detect t
 
 Agent plugins and MCP servers have the same supply chain risks as npm packages or container images — except the ecosystem has no equivalent of npm provenance, Sigstore, or SLSA. This skill fills that gap.
 
-```
+```text
 Plugin Directory → Hash All Files (SHA-256) → Generate INTEGRITY.json
                                                     ↓
 Later: Plugin Directory → Re-Hash Files → Compare Against INTEGRITY.json
@@ -97,6 +97,7 @@ print(f"Generated manifest: {manifest['file_count']} files, "
 ```
 
 **Output (`INTEGRITY.json`):**
+
 ```json
 {
   "plugin_name": "my-plugin",
@@ -165,7 +166,8 @@ else:
 ```
 
 **Output on tampered plugin:**
-```
+
+```text
 FAILED: 3 issue(s)
   MODIFIED: skills/search/SKILL.md
   MISSING: agency.json
@@ -326,7 +328,7 @@ Add to your GitHub Actions workflow:
 | **Include manifest in the PR** | Reviewers can verify what was hashed |
 | **Verify in CI before deploy** | Catches post-review modifications |
 | **Chain hash for tamper evidence** | Single hash represents entire plugin state |
-| **Exclude build artifacts** | Only hash source files — .git, __pycache__, node_modules excluded |
+| **Exclude build artifacts** | Only hash source files — .git, **pycache**, node_modules excluded |
 | **Pin all dependency versions** | Unpinned deps = different code on every install |
 
 ---

@@ -18,12 +18,14 @@ Push protection scans for secrets during the push process and blocks pushes cont
 ### Types of Push Protection
 
 **Repository push protection:**
+
 - Requires GitHub Secret Protection enabled
 - Disabled by default; enabled by repo admin, org owner, or security manager
 - Generates alerts for bypasses in the Security tab
 - Can be enabled at repository, organization, or enterprise level
 
 **User push protection:**
+
 - Enabled by default for all GitHub.com accounts
 - Blocks pushes to public repositories containing supported secrets
 - Does NOT generate alerts when bypassed (unless repo also has push protection enabled)
@@ -32,6 +34,7 @@ Push protection scans for secrets during the push process and blocks pushes cont
 ## Resolving Blocked Pushes — Command Line
 
 When push protection blocks a push, the error message includes:
+
 - The secret type detected
 - Commit SHAs containing the secret
 - File paths and line numbers
@@ -86,6 +89,7 @@ git push
 ## Resolving Blocked Pushes — GitHub UI
 
 When creating or editing a file in the GitHub UI:
+
 1. A banner appears warning about the detected secret
 2. Options to remove the secret or bypass are presented inline
 3. Same bypass reasons apply as command line
@@ -93,6 +97,7 @@ When creating or editing a file in the GitHub UI:
 ## Resolving Blocked Pushes — REST API
 
 Push protection also applies to REST API content creation endpoints. When blocked:
+
 - The API returns an error response with details about the detected secret
 - Include the bypass reason in the request to proceed
 
@@ -118,17 +123,20 @@ Delegated bypass gives organizations fine-grained control over who can bypass pu
 ### Enabling Delegated Bypass
 
 **Repository level:**
+
 1. Settings → Advanced Security → Push protection
 2. Enable "Restrict who can bypass push protection"
 3. Add users, teams, or roles to the bypass list
 
 **Organization level:**
+
 1. Organization Settings → Advanced Security → Global settings
 2. Configure delegated bypass in security configuration
 
 ### Managing Bypass Requests
 
 Designated reviewers:
+
 1. Navigate to repository Security tab → "Push protection bypass"
 2. Review pending requests (includes the secret, commit, and contributor's comment)
 3. **Approve** — contributor can push the secret and any future commits with the same secret
@@ -148,6 +156,7 @@ Designated reviewers:
 Push protection supports a subset of secret scanning patterns. Not all detected secret types trigger push protection blocks.
 
 Key considerations:
+
 - Older/legacy token formats may not be supported by push protection
 - Some patterns have higher false positive rates and are excluded from push protection
 - Custom patterns can have push protection enabled after publishing
@@ -157,6 +166,7 @@ For the full list of patterns supported by push protection, see [Supported secre
 ## Configuring Push Protection for Custom Patterns
 
 After publishing a custom pattern:
+
 1. Navigate to the custom pattern in Settings → Advanced Security
 2. Click **Enable** next to push protection
 3. The pattern will now block pushes containing matching secrets

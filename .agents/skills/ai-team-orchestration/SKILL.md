@@ -6,6 +6,7 @@ description: 'Bootstrap and run a multi-agent AI development team. Use when: sta
 # AI Team Orchestration
 
 ## When to Use
+
 - Starting a new project that needs planning, development, testing, and deployment
 - Setting up parallel AI agent teams (dev, QA, DevOps)
 - Writing brainstorm prompts that produce real debate (not generic output)
@@ -30,7 +31,7 @@ Customize names and roles for your project. Not every project needs all roles.
 
 The human (CEO) is the message bus between parallel chats:
 
-```
+```text
 ┌────────────────────────────────────────┐
 │  @ai-team-producer — Plans, merges     │
 │  NEVER writes code                     │
@@ -52,6 +53,7 @@ The human (CEO) is the message bus between parallel chats:
 ```
 
 Each team works in a **separate VS Code window** with its own clone:
+
 ```bash
 git clone <repo> project-dev    # Dev team
 git clone <repo> project-qa     # QA
@@ -65,6 +67,7 @@ git clone <repo> project-devops # DevOps (only when needed)
 The single source of truth across all chats. See the [project brief template](./references/project-brief-template.md).
 
 **Required sections (do not abbreviate):**
+
 1. Project Overview
 2. Concept / Product Description
 3. Tech Stack
@@ -87,13 +90,14 @@ See the [brainstorm format](./references/brainstorm-format.md). Key: name each a
 ### 3. Create Sprint Plans
 
 See the [sprint plan template](./references/sprint-plan-template.md). Every sprint gets:
+
 - `docs/sprint-N/plan.md` — prioritized tasks, success criteria
 - `docs/sprint-N/progress.md` — live tracker, enables recovery
 - `docs/sprint-N/done.md` — handoff doc written at sprint end
 
 ### 4. Execute Sprints
 
-```
+```text
 Read PROJECT_BRIEF.md, then read docs/sprint-N/plan.md. Execute Sprint N.
 
 First: git pull origin main && git checkout -b feature/sprint-N
@@ -107,7 +111,8 @@ Follow Sections 12-14 of PROJECT_BRIEF.md.
 ### 5. QA Sign-off
 
 After dev merges, QA does a full playthrough:
-```
+
+```text
 Read PROJECT_BRIEF.md. You are Ivy (QA).
 Sprint N is merged to main. Do full playthrough.
 File bugs as GitHub Issues. Write docs/qa/sprint-N-signoff.md.
@@ -118,12 +123,14 @@ File bugs as GitHub Issues. Write docs/qa/sprint-N-signoff.md.
 When a chat gets long (>100 messages), save state and start fresh:
 
 **Before closing:**
+
 1. Update `docs/sprint-N/progress.md` with current status
 2. Update `PROJECT_BRIEF.md` sections 7+8
 3. Write `docs/sprint-N/done.md`
 
 **Cold start prompt:**
-```
+
+```text
 Read PROJECT_BRIEF.md and docs/sprint-N/progress.md.
 Continue from where it left off.
 ```

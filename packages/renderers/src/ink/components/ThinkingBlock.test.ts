@@ -5,8 +5,8 @@ import { darkTheme, defaultTheme } from '../themes/index.js';
 import { ThinkingBlock } from './ThinkingBlock.js';
 
 // Mock Ink render to avoid terminal setup in test environment
-vi.mock(import('ink'), async () => {
-  const actual = await vi.importActual<typeof import('ink')>('ink');
+vi.mock('ink', async () => {
+  const actual = await vi.importActual('ink');
   return {
     ...actual,
     render: vi.fn(() => ({

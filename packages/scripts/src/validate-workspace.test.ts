@@ -6,16 +6,26 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 const { main } = await import('./validate-workspace.ts');
 
+function setupWorkspace(packages: string[] = [], packagesWithoutJson: string[] = []) {
+  const base = mkdtempSync(join(tmpdir(), 'agentsy-validate-'));
+  const packagesDir = join(base, 'packages');
+  mkdirSync(packagesDir);
+
+  for (const pkg of packages) {
+    mkdirSync(join(packagesDir, pkg));
+    writeFileSync(join(packagesDir, pkg, 'package.json'), '{}');
+  }
+
+  for (const pkg of packagesWithoutJson) {
+    mkdirSync(join(packagesDir, pkg));
+  }
+
+  return { base, packagesDir };
+}
+
 describe('validate-workspace', () => {
   it('should pass validation when all directories have package.json', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'agentsy-validate-'));
-    const packagesDir = join(base, 'packages');
-    mkdirSync(packagesDir);
-
-    mkdirSync(join(packagesDir, 'package1'));
-    writeFileSync(join(packagesDir, 'package1', 'package.json'), '{}');
-    mkdirSync(join(packagesDir, 'package2'));
-    writeFileSync(join(packagesDir, 'package2', 'package.json'), '{}');
+    const { base, packagesDir } = setupWorkspace(['package1', 'package2']);
 
     await main(packagesDir);
 
@@ -25,13 +35,7 @@ describe('validate-workspace', () => {
   });
 
   it('should fail validation when directory lacks package.json', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'agentsy-validate-'));
-    const packagesDir = join(base, 'packages');
-    mkdirSync(packagesDir);
-
-    mkdirSync(join(packagesDir, 'valid-package'));
-    writeFileSync(join(packagesDir, 'valid-package', 'package.json'), '{}');
-    mkdirSync(join(packagesDir, 'invalid-package'));
+    const { base, packagesDir } = setupWorkspace(['valid-package'], ['invalid-package']);
 
     await main(packagesDir);
 
@@ -41,13 +45,9 @@ describe('validate-workspace', () => {
   });
 
   it('should skip dot directories starting with .', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'agentsy-validate-'));
-    const packagesDir = join(base, 'packages');
-    mkdirSync(packagesDir);
+    const { base, packagesDir } = setupWorkspace(['package1']);
 
     mkdirSync(join(packagesDir, '.git'));
-    mkdirSync(join(packagesDir, 'package1'));
-    writeFileSync(join(packagesDir, 'package1', 'package.json'), '{}');
 
     await main(packagesDir);
 
@@ -74,13 +74,8 @@ describe('validate-workspace', () => {
   });
 
   it('should continue if non-packages and allowed dirs both present', async () => {
-    const base = mkdtempSync(join(tmpdir(), 'agentsy-validate-'));
-    const packagesDir = join(base, 'packages');
-    mkdirSync(packagesDir);
+    const { base, packagesDir } = setupWorkspace(['valid-package'], ['invalid-package']);
 
-    mkdirSync(join(packagesDir, 'valid-package'));
-    writeFileSync(join(packagesDir, 'valid-package', 'package.json'), '{}');
-    mkdirSync(join(packagesDir, 'invalid-package'));
     mkdirSync(join(packagesDir, 'core'));
 
     await main(packagesDir);

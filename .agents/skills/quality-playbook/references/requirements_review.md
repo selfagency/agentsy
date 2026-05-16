@@ -36,12 +36,15 @@ All three modes track progress in `quality/REFINEMENT_HINTS.md`.
 Read `quality/REQUIREMENTS.md` and present the user with a numbered list of use cases:
 
 ```
+
 Use cases in REQUIREMENTS.md:
+
 1. [x] Use Case 1: [name] (reviewed)
 2. [ ] Use Case 2: [name]
 3. [ ] Use Case 3: [name]
 ...
-```
+
+```text
 
 Check `quality/REFINEMENT_HINTS.md` for review progress — use cases marked `[x]` have already been reviewed. Present the list and ask the user which use case to examine.
 
@@ -98,23 +101,29 @@ Also check:
 Write findings to `quality/REFINEMENT_HINTS.md` under a `## Cross-Model Audit` heading:
 
 ```
+
 ## Cross-Model Audit
+
 Date: [date]
 Model: [model name]
 
 ### Verified domains
+
 - Null handling: CONFIRMED (REQ-054, REQ-055 correctly address null semantics)
 - ...
 
 ### Gaps found
+
 - Entry points: COMPLETENESS_REPORT cites REQ-100, REQ-101 but these are about
   pretty printing, not entry point contracts. JsonStreamParser has no coverage.
 - ...
 
 ### Orphaned requirements
+
 - REQ-NNN is not linked to any use case
 - ...
-```
+
+```text
 
 Present findings to the user and ask which gaps should be addressed in a refinement pass.
 
@@ -155,4 +164,5 @@ The review protocol creates and maintains this file:
 ```
 
 This file serves dual purpose: it tracks review progress (so the user can resume across sessions) AND accumulates feedback that the refinement pass reads.
-```
+
+```text

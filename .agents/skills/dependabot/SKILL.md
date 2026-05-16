@@ -119,6 +119,7 @@ groups:
 This creates one PR per dependency across all specified directories, reducing CI costs and review burden.
 
 Limitations:
+
 - All directories must use the same package ecosystem
 - Applies to version updates only
 - Incompatible version constraints create separate PRs
@@ -165,6 +166,7 @@ groups:
 ```
 
 Key behaviors:
+
 - Dependencies matching multiple groups go to the **first** match
 - `applies-to` defaults to `version-updates` when absent
 - Ungrouped dependencies get individual PRs
@@ -320,6 +322,7 @@ Interact with Dependabot PRs using `@dependabot` comments.
 | `@dependabot ignore this patch version` | Ignore this patch version |
 
 For grouped PRs, additional commands:
+
 - `@dependabot ignore DEPENDENCY_NAME` — ignore specific dependency in group
 - `@dependabot unignore DEPENDENCY_NAME` — clear ignores, reopen with updates
 - `@dependabot unignore *` — clear all ignores for all dependencies in group
@@ -425,17 +428,20 @@ For scanning code changes for vulnerable dependencies inside an AI coding agent 
 Install the **Advanced Security plugin** which provides dedicated dependency scanning tools and the `/dependency-scanning` skill.
 
 **GitHub Copilot CLI (shell):**
+
 ```bash
 # Enable the dependabot toolset for the GitHub MCP Server
 copilot --add-github-mcp-toolset dependabot
 ```
 
 **GitHub Copilot CLI (inside `copilot`):**
+
 ```text
 > /plugin install advanced-security@copilot-plugins
 ```
 
 **Visual Studio Code:**
+
 - Add `"X-MCP-Toolsets": "dependabot"` to your GitHub MCP Server headers, or pick **Dependabot** from the toolset selector in Copilot Chat
 - Install the `advanced-security` plugin, then use `/dependency-scanning` in Copilot Chat
 

@@ -1,5 +1,4 @@
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 
 export type SandboxExecutionStatus = 'ok' | 'error' | 'timeout' | 'blocked';

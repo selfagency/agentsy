@@ -5,6 +5,36 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createSharedRendererHandle } from './shared.js';
 
+export interface StepAssertionRendererOptions {
+  onStep?: (stepIndex: number, usage: unknown) => void | Promise<void>;
+}
+
+export const testOnStepCall = async (
+  createRenderer: (options: StepAssertionRendererOptions) => ReturnType<typeof createSharedRendererHandle>
+): Promise<void> => {
+  const onStep = vi.fn();
+  const renderer = createRenderer({ onStep });
+
+  await renderer.writeChunk({
+    content: 'step 0',
+    stepIndex: 0,
+    stepUsage: { outputTokens: 2 }
+  });
+  await renderer.writeChunk({
+    content: 'step 1',
+    stepIndex: 1,
+    usage: { inputTokens: 1, outputTokens: 3 }
+  });
+  await renderer.end();
+
+  expect(onStep).toHaveBeenCalledTimes(2);
+  expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
+  expect(onStep).toHaveBeenNthCalledWith(2, 1, {
+    inputTokens: 1,
+    outputTokens: 3
+  });
+};
+
 describe(createSharedRendererHandle, () => {
   let mockHandlers: {
     onText: (text: string) => Promise<void>;

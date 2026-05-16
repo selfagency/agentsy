@@ -66,7 +66,7 @@ Read every source file (within scope) and list every behavioral contract it impl
 
 ### Output format
 
-```
+```text
 # Behavioral Contract Extraction
 Generated: [date]
 Source files analyzed: N
@@ -126,7 +126,7 @@ For every contract in CONTRACTS.md, determine whether it is covered by a require
 
 ### Output format
 
-```
+```text
 # Contract Coverage Matrix
 Generated: [date]
 Total contracts: N
@@ -207,12 +207,13 @@ This check exists because earlier versions of the pipeline produced completeness
 **After the code review and spec audit are complete**, re-read `quality/COMPLETENESS_REPORT.md` and update it. The initial completeness report was written before the code review and spec audit ran, so it cannot reflect their findings. This refresh step reconciles the completeness verdict with the actual review results.
 
 **Procedure:**
+
 1. Read the combined summary from `quality/code_reviews/` — count VIOLATED and BUG findings.
 2. Read the triage summary from `quality/spec_audits/` — count confirmed code bugs.
 3. For each finding, check whether REQUIREMENTS.md has a requirement covering that behavior.
 4. Append a `## Post-Review Reconciliation` section to COMPLETENESS_REPORT.md:
 
-```
+```text
 ## Post-Review Reconciliation
 Updated: [date]
 
@@ -235,15 +236,18 @@ Updated: [date]
 When the code review and spec audit disagree about the same behavioral claim — one says BUG, the other says design choice or false positive — the reconciliation must resolve the conflict, not paper over it.
 
 **Resolution procedure:**
+
 1. Identify the factual claim at the center of the disagreement. What does the code actually do?
 2. Deploy a verification probe: give a model the disputed claim and the relevant source code, and ask it to report ground truth. (See `spec_audit.md` § "The Verification Probe.")
 3. Record the resolution in the Post-Review Reconciliation section:
-   ```
+
+   ```text
    ### Conflicts resolved
    - [finding description]: Code review said [X], spec audit said [Y].
      Verification probe: [what the code actually does].
      Resolution: [BUG CONFIRMED / FALSE POSITIVE / DESIGN CHOICE]. [Explanation.]
    ```
+
 4. If the resolution confirms a BUG, ensure it has a regression test. If the resolution overturns a BUG, clean up the regression test per `review_protocols.md` § "Cleaning up after spec audit reversals."
 
 **Do not resolve conflicts by defaulting to one source.** Neither the code review nor the spec audit is automatically more authoritative — they use different methods (structural reading vs. spec comparison) and have different blind spots. The verification probe is the tiebreaker.
@@ -252,7 +256,7 @@ When the code review and spec audit disagree about the same behavioral claim —
 
 ### Output format
 
-```
+```text
 # Completeness Report
 Generated: [date]
 
@@ -368,6 +372,7 @@ Maintain a version history file at `quality/VERSION_HISTORY.md`:
 | v1.1 | YYYY-MM-DD | [model] | [author] | N | [what changed] |
 
 ## Pending review
+
 [status from REFINEMENT_HINTS.md if review is in progress]
 ```
 
@@ -377,7 +382,7 @@ The **Author** column records provenance: "Quality Playbook" for automated pipel
 
 Before each version change, copy all quality files to `quality/history/vX.Y/`:
 
-```
+```text
 quality/history/
 ├── v1.0/
 │   ├── REQUIREMENTS.md
@@ -398,6 +403,7 @@ The REQUIREMENTS.md header includes the current version:
 
 ```markdown
 # Behavioral Requirements — [Project Name]
+
 Version: vX.Y
 Generated: [date]
 Pipeline: contract-extraction v2 with narrative pass
@@ -412,6 +418,7 @@ The pipeline produces a solid baseline, but AI isn't 100% reliable. The skill pr
 ### Requirements review (`quality/REVIEW_REQUIREMENTS.md`)
 
 An interactive or guided review of requirements organized by use case. Three modes:
+
 - **Self-guided**: Pick use cases to drill into
 - **Fully guided**: Walk through use cases sequentially
 - **Cross-model audit**: A different model fact-checks the completeness report

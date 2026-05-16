@@ -34,10 +34,8 @@ function createMockCancellationToken(initiallyCancelled = false): {
 }
 
 describe('VSCode ChatResponseStream Overloads', () => {
-  const mockCancellationToken = createMockCancellationToken().token;
-
   it('should create VSCode chat response stream', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     expect(stream).toBeDefined();
     expect(stream).toHaveProperty('markdown');
     expect(stream).toHaveProperty('anchor');
@@ -49,14 +47,14 @@ describe('VSCode ChatResponseStream Overloads', () => {
   });
 
   it('should support markdown with metadata', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     expect(() => {
       stream.markdown('test content', { source: 'test' });
     }).not.toThrow();
   });
 
   it('should support anchor with options', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     const uri = { toString: () => 'https://example.com' } as unknown as Uri;
     expect(() => {
       stream.anchor(uri as Uri | Location, 'Example');
@@ -64,14 +62,14 @@ describe('VSCode ChatResponseStream Overloads', () => {
   });
 
   it('should support button with command options', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     expect(() => {
       stream.button({ arguments: [], command: 'test.command', title: 'Test' });
     }).not.toThrow();
   });
 
   it('should support filetree with options', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     const baseUri = { toString: () => 'file:///base' } as unknown as Uri;
     expect(() => {
       stream.filetree([{ name: 'test' }], baseUri, { showRoot: true });
@@ -79,14 +77,14 @@ describe('VSCode ChatResponseStream Overloads', () => {
   });
 
   it('should support progress with context', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     expect(() => {
       stream.progress('Processing...', { step: 1, total: 10 });
     }).not.toThrow();
   });
 
   it('should support reference with metadata', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     const uri = { toString: () => 'https://example.com' } as unknown as Uri;
     expect(() => {
       stream.reference(uri as Uri | Location, uri);
@@ -94,7 +92,7 @@ describe('VSCode ChatResponseStream Overloads', () => {
   });
 
   it('should support push with validation', () => {
-    const stream = createVSCodeChatResponseStream(mockCancellationToken);
+    const stream = createVSCodeChatResponseStream(createMockCancellationToken());
     expect(() => {
       stream.push({}, { validate: true });
     }).not.toThrow();

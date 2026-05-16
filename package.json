@@ -77,13 +77,10 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "@go-task/cli",
-      "@google/genai",
-      "better-sqlite3",
-      "cbor-extract",
       "es5-ext",
       "esbuild",
       "fallow",
-      "koffi"
+      "msw"
     ]
   }
 }

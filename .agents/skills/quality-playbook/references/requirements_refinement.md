@@ -68,31 +68,39 @@ For each feedback item:
 After all changes, append a summary to `quality/REFINEMENT_HINTS.md`:
 
 ```
+
 ## Refinement Pass — v[new version]
+
 Date: [date]
 Model: [model name]
 
 ### Changes made
+
 - REQ-NNN (NEW): [brief description] — addresses feedback: "[quoted hint]"
 - REQ-NNN: Added condition of satisfaction for [what] — addresses feedback: "[quoted hint]"
 - REQ-NNN: Sharpened condition #N: [what changed] — addresses feedback: "[quoted hint]"
 - Use Case N: Added REQ-NNN to requirements list
 
 ### Feedback items not addressed
+
 - "[quoted hint]" — reason: [why this wasn't actionable or was out of scope]
 
 ### Summary
+
 Added N new requirements, modified N existing requirements, updated N use cases.
 Total requirements: N (was N).
-```
+
+```text
 
 ## Step 5: Update version history
 
 Add a row to `quality/VERSION_HISTORY.md`:
 
 ```
+
 | vX.Y | YYYY-MM-DD | [model] | [author] | N | [summary of changes] |
-```
+
+```text
 
 ## Step 6: Update completeness report
 

@@ -55,7 +55,7 @@ Look for SKILL.md in these locations, in order:
 
 Also check for a `references/` directory alongside SKILL.md.
 
-**If not found**, tell the user to install it from https://github.com/andrewstellman/quality-playbook and stop.
+**If not found**, tell the user to install it from <https://github.com/andrewstellman/quality-playbook> and stop.
 
 ## Pre-flight checks
 

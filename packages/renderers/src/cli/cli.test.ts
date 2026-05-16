@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { testOnStepCall } from '../shared.test.js';
 import { createCliRenderer } from './createCliRenderer.js';
 
 // Mock cli-markdown module
@@ -221,31 +222,12 @@ describe('CLI Renderer', () => {
     });
 
     it('calls onStep when stepIndex changes via writeChunk', async () => {
-      const onStep = vi.fn();
-      const output = vi.fn<(text: string) => void>();
-      const renderer = createCliRenderer({
-        onStep,
-        output
-      });
-
-      await renderer.writeChunk({
-        content: 'step 0',
-        stepIndex: 0,
-        stepUsage: { outputTokens: 2 }
-      });
-      await renderer.writeChunk({
-        content: 'step 1',
-        stepIndex: 1,
-        usage: { inputTokens: 1, outputTokens: 3 }
-      });
-      await renderer.end();
-
-      expect(onStep).toHaveBeenCalledTimes(2);
-      expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 2 });
-      expect(onStep).toHaveBeenNthCalledWith(2, 1, {
-        inputTokens: 1,
-        outputTokens: 3
-      });
+      await testOnStepCall(options =>
+        createCliRenderer({
+          ...options,
+          output: vi.fn() as unknown as (text: string) => void
+        })
+      );
     });
   });
 });

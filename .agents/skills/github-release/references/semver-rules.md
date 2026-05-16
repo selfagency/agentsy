@@ -1,12 +1,12 @@
 # SemVer Decision Rules
 
-Reference: https://semver.org/
+Reference: <https://semver.org/>
 
 ---
 
 ## Version format
 
-```
+```text
 vMAJOR.MINOR.PATCH
 ```
 
@@ -26,6 +26,7 @@ experience a compile error, runtime error, or behavior change **without changing
 own code**.
 
 Examples:
+
 - Removing a public function, class, method, or constant
 - Renaming a public function, class, method, or constant
 - Changing a function signature (adding required parameters, removing parameters,
@@ -67,7 +68,7 @@ change than to silently break consumers.
 
 When a release contains a mix of change types, the **highest precedence** wins:
 
-```
+```text
 MAJOR > MINOR > PATCH
 ```
 

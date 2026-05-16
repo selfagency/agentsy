@@ -291,7 +291,7 @@ Create the dataset at `pixie_qa/datasets/<name>.json`:
 
 **Entry structure** — all fields are top-level on each entry (flat structure — no nesting):
 
-```
+```text
 entry:
   ├── input_data    (required) — args for Runnable.run()
   ├── eval_input      (optional) — list of {"name": ..., "value": ...} objects (default: [])

@@ -46,8 +46,8 @@ Requires **Java 21+** on `JAVA_HOME` or `$PATH`.
 | OS      | Command                           |
 |---------|-----------------------------------|
 | macOS   | `brew install jdtls`              |
-| Linux   | Check distro repos for `jdtls` or `eclipse.jdt.ls`; alternatively download from https://download.eclipse.org/jdtls/milestones/ |
-| Windows | Download from https://download.eclipse.org/jdtls/milestones/ and add `bin/` to `PATH` |
+| Linux   | Check distro repos for `jdtls` or `eclipse.jdt.ls`; alternatively download from <https://download.eclipse.org/jdtls/milestones/> |
+| Windows | Download from <https://download.eclipse.org/jdtls/milestones/> and add `bin/` to `PATH` |
 
 On macOS with Homebrew, the binary is installed as `jdtls` on `$PATH`.
 
@@ -162,7 +162,7 @@ On macOS with Homebrew, the binary is installed as `jdtls` on `$PATH`.
 |---------|----------------------------------------|
 | macOS   | `brew install llvm` (clangd included) or Xcode command line tools |
 | Linux   | `apt install clangd` / `dnf install clang-tools-extra` |
-| Windows | Download LLVM from https://releases.llvm.org/ |
+| Windows | Download LLVM from <https://releases.llvm.org/> |
 
 ### Config snippet
 
@@ -303,7 +303,7 @@ On macOS with Homebrew, the binary is installed as `jdtls` on `$PATH`.
 | OS      | Command                                                        |
 |---------|----------------------------------------------------------------|
 | macOS   | Included with Xcode; binary at `xcrun sourcekit-lsp`          |
-| Linux   | Included with Swift toolchain; install from https://swift.org  |
+| Linux   | Included with Swift toolchain; install from <https://swift.org>  |
 
 ### Config snippet
 

@@ -4,6 +4,7 @@
  * Ink renderer module - streaming React/Ink renderer for terminal output
  */
 export type { KeyboardOptions } from './components/KeyboardHandler.js';
+export { createInkRuntimeController, loadInkRenderModules } from './ink-runtime-state.js';
 export {
   createInkConversationRenderer,
   type ConversationTurn,

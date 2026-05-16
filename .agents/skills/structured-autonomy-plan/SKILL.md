@@ -30,9 +30,9 @@ Analyze the user's request and break it down into commits:
 
 1. Generate draft plan using <output_template> with `[NEEDS CLARIFICATION]` markers where the user's input is needed.
 2. Save the plan to "plans/{feature-name}/plan.md"
-4. Ask clarifying questions for any `[NEEDS CLARIFICATION]` sections
-5. MANDATORY: Pause for feedback
-6. If feedback received, revise plan and go back to Step 1 for any research needed
+3. Ask clarifying questions for any `[NEEDS CLARIFICATION]` sections
+4. MANDATORY: Pause for feedback
+5. If feedback received, revise plan and go back to Step 1 for any research needed
 
 </workflow>
 
@@ -46,23 +46,28 @@ Analyze the user's request and break it down into commits:
 **Description:** {One sentence describing what gets accomplished}
 
 ## Goal
+
 {1-2 sentences describing the feature and why it matters}
 
 ## Implementation Steps
 
 ### Step 1: {Step Name} [SIMPLE features have only this step]
+
 **Files:** {List affected files: Service/HotKeyManager.cs, Models/PresetSize.cs, etc.}
 **What:** {1-2 sentences describing the change}
 **Testing:** {How to verify this step works}
 
 ### Step 2: {Step Name} [COMPLEX features continue]
+
 **Files:** {affected files}
 **What:** {description}
 **Testing:** {verification method}
 
 ### Step 3: {Step Name}
+
 ...
 ```
+
 </output_template>
 
 <research_guide>

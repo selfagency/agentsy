@@ -130,7 +130,7 @@ For each available model, evaluate against these dimensions:
 
 #### Selection Decision Tree
 
-```
+```text
 START
   │
   ├─ Task Complexity?
@@ -277,7 +277,7 @@ Using `context7/get-library-docs` with library ID `/websites/github_en_copilot`:
 
 **Example Context7 Usage**:
 
-```
+```text
 If unsure whether Claude Sonnet 4.5 supports image analysis:
 → Use context7 with topic "Claude Sonnet 4.5 vision image capabilities"
 → Confirm feature support before recommending for multi-modal tasks
@@ -632,35 +632,35 @@ Use these query patterns when verification needed:
 
 **Model Capabilities**:
 
-```
+```text
 Topic: "[Model Name] code generation quality capabilities"
 Library: /websites/github_en_copilot
 ```
 
 **Model Multipliers**:
 
-```
+```text
 Topic: "[Model Name] request multiplier cost billing"
 Library: /websites/github_en_copilot
 ```
 
 **Deprecation Status**:
 
-```
+```text
 Topic: "deprecated models October 2025 timeline"
 Library: /websites/github_en_copilot
 ```
 
 **Vision Support**:
 
-```
+```text
 Topic: "[Model Name] image vision multimodal support"
 Library: /websites/github_en_copilot
 ```
 
 **Auto Selection**:
 
-```
+```text
 Topic: "auto model selection behavior eligible models"
 Library: /websites/github_en_copilot
 ```
