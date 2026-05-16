@@ -63,14 +63,14 @@
     "vitest": "^4.1.6"
   },
   "lint-staged": {
-    "**/*.{ts,tsx,js,mjs,cjs}": [
-      "oxlint --no-error-on-unmatched-pattern .",
+    "**/*.{ts,tsx,js,ts,jsx}": [
       "oxfmt --no-error-on-unmatched-pattern --write ."
     ],
-    "**/*.{json,md,yaml,yml}": [
+    "**/*.{json,md,yaml,yml,cjs,mjs,css,scss,json,jsonc,mdx}": [
       "oxfmt --no-error-on-unmatched-pattern --write ."
     ],
-    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
+    "{js,ts,tsx}": [
+      "oxlint --no-error-on-unmatched-pattern",
       "pnpm dlx ultracite fix"
     ]
   },

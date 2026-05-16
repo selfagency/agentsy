@@ -48,6 +48,10 @@ class FileConflictStore implements ConflictStore {
 
   constructor(private readonly options: FileConflictStoreOptions) {}
 
+  isObject(value: unknown): value is Record<unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
   async #withLock<T>(operation: () => Promise<T>): Promise<T> {
     const next = this.#writeQueue.then(operation, operation);
     this.#writeQueue = next.then(
@@ -62,7 +66,7 @@ class FileConflictStore implements ConflictStore {
       const content = await readFile(this.options.filePath, 'utf-8');
       const parsed: unknown = JSON.parse(content);
 
-      if (!isObject(parsed)) {
+      if (!this.isObject(parsed)) {
         return createEmptyEnvelope();
       }
 
@@ -83,10 +87,6 @@ class FileConflictStore implements ConflictStore {
 
       throw error;
     }
-  }
-
-  function isObject(value: unknown): value is Record<unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   async #writeEnvelope(envelope: StoredConflictEnvelope): Promise<void> {
