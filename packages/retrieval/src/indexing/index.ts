@@ -13,10 +13,9 @@ export interface IndexingPipelineOptions {
 
 function hashString(str: string): string {
   let hash = 0;
-  for (const char of str) {
-    const charCode = char.codePointAt(0) || 0;
-    hash = (hash << 5) - hash + charCode;
-    hash &= hash;
+  for (let i = 0; i < str.length; i++) {
+    const charCode = str.codePointAt(i) ?? 0;
+    hash = Math.floor(hash * 31 + charCode);
   }
   return Math.abs(hash).toString(16);
 }
@@ -34,10 +33,10 @@ export class IndexingPipeline {
     this.currentStrategy = "semantic";
   }
 
-  async chunk(
+  chunk(
     source: DataSource,
     strategy: ChunkingStrategy = "semantic"
-  ): Promise<Chunk[]> {
+  ): Chunk[] {
     const sourcePath = source.path ?? "unknown";
     const content = source.content ?? "";
     switch (strategy) {
@@ -56,10 +55,10 @@ export class IndexingPipeline {
     }
   }
 
-  async semanticChunk(content: string, sourcePath: string): Promise<Chunk[]> {
+  semanticChunk(content: string, sourcePath: string): Chunk[] {
     this.currentStrategy = "semantic";
     const chunks: Chunk[] = [];
-    const sentences = content.split(/(?<=[.!?])\s+/);
+    const sentences = content.split(/(?<=[.!?])\s+/gu);
     let currentChunk = "";
     let currentPosition = 0;
 
@@ -96,11 +95,11 @@ export class IndexingPipeline {
     return chunks;
   }
 
-  async fixedSizeChunk(content: string, sourcePath: string): Promise<Chunk[]> {
+  fixedSizeChunk(content: string, sourcePath: string): Chunk[] {
     this.currentStrategy = "fixed";
     const chunks: Chunk[] = [];
     const words = content
-      .split(/\s+/)
+      .split(/\s+/u)
       .map((word) => word.trim())
       .filter(Boolean);
 
@@ -132,7 +131,7 @@ export class IndexingPipeline {
     return chunks;
   }
 
-  async astChunk(content: string, sourcePath: string): Promise<Chunk[]> {
+  astChunk(content: string, sourcePath: string): Chunk[] {
     this.currentStrategy = "ast";
     const chunks: Chunk[] = [];
     const blocks = this.splitByBlock(content);
@@ -207,7 +206,7 @@ export class IndexingPipeline {
     inFunction: boolean,
     currentBlock: string
   ): { shouldSplit: boolean; newInFunction: boolean } {
-    const isFunction = /function\b/.test(code.slice(i - 8, i + 1));
+    const isFunction = /function\b/u.test(code.slice(i - 8, i + 1));
     const isAsync =
       code.slice(i - 5, i + 1).includes("async") && nextChar === " ";
     const isClass = code.slice(i - 5, i + 1).includes("class");
