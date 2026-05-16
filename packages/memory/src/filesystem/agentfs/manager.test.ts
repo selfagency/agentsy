@@ -1,5 +1,5 @@
-import { describe, expect, it, afterEach } from 'vitest';
-import { createAgentFsManager, __globalStoreForTests } from './manager.js';
+import { afterEach, describe, expect, it } from 'vitest';
+import { __globalStoreForTests, createAgentFsManager } from './manager.js';
 
 describe('createAgentFsManager', () => {
   afterEach(() => {

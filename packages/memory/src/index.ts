@@ -112,8 +112,7 @@ export {
   createAgentFsManager,
   type AgentFsEntry,
   type AgentFsManager,
-  type AgentFsOptions,
-  type AgentFsPath
+  type AgentFsOptions
 } from './filesystem/agentfs/manager.js';
 
 export {

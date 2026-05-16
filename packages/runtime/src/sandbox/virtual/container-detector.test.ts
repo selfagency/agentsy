@@ -1,3 +1,4 @@
+import type { PathLike } from 'node:fs';
 import { accessSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { detectContainerRuntime } from './container-detector.js';
@@ -17,7 +18,7 @@ describe('detectContainerRuntime', () => {
   });
 
   it('should detect docker socket in standard path', () => {
-    vi.mocked(accessSync).mockImplementation((path: string | Buffer | URL) => {
+    vi.mocked(accessSync).mockImplementation((path: PathLike) => {
       if (path === '/var/run/docker.sock') return;
       throw new Error('Not found');
     });
@@ -29,7 +30,7 @@ describe('detectContainerRuntime', () => {
   });
 
   it('should detect podman socket', () => {
-    vi.mocked(accessSync).mockImplementation((path: string | Buffer | URL) => {
+    vi.mocked(accessSync).mockImplementation((path: PathLike) => {
       if (path === '/run/podman/podman.sock') return;
       throw new Error('Not found');
     });

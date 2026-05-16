@@ -4,7 +4,7 @@
  */
 export interface ContainerSandbox {
   readonly mode: 'container';
-  execute(input: any, files?: any[]): Promise<any>;
+  execute(input: unknown, files?: unknown[]): Promise<unknown>;
   destroy(): Promise<void>;
 }
 

@@ -56,7 +56,7 @@ describe('createAgentFsAdapter', () => {
     expect(result.error).toBe('write failed');
 
     vi.mocked(manager.write).mockImplementation(() => {
-      throw 'string error';
+      throw new Error('string error');
     });
     const result2 = adapter.write({ path: 'fail2.txt', content: '...' });
     expect(result2.error).toBe('string error');

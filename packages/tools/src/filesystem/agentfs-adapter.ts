@@ -1,37 +1,35 @@
-import type { AgentFsPath } from '@agentsy/types';
-
 /** Minimal structural interface matching AgentFsManager's shape — no import from @agentsy/memory. */
 export interface AgentFsLike {
-  read(path: AgentFsPath): { content: string; contentHash: string } | undefined;
-  write(path: AgentFsPath, content: string): { contentHash: string };
-  delete(path: AgentFsPath): boolean;
-  list(): Array<{ path: AgentFsPath; contentHash: string }>;
+  read(path: string): { content: string; contentHash: string } | undefined;
+  write(path: string, content: string): { contentHash: string };
+  delete(path: string): boolean;
+  list(): Array<{ path: string; contentHash: string }>;
 }
 
 export interface AgentFsToolResult {
   readonly ok: boolean;
-  readonly path: AgentFsPath;
+  readonly path: string;
   readonly content?: string;
   readonly contentHash?: string;
   readonly error?: string;
 }
 
 export interface AgentFsReadInput {
-  readonly path: AgentFsPath;
+  readonly path: string;
 }
 
 export interface AgentFsWriteInput {
-  readonly path: AgentFsPath;
+  readonly path: string;
   readonly content: string;
 }
 
 export interface AgentFsDeleteInput {
-  readonly path: AgentFsPath;
+  readonly path: string;
 }
 
 export interface AgentFsListResult {
   readonly ok: boolean;
-  readonly entries: Array<{ path: AgentFsPath; contentHash: string }>;
+  readonly entries: Array<{ path: string; contentHash: string }>;
 }
 
 export interface AgentFsAdapter {

@@ -49,7 +49,7 @@ describe('createSandboxRouter', () => {
   it('virtual sandbox execute() runs simple code', async () => {
     const router = createSandboxRouter();
     const sandbox = router.route(makeDecision('virtual'));
-    const result = await sandbox.execute({ code: 'console.log("hi");', env: {} });
+    const result = (await sandbox.execute({ code: 'console.log("hi");', env: {} })) as { status: string };
     expect(['ok', 'error', 'timeout']).toContain(result.status);
   });
 });

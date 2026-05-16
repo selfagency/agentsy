@@ -47,14 +47,13 @@ export interface MemoryStore {
 /**
  * Path in the agent filesystem.
  */
-export type AgentFsPath = string;
 
 /**
  * Single entry in the agent filesystem.
  */
 export interface AgentFsEntry {
   /** Full path including filename. */
-  readonly path: AgentFsPath;
+  readonly path: string;
   /** UTF-8 string content. */
   readonly content: string;
   /** SHA-256 hash of the content. */
@@ -80,15 +79,15 @@ export interface AgentFsManager {
   /** Current namespace. */
   readonly namespace: string;
   /** Read an entry by its path. */
-  read(path: AgentFsPath): AgentFsEntry | undefined;
+  read(path: string): AgentFsEntry | undefined;
   /** Write content to a path, creating or updating the entry. */
-  write(path: AgentFsPath, content: string): AgentFsEntry;
+  write(path: string, content: string): AgentFsEntry;
   /** Delete a path from the filesystem. */
-  delete(path: AgentFsPath): boolean;
+  delete(path: string): boolean;
   /** List all entries in the filesystem. */
   list(): AgentFsEntry[];
   /** Check if a path exists. */
-  has(path: AgentFsPath): boolean;
+  has(path: string): boolean;
   /** Remote all entries. */
   clear(): void;
   /** Bulk import existing entries, preserving timestamps. */
