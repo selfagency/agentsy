@@ -6,13 +6,14 @@ import type { ParseJsonOptions } from './parseJson.js';
 type JsonSchema = JsonObject;
 
 const REGEX_CACHE_MAX = 256;
-const regexCache = new Map<string, RegExp & { _accessTimestamp: number }>();
+const regexCache = new Map<string, RegExp>();
+const regexAccessTimestamps = new WeakMap<RegExp, number>();
 
 function getCachedRegex(pattern: string): RegExp {
   const existing = regexCache.get(pattern);
   if (existing !== undefined) {
     // Update access timestamp without delete/re-insert to avoid disrupting LRU tracking
-    existing._accessTimestamp = Date.now();
+    regexAccessTimestamps.set(existing, Date.now());
     return existing;
   }
 
@@ -30,26 +31,29 @@ function getCachedRegex(pattern: string): RegExp {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
     regex = /(?!)/; // Negative lookahead that never matches
   }
-  const taggedRegex = regex as RegExp & { _accessTimestamp: number };
-  taggedRegex._accessTimestamp = Date.now();
+  regexAccessTimestamps.set(regex, Date.now());
 
   if (regexCache.size >= REGEX_CACHE_MAX) {
     // Evict least-recently-used entry by scanning access timestamps
     let lruKey: string | undefined;
     let lruTime = Infinity;
     for (const [key, value] of regexCache.entries()) {
-      const accessTime = value._accessTimestamp;
+      const accessTime = regexAccessTimestamps.get(value) ?? Infinity;
       if (accessTime < lruTime) {
         lruTime = accessTime;
         lruKey = key;
       }
     }
     if (lruKey !== undefined) {
+      const lruRegex = regexCache.get(lruKey);
+      if (lruRegex) {
+        regexAccessTimestamps.delete(lruRegex);
+      }
       regexCache.delete(lruKey);
     }
   }
-  regexCache.set(pattern, taggedRegex);
-  return taggedRegex;
+  regexCache.set(pattern, regex);
+  return regex;
 }
 
 export type JsonSchemaValidator = (
@@ -119,7 +123,7 @@ function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unk
 }
 
 function deepEqual(a: unknown, b: unknown): boolean {
-  if (Object.is(a, b)) {
+  if (a === b) {
     return true;
   }
   if (a === null || b === null) {
@@ -301,9 +305,8 @@ function checkCompositeKeywords(
   }
 
   if (schema.not && typeof schema.not === 'object' && !Array.isArray(schema.not)) {
-    const notErrors: string[] = [];
-    validateNode(value, schema.not as JsonSchema, path, notErrors, context);
-    if (notErrors.length === 0) {
+    validateNode(value, schema.not as JsonSchema, path, errors, context);
+    if (errors.length === 0) {
       errors.push(`${path}: value must not match the 'not' schema`);
     }
   }
@@ -413,31 +416,36 @@ function checkAdditionalProperties(
 }
 
 function checkObjectConstraints(
-  value: Record<string, unknown>,
+  value: unknown,
   schema: JsonSchema,
   path: string,
   errors: string[],
   context?: ResolveContext
 ): void {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return;
+  }
+
+  const valueObj: Record<string, unknown> = value;
   const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
   for (const key of required) {
-    if (!Object.hasOwn(value, key)) {
+    if (!Object.hasOwn(valueObj, key)) {
       errors.push(`${path}.${key}: missing required property`);
     }
   }
 
-  const properties =
+  const properties: Record<string, unknown> =
     schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)
-      ? (schema.properties as Record<string, unknown>)
+      ? schema.properties
       : {};
 
   for (const [key, childSchema] of Object.entries(properties)) {
-    if (Object.hasOwn(value, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
-      validateNode(value[key], childSchema as JsonSchema, `${path}.${key}`, errors, context);
+    if (Object.hasOwn(valueObj, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
+      validateNode(valueObj[key], childSchema, `${path}.${key}`, errors, context);
     }
   }
 
-  checkAdditionalProperties(value, properties, schema.additionalProperties, path, errors);
+  checkAdditionalProperties(valueObj, properties, schema.additionalProperties, path, errors);
 }
 
 // #lizard forgives
@@ -458,7 +466,7 @@ function checkValueTypeConstraints(
     checkArrayConstraints(value, schema, path, errors, context);
   }
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-    checkObjectConstraints(value as Record<string, unknown>, schema, path, errors, context);
+    checkObjectConstraints(value, schema, path, errors, context);
   }
 }
 

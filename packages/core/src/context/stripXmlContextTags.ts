@@ -1,7 +1,7 @@
 import { createXmlStreamFilter } from '../xml-filter/index.js';
 
 export function stripXmlContextTags(input: string): string {
-  if (input.includes('<') === false) {
+  if (!input.includes('<')) {
     return input;
   }
 

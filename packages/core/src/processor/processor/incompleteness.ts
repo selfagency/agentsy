@@ -10,7 +10,7 @@ import type { IncompletenessDetail } from './LLMStreamProcessor.js';
  * Cyclomatic complexity reduced from 9 to 8 by extracting early return.
  */
 function hasUnclosedXmlTags(content: string): boolean {
-  if (content.includes('<') === false) {
+  if (!content.includes('<')) {
     return false;
   }
 
@@ -18,7 +18,7 @@ function hasUnclosedXmlTags(content: string): boolean {
   // Security: Limit tag name length to 50 chars and attribute length to 100
   // to prevent ReDoS attacks. Limited quantifier scope avoids backtracking.
   // biome-ignore lint/security/noReDoubleSlash: Limited quantifiers prevent ReDoS
-  const tagRe = /<(\/?)[\sA-Za-z][A-Za-z0-9_.-]{0,50}(?:\s[^>]{0,100})?\s*(\/?)>/g;
+  const tagRe = /<(\/?)[\sA-Za-z][A-Za-z0-9_.-]{0,50}(?:\s[^>]{0,100})?\s*(\/?)>/gu;
 
   for (const m of content.matchAll(tagRe)) {
     if (m[1] === '/') {

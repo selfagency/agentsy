@@ -1,7 +1,7 @@
 import { ELEVATED_CONTEXT_TAG_NAMES } from '../xml-filter/index.js';
 
 const XML_CONTEXT_MAX_PART_LENGTH = 1_000_000;
-const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]{0,63})[^>]*>[\s\S]*?<\/\1>/gi;
+const XML_CONTEXT_TAG_RE = /<([a-z_][a-z0-9_.-]{0,63})[^>]*>[\s\S]*?<\/\1>/giu;
 
 export function splitLeadingXmlContextBlocks(input: string): {
   contextBlocks: string[];

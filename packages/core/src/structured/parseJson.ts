@@ -9,7 +9,7 @@ export const DEFAULT_MAX_JSON_DEPTH = 64;
 export const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function stripCodeFences(text: string): string {
-  return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+  return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/giu, '$1').trim();
 }
 
 function processBracketChar(
@@ -182,8 +182,8 @@ function measureComprehensiveness(value: unknown): number {
       }
       return;
     }
-    if (node && typeof node === 'object') {
-      const entries = Object.entries(node as Record<string, unknown>);
+    if (node !== null && typeof node === 'object') {
+      const entries = Object.entries(node);
       keyCount += entries.length;
       for (const [, val] of entries) {
         walk(val, currentDepth + 1);
@@ -220,8 +220,8 @@ function exceedsJsonLimits(value: unknown, maxDepth: number, maxKeys: number): b
       return;
     }
 
-    if (node && typeof node === 'object') {
-      const entries = Object.entries(node as Record<string, unknown>);
+    if (node !== null && typeof node === 'object') {
+      const entries = Object.entries(node);
       keyCount += entries.length;
       if (maxKeys > 0 && keyCount > maxKeys) {
         exceeded = true;
@@ -277,11 +277,13 @@ export function parseJson<T = unknown>(text: string, options: ParseJsonOptions =
   const parsedValues = collectParsedCandidates(normalized, maxJsonDepth, maxJsonKeys);
 
   if (parsedValues.length > 0) {
-    return selectBestCandidate(parsedValues, selectMostComprehensive) as T;
+    const candidate = selectBestCandidate(parsedValues, selectMostComprehensive);
+    return candidate as T;
   }
 
   if (options.repairIncomplete) {
-    return tryParseRepaired(normalized, maxJsonDepth, maxJsonKeys) as T | null;
+    const repaired = tryParseRepaired(normalized, maxJsonDepth, maxJsonKeys);
+    return repaired as T | null;
   }
 
   return null;

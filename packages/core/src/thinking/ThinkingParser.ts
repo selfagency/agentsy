@@ -113,6 +113,9 @@ export class ThinkingParser {
         return ['', acc];
       }
     }
+
+    // This should never be reached but satisfies TypeScript
+    return ['', acc];
   }
 
   /** Check if the parser is in an incomplete state without flushing */
@@ -245,5 +248,8 @@ export class ThinkingParser {
         return this._eatThinkingDone();
       }
     }
+
+    // This should never be reached but satisfies TypeScript
+    return ['', '', false];
   }
 }

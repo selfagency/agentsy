@@ -1,7 +1,7 @@
-import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { compressMemoryFile } from './compressMemoryFile.js';
 

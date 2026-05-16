@@ -50,8 +50,8 @@ function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | 
 export function formatXmlLikeResponseForDisplay(text: string): string {
   if (
     text === '' ||
-    text.includes('<') === false ||
-    text.includes('>') === false ||
+    !text.includes('<') ||
+    !text.includes('>') ||
     text.length > MAX_XML_DISPLAY_INPUT_LENGTH
   ) {
     return text;
@@ -77,7 +77,7 @@ export function formatXmlLikeResponseForDisplay(text: string): string {
       continue;
     }
 
-    const tag = block.tag.replaceAll(/[._-]+/g, ' ').trim();
+    const tag = block.tag.replaceAll(/[._-]+/gu, ' ').trim();
     const title = `${tag.at(0)?.toUpperCase() ?? ''}${tag.slice(1)}`;
     transformed += `\n\n**${title}**\n${block.content.trim()}\n\n`;
     replaced = true;

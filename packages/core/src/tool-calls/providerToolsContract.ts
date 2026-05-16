@@ -30,7 +30,13 @@ function isOptionalJsonObject(value: unknown): value is JsonObject | undefined {
 const VALID_FORMATS = ['bare-xml', 'json-wrapped', 'native-json'] as const;
 
 function isValidFormat(value: unknown): value is (typeof VALID_FORMATS)[number] | undefined {
-  return value === undefined || (typeof value === 'string' && VALID_FORMATS.includes(value as never));
+  if (value === undefined) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return VALID_FORMATS.includes(value as (typeof VALID_FORMATS)[number]);
+  }
+  return false;
 }
 
 export function isProviderTool(obj: unknown): obj is ProviderTool {
@@ -38,7 +44,7 @@ export function isProviderTool(obj: unknown): obj is ProviderTool {
     return false;
   }
 
-  const tool = obj as Record<string, unknown>;
+  const tool: Record<string, unknown> = obj;
 
   return (
     isNonEmptyString(tool.name) &&

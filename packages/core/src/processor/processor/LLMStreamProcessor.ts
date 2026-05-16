@@ -8,10 +8,10 @@ import type {
 } from '@agentsy/types';
 
 import { ThinkingParser } from '../../thinking/index.js';
-import { extractXmlToolCalls, ToolCallAccumulator } from '../../tool-calls/index.js';
 import type { NativeToolCall, XmlToolCall } from '../../tool-calls/index.js';
-import { createXmlStreamFilter } from '../../xml-filter/index.js';
+import { extractXmlToolCalls, ToolCallAccumulator } from '../../tool-calls/index.js';
 import type { XmlStreamFilter } from '../../xml-filter/index.js';
+import { createXmlStreamFilter } from '../../xml-filter/index.js';
 import type { AccumulatedMessage } from './AccumulatedMessage.js';
 import { enforceMaxLength, ensureText, mapNativeToolCalls } from './chunkUtils.js';
 import { detectIncompleteness } from './incompleteness.js';
@@ -23,8 +23,8 @@ import type {
   ProcessorOptions,
   StreamEventMap
 } from './LLMStreamProcessor.types.js';
-import { createEmptyStats } from './ProcessorStats.js';
 import type { ProcessorStats } from './ProcessorStats.js';
+import { createEmptyStats } from './ProcessorStats.js';
 import type { ToolCallParser } from './ToolCallParser.js';
 
 export type { StreamChunk } from '@agentsy/types';
@@ -362,7 +362,7 @@ export class LLMStreamProcessor {
 
     this._rawResidual += rawContent;
     const extracted: XmlToolCall[] = [];
-    const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
+    const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/gu;
     let mm = completeTagRe.exec(this._rawResidual);
     while (mm !== null) {
       const full = mm[0];
@@ -397,7 +397,7 @@ export class LLMStreamProcessor {
     }
 
     this._filteredResidual += delta;
-    const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/g;
+    const completeTagRe = /<([A-Za-z0-9_:-]+)(?:\s[^>]*)?>([\s\S]*?)<\/\1\s*>/gu;
     let m = completeTagRe.exec(this._filteredResidual);
     while (m !== null) {
       const full = m[0];

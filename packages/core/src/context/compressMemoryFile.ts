@@ -16,7 +16,7 @@ export interface MemoryFileCompressionResult {
   backupPath?: string;
 }
 
-const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/gu;
 
 function compressPlainSegment(segment: string): string {
   const lines = segment.split('\n');
@@ -51,12 +51,12 @@ function compressPlainSegment(segment: string): string {
     }
 
     lastComparable = comparable;
-    output.push(line.replaceAll(/\s{2,}/g, ' '));
+    output.push(line.replaceAll(/\s{2,}/gu, ' '));
   }
 
   return output
     .join('\n')
-    .replaceAll(/\n{3,}/g, '\n\n')
+    .replaceAll(/\n{3,}/gu, '\n\n')
     .trim();
 }
 
@@ -84,7 +84,7 @@ function compressMemoryContent(content: string): string {
   return chunks
     .map(chunk => (chunk.kind === 'code' ? chunk.value : compressPlainSegment(chunk.value)))
     .join('\n')
-    .replaceAll(/\n{3,}/g, '\n\n')
+    .replaceAll(/\n{3,}/gu, '\n\n')
     .trim();
 }
 

@@ -4,7 +4,7 @@ const XML_CONTEXT_MAX_PART_LENGTH = 1_000_000;
 // Matches only opening tags — simpler pattern to prevent backtracking.
 // JavaScript doesn't support atomic groups, so we use a non-greedy
 // quantifier with character classes to limit backtracking.
-const OPEN_TAG_RE = /<([a-z_][a-z0-9_.-]{0,50})[^>]*>/gi;
+const OPEN_TAG_RE = /<([a-z_][a-z0-9_.-]{0,50})[^>]*>/giu;
 
 interface TagMatch {
   tagName: string;

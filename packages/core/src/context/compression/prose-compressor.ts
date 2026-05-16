@@ -25,6 +25,11 @@ export function getRemovalWords(level: CompressionLevel): readonly string[] {
     case 'ultra': {
       return ULTRA_REMOVALS;
     }
+    // This should never happen because of the type definition, but TypeScript needs it
+    default: {
+      const _exhaustiveCheck: never = level;
+      return [];
+    }
   }
 }
 
@@ -34,7 +39,7 @@ export function getRemovalWords(level: CompressionLevel): readonly string[] {
 export function removeWordList(input: string, words: readonly string[]): string {
   let output = input;
   for (const word of words) {
-    const escaped = word.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+    const escaped = word.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
     output = output.replaceAll(new RegExp(String.raw`\b${escaped}\b`, 'gi'), '');
   }
 
@@ -83,22 +88,22 @@ export function compressProse(input: string, level: CompressionLevel): string {
   let output = removeWordList(input, removals);
 
   if (level !== 'lite') {
-    output = output.replaceAll(/\b(a|an|the)\b/gi, '');
+    output = output.replaceAll(/\b(a|an|the)\b/giu, '');
   }
 
   if (level === 'ultra') {
     output = output
-      .replaceAll(/\bin order to\b/gi, 'to')
-      .replaceAll(/\bmake sure to\b/gi, 'ensure')
-      .replaceAll(/\bthat\b/gi, '');
+      .replaceAll(/\bin order to\b/giu, 'to')
+      .replaceAll(/\bmake sure to\b/giu, 'ensure')
+      .replaceAll(/\bthat\b/giu, '');
   }
 
   output = output
-    .replaceAll(/[ \t]+/g, ' ')
-    .replaceAll(/\s([,.;:!?])/g, '$1')
-    .replaceAll(/\n[ \t]+/g, '\n')
-    .replaceAll(/\n{3,}/g, '\n\n')
-    .replaceAll(/ {2,}/g, ' ')
+    .replaceAll(/[ \t]+/gu, ' ')
+    .replaceAll(/\s([,.;:!?])/gu, '$1')
+    .replaceAll(/\n[ \t]+/gu, '\n')
+    .replaceAll(/\n{3,}/gu, '\n\n')
+    .replaceAll(/ {2,}/gu, ' ')
     .trim();
 
   return output;

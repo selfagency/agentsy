@@ -31,7 +31,24 @@ interface CacheData {
   data: ModelsDevAPI;
 }
 
-const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/i;
+function isCacheData(value: unknown): value is CacheData {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'timestamp' in value &&
+    'data' in value
+  );
+}
+
+function isModelsDevAPI(value: unknown): value is ModelsDevAPI {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    value !== null
+  );
+}
+
+const PARAMS_B_PATTERN = /([0-9]+(?:\\.[0-9]+)?)\\s*b\\b/iu;
 
 const FORBIDDEN_OBJECT_KEYS = new Set([
   "__proto__",
@@ -189,6 +206,23 @@ function isEligibleForCriteria(
   return true;
 }
 
+function getMemoryRequirements(entry: LLMStatsLocalModel): {
+  requiredRamGb: number;
+  requiredVramGb: number;
+} {
+  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
+    return {
+      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
+      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0,
+    };
+  }
+
+  return estimateMemoryRequirementsFromModelId(
+    entry.modelId,
+    entry.quantization
+  );
+}
+
 function buildRecommendation(
   inputs: RecommendationInputs
 ): LocalModelRecommendation | null {
@@ -288,23 +322,6 @@ function buildRecommendation(
   return recommendation;
 }
 
-function getMemoryRequirements(entry: LLMStatsLocalModel): {
-  requiredRamGb: number;
-  requiredVramGb: number;
-} {
-  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
-    return {
-      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
-      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0,
-    };
-  }
-
-  return estimateMemoryRequirementsFromModelId(
-    entry.modelId,
-    entry.quantization
-  );
-}
-
 /**
  * Recommend local models by combining models.dev metadata, llm-stats/local benchmark data,
  * and system capability constraints.
@@ -366,7 +383,11 @@ export class ModelsDevClient {
     try {
       const fs = await import("node:fs/promises");
       const cacheData = await fs.readFile(this.CACHE_FILE, "utf-8");
-      const cached = JSON.parse(cacheData) as CacheData;
+      const parsed: unknown = JSON.parse(cacheData);
+      if (!isCacheData(parsed)) {
+        throw new Error("Invalid cache data");
+      }
+      const cached = parsed;
       if (cached.timestamp && Date.now() - cached.timestamp < this.CACHE_TTL) {
         this.cache = cached.data;
         this.lastFetched = new Date(cached.timestamp);
@@ -377,8 +398,12 @@ export class ModelsDevClient {
     }
 
     // Fetch from API
-    const response = await fetch("https://models.dev/api.json");
-    const data = (await response.json()) as ModelsDevAPI;
+const response = await fetch("https://models.dev/api.json");
+      const json = await response.json();
+      if (!isModelsDevAPI(json)) {
+        throw new Error("Invalid API response");
+      }
+      const data = json;
 
     // Save to cache
     try {
@@ -501,10 +526,7 @@ export class ModelSelector {
   }
 
   private getClient(): ModelsDevClient {
-    if (!this.client) {
-      this.client = new ModelsDevClient();
-    }
-
+    this.client ??= new ModelsDevClient();
     return this.client;
   }
 
@@ -617,7 +639,7 @@ export class ModelSelector {
       (a: ModelSelectionResult, b: ModelSelectionResult) =>
         b.confidence - a.confidence
     );
-    const bestModel = scoredModels[0];
+    const [bestModel] = scoredModels;
 
     if (!bestModel) {
       throw new Error("No model could be ranked after filtering");
@@ -643,10 +665,10 @@ export class ModelSelector {
 
     // Simple estimation: assume 2 tokens per word for input, 1 per word for output
     const inputTokens =
-      options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
+      options?.estimatedInputTokens ?? prompt.split(/\s+/u).length * 2;
     const outputTokens =
       options?.estimatedOutputTokens ??
-      Math.floor(prompt.split(/\s+/).length * 0.5);
+      Math.floor(prompt.split(/\s+/u).length * 0.5);
 
     const { cost } = model;
     const inputCost = (inputTokens / 1000) * cost.input;

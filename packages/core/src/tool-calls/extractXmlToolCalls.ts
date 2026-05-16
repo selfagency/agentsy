@@ -31,7 +31,7 @@ function isValidTagCharacter(char: string): boolean {
 
 function stripMarkdownCodeFence(text: string): string {
   const trimmed = text.trim();
-  if (trimmed.startsWith('```') === false) {
+  if (!trimmed.startsWith('```')) {
     return trimmed;
   }
 
@@ -103,7 +103,7 @@ function parseXmlElement(text: string, startIndex: number): ParsedXmlElement | n
 
 function extractBareXmlParams(inner: string): JsonObject {
   const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
-  const params = Object.create(null) as JsonObject;
+  const params: JsonObject = Object.create(null);
   let cursor = 0;
 
   while (cursor < inner.length) {
@@ -180,20 +180,20 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
   const candidates: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
   const results: XmlToolCall[] = [];
 
-  for (const candidate of candidates) {
+for (const candidate of candidates) {
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
       continue;
     }
-    const obj = candidate as Record<string, unknown>;
+    const obj: Record<string, unknown> = candidate as Record<string, unknown>;
     const name = typeof obj.name === 'string' ? obj.name : null;
     if (!name || !knownTools.has(name)) {
       continue;
     }
     const args = obj.arguments ?? obj.parameters ?? {};
-    const parameters =
+    const parameters: JsonObject =
       typeof args === 'object' && !Array.isArray(args)
-        ? (Object.assign(Object.create(null), args) as JsonObject)
-        : (Object.create(null) as JsonObject);
+        ? Object.assign(Object.create(null), args)
+        : Object.create(null);
 
     results.push({ format: 'json-wrapped', name, parameters });
   }
@@ -230,11 +230,7 @@ function isJsonToolCallWrapper(rawTag: string): boolean {
 
 function parseJsonToolCallPayload(inner: string): { name?: unknown; arguments?: unknown; parameters?: unknown } | null {
   try {
-    return JSON.parse(inner.trim()) as {
-      name?: unknown;
-      arguments?: unknown;
-      parameters?: unknown;
-    };
+    return JSON.parse(inner.trim());
   } catch {
     return null;
   }
@@ -250,9 +246,10 @@ function parseKnownToolName(name: unknown, knownTools: Set<string>): string | nu
 function normalizeWrappedToolCallArguments(parsed: { arguments?: unknown; parameters?: unknown }): JsonObject {
   const args = pickFirstObjectValue(parsed.arguments, parsed.parameters);
   if (args === null) {
-    return Object.create(null) as JsonObject;
+    return Object.create(null);
   }
-  return Object.assign(Object.create(null), args) as JsonObject;
+  const result: JsonObject = Object.assign(Object.create(null), args);
+  return result;
 }
 
 function pickFirstObjectValue(...values: unknown[]): Record<string, unknown> | null {

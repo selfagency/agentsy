@@ -1,6 +1,6 @@
 import type { FinishReason, UsageInfo } from '@agentsy/types';
-/* eslint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
-import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+/* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { XmlToolCall } from '../../tool-calls/index.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
@@ -854,7 +854,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 
     const stepStarted = events.find(e => e.type === 'step_started');
     expect(stepStarted).toBeDefined();
-    expectTypeOf(stepStarted?.messageId).toBeString();
+    expectTypeOf(stepStarted!.messageId).toBeString();
   });
 
   it('uses previous step usage when emitting step_finished on step switch', () => {

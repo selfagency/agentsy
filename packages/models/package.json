@@ -15,7 +15,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest --run --passWithNoTests"
+    "test": "vitest --run --passWithNoTests",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write ."
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",

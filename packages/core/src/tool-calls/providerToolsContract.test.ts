@@ -53,7 +53,6 @@ describe('Provider Tools Contract', () => {
 
     it('should return false for non-object', () => {
       expect(isProviderTool(null)).toBeFalsy();
-      expect(isProviderTool()).toBeFalsy();
       expect(isProviderTool('string')).toBeFalsy();
       expect(isProviderTool(123)).toBeFalsy();
     });

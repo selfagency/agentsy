@@ -40,9 +40,9 @@ function compressContent(input: string, level: MemoryCompressionLevel): string {
   const nextId = { value: 0 };
 
   let working = input;
-  working = protectPattern(working, /```[\s\S]*?```/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
-  working = protectPattern(working, /`[^`\n]+`/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
-  working = protectPattern(working, /https?:\/\/\S+/gi, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+  working = protectPattern(working, /```[\s\S]*?```/gu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+  working = protectPattern(working, /`[^`\n]+`/gu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+  working = protectPattern(working, /https?:\/\/\S+/giu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
 
   const compressed = compressProse(working, level);
   return restoreProtectedSegments(compressed, placeholderMap);
