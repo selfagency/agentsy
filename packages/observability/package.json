@@ -26,13 +26,12 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "lint": "oxlint --no-error-on-unmatched-pattern . --allow=oxc/no-barrel-file",
     "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
-    "@agentsy/types": "workspace:*",
     "@opentelemetry/api": "^1.9.1"
   },
   "devDependencies": {

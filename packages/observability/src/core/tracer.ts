@@ -4,7 +4,6 @@
  * OpenTelemetry-based tracer implementation for distributed tracing
  */
 
-import type { SpanId, TraceId } from '@agentsy/types';
 import * as api from '@opentelemetry/api';
 
 import type { AttributeValue, Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
@@ -13,9 +12,9 @@ import type { AttributeValue, Span, SpanEvent, SpanOptions, Tracer } from '../co
  * Internal span implementation
  */
 export class InternalSpan implements Span {
-  readonly traceId: TraceId;
-  readonly spanId: SpanId;
-  readonly parentId?: SpanId;
+  readonly traceId: string;
+  readonly spanId: string;
+  readonly parentId?: string;
   readonly name: string;
 
   private readonly _attributes: Record<string, AttributeValue> = {};
@@ -54,8 +53,8 @@ export class InternalSpan implements Span {
     this._context = api.trace.setSpan(parentContext ?? api.ROOT_CONTEXT, this._otelSpan);
 
     const otelSpanContext = this._otelSpan.spanContext();
-    this.traceId = otelSpanContext.traceId as TraceId;
-    this.spanId = otelSpanContext.spanId as SpanId;
+    this.traceId = otelSpanContext.traceId;
+    this.spanId = otelSpanContext.spanId;
     if (parent?.spanId) {
       this.parentId = parent.spanId;
     }
@@ -176,18 +175,15 @@ export class InternalSpan implements Span {
         'error.type': 'stringError'
       };
     } else if (exception !== null && typeof exception === 'object') {
-      if ('name' in exception && typeof exception.name === 'string') {
-        const info: Record<string, string> = {
-          'error.type': exception.name
-        };
-        if ('message' in exception && typeof exception.message === 'string') {
-          info['error.message'] = exception.message;
-        }
-        if ('stack' in exception && typeof exception.stack === 'string') {
-          info['error.stack'] = exception.stack;
-        }
-        return info;
+      const info: Record<string, string> = { 'error.type': exception.constructor.name };
+      
+      if ('message' in exception && typeof exception.message === 'string') {
+        info['error.message'] = exception.message;
       }
+      if ('stack' in exception && typeof exception.stack === 'string') {
+        info['error.stack'] = exception.stack;
+      }
+      return info;
     }
 
     return {

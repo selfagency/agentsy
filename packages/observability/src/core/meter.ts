@@ -65,7 +65,7 @@ class HistogramImpl extends BaseMetric implements Histogram {
 }
 
 /**
- * Gauge implementation
+ * Gauge implementation with increment/decrement support
  */
 class GaugeImpl extends BaseMetric implements Gauge {
   private readonly _otelGauge: api.Gauge;
@@ -83,16 +83,29 @@ class GaugeImpl extends BaseMetric implements Gauge {
   increment(amount?: number, attributes?: Record<string, AttributeValue>): void {
     const amt = amount ?? 1;
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
-    if ('add' in this._otelGauge && typeof this._otelGauge.add === 'function') {
-      (this._otelGauge as unknown as api.Counter).add(amt, attrs);
-    }
+    this._recordWithAdd(amt, attrs);
   }
 
   decrement(amount?: number, attributes?: Record<string, AttributeValue>): void {
     const amt = amount ?? 1;
     const attrs = attributes ? this._otelAttributesToAttributes(attributes) : {};
-    if ('add' in this._otelGauge && typeof this._otelGauge.add === 'function') {
-      (this._otelGauge as unknown as api.Counter).add(-amt, attrs);
+    this._recordWithAdd(-amt, attrs);
+  }
+
+  /**
+   * Helper method to safely record using the add method if available
+   */
+  private _recordWithAdd(amount: number, attributes: api.Attributes): void {
+    const gauge = this._otelGauge;
+    // Check if the gauge supports the add method
+    if ('add' in gauge && typeof gauge.add === 'function') {
+      // This type assertion is safe because we've checked that add exists
+      // and is a function above
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      const gaugeWithAdd = gauge as {
+        add: (amount: number, attributes?: api.Attributes) => void;
+      };
+      gaugeWithAdd.add(amount, attributes);
     }
   }
 }
@@ -101,9 +114,9 @@ class GaugeImpl extends BaseMetric implements Gauge {
  * Observable gauge implementation
  */
 class ObservableGaugeImpl extends BaseMetric implements ObservableGauge {
-  private readonly _observableResult: api.ObservableResult<api.Attributes>;
+  private readonly _observableResult: api.ObservableResult;
 
-  constructor(observableResult: api.ObservableResult<api.Attributes>) {
+  constructor(observableResult: api.ObservableResult) {
     super();
     this._observableResult = observableResult;
   }
