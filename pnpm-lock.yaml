@@ -75,7 +75,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.6
-        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(msw@2.14.6(@types/node@25.8.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.8.0)(esbuild@0.28.0)(tsx@4.22.0)(yaml@2.9.0))
+        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(msw@2.14.6(@types/node@25.8.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.8.0)(esbuild@0.27.3)(tsx@4.22.0)(yaml@2.9.0))
 
   packages/connectors:
     dependencies:
@@ -185,9 +185,6 @@ importers:
 
   packages/memory:
     dependencies:
-      '@agentsy/runtime':
-        specifier: workspace:*
-        version: link:../runtime
       '@agentsy/tokens':
         specifier: workspace:*
         version: link:../tokens
@@ -507,7 +504,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.6
-        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(msw@2.14.6(@types/node@25.8.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.8.0)(esbuild@0.27.3)(tsx@4.22.0)(yaml@2.9.0))
+        version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@25.8.0)(@vitest/coverage-v8@4.1.6)(msw@2.14.6(@types/node@25.8.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.8.0)(esbuild@0.28.0)(tsx@4.22.0)(yaml@2.9.0))
 
   packages/scripts:
     dependencies:
