@@ -17,9 +17,9 @@ import {
   resolveOwnerRepoFromOrigin,
   ensureLocalTagDoesNotExist,
   ensureRemoteTagDoesNotExist,
-  waitForWorkflow,
-  type ReleaseNotesOptions
+  waitForWorkflow
 } from './release-shared.js';
+import type { ReleaseNotesOptions } from './release-shared.js';
 import { ROOT, parseVersionArg, safeRead, safeWrite } from './release-utils.js';
 
 $.verbose = false;
@@ -109,8 +109,8 @@ async function main() {
   setGitCommand(resolvedGit);
 
   // Ensure npm uses the user's ~/.npmrc (tokens) and the public npm registry.
-  process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
-  const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
+  process.env.NPM_CONFIG_USERCONFIG ??= resolve(homedir(), '.npmrc');
+  const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY ?? 'https://registry.npmjs.org/';
 
   // If NPM_TOKEN is provided in the environment, set the npm auth config.
   if (process.env.NPM_TOKEN) {

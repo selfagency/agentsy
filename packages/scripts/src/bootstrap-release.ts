@@ -18,7 +18,7 @@ const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 
 const packageArg = argv._[0];
 const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
-const isDryRun = Boolean(argv['dry-run'] || argv.dryRun);
+const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
 const confirm = Boolean(argv['yes-i-know-this-is-first-publish']);
 const force = Boolean(argv.force);
 const explicitTag = typeof argv.tag === 'string' ? argv.tag : undefined;

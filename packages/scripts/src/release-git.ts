@@ -27,7 +27,7 @@ export function createGitHelpers(root: string): GitHelpers {
     if (result.status !== 0) {
       const stderr = (result.stderr || '').trim();
       const stdout = (result.stdout || '').trim();
-      const details = stderr || stdout || `git ${args.join(' ')} failed with exit code ${result.status}`;
+      const details = stderr ?? stdout ?? `git ${args.join(' ')} failed with exit code ${result.status}`;
       throw new Error(details);
     }
 

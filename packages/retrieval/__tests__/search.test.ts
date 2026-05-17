@@ -296,7 +296,9 @@ describe(RetrievalEngine, () => {
     });
 
     it('should handle deletion of non-existent document', () => {
-      expect(() => engine.delete('non-existent')).not.toThrow();
+      expect(() => {
+        engine.delete('non-existent');
+      }).not.toThrow();
     });
 
     it('should update document count after deletion', async () => {
@@ -311,11 +313,11 @@ describe(RetrievalEngine, () => {
   describe('clear', () => {
     it('should remove all indexed documents', async () => {
       await engine.index(sampleDocuments);
-      expect(await engine.count()).toBe(sampleDocuments.length);
+      await expect(engine.count()).resolves.toBe(sampleDocuments.length);
 
       engine.clear();
 
-      expect(await engine.count()).toBe(0);
+      await expect(engine.count()).resolves.toBe(0);
     });
   });
 });

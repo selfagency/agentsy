@@ -40,7 +40,7 @@ export function createSourceConnectors(options: SourceConnectorOptions): SourceC
     },
 
     async readLocalFile(filePath) {
-      return readFile(filePath, 'utf-8');
+      return await readFile(filePath, 'utf-8');
     }
   };
 }

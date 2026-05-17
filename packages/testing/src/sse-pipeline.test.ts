@@ -249,6 +249,6 @@ describe('createPipeline (unknown provider)', () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     });
     // The error is thrown when the generator function body begins executing
-    expect(await gen.next()).rejects.toThrow('Unknown provider');
+    await expect(gen.next()).resolves.rejects.toThrow('Unknown provider');
   });
 });

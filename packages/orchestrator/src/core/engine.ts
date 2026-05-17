@@ -189,7 +189,7 @@ async function executeTaskNode(
   // Find suitable agent
   const availableAgents = registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
 
-  return scheduler
+  return await scheduler
     .schedule({
       agents: availableAgents,
       taskInfo: {
@@ -316,7 +316,7 @@ async function executeParallelNode(
     await runNext();
   };
 
-  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) }, async () => runNext());
+  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) }, async () => await runNext());
   await Promise.all(workers);
 
   if (errors.length > 0) {

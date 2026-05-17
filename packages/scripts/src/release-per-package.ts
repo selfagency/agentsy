@@ -47,9 +47,9 @@ import {
   ensureLocalTagAvailability,
   ensureRemoteTagAvailability,
   waitForWorkflow,
-  waitForLatestSuccessfulWorkflow,
-  type ReleaseNotesOptions
+  waitForLatestSuccessfulWorkflow
 } from './release-shared.js';
+import type { ReleaseNotesOptions } from './release-shared.js';
 import { getPackageReleaseState, readReleaseState } from './release-state.ts';
 import { ROOT, parseVersionArg, safeRead, safeWrite } from './release-utils.js';
 import { getRepositoryField, validateRepositoryMatch } from './trusted-publish-readiness.js';
@@ -61,8 +61,8 @@ cd(ROOT);
 
 const packageName = argv._[0];
 const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
-const isDryRun = Boolean(argv['dry-run'] || argv.dryRun);
-const isRetag = Boolean(argv.retag || argv['re-tag']);
+const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
+const isRetag = Boolean(argv.retag ?? argv['re-tag']);
 
 if (!packageName) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
@@ -188,8 +188,8 @@ async function main() {
   }
   setGitCommand(resolvedGit);
 
-  process.env.NPM_CONFIG_USERCONFIG ||= resolve(homedir(), '.npmrc');
-  const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
+  process.env.NPM_CONFIG_USERCONFIG ??= resolve(homedir(), '.npmrc');
+  const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY ?? 'https://registry.npmjs.org/';
 
   await checkNpmCredentials(NPM_REGISTRY);
 

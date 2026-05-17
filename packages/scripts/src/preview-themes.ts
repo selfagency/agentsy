@@ -87,17 +87,17 @@ function displayThemePreview() {
     console.log(`${ANSI.bold}${ANSI.white}${name.padEnd(25)}${ANSI.reset}`);
 
     if (theme.thinking) {
-      const textColor = theme.thinking.textColor || 'cyan';
-      const spinnerColor = theme.thinking.spinnerColor || 'cyan';
+      const textColor = theme.thinking.textColor ?? 'cyan';
+      const spinnerColor = theme.thinking.spinnerColor ?? 'cyan';
       const thinkingText = `text=${textColor}, spinner=${spinnerColor}`;
       console.log(`  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`);
     }
 
     if (theme.toolCall) {
-      const pendingColor = theme.toolCall.pendingColor || 'yellow';
-      const doneColor = theme.toolCall.doneColor || 'green';
-      const pendingSymbol = theme.toolCall.pendingSymbol || '⠋';
-      const doneSymbol = theme.toolCall.doneSymbol || '✓';
+      const pendingColor = theme.toolCall.pendingColor ?? 'yellow';
+      const doneColor = theme.toolCall.doneColor ?? 'green';
+      const pendingSymbol = theme.toolCall.pendingSymbol ?? '⠋';
+      const doneSymbol = theme.toolCall.doneSymbol ?? '✓';
       const toolsPending = `Tools: ${pendingSymbol}`;
       const toolsPreview = `pending`;
       const toolsDone = `${doneSymbol} done`;

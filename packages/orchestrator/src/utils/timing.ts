@@ -21,7 +21,7 @@ export const TimingUtils = {
   },
 
   async delay(ms: number): Promise<void> {
-    return await new Promise(resolve => setTimeout(resolve, ms));
+    await new Promise(resolve => setTimeout(resolve, ms));
   },
 
   formatDuration(ms: number): string {
@@ -125,7 +125,7 @@ export class Throttle {
 
     if (now - this.lastExecution >= this.interval) {
       this.execute(...args);
-    } else
+    } else {
       this.pendingExecution ??= setTimeout(
         () => {
           this.execute(...args);
@@ -133,6 +133,7 @@ export class Throttle {
         },
         this.interval - (now - this.lastExecution)
       );
+    }
   }
 
   private execute(...args: unknown[]): void {

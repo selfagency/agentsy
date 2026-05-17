@@ -32,7 +32,7 @@ export class RetrievalEngine {
 
   keywordSearch(query: RetrievalQuery): SearchResult {
     const startTime = Date.now();
-    const results: Array<{ document: Document; score: number }> = [];
+    const results: { document: Document; score: number }[] = [];
     const queryLower = query.query.toLowerCase();
     const queryWords = queryLower.split(/\s+/u);
 
@@ -69,7 +69,7 @@ export class RetrievalEngine {
 
   vectorSearch(query: RetrievalQuery): SearchResult {
     const startTime = Date.now();
-    const results: Array<{ document: Document; similarity: number }> = [];
+    const results: { document: Document; similarity: number }[] = [];
 
     if (!query.embedding || query.embedding.length === 0) {
       return {
@@ -83,7 +83,7 @@ export class RetrievalEngine {
       for (const chunk of document.chunks) {
         const chunkEmbedding = this.embeddings.get(chunk.id);
         if (chunkEmbedding) {
-          const similarity = this.calculateCosineSimilarity(query.embedding!, chunkEmbedding);
+          const similarity = this.calculateCosineSimilarity(query.embedding, chunkEmbedding);
 
           if (similarity >= (query.minSimilarity ?? this.options.minSimilarity)) {
             results.push({
@@ -181,7 +181,7 @@ export class RetrievalEngine {
 
   private generateEmbedding(text: string): number[] {
     const words = text.toLowerCase().split(/\s+/u);
-    const embedding = Array.from({ length: 32 }, () => 0) as number[];
+    const embedding = Array.from({ length: 32 }, () => 0);
 
     for (const word of words) {
       const wordHash = this.hashWord(word);

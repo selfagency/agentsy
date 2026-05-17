@@ -39,7 +39,7 @@ async function createStorePath(): Promise<string> {
 
 afterEach(async () => {
   await Promise.all(
-    temporaryDirectories.splice(0).map(async directory => rm(directory, { force: true, recursive: true }))
+    temporaryDirectories.splice(0).map(async directory => await rm(directory, { force: true, recursive: true }))
   );
 });
 
