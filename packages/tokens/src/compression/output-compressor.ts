@@ -1,5 +1,5 @@
-import type { CompressionLevel } from '@agentsy/core/context';
-import { compressProse, protectPattern, restoreProtectedSegments } from '@agentsy/core/context';
+import type { CompressionLevel } from '@agentsy/core/context/compression';
+import { compressProse, protectPattern, restoreProtectedSegments } from '@agentsy/core/context/compression';
 
 export interface OutputPreserveOptions {
   codeFences: boolean;
