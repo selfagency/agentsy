@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -12,6 +11,7 @@ async function loadCorpus(): Promise<RetrievalBenchmarkDocument[]> {
   const filePath = join(currentDir, '..', 'fixtures', 'retrieval', 'corpus.json');
   const payload = await readFile(filePath, 'utf-8');
   return JSON.parse(payload) as RetrievalBenchmarkDocument[];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 }
 
 describe('retrieval benchmark', () => {

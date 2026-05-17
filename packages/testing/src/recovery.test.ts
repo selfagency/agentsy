@@ -118,7 +118,7 @@ describe(buildContinuationPrompt, () => {
     expect(messages[0]?.role).toBe('assistant');
     expect(messages[0]?.content).toContain('Partial answer');
     expect(messages[1]?.role).toBe('user');
-    expect(messages[1]?.content).toMatch(/continue/i);
+    expect(messages[1]?.content).toMatch(/continue/iu);
   });
 
   it('defaults to openai format when provider is omitted', () => {
@@ -166,7 +166,7 @@ describe('captureStreamState + buildContinuationPrompt round-trip', () => {
 
     expect(snapshot.content).toBe('The capital of France is Paris,');
     expect(messages[0]?.content).toContain('Paris');
-    expect(messages[1]?.content).toMatch(/continue/i);
+    expect(messages[1]?.content).toMatch(/continue/iu);
   });
 
   it('preserves processor options in the snapshot', () => {

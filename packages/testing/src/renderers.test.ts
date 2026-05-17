@@ -44,7 +44,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('suppresses thinking by default', async () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
-      output: chunk => collected.push(chunk),
+      output: (chunk: string): void => {
+        collected.push(chunk);
+      },
       showThinking: false
     });
 
@@ -61,7 +63,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('forwards thinking text when showThinking=true', async () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
-      output: chunk => collected.push(chunk),
+      output: (chunk: string): void => {
+        collected.push(chunk);
+      },
       showThinking: true,
       thinkingPrefix: '[T] '
     });
@@ -112,7 +116,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     await renderer.end();
 
     expect(onToolCall).toHaveBeenCalledOnce();
-    const firstCall = onToolCall.mock.calls[0];
+    const [firstCall] = onToolCall.mock.calls;
     expect(firstCall).toBeDefined();
     const call = firstCall?.[0];
     expect(call?.call.name).toBe('lookup');
@@ -135,13 +139,13 @@ describe(createSharedRendererHandle, () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: async t => {
+        onText: (t: string): void => {
           texts.push(t);
         },
-        onThinking: async t => {
+        onThinking: (t: string): void => {
           thinkings.push(t);
         },
-        onToolCall: async part => {
+        onToolCall: (part: any): void => {
           toolCalls.push(part.call.name);
         }
       }
@@ -163,10 +167,10 @@ describe(createSharedRendererHandle, () => {
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
       {
-        onText: async t => {
+        onText: (t: string): void => {
           texts.push(t);
         },
-        onThinking: async () => {}
+        onThinking: (): void => {}
       }
     );
 
@@ -183,11 +187,11 @@ describe(createSharedRendererHandle, () => {
 
     const handle = createSharedRendererHandle(
       {
-        onFinish: async (reason, usage) => {
+        onFinish: (reason: any, usage: any): void => {
           finishArgs.push([reason, usage]);
         }
       },
-      { onText: async () => {}, onThinking: async () => {} }
+      { onText: (): void => {}, onThinking: (): void => {} }
     );
 
     await handle.writeChunk({
@@ -199,7 +203,7 @@ describe(createSharedRendererHandle, () => {
     await handle.end();
 
     expect(finishArgs).toHaveLength(1);
-    const firstFinish = finishArgs[0];
+    const [firstFinish] = finishArgs;
     expect(firstFinish).toBeDefined();
     expect(firstFinish?.[0]).toBe('stop');
     expect(firstFinish?.[1]).toMatchObject({ outputTokens: 2 });

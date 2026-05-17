@@ -2,6 +2,9 @@ import { resolve } from 'node:path';
 
 import { defineConfig } from 'vitest/config';
 
+const __filename = import.meta.filename;
+const __dirname = import.meta.dirname;
+
 export default defineConfig({
   resolve: {
     alias: [

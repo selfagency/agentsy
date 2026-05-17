@@ -243,11 +243,12 @@ describe('createPipeline (gemini)', () => {
 // ---------------------------------------------------------------------------
 
 describe('createPipeline (unknown provider)', () => {
-  it('throws synchronously for unknown provider', () => {
+  it('throws synchronously for unknown provider', async () => {
     const gen = createPipeline(sseSource('data: {}\n\n'), {
       provider: 'unknown-provider' as Parameters<typeof createPipeline>[1]['provider']
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     });
     // The error is thrown when the generator function body begins executing
-    return expect(gen.next()).rejects.toThrow('Unknown provider');
+    expect(await gen.next()).rejects.toThrow('Unknown provider');
   });
 });
