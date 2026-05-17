@@ -48,18 +48,24 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
     {
       onText: (text: string) => {
         writeOutput(text);
+        return Promise.resolve();
       },
       onThinking: (text: string) => {
         if (showThinking) {
           writeOutput(`${thinkingPrefix}${text}\n`);
         }
+        return Promise.resolve();
       },
       ...(onToolCall !== undefined && {
-        onToolCall: async (part: Parameters<NonNullable<typeof options.onToolCall>>[0]) => {
-          await onToolCall(part);
+        onToolCall: (part: Parameters<NonNullable<typeof options.onToolCall>>[0] & { type: 'tool_call' }) => {
+          if (part) {
+            const result = onToolCall(part);
+            return result instanceof Promise ? result : Promise.resolve();
+          }
+          return Promise.resolve(undefined);
         }
       }),
-      onEnd: () => {
+      onEnd: async () => {
         // Call end() on stream if it has one (but not on process.stdout)
         if (
           typeof output === 'object' &&
