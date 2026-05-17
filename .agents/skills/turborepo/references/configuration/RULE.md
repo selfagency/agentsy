@@ -1,12 +1,12 @@
 # turbo.json Configuration Overview
 
-Configuration reference for Turborepo. Full docs: https://turborepo.dev/docs/reference/configuration
+Configuration reference for Turborepo. Full docs: <https://turborepo.dev/docs/reference/configuration>
 
 ## File Location
 
 Root `turbo.json` lives at repo root, sibling to root `package.json`:
 
-```
+```text
 my-monorepo/
 ├── turbo.json        # Root configuration
 ├── package.json

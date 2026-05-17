@@ -122,6 +122,8 @@ tags: [Optional: List of relevant tags or categories, e.g., `infrastructure`, `p
 ```
 ```
 
+```text
+
 ## 10. Validation Criteria
 
 [List the criteria or tests that must be satisfied for compliance with this specification.]
