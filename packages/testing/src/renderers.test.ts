@@ -1,6 +1,6 @@
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createPlainTextRenderer, createSharedRendererHandle } from '@agentsy/renderers';
 import type { BaseRendererOptions } from '@agentsy/renderers';
+import { createPlainTextRenderer, createSharedRendererHandle } from '@agentsy/renderers';
 /**
  * Integration: renderers + processor
  *
@@ -139,13 +139,13 @@ describe(createSharedRendererHandle, () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: (t: string): void => {
+        onText: async (t: string): Promise<void> => {
           texts.push(t);
         },
-        onThinking: (t: string): void => {
+        onThinking: async (t: string): Promise<void> => {
           thinkings.push(t);
         },
-        onToolCall: (part: any): void => {
+        onToolCall: async (part: any): Promise<void> => {
           toolCalls.push(part.call.name);
         }
       }
@@ -167,10 +167,10 @@ describe(createSharedRendererHandle, () => {
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
       {
-        onText: (t: string): void => {
+        onText: async (t: string): Promise<void> => {
           texts.push(t);
         },
-        onThinking: (): void => {}
+        onThinking: async (): Promise<void> => {}
       }
     );
 
@@ -191,7 +191,7 @@ describe(createSharedRendererHandle, () => {
           finishArgs.push([reason, usage]);
         }
       },
-      { onText: (): void => {}, onThinking: (): void => {} }
+      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
     );
 
     await handle.writeChunk({

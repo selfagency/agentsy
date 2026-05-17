@@ -752,7 +752,7 @@ describe('Cancellation Token Bridge', () => {
     expect(signal.aborted).toBeFalsy();
 
     for (const listener of listeners) {
-      listener();
+      listener(undefined);
     }
 
     expect(signal.aborted).toBeTruthy();

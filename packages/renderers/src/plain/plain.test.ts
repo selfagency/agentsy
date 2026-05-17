@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createPlainTextRenderer } from './createPlainTextRenderer.js';
+import { createPlainTextRenderer } from './create-plain-text-renderer.js';
 
 describe('Plain Text Renderer', () => {
   it('renders text on flush', async () => {

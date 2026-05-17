@@ -20,9 +20,9 @@ function makeCancellationToken(cancelled = false): CancellationToken {
 function makeExtensionContext() {
   return {
     secrets: {
-      delete: vi.fn().mockResolvedValue(),
-      get: vi.fn().mockResolvedValue(),
-      store: vi.fn().mockResolvedValue()
+      delete: vi.fn(),
+      get: vi.fn(),
+      store: vi.fn()
     }
   };
 }

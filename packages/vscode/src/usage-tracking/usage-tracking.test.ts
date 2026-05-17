@@ -241,6 +241,6 @@ describe(mapUsageToVSCode, () => {
   });
 
   it('returns undefined for undefined usage', () => {
-    expect(mapUsageToVSCode()).toBeUndefined();
+    expect(mapUsageToVSCode(undefined)).toBeUndefined();
   });
 });

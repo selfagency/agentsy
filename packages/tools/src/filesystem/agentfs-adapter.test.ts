@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { AgentFsLike } from './agentfs-adapter.js';
 import { createAgentFsAdapter } from './agentfs-adapter.js';
 
-describe(createAgentFsAdapter, () => {
+describe('createAgentFsAdapter', () => {
   const mockManager = (): AgentFsLike => ({
     delete: vi.fn<(path: string) => boolean>(),
     list: vi.fn<() => { path: string; contentHash: string }[]>(),

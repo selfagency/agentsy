@@ -12,6 +12,9 @@ export interface GitHelpers {
 export function createGitHelpers(root: string): GitHelpers {
   let gitCommand = 'git';
 
+  // Export for shared use
+  const { runGit: exportedRunGit, resolveGitExecutable: exportedResolveGitExecutable, setGitCommand: exportedSetGitCommand } = createGitHelpers(root);
+
   function withSafePathEnv(): NodeJS.ProcessEnv {
     return { ...process.env, PATH: SAFE_PATH };
   }
@@ -25,13 +28,14 @@ export function createGitHelpers(root: string): GitHelpers {
     });
 
     if (result.status !== 0) {
-      const stderr = (result.stderr || '').trim();
-      const stdout = (result.stdout || '').trim();
+      const stderr = String(result.stderr || '').trim();
+      const stdout = String(result.stdout || '').trim();
       const details = stderr ?? stdout ?? `git ${args.join(' ')} failed with exit code ${result.status}`;
       throw new Error(details);
     }
 
-    return result;
+    // Ensure the result is properly typed as string
+    return result as unknown as SpawnSyncReturns<string>;
   }
 
   function resolveGitExecutable(): string | null {

@@ -62,7 +62,6 @@ cd(ROOT);
 const packageName = argv._[0];
 const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
 const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
-const isRetag = Boolean(argv.retag ?? argv['re-tag']);
 
 if (!packageName) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
@@ -201,7 +200,7 @@ async function main() {
   syncMainBranch();
 
   // Re-read pkgJson and release state now that main is up to date.
-  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string };
+  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string; repository: unknown };
   const latestReleaseState = readReleaseState(RELEASE_STATE_PATH);
   const packageReleaseState = getPackageReleaseState(latestReleaseState, fullPackageName);
 
@@ -336,13 +335,13 @@ async function main() {
 
   const changedFiles = runGit(['show', '--name-only', '--pretty=format:', headSha])
     .stdout.split(/\r?\n/)
-    .map(line => line.trim())
+    .map((line: string) => line.trim())
     .filter(Boolean);
 
   const metadataOnlyFiles = new Set([`packages/${pkgShortName}/package.json`, `packages/${pkgShortName}/CHANGELOG.md`]);
 
   const isMetadataOnlyReleaseCommit =
-    changedFiles.length > 0 && changedFiles.every(file => metadataOnlyFiles.has(file));
+    changedFiles.length > 0 && changedFiles.every((file: string) => metadataOnlyFiles.has(file));
 
   // --- Wait for required workflows -----------------------------------------
 

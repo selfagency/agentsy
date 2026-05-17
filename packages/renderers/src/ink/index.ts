@@ -3,14 +3,14 @@
 /**
  * Ink renderer module - streaming React/Ink renderer for terminal output
  */
-export type { KeyboardOptions } from './components/KeyboardHandler.js';
+export type { KeyboardOptions } from './components/keyboard-handler.js';
 export { createInkRuntimeController, loadInkRenderModules } from './ink-runtime-state.js';
 export {
   createInkConversationRenderer,
   type ConversationTurn,
   type InkConversationRendererHandle,
   type InkConversationRendererOptions
-} from './createInkConversationRenderer.js';
+} from './create-ink-conversation-renderer.js';
 export { createInkRenderer, type InkRendererHandle, type InkRendererOptions } from './createInkRenderer.js';
 export {
   ayuMirageTheme,

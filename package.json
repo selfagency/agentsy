@@ -64,10 +64,10 @@
   },
   "lint-staged": {
     "**/*.{ts,tsx,js,ts,jsx}": [
-      "oxfmt --no-error-on-unmatched-pattern --write ."
+      "oxfmt --write ."
     ],
     "**/*.{json,md,yaml,yml,cjs,mjs,css,scss,json,jsonc,mdx}": [
-      "oxfmt --no-error-on-unmatched-pattern --write ."
+      "oxfmt --write ."
     ],
     "{js,ts,tsx}": [
       "oxlint --no-error-on-unmatched-pattern",

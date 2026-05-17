@@ -14,7 +14,7 @@ describe('chunkUtils', () => {
       expect(ensureText('hello')).toBe('hello');
       expect(ensureText(123)).toBe('');
       expect(ensureText(null)).toBe('');
-      expect(ensureText()).toBe('');
+      expect(ensureText(undefined)).toBe('');
     });
   });
 

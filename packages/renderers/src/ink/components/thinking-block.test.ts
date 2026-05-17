@@ -6,18 +6,14 @@ import { darkTheme, defaultTheme } from '../themes/index.js';
 import { ThinkingBlock } from './ThinkingBlock.js';
 
 // Mock Ink render to avoid terminal setup in test environment
-vi.mock(import('ink'), async () => {
-  const actual = await vi.importActual('ink');
-  return {
-    ...actual,
-    render: vi.fn<() => {}>(() => ({
-      clear: vi.fn<() => void>(),
-      lastFrame: () => '',
-      rerender: vi.fn<() => void>(),
-      unmount: vi.fn<() => void>()
-    }))
-  };
-});
+vi.mock('ink', () => ({
+  render: vi.fn(() => ({
+    clear: vi.fn(),
+    lastFrame: () => '',
+    rerender: vi.fn(),
+    unmount: vi.fn()
+  }))
+}));
 
 describe('ThinkingBlock Component', () => {
   beforeEach(() => {

@@ -218,7 +218,7 @@ describe(normalizeOpenAIChatChunk, () => {
   it('never throws on adversarial input', () => {
     expect(() => normalizeOpenAIChatChunk({ choices: 'not-an-array' })).not.toThrow();
     expect(() => normalizeOpenAIChatChunk({ choices: [null] })).not.toThrow();
-    expect(() => normalizeOpenAIChatChunk()).not.toThrow();
+    expect(() => normalizeOpenAIChatChunk(undefined)).not.toThrow();
   });
 });
 
@@ -376,7 +376,7 @@ describe(normalizeOpenAIResponseEvent, () => {
         type: 'response.completed'
       })
     ).not.toThrow();
-    expect(() => normalizeOpenAIResponseEvent()).not.toThrow();
+    expect(() => normalizeOpenAIResponseEvent(undefined)).not.toThrow();
   });
 });
 
@@ -522,7 +522,7 @@ describe(normalizeAnthropicEvent, () => {
   it('never throws on adversarial input', () => {
     expect(() => normalizeAnthropicEvent({ delta: null, type: 'content_block_delta' })).not.toThrow();
     expect(() => normalizeAnthropicEvent({ message: null, type: 'message_start' })).not.toThrow();
-    expect(() => normalizeAnthropicEvent()).not.toThrow();
+    expect(() => normalizeAnthropicEvent(undefined)).not.toThrow();
   });
 });
 
@@ -614,7 +614,7 @@ describe(normalizeOllamaChatChunk, () => {
   it('never throws on adversarial input', () => {
     expect(() => normalizeOllamaChatChunk({ message: null })).not.toThrow();
     expect(() => normalizeOllamaChatChunk({ message: { tool_calls: 'bad' } })).not.toThrow();
-    expect(() => normalizeOllamaChatChunk()).not.toThrow();
+    expect(() => normalizeOllamaChatChunk(undefined)).not.toThrow();
   });
 });
 
@@ -666,7 +666,7 @@ describe(normalizeOllamaGenerateChunk, () => {
 
   it('never throws on adversarial input', () => {
     expect(() => normalizeOllamaGenerateChunk({ response: 42 })).not.toThrow();
-    expect(() => normalizeOllamaGenerateChunk()).not.toThrow();
+    expect(() => normalizeOllamaGenerateChunk(undefined)).not.toThrow();
   });
 });
 
@@ -804,7 +804,7 @@ describe(normalizeGeminiChunk, () => {
   it('never throws on adversarial input', () => {
     expect(() => normalizeGeminiChunk({ candidates: [null] })).not.toThrow();
     expect(() => normalizeGeminiChunk({ candidates: [{ content: null }] })).not.toThrow();
-    expect(() => normalizeGeminiChunk()).not.toThrow();
+    expect(() => normalizeGeminiChunk(undefined)).not.toThrow();
   });
 });
 
@@ -960,7 +960,7 @@ describe(normalizeMistralChunk, () => {
 
   it('never throws on adversarial input', () => {
     expect(() => normalizeMistralChunk({ choices: null })).not.toThrow();
-    expect(() => normalizeMistralChunk()).not.toThrow();
+    expect(() => normalizeMistralChunk(undefined)).not.toThrow();
   });
 });
 
@@ -1094,7 +1094,7 @@ describe(normalizeCohereEvent, () => {
         type: 'tool-call-start'
       })
     ).not.toThrow();
-    expect(() => normalizeCohereEvent()).not.toThrow();
+    expect(() => normalizeCohereEvent(undefined)).not.toThrow();
   });
 });
 
@@ -1219,7 +1219,7 @@ describe(normalizeBedrockConverseEvent, () => {
   it('never throws on adversarial input', () => {
     expect(() => normalizeBedrockConverseEvent({ contentBlockDelta: null })).not.toThrow();
     expect(() => normalizeBedrockConverseEvent({ contentBlockDelta: { delta: null } })).not.toThrow();
-    expect(() => normalizeBedrockConverseEvent()).not.toThrow();
+    expect(() => normalizeBedrockConverseEvent(undefined)).not.toThrow();
   });
 });
 
@@ -1466,6 +1466,6 @@ describe(normalizeHuggingFaceTGIChunk, () => {
   it('never throws on adversarial input', () => {
     expect(() => normalizeHuggingFaceTGIChunk({ token: null })).not.toThrow();
     expect(() => normalizeHuggingFaceTGIChunk({ token: { text: null } })).not.toThrow();
-    expect(() => normalizeHuggingFaceTGIChunk()).not.toThrow();
+    expect(() => normalizeHuggingFaceTGIChunk(undefined)).not.toThrow();
   });
 });

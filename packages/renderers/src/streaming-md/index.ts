@@ -3,4 +3,4 @@
 export {
   createStreamingMarkdownRenderer,
   type StreamingMarkdownRendererOptions
-} from './createStreamingMarkdownRenderer.js';
+} from './create-streaming-markdown-renderer.js';

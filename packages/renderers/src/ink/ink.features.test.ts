@@ -9,18 +9,14 @@ vi.mock(import('cli-markdown'), () => ({
   default: vi.fn<(markdown: string) => string>((markdown: string) => `[ANSI:${markdown}]`)
 }));
 
-vi.mock(import('ink'), async () => {
-  const actual = await vi.importActual('ink');
-  return {
-    ...actual,
-    render: vi.fn<(component: React.ReactElement) => {}>((_component: React.ReactElement) => ({
-      clear: vi.fn<() => void>(),
-      lastFrame: () => '[mock frame]',
-      rerender: vi.fn<() => void>(),
-      unmount: vi.fn<() => void>()
-    }))
-  };
-});
+vi.mock('ink', () => ({
+  render: vi.fn((_component: React.ReactElement) => ({
+    clear: vi.fn(),
+    lastFrame: () => '[mock frame]',
+    rerender: vi.fn(),
+    unmount: vi.fn()
+  }))
+}));
 
 describe('Ink Renderer features', () => {
   let processor: LLMStreamProcessor;

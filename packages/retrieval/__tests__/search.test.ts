@@ -264,7 +264,7 @@ describe(RetrievalEngine, () => {
         query: 'JavaScript code'
       };
 
-      const result = await engine.search(query);
+      const result = engine.search(query);
 
       expect(result.documents).toBeDefined();
       expect(result.total).toBeGreaterThanOrEqual(0);
@@ -276,7 +276,7 @@ describe(RetrievalEngine, () => {
         query: 'data science'
       };
 
-      const result = await engine.search(query);
+      const result = engine.search(query);
 
       expect(result.queryTime).toBeDefined();
       expect(result.queryTime).toBeGreaterThanOrEqual(0);
@@ -313,11 +313,11 @@ describe(RetrievalEngine, () => {
   describe('clear', () => {
     it('should remove all indexed documents', async () => {
       await engine.index(sampleDocuments);
-      await expect(engine.count()).resolves.toBe(sampleDocuments.length);
+      expect(engine.count()).toBe(sampleDocuments.length);
 
       engine.clear();
 
-      await expect(engine.count()).resolves.toBe(0);
+      expect(engine.count()).toBe(0);
     });
   });
 });

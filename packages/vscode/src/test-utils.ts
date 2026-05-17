@@ -2,10 +2,8 @@ import { expect } from 'vitest';
 
 export interface MockCancellationToken {
   cancel(): void;
-  token: {
-    get isCancellationRequested(): boolean;
-    onCancellationRequested(event: (e: unknown) => unknown): { dispose(): void };
-  };
+  isCancellationRequested: boolean;
+  onCancellationRequested(listener: (e: unknown) => unknown): { dispose(): void };
 }
 
 /**
@@ -15,28 +13,24 @@ export interface MockCancellationToken {
  * @returns A mock CancellationToken with cancel() and isCancellationRequested/onCancellationRequested properties
  */
 export function createMockCancellationToken(initiallyCancelled = false): MockCancellationToken {
-  const listeners = new Set<(e: unknown) => unknown>();
+  const listeners = new Set<(e: unknown) => void>();
   let cancelled = initiallyCancelled;
 
   return {
     cancel() {
       cancelled = true;
       for (const listener of listeners) {
-        listener();
+        listener(undefined);
       }
     },
-    token: {
-      get isCancellationRequested() {
-        return cancelled;
-      },
-      onCancellationRequested(listener: (e: unknown) => unknown) {
-        listeners.add(listener);
-        return {
-          dispose: () => {
-            listeners.delete(listener);
-          }
-        };
-      }
+    isCancellationRequested: cancelled,
+    onCancellationRequested(listener: (e: unknown) => unknown) {
+      listeners.add(listener);
+      return {
+        dispose: () => {
+          listeners.delete(listener);
+        }
+      };
     }
   };
 }

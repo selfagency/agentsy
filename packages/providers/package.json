@@ -50,8 +50,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint --no-error-on-unmatched-pattern .",
-    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "lint": "oxlint .",
+    "format": "oxfmt --write .",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },

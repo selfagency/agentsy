@@ -286,7 +286,7 @@ async function executeParallelNode(
     return branchNode;
   });
 
-  const results = Array.from<unknown>({ length: branchNodes.length }).fill();
+  const results = Array.from<unknown>({ length: branchNodes.length });
   const errors: Error[] = [];
   let cursor = 0;
 

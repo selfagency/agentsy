@@ -93,7 +93,6 @@ export type * from './observability.js';
 
 - Modified: `packages/runtime/src/sandbox/virtual/sandbox-worker.ts`
 - Fixed: MessagePort location property and postMessage calls
-
 - Modified: `packages/runtime/src/sandbox/virtual/container-detector.test.ts`
 - Fixed: vi.mock() syntax
 
@@ -125,7 +124,7 @@ cd packages/runtime && pnpm lint
 
 ### CRITICAL WORKFLOW SUMMARY
 
-```
+```text
 ENUM FIX → EventType exported properly
          ↓
 87 TESTS FIXED (EventType.RUN_STARTED working)

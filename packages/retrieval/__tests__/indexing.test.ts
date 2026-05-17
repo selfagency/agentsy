@@ -43,34 +43,34 @@ describe(IndexingPipeline, () => {
 
   describe('chunk', () => {
     it('should chunk data source with semantic strategy', async () => {
-      const chunks = await pipeline.chunk(testDataSource, 'semantic');
+      const chunks = pipeline.chunk(testDataSource, 'semantic');
 
       expect(Array.isArray(chunks)).toBeTruthy();
       expect(chunks.length).toBeGreaterThan(0);
     });
 
     it('should chunk data source with fixed strategy', async () => {
-      const chunks = await pipeline.chunk(testDataSource, 'fixed');
+      const chunks = pipeline.chunk(testDataSource, 'fixed');
 
       expect(Array.isArray(chunks)).toBeTruthy();
       expect(chunks.length).toBeGreaterThan(0);
     });
 
     it('should chunk data source with ast strategy', async () => {
-      const chunks = await pipeline.chunk(testDataSource, 'ast');
+      const chunks = pipeline.chunk(testDataSource, 'ast');
 
       expect(Array.isArray(chunks)).toBeTruthy();
     });
 
     it('should generate unique chunk IDs', async () => {
-      const chunks = await pipeline.chunk(testDataSource, 'fixed');
+      const chunks = pipeline.chunk(testDataSource, 'fixed');
       const ids = chunks.map(chunk => chunk.id);
 
       expect(new Set(ids).size).toBe(ids.length);
     });
 
     it('should include metadata in chunks', async () => {
-      const chunks = await pipeline.chunk(testDataSource, 'fixed');
+      const chunks = pipeline.chunk(testDataSource, 'fixed');
 
       chunks.forEach(chunk => {
         expect(chunk.metadata).toBeDefined();
@@ -183,7 +183,7 @@ function second() {
   // Note: fixed-size chunking has implicit overlap of 2-3 words based on word boundaries
   describe('index', () => {
     it('should index chunks into document structure', async () => {
-      const chunks = await pipeline.chunk(testDataSource, 'semantic');
+      const chunks = pipeline.chunk(testDataSource, 'semantic');
       const document = pipeline.index(chunks);
 
       expect(document.id).toBeDefined();
@@ -192,8 +192,8 @@ function second() {
     });
 
     it('should generate consistent document ID for same content', async () => {
-      const chunks1 = await pipeline.chunk(testDataSource, 'semantic');
-      const chunks2 = await pipeline.chunk(testDataSource, 'semantic');
+      const chunks1 = pipeline.chunk(testDataSource, 'semantic');
+      const chunks2 = pipeline.chunk(testDataSource, 'semantic');
 
       const doc1 = pipeline.index(chunks1);
       const doc2 = pipeline.index(chunks2);

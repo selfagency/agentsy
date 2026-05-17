@@ -83,9 +83,10 @@ export class RetrievalEngine {
       for (const chunk of document.chunks) {
         const chunkEmbedding = this.embeddings.get(chunk.id);
         if (chunkEmbedding) {
-          const similarity = this.calculateCosineSimilarity(query.embedding, chunkEmbedding);
+          const similarity = this.calculateCosineSimilarity(query.embedding, chunkEmbedding)!;
 
-          if (similarity >= (query.minSimilarity ?? this.options.minSimilarity)) {
+          const minSimilarity = query.minSimilarity ?? this.options.minSimilarity ?? 0.7;
+          if (similarity >= minSimilarity) {
             results.push({
               document,
               similarity

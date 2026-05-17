@@ -1,20 +1,50 @@
 import { defineConfig } from 'oxlint';
-import core from 'ultracite/oxlint/core';
-import react from 'ultracite/oxlint/react';
-import vitest from 'ultracite/oxlint/vitest';
 
 export default defineConfig({
-  // Configure core linting rules for monorepo
-  categories: {
-    correctness: 'warn'
-  },
+  plugins: ['eslint', 'typescript', 'unicorn', 'oxc', 'import', 'react', 'jsdoc', 'node', 'promise', 'vitest'],
   rules: {
     'class-methods-use-this': 'off',
-    'jsdoc/require-yields': 'off' // Fix type-aware helper method warnings
+    'default-case': 'off',
+    'jsdoc/require-yields': 'off',
+    'max-classes-per-file': 'off',
+    'no-empty-function': 'warn',
+    'typescript/no-dynamic-delete': 'off',
+    'typescript/strict-boolean-expressions': 'off',
+    'typescript/no-non-null-assertion': 'error',
+    'typescript/no-unsafe-call': 'error',
+    'typescript/no-unsafe-assignment': 'error',
+    'typescript/no-unsafe-member-access': 'error',
+    'typescript/no-unsafe-return': 'error',
+    'unicorn/consistent-function-scoping': 'off',
+    'unicorn/filename-case': 'warn',
+    'unicorn/no-array-for-each': 'off',
+    'unicorn/no-array-reduce': 'off',
+    'vitest/max-expects': 'off',
+    'vitest/prefer-called-exactly-once-with': 'off',
+    'vitest/prefer-describe-function-title': 'off',
+    'vitest/require-mock-type-parameters': 'off'
   },
-  // Child package configs should extend this base config
-  // via relative imports
-  root: {
-    extends: ['.oxlintrc.json', 'oxlint.config.ts']
+  settings: {
+    jsdoc: {
+      ignorePrivate: false,
+      ignoreInternal: false,
+      ignoreReplacesDocs: true,
+      overrideReplacesDocs: true,
+      augmentsExtendsReplacesDocs: false,
+      implementsReplacesDocs: false,
+      exemptDestructuredRootsFromChecks: false,
+      tagNamePreference: {}
+    },
+    vitest: {
+      typecheck: false
+    }
+  },
+  env: {
+    builtin: true
+  },
+  ignorePatterns: ['node_modules', 'dist', 'gh-pages', 'coverage', '.codacy', '.agents', '.beans'],
+  options: {
+    typeAware: true,
+    typeCheck: true
   }
 });

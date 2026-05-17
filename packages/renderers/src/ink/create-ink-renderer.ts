@@ -9,7 +9,7 @@ import type typeInk from 'ink';
 // @ts-ignore react has no default export, but we need it for type references
 import type typeReact from 'react';
 
-import type { KeyboardOptions } from './components/KeyboardHandler.js';
+import type { KeyboardOptions } from './components/keyboard-handler.js';
 import { resolveTheme } from './themes/index.js';
 import type { Theme, ThemeName } from './themes/types.js';
 

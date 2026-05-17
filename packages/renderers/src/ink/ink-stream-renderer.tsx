@@ -2,11 +2,11 @@ import type { JsonObject } from '@agentsy/types';
 import { Box } from 'ink';
 import { useEffect, useState } from 'react';
 
-import type { KeyboardOptions } from './components/KeyboardHandler.js';
-import { KeyboardHandler } from './components/KeyboardHandler.js';
-import { StreamingText } from './components/StreamingText.js';
-import { ThinkingBlock } from './components/ThinkingBlock.js';
-import { ToolCallBlock } from './components/ToolCallBlock.js';
+import type { KeyboardOptions } from './components/keyboard-handler.js';
+import { KeyboardHandler } from './components/keyboard-handler.js';
+import { StreamingText } from './components/streaming-text.js';
+import { ThinkingBlock } from './components/thinking-block.js';
+import { ToolCallBlock } from './components/tool-call-block.js';
 import type { Theme } from './themes/types.js';
 
 interface InkStreamRendererProps {

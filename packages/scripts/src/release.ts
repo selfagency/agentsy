@@ -313,9 +313,8 @@ try {
   }
   await rollback();
   if (typeof error === 'object' && error !== null && 'exitCode' in error) {
-    process.exit(
-      typeof (error as Record<string, unknown>).exitCode === 'number' ? (error as Record<string, unknown>).exitCode : 1
-    );
+    const exitCode = (error as Record<string, unknown>).exitCode;
+    process.exit(typeof exitCode === 'number' || typeof exitCode === 'string' ? exitCode : 1);
   } else {
     process.exit(1);
   }

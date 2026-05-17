@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { testOnStepCall } from '../shared.test.js';
-import { createStreamingMarkdownRenderer } from './createStreamingMarkdownRenderer.js';
+import { createStreamingMarkdownRenderer } from './create-streaming-markdown-renderer.js';
 
 (vi.mock as any)('streaming-markdown', () => ({
   default: {

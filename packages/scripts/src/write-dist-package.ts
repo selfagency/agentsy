@@ -33,6 +33,7 @@ async function main() {
         };
     private?: boolean;
     publishConfig?: Record<string, unknown>;
+    exports?: Record<string, unknown>;
   };
   const {
     name,

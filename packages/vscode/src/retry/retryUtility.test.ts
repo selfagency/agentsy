@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { createMockCancellationToken } from '../test-utils.js';
 import { createRetryUtility, RetryUtility } from './retryUtility.js';
-import { createMockCancellationToken } from './test-utils';
 
 describe('Retry Utility', () => {
   const mockCancellationToken = createMockCancellationToken();
@@ -58,8 +58,8 @@ describe('Retry Utility', () => {
       expect(onRetry.mock.calls[0]?.[1]).toBeInstanceOf(Error);
     });
 
-    it('should throw error when cancelled', async () => {
-      const cancellingToken = createMockCancellationToken(true).token;
+it('should throw error when cancelled', async () => {
+      const cancellingToken = createMockCancellationToken(true);
 
       const utility = new RetryUtility(3, 100, cancellingToken);
       const operation = vi.fn().mockResolvedValue('success');
@@ -73,7 +73,7 @@ describe('Retry Utility', () => {
 
       try {
         const cancellingToken = createMockCancellationToken();
-        const utility = new RetryUtility(3, 1000, cancellingToken.token, 2);
+        const utility = new RetryUtility(3, 1000, cancellingToken, 2);
         const operation = vi.fn().mockRejectedValue(new Error('first failure'));
 
         const result = utility.executeWithRetry(operation);

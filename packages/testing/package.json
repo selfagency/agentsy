@@ -13,8 +13,8 @@
     "test:watch": "vitest",
     "coverage": "vitest --run --coverage",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint --no-error-on-unmatched-pattern .",
-    "format": "oxfmt --no-error-on-unmatched-pattern --write ."
+    "lint": "oxlint .",
+    "format": "oxfmt --write ."
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",

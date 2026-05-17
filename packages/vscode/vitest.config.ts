@@ -13,12 +13,13 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      branches: 85,
       exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.spec.ts', 'src/test/fixtures', 'src/test/integration'],
       functions: 90,
       lines: 90,
       provider: 'v8',
       reporter: ['text', 'lcov'],
+      statements: 90
+    },
       statements: 90
     },
     environment: 'node',

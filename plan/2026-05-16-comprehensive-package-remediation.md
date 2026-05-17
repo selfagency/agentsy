@@ -4,9 +4,19 @@
 
 This plan outlines a systematic, dependency-aware remediation approach for all 20 packages in the Agentsy monorepo, ranked from easiest to hardest. The goal is zero errors across type checking, linting, and testing.
 
-**Last Updated**: 2026-05-16
+**Last Updated**: 2026-05-16 (in progress)
 **Total Packages**: 20
 **Estimated Total Fixes**: ~150+ type errors, ~1,500+ lint errors, ~150+ test failures
+
+## Progress Update
+
+**✅ Completed (Phase 1): 8 packages (40%)**
+
+- prompts, observability, guardrails, mcp, connectors, types, models, tools
+
+**🔄 In Progress (Phase 2): 12 packages (60%)**
+
+- Orchestrator, runtime, scripts, cli, providers, renderers, retrieval, testing, ui, tokens, vscode
 
 ---
 
@@ -64,27 +74,27 @@ These are pass-or-fail issues that can be fixed in minutes each.
 - **Fix**: Add test coverage for 4 source files
 - **Estimated Time**: ~10 minutes
 
-### **Package 5: models** 🟢 **ADD CHECK-TYPES SCRIPT**
+### **Package 5: models** ✅ **DONE**
 
-- **Status**: Lint ✅, Tests ✅, check-types missing
+- **Status**: Type check ✅, Lint ✅, Tests ✅, check-types added
 - **Issues**: Missing `check-types` script from package.json
-- **Fix**: Add `"check-types": "tsc --noEmit"` to scripts section
+- **Fix**: Added `"check-types": "tsc --noEmit"` to scripts section
 - **Estimated Time**: ~2 minutes
 
-### **Package 6: memory** 🔴 **CRITICAL BUT EASY FIX**
+### **Package 6: memory** ✅ **DONE**
 
-- **Status**: 57 type errors, 33 lint errors, 8 test failures
-- **Root Cause**: `isObject()` helper function defined outside class scope
-- **File**: `packages/memory/src/sync/file-conflict-store.ts:88`
-- **Fix**:
-  ```typescript
-  // Move isObject function from outside class
-  // to inside the ConflictTracker class as a private method
-  ```
+- **Status**: Type check ✅, Lint ✅, Tests ✅ (all errors fixed)
+- **Root Cause**: Multiple issues including duplicate function implementations, type assertions, missing generic support
+- **Fixes Applied**:
+  - Fixed duplicate `createInMemoryPubSubManager()` function implementations
+  - Added generic type support to `subscribe()` method in PubSubManager interface
+  - Fixed `Record<unknown>` to `Record<string, unknown>` in conflict store
+  - Made `requestJson()` function generic for type safety
+  - Added missing return in `fetchWebSource()` method
 - **Impact**: Unblocks tools package + fixes cascading failures
-- **Estimated Time**: ~5 minutes
+- **Estimated Time**: ~15 minutes
 
-**Tier 1 Completion**: 3 packages fixed, 2 more passing
+**Tier 1 Completion**: 6 packages fully passing, Phase 1 complete
 
 ---
 
@@ -417,7 +427,7 @@ pnpm test          # All pass (1000+ tests)
 
 ### Complexity Distribution
 
-```
+```text
 Tier 1 (Quick Wins):     ████████░░░░░░░░░░░░░░░░░░░░░░░ 40% (packages: 6)
 Tier 2 (Easy):           ████████░░░░░░░░░░░░░░░░░░░░░░░ 20% (packages: 3)
 Tier 3 (Medium):         ████░░░░░░░░░░░░░░░░░░░░░░░░░░ 15% (packages: 3)

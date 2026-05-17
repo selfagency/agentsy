@@ -5,10 +5,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { detectContainerRuntime } from './container-detector.js';
 
-vi.mock(import('node:fs'), () => ({
+vi.mock('node:fs', () => ({
   accessSync: vi.fn(),
   constants: {
-    F_OK: 0
+    F_OK: 0,
+    R_OK: 4,
+    W_OK: 2,
+    X_OK: 1
   }
 }));
 

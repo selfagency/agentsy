@@ -48,7 +48,7 @@ class FileConflictStore implements ConflictStore {
 
   constructor(private readonly options: FileConflictStoreOptions) {}
 
-  isObject(value: unknown): value is Record<unknown> {
+  isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 

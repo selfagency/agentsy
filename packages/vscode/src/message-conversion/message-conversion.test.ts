@@ -119,7 +119,7 @@ describe('message-adapter', () => {
 
     it('handles null/undefined message', () => {
       expect(convertMessage(null)).toStrictEqual({ content: '', role: 'user' });
-      expect(convertMessage()).toStrictEqual({ content: '', role: 'user' });
+      expect(convertMessage(undefined)).toStrictEqual({ content: '', role: 'user' });
     });
 
     it('handles empty content array', () => {

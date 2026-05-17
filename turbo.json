@@ -20,6 +20,10 @@
       "dependsOn": ["^build"],
       "cache": true
     },
+    "[^lint_before]:lint": {
+      "dependsOn": ["^lint_before"],
+      "cache": true
+    },
     "lint": {
       "cache": true
     },

@@ -2,7 +2,11 @@
 import type { Octokit as OctokitType } from '@octokit/rest';
 import type ora from 'ora';
 
-import { runGit } from './release-git.js';
+import { createGitHelpers } from './release-git.js';
+import { ROOT } from './release-utils.js';
+
+const gitHelpers = createGitHelpers(ROOT);
+const { runGit } = gitHelpers;
 
 export type { Octokit as OctokitType };
 
@@ -103,8 +107,6 @@ export function updateChangelogFile(
       : `${original}\n${section}`;
   safeWrite(changelogPath, updated);
 }
-
-import { runGit } from './release-git.js';
 
 export function ensureCleanMainBranch(): void {
   const dirty = runGit(['status', '--porcelain']).stdout.trim();
@@ -246,7 +248,6 @@ export async function ensureRemoteTagAvailability(
 }
 
 export function ensureLocalTagAvailability(tag: string, isRetag?: boolean): void {
-  const { runGit } = require('./release-git.js');
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
   if (!localTag) {
     return;

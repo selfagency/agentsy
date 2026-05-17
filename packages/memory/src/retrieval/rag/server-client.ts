@@ -19,12 +19,12 @@ export interface RAGServerClient {
   delete(documentId: string): Promise<RAGDeleteResult>;
 }
 
-async function requestJson(
+async function requestJson<TData>(
   baseUrl: string,
   timeoutMs: number,
   path: string,
   init: RequestInit
-): Promise<{ ok: boolean; status: number; data: unknown | null }> {
+): Promise<{ ok: boolean; status: number; data: TData | null }> {
   const controller = new AbortController();
   const timeoutHandle = setTimeout(() => {
     controller.abort();
@@ -40,7 +40,7 @@ async function requestJson(
       signal: controller.signal
     });
 
-    const data = await response.json().catch(() => null);
+    const data = (await response.json().catch(() => null)) as TData | null;
     return { data, ok: response.ok, status: response.status };
   } catch {
     return { data: null, ok: false, status: 0 };

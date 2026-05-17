@@ -44,9 +44,9 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 
 | Task            | Description                                                        | Completed | Date |
 | --------------- | ------------------------------------------------------------------ | --------- | ---- |
-| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. |           |      |
-| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  |           |      |
-| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       |           |      |
+| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. | ✅        | 2026-05-17 |
+| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  | ✅        | 2026-05-17 |
+| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       | ✅        | 2026-05-17 |
 
 ### Implementation Phase 3
 
