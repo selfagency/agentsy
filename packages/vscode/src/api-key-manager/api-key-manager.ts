@@ -157,7 +157,7 @@ export class ApiKeyManager {
   private async promptForApiKey(): Promise<string | undefined> {
     const input = await this.promptForInput(
       this.config.displayName,
-      this.config.promptMessage || `Enter your ${this.config.displayName}:`,
+      this.config.promptMessage ?? `Enter your ${this.config.displayName}:`,
       true
     );
     return input;

@@ -64,32 +64,42 @@ export class VSCodeMCPBridgeHelper {
    */
   public createDirectChatResponseStream(): ChatResponseStream {
     const chatStream: ChatResponseStream = {
-      anchor: (value, title) =>
+      anchor: (value, title) => {
         this.pushEvent({
           data: { title, value: String(value) },
           type: 'anchor'
-        }),
-      button: command =>
+        });
+      },
+      button: command => {
         this.pushEvent({
           data: { command: String(command) },
           type: 'button'
-        }),
-      filetree: (value, baseUri) =>
+        });
+      },
+      filetree: (value, baseUri) => {
         this.pushEvent({
           data: { baseUri: String(baseUri), value },
           type: 'filetree'
-        }),
-      markdown: value => this.pushEvent({ data: { value }, type: 'markdown' }),
-      progress: value => this.pushEvent({ data: { value }, type: 'progress' }),
-      push: part => this.pushEvent({ data: part, type: 'push' }),
-      reference: (value, iconPath) =>
+        });
+      },
+      markdown: value => {
+        this.pushEvent({ data: { value }, type: 'markdown' });
+      },
+      progress: value => {
+        this.pushEvent({ data: { value }, type: 'progress' });
+      },
+      push: part => {
+        this.pushEvent({ data: part, type: 'push' });
+      },
+      reference: (value, iconPath) => {
         this.pushEvent({
           data: {
             iconPath: iconPath ? String(iconPath) : undefined,
             value: String(value)
           },
           type: 'reference'
-        })
+        });
+      }
     };
 
     return chatStream;
@@ -131,7 +141,7 @@ export class VSCodeMCPBridgeHelper {
         }
 
         // Map SSE event to MCP event type and handle
-        const mappedType = mapMcpToStreamEvent(sseEvent.event || 'content');
+        const mappedType = mapMcpToStreamEvent(sseEvent.event ?? 'content');
         if (mappedType) {
           const event: MCPStreamEvent = {
             data: sseEvent.data ? JSON.parse(sseEvent.data) : null,

@@ -94,11 +94,21 @@ describe(BaseLanguageModelChatProvider, () => {
     const ctx = makeExtensionContext();
     const provider = new TestProvider(ctx, config);
 
-    it('id', () => expect(provider.id).toBe('test-provider'));
-    it('vendor', () => expect(provider.vendor).toBe('Test'));
-    it('family', () => expect(provider.family).toBe('TestFamily'));
-    it('name', () => expect(provider.name).toBe('Test Provider'));
-    it('maxInputTokens', () => expect(provider.maxInputTokens).toBe(4096));
+    it('id', () => {
+      expect(provider.id).toBe('test-provider');
+    });
+    it('vendor', () => {
+      expect(provider.vendor).toBe('Test');
+    });
+    it('family', () => {
+      expect(provider.family).toBe('TestFamily');
+    });
+    it('name', () => {
+      expect(provider.name).toBe('Test Provider');
+    });
+    it('maxInputTokens', () => {
+      expect(provider.maxInputTokens).toBe(4096);
+    });
   });
 
   describe('countTokens', () => {

@@ -78,7 +78,7 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
 
   const endOnce = async (): Promise<void> => {
     if (endPromise) {
-      return endPromise;
+      return await endPromise;
     }
 
     detachAbortListener?.();
@@ -89,7 +89,7 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
       detachAbortListener = undefined;
     });
 
-    return endPromise;
+    return await endPromise;
   };
 
   const { abortSignal } = options;

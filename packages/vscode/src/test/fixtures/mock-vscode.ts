@@ -53,7 +53,7 @@ export class MockMemento implements Memento {
     return (this.storage.get(key) as T) ?? defaultValue;
   }
 
-  update(key: string, value: unknown): Promise<void> {
+  async update(key: string, value: unknown): Promise<void> {
     this.storage.set(key, value);
     return Promise.resolve();
   }

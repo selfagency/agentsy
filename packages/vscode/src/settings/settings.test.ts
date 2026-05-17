@@ -204,7 +204,9 @@ describe(SettingsLoader, () => {
 
   it('dispose does not throw', () => {
     const loader = new SettingsLoader({ namespace: 'myExt', schema: {} });
-    expect(() => loader.dispose()).not.toThrow();
+    expect(() => {
+      loader.dispose();
+    }).not.toThrow();
   });
 
   it('load without schema skips validation', async () => {

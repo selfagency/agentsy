@@ -87,8 +87,7 @@ export class McpServerRegistry {
       const vscode = await import('vscode');
       const config = vscode.workspace.getConfiguration();
 
-      const existing: Record<string, unknown> =
-        (config.get<Record<string, unknown>>(this.config.namespace) as Record<string, unknown>) ?? {};
+      const existing: Record<string, unknown> = config.get<Record<string, unknown>>(this.config.namespace)! ?? {};
 
       const merged: Record<string, unknown> = { ...existing };
 

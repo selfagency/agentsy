@@ -11,7 +11,7 @@ import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 function createFakeProcessor(processParts: Record<string, unknown>[] = [], customFlush?: ReturnType<typeof vi.fn>) {
   return {
     flush:
-      customFlush ||
+      customFlush ??
       vi.fn(() => ({
         content: '',
         done: true,

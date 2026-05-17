@@ -85,7 +85,7 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
   throw lastError;
 }
 
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
     if (!signal) {

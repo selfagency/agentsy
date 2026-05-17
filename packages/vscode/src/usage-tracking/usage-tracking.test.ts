@@ -119,7 +119,9 @@ describe(UsageStatusBar, () => {
       displayName: 'Test Usage',
       quotaDataSource: ds
     });
-    expect(() => bar.updateDisplay(makeQuota())).not.toThrow();
+    expect(() => {
+      bar.updateDisplay(makeQuota());
+    }).not.toThrow();
     bar.dispose();
   });
 
@@ -142,7 +144,9 @@ describe(UsageStatusBar, () => {
       displayName: 'Test Usage',
       quotaDataSource: ds
     });
-    expect(() => bar.dispose()).not.toThrow();
+    expect(() => {
+      bar.dispose();
+    }).not.toThrow();
   });
 
   it('hide is a no-op without statusBarItem', () => {
@@ -151,7 +155,9 @@ describe(UsageStatusBar, () => {
       displayName: 'Test Usage',
       quotaDataSource: ds
     });
-    expect(() => bar.hide()).not.toThrow();
+    expect(() => {
+      bar.hide();
+    }).not.toThrow();
     bar.dispose();
   });
 });
