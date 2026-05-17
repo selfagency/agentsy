@@ -5,7 +5,14 @@
 /**
  * Status of an agent execution.
  */
-export enum AgentStatus {}
+export enum AgentStatus {
+  IDLE = 'idle',
+  RUNNING = 'running',
+  PAUSED = 'paused',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  STOPPED = 'stopped'
+}
 
 /**
  * Conditions under which an agent loop should stop execution.

@@ -1,3 +1,4 @@
+import type { OutputPart } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { BaseRendererOptions } from '@agentsy/renderers';
 import { createPlainTextRenderer, createSharedRendererHandle } from '@agentsy/renderers';
@@ -145,7 +146,7 @@ describe('createSharedRendererHandle' as const, () => {
         onThinking: async (t: string): Promise<void> => {
           thinkings.push(t);
         },
-        onToolCall: async (part: any): Promise<void> => {
+        onToolCall: async (part: OutputPart & { type: 'tool_call' }): Promise<void> => {
           toolCalls.push(part.call.name);
         }
       }
@@ -190,7 +191,8 @@ describe('createSharedRendererHandle' as const, () => {
         onFinish: (reason: any, usage: any): void => {
           finishArgs.push([reason, usage]);
         }
-      },      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
+      },
+      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
     );
 
     await handle.writeChunk({

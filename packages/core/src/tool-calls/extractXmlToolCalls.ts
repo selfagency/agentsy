@@ -189,11 +189,13 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
     if (!name || !knownTools.has(name)) {
       continue;
     }
-const args = obj.arguments ?? obj.parameters ?? {};
-  const parameters: JsonObject =
-    typeof args === 'object' && !Array.isArray(args) ? Object.assign(Object.create(null), args) as JsonObject : Object.create(null) as JsonObject;
+    const args = obj.arguments ?? obj.parameters ?? {};
+    const parameters =
+      typeof args === 'object' && !Array.isArray(args)
+        ? (Object.assign(Object.create(null), args) as JsonObject)
+        : (Object.create(null) as JsonObject);
 
-    results.push({ format: 'json-wrapped', name, parameters });
+    results.push({ name, parameters, format: 'json-wrapped' });
   }
 
   return results;

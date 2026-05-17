@@ -168,7 +168,7 @@ export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
     const nativeToolCallDeltas = extractNativeToolCallDeltas(delta);
 
     const mappedFinishReason = mapZAiFinishReason(choice.finish_reason ?? null);
-    const done = choice.finish_reason === null ? undefined : true;
+    const done = choice.finish_reason == null ? undefined : true;
     const usage = normalizeUsage(raw.usage);
 
     const chunk = buildChunkFromParts({

@@ -10,7 +10,7 @@ function extractThinkingContent(thinkingArray: unknown[]): string {
   for (const t of thinkingArray) {
     if (t && typeof t === 'object') {
       const inner = t as Record<string, unknown>;
-      if (inner.type === 'text' && typeof inner.text === 'string') {
+      if (typeof inner.text === 'string') {
         result += inner.text;
       }
     }

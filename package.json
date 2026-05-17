@@ -63,13 +63,13 @@
     "vitest": "^4.1.6"
   },
   "lint-staged": {
-    "**/*.{ts,tsx,js,ts,jsx}": [
+    "**/*.{ts,tsx,js,jsx}": [
       "oxfmt --write ."
     ],
-    "**/*.{json,md,yaml,yml,cjs,mjs,css,scss,json,jsonc,mdx}": [
+    "**/*.{json,md,yaml,yml,cjs,mjs,css,scss,jsonc,mdx}": [
       "oxfmt --write ."
     ],
-    "{js,ts,tsx}": [
+    "**/*.{js,ts,tsx}": [
       "oxlint --no-error-on-unmatched-pattern",
       "pnpm dlx ultracite fix"
     ]
@@ -81,7 +81,14 @@
       "es5-ext",
       "esbuild",
       "fallow",
-      "msw"
+      "msw",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "@swc/core",
+      "@parcel/watcher",
+      "unrs-resolver"
     ]
   }
 }
