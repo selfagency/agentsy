@@ -901,9 +901,7 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
       nativeToolCallDeltas: [{ argumentsDelta: '"ts"}', index: 0 }]
     });
 
-    const added = events.find(e => {
-      return e.type === 'tool_call_part_added';
-    });
+    const added = events.find(e => e.type === 'tool_call_part_added');
     const updated = events.find(e => e.type === 'tool_call_updated' && e.state === 'input-complete') as
       | { toolCallId?: string }
       | undefined;

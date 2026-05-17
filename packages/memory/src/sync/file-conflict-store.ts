@@ -58,7 +58,7 @@ class FileConflictStore implements ConflictStore {
       () => {},
       () => {}
     );
-    return next;
+    return await next;
   }
 
   async #readEnvelope(): Promise<StoredConflictEnvelope> {

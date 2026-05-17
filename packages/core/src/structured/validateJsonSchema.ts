@@ -441,7 +441,7 @@ function checkObjectConstraints(
 
   for (const [key, childSchema] of Object.entries(properties)) {
     if (Object.hasOwn(valueObj, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
-      validateNode(valueObj[key] as unknown, childSchema as JsonSchema, `${path}.${key}`, errors, context);
+      validateNode(valueObj[key], childSchema as JsonSchema, `${path}.${key}`, errors, context);
     }
   }
 

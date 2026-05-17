@@ -12,9 +12,15 @@ describe('sync security helpers', () => {
   });
 
   it('rejects unsafe credential sources', () => {
-    expect(() => validateCredentialSource('environment')).not.toThrow();
-    expect(() => validateCredentialSource('injected')).not.toThrow();
-    expect(() => validateCredentialSource('source-code')).toThrow(/credential source/u);
+    expect(() => {
+      validateCredentialSource('environment');
+    }).not.toThrow();
+    expect(() => {
+      validateCredentialSource('injected');
+    }).not.toThrow();
+    expect(() => {
+      validateCredentialSource('source-code');
+    }).toThrow(/credential source/u);
   });
 
   it('creates redacted secure error envelopes', () => {

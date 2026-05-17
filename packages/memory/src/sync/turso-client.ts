@@ -143,7 +143,7 @@ class TursoSyncClient implements TursoClient {
       return database;
     })();
 
-    return this.#databasePromise;
+    return await this.#databasePromise;
   }
 
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
@@ -214,7 +214,7 @@ class TursoSyncClient implements TursoClient {
 
   async stats(): Promise<Record<string, unknown>> {
     const database = await this.#getDatabase();
-    return database.stats();
+    return await database.stats();
   }
 
   async close(): Promise<void> {

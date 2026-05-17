@@ -18,10 +18,18 @@ function sendMessage(args: unknown[], type: string): void {
 // Create a safe realm
 const context = createContext({
   console: {
-    error: (...args: unknown[]) => sendMessage(args, 'error'),
-    info: (...args: unknown[]) => sendMessage(args, 'info'),
-    log: (...args: unknown[]) => sendMessage(args, 'log'),
-    warn: (...args: unknown[]) => sendMessage(args, 'warn')
+    error: (...args: unknown[]) => {
+      sendMessage(args, 'error');
+    },
+    info: (...args: unknown[]) => {
+      sendMessage(args, 'info');
+    },
+    log: (...args: unknown[]) => {
+      sendMessage(args, 'log');
+    },
+    warn: (...args: unknown[]) => {
+      sendMessage(args, 'warn');
+    }
   },
   process: {
     env: Object.freeze({ ...env })

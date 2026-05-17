@@ -39,7 +39,7 @@ export function createSourceConnectors(options: SourceConnectorOptions): SourceC
       response.text();
     },
 
-    readLocalFile(filePath) {
+    async readLocalFile(filePath) {
       return readFile(filePath, 'utf-8');
     }
   };

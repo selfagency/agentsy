@@ -109,7 +109,7 @@ export class TursoManager {
   }
 
   async upload(snapshot: SyncSnapshot) {
-    return this.#client.upload(snapshot);
+    return await this.#client.upload(snapshot);
   }
 
   async download(cursor: string) {

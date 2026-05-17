@@ -37,7 +37,7 @@ export function createVirtualSandbox(): VirtualSandbox {
       const stderr: string[] = [];
       let resolved = false;
 
-      return new Promise(resolve => {
+      return await new Promise(resolve => {
         const worker = new Worker(WORKER_PATH, {
           workerData: {
             code: input.code,

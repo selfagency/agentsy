@@ -38,7 +38,9 @@ async function createStorePath(): Promise<string> {
 }
 
 afterEach(async () => {
-  await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { force: true, recursive: true })));
+  await Promise.all(
+    temporaryDirectories.splice(0).map(async directory => rm(directory, { force: true, recursive: true }))
+  );
 });
 
 describe(createFileConflictStore, () => {

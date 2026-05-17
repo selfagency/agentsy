@@ -12,20 +12,20 @@ describe(createKvStore, () => {
   });
 
   it('should store and retrieve values', () => {
-    const store = createKvStore<string>();
+    const store = createKvStore();
     store.set('foo', 'bar');
     expect(store.get('foo')).toBe('bar');
     expect(store.has('foo')).toBeTruthy();
   });
 
   it('should return undefined for missing keys', () => {
-    const store = createKvStore<string>();
+    const store = createKvStore();
     expect(store.get('missing')).toBeUndefined();
     expect(store.has('missing')).toBeFalsy();
   });
 
   it('should handle expiration with ttlMs', () => {
-    const store = createKvStore<string>();
+    const store = createKvStore();
 
     store.set('ephemeral', 'val', 100);
     expect(store.get('ephemeral')).toBe('val');
@@ -38,7 +38,7 @@ describe(createKvStore, () => {
   });
 
   it('should delete keys', () => {
-    const store = createKvStore<string>();
+    const store = createKvStore();
     store.set('foo', 'bar');
     expect(store.delete('foo')).toBeTruthy();
     expect(store.has('foo')).toBeFalsy();
@@ -80,7 +80,7 @@ describe(createKvStore, () => {
   });
 
   it('should purge only expired entries', () => {
-    const store = createKvStore<string>();
+    const store = createKvStore();
     store.set('keep1', 'ok');
     store.set('expire1', 'bye', 10);
     store.set('expire2', 'bye', 20);

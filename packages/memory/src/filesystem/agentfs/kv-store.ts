@@ -40,11 +40,11 @@ export function createKvStore<T = string>(): KvStore<T> {
     get(key) {
       const entry = store.get(key);
       if (entry === undefined) {
-        return undefined;
+        return;
       }
       if (isExpired(entry)) {
         store.delete(key);
-        return undefined;
+        return;
       }
       return entry.value;
     },
