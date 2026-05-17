@@ -85,11 +85,11 @@ async function rollback() {
   }
 }
 
-process.on('SIGINT', async () => {
+void process.on('SIGINT', async () => {
   await rollback();
   process.exit(130);
 });
-process.on('SIGTERM', async () => {
+void process.on('SIGTERM', async () => {
   await rollback();
   process.exit(143);
 });
@@ -182,7 +182,9 @@ async function main() {
   // --- Update package.json --------------------------------------------------
   console.log(`🧩 Updating package.json to ${version}...`);
   const pkgPath = resolve(ROOT, 'package.json');
-  const pkg = JSON.parse(safeRead(pkgPath, 'utf-8'));
+  const pkg = JSON.parse(safeRead(pkgPath, 'utf-8')) as {
+    version: string;
+  };
   pkg.version = version;
   safeWrite(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
 
@@ -268,7 +270,9 @@ async function main() {
   console.log(`🚀 Publishing ${tag} to npm (dist-tag: ${distTag})...`);
   try {
     // For scoped public packages, --access public is required on first publish; harmless on subsequent publishes.
-    const accessFlag = (JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf-8')).name || '').startsWith('@')
+    const accessFlag = (
+      JSON.parse(safeRead(resolve(ROOT, 'package.json'), 'utf-8')) as { name: string }
+    ).name?.startsWith('@')
       ? ['--access', 'public']
       : [];
     // Use spawn for interactive npm publish (required for 2FA/OTP prompts)
@@ -308,9 +312,11 @@ try {
     console.error(`❌ ${msg}`);
   }
   await rollback();
-  process.exit(
-    typeof error === 'object' && error !== null && 'exitCode' in error
-      ? ((error as { exitCode?: number }).exitCode ?? 1)
-      : 1
-  );
+  if (typeof error === 'object' && error !== null && 'exitCode' in error) {
+    process.exit(
+      typeof (error as Record<string, unknown>).exitCode === 'number' ? (error as Record<string, unknown>).exitCode : 1
+    );
+  } else {
+    process.exit(1);
+  }
 }

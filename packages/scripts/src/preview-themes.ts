@@ -51,10 +51,12 @@ for (const e of entries) {
   console.log('-', e.name);
 }
 
-const THEMES = Object.entries(themesModule).map(([name, theme]) => ({
-  name,
-  theme: theme as ThemeConfig
-}));
+const THEMES = Object.entries(themesModule)
+  .filter(([_, value]) => typeof value === 'object' && value !== null && 'thinking' in value)
+  .map(([name, theme]) => ({
+    name,
+    theme: theme as ThemeConfig
+  }));
 
 /**
  * Apply color to text using chalk. JSDoc types avoid implicit any in strict typechecks.
@@ -69,7 +71,10 @@ function applyColor(text: string, color: string | undefined): string {
     return text;
   }
 
-  const ansi = (ANSI as Record<string, string | undefined>)[color];
+  let ansi: string | undefined;
+  if (color in ANSI) {
+    ansi = (ANSI as Record<string, string>)[color];
+  }
   return ansi ? `${ansi}${text}${ANSI.reset}` : text;
 }
 

@@ -13,7 +13,10 @@ export function readReleaseState(releaseStatePath: string) {
 
   let raw;
   try {
-    raw = JSON.parse(readFileSync(releaseStatePath, 'utf-8'));
+    raw = JSON.parse(readFileSync(releaseStatePath, 'utf-8')) as {
+      defaultState?: string;
+      packages?: Record<string, string>;
+    };
   } catch {
     return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
   }

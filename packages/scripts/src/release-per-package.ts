@@ -92,7 +92,7 @@ if (!existsSync(pkgJsonPath)) {
 }
 
 // Load actual package name from package.json (needed for tag construction below)
-const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8'));
+const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string };
 const fullPackageName = pkgJson.name;
 
 const releaseState = readReleaseState(RELEASE_STATE_PATH);
@@ -160,12 +160,12 @@ async function rollback() {
   }
 }
 
-process.on('SIGINT', async () => {
+void process.on('SIGINT', async () => {
   await rollback();
   process.exit(130);
 });
 
-process.on('SIGTERM', async () => {
+void process.on('SIGTERM', async () => {
   await rollback();
   process.exit(143);
 });
@@ -201,7 +201,7 @@ async function main() {
   syncMainBranch();
 
   // Re-read pkgJson and release state now that main is up to date.
-  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8'));
+  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string };
   const latestReleaseState = readReleaseState(RELEASE_STATE_PATH);
   const packageReleaseState = getPackageReleaseState(latestReleaseState, fullPackageName);
 
@@ -277,9 +277,8 @@ async function main() {
   const releaseNotes = notesResp.data.body?.trim() || '- No notable changes.';
 
   // --- Update package.json -------------------------------------------------
-
   console.log(`🧩 Updating ${fullPackageName} to ${version}...`);
-  const pkg = JSON.parse(safeRead(pkgJsonPath, 'utf-8'));
+  const pkg = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { version: string };
   pkg.version = version;
   safeWrite(pkgJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
 

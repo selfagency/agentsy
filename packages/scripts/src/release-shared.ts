@@ -2,6 +2,8 @@
 import type { Octokit as OctokitType } from '@octokit/rest';
 import type ora from 'ora';
 
+import { runGit } from './release-git.js';
+
 export type { Octokit as OctokitType };
 
 export function createReleaseShared(octokitConstructor: typeof OctokitType): typeof OctokitType {
@@ -69,6 +71,8 @@ export function wrapBareUrls(text: string): string {
   return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/gu, '<$1>');
 }
 
+import { safeRead, safeWrite } from './release-utils.js';
+
 export function updateChangelogFile(
   changelogPath: string,
   heading: string,
@@ -76,8 +80,6 @@ export function updateChangelogFile(
   previousTag: string,
   tag: string
 ): void {
-  const { safeRead, safeWrite } = require('./release-utils.js');
-
   let original;
   try {
     original = safeRead(changelogPath, 'utf-8');
@@ -102,8 +104,9 @@ export function updateChangelogFile(
   safeWrite(changelogPath, updated);
 }
 
+import { runGit } from './release-git.js';
+
 export function ensureCleanMainBranch(): void {
-  const { runGit } = require('./release-git.js');
   const dirty = runGit(['status', '--porcelain']).stdout.trim();
   if (dirty) {
     console.error('❌ Working tree is not clean. Commit or stash changes first.');
@@ -118,7 +121,6 @@ export function ensureCleanMainBranch(): void {
 }
 
 export function syncMainBranch(): void {
-  const { runGit } = require('./release-git.js');
   console.log('🔄 Fetching latest refs...');
   runGit(['fetch', 'origin', 'main']);
   runGit(['pull', '--ff-only', 'origin', 'main']);
@@ -165,7 +167,6 @@ export function parseOwnerRepoFromRemoteUrl(remoteUrl: string): {
 }
 
 export function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
-  const { runGit } = require('./release-git.js');
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const { owner, repo } = parseOwnerRepoFromRemoteUrl(remoteUrl);
   if (!owner || !repo) {
@@ -177,7 +178,6 @@ export function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
 }
 
 export function ensureLocalTagDoesNotExist(tag: string) {
-  const { runGit } = require('./release-git.js');
   const localTag = runGit(['tag', '-l', tag]).stdout.trim();
   if (localTag) {
     console.error(`❌ Local tag ${tag} already exists.`);
@@ -200,7 +200,9 @@ export async function ensureRemoteTagDoesNotExist(
       typeof error !== 'object' ||
       error === null ||
       !('status' in error) ||
-      (error as { status?: unknown }).status !== 404
+      ('status' in error &&
+        typeof (error as Record<string, unknown>).status === 'number' &&
+        (error as Record<string, unknown>).status !== 404)
     ) {
       throw error;
     }
@@ -225,7 +227,6 @@ export async function ensureRemoteTagAvailability(
     console.log(`⚠️  Remote tag '${tag}' exists — deleting for retag...`);
     await octokit.git.deleteRef({ owner, ref: `tags/${tag}`, repo });
     console.log(`↩️  Remote tag deleted.`);
-    const { runGit } = require('./release-git.js');
     const localTagExists = runGit(['tag', '-l', tag]).stdout.trim();
     if (localTagExists) {
       runGit(['tag', '-d', tag]);
@@ -235,7 +236,9 @@ export async function ensureRemoteTagAvailability(
       typeof error !== 'object' ||
       error === null ||
       !('status' in error) ||
-      (error as { status?: unknown }).status !== 404
+      ('status' in error &&
+        typeof (error as Record<string, unknown>).status === 'number' &&
+        (error as Record<string, unknown>).status !== 404)
     ) {
       throw error;
     }

@@ -48,7 +48,7 @@ if (!existsSync(pkgDir) || !existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8'));
+const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string };
 const fullPackageName = pkgJson.name;
 
 if (typeof fullPackageName !== 'string' || fullPackageName.length === 0) {

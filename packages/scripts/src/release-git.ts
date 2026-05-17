@@ -22,7 +22,7 @@ export function createGitHelpers(root: string): GitHelpers {
       encoding: 'utf-8',
       shell: false,
       ...options
-    }) as SpawnSyncReturns<string>;
+    });
 
     if (result.status !== 0) {
       const stderr = (result.stderr || '').trim();
