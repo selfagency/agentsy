@@ -1,4 +1,4 @@
-import { getCachedAnsi } from './tokenCache.js';
+import { getCachedAnsi } from './token-cache.ts';
 
 async function highlightCode(code: string, lang?: string): Promise<string> {
   try {

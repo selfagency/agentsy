@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createProcessorEventAdapter } from './createProcessorEventAdapter.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 
-describe(createProcessorEventAdapter, () => {
+describe('createProcessorEventAdapter', () => {
   it('forwards onToolCallDelta, onStep, and onFinish callbacks', () => {
     const processor = new LLMStreamProcessor({
       accumulateNativeToolCalls: true

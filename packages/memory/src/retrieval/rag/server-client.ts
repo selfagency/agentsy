@@ -35,8 +35,8 @@ async function requestJson<TData>(
       ...init,
       headers: Object.fromEntries([
         ['content-type', 'application/json'],
-        ...(init.headers ? Object.entries(init.headers).map(([k, v]) => [k, v]) : [])
-      ]),
+        ...(init.headers ? Object.entries(init.headers).map(([k, v]) => [k, v] as [string, string]) : [])
+      ]) as Record<string, string>,
       signal: controller.signal
     });
 

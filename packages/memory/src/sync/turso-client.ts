@@ -1,7 +1,13 @@
 import type { DatabaseOpts } from '@tursodatabase/sync';
 import { connect } from '@tursodatabase/sync';
 
-import type { SyncSnapshot, TursoClient, TursoSyncConfig, TursoUploadResult } from './types.js';
+import type {
+  SyncSnapshot,
+  TursoClient,
+  TursoSyncConfig,
+  TursoUploadResult,
+  SyncRecord
+} from './types.js';
 
 class NoopTursoClient implements TursoClient {
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
@@ -199,9 +205,9 @@ class TursoSyncClient implements TursoClient {
       cursor: remoteCursor,
       records: (() => {
         try {
-          return JSON.parse(payload);
+          return JSON.parse(payload) as SyncRecord[];
         } catch {
-          return [];
+          return [] as SyncRecord[];
         }
       })()
     };

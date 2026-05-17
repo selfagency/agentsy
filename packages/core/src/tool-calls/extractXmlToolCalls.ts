@@ -103,7 +103,7 @@ function parseXmlElement(text: string, startIndex: number): ParsedXmlElement | n
 
 function extractBareXmlParams(inner: string): JsonObject {
   const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
-  const params: JsonObject = Object.create(null);
+  const params: JsonObject = Object.create(null) as JsonObject;
   let cursor = 0;
 
   while (cursor < inner.length) {
@@ -189,9 +189,9 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
     if (!name || !knownTools.has(name)) {
       continue;
     }
-    const args = obj.arguments ?? obj.parameters ?? {};
-    const parameters: JsonObject =
-      typeof args === 'object' && !Array.isArray(args) ? Object.assign(Object.create(null), args) : Object.create(null);
+const args = obj.arguments ?? obj.parameters ?? {};
+  const parameters: JsonObject =
+    typeof args === 'object' && !Array.isArray(args) ? Object.assign(Object.create(null), args) as JsonObject : Object.create(null) as JsonObject;
 
     results.push({ format: 'json-wrapped', name, parameters });
   }
@@ -228,7 +228,7 @@ function isJsonToolCallWrapper(rawTag: string): boolean {
 
 function parseJsonToolCallPayload(inner: string): { name?: unknown; arguments?: unknown; parameters?: unknown } | null {
   try {
-    return JSON.parse(inner.trim());
+    return JSON.parse(inner.trim()) as { name?: unknown; arguments?: unknown; parameters?: unknown };
   } catch {
     return null;
   }
@@ -244,9 +244,9 @@ function parseKnownToolName(name: unknown, knownTools: Set<string>): string | nu
 function normalizeWrappedToolCallArguments(parsed: { arguments?: unknown; parameters?: unknown }): JsonObject {
   const args = pickFirstObjectValue(parsed.arguments, parsed.parameters);
   if (args === null) {
-    return Object.create(null);
+    return Object.create(null) as JsonObject;
   }
-  const result: JsonObject = Object.assign(Object.create(null), args);
+  const result: JsonObject = Object.assign(Object.create(null), args) as JsonObject;
   return result;
 }
 

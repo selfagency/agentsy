@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createSessionStore } from './index.js';
 
-describe(createSessionStore, () => {
+describe('createSessionStore', () => {
   it('stores values and returns session state', () => {
     const store = createSessionStore({ id: 's1', values: {} });
     store.setValue('topic', 'agents');

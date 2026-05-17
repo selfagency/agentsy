@@ -12,7 +12,7 @@ function createParser(onError?: (_error: Error) => void) {
   return { events, parser };
 }
 
-describe(SSEParser, () => {
+describe('SSEParser', () => {
   it('parses a simple single-line event', () => {
     const { parser, events } = createParser();
 
@@ -215,7 +215,7 @@ async function* openaiChunks() {
   yield 'data: [DONE]\n\n';
 }
 
-describe(parseSSEStream, () => {
+describe('parseSSEStream', () => {
   it('parses events from an async iterable', async () => {
     const events = [];
 

@@ -32,7 +32,7 @@ function escapeXml(value: string): string {
 }
 
 function sanitizeText(value: string): string {
-  return [...value]
+  return Array.from(value)
     .filter(character => {
       const codePoint = character.codePointAt(0) ?? 0;
       const isControl =

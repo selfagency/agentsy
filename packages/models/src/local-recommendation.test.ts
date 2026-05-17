@@ -109,7 +109,7 @@ const systemCapabilities: SystemCapabilities = {
   vramGb: 12
 };
 
-describe(recommendLocalModelsBySystemCapabilities, () => {
+describe('recommendLocalModelsBySystemCapabilities', () => {
   it('filters out models that do not fit system memory limits', () => {
     const recommendations = recommendLocalModelsBySystemCapabilities(
       modelsDevFixture,

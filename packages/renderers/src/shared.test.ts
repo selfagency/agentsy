@@ -35,7 +35,7 @@ export const testOnStepCall = async (
   });
 };
 
-describe(createSharedRendererHandle, () => {
+describe('createSharedRendererHandle' as const, () => {
   let mockHandlers: {
     onText: (text: string) => Promise<void>;
     onThinking: (text: string) => Promise<void>;

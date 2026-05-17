@@ -73,10 +73,10 @@ export class ToolCallAccumulator {
         continue;
       }
       try {
-        const parsed = JSON.parse(pending.argumentsBuffer);
+        const parsed = JSON.parse(pending.argumentsBuffer) as JsonObject;
         if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
           const call: NativeToolCall = {
-            arguments: parsed as JsonObject,
+            arguments: parsed,
             name: pending.name
           };
           if (pending.id !== undefined) {
@@ -107,10 +107,10 @@ export class ToolCallAccumulator {
         continue;
       }
       try {
-        const parsed = JSON.parse(pending.argumentsBuffer);
+        const parsed = JSON.parse(pending.argumentsBuffer) as JsonObject;
         if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
           const call: NativeToolCall = {
-            arguments: parsed as JsonObject,
+            arguments: parsed,
             name: pending.name
           };
           if (pending.id !== undefined) {
@@ -166,12 +166,12 @@ export class ToolCallAccumulator {
       return 'awaiting-input';
     }
 
-    try {
-      const parsed = JSON.parse(pending.argumentsBuffer);
-      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        return 'input-complete';
-      }
-    } catch {
+try {
+        const parsed = JSON.parse(pending.argumentsBuffer) as JsonObject;
+        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          return 'input-complete';
+        }
+      } catch {
       // Still streaming.
     }
 
@@ -184,7 +184,8 @@ export class ToolCallAccumulator {
     }
 
     try {
-      const parsed = JSON.parse(pending.argumentsBuffer);
+      const parsed = JSON.parse(pending.argumentsBuffer) as Record<string, unknown>;
+
       if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
         const call: NativeToolCall = {
           arguments: parsed as JsonObject,

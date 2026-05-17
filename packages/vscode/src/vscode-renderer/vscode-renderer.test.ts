@@ -773,7 +773,6 @@ describe('Cancellation Token Bridge', () => {
       isCancellationRequested: false,
       onCancellationRequested: vi.fn(listener => {
         listener();
-        return { dispose };
       })
     };
 

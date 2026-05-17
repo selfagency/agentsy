@@ -3,7 +3,7 @@ import { describe, it, expectTypeOf } from 'vitest';
 import * as vscodePackage from './index.js';
 
 describe('@agentsy/vscode export surface', () => {
-it('exports renderer lifecycle helpers', () => {
+  it('exports renderer lifecycle helpers', () => {
     expectTypeOf(vscodePackage.createVSCodeChatRenderer).toBeFunction();
     expectTypeOf(vscodePackage.createVSCodeAgentLoop).toBeFunction();
     expectTypeOf(vscodePackage.cancellationTokenToAbortSignal).toBeFunction();

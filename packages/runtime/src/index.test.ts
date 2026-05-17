@@ -10,7 +10,7 @@ import {
 } from './index.js';
 import type { RuntimeExecutor, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 
-describe(createRuntimeExecutor, () => {
+describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {
     const calls: string[] = [];
     const executor = createRuntimeExecutor();
@@ -150,7 +150,7 @@ describe(createRuntimeExecutor, () => {
   });
 });
 
-describe(createRuntimeLoop, () => {
+describe('createRuntimeLoop', () => {
   it('captures completed tasks in a resumable snapshot', async () => {
     const calls: string[] = [];
     const loop = createRuntimeLoop({ sessionId: 'session-1' });
@@ -288,7 +288,7 @@ describe('runtime snapshot session helpers', () => {
         {
           finishedAt: 2,
           startedAt: 1,
-          status: 'completed' as const,
+          status: 'completed',
           taskId: 'task-1'
         }
       ],
@@ -296,7 +296,7 @@ describe('runtime snapshot session helpers', () => {
       updatedAt: 3
     };
 
-    saveRuntimeSnapshotToSession(sessionStore, snapshot);
+    saveRuntimeSnapshotToSession(sessionStore, snapshot as RuntimeSnapshot);
     expect(loadRuntimeSnapshotFromSession(sessionStore)).toStrictEqual(snapshot);
   });
 
@@ -310,7 +310,7 @@ describe('runtime snapshot session helpers', () => {
   });
 });
 
-describe(createRuntimeWorkflowExecutor, () => {
+describe('createRuntimeWorkflowExecutor', () => {
   it('executes workflow tasks in dependency order', async () => {
     const calls: string[] = [];
     const workflow = createRuntimeWorkflowExecutor({ sessionId: 'workflow-1' });

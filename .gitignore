@@ -251,3 +251,4 @@ test-report.junit.xml
 build-log*
 coverage_output*
 fallow-dupes*
+tmp/

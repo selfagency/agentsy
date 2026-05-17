@@ -58,7 +58,7 @@ describe('Retry Utility', () => {
       expect(onRetry.mock.calls[0]?.[1]).toBeInstanceOf(Error);
     });
 
-it('should throw error when cancelled', async () => {
+    it('should throw error when cancelled', async () => {
       const cancellingToken = createMockCancellationToken(true);
 
       const utility = new RetryUtility(3, 100, cancellingToken);

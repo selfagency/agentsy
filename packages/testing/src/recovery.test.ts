@@ -20,7 +20,7 @@ function makeSnapshot(content: string): StreamSnapshot {
 // captureStreamState
 // ---------------------------------------------------------------------------
 
-describe(captureStreamState, () => {
+describe('captureStreamState' as const, () => {
   it('captures empty state on a fresh processor', () => {
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
     const snapshot = captureStreamState(processor);
@@ -100,7 +100,7 @@ describe(captureStreamState, () => {
 // buildContinuationPrompt
 // ---------------------------------------------------------------------------
 
-describe(buildContinuationPrompt, () => {
+describe('buildContinuationPrompt' as const, () => {
   it('returns a single user message when snapshot has no content', () => {
     const messages = buildContinuationPrompt(makeSnapshot(''));
 

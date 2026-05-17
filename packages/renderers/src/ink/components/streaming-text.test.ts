@@ -1,8 +1,8 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
 
-import { darkTheme, defaultTheme } from '../themes/index.js';
-import { StreamingText } from './StreamingText.js';
+import { darkTheme, defaultTheme } from '../themes/index.ts';
+import { StreamingText } from './streaming-text.tsx';
 
 // Mock cli-markdown
 vi.mock(import('cli-markdown'), () => ({

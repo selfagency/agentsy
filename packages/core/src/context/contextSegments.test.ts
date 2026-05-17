@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildContextSegments } from './contextSegments.js';
 
-describe(buildContextSegments, () => {
+describe('buildContextSegments', () => {
   it('builds deterministic reusable context segments', () => {
     const segments = buildContextSegments({
       memorySummary: 'cached summary',

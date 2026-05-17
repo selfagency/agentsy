@@ -1,3 +1,6 @@
+
+import { default as InkStreamRenderer } from "./ink-stream-renderer.tsx";
+
 import { randomUUID } from 'node:crypto';
 
 import type { LLMStreamProcessor } from '@agentsy/core/processor';
@@ -91,7 +94,6 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     }
   };
 
-  const InkStreamRenderer = (await import('./InkStreamRenderer.js')).default;
 
   const resolvedTheme = resolveTheme(options.theme);
 

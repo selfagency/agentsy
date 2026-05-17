@@ -51,7 +51,7 @@ export function createVirtualSandbox(): VirtualSandbox {
             return;
           }
           resolved = true;
-          worker.terminate();
+          void void worker.terminate();
           resolve({
             durationMs: Date.now() - start,
             status: 'timeout',
@@ -61,24 +61,24 @@ export function createVirtualSandbox(): VirtualSandbox {
         }, timeoutMs);
 
         worker.on('message', msg => {
-          if (msg.type === 'log') {
+          if ((msg as any).type === 'log') {
             stdout.push(msg.args.map(String).join(' '));
           } else if (
-            msg.type === 'error' ||
-            msg.type === 'runtime-error' ||
-            msg.type === 'warn' ||
-            msg.type === 'info'
+            (msg as any).type === 'error' ||
+            (msg as any).type === 'runtime-error' ||
+            (msg as any).type === 'warn' ||
+            (msg as any).type === 'info'
           ) {
             const output = Array.isArray(msg.args) ? msg.args.map(String).join(' ') : String(msg.args ?? '');
             stderr.push(output);
 
-            if (msg.type === 'runtime-error') {
+            if ((msg as any).type === 'runtime-error') {
               if (resolved) {
                 return;
               }
               resolved = true;
               clearTimeout(timeout);
-              worker.terminate();
+              void void worker.terminate();
               resolve({
                 durationMs: Date.now() - start,
                 exitCode: 1,
@@ -87,13 +87,13 @@ export function createVirtualSandbox(): VirtualSandbox {
                 stdout: stdout.join('\n')
               });
             }
-          } else if (msg.type === 'result') {
+          } else if ((msg as any).type === 'result') {
             if (resolved) {
               return;
             }
             resolved = true;
             clearTimeout(timeout);
-            worker.terminate();
+            void void worker.terminate();
             resolve({
               durationMs: Date.now() - start,
               exitCode: 0,
@@ -110,7 +110,7 @@ export function createVirtualSandbox(): VirtualSandbox {
           }
           resolved = true;
           clearTimeout(timeout);
-          worker.terminate();
+          void void worker.terminate();
           resolve({
             durationMs: Date.now() - start,
             exitCode: 1,

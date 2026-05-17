@@ -2,7 +2,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type * as typeInk from 'ink';
 import { afterEach, beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
 
-import { createInkRenderer } from './createInkRenderer.js';
+import { createInkRenderer } from './create-ink-renderer.js';
 
 // Mock cli-markdown for consistent ANSI output in tests
 vi.mock(import('cli-markdown'), () => ({

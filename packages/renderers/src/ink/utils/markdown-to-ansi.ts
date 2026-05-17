@@ -1,4 +1,4 @@
-import { getCachedAnsi } from './tokenCache.js';
+import { getCachedAnsi } from './token-cache.ts';
 
 export interface MarkdownOptions {
   syntaxHighlight?: boolean;
@@ -42,7 +42,7 @@ export async function markdownToAnsi(content: string, options: MarkdownOptions =
   let processed = content;
 
   if (options.syntaxHighlight) {
-    const { highlightCodeFences } = await import('./codeHighlight.js');
+    const highlightCodeFences = (await import('./code-highlight.ts')).highlightCodeFences;
     processed = await highlightCodeFences(processed);
   }
 

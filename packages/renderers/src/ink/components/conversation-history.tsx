@@ -1,10 +1,10 @@
 import { Box, Static, Text } from 'ink';
 
-import type { ConversationTurn } from '../createInkConversationRenderer.js';
-import type { Theme } from '../themes/types.js';
-import { StreamingText } from './StreamingText.js';
-import { ThinkingBlock } from './ThinkingBlock.js';
-import { ToolCallBlock } from './ToolCallBlock.js';
+import type { ConversationTurn } from '../create-ink-conversation-renderer.ts';
+import type { Theme } from '../themes/types.ts';
+import { StreamingText } from './streaming-text.tsx';
+import { ThinkingBlock } from './thinking-block.tsx';
+import { ToolCallBlock } from './tool-call-block.tsx';
 
 interface ConversationHistoryProps {
   readonly turns: readonly ConversationTurn[];

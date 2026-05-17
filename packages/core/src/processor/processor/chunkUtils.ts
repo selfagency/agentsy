@@ -44,7 +44,8 @@ export function normalizeToolArguments(value: unknown): JsonObject {
 
   if (typeof value === 'string' && value.trim()) {
     try {
-      const parsed = JSON.parse(value);
+      const parsed = JSON.parse(value) as Record<string, unknown>;
+
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         return parsed as JsonObject;
       }

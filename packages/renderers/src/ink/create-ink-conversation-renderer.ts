@@ -8,7 +8,7 @@ import type typeInk from 'ink';
 // @ts-ignore react has no default export, but we need it for type references
 import type typeReact from 'react';
 
-import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';
+import type { InkRendererHandle, InkRendererOptions } from './create-ink-renderer.js';
 import { resolveTheme } from './themes/index.js';
 
 export interface ConversationTurn {
@@ -108,8 +108,8 @@ export async function createInkConversationRenderer(
   processor.on('done', listeners.done);
   processor.on('warning', listeners.warning);
 
-  const InkStreamRenderer = (await import('./InkStreamRenderer.js')).default;
-  const { ConversationHistory } = await import('./components/ConversationHistory.js');
+  const InkStreamRenderer = (await import('./ink-stream-renderer.tsx')).default;
+  const { ConversationHistory } = await import('./components/conversation-history.tsx');
 
   const rendererOptions = {
     keyboard: options.keyboard,
@@ -141,7 +141,7 @@ export async function createInkConversationRenderer(
         stateRef
       })
     ),
-    options.inkOptions!
+    options.inkOptions ?? {}
   );
 
   return {

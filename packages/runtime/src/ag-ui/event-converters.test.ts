@@ -69,7 +69,7 @@ async function* multiEventGenerator() {
   }
 }
 
-describe(toCopilotKitEvent, () => {
+describe('toCopilotKitEvent', () => {
   it('should convert RUN_STARTED to runStarted', () => {
     const event: RunStartedEvent = {
       runId: 'run_123',
@@ -183,7 +183,7 @@ describe(toCopilotKitEvent, () => {
   });
 });
 
-describe(toCustomUIEvent, () => {
+describe('toCustomUIEvent', () => {
   it('should create custom event with common fields', () => {
     const event: RunStartedEvent = {
       runId: 'run_123',
@@ -369,7 +369,7 @@ describe(toCustomUIEvent, () => {
   });
 });
 
-describe(createEventConverter, () => {
+describe('createEventConverter', () => {
   it('should create copilot-kit converter', () => {
     const converter = createEventConverter('copilot-kit');
 
@@ -411,7 +411,7 @@ describe(createEventConverter, () => {
   });
 });
 
-describe(convertEventStream, () => {
+describe('convertEventStream', () => {
   it('should convert stream to copilot-kit format', async () => {
     const source = await createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');

@@ -32,7 +32,7 @@ describe('Provider Tools Contract', () => {
     });
   });
 
-  describe(isProviderTool, () => {
+  describe('isProviderTool', () => {
     it('should return true for valid provider tool', () => {
       const validTool = {
         format: 'native-json' as const,
@@ -58,7 +58,7 @@ describe('Provider Tools Contract', () => {
     });
   });
 
-  describe(providerToolToNative, () => {
+  describe('providerToolToNative', () => {
     it('should convert provider tool to native format', () => {
       const providerTool = {
         id: 'testId',
@@ -90,7 +90,7 @@ describe('Provider Tools Contract', () => {
     });
   });
 
-  describe(nativeToProviderTool, () => {
+  describe('nativeToProviderTool', () => {
     it('should convert native tool to provider format', () => {
       const nativeTool = {
         arguments: { key: 'value' },

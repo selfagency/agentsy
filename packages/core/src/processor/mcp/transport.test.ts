@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { adaptTransportToStream } from './transport.js';
 
 describe('MCP Transport', () => {
-  describe(adaptTransportToStream, () => {
+  describe('adaptTransportToStream', () => {
     it('should adapt HTTP transport to ReadableStream', async () => {
       const mockStream = new ReadableStream<string>({
         start(controller) {

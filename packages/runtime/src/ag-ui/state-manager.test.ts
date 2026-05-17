@@ -17,7 +17,7 @@ import {
 } from './state-manager.js';
 import type { JsonPatchOp } from './state-manager.js';
 
-describe(createStateSnapshotEvent, () => {
+describe('createStateSnapshotEvent', () => {
   it('should create snapshot with state copy and timestamp', () => {
     const state = { count: 5, name: 'test' };
     const runId = 'run_123';
@@ -58,7 +58,7 @@ describe(createStateSnapshotEvent, () => {
   });
 });
 
-describe(computeStateDelta, () => {
+describe('computeStateDelta', () => {
   it('should detect added properties', () => {
     const from = { a: 1 };
     const to = { a: 1, b: 2 };
@@ -150,7 +150,7 @@ describe(computeStateDelta, () => {
   });
 });
 
-describe(createStateDeltaEvent, () => {
+describe('createStateDeltaEvent', () => {
   it('should create valid StateDeltaEvent with patches', () => {
     const patches: JsonPatchOp[] = [{ op: 'add', path: '/key', value: 'value' }];
     const runId = 'run_123';
@@ -176,7 +176,7 @@ describe(createStateDeltaEvent, () => {
   });
 });
 
-describe(applyJsonPatches, () => {
+describe('applyJsonPatches', () => {
   it('should apply add operation', () => {
     const state = { a: 1 };
     const patches: JsonPatchOp[] = [{ op: 'add', path: '/b', value: 2 }];
@@ -271,7 +271,7 @@ describe(applyJsonPatches, () => {
   });
 });
 
-describe(StateManager, () => {
+describe('StateManager', () => {
   it('should initialize with provided state', () => {
     const initialState = { count: 0 };
     const manager = new StateManager(initialState);
@@ -292,11 +292,14 @@ describe(StateManager, () => {
     const manager = new StateManager(state);
 
     const copy = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    copy.nested!.value = 999;
+    const nestedValue = copy.nested?.value;
+    if (nestedValue !== undefined) {
+      nestedValue = 999;
+    }
 
     // Original should not change
     const current = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    expect(current.nested!.value).toBe(1);
+    expect(current.nested?.value).toBe(1);
   });
 
   it('should create snapshot events', () => {

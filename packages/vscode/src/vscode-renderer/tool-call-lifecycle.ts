@@ -117,7 +117,7 @@ export class ToolCallDeltaAccumulator {
 
   private parseStrictJsonObject(value: string): Record<string, unknown> | null {
     try {
-      const json = JSON.parse(value);
+      const json = JSON.parse(value) as unknown;
       return this.asObjectRecord(json);
     } catch {
       return null;

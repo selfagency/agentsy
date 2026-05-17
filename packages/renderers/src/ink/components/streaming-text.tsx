@@ -1,8 +1,8 @@
 import { Box, Text } from 'ink';
 import { useEffect, useMemo, useState } from 'react';
 
-import type { Theme } from '../themes/types.js';
-import { markdownToAnsi } from '../utils/markdownToAnsi.js';
+import type { Theme } from '../themes/types.ts';
+import { markdownToAnsi } from '../utils/markdown-to-ansi.ts';
 
 interface StreamingTextProps {
   readonly text: string;

@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import { useEffect, useState } from 'react';
 
-import type { Theme } from '../themes/types.js';
+import type { Theme } from '../themes/types.ts';
 
 interface ThinkingBlockProps {
   readonly text: string;

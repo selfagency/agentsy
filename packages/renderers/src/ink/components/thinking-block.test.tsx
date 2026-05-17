@@ -3,8 +3,8 @@
 import { render } from 'ink-testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Theme } from '../themes/types.js';
-import { ThinkingBlock } from './ThinkingBlock.js';
+import type { Theme } from '../themes/types.ts';
+import { ThinkingBlock } from './thinking-block.tsx';
 
 // Mock default theme
 const mockTheme: Theme = {
@@ -31,7 +31,7 @@ const mockTheme: Theme = {
   }
 };
 
-describe(ThinkingBlock, () => {
+describe('ThinkingBlock' as const, () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

@@ -88,11 +88,12 @@ describe('memory state serialization', () => {
     const snapshot = await adapter.getCurrentState();
     await adapter.applySnapshot(snapshot);
 
-    expect(snapshot.cursor).toBe('cursor-2');
+expect(snapshot.cursor).toBe('cursor-2');
+    /* oxlint-disable */
     expect(applyState).toHaveBeenCalledWith(
       expect.objectContaining({
         pages: expect.arrayContaining([expect.objectContaining({ pageId: 'page-1' })]),
-        rawCaptures: expect.arrayContaining([expect.objectContaining({ id: 'raw-1' })]),
+        rawCaptures: expect.arrayContaining([expect.objectContaining({ id: 'raw-1'})]),
         vectors: expect.arrayContaining([expect.objectContaining({ pageId: 'page-1' })])
       })
     );

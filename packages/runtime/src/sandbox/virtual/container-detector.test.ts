@@ -15,7 +15,7 @@ vi.mock('node:fs', () => ({
   }
 }));
 
-describe(detectContainerRuntime, () => {
+describe('detectContainerRuntime', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv('HOME', '/home/user');

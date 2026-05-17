@@ -71,7 +71,7 @@ async function* sourceAsync() {
   yield 'end';
 }
 
-describe(toObservable, () => {
+describe('toObservable', () => {
   it('should subscribe and emit values', async () => {
     const results: number[] = [];
     toObservable(sourceBasic()).subscribe({

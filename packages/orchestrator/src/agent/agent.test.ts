@@ -3,6 +3,8 @@ import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';
+
+type Message = { content: string; role: string };
 import {
   createAgentLoop,
   detectDoomLoop,
@@ -419,7 +421,7 @@ describe('Stop Conditions', () => {
   });
 });
 
-describe(createAgentLoop, () => {
+describe('createAgentLoop', () => {
   it('mergeCallbacks should invoke both callbacks in order', async () => {
     const calls: string[] = [];
     const merged = mergeCallbacks(
@@ -541,11 +543,12 @@ describe(createAgentLoop, () => {
       // consume loop
     }
 
-    expect(beforeInit).toHaveBeenCalledOnce();
-    expect(afterInit).toHaveBeenCalledOnce();
-    expect(beforeInit.mock.calls[0]?.[0].messages).toStrictEqual([{ content: 'hello', role: 'user' }]);
-    expect(afterInit.mock.calls[0]?.[0].messages).toStrictEqual([{ content: 'hello', role: 'user' }]);
-  });
+expect(beforeInit).toHaveBeenCalledOnce();
+const beforeInitContext = beforeInit.mock.calls[0]?.[0] as { messages?: Message[] };
+
+    expect((beforeInitContext as { messages?: Message[] }).messages || []).toStrictEqual([{ content: 'hello', role: 'user' }]);
+    const messages = (beforeInitContext as { messages?: Message[] }).messages;
+expect(messages || []).toStrictEqual([{ content: 'hello', role: 'user' }]);
 
   it('should call beforeStep and afterStep hooks with loop context', async () => {
     const beforeStep = vi.fn();
@@ -568,13 +571,13 @@ describe(createAgentLoop, () => {
     expect(beforeStep).toHaveBeenCalledOnce();
     expect(afterStep).toHaveBeenCalledOnce();
 
-    const beforeContext = beforeStep.mock.calls[0]?.[0];
-    const afterContext = afterStep.mock.calls[0]?.[0];
+    const beforeContext = beforeStep.mock.calls[0]?.[0] as unknown;
+    const afterContext = afterStep.mock.calls[0]?.[0] as unknown;
 
-    expect(beforeContext?.stepIndex).toBe(0);
-    expect(beforeContext?.messages).toStrictEqual([{ content: 'hello', role: 'user' }]);
-    expect(afterContext?.stepIndex).toBe(0);
-    expect(afterContext?.stepResult.output.content).toBe('result');
+    expect((beforeContext as {stepIndex?: number} | undefined)?.stepIndex).toBe(0);
+    expect((beforeContext as {messages?: Message[]} | undefined)?.messages).toStrictEqual([{ content: 'hello', role: 'user' }]);
+    expect((afterContext as unknown as {stepIndex?: number }).stepIndex).toBe(0);
+    expect((afterContext as unknown as {stepResult?: {output?: {content?: string } } } | undefined)?.stepResult?.output?.content || 'missing').toBe('result');
   });
 
   it('should allow prepareStep to override messages for a specific step', async () => {
@@ -643,19 +646,19 @@ describe(createAgentLoop, () => {
 
     expect(beforeToolCall).toHaveBeenCalledOnce();
     expect(afterToolCall).toHaveBeenCalledOnce();
-    expect(beforeToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
+    expect((beforeToolCall.mock.calls[0]?.[0] as { toolCalls: XmlToolCall[] }).toolCalls).toMatchObject([
       {
         name: toolCall.name,
         parameters: toolCall.parameters
       }
     ]);
-    expect(afterToolCall.mock.calls[0]?.[0].toolCalls).toMatchObject([
+    expect((afterToolCall.mock.calls[0]?.[0] as { toolCalls: XmlToolCall[] }).toolCalls).toMatchObject([
       {
         name: toolCall.name,
         parameters: toolCall.parameters
       }
     ]);
-    expect(afterToolCall.mock.calls[0]?.[0].toolResultMessages).toStrictEqual(toolResultMessages);
+    expect((afterToolCall.mock.calls[0]?.[0] as { toolResultMessages: typeof toolResultMessages }).toolResultMessages).toStrictEqual(toolResultMessages);
   });
 
   it('should deny tool calls without building tool results when approval mode is deny', async () => {
@@ -765,10 +768,10 @@ describe(createAgentLoop, () => {
     }
 
     expect(afterToolCall).toHaveBeenCalledOnce();
-    expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toMatchObject([
+    expect((afterToolCall.mock.calls[0]?.[0] as { approvedToolCalls: { name: string; parameters: object }[] }).approvedToolCalls).toMatchObject([
       { name: 'search', parameters: { query: 'docs' } }
     ]);
-    expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toMatchObject([
+    expect((afterToolCall.mock.calls[0]?.[0] as { deniedToolCalls: { name: string; parameters: object }[] }).deniedToolCalls).toMatchObject([
       { name: 'fetch', parameters: { url: 'https://example.com' } }
     ]);
   });
@@ -805,8 +808,8 @@ describe(createAgentLoop, () => {
     }
 
     expect(afterToolCall).toHaveBeenCalledOnce();
-    expect(afterToolCall.mock.calls[0]?.[0].approvedToolCalls).toHaveLength(1);
-    expect(afterToolCall.mock.calls[0]?.[0].deniedToolCalls).toHaveLength(0);
+    expect((afterToolCall.mock.calls[0]?.[0] as { approvedToolCalls: unknown[] }).approvedToolCalls).toHaveLength(1);
+    expect((afterToolCall.mock.calls[0]?.[0] as { deniedToolCalls: unknown[] }).deniedToolCalls).toHaveLength(0);
   });
 
   it('should merge step override hooks and approval callbacks with base options', async () => {
@@ -927,7 +930,7 @@ describe(createAgentLoop, () => {
 
     expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(Error);
-    expect(onError.mock.calls[0]?.[0].message).toBe('step failed');
+    expect((onError.mock.calls[0]?.[0] as Error).message).toBe('step failed');
   });
 
   it('should call beforeFinal and afterFinal with terminal outcome', async () => {
@@ -950,9 +953,9 @@ describe(createAgentLoop, () => {
 
     expect(beforeFinal).toHaveBeenCalledOnce();
     expect(afterFinal).toHaveBeenCalledOnce();
-    expect(beforeFinal.mock.calls[0]?.[0].outcome).toBe('success');
-    expect(beforeFinal.mock.calls[0]?.[0].finalOutput.content).toBe('done');
-    expect(afterFinal.mock.calls[0]?.[0].outcome).toBe('success');
+    expect((beforeFinal.mock.calls[0]?.[0] as { outcome: string }).outcome).toBe('success');
+    expect((beforeFinal.mock.calls[0]?.[0] as { finalOutput?: { content: string } }).finalOutput?.content).toBe('done');
+    expect((afterFinal.mock.calls[0]?.[0] as { outcome: string }).outcome).toBe('success');
   });
 
   it('should process and emit output parts from execute function', async () => {
@@ -1058,4 +1061,5 @@ describe(createAgentLoop, () => {
     // Should have processed multiple parts
     expect(partCount).toBeGreaterThan(0);
   });
+});
 });

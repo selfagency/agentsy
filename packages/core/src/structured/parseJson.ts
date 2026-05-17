@@ -163,7 +163,7 @@ function tryParseRepaired(normalized: string, maxJsonDepth: number, maxJsonKeys:
     return null;
   }
   try {
-    const parsed = JSON.parse(repaired);
+    const parsed = JSON.parse(repaired) as unknown;
     return exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys) ? null : parsed;
   } catch {
     return null;
@@ -242,7 +242,7 @@ function collectParsedCandidates(normalized: string, maxJsonDepth: number, maxJs
   const parsedValues: unknown[] = [];
   for (const candidate of extractJsonCandidates(normalized)) {
     try {
-      const parsed = JSON.parse(candidate);
+      const parsed = JSON.parse(candidate) as unknown;
       if (!exceedsJsonLimits(parsed, maxJsonDepth, maxJsonKeys)) {
         parsedValues.push(parsed);
       }

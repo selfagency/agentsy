@@ -20,7 +20,7 @@ import { normalizeZAiChunk } from './zai.js';
 // OpenAI Chat Completions streaming chunk normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeOpenAIChatChunk, () => {
+describe('normalizeOpenAIChatChunk', () => {
   it('maps content delta to chunk.content', () => {
     const result = normalizeOpenAIChatChunk({
       choices: [
@@ -256,7 +256,7 @@ describe('openai-compatible normalizer', () => {
 // OpenAI Responses API streaming event normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeOpenAIResponseEvent, () => {
+describe('normalizeOpenAIResponseEvent', () => {
   it('maps response.output_text.delta to chunk.content', () => {
     const result = normalizeOpenAIResponseEvent({
       content_index: 0,
@@ -384,7 +384,7 @@ describe(normalizeOpenAIResponseEvent, () => {
 // Anthropic Claude SSE streaming event normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeAnthropicEvent, () => {
+describe('normalizeAnthropicEvent', () => {
   it('extracts input token usage from message_start', () => {
     const result = normalizeAnthropicEvent({
       message: {
@@ -530,7 +530,7 @@ describe(normalizeAnthropicEvent, () => {
 // Ollama NDJSON normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeOllamaChatChunk, () => {
+describe('normalizeOllamaChatChunk', () => {
   it('maps message.content to chunk.content', () => {
     const result = normalizeOllamaChatChunk({
       created_at: '2024-01-01T00:00:00Z',
@@ -618,7 +618,7 @@ describe(normalizeOllamaChatChunk, () => {
   });
 });
 
-describe(normalizeOllamaGenerateChunk, () => {
+describe('normalizeOllamaGenerateChunk', () => {
   it('maps response field to chunk.content', () => {
     const result = normalizeOllamaGenerateChunk({
       created_at: '2024-01-01T00:00:00Z',
@@ -674,7 +674,7 @@ describe(normalizeOllamaGenerateChunk, () => {
 // Gemini normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeGeminiChunk, () => {
+describe('normalizeGeminiChunk', () => {
   it('maps candidates[0].content.parts[0].text to chunk.content', () => {
     const result = normalizeGeminiChunk({
       candidates: [
@@ -812,7 +812,7 @@ describe(normalizeGeminiChunk, () => {
 // Mistral normalizer (OpenAI-compatible format)
 // ---------------------------------------------------------------------------
 
-describe(normalizeMistralChunk, () => {
+describe('normalizeMistralChunk', () => {
   it('maps delta.content to chunk.content (OpenAI-compatible)', () => {
     const result = normalizeMistralChunk({
       choices: [{ delta: { content: 'Bonjour' }, finish_reason: null, index: 0 }],
@@ -968,7 +968,7 @@ describe(normalizeMistralChunk, () => {
 // Cohere v2 streaming event normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeCohereEvent, () => {
+describe('normalizeCohereEvent', () => {
   it('maps content-delta to chunk.content', () => {
     const result = normalizeCohereEvent({
       delta: { message: { content: { text: 'Hello' } } },
@@ -1102,7 +1102,7 @@ describe(normalizeCohereEvent, () => {
 // AWS Bedrock Converse API streaming event normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeBedrockConverseEvent, () => {
+describe('normalizeBedrockConverseEvent', () => {
   it('maps contentBlockDelta.delta.text to chunk.content', () => {
     const result = normalizeBedrockConverseEvent({
       contentBlockDelta: { contentBlockIndex: 0, delta: { text: 'Hello' } }
@@ -1227,7 +1227,7 @@ describe(normalizeBedrockConverseEvent, () => {
 // Z.ai normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeZAiChunk, () => {
+describe('normalizeZAiChunk', () => {
   it('maps content delta to chunk.content', () => {
     const result = normalizeZAiChunk({
       choices: [
@@ -1353,7 +1353,7 @@ describe(normalizeZAiChunk, () => {
 // HuggingFace Text Generation Inference (TGI) streaming chunk normalizer
 // ---------------------------------------------------------------------------
 
-describe(normalizeHuggingFaceTGIChunk, () => {
+describe('normalizeHuggingFaceTGIChunk', () => {
   it('maps token.text to chunk.content for non-special tokens', () => {
     const result = normalizeHuggingFaceTGIChunk({
       details: null,

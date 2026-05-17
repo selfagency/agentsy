@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { dedupeXmlContextBlocksByTag } from './dedupeXmlContext.js';
 
-describe(dedupeXmlContextBlocksByTag, () => {
+describe('dedupeXmlContextBlocksByTag', () => {
   it('handles nested tags of the same name and returns the outermost block', () => {
     const xmlBlocks = ['<a><a>inner</a>outer</a>', '<b>other</b>', '<a>latest</a>'];
 

@@ -41,7 +41,7 @@ async function* createMockPipeline(events: PipelineEvent[]): AsyncGenerator<Pipe
   }
 }
 
-describe(toAgUiStream, () => {
+describe('toAgUiStream', () => {
   const runId = 'test_run_123';
   const threadId = 'thread_456';
 

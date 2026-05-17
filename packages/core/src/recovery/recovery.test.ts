@@ -3,7 +3,7 @@ import { describe, expect, it, expectTypeOf } from 'vitest';
 import { LLMStreamProcessor } from '../processor/processor/LLMStreamProcessor.js';
 import { buildContinuationPrompt, captureStreamState } from './index.js';
 
-describe(captureStreamState, () => {
+describe('captureStreamState', () => {
   it('captures empty state at start of stream', () => {
     const processor = new LLMStreamProcessor();
     const snap = captureStreamState(processor);
@@ -76,7 +76,7 @@ describe(captureStreamState, () => {
   });
 });
 
-describe(buildContinuationPrompt, () => {
+describe('buildContinuationPrompt', () => {
   it('returns a user continuation message when no content was accumulated', () => {
     const processor = new LLMStreamProcessor();
     const snap = captureStreamState(processor);

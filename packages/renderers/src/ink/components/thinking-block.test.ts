@@ -3,7 +3,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { darkTheme, defaultTheme } from '../themes/index.js';
-import { ThinkingBlock } from './ThinkingBlock.js';
+import { ThinkingBlock } from './thinking-block.tsx';
 
 // Mock Ink render to avoid terminal setup in test environment
 vi.mock('ink', () => ({

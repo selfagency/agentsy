@@ -42,7 +42,7 @@ async function* mockErrorGenerator() {
   throw new Error('Mock generator error');
 }
 
-describe(createSSEStream, () => {
+describe('createSSEStream', () => {
   it('should convert async generator to SSE stream', async () => {
     const stream = createSSEStream(mockEventGenerator());
     const chunks = [];
@@ -89,7 +89,7 @@ describe(createSSEStream, () => {
   });
 });
 
-describe(createAgentRunHandler, () => {
+describe('createAgentRunHandler', () => {
   it('should handle CORS OPTIONS preflight request', async () => {
     const handler = createAgentRunHandler(() => mockEventGenerator());
 
@@ -163,7 +163,7 @@ describe(createAgentRunHandler, () => {
   });
 });
 
-describe(createExpressMiddleware, () => {
+describe('createExpressMiddleware', () => {
   it('should stream events via Express response', async () => {
     const middleware = createExpressMiddleware(() => mockEventGenerator());
 
@@ -203,7 +203,7 @@ describe(createExpressMiddleware, () => {
   });
 });
 
-describe(createHonoHandler, () => {
+describe('createHonoHandler', () => {
   it('should return Hono body stream', async () => {
     const handler = createHonoHandler(() => mockEventGenerator());
 

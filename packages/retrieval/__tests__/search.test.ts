@@ -200,9 +200,9 @@ describe(RetrievalEngine, () => {
       const result = engine.keywordSearch(query);
 
       for (let i = 0; i < result.documents.length - 1; i++) {
-        expect(result.documents[i]?.score).toBeDefined();
-        expect(result.documents[i + 1]?.score).toBeDefined();
-        expect(result.documents[i]?.score).toBeGreaterThanOrEqual(result.documents[i + 1]?.score);
+        expect(result.documents[i]?.score ?? 0).toBeDefined();
+        expect(result.documents[i + 1]?.score ?? 0).toBeDefined();
+        expect(result.documents[i]?.score ?? 0).toBeGreaterThanOrEqual(result.documents[i + 1]?.score ?? 0);
       }
     });
   });

@@ -1,8 +1,8 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { darkTheme, defaultTheme } from '../themes/index.js';
-import { ToolCallBlock } from './ToolCallBlock.js';
+import { darkTheme, defaultTheme } from '../themes/index.ts';
+import { ToolCallBlock } from './tool-call-block.tsx';
 
 describe('ToolCallBlock Component', () => {
   beforeEach(() => {

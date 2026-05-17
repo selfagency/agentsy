@@ -28,7 +28,7 @@ async function* mockClaudeWithThinking() {
   yield 'data: {"type":"message_stop"}\n\n';
 }
 
-describe(createPipeline, () => {
+describe('createPipeline', () => {
   it('composes SSE → normalize → parse into a unified pipeline', async () => {
     const events: unknown[] = [];
     for await (const event of createPipeline(mockOpenAIStream(), {

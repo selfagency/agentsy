@@ -7,7 +7,7 @@ function run(filter: ReturnType<typeof createXmlStreamFilter>, chunk: string): s
   return filter.write(chunk) + filter.end();
 }
 
-describe(createXmlStreamFilter, () => {
+describe('createXmlStreamFilter', () => {
   // --- Basic passthrough ---
 
   it('passes through plain text unchanged', () => {
@@ -272,7 +272,7 @@ describe(createXmlStreamFilter, () => {
     expect(out).toContain('visible');
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('Privacy-sensitive'),
-      expect.objectContaining({ missingPrivacyTags: expect.any(Array) })
+      expect.objectContaining({ missingPrivacyTags: expect.any(Array) as Array<unknown> })
     );
   });
 

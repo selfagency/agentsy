@@ -6,7 +6,7 @@ import type { XmlToolCall } from '../../tool-calls/index.js';
 import { LLMStreamProcessor } from './LLMStreamProcessor.js';
 import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';
 
-describe(LLMStreamProcessor, () => {
+describe('LLMStreamProcessor', () => {
   it('processes thinking tags, scrubs content, and extracts xml-wrapped tool calls', () => {
     const processor = new LLMStreamProcessor({
       knownTools: new Set(['search_files'])

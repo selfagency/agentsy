@@ -41,11 +41,11 @@ This plan defines the production implementation order for `@agentsy/models` as m
 
 - GOAL-MODELS-002: Core model intelligence completion.
 
-| Task            | Description                                                            | Completed | Date |
-| --------------- | ---------------------------------------------------------------------- | --------- | ---- |
-| TASK-MODELS-004 | Finalize model catalog ingestion, enrichment, and normalization logic. |           |      |
-| TASK-MODELS-005 | Implement local-first recommendation and capability filtering paths.   |           |      |
-| TASK-MODELS-006 | Implement provider probing and health signal ingestion.                |           |      |
+| Task            | Description                                                            | Completed  | Date       |
+| --------------- | ---------------------------------------------------------------------- | ---------- | ---------- |
+| TASK-MODELS-004 | Finalize model catalog ingestion, enrichment, and normalization logic. | ✅         | 2026-05-17 |
+| TASK-MODELS-005 | Implement local-first recommendation and capability filtering paths.   | ✅         | 2026-05-17 |
+| TASK-MODELS-006 | Implement provider probing and health signal ingestion.                | ⚠️ partial | 2026-05-17 |
 
 ### Implementation Phase 3
 

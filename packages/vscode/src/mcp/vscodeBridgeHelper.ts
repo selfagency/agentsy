@@ -66,19 +66,19 @@ export class VSCodeMCPBridgeHelper {
     const chatStream: ChatResponseStream = {
       anchor: (value, title) => {
         this.pushEvent({
-          data: { title, value: String(value) },
+          data: { title, value: typeof value === 'string' ? value : String(value) },
           type: 'anchor'
         });
       },
       button: command => {
         this.pushEvent({
-          data: { command: String(command) },
+          data: { command: typeof command === 'string' ? command : String(command) },
           type: 'button'
         });
       },
       filetree: (value, baseUri) => {
         this.pushEvent({
-          data: { baseUri: String(baseUri), value },
+          data: { baseUri: typeof baseUri === 'string' ? baseUri : String(baseUri), value },
           type: 'filetree'
         });
       },
@@ -94,8 +94,8 @@ export class VSCodeMCPBridgeHelper {
       reference: (value, iconPath) => {
         this.pushEvent({
           data: {
-            iconPath: iconPath ? String(iconPath) : undefined,
-            value: String(value)
+            iconPath: iconPath && typeof iconPath === 'string' ? iconPath : iconPath ? String(iconPath) : undefined,
+            value: typeof value === 'string' ? value : String(value)
           },
           type: 'reference'
         });

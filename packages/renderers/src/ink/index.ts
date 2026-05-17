@@ -11,7 +11,7 @@ export {
   type InkConversationRendererHandle,
   type InkConversationRendererOptions
 } from './create-ink-conversation-renderer.js';
-export { createInkRenderer, type InkRendererHandle, type InkRendererOptions } from './createInkRenderer.js';
+export { createInkRenderer, type InkRendererHandle, type InkRendererOptions } from './create-ink-renderer.ts';
 export {
   ayuMirageTheme,
   catppuccinFrappeTheme,

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { formatXmlLikeResponseForDisplay } from './formatXmlLikeResponseForDisplay.js';
 import { sanitizeNonStreamingModelOutput } from './sanitizeNonStreamingModelOutput.js';
 
-describe(formatXmlLikeResponseForDisplay, () => {
+describe('formatXmlLikeResponseForDisplay', () => {
   it('formats xml-like blocks as markdown headings', () => {
     expect(formatXmlLikeResponseForDisplay('<note>important</note>')).toBe('**Note**\nimportant');
   });
@@ -24,7 +24,7 @@ describe(formatXmlLikeResponseForDisplay, () => {
   });
 });
 
-describe(sanitizeNonStreamingModelOutput, () => {
+describe('sanitizeNonStreamingModelOutput', () => {
   it('strips context tags and formats remaining xml-like blocks', () => {
     const input = '<user_info>secret</user_info><note>hello</note>';
     expect(sanitizeNonStreamingModelOutput(input)).toBe('**Note**\nhello');

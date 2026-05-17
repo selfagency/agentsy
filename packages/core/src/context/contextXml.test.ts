@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createXmlStreamFilter } from '../xml-filter/index.js';
 import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from './index.js';
 
-describe(createXmlStreamFilter, () => {
+describe('createXmlStreamFilter', () => {
   it('strips context tags across chunk boundaries', () => {
     const filter = createXmlStreamFilter();
     const a = filter.write('<environment_info>secret');
@@ -109,7 +109,7 @@ describe(createXmlStreamFilter, () => {
   });
 });
 
-describe(stripXmlContextTags, () => {
+describe('stripXmlContextTags', () => {
   it('removes context tags from complete text', () => {
     const result = stripXmlContextTags('<environment_info>private</environment_info>public');
     expect(result).toBe('public');
@@ -123,7 +123,7 @@ describe(stripXmlContextTags, () => {
   });
 });
 
-describe(splitLeadingXmlContextBlocks, () => {
+describe('splitLeadingXmlContextBlocks', () => {
   it('extracts only leading XML context blocks', () => {
     const input = '<user_info>u1</user_info><workspace_info>w1</workspace_info>hello';
     const result = splitLeadingXmlContextBlocks(input);
@@ -163,7 +163,7 @@ describe(splitLeadingXmlContextBlocks, () => {
   });
 });
 
-describe(dedupeXmlContextBlocksByTag, () => {
+describe('dedupeXmlContextBlocksByTag', () => {
   it('keeps latest occurrence per tag and preserves output order', () => {
     const xmlBlocks = [
       '<environment_info>old-env</environment_info>',

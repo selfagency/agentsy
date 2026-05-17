@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { assertSecretsGuard, guardSecrets } from './secrets-guard.js';
 
-describe(guardSecrets, () => {
+describe('guardSecrets', () => {
   it('safe: true when no secrets present', () => {
     const result = guardSecrets('hello world, no secrets here');
     expect(result.safe).toBeTruthy();
@@ -51,7 +51,7 @@ describe(guardSecrets, () => {
   });
 });
 
-describe(assertSecretsGuard, () => {
+describe('assertSecretsGuard', () => {
   it('returns redacted string for safe input', () => {
     const out = assertSecretsGuard('safe code here');
     expect(out).toBe('safe code here');

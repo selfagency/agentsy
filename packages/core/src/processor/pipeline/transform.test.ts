@@ -46,7 +46,7 @@ async function collectStream(stream: ReadableStream<OutputPart>): Promise<Output
   return parts;
 }
 
-describe(createSmoothStream, () => {
+describe('createSmoothStream', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -113,7 +113,7 @@ describe(createSmoothStream, () => {
   });
 });
 
-describe(createThinkingFilter, () => {
+describe('createThinkingFilter', () => {
   it('strips thinking parts', async () => {
     const parts = await writeAndCollect(createThinkingFilter(), [
       { text: 'internal', type: 'thinking' },
@@ -145,7 +145,7 @@ function makeCall(name: string): OutputPart {
   };
 }
 
-describe(createToolCallFilter, () => {
+describe('createToolCallFilter', () => {
   it('passes through only tool calls with matching names', async () => {
     const parts = await writeAndCollect(createToolCallFilter(['search', 'fetch']), [
       makeCall('search'),

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createSecretStore } from './index.js';
 
-describe(createSecretStore, () => {
+describe('createSecretStore', () => {
   it('sets and gets secrets', () => {
     const store = createSecretStore();
     store.setSecret('token', 'abc123');

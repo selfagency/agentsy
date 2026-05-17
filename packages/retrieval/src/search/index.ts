@@ -79,11 +79,11 @@ export class RetrievalEngine {
       };
     }
 
-    for (const [chunkId, document] of this.documents) {
+    for (const [, document] of this.documents) {
       for (const chunk of document.chunks) {
         const chunkEmbedding = this.embeddings.get(chunk.id);
         if (chunkEmbedding) {
-          const similarity = this.calculateCosineSimilarity(query.embedding, chunkEmbedding)!;
+          const similarity = this.calculateCosineSimilarity(query.embedding, chunkEmbedding);
 
           const minSimilarity = query.minSimilarity ?? this.options.minSimilarity ?? 0.7;
           if (similarity >= minSimilarity) {

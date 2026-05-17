@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createSessionSnapshot } from './index.js';
 
-describe(createSessionSnapshot, () => {
+describe('createSessionSnapshot', () => {
   it('persists reusable context metadata for resume', () => {
     const snapshot = createSessionSnapshot({
       id: 'session-1',

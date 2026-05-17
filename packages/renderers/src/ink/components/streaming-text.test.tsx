@@ -3,11 +3,11 @@
 import { render } from 'ink-testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
 
-import type { Theme } from '../themes/types.js';
-import { StreamingText } from './StreamingText.js';
+import type { Theme } from '../themes/types.ts';
+import { StreamingText } from './streaming-text.tsx';
 
 // Mock markdownToAnsi
-vi.mock(import('../utils/markdownToAnsi.js'), () => ({
+vi.mock(import('../utils/markdown-to-ansi.ts'), () => ({
   markdownToAnsi: vi.fn<(text: string) => Promise<string>>(async (text: string) => `ANSI[${text}]`)
 }));
 
@@ -35,7 +35,7 @@ const mockTheme: Theme = {
   }
 };
 
-describe(StreamingText, () => {
+describe('StreamingText' as const, () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -117,7 +117,8 @@ describe(StreamingText, () => {
   });
 
   it('converts markdown when not for screen readers', async () => {
-    const { markdownToAnsi } = await import('../utils/markdownToAnsi.js');
+    const result = await import('../utils/markdown-to-ansi.ts');
+      const markdownToAnsi = result.default;
 
     const { unmount } = render(
       <StreamingText text="*italic*" markdown={true} isStreaming={false} theme={mockTheme} screenReader={false} />
@@ -144,7 +145,8 @@ describe(StreamingText, () => {
   });
 
   it('enables syntax highlighting when specified', async () => {
-    const { markdownToAnsi } = await import('../utils/markdownToAnsi.js');
+    const result = await import('../utils/markdown-to-ansi.ts');
+      const markdownToAnsi = result.default;
 
     const { unmount } = render(
       <StreamingText

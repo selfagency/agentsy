@@ -9,7 +9,7 @@ import {
 } from './chunkUtils.js';
 
 describe('chunkUtils', () => {
-  describe(ensureText, () => {
+  describe('ensureText', () => {
     it('returns string values unchanged and non-strings as empty string', () => {
       expect(ensureText('hello')).toBe('hello');
       expect(ensureText(123)).toBe('');
@@ -18,7 +18,7 @@ describe('chunkUtils', () => {
     });
   });
 
-  describe(normalizeToolArguments, () => {
+  describe('normalizeToolArguments', () => {
     it('returns object values as-is', () => {
       expect(normalizeToolArguments({ a: 1 })).toStrictEqual({ a: 1 });
     });
@@ -35,7 +35,7 @@ describe('chunkUtils', () => {
     });
   });
 
-  describe(mapNativeToolCalls, () => {
+  describe('mapNativeToolCalls', () => {
     it('maps valid native calls and ignores invalid/missing-name calls', () => {
       const calls = [
         {
@@ -73,7 +73,7 @@ describe('chunkUtils', () => {
     });
   });
 
-  describe(estimateChunkSize, () => {
+  describe('estimateChunkSize', () => {
     it('counts serializable chunk fields and skips unserializable entries', () => {
       const encoder = new TextEncoder();
       const circular: Record<string, unknown> = {};
@@ -93,7 +93,7 @@ describe('chunkUtils', () => {
     });
   });
 
-  describe(enforceMaxLength, () => {
+  describe('enforceMaxLength', () => {
     it('returns unchanged value when within limit', () => {
       const warn = vi.fn();
       expect(enforceMaxLength('hello', 'content', 10, warn)).toBe('hello');

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { compressMemoryFile } from './index.js';
 
-describe(compressMemoryFile, () => {
+describe('compressMemoryFile', () => {
   it('creates a backup and preserves fenced code blocks', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'agentsy-memory-compress-'));
 

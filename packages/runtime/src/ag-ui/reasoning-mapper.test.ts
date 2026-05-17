@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import { mapReasoningToEvents } from './reasoning-mapper.js';
 
-describe(mapReasoningToEvents, () => {
+describe('mapReasoningToEvents', () => {
   it('should create 5-event sequence for reasoning', () => {
     const events = mapReasoningToEvents('thinking...', { runId: 'run_123' });
 
@@ -92,9 +92,9 @@ describe(mapReasoningToEvents, () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {}
     expect(contentEvent).toBeDefined();
-    expect(contentEvent?.encryptedValue).toBe('encrypted');
+    expect((contentEvent as any).encryptedValue).toBe('encrypted');
   });
 
   it('should use plain content when encryption disabled', () => {
@@ -105,9 +105,9 @@ describe(mapReasoningToEvents, () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {}
     expect(contentEvent).toBeDefined();
-    expect(contentEvent?.content).toBe(reasoning);
+    expect((contentEvent as any).content).toBe(reasoning);
   });
 
   it('should default encryption to false', () => {
@@ -115,9 +115,9 @@ describe(mapReasoningToEvents, () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {}
     expect(contentEvent).toBeDefined();
-    expect(contentEvent?.content).toBe(reasoning);
+    expect((contentEvent as any).content).toBe(reasoning);
   });
 
   it('should generate consistent timestamps', () => {
@@ -163,8 +163,11 @@ describe(mapReasoningToEvents, () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
-    expect(contentEvent?.content).toContain('line 1');
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
+    if (!contentEvent?) {
+      throw new Error("contentEvent is nullish");
+    }
+    expect(contentEvent.content).toContain('line 1');
     expect(contentEvent?.content).toContain('line 2');
     expect(contentEvent?.content).toContain('line 3');
   });

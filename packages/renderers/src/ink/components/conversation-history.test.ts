@@ -1,9 +1,9 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ConversationTurn } from '../createInkConversationRenderer.js';
-import { darkTheme, defaultTheme } from '../themes/index.js';
-import { ConversationHistory } from './ConversationHistory.js';
+import type { ConversationTurn } from '../create-ink-conversation-renderer.ts';
+import { darkTheme, defaultTheme } from '../themes/index.ts';
+import { ConversationHistory } from './conversation-history.tsx';
 
 describe('ConversationHistory Component', () => {
   beforeEach(() => {

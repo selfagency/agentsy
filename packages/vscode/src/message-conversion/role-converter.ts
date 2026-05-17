@@ -81,7 +81,7 @@ function parseToolArguments(input: unknown): Record<string, unknown> {
   }
   if (typeof input === 'string') {
     try {
-      const parsed = JSON.parse(input);
+      const parsed = JSON.parse(input) as unknown;
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         return parsed as Record<string, unknown>;
       }

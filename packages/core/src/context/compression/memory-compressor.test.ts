@@ -16,7 +16,7 @@ afterAll(async () => {
   await rm(TEST_TMP_BASE, { force: true, recursive: true });
 });
 
-describe(isSensitivePath, () => {
+describe('isSensitivePath', () => {
   it('detects known sensitive filenames and paths', () => {
     expect(isSensitivePath('/workspace/.env')).toBeTruthy();
     expect(isSensitivePath('/Users/me/.ssh/id_rsa')).toBeTruthy();
@@ -29,7 +29,7 @@ describe(isSensitivePath, () => {
   });
 });
 
-describe(compressMemoryFile, () => {
+describe('compressMemoryFile', () => {
   it('creates backup and preserves code/url regions while compressing prose', async () => {
     const dir = await mkdtemp(join(TEST_TMP_BASE, 'agentsy-memory-compress-'));
     const filePath = join(dir, 'CLAUDE.md');

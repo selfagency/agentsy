@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 // parseJson
 // ---------------------------------------------------------------------------
 
-describe(parseJson, () => {
+describe('parseJson' as const, () => {
   it('parses a plain JSON object string', () => {
     const result = parseJson<{ name: string }>('{"name":"Alice"}');
     expect(result).toStrictEqual({ name: 'Alice' });
@@ -52,7 +52,7 @@ describe(parseJson, () => {
 // validateJsonSchema
 // ---------------------------------------------------------------------------
 
-describe(validateJsonSchema, () => {
+describe('validateJsonSchema' as const, () => {
   const schema = {
     properties: {
       age: { type: 'number' },
@@ -88,7 +88,7 @@ describe(validateJsonSchema, () => {
 // buildRepairPrompt
 // ---------------------------------------------------------------------------
 
-describe(buildRepairPrompt, () => {
+describe('buildRepairPrompt' as const, () => {
   it('includes the parse error in the output', () => {
     const prompt = buildRepairPrompt({
       error: 'Unexpected end of JSON input',
@@ -125,7 +125,7 @@ describe(buildRepairPrompt, () => {
 // formatXmlLikeResponseForDisplay
 // ---------------------------------------------------------------------------
 
-describe(formatXmlLikeResponseForDisplay, () => {
+describe('formatXmlLikeResponseForDisplay' as const, () => {
   it('converts XML-like blocks to bold markdown titles + content', () => {
     const input = '<analysis>The code looks good.</analysis>';
     const out = formatXmlLikeResponseForDisplay(input);
@@ -151,7 +151,7 @@ describe(formatXmlLikeResponseForDisplay, () => {
 // sanitizeNonStreamingModelOutput
 // ---------------------------------------------------------------------------
 
-describe(sanitizeNonStreamingModelOutput, () => {
+describe('sanitizeNonStreamingModelOutput' as const, () => {
   it('strips context tags and formats display XML in one pass', () => {
     const input = '<context>hidden info</context><analysis>visible content</analysis>';
     const out = sanitizeNonStreamingModelOutput(input);
@@ -171,7 +171,7 @@ describe(sanitizeNonStreamingModelOutput, () => {
 // appendToBlockquote
 // ---------------------------------------------------------------------------
 
-describe(appendToBlockquote, () => {
+describe('appendToBlockquote' as const, () => {
   it('prefixes each line with "> "', () => {
     const out = appendToBlockquote('line one\nline two', true);
     expect(out).toBe('> line one\n> line two');
@@ -186,7 +186,7 @@ describe(appendToBlockquote, () => {
 // stripXmlContextTags (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
-describe(stripXmlContextTags, () => {
+describe('stripXmlContextTags' as const, () => {
   it('removes context-tagged blocks from text', () => {
     const out = stripXmlContextTags('<context>this is private</context>visible');
     expect(out).toBe('visible');
@@ -201,7 +201,7 @@ describe(stripXmlContextTags, () => {
 // splitLeadingXmlContextBlocks (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
-describe(splitLeadingXmlContextBlocks, () => {
+describe('splitLeadingXmlContextBlocks' as const, () => {
   it('separates leading XML blocks from trailing non-XML content', () => {
     const input = '<environment_info>meta info</environment_info>actual response here';
     const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(input);
@@ -221,7 +221,7 @@ describe(splitLeadingXmlContextBlocks, () => {
 // dedupeXmlContextBlocksByTag (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
-describe(dedupeXmlContextBlocksByTag, () => {
+describe('dedupeXmlContextBlocksByTag' as const, () => {
   it('removes duplicate context blocks with the same tag name', () => {
     const blocks = ['<memory>first</memory>', '<memory>second</memory>'];
 

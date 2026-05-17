@@ -1,7 +1,7 @@
 import { Text } from 'ink';
 import { useEffect, useState } from 'react';
 
-import type { Theme } from '../themes/types.js';
+import type { Theme } from '../themes/types.ts';
 
 interface ToolCallBlockProps {
   readonly call: {

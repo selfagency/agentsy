@@ -24,7 +24,7 @@ function makeContainerStub(): ContainerSandbox {
   };
 }
 
-describe(createSandboxRouter, () => {
+describe('createSandboxRouter', () => {
   it('routes virtual decision to VirtualSandbox', () => {
     const router = createSandboxRouter();
     const sandbox = router.route(makeDecision('virtual'));

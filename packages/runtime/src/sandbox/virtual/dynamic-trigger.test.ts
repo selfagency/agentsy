@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { decideSandboxTrigger } from './dynamic-trigger.js';
 
-describe(decideSandboxTrigger, () => {
+describe('decideSandboxTrigger', () => {
   it('should honor forceMode if provided', () => {
     expect(decideSandboxTrigger({ forceMode: 'virtual' }).mode).toBe('virtual');
     expect(decideSandboxTrigger({ forceMode: 'container' }).mode).toBe('container');

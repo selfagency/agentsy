@@ -128,7 +128,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
 // createSharedRendererHandle — lower-level integration
 // ---------------------------------------------------------------------------
 
-describe(createSharedRendererHandle, () => {
+describe('createSharedRendererHandle' as const, () => {
   it('routes text/thinking/toolCall through the appropriate handler callbacks', async () => {
     const texts: string[] = [];
     const thinkings: string[] = [];
@@ -190,8 +190,7 @@ describe(createSharedRendererHandle, () => {
         onFinish: (reason: any, usage: any): void => {
           finishArgs.push([reason, usage]);
         }
-      },
-      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
+      },      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
     );
 
     await handle.writeChunk({

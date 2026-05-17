@@ -25,7 +25,7 @@ describe('InterruptReason enum', () => {
   });
 });
 
-describe(InterruptController, () => {
+describe('InterruptController', () => {
   let controller: InterruptController;
 
   beforeEach(() => {
@@ -91,15 +91,15 @@ describe(InterruptController, () => {
   });
 });
 
-describe(createInterruptEvent, () => {
+describe('createInterruptEvent', () => {
   it('should create RunInterruptedEvent with minimal params', () => {
     const event = createInterruptEvent('run_123');
 
     expect(event.type).toBe(EventType.RUN_INTERRUPTED);
     expect(event.runId).toBe('run_123');
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts!.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts![0]!;
+    expect(event.interrupts?.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts?.[0] ?? {};
     expect(interrupt.reason).toBe(InterruptReason.TIMEOUT);
   });
 
@@ -121,8 +121,8 @@ describe(createInterruptEvent, () => {
     const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT);
 
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts!.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts![0]!;
+    expect(event.interrupts?.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts?.[0] ?? {};
     expect(interrupt.reason).toBe(InterruptReason.TIMEOUT);
   });
 
@@ -186,7 +186,7 @@ describe(createInterruptEvent, () => {
   });
 });
 
-describe(createInterruptAbortController, () => {
+describe('createInterruptAbortController', () => {
   it('should return controller with interrupt function', () => {
     const { interrupt } = createInterruptAbortController();
 
@@ -225,7 +225,7 @@ describe(createInterruptAbortController, () => {
   });
 });
 
-describe(TimeoutInterrupt, () => {
+describe('TimeoutInterrupt', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

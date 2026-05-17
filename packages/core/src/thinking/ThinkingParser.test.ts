@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ThinkingParser } from './ThinkingParser.js';
 
-describe(ThinkingParser, () => {
+describe('ThinkingParser', () => {
   it('returns content unchanged when no think tags present', () => {
     const parser = new ThinkingParser();
     const [thinking, content] = parser.addContent('Hello world');

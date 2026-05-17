@@ -25,10 +25,10 @@ interface ThemeConfig {
 let themesModule: Record<string, unknown>;
 try {
   const distThemesPath = '../dist/renderers/ink/themes/index.js';
-  themesModule = await import(distThemesPath);
+  themesModule = await import(distThemesPath) as Record<string, unknown>;
 } catch {
   // Fallback to local source so contributors can run the script before building
-  themesModule = await import('../../renderers/src/ink/themes/index.ts');
+  themesModule = await import('../../renderers/src/ink/themes/index.ts') as Record<string, unknown>;
 }
 
 const entries = Object.entries(themesModule).map(([name, value]) => ({

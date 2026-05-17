@@ -8,7 +8,7 @@ import {
   createTokenLedger
 } from './index.js';
 
-describe(createTokenLedger, () => {
+describe('createTokenLedger', () => {
   it('consumes tokens within budget', () => {
     const ledger = createTokenLedger({ limit: 10 });
 
@@ -25,7 +25,7 @@ describe(createTokenLedger, () => {
   });
 });
 
-describe(createInMemoryTokenManager, () => {
+describe('createInMemoryTokenManager', () => {
   it('creates budgets, allocates tokens, and records released usage', async () => {
     const manager = createInMemoryTokenManager();
     const budget = await manager.createBudget({
@@ -233,7 +233,7 @@ describe(createInMemoryTokenManager, () => {
   });
 });
 
-describe(compressConversation, () => {
+describe('compressConversation', () => {
   it('drops the oldest messages until the estimated token budget fits', () => {
     const result = compressConversation(['aaaa', 'bbbb', 'cccc', 'dddd'], {
       estimateTokens: (value: string) => value.length,
@@ -248,7 +248,7 @@ describe(compressConversation, () => {
   });
 });
 
-describe(compressOutput, () => {
+describe('compressOutput', () => {
   it('reduces token estimate while preserving fenced code blocks', () => {
     const source = [
       'This is a very verbose explanation that repeats itself repeatedly and unnecessarily.',
@@ -279,7 +279,7 @@ describe(compressOutput, () => {
   });
 });
 
-describe(PacingController, () => {
+describe('PacingController', () => {
   it('enforces provider rate limits and exposes wait time', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
     await controller.updateRateLimits('openai', [{ maxRequests: 1, windowMs: 1000 }]);
