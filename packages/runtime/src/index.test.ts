@@ -119,7 +119,7 @@ describe(createRuntimeExecutor, () => {
 
   it('keeps execute working when destructured from the executor', async () => {
     const calls: string[] = [];
-    const execute = Reflect.get(createRuntimeExecutor(), 'execute') as RuntimeExecutor['execute'];
+    const execute = Reflect.get(createRuntimeExecutor(), 'execute');
 
     await execute([
       {

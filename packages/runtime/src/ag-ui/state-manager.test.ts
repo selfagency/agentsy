@@ -228,28 +228,36 @@ describe(applyJsonPatches, () => {
     const state = {};
     const patches: JsonPatchOp[] = [{ op: 'add', path: '', value: 'bad' }];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Cannot add to root');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Cannot add to root');
   });
 
   it('should throw on invalid path (remove root)', () => {
     const state = { a: 1 };
     const patches: JsonPatchOp[] = [{ op: 'remove', path: '' }];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Cannot remove root');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Cannot remove root');
   });
 
   it('should throw on invalid path (replace root)', () => {
     const state = { a: 1 };
     const patches: JsonPatchOp[] = [{ op: 'replace', path: '', value: {} }];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Cannot replace root');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Cannot replace root');
   });
 
   it('should throw on unsupported operation', () => {
     const state = {};
     const patches: JsonPatchOp[] = [{ from: '/b', op: 'move', path: '/a' } as JsonPatchOp];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Unsupported patch operation');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Unsupported patch operation');
   });
 
   it('should mutate state in place', () => {
@@ -284,11 +292,11 @@ describe(StateManager, () => {
     const manager = new StateManager(state);
 
     const copy = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    (copy.nested as Record<string, unknown>).value = 999;
+    copy.nested!.value = 999;
 
     // Original should not change
     const current = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    expect((current.nested as Record<string, unknown>).value).toBe(1);
+    expect(current.nested!.value).toBe(1);
   });
 
   it('should create snapshot events', () => {

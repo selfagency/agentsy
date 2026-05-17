@@ -29,7 +29,7 @@ const WORKER_PATH = join(__dirname, 'sandbox-worker.js');
 
 export function createVirtualSandbox(): VirtualSandbox {
   return {
-    execute(input): Promise<SandboxOutput> {
+    async execute(input): Promise<SandboxOutput> {
       const start = Date.now();
       const timeoutMs = input.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
@@ -47,7 +47,9 @@ export function createVirtualSandbox(): VirtualSandbox {
         });
 
         const timeout = setTimeout(() => {
-          if (resolved) return;
+          if (resolved) {
+            return;
+          }
           resolved = true;
           worker.terminate();
           resolve({
@@ -71,7 +73,9 @@ export function createVirtualSandbox(): VirtualSandbox {
             stderr.push(output);
 
             if (msg.type === 'runtime-error') {
-              if (resolved) return;
+              if (resolved) {
+                return;
+              }
               resolved = true;
               clearTimeout(timeout);
               worker.terminate();
@@ -84,7 +88,9 @@ export function createVirtualSandbox(): VirtualSandbox {
               });
             }
           } else if (msg.type === 'result') {
-            if (resolved) return;
+            if (resolved) {
+              return;
+            }
             resolved = true;
             clearTimeout(timeout);
             worker.terminate();
@@ -99,7 +105,9 @@ export function createVirtualSandbox(): VirtualSandbox {
         });
 
         worker.on('error', err => {
-          if (resolved) return;
+          if (resolved) {
+            return;
+          }
           resolved = true;
           clearTimeout(timeout);
           worker.terminate();
@@ -113,7 +121,9 @@ export function createVirtualSandbox(): VirtualSandbox {
         });
 
         worker.on('exit', code => {
-          if (resolved) return;
+          if (resolved) {
+            return;
+          }
           resolved = true;
           clearTimeout(timeout);
           if (code !== 0) {

@@ -127,7 +127,7 @@ function computeStateDeltaForRemovedAndModified(
     const escapedKey = escapePathSegment(key);
     const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
 
-    if (key in to === false) {
+    if (!(key in to)) {
       patches.push({ op: 'remove', path });
     } else if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {
       const fromVal = from[key];
@@ -182,7 +182,7 @@ export function computeStateDelta(
   // Handle added properties
   const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
-    if (key in from === false && dangerousKeys.has(key) === false) {
+    if (!(key in from) && !dangerousKeys.has(key)) {
       const escapedKey = escapePathSegment(key);
       const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
       patches.push({ op: 'add', path, value: to[key] });

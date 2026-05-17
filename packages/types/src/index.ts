@@ -5,6 +5,7 @@ export type * from './completion.js';
 export type * from './conversation.js';
 export type * from './errors.js';
 export type * from './memory.js';
+export * from './observability.js';
 export type * from './observability.js';
 export type * from './providers.js';
 export type * from './response.js';

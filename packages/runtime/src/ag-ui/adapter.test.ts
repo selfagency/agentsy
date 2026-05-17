@@ -318,7 +318,7 @@ describe(toAgUiStream, () => {
       expect(event.timestamp).toBeDefined();
       expectTypeOf(event.timestamp).toBeString();
       // Verify it's a valid ISO timestamp
-      expect(() => new Date(event.timestamp as string)).not.toThrow();
+      expect(() => new Date(event.timestamp)).not.toThrow();
     });
   });
 

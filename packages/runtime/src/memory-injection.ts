@@ -60,7 +60,7 @@ export function buildRuntimeMemoryContextXml(
 
 export function injectRuntimeMemoryContext(existingPrompt: string, memoryContextXml: string): string {
   const trimmedExisting = existingPrompt.trimStart();
-  if (trimmedExisting.startsWith('<memory_context>') === false) {
+  if (!trimmedExisting.startsWith('<memory_context>')) {
     return `${memoryContextXml}\n${existingPrompt}`;
   }
 

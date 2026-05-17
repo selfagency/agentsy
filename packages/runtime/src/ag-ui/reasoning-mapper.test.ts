@@ -92,9 +92,7 @@ describe(mapReasoningToEvents, () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT
-    ) as ReasoningMessageContentEvent;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.encryptedValue).toBe('encrypted');
   });
@@ -107,9 +105,7 @@ describe(mapReasoningToEvents, () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT
-    ) as ReasoningMessageContentEvent;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.content).toBe(reasoning);
   });
@@ -119,9 +115,7 @@ describe(mapReasoningToEvents, () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT
-    ) as ReasoningMessageContentEvent;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
     expect(contentEvent).toBeDefined();
     expect(contentEvent?.content).toBe(reasoning);
   });
@@ -146,7 +140,7 @@ describe(mapReasoningToEvents, () => {
 
     for (const event of events) {
       expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-      expect(() => new Date(event.timestamp as string)).not.toThrow();
+      expect(() => new Date(event.timestamp)).not.toThrow();
     }
   });
 
@@ -169,9 +163,7 @@ describe(mapReasoningToEvents, () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(
-      e => e.type === EventType.REASONING_MESSAGE_CONTENT
-    ) as ReasoningMessageContentEvent;
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT)!;
     expect(contentEvent?.content).toContain('line 1');
     expect(contentEvent?.content).toContain('line 2');
     expect(contentEvent?.content).toContain('line 3');

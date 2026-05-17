@@ -52,7 +52,7 @@ export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
 
   const eventRec = event as unknown as Record<string, unknown>;
   const eventType = eventRec.type as string | undefined;
-  const copilotKitType = (eventType && copilotKitMapping[eventType]) || eventType || 'unknown';
+  const copilotKitType = (eventType && copilotKitMapping[eventType]) ?? eventType ?? 'unknown';
 
   return {
     type: copilotKitType,

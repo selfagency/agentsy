@@ -79,11 +79,15 @@ describe(InterruptController, () => {
   it('should throw when throwIfInterrupted() called while interrupted', () => {
     controller.interrupt(InterruptReason.SAFETY_CHECK, 'Safety violation');
 
-    expect(() => controller.throwIfInterrupted()).toThrow('Safety violation');
+    expect(() => {
+      controller.throwIfInterrupted();
+    }).toThrow('Safety violation');
   });
 
   it('should not throw when throwIfInterrupted() called while not interrupted', () => {
-    expect(() => controller.throwIfInterrupted()).not.toThrow();
+    expect(() => {
+      controller.throwIfInterrupted();
+    }).not.toThrow();
   });
 });
 
@@ -170,7 +174,7 @@ describe(createInterruptEvent, () => {
     const event = createInterruptEvent('run_123');
 
     expectTypeOf(event.timestamp).toBeString();
-    expect(() => new Date(event.timestamp as string)).not.toThrow();
+    expect(() => new Date(event.timestamp)).not.toThrow();
     expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   });
 

@@ -321,7 +321,7 @@ export function createRuntimeWorkflowExecutor(options: RuntimeLoopOptions = {}):
   return {
     async execute(tasks, signal) {
       const orderedTasks = getExecutionOrder(tasks);
-      return loop.execute(orderedTasks, signal);
+      return await loop.execute(orderedTasks, signal);
     }
   };
 }

@@ -11,13 +11,17 @@ const { code, env, timeout } = workerData as {
   timeout: number;
 };
 
+function sendMessage(args: unknown[], type: string): void {
+  parentPort?.postMessage({ args, type });
+}
+
 // Create a safe realm
 const context = createContext({
   console: {
-    error: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'error' }, parentPort.location.origin),
-    info: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'info' }, parentPort.location.origin),
-    log: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'log' }, parentPort.location.origin),
-    warn: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'warn' }, parentPort.location.origin)
+    error: (...args: unknown[]) => sendMessage(args, 'error'),
+    info: (...args: unknown[]) => sendMessage(args, 'info'),
+    log: (...args: unknown[]) => sendMessage(args, 'log'),
+    warn: (...args: unknown[]) => sendMessage(args, 'warn')
   },
   process: {
     env: Object.freeze({ ...env })
@@ -38,16 +42,13 @@ try {
     timeout // vm timeout provides a first layer, but worker.terminate() is the fallback
   });
 
-  parentPort.postMessage({ type: 'result', value: result }, parentPort.location.origin);
+  parentPort.postMessage({ type: 'result', value: result });
 } catch (error) {
   const errorPayload =
     error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
 
-  parentPort.postMessage(
-    {
-      args: [errorPayload.message],
-      type: 'runtime-error'
-    },
-    parentPort.location.origin
-  );
+  parentPort.postMessage({
+    args: [errorPayload.message],
+    type: 'runtime-error'
+  });
 }

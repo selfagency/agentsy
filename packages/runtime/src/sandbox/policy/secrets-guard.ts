@@ -37,7 +37,7 @@ export function guardSecrets(input: string, options?: SecretsGuardOptions): Secr
 
 export function assertSecretsGuard(input: string, options?: SecretsGuardOptions): string {
   const result = guardSecrets(input, options);
-  if (result.safe === false && options?.strict !== false) {
+  if (!result.safe && options?.strict !== false) {
     throw new Error(
       `Secrets detected in sandbox input (${result.violations.length} violation(s)). Use environment variables instead.`
     );

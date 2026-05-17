@@ -115,7 +115,7 @@ async function* handleThinking(
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null }
 ): AsyncGenerator<AgUiEvent> {
-  if (inReasoning.value === false) {
+  if (!inReasoning.value) {
     currentReasoningMessageId.value = generateMessageId();
     inReasoning.value = true;
 
@@ -233,7 +233,7 @@ async function* handleToolCall(
       runId,
       timestamp: new Date().toISOString(),
       toolCallId: currentToolCallId.value,
-      toolName: event.toolName || 'unknown',
+      toolName: event.toolName ?? 'unknown',
       type: EventType.TOOL_CALL_START
     };
     if (threadId) {
@@ -300,7 +300,7 @@ async function* handleError(
 
   const runErrorBase: RunErrorEvent = {
     error: {
-      message: event.message || 'Unknown error'
+      message: event.message ?? 'Unknown error'
     },
     runId,
     timestamp: new Date().toISOString(),

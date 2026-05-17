@@ -68,7 +68,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
           ...(complete !== null && complete !== undefined && { complete })
         };
       } else {
-        observer = observerOrNext || {};
+        observer = observerOrNext ?? {};
       }
 
       let isCancelled = false;
@@ -82,16 +82,16 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
             }
             observer.next?.(value);
           }
-          if (isCancelled === false) {
+          if (!isCancelled) {
             observer.complete?.();
           }
         } catch (error) {
-          if (isCancelled === false) {
+          if (!isCancelled) {
             observer.error?.(error);
           }
         } finally {
           // Clean up generator resources on completion or cancellation
-          generator.return?.(undefined);
+          generator.return?.();
         }
       })();
 
