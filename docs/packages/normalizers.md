@@ -42,7 +42,7 @@
 ## Example
 
 ```ts
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
 const normalized = normalizeOpenAIChatChunk(chunk);
 ```
@@ -50,8 +50,8 @@ const normalized = normalizeOpenAIChatChunk(chunk);
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 

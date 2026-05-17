@@ -134,10 +134,7 @@ function toCompressionLevel(value: string | null): OutputCompressionLevel | null
   return null;
 }
 
-async function handleCompressCommand(
-  rest: readonly string[],
-  io: CliIO
-): Promise<number> {
+async function handleCompressCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const filePath = getFlagValue(rest, '--file');
   const text = getFlagValue(rest, '--text');
   const level = toCompressionLevel(getFlagValue(rest, '--level'));
@@ -159,10 +156,7 @@ async function handleCompressCommand(
   return 0;
 }
 
-async function handleCompressMemoryCommand(
-  rest: readonly string[],
-  io: CliIO
-): Promise<number> {
+async function handleCompressMemoryCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const filePath = getFlagValue(rest, '--file');
   if (filePath === null) {
     (io.stderr ?? DEFAULT_IO.stderr)('Missing --file for compress-memory command.');
@@ -176,10 +170,7 @@ async function handleCompressMemoryCommand(
   return 0;
 }
 
-function _handleMemorySyncDevCommand(
-  rest: readonly string[],
-  io: CliIO
-): number {
+function _handleMemorySyncDevCommand(rest: readonly string[], io: CliIO): number {
   const example = createMemorySyncDevExample(rest);
   if (example === null) {
     (io.stderr ?? DEFAULT_IO.stderr)('Invalid --sync-interval-ms value. Use a positive number.');
@@ -199,25 +190,16 @@ function _handleMemorySyncDevCommand(
   return 0;
 }
 
-function handleMemorySyncDevCommand(
-  rest: readonly string[],
-  io: CliIO
-): number {
+function handleMemorySyncDevCommand(rest: readonly string[], io: CliIO): number {
   return _handleMemorySyncDevCommand(rest, io);
 }
 
-async function handleSandboxDiagnosticsCommand(
-  rest: readonly string[],
-  io: CliIO
-): Promise<number> {
+async function handleSandboxDiagnosticsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runSandboxDiagnosticsCommand } = await import('./commands/sandbox-diagnostics.js');
   return runSandboxDiagnosticsCommand(rest, io);
 }
 
-async function handleContentAddressStatsCommand(
-  rest: readonly string[],
-  io: CliIO
-): Promise<number> {
+async function handleContentAddressStatsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
   return runContentAddressStatsCommand(rest, io);
 }

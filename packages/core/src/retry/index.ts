@@ -27,7 +27,7 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
 
   return new Promise((resolve, reject) => {
     let attempt = 0;
-    let timeoutId:ReturnType<typeof setTimeout> | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let settled = false;
     let abortHandler: (() => void) | undefined;
 

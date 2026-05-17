@@ -21,73 +21,58 @@ npm install @agentsy/core @agentsy/providers @agentsy/orchestrator @agentsy/runt
 ## Illustrative implementation
 
 ```ts
-import {
-  applyDecisionAction,
-  runStructuredDecisionFromRawStream,
-} from "@agentsy/providers/adapters";
-import {
-  createAgentLoop,
-  hasNoToolCalls,
-  isStepCount,
-} from "@agentsy/orchestrator/agent";
-import { toAgUiStream } from "@agentsy/runtime/ag-ui";
-import { normalizeOpenAIResponseEvent } from "@agentsy/providers/normalizers";
-import {
-  LLMStreamProcessor,
-  createProcessorEventAdapter,
-} from "@agentsy/core/processor";
-import {
-  buildContinuationPrompt,
-  captureStreamState,
-} from "@agentsy/core/recovery";
-import { createPlainTextRenderer } from "@agentsy/renderers";
-import { parseSSEStream } from "@agentsy/core/sse";
-import { validateJsonSchema } from "@agentsy/core/structured";
-import { buildToolResultMessage } from "@agentsy/core/tool-calls";
-import { createConversationStoreFromProcessor } from "@agentsy/ui";
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
+import { createAgentLoop, hasNoToolCalls, isStepCount } from '@agentsy/orchestrator/agent';
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
+import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor, createProcessorEventAdapter } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
+import { createPlainTextRenderer } from '@agentsy/renderers';
+import { parseSSEStream } from '@agentsy/core/sse';
+import { validateJsonSchema } from '@agentsy/core/structured';
+import { buildToolResultMessage } from '@agentsy/core/tool-calls';
+import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 type SecurityDecision = {
   shouldBlock: boolean;
   targetIp: string;
   reason: string;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: 'low' | 'medium' | 'high' | 'critical';
   evidence: string[];
 };
 
 const decisionSchema = {
-  type: "object",
-  required: ["shouldBlock", "targetIp", "reason", "severity", "evidence"],
+  type: 'object',
+  required: ['shouldBlock', 'targetIp', 'reason', 'severity', 'evidence'],
   properties: {
-    shouldBlock: { type: "boolean" },
-    targetIp: { type: "string" },
-    reason: { type: "string" },
-    severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
-    evidence: { type: "array", items: { type: "string" }, minItems: 1 },
-  },
+    shouldBlock: { type: 'boolean' },
+    targetIp: { type: 'string' },
+    reason: { type: 'string' },
+    severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+    evidence: { type: 'array', items: { type: 'string' }, minItems: 1 }
+  }
 } as const;
 
-async function* executeProviderStream(
-  messages: Array<{ role: string; content: string }>
-) {
-  const response = await fetch("https://api.example.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
+async function* executeProviderStream(messages: Array<{ role: string; content: string }>) {
+  const response = await fetch('https://api.example.com/v1/responses', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      model: "gpt-4.1-mini",
+      model: 'gpt-4.1-mini',
       stream: true,
-      messages,
-    }),
+      messages
+    })
   });
 
   if (!response.body) {
-    throw new Error("Provider response did not include a body.");
+    throw new Error('Provider response did not include a body.');
   }
 
   const textStream = response.body.pipeThrough(new TextDecoderStream());
 
   // 1) SSE parsing + 2) provider normalization
   for await (const sseEvent of parseSSEStream(textStream)) {
-    if (sseEvent.data === "[DONE]") {
+    if (sseEvent.data === '[DONE]') {
       return;
     }
 
@@ -108,11 +93,11 @@ async function runFullWorkflow(): Promise<void> {
   // 3) processor + 7) conversation state + 8) AG-UI + 9) rendering
   const processor = new LLMStreamProcessor({
     parseThinkTags: true,
-    knownTools: new Set(["geo_lookup", "reputation_check", "dns_block"]),
+    knownTools: new Set(['geo_lookup', 'reputation_check', 'dns_block'])
   });
 
   const bridge = createConversationStoreFromProcessor(processor, {
-    conversationId: "security-ops-demo",
+    conversationId: 'security-ops-demo'
   });
 
   const processorEvents = createProcessorEventAdapter(processor);
@@ -130,19 +115,17 @@ async function runFullWorkflow(): Promise<void> {
   const loop = createAgentLoop({
     execute: executeWithContinuation,
     stopWhen: [hasNoToolCalls(), isStepCount(6)],
-    buildToolResultMessages: async (toolCalls) => {
+    buildToolResultMessages: async toolCalls => {
       const messages = [];
       for (const call of toolCalls) {
         const toolResult = await runTool(call.name, call.parameters);
         messages.push(buildToolResultMessage(call, toolResult));
       }
       return messages;
-    },
+    }
   });
 
-  async function* executeWithContinuation(
-    messages: Array<{ role: string; content: string }>
-  ) {
+  async function* executeWithContinuation(messages: Array<{ role: string; content: string }>) {
     try {
       for await (const chunk of executeProviderStream(messages)) {
         const output = processor.process(chunk);
@@ -157,12 +140,9 @@ async function runFullWorkflow(): Promise<void> {
       // 6) recovery + continuation
       const snapshot = captureStreamState(processor);
       const continuationMessages = buildContinuationPrompt(snapshot, {
-        provider: "openai",
+        provider: 'openai'
       });
-      for await (const chunk of executeProviderStream([
-        ...messages,
-        ...continuationMessages,
-      ])) {
+      for await (const chunk of executeProviderStream([...messages, ...continuationMessages])) {
         const output = processor.process(chunk);
         if (output.content) {
           renderer.write(output);
@@ -175,14 +155,13 @@ async function runFullWorkflow(): Promise<void> {
 
   const initialMessages = [
     {
-      role: "user",
-      content:
-        "Analyze current telemetry and decide whether to block malicious IPs. Use tools before final decision.",
-    },
+      role: 'user',
+      content: 'Analyze current telemetry and decide whether to block malicious IPs. Use tools before final decision.'
+    }
   ];
 
   for await (const part of loop.run(initialMessages)) {
-    if (part.type === "text") {
+    if (part.type === 'text') {
       // Optional live sink for text deltas
       process.stdout.write(part.text);
     }
@@ -193,30 +172,27 @@ async function runFullWorkflow(): Promise<void> {
     bridge.store
       .getState()
       .messages.at(-1)
-      ?.parts.filter((part) => part.type === "text")
-      .map((part) => part.text)
-      .join("\n") ?? "";
+      ?.parts.filter(part => part.type === 'text')
+      .map(part => part.text)
+      .join('\n') ?? '';
 
-  const decision = validateJsonSchema<SecurityDecision>(
-    decisionText,
-    decisionSchema
-  );
+  const decision = validateJsonSchema<SecurityDecision>(decisionText, decisionSchema);
   if (!decision.success) {
-    throw new Error(`Decision payload invalid: ${decision.errors.join("; ")}`);
+    throw new Error(`Decision payload invalid: ${decision.errors.join('; ')}`);
   }
 
   await applyDecisionAction(decision.data, {
-    shouldAct: (value) => value.shouldBlock,
-    onSkip: (value) => {
-      console.log("No DNS block required:", value.reason);
+    shouldAct: value => value.shouldBlock,
+    onSkip: value => {
+      console.log('No DNS block required:', value.reason);
     },
-    action: async (value) => {
+    action: async value => {
       await updateRemoteDnsBlocklist(value.targetIp, {
         reason: value.reason,
         severity: value.severity,
-        evidence: value.evidence,
+        evidence: value.evidence
       });
-    },
+    }
   });
 
   bridge.dispose();
@@ -224,22 +200,19 @@ async function runFullWorkflow(): Promise<void> {
 
 // Alternate low-boilerplate path when raw-stream + schema gate is enough:
 async function runSimplePath(rawSource: AsyncIterable<unknown>) {
-  const simpleDecision = await runStructuredDecisionFromRawStream<
-    unknown,
-    SecurityDecision
-  >({
+  const simpleDecision = await runStructuredDecisionFromRawStream<unknown, SecurityDecision>({
     source: rawSource,
-    normalize: (event) => {
+    normalize: event => {
       const normalized = normalizeOpenAIResponseEvent(event);
       return normalized ? normalized.chunk : null;
     },
-    schema: decisionSchema,
+    schema: decisionSchema
   });
 
   if (simpleDecision.success) {
     await applyDecisionAction(simpleDecision.decision, {
-      shouldAct: (value) => value.shouldBlock,
-      action: async (value) => updateRemoteDnsBlocklist(value.targetIp, value),
+      shouldAct: value => value.shouldBlock,
+      action: async value => updateRemoteDnsBlocklist(value.targetIp, value)
     });
   }
 }

@@ -1,10 +1,9 @@
 import { LLMStreamProcessor } from '@agentsy/core/processor';
+// @ts-ignore ink has no default export, but we need it for type references
+import type typeInk from 'ink';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createInkRenderer } from './createInkRenderer.js';
-
-// @ts-ignore ink has no default export, but we need it for type references
-import type typeInk from 'ink';
 
 vi.mock(import('ink'), async () => {
   const actual = await vi.importActual('ink');

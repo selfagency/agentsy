@@ -184,9 +184,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
       if (typeof value === 'string') {
         result[key] = this._redactionPolicy.redact(value);
       } else if (Array.isArray(value)) {
-        result[key] = value.map(item =>
-          this._redactionPolicy ? this._redactionPolicy.redact(item) : item
-        );
+        result[key] = value.map(item => (this._redactionPolicy ? this._redactionPolicy.redact(item) : item));
       } else {
         result[key] = value;
       }

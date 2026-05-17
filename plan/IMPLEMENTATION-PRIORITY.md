@@ -81,7 +81,7 @@
    export function compressOutput(
      response: string,
      options: {
-       level: "lite" | "full" | "ultra";
+       level: 'lite' | 'full' | 'ultra';
        preserve: string[]; // code, technical, URLs
        intensity?: number;
      }
@@ -221,16 +221,14 @@
 1. **Honker extension loader with BLAKE3:**
 
    ```typescript
-   export function loadHonkerExtension(
-     dbPath: string
-   ): Promise<LoadableExtension>;
+   export function loadHonkerExtension(dbPath: string): Promise<LoadableExtension>;
 
    // Load extension and configure BLAKE3
-   const extension = await loadHonkerExtension("./memory.db");
-   await extension.load("./honker.so");
+   const extension = await loadHonkerExtension('./memory.db');
+   await extension.load('./honker.so');
 
    // Initialize BLAKE3 for content addressing
-   await extension.load("./blake3.so");
+   await extension.load('./blake3.so');
    ```
 
 2. **Three-tier wiki system:**
@@ -239,24 +237,24 @@
    interface ThreeTierWiki {
      // Tier 1: Raw content layer (immediate data sources)
      raw: {
-       captures: "Document and file contents as they arrive";
-       schedule: "Scheduled ingestion and processing";
-       streaming: "Real-time content streams";
+       captures: 'Document and file contents as they arrive';
+       schedule: 'Scheduled ingestion and processing';
+       streaming: 'Real-time content streams';
      };
 
      // Tier 2: Wiki layer (processed, structured knowledge)
      wiki: {
-       article: "Normalized articles and documentation";
-       concept: "Related concepts and entity relationships";
-       conversation: "Conversation summaries and exchanges";
-       technical: "Technical documentation and code snippets";
+       article: 'Normalized articles and documentation';
+       concept: 'Related concepts and entity relationships';
+       conversation: 'Conversation summaries and exchanges';
+       technical: 'Technical documentation and code snippets';
      };
 
      // Tier 3: Vector index layer (semantic search capable)
      vector: {
-       embeddings: "Nomic v1.5 local embeddings";
-       index: "Vector search capabilities";
-       retrieval: "Semantic search and ranking";
+       embeddings: 'Nomic v1.5 local embeddings';
+       index: 'Vector search capabilities';
+       retrieval: 'Semantic search and ranking';
      };
    }
    ```
@@ -621,38 +619,38 @@
 
 ```typescript
 // Standalone memory service usage
-import { SQLiteManager } from "@agentsy/memory/coordination";
-import { PubSubManager } from "@agentsy/memory/coordination";
+import { SQLiteManager } from '@agentsy/memory/coordination';
+import { PubSubManager } from '@agentsy/memory/coordination';
 
 // Initialize with honker
-const manager = await SQLiteManager.initialize("./memory.db", {
-  withHonkExtension: true,
+const manager = await SQLiteManager.initialize('./memory.db', {
+  withHonkExtension: true
 });
 
 // Setup coordination
 const pubSub = new PubSubManager(manager);
 
 // Use for cross-process coordination
-await pubSub.notify("agent-startup", { agentId: "agent-1" });
+await pubSub.notify('agent-startup', { agentId: 'agent-1' });
 ```
 
 **As Standalone Token Optimizer:**
 
 ```typescript
 // Standalone token optimization
-import { compressOutput } from "@agentsy/tokens/compression";
-import { compressMemoryFile } from "@agentsy/core/context/compression";
+import { compressOutput } from '@agentsy/tokens/compression';
+import { compressMemoryFile } from '@agentsy/core/context/compression';
 
 // Compress output
 const compressedResponse = compressOutput(rawResponse, {
-  level: "full",
-  preserve: ["code", "technical", "urls"],
+  level: 'full',
+  preserve: ['code', 'technical', 'urls']
 });
 
 // Compress memory
-const { compressed, savings } = await compressMemoryFile("./CLAUDE.md", {
-  preserve: ["code", "urls", "paths"],
-  backup: true,
+const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
+  preserve: ['code', 'urls', 'paths'],
+  backup: true
 });
 ```
 

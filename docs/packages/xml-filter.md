@@ -22,11 +22,11 @@ Use this package when you need to suppress or route XML-like tagged content, esp
 ## Implementation example with neighbors
 
 ```ts
-import { formatXmlLikeResponseForDisplay } from "@agentsy/core/formatting";
-import { createXmlStreamFilter } from "@agentsy/core/xml-filter";
+import { formatXmlLikeResponseForDisplay } from '@agentsy/core/formatting';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const filter = createXmlStreamFilter({
-  extraScrubTags: new Set(["think", "context"]),
+  extraScrubTags: new Set(['think', 'context'])
 });
 
 for await (const chunk of stream) {

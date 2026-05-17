@@ -187,11 +187,11 @@ export interface MCPOrchestrator {
 ```typescript
 export interface ServerConfig {
   id: string;
-  transport: "stdio" | "sse";
+  transport: 'stdio' | 'sse';
   command?: string;
   args?: string[];
   url?: string;
-  trustLevel: "trusted" | "untrusted" | "readonly";
+  trustLevel: 'trusted' | 'untrusted' | 'readonly';
 }
 ```
 
@@ -283,8 +283,8 @@ We are **not** creating `@agentsy/fileops-mcp` as a separate package. File opera
 ### Orchestrator and server contracts
 
 ```typescript
-type MCPTransport = "stdio" | "websocket" | "http";
-type MCPTrustLevel = "trusted" | "untrusted" | "readonly";
+type MCPTransport = 'stdio' | 'websocket' | 'http';
+type MCPTrustLevel = 'trusted' | 'untrusted' | 'readonly';
 
 interface MCPServerConfig {
   name: string;

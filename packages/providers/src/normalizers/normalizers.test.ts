@@ -1243,7 +1243,7 @@ describe(normalizeZAiChunk, () => {
     expect(result?.chunk.done).toBeUndefined();
   });
 
-// oxlint-disable-next-line vitest/max-expects
+  // oxlint-disable-next-line vitest/max-expects
   it('maps finish reasons to canonical finishReason and done', () => {
     expect(
       normalizeZAiChunk({

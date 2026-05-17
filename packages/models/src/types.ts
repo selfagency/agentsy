@@ -65,7 +65,7 @@ export type ModelsDevAPI = Record<string, ModelsDevProvider>;
  * Task requirements for model selection
  */
 export interface TaskRequirements {
-  modality?: "text" | "multimodal" | "code";
+  modality?: 'text' | 'multimodal' | 'code';
   capabilities?: {
     tool_calling?: boolean;
     streaming?: boolean;
@@ -98,7 +98,7 @@ export interface SystemCapabilities {
   ramGb: number;
   vramGb?: number;
   cpuCores?: number;
-  backend?: "cuda" | "metal" | "rocm" | "sycl" | "cpu" | "unknown";
+  backend?: 'cuda' | 'metal' | 'rocm' | 'sycl' | 'cpu' | 'unknown';
   unifiedMemory?: boolean;
 }
 
@@ -114,19 +114,13 @@ export interface LLMStatsLocalModel {
   recommendedRamGb?: number;
   recommendedVramGb?: number;
   estimatedTokensPerSecond?: number;
-  runtime?:
-    | "ollama"
-    | "llama.cpp"
-    | "vllm"
-    | "mlx"
-    | "docker-model-runner"
-    | "other";
+  runtime?: 'ollama' | 'llama.cpp' | 'vllm' | 'mlx' | 'docker-model-runner' | 'other';
   quantization?: string;
   isLocalCompatible?: boolean;
 }
 
 export interface LocalRecommendationCriteria {
-  taskCategory?: "general" | "coding" | "reasoning" | "chat" | "multimodal";
+  taskCategory?: 'general' | 'coding' | 'reasoning' | 'chat' | 'multimodal';
   requireToolCalling?: boolean;
   minContext?: number;
   preferLowCost?: boolean;

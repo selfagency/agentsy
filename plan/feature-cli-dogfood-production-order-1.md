@@ -5,19 +5,7 @@ date_created: 2026-05-15
 last_updated: 2026-05-15
 owner: agentsy-core
 status: In progress
-tags:
-  [
-    feature,
-    architecture,
-    cli,
-    tui,
-    runtime,
-    providers,
-    models,
-    memory,
-    retrieval,
-    production,
-  ]
+tags: [feature, architecture, cli, tui, runtime, providers, models, memory, retrieval, production]
 ---
 
 # Introduction

@@ -69,7 +69,7 @@ describe('chunkUtils', () => {
     });
 
     it('returns empty for non-array or empty input', () => {
-expect(mapNativeToolCalls([])).toStrictEqual([]);
+      expect(mapNativeToolCalls([])).toStrictEqual([]);
     });
   });
 

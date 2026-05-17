@@ -150,24 +150,24 @@ Improvements to:
 ### Example test structure
 
 ```typescript
-import { describe, it, expect } from "vitest";
-import { parseJson } from "../index";
+import { describe, it, expect } from 'vitest';
+import { parseJson } from '../index';
 
-describe("parseJson", () => {
-  it("should parse valid JSON", () => {
+describe('parseJson', () => {
+  it('should parse valid JSON', () => {
     const result = parseJson('{"key": "value"}');
     expect(result.valid).toBe(true);
-    expect(result.data).toEqual({ key: "value" });
+    expect(result.data).toEqual({ key: 'value' });
   });
 
-  it("should handle malformed JSON", () => {
-    const result = parseJson("{invalid}");
+  it('should handle malformed JSON', () => {
+    const result = parseJson('{invalid}');
     expect(result.valid).toBe(false);
     expect(result.error).toBeDefined();
   });
 
-  it("should enforce max depth limit", () => {
-    const deep = '{"a":' + '{"b":'.repeat(10) + "1" + "}".repeat(11);
+  it('should enforce max depth limit', () => {
+    const deep = '{"a":' + '{"b":'.repeat(10) + '1' + '}'.repeat(11);
     const result = parseJson(deep, { maxDepth: 5 });
     expect(result.valid).toBe(false);
   });

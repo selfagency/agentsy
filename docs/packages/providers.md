@@ -32,9 +32,9 @@ Use it when you are dealing with:
 ## Example
 
 ```ts
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
-import { createPipeline } from "@agentsy/providers/pipeline";
-import { processStream } from "@agentsy/providers/adapters";
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { createPipeline } from '@agentsy/providers/pipeline';
+import { processStream } from '@agentsy/providers/adapters';
 ```
 
 ## Notes

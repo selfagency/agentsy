@@ -88,7 +88,9 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
       const interval = setInterval(() => {
         setFrame(f => (f + 1) % spinnerFrames.length);
       }, spinnerInterval);
-      return () =>{  clearInterval(interval); };
+      return () => {
+        clearInterval(interval);
+      };
     }
   }, [style, isStreaming, screenReader, spinnerInterval]);
 

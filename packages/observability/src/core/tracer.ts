@@ -176,7 +176,7 @@ export class InternalSpan implements Span {
       };
     } else if (exception !== null && typeof exception === 'object') {
       const info: Record<string, string> = { 'error.type': exception.constructor.name };
-      
+
       if ('message' in exception && typeof exception.message === 'string') {
         info['error.message'] = exception.message;
       }

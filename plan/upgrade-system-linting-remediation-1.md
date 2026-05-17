@@ -3,7 +3,7 @@ goal: Systematic remediation of ~7000 linting errors and dead code issues detect
 version: 1.0
 date_created: 2026-05-15
 owner: dev
-status: "Planned"
+status: 'Planned'
 tags: [architecture, migration, chore]
 ---
 

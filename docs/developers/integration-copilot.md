@@ -17,20 +17,20 @@ This guide describes how `@agentsy/*` stream-processing packages can be integrat
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
   scrubContextTags: true,
-  knownTools: new Set(["search", "edit_file"]),
+  knownTools: new Set(['search', 'edit_file'])
 });
 
-processor.on("thinking", (delta) => {
+processor.on('thinking', delta => {
   // Stream thinking to UI in real-time
   updateThinkingPanel(delta);
 });
 
-processor.on("text", (delta) => {
+processor.on('text', delta => {
   // Stream content to UI
   updateContentPanel(delta);
 });
 
-processor.on("tool_call", (call) => {
+processor.on('tool_call', call => {
   // Execute tool calls
   executeToolInCopilot(call.name, call.parameters);
 });
@@ -39,7 +39,7 @@ for await (const chunk of chatStream) {
   const output = processor.process({
     content: chunk.content,
     thinking: chunk.thinking,
-    done: chunk.done,
+    done: chunk.done
   });
 }
 
@@ -52,12 +52,12 @@ const final = processor.accumulatedMessage;
 Process chunks immediately without buffering:
 
 ```typescript
-import { ThinkingParser } from "@agentsy/core/thinking";
-import { createXmlStreamFilter } from "@agentsy/core/xml-filter";
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
 const thinking = new ThinkingParser({
-  openingTag: "<think>",
-  closingTag: "</think>",
+  openingTag: '<think>',
+  closingTag: '</think>'
 });
 const filter = createXmlStreamFilter({ enforcePrivacyTags: true });
 
@@ -90,13 +90,13 @@ updateChatDisplay(finalFiltered);
 Extract and execute structured tool calls:
 
 ```typescript
-import { extractXmlToolCalls } from "@agentsy/core/tool-calls";
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
 
 const response = await chatCompletion(messages);
 
 const toolCalls = extractXmlToolCalls(
   response,
-  new Set(["search_codebase", "edit_file", "run_tests", "execute_command"])
+  new Set(['search_codebase', 'edit_file', 'run_tests', 'execute_command'])
 );
 
 for (const call of toolCalls) {
@@ -104,8 +104,8 @@ for (const call of toolCalls) {
 
   // Feed result back to chat context
   messages.push({
-    role: "user",
-    content: `Tool ${call.name} returned: ${result}`,
+    role: 'user',
+    content: `Tool ${call.name} returned: ${result}`
   });
 }
 ```
@@ -115,27 +115,23 @@ for (const call of toolCalls) {
 Validate structured outputs and prompt for repairs:
 
 ```typescript
-import {
-  buildRepairPrompt,
-  parseJson,
-  validateJsonSchema,
-} from "@agentsy/core/structured";
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
 
 const schema = {
-  type: "object",
+  type: 'object',
   properties: {
     suggestions: {
-      type: "array",
-      items: { type: "string" },
-    },
-  },
+      type: 'array',
+      items: { type: 'string' }
+    }
+  }
 };
 
 let response = await chatCompletion(messages);
 let parsed = parseJson(response);
 
 if (parsed === null) {
-  console.error("Failed to parse JSON");
+  console.error('Failed to parse JSON');
   return;
 }
 
@@ -147,16 +143,16 @@ if (!validation.success) {
     failedOutput: response,
     error: validation.errors[0],
     schema,
-    originalPrompt: messages[messages.length - 1].content,
+    originalPrompt: messages[messages.length - 1].content
   });
 
   // Ask model to fix
-  messages.push({ role: "user", content: repairPrompt });
+  messages.push({ role: 'user', content: repairPrompt });
   response = await chatCompletion(messages);
   parsed = parseJson(response);
 
   if (parsed === null) {
-    console.error("Failed to parse JSON on retry");
+    console.error('Failed to parse JSON on retry');
     return;
   }
 
@@ -178,9 +174,9 @@ if (validation.success) {
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: "claude-opus", // Auto-detects thinking tags
+  modelId: 'claude-opus', // Auto-detects thinking tags
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 ```
 
@@ -192,10 +188,10 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  thinkingOpenTag: "<think>",
-  thinkingCloseTag: "</think>",
+  thinkingOpenTag: '<think>',
+  thinkingCloseTag: '</think>',
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 ```
 
@@ -207,17 +203,17 @@ const processor = new LLMStreamProcessor({
 
 ```typescript
 const processor = new LLMStreamProcessor({
-  modelId: "deepseek", // Auto-detects for known models
+  modelId: 'deepseek', // Auto-detects for known models
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 
 // Custom configuration for unknown models
 const processor2 = new LLMStreamProcessor({
-  thinkingOpenTag: "<reasoning>",
-  thinkingCloseTag: "</reasoning>",
+  thinkingOpenTag: '<reasoning>',
+  thinkingCloseTag: '</reasoning>',
   parseThinkTags: true,
-  knownTools: new Set(toolNames),
+  knownTools: new Set(toolNames)
 });
 ```
 
@@ -234,11 +230,9 @@ For safe integration into existing Copilot Chat hosts:
 
 ```typescript
 // Feature flag for gradual rollout
-const useLLMStreamParser = features.isEnabled("@agentsy/core/processor");
+const useLLMStreamParser = features.isEnabled('@agentsy/core/processor');
 
-const processor = useLLMStreamParser
-  ? new LLMStreamProcessor(config)
-  : legacyParsingPath(config);
+const processor = useLLMStreamParser ? new LLMStreamProcessor(config) : legacyParsingPath(config);
 
 // Run both paths in tests for parity verification
 if (process.env.VERIFY_PARITY) {
@@ -246,7 +240,7 @@ if (process.env.VERIFY_PARITY) {
   const newResult = processor.flush();
 
   if (JSON.stringify(legacyResult) !== JSON.stringify(newResult)) {
-    logParityMismatch("streams_not_equal", { legacyResult, newResult });
+    logParityMismatch('streams_not_equal', { legacyResult, newResult });
   }
 }
 ```
@@ -267,6 +261,6 @@ const processor = new LLMStreamProcessor({
   onWarning: (message, context) => {
     console.log(`[@agentsy/core/processor] ${message}`, context);
   },
-  ...config,
+  ...config
 });
 ```

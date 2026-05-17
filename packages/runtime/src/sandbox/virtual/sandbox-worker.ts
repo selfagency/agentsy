@@ -12,39 +12,42 @@ const { code, env, timeout } = workerData as {
 };
 
 // Create a safe realm
-  const context = createContext({
-    console: {
-      error: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'error' }, parentPort.location.origin),
-      info: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'info' }, parentPort.location.origin),
-      log: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'log' }, parentPort.location.origin),
-      warn: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'warn' }, parentPort.location.origin)
-    },
-    process: {
-      env: Object.freeze({ ...env })
-    },
-    // Add other primitives if needed, but keep it minimal for security
-    URL,
-    TextEncoder,
-    TextDecoder,
-    Buffer
+const context = createContext({
+  console: {
+    error: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'error' }, parentPort.location.origin),
+    info: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'info' }, parentPort.location.origin),
+    log: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'log' }, parentPort.location.origin),
+    warn: (...args: unknown[]) => parentPort?.postMessage({ args, type: 'warn' }, parentPort.location.origin)
+  },
+  process: {
+    env: Object.freeze({ ...env })
+  },
+  // Add other primitives if needed, but keep it minimal for security
+  URL,
+  TextEncoder,
+  TextDecoder,
+  Buffer
+});
+Object.freeze(context);
+
+try {
+  // Wrap code to support implicit return if it's a simple expression,
+  // or just run as-is if it's a block.
+  const result = runInContext(code, context, {
+    displayErrors: true,
+    timeout // vm timeout provides a first layer, but worker.terminate() is the fallback
   });
-  Object.freeze(context);
 
-  try {
-    // Wrap code to support implicit return if it's a simple expression,
-    // or just run as-is if it's a block.
-    const result = runInContext(code, context, {
-      displayErrors: true,
-      timeout // vm timeout provides a first layer, but worker.terminate() is the fallback
-    });
-
-    parentPort.postMessage({ type: 'result', value: result }, parentPort.location.origin);
+  parentPort.postMessage({ type: 'result', value: result }, parentPort.location.origin);
 } catch (error) {
-    const errorPayload =
-      error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
+  const errorPayload =
+    error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
 
-    parentPort.postMessage({
+  parentPort.postMessage(
+    {
       args: [errorPayload.message],
       type: 'runtime-error'
-    }, parentPort.location.origin);
-  }
+    },
+    parentPort.location.origin
+  );
+}

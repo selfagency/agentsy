@@ -426,7 +426,7 @@ function checkObjectConstraints(
     return;
   }
 
-  const valueObj: Record<string, unknown> = value;
+  const valueObj = value as Record<string, unknown>;
   const required = Array.isArray(schema.required) ? schema.required.filter(item => typeof item === 'string') : [];
   for (const key of required) {
     if (!Object.hasOwn(valueObj, key)) {
@@ -436,12 +436,12 @@ function checkObjectConstraints(
 
   const properties: Record<string, unknown> =
     schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)
-      ? schema.properties
+      ? (schema.properties as Record<string, unknown>)
       : {};
 
   for (const [key, childSchema] of Object.entries(properties)) {
     if (Object.hasOwn(valueObj, key) && childSchema && typeof childSchema === 'object' && !Array.isArray(childSchema)) {
-      validateNode(valueObj[key], childSchema, `${path}.${key}`, errors, context);
+      validateNode(valueObj[key] as unknown, childSchema as JsonSchema, `${path}.${key}`, errors, context);
     }
   }
 

@@ -16,26 +16,18 @@ npm install @agentsy/runtime @agentsy/core @agentsy/providers @agentsy/ui
 ## Illustrative implementation
 
 ```ts
-import { toAgUiStream } from "@agentsy/runtime/ag-ui";
-import { normalizeOpenAIResponseEvent } from "@agentsy/providers/normalizers";
-import {
-  createProcessorEventAdapter,
-  LLMStreamProcessor,
-} from "@agentsy/core/processor";
-import {
-  buildContinuationPrompt,
-  captureStreamState,
-} from "@agentsy/core/recovery";
-import { parseSSEStream } from "@agentsy/core/sse";
-import { createConversationStoreFromProcessor } from "@agentsy/ui";
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
+import { normalizeOpenAIResponseEvent } from '@agentsy/providers/normalizers';
+import { createProcessorEventAdapter, LLMStreamProcessor } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
+import { parseSSEStream } from '@agentsy/core/sse';
+import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
-async function* providerStream(
-  messages: Array<{ role: string; content: string }>
-) {
-  const response = await fetch("https://api.example.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ model: "gpt-4.1-mini", stream: true, messages }),
+async function* providerStream(messages: Array<{ role: string; content: string }>) {
+  const response = await fetch('https://api.example.com/v1/responses', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'gpt-4.1-mini', stream: true, messages })
   });
 
   const textStream = response.body?.pipeThrough(new TextDecoderStream());
@@ -44,7 +36,7 @@ async function* providerStream(
   }
 
   for await (const event of parseSSEStream(textStream)) {
-    if (event.data === "[DONE]") {
+    if (event.data === '[DONE]') {
       return;
     }
 
@@ -61,12 +53,10 @@ async function* providerStream(
   }
 }
 
-export async function runStatefulOpsCopilot(
-  conversationId: string
-): Promise<void> {
+export async function runStatefulOpsCopilot(conversationId: string): Promise<void> {
   const processor = new LLMStreamProcessor({ parseThinkTags: true });
   const bridge = createConversationStoreFromProcessor(processor, {
-    conversationId,
+    conversationId
   });
 
   const eventAdapter = createProcessorEventAdapter(processor);
@@ -80,9 +70,9 @@ export async function runStatefulOpsCopilot(
 
   const seedMessages = [
     {
-      role: "user",
-      content: "Review current incident telemetry and suggest next steps.",
-    },
+      role: 'user',
+      content: 'Review current incident telemetry and suggest next steps.'
+    }
   ];
 
   try {
@@ -93,20 +83,17 @@ export async function runStatefulOpsCopilot(
   } catch {
     const snapshot = captureStreamState(processor);
     const continuationMessages = buildContinuationPrompt(snapshot, {
-      provider: "openai",
+      provider: 'openai'
     });
 
-    for await (const chunk of providerStream([
-      ...seedMessages,
-      ...continuationMessages,
-    ])) {
+    for await (const chunk of providerStream([...seedMessages, ...continuationMessages])) {
       processor.process(chunk);
     }
     processor.flush();
   }
 
   const state = bridge.store.getState();
-  console.log("Final message count:", state.messages.length);
+  console.log('Final message count:', state.messages.length);
   bridge.dispose();
 }
 ```

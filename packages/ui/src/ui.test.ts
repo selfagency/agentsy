@@ -433,7 +433,7 @@ describe('UI Event Sourcing', () => {
       expect(calledWithState.messages[0]?.id).toBe('msg-1');
     });
 
-it('should unsubscribe listener', () => {
+    it('should unsubscribe listener', () => {
       const store = createConversationStore('conv-1');
       const listener = vi.fn<() => void>();
 

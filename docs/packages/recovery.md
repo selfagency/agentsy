@@ -25,17 +25,14 @@ Use `@agentsy/core/recovery` when your workflow needs to resume, continue, or st
 ## Implementation example with neighbors
 
 ```ts
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import {
-  buildContinuationPrompt,
-  captureStreamState,
-} from "@agentsy/core/recovery";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 
 const snapshot = captureStreamState(processor);
 const continuationMessages = buildContinuationPrompt(snapshot, {
-  provider: "openai",
+  provider: 'openai'
 });
 
 console.log(continuationMessages);

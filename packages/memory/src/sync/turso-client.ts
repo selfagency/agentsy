@@ -135,7 +135,7 @@ class TursoSyncClient implements TursoClient {
 
   constructor(private readonly config: TursoSyncClientConfig) {}
 
-async #getDatabase(): Promise<TursoSyncDatabase> {
+  async #getDatabase(): Promise<TursoSyncDatabase> {
     this.#databasePromise ??= (async () => {
       const database = (await connect(toDatabaseOpts(this.config))) as unknown as TursoSyncDatabase;
       await database.connect();

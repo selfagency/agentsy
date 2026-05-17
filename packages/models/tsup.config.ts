@@ -1,11 +1,11 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
   dts: {
-    resolve: true,
+    resolve: true
   },
-  entry: ["src/index.ts"],
-  external: ["node-fetch"],
-  format: ["esm", "cjs"],
-  target: "node20",
+  entry: ['src/index.ts'],
+  external: ['node-fetch'],
+  format: ['esm', 'cjs'],
+  target: 'node20'
 });

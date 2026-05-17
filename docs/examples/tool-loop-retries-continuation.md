@@ -16,37 +16,29 @@ npm install @agentsy/orchestrator/agent @agentsy/core @agentsy/providers
 ## Illustrative implementation
 
 ```ts
-import { createAgentLoop, isStepCount } from "@agentsy/orchestrator/agent";
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import {
-  buildContinuationPrompt,
-  captureStreamState,
-} from "@agentsy/core/recovery";
-import { buildToolResultMessage } from "@agentsy/core/tool-calls";
+import { createAgentLoop, isStepCount } from '@agentsy/orchestrator/agent';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
+import { buildToolResultMessage } from '@agentsy/core/tool-calls';
 
 const MAX_STREAM_RETRIES = 2;
 
-async function* executeWithRetries(
-  messages: Array<{ role: string; content: string }>
-) {
+async function* executeWithRetries(messages: Array<{ role: string; content: string }>) {
   const processor = new LLMStreamProcessor({ parseThinkTags: true });
 
   let workingMessages = messages;
   for (let attempt = 0; attempt <= MAX_STREAM_RETRIES; attempt++) {
     try {
-      const response = await fetch(
-        "https://api.example.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            model: "gpt-4.1-mini",
-            stream: true,
-            messages: workingMessages,
-          }),
-        }
-      );
+      const response = await fetch('https://api.example.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4.1-mini',
+          stream: true,
+          messages: workingMessages
+        })
+      });
 
       for await (const rawChunk of response.body as AsyncIterable<unknown>) {
         const normalized = normalizeOpenAIChatChunk(rawChunk);
@@ -56,10 +48,10 @@ async function* executeWithRetries(
 
         const output = processor.process(normalized.chunk);
         if (output.content) {
-          yield { type: "text" as const, text: output.content };
+          yield { type: 'text' as const, text: output.content };
         }
         for (const toolCall of output.toolCalls) {
-          yield { type: "tool_call" as const, call: toolCall };
+          yield { type: 'tool_call' as const, call: toolCall };
         }
       }
 
@@ -73,7 +65,7 @@ async function* executeWithRetries(
       // Recover context from partial stream and ask the model to continue.
       const snapshot = captureStreamState(processor);
       const continuation = buildContinuationPrompt(snapshot, {
-        provider: "openai",
+        provider: 'openai'
       });
       workingMessages = [...workingMessages, ...continuation];
     }
@@ -83,23 +75,23 @@ async function* executeWithRetries(
 const loop = createAgentLoop({
   execute: executeWithRetries,
   stopWhen: [isStepCount(8)],
-  buildToolResultMessages: async (toolCalls) => {
+  buildToolResultMessages: async toolCalls => {
     const results = [];
     for (const call of toolCalls) {
       const toolResult = await runTool(call.name, call.parameters);
       results.push(buildToolResultMessage(call, toolResult));
     }
     return results;
-  },
+  }
 });
 
 for await (const part of loop.run([
   {
-    role: "user",
-    content: "Investigate elevated 5xx rates and propose fixes.",
-  },
+    role: 'user',
+    content: 'Investigate elevated 5xx rates and propose fixes.'
+  }
 ])) {
-  if (part.type === "text") {
+  if (part.type === 'text') {
     process.stdout.write(part.text);
   }
 }

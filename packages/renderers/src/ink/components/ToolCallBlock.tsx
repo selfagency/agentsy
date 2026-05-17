@@ -27,7 +27,9 @@ export function ToolCallBlock({ call, theme, screenReader = false }: ToolCallBlo
       const interval = setInterval(() => {
         setFrame(f => (f + 1) % spinnerFrames.length);
       }, spinnerInterval);
-      return () =>{  clearInterval(interval); };
+      return () => {
+        clearInterval(interval);
+      };
     }
   }, [call.done, shouldAnimate, spinnerInterval]);
 

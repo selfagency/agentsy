@@ -7,15 +7,11 @@ export type {
   ConnectorGatewayOptions,
   InboundMessage,
   OutboundMessage,
-  SessionStore,
-} from "./types.js";
+  SessionStore
+} from './types.js';
 
-export {
-  BUILT_IN_COMMANDS,
-  isBuiltInCommand,
-  stripXmlContextTags,
-} from "./types.js";
+export { BUILT_IN_COMMANDS, isBuiltInCommand, stripXmlContextTags } from './types.js';
 
-export { isDiscordAdapterAvailable } from "./discord.js";
-export { isSlackAdapterAvailable } from "./slack.js";
-export { isTelegramAdapterAvailable } from "./telegram.js";
+export { isDiscordAdapterAvailable } from './discord.js';
+export { isSlackAdapterAvailable } from './slack.js';
+export { isTelegramAdapterAvailable } from './telegram.js';

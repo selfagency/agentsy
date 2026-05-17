@@ -8,9 +8,9 @@ describe(createProcessorEventAdapter, () => {
     const processor = new LLMStreamProcessor({
       accumulateNativeToolCalls: true
     });
-    const onToolCallDelta = vi.fn();
-    const onStep = vi.fn();
-    const onFinish = vi.fn();
+    const onToolCallDelta = vi.fn<() => void>();
+    const onStep = vi.fn<(() => void) | ((callback: void) => void)>();
+    const onFinish = vi.fn<() => void>();
 
     createProcessorEventAdapter(processor, {
       onFinish,
@@ -31,7 +31,12 @@ describe(createProcessorEventAdapter, () => {
       usage: { inputTokens: 1, outputTokens: 2 }
     });
 
-    expect(onToolCallDelta).toHaveBeenCalledWith();
+    expect(onToolCallDelta).toHaveBeenCalledWith({
+      argumentsDelta: '{"q":',
+      index: 0,
+      name: 'lookup',
+      type: 'tool_call_delta'
+    });
     expect(onStep).toHaveBeenCalledWith(0, undefined);
     expect(onFinish).toHaveBeenCalledWith('tool-calls', {
       inputTokens: 1,

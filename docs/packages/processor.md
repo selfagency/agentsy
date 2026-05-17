@@ -39,13 +39,13 @@
 ## Example
 
 ```ts
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
-import { createPipeline } from "@agentsy/providers/pipeline";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { createPipeline } from '@agentsy/providers/pipeline';
 
 const processor = new LLMStreamProcessor();
 for await (const event of createPipeline(openAiSseStream, {
-  provider: "openai",
+  provider: 'openai'
 })) {
   console.log(event);
 }
@@ -54,13 +54,13 @@ for await (const event of createPipeline(openAiSseStream, {
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeAnthropicEvent } from "@agentsy/providers/normalizers";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import { createConversationStoreFromProcessor } from "@agentsy/ui";
+import { normalizeAnthropicEvent } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 const bridge = createConversationStoreFromProcessor(processor, {
-  conversationId: "demo-conversation",
+  conversationId: 'demo-conversation'
 });
 
 for await (const event of anthropicEventStream) {

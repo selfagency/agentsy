@@ -7,11 +7,11 @@ interface XmlDisplayBlock {
 }
 
 function isAsciiLetter(char: string): boolean {
-  return /[A-Za-z]/.test(char);
+  return /[A-Za-z]/u.test(char);
 }
 
 function isValidDisplayTagCharacter(char: string): boolean {
-  return /[A-Za-z0-9_.-]/.test(char);
+  return /[A-Za-z0-9_.-]/u.test(char);
 }
 
 function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | null {
@@ -48,12 +48,7 @@ function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | 
 }
 
 export function formatXmlLikeResponseForDisplay(text: string): string {
-  if (
-    text === '' ||
-    !text.includes('<') ||
-    !text.includes('>') ||
-    text.length > MAX_XML_DISPLAY_INPUT_LENGTH
-  ) {
+  if (text === '' || !text.includes('<') || !text.includes('>') || text.length > MAX_XML_DISPLAY_INPUT_LENGTH) {
     return text;
   }
 

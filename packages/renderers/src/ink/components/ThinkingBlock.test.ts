@@ -1,5 +1,5 @@
-import React from 'react';
 import type * as typeInk from 'ink';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { darkTheme, defaultTheme } from '../themes/index.js';

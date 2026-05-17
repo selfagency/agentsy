@@ -109,22 +109,22 @@ The table below maps the main `v0.3.1` subpaths to their modern homes.
 #### Before
 
 ```ts
-import { LLMStreamProcessor } from "@selfagency/llm-stream-parser/processor";
+import { LLMStreamProcessor } from '@selfagency/llm-stream-parser/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
-  knownTools: new Set(["search", "edit_file"]),
+  knownTools: new Set(['search', 'edit_file'])
 });
 ```
 
 #### After
 
 ```ts
-import { LLMStreamProcessor } from "@agentsy/core/processor";
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 const processor = new LLMStreamProcessor({
   parseThinkTags: true,
-  knownTools: new Set(["search", "edit_file"]),
+  knownTools: new Set(['search', 'edit_file'])
 });
 ```
 
@@ -133,20 +133,14 @@ const processor = new LLMStreamProcessor({
 #### Before
 
 ```ts
-import {
-  createSmoothStream,
-  createThinkingFilter,
-} from "@selfagency/llm-stream-parser/pipeline";
+import { createSmoothStream, createThinkingFilter } from '@selfagency/llm-stream-parser/pipeline';
 ```
 
 #### After
 
 ```ts
-import {
-  createSmoothStream,
-  createThinkingFilter,
-} from "@agentsy/core/processor";
-import { createPipeline } from "@agentsy/providers/pipeline";
+import { createSmoothStream, createThinkingFilter } from '@agentsy/core/processor';
+import { createPipeline } from '@agentsy/providers/pipeline';
 ```
 
 ### Tool calls plus structured output
@@ -154,15 +148,15 @@ import { createPipeline } from "@agentsy/providers/pipeline";
 #### Before
 
 ```ts
-import { extractXmlToolCalls } from "@selfagency/llm-stream-parser/tool-calls";
-import { parseJson } from "@selfagency/llm-stream-parser/structured";
+import { extractXmlToolCalls } from '@selfagency/llm-stream-parser/tool-calls';
+import { parseJson } from '@selfagency/llm-stream-parser/structured';
 ```
 
 #### After
 
 ```ts
-import { extractXmlToolCalls } from "@agentsy/core/tool-calls";
-import { parseJson } from "@agentsy/core/structured";
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
+import { parseJson } from '@agentsy/core/structured';
 ```
 
 ### Generic adapter usage
@@ -170,13 +164,13 @@ import { parseJson } from "@agentsy/core/structured";
 #### Before
 
 ```ts
-import { createGenericAdapter } from "@selfagency/llm-stream-parser/adapters";
+import { createGenericAdapter } from '@selfagency/llm-stream-parser/adapters';
 ```
 
 #### After
 
 ```ts
-import { createGenericAdapter } from "@agentsy/providers/adapters";
+import { createGenericAdapter } from '@agentsy/providers/adapters';
 ```
 
 ### Manual normalize + process loop → `processRawStream`
@@ -198,14 +192,10 @@ render(processor.flush());
 #### After
 
 ```ts
-import { processRawStream } from "@agentsy/providers/adapters";
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { processRawStream } from '@agentsy/providers/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
-for await (const output of processRawStream(
-  providerStream,
-  normalizeOpenAIChatChunk,
-  { parseThinkTags: true }
-)) {
+for await (const output of processRawStream(providerStream, normalizeOpenAIChatChunk, { parseThinkTags: true })) {
   render(output);
 }
 ```
@@ -225,7 +215,7 @@ for await (const rawChunk of providerStream) {
 
 const content = processor.accumulatedMessage.content;
 const validated = validateJsonSchema(content, schema);
-if (!validated.success) throw new Error(validated.errors.join("; "));
+if (!validated.success) throw new Error(validated.errors.join('; '));
 
 if (validated.data.shouldBlock) {
   await updateRemoteDns(validated.data);
@@ -235,28 +225,22 @@ if (validated.data.shouldBlock) {
 #### After
 
 ```ts
-import {
-  applyDecisionAction,
-  runStructuredDecisionFromRawStream,
-} from "@agentsy/providers/adapters";
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
-const decision = await runStructuredDecisionFromRawStream<
-  unknown,
-  { shouldBlock: boolean }
->({
+const decision = await runStructuredDecisionFromRawStream<unknown, { shouldBlock: boolean }>({
   source: providerStream,
   normalize: normalizeOpenAIChatChunk,
-  schema,
+  schema
 });
 
 if (!decision.success) {
-  throw new Error(decision.errors.join("; "));
+  throw new Error(decision.errors.join('; '));
 }
 
 await applyDecisionAction(decision.decision, {
-  shouldAct: (value) => value.shouldBlock,
-  action: async (value) => updateRemoteDns(value),
+  shouldAct: value => value.shouldBlock,
+  action: async value => updateRemoteDns(value)
 });
 ```
 
@@ -265,13 +249,13 @@ await applyDecisionAction(decision.decision, {
 #### Before
 
 ```ts
-import { createConversationStoreFromProcessor } from "@selfagency/llm-stream-parser/ui";
+import { createConversationStoreFromProcessor } from '@selfagency/llm-stream-parser/ui';
 ```
 
 #### After
 
 ```ts
-import { createConversationStoreFromProcessor } from "@agentsy/ui";
+import { createConversationStoreFromProcessor } from '@agentsy/ui';
 ```
 
 ### VS Code renderer
@@ -279,13 +263,13 @@ import { createConversationStoreFromProcessor } from "@agentsy/ui";
 #### Before
 
 ```ts
-import { createVSCodeChatRenderer } from "@selfagency/llm-stream-parser/renderers/vscode";
+import { createVSCodeChatRenderer } from '@selfagency/llm-stream-parser/renderers/vscode';
 ```
 
 #### After
 
 ```ts
-import { createVSCodeChatRenderer } from "@agentsy/vscode";
+import { createVSCodeChatRenderer } from '@agentsy/vscode';
 ```
 
 ## Conceptual migration notes

@@ -159,11 +159,11 @@ The models layer must include first-class profile support for:
 
 ```ts
 export type ProviderProtocol =
-  | "openai-compatible"
-  | "ollama-native"
-  | "anthropic-compatible"
-  | "lmstudio-native"
-  | "node-llama-cpp-native";
+  | 'openai-compatible'
+  | 'ollama-native'
+  | 'anthropic-compatible'
+  | 'lmstudio-native'
+  | 'node-llama-cpp-native';
 
 export interface LocalProviderProfile {
   id: string; // ollama | vllm | lmstudio | lemonade | docker-model-runner | jan | apfel | agentsy-local-llama
@@ -275,24 +275,20 @@ The models package must support **search and acquisition planning** for runner-m
 ```ts
 export interface ModelDiscoveryQuery {
   text?: string;
-  provider?: "huggingface" | "ollama" | "open-provider";
-  modalities?: Array<"text" | "image" | "audio">;
+  provider?: 'huggingface' | 'ollama' | 'open-provider';
+  modalities?: Array<'text' | 'image' | 'audio'>;
   minContext?: number;
   quantizations?: string[]; // q4_k_m, q8_0, f16, etc.
   licenseAllowlist?: string[];
 }
 
 export interface ModelArtifactFetchPlan {
-  source: "huggingface" | "ollama" | "open-provider";
+  source: 'huggingface' | 'ollama' | 'open-provider';
   modelId: string;
-  artifactType: "gguf" | "safetensors" | "provider-native";
-  fetchMethod:
-    | "direct-download"
-    | "llama-hf-shortcut"
-    | "ollama-pull"
-    | "conversion";
+  artifactType: 'gguf' | 'safetensors' | 'provider-native';
+  fetchMethod: 'direct-download' | 'llama-hf-shortcut' | 'ollama-pull' | 'conversion';
   estimatedSizeBytes?: number;
-  checks?: Array<"checksum" | "license" | "compatibility">;
+  checks?: Array<'checksum' | 'license' | 'compatibility'>;
 }
 ```
 
@@ -350,9 +346,9 @@ export interface ModelSearchQuery {
 
 export interface ModelRefinementRequest {
   baseSelectionId?: string;
-  tighten?: Array<"cost" | "latency" | "quality" | "privacy" | "tooling">;
-  relax?: Array<"cost" | "latency" | "quality" | "privacy" | "tooling">;
-  task?: RecommendationCriteria["task"];
+  tighten?: Array<'cost' | 'latency' | 'quality' | 'privacy' | 'tooling'>;
+  relax?: Array<'cost' | 'latency' | 'quality' | 'privacy' | 'tooling'>;
+  task?: RecommendationCriteria['task'];
 }
 ```
 
@@ -360,8 +356,8 @@ These APIs must return explainable ranking reasons so the CLI can show "why this
 
 ```ts
 export interface RecommendationCriteria {
-  task: "coding" | "math" | "writing" | "general" | "multimodal";
-  budgetTier?: "low" | "mid" | "high";
+  task: 'coding' | 'math' | 'writing' | 'general' | 'multimodal';
+  budgetTier?: 'low' | 'mid' | 'high';
   preferLocal?: boolean;
   minBenchmarks?: Record<string, number>; // e.g. { HumanEval: 80 }
   preferredLicenses?: string[];
@@ -438,10 +434,10 @@ The models package must never decide how to spawn the process or manage the upst
 ## Export Surface (target)
 
 ```ts
-export * from "./types.js";
-export * from "./catalog/index.js";
-export * from "./selector/index.js";
-export * from "./providers/profiles/index.js";
+export * from './types.js';
+export * from './catalog/index.js';
+export * from './selector/index.js';
+export * from './providers/profiles/index.js';
 ```
 
 ## Risks and Mitigations

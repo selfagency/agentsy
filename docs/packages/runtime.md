@@ -30,22 +30,22 @@ Use `@agentsy/runtime` when your application needs resumable task execution, che
 ## Implementation example with neighbors
 
 ```ts
-import { createRuntimeLoop } from "@agentsy/runtime";
-import { createSessionStore } from "@agentsy/session";
+import { createRuntimeLoop } from '@agentsy/runtime';
+import { createSessionStore } from '@agentsy/session';
 
-const sessionStore = createSessionStore({ id: "ops-session", values: {} });
+const sessionStore = createSessionStore({ id: 'ops-session', values: {} });
 const runtime = createRuntimeLoop({
-  sessionId: "ops-session",
+  sessionId: 'ops-session',
   sessionStore,
-  maxDepth: 2,
+  maxDepth: 2
 });
 
 await runtime.execute([
   {
-    id: "collect-telemetry",
+    id: 'collect-telemetry',
     async run() {
       // perform work
-    },
-  },
+    }
+  }
 ]);
 ```

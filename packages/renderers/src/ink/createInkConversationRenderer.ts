@@ -5,7 +5,7 @@ import type { JsonObject } from '@agentsy/types';
 import type { Instance, RenderOptions } from 'ink';
 // @ts-ignore ink has no default export, but we need it for type references
 import type typeInk from 'ink';
-// @ts-ignore react has no default export, but we need it for type references  
+// @ts-ignore react has no default export, but we need it for type references
 import type typeReact from 'react';
 
 import type { InkRendererHandle, InkRendererOptions } from './createInkRenderer.js';

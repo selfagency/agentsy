@@ -30,13 +30,13 @@ This package projects processed events into application state. Use it when you n
 ## Implementation example with neighbors
 
 ```ts
-import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
-import { LLMStreamProcessor } from "@agentsy/core/processor";
-import { createConversationStoreFromProcessor } from "@agentsy/ui";
+import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 const bridge = createConversationStoreFromProcessor(processor, {
-  conversationId: "conversation-1",
+  conversationId: 'conversation-1'
 });
 
 for await (const rawChunk of stream) {

@@ -56,7 +56,9 @@ describe(createSharedRendererHandle, () => {
       onToolCallDelta: vi.fn<() => Promise<void>>().mockResolvedValue()
     };
 
-    mockOnFinish = vi.fn<(finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>>().mockResolvedValue();
+    mockOnFinish = vi
+      .fn<(finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>>()
+      .mockResolvedValue();
     mockOnError = vi.fn<(error: Error) => void | Promise<void>>().mockResolvedValue();
   });
 

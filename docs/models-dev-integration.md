@@ -145,7 +145,7 @@ interface ModelsDevModel {
 
 // Task requirements for model selection
 interface TaskRequirements {
-  modality?: "text" | "multimodal" | "code" | "reasoning";
+  modality?: 'text' | 'multimodal' | 'code' | 'reasoning';
   capabilities?: {
     tool_calling?: boolean;
     streaming?: boolean;
@@ -157,7 +157,7 @@ interface TaskRequirements {
   constraints?: {
     max_cost?: number; // Maximum cost per request
     max_context?: number; // Minimum context window
-    min_speed?: "fast" | "medium" | "slow";
+    min_speed?: 'fast' | 'medium' | 'slow';
     preferred_family?: string; // Prefer specific model family
     exclude_family?: string[]; // Exclude specific model families
   };
@@ -170,7 +170,7 @@ interface ModelSelectionResult {
   provider: string;
   confidence: number; // 0-1 match score
   estimated_cost: number; // Estimated cost in $
-  capabilities: TaskRequirements["capabilities"];
+  capabilities: TaskRequirements['capabilities'];
   reasoning: string;
 }
 ```
@@ -187,14 +187,11 @@ class ModelsDevClient {
 
   async fetchModelsDevData(): Promise<ModelsDevAPI> {
     // Cache models.dev data for 24 hours
-    if (
-      this.cache &&
-      Date.now() - this.lastFetched!.getTime() < this.CACHE_TTL
-    ) {
+    if (this.cache && Date.now() - this.lastFetched!.getTime() < this.CACHE_TTL) {
       return this.cache;
     }
 
-    const response = await fetch("https://models.dev/api.json");
+    const response = await fetch('https://models.dev/api.json');
     const data = (await response.json()) as ModelsDevAPI;
     this.cache = data;
     this.lastFetched = new Date();
@@ -207,7 +204,7 @@ class ModelsDevClient {
 
   getModel(modelId: string): ModelsDevModel | undefined {
     // Parse model ID (format: provider:model or model)
-    const parts = modelId.includes(":") ? modelId.split(":") : [null, modelId];
+    const parts = modelId.includes(':') ? modelId.split(':') : [null, modelId];
 
     if (parts[0]) {
       const provider = this.getProvider(parts[0]);
@@ -232,9 +229,7 @@ class ModelsDevClient {
       const provider = this.getProvider(providerId);
       return Object.values(provider?.models || {});
     }
-    return Object.values(this.cache ?? {}).flatMap((p) =>
-      Object.values(p.models)
-    );
+    return Object.values(this.cache ?? {}).flatMap(p => Object.values(p.models));
   }
 }
 ```
@@ -254,17 +249,17 @@ class ModelSelector {
   ): Promise<ModelSelectionResult> {
     const allModels = this.modelsDev.listModels();
     const filteredModels = availableModels
-      ? allModels.filter((m) => this.isModelAvailable(m.id, availableModels))
+      ? allModels.filter(m => this.isModelAvailable(m.id, availableModels))
       : allModels;
 
-    const scoredModels = filteredModels.map((model) => ({
+    const scoredModels = filteredModels.map(model => ({
       model,
       score: this.calculateMatchScore(model, requirements),
-      cost: this.estimateCost(model, requirements),
+      cost: this.estimateCost(model, requirements)
     }));
 
     const sortedModels = scoredModels
-      .filter((m) => m.score > 0.3) // Minimum match threshold
+      .filter(m => m.score > 0.3) // Minimum match threshold
       .sort((a, b) => {
         // Sort by (score, cost) - prefer high match, low cost
         const scoreDiff = b.score - a.score;
@@ -273,11 +268,11 @@ class ModelSelector {
       });
 
     if (sortedModels.length === 0) {
-      throw new Error("No model matches requirements");
+      throw new Error('No model matches requirements');
     }
 
     const best = sortedModels[0];
-    const provider = this.modelsDev.getProvider(best.model.id.split(":")[0]);
+    const provider = this.modelsDev.getProvider(best.model.id.split(':')[0]);
 
     return {
       model: best.model.id,
@@ -285,19 +280,16 @@ class ModelSelector {
       confidence: best.score,
       estimated_cost: best.cost,
       capabilities: this.extractCapabilities(best.model),
-      reasoning: this.buildReasoning(best.model, requirements),
+      reasoning: this.buildReasoning(best.model, requirements)
     };
   }
 
-  private calculateMatchScore(
-    model: ModelsDevModel,
-    requirements: TaskRequirements
-  ): number {
+  private calculateMatchScore(model: ModelsDevModel, requirements: TaskRequirements): number {
     let score = 0; // 0-1 scale
 
     // Check modality requirements
-    if (requirements.modality === "multimodal") {
-      if (!model.modalities.input.includes("image")) {
+    if (requirements.modality === 'multimodal') {
+      if (!model.modalities.input.includes('image')) {
         return 0; // Veto: doesn't support images
       }
       score += 0.3;
@@ -316,10 +308,10 @@ class ModelSelector {
     }
 
     // Check specialization
-    if (requirements.specialization === "reasoning" && !model.reasoning) {
+    if (requirements.specialization === 'reasoning' && !model.reasoning) {
       score -= 0.2; // Penalty for reasoning tasks without reasoning capability
     }
-    if (requirements.specialization === "reasoning" && model.reasoning) {
+    if (requirements.specialization === 'reasoning' && model.reasoning) {
       score += 0.3;
     }
 
@@ -328,22 +320,15 @@ class ModelSelector {
       if (model.limit.context < requirements.constraints.max_context) {
         return 0; // Veto: context too small
       }
-      score += Math.min(
-        0.2,
-        (model.limit.context - requirements.constraints.max_context) / 100000
-      );
+      score += Math.min(0.2, (model.limit.context - requirements.constraints.max_context) / 100000);
     }
 
     if (requirements.constraints?.max_cost) {
-      const modelCost =
-        (model.cost.input * 1000 + model.cost.output * 1000) / 1000000;
+      const modelCost = (model.cost.input * 1000 + model.cost.output * 1000) / 1000000;
       if (modelCost > requirements.constraints.max_cost) {
         return 0; // Veto: too expensive
       }
-      score +=
-        ((requirements.constraints.max_cost - modelCost) /
-          requirements.constraints.max_cost) *
-        0.1;
+      score += ((requirements.constraints.max_cost - modelCost) / requirements.constraints.max_cost) * 0.1;
     }
 
     // Family preferences
@@ -360,78 +345,63 @@ class ModelSelector {
     return Math.min(1, score);
   }
 
-  private estimateCost(
-    model: ModelsDevModel,
-    requirements: TaskRequirements
-  ): number {
+  private estimateCost(model: ModelsDevModel, requirements: TaskRequirements): number {
     // Rough estimate: 10K input + 1K output tokens
     const inputTokens = 10000;
     const outputTokens = 1000;
 
-    let cost =
-      (model.cost.input * inputTokens + model.cost.output * outputTokens) /
-      1000000;
+    let cost = (model.cost.input * inputTokens + model.cost.output * outputTokens) / 1000000;
 
     // Reasoning models may use more output tokens
-    if (requirements.specialization === "reasoning") {
+    if (requirements.specialization === 'reasoning') {
       cost *= 3; // Estimate 3x output for reasoning
     }
 
     // Multimodal tasks may use more input tokens
-    if (requirements.modality === "multimodal") {
+    if (requirements.modality === 'multimodal') {
       cost *= 1.5;
     }
 
     return cost;
   }
 
-  private extractCapabilities(
-    model: ModelsDevModel
-  ): TaskRequirements["capabilities"] {
+  private extractCapabilities(model: ModelsDevModel): TaskRequirements['capabilities'] {
     return {
       tool_calling: model.tool_call,
       streaming: true, // Assuming most support streaming
-      image_input: model.modalities.input.includes("image"),
-      image_output: model.modalities.output.includes("image"),
-      audio_input: model.modalities.input.includes("audio"),
-      audio_output: model.modalities.output.includes("audio"),
+      image_input: model.modalities.input.includes('image'),
+      image_output: model.modalities.output.includes('image'),
+      audio_input: model.modalities.input.includes('audio'),
+      audio_output: model.modalities.output.includes('audio')
     };
   }
 
-  private buildReasoning(
-    model: ModelsDevModel,
-    requirements: TaskRequirements
-  ): string {
+  private buildReasoning(model: ModelsDevModel, requirements: TaskRequirements): string {
     const reasons = [`Matched ${model.family} family`];
 
     if (requirements.modality) {
       reasons.push(`Supports ${requirements.modality} modality`);
     }
     if (model.reasoning) {
-      reasons.push("Has reasoning capability");
+      reasons.push('Has reasoning capability');
     }
     if (model.cost.input < 3) {
-      reasons.push("Cost-efficient (low input cost)");
+      reasons.push('Cost-efficient (low input cost)');
     }
     if (model.limit.context > 100000) {
-      reasons.push("Large context window");
+      reasons.push('Large context window');
     }
 
-    return reasons.join(". ");
+    return reasons.join('. ');
   }
 
-  private isModelAvailable(
-    modelId: string,
-    availableModels: string[]
-  ): boolean {
-    return availableModels.some((available) => {
+  private isModelAvailable(modelId: string, availableModels: string[]): boolean {
+    return availableModels.some(available => {
       if (available === modelId) return true;
       // Support wildcard provider:model matching (e.g., "anthropic:*" for all Anthropic models)
-      if (available.includes("*")) {
-        const [provider, model] = modelId.split(":");
-        return (
-          available.endsWith("*") && available.replace("*", "") === provider
-        );
+      if (available.includes('*')) {
+        const [provider, model] = modelId.split(':');
+        return available.endsWith('*') && available.replace('*', '') === provider;
       }
       return false;
     });
@@ -450,7 +420,7 @@ class AvailableModelsManager {
    */
   async loadAvailableModels() {
     // Priority: environment variable > config file > default
-    const envModels = process.env.AGENTS_MODELS?.split(",");
+    const envModels = process.env.AGENTS_MODELS?.split(',');
     const configModels = await this.loadFromConfig();
 
     if (envModels && envModels.length > 0) {
@@ -460,9 +430,7 @@ class AvailableModelsManager {
     } else {
       // Default: all models from models.dev (dev mode)
       const models = await modelsDevClient.listModels();
-      this.availableModels = new Set(
-        models.map((m) => `${m.providerId}:${m.id}`)
-      );
+      this.availableModels = new Set(models.map(m => `${m.providerId}:${m.id}`));
     }
   }
 
@@ -562,10 +530,7 @@ class ModelAwareOrchestrationEngine {
     const taskRequirements = await this.analyzeTask(taskDescription);
 
     // 2. Find matching agents and models
-    const matches = await this.agentRegistry.findAgentsWithModelMatch(
-      taskRequirements,
-      requiredSkills
-    );
+    const matches = await this.agentRegistry.findAgentsWithModelMatch(taskRequirements, requiredSkills);
 
     if (matches.length === 0) {
       throw new Error(`No agent/model combination matches task requirements`);
@@ -575,16 +540,13 @@ class ModelAwareOrchestrationEngine {
     const selected = this.selectBestMatch(matches, availableBudget);
 
     // 4. Verify budget
-    await this.tokenBudget.verifyBudget(
-      selected.model.model,
-      selected.model.estimatedCost
-    );
+    await this.tokenBudget.verifyBudget(selected.model.model, selected.model.estimatedCost);
 
     // 5. Return execution plan
     return {
       agent: selected.agent,
       model: selected.model,
-      executionPlan: this.buildExecutionPlan(selected),
+      executionPlan: this.buildExecutionPlan(selected)
     };
   }
 
@@ -594,12 +556,12 @@ class ModelAwareOrchestrationEngine {
   ): { agent: AgentCapabilities; model: ModelSelectionResult } {
     // Score based on: model confidence * agent proficiency * cost factor
     return matches
-      .map((match) => ({
+      .map(match => ({
         ...match,
         score:
           match.model.confidence *
           this.getAgentProficiency(match.agent) *
-          this.getCostFactor(match.model.estimated_cost, availableBudget),
+          this.getCostFactor(match.model.estimated_cost, availableBudget)
       }))
       .sort((a, b) => b.score - a.score)[0];
   }
@@ -614,10 +576,7 @@ class ModelAwareOrchestrationEngine {
 class DynamicProviderRegistry {
   private modelsDev: ModelsDevClient;
 
-  async configureProvider(
-    providerId: string,
-    apiKey: string
-  ): Promise<UniversalClientConfig> {
+  async configureProvider(providerId: string, apiKey: string): Promise<UniversalClientConfig> {
     const provider = this.modelsDev.getProvider(providerId);
 
     if (!provider) {
@@ -625,32 +584,30 @@ class DynamicProviderRegistry {
     }
 
     // Check required environment variables
-    const missingEnv = provider.env.filter((env) => !process.env[env]);
+    const missingEnv = provider.env.filter(env => !process.env[env]);
     if (missingEnv.length > 0) {
-      throw new Error(
-        `Missing required env vars for ${providerId}: ${missingEnv.join(", ")}`
-      );
+      throw new Error(`Missing required env vars for ${providerId}: ${missingEnv.join(', ')}`);
     }
 
     return {
       provider: providerId as NormalizerProvider,
       apiKey,
-      baseUrl: provider.api,
+      baseUrl: provider.api
     };
   }
 
   async listProviders(): Promise<ProviderDefinition[]> {
     const providers = this.modelsDev.listProviders();
 
-    return providers.map((p) => ({
+    return providers.map(p => ({
       id: p.id,
       name: p.name,
       capabilities: {
         streaming: true,
-        toolCalling: this.getProviderCapability(p, "tool_calling"),
+        toolCalling: this.getProviderCapability(p, 'tool_calling'),
         batching: false,
-        reasoning: this.getProviderCapability(p, "reasoning"),
-      },
+        reasoning: this.getProviderCapability(p, 'reasoning')
+      }
     }));
   }
 
@@ -658,20 +615,15 @@ class DynamicProviderRegistry {
     return this.modelsDev.listModels(providerId);
   }
 
-  private getProviderCapability(
-    provider: ModelsDevProvider,
-    capability: string
-  ): boolean {
-    return Object.values(provider.models).some((model) =>
-      this.isCapable(model, capability)
-    );
+  private getProviderCapability(provider: ModelsDevProvider, capability: string): boolean {
+    return Object.values(provider.models).some(model => this.isCapable(model, capability));
   }
 
   private isCapable(model: ModelsDevModel, capability: string): boolean {
     switch (capability) {
-      case "tool_calling":
+      case 'tool_calling':
         return model.tool_call;
-      case "reasoning":
+      case 'reasoning':
         return model.reasoning;
       default:
         return false;
@@ -852,17 +804,17 @@ await orchestrationEngine.orchestrateTask('Parse docs', [...]);
 
 ```typescript
 // User provides task
-const task = "Analyze codebase security vulnerabilities";
+const task = 'Analyze codebase security vulnerabilities';
 
 // System analyzes task requirements
 const analysis = await modelSelector.selectModel(
   {
-    modality: "text",
+    modality: 'text',
     capabilities: { tool_calling: true },
-    specialization: "coding",
-    constraints: { max_cost: 0.05 },
+    specialization: 'coding',
+    constraints: { max_cost: 0.05 }
   },
-  ["anthropic:claude-3.7-sonnet*", "openai:gpt-4*"]
+  ['anthropic:claude-3.7-sonnet*', 'openai:gpt-4*']
 );
 
 // Result:
@@ -877,7 +829,7 @@ const analysis = await modelSelector.selectModel(
 // Orchestrator executes with selected model
 const result = await orchestrationEngine.orchestrateTask(
   task,
-  [{ name: "security-analysis", proficiency: "advanced" }],
+  [{ name: 'security-analysis', proficiency: 'advanced' }],
   analysis.estimated_cost
 );
 ```

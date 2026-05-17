@@ -28,11 +28,11 @@ Use `@agentsy/runtime/ag-ui` when your application needs to adapt runtime or pro
 ## Implementation example with neighbors
 
 ```ts
-import { toAgUiStream } from "@agentsy/runtime/ag-ui";
+import { toAgUiStream } from '@agentsy/runtime/ag-ui';
 
 const agUiEvents = toAgUiStream(processedEventStream, {
-  runId: "run-1",
-  threadId: "thread-1",
+  runId: 'run-1',
+  threadId: 'thread-1'
 });
 
 for await (const event of agUiEvents) {

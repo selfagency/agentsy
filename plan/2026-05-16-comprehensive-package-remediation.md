@@ -12,12 +12,12 @@ This plan outlines a systematic, dependency-aware remediation approach for all 2
 
 ## Executive Summary
 
-| Category | Current Status | Target |
-|----------|----------------|---------|
-| Packages Passing | 8 (40%) | 20 (100%) |
-| Type Error Packages | 13 | 0 |
-| Lint Error Packages | 11 | 0 |
-| Test Failing Packages | 8 | 0 |
+| Category              | Current Status | Target    |
+| --------------------- | -------------- | --------- |
+| Packages Passing      | 8 (40%)        | 20 (100%) |
+| Type Error Packages   | 13             | 0         |
+| Lint Error Packages   | 11             | 0         |
+| Test Failing Packages | 8              | 0         |
 
 ### Root Cause Analysis
 
@@ -34,39 +34,45 @@ Most issues stem from 4 critical packages that form the foundation:
 
 The packages are ranked by remediation difficulty (1 = trivial, 5 = major refactoring) and tackled in dependency order.
 
-### Tier 1: Quick Wins** (Difficulty: 1/5)
+### Tier 1: Quick Wins\*\* (Difficulty: 1/5)
 
 These are pass-or-fail issues that can be fixed in minutes each.
 
 ### **Package 1: prompts** ✅ **ALREADY PASSING**
+
 - **Status**: No issues detected
 - **Action**: Mark as healthy, move on
 
 ### **Package 2: observability** 🟢 **DONE (add tests if desired)**
+
 - **Status**: Type check ✅, Lint ✅, Tests (none)
 - **Issues**: None
 - **Fix**: Optionally add test coverage for 7 source files
 - **Estimated Time**: ~15 minutes
 
 ### **Package 3: guardrails** 🟢 **DONE (add tests if desired)**
+
 - **Status**: Type check ✅, Lint ✅, Tests (none)
 - **Issues**: None
 - **Fix**: Add test coverage for 3 source files
 - **Estimated Time**: ~10 minutes
 
 ### **Package 4: mcp** 🟢 **DONE (add tests if desired)**
+
 - **Status**: Type check ✅, Lint ✅, Tests (none)
 - **Issues**: None
 - **Fix**: Add test coverage for 4 source files
 - **Estimated Time**: ~10 minutes
 
 ### **Package 5: models** 🟢 **ADD CHECK-TYPES SCRIPT**
+
 - **Status**: Lint ✅, Tests ✅, check-types missing
 - **Issues**: Missing `check-types` script from package.json
 - **Fix**: Add `"check-types": "tsc --noEmit"` to scripts section
 - **Estimated Time**: ~2 minutes
 
 ### **Package 6: memory** 🔴 **CRITICAL BUT EASY FIX**
+
 - **Status**: 57 type errors, 33 lint errors, 8 test failures
 - **Root Cause**: `isObject()` helper function defined outside class scope
 - **File**: `packages/memory/src/sync/file-conflict-store.ts:88`
@@ -82,17 +88,19 @@ These are pass-or-fail issues that can be fixed in minutes each.
 
 ---
 
-### Tier 2: Easy/Medium Fixes** (Difficulty: 2/5)
+### Tier 2: Easy/Medium Fixes\*\* (Difficulty: 2/5)
 
 Small but meaningful fixes requiring code changes.
 
 ### **Package 7: tools** 🔴 **UNBLOCKED BY MEMORY**
+
 - **Status**: 56+ type errors, Lint ✅, Tests ✅
 - **Root Cause**: Type checker checking wrong build path
 - **Fix**: Fix TypeScript config/project references to check `tools` instead of memory
 - **Estimated Time**: ~10 minutes (after memory is fixed)
 
 ### **Package 8: core** 🔴 **FOUNDATIONAL - HIGHEST PRIORITY**
+
 - **Status**: 4 type errors, 220 lint errors, 4 test failures
 - **Type Errors**:
   - `packages/core/src/structured/validateJsonSchema.ts:429:9` - object → Record<string, unknown>
@@ -115,6 +123,7 @@ Small but meaningful fixes requiring code changes.
 - **Estimated Time**: ~2-3 hours
 
 ### **Package 9: scripts** 🟡 **ESM MIGRATION**
+
 - **Status**: 206 lint errors, Tests ✅ (36 passed)
 - **Issues**:
   - 42 CommonJS violations (`require()` → `import`)
@@ -132,11 +141,12 @@ Small but meaningful fixes requiring code changes.
 
 ---
 
-### Tier 3: Medium Refactoring** (Difficulty: 3/5)
+### Tier 3: Medium Refactoring\*\* (Difficulty: 3/5)
 
 Moderate-level structural and API changes.
 
 ### **Package 10: cli** 🟡
+
 - **Status**: 1 type error, 4 lint errors, 1 test failure
 - **Type Error**: Missing `@agentsy/core/context` declaration
 - **Lint Errors**: 4 unsafe operations on error-typed values
@@ -148,6 +158,7 @@ Moderate-level structural and API changes.
 - **Estimated Time**: ~30 minutes (after core fixed)
 
 ### **Package 11: retrieval** 🟠 **IMPLEMENTATION NEEDED**
+
 - **Status**: 10 type errors, 138 lint errors, 13 test failures
 - **Root Cause**: `RetrievalEngine` class missing methods that tests expect
 - **Type Errors**:
@@ -163,6 +174,7 @@ Moderate-level structural and API changes.
 - **Estimated Time**: ~3 hours
 
 ### **Package 12: providers** 🟠 **API UPGRADES**
+
 - **Status**: 13 type errors, 149 lint errors, Tests ✅ (123 passed)
 - **Type Errors**:
   - 7 missing core module type declarations:
@@ -187,11 +199,12 @@ Moderate-level structural and API changes.
 
 ---
 
-### Tier 4: Medium/Hard** (Difficulty: 4/5)
+### Tier 4: Medium/Hard\*\* (Difficulty: 4/5)
 
 Significant work with extensive changes.
 
 ### **Package 13: ui** 🔴 **PROCESSOR API INTEGRATION**
+
 - **Status**: 2 type errors, 19 lint errors, Tests ✅ (22 passed)
 - **Type Errors**: 2 missing `@agentsy/core/processor` declarations
 - **Lint Errors**: 19 unsafe operations:
@@ -207,6 +220,7 @@ Significant work with extensive changes.
 - **Estimated Time**: ~1 hour (after core fixed)
 
 ### **Package 14: testing** 🟠 **COMPLEX DEPENDENCIES**
+
 - **Status**: 7 type errors, 45 lint errors, 8 test failures
 - **Type Errors**: All blocked by dependencies (core, renderers)
 - **Lint Errors**: 45 issues:
@@ -227,11 +241,12 @@ Significant work with extensive changes.
 
 ---
 
-### Tier 5: Hard Refactoring** (Difficulty: 5/5)
+### Tier 5: Hard Refactoring\*\* (Difficulty: 5/5)
 
 Major architectural and type system overhauls.
 
 ### **Package 15: runtime** 🔴 **ENUM OVERHAULD**
+
 - **Status**: 7 type errors, 328 lint errors, 87 test failures
 - **Type Errors**:
   - 1 error: Invalid `vi.mock` overload in container-detector.test.ts:8
@@ -258,6 +273,7 @@ Major architectural and type system overhauls.
 - **Estimated Time**: ~4-5 hours
 
 ### **Package 16: renderers** 🔴 **INK + TYPES COMPLEXITY**
+
 - **Status**: 30+ type errors, 11 lint errors, 35 test failures
 - **Type Errors**: All stemming from missing core type declarations
   - `@agentsy/core/formatting` declaration not found
@@ -285,20 +301,21 @@ Major architectural and type system overhauls.
 
 ## ✅ PHASE EXECUTION PLAN
 
-### Phase 1: Cleanup** (Day 1, ~2 hours)
+### Phase 1: Cleanup\*\* (Day 1, ~2 hours)
 
 **Goal**: Fix critical low-hanging fruit and establish momentum
 
-| Package | Challenge | Est. Time | Impact |
-|---------|-----------|-----------|---------|
-| observability | No errors, add tests | ~15 min | Minimal |
-| guardrails | No errors, add tests | ~10 min | Minimal |
-| mcp | No errors, add tests | ~10 min | Minimal |
-| models | Add check-types script | ~2 min | Low |
-| **memory** | Syntax error, easy fix | ~5 min | **HIGH** - unblocks tools |
-| **tools** | Wrong build path config | ~10 min | **HIGH** - fixed by memory |
+| Package       | Challenge               | Est. Time | Impact                     |
+| ------------- | ----------------------- | --------- | -------------------------- |
+| observability | No errors, add tests    | ~15 min   | Minimal                    |
+| guardrails    | No errors, add tests    | ~10 min   | Minimal                    |
+| mcp           | No errors, add tests    | ~10 min   | Minimal                    |
+| models        | Add check-types script  | ~2 min    | Low                        |
+| **memory**    | Syntax error, easy fix  | ~5 min    | **HIGH** - unblocks tools  |
+| **tools**     | Wrong build path config | ~10 min   | **HIGH** - fixed by memory |
 
 **Expected Results**:
+
 - ✅ 3 packages with comprehensive testing
 - ✅ 2 packages fully fixed (memory, tools)
 - ✅ 1 package with check-types added (models)
@@ -307,17 +324,18 @@ Major architectural and type system overhauls.
 
 ---
 
-### Phase 2: Foundation** (Day 2, ~5-6 hours)
+### Phase 2: Foundation\*\* (Day 2, ~5-6 hours)
 
 **Goal**: Fix core infrastructure to unblock 8+ downstream packages
 
-| Package | Challenge | Est. Time | Impact |
-|---------|-----------|-----------|---------|
-| **core** | Type safety, tests | ~2-3 hr | **CRITICAL** - unblocks 8+ |
-| **scripts** | ESM migration | ~2 hr | Medium |
-| **retrieval** | Implement missing methods | ~3 hr | Medium |
+| Package       | Challenge                 | Est. Time | Impact                     |
+| ------------- | ------------------------- | --------- | -------------------------- |
+| **core**      | Type safety, tests        | ~2-3 hr   | **CRITICAL** - unblocks 8+ |
+| **scripts**   | ESM migration             | ~2 hr     | Medium                     |
+| **retrieval** | Implement missing methods | ~3 hr     | Medium                     |
 
 **Expected Results**:
+
 - ✅ Core package base fixed (type safety, tests)
 - ✅ ESM migration complete for scripts
 - ✅ Retrieval engine methods implemented
@@ -325,6 +343,7 @@ Major architectural and type system overhauls.
 - 📊 Summary: 3 complex packages fixed, multi-level dependency chain resolved
 
 **Critical Dependencies Fixed**:
+
 1. core type exports → unblocks: cli, providers, ui, testing
 2. core tests → validates processor behavior
 3. scripts ESM → improves maintainability
@@ -332,17 +351,18 @@ Major architectural and type system overhauls.
 
 ---
 
-### Phase 3: Dependencies** (Day 3, ~4-5 hours)
+### Phase 3: Dependencies\*\* (Day 3, ~4-5 hours)
 
 **Goal**: Fix all core-dependent packages
 
-| Package | Challenge | Est. Time | Impact |
-|---------|-----------|-----------|---------|
-| cli | Missing type, test failure | ~30 min | Low |
-| providers | API upgrades | ~2 hr | Medium |
-| ui | Processor API | ~1 hr | Medium |
+| Package   | Challenge                  | Est. Time | Impact |
+| --------- | -------------------------- | --------- | ------ |
+| cli       | Missing type, test failure | ~30 min   | Low    |
+| providers | API upgrades               | ~2 hr     | Medium |
+| ui        | Processor API              | ~1 hr     | Medium |
 
 **Expected Results**:
+
 - ✅ All 3 core-dependent packages fixed
 - ✅ CLI metadata parsing works
 - ✅ All adapter patterns cleaned up
@@ -351,17 +371,18 @@ Major architectural and type system overhauls.
 
 ---
 
-### Phase 4: Hard Cases** (Day 4-5, ~8-10 hours)
+### Phase 4: Hard Cases\*\* (Day 4-5, ~8-10 hours)
 
 **Goal**: Resolve remaining complex packages
 
-| Package | Challenge | Est. Time | Priority |
-|---------|-----------|-----------|----------|
-| testing | Complex deps + serialization | ~3 hr | High |
-| renderers | Ink + types | ~3-4 hr | **HIGH** |
-| runtime | Enum overhaul | ~4-5 hr | **HIGH** |
+| Package   | Challenge                    | Est. Time | Priority |
+| --------- | ---------------------------- | --------- | -------- |
+| testing   | Complex deps + serialization | ~3 hr     | High     |
+| renderers | Ink + types                  | ~3-4 hr   | **HIGH** |
+| runtime   | Enum overhaul                | ~4-5 hr   | **HIGH** |
 
 **Expected Results**:
+
 - ✅ Testing infrastructure ESM migrated
 - ✅ Renderers properly typed and tested
 - ✅ Runtime enum issues resolved
@@ -369,6 +390,7 @@ Major architectural and type system overhauls.
 - ✅ Zero lint, type, and test errors
 
 **Final Verification**:
+
 ```bash
 pnpm check-types  # All pass
 pnpm lint          # All pass (0 errors)
@@ -381,17 +403,17 @@ pnpm test          # All pass (1000+ tests)
 
 ### Issue Breakdown by Type
 
-| Error Type | Estimated Count | Est. Hours |
-|------------|----------------|------------|
-| Missing scripts | 2 | ~1 |
-| Syntax errors | ~5 | ~1 |
-| Type declaration issues | ~80 | ~10 |
-| Type safety violations | ~150 | ~15 |
-| Unsafe operations | ~1200 | ~30 |
-| Missing implementations | ~15 | ~5 |
-| Test failures | ~150 | ~20 |
-| Mock/Setup issues | ~50 | ~8 |
-| **TOTAL** | **~1,672** | **~90 hours** |
+| Error Type              | Estimated Count | Est. Hours    |
+| ----------------------- | --------------- | ------------- |
+| Missing scripts         | 2               | ~1            |
+| Syntax errors           | ~5              | ~1            |
+| Type declaration issues | ~80             | ~10           |
+| Type safety violations  | ~150            | ~15           |
+| Unsafe operations       | ~1200           | ~30           |
+| Missing implementations | ~15             | ~5            |
+| Test failures           | ~150            | ~20           |
+| Mock/Setup issues       | ~50             | ~8            |
+| **TOTAL**               | **~1,672**      | **~90 hours** |
 
 ### Complexity Distribution
 
@@ -409,14 +431,14 @@ Tier 5 (Hard):           ███░░░░░░░░░░░░░░░�
 
 ### Before vs After
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Packages Passing | 8 (40%) | 20 (100%) |
-| Type Errors | 150+ | 0 |
-| Lint Errors | 1500+ | 0 |
-| Test Failures | 150+ | 0 |
-| Passing Tests | ~400 | ~1300+ |
-| Zero-Error Baseline | No | Yes |
+| Metric              | Before  | After     |
+| ------------------- | ------- | --------- |
+| Packages Passing    | 8 (40%) | 20 (100%) |
+| Type Errors         | 150+    | 0         |
+| Lint Errors         | 1500+   | 0         |
+| Test Failures       | 150+    | 0         |
+| Passing Tests       | ~400    | ~1300+    |
+| Zero-Error Baseline | No      | Yes       |
 
 ### Quality Improvements
 
@@ -450,11 +472,13 @@ Tier 5 (Hard):           ███░░░░░░░░░░░░░░░�
 ## 📝 IMPLEMENTATION NOTES
 
 ### Decision #1: Package Ordering Strategy
+
 - **Rationale**: Fixed dependencies first (memory → tools → core → dependents)
 - **Alternative**: Parallel fixes across all packages (rejected due to cascading dependency issues)
 - **Result**: Tiered approach reduces risk of introducing new errors
 
 ### Decision #2: Fix Everything vs Truncation
+
 - **Approach**: Fix ALL errors, no silencing of lint rules
 - **Rationale**:
   - Linting rules represent real code quality issues
@@ -464,6 +488,7 @@ Tier 5 (Hard):           ███░░░░░░░░░░░░░░░�
 - **Exception**: Only if rule is fundamentally incompatible with project needs (to be documented and approved)
 
 ### Decision #3: API Stability
+
 - **Approach**: NO backward compatibility required (0.1.2 was only release; 0.2.0 is all new)
 - **Rationale**:
   - First pre-release (0.1.2) has very limited adoption
@@ -473,6 +498,7 @@ Tier 5 (Hard):           ███░░░░░░░░░░░░░░░�
 - **Impact**: Faster fixes, cleaner APIs, no deprecation cycles
 
 ### Decision #4: ESM + Type Safety优先
+
 - **Approach**: Modernize at same time
 - **Rationale**:
   - JavaScript APIs are being deprecated
@@ -501,11 +527,13 @@ These are not blocking remediation but could be addressed in follow-up work:
 ### If Phase 2 (Core) is More Complex
 
 **Indicators**:
+
 - Critical architecture issues discovered in core package
 - Extensive enum/type issues requiring major refactoring
 - Core package has hidden dependencies on external systems
 
 **Alternative**:
+
 - Scope Phase 2 to core type fixes only (skip test failures)
 - Defer renderers runtime issues to separate project
 - Reorder: Fix types → Fix tests → Rebuild
@@ -513,11 +541,13 @@ These are not blocking remediation but could be addressed in follow-up work:
 ### If External Dependencies Block Progress
 
 **Indicators**:
+
 - Tool versions incompatible with TypeScript config
 - Package manager locking issues
 - Build tooling changes required
 
 **Alternative**:
+
 - Document blocking issues separately
 - Create parallel branch for tooling updates
 - Resolve dependencies before packaging fixes
@@ -527,11 +557,13 @@ These are not blocking remediation but could be addressed in follow-up work:
 ## 📚 RELATED DOCUMENTS
 
 ### Existing Plans
+
 - `UPGRADE-SYSTEM-LINTING-REMEDIALTION-1.md` - Focused on Ultracite/oxlint errors
 - `IMPLEMENTATION-PRIORITY.md` - General implementation priorities
 - `MASTER-IMPLEMENTATION-PLAN.md` - Overall system architecture plan
 
 ### Supporting References
+
 - [TypeScript Declaration Files](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 - [Rollup Exports Guide](https://rollupjs.org/guide/en/#exporting-a-functionscope-default)
 - [ES Module Compatibility](https://nodejs.org/api/esm.html)
@@ -559,4 +591,4 @@ Before declaring success:
 
 ---
 
-*[End of Plan - Ready for implementation]*
+_[End of Plan - Ready for implementation]_

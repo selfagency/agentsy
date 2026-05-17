@@ -6,4 +6,4 @@
  */
 
 // Public API exports
-export const packageName = "@agentsy/prompts";
+export const packageName = '@agentsy/prompts';

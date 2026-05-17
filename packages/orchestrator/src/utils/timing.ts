@@ -69,7 +69,9 @@ export const TimingUtils = {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() =>{  reject(new Error(`Operation timed out after ${timeoutMs}ms`)); }, timeoutMs);
+      timeoutId = setTimeout(() => {
+        reject(new Error(`Operation timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
     });
 
     try {
@@ -123,7 +125,8 @@ export class Throttle {
 
     if (now - this.lastExecution >= this.interval) {
       this.execute(...args);
-    } else this.pendingExecution ??= setTimeout(
+    } else
+      this.pendingExecution ??= setTimeout(
         () => {
           this.execute(...args);
           this.pendingExecution = null;

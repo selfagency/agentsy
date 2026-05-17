@@ -7,7 +7,9 @@ import { createStreamingMarkdownRenderer } from './createStreamingMarkdownRender
 (vi.mock as any)('streaming-markdown', () => ({
   default: {
     removed: [],
-    parser_create: vi.fn<{ target: unknown }, { target: unknown }>((opts: { target: unknown }) => ({ target: opts.target })),
+    parser_create: vi.fn<{ target: unknown }, { target: unknown }>((opts: { target: unknown }) => ({
+      target: opts.target
+    })),
     parser_end: vi.fn<() => void>(),
     parser_write: vi.fn<() => void>()
   }

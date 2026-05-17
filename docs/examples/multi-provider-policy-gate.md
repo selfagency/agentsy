@@ -16,31 +16,25 @@ npm install @agentsy/providers
 ## Illustrative implementation
 
 ```ts
-import {
-  applyDecisionAction,
-  runStructuredDecisionFromRawStream,
-} from "@agentsy/providers/adapters";
-import {
-  normalizeAnthropicEvent,
-  normalizeOpenAIChatChunk,
-} from "@agentsy/providers/normalizers";
+import { applyDecisionAction, runStructuredDecisionFromRawStream } from '@agentsy/providers/adapters';
+import { normalizeAnthropicEvent, normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 
 type PolicyDecision = {
   shouldEscalate: boolean;
-  queue: "security" | "payments" | "platform";
+  queue: 'security' | 'payments' | 'platform';
   reason: string;
   confidence: number;
 };
 
 const policySchema = {
-  type: "object",
-  required: ["shouldEscalate", "queue", "reason", "confidence"],
+  type: 'object',
+  required: ['shouldEscalate', 'queue', 'reason', 'confidence'],
   properties: {
-    shouldEscalate: { type: "boolean" },
-    queue: { type: "string", enum: ["security", "payments", "platform"] },
-    reason: { type: "string", minLength: 1 },
-    confidence: { type: "number", minimum: 0, maximum: 1 },
-  },
+    shouldEscalate: { type: 'boolean' },
+    queue: { type: 'string', enum: ['security', 'payments', 'platform'] },
+    reason: { type: 'string', minLength: 1 },
+    confidence: { type: 'number', minimum: 0, maximum: 1 }
+  }
 } as const;
 
 async function* streamOpenAI(prompt: string): AsyncGenerator<unknown> {
@@ -53,38 +47,28 @@ async function* streamAnthropic(prompt: string): AsyncGenerator<unknown> {
   yield* fetchAnthropicEvents(prompt);
 }
 
-async function runPolicyGate(
-  provider: "openai" | "anthropic",
-  prompt: string
-): Promise<void> {
-  const source =
-    provider === "openai" ? streamOpenAI(prompt) : streamAnthropic(prompt);
-  const normalize =
-    provider === "openai" ? normalizeOpenAIChatChunk : normalizeAnthropicEvent;
+async function runPolicyGate(provider: 'openai' | 'anthropic', prompt: string): Promise<void> {
+  const source = provider === 'openai' ? streamOpenAI(prompt) : streamAnthropic(prompt);
+  const normalize = provider === 'openai' ? normalizeOpenAIChatChunk : normalizeAnthropicEvent;
 
-  const decision = await runStructuredDecisionFromRawStream<
-    unknown,
-    PolicyDecision
-  >({
+  const decision = await runStructuredDecisionFromRawStream<unknown, PolicyDecision>({
     source,
-    normalize: (raw) => normalize(raw),
-    schema: policySchema,
+    normalize: raw => normalize(raw),
+    schema: policySchema
   });
 
   if (!decision.success) {
-    throw new Error(
-      `Policy decision failed schema validation: ${decision.errors.join("; ")}`
-    );
+    throw new Error(`Policy decision failed schema validation: ${decision.errors.join('; ')}`);
   }
 
   await applyDecisionAction(decision.decision, {
-    shouldAct: (value) => value.shouldEscalate && value.confidence >= 0.8,
-    onSkip: (value) => {
-      console.log("No escalation required:", value.reason);
+    shouldAct: value => value.shouldEscalate && value.confidence >= 0.8,
+    onSkip: value => {
+      console.log('No escalation required:', value.reason);
     },
-    action: async (value) => {
+    action: async value => {
       await enqueueIncident(value.queue, value.reason);
-    },
+    }
   });
 }
 ```

@@ -19,13 +19,12 @@ describe(LLMStreamProcessor, () => {
 
     expect(out.thinking).toBe('reasoning');
     expect(out.content).toBe('Hello ');
-    expect(out.toolCalls).toStrictEqual([
-      {
-        format: 'json-wrapped',
-        name: 'search_files',
-        parameters: { query: 'abc' }
-      }
-    ]);
+    expect(out.toolCalls).toHaveLength(1);
+    expect(out.toolCalls[0]).toMatchObject({
+      format: 'json-wrapped',
+      name: 'search_files',
+      parameters: { query: 'abc' }
+    });
     expect(out.parts.map(part => part.type)).toStrictEqual(['thinking', 'text', 'tool_call']);
 
     expect(processor.accumulatedThinking).toBe('reasoning');
@@ -50,9 +49,12 @@ describe(LLMStreamProcessor, () => {
     processor.process({ content: '1234567890123456789012345' });
     processor.flush();
 
-    expect(onWarning).toHaveBeenCalledWith();
+    expect(onWarning).toHaveBeenCalledWith(
+      expect.stringContaining('exceeded maxInputLength'),
+      expect.objectContaining({ field: 'content', maxInputLength: 20, originalLength: 25 })
+    );
     expect(onThinking).toHaveBeenCalledWith('x');
-    expect(onText).toHaveBeenCalledWith();
+    expect(onText).toHaveBeenCalledWith('ok12345678901234567890');
     expect(onDone).toHaveBeenCalledOnce();
   });
 
@@ -498,7 +500,8 @@ describe(LLMStreamProcessor, () => {
       done: true
     });
 
-    expect(out.toolCalls).toStrictEqual([{ format: 'json-wrapped', name: 'do', parameters: { a: 'x' } }]);
+    expect(out.toolCalls).toHaveLength(1);
+    expect(out.toolCalls[0]).toMatchObject({ format: 'json-wrapped', name: 'do', parameters: { a: 'x' } });
   }, 5000);
 
   it('enforces maxResidualBytes limit to prevent unbounded buffer growth', () => {

@@ -66,8 +66,12 @@ export function StreamingText({
 
   useEffect(() => {
     if (isStreaming) {
-      const interval = setInterval(() =>{  setTick(t => t + 1); }, 100);
-      return () =>{  clearInterval(interval); };
+      const interval = setInterval(() => {
+        setTick(t => t + 1);
+      }, 100);
+      return () => {
+        clearInterval(interval);
+      };
     }
   }, [isStreaming]);
 
