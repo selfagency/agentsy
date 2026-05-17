@@ -12,7 +12,7 @@ describe('Plain Text Renderer', () => {
     await renderer.end();
 
     // Processor accumulates and emits on end/flush
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
     const allCalls = output.mock.calls.map(c => c[0]).join('');
     expect(allCalls).toContain('Hello');
     expect(allCalls).toContain('World');
@@ -49,8 +49,8 @@ describe('Plain Text Renderer', () => {
     await renderer.write('stream');
     await renderer.end();
 
-    expect(mockStream.write).toHaveBeenCalledWith();
-    expect(mockStream.end).toHaveBeenCalledWith();
+    expect(mockStream.write).toHaveBeenCalled();
+    expect(mockStream.end).toHaveBeenCalled();
 
     // Verify content was written
     const allContent = mockStream.write.mock.calls.map(c => c[0]).join('');
@@ -94,7 +94,7 @@ describe('Plain Text Renderer', () => {
     await renderer.end();
 
     // Just verify it doesn't error with showThinking enabled
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
   });
 
   it('uses custom thinking prefix when provided', async () => {
@@ -109,7 +109,7 @@ describe('Plain Text Renderer', () => {
     await renderer.end();
 
     // Just verify it doesn't error with custom prefix
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
   });
 
   describe('onFinish callback', () => {

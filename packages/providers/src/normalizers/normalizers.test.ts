@@ -4,7 +4,7 @@ import { normalizeAnthropicEvent } from './anthropic.js';
 import { normalizeBedrockConverseEvent } from './bedrock.js';
 import { normalizeCohereEvent } from './cohere.js';
 import { normalizeGeminiChunk } from './gemini.js';
-import { normalizeHuggingFaceTGIChunk } from './hfTgi.js';
+import { normalizeHuggingFaceTGIChunk } from './hf-tgi.js';
 import { normalizeMistralChunk } from './mistral.js';
 import { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
 import {
@@ -12,8 +12,8 @@ import {
   isOpenAICompatibleNormalizerProvider,
   normalizeOpenAICompatibleChunk
 } from './openai-compatible.js';
+import { normalizeOpenAIResponseEvent } from './openai-responses.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
-import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
 import { normalizeZAiChunk } from './zai.js';
 
 // ---------------------------------------------------------------------------

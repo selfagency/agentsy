@@ -76,7 +76,7 @@ describe('KeyboardHandler Component Props', () => {
         options.onInterrupt();
       }
 
-      expect(onInterrupt).toHaveBeenCalledWith();
+      expect(onInterrupt).toHaveBeenCalled();
     });
   });
 

@@ -95,7 +95,7 @@ export class VSCodeMCPBridgeHelper {
         this.pushEvent({
           data: {
             iconPath: iconPath && typeof iconPath === 'string' ? iconPath : iconPath ? String(iconPath) : undefined,
-            value: typeof value === 'string' ? value : String(value)
+            value: typeof value === 'string' ? value : JSON.stringify(value)
           },
           type: 'reference'
         });

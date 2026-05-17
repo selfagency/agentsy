@@ -89,7 +89,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
         return;
       }
       try {
-        const { done, value } = await iterator.next() as { done: boolean; value: unknown };
+        const { done, value } = (await iterator.next()) as { done: boolean; value: unknown };
         if (done) {
           finished = true;
           controller.close();

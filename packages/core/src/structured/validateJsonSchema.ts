@@ -123,7 +123,7 @@ function areObjectsEqual(aObj: Record<string, unknown>, bObj: Record<string, unk
 }
 
 function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) {
+  if (Object.is(a, b)) {
     return true;
   }
   if (a === null || b === null) {
@@ -305,8 +305,9 @@ function checkCompositeKeywords(
   }
 
   if (schema.not && typeof schema.not === 'object' && !Array.isArray(schema.not)) {
-    validateNode(value, schema.not as JsonSchema, path, errors, context);
-    if (errors.length === 0) {
+    const notErrors: string[] = [];
+    validateNode(value, schema.not as JsonSchema, path, notErrors, context);
+    if (notErrors.length === 0) {
       errors.push(`${path}: value must not match the 'not' schema`);
     }
   }

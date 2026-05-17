@@ -1,6 +1,8 @@
 import { join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 
+import type { WorkerMessage } from './worker-messages.js';
+
 export type SandboxExecutionStatus = 'ok' | 'error' | 'timeout' | 'blocked';
 
 export interface SandboxInput {
@@ -51,7 +53,7 @@ export function createVirtualSandbox(): VirtualSandbox {
             return;
           }
           resolved = true;
-          void void worker.terminate();
+          void worker.terminate();
           resolve({
             durationMs: Date.now() - start,
             status: 'timeout',
@@ -60,25 +62,25 @@ export function createVirtualSandbox(): VirtualSandbox {
           });
         }, timeoutMs);
 
-        worker.on('message', msg => {
-          if ((msg as any).type === 'log') {
+        worker.on('message', (msg: WorkerMessage) => {
+          if (msg.type === 'log') {
             stdout.push(msg.args.map(String).join(' '));
           } else if (
-            (msg as any).type === 'error' ||
-            (msg as any).type === 'runtime-error' ||
-            (msg as any).type === 'warn' ||
-            (msg as any).type === 'info'
+            msg.type === 'error' ||
+            msg.type === 'runtime-error' ||
+            msg.type === 'warn' ||
+            msg.type === 'info'
           ) {
             const output = Array.isArray(msg.args) ? msg.args.map(String).join(' ') : String(msg.args ?? '');
             stderr.push(output);
 
-            if ((msg as any).type === 'runtime-error') {
+            if (msg.type === 'runtime-error') {
               if (resolved) {
                 return;
               }
               resolved = true;
               clearTimeout(timeout);
-              void void worker.terminate();
+              void worker.terminate();
               resolve({
                 durationMs: Date.now() - start,
                 exitCode: 1,
@@ -87,13 +89,13 @@ export function createVirtualSandbox(): VirtualSandbox {
                 stdout: stdout.join('\n')
               });
             }
-          } else if ((msg as any).type === 'result') {
+          } else if (msg.type === 'result') {
             if (resolved) {
               return;
             }
             resolved = true;
             clearTimeout(timeout);
-            void void worker.terminate();
+            void worker.terminate();
             resolve({
               durationMs: Date.now() - start,
               exitCode: 0,
@@ -110,7 +112,7 @@ export function createVirtualSandbox(): VirtualSandbox {
           }
           resolved = true;
           clearTimeout(timeout);
-          void void worker.terminate();
+          void worker.terminate();
           resolve({
             durationMs: Date.now() - start,
             exitCode: 1,

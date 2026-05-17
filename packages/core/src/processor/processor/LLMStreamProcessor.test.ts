@@ -855,8 +855,9 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 
     processor.process({ content: 'hello', stepIndex: 0 });
 
-    const stepStarted = events.find((e): e is { messageId?: string; stepIndex: number; usage?: unknown } & { type: 'step_started' } => 
-      (e as { type?: string }).type === 'step_started'
+    const stepStarted = events.find(
+      (e): e is { messageId?: string; stepIndex: number; usage?: unknown } & { type: 'step_started' } =>
+        (e as { type?: string }).type === 'step_started'
     );
     expect(stepStarted).toBeDefined();
     if (stepStarted?.messageId) {
@@ -883,8 +884,9 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
       stepUsage: { outputTokens: 9 }
     });
 
-    const stepFinished = events.find((e): e is { messageId?: string; stepIndex?: number; usage?: unknown } & { type: 'step_finished' } => 
-      (e as { type?: string }).type === 'step_finished'
+    const stepFinished = events.find(
+      (e): e is { messageId?: string; stepIndex?: number; usage?: unknown } & { type: 'step_finished' } =>
+        (e as { type?: string }).type === 'step_finished'
     );
     expect(stepFinished).toBeDefined();
     expect(stepFinished?.usage).toStrictEqual({ outputTokens: 3 });
@@ -907,11 +909,13 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
       nativeToolCallDeltas: [{ argumentsDelta: '"ts"}', index: 0 }]
     });
 
-    const added = events.find((e): e is { toolCall: { id: string } } & { type: 'tool_call_part_added' } => 
-      (e as { type?: string }).type === 'tool_call_part_added'
+    const added = events.find(
+      (e): e is { toolCall: { id: string } } & { type: 'tool_call_part_added' } =>
+        (e as { type?: string }).type === 'tool_call_part_added'
     );
-    const updated = events.find((e): e is { toolCallId?: string } & { type: 'tool_call_updated' } & { state: string } => 
-      (e as { type?: string }).type === 'tool_call_updated' && (e as { state?: string }).state === 'input-complete'
+    const updated = events.find(
+      (e): e is { toolCallId?: string } & { type: 'tool_call_updated' } & { state: string } =>
+        (e as { type?: string }).type === 'tool_call_updated' && (e as { state?: string }).state === 'input-complete'
     );
 
     expect(added?.toolCall?.id).toBeDefined();
@@ -933,12 +937,13 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
       content: '<search><q>one</q></search><search><q>two</q></search>'
     });
 
-    const adds = events.filter((e): e is { toolCall: { id: string } } & { type: 'tool_call_part_added' } => 
-      (e as { type?: string }).type === 'tool_call_part_added'
+    const adds = events.filter(
+      (e): e is { toolCall: { id: string } } & { type: 'tool_call_part_added' } =>
+        (e as { type?: string }).type === 'tool_call_part_added'
     );
     expect(adds).toHaveLength(2);
 
-    const ids = adds.map((e) => (e as { toolCall: { id: string } }).toolCall.id);
+    const ids = adds.map(e => (e as { toolCall: { id: string } }).toolCall.id);
     expect(ids[0]).not.toBe(ids[1]);
   });
 });

@@ -3,10 +3,8 @@ import { randomUUID } from 'node:crypto';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
 import type { Instance, RenderOptions } from 'ink';
-// @ts-ignore ink has no default export, but we need it for type references
-import type typeInk from 'ink';
-// @ts-ignore react has no default export, but we need it for type references
-import type typeReact from 'react';
+import type * as inkNS from 'ink';
+import type * as reactNS from 'react';
 
 import type { InkRendererHandle, InkRendererOptions } from './create-ink-renderer.js';
 import { resolveTheme } from './themes/index.js';
@@ -39,8 +37,8 @@ export interface InkConversationRendererHandle extends InkRendererHandle {
 export async function createInkConversationRenderer(
   options: InkConversationRendererOptions
 ): Promise<InkConversationRendererHandle> {
-  let ink: typeof typeInk;
-  let react: typeof typeReact;
+  let ink: typeof inkNS;
+  let react: typeof reactNS;
   try {
     ink = await import('ink');
     react = await import('react');

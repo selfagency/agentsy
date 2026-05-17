@@ -92,7 +92,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
         } finally {
           // Clean up generator resources on completion or cancellation
           if (generator) {
-            generator.return(undefined);
+            void generator.return(undefined);
           }
         }
       })();

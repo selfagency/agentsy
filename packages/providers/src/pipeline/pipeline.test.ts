@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createPipeline } from './createPipeline.js';
+import { createPipeline } from './create-pipeline.js';
 
 async function* mockOpenAIStream() {
   yield 'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n';

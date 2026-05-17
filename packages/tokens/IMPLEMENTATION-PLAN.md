@@ -42,8 +42,8 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 
 - GOAL-TOKENS-002: Core accounting and compression implementation.
 
-| Task            | Description                                                        | Completed | Date |
-| --------------- | ------------------------------------------------------------------ | --------- | ---- |
+| Task            | Description                                                        | Completed | Date       |
+| --------------- | ------------------------------------------------------------------ | --------- | ---------- |
 | TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. | ✅        | 2026-05-17 |
 | TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  | ✅        | 2026-05-17 |
 | TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       | ✅        | 2026-05-17 |

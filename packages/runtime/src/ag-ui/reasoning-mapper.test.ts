@@ -92,8 +92,9 @@ describe('mapReasoningToEvents', () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {}
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
     expect(contentEvent).toBeDefined();
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- testing encrypted value on internal event shape
     expect((contentEvent as any).encryptedValue).toBe('encrypted');
   });
 
@@ -105,8 +106,9 @@ describe('mapReasoningToEvents', () => {
     });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {}
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
     expect(contentEvent).toBeDefined();
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- testing content field on internal event shape
     expect((contentEvent as any).content).toBe(reasoning);
   });
 
@@ -115,8 +117,9 @@ describe('mapReasoningToEvents', () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {}
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
     expect(contentEvent).toBeDefined();
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- testing content field on internal event shape
     expect((contentEvent as any).content).toBe(reasoning);
   });
 
@@ -163,13 +166,13 @@ describe('mapReasoningToEvents', () => {
     const events = mapReasoningToEvents(reasoning, { runId: 'run_123' });
 
     expect(events.length).toBeGreaterThan(2);
-    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
-    if (!contentEvent?) {
-      throw new Error("contentEvent is nullish");
+    const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT);
+    if (!contentEvent) {
+      throw new Error('contentEvent is nullish');
     }
     expect(contentEvent.content).toContain('line 1');
-    expect(contentEvent?.content).toContain('line 2');
-    expect(contentEvent?.content).toContain('line 3');
+    expect(contentEvent.content).toContain('line 2');
+    expect(contentEvent.content).toContain('line 3');
   });
 
   it('should generate unique messageIds for different reasoning calls', () => {

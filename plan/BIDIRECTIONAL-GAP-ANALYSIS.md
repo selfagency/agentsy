@@ -17,7 +17,9 @@ This document identifies gaps between:
 The following detailed tasks from package implementation plans are NOT captured in TODO.txt:
 
 ### @agentsy/cli (18+ detailed tasks missing)
+
 Package plan tasks not in TODO:
+
 - TASK-CLI-001: Align CLI command-routing contracts with oclif/core
 - TASK-CLI-002: Stabilize typed config contracts and precedence diagnostics
 - TASK-CLI-003: Publish boundary notes for shell composition vs package-owned
@@ -40,7 +42,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "No CLI framework, no commands, no TUI" (generic)
 
 ### @agentsy/core (12 detailed tasks missing)
+
 Package plan tasks not in TODO:
+
 - TASK-CORE-001: Freeze normalized chunk/event type contracts
 - TASK-CORE-002: Add compile-time snapshots for processor and normalizer
 - TASK-CORE-003: Document ownership boundaries in package docs
@@ -57,7 +61,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "65% for stream processing, but critical UniversalClient is placeholder"
 
 ### @agentsy/guardrails (12 tasks + ethical rules missing)
+
 Package plan tasks not in TODO:
+
 - TASK-GUARDRAILS-001: Finalize policy schema, decision envelope, reason codes
 - TASK-GUARDRAILS-002: Add deterministic evaluation contract tests
 - TASK-GUARDRAILS-003: Align package boundaries with runtime/tools/retrieval
@@ -75,7 +81,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "All providers are abstract base classes; 0/4 usable"
 
 ### @agentsy/orchestrator (12 tasks + agent mode infrastructure missing)
+
 Package plan tasks not in TODO:
+
 - TASK-ORCH-001: Finalize planner/strategy interfaces
 - TASK-ORCH-002: Stabilize task-board and persistence abstraction
 - TASK-ORCH-003: Document orchestration ownership vs runtime/tools
@@ -95,7 +103,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "No slash commands system, No agent mode bundles, No Hook system"
 
 ### @agentsy/observability (22 detailed tasks missing)
+
 Package plan tasks not in TODO:
+
 - TASK-OBS-001: Stabilize trace/span/event contracts
 - TASK-OBS-002: Add redaction contract tests and schema validation
 - TASK-OBS-003: Document ownership boundaries and package integration
@@ -118,7 +128,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "No OpenTelemetry integration, No AgentSpan, No AI-specific events"
 
 ### @agentsy/runtime (12 tasks, mostly complete in plan but not reflected in TODO)
+
 Package plan tasks (TASK-RUNTIME-001 to -006 all marked ✅ complete 2026-05-17):
+
 - TASK-RUNTIME-007: Integrate tools/guardrails/session/memory/retrieval
 - TASK-RUNTIME-008: Add integration tests for approval/policy/resume
 - TASK-RUNTIME-009: Emit runtime lifecycle telemetry
@@ -130,7 +142,9 @@ TODO says: "~30% complete, Expected agent runtime but got task executor, No agen
 BUT PLAN SAYS: Tasks 1-6 are COMPLETE with dates 2026-05-17
 
 ### @agentsy/session (12 tasks, mostly complete in plan but not reflected in TODO)
+
 Package plan tasks (TASK-SESSION-001 to -006 all marked ✅ complete 2026-05-17):
+
 - TASK-SESSION-007: Integrate runtime loop persistence and CLI resume
 - TASK-SESSION-008: Add integration tests for interruption/restart
 - TASK-SESSION-009: Validate memory/runtime boundary behavior
@@ -142,7 +156,9 @@ TODO says: "5% complete, In-memory only, no persistence across restarts"
 BUT PLAN SAYS: Tasks 1-6 are COMPLETE with dates 2026-05-17
 
 ### @agentsy/secrets (12 detailed tasks missing)
+
 Package plan tasks not in TODO:
+
 - TASK-SECRETS-001: Stabilize secrets API contract and backend selection precedence
 - TASK-SECRETS-002: Add typed tests for backend fallback and access error
 - TASK-SECRETS-003: Document security boundary ownership
@@ -159,7 +175,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "In-memory Map with no encryption, No platform-specific storage"
 
 ### @agentsy/tools (12 detailed tasks missing)
+
 Package plan tasks not in TODO:
+
 - TASK-TOOLS-001: Stabilize tool definition, schema, and lifecycle event contracts
 - TASK-TOOLS-002: Add typed tests for validation and result envelope
 - TASK-TOOLS-003: Document ownership boundaries with runtime/plugins/orchestrator
@@ -176,7 +194,9 @@ Package plan tasks not in TODO:
 TODO only mentions: "ToolDefinition interface doesn't exist, REPL tool only placeholder, No file operations"
 
 ### @agentsy/tokens (12 tasks, partially complete in plan but not reflected in TODO)
+
 Package plan tasks (TASK-TOKENS-004 to -006 marked ✅ complete 2026-05-17):
+
 - TASK-TOKENS-007: Integrate runtime/orchestrator enforcement middleware
 - TASK-TOKENS-008: Add integration tests for budget rejection/downscoping
 - TASK-TOKENS-009: Validate observability/CLI/UI metric wiring
@@ -194,7 +214,9 @@ BUT PLAN SAYS: Tasks 4-6 are COMPLETE with dates 2026-05-17
 The following content from TODO.txt is NOT captured in package implementation plans:
 
 ### Ecosystem Integration Strategy (not in any package plan)
+
 FROM TODO Section ECOSYSTEM ANALYSIS FINDINGS:
+
 - Bundle strategy: models.dev, Honker, AgentFS, mcp-rag-server, Maki
 - Conditional packages: tldw_server, mirage, Codeburn, Stagehand, Varlock, Crit
 - Local LLM provider support: Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel, node-llama-cpp
@@ -205,7 +227,9 @@ FROM TODO Section ECOSYSTEM ANALYSIS FINDINGS:
 These are cross-ecosystem decisions that should be referenced in individual package plans but are currently not.
 
 ### Turso + Honker Hybrid Strategy (not in memory package plan)
+
 FROM TODO:
+
 - CRITICAL CONSTRAINT: Turso does NOT support honk extension
 - SOLUTION: Local-first coordination with Turso remote sync
 - Local Layer (1-5ms latency): Local SQLite with honk extension
@@ -215,7 +239,9 @@ FROM TODO:
 This critical architecture decision should be in @agentsy/memory IMPLEMENTATION-PLAN.md but isn't.
 
 ### Phase 0-2 Completion Claims (not verified in package plans)
+
 FROM TODO Verification Update:
+
 - Phase 0 (token reduction foundation): COMPLETE
 - Phase 1 (memory coordination + wiki foundation): COMPLETE
 - Phase 2 (Turso sync + backup): COMPLETE
@@ -223,7 +249,9 @@ FROM TODO Verification Update:
 These completion claims need verification against individual package plan task completion status.
 
 ### 23 Priority Structure (not in package plans)
+
 TODO organizes work into 26 priorities across 4 phases (Foundation, Integration, Feature, Polish):
+
 - Foundation Phase: types, core, observability, memory, session, secrets, guardrails, testing
 - Integration Phase: providers, runtime, orchestrator, retrieval, tools, connectors, mcp
 - Feature Phase: prompts, plugins, tokens, ui, types completion, renderers, scripts
@@ -237,18 +265,18 @@ This sequencing is useful but not reflected in individual package plans.
 
 ### Critical Discrepancies between TODO vs Package Plans vs Actual Code
 
-| Package | TODO Claim | Package Plan Marked | Compliance Matrix Actual | Discrepancy |
-|---------|------------|---------------------|------------------------|-------------|
-| **runtime** | "~30% complete, Expected agent runtime got task executor" | TASK-RUNTIME-001 to -006 ✅ (2026-05-17) | 200%+ compliance (bonus features) | TODO contradicts plan and actual code |
-| **session** | "5% complete, In-memory only, no persistence" | TASK-SESSION-001 to -006 ✅ (2026-05-17) | 60% compliance (some extras beyond plan) | TODO contradicts plan and actual code |
-| **tokens** | "~30% complete, No cost calculation, No real token counting" | TASK-TOKENS-004 to -006 ✅ (2026-05-17) | 10% compliance (compression only) | TODO contradicts plan, plan ahead of actual |
-| **memory** | "Phase 1-2 COMPLETE" (implies 100%) | No completion marks in plan | 98% compliance (51/52 tasks) | TODO overclaims, plan lacks verification |
-| **observability** | "5% complete, No OpenTelemetry, No traces" | No completion marks | 30% compliance (type stubs only) | TODO matches actual, plan lacks verification |
-| **tools** | "5% complete, ToolDefinition doesn't exist" | No completion marks | 15% compliance (2 stubs) | TODO matches actual, plan lacks verification |
-| **secrets** | "5% complete, In-memory Map only" | No completion marks | 8% compliance (1 interface) | TODO matches actual, plan lacks verification |
-| **guardrails** | "23% complete, types only" | No completion marks | 12% compliance (2 error classes) | TODO matches actual, plan lacks verification |
-| **orchestrator** | "~35% complete, No slash commands" | No completion marks | 40% compliance (4 interfaces) | TODO matches actual, plan lacks verification |
-| **cli** | "1% complete, No CLI framework" | No completion marks | 37% compliance (3 commands) | TODO matches actual, plan lacks verification |
+| Package           | TODO Claim                                                   | Package Plan Marked                      | Compliance Matrix Actual                 | Discrepancy                                  |
+| ----------------- | ------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------- | -------------------------------------------- |
+| **runtime**       | "~30% complete, Expected agent runtime got task executor"    | TASK-RUNTIME-001 to -006 ✅ (2026-05-17) | 200%+ compliance (bonus features)        | TODO contradicts plan and actual code        |
+| **session**       | "5% complete, In-memory only, no persistence"                | TASK-SESSION-001 to -006 ✅ (2026-05-17) | 60% compliance (some extras beyond plan) | TODO contradicts plan and actual code        |
+| **tokens**        | "~30% complete, No cost calculation, No real token counting" | TASK-TOKENS-004 to -006 ✅ (2026-05-17)  | 10% compliance (compression only)        | TODO contradicts plan, plan ahead of actual  |
+| **memory**        | "Phase 1-2 COMPLETE" (implies 100%)                          | No completion marks in plan              | 98% compliance (51/52 tasks)             | TODO overclaims, plan lacks verification     |
+| **observability** | "5% complete, No OpenTelemetry, No traces"                   | No completion marks                      | 30% compliance (type stubs only)         | TODO matches actual, plan lacks verification |
+| **tools**         | "5% complete, ToolDefinition doesn't exist"                  | No completion marks                      | 15% compliance (2 stubs)                 | TODO matches actual, plan lacks verification |
+| **secrets**       | "5% complete, In-memory Map only"                            | No completion marks                      | 8% compliance (1 interface)              | TODO matches actual, plan lacks verification |
+| **guardrails**    | "23% complete, types only"                                   | No completion marks                      | 12% compliance (2 error classes)         | TODO matches actual, plan lacks verification |
+| **orchestrator**  | "~35% complete, No slash commands"                           | No completion marks                      | 40% compliance (4 interfaces)            | TODO matches actual, plan lacks verification |
+| **cli**           | "1% complete, No CLI framework"                              | No completion marks                      | 37% compliance (3 commands)              | TODO matches actual, plan lacks verification |
 
 ### Root Cause of Discrepancies
 
@@ -268,7 +296,7 @@ This sequencing is useful but not reflected in individual package plans.
 
 1. **Update TODO.txt with accurate package plan tasks**: Add the 100+ specific TASK-XXX-XXX tasks from package implementation plans that are currently missing.
 
-2. **Update TODO.txt completion rates to match compliance matrix**: 
+2. **Update TODO.txt completion rates to match compliance matrix**:
    - runtime: 200%+ (not 30%)
    - session: 60% (not 5%)
    - tokens: 10% (not 30%)
@@ -299,14 +327,17 @@ This sequencing is useful but not reflected in individual package plans.
 ## Section 5: Summary
 
 **Total Missing Tasks Identified:**
+
 - From package plans missing in TODO: ~120+ specific TASK-XXX-XXX tasks across 10 packages
 - From TODO missing in package plans: Ecosystem strategy, Turso+Honker architecture, phase Sequencing
 
 **Critical Discrepancies Identified:**
+
 - 10/10 packages have TODO completion rates that contradict either package plan ✅ marks or compliance matrix verification
 - Most likely cause: TODO estimates were based on priority/phase completion guesses rather than verified task completion
 
 **Recommended Path Forward:**
+
 1. Update TODO.txt with package plan tasks and accurate completion rates
 2. Verify package plan ✅ marks represent actual code
 3. Add cross-package ecosystem decisions to relevant package plans

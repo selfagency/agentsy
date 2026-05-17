@@ -496,6 +496,10 @@ importers:
       zx:
         specifier: ^8.8.5
         version: 8.8.5
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/secrets:
     dependencies:

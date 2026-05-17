@@ -8,7 +8,7 @@ import {
   loadRuntimeSnapshotFromSession,
   saveRuntimeSnapshotToSession
 } from './index.js';
-import type { RuntimeExecutor, RuntimeTask, RuntimeWorkflowTask } from './index.js';
+import type { RuntimeExecutor, RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 
 describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {
@@ -72,6 +72,7 @@ describe('createRuntimeExecutor', () => {
     await executor.execute([task]);
 
     expect(onError).toHaveBeenCalledOnce();
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- mock call args typed as any
     expect(onError.mock.calls[0]?.[0].message).toBe('boom');
     expect(onError.mock.calls[0]?.[1]).toBe(task);
   });
@@ -89,6 +90,7 @@ describe('createRuntimeExecutor', () => {
     await executor.execute([task]);
 
     expect(onError).toHaveBeenCalledOnce();
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- mock call args typed as any
     const [error] = onError.mock.calls[0] ?? [];
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe('Runtime task failed');
@@ -189,6 +191,7 @@ describe('createRuntimeLoop', () => {
 
     expect(onTaskStart).toHaveBeenCalledOnce();
     expect(onTaskComplete).toHaveBeenCalledOnce();
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- mock call args typed as any
     expect(onTaskComplete.mock.calls[0]?.[0]?.status).toBe('completed');
   });
 

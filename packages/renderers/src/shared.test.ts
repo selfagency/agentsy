@@ -147,7 +147,7 @@ describe('createSharedRendererHandle' as const, () => {
 
     await renderer.end();
 
-    expect(mockHandlers.onEnd).toHaveBeenCalledWith();
+    expect(mockHandlers.onEnd).toHaveBeenCalled();
   });
 
   it('does not call onEnd when not provided', async () => {
@@ -281,6 +281,6 @@ describe('createSharedRendererHandle' as const, () => {
     await renderer.end();
 
     // Verify handlers were called (processor connects parts to handlers)
-    expect(mockHandlers.onText).toHaveBeenCalledWith();
+    expect(mockHandlers.onText).toHaveBeenCalled();
   });
 });

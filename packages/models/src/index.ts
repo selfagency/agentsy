@@ -36,10 +36,20 @@ function isCacheData(value: unknown): value is CacheData {
 }
 
 function isModelsDevAPI(value: unknown): value is ModelsDevAPI {
-  return typeof value === 'object' && value !== null && value !== null;
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
+  return Object.values(record).every(
+    provider =>
+      typeof provider === 'object' &&
+      provider !== null &&
+      typeof (provider as Record<string, unknown>).id === 'string' &&
+      typeof (provider as Record<string, unknown>).models === 'object'
+  );
 }
 
-const PARAMS_B_PATTERN = /([0-9]+(?:\\.[0-9]+)?)\\s*b\\b/iu;
+const PARAMS_B_PATTERN = /([0-9]+(?:\.[0-9]+)?)\s*b\b/iu;
 
 const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 

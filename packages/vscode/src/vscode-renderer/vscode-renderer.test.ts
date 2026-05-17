@@ -33,24 +33,28 @@ function createFakeProcessor(processParts: Record<string, unknown>[] = [], custo
   } as unknown as LLMStreamProcessor;
 }
 
+function createMockStream(): ChatResponseStream {
+  const fn = <T extends (...args: never[]) => unknown>() => vi.fn<T>() as unknown as T;
+  return {
+    anchor: fn<NonNullable<ChatResponseStream['anchor']>>(),
+    beginToolInvocation: fn<NonNullable<ChatResponseStream['beginToolInvocation']>>(),
+    button: fn<NonNullable<ChatResponseStream['button']>>(),
+    filetree: fn<NonNullable<ChatResponseStream['filetree']>>(),
+    markdown: fn<NonNullable<ChatResponseStream['markdown']>>(),
+    progress: fn<NonNullable<ChatResponseStream['progress']>>(),
+    reference: fn<NonNullable<ChatResponseStream['reference']>>(),
+    thinkingProgress: fn<NonNullable<ChatResponseStream['thinkingProgress']>>(),
+    updateToolInvocation: fn<NonNullable<ChatResponseStream['updateToolInvocation']>>(),
+    usage: fn<NonNullable<ChatResponseStream['usage']>>()
+  };
+}
+
 describe('VS Code Chat Renderer', () => {
   let mockStream: ChatResponseStream;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockStream = {
-      progress: vi.fn(),
-      markdown: vi.fn(),
-      anchor: vi.fn(),
-      reference: vi.fn(),
-      button: vi.fn(),
-      filetree: vi.fn(),
-      // Proposed API methods (optional)
-      thinkingProgress: vi.fn(),
-      beginToolInvocation: vi.fn(),
-      updateToolInvocation: vi.fn(),
-      usage: vi.fn()
-    };
+    mockStream = createMockStream();
   });
 
   it('requires ChatResponseStream', () => {
@@ -195,13 +199,13 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(onToolCall).toHaveBeenCalledOnce();
-      expect(onToolCall).toHaveBeenCalledWith(
-        expect.objectContaining({
-          call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
-          state: 'pending',
-          type: 'tool_call'
-        })
-      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- vitest matcher inference
+      const expectedArg = {
+        call: { id: 'tc_callback', name: 'search' },
+        state: 'pending',
+        type: 'tool_call'
+      } as const;
+      expect(onToolCall).toHaveBeenCalledWith(expect.objectContaining(expectedArg));
     });
 
     it('invokes beginToolInvocation when available', async () => {
@@ -771,8 +775,9 @@ describe('Cancellation Token Bridge', () => {
     const dispose = vi.fn();
     const mockToken: CancellationToken = {
       isCancellationRequested: false,
-      onCancellationRequested: vi.fn(listener => {
-        listener();
+      onCancellationRequested: vi.fn((listener: (e: unknown) => void) => {
+        listener(undefined);
+        return { dispose };
       })
     };
 

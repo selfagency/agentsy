@@ -40,7 +40,10 @@ describe('release-state', () => {
       }
     });
 
-    const written = JSON.parse(readFileSync(p, 'utf-8')) as { defaultState: unknown; packages: Record<string, unknown> };
+    const written = JSON.parse(readFileSync(p, 'utf-8')) as {
+      defaultState: unknown;
+      packages: Record<string, unknown>;
+    };
     expect(written.packages).toBeDefined();
     expect(Object.keys(written.packages)).toStrictEqual(['@agentsy/a', '@agentsy/z']);
   });

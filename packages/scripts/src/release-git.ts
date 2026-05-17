@@ -12,9 +12,6 @@ export interface GitHelpers {
 export function createGitHelpers(root: string): GitHelpers {
   let gitCommand = 'git';
 
-  // Export for shared use
-  const { runGit: exportedRunGit, resolveGitExecutable: exportedResolveGitExecutable, setGitCommand: exportedSetGitCommand } = createGitHelpers(root);
-
   function withSafePathEnv(): NodeJS.ProcessEnv {
     return { ...process.env, PATH: SAFE_PATH };
   }

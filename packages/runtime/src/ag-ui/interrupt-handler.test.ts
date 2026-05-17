@@ -99,8 +99,8 @@ describe('createInterruptEvent', () => {
     expect(event.runId).toBe('run_123');
     expect(event.interrupts).toBeDefined();
     expect(event.interrupts?.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts?.[0] ?? {};
-    expect(interrupt.reason).toBe(InterruptReason.TIMEOUT);
+    const interrupt = event.interrupts?.[0];
+    expect(interrupt?.reason).toBe(InterruptReason.TIMEOUT);
   });
 
   it('should create interrupt with unique ID', () => {
@@ -122,8 +122,8 @@ describe('createInterruptEvent', () => {
 
     expect(event.interrupts).toBeDefined();
     expect(event.interrupts?.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts?.[0] ?? {};
-    expect(interrupt.reason).toBe(InterruptReason.TIMEOUT);
+    const interrupt = event.interrupts?.[0];
+    expect(interrupt?.reason).toBe(InterruptReason.TIMEOUT);
   });
 
   it('should include message in interrupt event', () => {

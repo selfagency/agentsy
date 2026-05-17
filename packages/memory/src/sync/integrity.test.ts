@@ -28,7 +28,7 @@ describe('sync integrity helpers', () => {
         cursor: 42,
         records: [{ content: 12, id: '', tier: 'broken', updatedAt: 'nope' }]
       })
-).toStrictEqual({
+    ).toStrictEqual({
       errors: expect.arrayContaining([
         expect.stringMatching(/cursor/u),
         expect.stringMatching(/id/u),

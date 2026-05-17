@@ -134,9 +134,13 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
       return null;
     }
 
-    const candidates = raw.candidates as Array<{ content?: { parts?: unknown[] }; finishReason?: string; parts?: unknown[] }>;
+    const candidates = raw.candidates as Array<{
+      content?: { parts?: unknown[] };
+      finishReason?: string;
+      parts?: unknown[];
+    }>;
     // Ensure candidate has required properties
-    const candidate = (candidates.length > 0 ? candidates[0] : undefined);
+    const candidate = candidates.length > 0 ? candidates[0] : undefined;
     if (!candidate || !isObject(candidate)) {
       return null;
     }

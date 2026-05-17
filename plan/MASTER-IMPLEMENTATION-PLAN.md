@@ -426,18 +426,18 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 
 **Verified Progress vs Plans:**
 
-| Package | Plan Tasks | Implemented | Compliance | Status |
-|---------|------------|-------------|------------|--------|
-| **@agentsy/tools** | 10 | 2 stubs | 15% | 🔴 CRITICAL - No actual tool functionality |
-| **@agentsy/secrets** | 12 | 1 interface | 8% | 🔴 CRITICAL - No persistence or encryption |
-| **@agentsy/guardrails** | 8+ | 2 error classes | 12% | 🔴 CRITICAL - No policy engine |
-| **@agentsy/observability** | 10 | 3 type stubs | 30% | 🟠 HIGH - No implementation behind types |
-| **@agentsy/orchestrator** | 10 | 4 interfaces | 40% | 🟠 HIGH - No orchestration logic |
-| **@agentsy/cli** | 8 | 3 commands | 37% | 🟠 HIGH - No interactive shell/oclif |
-| **@agentsy/memory** | 52 | 51+ implementations | 98% | 🟢 HIGH - Nearly complete |
-| **@agentsy/runtime** | 6 plan tasks | 32 files+ | 200%+ | 🟢 BONUS - Beyond plan scope |
-| **@agentsy/session** | 30 | 6 interfaces | 60% | 🟡 MEDIUM - Entity detection beyond plan |
-| **@agentsy/tokens** | 28 | 7 files | 10% | 🟡 MEDIUM - Compression only |
+| Package                    | Plan Tasks   | Implemented         | Compliance | Status                                     |
+| -------------------------- | ------------ | ------------------- | ---------- | ------------------------------------------ |
+| **@agentsy/tools**         | 10           | 2 stubs             | 15%        | 🔴 CRITICAL - No actual tool functionality |
+| **@agentsy/secrets**       | 12           | 1 interface         | 8%         | 🔴 CRITICAL - No persistence or encryption |
+| **@agentsy/guardrails**    | 8+           | 2 error classes     | 12%        | 🔴 CRITICAL - No policy engine             |
+| **@agentsy/observability** | 10           | 3 type stubs        | 30%        | 🟠 HIGH - No implementation behind types   |
+| **@agentsy/orchestrator**  | 10           | 4 interfaces        | 40%        | 🟠 HIGH - No orchestration logic           |
+| **@agentsy/cli**           | 8            | 3 commands          | 37%        | 🟠 HIGH - No interactive shell/oclif       |
+| **@agentsy/memory**        | 52           | 51+ implementations | 98%        | 🟢 HIGH - Nearly complete                  |
+| **@agentsy/runtime**       | 6 plan tasks | 32 files+           | 200%+      | 🟢 BONUS - Beyond plan scope               |
+| **@agentsy/session**       | 30           | 6 interfaces        | 60%        | 🟡 MEDIUM - Entity detection beyond plan   |
+| **@agentsy/tokens**        | 28           | 7 files             | 10%        | 🟡 MEDIUM - Compression only               |
 
 ### 5.3 Active implementation streams
 
@@ -566,29 +566,29 @@ This section captures the bidirectional gaps where TODO.txt and package implemen
 
 ### 14.1 Package plan tasks NOT captured in TODO.txt (120+ detailed tasks missing)
 
-| Package | Tasks Missing | Critical Impact |
-|---------|---------------|-----------------|
-| **cli** | 18 detailed tasks including oclif plugin stack, cmux integration contracts, subagent orchestration, interactive shell flows | Cannot implement interactive CLI or plugin system |
-| **core** | 12 detailed tasks including chunk/event contracts, compile-time snapshots, error taxonomy | Cannot stabilize stream processing contracts |
-| **guardrails** | 12 detailed tasks + ethical rules including policy schema, evaluators, transform/redaction, red-team coverage | Cannot enforce security policies or detect PII/secrets |
-| **orchestrator** | 12 detailed tasks + agent mode infrastructure including planner/strategy interfaces, plan/act loops, supermode contracts | Cannot implement multi-step planning or agent mode bundles |
-| **observability** | 22 detailed tasks including semantic conventions, tslog logger, trace assembly, metric aggregation | Cannot monitor production or debug issues |
-| **runtime** | 6 additional tasks beyond current ✅ marks (7-12) including integration tests, telemetry emission, stress suites | Core loop mostly complete but missing verification |
-| **session** | 6 additional tasks beyond current ✅ marks (7-12) including integration tests, regressions, operational workflows | Persistence mostly complete but missing verification |
-| **secrets** | 12 detailed tasks including keychain adapters, rotation flows, diagnostics integrations | Cannot store secrets securely or rotate them |
-| **tools** | 12 detailed tasks including tool definition contracts, baseline tool sets, error handling | Agent cannot execute actual operations |
-| **tokens** | 6 additional tasks beyond current ✅ marks (7-12) including integration tests, performance benchmarks | Compression complete but cost tracking incomplete |
+| Package           | Tasks Missing                                                                                                               | Critical Impact                                            |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **cli**           | 18 detailed tasks including oclif plugin stack, cmux integration contracts, subagent orchestration, interactive shell flows | Cannot implement interactive CLI or plugin system          |
+| **core**          | 12 detailed tasks including chunk/event contracts, compile-time snapshots, error taxonomy                                   | Cannot stabilize stream processing contracts               |
+| **guardrails**    | 12 detailed tasks + ethical rules including policy schema, evaluators, transform/redaction, red-team coverage               | Cannot enforce security policies or detect PII/secrets     |
+| **orchestrator**  | 12 detailed tasks + agent mode infrastructure including planner/strategy interfaces, plan/act loops, supermode contracts    | Cannot implement multi-step planning or agent mode bundles |
+| **observability** | 22 detailed tasks including semantic conventions, tslog logger, trace assembly, metric aggregation                          | Cannot monitor production or debug issues                  |
+| **runtime**       | 6 additional tasks beyond current ✅ marks (7-12) including integration tests, telemetry emission, stress suites            | Core loop mostly complete but missing verification         |
+| **session**       | 6 additional tasks beyond current ✅ marks (7-12) including integration tests, regressions, operational workflows           | Persistence mostly complete but missing verification       |
+| **secrets**       | 12 detailed tasks including keychain adapters, rotation flows, diagnostics integrations                                     | Cannot store secrets securely or rotate them               |
+| **tools**         | 12 detailed tasks including tool definition contracts, baseline tool sets, error handling                                   | Agent cannot execute actual operations                     |
+| **tokens**        | 6 additional tasks beyond current ✅ marks (7-12) including integration tests, performance benchmarks                       | Compression complete but cost tracking incomplete          |
 
 ### 14.2 TODO.txt content NOT in package plans
 
-| Content Type | Missing From | What's Missing |
-|--------------|--------------|----------------|
-| Ecosystem integration targets | All package plans | Bundle strategy (models.dev, Honker, AgentFS, mcp-rag-server, Maki), conditional packages (tldw_server, mirage, Codeburn, Stagehand, Varlock, Crit) |
-| Turso+Honker hybrid strategy | memory package plan | CRITICAL CONSTRAINT that Turso does NOT support honk extension, local-first coordination architecture |
-| Phase 0-3 sequencing | Individual package plans | 26-priority structure across Foundation/Integration/Feature/Polish phases |
-| Local LLM provider support strategy | models/providers package plans | Targets (Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel), node-llama-cpp first-party adapter |
-| Runner model acquisition strategy | models/providers package plans | Hugging Face, Ollama marketplace artifact fetch and model search |
-| Local automodel selection strategy | models/providers minimal plan | llmfit hardware scoring, llama-swap hot-swap endpoint management |
+| Content Type                        | Missing From                   | What's Missing                                                                                                                                      |
+| ----------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ecosystem integration targets       | All package plans              | Bundle strategy (models.dev, Honker, AgentFS, mcp-rag-server, Maki), conditional packages (tldw_server, mirage, Codeburn, Stagehand, Varlock, Crit) |
+| Turso+Honker hybrid strategy        | memory package plan            | CRITICAL CONSTRAINT that Turso does NOT support honk extension, local-first coordination architecture                                               |
+| Phase 0-3 sequencing                | Individual package plans       | 26-priority structure across Foundation/Integration/Feature/Polish phases                                                                           |
+| Local LLM provider support strategy | models/providers package plans | Targets (Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel), node-llama-cpp first-party adapter                                    |
+| Runner model acquisition strategy   | models/providers package plans | Hugging Face, Ollama marketplace artifact fetch and model search                                                                                    |
+| Local automodel selection strategy  | models/providers minimal plan  | llmfit hardware scoring, llama-swap hot-swap endpoint management                                                                                    |
 
 ### 14.3 Recommended synchronization actions
 

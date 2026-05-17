@@ -1,7 +1,7 @@
 // fallow-ignore-file unused-file
 
 import { render } from 'ink-testing-library';
-import { afterEach, beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Theme } from '../themes/types.ts';
 import { StreamingText } from './streaming-text.tsx';
@@ -117,8 +117,7 @@ describe('StreamingText' as const, () => {
   });
 
   it('converts markdown when not for screen readers', async () => {
-    const result = await import('../utils/markdown-to-ansi.ts');
-      const markdownToAnsi = result.default;
+    const { markdownToAnsi } = await import('../utils/markdown-to-ansi.ts');
 
     const { unmount } = render(
       <StreamingText text="*italic*" markdown={true} isStreaming={false} theme={mockTheme} screenReader={false} />
@@ -145,8 +144,7 @@ describe('StreamingText' as const, () => {
   });
 
   it('enables syntax highlighting when specified', async () => {
-    const result = await import('../utils/markdown-to-ansi.ts');
-      const markdownToAnsi = result.default;
+    const { markdownToAnsi } = await import('../utils/markdown-to-ansi.ts');
 
     const { unmount } = render(
       <StreamingText
@@ -249,7 +247,7 @@ describe('StreamingText' as const, () => {
 
     const output = lastFrame();
     // Component should render without error
-    expectTypeOf(output).toBeString();
+    expect(typeof output).toBe('string');
 
     unmount();
   });
@@ -269,7 +267,7 @@ describe('StreamingText' as const, () => {
 
     const output = lastFrame();
     // Component should render without error when screenReader is true
-    expectTypeOf(output).toBeString();
+    expect(typeof output).toBe('string');
 
     unmount();
   });

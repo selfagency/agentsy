@@ -32,8 +32,8 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 
 - GOAL-RUNTIME-001: Contract and policy surface stabilization.
 
-| Task             | Description                                                                     | Completed | Date |
-| ---------------- | ------------------------------------------------------------------------------- | --------- | ---- |
+| Task             | Description                                                                     | Completed | Date       |
+| ---------------- | ------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-RUNTIME-001 | Stabilize runtime loop interfaces, state envelope, and policy hook contracts.   | ✅        | 2026-05-17 |
 | TASK-RUNTIME-002 | Add compile-time and unit tests for approval and budget enforcement boundaries. | ✅        | 2026-05-17 |
 | TASK-RUNTIME-003 | Document ownership boundaries with orchestrator/tools/session/core.             | ✅        | 2026-05-17 |
@@ -42,8 +42,8 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 
 - GOAL-RUNTIME-002: Core runtime capability completion.
 
-| Task             | Description                                                                     | Completed | Date |
-| ---------------- | ------------------------------------------------------------------------------- | --------- | ---- |
+| Task             | Description                                                                     | Completed | Date       |
+| ---------------- | ------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-RUNTIME-004 | Complete turn execution loop for model deltas, tool calls, and approval pauses. | ✅        | 2026-05-17 |
 | TASK-RUNTIME-005 | Finalize hook registry and policy evaluation pathways.                          | ✅        | 2026-05-17 |
 | TASK-RUNTIME-006 | Complete cache-aware context handling and token governance integration.         | ✅        | 2026-05-17 |
@@ -52,8 +52,8 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 
 - GOAL-RUNTIME-003: Cross-package integration.
 
-| Task             | Description                                                                         | Completed | Date |
-| ---------------- | ----------------------------------------------------------------------------------- | --------- | ---- |
+| Task             | Description                                                                         | Completed | Date       |
+| ---------------- | ----------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-RUNTIME-007 | Integrate tools/guardrails/session/memory/retrieval orchestrations in runtime loop. | ✅        | 2026-05-17 |
 | TASK-RUNTIME-008 | Add integration tests for approval, policy refusal, and resume/replay paths.        | ✅        | 2026-05-17 |
 | TASK-RUNTIME-009 | Emit runtime lifecycle telemetry and ensure trace completeness.                     | ✅        | 2026-05-17 |
@@ -62,8 +62,8 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 
 - GOAL-RUNTIME-004: Hardening and release gates.
 
-| Task             | Description                                                                  | Completed | Date |
-| ---------------- | ---------------------------------------------------------------------------- | --------- | ---- |
+| Task             | Description                                                                  | Completed | Date       |
+| ---------------- | ---------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-RUNTIME-010 | Add stress/failure-mode suites for streaming interruption and tool failures. | ✅        | 2026-05-17 |
 | TASK-RUNTIME-011 | Update docs/examples for operator-safe runtime behavior.                     | ✅        | 2026-05-17 |
 | TASK-RUNTIME-012 | Pass package and monorepo release gates.                                     | ✅        | 2026-05-17 |

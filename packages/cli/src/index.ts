@@ -151,11 +151,7 @@ async function handleCompressCommand(rest: readonly string[], io: CliIO): Promis
 
   const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf-8'));
   const result = compressOutput(source, { level });
-  (io.stderr ?? DEFAULT_IO.stderr)(
-    `[DEBUG] source length: ${source.length}, compressed length: ${result.compressed.length}, savings: ${(result.savingsRatio * 100).toFixed(2)}%`
-  );
   (io.stdout ?? DEFAULT_IO.stdout)(result.compressed);
-  (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
   return 0;
 }
 

@@ -52,8 +52,8 @@ This plan defines the production implementation order for `@agentsy/memory` with
 
 - GOAL-MEMORY-003: Runtime/session/retrieval integration.
 
-| Task            | Description                                                                 | Completed | Date |
-| --------------- | --------------------------------------------------------------------------- | --------- | ---- |
+| Task            | Description                                                                 | Completed | Date       |
+| --------------- | --------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-MEMORY-007 | Integrate runtime post-turn capture and pre-turn retrieval injection hooks. | ✅        | 2026-05-17 |
 | TASK-MEMORY-008 | Validate session continuity and replay with memory-aware context behavior.  | ✅        | 2026-05-17 |
 | TASK-MEMORY-009 | Add integration and benchmark coverage for quality/cost improvements.       | ✅        | 2026-05-17 |
@@ -62,8 +62,8 @@ This plan defines the production implementation order for `@agentsy/memory` with
 
 - GOAL-MEMORY-004: Hardening and release gates.
 
-| Task            | Description                                                            | Completed | Date |
-| --------------- | ---------------------------------------------------------------------- | --------- | ---- |
+| Task            | Description                                                            | Completed | Date       |
+| --------------- | ---------------------------------------------------------------------- | --------- | ---------- |
 | TASK-MEMORY-010 | Add failure-mode tests for corruption, stale cache, and scope leakage. | ✅        | 2026-05-17 |
 | TASK-MEMORY-011 | Align docs/examples with shipped memory workflows.                     | ✅        | 2026-05-17 |
 | TASK-MEMORY-012 | Pass monorepo release gates and package-quality thresholds.            | ✅        | 2026-05-17 |

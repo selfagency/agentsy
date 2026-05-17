@@ -1,18 +1,14 @@
-
-import { default as InkStreamRenderer } from "./ink-stream-renderer.tsx";
-
 import { randomUUID } from 'node:crypto';
 
 import type { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
 import type { Instance, RenderOptions } from 'ink';
-// @ts-ignore ink has no default export, but we need it for type references
-import type typeInk from 'ink';
-// @ts-ignore react has no default export, but we need it for type references
-import type typeReact from 'react';
+import type * as inkNS from 'ink';
+import type * as reactNS from 'react';
 
 import type { KeyboardOptions } from './components/keyboard-handler.js';
+import { default as InkStreamRenderer } from './ink-stream-renderer.tsx';
 import { resolveTheme } from './themes/index.js';
 import type { Theme, ThemeName } from './themes/types.js';
 
@@ -39,8 +35,8 @@ export interface InkRendererHandle {
 }
 
 export async function createInkRenderer(options: InkRendererOptions): Promise<InkRendererHandle> {
-  let ink: typeof typeInk;
-  let react: typeof typeReact;
+  let ink: typeof inkNS;
+  let react: typeof reactNS;
   try {
     ink = await import('ink');
     react = await import('react');
@@ -94,7 +90,6 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     }
   };
 
-
   const resolvedTheme = resolveTheme(options.theme);
 
   const instance = render(
@@ -117,6 +112,13 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
     }),
     options.inkOptions
   );
+
+  // Subscribe to processor events
+  processor
+    .on('done', listeners.done)
+    .on('text', listeners.text)
+    .on('thinking', listeners.thinking)
+    .on('tool_call', listeners.tool_call);
 
   return {
     end(): void {

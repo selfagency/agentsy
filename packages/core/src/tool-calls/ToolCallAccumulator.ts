@@ -166,12 +166,12 @@ export class ToolCallAccumulator {
       return 'awaiting-input';
     }
 
-try {
-        const parsed = JSON.parse(pending.argumentsBuffer) as JsonObject;
-        if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          return 'input-complete';
-        }
-      } catch {
+    try {
+      const parsed = JSON.parse(pending.argumentsBuffer) as JsonObject;
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return 'input-complete';
+      }
+    } catch {
       // Still streaming.
     }
 

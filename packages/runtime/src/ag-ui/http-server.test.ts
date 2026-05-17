@@ -83,6 +83,7 @@ describe('createSSEStream', () => {
 
     // Use Symbol.asyncIterator
     const iterator = stream[Symbol.asyncIterator]();
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- async iterator yields Uint8Array
     const { value } = await iterator.next();
 
     expect(value).toBeInstanceOf(Uint8Array);
@@ -216,6 +217,7 @@ describe('createHonoHandler', () => {
     expect(c.body).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
+        // oxlint-disable-next-line typescript/no-unsafe-assignment -- Hono response shape
         headers: expect.objectContaining({
           'Content-Type': 'text/event-stream'
         })

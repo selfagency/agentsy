@@ -1,9 +1,12 @@
 // @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// oxlint-disable-next-line typescript/no-unsafe-call typescript/no-unsafe-assignment
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { testOnStepCall } from '../shared.test.js';
 import { createStreamingMarkdownRenderer } from './create-streaming-markdown-renderer.js';
 
+// oxlint-disable-next-line typescript/no-unsafe-call
 (vi.mock as any)('streaming-markdown', () => ({
   default: {
     removed: [],
@@ -15,14 +18,17 @@ import { createStreamingMarkdownRenderer } from './create-streaming-markdown-ren
   }
 }));
 
+// oxlint-disable-next-line typescript/no-unsafe-call
 (vi.mock as any)('dompurify', () => {
   const mockSanitize = vi.fn<(html: string | Element) => string>((html: string | Element) => html);
   return {
     default: {
       removed: [],
+      // oxlint-disable-next-line typescript/no-unsafe-assignment
       sanitize: mockSanitize as any
     },
     removed: [],
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
     sanitize: mockSanitize as any
   };
 });

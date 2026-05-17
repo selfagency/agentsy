@@ -22,7 +22,7 @@ describe('CLI Renderer', () => {
     await renderer.end();
 
     // Verify cli-markdown was called and output was written
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
     const allOutput = output.mock.calls.map(c => c[0]).join('');
     expect(allOutput).toContain('[FORMATTED]');
     expect(allOutput).toContain('Heading');
@@ -39,7 +39,7 @@ describe('CLI Renderer', () => {
     await renderer.write('Content');
     await renderer.end();
 
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
   });
 
   it('suppresses thinking blocks with suppress style', async () => {
@@ -53,7 +53,7 @@ describe('CLI Renderer', () => {
     await renderer.write('Content');
     await renderer.end();
 
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
   });
 
   it('handles writable stream output', async () => {
@@ -69,8 +69,8 @@ describe('CLI Renderer', () => {
     await renderer.write('# Test\n\nContent');
     await renderer.end();
 
-    expect(mockStream.write).toHaveBeenCalledWith();
-    expect(mockStream.end).toHaveBeenCalledWith();
+    expect(mockStream.write).toHaveBeenCalled();
+    expect(mockStream.end).toHaveBeenCalled();
   });
 
   it('calls onError callback on errors', async () => {
@@ -109,7 +109,7 @@ describe('CLI Renderer', () => {
     await renderer.write('Content for section 2');
     await renderer.end();
 
-    expect(output).toHaveBeenCalledWith();
+    expect(output).toHaveBeenCalled();
     const allOutput = output.mock.calls.map(c => c[0]).join('');
     expect(allOutput).toContain('Section 1');
     expect(allOutput).toContain('Section 2');

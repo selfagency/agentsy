@@ -67,7 +67,7 @@ describe('Ink Renderer', () => {
     processor.process({ content: 'World' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -85,7 +85,7 @@ describe('Ink Renderer', () => {
     processor.process({ content: 'Main text' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -220,7 +220,7 @@ describe('Ink Renderer', () => {
     processor.process({ content: 'This comes from processor' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -235,7 +235,7 @@ describe('Ink Renderer', () => {
     processor.process({ content: 'Text' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -271,7 +271,7 @@ describe('Ink Renderer', () => {
     processor.process({ content: '\nResult is 42' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -299,7 +299,7 @@ describe('Ink Renderer', () => {
 
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -317,7 +317,7 @@ describe('Ink Renderer', () => {
     processor.process({ content: 'Chunk 3' });
     processor.process({ done: true });
 
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(onFinish).toHaveBeenCalled();
 
     renderer.unmount();
   });
@@ -366,7 +366,7 @@ describe('Ink Renderer', () => {
       processor.process({ content: 'Test content' });
       processor.process({ done: true });
 
-      expect(onFinish).toHaveBeenCalledWith();
+      expect(onFinish).toHaveBeenCalled();
       expect(renderer.instance).toBeDefined();
 
       renderer.unmount();
