@@ -53,13 +53,14 @@ export class ZAiInlineToolCallParser implements ToolCallParser {
 
     let visibleContent = '';
     const deltas: NativeToolCallDelta[] = [];
+    const appendVisibleContent = (value: string) => {
+      visibleContent += value;
+    };
 
     this.residual += content;
 
     while (this.residual.length > 0) {
-      const shouldContinue = this.processCurrentState(deltas, append => {
-        visibleContent += append;
-      });
+      const shouldContinue = this.processCurrentState(deltas, appendVisibleContent);
       if (!shouldContinue) {
         break;
       }
