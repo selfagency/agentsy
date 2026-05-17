@@ -19,7 +19,7 @@ export class RetrievalEngine {
     };
   }
 
-  index(documents: Document[]): Promise<void> {
+  async index(documents: Document[]): Promise<void> {
     for (const document of documents) {
       this.documents.set(document.id, document);
 
@@ -28,6 +28,85 @@ export class RetrievalEngine {
         this.embeddings.set(chunk.id, embedding);
       }
     }
+  }
+
+  keywordSearch(query: RetrievalQuery): SearchResult {
+    const startTime = Date.now();
+    const results: Array<{ document: Document; score: number }> = [];
+    const queryLower = query.query.toLowerCase();
+    const queryWords = queryLower.split(/\s+/u);
+
+    for (const [chunkId, document] of this.documents) {
+      for (const chunk of document.chunks) {
+        const contentLower = chunk.content.toLowerCase();
+        let score = 0;
+
+        for (const word of queryWords) {
+          if (contentLower.includes(word)) {
+            score += 0.1;
+          }
+        }
+
+        if (score > 0) {
+          results.push({
+            document,
+            score
+          });
+        }
+      }
+    }
+
+    results.sort((a, b) => b.score - a.score);
+
+    const queryTime = Date.now() - startTime;
+
+    return {
+      documents: results.slice(0, query.topK ?? 10).map(r => this.toSearchResultDocument(r.document, r.score)),
+      queryTime,
+      total: results.length
+    };
+  }
+
+  vectorSearch(query: RetrievalQuery): SearchResult {
+    const startTime = Date.now();
+    const results: Array<{ document: Document; similarity: number }> = [];
+
+    if (!query.embedding || query.embedding.length === 0) {
+      return {
+        documents: [],
+        queryTime: Date.now() - startTime,
+        total: 0
+      };
+    }
+
+    for (const [chunkId, document] of this.documents) {
+      for (const chunk of document.chunks) {
+        const chunkEmbedding = this.embeddings.get(chunk.id);
+        if (chunkEmbedding) {
+          const similarity = this.calculateCosineSimilarity(query.embedding!, chunkEmbedding);
+
+          if (similarity >= (query.minSimilarity ?? this.options.minSimilarity)) {
+            results.push({
+              document,
+              similarity
+            });
+          }
+        }
+      }
+    }
+
+    results.sort((a, b) => b.similarity - a.similarity);
+    const queryTime = Date.now() - startTime;
+
+    return {
+      documents: results.slice(0, query.topK ?? 10).map(r => this.toSearchResultDocument(r.document, r.similarity)),
+      queryTime,
+      total: results.length
+    };
+  }
+
+  async hasDoc(docId: string): Promise<boolean> {
+    return this.documents.has(docId);
   }
 
   search(query: RetrievalQuery): SearchResult {
@@ -96,17 +175,13 @@ export class RetrievalEngine {
     this.embeddings.clear();
   }
 
-  hasDoc(docId: string): boolean {
-    return this.documents.has(docId);
-  }
-
   count(): number {
     return this.documents.size;
   }
 
   private generateEmbedding(text: string): number[] {
     const words = text.toLowerCase().split(/\s+/u);
-    const embedding = Array.from({ length: 32 }).fill(0);
+    const embedding = Array.from({ length: 32 }, () => 0) as number[];
 
     for (const word of words) {
       const wordHash = this.hashWord(word);
@@ -114,7 +189,7 @@ export class RetrievalEngine {
       embedding[index] = (embedding[index] ?? 0) + 1;
     }
 
-    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+    const magnitude = Math.sqrt(embedding.reduce((sum: number, val: number) => sum + val * val, 0));
 
     if (magnitude > 0) {
       return embedding.map(val => val / magnitude);
