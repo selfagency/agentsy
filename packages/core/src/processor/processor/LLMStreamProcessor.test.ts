@@ -847,10 +847,10 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 
   it('emits step_started with messageId for first step in a conversation', () => {
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
-    const events: Record<string, unknown>[] = [];
+    const events: unknown[] = [];
 
     processor.on('conversation_event', event => {
-      events.push(event as unknown as Record<string, unknown>);
+      events.push(event);
     });
 
     processor.process({ content: 'hello', stepIndex: 0 });
@@ -862,10 +862,10 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
 
   it('uses previous step usage when emitting step_finished on step switch', () => {
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
-    const events: Record<string, unknown>[] = [];
+    const events: unknown[] = [];
 
     processor.on('conversation_event', event => {
-      events.push(event as unknown as Record<string, unknown>);
+      events.push(event);
     });
 
     processor.process({
@@ -888,10 +888,10 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
     const processor = new LLMStreamProcessor({
       accumulateNativeToolCalls: true
     });
-    const events: Record<string, unknown>[] = [];
+    const events: unknown[] = [];
 
     processor.on('conversation_event', event => {
-      events.push(event as unknown as Record<string, unknown>);
+      events.push(event);
     });
 
     processor.process({
@@ -901,7 +901,9 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
       nativeToolCallDeltas: [{ argumentsDelta: '"ts"}', index: 0 }]
     });
 
-    const added = events.find(e => e.type === 'tool_call_part_added') as { toolCall?: { id?: string } } | undefined;
+    const added = events.find(e => {
+      return e.type === 'tool_call_part_added';
+    });
     const updated = events.find(e => e.type === 'tool_call_updated' && e.state === 'input-complete') as
       | { toolCallId?: string }
       | undefined;
@@ -915,10 +917,10 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
       knownTools: new Set(['search']),
       scrubContextTags: false
     });
-    const events: Record<string, unknown>[] = [];
+    const events: unknown[] = [];
 
     processor.on('conversation_event', event => {
-      events.push(event as unknown as Record<string, unknown>);
+      events.push(event);
     });
 
     processor.process({
