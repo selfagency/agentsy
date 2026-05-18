@@ -132,34 +132,34 @@ describe(McpServerRegistry, () => {
 
     await registry.registerWithVscode();
 
-expect(get).toHaveBeenCalledWith('ext.mcpServers');
-      expect(update).toHaveBeenCalledWith(
-        'ext.mcpServers',
-        expect.objectContaining({
-          existing: { command: 'existing-cmd' },
-          'zai-server': expect.objectContaining({
-            alwaysAllow: true,
-            args: ['mcp.js'],
-            command: 'node'
+    expect(get).toHaveBeenCalledWith('ext.mcpServers');
+    expect(update).toHaveBeenCalledWith(
+      'ext.mcpServers',
+      expect.objectContaining({
+        existing: { command: 'existing-cmd' },
+        'zai-server': expect.objectContaining({
+          alwaysAllow: true,
+          args: ['mcp.js'],
+          command: 'node'
+        })
+      }),
+      1
+    );
+    // Ensure sensitive data (API_KEY, Authorization) is not persisted
+    expect(update).not.toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        'zai-server': expect.objectContaining({
+          env: expect.not.objectContaining({
+            API_KEY: 'x'
+          }),
+          headers: expect.not.objectContaining({
+            Authorization: 'Bearer x'
           })
-        }),
-        1
-      );
-      // Ensure sensitive data (API_KEY, Authorization) is not persisted
-      expect(update).not.toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          'zai-server': expect.objectContaining({
-            env: expect.not.objectContaining({
-              API_KEY: 'x'
-            }),
-            headers: expect.not.objectContaining({
-              Authorization: 'Bearer x'
-            })
-          })
-        }),
-        expect.any(Number)
-      );
+        })
+      }),
+      expect.any(Number)
+    );
   });
 
   it('dispose clears all servers', () => {
