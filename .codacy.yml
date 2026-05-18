@@ -8,16 +8,16 @@ engines:
     ignoreAnnotations: false
     ignoreUsings: false
 exclude_paths:
-  - config/release-state.json
-  - .agents/
-  - .fallow/
-  - .vscode/
-  - .gh-pages/
-  - .rumdl_cache/
-  - .turbo/
-  - coverage/
-  - dist/
-  - node_modules/
-  - plan/
+  - config/**
+  - .agents/**
+  - .fallow/**
+  - .vscode/**
+  - .gh-pages/**
+  - .rumdl_cache/**
+  - .turbo/**
+  - coverage/**
+  - dist/**
+  - node_modules/**
+  - plan/**
 include_paths:
   - packages/**
