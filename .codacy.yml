@@ -1,12 +1,5 @@
 ---
 engines:
-  bandit:
-  biome:
-  eslint-9:
-  lizard:
-  markdownlint:
-  opengrep:
-  trivy:
   duplication:
     minTokenMatch: 20
     skipLexicalErrors: false
@@ -14,7 +7,6 @@ engines:
     ignoreIdentifiers: true
     ignoreAnnotations: false
     ignoreUsings: false
-  metric:
 exclude_paths:
   - config/release-state.json
   - .agents/
