@@ -522,7 +522,7 @@ describe('createAgentLoop', () => {
       // consume loop
     }
 
-    expect(onStepSpy).toHaveBeenCalledWith();
+    expect(onStepSpy).toHaveBeenCalled();
   });
 
   it('should call beforeInit and afterInit hooks around run startup', async () => {

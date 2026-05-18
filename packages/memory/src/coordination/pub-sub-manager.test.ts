@@ -135,7 +135,7 @@ describe('PubSubManager', () => {
 
       await manager.publish('channel1', { data: 'test' });
 
-      expect(listener1).toHaveBeenCalledWith();
+      expect(listener1).toHaveBeenCalledWith({ data: 'test' });
       expect(listener2).not.toHaveBeenCalled();
     });
 

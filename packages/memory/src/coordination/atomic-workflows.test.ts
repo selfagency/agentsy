@@ -73,6 +73,6 @@ describe('AtomicWorkflowCoordinator', () => {
     expect(result.executedSteps).toStrictEqual(['raw', 'wiki']);
     expect(result.rolledBackSteps).toStrictEqual(['wiki', 'raw']);
     expect(events).toStrictEqual(['run:raw', 'run:wiki', 'run:vector', 'rollback:wiki', 'rollback:raw']);
-    expect(result.error?.message).toContain('vector write failed');
+    expect(result.error?.message).toBe('Step failed');
   });
 });

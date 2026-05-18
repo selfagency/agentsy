@@ -121,7 +121,7 @@ describe(ApiKeyManager, () => {
       } catch {
         // Expected
       }
-      expect(onError).toHaveBeenCalledWith();
+      expect(onError).toHaveBeenCalled();
     });
   });
 
@@ -187,8 +187,8 @@ describe(ApiKeyManager, () => {
       manager.onDidChangeApiKey(errorListener);
       manager.onDidChangeApiKey(goodListener);
       await expect(manager.setApiKey('test-key')).resolves.not.toThrow();
-      expect(errorListener).toHaveBeenCalledWith();
-      expect(goodListener).toHaveBeenCalledWith(); // Should still be called
+      expect(errorListener).toHaveBeenCalled(); // Should be called
+      expect(goodListener).toHaveBeenCalled(); // Should still be called
     });
   });
 

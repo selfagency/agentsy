@@ -236,7 +236,8 @@ describe('HonkerExtensionLoader', () => {
         extensionPath: '/root/restricted/honker.so' // Likely no access
       };
 
-      expect(loadHonkerExtension(options)).not.toThrow();
+      const result = await loadHonkerExtension(options);
+      expect(result).toBeDefined();
     });
   });
 

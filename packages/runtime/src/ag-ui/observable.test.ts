@@ -154,20 +154,20 @@ describe('toObservable', () => {
     expect(next).toHaveBeenCalledWith('test');
   });
 
-  it('should handle observer without error handler', async () => {
-    const next = vi.fn();
-    const complete = vi.fn();
+it('should handle observer without error handler', async () => {
+      const next = vi.fn();
+      const complete = vi.fn();
 
-    toObservable(sourceExpected()).subscribe({
-      complete,
-      next
+      toObservable(sourceExpected()).subscribe({
+        complete,
+        next
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Should not crash, just stop - next should receive yielded value
+      expect(next).toHaveBeenCalledWith(1);
     });
-
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    // Should not crash, just stop
-    expect(next).toHaveBeenCalledWith();
-  });
 
   it('should handle empty generator', async () => {
     const next = vi.fn();
