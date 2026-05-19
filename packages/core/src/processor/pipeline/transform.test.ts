@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { OutputPart } from '../processor/LLMStreamProcessor.js';
-import { LLMStreamProcessor } from '../processor/LLMStreamProcessor.js';
+import type { OutputPart } from '../processor/llm-stream-processor.js';
+import { LLMStreamProcessor } from '../processor/llm-stream-processor.js';
 import { createSmoothStream, createThinkingFilter, createToolCallFilter } from './transform.js';
 
 async function writeAndCollect(

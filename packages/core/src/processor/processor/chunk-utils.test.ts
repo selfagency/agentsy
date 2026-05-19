@@ -6,7 +6,7 @@ import {
   estimateChunkSize,
   mapNativeToolCalls,
   normalizeToolArguments
-} from './chunkUtils.js';
+} from './chunk-utils.js';
 
 describe('chunkUtils', () => {
   describe('ensureText', () => {

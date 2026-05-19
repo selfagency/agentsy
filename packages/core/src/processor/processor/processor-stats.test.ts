@@ -1,7 +1,7 @@
-import { describe, expect, it, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import { LLMStreamProcessor } from './LLMStreamProcessor.js';
-import { createEmptyStats } from './ProcessorStats.js';
+import { LLMStreamProcessor } from './llm-stream-processor.js';
+import { createEmptyStats } from './processor-stats.js';
 
 describe('ProcessorStats', () => {
   it('creates empty stats with zero counters', () => {

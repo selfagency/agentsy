@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { compressMemoryFile } from './compressMemoryFile.js';
+import { compressMemoryFile } from './compress-memory-file.js';
 
 /**
  * Phase 0 Memory File Compression Validation

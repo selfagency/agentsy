@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createProcessorEventAdapter } from './createProcessorEventAdapter.js';
-import { LLMStreamProcessor } from './LLMStreamProcessor.js';
+import { createProcessorEventAdapter } from './create-processor-event-adapter.js';
+import { LLMStreamProcessor } from './llm-stream-processor.js';
 
 describe('createProcessorEventAdapter', () => {
   it('forwards onToolCallDelta, onStep, and onFinish callbacks', () => {

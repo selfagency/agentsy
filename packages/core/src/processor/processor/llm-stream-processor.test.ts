@@ -3,8 +3,8 @@ import type { FinishReason, UsageInfo } from '@agentsy/types';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { XmlToolCall } from '../../tool-calls/index.js';
-import { LLMStreamProcessor } from './LLMStreamProcessor.js';
-import { createZAiInlineToolCallParser } from './ZAiInlineToolCallParser.js';
+import { LLMStreamProcessor } from './llm-stream-processor.js';
+import { createZAiInlineToolCallParser } from './zai-inline-tool-call-parser.js';
 
 describe('LLMStreamProcessor', () => {
   it('processes thinking tags, scrubs content, and extracts xml-wrapped tool calls', () => {

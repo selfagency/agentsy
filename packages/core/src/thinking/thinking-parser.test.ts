@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ThinkingParser } from './ThinkingParser.js';
+import { ThinkingParser } from './thinking-parser.js';
 
 describe('ThinkingParser', () => {
   it('returns content unchanged when no think tags present', () => {

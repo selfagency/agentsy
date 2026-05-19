@@ -1,2 +1,2 @@
-export { SSEParser, type SSEEvent, type SSEParserOptions } from './SSEParser.js';
-export { parseSSEStream } from './parseSSEStream.js';
+export { parseSSEStream } from './parse-sse-stream.js';
+export { SSEParser, type SSEEvent, type SSEParserOptions } from './sse-parser.js';

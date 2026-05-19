@@ -1,5 +1,5 @@
 import type { XmlToolCall } from '../../tool-calls/index.js';
-import type { IncompletenessDetail } from './LLMStreamProcessor.js';
+import type { IncompletenessDetail } from './llm-stream-processor.js';
 
 /**
  * Returns true if `content` contains XML open tags that have no matching close tags.

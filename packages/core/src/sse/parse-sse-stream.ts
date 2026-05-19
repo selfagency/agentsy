@@ -1,5 +1,5 @@
-import { SSEParser } from './sse-parser.js';
 import type { SSEEvent } from './sse-parser.js';
+import { SSEParser } from './sse-parser.js';
 
 /**
  * Parse a stream of SSE frames as an async generator.

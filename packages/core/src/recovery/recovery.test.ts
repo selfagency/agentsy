@@ -1,6 +1,6 @@
-import { describe, expect, it, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import { LLMStreamProcessor } from '../processor/processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '../processor/processor/llm-stream-processor.js';
 import { buildContinuationPrompt, captureStreamState } from './index.js';
 
 describe('captureStreamState', () => {

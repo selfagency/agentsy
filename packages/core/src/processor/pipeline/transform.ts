@@ -1,4 +1,4 @@
-import type { OutputPart } from '../processor/LLMStreamProcessor.js';
+import type { OutputPart } from '../processor/llm-stream-processor.js';
 
 /**
  * A `TransformStream` that accepts and emits `OutputPart` values.

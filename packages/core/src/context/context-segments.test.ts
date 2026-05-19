@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildContextSegments } from './contextSegments.js';
+import { buildContextSegments } from './context-segments.js';
 
 describe('buildContextSegments', () => {
   it('builds deterministic reusable context segments', () => {
