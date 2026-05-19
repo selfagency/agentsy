@@ -19,7 +19,7 @@ describe('Scheduler', () => {
       expect(job).not.toHaveBeenCalled();
 
       // Wait for the job to execute
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job).toHaveBeenCalledWith();
     });
@@ -33,7 +33,7 @@ describe('Scheduler', () => {
       expect(job).not.toHaveBeenCalled();
 
       // Wait for the job to execute
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job).toHaveBeenCalledOnce();
     });
@@ -44,7 +44,7 @@ describe('Scheduler', () => {
       scheduler.schedule('zero-delay-job', 0, job);
 
       // Should execute almost immediately
-      await new Promise(resolve => void setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(job).toHaveBeenCalledWith();
     });
@@ -55,7 +55,7 @@ describe('Scheduler', () => {
       scheduler.schedule('negative-delay-job', -100, job);
 
       // Should execute almost immediately
-      await new Promise(resolve => void setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(job).toHaveBeenCalledWith();
     });
@@ -69,7 +69,7 @@ describe('Scheduler', () => {
       scheduler.schedule('job-2', 60, job2);
       scheduler.schedule('job-3', 90, job3);
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job1).toHaveBeenCalledWith();
       expect(job2).toHaveBeenCalledWith();
@@ -83,7 +83,7 @@ describe('Scheduler', () => {
       scheduler.schedule('replacement-job', 50, job1);
       scheduler.schedule('replacement-job', 50, job2); // Replace with job2
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Only job2 should have been called, not job1
       expect(job1).not.toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('Scheduler', () => {
       scheduler.schedule('uuid-123e4567-e89b-12d3-a456-426614174000', 30, job2);
       scheduler.schedule('id-with-special-chars_123', 30, job3);
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job1).toHaveBeenCalledWith();
       expect(job2).toHaveBeenCalledWith();
@@ -112,7 +112,7 @@ describe('Scheduler', () => {
       scheduler.schedule('large-delay-job', 5000, job);
 
       // Wait briefly
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Should not have executed yet
       expect(job).not.toHaveBeenCalled();
@@ -129,7 +129,7 @@ describe('Scheduler', () => {
       scheduler.schedule('job-to-cancel', 50, job);
       scheduler.cancel('job-to-cancel');
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job).not.toHaveBeenCalled();
     });
@@ -143,7 +143,7 @@ describe('Scheduler', () => {
 
       scheduler.cancel('job-1');
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job1).not.toHaveBeenCalled();
       expect(job2).toHaveBeenCalledWith();
@@ -165,7 +165,7 @@ describe('Scheduler', () => {
         scheduler.cancel('job-to-cancel-twice');
       }).not.toThrow();
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
       expect(job).not.toHaveBeenCalled();
     });
 
@@ -178,7 +178,7 @@ describe('Scheduler', () => {
       scheduler.cancel('delayed-cancel');
 
       // Wait longer than the original delay
-      await new Promise(resolve => void setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       expect(job).not.toHaveBeenCalled();
     });
@@ -189,11 +189,11 @@ describe('Scheduler', () => {
       scheduler.schedule('partial-delay-cancel', 100, job);
 
       // Cancel after 50ms (before the job should execute)
-      await new Promise(resolve => void setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 50));
       scheduler.cancel('partial-delay-cancel');
 
       // Wait for original delay to pass
-      await new Promise(resolve => void setTimeout(resolve, 60));
+      await new Promise(resolve => setTimeout(resolve, 60));
 
       expect(job).not.toHaveBeenCalled();
     });
@@ -239,7 +239,7 @@ describe('Scheduler', () => {
       expect(scheduler.pendingCount()).toBe(1);
 
       // Wait for job to execute
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(scheduler.pendingCount()).toBe(0);
     });
@@ -283,7 +283,7 @@ describe('Scheduler', () => {
       expect(scheduler.pendingCount()).toBe(2);
 
       // Wait for jobs to execute
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(scheduler.pendingCount()).toBe(0);
     });
@@ -299,7 +299,7 @@ describe('Scheduler', () => {
       scheduler.schedule('replace-me', 50, job2);
       scheduler.schedule('replace-me', 50, job3);
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Only job3 should be called
       expect(job1).not.toHaveBeenCalled();
@@ -334,7 +334,7 @@ describe('Scheduler', () => {
 
       expect(scheduler.pendingCount()).toBe(5);
 
-      await new Promise(resolve => void setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       jobs.forEach(job => {
         expect(job).toHaveBeenCalledWith();
@@ -366,7 +366,7 @@ describe('Scheduler', () => {
       expect(scheduler.pendingCount()).toBe(25);
 
       // Wait for remaining jobs
-      await new Promise(resolve => void setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // Check results
       let cancelledCount = 0;
@@ -395,7 +395,7 @@ describe('Scheduler', () => {
       scheduler.schedule('error-job', 30, errorJob);
       scheduler.schedule('normal-job', 40, normalJob);
 
-      await new Promise(resolve => void setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // errorJob threw but normalJob should still execute
       expect(errorJob).toHaveBeenCalledWith();

@@ -40,7 +40,7 @@ export function createMockCancellationToken(initiallyCancelled = false): MockCan
  *
  * @param stream - The stream to check
  */
-export function expectStreamToHaveAllAnchors(stream: any) {
+export function expectStreamToHaveAllAnchors(stream: Record<string, unknown>) {
   expect(stream).toBeDefined();
   expect(stream).toHaveProperty('markdown');
   expect(stream).toHaveProperty('anchor');

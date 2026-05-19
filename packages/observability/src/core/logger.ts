@@ -101,7 +101,8 @@ export class LoggerImpl implements Logger {
     // For now, just output to console
     const timestampStr = this.config.includeTimestamp ? new Date(timestamp).toISOString() : '';
     const prefix = levelName.padEnd(5);
-    console.log(`[${prefix}${timestampStr ? ` ${timestampStr}` : ''}] ${message}`, attributes ?? '', entry.error ?? '');
+    const logPrefix = `[${prefix}${timestampStr ? ` ${timestampStr}` : ''}]`;
+    console.log(logPrefix, message, attributes ?? '', entry.error ?? '');
   }
 
   /**

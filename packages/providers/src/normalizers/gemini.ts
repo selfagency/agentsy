@@ -118,6 +118,36 @@ function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined
 // Normalizer
 // ---------------------------------------------------------------------------
 
+function validateGeminiInput(raw: unknown): boolean {
+  if (!isObject(raw)) {
+    return false;
+  }
+  if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) {
+    return false;
+  }
+  return true;
+}
+
+function getFirstCandidate(
+  raw: unknown
+): { content?: { parts?: unknown[] }; finishReason?: string; parts?: unknown[] } | null {
+  if (!isObject(raw)) {
+    return null;
+  }
+
+  const rawWithCandidates = raw as { candidates?: unknown[] };
+  const candidates = rawWithCandidates.candidates as Array<{
+    content?: { parts?: unknown[] };
+    finishReason?: string;
+    parts?: unknown[];
+  }>;
+  const candidate = candidates.length > 0 ? candidates[0] : undefined;
+  if (!candidate || !isObject(candidate)) {
+    return null;
+  }
+  return candidate;
+}
+
 /**
  * Normalizes a Google Gemini `generateContent` streaming chunk into a
  * canonical `NormalizerResult`.  Returns `null` if the chunk has no
@@ -127,24 +157,12 @@ function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined
  */
 export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!isObject(raw)) {
-      return null;
-    }
-    if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) {
+    if (!validateGeminiInput(raw)) {
       return null;
     }
 
-    const candidates = raw.candidates as Array<{
-      content?: { parts?: unknown[] };
-      finishReason?: string;
-      parts?: unknown[];
-    }>;
-    // Ensure candidate has required properties
-    const candidate = candidates.length > 0 ? candidates[0] : undefined;
-    if (!candidate || !isObject(candidate)) {
-      return null;
-    }
-    if (!isObject(candidate)) {
+    const candidate = getFirstCandidate(raw);
+    if (!candidate) {
       return null;
     }
 
@@ -155,7 +173,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
 
     const parts = isObject(content) && Array.isArray(content.parts) ? (content.parts as unknown[]) : [];
     const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
-    const usage = extractGeminiUsage(raw);
+    const usage = isObject(raw) ? extractGeminiUsage(raw) : undefined;
 
     const chunk = {
       ...(textContent !== undefined && { content: textContent }),

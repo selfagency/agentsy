@@ -300,7 +300,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element).toBeDefined();
     });
 
@@ -319,7 +319,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.call.arguments.query).toBe('test query');
     });
   });
@@ -335,7 +335,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.call.done).toBeFalsy();
     });
 
@@ -349,7 +349,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.call.done).toBeTruthy();
     });
   });
@@ -365,7 +365,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(Object.keys(element.props.call.arguments)).toHaveLength(0);
     });
 
@@ -385,7 +385,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(Object.keys(element.props.call.arguments)).toHaveLength(5);
     });
 
@@ -399,7 +399,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.call.arguments.text).toBe('hello world');
     });
 
@@ -413,7 +413,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.call.arguments.count).toBe(42);
     });
   });
@@ -424,7 +424,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: darkTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.theme).toBe(darkTheme);
     });
 
@@ -433,7 +433,7 @@ describe('ToolCallBlock Component', () => {
       const element = React.createElement(ToolCallBlock, {
         call,
         theme: defaultTheme
-      } as Parameters<typeof ToolCallBlock>[0]);
+      } as React.ComponentProps<typeof ToolCallBlock>);
       expect(element.props.theme).toBe(defaultTheme);
     });
   });

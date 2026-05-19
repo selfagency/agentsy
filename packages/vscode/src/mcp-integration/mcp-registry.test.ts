@@ -133,33 +133,30 @@ describe(McpServerRegistry, () => {
     await registry.registerWithVscode();
 
     expect(get).toHaveBeenCalledWith('ext.mcpServers');
-    expect(update).toHaveBeenCalledWith(
-      'ext.mcpServers',
-      expect.objectContaining({
-        existing: { command: 'existing-cmd' },
-        'zai-server': expect.objectContaining({
-          alwaysAllow: true,
-          args: ['mcp.js'],
-          command: 'node'
-        })
-      }),
-      1
-    );
+
+    const mcpServerConfig = {
+      existing: { command: 'existing-cmd' },
+      'zai-server': expect.objectContaining({
+        alwaysAllow: true,
+        args: ['mcp.js'],
+        command: 'node'
+      }) as Record<string, unknown>
+    } as Record<string, unknown>;
+
+    expect(update).toHaveBeenCalledWith('ext.mcpServers', mcpServerConfig, 1);
     // Ensure sensitive data (API_KEY, Authorization) is not persisted
-    expect(update).not.toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        'zai-server': expect.objectContaining({
-          env: expect.not.objectContaining({
-            API_KEY: 'x'
-          }),
-          headers: expect.not.objectContaining({
-            Authorization: 'Bearer x'
-          })
+    const sanitizedConfig = {
+      'zai-server': {
+        env: expect.not.objectContaining({
+          API_KEY: 'x'
+        }),
+        headers: expect.not.objectContaining({
+          Authorization: 'Bearer x'
         })
-      }),
-      expect.any(Number)
-    );
+      } as Record<string, unknown> // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    };
+
+    expect(update).not.toHaveBeenCalledWith(expect.any(String), sanitizedConfig, expect.any(Number));
   });
 
   it('dispose clears all servers', () => {

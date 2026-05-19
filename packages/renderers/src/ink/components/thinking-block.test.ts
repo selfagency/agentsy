@@ -1,4 +1,3 @@
-import type * as typeInk from 'ink';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -274,7 +273,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: 'Test',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element).toBeDefined();
     });
 
@@ -284,7 +283,7 @@ describe('ThinkingBlock Component', () => {
         style: 'inline',
         text: 'Inline thoughts',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.style).toBe('inline');
     });
 
@@ -294,7 +293,7 @@ describe('ThinkingBlock Component', () => {
         style: 'suppress',
         text: 'Hidden thoughts',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.style).toBe('suppress');
     });
   });
@@ -306,7 +305,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: '',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.text).toBe('');
     });
 
@@ -317,7 +316,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: longThinking,
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.text.length).toBeGreaterThan(500);
     });
 
@@ -328,7 +327,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: multilineThinking,
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.text).toContain('First thought');
       expect(element.props.text).toContain('Second thought');
     });
@@ -341,7 +340,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: 'Themed thought',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.theme).toBe(darkTheme);
     });
 
@@ -351,7 +350,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: 'Themed thought',
         theme: defaultTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.theme).toBe(defaultTheme);
     });
   });
@@ -363,7 +362,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: 'Streaming thought...',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.isStreaming).toBeTruthy();
     });
 
@@ -373,7 +372,7 @@ describe('ThinkingBlock Component', () => {
         style: 'blockquote',
         text: 'Completed thought',
         theme: darkTheme
-      } as Parameters<typeof ThinkingBlock>[0]);
+      } as React.ComponentProps<typeof ThinkingBlock>);
       expect(element.props.isStreaming).toBeFalsy();
     });
   });

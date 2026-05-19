@@ -3,7 +3,7 @@ import type { Octokit as OctokitType } from '@octokit/rest';
 import type ora from 'ora';
 
 import { createGitHelpers } from './release-git.js';
-import { ROOT } from './release-utils.js';
+import { ROOT, safeRead, safeWrite } from './release-utils.js';
 
 const gitHelpers = createGitHelpers(ROOT);
 const { runGit } = gitHelpers;
@@ -69,13 +69,8 @@ export async function resolveGithubToken() {
 }
 
 export function wrapBareUrls(text: string): string {
-  // Wrap bare URLs in angle brackets for Markdown compliance.
-  // Skip URLs already wrapped in < > or used as Markdown link destinations,
-  // and avoid including common trailing punctuation in the wrapped URL.
   return text.replaceAll(/(https?:\/\/[^\s<>)\],.!?:;]+)/gu, '<$1>');
 }
-
-import { safeRead, safeWrite } from './release-utils.js';
 
 export function updateChangelogFile(
   changelogPath: string,
@@ -84,7 +79,7 @@ export function updateChangelogFile(
   previousTag: string,
   tag: string
 ): void {
-  let original;
+  let original: string;
   try {
     original = safeRead(changelogPath, 'utf-8');
   } catch {
@@ -116,10 +111,11 @@ export function ensureCleanMainBranch(): void {
   }
 
   const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
-  if (branch !== 'main') {
-    console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
-    process.exit(1);
+  if (branch === 'main') {
+    return;
   }
+  console.error(`❌ Must run from 'main'. Current branch: ${branch}`);
+  process.exit(1);
 }
 
 export function syncMainBranch(): void {

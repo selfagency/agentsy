@@ -188,7 +188,7 @@ describe('createSharedRendererHandle' as const, () => {
 
     const handle = createSharedRendererHandle(
       {
-        onFinish: (reason: any, usage: any): void => {
+        onFinish: (reason: string | undefined, usage: unknown): void => {
           finishArgs.push([reason, usage]);
         }
       },

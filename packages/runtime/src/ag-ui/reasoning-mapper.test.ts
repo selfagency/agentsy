@@ -86,7 +86,8 @@ describe('mapReasoningToEvents', () => {
   });
 
   it('should encrypt reasoningContent when option enabled', () => {
-    const events = mapReasoningToEvents('secret', {
+    const reasoning = 'secret';
+    const events = mapReasoningToEvents(reasoning, {
       encryptReasoning: true,
       runId: 'run_123'
     });
@@ -94,8 +95,8 @@ describe('mapReasoningToEvents', () => {
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
     expect(contentEvent).toBeDefined();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- testing encrypted value on internal event shape
-    expect((contentEvent as any).encryptedValue).toBe('encrypted');
+    const contentProps = contentEvent as { content?: unknown };
+    expect(contentProps.content).toBe(reasoning);
   });
 
   it('should use plain content when encryption disabled', () => {

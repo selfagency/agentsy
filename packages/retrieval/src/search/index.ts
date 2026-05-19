@@ -36,7 +36,7 @@ export class RetrievalEngine {
     const queryLower = query.query.toLowerCase();
     const queryWords = queryLower.split(/\s+/u);
 
-    for (const [chunkId, document] of this.documents) {
+    for (const [, document] of this.documents) {
       for (const chunk of document.chunks) {
         const contentLower = chunk.content.toLowerCase();
         let score = 0;
@@ -224,35 +224,6 @@ export class RetrievalEngine {
     const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
 
     return magnitude > 0 ? dotProduct / magnitude : 0;
-  }
-
-  private searchWithinDocument(query: string, document: Document): { document: Document; score: number }[] {
-    const results: { document: Document; score: number }[] = [];
-    const queryLower = query.toLowerCase();
-
-    for (const chunk of document.chunks) {
-      const contentLower = chunk.content.toLowerCase();
-      let score = 0;
-
-      if (contentLower.includes(queryLower)) {
-        score += this.calculateKeywordMatch(query, contentLower);
-      }
-
-      for (const word of queryLower.split(/\s+/u)) {
-        if (contentLower.includes(word)) {
-          score += 0.1;
-        }
-      }
-
-      if (score > 0) {
-        results.push({
-          document,
-          score
-        });
-      }
-    }
-
-    return results;
   }
 
   private calculateKeywordMatch(query: string, content: string): number {

@@ -128,20 +128,20 @@ export function createVirtualSandbox(): VirtualSandbox {
           }
           resolved = true;
           clearTimeout(timeout);
-          if (code !== 0) {
-            resolve({
-              durationMs: Date.now() - start,
-              exitCode: code,
-              status: 'error',
-              stderr: `Worker exited with code ${code}`,
-              stdout: stdout.join('\n')
-            });
-          } else {
+          if (code === 0) {
             resolve({
               durationMs: Date.now() - start,
               exitCode: 0,
               status: 'ok',
               stderr: stderr.join('\n'),
+              stdout: stdout.join('\n')
+            });
+          } else {
+            resolve({
+              durationMs: Date.now() - start,
+              exitCode: code,
+              status: 'error',
+              stderr: `Worker exited with code ${code}`,
               stdout: stdout.join('\n')
             });
           }

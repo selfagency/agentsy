@@ -8,6 +8,14 @@ const files = fs.readdirSync(packagesDir);
 
 files.forEach(file => {
   const filePath = path.join(packagesDir, file, 'CHANGELOG.md');
+  const normalizedPath = path.normalize(filePath);
+
+  // Validate path stays within packagesDir to prevent path traversal
+  if (!normalizedPath.startsWith(path.normalize(packagesDir))) {
+    console.error(`Invalid path: ${filePath} escaped allowed directory`);
+    return;
+  }
+
   if (fs.existsSync(filePath) && !file.startsWith('.')) {
     let content = fs.readFileSync(filePath, 'utf-8');
     // Add angle brackets around GitHub URLs in commit references

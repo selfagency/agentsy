@@ -708,7 +708,7 @@ describe('VS Code Agent Loop', () => {
     await Promise.resolve();
     await renderer.end();
 
-    expect(mockStream.markdown).not.toThrow();
+    expect(() => mockStream.markdown('')).not.toThrow();
   });
 });
 

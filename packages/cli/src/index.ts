@@ -134,18 +134,31 @@ function toCompressionLevel(value: string | null): OutputCompressionLevel | null
   return null;
 }
 
+function validateCompressFlags(
+  filePath: string | null,
+  text: string | null,
+  level: OutputCompressionLevel | null,
+  io: CliIO
+): level is OutputCompressionLevel {
+  if (level === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
+    return false;
+  }
+
+  if (filePath === null && text === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
+    return false;
+  }
+
+  return true;
+}
+
 async function handleCompressCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const filePath = getFlagValue(rest, '--file');
   const text = getFlagValue(rest, '--text');
   const level = toCompressionLevel(getFlagValue(rest, '--level'));
 
-  if (level === null) {
-    (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
-    return 1;
-  }
-
-  if (filePath === null && text === null) {
-    (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
+  if (!validateCompressFlags(filePath, text, level, io)) {
     return 1;
   }
 

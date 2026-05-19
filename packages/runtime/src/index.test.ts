@@ -8,7 +8,7 @@ import {
   loadRuntimeSnapshotFromSession,
   saveRuntimeSnapshotToSession
 } from './index.js';
-import type { RuntimeExecutor, RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
+import type { RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 
 describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {

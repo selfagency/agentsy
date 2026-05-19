@@ -12,7 +12,7 @@ export default defineConfig({
   tabWidth: 2,
   trailingComma: 'none',
   ignorePatterns: [
-    ...(ultracite.ignorePatterns || []),
+    ...(ultracite.ignorePatterns ?? []),
     'node_modules',
     'dist',
     'gh-pages',

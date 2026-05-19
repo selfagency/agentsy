@@ -1,6 +1,6 @@
 import type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
 
-export type { ConversationEvent };
+export type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo };
 
 /**
  * Represents a single UI message in a conversation.
