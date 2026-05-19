@@ -64,8 +64,8 @@ describe('Phase 0: CLI Commands Validation', () => {
       const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], { stdout });
 
       expect(exitCode).toBe(0);
-      if (capturedOutput.length === 0) {
-        console.log(`No output for level: ${level}, capturedOutput:`, capturedOutput);
+      if (currentLevelOutput.length === 0) {
+        console.log(`No output for level: ${level}, currentLevelOutput:`, currentLevelOutput);
         throw new Error(`Expected output for level ${level}`);
       }
     }
