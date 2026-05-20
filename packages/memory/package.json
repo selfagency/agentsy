@@ -12,6 +12,9 @@
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"
   },
+  "bin": {
+    "agentsy-memory": "./bin/run.js"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -21,6 +24,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./cognitive": {
+      "types": "./dist/cognitive.d.ts",
+      "import": "./dist/cognitive.js",
+      "require": "./dist/cognitive.cjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp.d.ts",
+      "import": "./dist/mcp.js",
+      "require": "./dist/mcp.cjs"
+    },
+    "./hooks": {
+      "types": "./dist/hooks.d.ts",
+      "import": "./dist/hooks.js",
+      "require": "./dist/hooks.cjs"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js",
+      "require": "./dist/config.cjs"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js",
+      "require": "./dist/cli.cjs"
     }
   },
   "scripts": {
@@ -34,6 +62,8 @@
   "dependencies": {
     "@agentsy/tokens": "workspace:*",
     "@agentsy/types": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@oclif/core": "^4.11.3",
     "@tursodatabase/sync": "^0.6.0",
     "blake3-jit": "^1.1.0"
   },
@@ -44,6 +74,12 @@
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
     "vitest": "^4.1.6"
+  },
+  "oclif": {
+    "bin": "agentsy-memory",
+    "commands": "./dist/commands",
+    "dirname": "dist",
+    "topicSeparator": ":"
   },
   "engines": {
     "node": ">=18"
