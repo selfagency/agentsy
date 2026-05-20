@@ -33,7 +33,7 @@ describe('ConversationHistory Component edge cases', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(2);
     });
 
@@ -49,7 +49,7 @@ describe('ConversationHistory Component edge cases', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(100);
     });
 
@@ -95,7 +95,7 @@ describe('ConversationHistory Component edge cases', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.map((t: ConversationTurn) => t.id)).toStrictEqual(['1', '2', '3', '4', '5']);
     });
 
@@ -121,7 +121,7 @@ describe('ConversationHistory Component edge cases', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.timestamp).toBeLessThan(element.props.turns.at(1)?.timestamp ?? 0);
     });
 
@@ -146,7 +146,7 @@ describe('ConversationHistory Component edge cases', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.text).toContain('👋');
       expect(element.props.turns.at(1)?.text).toContain('Привет');
     });
@@ -172,7 +172,7 @@ describe('ConversationHistory Component edge cases', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.text).toContain('code');
       expect(element.props.turns.at(1)?.text).toContain('bold');
     });

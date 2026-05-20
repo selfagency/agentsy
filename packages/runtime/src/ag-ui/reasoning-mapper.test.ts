@@ -108,8 +108,7 @@ describe('mapReasoningToEvents', () => {
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
     expect(contentEvent).toBeDefined();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- testing content field on internal event shape
-    expect((contentEvent as any).content).toBe(reasoning);
+    expect((contentEvent as { content?: unknown }).content).toBe(reasoning);
   });
 
   it('should default encryption to false', () => {
@@ -119,8 +118,7 @@ describe('mapReasoningToEvents', () => {
     expect(events.length).toBeGreaterThan(2);
     const contentEvent = events.find(e => e.type === EventType.REASONING_MESSAGE_CONTENT) ?? {};
     expect(contentEvent).toBeDefined();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- testing content field on internal event shape
-    expect((contentEvent as any).content).toBe(reasoning);
+    expect((contentEvent as { content?: unknown }).content).toBe(reasoning);
   });
 
   it('should generate consistent timestamps', () => {

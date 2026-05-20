@@ -3,6 +3,10 @@ import type { SpawnSyncOptions, SpawnSyncReturns } from 'node:child_process';
 
 const SAFE_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(':');
 
+function withSafePathEnv(): NodeJS.ProcessEnv {
+  return { ...process.env, PATH: SAFE_PATH };
+}
+
 export interface GitHelpers {
   resolveGitExecutable(): string | null;
   runGit(args: readonly string[], options?: SpawnSyncOptions): SpawnSyncReturns<string>;
@@ -11,10 +15,6 @@ export interface GitHelpers {
 
 export function createGitHelpers(root: string): GitHelpers {
   let gitCommand = 'git';
-
-  function withSafePathEnv(): NodeJS.ProcessEnv {
-    return { ...process.env, PATH: SAFE_PATH };
-  }
 
   function runGit(args: readonly string[], options: SpawnSyncOptions = {}): SpawnSyncReturns<string> {
     const result = spawnSync(gitCommand, args, {

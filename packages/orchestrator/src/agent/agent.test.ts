@@ -546,10 +546,8 @@ describe('createAgentLoop', () => {
     expect(beforeInit).toHaveBeenCalledOnce();
     const beforeInitContext = beforeInit.mock.calls[0]?.[0] as { messages?: Message[] };
 
-    expect((beforeInitContext as { messages?: Message[] }).messages || []).toStrictEqual([
-      { content: 'hello', role: 'user' }
-    ]);
-    const messages = (beforeInitContext as { messages?: Message[] }).messages;
+    expect(beforeInitContext.messages || []).toStrictEqual([{ content: 'hello', role: 'user' }]);
+    const messages = beforeInitContext.messages;
     expect(messages || []).toStrictEqual([{ content: 'hello', role: 'user' }]);
   });
 
@@ -581,10 +579,10 @@ describe('createAgentLoop', () => {
     expect((beforeContext as { messages?: Message[] } | undefined)?.messages).toStrictEqual([
       { content: 'hello', role: 'user' }
     ]);
-    expect((afterContext as unknown as { stepIndex?: number }).stepIndex).toBe(0);
+    expect((afterContext as { stepIndex?: number }).stepIndex).toBe(0);
     expect(
-      (afterContext as unknown as { stepResult?: { output?: { content?: string } } } | undefined)?.stepResult?.output
-        ?.content || 'missing'
+      (afterContext as { stepResult?: { output?: { content?: string } } } | undefined)?.stepResult?.output?.content ||
+        'missing'
     ).toBe('result');
   });
 

@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
-import type { Instance, RenderOptions } from 'ink';
 import type * as inkNS from 'ink';
 import type * as reactNS from 'react';
 
@@ -120,7 +119,7 @@ export async function createInkConversationRenderer(
     thinkingStyle: options.thinkingStyle
   };
 
-  const instance: Instance = render(
+  const instance: inkNS.Instance = render(
     h(
       Fragment,
       null,

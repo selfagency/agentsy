@@ -97,9 +97,9 @@ export function updateChangelogFile(
   const marker = '## [Unreleased]';
   const idx = original.indexOf(marker);
   const updated =
-    idx !== -1
-      ? `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`
-      : `${original}\n${section}`;
+    idx === -1
+      ? `${original}\n${section}`
+      : `${original.slice(0, idx + marker.length)}\n${section}${original.slice(idx + marker.length)}`;
   safeWrite(changelogPath, updated);
 }
 

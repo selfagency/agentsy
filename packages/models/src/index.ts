@@ -49,7 +49,7 @@ function isModelsDevAPI(value: unknown): value is ModelsDevAPI {
   );
 }
 
-const PARAMS_B_PATTERN = /([0-9]+(?:\.[0-9]+)?)\s*b\b/iu;
+const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/iu;
 
 const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 

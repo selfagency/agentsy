@@ -2,7 +2,7 @@
 
 ## CRITICAL ISSUES RESOLVED
 
-#### 1. ENUM ROOT CAUSE - **RESOLVED** ✅
+### 1. ENUM ROOT CAUSE - **RESOLVED** ✅
 
 **Problem:** 87 failing tests due to `EventType.RUN_STARTED` showing as undefined
 **Root Cause:** The `@agentsy/types` package was exporting EventType using `export type *` syntax, which only exports type-level declarations, not runtime enum values

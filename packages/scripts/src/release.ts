@@ -85,13 +85,15 @@ async function rollback() {
   }
 }
 
-void process.on('SIGINT', async () => {
-  await rollback();
-  process.exit(130);
+process.on('SIGINT', () => {
+  rollback()
+    .then(() => process.exit(130))
+    .catch(() => process.exit(130));
 });
-void process.on('SIGTERM', async () => {
-  await rollback();
-  process.exit(143);
+process.on('SIGTERM', () => {
+  rollback()
+    .then(() => process.exit(143))
+    .catch(() => process.exit(143));
 });
 
 // ---------------------------------------------------------------------------

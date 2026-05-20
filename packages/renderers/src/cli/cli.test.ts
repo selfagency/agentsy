@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { testOnStepCall } from '../shared.test.js';
+import { testOnStepCall } from '../shared.test-utils.js';
 import { createCliRenderer } from './create-cli-renderer.js';
 
 // Mock cli-markdown module

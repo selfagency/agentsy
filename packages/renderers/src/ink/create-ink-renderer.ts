@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto';
 import type { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
-import type { Instance, RenderOptions } from 'ink';
 import type * as inkNS from 'ink';
 import type * as reactNS from 'react';
 
@@ -20,7 +19,7 @@ export interface InkRendererOptions {
   processor: LLMStreamProcessor;
   onWarning: (message: string) => void;
   onFinish?: () => void;
-  inkOptions?: Partial<RenderOptions>;
+  inkOptions?: Partial<inkNS.RenderOptions>;
   theme?: Theme | ThemeName;
   screenReader?: boolean;
   syntaxHighlight?: boolean;
@@ -28,7 +27,7 @@ export interface InkRendererOptions {
 }
 
 export interface InkRendererHandle {
-  instance: Instance;
+  instance: inkNS.Instance;
   write(chunk: string): void;
   end(): void;
   unmount(): void;

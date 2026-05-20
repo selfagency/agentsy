@@ -81,9 +81,12 @@ describe(applyDefaults, () => {
   });
 
   it('ignores null/undefined settings (uses default)', () => {
-    const result = applyDefaults({ key: null } as Record<string, unknown>, {
-      key: 'fallback'
-    });
+    const result = applyDefaults(
+      { key: null },
+      {
+        key: 'fallback'
+      }
+    );
     expect(result.key).toBe('fallback');
   });
 });

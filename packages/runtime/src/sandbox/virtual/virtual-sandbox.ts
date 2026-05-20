@@ -53,7 +53,7 @@ export function createVirtualSandbox(): VirtualSandbox {
             return;
           }
           resolved = true;
-          void worker.terminate();
+          worker.terminate().catch(() => undefined);
           resolve({
             durationMs: Date.now() - start,
             status: 'timeout',
@@ -80,7 +80,7 @@ export function createVirtualSandbox(): VirtualSandbox {
               }
               resolved = true;
               clearTimeout(timeout);
-              void worker.terminate();
+              worker.terminate().catch(() => undefined);
               resolve({
                 durationMs: Date.now() - start,
                 exitCode: 1,
@@ -95,7 +95,7 @@ export function createVirtualSandbox(): VirtualSandbox {
             }
             resolved = true;
             clearTimeout(timeout);
-            void worker.terminate();
+            worker.terminate().catch(() => undefined);
             resolve({
               durationMs: Date.now() - start,
               exitCode: 0,
@@ -112,7 +112,7 @@ export function createVirtualSandbox(): VirtualSandbox {
           }
           resolved = true;
           clearTimeout(timeout);
-          void worker.terminate();
+          worker.terminate().catch(() => undefined);
           resolve({
             durationMs: Date.now() - start,
             exitCode: 1,

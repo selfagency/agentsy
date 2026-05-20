@@ -48,7 +48,7 @@ describe('chunkUtils', () => {
         { function: { arguments: {} } }
       ];
 
-      expect(mapNativeToolCalls(calls as never)).toStrictEqual([
+      expect(mapNativeToolCalls(calls)).toStrictEqual([
         {
           format: 'native-json',
           name: 'read_file',

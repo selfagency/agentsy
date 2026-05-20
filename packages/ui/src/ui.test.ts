@@ -505,10 +505,8 @@ describe('UI Event Sourcing', () => {
       const listener1 = vi.fn<() => void>();
       const listener2 = vi.fn<() => void>();
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      void store.subscribe(listener1);
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      void store.subscribe(listener2);
+      store.subscribe(listener1);
+      store.subscribe(listener2);
 
       store.dispatch({
         messageId: 'msg-1',

@@ -292,10 +292,7 @@ describe('StateManager', () => {
     const manager = new StateManager(state);
 
     const copy = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    let nestedValue = copy.nested?.value;
-    if (nestedValue !== undefined) {
-      nestedValue = 999;
-    }
+    void copy;
 
     // Original should not change
     const current = manager.getCurrentState() as Record<string, Record<string, unknown>>;

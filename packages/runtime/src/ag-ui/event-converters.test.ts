@@ -448,7 +448,7 @@ describe('convertEventStream', () => {
     const source = await createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
-    expectTypeOf(converted[Symbol.asyncIterator]).toBeFunction();
+    expectTypeOf(converted[Symbol.asyncIterator]).toBeFunction(); // nosemgrep: detect-object-injection -- Symbol.asyncIterator is a well-known symbol, not user input
   });
 
   it('should handle multiple event orders distinctly', async () => {

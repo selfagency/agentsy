@@ -48,7 +48,7 @@ export function isProviderTool(obj: unknown): obj is ProviderTool {
 
   return (
     isNonEmptyString(tool.name as string) &&
-    isJsonObject(tool.parameters as Record<string, unknown>) &&
+    isJsonObject(tool.parameters) &&
     isOptionalString(tool.id as string) &&
     isValidFormat((tool.format as string) || '') &&
     isOptionalJsonObject(tool.metadata as Record<string, unknown> | undefined)

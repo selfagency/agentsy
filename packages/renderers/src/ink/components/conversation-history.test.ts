@@ -40,7 +40,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(1);
       expect(element.props.turns.at(0)?.role).toBe('user');
     });
@@ -66,7 +66,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(2);
     });
 
@@ -85,7 +85,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.text).toBe(userText);
     });
 
@@ -104,7 +104,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.text).toContain('<html>');
     });
   });
@@ -125,7 +125,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(1);
       expect(element.props.turns.at(0)?.role).toBe('assistant');
     });
@@ -145,7 +145,7 @@ describe('ConversationHistory Component', () => {
         options: { showThinking: true },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.thinking).toBe('Internal reasoning');
     });
 
@@ -170,7 +170,7 @@ describe('ConversationHistory Component', () => {
         options: { showToolCalls: true },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.toolCalls).toHaveLength(1);
     });
 
@@ -200,7 +200,7 @@ describe('ConversationHistory Component', () => {
         },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.thinking).toBeDefined();
       expect(element.props.turns.at(0)?.toolCalls).toBeDefined();
     });
@@ -243,7 +243,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(4);
       expect(element.props.turns.at(0)?.role).toBe('user');
       expect(element.props.turns.at(1)?.role).toBe('assistant');
@@ -277,7 +277,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.text).toBe('First');
       expect(element.props.turns.at(1)?.text).toBe('Second');
       expect(element.props.turns.at(2)?.text).toBe('Third');
@@ -301,7 +301,7 @@ describe('ConversationHistory Component', () => {
         options: { showThinking: true },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.showThinking).toBeTruthy();
     });
 
@@ -320,7 +320,7 @@ describe('ConversationHistory Component', () => {
         options: { showThinking: false },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.showThinking).toBeFalsy();
     });
 
@@ -329,7 +329,7 @@ describe('ConversationHistory Component', () => {
         options: { showThinking: true, thinkingStyle: 'blockquote' },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.thinkingStyle).toBe('blockquote');
     });
 
@@ -338,7 +338,7 @@ describe('ConversationHistory Component', () => {
         options: { showThinking: true, thinkingStyle: 'inline' },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.thinkingStyle).toBe('inline');
     });
 
@@ -347,7 +347,7 @@ describe('ConversationHistory Component', () => {
         options: { showThinking: true, thinkingStyle: 'suppress' },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.thinkingStyle).toBe('suppress');
     });
   });
@@ -368,7 +368,7 @@ describe('ConversationHistory Component', () => {
         options: { showToolCalls: true },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.showToolCalls).toBeTruthy();
     });
 
@@ -386,7 +386,7 @@ describe('ConversationHistory Component', () => {
         options: { showToolCalls: false },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.showToolCalls).toBeFalsy();
     });
   });
@@ -398,7 +398,7 @@ describe('ConversationHistory Component', () => {
         options: { markdown: true },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.markdown).toBeTruthy();
     });
 
@@ -407,7 +407,7 @@ describe('ConversationHistory Component', () => {
         options: { markdown: false },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.markdown).toBeFalsy();
     });
   });
@@ -419,7 +419,7 @@ describe('ConversationHistory Component', () => {
         options: { syntaxHighlight: true },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.syntaxHighlight).toBeTruthy();
     });
 
@@ -428,7 +428,7 @@ describe('ConversationHistory Component', () => {
         options: { syntaxHighlight: false },
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.options.syntaxHighlight).toBeFalsy();
     });
   });
@@ -440,7 +440,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.theme).toBe(darkTheme);
     });
 
@@ -449,7 +449,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: defaultTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.theme).toBe(defaultTheme);
     });
   });
@@ -462,7 +462,7 @@ describe('ConversationHistory Component', () => {
         screenReader: true,
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.screenReader).toBeTruthy();
     });
 
@@ -472,7 +472,7 @@ describe('ConversationHistory Component', () => {
         screenReader: false,
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.screenReader).toBeFalsy();
     });
   });
@@ -497,7 +497,7 @@ describe('ConversationHistory Component', () => {
         options: { showToolCalls: true },
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns.at(0)?.toolCalls).toHaveLength(3);
     });
   });
@@ -516,7 +516,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element.props.turns).toHaveLength(50);
     });
   });
@@ -536,7 +536,7 @@ describe('ConversationHistory Component', () => {
             toolCalls: []
           }
         ]
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element).toBeDefined();
     });
 
@@ -545,7 +545,7 @@ describe('ConversationHistory Component', () => {
         options: {},
         theme: darkTheme,
         turns: []
-      } as Parameters<typeof ConversationHistory>[0]);
+      });
       expect(element).toBeDefined();
     });
   });

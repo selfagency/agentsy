@@ -171,7 +171,7 @@ export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
     const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
     const mappedFinishReason = mapGeminiFinishReason(finishReason);
 
-    const parts = isObject(content) && Array.isArray(content.parts) ? (content.parts as unknown[]) : [];
+    const parts = isObject(content) && Array.isArray(content.parts) ? content.parts : [];
     const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
     const usage = isObject(raw) ? extractGeminiUsage(raw) : undefined;
 

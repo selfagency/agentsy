@@ -116,7 +116,7 @@ export function createVSCodeAgentLoop(options: VSCodeAgentLoopOptions) {
 
   return {
     end: endOnce,
-    write: (content: unknown) => renderer.write(content as any),
-    writeChunk: (content: unknown) => renderer.writeChunk(content as any)
+    write: (content: unknown) => renderer.write(content as Parameters<typeof renderer.write>[0]),
+    writeChunk: (content: unknown) => renderer.writeChunk(content as Parameters<typeof renderer.writeChunk>[0])
   };
 }

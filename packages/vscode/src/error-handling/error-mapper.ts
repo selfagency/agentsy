@@ -51,7 +51,7 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
   }
 
   if (typeof error === 'object' && 'status' in error) {
-    const { status } = error as { status: unknown };
+    const { status } = error;
     if (typeof status === 'number') {
       return httpStatusToErrorCode(status);
     }

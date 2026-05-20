@@ -9,12 +9,14 @@ This repository is a **pnpm workspace monorepo** orchestrated with **Turborepo**
 ### Current packages
 
 Core infrastructure:
-- `@agentsy/core` — Stream processing bundle (processor, SSE, XML filter, structured JSON, thinking block parsing, retry, recovery)
+
+- `@agentsy/core` — Stream processing bundle (processor, SSE (Server-Sent Events), XML filter, structured JSON, thinking block parsing, retry, recovery)
 - `@agentsy/types` — Shared TypeScript types across all packages
 - `@agentsy/providers` — Provider normalizers (Anthropic, OpenAI, Mistral, etc.) and adapters
 - `@agentsy/mcp` — Model Context Protocol types and utilities
 
 Runtime and orchestration:
+
 - `@agentsy/runtime` — Agent execution runtime with sandboxing, AG-UI protocol adapter
 - `@agentsy/orchestrator` — Agent orchestration and scheduling
 - `@agentsy/memory` — Three-tier memory engine (raw event log, synthesized wiki, vector retrieval)
@@ -26,6 +28,7 @@ Runtime and orchestration:
 - `@agentsy/models` — Model selection and recommendation
 
 Surfaces and utilities:
+
 - `@agentsy/vscode` — VS Code Language Model Chat Provider integration (currently published)
 - `@agentsy/renderers` — CLI/TUI/renderers (plain text, streaming markdown, Ink components)
 - `@agentsy/ui` — UI components and event sourcing
@@ -37,6 +40,7 @@ Surfaces and utilities:
 - `@agentsy/secrets` — Secret management
 
 Build and testing:
+
 - `@agentsy/scripts` (private) — Release and validation scripts
 - `@agentsy/testing` (private) — Cross-package integration tests
 
@@ -168,6 +172,7 @@ The repo uses **oxlint** and **oxfmt** via the ultracite preset (oxfmt.config.ts
 Enabled plugins: `['eslint', 'typescript', 'unicorn', 'oxc', 'import', 'react', 'jsdoc', 'node', 'promise', 'vitest']`
 
 Key rules:
+
 - Type-aware mode enabled (`typeAware: true`, `typeCheck: true`)
 - TypeScript safety: `no-non-null-assertion: error`, `no-unsafe-*: error`
 - Relaxed: `max-classes-per-file: off`, `unicorn/no-array-for-each: off`, `unicorn/no-array-reduce: off`
@@ -176,6 +181,7 @@ Key rules:
 ### Oxlint-disable patterns
 
 For test inputs that intentionally include mixed HTML/XML or other exceptions, use comment disables:
+
 ```typescript
 /* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
 ```
@@ -199,6 +205,7 @@ For test inputs that intentionally include mixed HTML/XML or other exceptions, u
 ### Internal workspace packages
 
 Important dependencies intentionally not flagged by Fallow (see .fallowrc.jsonc):
+
 ```json
 "ignoreDependencies": [
   "@agentsy/types", "@agentsy/core", "@agentsy/renderers",
@@ -221,6 +228,7 @@ These are safe to ignore in unused-dependencies checks — they are workspace pa
 ### Naming conventions
 
 Follow existing patterns throughout the repo:
+
 - Factory functions: `create*`
 - Parser classes: `*Parser`
 - Processor classes: `*Processor`
@@ -261,7 +269,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     processor: 'src/processor/index.ts',
-    'xml-filter': 'src/xml-filter/index.ts',
+    'xml-filter': 'src/xml-filter/index.ts'
     // ...
   },
   external: ['@agentsy/types', 'zod'], // Workspace and peer deps
@@ -356,6 +364,7 @@ import { describe, expect, it, vi } from 'vitest';
 ### Processor behavior
 
 LLMStreamProcessor and similar components:
+
 - Emit structured `StreamChunk` interfaces with `content`, `thinking`, `toolCalls`, `parts`
 - Accumulate state across chunks and emit partial results
 - Respect configurable limits (e.g., `maxToolCallsPerMessage`, `maxInputLength`)
@@ -445,7 +454,7 @@ LLMStreamProcessor and similar components:
 - Do **not** place VS Code-specific logic in non-vscode packages
 - Do **not** rely on omitted optional properties having `undefined` — exactOptionalPropertyTypes is enabled
 - Do **not** assume providers are merged away — `@agentsy/providers` is active
-- Do **not** bypass workspace-* dependencies in favor of relative imports across packages
+- Do **not** bypass workspace-\* dependencies in favor of relative imports across packages
 
 ## Rule of Thumb
 
