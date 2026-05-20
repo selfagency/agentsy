@@ -1,0 +1,12 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "6d0cd8a6b4a89776725b79451f18717bc32f7bf8",
+  "prompts": {},
+  "humans": {
+    "h_627b419bd8fa0f": {
+      "author": "Daniel Sieradski <2541728+selfagency@users.noreply.github.com>"
+    }
+  }
+}
