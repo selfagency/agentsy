@@ -110,7 +110,7 @@ describe(McpServerRegistry, () => {
     const update = vi.fn(async () => {});
     const get = vi.fn(() => ({ existing: { command: 'existing-cmd' } }));
 
-    vi.mock('vscode', () => ({
+    vi.doMock('vscode', () => ({
       ConfigurationTarget: {
         Workspace: 1
       },

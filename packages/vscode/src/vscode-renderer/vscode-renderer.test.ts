@@ -80,7 +80,7 @@ describe('VS Code Chat Renderer', () => {
     await renderer.write('# Title\n\nContent');
     await renderer.end();
 
-    expect(mockStream.markdown).toHaveBeenCalledWith();
+    expect(mockStream.markdown).toHaveBeenCalled();
   });
 
   it('sends multiple chunks to stream', async () => {
@@ -91,7 +91,7 @@ describe('VS Code Chat Renderer', () => {
     await renderer.write('Part 3');
     await renderer.end();
 
-    expect(mockStream.markdown).toHaveBeenCalledWith();
+    expect(mockStream.markdown).toHaveBeenCalled();
   });
 
   describe('Thinking Blocks', () => {
@@ -105,7 +105,7 @@ describe('VS Code Chat Renderer', () => {
       await renderer.write('Content');
       await renderer.end();
 
-      expect(mockStream.markdown).toHaveBeenCalledWith();
+      expect(mockStream.markdown).toHaveBeenCalled();
     });
 
     it('handles thinking blocks as progress style', async () => {
@@ -124,7 +124,7 @@ describe('VS Code Chat Renderer', () => {
         thinking: 'Internal reasoning'
       });
 
-      expect(mockStream.progress).toHaveBeenCalledWith();
+      expect(mockStream.progress).toHaveBeenCalled();
     });
 
     it('uses thinkingProgress when available', async () => {
@@ -199,13 +199,14 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(onToolCall).toHaveBeenCalledOnce();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- vitest matcher inference
-      const expectedArg = {
-        call: { id: 'tc_callback', name: 'search' },
-        state: 'pending',
-        type: 'tool_call'
-      } as const;
-      expect(onToolCall).toHaveBeenCalledWith(expect.objectContaining(expectedArg));
+      expect(onToolCall).toHaveBeenCalledWith(
+        expect.objectContaining({
+          // oxlint-disable-next-line typescript/no-unsafe-assignment -- vitest matcher returns any
+          call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
+          state: 'pending',
+          type: 'tool_call'
+        })
+      );
     });
 
     it('invokes beginToolInvocation when available', async () => {
@@ -476,7 +477,7 @@ describe('VS Code Chat Renderer', () => {
 
       await renderer.end();
 
-      expect(mockStream.markdown).toHaveBeenCalledWith();
+      expect(mockStream.markdown).toHaveBeenCalled();
     });
 
     it('write processes string chunks', async () => {
@@ -487,7 +488,7 @@ describe('VS Code Chat Renderer', () => {
       await renderer.write('String content');
       await renderer.end();
 
-      expect(mockStream.markdown).toHaveBeenCalledWith();
+      expect(mockStream.markdown).toHaveBeenCalled();
     });
   });
 
@@ -502,7 +503,7 @@ describe('VS Code Chat Renderer', () => {
       await renderer.write('Let me think about this');
       await renderer.end();
 
-      expect(mockStream.markdown).toHaveBeenCalledWith();
+      expect(mockStream.markdown).toHaveBeenCalled();
     });
 
     it('suppresses thinking blocks when showThinking is false', async () => {
@@ -542,7 +543,7 @@ describe('VS Code Chat Renderer', () => {
 
       await renderer.end();
 
-      expect(mockStream.markdown).toHaveBeenCalledWith();
+      expect(mockStream.markdown).toHaveBeenCalled();
     });
   });
 });
@@ -590,7 +591,7 @@ describe('VS Code Agent Loop', () => {
     await renderer.write('Agent step');
     await renderer.end();
 
-    expect(mockStream.markdown).toHaveBeenCalledWith();
+    expect(mockStream.markdown).toHaveBeenCalled();
   });
 
   it('handles abort signal gracefully', async () => {
@@ -685,7 +686,7 @@ describe('VS Code Agent Loop', () => {
     abortController.abort();
 
     await vi.waitFor(() => {
-      expect(consoleWarnSpy).toHaveBeenCalledWith();
+      expect(consoleWarnSpy).toHaveBeenCalled();
     });
 
     expect(consoleWarnSpy).toHaveBeenCalledWith(

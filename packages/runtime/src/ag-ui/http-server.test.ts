@@ -133,7 +133,7 @@ describe('createAgentRunHandler', () => {
     const res = {
       end: vi.fn(),
       write: vi.fn().mockImplementation((chunk: unknown) => {
-        // Verify chunk is data (Uint8Array) 
+        // Verify chunk is data (Uint8Array)
         expect(chunk).toBeInstanceOf(Uint8Array);
       }),
       writeHead: vi.fn()
@@ -166,7 +166,7 @@ describe('createAgentRunHandler', () => {
 describe('createExpressMiddleware', () => {
   it('should stream events via Express response', async () => {
     const middleware = createExpressMiddleware(() => mockEventGenerator());
-    
+
     const res = {
       end: vi.fn(),
       setHeader: vi.fn(),
@@ -181,7 +181,6 @@ describe('createExpressMiddleware', () => {
 
     expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream');
     expect(res.end).toHaveBeenCalled();
-  }
   });
 
   it('should handle errors in Express middleware', async () => {
@@ -241,6 +240,7 @@ describe('createHonoHandler', () => {
     expect(c.body).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
+        // oxlint-disable-next-line typescript/no-unsafe-assignment -- Hono response shape
         headers: expect.objectContaining({
           'Content-Type': 'text/event-stream'
         })

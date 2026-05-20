@@ -187,6 +187,7 @@ describe('createRuntimeLoop', () => {
     const onTaskComplete = vi.fn();
     const loop = createRuntimeLoop({ onTaskComplete, onTaskStart });
 
+    // oxlint-disable-next-line no-empty-function -- no-op task for lifecycle callback test
     await loop.execute([{ id: 'task-1', run: async () => {} }]);
 
     expect(onTaskStart).toHaveBeenCalledOnce();
@@ -273,6 +274,7 @@ describe('createRuntimeLoop', () => {
       loop.spawn([
         {
           id: 'child',
+          // oxlint-disable-next-line no-empty-function -- no-op child task for depth test
           run: async () => {}
         }
       ])
@@ -348,7 +350,10 @@ describe('createRuntimeWorkflowExecutor', () => {
 
   it('rejects workflows with missing dependencies', async () => {
     const workflow = createRuntimeWorkflowExecutor();
-    const tasks: RuntimeWorkflowTask[] = [{ dependsOn: ['build'], id: 'deploy', run: async () => {} }];
+    const tasks: RuntimeWorkflowTask[] = [
+      // oxlint-disable-next-line no-empty-function -- no-op task for missing-dependency error test
+      { dependsOn: ['build'], id: 'deploy', run: async () => {} }
+    ];
 
     await expect(workflow.execute(tasks)).rejects.toThrow('depends on missing task');
   });
@@ -356,7 +361,9 @@ describe('createRuntimeWorkflowExecutor', () => {
   it('rejects workflows with cycles', async () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
+      // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
       { dependsOn: ['b'], id: 'a', run: async () => {} },
+      // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
       { dependsOn: ['a'], id: 'b', run: async () => {} }
     ];
 

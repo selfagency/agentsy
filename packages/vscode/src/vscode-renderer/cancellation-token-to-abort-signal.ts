@@ -53,12 +53,12 @@ export function cancellationTokenToAbortSignal(token: CancellationTokenLike): Ab
   }
 
   try {
-    const cancellationListener: { dispose(): void } | undefined = token.onCancellationRequested(() => {
+    let disposable: { dispose(): void } | undefined;
+    disposable = token.onCancellationRequested(() => {
       controller.abort();
-      cancellationListener?.dispose();
     });
     if (controller.signal.aborted) {
-      cancellationListener?.dispose();
+      disposable?.dispose();
     }
   } catch {
     // Gracefully fall back to a non-cancelled signal in partial/mock host environments.

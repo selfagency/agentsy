@@ -11,6 +11,7 @@ function makeDecision(mode: SandboxTriggerDecision['mode']): SandboxTriggerDecis
 
 function makeContainerStub(): ContainerSandbox {
   return {
+    // oxlint-disable-next-line no-empty-function -- stub implementation for routing test
     async destroy(): Promise<void> {},
     async execute(_input: SandboxInput): Promise<SandboxOutput> {
       return {

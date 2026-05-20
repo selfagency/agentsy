@@ -118,6 +118,7 @@ describe('toObservable', () => {
       complete: () => {
         completed = true;
       },
+      // oxlint-disable-next-line no-empty-function -- intentional no-op for complete-only subscription test
       next: () => {}
     });
 
@@ -185,8 +186,10 @@ describe('toObservable', () => {
   });
 
   it('should return subscription object', () => {
+    // oxlint-disable-next-line no-empty-function -- intentional no-op subscriber
     const subscription = toObservable(sourceSingle()).subscribe(() => {});
 
+    // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
     expectTypeOf(subscription.unsubscribe).toBeFunction();
   });
 

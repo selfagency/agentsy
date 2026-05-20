@@ -4,7 +4,6 @@
  * Verifies mapping of reasoning content to AG-UI reasoning events
  */
 
-import type { ReasoningMessageContentEvent } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
 import { describe, expect, it } from 'vitest';
 
