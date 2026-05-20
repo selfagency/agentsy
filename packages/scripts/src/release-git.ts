@@ -7,6 +7,41 @@ function withSafePathEnv(): NodeJS.ProcessEnv {
   return { ...process.env, PATH: SAFE_PATH };
 }
 
+function resolveGitExecutable(): string | null {
+  // nosemgrep: command-injection-path
+  // PATH is explicitly restricted to safe system directories via withSafePathEnv().
+  const direct = spawnSync('git', ['--version'], {
+    env: withSafePathEnv(),
+    shell: false,
+    stdio: 'ignore'
+  });
+
+  if (direct.status === 0) {
+    return 'git';
+  }
+
+  const locatorCommand = process.platform === 'win32' ? 'where' : 'which';
+  // nosemgrep: command-injection-path
+  // PATH is explicitly restricted to safe system directories via withSafePathEnv().
+  const located = spawnSync(locatorCommand, ['git'], {
+    encoding: 'utf-8',
+    env: withSafePathEnv(),
+    shell: false
+  });
+
+  if (located.status === 0) {
+    const candidate = located.stdout
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .find(Boolean);
+    if (candidate) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 export interface GitHelpers {
   resolveGitExecutable(): string | null;
   runGit(args: readonly string[], options?: SpawnSyncOptions): SpawnSyncReturns<string>;
@@ -33,41 +68,6 @@ export function createGitHelpers(root: string): GitHelpers {
 
     // Ensure the result is properly typed as string
     return result as unknown as SpawnSyncReturns<string>;
-  }
-
-  function resolveGitExecutable(): string | null {
-    // nosemgrep: command-injection-path
-    // PATH is explicitly restricted to safe system directories via withSafePathEnv().
-    const direct = spawnSync('git', ['--version'], {
-      env: withSafePathEnv(),
-      shell: false,
-      stdio: 'ignore'
-    });
-
-    if (direct.status === 0) {
-      return 'git';
-    }
-
-    const locatorCommand = process.platform === 'win32' ? 'where' : 'which';
-    // nosemgrep: command-injection-path
-    // PATH is explicitly restricted to safe system directories via withSafePathEnv().
-    const located = spawnSync(locatorCommand, ['git'], {
-      encoding: 'utf-8',
-      env: withSafePathEnv(),
-      shell: false
-    });
-
-    if (located.status === 0) {
-      const candidate = located.stdout
-        .split(/\r?\n/)
-        .map(line => line.trim())
-        .find(Boolean);
-      if (candidate) {
-        return candidate;
-      }
-    }
-
-    return null;
   }
 
   return {

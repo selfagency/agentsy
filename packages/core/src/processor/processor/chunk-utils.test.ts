@@ -59,7 +59,7 @@ describe('chunkUtils', () => {
 
     it('normalizes stringified argument payloads', () => {
       const calls = [{ function: { arguments: '{"x":1}', name: 'tool' } }];
-      expect(mapNativeToolCalls(calls as never)).toStrictEqual([
+      expect(mapNativeToolCalls(calls)).toStrictEqual([
         {
           format: 'native-json',
           name: 'tool',

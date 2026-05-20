@@ -1,3 +1,5 @@
+// nosemgrep: export-from-syntax
+// Types are imported for use in local interfaces below and then re-exported.
 import type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
 
 export type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo };

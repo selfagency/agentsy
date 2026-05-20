@@ -292,7 +292,7 @@ describe('StateManager', () => {
     const manager = new StateManager(state);
 
     const copy = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    void copy;
+    expect(copy).toBeDefined();
 
     // Original should not change
     const current = manager.getCurrentState() as Record<string, Record<string, unknown>>;

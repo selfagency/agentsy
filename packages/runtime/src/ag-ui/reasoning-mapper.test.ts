@@ -152,7 +152,7 @@ describe('mapReasoningToEvents', () => {
   });
 
   it('should handle undefined reasoning gracefully', () => {
-    const events = mapReasoningToEvents(undefined as unknown as string, {
+    const events = mapReasoningToEvents(undefined, {
       runId: 'run_123'
     });
 

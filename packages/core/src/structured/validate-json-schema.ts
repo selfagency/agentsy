@@ -200,11 +200,11 @@ function checkRef(
 
   const ref = schema.$ref;
   const match = /^#\/\$defs\/([^/]+)$/.exec(ref);
-  if (match === null || match[1] === undefined) {
+  const defName = match?.[1];
+  if (defName === undefined) {
     errors.push(`${path}: unsupported $ref (only local #/$defs/... references are supported): ${ref}`);
     return true;
   }
-  const defName = match[1];
   if (context?.resolving.has(defName)) {
     errors.push(`${path}: circular $ref detected: ${ref}`);
     return true;

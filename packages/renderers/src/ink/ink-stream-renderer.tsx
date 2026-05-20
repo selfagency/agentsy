@@ -206,7 +206,8 @@ export default function InkStreamRenderer({
   setForceUpdate,
   options
 }: InkStreamRendererProps) {
-  // tick triggers re-renders when stateRef is mutated externally
+  // nosemgrep: react-use-state-destructure
+  // _tick is intentionally unused; setTick is used to force re-renders when stateRef is mutated externally.
   const [_tick, setTick] = useState(0);
 
   useEffect(() => {

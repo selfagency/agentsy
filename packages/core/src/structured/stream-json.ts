@@ -131,6 +131,9 @@ function deepEqual(a: unknown, b: unknown): boolean {
 
   // Compare objects
   if (!Array.isArray(a) && !Array.isArray(b)) {
+    // nosemgrep: typescript-unnecessary-assertion
+    // TypeScript narrows to `object` after Array.isArray checks, but Object.keys and property
+    // access require `Record<string, unknown>`. The cast is required for type safety.
     return deepEqualObjects(a as Record<string, unknown>, b as Record<string, unknown>);
   }
 
@@ -158,12 +161,17 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
     return;
   }
 
+  // nosemgrep: typescript-unnecessary-assertion
+  // TypeScript narrows `value` to `object` here, but `Object.keys` and index access
+  // require `Record<string, unknown>`. The cast is required for type safety.
   const keys = Object.keys(value as Record<string, unknown>);
   if (keys.length === 0) {
     out.set(prefix, value);
     return;
   }
   for (const key of keys) {
+    // nosemgrep: typescript-unnecessary-assertion
+    // `value` is narrowed to `object`; property access requires Record<string, unknown>.
     const child = (value as Record<string, unknown>)[key];
     collectPaths(child, prefix === '' ? key : `${prefix}.${key}`, out);
   }

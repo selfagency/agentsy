@@ -47,11 +47,11 @@ export function isProviderTool(obj: unknown): obj is ProviderTool {
   const tool = obj as Record<string, unknown>;
 
   return (
-    isNonEmptyString(tool.name as string) &&
+    isNonEmptyString(tool.name) &&
     isJsonObject(tool.parameters) &&
-    isOptionalString(tool.id as string) &&
-    isValidFormat((tool.format as string) || '') &&
-    isOptionalJsonObject(tool.metadata as Record<string, unknown> | undefined)
+    isOptionalString(tool.id) &&
+    isValidFormat(tool.format || '') &&
+    isOptionalJsonObject(tool.metadata)
   );
 }
 

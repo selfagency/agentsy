@@ -21,7 +21,9 @@ export function StreamingText({
   screenReader = false,
   syntaxHighlight = false
 }: StreamingTextProps) {
-  const [_tick, setTick] = useState(0); // tick triggers re-renders for cursor animation
+  // nosemgrep: react-use-state-destructure
+  // _tick is intentionally unused; setTick is used to force re-renders for cursor animation.
+  const [_tick, setTick] = useState(0);
 
   const { stablePrefix, unstableSuffix } = useMemo(() => {
     if (!isStreaming) {

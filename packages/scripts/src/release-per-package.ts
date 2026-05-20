@@ -159,12 +159,12 @@ async function rollback() {
   }
 }
 
-void process.on('SIGINT', async () => {
+process.on('SIGINT', async () => {
   await rollback();
   process.exit(130);
 });
 
-void process.on('SIGTERM', async () => {
+process.on('SIGTERM', async () => {
   await rollback();
   process.exit(143);
 });

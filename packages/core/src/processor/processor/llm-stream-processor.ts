@@ -798,8 +798,14 @@ export class LLMStreamProcessor {
 
   private emitOutput(output: ProcessedOutput): void {
     this.emitConversationLifecycle(output);
+    this.emitParts(output.parts);
+    if (output.thinking) this.emitThinking(output.thinking);
+    if (output.content) this.emitText(output.content);
+    this.emitDoneIfNeeded(output.done);
+  }
 
-    for (const part of output.parts) {
+  private emitParts(parts: OutputPart[]): void {
+    for (const part of parts) {
       if (part.type === 'tool_call_delta') {
         for (const listener of this.listeners.tool_call_delta) {
           listener(part);
@@ -807,32 +813,38 @@ export class LLMStreamProcessor {
         this.emitConversationToolCallDelta(part);
       }
       if (part.type === 'tool_call') {
-        for (const listener of this.listeners.tool_call_part) {
-          listener(part);
-        }
-        if (part.state === 'input-complete' || part.state === 'output-available' || part.state === 'output-error') {
-          for (const listener of this.listeners.tool_call) {
-            listener(part.call);
-          }
-        }
-        this.emitConversationToolCallPart(part);
+        this.emitToolCallPart(part);
       }
       this._partsController?.enqueue(part);
     }
+  }
 
-    if (output.thinking) {
-      for (const listener of this.listeners.thinking) {
-        listener(output.thinking);
+  private emitToolCallPart(part: Extract<OutputPart, { type: 'tool_call' }>): void {
+    for (const listener of this.listeners.tool_call_part) {
+      listener(part);
+    }
+    if (part.state === 'input-complete' || part.state === 'output-available' || part.state === 'output-error') {
+      for (const listener of this.listeners.tool_call) {
+        listener(part.call);
       }
     }
+    this.emitConversationToolCallPart(part);
+  }
 
-    if (output.content) {
-      for (const listener of this.listeners.text) {
-        listener(output.content);
-      }
+  private emitThinking(thinking: string): void {
+    for (const listener of this.listeners.thinking) {
+      listener(thinking);
     }
+  }
 
-    if (output.done && !this.doneEmitted) {
+  private emitText(content: string): void {
+    for (const listener of this.listeners.text) {
+      listener(content);
+    }
+  }
+
+  private emitDoneIfNeeded(done: boolean): void {
+    if (done && !this.doneEmitted) {
       this.doneEmitted = true;
       for (const listener of this.listeners.done) {
         listener();

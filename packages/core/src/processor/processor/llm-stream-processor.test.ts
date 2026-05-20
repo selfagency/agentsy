@@ -64,8 +64,7 @@ describe('LLMStreamProcessor', () => {
       tool_calls: [
         {
           function: {
-            // sonar-disable-next-line typescript:S5443 -- test fixture value, not actual filesystem access
-            arguments: { path: '/tmp/a.ts' },
+            arguments: { path: '/home/user/project/a.ts' },
             name: 'read_file'
           }
         }
@@ -76,7 +75,7 @@ describe('LLMStreamProcessor', () => {
       {
         format: 'native-json',
         name: 'read_file',
-        parameters: { path: '/tmp/a.ts' }
+        parameters: { path: '/home/user/project/a.ts' }
       }
     ]);
   });

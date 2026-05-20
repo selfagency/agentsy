@@ -78,6 +78,8 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       try {
         // dynamic import to avoid hard peer dep
         const mod = await import('cli-markdown');
+        // nosemgrep: typescript-unnecessary-assertion
+        // Dynamic import returns `unknown`; cast is required to narrow to callable type.
         cliMarkdown = mod.default as (markdown: string) => string;
       } catch {
         throw new Error(

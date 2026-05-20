@@ -29,6 +29,147 @@ const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
 const WORKER_PATH = join(__dirname, 'sandbox-worker.js');
 
+interface SandboxTimeoutHandlerOptions {
+  worker: Worker;
+  resolve: (value: SandboxOutput) => void;
+  start: number;
+  timeoutMs: number;
+  stdout: string[];
+  stderr: string[];
+  resolved: { value: boolean };
+}
+
+function createSandboxTimeoutHandler(options: SandboxTimeoutHandlerOptions) {
+  return () => {
+    if (options.resolved.value) {
+      return;
+    }
+    options.resolved.value = true;
+    options.worker.terminate().catch(() => undefined);
+    options.resolve({
+      durationMs: Date.now() - options.start,
+      status: 'timeout',
+      stderr: `${options.stderr.join('\n')}\nExecution timed out after ${options.timeoutMs}ms`.trim(),
+      stdout: options.stdout.join('\n')
+    });
+  };
+}
+
+interface MessageHandlerOptions {
+  worker: Worker;
+  resolve: (value: SandboxOutput) => void;
+  timeout: NodeJS.Timeout;
+  start: number;
+  stdout: string[];
+  stderr: string[];
+  resolved: { value: boolean };
+}
+
+function createMessageHandler(options: MessageHandlerOptions) {
+  return (msg: WorkerMessage) => {
+    if (msg.type === 'log') {
+      options.stdout.push(msg.args.map(String).join(' '));
+    } else if (msg.type === 'error' || msg.type === 'runtime-error' || msg.type === 'warn' || msg.type === 'info') {
+      const output = Array.isArray(msg.args) ? msg.args.map(String).join(' ') : String(msg.args ?? '');
+      options.stderr.push(output);
+
+      if (msg.type === 'runtime-error') {
+        if (options.resolved.value) {
+          return;
+        }
+        options.resolved.value = true;
+        clearTimeout(options.timeout);
+        options.worker.terminate().catch(() => undefined);
+        options.resolve({
+          durationMs: Date.now() - options.start,
+          exitCode: 1,
+          status: 'error',
+          stderr: options.stderr.join('\n'),
+          stdout: options.stdout.join('\n')
+        });
+      }
+    } else if (msg.type === 'result') {
+      if (options.resolved.value) {
+        return;
+      }
+      options.resolved.value = true;
+      clearTimeout(options.timeout);
+      options.worker.terminate().catch(() => undefined);
+      options.resolve({
+        durationMs: Date.now() - options.start,
+        exitCode: 0,
+        status: 'ok',
+        stderr: options.stderr.join('\n'),
+        stdout: options.stdout.join('\n')
+      });
+    }
+  };
+}
+
+interface ErrorHandlerOptions {
+  worker: Worker;
+  resolve: (value: SandboxOutput) => void;
+  timeout: NodeJS.Timeout;
+  start: number;
+  stdout: string[];
+  stderr: string[];
+  resolved: { value: boolean };
+}
+
+function createErrorHandler(options: ErrorHandlerOptions) {
+  return (err: Error) => {
+    if (options.resolved.value) {
+      return;
+    }
+    options.resolved.value = true;
+    clearTimeout(options.timeout);
+    options.worker.terminate().catch(() => undefined);
+    options.resolve({
+      durationMs: Date.now() - options.start,
+      exitCode: 1,
+      status: 'error',
+      stderr: err instanceof Error ? err.message : String(err),
+      stdout: options.stdout.join('\n')
+    });
+  };
+}
+
+interface ExitHandlerOptions {
+  resolve: (value: SandboxOutput) => void;
+  timeout: NodeJS.Timeout;
+  start: number;
+  stdout: string[];
+  stderr: string[];
+  resolved: { value: boolean };
+}
+
+function createExitHandler(options: ExitHandlerOptions) {
+  return (code: number) => {
+    if (options.resolved.value) {
+      return;
+    }
+    options.resolved.value = true;
+    clearTimeout(options.timeout);
+    if (code === 0) {
+      options.resolve({
+        durationMs: Date.now() - options.start,
+        exitCode: 0,
+        status: 'ok',
+        stderr: options.stderr.join('\n'),
+        stdout: options.stdout.join('\n')
+      });
+    } else {
+      options.resolve({
+        durationMs: Date.now() - options.start,
+        exitCode: code,
+        status: 'error',
+        stderr: `Worker exited with code ${code}`,
+        stdout: options.stdout.join('\n')
+      });
+    }
+  };
+}
+
 export function createVirtualSandbox(): VirtualSandbox {
   return {
     async execute(input): Promise<SandboxOutput> {
@@ -37,7 +178,7 @@ export function createVirtualSandbox(): VirtualSandbox {
 
       const stdout: string[] = [];
       const stderr: string[] = [];
-      let resolved = false;
+      const resolved = { value: false };
 
       return await new Promise(resolve => {
         const worker = new Worker(WORKER_PATH, {
@@ -48,104 +189,54 @@ export function createVirtualSandbox(): VirtualSandbox {
           }
         });
 
-        const timeout = setTimeout(() => {
-          if (resolved) {
-            return;
-          }
-          resolved = true;
-          worker.terminate().catch(() => undefined);
-          resolve({
-            durationMs: Date.now() - start,
-            status: 'timeout',
-            stderr: `${stderr.join('\n')}\nExecution timed out after ${timeoutMs}ms`.trim(),
-            stdout: stdout.join('\n')
-          });
-        }, timeoutMs);
+        const timeout = setTimeout(
+          createSandboxTimeoutHandler({
+            worker,
+            resolve,
+            start,
+            timeoutMs,
+            stdout,
+            stderr,
+            resolved
+          }),
+          timeoutMs
+        );
 
-        worker.on('message', (msg: WorkerMessage) => {
-          if (msg.type === 'log') {
-            stdout.push(msg.args.map(String).join(' '));
-          } else if (
-            msg.type === 'error' ||
-            msg.type === 'runtime-error' ||
-            msg.type === 'warn' ||
-            msg.type === 'info'
-          ) {
-            const output = Array.isArray(msg.args) ? msg.args.map(String).join(' ') : String(msg.args ?? '');
-            stderr.push(output);
-
-            if (msg.type === 'runtime-error') {
-              if (resolved) {
-                return;
-              }
-              resolved = true;
-              clearTimeout(timeout);
-              worker.terminate().catch(() => undefined);
-              resolve({
-                durationMs: Date.now() - start,
-                exitCode: 1,
-                status: 'error',
-                stderr: stderr.join('\n'),
-                stdout: stdout.join('\n')
-              });
-            }
-          } else if (msg.type === 'result') {
-            if (resolved) {
-              return;
-            }
-            resolved = true;
-            clearTimeout(timeout);
-            worker.terminate().catch(() => undefined);
-            resolve({
-              durationMs: Date.now() - start,
-              exitCode: 0,
-              status: 'ok',
-              stderr: stderr.join('\n'),
-              stdout: stdout.join('\n')
-            });
-          }
-        });
-
-        worker.on('error', err => {
-          if (resolved) {
-            return;
-          }
-          resolved = true;
-          clearTimeout(timeout);
-          worker.terminate().catch(() => undefined);
-          resolve({
-            durationMs: Date.now() - start,
-            exitCode: 1,
-            status: 'error',
-            stderr: err instanceof Error ? err.message : String(err),
-            stdout: stdout.join('\n')
-          });
-        });
-
-        worker.on('exit', code => {
-          if (resolved) {
-            return;
-          }
-          resolved = true;
-          clearTimeout(timeout);
-          if (code === 0) {
-            resolve({
-              durationMs: Date.now() - start,
-              exitCode: 0,
-              status: 'ok',
-              stderr: stderr.join('\n'),
-              stdout: stdout.join('\n')
-            });
-          } else {
-            resolve({
-              durationMs: Date.now() - start,
-              exitCode: code,
-              status: 'error',
-              stderr: `Worker exited with code ${code}`,
-              stdout: stdout.join('\n')
-            });
-          }
-        });
+        worker.on(
+          'message',
+          createMessageHandler({
+            worker,
+            resolve,
+            timeout,
+            start,
+            stdout,
+            stderr,
+            resolved
+          })
+        );
+        worker.on(
+          'error',
+          createErrorHandler({
+            worker,
+            resolve,
+            timeout,
+            start,
+            stdout,
+            stderr,
+            resolved
+          })
+        );
+        worker.on(
+          'exit',
+          createExitHandler({
+            resolve,
+            timeout,
+            start,
+            stdout,
+            stderr,
+            resolved
+          })
+        );
       });
     },
 

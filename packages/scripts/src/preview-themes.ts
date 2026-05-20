@@ -25,9 +25,13 @@ interface ThemeConfig {
 let themesModule: Record<string, unknown>;
 try {
   const distThemesPath = '../dist/renderers/ink/themes/index.js';
+  // nosemgrep: typescript-unnecessary-assertion
+  // Dynamic import returns `unknown`; cast is required for type safety.
   themesModule = (await import(distThemesPath)) as Record<string, unknown>;
 } catch {
   // Fallback to local source so contributors can run the script before building
+  // nosemgrep: typescript-unnecessary-assertion
+  // Dynamic import returns `unknown`; cast is required for type safety.
   themesModule = (await import('../../renderers/src/ink/themes/index.ts')) as Record<string, unknown>;
 }
 

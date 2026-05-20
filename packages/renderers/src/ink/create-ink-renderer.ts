@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
-import type * as inkNS from 'ink';
+import type { Instance, RenderOptions } from 'ink';
 import type * as reactNS from 'react';
 
 import type { KeyboardOptions } from './components/keyboard-handler.js';
@@ -19,7 +19,7 @@ export interface InkRendererOptions {
   processor: LLMStreamProcessor;
   onWarning: (message: string) => void;
   onFinish?: () => void;
-  inkOptions?: Partial<inkNS.RenderOptions>;
+  inkOptions?: Partial<RenderOptions>;
   theme?: Theme | ThemeName;
   screenReader?: boolean;
   syntaxHighlight?: boolean;
@@ -27,14 +27,14 @@ export interface InkRendererOptions {
 }
 
 export interface InkRendererHandle {
-  instance: inkNS.Instance;
+  instance: Instance;
   write(chunk: string): void;
   end(): void;
   unmount(): void;
 }
 
 export async function createInkRenderer(options: InkRendererOptions): Promise<InkRendererHandle> {
-  let ink: typeof inkNS;
+  let ink: typeof import('ink');
   let react: typeof reactNS;
   try {
     ink = await import('ink');

@@ -5,6 +5,29 @@ import { resolve } from 'node:path';
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
 
+function rewriteDistExports(
+  rootExports: Record<string, unknown>
+): Record<string, { types?: string; import?: string; require?: string }> {
+  const distExports: Record<string, { types?: string; import?: string; require?: string }> = {};
+  for (const [key, value] of Object.entries(rootExports)) {
+    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    const entry: { types?: string; import?: string; require?: string } = {};
+    if (typeof value === 'object' && value !== null) {
+      const obj = value as Record<string, unknown>;
+      for (const field of ['types', 'import', 'require'] as const) {
+        if (field in obj) {
+          const fieldValue = obj[field] as string | undefined;
+          if (fieldValue !== undefined) {
+            entry[field] = fieldValue.replace('./dist/', './');
+          }
+        }
+      }
+    }
+    distExports[key] = entry;
+  }
+  return distExports;
+}
+
 async function main() {
   // If a package path is provided as an argument, use it; otherwise use root
   const packagePath = process.argv[2] ? resolve(process.argv[2]) : resolve(__dirname, '..');
@@ -49,31 +72,7 @@ async function main() {
     publishConfig
   } = pkg;
 
-  // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
-  const rootExports = pkg.exports as Record<string, unknown>;
-  const distExports: Record<string, { types?: string; import?: string; require?: string }> = {};
-  for (const [key, value] of Object.entries(rootExports)) {
-    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    distExports[key] = {};
-    if (typeof value === 'object' && value !== null && 'types' in value) {
-      const typesValue = (value as Record<string, unknown>).types as string | undefined;
-      if (typesValue !== undefined) {
-        distExports[key].types = typesValue.replace('./dist/', './');
-      }
-    }
-    if (typeof value === 'object' && value !== null && 'import' in value) {
-      const importValue = (value as Record<string, unknown>).import as string | undefined;
-      if (importValue !== undefined) {
-        distExports[key].import = importValue.replace('./dist/', './');
-      }
-    }
-    if (typeof value === 'object' && value !== null && 'require' in value) {
-      const requireValue = (value as Record<string, unknown>).require as string | undefined;
-      if (requireValue !== undefined) {
-        distExports[key].require = requireValue.replace('./dist/', './');
-      }
-    }
-  }
+  const distExports = rewriteDistExports(pkg.exports as Record<string, unknown>);
 
   const distPkg = {
     author,
