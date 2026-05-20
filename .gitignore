@@ -252,3 +252,4 @@ build-log*
 coverage_output*
 fallow-dupes*
 tmp/
+.sisyphus/
