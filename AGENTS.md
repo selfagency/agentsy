@@ -200,6 +200,7 @@ For test inputs that intentionally include mixed HTML/XML or other exceptions, u
 - Durable knowledge layer, not hidden orchestration dependency
 - Must remain pluggable for consumers to substitute backends
 - Prefer abstract interfaces for memory providers, retrievers, lifecycle hooks
+
 - Expose as both Agentsy-native package and standalone MCP server/plugin surface when possible
 
 ### Internal workspace packages
