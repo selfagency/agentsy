@@ -1,8 +1,10 @@
+import type { ReadableStream } from 'node:stream/web';
+
 import type { MCPTransport } from '@agentsy/core/processor';
 import { adaptTransportToStream } from '@agentsy/core/processor';
 import { parseSSEStream } from '@agentsy/core/sse';
-import type { ReadableStream } from 'node:stream/web';
-import { type CancellationToken, ChatResponseProgressPart, type ChatResponseStream, Uri } from 'vscode';
+import { ChatResponseProgressPart, Uri } from 'vscode';
+import type { CancellationToken, ChatResponseStream } from 'vscode';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
@@ -19,13 +21,13 @@ export interface MCPStreamEvent {
  */
 function mapMcpToStreamEvent(mcpType: string): MCPStreamEvent['type'] | null {
   const mapping: Record<string, MCPStreamEvent['type']> = {
-    content: 'markdown',
     anchor: 'anchor',
     button: 'button',
+    content: 'markdown',
     filetree: 'filetree',
     progress: 'progress',
-    reference: 'reference',
-    push: 'push'
+    push: 'push',
+    reference: 'reference'
   };
   return mapping[mcpType] ?? null;
 }
@@ -62,28 +64,44 @@ export class VSCodeMCPBridgeHelper {
    */
   public createDirectChatResponseStream(): ChatResponseStream {
     const chatStream: ChatResponseStream = {
-      markdown: value => this.pushEvent({ type: 'markdown', data: { value } }),
-      anchor: (value, title) => this.pushEvent({ type: 'anchor', data: { value: String(value), title } }),
-      button: command =>
+      anchor: (value, title) => {
         this.pushEvent({
-          type: 'button',
-          data: { command: String(command) }
-        }),
-      filetree: (value, baseUri) =>
+          data: { title, value: typeof value === 'string' ? value : String(value) },
+          type: 'anchor'
+        });
+      },
+      button: command => {
         this.pushEvent({
-          type: 'filetree',
-          data: { value, baseUri: String(baseUri) }
-        }),
-      progress: value => this.pushEvent({ type: 'progress', data: { value } }),
-      reference: (value, iconPath) =>
+          data: { command: typeof command === 'string' ? command : String(command) },
+          type: 'button'
+        });
+      },
+      filetree: (value, baseUri) => {
         this.pushEvent({
-          type: 'reference',
+          data: { baseUri: typeof baseUri === 'string' ? baseUri : String(baseUri), value },
+          type: 'filetree'
+        });
+      },
+      markdown: value => {
+        this.pushEvent({ data: { value }, type: 'markdown' });
+      },
+      progress: value => {
+        this.pushEvent({ data: { value }, type: 'progress' });
+      },
+      push: part => {
+        this.pushEvent({ data: part, type: 'push' });
+      },
+      reference: (value, iconPath) => {
+        const resolvedIconPath =
+          iconPath && typeof iconPath === 'string' ? iconPath : iconPath ? String(iconPath) : undefined;
+        this.pushEvent({
           data: {
-            value: String(value),
-            iconPath: iconPath ? String(iconPath) : undefined
-          }
-        }),
-      push: part => this.pushEvent({ type: 'push', data: part })
+            iconPath: resolvedIconPath,
+            value: typeof value === 'string' ? value : JSON.stringify(value)
+          },
+          type: 'reference'
+        });
+      }
     };
 
     return chatStream;
@@ -125,11 +143,11 @@ export class VSCodeMCPBridgeHelper {
         }
 
         // Map SSE event to MCP event type and handle
-        const mappedType = mapMcpToStreamEvent(sseEvent.event || 'content');
+        const mappedType = mapMcpToStreamEvent(sseEvent.event ?? 'content');
         if (mappedType) {
           const event: MCPStreamEvent = {
-            type: mappedType,
-            data: sseEvent.data ? JSON.parse(sseEvent.data) : null
+            data: sseEvent.data ? JSON.parse(sseEvent.data) : null,
+            type: mappedType
           };
           this.handleEvent(event, chatStream);
         }
@@ -152,27 +170,34 @@ export class VSCodeMCPBridgeHelper {
     const data = event.data as Record<string, unknown>;
 
     switch (event.type) {
-      case 'markdown':
+      case 'markdown': {
         this.handleMarkdown(data, chatStream);
         break;
-      case 'progress':
+      }
+      case 'progress': {
         this.handleProgress(data, chatStream);
         break;
-      case 'anchor':
+      }
+      case 'anchor': {
         this.handleAnchor(data, chatStream);
         break;
-      case 'button':
+      }
+      case 'button': {
         this.handleButton(data, chatStream);
         break;
-      case 'filetree':
+      }
+      case 'filetree': {
         this.handleFiletree(chatStream);
         break;
-      case 'reference':
+      }
+      case 'reference': {
         this.handleReference(data, chatStream);
         break;
-      case 'push':
+      }
+      case 'push': {
         this.handlePush(chatStream);
         break;
+      }
     }
   }
 

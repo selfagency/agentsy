@@ -85,9 +85,7 @@ export interface ProviderApiRequest {
  * Provider-specific streaming chunk format.
  * Each provider emits a different chunk type.
  */
-export interface ProviderStreamChunk {
-  [key: string]: unknown;
-}
+export type ProviderStreamChunk = Record<string, unknown>;
 
 /**
  * API key manager configuration.
@@ -234,9 +232,7 @@ export interface SettingsLoaderConfig {
 /**
  * Loaded and validated settings.
  */
-export interface LoadedSettings {
-  [key: string]: unknown;
-}
+export type LoadedSettings = Record<string, unknown>;
 
 /**
  * Export interface for providers.

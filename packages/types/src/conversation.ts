@@ -29,10 +29,36 @@ export type ConversationEvent =
       argumentsTextDelta?: string;
       parameters?: JsonObject;
     }
-  | { type: 'tool_call_result_added'; messageId: string; toolCallId: string; result: unknown; isError?: boolean }
-  | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }
-  | { type: 'step_started'; stepIndex: number; messageId?: string; usage?: UsageInfo }
-  | { type: 'step_finished'; stepIndex: number; messageId?: string; usage?: UsageInfo }
+  | {
+      type: 'tool_call_result_added';
+      messageId: string;
+      toolCallId: string;
+      result: unknown;
+      isError?: boolean;
+    }
+  | {
+      type: 'message_finished';
+      messageId: string;
+      finishReason?: FinishReason;
+      usage?: UsageInfo;
+    }
+  | {
+      type: 'step_started';
+      stepIndex: number;
+      messageId?: string;
+      usage?: UsageInfo;
+    }
+  | {
+      type: 'step_finished';
+      stepIndex: number;
+      messageId?: string;
+      usage?: UsageInfo;
+    }
   | { type: 'step_updated'; stepIndex: number }
-  | { type: 'error_part_added'; messageId: string; message: string; code?: string }
+  | {
+      type: 'error_part_added';
+      messageId: string;
+      message: string;
+      code?: string;
+    }
   | { type: 'conversation_reset' };

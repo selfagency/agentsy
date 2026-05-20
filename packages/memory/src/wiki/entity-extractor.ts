@@ -22,7 +22,7 @@ export interface EntityExtractor {
   extract(content: string): EntityExtractionResult;
 }
 
-const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/g;
+const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/gu;
 
 function classifyEntity(name: string): EntityKind {
   if (/(Inc|Corp|LLC|Ltd|Foundation)$/u.test(name)) {
@@ -45,7 +45,7 @@ function toConfidence(occurrences: number): number {
 }
 
 function normalizeSentence(sentence: string): string {
-  return sentence.replace(/\s+/g, ' ').trim();
+  return sentence.replaceAll(/\s+/gu, ' ').trim();
 }
 
 export function createEntityExtractor(): EntityExtractor {
@@ -60,11 +60,11 @@ export function createEntityExtractor(): EntityExtractor {
 
       const entities: ExtractedEntity[] = [...frequency.entries()]
         .map(([name, occurrences]) => ({
-          name,
+          confidence: toConfidence(occurrences),
           kind: classifyEntity(name),
-          confidence: toConfidence(occurrences)
+          name
         }))
-        .sort((left, right) => right.confidence - left.confidence || left.name.localeCompare(right.name));
+        .toSorted((left, right) => right.confidence - left.confidence || left.name.localeCompare(right.name));
 
       const entitySet = new Set(entities.map(entity => entity.name));
       const relationships: EntityRelationship[] = [];
@@ -91,10 +91,10 @@ export function createEntityExtractor(): EntityExtractor {
 
             seenEdges.add(edgeKey);
             relationships.push({
+              confidence: 0.6,
               from,
-              to,
               relation: 'co_occurs_with',
-              confidence: 0.6
+              to
             });
           }
         }

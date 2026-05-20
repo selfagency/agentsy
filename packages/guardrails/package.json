@@ -41,13 +41,15 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest --run --passWithNoTests",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt --write ."
   },
   "dependencies": {
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",

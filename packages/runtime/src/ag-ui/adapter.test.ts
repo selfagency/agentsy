@@ -16,8 +16,10 @@ import type {
   ToolCallStartEvent
 } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
-import { describe, expect, it } from 'vitest';
-import { toAgUiStream, type PipelineEvent } from './adapter.js';
+import { describe, expect, it, expectTypeOf } from 'vitest';
+
+import { toAgUiStream } from './adapter.js';
+import type { PipelineEvent } from './adapter.js';
 
 /**
  * Helper to consume an async generator into an array
@@ -45,7 +47,7 @@ describe('toAgUiStream', () => {
 
   it('should wrap stream with RUN_STARTED and RUN_FINISHED', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: 'Hello' },
+      { content: 'Hello', type: 'delta' },
       { type: 'message_done', usage: { inputTokens: 10, outputTokens: 5 } }
     ]);
 
@@ -66,8 +68,8 @@ describe('toAgUiStream', () => {
 
   it('should convert delta events to TEXT_MESSAGE_CONTENT', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: 'Hello ' },
-      { type: 'delta', content: 'world!' },
+      { content: 'Hello ', type: 'delta' },
+      { content: 'world!', type: 'delta' },
       { type: 'message_done' }
     ]);
 
@@ -87,9 +89,9 @@ describe('toAgUiStream', () => {
 
   it('should convert thinking events to REASONING_* sequence', async () => {
     const pipeline = createMockPipeline([
-      { type: 'thinking', content: 'Thinking step 1' },
-      { type: 'thinking', content: 'Thinking step 2' },
-      { type: 'delta', content: 'Answer' },
+      { content: 'Thinking step 1', type: 'thinking' },
+      { content: 'Thinking step 2', type: 'thinking' },
+      { content: 'Answer', type: 'delta' },
       { type: 'message_done' }
     ]);
 
@@ -111,7 +113,7 @@ describe('toAgUiStream', () => {
     const contentEvents = reasoningEvents.filter(
       (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT
     );
-    expect(contentEvents.length).toBe(2);
+    expect(contentEvents).toHaveLength(2);
     const firstContent = contentEvents[0];
     const secondContent = contentEvents[1];
     expect(firstContent?.content).toBe('Thinking step 1');
@@ -125,10 +127,10 @@ describe('toAgUiStream', () => {
   it('should convert tool_call events to TOOL_CALL_* sequence', async () => {
     const pipeline = createMockPipeline([
       {
-        type: 'tool_call',
+        toolArgs: { query: 'AI trends' },
         toolCallId: 'call_123',
         toolName: 'search',
-        toolArgs: { query: 'AI trends' }
+        type: 'tool_call'
       },
       { type: 'message_done' }
     ]);
@@ -147,19 +149,19 @@ describe('toAgUiStream', () => {
     expect(toolStart?.toolCallId).toBe('call_123');
 
     expect(toolArgs?.type).toBe(EventType.TOOL_CALL_ARGS);
-    expect(toolArgs?.args).toEqual({ query: 'AI trends' });
+    expect(toolArgs?.args).toStrictEqual({ query: 'AI trends' });
 
     expect(toolEnd?.type).toBe(EventType.TOOL_CALL_END);
   });
 
   it('should handle thinking followed by tool_call', async () => {
     const pipeline = createMockPipeline([
-      { type: 'thinking', content: 'Need to search for info' },
+      { content: 'Need to search for info', type: 'thinking' },
       {
-        type: 'tool_call',
+        toolArgs: { query: 'something' },
         toolCallId: 'call_456',
         toolName: 'search',
-        toolArgs: { query: 'something' }
+        type: 'tool_call'
       },
       { type: 'message_done' }
     ]);
@@ -184,11 +186,11 @@ describe('toAgUiStream', () => {
 
   it('should emit RUN_ERROR on error event', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: 'Starting...' },
+      { content: 'Starting...', type: 'delta' },
       {
-        type: 'error',
+        code: 'RATE_LIMIT',
         message: 'API rate limit exceeded',
-        code: 'RATE_LIMIT'
+        type: 'error'
       }
     ]);
 
@@ -200,14 +202,17 @@ describe('toAgUiStream', () => {
       throw new Error('Expected RUN_ERROR event');
     }
 
-    expect(errorEvent.error).toEqual(
-      expect.objectContaining({ message: 'API rate limit exceeded', code: 'RATE_LIMIT' })
+    expect(errorEvent.error).toStrictEqual(
+      expect.objectContaining({
+        code: 'RATE_LIMIT',
+        message: 'API rate limit exceeded'
+      })
     );
   });
 
   it('should include usage info in RUN_FINISHED', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: 'Response' },
+      { content: 'Response', type: 'delta' },
       {
         type: 'message_done',
         usage: { inputTokens: 100, outputTokens: 50 }
@@ -217,17 +222,17 @@ describe('toAgUiStream', () => {
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
     const finished = events.find((e): e is RunFinishedEvent => e.type === EventType.RUN_FINISHED);
-    expect(finished?.usage).toEqual({
+    expect(finished?.usage).toStrictEqual({
       inputTokens: 100,
       outputTokens: 50
     });
   });
 
   it('should support parentRunId for hierarchical workflows', async () => {
-    const pipeline = createMockPipeline([{ type: 'delta', content: 'Sub-agent response' }, { type: 'message_done' }]);
+    const pipeline = createMockPipeline([{ content: 'Sub-agent response', type: 'delta' }, { type: 'message_done' }]);
 
     const parentRunId = 'parent_run_789';
-    const events = await collectEvents(toAgUiStream(pipeline, { runId, parentRunId }));
+    const events = await collectEvents(toAgUiStream(pipeline, { parentRunId, runId }));
 
     const started = events.find((e): e is RunStartedEvent => e.type === EventType.RUN_STARTED);
     expect(started?.parentRunId).toBe(parentRunId);
@@ -235,8 +240,8 @@ describe('toAgUiStream', () => {
 
   it('should maintain correct messageIds across events', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: 'Part 1 ' },
-      { type: 'delta', content: 'Part 2' },
+      { content: 'Part 1 ', type: 'delta' },
+      { content: 'Part 2', type: 'delta' },
       { type: 'message_done' }
     ]);
 
@@ -253,8 +258,8 @@ describe('toAgUiStream', () => {
 
   it('should handle empty delta gracefully', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: '' },
-      { type: 'delta', content: 'Real content' },
+      { content: '', type: 'delta' },
+      { content: 'Real content', type: 'delta' },
       { type: 'message_done' }
     ]);
 
@@ -262,17 +267,17 @@ describe('toAgUiStream', () => {
 
     // Should still emit a text event for the real content
     const textEvents = events.filter((e): e is TextMessageContentEvent => e.type === EventType.TEXT_MESSAGE_CONTENT);
-    expect(textEvents.some(e => e.content === 'Real content')).toBe(true);
+    expect(textEvents.some(e => e.content === 'Real content')).toBeTruthy();
   });
 
   it('should emit RUN_FINISHED after closing reasoning/tool_call', async () => {
     const pipeline = createMockPipeline([
-      { type: 'thinking', content: 'Thinking...' },
+      { content: 'Thinking...', type: 'thinking' },
       {
-        type: 'tool_call',
+        toolArgs: { expression: '2+2' },
         toolCallId: 'call_789',
         toolName: 'calculate',
-        toolArgs: { expression: '2+2' }
+        type: 'tool_call'
       },
       { type: 'message_done' }
     ]);
@@ -290,9 +295,9 @@ describe('toAgUiStream', () => {
   });
 
   it('should handle encryption option for reasoning', async () => {
-    const pipeline = createMockPipeline([{ type: 'thinking', content: 'Secret thoughts' }, { type: 'message_done' }]);
+    const pipeline = createMockPipeline([{ content: 'Secret thoughts', type: 'thinking' }, { type: 'message_done' }]);
 
-    const events = await collectEvents(toAgUiStream(pipeline, { runId, encryptReasoning: true }));
+    const events = await collectEvents(toAgUiStream(pipeline, { encryptReasoning: true, runId }));
 
     const contentEvent = events.find(
       (e): e is ReasoningMessageContentEvent => e.type === EventType.REASONING_MESSAGE_CONTENT
@@ -305,27 +310,27 @@ describe('toAgUiStream', () => {
   });
 
   it('should include timestamps on all events', async () => {
-    const pipeline = createMockPipeline([{ type: 'delta', content: 'Hello' }, { type: 'message_done' }]);
+    const pipeline = createMockPipeline([{ content: 'Hello', type: 'delta' }, { type: 'message_done' }]);
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
     events.forEach(event => {
       expect(event.timestamp).toBeDefined();
-      expect(typeof event.timestamp).toBe('string');
+      expectTypeOf(event.timestamp).toBeString();
       // Verify it's a valid ISO timestamp
-      expect(() => new Date(event.timestamp as string)).not.toThrow();
+      expect(() => new Date(event.timestamp)).not.toThrow();
     });
   });
 
   it('should pass through runId and threadId to all events', async () => {
     const pipeline = createMockPipeline([
-      { type: 'delta', content: 'Test' },
-      { type: 'thinking', content: 'Think' },
+      { content: 'Test', type: 'delta' },
+      { content: 'Think', type: 'thinking' },
       {
-        type: 'tool_call',
+        toolArgs: {},
         toolCallId: 'call_1',
         toolName: 'test',
-        toolArgs: {}
+        type: 'tool_call'
       },
       { type: 'message_done' }
     ]);
@@ -341,16 +346,16 @@ describe('toAgUiStream', () => {
   it('should handle consecutive tool calls with same ID', async () => {
     const pipeline = createMockPipeline([
       {
-        type: 'tool_call',
+        toolArgs: { key: 'value1' },
         toolCallId: 'call_1',
         toolName: 'tool_a',
-        toolArgs: { key: 'value1' }
+        type: 'tool_call'
       },
       {
-        type: 'tool_call',
+        toolArgs: { key: 'value2' },
         toolCallId: 'call_1',
         toolName: 'tool_a',
-        toolArgs: { key: 'value2' }
+        type: 'tool_call'
       },
       { type: 'message_done' }
     ]);

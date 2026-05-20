@@ -33,13 +33,15 @@ export function validateSettings(settings: Record<string, unknown>, schema: Sett
 
   if (schema.properties) {
     for (const [key, propSchema] of Object.entries(schema.properties)) {
-      if (!(key in settings)) continue;
+      if (!(key in settings)) {
+        continue;
+      }
       const value = settings[key];
       validateValue(key, value, propSchema, errors);
     }
   }
 
-  return errors.length === 0 ? { valid: true } : { valid: false, errors };
+  return errors.length === 0 ? { valid: true } : { errors, valid: false };
 }
 
 /**
@@ -58,17 +60,23 @@ function validateNumber(value: number, schema: SchemaProperty, path: string, err
  * Validates an object value against schema properties.
  */
 function validateObject(value: unknown, schema: SchemaProperty, path: string, errors: string[]): void {
-  if (typeof value !== 'object' || Array.isArray(value) || !schema.properties) return;
+  if (typeof value !== 'object' || Array.isArray(value) || !schema.properties) {
+    return;
+  }
 
   for (const [subKey, subSchema] of Object.entries(schema.properties)) {
-    if (!(subKey in (value as Record<string, unknown>))) continue;
+    if (!(subKey in (value as Record<string, unknown>))) {
+      continue;
+    }
     const subValue = (value as Record<string, unknown>)[subKey];
     validateValue(`${path}.${subKey}`, subValue, subSchema, errors);
   }
 }
 
 function validateValue(path: string, value: unknown, schema: SchemaProperty, errors: string[]): void {
-  if (value === undefined || value === null) return;
+  if (value === undefined || value === null) {
+    return;
+  }
 
   if (schema.type) {
     const actualType = Array.isArray(value) ? 'array' : typeof value;

@@ -1,20 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import type { SettingsSchema } from './schema-validator.js';
 import { applyDefaults, validateSettings } from './schema-validator.js';
 import { SettingsLoader } from './settings-loader.js';
 
 // --- Schema Validator Tests ---
 
-describe('validateSettings', () => {
+describe(validateSettings, () => {
   it('returns valid for empty schema', () => {
     const result = validateSettings({ key: 'value' }, {});
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBeTruthy();
   });
 
   it('reports missing required fields', () => {
     const schema: SettingsSchema = { required: ['host', 'port'] };
     const result = validateSettings({ host: 'localhost' }, schema);
-    expect(result.valid).toBe(false);
+    expect(result.valid).toBeFalsy();
     expect(result.errors).toContain("Missing required setting: 'port'");
   });
 
@@ -23,27 +24,29 @@ describe('validateSettings', () => {
       properties: { port: { type: 'number' } }
     };
     const result = validateSettings({ port: 'not-a-number' }, schema);
-    expect(result.valid).toBe(false);
+    expect(result.valid).toBeFalsy();
     expect(result.errors?.[0]).toContain("'port' must be of type 'number'");
   });
 
   it('validates enum values', () => {
     const schema: SettingsSchema = {
-      properties: { level: { type: 'string', enum: ['debug', 'info', 'error'] } }
+      properties: {
+        level: { enum: ['debug', 'info', 'error'], type: 'string' }
+      }
     };
-    expect(validateSettings({ level: 'info' }, schema).valid).toBe(true);
+    expect(validateSettings({ level: 'info' }, schema).valid).toBeTruthy();
     const bad = validateSettings({ level: 'verbose' }, schema);
-    expect(bad.valid).toBe(false);
+    expect(bad.valid).toBeFalsy();
     expect(bad.errors?.[0]).toContain('one of: debug, info, error');
   });
 
   it('validates number minimum', () => {
     const schema: SettingsSchema = {
-      properties: { port: { type: 'number', minimum: 1, maximum: 65535 } }
+      properties: { port: { maximum: 65_535, minimum: 1, type: 'number' } }
     };
-    expect(validateSettings({ port: 80 }, schema).valid).toBe(true);
-    expect(validateSettings({ port: 0 }, schema).valid).toBe(false);
-    expect(validateSettings({ port: 70000 }, schema).valid).toBe(false);
+    expect(validateSettings({ port: 80 }, schema).valid).toBeTruthy();
+    expect(validateSettings({ port: 0 }, schema).valid).toBeFalsy();
+    expect(validateSettings({ port: 70_000 }, schema).valid).toBeFalsy();
   });
 
   it('skips validation for absent optional fields', () => {
@@ -51,25 +54,25 @@ describe('validateSettings', () => {
       properties: { port: { type: 'number' } }
     };
     const result = validateSettings({}, schema);
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBeTruthy();
   });
 
   it('returns valid with no errors array when valid', () => {
     const schema: SettingsSchema = { required: ['host'] };
     const result = validateSettings({ host: 'localhost' }, schema);
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBeTruthy();
     expect(result.errors).toBeUndefined();
   });
 });
 
-describe('applyDefaults', () => {
+describe(applyDefaults, () => {
   it('merges defaults with settings', () => {
-    const defaults = { host: 'localhost', port: 11434, debug: false };
+    const defaults = { debug: false, host: 'localhost', port: 11_434 };
     const settings = { port: 8080 };
     const result = applyDefaults(settings, defaults);
     expect(result.host).toBe('localhost');
     expect(result.port).toBe(8080);
-    expect(result.debug).toBe(false);
+    expect(result.debug).toBeFalsy();
   });
 
   it('settings override defaults', () => {
@@ -78,39 +81,44 @@ describe('applyDefaults', () => {
   });
 
   it('ignores null/undefined settings (uses default)', () => {
-    const result = applyDefaults({ key: null } as Record<string, unknown>, { key: 'fallback' });
+    const result = applyDefaults(
+      { key: null },
+      {
+        key: 'fallback'
+      }
+    );
     expect(result.key).toBe('fallback');
   });
 });
 
 // --- SettingsLoader Tests ---
 
-describe('SettingsLoader', () => {
+describe(SettingsLoader, () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
   it('loads defaults when VS Code unavailable', async () => {
     const loader = new SettingsLoader({
+      defaults: { host: 'localhost', port: 11_434 },
       namespace: 'myExt',
-      schema: { properties: { host: { type: 'string' } } },
-      defaults: { host: 'localhost', port: 11434 }
+      schema: { properties: { host: { type: 'string' } } }
     });
     const settings = await loader.load();
     expect(settings.host).toBe('localhost');
-    expect(settings.port).toBe(11434);
+    expect(settings.port).toBe(11_434);
   });
 
   it('validate returns valid for conforming settings', () => {
     const loader = new SettingsLoader({
       namespace: 'myExt',
       schema: {
-        required: ['host'],
-        properties: { host: { type: 'string' }, port: { type: 'number' } }
+        properties: { host: { type: 'string' }, port: { type: 'number' } },
+        required: ['host']
       }
     });
     const result = loader.validate({ host: 'localhost', port: 80 });
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBeTruthy();
   });
 
   it('validate returns errors for invalid settings', () => {
@@ -119,7 +127,7 @@ describe('SettingsLoader', () => {
       schema: { required: ['host'] }
     });
     const result = loader.validate({ port: 80 });
-    expect(result.valid).toBe(false);
+    expect(result.valid).toBeFalsy();
     expect(result.errors).toBeDefined();
   });
 
@@ -135,9 +143,9 @@ describe('SettingsLoader', () => {
 
   it('get returns value after load', async () => {
     const loader = new SettingsLoader({
+      defaults: { myKey: 'myValue' },
       namespace: 'myExt',
-      schema: {},
-      defaults: { myKey: 'myValue' }
+      schema: {}
     });
     await loader.load();
     expect(loader.get('myKey')).toBe('myValue');
@@ -145,9 +153,9 @@ describe('SettingsLoader', () => {
 
   it('onDidChange registers and triggers listener', async () => {
     const loader = new SettingsLoader({
+      defaults: { port: 80 },
       namespace: 'myExt',
-      schema: { properties: { port: { type: 'number' } } },
-      defaults: { port: 80 }
+      schema: { properties: { port: { type: 'number' } } }
     });
     await loader.load();
 
@@ -156,14 +164,20 @@ describe('SettingsLoader', () => {
 
     // Simulate internal change notification
     const notifyListeners = (
-      loader as unknown as { notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void }
+      loader as unknown as {
+        notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void;
+      }
     ).notifyListeners?.bind(loader);
     if (notifyListeners) {
       notifyListeners({ port: 80 }, { port: 443 });
     }
 
     expect(events).toHaveLength(1);
-    const event = events[0] as { key: string; oldValue: number; newValue: number };
+    const event = events[0] as {
+      key: string;
+      oldValue: number;
+      newValue: number;
+    };
     expect(event.key).toBe('port');
     expect(event.oldValue).toBe(80);
     expect(event.newValue).toBe(443);
@@ -176,7 +190,9 @@ describe('SettingsLoader', () => {
     disposable.dispose();
 
     const notifyListeners = (
-      loader as unknown as { notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void }
+      loader as unknown as {
+        notifyListeners(o: Record<string, unknown>, n: Record<string, unknown>): void;
+      }
     ).notifyListeners?.bind(loader);
     if (notifyListeners) {
       notifyListeners({ key: 'old' }, { key: 'new' });
@@ -191,14 +207,16 @@ describe('SettingsLoader', () => {
 
   it('dispose does not throw', () => {
     const loader = new SettingsLoader({ namespace: 'myExt', schema: {} });
-    expect(() => loader.dispose()).not.toThrow();
+    expect(() => {
+      loader.dispose();
+    }).not.toThrow();
   });
 
   it('load without schema skips validation', async () => {
     const loader = new SettingsLoader({
+      defaults: { x: 1 },
       namespace: 'myExt',
-      schema: {},
-      defaults: { x: 1 }
+      schema: {}
     });
     const settings = await loader.load();
     expect(settings.x).toBe(1);

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
 import { createAuditTrail } from './audit-trail.js';
 
-describe('createAuditTrail', () => {
+describe(createAuditTrail, () => {
   it('records a write event', () => {
     const trail = createAuditTrail();
     trail.record('write', '/a.txt', { contentHash: 'sha256:abc' });

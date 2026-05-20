@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+
 import { SSEParser, parseSSEStream } from './index.js';
 
 // Helper to create SSEParser with event collection
@@ -8,7 +9,7 @@ function createParser(onError?: (_error: Error) => void) {
     onEvent: event => events.push(event),
     ...(onError && { onError })
   });
-  return { parser, events };
+  return { events, parser };
 }
 
 describe('SSEParser', () => {
@@ -19,7 +20,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'hello' });
+    expect(events[0]).toStrictEqual({ data: 'hello' });
   });
 
   it('parses multi-line data (multiple data: fields)', () => {
@@ -30,7 +31,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'line1\nline2' });
+    expect(events[0]).toStrictEqual({ data: 'line1\nline2' });
   });
 
   it('handles cross-chunk event splits', () => {
@@ -41,7 +42,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'hello' });
+    expect(events[0]).toStrictEqual({ data: 'hello' });
   });
 
   it('handles cross-chunk field delimiter splits', () => {
@@ -52,7 +53,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'value' });
+    expect(events[0]).toStrictEqual({ data: 'value' });
   });
 
   it('parses event name, id, and retry fields', () => {
@@ -65,9 +66,9 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({
-      event: 'custom',
+    expect(events[0]).toStrictEqual({
       data: 'content',
+      event: 'custom',
       id: '123',
       retry: 5000
     });
@@ -81,7 +82,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'hello' });
+    expect(events[0]).toStrictEqual({ data: 'hello' });
   });
 
   it('strips leading space after colon', () => {
@@ -91,7 +92,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'value' });
+    expect(events[0]).toStrictEqual({ data: 'value' });
   });
 
   it('handles empty data field', () => {
@@ -101,7 +102,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: '' });
+    expect(events[0]).toStrictEqual({ data: '' });
   });
 
   it('parses multiple events in one write', () => {
@@ -111,8 +112,8 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toEqual({ data: 'event1' });
-    expect(events[1]).toEqual({ data: 'event2' });
+    expect(events[0]).toStrictEqual({ data: 'event1' });
+    expect(events[1]).toStrictEqual({ data: 'event2' });
   });
 
   it('handles retry field parsing', () => {
@@ -122,7 +123,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ retry: 10000 });
+    expect(events[0]).toStrictEqual({ retry: 10_000 });
   });
 
   it('ignores invalid retry values', () => {
@@ -142,7 +143,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({
+    expect(events[0]).toStrictEqual({
       data: '{"type":"message","content":"hello"}'
     });
   });
@@ -156,7 +157,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'complete' });
+    expect(events[0]).toStrictEqual({ data: 'complete' });
   });
 
   it('handles empty writes', () => {
@@ -168,7 +169,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({ data: 'hello' });
+    expect(events[0]).toStrictEqual({ data: 'hello' });
   });
 });
 
@@ -223,8 +224,8 @@ describe('parseSSEStream', () => {
     }
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toEqual({ data: 'hello' });
-    expect(events[1]).toEqual({ data: 'world' });
+    expect(events[0]).toStrictEqual({ data: 'hello' });
+    expect(events[1]).toStrictEqual({ data: 'world' });
   });
 
   it('parses events from an async iterable (async)', async () => {
@@ -235,8 +236,8 @@ describe('parseSSEStream', () => {
     }
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toEqual({ data: 'chunk1' });
-    expect(events[1]).toEqual({ data: 'chunk2' });
+    expect(events[0]).toStrictEqual({ data: 'chunk1' });
+    expect(events[1]).toStrictEqual({ data: 'chunk2' });
   });
 
   it('handles cross-chunk splits in async iterable', async () => {
@@ -247,8 +248,8 @@ describe('parseSSEStream', () => {
     }
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toEqual({ data: 'hello' });
-    expect(events[1]).toEqual({ data: 'world' });
+    expect(events[0]).toStrictEqual({ data: 'hello' });
+    expect(events[1]).toStrictEqual({ data: 'world' });
   });
 
   it('handles empty stream', async () => {
@@ -269,10 +270,10 @@ describe('parseSSEStream', () => {
     }
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toEqual({
+    expect(events[0]).toStrictEqual({
+      data: '{"step":1}',
       event: 'progress',
       id: 'msg1',
-      data: '{"step":1}',
       retry: 5000
     });
   });
@@ -287,7 +288,7 @@ describe('parseSSEStream', () => {
     expect(events).toHaveLength(3);
     expect(events[0]?.data).toContain('Hello');
     expect(events[1]?.data).toContain('world');
-    expect(events[2]?.data).toEqual('[DONE]');
+    expect(events[2]?.data).toBe('[DONE]');
   });
 
   it('parses events from a ReadableStream source', async () => {
@@ -303,7 +304,7 @@ describe('parseSSEStream', () => {
       events.push(event);
     }
 
-    expect(events).toEqual([{ data: 'from-stream' }]);
+    expect(events).toStrictEqual([{ data: 'from-stream' }]);
   });
 
   it('propagates readable stream read errors', async () => {
@@ -322,6 +323,6 @@ describe('parseSSEStream', () => {
         // iterate until error
       }
     }).rejects.toThrow('read failed');
-    expect(releaseLock).toHaveBeenCalledTimes(1);
+    expect(releaseLock).toHaveBeenCalledOnce();
   });
 });

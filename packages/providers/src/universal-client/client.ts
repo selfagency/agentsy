@@ -1,12 +1,13 @@
 /**
- * @agentsy/providers/universal-client
- *
  * Unified client abstractions for provider integration.
  */
 
-import type { CompletionRequest, CompletionResponse, NormalizedChunk, UsageInfo } from '@agentsy/types';
 import { ReadableStream } from 'node:stream/web';
-import { createPipeline, type NormalizerProvider } from '../pipeline/index.js';
+
+import type { CompletionRequest, CompletionResponse, NormalizedChunk, UsageInfo } from '@agentsy/types';
+
+import type { NormalizerProvider } from '../pipeline/index.js';
+import { createPipeline } from '../pipeline/index.js';
 
 /**
  * Configuration options for a UniversalClient instance.
@@ -34,16 +35,122 @@ export interface UniversalClientConfig {
  * Provider endpoint URLs.
  */
 const PROVIDER_ENDPOINTS: Record<NormalizerProvider, string> = {
-  openai: 'https://api.openai.com/v1/chat/completions',
   anthropic: 'https://api.anthropic.com/v1/messages',
-  gemini: 'https://generativelanguage.googleapis.com/v1beta/models',
   bedrock: 'https://bedrock-runtime.amazonaws.com',
+  cohere: 'https://api.cohere.com/v1/chat',
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/models',
+  'hugging-face': 'https://api-inference.huggingface.co/models',
   mistral: 'https://api.mistral.ai/v1/chat/completions',
   ollama: 'http://localhost:11434/api/chat',
-  cohere: 'https://api.cohere.com/v1/chat',
-  'hugging-face': 'https://api-inference.huggingface.co/models',
+  openai: 'https://api.openai.com/v1/chat/completions',
   zai: 'https://api.zai.com/v1/chat'
 };
+
+/**
+ * Convert CompletionRequest to OpenAI-compatible format.
+ */
+function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
+  const req: Record<string, unknown> = {
+    messages: request.messages.map(msg => ({
+      content: Array.isArray(msg.content)
+        ? msg.content.map(part => {
+            if (part.type === 'text') {
+              return part.text;
+            }
+            if (part.type === 'image') {
+              return {
+                image_url: {
+                  detail: part.detail ?? 'auto',
+                  url: part.imageUrl
+                },
+                type: 'image_url'
+              };
+            }
+            if (part.type === 'tool_call') {
+              return {
+                tool_calls: [
+                  {
+                    function: {
+                      arguments: JSON.stringify(part.input),
+                      name: part.name
+                    },
+                    id: part.id,
+                    type: 'function' as const
+                  }
+                ],
+                type: 'tool_calls' as const
+              };
+            }
+            if (part.type === 'tool_result') {
+              return {
+                content: part.content,
+                tool_call_id: part.toolCallId,
+                type: 'tool_result' as const
+              };
+            }
+            return part;
+          })
+        : msg.content,
+      role: msg.role,
+      ...(msg.toolCallId && { tool_call_id: msg.toolCallId })
+    })),
+    model: request.model
+  };
+
+  if (request.temperature !== undefined) {
+    req.temperature = request.temperature;
+  }
+  if (request.maxTokens !== undefined) {
+    req.max_tokens = request.maxTokens;
+  }
+  if (request.topP !== undefined) {
+    req.top_p = request.topP;
+  }
+  if (request.topK !== undefined) {
+    req.top_k = request.topK;
+  }
+  if (request.stop) {
+    req.stop = request.stop;
+  }
+  if (request.stream !== undefined) {
+    req.stream = request.stream;
+  }
+  if (request.tools) {
+    req.tools = request.tools;
+  }
+
+  return req;
+}
+
+/**
+ * Convert CompletionRequest to Bedrock format.
+ */
+function toBedrockFormat(request: CompletionRequest): Record<string, unknown> {
+  // Bedrock uses a different format
+  return {
+    maxTokens: request.maxTokens ?? 2048,
+    messages: request.messages,
+    modelId: request.model,
+    temperature: request.temperature ?? 0.7
+  };
+}
+
+/**
+ * Convert CompletionRequest to HuggingFace text generation format.
+ */
+function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown> {
+  return {
+    inputs: request.messages,
+    model: request.model,
+    parameters: {
+      do_sample: request.temperature !== undefined,
+      max_new_tokens: request.maxTokens,
+      temperature: request.temperature,
+      top_k: request.topK,
+      top_p: request.topP
+    }
+  };
+}
 
 /**
  * Convert CompletionRequest to provider-specific request format.
@@ -56,102 +163,60 @@ function toProviderRequest(request: CompletionRequest, provider: NormalizerProvi
     case 'mistral':
     case 'ollama':
     case 'cohere':
-    case 'zai':
+    case 'zai': {
       return toOpenAIFormat(request);
-    case 'bedrock':
+    }
+    case 'bedrock': {
       return toBedrockFormat(request);
-    case 'hugging-face':
+    }
+    case 'hugging-face': {
       return toHuggingFaceFormat(request);
-    default:
+    }
+    default: {
       return toOpenAIFormat(request);
+    }
   }
 }
 
-/**
- * Convert CompletionRequest to OpenAI-compatible format.
- */
-function toOpenAIFormat(request: CompletionRequest): Record<string, unknown> {
-  const req: Record<string, unknown> = {
-    model: request.model,
-    messages: request.messages.map(msg => ({
-      role: msg.role,
-      content: Array.isArray(msg.content)
-        ? msg.content.map(part => {
-            if (part.type === 'text') return part.text;
-            if (part.type === 'image')
-              return {
-                type: 'image_url',
-                image_url: {
-                  url: part.imageUrl,
-                  detail: part.detail ?? 'auto'
-                }
-              };
-            if (part.type === 'tool_call')
-              return {
-                type: 'tool_calls' as const,
-                tool_calls: [
-                  {
-                    id: part.id,
-                    type: 'function' as const,
-                    function: {
-                      name: part.name,
-                      arguments: JSON.stringify(part.input)
-                    }
-                  }
-                ]
-              };
-            if (part.type === 'tool_result')
-              return {
-                type: 'tool_result' as const,
-                tool_call_id: part.toolCallId,
-                content: part.content
-              };
-            return part;
-          })
-        : msg.content,
-      ...(msg.toolCallId && { tool_call_id: msg.toolCallId })
-    }))
+function buildHeaders(
+  _provider: NormalizerProvider,
+  apiKey?: string,
+  organizationId?: string,
+  stream?: boolean
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
   };
 
-  if (request.temperature !== undefined) req.temperature = request.temperature;
-  if (request.maxTokens !== undefined) req.max_tokens = request.maxTokens;
-  if (request.topP !== undefined) req.top_p = request.topP;
-  if (request.topK !== undefined) req.top_k = request.topK;
-  if (request.stop) req.stop = request.stop;
-  if (request.stream !== undefined) req.stream = request.stream;
-  if (request.tools) req.tools = request.tools;
-
-  return req;
-}
-
-/**
- * Convert CompletionRequest to Bedrock format.
- */
-function toBedrockFormat(request: CompletionRequest): Record<string, unknown> {
-  // Bedrock uses a different format
-  return {
-    modelId: request.model,
-    messages: request.messages,
-    maxTokens: request.maxTokens ?? 2048,
-    temperature: request.temperature ?? 0.7
-  };
-}
-
-/**
- * Convert CompletionRequest to HuggingFace text generation format.
- */
-function toHuggingFaceFormat(request: CompletionRequest): Record<string, unknown> {
-  return {
-    model: request.model,
-    inputs: request.messages,
-    parameters: {
-      max_new_tokens: request.maxTokens,
-      temperature: request.temperature,
-      do_sample: request.temperature !== undefined,
-      top_p: request.topP,
-      top_k: request.topK
+  if (apiKey) {
+    // oxlint-disable-next-line switch-exhaustiveness-check
+    switch (_provider) {
+      case 'openai': {
+        headers.Authorization = `Bearer ${apiKey}`;
+        if (organizationId) {
+          headers['OpenAI-Organization'] = organizationId;
+        }
+        break;
+      }
+      case 'anthropic': {
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        if (stream) {
+          headers.accept = 'text/event-stream';
+        }
+        break;
+      }
+      case 'gemini': {
+        headers.Authorization = `Bearer ${apiKey}`;
+        break;
+      }
+      default: {
+        headers.Authorization = `Bearer ${apiKey}`;
+      }
     }
-  };
+  }
+
+  return headers;
 }
 
 function parseUsageInfo(usageData: Record<string, unknown>): UsageInfo | undefined {
@@ -168,9 +233,7 @@ function parseUsageInfo(usageData: Record<string, unknown>): UsageInfo | undefin
   return Object.keys(usage).length > 0 ? usage : undefined;
 }
 
-function parseContentFromChoice(
-  content: { content: string } | { content?: { parts?: Array<{ text?: string }> } }
-): string {
+function parseContentFromChoice(content: { content: string } | { content?: { parts?: { text?: string }[] } }): string {
   if (typeof content.content === 'string') {
     return content.content;
   }
@@ -187,7 +250,7 @@ function parseProviderResponse(response: unknown, _provider: NormalizerProvider)
   }
 
   const choice = data.choices[0] as Record<string, unknown>;
-  const content = choice.message as { content: string } | { content?: { parts?: Array<{ text?: string }> } };
+  const content = choice.message as { content: string } | { content?: { parts?: { text?: string }[] } };
 
   const usage: UsageInfo | undefined =
     data.usage && typeof data.usage === 'object' ? parseUsageInfo(data.usage as Record<string, unknown>) : undefined;
@@ -261,9 +324,9 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
     async complete(request: CompletionRequest): Promise<CompletionResponse> {
       const providerRequest = toProviderRequest(request, provider);
       const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: buildHeaders(provider, apiKey, config.organizationId),
         body: JSON.stringify(providerRequest),
+        headers: buildHeaders(provider, apiKey, config.organizationId),
+        method: 'POST',
         signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null
       });
 
@@ -278,9 +341,9 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
     async stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
       const providerRequest = toProviderRequest({ ...request, stream: true }, provider);
       const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: buildHeaders(provider, apiKey, config.organizationId, true),
         body: JSON.stringify(providerRequest),
+        headers: buildHeaders(provider, apiKey, config.organizationId, true),
+        method: 'POST',
         signal: config.timeoutMs ? AbortSignal.timeout(config.timeoutMs) : null
       });
 
@@ -293,9 +356,9 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       }
 
       const pipeline = createPipeline(response.body, {
-        provider,
         maxJsonDepth: 64,
-        maxJsonKeys: 10000
+        maxJsonKeys: 10_000,
+        provider
       });
 
       const chunks: NormalizedChunk[] = [];
@@ -304,7 +367,14 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
           chunks.push({ content: event.content });
         } else if (event.type === 'tool_call' && event.tool_call) {
           chunks.push({
-            tool_calls: [{ function: { name: event.tool_call.name, arguments: event.tool_call.parameters } }]
+            tool_calls: [
+              {
+                function: {
+                  arguments: event.tool_call.parameters,
+                  name: event.tool_call.name
+                }
+              }
+            ]
           });
         } else if (event.type === 'thinking' && event.thinking) {
           chunks.push({ thinking: event.thinking });
@@ -312,7 +382,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       }
 
       const stream = new ReadableStream<NormalizedChunk>({
-        async start(controller) {
+        start(controller) {
           for (const chunk of chunks) {
             controller.enqueue(chunk);
           }
@@ -323,36 +393,4 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
       return stream;
     }
   };
-}
-
-function buildHeaders(
-  _provider: NormalizerProvider,
-  apiKey?: string,
-  organizationId?: string,
-  stream?: boolean
-): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  };
-
-  if (apiKey) {
-    switch (_provider) {
-      case 'openai':
-        headers.Authorization = `Bearer ${apiKey}`;
-        if (organizationId) headers['OpenAI-Organization'] = organizationId;
-        break;
-      case 'anthropic':
-        headers['x-api-key'] = apiKey;
-        headers['anthropic-version'] = '2023-06-01';
-        if (stream) headers.accept = 'text/event-stream';
-        break;
-      case 'gemini':
-        headers.Authorization = `Bearer ${apiKey}`;
-        break;
-      default:
-        headers.Authorization = `Bearer ${apiKey}`;
-    }
-  }
-
-  return headers;
 }

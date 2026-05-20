@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+
 import type { AgentCapabilities } from '../types/index.js';
 
 export class AgentRegistry extends EventEmitter {
@@ -62,14 +63,16 @@ export class AgentRegistry extends EventEmitter {
   }
 
   getAllAgents(): AgentCapabilities[] {
-    return Array.from(this.agents.values());
+    return [...this.agents.values()];
   }
 
   findAgentsBySkill(skillName: string): AgentCapabilities[] {
     const agentIds = this.skillMap.get(skillName);
-    if (!agentIds) return [];
+    if (!agentIds) {
+      return [];
+    }
 
-    return Array.from(agentIds)
+    return [...agentIds]
       .map(id => this.agents.get(id))
       .filter((agent): agent is AgentCapabilities => !!agent?.available);
   }
@@ -80,7 +83,9 @@ export class AgentRegistry extends EventEmitter {
     }
 
     const firstSkill = requiredSkills[0];
-    if (!firstSkill) return [];
+    if (!firstSkill) {
+      return [];
+    }
 
     const candidateAgents = this.findAgentsBySkill(firstSkill.name);
 

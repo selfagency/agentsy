@@ -5,8 +5,6 @@
  * ObservabilityEngine, AgentSpan, and supporting types.
  */
 
-import type { SpanId, TraceId } from '@agentsy/types';
-
 /**
  * Attribute value type for span attributes
  */
@@ -64,11 +62,11 @@ export interface Tracer {
  */
 export interface Span {
   /** The unique trace ID that groups all related spans together */
-  readonly traceId: TraceId;
+  readonly traceId: string;
   /** The unique span ID */
-  readonly spanId: SpanId;
+  readonly spanId: string;
   /** The parent span ID if this is a child span */
-  readonly parentId?: SpanId;
+  readonly parentId?: string;
   /** The span name */
   readonly name: string;
   /**
@@ -121,8 +119,8 @@ export interface SpanOptions {
  * Link to a span in another trace for distributed tracing
  */
 export interface SpanLink {
-  readonly traceId: TraceId;
-  readonly spanId: SpanId;
+  readonly traceId: string;
+  readonly spanId: string;
   readonly attributes?: Attributes;
 }
 
@@ -300,11 +298,11 @@ export interface ObservabilitySink {
  */
 export interface SpanData {
   /** Unique trace identifier */
-  readonly traceId: TraceId;
+  readonly traceId: string;
   /** Unique span identifier */
-  readonly spanId: SpanId;
+  readonly spanId: string;
   /** Parent span identifier if exists */
-  readonly parentId?: SpanId;
+  readonly parentId?: string;
   /** Span name */
   readonly name: string;
   /** Span type (agent, tool, model, internal) */

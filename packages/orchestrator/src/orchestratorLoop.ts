@@ -1,10 +1,11 @@
-import { createAgentLoop, type AgentLoopHandle, type AgentLoopOptions } from './agent/index.js';
-import {
-  createSchedulerRegistry,
-  type SchedulerRegistry,
-  type SchedulerTaskDefinition,
-  type SchedulerTaskRecord,
-  type SchedulerTaskStatus
+import { createAgentLoop } from './agent/index.js';
+import type { AgentLoopHandle, AgentLoopOptions } from './agent/index.js';
+import { createSchedulerRegistry } from './scheduler/index.js';
+import type {
+  SchedulerRegistry,
+  SchedulerTaskDefinition,
+  SchedulerTaskRecord,
+  SchedulerTaskStatus
 } from './scheduler/index.js';
 
 export interface OrchestratorConfig extends AgentLoopOptions {
@@ -25,9 +26,6 @@ export function createOrchestratorLoop(config: OrchestratorConfig): Orchestrator
 
   return {
     ...handle,
-    scheduleTask(task) {
-      return scheduler.register(task);
-    },
     cancelScheduledTask(taskId) {
       return scheduler.cancel(taskId);
     },
@@ -36,6 +34,9 @@ export function createOrchestratorLoop(config: OrchestratorConfig): Orchestrator
     },
     listScheduledTasks(options) {
       return scheduler.list(options);
+    },
+    scheduleTask(task) {
+      return scheduler.register(task);
     }
   };
 }

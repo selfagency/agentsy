@@ -30,8 +30,8 @@ function cloneWikiPage(page: WikiPage): WikiPage {
   return {
     ...page,
     tags: [...page.tags],
-    writerIds: [...page.writerIds],
-    updatedAt: new Date(page.updatedAt)
+    updatedAt: new Date(page.updatedAt),
+    writerIds: [...page.writerIds]
   };
 }
 
@@ -44,43 +44,43 @@ function cloneVector(vector: VectorEntry): VectorEntry {
 
 function serializeRawCapture(capture: RawCapture): SyncRecord {
   return {
-    id: capture.id,
-    tier: 'raw',
-    updatedAt: capture.createdAt.toISOString(),
     content: capture.content,
+    id: capture.id,
     metadata: {
+      normalizedContent: capture.normalizedContent,
       sourceId: capture.sourceId,
-      sourceType: capture.sourceType,
-      normalizedContent: capture.normalizedContent
-    }
+      sourceType: capture.sourceType
+    },
+    tier: 'raw',
+    updatedAt: capture.createdAt.toISOString()
   };
 }
 
 function serializeWikiPage(page: WikiPage): SyncRecord {
   return {
-    id: page.pageId,
-    tier: 'wiki',
-    updatedAt: page.updatedAt.toISOString(),
     content: page.body,
+    id: page.pageId,
     metadata: {
-      title: page.title,
-      tags: [...page.tags],
-      version: page.version,
       format: page.format,
+      tags: [...page.tags],
+      title: page.title,
+      version: page.version,
       writerIds: [...page.writerIds]
-    }
+    },
+    tier: 'wiki',
+    updatedAt: page.updatedAt.toISOString()
   };
 }
 
 function serializeVectorEntry(vector: VectorEntry, updatedAt: string): SyncRecord {
   return {
-    id: vector.pageId,
-    tier: 'vector',
-    updatedAt,
     content: JSON.stringify(vector.embedding),
+    id: vector.pageId,
     metadata: {
       dimensions: vector.embedding.length
     },
+    tier: 'vector',
+    updatedAt,
     vectorFingerprint: computeSyncChecksum(vector.embedding)
   };
 }
@@ -101,15 +101,15 @@ function deserializeRawCapture(record: SyncRecord): RawCapture {
   const metadata = readMetadata(record);
 
   return {
+    content: record.content,
+    createdAt: new Date(record.updatedAt),
     id: record.id,
+    normalizedContent: typeof metadata.normalizedContent === 'string' ? metadata.normalizedContent : record.content,
     sourceId: typeof metadata.sourceId === 'string' ? metadata.sourceId : record.id,
     sourceType:
       metadata.sourceType === 'document' || metadata.sourceType === 'conversation' || metadata.sourceType === 'capture'
         ? metadata.sourceType
-        : 'capture',
-    content: record.content,
-    normalizedContent: typeof metadata.normalizedContent === 'string' ? metadata.normalizedContent : record.content,
-    createdAt: new Date(record.updatedAt)
+        : 'capture'
   };
 }
 
@@ -117,11 +117,7 @@ function deserializeWikiPage(record: SyncRecord): WikiPage {
   const metadata = readMetadata(record);
 
   return {
-    pageId: record.id,
-    title: typeof metadata.title === 'string' ? metadata.title : record.id,
     body: record.content,
-    tags: isStringArray(metadata.tags) ? [...metadata.tags] : [],
-    version: typeof metadata.version === 'number' ? metadata.version : 1,
     format:
       metadata.format === 'markdown' ||
       metadata.format === 'text' ||
@@ -129,8 +125,12 @@ function deserializeWikiPage(record: SyncRecord): WikiPage {
       metadata.format === 'json'
         ? metadata.format
         : 'markdown',
-    writerIds: isStringArray(metadata.writerIds) ? [...metadata.writerIds] : [],
-    updatedAt: new Date(record.updatedAt)
+    pageId: record.id,
+    tags: isStringArray(metadata.tags) ? [...metadata.tags] : [],
+    title: typeof metadata.title === 'string' ? metadata.title : record.id,
+    updatedAt: new Date(record.updatedAt),
+    version: typeof metadata.version === 'number' ? metadata.version : 1,
+    writerIds: isStringArray(metadata.writerIds) ? [...metadata.writerIds] : []
   };
 }
 
@@ -143,8 +143,8 @@ function deserializeVectorEntry(record: SyncRecord): VectorEntry {
   }
 
   return {
-    pageId: record.id,
-    embedding
+    embedding,
+    pageId: record.id
   };
 }
 
@@ -161,7 +161,7 @@ function tierRank(tier: MemorySyncTier): number {
 }
 
 function sortRecords(records: SyncRecord[]): SyncRecord[] {
-  return [...records].sort((left, right) => {
+  return [...records].toSorted((left, right) => {
     const tierDifference = tierRank(left.tier) - tierRank(right.tier);
     if (tierDifference !== 0) {
       return tierDifference;
@@ -177,8 +177,8 @@ function sortRecords(records: SyncRecord[]): SyncRecord[] {
 
 function cloneMemoryState(state: MemoryState): MemoryState {
   return {
-    rawCaptures: state.rawCaptures.map(cloneRawCapture),
     pages: state.pages.map(cloneWikiPage),
+    rawCaptures: state.rawCaptures.map(cloneRawCapture),
     vectors: state.vectors.map(cloneVector)
   };
 }
@@ -219,23 +219,23 @@ export function deserializeMemoryState(snapshot: SyncSnapshot): MemoryState {
   }
 
   return {
-    rawCaptures,
     pages,
+    rawCaptures,
     vectors
   };
 }
 
 export function createMemoryStateAdapter(options: MemoryStateAdapterOptions): MemoryStateAdapter {
   return {
+    async applySnapshot(snapshot: SyncSnapshot) {
+      await options.applyState(deserializeMemoryState(snapshot));
+    },
+
     async getCurrentState() {
       const state = cloneMemoryState(await options.getState());
       const cursor = await options.getCursor?.();
 
       return serializeMemoryState(state, cursor ?? '');
-    },
-
-    async applySnapshot(snapshot: SyncSnapshot) {
-      await options.applyState(deserializeMemoryState(snapshot));
     }
   };
 }

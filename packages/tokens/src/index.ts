@@ -136,7 +136,7 @@ export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
 
 export interface OutputCompressionOptions {
   level: OutputCompressionLevel;
-  preserve?: Array<'code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors'>;
+  preserve?: ('code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors')[];
   intensity?: number;
 }
 
@@ -175,12 +175,15 @@ interface AllocationRecord {
 
 function getBudgetPriorityRank(priority: BudgetPriority): number {
   switch (priority) {
-    case 'high':
+    case 'high': {
       return 2;
-    case 'medium':
+    }
+    case 'medium': {
       return 1;
-    case 'low':
+    }
+    case 'low': {
       return 0;
+    }
   }
 }
 
@@ -256,7 +259,7 @@ function selectBudget(budgets: TokenBudget[], request: TokenRequest): TokenBudge
   }
 
   return (
-    [...candidates].sort(
+    [...candidates].toSorted(
       (left, right) => getBudgetPriorityRank(right.priority) - getBudgetPriorityRank(left.priority)
     )[0] ?? null
   );
@@ -296,10 +299,10 @@ function sumUsageForBudget(budget: TokenBudget, usage: TokenUsage[], now: number
     })
     .reduce(
       (totals, entry) => ({
-        tokens: totals.tokens + entry.tokensUsed,
-        cost: totals.cost + entry.cost
+        cost: totals.cost + entry.cost,
+        tokens: totals.tokens + entry.tokensUsed
       }),
-      { tokens: 0, cost: 0 }
+      { cost: 0, tokens: 0 }
     );
 }
 
@@ -311,10 +314,10 @@ function sumReservedForBudget(
     .filter(record => record.allocation.budgetId === budgetId)
     .reduce(
       (totals, record) => ({
-        tokens: totals.tokens + record.allocation.allocatedTokens,
-        cost: totals.cost + record.allocation.allocatedCost
+        cost: totals.cost + record.allocation.allocatedCost,
+        tokens: totals.tokens + record.allocation.allocatedTokens
       }),
-      { tokens: 0, cost: 0 }
+      { cost: 0, tokens: 0 }
     );
 }
 
@@ -362,14 +365,14 @@ export function compressConversation<TMessage>(
   }
 
   return {
-    messages: retained,
+    compressed: droppedCount > 0,
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
-    compressed: droppedCount > 0
+    messages: retained
   };
 }
 
-const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/gu;
 const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths', 'markdown', 'errors']);
 const FILLER_WORDS = new Set([
   'really',
@@ -429,37 +432,37 @@ const STOP_WORDS = new Set(
     .filter(item => item.length > 0)
 );
 
-const REDUNDANT_PHRASES: ReadonlyArray<[RegExp, string]> = [
-  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
-  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
-  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
-  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
-  [/\bas\s+mentioned\b/gi, ''],
-  [/\bas\s+you\s+may\s+know\b/gi, ''],
-  [/\bin\s+conclusion/gi, 'Finally'],
-  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
-  [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now']
+const REDUNDANT_PHRASES: readonly [RegExp, string][] = [
+  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/giu, ''],
+  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/giu, 'that '],
+  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/giu, 'because '],
+  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/giu, ''],
+  [/\bas\s+mentioned\b/giu, ''],
+  [/\bas\s+you\s+may\s+know\b/giu, ''],
+  [/\bin\s+conclusion/giu, 'Finally'],
+  [/\bdue\s+to\s+the\s+fact\s+that\b/giu, 'because'],
+  [/\bat\s+this\s+point\s+in\s+time\b/giu, 'now']
 ];
 
-const ABBREVIATIONS: ReadonlyArray<[RegExp, string]> = [
-  [/\bapproximately\b/gi, 'approx'],
-  [/\bconfiguration\b/gi, 'config'],
-  [/\binformation\b/gi, 'info'],
-  [/\badministration\b/gi, 'admin'],
-  [/\bdocumentation\b/gi, 'docs'],
-  [/\bdirectory\b/gi, 'dir'],
-  [/\bnumber\b/gi, '#'],
-  [/\btechnology\b/gi, 'tech'],
-  [/\bimplementation\b/gi, 'impl'],
-  [/\boperation\b/gi, 'op'],
-  [/\bgeneral\b/gi, 'gen']
+const ABBREVIATIONS: readonly [RegExp, string][] = [
+  [/\bapproximately\b/giu, 'approx'],
+  [/\bconfiguration\b/giu, 'config'],
+  [/\binformation\b/giu, 'info'],
+  [/\badministration\b/giu, 'admin'],
+  [/\bdocumentation\b/giu, 'docs'],
+  [/\bdirectory\b/giu, 'dir'],
+  [/\bnumber\b/giu, '#'],
+  [/\btechnology\b/giu, 'tech'],
+  [/\bimplementation\b/giu, 'impl'],
+  [/\boperation\b/giu, 'op'],
+  [/\bgeneral\b/giu, 'gen']
 ];
 
 function estimateTextTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-function applyReplacements(source: string, replacements: ReadonlyArray<[RegExp, string]>): string {
+function applyReplacements(source: string, replacements: readonly [RegExp, string][]): string {
   let result = source;
   for (const [pattern, replacement] of replacements) {
     result = result.replace(pattern, replacement);
@@ -475,7 +478,7 @@ function normalizeAndDedupeLines(segment: string): string {
   let previousWasBlank = false;
 
   for (const rawLine of lines) {
-    const line = rawLine.replace(/\s+/g, ' ').trimEnd();
+    const line = rawLine.replaceAll(/\s+/gu, ' ').trimEnd();
     const isBlank = line.trim().length === 0;
 
     if (isBlank) {
@@ -513,30 +516,35 @@ function protectPreservedContent(
   let masked = source;
 
   if (preserve.has('urls')) {
-    masked = masked.replace(/https?:\/\/[^\s)]+/g, stash);
+    masked = masked.replaceAll(/https?:\/\/[^\s)]+/gu, stash);
   }
 
   if (preserve.has('paths')) {
-    masked = masked.replace(/(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/g, (_, prefix: string, path: string) => {
-      return `${prefix}${stash(path)}`;
-    });
+    masked = masked.replaceAll(
+      /(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/gu,
+      (_, prefix: string, path: string) => `${prefix}${stash(path)}`
+    );
   }
 
   if (preserve.has('markdown')) {
-    masked = masked.replace(/`[^`]+`/g, stash);
+    masked = masked.replaceAll(/`[^`]+`/gu, stash);
     masked = protectMarkdownLinks(masked, stash);
   }
 
   if (preserve.has('errors')) {
-    masked = masked.replace(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi, stash);
+    // nosemgrep: regex-dos-error-pattern
+    // Input is bounded LLM token output; pattern has no nested quantifiers.
+    masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/giu, stash);
   }
 
   if (preserve.has('technical')) {
-    masked = masked.replace(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/g, stash);
+    // nosemgrep: regex-dos-technical-pattern
+    // Input is bounded LLM token output; pattern has no nested quantifiers.
+    masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/gu, stash);
   }
 
   const restore = (value: string): string =>
-    value.replace(/__AGENTSY_PRESERVE_(\d+)__/g, (_, indexRaw: string) => {
+    value.replaceAll(/__AGENTSY_PRESERVE_(\d+)__/gu, (_, indexRaw: string) => {
       const index = Number(indexRaw);
       return preserved[index] ?? '';
     });
@@ -593,7 +601,7 @@ function stripFillerWords(source: string, strongOnly: boolean): string {
 }
 
 function finalizeWhitespace(source: string): string {
-  return source.replace(/\s{2,}/g, ' ').trim();
+  return source.replaceAll(/\s{2,}/gu, ' ').trim();
 }
 
 function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, preserve: ReadonlySet<string>): string {
@@ -619,15 +627,15 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
     case 'ultra': {
       const withoutFiller = stripFillerWords(masked, false);
       const reduced = normalizeUltraText(applyReplacements(withoutFiller, REDUNDANT_PHRASES));
-      const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replace(
-        /\b(?:the|a|an)\s+([a-z]+)\b/gi,
+      const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replaceAll(
+        /\b(?:the|a|an)\s+([a-z]+)\b/giu,
         (_, adjective: string) => `${adjective} `
       );
 
       return restore(
         abbreviated
-          .replace(/\s{2,}/g, ' ')
-          .replace(/ ([,.])/g, '$1')
+          .replaceAll(/\s{2,}/gu, ' ')
+          .replaceAll(/ ([,.])/gu, '$1')
           .trim()
       );
     }
@@ -635,10 +643,10 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
 }
 
 function normalizeUltraText(source: string): string {
-  let output = source.replace(/\b(and|or)\s+\1\s+/gi, '$1 ').replace(/\b(is|are|was|were)\s+quite\s+/gi, '');
+  let output = source.replaceAll(/\b(and|or)\s+\1\s+/giu, '$1 ').replaceAll(/\b(is|are|was|were)\s+quite\s+/giu, '');
 
   output = removeWhichClauses(output);
-  return output.replace(/ ([,.?!])/g, '$1');
+  return output.replaceAll(/ ([,.?!])/gu, '$1');
 }
 
 function removeWhichClauses(source: string): string {
@@ -672,22 +680,22 @@ function removeWhichClauses(source: string): string {
 
 export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {
   const preserve = new Set(options.preserve ?? [...DEFAULT_PRESERVATION_SET]);
-  const level = options.level;
+  const { level } = options;
 
   if (!preserve.has('code')) {
     const originalTokens = estimateTextTokens(response);
     const compressed = compressNonCodeSegment(response, level, preserve);
     const compressedTokens = estimateTextTokens(compressed);
     return {
-      original: response,
       compressed,
-      originalTokens,
       compressedTokens,
+      original: response,
+      originalTokens,
       savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
     };
   }
 
-  const segments: Array<{ kind: 'code' | 'text'; value: string }> = [];
+  const segments: { kind: 'code' | 'text'; value: string }[] = [];
   let lastIndex = 0;
 
   for (const match of response.matchAll(CODE_FENCE_PATTERN)) {
@@ -710,17 +718,17 @@ export function compressOutput(response: string, options: OutputCompressionOptio
   const compressed = segments
     .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level, preserve)))
     .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
+    .replaceAll(/\n{3,}/gu, '\n\n')
     .trim();
 
   const originalTokens = estimateTextTokens(response);
   const compressedTokens = estimateTextTokens(compressed);
 
   return {
-    original: response,
     compressed,
-    originalTokens,
     compressedTokens,
+    original: response,
+    originalTokens,
     savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
   };
 }
@@ -735,38 +743,18 @@ export function createInMemoryTokenManager(): TokenManager {
       const id = config.id ?? createId('budget');
       const budget: TokenBudget = {
         id,
-        name: config.name,
-        provider: config.provider,
-        model: config.model,
-        maxTokens: config.maxTokens,
         maxCost: config.maxCost,
+        maxTokens: config.maxTokens,
+        model: config.model,
+        name: config.name,
         periodMs: config.periodMs,
-        resetStrategy: config.resetStrategy,
         priority: config.priority,
+        provider: config.provider,
+        resetStrategy: config.resetStrategy,
         ...(config.metadata === undefined ? {} : { metadata: { ...config.metadata } })
       };
       budgets.set(id, budget);
       return cloneBudget(budget);
-    },
-
-    async getBudget(id) {
-      const budget = budgets.get(id);
-      return budget ? cloneBudget(budget) : null;
-    },
-
-    async updateBudget(id, updates) {
-      const current = budgets.get(id);
-      if (!current) {
-        throw new Error(`Unknown token budget: ${id}`);
-      }
-
-      const next: TokenBudget = {
-        ...current,
-        ...updates,
-        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } })
-      };
-      budgets.set(id, next);
-      return cloneBudget(next);
     },
 
     async deleteBudget(id) {
@@ -778,8 +766,105 @@ export function createInMemoryTokenManager(): TokenManager {
       }
     },
 
+    async getBudget(id) {
+      const budget = budgets.get(id);
+      return budget ? cloneBudget(budget) : null;
+    },
+
+    async getCostAnalysis(periodMs) {
+      const now = Date.now();
+      const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
+      const budgetSummaries = new Map<string, CostAnalysisBudgetSummary>();
+
+      for (const entry of inWindow) {
+        const existing = budgetSummaries.get(entry.budgetId) ?? {
+          budgetId: entry.budgetId,
+          requestCount: 0,
+          totalCost: 0,
+          totalTokens: 0
+        };
+        existing.totalTokens += entry.tokensUsed;
+        existing.totalCost += entry.cost;
+        existing.requestCount += 1;
+        budgetSummaries.set(entry.budgetId, existing);
+      }
+
+      return {
+        budgets: [...budgetSummaries.values()].toSorted((left, right) => left.budgetId.localeCompare(right.budgetId)),
+        requestCount: inWindow.length,
+        totalCost: inWindow.reduce((total, entry) => total + entry.cost, 0),
+        totalTokens: inWindow.reduce((total, entry) => total + entry.tokensUsed, 0)
+      };
+    },
+
+    async getOptimizationSuggestions(budgetId) {
+      const budget = budgets.get(budgetId);
+      if (!budget) {
+        return [];
+      }
+
+      const now = Date.now();
+      const spent = sumUsageForBudget(budget, usage, now);
+      const suggestions: OptimizationSuggestion[] = [];
+      const tokenRatio = budget.maxTokens === 0 ? 0 : spent.tokens / budget.maxTokens;
+      const costRatio = budget.maxCost === 0 ? 0 : spent.cost / budget.maxCost;
+
+      if (tokenRatio >= 0.8) {
+        suggestions.push({
+          budgetId,
+          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.',
+          type: 'reduce-tokens'
+        });
+      }
+
+      if (costRatio >= 0.8) {
+        suggestions.push({
+          budgetId,
+          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.',
+          type: 'reduce-cost'
+        });
+      }
+
+      if (suggestions.length === 0) {
+        suggestions.push({
+          budgetId,
+          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.',
+          type: 'rate-limit'
+        });
+      }
+
+      return suggestions;
+    },
+
+    async getUsage(filter = {}) {
+      return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
+    },
+
     async listBudgets(filter = {}) {
       return [...budgets.values()].filter(budget => filterBudget(budget, filter)).map(cloneBudget);
+    },
+
+    async recordUsage(entry) {
+      usage.push(cloneUsage(entry));
+    },
+
+    async releaseTokens(allocationId, actualUsage, actualCost = 0) {
+      const record = allocations.get(allocationId);
+      if (!record) {
+        throw new Error(`Unknown token allocation: ${allocationId}`);
+      }
+
+      allocations.delete(allocationId);
+      usage.push({
+        budgetId: record.allocation.budgetId,
+        cost: actualCost,
+        model: record.request.model,
+        provider: record.request.provider,
+        requestType: record.request.requestType,
+        timestamp: new Date(record.createdAt),
+        tokensUsed: actualUsage,
+        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } })
+      });
     },
 
     async requestTokens(request) {
@@ -805,115 +890,38 @@ export function createInMemoryTokenManager(): TokenManager {
       }
 
       const allocation: TokenAllocation = {
-        id: createId('allocation'),
-        budgetId: budget.id,
-        allocatedTokens: request.estimatedTokens,
         allocatedCost: getAllocationCost(request),
-        expiresAt: new Date(now + budget.periodMs)
+        allocatedTokens: request.estimatedTokens,
+        budgetId: budget.id,
+        expiresAt: new Date(now + budget.periodMs),
+        id: createId('allocation')
       };
 
       allocations.set(allocation.id, {
         allocation,
+        createdAt: now,
         request: {
           ...request,
           ...(request.metadata === undefined ? {} : { metadata: { ...request.metadata } })
-        },
-        createdAt: now
+        }
       });
 
       return cloneAllocation(allocation);
     },
 
-    async releaseTokens(allocationId, actualUsage, actualCost = 0) {
-      const record = allocations.get(allocationId);
-      if (!record) {
-        throw new Error(`Unknown token allocation: ${allocationId}`);
+    async updateBudget(id, updates) {
+      const current = budgets.get(id);
+      if (!current) {
+        throw new Error(`Unknown token budget: ${id}`);
       }
 
-      allocations.delete(allocationId);
-      usage.push({
-        budgetId: record.allocation.budgetId,
-        provider: record.request.provider,
-        model: record.request.model,
-        tokensUsed: actualUsage,
-        cost: actualCost,
-        timestamp: new Date(record.createdAt),
-        requestType: record.request.requestType,
-        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } })
-      });
-    },
-
-    async recordUsage(entry) {
-      usage.push(cloneUsage(entry));
-    },
-
-    async getUsage(filter = {}) {
-      return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
-    },
-
-    async getCostAnalysis(periodMs) {
-      const now = Date.now();
-      const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
-      const budgetSummaries = new Map<string, CostAnalysisBudgetSummary>();
-
-      for (const entry of inWindow) {
-        const existing = budgetSummaries.get(entry.budgetId) ?? {
-          budgetId: entry.budgetId,
-          totalTokens: 0,
-          totalCost: 0,
-          requestCount: 0
-        };
-        existing.totalTokens += entry.tokensUsed;
-        existing.totalCost += entry.cost;
-        existing.requestCount += 1;
-        budgetSummaries.set(entry.budgetId, existing);
-      }
-
-      return {
-        totalTokens: inWindow.reduce((total, entry) => total + entry.tokensUsed, 0),
-        totalCost: inWindow.reduce((total, entry) => total + entry.cost, 0),
-        requestCount: inWindow.length,
-        budgets: [...budgetSummaries.values()].sort((left, right) => left.budgetId.localeCompare(right.budgetId))
+      const next: TokenBudget = {
+        ...current,
+        ...updates,
+        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } })
       };
-    },
-
-    async getOptimizationSuggestions(budgetId) {
-      const budget = budgets.get(budgetId);
-      if (!budget) {
-        return [];
-      }
-
-      const now = Date.now();
-      const spent = sumUsageForBudget(budget, usage, now);
-      const suggestions: OptimizationSuggestion[] = [];
-      const tokenRatio = budget.maxTokens === 0 ? 0 : spent.tokens / budget.maxTokens;
-      const costRatio = budget.maxCost === 0 ? 0 : spent.cost / budget.maxCost;
-
-      if (tokenRatio >= 0.8) {
-        suggestions.push({
-          budgetId,
-          type: 'reduce-tokens',
-          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.'
-        });
-      }
-
-      if (costRatio >= 0.8) {
-        suggestions.push({
-          budgetId,
-          type: 'reduce-cost',
-          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.'
-        });
-      }
-
-      if (suggestions.length === 0) {
-        suggestions.push({
-          budgetId,
-          type: 'rate-limit',
-          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.'
-        });
-      }
-
-      return suggestions;
+      budgets.set(id, next);
+      return cloneBudget(next);
     }
   };
 }
@@ -962,8 +970,8 @@ export class PacingController {
         allowed: true,
         limit: 0,
         remaining: Number.MAX_SAFE_INTEGER,
-        windowMs: 0,
-        retryAfterMs: 0
+        retryAfterMs: 0,
+        windowMs: 0
       };
     }
 
@@ -974,8 +982,8 @@ export class PacingController {
       allowed: true,
       limit: 0,
       remaining: Number.MAX_SAFE_INTEGER,
-      windowMs: 0,
-      retryAfterMs: 0
+      retryAfterMs: 0,
+      windowMs: 0
     };
 
     for (const limit of limits) {
@@ -986,8 +994,8 @@ export class PacingController {
         allowed: retryAfterMs === 0,
         limit: limit.maxRequests,
         remaining,
-        windowMs: limit.windowMs,
-        retryAfterMs
+        retryAfterMs,
+        windowMs: limit.windowMs
       };
 
       if (!candidate.allowed) {

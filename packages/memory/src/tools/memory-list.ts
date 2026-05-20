@@ -44,7 +44,11 @@ export function createMemoryListTool(deps: MemoryListToolDeps): MemoryListTool {
           return true;
         }
 
-        return deps.scopeManager.canAccess({ actorId: input.actorId, action: 'read', scope: record.scope });
+        return deps.scopeManager.canAccess({
+          action: 'read',
+          actorId: input.actorId,
+          scope: record.scope
+        });
       });
 
       return {

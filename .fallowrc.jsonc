@@ -10,7 +10,11 @@
   "usedClassMembers": [],
   // Duplicate detection tuning (reduce noise for trivial/script duplication during cleanup).
   "duplicates": {
-    "threshold": 10
+    "threshold": 8,
+    "ignoreDefaults": false,
+    "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.jsx", "**/*.test.js", "**/*.spec.ts", "**/*.spec.tsx"],
+    "minLines": 8,
+    "minTokens": 70
   },
   // Health threshold tuning (will be refined after regenerating coverage).
   "health": {

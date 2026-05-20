@@ -10,28 +10,28 @@ describe('AtomicWorkflowCoordinator', () => {
     const result = await coordinator.runWorkflow('wf-1', [
       {
         name: 'raw',
-        run: async () => {
+        run: async (): Promise<void> => {
           events.push('run:raw');
         }
       },
       {
         name: 'wiki',
-        run: async () => {
+        run: async (): Promise<void> => {
           events.push('run:wiki');
         }
       },
       {
         name: 'vector',
-        run: async () => {
+        run: async (): Promise<void> => {
           events.push('run:vector');
         }
       }
     ]);
 
-    expect(events).toEqual(['run:raw', 'run:wiki', 'run:vector']);
+    expect(events).toStrictEqual(['run:raw', 'run:wiki', 'run:vector']);
     expect(result.status).toBe('committed');
-    expect(result.executedSteps).toEqual(['raw', 'wiki', 'vector']);
-    expect(result.rolledBackSteps).toEqual([]);
+    expect(result.executedSteps).toStrictEqual(['raw', 'wiki', 'vector']);
+    expect(result.rolledBackSteps).toStrictEqual([]);
   });
 
   it('rolls back already executed steps in reverse order when a step fails', async () => {
@@ -41,38 +41,38 @@ describe('AtomicWorkflowCoordinator', () => {
     const result = await coordinator.runWorkflow('wf-rollback', [
       {
         name: 'raw',
-        run: async () => {
-          events.push('run:raw');
-        },
-        rollback: async () => {
+        rollback: async (): Promise<void> => {
           events.push('rollback:raw');
+        },
+        run: async (): Promise<void> => {
+          events.push('run:raw');
         }
       },
       {
         name: 'wiki',
-        run: async () => {
-          events.push('run:wiki');
-        },
-        rollback: async () => {
+        rollback: async (): Promise<void> => {
           events.push('rollback:wiki');
+        },
+        run: async (): Promise<void> => {
+          events.push('run:wiki');
         }
       },
       {
         name: 'vector',
-        run: async () => {
-          events.push('run:vector');
-          throw new Error('vector write failed');
-        },
-        rollback: async () => {
+        rollback: async (): Promise<void> => {
           events.push('rollback:vector');
+        },
+        run: async (): Promise<void> => {
+          events.push('run:vector');
+          throw new Error('Step failed');
         }
       }
     ]);
 
     expect(result.status).toBe('rolled_back');
-    expect(result.executedSteps).toEqual(['raw', 'wiki']);
-    expect(result.rolledBackSteps).toEqual(['wiki', 'raw']);
-    expect(events).toEqual(['run:raw', 'run:wiki', 'run:vector', 'rollback:wiki', 'rollback:raw']);
-    expect(result.error?.message).toContain('vector write failed');
+    expect(result.executedSteps).toStrictEqual(['raw', 'wiki']);
+    expect(result.rolledBackSteps).toStrictEqual(['wiki', 'raw']);
+    expect(events).toStrictEqual(['run:raw', 'run:wiki', 'run:vector', 'rollback:wiki', 'rollback:raw']);
+    expect(result.error?.message).toBe('Step failed');
   });
 });

@@ -11,37 +11,56 @@
 // otherwise fall back to local workspace source so this script works during dev
 // without requiring a build step. This reduces duplicate source files and
 // allows CI and local tooling to run the preview command in either state.
-type ThemeConfig = {
+interface ThemeConfig {
   thinking?: { textColor?: string; spinnerColor?: string };
-  toolCall?: { pendingColor?: string; doneColor?: string; pendingSymbol?: string; doneSymbol?: string };
+  toolCall?: {
+    pendingColor?: string;
+    doneColor?: string;
+    pendingSymbol?: string;
+    doneSymbol?: string;
+  };
   border?: { style?: string };
-};
+}
 
 let themesModule: Record<string, unknown>;
 try {
   const distThemesPath = '../dist/renderers/ink/themes/index.js';
-  themesModule = await import(distThemesPath);
+  // nosemgrep: typescript-unnecessary-assertion
+  // Dynamic import returns `unknown`; cast is required for type safety.
+  themesModule = (await import(distThemesPath)) as Record<string, unknown>;
 } catch {
   // Fallback to local source so contributors can run the script before building
-  themesModule = await import('../../renderers/src/ink/themes/index.ts');
+  // nosemgrep: typescript-unnecessary-assertion
+  // Dynamic import returns `unknown`; cast is required for type safety.
+  themesModule = (await import('../../renderers/src/ink/themes/index.ts')) as Record<string, unknown>;
 }
 
-const entries = Object.entries(themesModule).map(([name, value]) => ({ name, value }));
+const entries = Object.entries(themesModule).map(([name, value]) => ({
+  name,
+  value
+}));
 
 const ANSI = {
-  reset: '\u001B[0m',
   bold: '\u001B[1m',
   cyan: '\u001B[36m',
+  dim: '\u001B[2m',
   green: '\u001B[32m',
+  reset: '\u001B[0m',
   white: '\u001B[37m',
-  yellow: '\u001B[33m',
-  dim: '\u001B[2m'
+  yellow: '\u001B[33m'
 } as const;
 
 console.log('Available themes:');
-for (const e of entries) console.log('-', e.name);
+for (const e of entries) {
+  console.log('-', e.name);
+}
 
-const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, theme: theme as ThemeConfig }));
+const THEMES = Object.entries(themesModule)
+  .filter(([_, value]) => typeof value === 'object' && value !== null && 'thinking' in value)
+  .map(([name, theme]) => ({
+    name,
+    theme: theme as ThemeConfig
+  }));
 
 /**
  * Apply color to text using chalk. JSDoc types avoid implicit any in strict typechecks.
@@ -49,12 +68,17 @@ const THEMES = Object.entries(themesModule).map(([name, theme]) => ({ name, them
  * @param {string | undefined} color
  */
 function applyColor(text: string, color: string | undefined): string {
-  if (!color) return text;
+  if (!color) {
+    return text;
+  }
   if (color.startsWith('#')) {
     return text;
   }
 
-  const ansi = (ANSI as Record<string, string | undefined>)[color];
+  let ansi: string | undefined;
+  if (color in ANSI) {
+    ansi = (ANSI as Record<string, string>)[color];
+  }
   return ansi ? `${ansi}${text}${ANSI.reset}` : text;
 }
 
@@ -67,17 +91,17 @@ function displayThemePreview() {
     console.log(`${ANSI.bold}${ANSI.white}${name.padEnd(25)}${ANSI.reset}`);
 
     if (theme.thinking) {
-      const textColor = theme.thinking.textColor || 'cyan';
-      const spinnerColor = theme.thinking.spinnerColor || 'cyan';
+      const textColor = theme.thinking.textColor ?? 'cyan';
+      const spinnerColor = theme.thinking.spinnerColor ?? 'cyan';
       const thinkingText = `text=${textColor}, spinner=${spinnerColor}`;
       console.log(`  ${applyColor('├─ Thinking:', textColor)} ${applyColor(thinkingText, spinnerColor)}`);
     }
 
     if (theme.toolCall) {
-      const pendingColor = theme.toolCall.pendingColor || 'yellow';
-      const doneColor = theme.toolCall.doneColor || 'green';
-      const pendingSymbol = theme.toolCall.pendingSymbol || '⠋';
-      const doneSymbol = theme.toolCall.doneSymbol || '✓';
+      const pendingColor = theme.toolCall.pendingColor ?? 'yellow';
+      const doneColor = theme.toolCall.doneColor ?? 'green';
+      const pendingSymbol = theme.toolCall.pendingSymbol ?? '⠋';
+      const doneSymbol = theme.toolCall.doneSymbol ?? '✓';
       const toolsPending = `Tools: ${pendingSymbol}`;
       const toolsPreview = `pending`;
       const toolsDone = `${doneSymbol} done`;

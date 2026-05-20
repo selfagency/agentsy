@@ -1,5 +1,6 @@
 import { errorCodeToMessage, errorToProviderCode } from '../error-handling/error-mapper.js';
-import { convertMessages, type ChatMessage } from '../message-conversion/index.js';
+import { convertMessages } from '../message-conversion/index.js';
+import type { ChatMessage } from '../message-conversion/index.js';
 import type { ProviderApiRequest, ProviderConfig, ProviderStreamChunk } from '../types/errors.js';
 
 /**
@@ -117,12 +118,14 @@ export abstract class BaseLanguageModelChatProvider {
         resolveText = resolve;
       });
 
-      const generateStream = async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
+      const generateStream = async function* generateStream(): AsyncIterable<LanguageModelChatResponseChunk> {
         try {
           for await (const chunk of normalizedStream) {
             if (chunk.part && typeof chunk.part === 'object') {
               const p = chunk.part as Record<string, unknown>;
-              if (typeof p.value === 'string') fullText += String(p.value);
+              if (typeof p.value === 'string') {
+                fullText += String(p.value);
+              }
             }
             yield chunk;
           }
@@ -157,14 +160,14 @@ export abstract class BaseLanguageModelChatProvider {
     }
 
     const response = await fetch(url, {
-      method: method ?? 'POST',
-      headers: headers as NonNullable<RequestInit['headers']>,
       body: body !== undefined ? JSON.stringify(body) : null,
+      headers: headers as NonNullable<RequestInit['headers']>,
+      method: method ?? 'POST',
       ...(signal && { signal })
     });
 
     if (response.ok) {
-      const body = response.body;
+      const { body } = response;
       if (body === null) {
         throw new Error('HTTP response has no body');
       }
@@ -176,14 +179,18 @@ export abstract class BaseLanguageModelChatProvider {
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              break;
+            }
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
             buffer = lines.pop() ?? '';
 
             for (const line of lines) {
               const trimmed = line.trim();
-              if (!trimmed || trimmed === 'data: [DONE]') continue;
+              if (!trimmed || trimmed === 'data: [DONE]') {
+                continue;
+              }
               const data = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
               try {
                 yield JSON.parse(data) as ProviderStreamChunk;
@@ -202,7 +209,9 @@ export abstract class BaseLanguageModelChatProvider {
 
     // Handle error response
     const text = await response.text().catch(() => '');
-    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & { status: number };
+    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & {
+      status: number;
+    };
     err.status = response.status;
     throw err;
   }

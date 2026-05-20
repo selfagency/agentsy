@@ -19,12 +19,15 @@ export interface RuntimeContextReuse {
 
 function reusePriority(reuseClass: RuntimeReusableSegment['reuseClass']): number {
   switch (reuseClass) {
-    case 'hot':
+    case 'hot': {
       return 0;
-    case 'warm':
+    }
+    case 'warm': {
       return 1;
-    case 'cold':
+    }
+    case 'cold': {
       return 2;
+    }
   }
 }
 
@@ -33,12 +36,12 @@ export function buildRuntimeContext(input: BuildRuntimeContextInput): RuntimeCon
   const reusedSegments = [...input.reusableSegments]
     .filter(segment => segment.reuseClass !== 'cold')
     .filter(segment => segment.invalidations.every(invalidation => !invalidated.has(invalidation)))
-    .sort((left, right) => reusePriority(left.reuseClass) - reusePriority(right.reuseClass))
+    .toSorted((left, right) => reusePriority(left.reuseClass) - reusePriority(right.reuseClass))
     .map(segment => segment.fingerprint);
 
   return {
     modelFamily: input.modelFamily,
-    templateVersion: input.templateVersion,
-    reusedSegments
+    reusedSegments,
+    templateVersion: input.templateVersion
   };
 }

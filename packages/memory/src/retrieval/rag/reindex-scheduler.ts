@@ -22,6 +22,10 @@ export function createReindexScheduler(options: ReindexSchedulerOptions): Reinde
   };
 
   return {
+    isRunning() {
+      return timer !== null;
+    },
+
     start() {
       if (timer) {
         return;
@@ -46,10 +50,6 @@ export function createReindexScheduler(options: ReindexSchedulerOptions): Reinde
 
     async triggerNow() {
       await runSafely();
-    },
-
-    isRunning() {
-      return timer !== null;
     }
   };
 }

@@ -68,11 +68,11 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
   const {
     formatEvent = defaultFormatEvent,
     includeComments: _includeComments = false,
-    heartbeatInterval: _heartbeatInterval = 30000
+    heartbeatInterval: _heartbeatInterval = 30_000
   } = options;
 
   // Create an async iterable that produces SSE-formatted chunks
-  const createAsyncIterable = async function* () {
+  const createAsyncIterable = async function* createAsyncIterable() {
     const encoder = new TextEncoder();
 
     try {
@@ -93,8 +93,8 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
           controller.enqueue(chunk);
         }
         controller.close();
-      } catch (err) {
-        controller.error(err);
+      } catch (error) {
+        controller.error(error);
       }
     }
   });
@@ -106,7 +106,9 @@ export function createSSEStream(events: AsyncGenerator<AgUiEvent>, options: SSES
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done === true) break;
+          if (done) {
+            break;
+          }
           yield value;
         }
       } finally {
@@ -153,9 +155,9 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
       res.writeHead?.(200, {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        'Access-Control-Allow-Origin': '*'
       });
       res.end?.();
       return;
@@ -174,12 +176,12 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       const sseStream = createSSEStream(events);
 
       res.writeHead?.(200, {
-        'Content-Type': 'text/event-stream',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        'Content-Type': 'text/event-stream'
       });
 
       for await (const chunk of sseStream) {
@@ -187,8 +189,8 @@ export function createAgentRunHandler(streamGenerator: (runId: string) => AsyncG
       }
 
       res.end?.();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       res.writeHead?.(500, { 'Content-Type': 'application/json' });
       res.end?.(JSON.stringify({ error: errorMessage }));
     }
@@ -219,8 +221,8 @@ export function createExpressMiddleware(streamGenerator: (runId: string) => Asyn
       }
 
       res.end?.();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const status = res.status?.(500);
       status?.json({ error: errorMessage });
     }
@@ -248,14 +250,14 @@ export function createHonoHandler(streamGenerator: (runId: string) => AsyncGener
 
       return bodyFn(sseStream.readable, {
         headers: {
-          'Content-Type': 'text/event-stream',
+          'Access-Control-Allow-Origin': '*',
           'Cache-Control': 'no-cache',
           Connection: 'keep-alive',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'text/event-stream'
         }
       });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const _jsonFn = c.json as (data: Record<string, unknown>, status: number) => unknown;
       return _jsonFn({ error: errorMessage }, 500);
     }

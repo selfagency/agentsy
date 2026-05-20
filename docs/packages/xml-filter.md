@@ -25,7 +25,9 @@ Use this package when you need to suppress or route XML-like tagged content, esp
 import { formatXmlLikeResponseForDisplay } from '@agentsy/core/formatting';
 import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
-const filter = createXmlStreamFilter({ extraScrubTags: new Set(['think', 'context']) });
+const filter = createXmlStreamFilter({
+  extraScrubTags: new Set(['think', 'context'])
+});
 
 for await (const chunk of stream) {
   const visible = filter.write(chunk);

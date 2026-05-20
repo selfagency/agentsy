@@ -1,12 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+
 import type { ChatMessage } from '../message-conversion/index.js';
 import type { ProviderApiRequest, ProviderStreamChunk } from '../types/errors.js';
-import {
-  BaseLanguageModelChatProvider,
-  type CancellationToken,
-  type LanguageModelChatRequest,
-  type LanguageModelChatResponse,
-  type LanguageModelChatResponseChunk
+import { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';
+import type {
+  CancellationToken,
+  LanguageModelChatRequest,
+  LanguageModelChatResponse,
+  LanguageModelChatResponseChunk
 } from './base-language-model-chat-provider.js';
 
 function makeCancellationToken(cancelled = false): CancellationToken {
@@ -19,19 +20,19 @@ function makeCancellationToken(cancelled = false): CancellationToken {
 function makeExtensionContext() {
   return {
     secrets: {
-      get: vi.fn().mockResolvedValue(undefined),
-      store: vi.fn().mockResolvedValue(undefined),
-      delete: vi.fn().mockResolvedValue(undefined)
+      delete: vi.fn(),
+      get: vi.fn(),
+      store: vi.fn()
     }
   };
 }
 
 const config = {
-  providerId: 'test-provider',
-  vendor: 'Test',
-  family: 'TestFamily',
   displayName: 'Test Provider',
-  maxInputTokens: 4096
+  family: 'TestFamily',
+  maxInputTokens: 4096,
+  providerId: 'test-provider',
+  vendor: 'Test'
 };
 
 class TestProvider extends BaseLanguageModelChatProvider {
@@ -44,10 +45,10 @@ class TestProvider extends BaseLanguageModelChatProvider {
     request: LanguageModelChatRequest
   ): Promise<ProviderApiRequest> {
     this.builtRequest = {
-      url: 'http://localhost:11434/api/chat',
-      method: 'POST',
+      body: { messages, model: request.model?.id ?? 'test' },
       headers: { 'Content-Type': 'application/json' },
-      body: { messages, model: request.model?.id ?? 'test' }
+      method: 'POST',
+      url: 'http://localhost:11434/api/chat'
     };
     return this.builtRequest;
   }
@@ -81,21 +82,33 @@ class TestProvider extends BaseLanguageModelChatProvider {
     const chunks = this.streamChunks;
     const mockChunks = chunks.length > 0 ? [...chunks] : [{ content: 'Hello' }];
     return (async function* () {
-      for (const c of mockChunks) yield c;
+      for (const c of mockChunks) {
+        yield c;
+      }
     })();
   }
 }
 
-describe('BaseLanguageModelChatProvider', () => {
+describe(BaseLanguageModelChatProvider, () => {
   describe('getters', () => {
     const ctx = makeExtensionContext();
     const provider = new TestProvider(ctx, config);
 
-    it('id', () => expect(provider.id).toBe('test-provider'));
-    it('vendor', () => expect(provider.vendor).toBe('Test'));
-    it('family', () => expect(provider.family).toBe('TestFamily'));
-    it('name', () => expect(provider.name).toBe('Test Provider'));
-    it('maxInputTokens', () => expect(provider.maxInputTokens).toBe(4096));
+    it('id', () => {
+      expect(provider.id).toBe('test-provider');
+    });
+    it('vendor', () => {
+      expect(provider.vendor).toBe('Test');
+    });
+    it('family', () => {
+      expect(provider.family).toBe('TestFamily');
+    });
+    it('name', () => {
+      expect(provider.name).toBe('Test Provider');
+    });
+    it('maxInputTokens', () => {
+      expect(provider.maxInputTokens).toBe(4096);
+    });
   });
 
   describe('countTokens', () => {
@@ -125,14 +138,19 @@ describe('BaseLanguageModelChatProvider', () => {
     it('converts messages and calls buildRequest', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
       const request: LanguageModelChatRequest = {
-        messages: [{ role: 1, content: 'Hello' }],
+        messages: [{ content: 'Hello', role: 1 }],
         model: { id: 'my-model' }
       };
       const token = makeCancellationToken();
       await provider.makeRequest(request, token);
       expect(provider.builtRequest).toBeDefined();
-      if (!provider.builtRequest) throw new Error('builtRequest should be defined');
-      const body = provider.builtRequest.body as { messages: ChatMessage[]; model: string };
+      if (!provider.builtRequest) {
+        throw new Error('builtRequest should be defined');
+      }
+      const body = provider.builtRequest.body as {
+        messages: ChatMessage[];
+        model: string;
+      };
       const firstMessage = body.messages[0];
       if (!firstMessage) {
         throw new Error('Expected at least one converted message');
@@ -143,7 +161,9 @@ describe('BaseLanguageModelChatProvider', () => {
 
     it('streams normalized chunks', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const request: LanguageModelChatRequest = { messages: [{ role: 1, content: 'Hi' }] };
+      const request: LanguageModelChatRequest = {
+        messages: [{ content: 'Hi', role: 1 }]
+      };
       const token = makeCancellationToken();
       const response = await provider.makeRequest(request, token);
       const chunks: LanguageModelChatResponseChunk[] = [];
@@ -163,7 +183,7 @@ describe('BaseLanguageModelChatProvider', () => {
       const token = makeCancellationToken();
       const response = await provider.makeRequest({ messages: [] }, token);
       const text = await response.text;
-      expect(typeof text).toBe('string');
+      expectTypeOf(text).toBeString();
     });
   });
 
@@ -171,7 +191,9 @@ describe('BaseLanguageModelChatProvider', () => {
     it('produces empty stream', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
       const response = (
-        provider as unknown as { createErrorResponse(e: unknown, m: string): LanguageModelChatResponse }
+        provider as unknown as {
+          createErrorResponse(e: unknown, m: string): LanguageModelChatResponse;
+        }
       ).createErrorResponse(new Error('test'), 'Something went wrong');
       const chunks: unknown[] = [];
       for await (const chunk of response.stream) {
@@ -183,7 +205,9 @@ describe('BaseLanguageModelChatProvider', () => {
     it('resolves text with provided message', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
       const response = (
-        provider as unknown as { createErrorResponse(e: unknown, m: string): LanguageModelChatResponse }
+        provider as unknown as {
+          createErrorResponse(e: unknown, m: string): LanguageModelChatResponse;
+        }
       ).createErrorResponse(new Error('test'), 'User-facing message');
       const text = await response.text;
       expect(text).toBe('User-facing message');

@@ -35,26 +35,26 @@ export async function loadHonkerExtension(options: HonkerLoadOptions): Promise<H
 
   if (hasHonker && hasBlake3) {
     return {
-      mode: 'native',
       dbPath: options.dbPath,
       features: {
+        blake3: true,
         pubSub: true,
-        taskQueue: true,
         scheduler: true,
-        blake3: true
-      }
+        taskQueue: true
+      },
+      mode: 'native'
     };
   }
 
   return {
-    mode: 'fallback',
     dbPath: options.dbPath,
     features: {
+      blake3: false,
       pubSub: false,
-      taskQueue: false,
       scheduler: false,
-      blake3: false
+      taskQueue: false
     },
+    mode: 'fallback',
     reason: 'Required native extensions were not found on disk.'
   };
 }

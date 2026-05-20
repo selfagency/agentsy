@@ -17,20 +17,20 @@ export interface ChunkMetadata {
 }
 
 export const _Chunk: Chunk = {
-  id: '',
   content: '',
+  id: '',
   metadata: {
+    endLine: 1,
     source: '',
     startLine: 1,
-    endLine: 1,
     strategy: 'semantic'
   }
 };
 
 export const _ChunkMetadata: ChunkMetadata = {
+  endLine: 1,
   source: '',
   startLine: 1,
-  endLine: 1,
   strategy: 'semantic'
 };
 
@@ -63,8 +63,8 @@ export interface SearchResult {
 
 export const _SearchResult: SearchResult = {
   documents: [],
-  total: 0,
-  queryTime: 0
+  queryTime: 0,
+  total: 0
 };
 
 export interface SearchDocument {
@@ -76,8 +76,8 @@ export interface SearchDocument {
 }
 
 export const _SearchDocument: SearchDocument = {
-  id: '',
-  content: ''
+  content: '',
+  id: ''
 };
 
 export interface Document {
@@ -89,9 +89,9 @@ export interface Document {
 }
 
 export const _Document: Document = {
-  id: '',
+  chunks: [],
   content: '',
-  chunks: []
+  id: ''
 };
 
 export interface DocumentMetadata {
@@ -103,7 +103,7 @@ export interface DocumentMetadata {
 export const _DocumentMetadata: DocumentMetadata = {};
 
 export const ChunkingStrategy = {
-  SEMANTIC: 'semantic',
+  AST: 'ast',
   FIXED: 'fixed',
-  AST: 'ast'
+  SEMANTIC: 'semantic'
 } as const;

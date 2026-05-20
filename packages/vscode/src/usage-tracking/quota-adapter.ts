@@ -21,14 +21,16 @@ export interface QuotaAdapterOptions<TPayload> {
 
 const DEFAULT_WINDOW_ORDER: QuotaWindow[] = ['hourly', 'daily', 'weekly', 'monthly'];
 const EMPTY_QUOTA_WINDOW: QuotaWindowValue = {
-  used: 0,
   total: 1,
   unit: 'requests',
+  used: 0,
   window: 'daily'
 };
 
 function percentUsed(windowValue: QuotaWindowValue): number {
-  if (windowValue.total <= 0) return 0;
+  if (windowValue.total <= 0) {
+    return 0;
+  }
   return Math.max(0, Math.min(1, windowValue.used / windowValue.total));
 }
 
@@ -45,7 +47,9 @@ export function pickActiveQuotaWindow(
   if (strategy === 'preferred-order') {
     for (const window of preferredOrder) {
       const match = windows.find(value => value.window === window);
-      if (match !== undefined) return match;
+      if (match !== undefined) {
+        return match;
+      }
     }
     const first = windows[0];
     if (first !== undefined) {
@@ -72,8 +76,12 @@ export function pickActiveQuotaWindow(
   return rest.reduce((best, current) => {
     const bestPercent = percentUsed(best);
     const currentPercent = percentUsed(current);
-    if (currentPercent > bestPercent) return current;
-    if (currentPercent < bestPercent) return best;
+    if (currentPercent > bestPercent) {
+      return current;
+    }
+    if (currentPercent < bestPercent) {
+      return best;
+    }
 
     const bestRemaining = best.total - best.used;
     const currentRemaining = current.total - current.used;
@@ -103,11 +111,11 @@ export function createQuotaDataSourceAdapter<TPayload>(options: QuotaAdapterOpti
     const active = pickActiveQuotaWindow(windows, strategy, preferredOrder);
     const percent = percentUsed(active);
     return {
-      used: active.used,
+      percentUsed: percent,
       total: active.total,
       unit: active.unit,
+      used: active.used,
       window: active.window,
-      percentUsed: percent,
       ...(active.expiresAt === undefined ? {} : { expiresAt: active.expiresAt })
     };
   }

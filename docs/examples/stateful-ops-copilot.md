@@ -55,7 +55,9 @@ async function* providerStream(messages: Array<{ role: string; content: string }
 
 export async function runStatefulOpsCopilot(conversationId: string): Promise<void> {
   const processor = new LLMStreamProcessor({ parseThinkTags: true });
-  const bridge = createConversationStoreFromProcessor(processor, { conversationId });
+  const bridge = createConversationStoreFromProcessor(processor, {
+    conversationId
+  });
 
   const eventAdapter = createProcessorEventAdapter(processor);
   const agUiStream = toAgUiStream(eventAdapter.stream);
@@ -66,7 +68,12 @@ export async function runStatefulOpsCopilot(conversationId: string): Promise<voi
     }
   })();
 
-  const seedMessages = [{ role: 'user', content: 'Review current incident telemetry and suggest next steps.' }];
+  const seedMessages = [
+    {
+      role: 'user',
+      content: 'Review current incident telemetry and suggest next steps.'
+    }
+  ];
 
   try {
     for await (const chunk of providerStream(seedMessages)) {
@@ -75,7 +82,9 @@ export async function runStatefulOpsCopilot(conversationId: string): Promise<voi
     processor.flush();
   } catch {
     const snapshot = captureStreamState(processor);
-    const continuationMessages = buildContinuationPrompt(snapshot, { provider: 'openai' });
+    const continuationMessages = buildContinuationPrompt(snapshot, {
+      provider: 'openai'
+    });
 
     for await (const chunk of providerStream([...seedMessages, ...continuationMessages])) {
       processor.process(chunk);

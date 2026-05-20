@@ -2,6 +2,7 @@ import { appendToBlockquote } from '@agentsy/core/formatting';
 import type { OutputPart } from '@agentsy/core/processor';
 import type { BaseRendererOptions, RendererHandle, ThinkingStyle } from '@agentsy/renderers';
 import { createSharedRendererHandle } from '@agentsy/renderers';
+
 import { mapUsageToVSCode } from '../usage-tracking/map-usage.js';
 import { toVSCodeToolCallPart } from './tool-call-lifecycle.js';
 
@@ -44,7 +45,10 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
       | { scheme: string; path: string }
       | {
           uri: { scheme: string; path: string };
-          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+          range: {
+            start: { line: number; character: number };
+            end: { line: number; character: number };
+          };
         },
     title?: string
   ): void;
@@ -55,19 +59,25 @@ export interface ChatResponseStream extends MinimalChatResponseStream {
       | { scheme: string; path: string }
       | {
           uri: { scheme: string; path: string };
-          range: { start: { line: number; character: number }; end: { line: number; character: number } };
+          range: {
+            start: { line: number; character: number };
+            end: { line: number; character: number };
+          };
         }
       | { variableName: string; value?: { scheme: string; path: string } },
     iconPath?:
       | { scheme: string; path: string }
-      | { light: { scheme: string; path: string }; dark: { scheme: string; path: string } }
+      | {
+          light: { scheme: string; path: string };
+          dark: { scheme: string; path: string };
+        }
   ): void;
 
   /** Emit a button that runs a command. */
   button(command: { command: string; title: string; arguments?: unknown[] }): void;
 
   /** Emit a file tree. */
-  filetree(value: Array<{ name: string; children?: unknown[] }>, baseUri: { scheme: string; path: string }): void;
+  filetree(value: { name: string; children?: unknown[] }[], baseUri: { scheme: string; path: string }): void;
 
   /** Push a response part (stable or proposed). */
   push?(part: unknown): void;
@@ -148,7 +158,7 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
     }
 
     if (stream.thinkingProgress) {
-      stream.thinkingProgress({ text, id: 'thinking' });
+      stream.thinkingProgress({ id: 'thinking', text });
     } else if (thinkingStyle === 'progress') {
       stream.progress?.(text);
     } else {
@@ -197,6 +207,12 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   return createSharedRendererHandle(
     sharedOptions,
     {
+      onEnd: async () => {
+        if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
+          stream.markdown('\n\n');
+          blockquoteThinkingStarted = false;
+        }
+      },
       onText: async (text: string) => {
         stream.markdown(text);
       },
@@ -221,12 +237,6 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
         }
         if (stream.updateToolInvocation && typeof part.id === 'string') {
           stream.updateToolInvocation(part.id, part as OutputPart);
-        }
-      },
-      onEnd: async () => {
-        if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
-          stream.markdown('\n\n');
-          blockquoteThinkingStarted = false;
         }
       }
     },

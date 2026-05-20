@@ -11,7 +11,7 @@ describe('ContentProcessor', () => {
   it('extracts markdown code blocks without stripping content', () => {
     const processor = createContentProcessor();
     const blocks = processor.extractCodeBlocks('```ts\nconst a = 1;\n```\ntext');
-    expect(blocks).toEqual(['```ts\nconst a = 1;\n```']);
+    expect(blocks).toStrictEqual(['```ts\nconst a = 1;\n```']);
   });
 
   it('detects supported formats', () => {

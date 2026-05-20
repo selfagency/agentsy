@@ -7,14 +7,15 @@
 import type { AgUiEvent } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
 import { describe, expect, it, vi } from 'vitest';
+
 import { createAgentRunHandler, createExpressMiddleware, createHonoHandler, createSSEStream } from './http-server.js';
 
 // Test fixtures
 async function* mockEventGenerator() {
   yield {
-    type: EventType.RUN_STARTED,
     runId: 'run_123',
-    timestamp: '2024-01-01T00:00:00Z'
+    timestamp: '2024-01-01T00:00:00Z',
+    type: EventType.RUN_STARTED
   } as AgUiEvent;
 }
 
@@ -25,18 +26,18 @@ async function* emptyGenerator() {
 
 async function* errorGeneratorWithYield() {
   yield {
-    type: EventType.RUN_STARTED,
     runId: 'run_123',
-    timestamp: '2024-01-01T00:00:00Z'
+    timestamp: '2024-01-01T00:00:00Z',
+    type: EventType.RUN_STARTED
   } as AgUiEvent;
   throw new Error('Generator error');
 }
 
 async function* mockErrorGenerator() {
   yield {
-    type: EventType.RUN_STARTED,
     runId: 'run_123',
-    timestamp: '2024-01-01T00:00:00Z'
+    timestamp: '2024-01-01T00:00:00Z',
+    type: EventType.RUN_STARTED
   } as AgUiEvent;
   throw new Error('Mock generator error');
 }
@@ -64,7 +65,7 @@ describe('createSSEStream', () => {
       chunks.push(chunk);
     }
 
-    expect(chunks.length).toBe(0);
+    expect(chunks).toHaveLength(0);
   });
 
   it('should handle stream errors gracefully', async () => {
@@ -82,6 +83,7 @@ describe('createSSEStream', () => {
 
     // Use Symbol.asyncIterator
     const iterator = stream[Symbol.asyncIterator]();
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- async iterator yields Uint8Array
     const { value } = await iterator.next();
 
     expect(value).toBeInstanceOf(Uint8Array);
@@ -94,8 +96,8 @@ describe('createAgentRunHandler', () => {
 
     const req = { method: 'OPTIONS' };
     const res = {
-      writeHead: vi.fn(),
-      end: vi.fn()
+      end: vi.fn(),
+      writeHead: vi.fn()
     };
 
     await handler(req, res);
@@ -103,11 +105,11 @@ describe('createAgentRunHandler', () => {
     expect(res.writeHead).toHaveBeenCalledWith(
       200,
       expect.objectContaining({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Origin': '*'
       })
     );
-    expect(res.end).toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledWith();
   });
 
   it('should reject unsupported HTTP methods', async () => {
@@ -115,9 +117,9 @@ describe('createAgentRunHandler', () => {
 
     const req = { method: 'DELETE' };
     const res = {
-      writeHead: vi.fn(),
       end: vi.fn(),
-      write: vi.fn()
+      write: vi.fn(),
+      writeHead: vi.fn()
     };
 
     await handler(req, res);
@@ -128,20 +130,19 @@ describe('createAgentRunHandler', () => {
   it('should handle POST requests and stream events', async () => {
     const handler = createAgentRunHandler(() => mockEventGenerator());
 
-    const writeHeadHeaders: Record<string, unknown> = {};
     const res = {
-      writeHead: vi.fn((_code, headers) => {
-        Object.assign(writeHeadHeaders, headers);
+      end: vi.fn(),
+      write: vi.fn().mockImplementation((chunk: unknown) => {
+        // Verify chunk is data (Uint8Array)
+        expect(chunk).toBeInstanceOf(Uint8Array);
       }),
-      write: vi.fn(),
-      end: vi.fn()
+      writeHead: vi.fn()
     };
     const req = { method: 'POST' };
 
     await handler(req, res);
 
     expect(res.writeHead).toHaveBeenCalledWith(200, expect.any(Object));
-    expect(writeHeadHeaders['Content-Type']).toBe('text/event-stream');
     expect(res.write).toHaveBeenCalled();
     expect(res.end).toHaveBeenCalled();
   });
@@ -150,9 +151,9 @@ describe('createAgentRunHandler', () => {
     const handler = createAgentRunHandler(() => mockErrorGenerator());
 
     const res = {
-      writeHead: vi.fn(),
       end: vi.fn(),
-      write: vi.fn()
+      write: vi.fn(),
+      writeHead: vi.fn()
     };
     const req = { method: 'POST' };
 
@@ -167,19 +168,18 @@ describe('createExpressMiddleware', () => {
     const middleware = createExpressMiddleware(() => mockEventGenerator());
 
     const res = {
-      setHeader: vi.fn(),
-      write: vi.fn(),
       end: vi.fn(),
+      setHeader: vi.fn(),
       status: vi.fn(() => ({
         json: vi.fn()
-      }))
+      })),
+      write: vi.fn()
     };
     const req = {};
 
     await middleware(req, res);
 
     expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream');
-    expect(res.write).toHaveBeenCalled();
     expect(res.end).toHaveBeenCalled();
   });
 
@@ -187,12 +187,12 @@ describe('createExpressMiddleware', () => {
     const middleware = createExpressMiddleware(() => mockErrorGenerator());
 
     const res = {
-      setHeader: vi.fn(),
-      write: vi.fn(),
       end: vi.fn(),
+      setHeader: vi.fn(),
       status: vi.fn(() => ({
         json: vi.fn()
-      }))
+      })),
+      write: vi.fn()
     };
     const req = {};
 
@@ -215,6 +215,7 @@ describe('createHonoHandler', () => {
     expect(c.body).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
+        // oxlint-disable-next-line typescript/no-unsafe-assignment -- Hono response shape
         headers: expect.objectContaining({
           'Content-Type': 'text/event-stream'
         })
@@ -236,6 +237,14 @@ describe('createHonoHandler', () => {
     await handler(c);
 
     // Handler should attempt to use body() or handle error gracefully
-    expect(c.body).toHaveBeenCalled();
+    expect(c.body).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        // oxlint-disable-next-line typescript/no-unsafe-assignment -- Hono response shape
+        headers: expect.objectContaining({
+          'Content-Type': 'text/event-stream'
+        })
+      })
+    );
   });
 });

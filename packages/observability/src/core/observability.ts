@@ -15,7 +15,8 @@ import type {
   RedactionPolicy,
   Span
 } from '../core/types.js';
-import { LoggerImpl, type LogLevel, type LoggerConfig } from './logger.js';
+import { LoggerImpl } from './logger.js';
+import type { LogLevel, LoggerConfig } from './logger.js';
 import { MeterImpl } from './meter.js';
 import { TracerImpl } from './tracer.js';
 
@@ -52,9 +53,9 @@ export interface ObservabilityEngineConfig {
 
 const LOG_LEVEL_MAP: Record<string, LogLevel> = {
   DEBUG: 0,
+  ERROR: 3,
   INFO: 1,
-  WARN: 2,
-  ERROR: 3
+  WARN: 2
 };
 export { LOG_LEVEL_MAP };
 
@@ -94,7 +95,9 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   }
 
   async shutdown(): Promise<void> {
-    if (this._isShutdown) return;
+    if (this._isShutdown) {
+      return;
+    }
     this._isShutdown = true;
 
     this.logger.info('Shutting down observability engine...');
@@ -139,22 +142,34 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
 
   createCounter(name: string, options?: { description?: string; unit?: string }): Counter {
     const metricOptions: MetricOptions = {};
-    if (options?.description) metricOptions.description = options.description;
-    if (options?.unit) metricOptions.unit = options.unit;
+    if (options?.description) {
+      metricOptions.description = options.description;
+    }
+    if (options?.unit) {
+      metricOptions.unit = options.unit;
+    }
     return this.meter.createCounter(name, metricOptions);
   }
 
   createHistogram(name: string, options?: { description?: string; unit?: string }): Histogram {
     const metricOptions: MetricOptions = {};
-    if (options?.description) metricOptions.description = options.description;
-    if (options?.unit) metricOptions.unit = options.unit;
+    if (options?.description) {
+      metricOptions.description = options.description;
+    }
+    if (options?.unit) {
+      metricOptions.unit = options.unit;
+    }
     return this.meter.createHistogram(name, metricOptions);
   }
 
   createGauge(name: string, options?: { description?: string; unit?: string }): Gauge {
     const metricOptions: MetricOptions = {};
-    if (options?.description) metricOptions.description = options.description;
-    if (options?.unit) metricOptions.unit = options.unit;
+    if (options?.description) {
+      metricOptions.description = options.description;
+    }
+    if (options?.unit) {
+      metricOptions.unit = options.unit;
+    }
     return this.meter.createGauge(name, metricOptions);
   }
 
@@ -169,9 +184,7 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
       if (typeof value === 'string') {
         result[key] = this._redactionPolicy.redact(value);
       } else if (Array.isArray(value)) {
-        result[key] = value.map(item =>
-          this._redactionPolicy ? this._redactionPolicy.redact(String(item)) : String(item)
-        );
+        result[key] = value.map(item => (this._redactionPolicy ? this._redactionPolicy.redact(item) : item));
       } else {
         result[key] = value;
       }
@@ -181,9 +194,8 @@ export class ObservabilityEngineImpl implements ObservabilityEngine {
   }
 }
 
-export const createObservabilityEngine = (config: ObservabilityEngineConfig): ObservabilityEngine => {
-  return new ObservabilityEngineImpl(config);
-};
+export const createObservabilityEngine = (config: ObservabilityEngineConfig): ObservabilityEngine =>
+  new ObservabilityEngineImpl(config);
 
 let _defaultEngine: ObservabilityEngineImpl | null = null;
 
@@ -210,8 +222,12 @@ export const createSimpleEngine = (
 
   if (options?.sampling || options?.jaegerEndpoint) {
     config.tracing = {};
-    if (options.sampling) config.tracing.sampling = options.sampling;
-    if (options.jaegerEndpoint) config.tracing.jaegerEndpoint = options.jaegerEndpoint;
+    if (options.sampling) {
+      config.tracing.sampling = options.sampling;
+    }
+    if (options.jaegerEndpoint) {
+      config.tracing.jaegerEndpoint = options.jaegerEndpoint;
+    }
   }
 
   return createObservabilityEngine(config);

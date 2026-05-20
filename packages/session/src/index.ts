@@ -43,31 +43,31 @@ export function createSessionSnapshot(input: CreateSessionSnapshotInput): Sessio
       : {
           reusableSegments: input.reusableSegments.map(segment => ({
             fingerprint: segment.fingerprint,
-            reuseClass: segment.reuseClass,
-            invalidations: [...segment.invalidations]
+            invalidations: [...segment.invalidations],
+            reuseClass: segment.reuseClass
           }))
         })
   };
 
   const checksumSource = JSON.stringify({
     id: snapshotState.id,
-    values: snapshotState.values,
     modelFamily: snapshotState.modelFamily ?? null,
-    reusableSegments: snapshotState.reusableSegments ?? null
+    reusableSegments: snapshotState.reusableSegments ?? null,
+    values: snapshotState.values
   });
 
   return {
-    sessionId: input.id,
-    timestamp: new Date(),
     checksum: `sha256:${createHash('sha256').update(checksumSource).digest('hex')}`,
+    schemaVersion: 1,
+    sessionId: input.id,
     state: snapshotState,
-    schemaVersion: 1
+    timestamp: new Date()
   };
 }
 
 export interface SessionStore {
   getState(): SessionState;
-  getValue<T = unknown>(key: string): T | undefined;
+  getValue(key: string): unknown;
   setValue(key: string, value: unknown): void;
 }
 
@@ -81,8 +81,8 @@ export const createSessionStore = (state: SessionState): SessionStore => {
         values: { ...values }
       };
     },
-    getValue<T = unknown>(key: string) {
-      return values[key] as T | undefined;
+    getValue(key: string) {
+      return values[key];
     },
     setValue(key, value) {
       values[key] = value;

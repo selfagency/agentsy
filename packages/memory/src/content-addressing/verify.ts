@@ -11,9 +11,9 @@ export function verifyContent(content: string | Uint8Array, expected: ContentFin
   const actual = fingerprintContent(content);
   const expectedValue = typeof expected === 'string' ? expected : expected.value;
   return {
-    ok: actual.value === expectedValue,
+    actual: actual.value,
     expected: expectedValue,
-    actual: actual.value
+    ok: actual.value === expectedValue
   };
 }
 

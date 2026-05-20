@@ -31,7 +31,9 @@ import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recov
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
 
 const snapshot = captureStreamState(processor);
-const continuationMessages = buildContinuationPrompt(snapshot, { provider: 'openai' });
+const continuationMessages = buildContinuationPrompt(snapshot, {
+  provider: 'openai'
+});
 
 console.log(continuationMessages);
 ```

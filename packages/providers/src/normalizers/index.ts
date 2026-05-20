@@ -1,9 +1,9 @@
+export type * from './types.js';
 export { normalizeAnthropicEvent } from './anthropic.js';
 export { normalizeBedrockConverseEvent } from './bedrock.js';
 export { normalizeCohereEvent } from './cohere.js';
 export { normalizeDeepSeekChunk } from './deepseek.js';
-export { normalizeGeminiChunk } from './gemini.js';
-export { normalizeHuggingFaceTGIChunk } from './hfTgi.js';
+export { normalizeHuggingFaceTGIChunk } from './hf-tgi.js';
 export { normalizeMistralChunk } from './mistral.js';
 export { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
 export {
@@ -13,6 +13,6 @@ export {
   type OpenAICompatibleNormalizerProvider
 } from './openai-compatible.js';
 export { normalizeOpenAIChatChunk } from './openai.js';
-export { normalizeOpenAIResponseEvent } from './openaiResponses.js';
-export * from './types.js';
-export { normalizeZAiChunk } from './zai.js';
+export { normalizeOpenAIResponseEvent } from './openai-responses.js';
+export * from './gemini.js';
+export * from './zai.js';

@@ -1,13 +1,13 @@
 import type { DatabaseOpts } from '@tursodatabase/sync';
 import { connect } from '@tursodatabase/sync';
 
-import type { SyncSnapshot, TursoClient, TursoSyncConfig, TursoUploadResult } from './types.js';
+import type { SyncSnapshot, TursoClient, TursoSyncConfig, TursoUploadResult, SyncRecord } from './types.js';
 
 class NoopTursoClient implements TursoClient {
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
     return {
-      uploadedCount: snapshot.records.length,
-      nextCursor: snapshot.cursor
+      nextCursor: snapshot.cursor,
+      uploadedCount: snapshot.records.length
     };
   }
 
@@ -29,7 +29,8 @@ export interface TursoHttpClientConfig {
 }
 
 async function resolveAuthToken(authToken: TursoHttpClientConfig['authToken']): Promise<string> {
-  return typeof authToken === 'function' ? authToken() : authToken;
+  const resolved = typeof authToken === 'function' ? await authToken() : authToken;
+  return resolved;
 }
 
 class TursoHttpClient implements TursoClient {
@@ -38,12 +39,12 @@ class TursoHttpClient implements TursoClient {
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
     const authToken = await resolveAuthToken(this.config.authToken);
     const response = await fetch(`${this.config.databaseUrl}/sync/upload`, {
-      method: 'POST',
+      body: JSON.stringify(snapshot),
       headers: {
         authorization: `Bearer ${authToken}`,
         'content-type': 'application/json'
       },
-      body: JSON.stringify(snapshot)
+      method: 'POST'
     });
 
     if (!response.ok) {
@@ -135,16 +136,14 @@ class TursoSyncClient implements TursoClient {
   constructor(private readonly config: TursoSyncClientConfig) {}
 
   async #getDatabase(): Promise<TursoSyncDatabase> {
-    if (!this.#databasePromise) {
-      this.#databasePromise = (async () => {
-        const database = (await connect(toDatabaseOpts(this.config))) as unknown as TursoSyncDatabase;
-        await database.connect();
-        await database.run(SNAPSHOT_TABLE_SQL);
-        return database;
-      })();
-    }
+    this.#databasePromise ??= (async () => {
+      const database = (await connect(toDatabaseOpts(this.config))) as unknown as TursoSyncDatabase;
+      await database.connect();
+      await database.run(SNAPSHOT_TABLE_SQL);
+      return database;
+    })();
 
-    return this.#databasePromise;
+    return await this.#databasePromise;
   }
 
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
@@ -166,8 +165,8 @@ class TursoSyncClient implements TursoClient {
     await database.push();
 
     return {
-      uploadedCount: snapshot.records.length,
-      nextCursor: snapshot.cursor
+      nextCursor: snapshot.cursor,
+      uploadedCount: snapshot.records.length
     };
   }
 
@@ -198,7 +197,13 @@ class TursoSyncClient implements TursoClient {
 
     return {
       cursor: remoteCursor,
-      records: JSON.parse(payload) as SyncSnapshot['records']
+      records: (() => {
+        try {
+          return JSON.parse(payload) as SyncRecord[];
+        } catch {
+          return [] as SyncRecord[];
+        }
+      })()
     };
   }
 
@@ -209,7 +214,7 @@ class TursoSyncClient implements TursoClient {
 
   async stats(): Promise<Record<string, unknown>> {
     const database = await this.#getDatabase();
-    return database.stats();
+    return await database.stats();
   }
 
   async close(): Promise<void> {
@@ -225,9 +230,9 @@ export function createTursoSyncClient(config: TursoSyncClientConfig): TursoClien
 export function createDefaultTursoClient(config: TursoSyncConfig): TursoClient {
   if (config.path) {
     return createTursoSyncClient({
+      authToken: config.authToken,
       path: config.path,
       url: config.databaseUrl,
-      authToken: config.authToken,
       ...(config.clientName === undefined ? {} : { clientName: config.clientName }),
       ...(config.longPollTimeoutMs === undefined ? {} : { longPollTimeoutMs: config.longPollTimeoutMs }),
       ...(config.tracing === undefined ? {} : { tracing: config.tracing }),

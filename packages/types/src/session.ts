@@ -25,6 +25,7 @@ export interface SessionStore {
   getState(): SessionState;
 
   /** Get a specific value. */
+  // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
   getValue<T>(key: string): T | undefined;
 
   /** Set a value. */

@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 
 import { compressMemoryFile } from '@agentsy/core/context';
-import { compressOutput, type OutputCompressionLevel } from '@agentsy/tokens';
+import { compressOutput } from '@agentsy/tokens';
+import type { OutputCompressionLevel } from '@agentsy/tokens';
 
 export const name = 'cli';
 
@@ -11,17 +12,17 @@ export interface CliIO {
 }
 
 const DEFAULT_IO: Required<CliIO> = {
-  stdout: message => {
-    console.log(message);
-  },
   stderr: message => {
     console.error(message);
+  },
+  stdout: message => {
+    console.log(message);
   }
 };
 
 function getFlagValue(args: readonly string[], flag: string): string | null {
   const index = args.indexOf(flag);
-  if (index < 0) {
+  if (index === -1) {
     return null;
   }
 
@@ -51,7 +52,7 @@ const DEFAULT_MEMORY_SYNC_SERVER_DB = './.agentsy/local-sync-server.db';
 const DEFAULT_MEMORY_SYNC_REPLICA_DB = './.agentsy/local-replica.db';
 const DEFAULT_MEMORY_SYNC_BIND = '0.0.0.0:8080';
 const DEFAULT_MEMORY_SYNC_URL = 'http://localhost:8080';
-const DEFAULT_MEMORY_SYNC_INTERVAL_MS = 5_000;
+const DEFAULT_MEMORY_SYNC_INTERVAL_MS = 5000;
 
 function getNumberFlagValue(args: readonly string[], flag: string, fallback: number): number | null {
   const raw = getFlagValue(args, flag);
@@ -76,16 +77,11 @@ function createMemorySyncDevExample(args: readonly string[]): MemorySyncDevExamp
   const startCommand = `tursodb ${serverDbPath} --sync-server ${bindAddress}`;
 
   return {
-    serverDbPath,
-    replicaDbPath,
     bindAddress,
-    serverUrl,
-    syncIntervalMs,
-    startCommand,
     env: {
-      TURSO_DATABASE_URL: serverUrl,
+      AGENTSY_MEMORY_SYNC_INTERVAL_MS: String(syncIntervalMs),
       TURSO_AUTH_TOKEN: '',
-      AGENTSY_MEMORY_SYNC_INTERVAL_MS: String(syncIntervalMs)
+      TURSO_DATABASE_URL: serverUrl
     },
     managerExample: [
       "import { createTursoManager } from '@agentsy/memory';",
@@ -98,7 +94,12 @@ function createMemorySyncDevExample(args: readonly string[]): MemorySyncDevExamp
       '  maxRetries: 3,',
       "  mode: 'remote-shadow'",
       '});'
-    ].join('\n')
+    ].join('\n'),
+    replicaDbPath,
+    serverDbPath,
+    serverUrl,
+    startCommand,
+    syncIntervalMs
   };
 }
 
@@ -133,81 +134,119 @@ function toCompressionLevel(value: string | null): OutputCompressionLevel | null
   return null;
 }
 
-export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
-  const [command, ...rest] = argv;
+function validateCompressFlags(
+  filePath: string | null,
+  text: string | null,
+  level: OutputCompressionLevel | null,
+  io: CliIO
+): level is OutputCompressionLevel {
+  if (level === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
+    return false;
+  }
 
-  if (command === 'compress') {
-    const filePath = getFlagValue(rest, '--file');
-    const text = getFlagValue(rest, '--text');
-    const level = toCompressionLevel(getFlagValue(rest, '--level'));
+  if (filePath === null && text === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
+    return false;
+  }
 
-    if (level === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Invalid --level value. Use one of: lite, full, ultra.');
-      return 1;
-    }
+  return true;
+}
 
-    if (filePath === null && text === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Missing input. Provide --text or --file.');
-      return 1;
-    }
+async function handleCompressCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const filePath = getFlagValue(rest, '--file');
+  const text = getFlagValue(rest, '--text');
+  const level = toCompressionLevel(getFlagValue(rest, '--level'));
 
-    const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf8'));
-    const result = compressOutput(source, { level });
-    (io.stdout ?? DEFAULT_IO.stdout)(result.compressed);
-    (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+  if (!validateCompressFlags(filePath, text, level, io)) {
+    return 1;
+  }
+
+  const source = text ?? (filePath === null ? '' : await readFile(filePath, 'utf-8'));
+  const result = compressOutput(source, { level });
+  (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+  (io.stdout ?? DEFAULT_IO.stdout)(result.compressed);
+  return 0;
+}
+
+async function handleCompressMemoryCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const filePath = getFlagValue(rest, '--file');
+  if (filePath === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Missing --file for compress-memory command.');
+    return 1;
+  }
+
+  const backup = !hasFlag(rest, '--no-backup');
+  const result = await compressMemoryFile(filePath, { backup });
+  (io.stdout ?? DEFAULT_IO.stdout)(`Compressed ${filePath}`);
+  (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
+  return 0;
+}
+
+function _handleMemorySyncDevCommand(rest: readonly string[], io: CliIO): number {
+  const example = createMemorySyncDevExample(rest);
+  if (example === null) {
+    (io.stderr ?? DEFAULT_IO.stderr)('Invalid --sync-interval-ms value. Use a positive number.');
+    return 1;
+  }
+
+  const stdout = io.stdout ?? DEFAULT_IO.stdout;
+  if (hasFlag(rest, '--json')) {
+    stdout(JSON.stringify(example, null, 2));
     return 0;
   }
 
-  if (command === 'compress-memory') {
-    const filePath = getFlagValue(rest, '--file');
-    if (filePath === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Missing --file for compress-memory command.');
-      return 1;
-    }
-
-    const backup = !hasFlag(rest, '--no-backup');
-
-    const result = await compressMemoryFile(filePath, {
-      backup
-    });
-    (io.stdout ?? DEFAULT_IO.stdout)(`Compressed ${filePath}`);
-    (io.stdout ?? DEFAULT_IO.stdout)(`Savings: ${(result.savingsRatio * 100).toFixed(2)}%`);
-    return 0;
+  for (const line of formatMemorySyncDevExample(example)) {
+    stdout(line);
   }
 
-  if (command === 'memory-sync-dev') {
-    const example = createMemorySyncDevExample(rest);
-    if (example === null) {
-      (io.stderr ?? DEFAULT_IO.stderr)('Invalid --sync-interval-ms value. Use a positive number.');
-      return 1;
-    }
+  return 0;
+}
 
-    const stdout = io.stdout ?? DEFAULT_IO.stdout;
-    if (hasFlag(rest, '--json')) {
-      stdout(JSON.stringify(example, null, 2));
-      return 0;
-    }
+function handleMemorySyncDevCommand(rest: readonly string[], io: CliIO): number {
+  return _handleMemorySyncDevCommand(rest, io);
+}
 
-    for (const line of formatMemorySyncDevExample(example)) {
-      stdout(line);
-    }
+async function handleSandboxDiagnosticsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSandboxDiagnosticsCommand } = await import('./commands/sandbox-diagnostics.js');
+  return runSandboxDiagnosticsCommand(rest, io);
+}
 
-    return 0;
-  }
+async function handleContentAddressStatsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
+  return runContentAddressStatsCommand(rest, io);
+}
 
-  if (command === 'sandbox-diagnostics') {
-    const { runSandboxDiagnosticsCommand } = await import('./commands/sandbox-diagnostics.js');
-    return runSandboxDiagnosticsCommand(rest, io);
-  }
-
-  if (command === 'content-address-stats') {
-    const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
-    return runContentAddressStatsCommand(rest, io);
-  }
-
+function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
     'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
   );
   return 1;
+}
+
+export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
+  const [command, ...rest] = argv;
+
+  if (command === 'compress') {
+    return await handleCompressCommand(rest, io);
+  }
+
+  if (command === 'compress-memory') {
+    return await handleCompressMemoryCommand(rest, io);
+  }
+
+  if (command === 'memory-sync-dev') {
+    return handleMemorySyncDevCommand(rest, io);
+  }
+
+  if (command === 'sandbox-diagnostics') {
+    return await handleSandboxDiagnosticsCommand(rest, io);
+  }
+
+  if (command === 'content-address-stats') {
+    return await handleContentAddressStatsCommand(rest, io);
+  }
+
+  return handleUnknownCommand(command, io);
 }

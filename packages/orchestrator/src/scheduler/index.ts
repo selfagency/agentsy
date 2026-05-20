@@ -74,8 +74,6 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
   }
 
   return {
-    register,
-
     cancel(taskId) {
       const record = tasks.get(taskId);
       if (!record) {
@@ -99,16 +97,17 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
       return [...tasks.values()]
         .filter(task => (options.lane ? task.lane === options.lane : true))
         .filter(task => (options.status ? task.status === options.status : true))
-        .sort((left, right) => left.createdAt - right.createdAt)
+        .toSorted((left, right) => left.createdAt - right.createdAt)
         .map(task => ({ ...task }));
-    }
+    },
+
+    register
   };
 }
 
 export function createTaskScheduler(registry: SchedulerRegistry = createSchedulerRegistry()): TaskScheduler {
-  const isSchedulableAgent = (agent: unknown): agent is SchedulableAgent => {
-    return typeof agent === 'object' && agent !== null && 'id' in agent && typeof agent.id === 'string';
-  };
+  const isSchedulableAgent = (agent: unknown): agent is SchedulableAgent =>
+    typeof agent === 'object' && agent !== null && 'id' in agent && typeof agent.id === 'string';
 
   const toSchedulerTaskInfo = (taskInfo: unknown): SchedulerTaskInfo => {
     if (typeof taskInfo !== 'object' || taskInfo === null) {
@@ -127,7 +126,7 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
   return {
     async schedule<T>(task: SchedulerExecutionInput<T>): Promise<SchedulerAssignment | T | null> {
       if (typeof task === 'function') {
-        return task();
+        return await task();
       }
 
       const schedulerTask = toSchedulerTaskInfo(task.taskInfo);
@@ -143,8 +142,8 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
         prompt: schedulerTask.name ?? schedulerTask.id ?? 'scheduled task',
         ...(typeof schedulerTask.runAt === 'number' ? { runAt: schedulerTask.runAt } : {}),
         metadata: {
-          input: schedulerTask.input,
-          assignedAgentId: selectedAgent.id
+          assignedAgentId: selectedAgent.id,
+          input: schedulerTask.input
         }
       });
 

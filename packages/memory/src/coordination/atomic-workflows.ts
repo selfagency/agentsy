@@ -60,9 +60,9 @@ export function createAtomicWorkflowCoordinator(): AtomicWorkflowCoordinator {
     async runWorkflow(workflowId, steps, metadata = {}) {
       const startedAt = Date.now();
       const context: AtomicWorkflowContext = {
-        workflowId,
+        metadata: { ...metadata },
         startedAt,
-        metadata: { ...metadata }
+        workflowId
       };
 
       const executedStepDefinitions: AtomicWorkflowStep[] = [];
@@ -76,23 +76,23 @@ export function createAtomicWorkflowCoordinator(): AtomicWorkflowCoordinator {
         }
 
         return {
-          workflowId,
-          status: 'committed',
-          startedAt,
-          finishedAt: Date.now(),
           executedSteps,
-          rolledBackSteps: []
+          finishedAt: Date.now(),
+          rolledBackSteps: [],
+          startedAt,
+          status: 'committed',
+          workflowId
         };
       } catch (error) {
         const rolledBackSteps = await rollbackExecutedSteps(context, executedStepDefinitions);
         return {
-          workflowId,
-          status: 'rolled_back',
-          startedAt,
-          finishedAt: Date.now(),
+          error: toError(error),
           executedSteps,
+          finishedAt: Date.now(),
           rolledBackSteps,
-          error: toError(error)
+          startedAt,
+          status: 'rolled_back',
+          workflowId
         };
       }
     }

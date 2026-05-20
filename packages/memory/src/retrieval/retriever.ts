@@ -1,5 +1,6 @@
-import { createLocalEmbeddingEngine, type LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 import type { MemoryScope } from '../scope/scope-manager.js';
+import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
+import type { LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 
 export interface MemorySearchRecord {
   id: string;
@@ -114,19 +115,13 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
   const embeddings = new Map<string, number[]>();
 
   return {
-    upsert(record) {
-      const normalized = cloneRecord(record);
-      records.set(record.id, normalized);
-      embeddings.set(record.id, embeddingEngine.embed(`${normalized.title ?? ''}\n${normalized.content}`));
+    list() {
+      return [...records.values()].map(cloneRecord);
     },
 
     remove(recordId) {
       records.delete(recordId);
       embeddings.delete(recordId);
-    },
-
-    list() {
-      return [...records.values()].map(cloneRecord);
     },
 
     async search(input) {
@@ -162,13 +157,19 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
           ];
 
           return {
+            reasons,
             record: cloneRecord(record),
-            score,
-            reasons
+            score
           };
         })
-        .sort((left, right) => right.score - left.score)
+        .toSorted((left, right) => right.score - left.score)
         .slice(0, limit);
+    },
+
+    upsert(record) {
+      const normalized = cloneRecord(record);
+      records.set(record.id, normalized);
+      embeddings.set(record.id, embeddingEngine.embed(`${normalized.title ?? ''}\n${normalized.content}`));
     }
   };
 }

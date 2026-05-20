@@ -1,4 +1,8 @@
-import type { FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
+// nosemgrep: export-from-syntax
+// Types are imported for use in local interfaces below and then re-exported.
+import type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
+
+export type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo };
 
 /**
  * Represents a single UI message in a conversation.
@@ -123,39 +127,5 @@ export interface UIConversation {
   totalUsage: UsageInfo;
 
   /** Metadata: custom key-value pairs. */
-  metadata: JsonObject | undefined;
+  metadata?: JsonObject | undefined;
 }
-
-/**
- * Events that drive conversation state transitions.
- */
-export type ConversationEvent =
-  | { type: 'message_started'; role: 'user' | 'assistant'; messageId: string }
-  | { type: 'text_part_added'; messageId: string; text: string }
-  | { type: 'thinking_part_added'; messageId: string; text: string }
-  | {
-      type: 'tool_call_part_added';
-      messageId: string;
-      toolCall: {
-        id: string;
-        name: string;
-        parameters: JsonObject;
-        state?: ToolCallState;
-        argumentsText?: string;
-      };
-    }
-  | {
-      type: 'tool_call_updated';
-      messageId: string;
-      toolCallId: string;
-      state?: ToolCallState;
-      argumentsTextDelta?: string;
-      parameters?: JsonObject;
-    }
-  | { type: 'tool_call_result_added'; messageId: string; toolCallId: string; result: unknown; isError?: boolean }
-  | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }
-  | { type: 'step_started'; stepIndex: number; messageId?: string; usage?: UsageInfo }
-  | { type: 'step_finished'; stepIndex: number; messageId?: string; usage?: UsageInfo }
-  | { type: 'step_updated'; stepIndex: number }
-  | { type: 'error_part_added'; messageId: string; message: string; code?: string }
-  | { type: 'conversation_reset' };

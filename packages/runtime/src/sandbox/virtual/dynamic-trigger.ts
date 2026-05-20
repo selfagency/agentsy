@@ -22,12 +22,18 @@ export function decideSandboxTrigger(ctx: SandboxTriggerContext): SandboxTrigger
   }
 
   if (ctx.readOnly === true) {
-    return { mode: 'none', reason: 'read-only operations do not require a sandbox' };
+    return {
+      mode: 'none',
+      reason: 'read-only operations do not require a sandbox'
+    };
   }
 
   if (ctx.trustLevel === 'untrusted') {
     if (ctx.containerAvailable === true) {
-      return { mode: 'container', reason: 'untrusted input correctly isolated in container' };
+      return {
+        mode: 'container',
+        reason: 'untrusted input correctly isolated in container'
+      };
     }
     // Block unless container is available for untrusted input
     return {

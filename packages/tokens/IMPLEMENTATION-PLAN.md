@@ -42,11 +42,11 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 
 - GOAL-TOKENS-002: Core accounting and compression implementation.
 
-| Task            | Description                                                        | Completed | Date |
-| --------------- | ------------------------------------------------------------------ | --------- | ---- |
-| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. |           |      |
-| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  |           |      |
-| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       |           |      |
+| Task            | Description                                                        | Completed | Date       |
+| --------------- | ------------------------------------------------------------------ | --------- | ---------- |
+| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. | ✅        | 2026-05-17 |
+| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  | ✅        | 2026-05-17 |
+| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       | ✅        | 2026-05-17 |
 
 ### Implementation Phase 3
 
@@ -676,7 +676,13 @@ export function selectOptimalFormat(data: unknown, context: ModelContext): 'json
 export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingResult {
   const actualFormat =
     options?.format === 'auto'
-      ? selectOptimalFormat(data, options?.modelContext || { budget: 100000, model: 'claude-3-5-sonnet' })
+      ? selectOptimalFormat(
+          data,
+          options?.modelContext || {
+            budget: 100000,
+            model: 'claude-3-5-sonnet'
+          }
+        )
       : options?.format;
 
   let encoded: string;
@@ -688,14 +694,20 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
     case 'toon':
       encoded = encode(data);
       // Estimate token count with o200k_base tokenizer
-      tokenCount = countTokens(encoded, { model: context.model?.model || 'gpt-4o', encoding: 'o200k_base' });
+      tokenCount = countTokens(encoded, {
+        model: context.model?.model || 'gpt-4o',
+        encoding: 'o200k_base'
+      });
       savingsPercentage = 40; // Estimated 40% savings vs JSON
       accuracy = 0.764; // 76.4% accuracy from benchmarks
       break;
 
     case 'json-compact':
       encoded = JSON.stringify(data);
-      tokenCount = countTokens(encoded, { model: context?.model?.model || 'gpt-4o', encoding: 'o200k_base' });
+      tokenCount = countTokens(encoded, {
+        model: context?.model?.model || 'gpt-4o',
+        encoding: 'o200k_base'
+      });
       savingsPercentage = 15; // Estimated 15% savings vs pretty JSON
       accuracy = 0.75; // 75.0% accuracy baseline
       break;
@@ -703,7 +715,10 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
     case 'json':
     default:
       encoded = JSON.stringify(data, null, 2);
-      tokenCount = countTokens(encoded, { model: context?.model?.model || 'gpt-4o', encoding: 'o200k_base' });
+      tokenCount = countTokens(encoded, {
+        model: context?.model?.model || 'gpt-4o',
+        encoding: 'o200k_base'
+      });
       savingsPercentage = 0;
       accuracy = 0.75; // 75.0% accuracy baseline
   }

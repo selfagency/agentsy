@@ -40,13 +40,13 @@ This plan defines the production implementation order for `@agentsy/providers` a
 
 ### Implementation Phase 2
 
-- GOAL-PROVIDERS-002: Core provider implementation completion.
+- GOAL-PROVIDERS-002: Core provider infrastructure completion.
 
-| Task               | Description                                                                            | Completed | Date |
-| ------------------ | -------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                           |           |      |
-| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                     |           |      |
-| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. |           |      |
+| Task               | Description                                                                            | Completed  | Date       |
+| ------------------ | -------------------------------------------------------------------------------------- | ---------- | ---------- |
+| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                           | ✅         | 2026-05-17 |
+| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                     | ⚠️ partial | 2026-05-17 |
+| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. | ✅         | 2026-05-17 |
 
 ### Implementation Phase 3
 

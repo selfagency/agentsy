@@ -12,7 +12,7 @@ export function fingerprintContent(content: string | Uint8Array): ContentFingerp
   const digest = blake3(bytes);
   const value = `blake3:${Buffer.from(digest).toString('hex')}`;
   const size = bytes.byteLength;
-  return { algorithm: 'blake3', value, size };
+  return { algorithm: 'blake3', size, value };
 }
 
 export function fingerprintsEqual(a: ContentFingerprint, b: ContentFingerprint): boolean {

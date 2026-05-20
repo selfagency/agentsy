@@ -68,7 +68,7 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
           ...(complete !== null && complete !== undefined && { complete })
         };
       } else {
-        observer = observerOrNext || {};
+        observer = observerOrNext ?? {};
       }
 
       let isCancelled = false;
@@ -77,19 +77,23 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
       void (async () => {
         try {
           for await (const value of generator) {
-            if (isCancelled) break;
+            if (isCancelled) {
+              break;
+            }
             observer.next?.(value);
           }
-          if (isCancelled === false) {
+          if (!isCancelled) {
             observer.complete?.();
           }
-        } catch (err) {
-          if (isCancelled === false) {
-            observer.error?.(err);
+        } catch (error) {
+          if (!isCancelled) {
+            observer.error?.(error);
           }
         } finally {
           // Clean up generator resources on completion or cancellation
-          await generator.return?.(undefined);
+          if (generator) {
+            void generator.return(undefined);
+          }
         }
       })();
 
@@ -97,8 +101,6 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
       return {
         unsubscribe() {
           isCancelled = true;
-          // Also clean up generator on early unsubscribe
-          void generator.return?.(undefined);
         }
       };
     }

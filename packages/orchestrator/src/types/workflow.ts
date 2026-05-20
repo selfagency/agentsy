@@ -14,13 +14,6 @@ export enum WorkflowStatus {
   CANCELLED = 'cancelled'
 }
 
-export enum AgentStatus {
-  IDLE = 'idle',
-  BUSY = 'busy',
-  OFFLINE = 'offline',
-  ERROR = 'error'
-}
-
 export interface TaskNode {
   type: NodeType.TASK;
   id: string;

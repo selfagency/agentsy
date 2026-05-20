@@ -31,7 +31,28 @@ interface CacheData {
   data: ModelsDevAPI;
 }
 
-const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/i;
+function isCacheData(value: unknown): value is CacheData {
+  return typeof value === 'object' && value !== null && 'timestamp' in value && 'data' in value;
+}
+
+function isModelsDevAPI(value: unknown): value is ModelsDevAPI {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
+  return Object.values(record).every(
+    provider =>
+      typeof provider === 'object' &&
+      provider !== null &&
+      typeof (provider as Record<string, unknown>).id === 'string' &&
+      typeof (provider as Record<string, unknown>).models === 'object'
+  );
+}
+
+// nosemgrep: regex-dos-model-params
+// Pattern only matches short model-ID strings with bounded length (e.g. "70b", "13.5b").
+// No alternation or nested quantifiers; input is always a known model identifier.
+const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/iu;
 
 const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 
@@ -67,13 +88,27 @@ function quantizationFactor(quantization?: string): number {
 
   const q = quantization.toLowerCase();
 
-  if (q.includes('q2')) return 0.2;
-  if (q.includes('q3')) return 0.28;
-  if (q.includes('q4')) return 0.36;
-  if (q.includes('q5')) return 0.45;
-  if (q.includes('q6')) return 0.56;
-  if (q.includes('q8')) return 0.7;
-  if (q.includes('f16')) return 1;
+  if (q.includes('q2')) {
+    return 0.2;
+  }
+  if (q.includes('q3')) {
+    return 0.28;
+  }
+  if (q.includes('q4')) {
+    return 0.36;
+  }
+  if (q.includes('q5')) {
+    return 0.45;
+  }
+  if (q.includes('q6')) {
+    return 0.56;
+  }
+  if (q.includes('q8')) {
+    return 0.7;
+  }
+  if (q.includes('f16')) {
+    return 1;
+  }
 
   return 0.5;
 }
@@ -108,7 +143,7 @@ function resolveModelsDevModel(
 
       const candidateIds = [normalizedModelId, normalizedModelKey, normalizedProviderModel];
       if (candidateIds.includes(normalizedTarget)) {
-        return { provider: providerId, model };
+        return { model, provider: providerId };
       }
     }
   }
@@ -159,6 +194,20 @@ function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendat
   return true;
 }
 
+function getMemoryRequirements(entry: LLMStatsLocalModel): {
+  requiredRamGb: number;
+  requiredVramGb: number;
+} {
+  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
+    return {
+      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
+      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0
+    };
+  }
+
+  return estimateMemoryRequirementsFromModelId(entry.modelId, entry.quantization);
+}
+
 function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommendation | null {
   const { entry, criteria, category, modelsDevData, systemCapabilities, availableVram } = inputs;
 
@@ -197,7 +246,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   const rawCost = (model.cost.input ?? 0) + (model.cost.output ?? 0);
   const costScore = clamp01(1 / (1 + rawCost * 50));
 
-  const contextScore = clamp01(model.limit.context / 256000);
+  const contextScore = clamp01(model.limit.context / 256_000);
   const capabilityScore = criteria.requireToolCalling ? Number(model.tool_call) : 0.8;
 
   const fitWeight = 0.4;
@@ -216,22 +265,22 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
     costWeight * costScore;
 
   const recommendation: LocalModelRecommendation = {
+    benchmarkScore,
+    capabilities: {
+      reasoning: model.reasoning,
+      tool_calling: model.tool_call
+    },
+    compositeScore,
+    confidence: clamp01(compositeScore),
+    costScore,
+    estimatedCost: rawCost,
+    fitScore,
     model: model.id,
     provider,
-    confidence: clamp01(compositeScore),
-    estimatedCost: rawCost,
-    capabilities: {
-      tool_calling: model.tool_call,
-      reasoning: model.reasoning
-    },
     reasoning: `Fit ${fitScore.toFixed(2)}, benchmark ${benchmarkScore.toFixed(2)}, cost ${costScore.toFixed(2)} for ${category}`,
-    fitScore,
-    benchmarkScore,
-    speedScore,
-    costScore,
-    compositeScore,
     requiredRamGb,
-    requiredVramGb
+    requiredVramGb,
+    speedScore
   };
 
   if (entry.runtime !== undefined) {
@@ -243,17 +292,6 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   }
 
   return recommendation;
-}
-
-function getMemoryRequirements(entry: LLMStatsLocalModel): { requiredRamGb: number; requiredVramGb: number } {
-  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
-    return {
-      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
-      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0
-    };
-  }
-
-  return estimateMemoryRequirementsFromModelId(entry.modelId, entry.quantization);
 }
 
 /**
@@ -273,12 +311,12 @@ export function recommendLocalModelsBySystemCapabilities(
 
   for (const entry of llmStatsLocalModels) {
     const recommendation = buildRecommendation({
-      entry,
-      criteria,
+      availableVram,
       category,
+      criteria,
+      entry,
       modelsDevData,
-      systemCapabilities,
-      availableVram
+      systemCapabilities
     });
 
     if (recommendation) {
@@ -312,7 +350,11 @@ export class ModelsDevClient {
     try {
       const fs = await import('node:fs/promises');
       const cacheData = await fs.readFile(this.CACHE_FILE, 'utf-8');
-      const cached = JSON.parse(cacheData) as CacheData;
+      const parsed: unknown = JSON.parse(cacheData);
+      if (!isCacheData(parsed)) {
+        throw new Error('Invalid cache data');
+      }
+      const cached = parsed;
       if (cached.timestamp && Date.now() - cached.timestamp < this.CACHE_TTL) {
         this.cache = cached.data;
         this.lastFetched = new Date(cached.timestamp);
@@ -324,14 +366,18 @@ export class ModelsDevClient {
 
     // Fetch from API
     const response = await fetch('https://models.dev/api.json');
-    const data = (await response.json()) as ModelsDevAPI;
+    const json = await response.json();
+    if (!isModelsDevAPI(json)) {
+      throw new Error('Invalid API response');
+    }
+    const data = json;
 
     // Save to cache
     try {
       const fs = await import('node:fs/promises');
       const cacheDir = os.tmpdir();
       await fs.mkdir(cacheDir, { recursive: true });
-      await fs.writeFile(this.CACHE_FILE, JSON.stringify({ timestamp: Date.now(), data }), 'utf-8');
+      await fs.writeFile(this.CACHE_FILE, JSON.stringify({ data, timestamp: Date.now() }), 'utf-8');
     } catch {
       // Failed to save cache, ignore
     }
@@ -353,7 +399,7 @@ export class ModelsDevClient {
       return undefined;
     }
 
-    const cache = this.cache;
+    const { cache } = this;
     if (!cache || !Object.hasOwn(cache, providerId)) {
       return undefined;
     }
@@ -438,10 +484,7 @@ export class ModelSelector {
   }
 
   private getClient(): ModelsDevClient {
-    if (!this.client) {
-      this.client = new ModelsDevClient();
-    }
-
+    this.client ??= new ModelsDevClient();
     return this.client;
   }
 
@@ -518,11 +561,11 @@ export class ModelSelector {
 
   private scoreModels(models: ModelsDevModel[], requirements: TaskRequirements): ModelSelectionResult[] {
     return models.map(model => ({
-      model: model.id,
-      provider: this.findProviderForModel(model.id),
+      capabilities: requirements.capabilities ?? {},
       confidence: this.calculateConfidence(model, requirements),
       estimatedCost: this.estimateModelCost(model),
-      capabilities: requirements.capabilities ?? {},
+      model: model.id,
+      provider: this.findProviderForModel(model.id),
       reasoning: this.generateReasoning(model, requirements)
     }));
   }
@@ -533,7 +576,7 @@ export class ModelSelector {
     }
 
     scoredModels.sort((a: ModelSelectionResult, b: ModelSelectionResult) => b.confidence - a.confidence);
-    const bestModel = scoredModels[0];
+    const [bestModel] = scoredModels;
 
     if (!bestModel) {
       throw new Error('No model could be ranked after filtering');
@@ -558,19 +601,19 @@ export class ModelSelector {
     }
 
     // Simple estimation: assume 2 tokens per word for input, 1 per word for output
-    const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
-    const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/).length * 0.5);
+    const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/u).length * 2;
+    const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/u).length * 0.5);
 
-    const cost = model.cost;
+    const { cost } = model;
     const inputCost = (inputTokens / 1000) * cost.input;
     const outputCost = (outputTokens / 1000) * cost.output;
 
     return {
-      model: modelId,
-      provider: this.findProviderForModel(model.id),
+      capabilities: {},
       confidence: 0.8,
       estimatedCost: inputCost + outputCost,
-      capabilities: {},
+      model: modelId,
+      provider: this.findProviderForModel(model.id),
       reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`
     };
   }
@@ -697,7 +740,7 @@ export class ModelSelector {
 
     // Consider specialization
     if (requirements.specialization && model.knowledge) {
-      const knowledge = model.knowledge;
+      const { knowledge } = model;
       if (knowledge.toLowerCase().includes(requirements.specialization.toLowerCase())) {
         confidence += 0.2;
       }
@@ -710,7 +753,7 @@ export class ModelSelector {
    * Estimate model cost based on cost per thousand tokens
    */
   private estimateModelCost(model: ModelsDevModel): number {
-    const cost = model.cost;
+    const { cost } = model;
     // Rough estimate assuming 1000 input and 1000 output tokens
     return (cost?.input ?? 0) + (cost?.output ?? 0) * 10;
   }
@@ -725,12 +768,12 @@ export class ModelSelector {
       reasons.push('Supports tool calling');
     }
 
-    const limit = model.limit;
-    if (limit?.context && limit.context > 200000) {
+    const { limit } = model;
+    if (limit?.context && limit.context > 200_000) {
       reasons.push('Large context window');
     }
 
-    const cost = model.cost;
+    const { cost } = model;
     if (cost && cost.input + cost.output < 0.01) {
       reasons.push('Cost-effective');
     }

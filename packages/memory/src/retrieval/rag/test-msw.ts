@@ -11,13 +11,13 @@ export interface MockRAGState {
 
 export function createMockRAGState(): MockRAGState {
   return {
-    healthy: true,
     documents: new Map<string, RAGServerDocument>(),
+    healthy: true,
     searchResults: []
   };
 }
 
-export function createRAGHandlers(baseUrl: string, state: MockRAGState) {
+function createRAGHandlers(baseUrl: string, state: MockRAGState) {
   return [
     http.get(`${baseUrl}/health`, () => {
       if (!state.healthy) {
@@ -27,7 +27,10 @@ export function createRAGHandlers(baseUrl: string, state: MockRAGState) {
       return HttpResponse.json({ status: 'ok' }, { status: 200 });
     }),
     http.post(`${baseUrl}/search`, async ({ request }) => {
-      const payload = (await request.json()) as { query?: string; limit?: number };
+      const payload = (await request.json()) as {
+        query?: string;
+        limit?: number;
+      };
       const query = payload.query?.toLowerCase() ?? '';
       const terms = query.split(/\s+/u).filter(Boolean);
       const limit = Math.max(1, payload.limit ?? 10);
@@ -52,7 +55,7 @@ export function createRAGHandlers(baseUrl: string, state: MockRAGState) {
     http.delete(`${baseUrl}/documents/:id`, ({ params }) => {
       const documentId = String(params.id ?? '');
       const deleted = state.documents.delete(documentId);
-      return HttpResponse.json({ id: documentId, deleted }, { status: 200 });
+      return HttpResponse.json({ deleted, id: documentId }, { status: 200 });
     })
   ];
 }

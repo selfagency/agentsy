@@ -1,54 +1,5 @@
 {
-  "dependencies": {
-    "@opentelemetry/api": "^1.9.1"
-  },
-  "devDependencies": {
-    "@types/node": "^25.8.0",
-    "fallow": "^2.74.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "oxfmt": "^0.50.0",
-    "oxlint": "^1.65.0",
-    "tsx": "^4.22.0",
-    "turbo": "^2.9.14",
-    "ultracite": "7.7.0",
-    "vitepress": "^1.6.4",
-    "vitest": "^4.1.6"
-  },
-  "lint-staged": {
-    "**/*.{ts,tsx,js,mjs,cjs}": [
-      "oxlint --no-error-on-unmatched-pattern .",
-      "oxfmt --no-error-on-unmatched-pattern --write ."
-    ],
-    "**/*.{json,md,yaml,yml}": [
-      "oxfmt --no-error-on-unmatched-pattern --write ."
-    ],
-    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
-      "pnpm dlx ultracite fix"
-    ]
-  },
   "name": "@agentsy/monorepo",
-  "scripts": {
-    "build": "turbo run build",
-    "docs:build": "vitepress build",
-    "docs:dev": "vitepress dev",
-    "docs:preview": "vitepress preview",
-    "check-types": "turbo run check-types",
-    "fallow": "fallow",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "format": "turbo run format",
-    "test": "turbo run test",
-    "test:release": "pnpm -C packages/scripts run release-test",
-    "test:coverage": "turbo run coverage",
-    "precommit": "turbo run precommit",
-    "release": "pnpm -C packages/scripts run release",
-    "bootstrap-release": "pnpm -C packages/scripts run bootstrap-release",
-    "prepare": "husky",
-    "check": "ultracite check",
-    "fix": "ultracite fix"
-  },
-  "type": "module",
   "version": "0.1.1",
   "private": true,
   "description": "Agentsy agentic development framework",
@@ -73,17 +24,71 @@
   ],
   "license": "MIT",
   "author": "Daniel Sieradski <daniel@self.agency>",
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "docs:build": "vitepress build",
+    "docs:dev": "vitepress dev",
+    "docs:preview": "vitepress preview",
+    "check-types": "turbo run check-types",
+    "fallow": "fallow",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint -- --fix",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "test:release": "pnpm -C packages/scripts run release-test",
+    "test:coverage": "turbo run coverage",
+    "precommit": "turbo run precommit",
+    "release": "pnpm -C packages/scripts run release",
+    "bootstrap-release": "pnpm -C packages/scripts run bootstrap-release",
+    "prepare": "husky",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "fallow": "^2.75.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "oxfmt": "^0.50.0",
+    "oxlint": "^1.65.0",
+    "oxlint-tsgolint": "^0.23.0",
+    "tsx": "^4.22.2",
+    "turbo": "^2.9.14",
+    "ultracite": "7.7.0",
+    "vitepress": "^1.6.4",
+    "vitest": "^4.1.6"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx}": [
+      "oxfmt --write ."
+    ],
+    "**/*.{json,md,yaml,yml,cjs,mjs,css,scss,jsonc,mdx}": [
+      "oxfmt --write ."
+    ],
+    "**/*.{js,ts,tsx}": [
+      "oxlint --no-error-on-unmatched-pattern",
+      "pnpm dlx ultracite fix"
+    ]
+  },
   "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@go-task/cli",
-      "@google/genai",
-      "better-sqlite3",
-      "cbor-extract",
       "es5-ext",
       "esbuild",
       "fallow",
-      "koffi"
+      "msw",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "@swc/core",
+      "@parcel/watcher",
+      "unrs-resolver"
     ]
   }
 }

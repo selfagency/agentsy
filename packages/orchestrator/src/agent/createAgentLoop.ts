@@ -1,6 +1,9 @@
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createInterruptEvent, EventType, type AgUiEvent } from '@agentsy/runtime/ag-ui';
 import { randomUUID } from 'node:crypto';
+
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { createInterruptEvent, EventType } from '@agentsy/runtime/ag-ui';
+import type { AgUiEvent } from '@agentsy/runtime/ag-ui';
+
 import type {
   AgentLoopContext,
   AgentLoopFinalContext,
@@ -24,12 +27,14 @@ import { mergeCallbacks } from './utils.js';
  * @internal
  */
 function objectKeysMatch(aKeys: string[], bKeys: string[]): boolean {
-  if (aKeys.length !== bKeys.length) return false;
+  if (aKeys.length !== bKeys.length) {
+    return false;
+  }
   return aKeys.every((k, i) => k === bKeys[i]);
 }
 
-function getSortedEntries(value: object): Array<[string, unknown]> {
-  return Object.entries(value).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
+function getSortedEntries(value: object): [string, unknown][] {
+  return Object.entries(value).toSorted(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
 }
 
 function assignCallbackIfDefined<K extends keyof AgentLoopOptions>(
@@ -49,7 +54,9 @@ function assignCallbackIfDefined<K extends keyof AgentLoopOptions>(
  */
 function parametersEqual(a: unknown, b: unknown): boolean {
   // Handle primitives and identity
-  if (Object.is(a, b)) return true;
+  if (Object.is(a, b)) {
+    return true;
+  }
 
   // Check if both are objects
   if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') {
@@ -62,7 +69,9 @@ function parametersEqual(a: unknown, b: unknown): boolean {
   const aKeys = aEntries.map(([key]) => key);
   const bKeys = bEntries.map(([key]) => key);
 
-  if (objectKeysMatch(aKeys, bKeys) === false) return false;
+  if (!objectKeysMatch(aKeys, bKeys)) {
+    return false;
+  }
 
   return aEntries.every(([, aValue], index) => {
     const bEntry = bEntries[index];
@@ -133,7 +142,10 @@ function createRunId(): string {
 function mapApprovalDecision(
   toolCalls: AgentLoopToolContext['toolCalls'],
   decision: ToolApprovalDecision
-): { approvedToolCalls: AgentLoopToolContext['toolCalls']; deniedToolCalls: AgentLoopToolContext['toolCalls'] } {
+): {
+  approvedToolCalls: AgentLoopToolContext['toolCalls'];
+  deniedToolCalls: AgentLoopToolContext['toolCalls'];
+} {
   return decision === 'allow'
     ? { approvedToolCalls: [...toolCalls], deniedToolCalls: [] }
     : { approvedToolCalls: [], deniedToolCalls: [...toolCalls] };
@@ -150,7 +162,10 @@ function normalizeApprovalResult(
   toolCalls: AgentLoopToolContext['toolCalls'],
   result: ToolApprovalResult,
   fallbackDecision: ToolApprovalDecision
-): { approvedToolCalls: AgentLoopToolContext['toolCalls']; deniedToolCalls: AgentLoopToolContext['toolCalls'] } {
+): {
+  approvedToolCalls: AgentLoopToolContext['toolCalls'];
+  deniedToolCalls: AgentLoopToolContext['toolCalls'];
+} {
   if (result.approvedToolCalls) {
     return {
       approvedToolCalls: [...result.approvedToolCalls],
@@ -220,8 +235,8 @@ function mergeStepOptions(base: AgentLoopOptions, overrides?: AgentLoopStepOverr
   const merged = {
     ...baseWithoutApprove,
     ...overrideWithoutApprove,
-    stopWhen: overrides.stopWhen ?? base.stopWhen,
-    buildToolResultMessages: resolveBuildToolResultMessages(base, overrides)
+    buildToolResultMessages: resolveBuildToolResultMessages(base, overrides),
+    stopWhen: overrides.stopWhen ?? base.stopWhen
   } as AgentLoopOptions;
 
   mergeLifecycleCallbacks(base, overrides, merged);
@@ -243,7 +258,9 @@ async function safeEmitEvent(
   callbackName: string,
   onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>
 ): Promise<void> {
-  if (!onAgUiEvent) return;
+  if (!onAgUiEvent) {
+    return;
+  }
   try {
     await Promise.resolve(onAgUiEvent(event));
   } catch (error) {
@@ -256,7 +273,9 @@ async function safeEmitEvent(
  * @internal
  */
 function withThreadId(event: AgUiEvent, threadId?: string): AgUiEvent {
-  if (threadId === undefined) return event;
+  if (threadId === undefined) {
+    return event;
+  }
   return { ...event, threadId } as AgUiEvent;
 }
 
@@ -270,35 +289,39 @@ async function processSingleStep(
   context: AgentLoopContext,
   currentMessages: unknown[],
   abortController: AbortController,
-  stopConditions: Array<(state: AgentLoopState) => boolean>
-): Promise<{ parts: OutputPart[]; continueLoop: boolean; nextMessages?: unknown[] }> {
+  stopConditions: ((state: AgentLoopState) => boolean)[]
+): Promise<{
+  parts: OutputPart[];
+  continueLoop: boolean;
+  nextMessages?: unknown[];
+}> {
   await options.beforeStep?.(context);
 
   const { processor, parts: streamedParts, isAborted } = await executeStep(options, currentMessages, abortController);
 
   if (isAborted) {
-    return { parts: [], continueLoop: false };
+    return { continueLoop: false, parts: [] };
   }
 
   const flushedOutput = processor.flush();
-  const accumulatedMessage = processor.accumulatedMessage;
+  const { accumulatedMessage } = processor;
   const finalOutput: ProcessedOutput = {
     ...flushedOutput,
-    thinking: accumulatedMessage.thinking,
     content: accumulatedMessage.content,
-    toolCalls: accumulatedMessage.toolCalls,
     parts: [...streamedParts, ...flushedOutput.parts],
+    thinking: accumulatedMessage.thinking,
+    toolCalls: accumulatedMessage.toolCalls,
     ...(accumulatedMessage.usage === undefined ? {} : { usage: accumulatedMessage.usage })
   };
-  const parts = finalOutput.parts;
+  const { parts } = finalOutput;
 
   state.lastOutput = finalOutput;
 
   // Build step result
   const stepResult: StepResult = {
+    finishReason: finalOutput.finishReason ?? undefined,
     output: finalOutput,
     toolCalls: finalOutput.toolCalls,
-    finishReason: finalOutput.finishReason ?? undefined,
     usage: finalOutput.usage ?? undefined
   };
 
@@ -313,8 +336,8 @@ async function processSingleStep(
 
   const stepContext: AgentLoopStepContext = {
     ...context,
-    stepIndex: state.stepIndex,
     state,
+    stepIndex: state.stepIndex,
     stepResult
   };
 
@@ -322,14 +345,14 @@ async function processSingleStep(
 
   // Check stop conditions
   if (stopConditions.some(condition => condition(state)) || stepResult.toolCalls.length === 0) {
-    return { parts, continueLoop: false };
+    return { continueLoop: false, parts };
   }
 
   // Build next messages with conversation trimming
   const toolContext: AgentLoopToolContext = {
     ...stepContext,
-    toolCalls: stepResult.toolCalls,
-    toolApprovalMode: options.toolApprovalMode ?? 'allow'
+    toolApprovalMode: options.toolApprovalMode ?? 'allow',
+    toolCalls: stepResult.toolCalls
   };
 
   await options.beforeToolCall?.(toolContext);
@@ -342,25 +365,25 @@ async function processSingleStep(
       deniedToolCalls,
       toolResultMessages: []
     });
-    return { parts, continueLoop: false };
+    return { continueLoop: false, parts };
   }
 
   const toolResultMessages = await options.buildToolResultMessages(approvedToolCalls);
   await options.afterToolCall?.({
     ...toolContext,
-    toolCalls: approvedToolCalls,
     approvedToolCalls,
     deniedToolCalls,
+    toolCalls: approvedToolCalls,
     toolResultMessages
   });
-  const newMessages = [...currentMessages, { role: 'assistant', content: finalOutput.content }, ...toolResultMessages];
+  const newMessages = [...currentMessages, { content: finalOutput.content, role: 'assistant' }, ...toolResultMessages];
 
   const nextMessages =
     options.maxConversationMessages && newMessages.length > options.maxConversationMessages
       ? newMessages.slice(newMessages.length - options.maxConversationMessages)
       : newMessages;
 
-  return { parts, continueLoop: true, nextMessages };
+  return { continueLoop: true, nextMessages, parts };
 }
 
 /**
@@ -374,7 +397,9 @@ function updateConsecutiveIdenticalCalls(state: AgentLoopState, stepResult: Step
     if (prevStep && prevStep.toolCalls.length > 0) {
       const prev = prevStep.toolCalls[0];
       const curr = stepResult.toolCalls[0];
-      if (!prev || !curr) return;
+      if (!prev || !curr) {
+        return;
+      }
       if (prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
         state.consecutiveIdenticalCalls += 1;
       } else {
@@ -392,7 +417,11 @@ async function executeStep(
   options: AgentLoopOptions,
   currentMessages: unknown[],
   abortController: AbortController
-): Promise<{ processor: LLMStreamProcessor; parts: OutputPart[]; isAborted: boolean }> {
+): Promise<{
+  processor: LLMStreamProcessor;
+  parts: OutputPart[];
+  isAborted: boolean;
+}> {
   const processor = new LLMStreamProcessor();
   const parts: OutputPart[] = [];
 
@@ -407,9 +436,9 @@ async function executeStep(
   }
 
   return {
-    processor,
+    isAborted: abortController.signal.aborted,
     parts,
-    isAborted: abortController.signal.aborted
+    processor
   };
 }
 
@@ -425,18 +454,23 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     state: AgentLoopState
   ): AgentLoopContext {
     return {
-      runId,
-      stepIndex,
       messages,
-      state,
+      runId,
       signal: abortController.signal,
+      state,
+      stepIndex,
       ...(threadId === undefined ? {} : { threadId })
     };
   }
 
   type LoopIterationResult =
     | { interrupted: true }
-    | { interrupted: false; parts: OutputPart[]; continueLoop: boolean; nextMessages: unknown[] | undefined };
+    | {
+        interrupted: false;
+        parts: OutputPart[];
+        continueLoop: boolean;
+        nextMessages: unknown[] | undefined;
+      };
 
   async function executeLoopIteration(
     runId: string,
@@ -449,7 +483,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     const stepOverrides = (await options.prepareStep?.(loopContext)) ?? undefined;
     const stepOptions = mergeStepOptions(options, stepOverrides);
     const stepMessages = stepOverrides?.messages ?? currentMessages;
-    const stopWhen = stepOptions.stopWhen;
+    const { stopWhen } = stepOptions;
     const stepStopConditions = Array.isArray(stopWhen) ? stopWhen : [stopWhen];
 
     if (interruptController?.isInterrupted()) {
@@ -467,10 +501,10 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     await safeEmitEvent(
       withThreadId(
         {
-          type: EventType.STEP_STARTED as const,
           runId,
           stepIndex: state.steps.length,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          type: EventType.STEP_STARTED
         },
         threadId
       ),
@@ -490,11 +524,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     await safeEmitEvent(
       withThreadId(
         {
-          type: EventType.STEP_FINISHED as const,
+          outputLength: result.parts.length,
           runId,
           stepIndex: state.stepIndex,
-          outputLength: result.parts.length,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          type: EventType.STEP_FINISHED
         },
         threadId
       ),
@@ -504,12 +538,17 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
     let nextMessages: unknown[] | undefined;
     if (result.nextMessages) {
-      nextMessages = result.nextMessages;
+      ({ nextMessages } = result);
     } else if (stepOverrides?.messages) {
       nextMessages = stepMessages;
     }
 
-    return { interrupted: false, parts: result.parts, continueLoop: result.continueLoop, nextMessages };
+    return {
+      continueLoop: result.continueLoop,
+      interrupted: false,
+      nextMessages,
+      parts: result.parts
+    };
   }
 
   async function handleRunError(
@@ -526,10 +565,10 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     await safeEmitEvent(
       withThreadId(
         {
-          type: EventType.RUN_ERROR as const,
-          runId,
           error: { message: errorMessage },
-          timestamp: new Date().toISOString()
+          runId,
+          timestamp: new Date().toISOString(),
+          type: EventType.RUN_ERROR
         },
         threadId
       ),
@@ -539,8 +578,8 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
     const finalContext: AgentLoopFinalContext = {
       ...createContext(runId, threadId, state.steps.length, currentMessages, state),
-      outcome: 'error',
-      finalOutput: state.lastOutput
+      finalOutput: state.lastOutput,
+      outcome: 'error'
     };
 
     await options.beforeFinal?.(finalContext);
@@ -549,23 +588,23 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   }
 
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
-    const runId = options.runId || createRunId();
+    const runId = options.runId ?? createRunId();
     const { threadId, onAgUiEvent } = options;
 
     const state: AgentLoopState = {
-      steps: [],
-      stepIndex: 0,
+      consecutiveIdenticalCalls: 0,
       lastOutput: {
-        thinking: '',
         content: '',
-        toolCalls: [],
         done: false,
-        parts: [],
         incomplete: false,
-        incompleteness: []
+        incompleteness: [],
+        parts: [],
+        thinking: '',
+        toolCalls: []
       },
-      toolCallCount: 0,
-      consecutiveIdenticalCalls: 0
+      stepIndex: 0,
+      steps: [],
+      toolCallCount: 0
     };
 
     const maxSteps = options.maxSteps ?? 20;
@@ -579,9 +618,9 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     await safeEmitEvent(
       withThreadId(
         {
-          type: EventType.RUN_STARTED as const,
           runId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          type: EventType.RUN_STARTED
         },
         threadId
       ),
@@ -618,8 +657,8 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
 
       const finalContext: AgentLoopFinalContext = {
         ...createContext(runId, threadId, state.steps.length, currentMessages, state),
-        outcome: abortReason,
-        finalOutput: state.lastOutput
+        finalOutput: state.lastOutput,
+        outcome: abortReason
       };
 
       await options.beforeFinal?.(finalContext);
@@ -630,11 +669,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       await safeEmitEvent(
         withThreadId(
           {
-            type: EventType.RUN_FINISHED as const,
-            runId,
             outcome: { type: finishedOutcomeType },
-            timestamp: new Date().toISOString()
-          } as const,
+            runId,
+            timestamp: new Date().toISOString(),
+            type: EventType.RUN_FINISHED as const
+          },
           threadId
         ),
         'RUN_FINISHED',
@@ -648,11 +687,11 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
   }
 
   return {
-    run,
     abort: () => {
       aborted = true;
       abortController.abort();
-    }
+    },
+    run
   };
 }
 

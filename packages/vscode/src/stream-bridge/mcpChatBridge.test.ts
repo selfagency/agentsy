@@ -1,17 +1,18 @@
-import { describe, it, expect, vi } from 'vitest';
-import { MCPChatBridge, createMCPChatBridge } from './mcpChatBridge.js';
 import type { MCPTransport } from '@agentsy/core/processor';
+import { describe, it, expect, vi } from 'vitest';
 import type { CancellationToken } from 'vscode';
+
+import { MCPChatBridge, createMCPChatBridge } from './mcpChatBridge.js';
 
 describe('VSCode Stream Bridge', () => {
   const mockTransport: MCPTransport = {
-    type: 'http',
     stream: new ReadableStream<string>({
       start(controller) {
         controller.enqueue('data: test\n\n');
         controller.close();
       }
-    })
+    }),
+    type: 'http'
   };
 
   const mockCancellationToken: CancellationToken = {
@@ -19,7 +20,7 @@ describe('VSCode Stream Bridge', () => {
     onCancellationRequested: vi.fn()
   };
 
-  describe('MCPChatBridge', () => {
+  describe(MCPChatBridge, () => {
     it('should create bridge instance', () => {
       const bridge = new MCPChatBridge(mockTransport, mockCancellationToken);
       expect(bridge).toBeInstanceOf(MCPChatBridge);
@@ -49,7 +50,7 @@ describe('VSCode Stream Bridge', () => {
     });
   });
 
-  describe('createMCPChatBridge', () => {
+  describe(createMCPChatBridge, () => {
     it('should create bridge via factory', () => {
       const bridge = createMCPChatBridge(mockTransport, mockCancellationToken);
       expect(bridge).toBeInstanceOf(MCPChatBridge);

@@ -26,22 +26,16 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint --no-error-on-unmatched-pattern .",
-    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "lint": "oxlint .",
+    "format": "oxfmt --write .",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
-    "@agentsy/types": "workspace:*",
-    "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/exporter-prometheus": "^0.218.0",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.218.0",
-    "@opentelemetry/sdk-metrics": "^2.7.1",
-    "@opentelemetry/sdk-trace-node": "^2.7.1",
-    "@opentelemetry/semantic-conventions": "^1.41.1"
+    "@opentelemetry/api": "^1.9.1"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

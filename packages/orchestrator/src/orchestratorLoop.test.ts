@@ -1,18 +1,23 @@
 import { describe, expect, it } from 'vitest';
+
 import { isStepCount } from './agent/index.js';
 import { createOrchestratorLoop } from './orchestratorLoop.js';
 
-describe('createOrchestratorLoop', () => {
+describe(createOrchestratorLoop, () => {
   it('exposes scheduler operations alongside the agent loop handle', async () => {
     const loop = createOrchestratorLoop({
-      execute: async function* () {
+      buildToolResultMessages: async () => [],
+      async *execute() {
         yield { content: 'done', done: true, finishReason: 'stop' as const };
       },
-      stopWhen: isStepCount(1),
-      buildToolResultMessages: async () => []
+      stopWhen: isStepCount(1)
     });
 
-    const scheduled = loop.scheduleTask({ id: 'task-1', prompt: 'run later', lane: 'nightly' });
+    const scheduled = loop.scheduleTask({
+      id: 'task-1',
+      lane: 'nightly',
+      prompt: 'run later'
+    });
 
     expect(scheduled.status).toBe('pending');
     expect(loop.getScheduledTask('task-1')?.prompt).toBe('run later');

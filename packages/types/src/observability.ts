@@ -80,13 +80,13 @@ export interface RunInterruptedEvent extends BaseAgUiEvent {
   type: EventType.RUN_INTERRUPTED;
   reason?: string;
   message?: string;
-  interrupts?: Array<{
+  interrupts?: {
     id: string;
     reason: string;
     options?: {
       message?: string;
     };
-  }>;
+  }[];
 }
 
 /**

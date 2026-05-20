@@ -1,5 +1,5 @@
-import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
 import type { MemorySearchHit } from '../retrieval/retriever.js';
+import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
 
 export interface MemorySearchToolInput {
   actorId?: string;
@@ -25,7 +25,11 @@ export function createMemorySearchTool(deps: MemorySearchToolDeps): MemorySearch
   return {
     async execute(input) {
       if (input.scope && input.actorId && deps.scopeManager) {
-        const allowed = deps.scopeManager.canAccess({ actorId: input.actorId, action: 'read', scope: input.scope });
+        const allowed = deps.scopeManager.canAccess({
+          action: 'read',
+          actorId: input.actorId,
+          scope: input.scope
+        });
         if (!allowed) {
           return { results: [] };
         }

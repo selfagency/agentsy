@@ -53,7 +53,10 @@ export class ChatResponseProgressPart {
 export class Location {
   constructor(
     public uri: Uri,
-    public range: { start: { line: number; character: number }; end: { line: number; character: number } }
+    public range: {
+      start: { line: number; character: number };
+      end: { line: number; character: number };
+    }
   ) {}
 }
 

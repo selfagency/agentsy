@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  Saxophone,
-  type SaxophoneCData,
-  type SaxophoneComment,
-  type SaxophoneProcessingInstruction,
-  type SaxophoneTag,
-  type SaxophoneTagClose,
-  type SaxophoneText
+import { Saxophone } from './index.js';
+import type {
+  SaxophoneCData,
+  SaxophoneComment,
+  SaxophoneProcessingInstruction,
+  SaxophoneTag,
+  SaxophoneTagClose,
+  SaxophoneText
 } from './index.js';
 
 function firstEvent<T>(events: T[]): T {
@@ -49,7 +49,7 @@ describe('Saxophone Parser', () => {
 
     expect(events).toHaveLength(1);
     expect(firstEvent(events).name).toBe('div');
-    expect(firstEvent(events).isSelfClosing).toBe(false);
+    expect(firstEvent(events).isSelfClosing).toBeFalsy();
   });
 
   it('emits tagclose events for closing tags', () => {
@@ -102,7 +102,7 @@ describe('Saxophone Parser', () => {
 
     expect(events).toHaveLength(1);
     expect(firstEvent(events).name).toBe('br');
-    expect(firstEvent(events).isSelfClosing).toBe(true);
+    expect(firstEvent(events).isSelfClosing).toBeTruthy();
   });
 
   it('handles multiple tags in sequence', () => {
@@ -117,7 +117,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(3);
-    expect(events.map(e => e.name)).toEqual(['div', 'span', 'p']);
+    expect(events.map(e => e.name)).toStrictEqual(['div', 'span', 'p']);
   });
 
   // --- Attribute parsing ---
@@ -353,7 +353,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some(err => err.message.includes('Unclosed'))).toBe(true);
+    expect(errors.some(err => err.message.includes('Unclosed'))).toBeTruthy();
   });
 
   it('emits error for mismatched closing tag', () => {
@@ -368,7 +368,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some(err => err.message.includes('Unclosed'))).toBe(true);
+    expect(errors.some(err => err.message.includes('Unclosed'))).toBeTruthy();
   });
 
   it('emits error for unclosed CDATA section', () => {
@@ -383,7 +383,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some(err => err.message.includes('Unclosed CDATA'))).toBe(true);
+    expect(errors.some(err => err.message.includes('Unclosed CDATA'))).toBeTruthy();
   });
 
   it('emits error for unclosed comment', () => {
@@ -398,7 +398,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some(err => err.message.includes('Unclosed comment'))).toBe(true);
+    expect(errors.some(err => err.message.includes('Unclosed comment'))).toBeTruthy();
   });
 
   it('emits error for unclosed processing instruction', () => {
@@ -413,7 +413,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some(err => err.message.includes('Unclosed processing instruction'))).toBe(true);
+    expect(errors.some(err => err.message.includes('Unclosed processing instruction'))).toBeTruthy();
   });
 
   // --- Edge cases and corner cases ---
@@ -426,7 +426,7 @@ describe('Saxophone Parser', () => {
     parser.write('');
     parser.end();
 
-    expect(finishEvent).toHaveBeenCalled();
+    expect(finishEvent).toHaveBeenCalledWith();
   });
 
   it('handles consecutive tags without whitespace', () => {
@@ -441,7 +441,7 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(events).toHaveLength(2);
-    expect(events.map(e => e.name)).toEqual(['div', 'span']);
+    expect(events.map(e => e.name)).toStrictEqual(['div', 'span']);
   });
 
   it('handles self-closing tags with attributes', () => {
@@ -457,7 +457,7 @@ describe('Saxophone Parser', () => {
 
     expect(events).toHaveLength(1);
     expect(firstEvent(events).name).toBe('img');
-    expect(firstEvent(events).isSelfClosing).toBe(true);
+    expect(firstEvent(events).isSelfClosing).toBeTruthy();
     expect(firstEvent(events).attrs).toContain('src="test.jpg"');
   });
 
@@ -478,8 +478,8 @@ describe('Saxophone Parser', () => {
     parser.end();
 
     expect(tagEvents.length).toBeGreaterThan(0);
-    expect(textEvents.some(t => t.contents === 'text1')).toBe(true);
-    expect(textEvents.some(t => t.contents === 'text2')).toBe(true);
+    expect(textEvents.some(t => t.contents === 'text1')).toBeTruthy();
+    expect(textEvents.some(t => t.contents === 'text2')).toBeTruthy();
   });
 
   // --- Finish event ---
@@ -493,7 +493,7 @@ describe('Saxophone Parser', () => {
     parser.write('<div>content</div>');
     parser.end();
 
-    expect(finishEvent).toHaveBeenCalledTimes(1);
+    expect(finishEvent).toHaveBeenCalledOnce();
   });
 
   // --- parse() convenience method ---
@@ -520,7 +520,7 @@ describe('Saxophone Parser', () => {
 
     parser.parse('<div>content</div>');
 
-    expect(finishEvent).toHaveBeenCalledTimes(1);
+    expect(finishEvent).toHaveBeenCalledOnce();
   });
 
   // Large document streaming
@@ -532,7 +532,7 @@ describe('Saxophone Parser', () => {
       textEvents.push(node);
     });
 
-    const largeContent = 'a'.repeat(10000);
+    const largeContent = 'a'.repeat(10_000);
     parser.write(`<div>${largeContent}</div>`);
     parser.end();
 

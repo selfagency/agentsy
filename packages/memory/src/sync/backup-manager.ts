@@ -11,9 +11,9 @@ interface StoredSnapshot {
 
 function createRestoreResult(snapshotId: string, restoredCount: number, rollbackSnapshotId?: string): RestoreResult {
   return {
-    snapshotId,
-    restoredCount,
     restoredAt: new Date().toISOString(),
+    restoredCount,
+    snapshotId,
     ...(rollbackSnapshotId === undefined ? {} : { rollbackSnapshotId })
   };
 }
@@ -29,12 +29,12 @@ class InMemoryBackupManager implements BackupManager {
     const now = (this.options.now ?? (() => new Date()))().toISOString();
     const snapshotId = (this.options.createId ?? randomUUID)();
     const manifest = createBackupManifest({
+      createdAt: now,
+      records: current.records,
+      schemaVersion: this.options.schemaVersion,
       snapshotId,
       sourceVersion: 1,
-      schemaVersion: this.options.schemaVersion,
-      targetDatabaseId: this.options.databaseId,
-      records: current.records,
-      createdAt: now
+      targetDatabaseId: this.options.databaseId
     });
 
     this.#snapshots.set(snapshotId, {
@@ -56,7 +56,11 @@ class InMemoryBackupManager implements BackupManager {
 
   async restoreSnapshot(
     snapshotId: string,
-    options: { targetDatabaseId: string; schemaVersion: number; force?: boolean }
+    options: {
+      targetDatabaseId: string;
+      schemaVersion: number;
+      force?: boolean;
+    }
   ): Promise<RestoreResult> {
     const stored = this.#snapshots.get(snapshotId);
     if (!stored) {

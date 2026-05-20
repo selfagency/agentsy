@@ -6,7 +6,7 @@ describe('ScopeManager', () => {
   it('denies by default', () => {
     const manager = createScopeManager();
 
-    expect(manager.canAccess({ actorId: 'a1', action: 'read', scope: 'project' })).toBe(false);
+    expect(manager.canAccess({ action: 'read', actorId: 'a1', scope: 'project' })).toBeFalsy();
   });
 
   it('enforces explicit grants and inheritance', () => {
@@ -14,11 +14,11 @@ describe('ScopeManager', () => {
 
     manager.setPolicy({
       actorId: 'a1',
-      grants: [{ scope: 'project', actions: ['read'], includeDescendants: true }]
+      grants: [{ actions: ['read'], includeDescendants: true, scope: 'project' }]
     });
 
-    expect(manager.canAccess({ actorId: 'a1', action: 'read', scope: 'project' })).toBe(true);
-    expect(manager.canAccess({ actorId: 'a1', action: 'read', scope: 'session' })).toBe(true);
-    expect(manager.canAccess({ actorId: 'a1', action: 'write', scope: 'project' })).toBe(false);
+    expect(manager.canAccess({ action: 'read', actorId: 'a1', scope: 'project' })).toBeTruthy();
+    expect(manager.canAccess({ action: 'read', actorId: 'a1', scope: 'session' })).toBeTruthy();
+    expect(manager.canAccess({ action: 'write', actorId: 'a1', scope: 'project' })).toBeFalsy();
   });
 });

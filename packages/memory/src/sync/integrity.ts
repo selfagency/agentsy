@@ -31,8 +31,8 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
 
   if (!isPlainObject(payload)) {
     return {
-      valid: false,
-      errors: ['payload must be an object']
+      errors: ['payload must be an object'],
+      valid: false
     };
   }
 
@@ -72,8 +72,8 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
   }
 
   return {
-    valid: errors.length === 0,
-    errors
+    errors,
+    valid: errors.length === 0
   };
 }
 

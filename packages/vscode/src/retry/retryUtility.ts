@@ -21,7 +21,7 @@ export class RetryUtility {
     operation: () => Promise<T>,
     onRetry?: (attempt: number, error: unknown) => void
   ): Promise<T> {
-    return this.performRetryWithBackoff(operation, onRetry);
+    return await this.performRetryWithBackoff(operation, onRetry);
   }
 
   private async performRetryWithBackoff<T>(

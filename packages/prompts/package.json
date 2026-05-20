@@ -28,13 +28,15 @@
     "build": "tsup",
     "check-types": "tsc --noEmit",
     "test": "vitest --run --passWithNoTests",
-    "coverage": "vitest --run --coverage"
+    "coverage": "vitest --run --coverage",
+    "lint": "oxlint .",
+    "format": "oxfmt --write ."
   },
   "dependencies": {
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

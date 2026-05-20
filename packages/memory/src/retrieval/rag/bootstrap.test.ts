@@ -8,20 +8,20 @@ describe('RAG bootstrapper', () => {
     const bootstrapper = createRAGBootstrapper({
       collectSources: async () => [
         {
+          content: 'OAuth refresh flow and token lifetime docs.',
           sourceId: 'docs:README',
-          sourceType: 'file',
-          content: 'OAuth refresh flow and token lifetime docs.'
+          sourceType: 'file'
         }
       ],
       ingest: async input => {
         calls.push(input.sourceId);
-        return { inserted: 1, updated: 0, skipped: 0 };
+        return { inserted: 1, skipped: 0, updated: 0 };
       }
     });
 
     const result = await bootstrapper.initialize();
 
-    expect(calls).toEqual(['docs:README']);
+    expect(calls).toStrictEqual(['docs:README']);
     expect(result.totalSources).toBe(1);
     expect(result.totalInserted).toBe(1);
   });

@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
+
 import { createSchedulerRegistry, createTaskScheduler } from './index.js';
 
-describe('createSchedulerRegistry', () => {
+describe(createSchedulerRegistry, () => {
   it('registers pending and scheduled tasks', () => {
     const registry = createSchedulerRegistry();
 
     const pending = registry.register({ id: 'pending', prompt: 'run soon' });
     const scheduled = registry.register({
       id: 'scheduled',
+      lane: 'nightly',
       prompt: 'run later',
-      runAt: Date.now() + 1_000,
-      lane: 'nightly'
+      runAt: Date.now() + 1000
     });
 
     expect(pending.status).toBe('pending');
@@ -29,8 +30,8 @@ describe('createSchedulerRegistry', () => {
 
   it('filters tasks by lane and status', () => {
     const registry = createSchedulerRegistry([
-      { id: 'a', prompt: 'alpha', lane: 'default' },
-      { id: 'b', prompt: 'beta', lane: 'nightly', runAt: Date.now() + 100 }
+      { id: 'a', lane: 'default', prompt: 'alpha' },
+      { id: 'b', lane: 'nightly', prompt: 'beta', runAt: Date.now() + 100 }
     ]);
 
     expect(registry.list({ lane: 'nightly' })).toHaveLength(1);
@@ -48,16 +49,18 @@ describe('createSchedulerRegistry', () => {
     const scheduler = createTaskScheduler(registry);
 
     const decision = await scheduler.schedule({
-      taskInfo: { id: 'task-1', name: 'Task 1', input: { value: 1 } },
-      agents: [{ id: 'agent-1', available: true }]
+      agents: [{ available: true, id: 'agent-1' }],
+      taskInfo: { id: 'task-1', input: { value: 1 }, name: 'Task 1' }
     });
 
-    expect(decision).toEqual({
+    expect(decision).toStrictEqual({
       agentId: 'agent-1',
       assigned: true,
       status: 'scheduled'
     });
-    expect(registry.get('task-1')?.metadata).toMatchObject({ assignedAgentId: 'agent-1' });
+    expect(registry.get('task-1')?.metadata).toMatchObject({
+      assignedAgentId: 'agent-1'
+    });
   });
 
   it('returns null when no eligible agent is available', async () => {
@@ -65,8 +68,8 @@ describe('createSchedulerRegistry', () => {
 
     await expect(
       scheduler.schedule({
-        taskInfo: { id: 'task-2', name: 'Task 2' },
-        agents: [{ nope: true }]
+        agents: [{ nope: true }],
+        taskInfo: { id: 'task-2', name: 'Task 2' }
       })
     ).resolves.toBeNull();
   });

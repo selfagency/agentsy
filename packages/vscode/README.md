@@ -391,7 +391,9 @@ import { createChunkNormalizerStub, createMockApiKeyManager, createMockRendererH
 
 const apiKeyManager = createMockApiKeyManager('demo-key');
 const renderer = createMockRendererHandle();
-const normalize = createChunkNormalizerStub<{ text: string }>(event => ({ content: event.text }));
+const normalize = createChunkNormalizerStub<{ text: string }>(event => ({
+  content: event.text
+}));
 ```
 
 ## License

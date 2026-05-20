@@ -4,7 +4,8 @@
  * Verifies AsyncGenerator to Observable conversion without hard RxJS dependency
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+
 import { toObservable } from './observable.js';
 
 // Module-level generators for test fixtures
@@ -80,7 +81,7 @@ describe('toObservable', () => {
     // Give async generator time to consume
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    expect(results).toEqual([1, 2, 3]);
+    expect(results).toStrictEqual([1, 2, 3]);
   });
 
   it('should support callback syntax for next', async () => {
@@ -91,7 +92,7 @@ describe('toObservable', () => {
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    expect(results).toEqual(['a', 'b']);
+    expect(results).toStrictEqual(['a', 'b']);
   });
 
   it('should call error handler on generator error', async () => {
@@ -99,8 +100,8 @@ describe('toObservable', () => {
     const errors: unknown[] = [];
 
     toObservable(sourceWithError()).subscribe({
-      next: value => results.push(value),
-      error: err => errors.push(err)
+      error: err => errors.push(err),
+      next: value => results.push(value)
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -114,15 +115,16 @@ describe('toObservable', () => {
     let completed = false;
 
     toObservable(sourceDouble()).subscribe({
-      next: () => {},
       complete: () => {
         completed = true;
-      }
+      },
+      // oxlint-disable-next-line no-empty-function -- intentional no-op for complete-only subscription test
+      next: () => {}
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    expect(completed).toBe(true);
+    expect(completed).toBeTruthy();
   });
 
   it('should support unsubscribe to stop consuming', async () => {
@@ -158,14 +160,14 @@ describe('toObservable', () => {
     const complete = vi.fn();
 
     toObservable(sourceExpected()).subscribe({
-      next,
-      complete
+      complete,
+      next
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Should not crash, just stop
-    expect(next).toHaveBeenCalled();
+    // Should not crash, just stop - next should receive yielded value
+    expect(next).toHaveBeenCalledWith(1);
   });
 
   it('should handle empty generator', async () => {
@@ -173,20 +175,22 @@ describe('toObservable', () => {
     const complete = vi.fn();
 
     toObservable(sourceEmpty()).subscribe({
-      next,
-      complete
+      complete,
+      next
     });
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
     expect(next).not.toHaveBeenCalled();
-    expect(complete).toHaveBeenCalled();
+    expect(complete).toHaveBeenCalledWith();
   });
 
   it('should return subscription object', () => {
+    // oxlint-disable-next-line no-empty-function -- intentional no-op subscriber
     const subscription = toObservable(sourceSingle()).subscribe(() => {});
 
-    expect(typeof subscription.unsubscribe).toBe('function');
+    // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
+    expectTypeOf(subscription.unsubscribe).toBeFunction();
   });
 
   it('should support multiple values with no delay', async () => {
@@ -198,7 +202,7 @@ describe('toObservable', () => {
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    expect(results).toEqual([1, 2, 3, 4, 5]);
+    expect(results).toStrictEqual([1, 2, 3, 4, 5]);
   });
 
   it('should handle async operations in generator', async () => {
@@ -210,7 +214,7 @@ describe('toObservable', () => {
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    expect(results).toEqual(['start', 'middle', 'end']);
+    expect(results).toStrictEqual(['start', 'middle', 'end']);
   });
 
   it('should not consume generator if not subscribed', async () => {
@@ -228,7 +232,7 @@ describe('toObservable', () => {
 
     // nextSpy might or might not be called depending on implementation
     // This test documents the behavior
-    expect(true).toBe(true); // Placeholder
+    expect(true).toBeTruthy(); // Placeholder
   });
 
   it('should call error handler with error object', async () => {

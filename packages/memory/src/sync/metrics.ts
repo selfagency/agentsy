@@ -7,7 +7,7 @@ interface DurationAccumulator {
 }
 
 function createAccumulator(): DurationAccumulator {
-  return { total: 0, count: 0, max: 0 };
+  return { count: 0, max: 0, total: 0 };
 }
 
 function toAverage(accumulator: DurationAccumulator): number {
@@ -27,6 +27,20 @@ export function createSyncMetricsRegistry(): SyncMetricsRegistry {
   const queueDepth = createAccumulator();
 
   return {
+    recordBackupRun(input) {
+      backupRuns += 1;
+      if (input.success) {
+        backupSuccesses += 1;
+      }
+    },
+
+    recordRestoreRun(input) {
+      restoreRuns += 1;
+      if (input.success) {
+        restoreSuccesses += 1;
+      }
+    },
+
     recordSyncRun(input) {
       syncRuns += 1;
       if (input.status === 'error') {
@@ -43,38 +57,24 @@ export function createSyncMetricsRegistry(): SyncMetricsRegistry {
       queueDepth.max = Math.max(queueDepth.max, input.queueDepth);
     },
 
-    recordBackupRun(input) {
-      backupRuns += 1;
-      if (input.success) {
-        backupSuccesses += 1;
-      }
-    },
-
-    recordRestoreRun(input) {
-      restoreRuns += 1;
-      if (input.success) {
-        restoreSuccesses += 1;
-      }
-    },
-
     snapshot(): SyncMetricsRegistrySnapshot {
       return {
-        sync_runs_total: syncRuns,
-        sync_failures_total: syncFailures,
-        sync_conflicts_total: syncConflicts,
-        backup_runs_total: backupRuns,
         backup_restore_total: restoreRuns,
-        sync_duration_ms: {
-          average: toAverage(syncDurations),
-          max: syncDurations.max
-        },
+        backup_runs_total: backupRuns,
+        backup_success_rate: backupRuns === 0 ? 0 : backupSuccesses / backupRuns,
         queue_depth: {
           average: toAverage(queueDepth),
           max: queueDepth.max
         },
+        restore_success_rate: restoreRuns === 0 ? 0 : restoreSuccesses / restoreRuns,
         retries_total: retriesTotal,
-        backup_success_rate: backupRuns === 0 ? 0 : backupSuccesses / backupRuns,
-        restore_success_rate: restoreRuns === 0 ? 0 : restoreSuccesses / restoreRuns
+        sync_conflicts_total: syncConflicts,
+        sync_duration_ms: {
+          average: toAverage(syncDurations),
+          max: syncDurations.max
+        },
+        sync_failures_total: syncFailures,
+        sync_runs_total: syncRuns
       };
     }
   };

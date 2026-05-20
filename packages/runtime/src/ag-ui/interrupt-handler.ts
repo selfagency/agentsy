@@ -75,7 +75,7 @@ export class InterruptController {
    * @throws Error if interrupted
    */
   throwIfInterrupted(): void {
-    if (this.interrupted === true) {
+    if (this.interrupted) {
       throw new Error(this.interruptMessage ?? `Interrupted: ${this.interruptReason}`);
     }
   }
@@ -96,7 +96,11 @@ export function createInterruptEvent(
   message?: string,
   threadId?: string
 ): RunInterruptedEvent {
-  const interrupt: { id: string; reason: string; options?: { message: string } } = {
+  const interrupt: {
+    id: string;
+    reason: string;
+    options?: { message: string };
+  } = {
     id: `interrupt_${Math.random().toString(36).slice(2, 11)}`,
     reason: String(reason)
   };
@@ -105,10 +109,10 @@ export function createInterruptEvent(
   }
 
   const event: RunInterruptedEvent = {
-    type: EventType.RUN_INTERRUPTED,
+    interrupts: [interrupt],
     runId,
     timestamp: new Date().toISOString(),
-    interrupts: [interrupt]
+    type: EventType.RUN_INTERRUPTED
   };
 
   if (threadId !== undefined) {

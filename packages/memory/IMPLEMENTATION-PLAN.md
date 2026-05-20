@@ -36,7 +36,7 @@ This plan defines the production implementation order for `@agentsy/memory` with
 | --------------- | --------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-MEMORY-001 | Stabilize memory record schemas, scope manager contracts, and promotion taxonomy. | ✅        | 2026-05-15 |
 | TASK-MEMORY-002 | Finalize retrieval/injection envelope and XML context insertion contract.         | ✅        | 2026-05-15 |
-| TASK-MEMORY-003 | Document ownership boundaries vs session/retrieval/runtime packages.              | ✅        | 2026-05-15 |
+| TASK-MEMORY-003 | Document ownership boundaries vs session/retrieval/runtime packages.              | ✅        | 2026-05-17 |
 
 ### Implementation Phase 2
 
@@ -46,27 +46,27 @@ This plan defines the production implementation order for `@agentsy/memory` with
 | --------------- | -------------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-MEMORY-004 | Complete capture/retrieval/reuse modules and scope-aware storage behavior.             | ✅        | 2026-05-15 |
 | TASK-MEMORY-005 | Implement cache-aware context segment reuse and invalidation logic.                    | ✅        | 2026-05-15 |
-| TASK-MEMORY-006 | Implement memory tools (`search`, `list`, `stats`, `lint`, capture) and policy checks. | ✅        | 2026-05-15 |
+| TASK-MEMORY-006 | Implement memory tools (`search`, `list`, `stats`, `lint`, capture) and policy checks. | ✅        | 2026-05-17 |
 
 ### Implementation Phase 3
 
 - GOAL-MEMORY-003: Runtime/session/retrieval integration.
 
-| Task            | Description                                                                 | Completed | Date |
-| --------------- | --------------------------------------------------------------------------- | --------- | ---- |
-| TASK-MEMORY-007 | Integrate runtime post-turn capture and pre-turn retrieval injection hooks. |           |      |
-| TASK-MEMORY-008 | Validate session continuity and replay with memory-aware context behavior.  |           |      |
-| TASK-MEMORY-009 | Add integration and benchmark coverage for quality/cost improvements.       |           |      |
+| Task            | Description                                                                 | Completed | Date       |
+| --------------- | --------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-MEMORY-007 | Integrate runtime post-turn capture and pre-turn retrieval injection hooks. | ✅        | 2026-05-17 |
+| TASK-MEMORY-008 | Validate session continuity and replay with memory-aware context behavior.  | ✅        | 2026-05-17 |
+| TASK-MEMORY-009 | Add integration and benchmark coverage for quality/cost improvements.       | ✅        | 2026-05-17 |
 
 ### Implementation Phase 4
 
 - GOAL-MEMORY-004: Hardening and release gates.
 
-| Task            | Description                                                            | Completed | Date |
-| --------------- | ---------------------------------------------------------------------- | --------- | ---- |
-| TASK-MEMORY-010 | Add failure-mode tests for corruption, stale cache, and scope leakage. |           |      |
-| TASK-MEMORY-011 | Align docs/examples with shipped memory workflows.                     |           |      |
-| TASK-MEMORY-012 | Pass monorepo release gates and package-quality thresholds.            |           |      |
+| Task            | Description                                                            | Completed | Date       |
+| --------------- | ---------------------------------------------------------------------- | --------- | ---------- |
+| TASK-MEMORY-010 | Add failure-mode tests for corruption, stale cache, and scope leakage. | ✅        | 2026-05-17 |
+| TASK-MEMORY-011 | Align docs/examples with shipped memory workflows.                     | ✅        | 2026-05-17 |
+| TASK-MEMORY-012 | Pass monorepo release gates and package-quality thresholds.            | ✅        | 2026-05-17 |
 
 ## 3. Acceptance Criteria
 

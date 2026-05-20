@@ -7,22 +7,26 @@ describe('MemoryRetriever', () => {
     const retriever = createMemoryRetriever();
 
     retriever.upsert({
+      content: 'Use OAuth PKCE refresh token flow',
+      createdAt: new Date(Date.now() - 1000),
       id: 'auth-1',
       scope: 'project',
-      title: 'OAuth PKCE',
-      content: 'Use OAuth PKCE refresh token flow',
-      createdAt: new Date(Date.now() - 1_000)
+      title: 'OAuth PKCE'
     });
 
     retriever.upsert({
+      content: 'Redis eviction policy',
+      createdAt: new Date(Date.now() - 5000),
       id: 'cache-1',
       scope: 'project',
-      title: 'Redis',
-      content: 'Redis eviction policy',
-      createdAt: new Date(Date.now() - 5_000)
+      title: 'Redis'
     });
 
-    const results = await retriever.search({ query: 'oauth refresh token', scope: 'project', limit: 2 });
+    const results = await retriever.search({
+      limit: 2,
+      query: 'oauth refresh token',
+      scope: 'project'
+    });
 
     expect(results).toHaveLength(2);
     expect(results[0]?.record.id).toBe('auth-1');

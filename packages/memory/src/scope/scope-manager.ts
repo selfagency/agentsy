@@ -28,10 +28,10 @@ export interface ScopeManager {
 
 const SCOPE_DESCENDANTS: Record<MemoryScope, readonly MemoryScope[]> = {
   global: ['team', 'project', 'user', 'session'],
-  team: ['project', 'user', 'session'],
   project: ['user', 'session'],
-  user: ['session'],
-  session: []
+  session: [],
+  team: ['project', 'user', 'session'],
+  user: ['session']
 };
 
 function grantMatchesScope(grant: ScopeGrant, requestedScope: MemoryScope): boolean {
@@ -50,19 +50,12 @@ export function createScopeManager(): ScopeManager {
   const policies = new Map<string, ScopePolicy>();
 
   return {
-    setPolicy(policy) {
-      policies.set(policy.actorId, {
-        actorId: policy.actorId,
-        grants: policy.grants.map(grant => ({
-          scope: grant.scope,
-          actions: [...grant.actions],
-          includeDescendants: grant.includeDescendants ?? false
-        }))
-      });
-    },
-
-    removePolicy(actorId) {
-      policies.delete(actorId);
+    assertAccess(request) {
+      if (!this.canAccess(request)) {
+        throw new Error(
+          `Access denied: actor=${request.actorId} action=${request.action} scope=${request.scope} (deny-by-default)`
+        );
+      }
     },
 
     canAccess(request) {
@@ -76,16 +69,23 @@ export function createScopeManager(): ScopeManager {
       );
     },
 
-    assertAccess(request) {
-      if (!this.canAccess(request)) {
-        throw new Error(
-          `Access denied: actor=${request.actorId} action=${request.action} scope=${request.scope} (deny-by-default)`
-        );
-      }
+    filterAccessibleScopes(actorId, action, scopes) {
+      return scopes.filter(scope => this.canAccess({ action, actorId, scope }));
     },
 
-    filterAccessibleScopes(actorId, action, scopes) {
-      return scopes.filter(scope => this.canAccess({ actorId, action, scope }));
+    removePolicy(actorId) {
+      policies.delete(actorId);
+    },
+
+    setPolicy(policy) {
+      policies.set(policy.actorId, {
+        actorId: policy.actorId,
+        grants: policy.grants.map(grant => ({
+          actions: [...grant.actions],
+          includeDescendants: grant.includeDescendants ?? false,
+          scope: grant.scope
+        }))
+      });
     }
   };
 }

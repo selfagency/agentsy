@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { createSecretStore } from './index.js';
 
 describe('createSecretStore', () => {
@@ -13,7 +14,7 @@ describe('createSecretStore', () => {
     const store = createSecretStore();
     store.setSecret('token', 'abc123');
 
-    expect(store.deleteSecret('token')).toBe(true);
+    expect(store.deleteSecret('token')).toBeTruthy();
     expect(store.getSecret('token')).toBeUndefined();
   });
 });

@@ -1,4 +1,4 @@
-import type { OutputPart } from '../processor/LLMStreamProcessor.js';
+import type { OutputPart } from '../processor/llm-stream-processor.js';
 
 /**
  * A `TransformStream` that accepts and emits `OutputPart` values.
@@ -33,7 +33,10 @@ export function createSmoothStream(options?: { chunkSize?: number; delayMs?: num
             setTimeout(resolve, delayMs);
           });
         }
-        controller.enqueue({ type: 'text', text: text.slice(offset, offset + chunkSize) });
+        controller.enqueue({
+          text: text.slice(offset, offset + chunkSize),
+          type: 'text'
+        });
         offset += chunkSize;
       }
     }

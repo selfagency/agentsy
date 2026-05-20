@@ -68,7 +68,7 @@ export interface AgentSessionManagerOptions {
  * Connector gateway options
  */
 export interface ConnectorGatewayOptions {
-  adapters: ChannelAdapter<unknown>[];
+  adapters: ChannelAdapter[];
   sessionManager?: AgentSessionManagerOptions;
 }
 
@@ -110,10 +110,10 @@ export function isBuiltInCommand(text: string): text is BuiltInCommandType {
  */
 export function stripXmlContextTags(text: string): string {
   return text
-    .replace(/<SYSTEM>[\s\S]*?<\/SYSTEM>/gi, '')
-    .replace(/<system>[\s\S]*?<\/system>/gi, '')
-    .replace(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/gi, '')
-    .replace(/<instruction>[\s\S]*?<\/instruction>/gi, '')
-    .replace(/<THOUGHT>[\s\S]*?<\/THOUGHT>/gi, '')
-    .replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+    .replaceAll(/<SYSTEM>[\s\S]*?<\/SYSTEM>/giu, '')
+    .replaceAll(/<system>[\s\S]*?<\/system>/giu, '')
+    .replaceAll(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/giu, '')
+    .replaceAll(/<instruction>[\s\S]*?<\/instruction>/giu, '')
+    .replaceAll(/<THOUGHT>[\s\S]*?<\/THOUGHT>/giu, '')
+    .replaceAll(/<thought>[\s\S]*?<\/thought>/giu, '');
 }

@@ -6,18 +6,18 @@ describe('runtime memory injection', () => {
   it('builds memory context XML including citation metadata', () => {
     const xml = buildRuntimeMemoryContextXml([
       {
-        id: 'e1',
-        scope: 'project',
-        score: 0.91,
-        title: 'OAuth policy',
-        content: 'Rotate refresh tokens periodically',
         citations: [
           {
             sourceId: 'wiki:oauth',
             sourceType: 'wiki',
             title: 'OAuth Wiki'
           }
-        ]
+        ],
+        content: 'Rotate refresh tokens periodically',
+        id: 'e1',
+        scope: 'project',
+        score: 0.91,
+        title: 'OAuth policy'
       }
     ]);
 

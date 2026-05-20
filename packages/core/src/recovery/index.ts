@@ -1,4 +1,5 @@
 import type { UsageInfo } from '@agentsy/types';
+
 import type { LLMStreamProcessor, ProcessorOptions } from '../processor/index.js';
 import type { XmlToolCall } from '../tool-calls/index.js';
 
@@ -44,9 +45,9 @@ function formatToolCallParameters(parameters: XmlToolCall['parameters']): string
 
 function buildCompletedToolCallsContext(toolCalls: readonly XmlToolCall[]): string | null {
   if (toolCalls.length > 0) {
-    const serializedCalls = toolCalls.map(toolCall => {
-      return `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`;
-    });
+    const serializedCalls = toolCalls.map(
+      toolCall => `- ${toolCall.name}(${formatToolCallParameters(toolCall.parameters)})`
+    );
 
     return ['The following tool calls already completed before the interruption:', ...serializedCalls].join('\n');
   }
@@ -91,14 +92,14 @@ export function buildContinuationPrompt(
       if (completedToolCallsContext !== null) {
         return [
           {
-            role: 'user',
-            content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`
+            content: `${completedToolCallsContext}\n\nContinue from exactly where you left off without repeating the completed tool calls.`,
+            role: 'user'
           },
-          { role: 'assistant', content: partialContent }
+          { content: partialContent, role: 'assistant' }
         ];
       }
 
-      return [{ role: 'assistant', content: partialContent }];
+      return [{ content: partialContent, role: 'assistant' }];
     }
 
     const userContent = completedToolCallsContext
@@ -106,8 +107,8 @@ export function buildContinuationPrompt(
       : 'Please continue from exactly where you left off.';
 
     return [
-      { role: 'assistant', content: partialContent },
-      { role: 'user', content: userContent }
+      { content: partialContent, role: 'assistant' },
+      { content: userContent, role: 'user' }
     ];
   }
 
@@ -115,5 +116,5 @@ export function buildContinuationPrompt(
     ? `${completedToolCallsContext}\n\nPlease continue without repeating the completed tool calls.`
     : 'Please continue.';
 
-  return [{ role: 'user', content: userContent }];
+  return [{ content: userContent, role: 'user' }];
 }

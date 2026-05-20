@@ -31,20 +31,20 @@ export interface ReasoningMapperOptions {
 export function mapReasoningToEvents(
   reasoning: string | undefined,
   options: ReasoningMapperOptions
-): Array<
+): (
   | ReasoningStartEvent
   | ReasoningMessageStartEvent
   | ReasoningMessageContentEvent
   | ReasoningMessageEndEvent
   | ReasoningEndEvent
-> {
-  const events: Array<
+)[] {
+  const events: (
     | ReasoningStartEvent
     | ReasoningMessageStartEvent
     | ReasoningMessageContentEvent
     | ReasoningMessageEndEvent
     | ReasoningEndEvent
-  > = [];
+  )[] = [];
 
   if (reasoning === undefined || reasoning === '') {
     return events;

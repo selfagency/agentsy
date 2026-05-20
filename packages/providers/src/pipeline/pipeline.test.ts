@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createPipeline } from './createPipeline.js';
+import { createPipeline } from './create-pipeline.js';
 
 async function* mockOpenAIStream() {
   yield 'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n';
@@ -48,7 +48,9 @@ describe('createPipeline', () => {
 
   it('emits error events instead of throwing on invalid source', async () => {
     const events: unknown[] = [];
-    for await (const event of createPipeline(mockStreamWithBadJson(), { provider: 'openai' })) {
+    for await (const event of createPipeline(mockStreamWithBadJson(), {
+      provider: 'openai'
+    })) {
       events.push(event);
     }
 
@@ -80,7 +82,9 @@ describe('createPipeline', () => {
 
   it('emits thinking blocks separately', async () => {
     const events: unknown[] = [];
-    for await (const event of createPipeline(mockClaudeWithThinking(), { provider: 'anthropic' })) {
+    for await (const event of createPipeline(mockClaudeWithThinking(), {
+      provider: 'anthropic'
+    })) {
       events.push(event);
     }
 
@@ -88,6 +92,6 @@ describe('createPipeline', () => {
       (e: unknown): e is { type: string } =>
         typeof e === 'object' && e !== null && (e as Record<string, unknown>).type === 'thinking'
     );
-    expect(hasThinking).toBe(true);
+    expect(hasThinking).toBeTruthy();
   });
 });

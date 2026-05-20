@@ -49,14 +49,18 @@ export interface SaxophoneProcessingInstruction {
  * Returns -1 if not found.
  */
 function findIndexOutside(haystack: string, predicate: (ch: string) => boolean, delim = '', fromIndex = 0): number {
-  const length = haystack.length;
+  const { length } = haystack;
   let index = fromIndex;
   let inDelim = false;
 
   while (index < length) {
     const ch = haystack.charAt(index);
-    if (!inDelim && predicate(ch)) break;
-    if (ch === delim) inDelim = !inDelim;
+    if (!inDelim && predicate(ch)) {
+      break;
+    }
+    if (ch === delim) {
+      inDelim = !inDelim;
+    }
     index++;
   }
 
@@ -95,12 +99,14 @@ export class Saxophone extends EventEmitter {
   private _waiting: WaitState | null = null;
 
   private _wait(token: string, data: string): void {
-    this._waiting = { token, data };
+    this._waiting = { data, token };
   }
 
   private _unwait(): string {
-    if (this._waiting === null) return '';
-    const data = this._waiting.data;
+    if (this._waiting === null) {
+      return '';
+    }
+    const { data } = this._waiting;
     this._waiting = null;
     return data;
   }
@@ -120,7 +126,9 @@ export class Saxophone extends EventEmitter {
       return input.length;
     }
 
-    this.emit(NT_TEXT, { contents: input.slice(pos, nextTag) } satisfies SaxophoneText);
+    this.emit(NT_TEXT, {
+      contents: input.slice(pos, nextTag)
+    } satisfies SaxophoneText);
     return nextTag;
   }
 
@@ -133,7 +141,9 @@ export class Saxophone extends EventEmitter {
       return null;
     }
 
-    this.emit(NT_CDATA, { contents: input.slice(pos, cdataClose) } satisfies SaxophoneCData);
+    this.emit(NT_CDATA, {
+      contents: input.slice(pos, cdataClose)
+    } satisfies SaxophoneCData);
     return cdataClose + 3;
   }
 
@@ -150,7 +160,9 @@ export class Saxophone extends EventEmitter {
       return new Error(`Unexpected -- inside comment: '${input.slice(pos - 4)}'`);
     }
 
-    this.emit(NT_COMMENT, { contents: input.slice(pos, commentClose) } satisfies SaxophoneComment);
+    this.emit(NT_COMMENT, {
+      contents: input.slice(pos, commentClose)
+    } satisfies SaxophoneComment);
     return commentClose + 3;
   }
 
@@ -215,17 +227,17 @@ export class Saxophone extends EventEmitter {
 
     if (wsOffset === -1 || wsOffset >= tagClose - pos) {
       this._handleTagOpening({
-        name: input.slice(pos, realTagClose),
         attrs: '',
-        isSelfClosing
+        isSelfClosing,
+        name: input.slice(pos, realTagClose)
       });
     } else if (wsOffset === 0) {
       return new Error('Tag names may not start with whitespace');
     } else {
       this._handleTagOpening({
-        name: input.slice(pos, pos + wsOffset),
         attrs: input.slice(pos + wsOffset, realTagClose),
-        isSelfClosing
+        isSelfClosing,
+        name: input.slice(pos, pos + wsOffset)
       });
     }
 
@@ -274,7 +286,9 @@ export class Saxophone extends EventEmitter {
   /** Write a string chunk into the parser. */
   write(chunk: string): this {
     const err = this._parseChunk(chunk);
-    if (err) this.emit('error', err);
+    if (err) {
+      this.emit('error', err);
+    }
     return this;
   }
 
@@ -288,21 +302,28 @@ export class Saxophone extends EventEmitter {
 
     if (this._waiting !== null) {
       switch (this._waiting.token) {
-        case NT_TEXT:
-          this.emit(NT_TEXT, { contents: this._waiting.data } satisfies SaxophoneText);
+        case NT_TEXT: {
+          this.emit(NT_TEXT, {
+            contents: this._waiting.data
+          } satisfies SaxophoneText);
           break;
-        case NT_CDATA:
+        }
+        case NT_CDATA: {
           this.emit('error', new Error('Unclosed CDATA section'));
           return this;
-        case NT_COMMENT:
+        }
+        case NT_COMMENT: {
           this.emit('error', new Error('Unclosed comment'));
           return this;
-        case NT_PROC_INST:
+        }
+        case NT_PROC_INST: {
           this.emit('error', new Error('Unclosed processing instruction'));
           return this;
-        default:
+        }
+        default: {
           this.emit('error', new Error('Unclosed tag'));
           return this;
+        }
       }
     }
 

@@ -7,17 +7,18 @@ import type { ConversationEvent, UIConversation, UIMessage } from './types.js';
  */
 function handleMessageStarted(state: UIConversation, messageId: string, role: string, now: Date): UIConversation {
   const newMessage: UIMessage = {
+    createdAt: now,
     id: messageId,
-    role: role as 'user' | 'assistant',
     parts: [],
-    createdAt: now
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    role: role as 'user' | 'assistant'
   };
 
   return {
     ...state,
+    lastEventAt: now,
     messages: [...state.messages, newMessage],
-    status: 'streaming',
-    lastEventAt: now
+    status: 'streaming'
   };
 }
 
@@ -28,9 +29,9 @@ function handleMessageStarted(state: UIConversation, messageId: string, role: st
 function handleStepUpdated(state: UIConversation, stepIndex: number, now: Date): UIConversation {
   return {
     ...state,
-    stepIndex,
+    lastEventAt: now,
     status: state.status,
-    lastEventAt: now
+    stepIndex
   };
 }
 
@@ -41,13 +42,13 @@ function handleStepUpdated(state: UIConversation, stepIndex: number, now: Date):
 function handleConversationReset(state: UIConversation, now: Date): UIConversation {
   return {
     id: state.id,
-    messages: [],
-    stepIndex: 0,
-    status: 'idle',
     lastEventAt: now,
+    messages: [],
+    metadata: undefined,
+    status: 'idle',
+    stepIndex: 0,
     totalTokens: 0,
-    totalUsage: {},
-    metadata: undefined
+    totalUsage: {}
   };
 }
 
@@ -61,9 +62,9 @@ function addStepPart(
   }
 
   return addPartToMessage(nextState, event.messageId, {
-    type: 'step',
-    stepIndex: event.stepIndex,
     status: event.type === 'step_started' ? 'started' : 'finished',
+    stepIndex: event.stepIndex,
+    type: 'step',
     ...(event.usage === undefined ? {} : { usage: event.usage })
   });
 }
@@ -76,6 +77,7 @@ function addStepPart(
  * @param event - Event to apply
  * @returns New conversation state with event applied
  */
+// eslint-disable-next-line complexity
 export function applyConversationEvent(state: UIConversation, event: ConversationEvent): UIConversation {
   const now = new Date();
 
@@ -86,25 +88,25 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
     case 'text_part_added': {
       return addPartToMessage(state, event.messageId, {
-        type: 'text',
-        text: event.text
+        text: event.text,
+        type: 'text'
       } as const);
     }
 
     case 'thinking_part_added': {
       return addPartToMessage(state, event.messageId, {
-        type: 'thinking',
-        text: event.text
+        text: event.text,
+        type: 'thinking'
       } as const);
     }
 
     case 'tool_call_part_added': {
       return addPartToMessage(state, event.messageId, {
-        type: 'tool_call',
         id: event.toolCall.id,
         name: event.toolCall.name,
         parameters: event.toolCall.parameters,
         state: event.toolCall.state ?? 'input-complete',
+        type: 'tool_call',
         ...(event.toolCall.argumentsText === undefined ? {} : { argumentsText: event.toolCall.argumentsText })
       } as const);
     }
@@ -119,7 +121,7 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
     case 'tool_call_result_added': {
       return updateToolCallInMessage(state, event.messageId, event.toolCallId, {
-        ...(event.isError ? { state: 'output-error', error: String(event.result) } : { state: 'output-available' }),
+        ...(event.isError ? { error: String(event.result), state: 'output-error' } : { state: 'output-available' }),
         ...(event.isError ? {} : { result: event.result })
       });
     }
@@ -139,8 +141,8 @@ export function applyConversationEvent(state: UIConversation, event: Conversatio
 
     case 'error_part_added': {
       const nextState = addPartToMessage(state, event.messageId, {
-        type: 'error',
         message: event.message,
+        type: 'error',
         ...(event.code === undefined ? {} : { code: event.code })
       });
 

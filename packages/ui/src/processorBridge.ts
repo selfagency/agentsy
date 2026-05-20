@@ -1,5 +1,7 @@
 import type { LLMStreamProcessor, StreamEventMap } from '@agentsy/core/processor';
-import { createConversationStore, type ConversationStore } from './store.js';
+
+import { createConversationStore } from './store.js';
+import type { ConversationStore } from './store.js';
 import type { ConversationEvent } from './types.js';
 
 export interface ConversationStoreBridge {
@@ -7,15 +9,15 @@ export interface ConversationStoreBridge {
   dispose(): void;
 }
 
-type BridgeOptions = {
+interface BridgeOptions {
   conversationId: string;
-};
+}
 
 function addListener<K extends keyof StreamEventMap>(
   processor: LLMStreamProcessor,
   event: K,
   listener: StreamEventMap[K],
-  listeners: Array<() => void>
+  listeners: (() => void)[]
 ): void {
   processor.on(event, listener);
   listeners.push(() => {
@@ -24,7 +26,7 @@ function addListener<K extends keyof StreamEventMap>(
 }
 
 export function bindProcessorToConversationStore(processor: LLMStreamProcessor, store: ConversationStore): () => void {
-  const removers: Array<() => void> = [];
+  const removers: (() => void)[] = [];
 
   addListener(
     processor,
@@ -50,7 +52,7 @@ export function createConversationStoreFromProcessor(
   const dispose = bindProcessorToConversationStore(processor, store);
 
   return {
-    store,
-    dispose
+    dispose,
+    store
   };
 }

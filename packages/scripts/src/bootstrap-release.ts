@@ -2,54 +2,23 @@
 
 process.env.HUSKY = '0';
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { $, argv, cd } from 'zx';
+
 import { getPackageReleaseState, readReleaseState, writeReleaseState } from './release-state.js';
+import { ROOT, parseVersionArg, safeRead, safeWrite } from './release-utils.js';
 
 $.verbose = false;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const ROOT = resolve(__dirname, '..');
 cd(ROOT);
 
 const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
-const PACKAGES_DIR = resolve(ROOT, 'packages');
-
-function isPathInsideRoot(p: string): boolean {
-  try {
-    const resolved = resolve(p);
-    const rel = relative(ROOT, resolved);
-    return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
-  } catch {
-    return false;
-  }
-}
-
-function safeRead(p: string, enc: BufferEncoding = 'utf8'): string {
-  if (!isPathInsideRoot(p)) throw new Error(`Refusing to read outside repository root: ${p}`);
-  return readFileSync(resolve(p), enc);
-}
-
-function safeWrite(p: string, data: string): void {
-  if (!isPathInsideRoot(p)) throw new Error(`Refusing to write outside repository root: ${p}`);
-  return writeFileSync(resolve(p), data);
-}
-
-function parseVersionArg(versionArg: string | undefined): string {
-  if (!versionArg || !/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(versionArg)) {
-    console.error(`❌ Invalid version: "${versionArg}". Expected semver (e.g. 1.2.3 or 1.2.3-beta.1)`);
-    process.exit(1);
-  }
-
-  return versionArg;
-}
 
 const packageArg = argv._[0];
 const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
-const isDryRun = Boolean(argv['dry-run'] || argv.dryRun);
+const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
 const confirm = Boolean(argv['yes-i-know-this-is-first-publish']);
 const force = Boolean(argv.force);
 const explicitTag = typeof argv.tag === 'string' ? argv.tag : undefined;
@@ -71,7 +40,7 @@ if (!confirm) {
 
 const normalizedPackageName = packageArg.includes('/') ? packageArg : `@agentsy/${packageArg}`;
 const pkgShortName = normalizedPackageName.replace(/^@[^/]+\//, '');
-const pkgDir = resolve(PACKAGES_DIR, pkgShortName);
+const pkgDir = resolve(ROOT, 'packages', pkgShortName);
 const pkgJsonPath = resolve(pkgDir, 'package.json');
 
 if (!existsSync(pkgDir) || !existsSync(pkgJsonPath)) {
@@ -79,7 +48,7 @@ if (!existsSync(pkgDir) || !existsSync(pkgJsonPath)) {
   process.exit(1);
 }
 
-const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf8'));
+const pkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string; version: string };
 const fullPackageName = pkgJson.name;
 
 if (typeof fullPackageName !== 'string' || fullPackageName.length === 0) {
@@ -153,7 +122,9 @@ async function main() {
   const distPath = `${packagePath}/dist`;
   await $`node scripts/write-dist-package.js ${packagePath}`;
   const publishArgs = ['publish', distPath, '--access', 'public', `--tag=${distTag}`];
-  if (otp) publishArgs.push(`--otp=${otp}`);
+  if (otp) {
+    publishArgs.push(`--otp=${otp}`);
+  }
   await $`npm ${publishArgs}`;
 
   releaseState.packages[fullPackageName] = 'oidc-ready';

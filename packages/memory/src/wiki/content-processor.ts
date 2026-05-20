@@ -6,8 +6,8 @@ export interface ContentProcessor {
   extractEntities(content: string): string[];
 }
 
-const CODE_BLOCK_PATTERN = /```[\s\S]*?```/g;
-const ENTITY_PATTERN = /\b[A-Z][A-Za-z0-9]*\b/g;
+const CODE_BLOCK_PATTERN = /```[\s\S]*?```/gu;
+const ENTITY_PATTERN = /\b[A-Z][A-Za-z0-9]*\b/gu;
 
 function normalizeWhitespace(content: string): string {
   return content.replaceAll('\r\n', '\n').trim();
@@ -30,14 +30,6 @@ function looksLikeMarkdown(content: string): boolean {
 
 export function createContentProcessor(): ContentProcessor {
   return {
-    normalize(content: string) {
-      return normalizeWhitespace(content);
-    },
-
-    extractCodeBlocks(content: string) {
-      return content.match(CODE_BLOCK_PATTERN) ?? [];
-    },
-
     detectFormat(content: string) {
       if (looksLikeJson(content)) {
         return 'json';
@@ -54,6 +46,19 @@ export function createContentProcessor(): ContentProcessor {
       return 'text';
     },
 
+    extractCodeBlocks(content: string) {
+      return content.match(CODE_BLOCK_PATTERN) ?? [];
+    },
+
+    extractEntities(content: string) {
+      const candidates = content.match(ENTITY_PATTERN) ?? [];
+      return [...new Set(candidates.filter(entity => entity.length >= 3))];
+    },
+
+    normalize(content: string) {
+      return normalizeWhitespace(content);
+    },
+
     toSearchableText(content: string) {
       if (looksLikeJson(content)) {
         try {
@@ -65,12 +70,7 @@ export function createContentProcessor(): ContentProcessor {
 
       return normalizeWhitespace(content)
         .replace(CODE_BLOCK_PATTERN, ' ')
-        .replace(/[`*_#>-]/g, ' ');
-    },
-
-    extractEntities(content: string) {
-      const candidates = content.match(ENTITY_PATTERN) ?? [];
-      return [...new Set(candidates.filter(entity => entity.length >= 3))];
+        .replaceAll(/[`*_#>-]/gu, ' ');
     }
   };
 }

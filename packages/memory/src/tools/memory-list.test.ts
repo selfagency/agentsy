@@ -6,8 +6,20 @@ describe('memory_list tool', () => {
   it('lists records by scope', async () => {
     const tool = createMemoryListTool({
       list: () => [
-        { id: '1', actorId: 'u1', scope: 'session', content: 's', createdAt: new Date('2026-01-01T00:00:00Z') },
-        { id: '2', actorId: 'u1', scope: 'project', content: 'p', createdAt: new Date('2026-01-01T00:00:00Z') }
+        {
+          actorId: 'u1',
+          content: 's',
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          id: '1',
+          scope: 'session'
+        },
+        {
+          actorId: 'u1',
+          content: 'p',
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          id: '2',
+          scope: 'project'
+        }
       ]
     });
 

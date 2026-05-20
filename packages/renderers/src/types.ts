@@ -56,7 +56,9 @@ export type ThinkingStyle = 'blockquote' | 'progress' | 'suppress';
  */
 export interface CancellationToken {
   readonly isCancellationRequested: boolean;
-  readonly onCancellationRequested: (listener: (e: unknown) => void) => { dispose(): void };
+  readonly onCancellationRequested: (listener: (e: unknown) => void) => {
+    dispose(): void;
+  };
 }
 
 /**

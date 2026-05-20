@@ -1,3 +1,7 @@
+import type { OutputPart } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { BaseRendererOptions } from '@agentsy/renderers';
+import { createPlainTextRenderer, createSharedRendererHandle } from '@agentsy/renderers';
 /**
  * Integration: renderers + processor
  *
@@ -6,9 +10,6 @@
  * and calling onFinish after `end()`.
  */
 import { describe, expect, it, vi } from 'vitest';
-
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createPlainTextRenderer, createSharedRendererHandle, type BaseRendererOptions } from '@agentsy/renderers';
 
 // ---------------------------------------------------------------------------
 // Plain-text renderer
@@ -44,11 +45,16 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('suppresses thinking by default', async () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
-      output: chunk => collected.push(chunk),
+      output: (chunk: string): void => {
+        collected.push(chunk);
+      },
       showThinking: false
     });
 
-    await renderer.writeChunk({ thinking: 'internal thought', content: 'answer' });
+    await renderer.writeChunk({
+      content: 'answer',
+      thinking: 'internal thought'
+    });
     await renderer.end();
 
     expect(collected.join('')).toBe('answer');
@@ -58,7 +64,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('forwards thinking text when showThinking=true', async () => {
     const collected: string[] = [];
     const renderer = createPlainTextRenderer({
-      output: chunk => collected.push(chunk),
+      output: (chunk: string): void => {
+        collected.push(chunk);
+      },
       showThinking: true,
       thinkingPrefix: '[T] '
     });
@@ -72,8 +80,8 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
   it('calls onFinish with finishReason and usage after end()', async () => {
     const onFinish = vi.fn<NonNullable<BaseRendererOptions['onFinish']>>();
     const renderer = createPlainTextRenderer({
-      output: () => {},
-      onFinish
+      onFinish,
+      output: () => {}
     });
 
     await renderer.writeChunk({
@@ -84,17 +92,22 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     });
     await renderer.end();
 
-    expect(onFinish).toHaveBeenCalledWith('stop', { inputTokens: 5, outputTokens: 3 });
+    expect(onFinish).toHaveBeenCalledWith('stop', {
+      inputTokens: 5,
+      outputTokens: 3
+    });
   });
 
   it('calls onToolCall when an XML tool call is encountered', async () => {
     const onToolCall = vi.fn<NonNullable<BaseRendererOptions['onToolCall']>>();
-    const processor = new LLMStreamProcessor({ knownTools: new Set(['lookup']) });
+    const processor = new LLMStreamProcessor({
+      knownTools: new Set(['lookup'])
+    });
 
     const renderer = createPlainTextRenderer({
+      onToolCall,
       output: () => {},
-      processor,
-      onToolCall
+      processor
     });
 
     await renderer.writeChunk({
@@ -103,12 +116,12 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     });
     await renderer.end();
 
-    expect(onToolCall).toHaveBeenCalledTimes(1);
-    const firstCall = onToolCall.mock.calls[0];
+    expect(onToolCall).toHaveBeenCalledOnce();
+    const [firstCall] = onToolCall.mock.calls;
     expect(firstCall).toBeDefined();
     const call = firstCall?.[0];
     expect(call?.call.name).toBe('lookup');
-    expect(call?.call.parameters).toEqual({ term: 'vitest' });
+    expect(call?.call.parameters).toStrictEqual({ term: 'vitest' });
   });
 });
 
@@ -116,7 +129,7 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
 // createSharedRendererHandle — lower-level integration
 // ---------------------------------------------------------------------------
 
-describe('createSharedRendererHandle', () => {
+describe('createSharedRendererHandle' as const, () => {
   it('routes text/thinking/toolCall through the appropriate handler callbacks', async () => {
     const texts: string[] = [];
     const thinkings: string[] = [];
@@ -127,19 +140,19 @@ describe('createSharedRendererHandle', () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: async t => {
+        onText: async (t: string): Promise<void> => {
           texts.push(t);
         },
-        onThinking: async t => {
+        onThinking: async (t: string): Promise<void> => {
           thinkings.push(t);
         },
-        onToolCall: async part => {
+        onToolCall: async (part: OutputPart & { type: 'tool_call' }): Promise<void> => {
           toolCalls.push(part.call.name);
         }
       }
     );
 
-    await handle.writeChunk({ thinking: 'a thought', content: 'text part' });
+    await handle.writeChunk({ content: 'text part', thinking: 'a thought' });
     await handle.writeChunk({ content: '<ping></ping>', done: true });
     await handle.end();
 
@@ -155,10 +168,10 @@ describe('createSharedRendererHandle', () => {
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
       {
-        onText: async t => {
+        onText: async (t: string): Promise<void> => {
           texts.push(t);
         },
-        onThinking: async () => {}
+        onThinking: async (): Promise<void> => {}
       }
     );
 
@@ -175,18 +188,23 @@ describe('createSharedRendererHandle', () => {
 
     const handle = createSharedRendererHandle(
       {
-        onFinish: async (reason, usage) => {
+        onFinish: (reason: string | undefined, usage: unknown): void => {
           finishArgs.push([reason, usage]);
         }
       },
-      { onText: async () => {}, onThinking: async () => {} }
+      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
     );
 
-    await handle.writeChunk({ content: 'hi', done: true, finishReason: 'stop', usage: { outputTokens: 2 } });
+    await handle.writeChunk({
+      content: 'hi',
+      done: true,
+      finishReason: 'stop',
+      usage: { outputTokens: 2 }
+    });
     await handle.end();
 
     expect(finishArgs).toHaveLength(1);
-    const firstFinish = finishArgs[0];
+    const [firstFinish] = finishArgs;
     expect(firstFinish).toBeDefined();
     expect(firstFinish?.[0]).toBe('stop');
     expect(firstFinish?.[1]).toMatchObject({ outputTokens: 2 });
@@ -204,12 +222,16 @@ describe('processStream generic adapter', () => {
     const chunks = [{ content: 'Hello' }, { content: ' world' }, { content: '', done: true }];
 
     async function* gen() {
-      for (const c of chunks) yield c;
+      for (const c of chunks) {
+        yield c;
+      }
     }
 
     const outputs: string[] = [];
     for await (const out of processStream(gen())) {
-      if (out.content) outputs.push(out.content);
+      if (out.content) {
+        outputs.push(out.content);
+      }
     }
 
     expect(outputs.join('')).toBe('Hello world');

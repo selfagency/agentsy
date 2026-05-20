@@ -10,6 +10,6 @@ describe('@agentsy/plugins package entrypoints', () => {
   });
 
   it('currently exposes no concrete agent exports from scaffolded module', () => {
-    expect(Object.keys(agents)).toEqual([]);
+    expect(Object.keys(agents)).toStrictEqual([]);
   });
 });

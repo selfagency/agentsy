@@ -54,7 +54,7 @@ export function calculateRetryDelay(
  * Executes an operation with automatic retry on retryable errors.
  */
 export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-  const { maxAttempts = 3, initialDelayMs = 1000, backoffMultiplier = 2, maxDelayMs = 30000, signal } = options;
+  const { maxAttempts = 3, initialDelayMs = 1000, backoffMultiplier = 2, maxDelayMs = 30_000, signal } = options;
 
   let lastError: unknown;
 
@@ -73,7 +73,11 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
         throw error;
       }
 
-      const delay = calculateRetryDelay(attempt, { initialDelayMs, backoffMultiplier, maxDelayMs });
+      const delay = calculateRetryDelay(attempt, {
+        backoffMultiplier,
+        initialDelayMs,
+        maxDelayMs
+      });
       await sleep(delay, signal);
     }
   }
@@ -81,10 +85,12 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
   throw lastError;
 }
 
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
+async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return await new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
-    if (!signal) return;
+    if (!signal) {
+      return;
+    }
 
     const abortHandler = () => {
       clearTimeout(timer);

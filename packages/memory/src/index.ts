@@ -270,14 +270,14 @@ export function createMemoryStore(): MemoryStore {
   const records = new Map<string, MemoryRecord>();
 
   return {
-    put(record) {
-      records.set(record.id, record);
-    },
     get(id) {
       return records.get(id);
     },
     list() {
       return [...records.values()];
+    },
+    put(record) {
+      records.set(record.id, record);
     }
   };
 }

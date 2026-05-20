@@ -1,4 +1,5 @@
 import type { FinishReason, UsageInfo } from '@agentsy/types';
+
 import type { UIConversation, UIMessagePart, UIMessagePartWithoutCreatedAt, UIToolCallPart } from './types.js';
 
 /**
@@ -26,8 +27,8 @@ export function addPartToMessage(
 
   return {
     ...state,
-    messages,
-    lastEventAt: now
+    lastEventAt: now,
+    messages
   };
 }
 
@@ -42,7 +43,7 @@ export function finishMessage(
   usage: UsageInfo | undefined
 ): UIConversation {
   const now = new Date();
-  let totalTokens = state.totalTokens;
+  let { totalTokens } = state;
   const totalUsage: UsageInfo = { ...state.totalUsage };
 
   const messages = state.messages.map(msg => {
@@ -63,11 +64,11 @@ export function finishMessage(
 
   return {
     ...state,
+    lastEventAt: now,
     messages,
     status: state.status === 'error' ? 'error' : 'idle',
     totalTokens,
-    totalUsage,
-    lastEventAt: now
+    totalUsage
   };
 }
 
@@ -103,7 +104,9 @@ export function updateToolCallInMessage(
           ...(updates.error === undefined ? {} : { error: updates.error }),
           ...(updates.argumentsText === undefined
             ? {}
-            : { argumentsText: (part.argumentsText ?? '') + updates.argumentsText })
+            : {
+                argumentsText: (part.argumentsText ?? '') + updates.argumentsText
+              })
         };
       })
     };
@@ -111,7 +114,7 @@ export function updateToolCallInMessage(
 
   return {
     ...state,
-    messages,
-    lastEventAt: now
+    lastEventAt: now,
+    messages
   };
 }

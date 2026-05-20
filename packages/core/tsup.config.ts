@@ -1,26 +1,26 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
+  clean: true,
+  dts: true,
   entry: {
-    index: 'src/index.ts',
-    processor: 'src/processor/index.ts',
     context: 'src/context/index.ts',
     formatting: 'src/formatting/index.ts',
-    'xml-filter': 'src/xml-filter/index.ts',
+    index: 'src/index.ts',
+    processor: 'src/processor/index.ts',
     recovery: 'src/recovery/index.ts',
     retry: 'src/retry/index.ts',
     sse: 'src/sse/index.ts',
     structured: 'src/structured/index.ts',
     thinking: 'src/thinking/index.ts',
-    'tool-calls': 'src/tool-calls/index.ts'
+    'tool-calls': 'src/tool-calls/index.ts',
+    'xml-filter': 'src/xml-filter/index.ts'
   },
-  format: ['esm', 'cjs'],
-  dts: true,
-  clean: true,
-  sourcemap: true,
   external: ['@agentsy/types', 'zod'],
-  splitting: false,
-  treeshake: true,
+  format: ['esm', 'cjs'],
   minify: false,
-  target: 'node18'
+  sourcemap: true,
+  splitting: false,
+  target: 'node18',
+  treeshake: true
 });

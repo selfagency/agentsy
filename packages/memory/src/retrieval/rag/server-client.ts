@@ -19,12 +19,12 @@ export interface RAGServerClient {
   delete(documentId: string): Promise<RAGDeleteResult>;
 }
 
-async function requestJson<T>(
+async function requestJson<TData>(
   baseUrl: string,
   timeoutMs: number,
   path: string,
   init: RequestInit
-): Promise<{ ok: boolean; status: number; data: T | null }> {
+): Promise<{ ok: boolean; status: number; data: TData | null }> {
   const controller = new AbortController();
   const timeoutHandle = setTimeout(() => {
     controller.abort();
@@ -33,17 +33,17 @@ async function requestJson<T>(
   try {
     const response = await fetch(`${baseUrl}${path}`, {
       ...init,
-      headers: {
-        'content-type': 'application/json',
-        ...init.headers
-      },
+      headers: Object.fromEntries([
+        ['content-type', 'application/json'],
+        ...(init.headers ? Object.entries(init.headers).map(([k, v]) => [k, v] as [string, string]) : [])
+      ]) as Record<string, string>,
       signal: controller.signal
     });
 
-    const data = (await response.json().catch(() => null)) as T | null;
-    return { ok: response.ok, status: response.status, data };
+    const data = (await response.json().catch(() => null)) as TData | null;
+    return { data, ok: response.ok, status: response.status };
   } catch {
-    return { ok: false, status: 0, data: null };
+    return { data: null, ok: false, status: 0 };
   } finally {
     clearTimeout(timeoutHandle);
   }
@@ -51,9 +51,25 @@ async function requestJson<T>(
 
 export function createRAGServerClient(options: RAGServerClientOptions): RAGServerClient {
   const baseUrl = options.baseUrl.replace(/\/$/u, '');
-  const timeoutMs = Math.max(200, options.timeoutMs ?? 3_000);
+  const timeoutMs = Math.max(200, options.timeoutMs ?? 3000);
 
   return {
+    async delete(documentId) {
+      const result = await requestJson<{ id?: string; deleted?: boolean }>(
+        baseUrl,
+        timeoutMs,
+        `/documents/${encodeURIComponent(documentId)}`,
+        {
+          method: 'DELETE'
+        }
+      );
+
+      return {
+        deleted: result.data?.deleted ?? false,
+        id: result.data?.id ?? documentId
+      };
+    },
+
     async health() {
       const result = await requestJson<{ status?: string }>(baseUrl, timeoutMs, '/health', {
         method: 'GET'
@@ -69,10 +85,14 @@ export function createRAGServerClient(options: RAGServerClientOptions): RAGServe
       };
     },
 
+    async ingest(document) {
+      await this.upsert(document);
+    },
+
     async search(request) {
       const result = await requestJson<{ results?: RAGSearchResult[] }>(baseUrl, timeoutMs, '/search', {
-        method: 'POST',
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
+        method: 'POST'
       });
 
       if (!result.ok) {
@@ -82,35 +102,15 @@ export function createRAGServerClient(options: RAGServerClientOptions): RAGServe
       return [...(result.data?.results ?? [])];
     },
 
-    async ingest(document) {
-      await this.upsert(document);
-    },
-
     async upsert(document) {
       const result = await requestJson<Record<string, unknown>>(baseUrl, timeoutMs, '/documents', {
-        method: 'POST',
-        body: JSON.stringify(document)
+        body: JSON.stringify(document),
+        method: 'POST'
       });
 
       if (!result.ok) {
         throw new Error(`Failed to upsert document ${document.id}`);
       }
-    },
-
-    async delete(documentId) {
-      const result = await requestJson<{ id?: string; deleted?: boolean }>(
-        baseUrl,
-        timeoutMs,
-        `/documents/${encodeURIComponent(documentId)}`,
-        {
-          method: 'DELETE'
-        }
-      );
-
-      return {
-        id: result.data?.id ?? documentId,
-        deleted: result.data?.deleted ?? false
-      };
     }
   };
 }

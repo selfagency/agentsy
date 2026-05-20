@@ -5,7 +5,7 @@ import type { NativeToolCallDelta, UsageInfo } from './usage.js';
 export interface StreamChunk {
   content?: string | undefined;
   thinking?: string | undefined;
-  tool_calls?: Array<{ function?: { name?: string | undefined; arguments?: unknown } }> | undefined;
+  tool_calls?: { function?: { name?: string | undefined; arguments?: unknown } }[] | undefined;
   done?: boolean | undefined;
   /** Optional step index supplied by higher-level agent loops or callers. */
   stepIndex?: number | undefined;

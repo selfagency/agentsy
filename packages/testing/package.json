@@ -12,7 +12,9 @@
     "test": "vitest --run --passWithNoTests",
     "test:watch": "vitest",
     "coverage": "vitest --run --coverage",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt --write ."
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
@@ -22,6 +24,7 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"

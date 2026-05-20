@@ -1,17 +1,20 @@
 import type { FinishReason } from '@agentsy/types';
+
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
 const ZAI_FINISH_REASON_MAP: Record<string, FinishReason> = {
-  stop: 'stop',
-  tool_calls: 'tool-calls',
   length: 'length',
-  sensitive: 'content-filter',
   model_context_window_exceeded: 'error',
-  network_error: 'error'
+  network_error: 'error',
+  sensitive: 'content-filter',
+  stop: 'stop',
+  tool_calls: 'tool-calls'
 };
 
 function mapZAiFinishReason(reason: string | null | undefined): FinishReason | undefined {
-  if (!reason) return undefined;
+  if (!reason) {
+    return undefined;
+  }
   return ZAI_FINISH_REASON_MAP[reason] ?? 'other';
 }
 
@@ -84,26 +87,50 @@ function buildChunkFromParts(parts: {
   usage?: UsageInfo;
 }): NormalizerResult['chunk'] {
   const chunk: NormalizerResult['chunk'] = {};
-  if (parts.content !== undefined) chunk.content = parts.content;
-  if (parts.thinking !== undefined) chunk.thinking = parts.thinking;
-  if (parts.nativeToolCallDeltas !== undefined) chunk.nativeToolCallDeltas = parts.nativeToolCallDeltas;
-  if (parts.done !== undefined) chunk.done = parts.done;
-  if (parts.finishReason !== undefined) chunk.finishReason = parts.finishReason;
-  if (parts.usage !== undefined) chunk.usage = parts.usage;
+  if (parts.content !== undefined) {
+    chunk.content = parts.content;
+  }
+  if (parts.thinking !== undefined) {
+    chunk.thinking = parts.thinking;
+  }
+  if (parts.nativeToolCallDeltas !== undefined) {
+    chunk.nativeToolCallDeltas = parts.nativeToolCallDeltas;
+  }
+  if (parts.done !== undefined) {
+    chunk.done = parts.done;
+  }
+  if (parts.finishReason !== undefined) {
+    chunk.finishReason = parts.finishReason;
+  }
+  if (parts.usage !== undefined) {
+    chunk.usage = parts.usage;
+  }
   return chunk;
 }
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
-  if (!isRecord(raw)) return undefined;
+  if (!isRecord(raw)) {
+    return undefined;
+  }
 
   const usage: UsageInfo = {};
 
-  if (typeof raw.prompt_tokens === 'number') usage.inputTokens = raw.prompt_tokens;
-  if (typeof raw.completion_tokens === 'number') usage.outputTokens = raw.completion_tokens;
-  if (typeof raw.total_tokens === 'number') usage.totalTokens = raw.total_tokens;
+  if (typeof raw.prompt_tokens === 'number') {
+    usage.inputTokens = raw.prompt_tokens;
+  }
+  if (typeof raw.completion_tokens === 'number') {
+    usage.outputTokens = raw.completion_tokens;
+  }
+  if (typeof raw.total_tokens === 'number') {
+    usage.totalTokens = raw.total_tokens;
+  }
 
-  if (typeof raw.input_tokens === 'number') usage.inputTokens = raw.input_tokens;
-  if (typeof raw.output_tokens === 'number') usage.outputTokens = raw.output_tokens;
+  if (typeof raw.input_tokens === 'number') {
+    usage.inputTokens = raw.input_tokens;
+  }
+  if (typeof raw.output_tokens === 'number') {
+    usage.outputTokens = raw.output_tokens;
+  }
 
   if (
     typeof usage.inputTokens === 'number' &&
@@ -124,9 +151,13 @@ function normalizeUsage(raw: unknown): UsageInfo | undefined {
  */
 export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!isRecord(raw)) return null;
+    if (!isRecord(raw)) {
+      return null;
+    }
     const choicesUnknown = raw.choices;
-    if (!Array.isArray(choicesUnknown) || choicesUnknown.length === 0) return null;
+    if (!Array.isArray(choicesUnknown) || choicesUnknown.length === 0) {
+      return null;
+    }
 
     const choice = choicesUnknown[0] as ZAiChoice;
     const delta = isRecord(choice.delta) ? choice.delta : undefined;
@@ -149,7 +180,9 @@ export function normalizeZAiChunk(raw: unknown): NormalizerResult | null {
       ...(usage === undefined ? {} : { usage })
     });
 
-    if (Object.keys(chunk).length === 0) return null;
+    if (Object.keys(chunk).length === 0) {
+      return null;
+    }
     return { chunk, rawEvent: raw };
   } catch {
     return null;

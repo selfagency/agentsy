@@ -1,13 +1,50 @@
-import { defineConfig } from "oxlint";
-
-import core from "ultracite/oxlint/core";
-import vitest from "ultracite/oxlint/vitest";
-import react from "ultracite/oxlint/react";
+import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-  extends: [
-    core,
-    vitest,
-    react,
-  ],
+  plugins: ['eslint', 'typescript', 'unicorn', 'oxc', 'import', 'react', 'jsdoc', 'node', 'promise', 'vitest'],
+  rules: {
+    'class-methods-use-this': 'off',
+    'default-case': 'off',
+    'jsdoc/require-yields': 'off',
+    'max-classes-per-file': 'off',
+    'no-empty-function': 'warn',
+    'typescript/no-dynamic-delete': 'off',
+    'typescript/strict-boolean-expressions': 'off',
+    'typescript/no-non-null-assertion': 'error',
+    'typescript/no-unsafe-call': 'error',
+    'typescript/no-unsafe-assignment': 'error',
+    'typescript/no-unsafe-member-access': 'error',
+    'typescript/no-unsafe-return': 'error',
+    'unicorn/consistent-function-scoping': 'off',
+    'unicorn/filename-case': 'warn',
+    'unicorn/no-array-for-each': 'off',
+    'unicorn/no-array-reduce': 'off',
+    'vitest/max-expects': 'off',
+    'vitest/prefer-called-exactly-once-with': 'off',
+    'vitest/prefer-describe-function-title': 'off',
+    'vitest/require-mock-type-parameters': 'off'
+  },
+  settings: {
+    jsdoc: {
+      ignorePrivate: false,
+      ignoreInternal: false,
+      ignoreReplacesDocs: true,
+      overrideReplacesDocs: true,
+      augmentsExtendsReplacesDocs: false,
+      implementsReplacesDocs: false,
+      exemptDestructuredRootsFromChecks: false,
+      tagNamePreference: {}
+    },
+    vitest: {
+      typecheck: false
+    }
+  },
+  env: {
+    builtin: true
+  },
+  ignorePatterns: ['node_modules', 'dist', 'gh-pages', 'coverage', '.codacy', '.agents', '.beans'],
+  options: {
+    typeAware: true,
+    typeCheck: true
+  }
 });

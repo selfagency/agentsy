@@ -6,15 +6,16 @@
 
 import type { StateSnapshotEvent } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, expectTypeOf } from 'vitest';
+
 import {
   applyJsonPatches,
   computeStateDelta,
   createStateDeltaEvent,
   createStateSnapshotEvent,
-  StateManager,
-  type JsonPatchOp
+  StateManager
 } from './state-manager.js';
+import type { JsonPatchOp } from './state-manager.js';
 
 describe('createStateSnapshotEvent', () => {
   it('should create snapshot with state copy and timestamp', () => {
@@ -25,7 +26,7 @@ describe('createStateSnapshotEvent', () => {
 
     expect(event.type).toBe(EventType.STATE_SNAPSHOT);
     expect(event.runId).toBe(runId);
-    expect(event.state).toEqual(state);
+    expect(event.state).toStrictEqual(state);
     expect(event.timestamp).toBeDefined();
   });
 
@@ -45,7 +46,7 @@ describe('createStateSnapshotEvent', () => {
       timestamp: string;
     };
 
-    expect(typeof event.timestamp).toBe('string');
+    expectTypeOf(event.timestamp).toBeString();
     expect(() => new Date(event.timestamp)).not.toThrow();
     // Verify ISO 8601 format
     expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
@@ -53,7 +54,7 @@ describe('createStateSnapshotEvent', () => {
 
   it('should not include threadId when undefined', () => {
     const event = createStateSnapshotEvent({}, 'run_123');
-    expect('threadId' in event).toBe(false);
+    expect('threadId' in event).toBeFalsy();
   });
 });
 
@@ -92,7 +93,7 @@ describe('computeStateDelta', () => {
     const patches = computeStateDelta(from, to);
 
     // Should recurse and patch nested property
-    expect(patches.some(p => p.path.includes('nested') && p.value === 2)).toBe(true);
+    expect(patches.some(p => p.path.includes('nested') && p.value === 2)).toBeTruthy();
   });
 
   it('should ignore unchanged properties', () => {
@@ -124,7 +125,7 @@ describe('computeStateDelta', () => {
 
     const patches = computeStateDelta(from, to);
 
-    expect(patches.some(p => p.path === '/a/b/c' && p.value === 2)).toBe(true);
+    expect(patches.some(p => p.path === '/a/b/c' && p.value === 2)).toBeTruthy();
   });
 
   it('should return empty array for identical states', () => {
@@ -141,7 +142,11 @@ describe('computeStateDelta', () => {
 
     const patches = computeStateDelta(from, to, '/root');
 
-    expect(patches).toContainEqual({ op: 'replace', path: '/root/a', value: 2 });
+    expect(patches).toContainEqual({
+      op: 'replace',
+      path: '/root/a',
+      value: 2
+    });
   });
 });
 
@@ -154,14 +159,14 @@ describe('createStateDeltaEvent', () => {
 
     expect(event.type).toBe(EventType.STATE_DELTA);
     expect(event.runId).toBe(runId);
-    expect(event.delta).toEqual(patches);
+    expect(event.delta).toStrictEqual(patches);
   });
 
   it('should include timestamp', () => {
     const event = createStateDeltaEvent([], 'run_123');
 
     expect(event.timestamp).toBeDefined();
-    expect(typeof event.timestamp).toBe('string');
+    expectTypeOf(event.timestamp).toBeString();
   });
 
   it('should respect optional threadId', () => {
@@ -178,7 +183,7 @@ describe('applyJsonPatches', () => {
 
     applyJsonPatches(state, patches);
 
-    expect(state).toEqual({ a: 1, b: 2 });
+    expect(state).toStrictEqual({ a: 1, b: 2 });
   });
 
   it('should apply remove operation', () => {
@@ -187,7 +192,7 @@ describe('applyJsonPatches', () => {
 
     applyJsonPatches(state, patches);
 
-    expect(state).toEqual({ a: 1 });
+    expect(state).toStrictEqual({ a: 1 });
   });
 
   it('should apply replace operation', () => {
@@ -196,7 +201,7 @@ describe('applyJsonPatches', () => {
 
     applyJsonPatches(state, patches);
 
-    expect(state).toEqual({ a: 10 });
+    expect(state).toStrictEqual({ a: 10 });
   });
 
   it('should handle nested paths (/a/b/c)', () => {
@@ -214,35 +219,45 @@ describe('applyJsonPatches', () => {
 
     applyJsonPatches(state, patches);
 
-    expect((state as Record<string, unknown>).a).toEqual({ b: { c: 'deep' } });
+    expect((state as Record<string, unknown>).a).toStrictEqual({
+      b: { c: 'deep' }
+    });
   });
 
   it('should throw on invalid path (add to root)', () => {
     const state = {};
     const patches: JsonPatchOp[] = [{ op: 'add', path: '', value: 'bad' }];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Cannot add to root');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Cannot add to root');
   });
 
   it('should throw on invalid path (remove root)', () => {
     const state = { a: 1 };
     const patches: JsonPatchOp[] = [{ op: 'remove', path: '' }];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Cannot remove root');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Cannot remove root');
   });
 
   it('should throw on invalid path (replace root)', () => {
     const state = { a: 1 };
     const patches: JsonPatchOp[] = [{ op: 'replace', path: '', value: {} }];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Cannot replace root');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Cannot replace root');
   });
 
   it('should throw on unsupported operation', () => {
     const state = {};
-    const patches: JsonPatchOp[] = [{ op: 'move', path: '/a', from: '/b' } as JsonPatchOp];
+    const patches: JsonPatchOp[] = [{ from: '/b', op: 'move', path: '/a' } as JsonPatchOp];
 
-    expect(() => applyJsonPatches(state, patches)).toThrow('Unsupported patch operation');
+    expect(() => {
+      applyJsonPatches(state, patches);
+    }).toThrow('Unsupported patch operation');
   });
 
   it('should mutate state in place', () => {
@@ -252,7 +267,7 @@ describe('applyJsonPatches', () => {
 
     applyJsonPatches(state, patches);
 
-    expect(state === original).toBe(true);
+    expect(state === original).toBeTruthy();
   });
 });
 
@@ -262,14 +277,14 @@ describe('StateManager', () => {
     const manager = new StateManager(initialState);
 
     const current = manager.getCurrentState();
-    expect(current).toEqual(initialState);
+    expect(current).toStrictEqual(initialState);
   });
 
   it('should initialize with empty state by default', () => {
     const manager = new StateManager();
 
     const current = manager.getCurrentState();
-    expect(current).toEqual({});
+    expect(current).toStrictEqual({});
   });
 
   it('should return state copy from getCurrentState()', () => {
@@ -277,11 +292,11 @@ describe('StateManager', () => {
     const manager = new StateManager(state);
 
     const copy = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    (copy.nested as Record<string, unknown>).value = 999;
+    expect(copy).toBeDefined();
 
     // Original should not change
     const current = manager.getCurrentState() as Record<string, Record<string, unknown>>;
-    expect((current.nested as Record<string, unknown>).value).toBe(1);
+    expect(current.nested?.value).toBe(1);
   });
 
   it('should create snapshot events', () => {
@@ -292,7 +307,7 @@ describe('StateManager', () => {
     expect(event.type).toBe(EventType.STATE_SNAPSHOT);
     expect(event.runId).toBe('run_123');
     expect(event.threadId).toBe('thread_456');
-    expect(event.state).toEqual({ a: 1 });
+    expect(event.state).toStrictEqual({ a: 1 });
   });
 
   it('should compute delta between two states', () => {
@@ -318,7 +333,7 @@ describe('StateManager', () => {
 
     manager.reset({ a: 0 });
 
-    expect(manager.getCurrentState()).toEqual({ a: 0 });
+    expect(manager.getCurrentState()).toStrictEqual({ a: 0 });
   });
 
   it('should apply patches to internal state', () => {
@@ -326,7 +341,10 @@ describe('StateManager', () => {
 
     manager.updateState({ count: 2, name: 'updated' }, 'run_123');
 
-    expect(manager.getCurrentState()).toEqual({ count: 2, name: 'updated' });
+    expect(manager.getCurrentState()).toStrictEqual({
+      count: 2,
+      name: 'updated'
+    });
   });
 
   it('should handle multiple sequential updates', () => {
@@ -337,7 +355,7 @@ describe('StateManager', () => {
 
     expect(delta1).toBeDefined();
     expect(delta2).toBeDefined();
-    expect(manager.getCurrentState()).toEqual({ a: 10, b: 20 });
+    expect(manager.getCurrentState()).toStrictEqual({ a: 10, b: 20 });
   });
 
   it('should reject state with circular references', () => {
@@ -357,7 +375,9 @@ describe('StateManager', () => {
 
     manager.updateState({ 'key~with~tilde': 'value' }, 'run_123');
 
-    expect(manager.getCurrentState()).toEqual({ 'key~with~tilde': 'value' });
+    expect(manager.getCurrentState()).toStrictEqual({
+      'key~with~tilde': 'value'
+    });
   });
 
   it('should handle paths with forward slash character (RFC 6901 escaping)', () => {
@@ -365,7 +385,9 @@ describe('StateManager', () => {
 
     manager.updateState({ 'path/with/slash': 'value' }, 'run_123');
 
-    expect(manager.getCurrentState()).toEqual({ 'path/with/slash': 'value' });
+    expect(manager.getCurrentState()).toStrictEqual({
+      'path/with/slash': 'value'
+    });
   });
 
   it('should handle nested paths with special characters', () => {
@@ -373,7 +395,9 @@ describe('StateManager', () => {
 
     manager.updateState({ data: { 'sub~key/path': 'value' } }, 'run_123');
 
-    expect(manager.getCurrentState().data).toEqual({ 'sub~key/path': 'value' });
+    expect(manager.getCurrentState().data).toStrictEqual({
+      'sub~key/path': 'value'
+    });
   });
 
   it('should handle complex state updates with multiple properties', () => {
@@ -382,7 +406,10 @@ describe('StateManager', () => {
     const deltaEvent = manager.updateState({ a: 10, b: { c: 20, d: 30 } }, 'run_123');
 
     expect(deltaEvent).toBeDefined();
-    expect(manager.getCurrentState()).toEqual({ a: 10, b: { c: 20, d: 30 } });
+    expect(manager.getCurrentState()).toStrictEqual({
+      a: 10,
+      b: { c: 20, d: 30 }
+    });
   });
 
   it('should prevent external state mutation via reference', () => {

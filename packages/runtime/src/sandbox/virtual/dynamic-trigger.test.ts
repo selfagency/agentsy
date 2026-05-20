@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { decideSandboxTrigger } from './dynamic-trigger.js';
 
 describe('decideSandboxTrigger', () => {
@@ -15,12 +16,18 @@ describe('decideSandboxTrigger', () => {
   });
 
   it('should prefer container for untrusted input if available', () => {
-    const result = decideSandboxTrigger({ trustLevel: 'untrusted', containerAvailable: true });
+    const result = decideSandboxTrigger({
+      containerAvailable: true,
+      trustLevel: 'untrusted'
+    });
     expect(result.mode).toBe('container');
   });
 
   it('should REFUSE untrusted input if container is not available', () => {
-    const result = decideSandboxTrigger({ trustLevel: 'untrusted', containerAvailable: false });
+    const result = decideSandboxTrigger({
+      containerAvailable: false,
+      trustLevel: 'untrusted'
+    });
     expect(result.mode).toBe('none');
     expect(result.reason).toContain('REFUSED');
   });

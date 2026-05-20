@@ -4,10 +4,11 @@ This roadmap tracks implementation direction against the canonical plan in `plan
 
 ## Status of sandbox isolation
 
-- [✅] `VirtualSandbox` moved to `worker_threads` to prevent main-thread hangs.
+- [✅] `VirtualSandbox` moved to `worker_threads` (or compatible async execution) to prevent main-thread hangs.
 - [✅] `VirtualSandbox` supports hard timeouts with automatic termination.
 - [🔄] `ContainerSandbox` (Rivet) promoted from 'Investigation' to 'Implementation'.
 - [🔄] Drafting `RivetSandbox` provider for the `SandboxRouter`.
+- [✅] Implemented virtual sandbox with hybrid architecture supporting both virtual first and container fallback.
 
 ## Snapshot (May 2026)
 

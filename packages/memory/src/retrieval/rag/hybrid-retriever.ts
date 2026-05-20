@@ -1,5 +1,4 @@
 import { createLocalEmbeddingEngine } from '../../wiki/local-embedding-engine.js';
-
 import type { PlannedQuery, RAGEvidence, RAGSearchResult } from './types.js';
 
 interface HybridRecord {
@@ -103,20 +102,6 @@ export function createHybridRetriever(): HybridRetriever {
   const vectors = new Map<string, number[]>();
 
   return {
-    upsert(result) {
-      const record: HybridRecord = {
-        id: result.id,
-        sourceId: result.sourceId,
-        sourceType: result.sourceType,
-        title: result.title,
-        content: result.content,
-        updatedAt: result.updatedAt,
-        ...(result.metadata === undefined ? {} : { metadata: { ...result.metadata } })
-      };
-      records.set(record.id, record);
-      vectors.set(record.id, engine.embed(`${record.title}\n${record.content}`));
-    },
-
     remove(id) {
       records.delete(id);
       vectors.delete(id);
@@ -137,21 +122,6 @@ export function createHybridRetriever(): HybridRetriever {
           const final = vectorScore * 0.4 + lexical * 0.3 + entity * 0.2 + temporal * 0.1;
 
           const evidence: RAGEvidence = {
-            id: record.id,
-            sourceId: record.sourceId,
-            sourceType: record.sourceType,
-            title: record.title,
-            content: record.content,
-            score: final,
-            confidence: Math.max(0, Math.min(1, final)),
-            updatedAt: record.updatedAt,
-            scoreBreakdown: {
-              vector: vectorScore,
-              lexical,
-              entity,
-              temporal,
-              final
-            },
             citations: [
               {
                 sourceId: record.sourceId,
@@ -159,13 +129,42 @@ export function createHybridRetriever(): HybridRetriever {
                 title: record.title
               }
             ],
+            confidence: Math.max(0, Math.min(1, final)),
+            content: record.content,
+            id: record.id,
+            score: final,
+            scoreBreakdown: {
+              entity,
+              final,
+              lexical,
+              temporal,
+              vector: vectorScore
+            },
+            sourceId: record.sourceId,
+            sourceType: record.sourceType,
+            title: record.title,
+            updatedAt: record.updatedAt,
             ...(record.metadata === undefined ? {} : { metadata: { ...record.metadata } })
           };
 
           return evidence;
         })
-        .sort((left, right) => right.score - left.score)
+        .toSorted((left, right) => right.score - left.score)
         .slice(0, Math.max(1, query.limit));
+    },
+
+    upsert(result) {
+      const record: HybridRecord = {
+        content: result.content,
+        id: result.id,
+        sourceId: result.sourceId,
+        sourceType: result.sourceType,
+        title: result.title,
+        updatedAt: result.updatedAt,
+        ...(result.metadata === undefined ? {} : { metadata: { ...result.metadata } })
+      };
+      records.set(record.id, record);
+      vectors.set(record.id, engine.embed(`${record.title}\n${record.content}`));
     }
   };
 }

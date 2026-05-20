@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { createRAGConfig } from './config.js';
 
-describe('createRAGConfig', () => {
+describe(createRAGConfig, () => {
   it('defaults to local-only retrieval and disabled web augmentation', () => {
     const config = createRAGConfig({});
 
-    expect(config.localOnly).toBe(true);
-    expect(config.web.enabled).toBe(false);
+    expect(config.localOnly).toBeTruthy();
+    expect(config.web.enabled).toBeFalsy();
     expect(config.weights.vector).toBeGreaterThan(0);
     expect(config.weights.lexical).toBeGreaterThan(0);
     expect(config.weights.temporal).toBeGreaterThan(0);
@@ -18,19 +18,19 @@ describe('createRAGConfig', () => {
     const config = createRAGConfig({
       localOnly: false,
       web: {
-        enabled: true,
-        allowHosts: ['docs.example.com']
+        allowHosts: ['docs.example.com'],
+        enabled: true
       },
       weights: {
-        vector: 2,
+        entity: 1,
         lexical: 2,
         temporal: 1,
-        entity: 1
+        vector: 2
       }
     });
 
-    expect(config.localOnly).toBe(false);
-    expect(config.web.enabled).toBe(true);
+    expect(config.localOnly).toBeFalsy();
+    expect(config.web.enabled).toBeTruthy();
     expect(
       config.weights.vector + config.weights.lexical + config.weights.temporal + config.weights.entity
     ).toBeCloseTo(1, 3);

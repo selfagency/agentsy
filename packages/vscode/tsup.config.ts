@@ -1,14 +1,14 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
+  clean: true,
+  dts: true,
   entry: {
     index: 'src/index.ts'
   },
+  external: ['vscode'],
   format: ['esm', 'cjs'],
-  dts: true,
   sourcemap: true,
-  clean: true,
   splitting: false,
-  target: 'es2022',
-  external: ['vscode']
+  target: 'es2022'
 });

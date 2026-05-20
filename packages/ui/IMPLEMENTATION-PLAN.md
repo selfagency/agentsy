@@ -31,21 +31,21 @@ This plan defines the production implementation order for `@agentsy/ui` as share
 
 - GOAL-UI-001: Contract stabilization.
 
-| Task        | Description                                                             | Completed | Date |
-| ----------- | ----------------------------------------------------------------------- | --------- | ---- |
-| TASK-UI-001 | Stabilize UI message/event/store contracts and reducer semantics.       |           |      |
-| TASK-UI-002 | Add typed tests for event ordering and deterministic state transitions. |           |      |
-| TASK-UI-003 | Document boundary ownership vs renderers/runtime packages.              |           |      |
+| Task        | Description                                                             | Completed | Date       |
+| ----------- | ----------------------------------------------------------------------- | --------- | ---------- |
+| TASK-UI-001 | Stabilize UI message/event/store contracts and reducer semantics.       | ✅        | 2026-05-17 |
+| TASK-UI-002 | Add typed tests for event ordering and deterministic state transitions. | ✅        | 2026-05-17 |
+| TASK-UI-003 | Document boundary ownership vs renderers/runtime packages.              | ✅        | 2026-05-17 |
 
 ### Implementation Phase 2
 
 - GOAL-UI-002: Core store implementation completion.
 
-| Task        | Description                                                     | Completed | Date |
-| ----------- | --------------------------------------------------------------- | --------- | ---- |
-| TASK-UI-004 | Finalize event helpers, immutable store updates, and selectors. |           |      |
-| TASK-UI-005 | Implement performance-safe derived state for streaming updates. |           |      |
-| TASK-UI-006 | Implement adapter helpers for cross-surface consumption.        |           |      |
+| Task        | Description                                                     | Completed | Date       |
+| ----------- | --------------------------------------------------------------- | --------- | ---------- |
+| TASK-UI-004 | Finalize event helpers, immutable store updates, and selectors. | ✅        | 2026-05-17 |
+| TASK-UI-005 | Implement performance-safe derived state for streaming updates. | ✅        | 2026-05-17 |
+| TASK-UI-006 | Implement adapter helpers for cross-surface consumption.        | ✅        | 2026-05-17 |
 
 ### Implementation Phase 3
 

@@ -1,4 +1,5 @@
 import type { StreamChunk } from '@agentsy/core/processor';
+
 import { mapStreamChunkToVsCode } from './message-conversion/helpers.js';
 import type { LanguageModelChatResponseChunk } from './provider/index.js';
 

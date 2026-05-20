@@ -19,11 +19,11 @@ function fingerprintOf(document: RAGServerDocument): string {
   return createHash('sha256')
     .update(
       JSON.stringify({
-        title: document.title,
+        chunkIndex: document.chunkIndex,
         content: document.content,
         metadata: document.metadata,
-        updatedAt: document.updatedAt,
-        chunkIndex: document.chunkIndex
+        title: document.title,
+        updatedAt: document.updatedAt
       })
     )
     .digest('hex');
@@ -33,6 +33,22 @@ export function createIndexManager(): IndexManager {
   const records = new Map<string, IndexedDocumentRecord>();
 
   return {
+    get(documentId) {
+      return records.get(documentId) ?? null;
+    },
+
+    list() {
+      return [...records.values()].map(record => ({
+        document: record.document,
+        fingerprint: record.fingerprint,
+        version: record.version
+      }));
+    },
+
+    remove(documentId) {
+      return records.delete(documentId);
+    },
+
     upsertMany(documents) {
       let inserted = 0;
       let updated = 0;
@@ -64,23 +80,7 @@ export function createIndexManager(): IndexManager {
         updated += 1;
       }
 
-      return { inserted, updated, skipped };
-    },
-
-    remove(documentId) {
-      return records.delete(documentId);
-    },
-
-    get(documentId) {
-      return records.get(documentId) ?? null;
-    },
-
-    list() {
-      return [...records.values()].map(record => ({
-        document: record.document,
-        fingerprint: record.fingerprint,
-        version: record.version
-      }));
+      return { inserted, skipped, updated };
     }
   };
 }

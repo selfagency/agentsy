@@ -38,9 +38,6 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
   };
 
   const stream: VSCodeChatResponseStream = {
-    markdown: (_value: string, _metadata?: Record<string, unknown>) => {
-      runIfActive(() => {});
-    },
     anchor: (_value: Uri | Location, _title?: string) => {
       runIfActive(() => {});
     },
@@ -50,13 +47,16 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
     filetree: (_value: FileTreeEntry[], _baseUri: Uri, _options?: { showRoot?: boolean }) => {
       runIfActive(() => {});
     },
+    markdown: (_value: string, _metadata?: Record<string, unknown>) => {
+      runIfActive(() => {});
+    },
     progress: (_value: string, _context?: { step?: number; total?: number }) => {
       runIfActive(() => {});
     },
-    reference: (_value: Uri | Location, _iconPath?: Uri) => {
+    push: (_part: unknown, _options?: { validate?: boolean }) => {
       runIfActive(() => {});
     },
-    push: (_part: unknown, _options?: { validate?: boolean }) => {
+    reference: (_value: Uri | Location, _iconPath?: Uri) => {
       runIfActive(() => {});
     }
   };

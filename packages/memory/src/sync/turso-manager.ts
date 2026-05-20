@@ -13,10 +13,10 @@ import type {
 } from './types.js';
 
 const INITIAL_SYNC_METRICS: SyncMetrics = {
-  successes: 0,
+  conflicts: 0,
   failures: 0,
   retries: 0,
-  conflicts: 0
+  successes: 0
 };
 
 function createRecordKey(record: Pick<SyncRecord, 'id' | 'tier'>): string {
@@ -109,7 +109,7 @@ export class TursoManager {
   }
 
   async upload(snapshot: SyncSnapshot) {
-    return this.#client.upload(snapshot);
+    return await this.#client.upload(snapshot);
   }
 
   async download(cursor: string) {
@@ -151,12 +151,12 @@ export class TursoManager {
   async sync(localState: SyncSnapshot): Promise<SyncRunResult> {
     if (this.#status === 'paused') {
       return {
-        status: 'paused',
-        uploaded: 0,
         downloaded: 0,
+        nextCursor: localState.cursor,
         resolvedConflicts: 0,
+        status: 'paused',
         unresolvedConflicts: 0,
-        nextCursor: localState.cursor
+        uploaded: 0
       };
     }
 
@@ -199,12 +199,12 @@ export class TursoManager {
       this.#status = 'idle';
 
       return {
-        status: 'success',
-        uploaded: uploadResult.uploadedCount,
         downloaded: remoteSnapshot.records.length,
+        nextCursor: uploadResult.nextCursor,
         resolvedConflicts,
+        status: 'success',
         unresolvedConflicts,
-        nextCursor: uploadResult.nextCursor
+        uploaded: uploadResult.uploadedCount
       };
     } catch (error) {
       const envelope = createSecureSyncErrorEnvelope(error, {
@@ -215,17 +215,17 @@ export class TursoManager {
       this.#status = 'error';
 
       return {
-        status: 'error',
-        uploaded: 0,
         downloaded: 0,
-        resolvedConflicts: 0,
-        unresolvedConflicts: 0,
-        nextCursor: localState.cursor,
         error: {
           code: envelope.code,
           message: envelope.message,
           retryable: envelope.retryable
-        }
+        },
+        nextCursor: localState.cursor,
+        resolvedConflicts: 0,
+        status: 'error',
+        unresolvedConflicts: 0,
+        uploaded: 0
       };
     }
   }

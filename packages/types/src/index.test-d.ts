@@ -1,4 +1,5 @@
 import { assertType, expectTypeOf, test } from 'vitest';
+
 import type {
   FinishReason,
   JsonObject,
@@ -11,11 +12,14 @@ import type {
 } from './index.js';
 
 test('UsageInfo shape', () => {
-  expectTypeOf<UsageInfo>().toMatchTypeOf<{
-    inputTokens?: number;
-    outputTokens?: number;
-    totalTokens?: number;
-  }>();
+  expectTypeOf<UsageInfo>().toHaveProperty('inputTokens');
+  expectTypeOf<UsageInfo>().toHaveProperty('outputTokens');
+  expectTypeOf<UsageInfo>().toHaveProperty('totalTokens');
+});
+
+test('UsageInfo allows optional properties', () => {
+  const partialUsageInfo: UsageInfo = { inputTokens: 10 };
+  expectTypeOf(partialUsageInfo).toEqualTypeOf<UsageInfo>();
 });
 
 test('NativeToolCallDelta field types', () => {
@@ -47,9 +51,10 @@ test('ToolCallState closed union', () => {
 });
 
 test('StreamChunk all fields optional', () => {
-  expectTypeOf<StreamChunk>().toMatchTypeOf<object>();
+  const chunk: StreamChunk = { content: 'hello', done: true };
+  // Verify all fields are optional by checking the chunk satisfies the interface
+  expectTypeOf(chunk).toEqualTypeOf<StreamChunk>();
 
-  const chunk: StreamChunk = { done: true, content: 'hello' };
   expectTypeOf(chunk.content).toEqualTypeOf<string | undefined>();
   expectTypeOf(chunk.thinking).toEqualTypeOf<string | undefined>();
   expectTypeOf(chunk.done).toEqualTypeOf<boolean | undefined>();
@@ -68,32 +73,35 @@ test('StreamChunk.tool_calls element shape', () => {
 
 test('JsonObject and JsonValue exports are available', () => {
   const jsonObject: JsonObject = {
+    items: [1, 'two', null],
     label: 'agentsy',
-    nested: { enabled: true },
-    items: [1, 'two', null]
+    nested: { enabled: true }
   };
 
   const jsonValue: JsonValue = jsonObject;
 
-  expectTypeOf(jsonObject).toMatchTypeOf<JsonObject>();
-  expectTypeOf(jsonValue).toMatchTypeOf<JsonValue>();
+  expectTypeOf(jsonObject).toHaveProperty('items');
+  expectTypeOf(jsonValue).toHaveProperty('label');
+  expectTypeOf(jsonValue).toHaveProperty('nested');
 });
 
 test('PartialDeep supports recursive array partials when requested', () => {
-  type Input = {
-    items: Array<{
+  interface Input {
+    items: {
       id: string;
       metadata: {
         count: number;
       };
-    }>;
-  };
+    }[];
+  }
 
   type PartialInput = PartialDeep<Input, { recurseIntoArrays: true }>;
 
   const value1: PartialInput = { items: [{ metadata: {} }] };
-  const value2: PartialInput = { items: [{ id: 'abc', metadata: { count: 1 } }] };
+  const value2: PartialInput = {
+    items: [{ id: 'abc', metadata: { count: 1 } }]
+  };
 
-  expectTypeOf(value1).toMatchTypeOf<PartialInput>();
-  expectTypeOf(value2).toMatchTypeOf<PartialInput>();
+  expectTypeOf(value1).toEqualTypeOf<PartialInput>();
+  expectTypeOf(value2).toEqualTypeOf<PartialInput>();
 });

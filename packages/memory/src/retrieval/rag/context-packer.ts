@@ -34,17 +34,17 @@ export function packEvidenceForContext(
 
     usedTokens += cost;
     packed.push({
-      id: item.id,
-      title: item.title,
+      citations,
       content: compressedContent,
+      id: item.id,
       score: item.score,
-      citations
+      title: item.title
     });
   }
 
   return {
     items: packed,
-    usedTokens,
-    maxTokens
+    maxTokens,
+    usedTokens
   };
 }

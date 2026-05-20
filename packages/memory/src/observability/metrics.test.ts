@@ -7,8 +7,12 @@ describe('MemoryMetrics', () => {
     const metrics = createMemoryMetrics();
 
     metrics.recordCoordinationLatency('pubsub.publish', 2.3);
-    metrics.recordRetrieval('oauth', { latencyMs: 4.1, hitCount: 3, topScore: 0.92 });
-    metrics.recordInjection({ usedTokens: 320, budgetTokens: 1000 });
+    metrics.recordRetrieval('oauth', {
+      hitCount: 3,
+      latencyMs: 4.1,
+      topScore: 0.92
+    });
+    metrics.recordInjection({ budgetTokens: 1000, usedTokens: 320 });
 
     const snapshot = metrics.snapshot();
     expect(snapshot.coordination['pubsub.publish']?.count).toBe(1);

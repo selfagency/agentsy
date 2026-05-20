@@ -26,11 +26,11 @@ export function createKnowledgeBaseManager(): KnowledgeBaseManager {
 
       for (const document of ingestOutput.documents) {
         retriever.upsert({
+          content: document.content,
           id: document.id,
           sourceId: document.sourceId,
           sourceType: document.sourceType,
           title: document.title,
-          content: document.content,
           updatedAt: document.updatedAt,
           ...(document.metadata === undefined ? {} : { metadata: { ...document.metadata } })
         });

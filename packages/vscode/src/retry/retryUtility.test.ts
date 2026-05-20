@@ -1,41 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { CancellationToken, Event } from 'vscode';
+
+import { createMockCancellationToken } from '../test-utils.js';
 import { createRetryUtility, RetryUtility } from './retryUtility.js';
 
-function createMockCancellationToken(initiallyCancelled = false): {
-  token: CancellationToken;
-  cancel(): void;
-} {
-  const listeners = new Set<(e: unknown) => unknown>();
-  let cancelled = initiallyCancelled;
-
-  return {
-    token: {
-      get isCancellationRequested() {
-        return cancelled;
-      },
-      onCancellationRequested: ((listener: (e: unknown) => unknown) => {
-        listeners.add(listener);
-        return {
-          dispose: () => {
-            listeners.delete(listener);
-          }
-        };
-      }) as unknown as Event<unknown>
-    },
-    cancel() {
-      cancelled = true;
-      for (const listener of listeners) {
-        listener(undefined);
-      }
-    }
-  };
-}
-
 describe('Retry Utility', () => {
-  const mockCancellationToken = createMockCancellationToken().token;
+  const mockCancellationToken = createMockCancellationToken();
 
-  describe('RetryUtility', () => {
+  describe(RetryUtility, () => {
     it('should create retry utility instance', () => {
       const utility = new RetryUtility(3, 100, mockCancellationToken);
       expect(utility).toBeInstanceOf(RetryUtility);
@@ -50,7 +21,7 @@ describe('Retry Utility', () => {
 
       const result = await utility.executeWithRetry(operation);
       expect(result).toBe('success');
-      expect(operation).toHaveBeenCalledTimes(1);
+      expect(operation).toHaveBeenCalledOnce();
     });
 
     it('should retry failed operation and succeed', async () => {
@@ -82,13 +53,13 @@ describe('Retry Utility', () => {
 
       await utility.executeWithRetry(operation, onRetry);
 
-      expect(onRetry).toHaveBeenCalledTimes(1);
+      expect(onRetry).toHaveBeenCalledOnce();
       expect(onRetry.mock.calls[0]?.[0]).toBe(1);
       expect(onRetry.mock.calls[0]?.[1]).toBeInstanceOf(Error);
     });
 
     it('should throw error when cancelled', async () => {
-      const cancellingToken = createMockCancellationToken(true).token;
+      const cancellingToken = createMockCancellationToken(true);
 
       const utility = new RetryUtility(3, 100, cancellingToken);
       const operation = vi.fn().mockResolvedValue('success');
@@ -102,25 +73,25 @@ describe('Retry Utility', () => {
 
       try {
         const cancellingToken = createMockCancellationToken();
-        const utility = new RetryUtility(3, 1_000, cancellingToken.token, 2);
+        const utility = new RetryUtility(3, 1000, cancellingToken, 2);
         const operation = vi.fn().mockRejectedValue(new Error('first failure'));
 
         const result = utility.executeWithRetry(operation);
         await Promise.resolve();
-        expect(operation).toHaveBeenCalledTimes(1);
+        expect(operation).toHaveBeenCalledOnce();
 
         cancellingToken.cancel();
 
         await expect(result).rejects.toThrow('Operation cancelled');
-        vi.advanceTimersByTime(1_000);
-        expect(operation).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(1000);
+        expect(operation).toHaveBeenCalledOnce();
       } finally {
         vi.useRealTimers();
       }
     });
   });
 
-  describe('createRetryUtility', () => {
+  describe(createRetryUtility, () => {
     it('should create retry utility via factory', () => {
       const utility = createRetryUtility(3, 100, mockCancellationToken);
       expect(utility).toBeInstanceOf(RetryUtility);

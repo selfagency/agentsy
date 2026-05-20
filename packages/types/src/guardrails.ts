@@ -28,7 +28,14 @@ export interface GuardrailsConfig {
   enabledGuardrails: string[];
 
   /** Map of guardrail IDs to their configurations. */
-  configs: Record<string, { enabled: boolean; severity: 'low' | 'medium' | 'high'; options?: Record<string, unknown> }>;
+  configs: Record<
+    string,
+    {
+      enabled: boolean;
+      severity: 'low' | 'medium' | 'high';
+      options?: Record<string, unknown>;
+    }
+  >;
 
   /** Action on all guardrails passing. */
   passAction: 'allow' | 'warn' | 'log';

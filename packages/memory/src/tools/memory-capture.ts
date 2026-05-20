@@ -38,7 +38,11 @@ export interface MemoryCaptureToolDeps {
 export function createMemoryCaptureTool(deps: MemoryCaptureToolDeps): MemoryCaptureTool {
   return {
     async execute(input) {
-      deps.scopeManager?.assertAccess({ actorId: input.actorId, action: 'write', scope: input.scope });
+      deps.scopeManager?.assertAccess({
+        action: 'write',
+        actorId: input.actorId,
+        scope: input.scope
+      });
 
       const record: CapturedMemoryRecord = {
         id: deps.idFactory?.() ?? randomUUID(),

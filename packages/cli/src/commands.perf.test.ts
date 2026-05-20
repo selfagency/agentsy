@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'node:fs';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { runCli } from './index.js';
 
 /**
@@ -39,7 +41,10 @@ describe('Phase 0: CLI Commands Validation', () => {
 
   it('compress command works with --text flag', async () => {
     const exitCode = await runCli(['compress', '--level', 'full', '--text', SAMPLE_TEXT], {
-      stdout: (value: string) => capturedOutput.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stdout: (value: string): void => {
+        capturedOutput.push(value);
+      }
     });
 
     expect(exitCode).toBe(0);
@@ -49,13 +54,20 @@ describe('Phase 0: CLI Commands Validation', () => {
 
   it('compress command supports different levels', async () => {
     for (const level of ['lite', 'full', 'ultra']) {
+      const currentLevelOutput: string[] = [];
+      // oxlint-disable-next-line typescript/no-loop-func
+      const stdout = (value: string): void => {
+        currentLevelOutput.push(value);
+      };
+
       capturedOutput = [];
-      const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], {
-        stdout: (value: string) => capturedOutput.push(value)
-      });
+      const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], { stdout });
 
       expect(exitCode).toBe(0);
-      expect(capturedOutput.length).toBeGreaterThan(0);
+      if (currentLevelOutput.length === 0) {
+        console.log(`No output for level: ${level}, currentLevelOutput:`, currentLevelOutput);
+        throw new Error(`Expected output for level ${level}`);
+      }
     }
   });
 
@@ -64,12 +76,15 @@ describe('Phase 0: CLI Commands Validation', () => {
     writeFileSync(memoryFile, SAMPLE_TEXT, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      stdout: (value: string) => capturedOutput.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stdout: (value: string): void => {
+        capturedOutput.push(value);
+      }
     });
 
     expect(exitCode).toBe(0);
     const backupFile = `${memoryFile}.original.md`;
-    expect(existsSync(backupFile)).toBe(true);
+    expect(existsSync(backupFile)).toBeTruthy();
 
     // Verify backup contains original content
     const backupContent = readFileSync(backupFile, 'utf-8');
@@ -90,7 +105,10 @@ More text after code.
     writeFileSync(memoryFile, contentWithCode, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      stdout: (value: string) => capturedOutput.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stdout: (value: string): void => {
+        capturedOutput.push(value);
+      }
     });
 
     expect(exitCode).toBe(0);
@@ -102,7 +120,10 @@ More text after code.
 
   it('compress command reports savings ratio', async () => {
     const exitCode = await runCli(['compress', '--level', 'ultra', '--text', SAMPLE_TEXT], {
-      stdout: (value: string) => capturedOutput.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stdout: (value: string): void => {
+        capturedOutput.push(value);
+      }
     });
 
     expect(exitCode).toBe(0);
@@ -110,13 +131,17 @@ More text after code.
     // Should have compressed content and savings ratio
     const savingsLine = capturedOutput.find(line => line.includes('Savings:'));
     expect(savingsLine).toBeDefined();
+    // oxlint-disable-next-line require-unicode-regexp
     expect(savingsLine).toMatch(/Savings: \d+\.\d+%/);
   });
 
   it('compress command completes quickly', async () => {
     const startTime = performance.now();
     await runCli(['compress', '--level', 'full', '--text', SAMPLE_TEXT], {
-      stdout: (value: string) => capturedOutput.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stdout: (value: string): void => {
+        capturedOutput.push(value);
+      }
     });
     const elapsed = performance.now() - startTime;
 
@@ -127,21 +152,27 @@ More text after code.
   it('handles missing --file argument gracefully', async () => {
     const errors: string[] = [];
     const exitCode = await runCli(['compress-memory'], {
-      stderr: (value: string) => errors.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stderr: (value: string): void => {
+        errors.push(value);
+      }
     });
 
     expect(exitCode).toBe(1);
-    expect(errors.some(e => e.includes('Missing --file'))).toBe(true);
+    expect(errors.some(e => e.includes('Missing --file'))).toBeTruthy();
   });
 
   it('handles missing input for compress command', async () => {
     const errors: string[] = [];
     const exitCode = await runCli(['compress'], {
-      stderr: (value: string) => errors.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stderr: (value: string): void => {
+        errors.push(value);
+      }
     });
 
     expect(exitCode).toBe(1);
-    expect(errors.some(e => e.includes('Missing input'))).toBe(true);
+    expect(errors.some(e => e.includes('Missing input'))).toBeTruthy();
   });
 
   it('compress-memory command reports savings', async () => {
@@ -149,7 +180,10 @@ More text after code.
     writeFileSync(memoryFile, SAMPLE_TEXT, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      stdout: (value: string) => capturedOutput.push(value)
+      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      stdout: (value: string): void => {
+        capturedOutput.push(value);
+      }
     });
 
     expect(exitCode).toBe(0);

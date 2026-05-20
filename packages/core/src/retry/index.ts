@@ -4,13 +4,13 @@
  * Real implementation to be recovered soon.
  */
 
-export type RetryOptions = {
+export interface RetryOptions {
   maxAttempts?: number;
   initialDelay?: number;
   maxDelay?: number;
   backoffFactor?: number;
   signal?: AbortSignal;
-};
+}
 
 function createAbortError(): Error {
   if (typeof DOMException !== 'undefined') {
@@ -22,8 +22,8 @@ function createAbortError(): Error {
   return error;
 }
 
-export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-  const { maxAttempts = 3, initialDelay = 1000, maxDelay = 30000, backoffFactor = 2, signal } = options;
+export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+  const { maxAttempts = 3, initialDelay = 1000, maxDelay = 30_000, backoffFactor = 2, signal } = options;
 
   return new Promise((resolve, reject) => {
     let attempt = 0;
@@ -56,12 +56,16 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
     // Listen for abort signal
     if (signal) {
       if (signal.aborted) {
-        settle(() => reject(createAbortError()));
+        settle(() => {
+          reject(createAbortError());
+        });
         return;
       }
 
       abortHandler = () => {
-        settle(() => reject(createAbortError()));
+        settle(() => {
+          reject(createAbortError());
+        });
       };
       signal.addEventListener('abort', abortHandler, { once: true });
     }
@@ -69,7 +73,9 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
     const attemptRetry = async () => {
       try {
         const result = await fn();
-        settle(() => resolve(result));
+        settle(() => {
+          resolve(result);
+        });
       } catch (error) {
         if (settled) {
           return;
@@ -77,10 +83,14 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
 
         attempt++;
         if (attempt >= maxAttempts) {
-          settle(() => reject(error));
+          settle(() => {
+            reject(error);
+          });
         } else {
           const delay = Math.min(initialDelay * backoffFactor ** (attempt - 1), maxDelay);
-          timeoutId = setTimeout(attemptRetry, delay);
+          timeoutId = setTimeout(() => {
+            void attemptRetry();
+          }, delay);
         }
       }
     };

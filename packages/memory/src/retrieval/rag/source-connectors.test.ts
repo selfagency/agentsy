@@ -6,8 +6,8 @@ describe('source connectors', () => {
   it('blocks web fetch for hosts outside allowlist', async () => {
     const connectors = createSourceConnectors({
       web: {
-        enabled: true,
-        allowHosts: ['docs.example.com']
+        allowHosts: ['docs.example.com'],
+        enabled: true
       }
     });
 

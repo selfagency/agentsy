@@ -20,12 +20,14 @@ export function migrateContentToDedupStore(contents: readonly string[], store: D
     const count = seen.get(fp.value) ?? 0;
     seen.set(fp.value, count + 1);
     store.intern(content);
-    if (count > 0) deduped++;
+    if (count > 0) {
+      deduped++;
+    }
   }
 
   return {
-    total: contents.length,
     deduped,
+    total: contents.length,
     unique: store.size()
   };
 }

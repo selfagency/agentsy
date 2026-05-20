@@ -35,7 +35,7 @@ export interface ModelsDevModel {
   reasoning: boolean;
   tool_call: boolean;
   temperature: boolean;
-  knowledge: string;
+  knowledge?: string;
   release_date: string;
   last_updated: string;
   modalities: ModelModalities;
@@ -48,10 +48,11 @@ export interface ModelsDevModel {
  * Provider information from models.dev API
  */
 export interface ModelsDevProvider {
-  id: string;
+  api?: string;
   env: readonly string[];
-  npm: string;
+  id: string;
   name: string;
+  npm: string;
   doc: string;
   models: Record<string, ModelsDevModel>;
 }

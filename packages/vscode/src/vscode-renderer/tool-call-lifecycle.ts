@@ -27,8 +27,8 @@ export function toVSCodeToolCallPart(
 
   return {
     callId: part.call.id ?? fallbackCallId,
-    name: part.call.name,
-    input: part.call.parameters
+    input: part.call.parameters,
+    name: part.call.name
   };
 }
 
@@ -41,7 +41,9 @@ export class ToolCallDeltaAccumulator {
   add(delta: Extract<OutputPart, { type: 'tool_call_delta' }>): void {
     const existing = this.calls.get(delta.index);
     if (existing !== undefined) {
-      if (delta.id !== undefined) existing.id = delta.id;
+      if (delta.id !== undefined) {
+        existing.id = delta.id;
+      }
       existing.name = delta.name;
       existing.argumentsBuffer += delta.argumentsDelta;
       return;
@@ -49,8 +51,8 @@ export class ToolCallDeltaAccumulator {
 
     this.calls.set(delta.index, {
       ...(delta.id === undefined ? {} : { id: delta.id }),
-      name: delta.name,
-      argumentsBuffer: delta.argumentsDelta
+      argumentsBuffer: delta.argumentsDelta,
+      name: delta.name
     });
   }
 
@@ -68,8 +70,8 @@ export class ToolCallDeltaAccumulator {
 
       parts.push({
         callId: fallbackId,
-        name: fallbackName,
-        input: parsed
+        input: parsed,
+        name: fallbackName
       });
     }
 
@@ -98,7 +100,9 @@ export class ToolCallDeltaAccumulator {
     }
 
     if (!repairIncomplete) {
-      onWarning?.('Malformed tool_call_delta arguments; using empty input.', { index });
+      onWarning?.('Malformed tool_call_delta arguments; using empty input.', {
+        index
+      });
       return {};
     }
 
@@ -113,7 +117,7 @@ export class ToolCallDeltaAccumulator {
 
   private parseStrictJsonObject(value: string): Record<string, unknown> | null {
     try {
-      const json = JSON.parse(value);
+      const json = JSON.parse(value) as unknown;
       return this.asObjectRecord(json);
     } catch {
       return null;

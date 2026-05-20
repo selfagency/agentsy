@@ -1,6 +1,8 @@
 import { EventEmitter } from 'node:events';
+
 import type { AgentRegistry } from '../agents/registry.js';
-import { createTaskScheduler, type TaskScheduler } from '../scheduler/index.js';
+import { createTaskScheduler } from '../scheduler/index.js';
+import type { TaskScheduler } from '../scheduler/index.js';
 import type { AgentCapabilities, WorkflowResult, WorkflowSpec } from '../types/index.js';
 import { NodeType, WorkflowStatus } from '../types/index.js';
 
@@ -72,8 +74,10 @@ export class WorkflowMonitor {
   }
 
   getDuration(): number | null {
-    if (!this.context.startTime) return null;
-    const endTime = this.context.endTime || new Date();
+    if (!this.context.startTime) {
+      return null;
+    }
+    const endTime = this.context.endTime ?? new Date();
     return endTime.getTime() - this.context.startTime.getTime();
   }
 
@@ -103,7 +107,9 @@ function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions):
   const nodeResults = new Map<string, unknown>();
 
   return {
-    workflow,
+    async cancel(): Promise<void> {
+      cancelled = true;
+    },
     options,
     async run(): Promise<WorkflowResult> {
       const spec = this.workflow.getSpec();
@@ -115,21 +121,18 @@ function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions):
       const results = await executeNode(startNode, this.workflow, registry, scheduler, cancelled, nodeResults);
 
       return {
-        workflowId: this.workflow.getId(),
-        status: WorkflowStatus.COMPLETED,
-        results: (results ?? {}) as Record<string, unknown>,
         errors: [],
         metrics: {
-          duration: 0, // Will be calculated by orchestration engine
+          agentsUsed: 0,
           cost: 0,
-          agentsUsed: 0
-        }
+          duration: 0 // Will be calculated by orchestration engine,
+        },
+        results: (results ?? {}) as Record<string, unknown>,
+        status: WorkflowStatus.COMPLETED,
+        workflowId: this.workflow.getId()
       };
     },
-
-    async cancel(): Promise<void> {
-      cancelled = true;
-    }
+    workflow
   };
 }
 
@@ -149,44 +152,54 @@ async function executeNode(
   let result: unknown;
 
   switch (node.type) {
-    case NodeType.TASK:
+    case NodeType.TASK: {
       result = await executeTaskNode(node, registry, scheduler);
       break;
-    case NodeType.DECISION:
+    }
+    case NodeType.DECISION: {
       result = await executeDecisionNode(node, workflow, registry, scheduler, cancelled, nodeResults);
       break;
-    case NodeType.PARALLEL:
+    }
+    case NodeType.PARALLEL: {
       result = await executeParallelNode(node, workflow, registry, scheduler, cancelled, nodeResults);
       break;
-    case NodeType.SEQUENCE:
+    }
+    case NodeType.SEQUENCE: {
       result = await executeSequenceNode(node, workflow, registry, scheduler, cancelled, nodeResults);
       break;
-    case NodeType.MERGE:
+    }
+    case NodeType.MERGE: {
       result = executeMergeNode(node, nodeResults);
       break;
-    default:
+    }
+    default: {
       throw new Error(`Unsupported node type: ${String(node)}`);
+    }
   }
 
   nodeResults.set(node.id, result);
   return result;
 }
 
-function executeTaskNode(node: RuntimeTaskNode, registry: AgentRegistry, scheduler: TaskScheduler): Promise<unknown> {
+async function executeTaskNode(
+  node: RuntimeTaskNode,
+  registry: AgentRegistry,
+  scheduler: TaskScheduler
+): Promise<unknown> {
   // Find suitable agent
   const availableAgents = registry.getAllAgents().filter((a: AgentCapabilities) => a.available);
 
-  return scheduler
+  return await scheduler
     .schedule({
+      agents: availableAgents,
       taskInfo: {
         id: node.id,
-        name: node.name,
-        type: node.type,
-        requirements: [],
         input: node.input,
-        priority: 'high'
-      },
-      agents: availableAgents
+        name: node.name,
+        priority: 'high',
+        requirements: [],
+        type: node.type
+      }
     })
     .then(decision => {
       if (!decision) {
@@ -194,7 +207,9 @@ function executeTaskNode(node: RuntimeTaskNode, registry: AgentRegistry, schedul
       }
 
       // Execute task (placeholder - would integrate with actual agent execution)
-      return { result: `Task ${node.id} executed by agent ${(decision as { agentId: string }).agentId}` };
+      return {
+        result: `Task ${node.id} executed by agent ${(decision as { agentId: string }).agentId}`
+      };
     });
 }
 
@@ -249,7 +264,7 @@ async function executeDecisionNode(
     results.push(branchResult);
   }
 
-  return { decision, branch: decision ? 'true' : 'false', results };
+  return { branch: decision ? 'true' : 'false', decision, results };
 }
 
 async function executeParallelNode(
@@ -271,7 +286,7 @@ async function executeParallelNode(
     return branchNode;
   });
 
-  const results = Array.from<unknown>({ length: branchNodes.length }).fill(undefined);
+  const results = Array.from<unknown>({ length: branchNodes.length });
   const errors: Error[] = [];
   let cursor = 0;
 
@@ -301,7 +316,7 @@ async function executeParallelNode(
     await runNext();
   };
 
-  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) }, () => runNext());
+  const workers = Array.from({ length: Math.min(maxConcurrency, branchNodes.length) }, async () => await runNext());
   await Promise.all(workers);
 
   if (errors.length > 0) {
@@ -315,11 +330,13 @@ function executeMergeNode(node: RuntimeMergeNode, nodeResults: Map<string, unkno
   const inputs = node.inputs.map(inputId => nodeResults.get(inputId));
 
   switch (node.strategy) {
-    case 'first':
+    case 'first': {
       return inputs.find(input => input !== undefined) ?? null;
+    }
     case 'all':
-    case 'join':
+    case 'join': {
       return inputs;
+    }
     case 'majority': {
       const frequency = new Map<string, { value: unknown; count: number }>();
       for (const input of inputs) {
@@ -328,7 +345,7 @@ function executeMergeNode(node: RuntimeMergeNode, nodeResults: Map<string, unkno
         if (existing) {
           existing.count += 1;
         } else {
-          frequency.set(key, { value: input, count: 1 });
+          frequency.set(key, { count: 1, value: input });
         }
       }
 
@@ -343,8 +360,9 @@ function executeMergeNode(node: RuntimeMergeNode, nodeResults: Map<string, unkno
 
       return majorityValue;
     }
-    default:
+    default: {
       return inputs;
+    }
   }
 }
 
@@ -355,35 +373,47 @@ function findNodeById(id: string, workflow: Workflow): RuntimeWorkflowNode | und
 
 function getNodeReferences(node: RuntimeWorkflowNode): string[] {
   switch (node.type) {
-    case NodeType.DECISION:
+    case NodeType.DECISION: {
       return [...node.trueBranch, ...node.falseBranch];
-    case NodeType.SEQUENCE:
+    }
+    case NodeType.SEQUENCE: {
       return node.steps;
-    case NodeType.PARALLEL:
+    }
+    case NodeType.PARALLEL: {
       return node.branches;
-    case NodeType.MERGE:
+    }
+    case NodeType.MERGE: {
       return node.inputs;
-    case NodeType.TASK:
+    }
+    case NodeType.TASK: {
       return [];
-    default:
+    }
+    default: {
       return [];
+    }
   }
 }
 
 function getNodeTypeLabel(node: RuntimeWorkflowNode): string {
   switch (node.type) {
-    case NodeType.DECISION:
+    case NodeType.DECISION: {
       return 'Decision';
-    case NodeType.SEQUENCE:
+    }
+    case NodeType.SEQUENCE: {
       return 'Sequence';
-    case NodeType.PARALLEL:
+    }
+    case NodeType.PARALLEL: {
       return 'Parallel';
-    case NodeType.MERGE:
+    }
+    case NodeType.MERGE: {
       return 'Merge';
-    case NodeType.TASK:
+    }
+    case NodeType.TASK: {
       return 'Task';
-    default:
+    }
+    default: {
       return 'Node';
+    }
   }
 }
 
@@ -418,11 +448,11 @@ export class OrchestrationEngine extends EventEmitter {
     this.validateWorkflow(workflow);
 
     this.workflows.set(workflow.id, {
-      workflow,
-      status: WorkflowStatus.PENDING,
-      startTime: null,
+      context: {},
       endTime: null,
-      context: {}
+      startTime: null,
+      status: WorkflowStatus.PENDING,
+      workflow
     });
 
     this.emit('workflow:created', workflow.id);
@@ -461,15 +491,15 @@ export class OrchestrationEngine extends EventEmitter {
       this.activeExecutions.delete(workflow.id);
 
       const result: WorkflowResult = {
-        workflowId: workflow.id,
-        status: WorkflowStatus.FAILED,
-        results: {},
         errors: [error instanceof Error ? error.message : String(error)],
         metrics: {
-          duration: context.startTime ? Date.now() - context.startTime.getTime() : 0,
+          agentsUsed: 0,
           cost: 0,
-          agentsUsed: 0
-        }
+          duration: context.startTime ? Date.now() - context.startTime.getTime() : 0
+        },
+        results: {},
+        status: WorkflowStatus.FAILED,
+        workflowId: workflow.id
       };
 
       this.emit('workflow:failed', workflow.id, result);

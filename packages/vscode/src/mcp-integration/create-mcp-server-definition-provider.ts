@@ -35,11 +35,11 @@ export interface CreateMcpServerDefinitionProviderOptions {
   formatApiKeyHeaderValue?: (apiKey: string) => string;
 }
 
-function resolveEnabled(
+const resolveEnabled = (
   server: McpProviderServerDefinition,
   settings: McpProviderSettingsReader | undefined,
   defaultEnabled: boolean
-): boolean {
+): boolean => {
   if (server.enabledSettingKey === undefined || settings === undefined) {
     return server.disabled !== true;
   }
@@ -50,14 +50,14 @@ function resolveEnabled(
   }
 
   return defaultEnabled;
-}
+};
 
 /**
  * Creates an MCP server-definition provider with built-in auth and settings enrichment.
  */
-export function createMcpServerDefinitionProvider(
+export const createMcpServerDefinitionProvider = (
   options: CreateMcpServerDefinitionProviderOptions
-): McpServerProvider {
+): McpServerProvider => {
   const defaultEnabled = options.defaultEnabled ?? true;
   const formatHeader = options.formatApiKeyHeaderValue ?? (apiKey => apiKey);
 
@@ -85,8 +85,8 @@ export function createMcpServerDefinitionProvider(
         }
 
         const enriched: McpServerDefinition = {
-          name: server.name,
           command: server.command,
+          name: server.name,
           ...(server.args === undefined ? {} : { args: server.args }),
           ...(Object.keys(env).length > 0 ? { env } : {}),
           ...(Object.keys(headers).length > 0 ? { headers } : {}),
@@ -98,4 +98,4 @@ export function createMcpServerDefinitionProvider(
       });
     }
   };
-}
+};

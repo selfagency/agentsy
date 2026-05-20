@@ -8,7 +8,7 @@ export type AuditOperation = 'read' | 'write' | 'delete' | 'snapshot' | 'restore
  * Uses a negative lookbehind (or alternative approach since lookbehind support varies)
  * to avoid matching common file or list names like 'author-list' or 'key-count'.
  */
-const SECRET_PATTERN = /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/gi;
+const SECRET_PATTERN = /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/giu;
 
 function redactSecrets(value: string): string {
   return value.replace(SECRET_PATTERN, '[REDACTED]');
@@ -57,6 +57,21 @@ export function createAuditTrail(): AuditTrail {
   const events: AuditEvent[] = [];
 
   return {
+    byCorrelation(correlationId) {
+      return events.filter(e => e.correlationId === correlationId);
+    },
+
+    clear() {
+      events.length = 0;
+    },
+
+    query(path) {
+      if (path === undefined) {
+        return [...events];
+      }
+      return events.filter(e => e.path === path);
+    },
+
     record(operation, path, options) {
       const event: AuditEvent = {
         id: generateId(),
@@ -70,19 +85,6 @@ export function createAuditTrail(): AuditTrail {
       };
       events.push(event);
       return event;
-    },
-
-    query(path) {
-      if (path === undefined) return [...events];
-      return events.filter(e => e.path === path);
-    },
-
-    byCorrelation(correlationId) {
-      return events.filter(e => e.correlationId === correlationId);
-    },
-
-    clear() {
-      events.length = 0;
     }
   };
 }
