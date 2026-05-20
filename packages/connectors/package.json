@@ -62,27 +62,12 @@
     "@agentsy/session": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "oxfmt": "^0.50.0",
     "oxlint": "^1.65.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
-  },
-  "peerDependencies": {
-    "@slack/bolt": "^4",
-    "discord.js": "^14",
-    "grammy": "^1"
-  },
-  "peerDependenciesMeta": {
-    "grammy": {
-      "optional": true
-    },
-    "discord.js": {
-      "optional": true
-    },
-    "@slack/bolt": {
-      "optional": true
-    }
   }
 }
