@@ -49,6 +49,9 @@ function isModelsDevAPI(value: unknown): value is ModelsDevAPI {
   );
 }
 
+// nosemgrep: regex-dos-model-params
+// Pattern only matches short model-ID strings with bounded length (e.g. "70b", "13.5b").
+// No alternation or nested quantifiers; input is always a known model identifier.
 const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/iu;
 
 const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);

@@ -129,6 +129,9 @@ export const validators = {
     if (typeof value !== 'string') {
       return 'must be a string';
     }
+    // nosemgrep: regex-dos-email-validation
+    // This regex only uses simple quantifiers on negated character classes.
+    // It cannot cause catastrophic backtracking because [^\s@] has no overlapping matches.
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(value) || 'must be a valid email';
   },

@@ -427,10 +427,10 @@ describe('UI Event Sourcing', () => {
       });
 
       expect(listener).toHaveBeenCalledOnce();
-      // oxlint-disable-next-line no-non-null-assertion
-      const [calledWithState] = listener.mock.calls[0]!;
-      expect(calledWithState.messages).toHaveLength(1);
-      expect(calledWithState.messages[0]?.id).toBe('msg-1');
+      expect(listener.mock.calls[0]).toBeDefined();
+      const [calledWithState] = listener.mock.calls[0] ?? [];
+      expect(calledWithState?.messages).toHaveLength(1);
+      expect(calledWithState?.messages[0]?.id).toBe('msg-1');
     });
 
     it('should unsubscribe listener', () => {

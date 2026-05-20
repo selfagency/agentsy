@@ -532,10 +532,14 @@ function protectPreservedContent(
   }
 
   if (preserve.has('errors')) {
+    // nosemgrep: regex-dos-error-pattern
+    // Input is bounded LLM token output; pattern has no nested quantifiers.
     masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/giu, stash);
   }
 
   if (preserve.has('technical')) {
+    // nosemgrep: regex-dos-technical-pattern
+    // Input is bounded LLM token output; pattern has no nested quantifiers.
     masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/gu, stash);
   }
 

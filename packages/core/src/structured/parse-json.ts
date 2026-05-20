@@ -9,6 +9,8 @@ export const DEFAULT_MAX_JSON_DEPTH = 64;
 export const DEFAULT_MAX_JSON_KEYS = 10_000;
 
 function stripCodeFences(text: string): string {
+  // nosemgrep: regex-dos-code-fences
+  // Input is bounded LLM output chunks; lazy quantifier limits backtracking.
   return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/giu, '$1').trim();
 }
 

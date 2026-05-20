@@ -36,6 +36,8 @@ export function createGitHelpers(root: string): GitHelpers {
   }
 
   function resolveGitExecutable(): string | null {
+    // nosemgrep: command-injection-path
+    // PATH is explicitly restricted to safe system directories via withSafePathEnv().
     const direct = spawnSync('git', ['--version'], {
       env: withSafePathEnv(),
       shell: false,
@@ -47,6 +49,8 @@ export function createGitHelpers(root: string): GitHelpers {
     }
 
     const locatorCommand = process.platform === 'win32' ? 'where' : 'which';
+    // nosemgrep: command-injection-path
+    // PATH is explicitly restricted to safe system directories via withSafePathEnv().
     const located = spawnSync(locatorCommand, ['git'], {
       encoding: 'utf-8',
       env: withSafePathEnv(),

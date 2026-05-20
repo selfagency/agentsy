@@ -12,26 +12,26 @@ Core infrastructure:
 
 - `@agentsy/core` — Stream processing bundle (processor, SSE (Server-Sent Events), XML filter, structured JSON, thinking block parsing, retry, recovery)
 - `@agentsy/types` — Shared TypeScript types across all packages
-- `@agentsy/providers` — Provider normalizers (Anthropic, OpenAI, Mistral, etc.) and adapters
-- `@agentsy/mcp` — Model Context Protocol types and utilities
+- `@agentsy/providers` — Provider normalizers (Anthropic, OpenAI, Mistral, and others) and API adapters
+- `@agentsy/mcp` — Model Context Protocol (MCP) types and utilities
 
 Runtime and orchestration:
 
-- `@agentsy/runtime` — Agent execution runtime with sandboxing, AG-UI protocol adapter
+- `@agentsy/runtime` — Agent execution runtime with sandboxing and Agent-Generated User Interface (AG-UI) protocol adapter
 - `@agentsy/orchestrator` — Agent orchestration and scheduling
 - `@agentsy/memory` — Three-tier memory engine (raw event log, synthesized wiki, vector retrieval)
 - `@agentsy/session` — Session management and caching
 - `@agentsy/tokens` — Token budgeting and output compression
 - `@agentsy/guardrails` — Safety and validation boundaries
 - `@agentsy/observability` — Metrics and tracing
-- `@agentsy/retrieval` — RAG retrieval and indexing
+- `@agentsy/retrieval` — Retrieval-Augmented Generation (RAG) retrieval and indexing
 - `@agentsy/models` — Model selection and recommendation
 
 Surfaces and utilities:
 
 - `@agentsy/vscode` — VS Code Language Model Chat Provider integration (currently published)
-- `@agentsy/renderers` — CLI/TUI/renderers (plain text, streaming markdown, Ink components)
-- `@agentsy/ui` — UI components and event sourcing
+- `@agentsy/renderers` — CLI, Text-based User Interface (TUI), and renderers (plain text, streaming markdown, Ink components)
+- `@agentsy/ui` — UI components and event sourcingng
 - `@agentsy/cli` — CLI commands
 - `@agentsy/connectors` — Platform connectors (Discord, Slack, Telegram)
 - `@agentsy/tools` — Tool implementations and filesystem utilities
@@ -95,7 +95,7 @@ cd packages/vscode && pnpm build
 cd packages/vscode && pnpm test
 cd packages/vscode && pnpm coverage
 
-# Or any other package:
+// Or any other package:
 cd packages/core && pnpm build
 cd packages/providers && pnpm test
 ```
@@ -115,7 +115,7 @@ When a change is package-scoped, run the corresponding package scripts first, th
 
 - Develop against **Node.js 22** to match CI (VS Code package declares `>=18`, but repo targets Node 22 consistently)
 - Package manager is **pnpm** with workspace: protocol for internal dependencies
-- Module system is **ESM-first** with `.js` extensions in imports
+- Module system is **ESM-first** (ECMAScript Modules) with `.js` extensions in imports
 - Build tool is **tsup**
 - Test framework is **Vitest**
 - Linter is **oxlint** (Rust-based, type-aware)
@@ -140,14 +140,13 @@ Follow the root `tsconfig.json` as source of truth.
 
 ### Type safety requirements
 
-- Never introduce `any`
-- Prefer `unknown`, `Record<string, unknown>`, null-prototype objects, and explicit narrowing for untrusted shapes
+- Avoid introducing `any`; when type information is genuinely unknown, use `unknown`, `Record<string, unknown>`, null-prototype objects, or explicit narrowing instead
 - Preserve exact optional-property behavior; do not add `undefined` loosely where omission is intended
 
 ### Import rules
 
 - Use `.js` extensions in **relative imports inside `.ts` files** (verbatimModuleSyntax)
-- Keep imports ESM-compatible throughout
+- Keep imports ESM-compatible throughout the codebase
 - Do not use cross-package relative imports like `../../core/...`; use workspace package imports instead (e.g., `@agentsy/core/processor`)
 
 ## Linting and Formatting
@@ -197,11 +196,10 @@ For test inputs that intentionally include mixed HTML/XML or other exceptions, u
 
 ### `@agentsy/memory`
 
-- Durable knowledge layer, not hidden orchestration dependency
-- Must remain pluggable for consumers to substitute backends
-- Prefer abstract interfaces for memory providers, retrievers, lifecycle hooks
-
-- Expose as both Agentsy-native package and standalone MCP server/plugin surface when possible
+- Durable knowledge layer, not a hidden orchestration dependency
+- Should remain pluggable so consumers can substitute backends when needed
+- Prefer abstract interfaces for memory providers, retrievers, and lifecycle hooks
+- Expose as both Agentsy-native package and standalone Model Context Protocol (MCP) server or plugin surface when possible
 
 ### Internal workspace packages
 
@@ -428,7 +426,7 @@ LLMStreamProcessor and similar components:
 - Update docs when public APIs, commands, package names, or workflows change
 - Keep root docs aligned with current monorepo structure (README.md lists current packages)
 - Do not reintroduce stale references to obsolete packages or missing tooling
-- Update plan documents only when genuinely planning future work; actual implementation belongs in IMPLEMENTATION-PLAN.md files within packages
+- Update implementation-plan documents only when genuinely planning future work; actual implementation belongs in `IMPLEMENTATION-PLAN.md` files within packages
 
 ## CI and Integration
 

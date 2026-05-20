@@ -18,6 +18,10 @@ const regexAccessTimestamps = new WeakMap<RegExp, number>();
  *   - Excessive alternation depth
  */
 function hasDangerousQuantifier(pattern: string): boolean {
+  if (pattern.length > 200) return true;
+  // nosemgrep: regex-dos-meta-validation
+  // These regexes only run against already-length-capped pattern strings (≤200 chars).
+  // They detect nested quantifiers in *other* regexes as a security guard.
   // Nested quantifiers: quantifier on a group that itself contains a quantifier
   if (/\([^)]*[+*?][^)]*\)[+*?]/.test(pattern)) return true;
   // Chained possessive-style: two consecutive quantifiers

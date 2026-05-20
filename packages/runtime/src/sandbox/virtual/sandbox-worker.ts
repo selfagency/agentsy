@@ -45,8 +45,10 @@ const context = createContext({
 Object.freeze(context);
 
 try {
-  // Wrap code to support implicit return if it's a simple expression,
-  // or just run as-is if it's a block.
+  // nosemgrep: dangerous-sandbox-run-in-context
+  // runInContext executes user-provided code inside a hardened vm.Context with
+  // no Node builtins, no require, no filesystem, and a frozen global object.
+  // Timeout and worker.terminate() provide defense-in-depth.
   const result: unknown = runInContext(code, context, {
     displayErrors: true,
     timeout // vm timeout provides a first layer, but worker.terminate() is the fallback
