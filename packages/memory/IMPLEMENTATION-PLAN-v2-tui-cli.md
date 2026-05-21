@@ -88,7 +88,7 @@ Add new oclif commands as top-level commands (no topic namespace). These are the
 ### Command list
 
 | Command                         | Description                 | Key flags                                                                               |
-| ------------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
+| ------------------------------- | --------------------------- | --------------------------------------------------------------------------------------- | ------ |
 | `agentsy-memory list`           | List all memories           | `--tier`, `--kind`, `--min-importance`, `--limit`, `--format=json                       | table` |
 | `agentsy-memory get <id>`       | Get a single memory by ID   | `--format=json                                                                          | table` |
 | `agentsy-memory add`            | Add a memory                | `--content`, `--importance`, `--kind`, `--tier`, `--metadata` (interactive if no flags) |
