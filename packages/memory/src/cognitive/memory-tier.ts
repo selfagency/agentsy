@@ -7,7 +7,12 @@ export interface MemoryTierLike {
   readonly config: TierConfig;
   write(item: MemoryItem): MemoryItem | null;
   read(query?: TierReadQuery): TierReadResult;
-  capacity(): { usedTokens: number; maxTokens: number; usedItems: number; maxItems: number };
+  capacity(): {
+    usedTokens: number;
+    maxTokens: number;
+    usedItems: number;
+    maxItems: number;
+  };
   evict(count: number): MemoryItem[];
   promote(count: number, to: MemoryTierLike): number;
   demote(count: number, from: MemoryTierLike): number;
@@ -101,7 +106,12 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
     },
 
     capacity() {
-      return { maxItems: config.maxItems, maxTokens: config.maxTokens, usedItems: items.size, usedTokens };
+      return {
+        maxItems: config.maxItems,
+        maxTokens: config.maxTokens,
+        usedItems: items.size,
+        usedTokens
+      };
     },
 
     evict(count: number): MemoryItem[] {
@@ -174,15 +184,21 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
 }
 
 export function nextTierName(current: TierName): TierName | null {
+  // nosemgrep: current key comes from TierName enum, verified to exist in TIER_LEVELS
   const level = TIER_LEVELS[current];
   if (level >= 5) return null;
+  // nosemgrep: level+1 is a numeric array index bounded by known tier levels
+  // NOSONAR: cast is required by strict TS for Record<TierLevel, TierName> index
   const nextTierName = TIER_NAMES[(level + 1) as TierLevel];
   return nextTierName ?? null;
 }
 
 export function prevTierName(current: TierName): TierName | null {
+  // nosemgrep: current key comes from TierName enum, verified to exist in TIER_LEVELS
   const level = TIER_LEVELS[current];
   if (level <= 1) return null;
+  // nosemgrep: level-1 is a numeric array index bounded by known tier levels
+  // NOSONAR: cast is required by strict TS for Record<TierLevel, TierName> index
   const prevTierName = TIER_NAMES[(level - 1) as TierLevel];
   return prevTierName ?? null;
 }

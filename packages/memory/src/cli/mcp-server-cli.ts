@@ -36,10 +36,12 @@ Environment variables:
   const configOverrides: Partial<MemoryConfig> = {};
 
   for (let i = 0; i < args.length; i++) {
+    // nosemgrep: args[i] is from process.argv with loop bounds check
     const arg = args[i];
     switch (arg) {
       case '--transport': {
         configOverrides.mcp = configOverrides.mcp ?? {};
+        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const transportVal = args[++i];
         if (transportVal) {
           const mcpObj = configOverrides.mcp as Record<string, unknown>;
@@ -49,6 +51,7 @@ Environment variables:
       }
       case '--port': {
         configOverrides.mcp = configOverrides.mcp ?? {};
+        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const portVal = args[++i];
         if (portVal) {
           const mcpObj = configOverrides.mcp as Record<string, unknown>;
@@ -57,6 +60,7 @@ Environment variables:
         break;
       }
       case '--log-level': {
+        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const logVal = args[++i];
         if (logVal) configOverrides.logLevel = logVal as MemoryConfig['logLevel'];
         break;

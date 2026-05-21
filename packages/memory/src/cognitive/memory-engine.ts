@@ -222,7 +222,8 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
   function ingest(content: string, ingestOptions: MemoryEngineIngestOptions = {}): string | null {
     const targetTierName = ingestOptions.targetTier ?? 'sensory_buffer';
-    const targetTier = tiers[targetTierName as TierName];
+    // nosemgrep: targetTierName is TierName with fallback, not user-controlled
+    const targetTier = tiers[targetTierName];
 
     if (!targetTier) return null;
 

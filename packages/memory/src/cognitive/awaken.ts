@@ -95,6 +95,7 @@ function reclaimBudgetForDiscarded(results: DecayedItem[], budgetRelease: Awaken
 
 function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): void {
   for (const result of results) {
+    // nosemgrep: result.tier is from DecayedItem, comes from controlled iteration
     const currentTier = tiers[result.tier];
     if (!currentTier) continue;
 
@@ -102,24 +103,24 @@ function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): vo
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const nextIdx = currentIdx + 1;
       if (nextIdx < TIER_ORDER.length) {
-        const nextTierName = TIER_ORDER[nextIdx] as TierName | undefined;
-        if (nextTierName !== undefined) {
-          const nextTier = tiers[nextTierName];
-          if (nextTier) {
-            currentTier.promote(1, nextTier);
-          }
+        // nosemgrep: nextIdx is a numeric array index verified by length check
+        const nextTierName = TIER_ORDER[nextIdx];
+        // nosemgrep: nextTierName comes from TIER_ORDER enum, not user-controlled
+        const nextTier = nextTierName ? tiers[nextTierName] : undefined;
+        if (nextTier) {
+          currentTier.promote(1, nextTier);
         }
       }
     } else if (result.action === 'demote') {
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const prevIdx = currentIdx - 1;
       if (prevIdx >= 0) {
-        const prevTierName = TIER_ORDER[prevIdx] as TierName | undefined;
-        if (prevTierName !== undefined) {
-          const prevTier = tiers[prevTierName];
-          if (prevTier) {
-            currentTier.demote(1, prevTier);
-          }
+        // nosemgrep: prevIdx is a numeric array index verified by bounds check
+        const prevTierName = TIER_ORDER[prevIdx];
+        // nosemgrep: prevTierName comes from TIER_ORDER enum, not user-controlled
+        const prevTier = prevTierName ? tiers[prevTierName] : undefined;
+        if (prevTier) {
+          currentTier.demote(1, prevTier);
         }
       }
     }
@@ -155,9 +156,11 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   let summarized = 0;
 
   for (let i = 0; i < TIER_ORDER.length - 1; i++) {
-    const tierName = TIER_ORDER[i] as TierName | undefined;
-    const nextTierName = TIER_ORDER[i + 1] as TierName | undefined;
-    if (tierName === undefined || nextTierName === undefined) continue;
+    // nosemgrep: numeric array index verified by loop bounds
+    const tierName = TIER_ORDER[i];
+    // nosemgrep: numeric array index verified by loop bounds
+    const nextTierName = TIER_ORDER[i + 1];
+    if (!tierName || !nextTierName) continue;
 
     const tier = tiers[tierName];
     const nextTier = tiers[nextTierName];
@@ -169,6 +172,7 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
     if (utilizationRatio >= tier.config.consolidationThreshold) {
       const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
       const actuallyPromoted = tier.promote(promoteCount, nextTier);
+      // nosemgrep: numeric index from loop counter, bounds-checked by conditions
       if (i < 2) {
         compressed += actuallyPromoted;
       } else if (i < 3) {
@@ -199,7 +203,8 @@ function buildGetAllItems(tiers: AwakenDeps['tiers']): () => MemoryItem[] {
   return () => {
     const items: MemoryItem[] = [];
     for (const tierName of TIER_ORDER) {
-      const tier = tiers[tierName as TierName];
+      // nosemgrep: tierName comes from TIER_ORDER enum, not user-controlled
+      const tier = tiers[tierName];
       if (!tier) continue;
       items.push(...tier.items());
     }

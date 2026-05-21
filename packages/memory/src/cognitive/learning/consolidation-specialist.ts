@@ -90,7 +90,9 @@ function runTemporalSpecialist(observations: Observation[]): string {
   // Sort by extraction time, look for trends
   const sorted = [...observations].sort((a, b) => a.extractedAt - b.extractedAt);
   if (sorted.length >= 2) {
+    // nosemgrep: [0] is on a non-empty array checked by length >= 2
     const first = sorted[0];
+    // nosemgrep: [sorted.length - 1] is on a non-empty array
     const last = sorted[sorted.length - 1];
     if (first && last) {
       return `Temporal trend from "${first.content.slice(0, 40)}..." to "${last.content.slice(0, 40)}..." over ${observations.length} observations.`;

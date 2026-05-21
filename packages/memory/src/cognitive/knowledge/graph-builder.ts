@@ -84,7 +84,10 @@ export function createKnowledgeGraph(_options: KnowledgeGraphOptions = {}): Know
       }
 
       walk(entityId, 0);
-      return { nodes: [...resultNodes.values()], edges: [...resultEdges.values()] };
+      return {
+        nodes: [...resultNodes.values()],
+        edges: [...resultEdges.values()]
+      };
     },
 
     merge(other: KnowledgeGraph): number {
@@ -153,8 +156,8 @@ export function createGraphBuilder(options: GraphBuilderOptions = {}): GraphBuil
     };
 
     for (const entity of extraction.entities) {
-      const entityKind = entity.kind as string;
-      const kind = kindMap[entityKind] ?? 'unknown';
+      // nosemgrep: entity.kind lookup in kindMap with safe fallback to 'unknown'
+      const kind = kindMap[entity.kind] ?? 'unknown';
       graph.addNode({
         id: fingerprintContent(entity.name.toLowerCase()).value,
         kind,

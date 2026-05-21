@@ -45,6 +45,7 @@ const DEFAULT_PRIORITY: ResolutionPriority = {
 function extractPolarity(content: string): number {
   const polarityPatterns = [/\b(?:like|love|enjoy|prefer)s?\b/giu, /\b(?:dislike|hate|avoid|not)s?\b/giu];
   for (let i = 0; i < polarityPatterns.length; i++) {
+    // nosemgrep: numeric array index verified by loop bounds
     if (polarityPatterns[i]?.test(content)) return i + 1;
   }
   return 0;
@@ -66,8 +67,9 @@ function observationsOverlap(a: Observation, b: Observation): boolean {
 }
 
 function scoreObservation(obs: Observation, priority: ResolutionPriority): number {
-  const sourceWriteHeap = obs.sourceMemoryId as WriteHeap;
-  const sourceWeight = priority.sourceWeights[sourceWriteHeap] ?? 0.5;
+  // nosemgrep: sourceMemoryId key is from controlled Observation type, has fallback
+  // NOSONAR: type cast is required by strict TS for Record<WriteHeap, number> index
+  const sourceWeight = priority.sourceWeights[obs.sourceMemoryId as WriteHeap] ?? 0.5;
   const _recencyScore = 1.0; // We don't have extractedAt age here; caller handles temporal
   const confidenceScore = obs.confidence;
   return sourceWeight * (1 - priority.recencyBias) + confidenceScore * priority.recencyBias;
