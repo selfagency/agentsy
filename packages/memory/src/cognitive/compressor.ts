@@ -31,8 +31,8 @@ function estimateTokens(text: string): number {
 function computeInitialImportance(item: MemoryItem, now: number): number {
   const ageMs = Math.max(0, now - item.createdAt);
   const recencyWeight = 1 / (1 + ageMs / 30_000);
-  const contentTypeWeight = CONTENT_TYPE_WEIGHTS[item.writeHeap] ?? 0.5;
-  const score = item.importance * 0.4 + recencyWeight * 0.3 + contentTypeWeight * 0.3;
+  const writeHeapWeight = CONTENT_TYPE_WEIGHTS[item.writeHeap as WriteHeap] ?? 0.5;
+  const score = item.importance * 0.4 + recencyWeight * 0.3 + writeHeapWeight * 0.3;
   return Math.min(1, Math.max(0, score));
 }
 

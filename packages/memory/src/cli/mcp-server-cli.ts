@@ -41,13 +41,19 @@ Environment variables:
       case '--transport': {
         configOverrides.mcp = configOverrides.mcp ?? {};
         const transportVal = args[++i];
-        if (transportVal) (configOverrides.mcp as Record<string, unknown>).transport = transportVal;
+        if (transportVal) {
+          const mcpObj = configOverrides.mcp as Record<string, unknown>;
+          mcpObj.transport = transportVal;
+        }
         break;
       }
       case '--port': {
         configOverrides.mcp = configOverrides.mcp ?? {};
         const portVal = args[++i];
-        if (portVal) (configOverrides.mcp as Record<string, unknown>).port = Number.parseInt(portVal, 10);
+        if (portVal) {
+          const mcpObj = configOverrides.mcp as Record<string, unknown>;
+          mcpObj.port = Number.parseInt(portVal, 10);
+        }
         break;
       }
       case '--log-level': {

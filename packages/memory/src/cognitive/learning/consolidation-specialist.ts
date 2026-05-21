@@ -165,7 +165,8 @@ export function createConsolidationSpecialist(options: ConsolidationSpecialistOp
     const unique = new Map<string, ConsolidationResult>();
     for (const r of results) {
       const key = r.output.slice(0, 60);
-      if (!unique.has(key) || (unique.get(key)?.confidence ?? 0) < r.confidence) {
+      const existing = unique.get(key);
+      if (!existing || (existing.confidence ?? 0) < r.confidence) {
         unique.set(key, r);
       }
     }

@@ -64,7 +64,8 @@ export async function createMemoryMCPServer(
     warn: 2,
     error: 3
   };
-  const currentLevel = LOG_LEVELS[logLevel] ?? 1;
+  const logLevelKey = logLevel as string;
+  const currentLevel = LOG_LEVELS[logLevelKey] ?? 1;
 
   function log(level: string, msg: string) {
     if ((LOG_LEVELS[level] ?? 1) >= currentLevel) {

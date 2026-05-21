@@ -66,7 +66,8 @@ function observationsOverlap(a: Observation, b: Observation): boolean {
 }
 
 function scoreObservation(obs: Observation, priority: ResolutionPriority): number {
-  const sourceWeight = priority.sourceWeights[obs.sourceMemoryId as WriteHeap] ?? 0.5;
+  const sourceWriteHeap = obs.sourceMemoryId as WriteHeap;
+  const sourceWeight = priority.sourceWeights[sourceWriteHeap] ?? 0.5;
   const _recencyScore = 1.0; // We don't have extractedAt age here; caller handles temporal
   const confidenceScore = obs.confidence;
   return sourceWeight * (1 - priority.recencyBias) + confidenceScore * priority.recencyBias;
@@ -89,8 +90,9 @@ function buildRepresentations(group: Observation[]): Representation[] {
 
   // Contradiction view: summarize the conflict
   const contradictionSummary = group.map(o => o.content).join(' vs ');
+  const firstId = group[0];
   representations.push({
-    id: `rep-contra-${group[0]?.id ?? 'unknown'}`,
+    id: `rep-contra-${firstId?.id ?? 'unknown'}`,
     observationIds: group.map(o => o.id),
     view: 'contradiction',
     summary: contradictionSummary,
@@ -141,7 +143,9 @@ function detectContradictionsInternal(observations: Observation[]): Observation[
 
   for (let i = 0; i < observations.length; i++) {
     if (visited.has(i)) continue;
-    const group: Observation[] = [observations[i] as Observation];
+    const obsI = observations[i];
+    if (!obsI) continue;
+    const group: Observation[] = [obsI];
     visited.add(i);
 
     for (let j = i + 1; j < observations.length; j++) {

@@ -222,7 +222,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
   function ingest(content: string, ingestOptions: MemoryEngineIngestOptions = {}): string | null {
     const targetTierName = ingestOptions.targetTier ?? 'sensory_buffer';
-    const targetTier = tiers[targetTierName];
+    const targetTier = tiers[targetTierName as TierName];
 
     if (!targetTier) return null;
 
@@ -250,7 +250,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       let allItems: MemoryItem[] = [];
 
       for (const tierName of targetTiers) {
-        const tier = tiers[tierName];
+        const tier = tiers[tierName as TierName];
         if (!tier) continue;
         const result = tier.read(readQuery);
         allItems.push(...result.items);
@@ -275,7 +275,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
     const results: TierReadResult[] = [];
     for (const tierName of targetTiers) {
-      const tier = tiers[tierName];
+      const tier = tiers[tierName as TierName];
       if (!tier) continue;
       results.push(tier.read(readQuery));
     }
@@ -304,10 +304,11 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
   function takeSnapshot(): MemoryEngineSnapshot {
     const tierData = {} as Record<TierName, { items: number; usedTokens: number; maxTokens: number }>;
-    for (const [name, tier] of Object.entries(tiers) as [TierName, MemoryTierLike | undefined][]) {
+    for (const [name, tier] of Object.entries(tiers) as [string, MemoryTierLike | undefined][]) {
       if (!tier) continue;
+      const tierName = name as TierName;
       const cap = tier.capacity();
-      tierData[name] = {
+      tierData[tierName] = {
         items: cap.usedItems,
         usedTokens: cap.usedTokens,
         maxTokens: cap.maxTokens
@@ -334,12 +335,13 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       }
     >;
 
-    for (const [name, tier] of Object.entries(tiers) as [TierName, MemoryTierLike | undefined][]) {
+    for (const [name, tier] of Object.entries(tiers) as [string, MemoryTierLike | undefined][]) {
       if (!tier) continue;
+      const tierName = name as TierName;
       const cap = tier.capacity();
       totalItems += cap.usedItems;
       totalTokens += cap.usedTokens;
-      tierStats[name] = {
+      tierStats[tierName] = {
         items: cap.usedItems,
         usedTokens: cap.usedTokens,
         maxTokens: cap.maxTokens,

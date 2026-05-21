@@ -25,11 +25,13 @@ function cosineSimilarity(a: number[], b: number[]): number {
   let normA = 0;
   let normB = 0;
   for (let i = 0; i < a.length; i++) {
-    const ai = a[i] ?? 0;
-    const bi = b[i] ?? 0;
-    dot += ai * bi;
-    normA += ai * ai;
-    normB += bi * bi;
+    const ai = a[i];
+    const bi = b[i];
+    const aiVal = ai !== undefined ? ai : 0;
+    const biVal = bi !== undefined ? bi : 0;
+    dot += aiVal * biVal;
+    normA += aiVal * aiVal;
+    normB += biVal * biVal;
   }
   const denom = Math.sqrt(normA) * Math.sqrt(normB);
   return denom === 0 ? 0 : dot / denom;
@@ -63,13 +65,13 @@ function tryAddToGroup(
 ): void {
   if (assigned.has(j)) return;
 
-  const embeddingJ = embeddings[j]?.embedding;
-  if (!embeddingJ) return;
+  const embeddingJ = embeddings[j];
+  if (!embeddingJ?.embedding) return;
 
-  const embeddingI = embeddings[i]?.embedding;
-  if (!embeddingI) return;
+  const embeddingI = embeddings[i];
+  if (!embeddingI?.embedding) return;
 
-  const sim = cosineSimilarity(embeddingI, embeddingJ);
+  const sim = cosineSimilarity(embeddingI.embedding, embeddingJ.embedding);
   if (sim < threshold) return;
 
   const jItem = items[j];
@@ -93,8 +95,8 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
     const group: Group = { items: [groupItem], indices: [i] };
     assigned.add(i);
 
-    const embeddingI = embeddings[i]?.embedding;
-    if (!embeddingI) {
+    const embeddingI = embeddings[i];
+    if (!embeddingI?.embedding) {
       groups.push(group);
       continue;
     }

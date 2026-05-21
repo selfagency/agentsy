@@ -153,7 +153,8 @@ export function createGraphBuilder(options: GraphBuilderOptions = {}): GraphBuil
     };
 
     for (const entity of extraction.entities) {
-      const kind = kindMap[entity.kind] ?? 'unknown';
+      const entityKind = entity.kind as string;
+      const kind = kindMap[entityKind] ?? 'unknown';
       graph.addNode({
         id: fingerprintContent(entity.name.toLowerCase()).value,
         kind,

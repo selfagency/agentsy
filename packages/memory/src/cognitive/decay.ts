@@ -35,7 +35,8 @@ const TIER_HALF_LIVES: Record<TierName, keyof DecayConfig> = {
 
 function getHalfLife(tier: TierName, config: DecayConfig): number {
   const key = TIER_HALF_LIVES[tier];
-  return config[key] ?? Infinity;
+  const halfLife = config[key];
+  return halfLife ?? Infinity;
 }
 
 export function applyDecay(

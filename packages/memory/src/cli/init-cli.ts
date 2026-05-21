@@ -43,14 +43,18 @@ Environment variables:
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
         const transportVal = args[++i];
-        if (transportVal) options.config.mcp.transport = transportVal as 'stdio' | 'http';
+        if (transportVal && typeof transportVal === 'string') {
+          options.config.mcp.transport = transportVal as 'stdio' | 'http';
+        }
         break;
       }
       case '--port': {
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
         const portVal = args[++i];
-        if (portVal) options.config.mcp.port = parseInt(portVal, 10);
+        if (portVal && typeof portVal === 'string') {
+          options.config.mcp.port = Number.parseInt(portVal, 10);
+        }
         break;
       }
       case '--skip-mcp':

@@ -176,11 +176,13 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
 export function nextTierName(current: TierName): TierName | null {
   const level = TIER_LEVELS[current];
   if (level >= 5) return null;
-  return TIER_NAMES[(level + 1) as TierLevel];
+  const nextTierName = TIER_NAMES[(level + 1) as TierLevel];
+  return nextTierName ?? null;
 }
 
 export function prevTierName(current: TierName): TierName | null {
   const level = TIER_LEVELS[current];
   if (level <= 1) return null;
-  return TIER_NAMES[(level - 1) as TierLevel];
+  const prevTierName = TIER_NAMES[(level - 1) as TierLevel];
+  return prevTierName ?? null;
 }

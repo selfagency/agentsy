@@ -1,36 +1,36 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import type { MemoryItem } from "../tier-types.js";
-import { createLearningLoopOrchestrator } from "./loop-orchestrator.js";
+import type { MemoryItem } from '../tier-types.js';
+import { createLearningLoopOrchestrator } from './loop-orchestrator.js';
 
 function makeMemory(id: string, content: string): MemoryItem {
   const now = 1_000_000;
   return {
     id,
-    kind: "semantic",
+    kind: 'semantic',
     content,
     tokenCount: 10,
     importance: 0.7,
-    writeHeap: "event",
-    reuseClass: "hot",
+    writeHeap: 'event',
+    reuseClass: 'hot',
     createdAt: now - 1_000,
     lastAccessedAt: now - 100,
     accessCount: 3,
     fingerprint: `fp-${id}`,
-    metadata: {},
+    metadata: {}
   };
 }
 
-describe("LearningLoopOrchestrator", () => {
+describe('LearningLoopOrchestrator', () => {
   const orchestrator = createLearningLoopOrchestrator();
 
-  it("runs a full learning cycle", async () => {
+  it('runs a full learning cycle', async () => {
     const result = await orchestrator.runCycle({
       getNewMemories: () => [
-        makeMemory("1", "The user is a developer who likes TypeScript."),
-        makeMemory("2", "The project uses ESM modules."),
+        makeMemory('1', 'The user is a developer who likes TypeScript.'),
+        makeMemory('2', 'The project uses ESM modules.')
       ],
-      getLTMMemories: () => [],
+      getLTMMemories: () => []
     });
 
     expect(result.observationsExtracted).toBeGreaterThanOrEqual(0);
@@ -38,10 +38,10 @@ describe("LearningLoopOrchestrator", () => {
     expect(result.consolidationsProduced).toBeGreaterThanOrEqual(0);
   });
 
-  it("returns zero counts with empty input", async () => {
+  it('returns zero counts with empty input', async () => {
     const result = await orchestrator.runCycle({
       getNewMemories: () => [],
-      getLTMMemories: () => [],
+      getLTMMemories: () => []
     });
 
     expect(result.observationsExtracted).toBe(0);
@@ -49,30 +49,25 @@ describe("LearningLoopOrchestrator", () => {
     expect(result.resolutionsProduced).toBe(0);
   });
 
-  it("emits events when emitEvent is provided", async () => {
+  it('emits events when emitEvent is provided', async () => {
     const events: { type: string; payload: Record<string, unknown> }[] = [];
     const result = await orchestrator.runCycle({
-      getNewMemories: () => [makeMemory("1", "Test content.")],
+      getNewMemories: () => [makeMemory('1', 'Test content.')],
       getLTMMemories: () => [],
-      emitEvent: (e) => events.push(e),
+      emitEvent: e => events.push(e)
     });
 
     expect(events.length).toBeGreaterThanOrEqual(3); // observations, dialectic, consolidation, solidify, canary
     expect(result.durationMs).toBeGreaterThanOrEqual(0);
   });
 
-  it("respects batch size config", async () => {
+  it('respects batch size config', async () => {
     const result = await orchestrator.runCycle(
       {
-        getNewMemories: (limit) =>
-          [
-            makeMemory("1", "A"),
-            makeMemory("2", "B"),
-            makeMemory("3", "C"),
-          ].slice(0, limit),
-        getLTMMemories: () => [],
+        getNewMemories: limit => [makeMemory('1', 'A'), makeMemory('2', 'B'), makeMemory('3', 'C')].slice(0, limit),
+        getLTMMemories: () => []
       },
-      { observation: { batchSize: 2, extractors: ["factual"] } },
+      { observation: { batchSize: 2, extractors: ['factual'] } }
     );
 
     expect(result.observationsExtracted).toBeLessThanOrEqual(2);

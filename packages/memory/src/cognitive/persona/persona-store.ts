@@ -50,7 +50,8 @@ function deepMergePreferences(
   if (!incoming) return existing;
   const merged = { ...existing };
   for (const [key, value] of Object.entries(incoming)) {
-    merged[key] = value;
+    const keyVal = key as string;
+    merged[keyVal] = value;
   }
   return merged;
 }
