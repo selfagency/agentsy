@@ -5,6 +5,7 @@ import { awaken, type AwakenResult, type PendingEvent } from './awaken.js';
 import { createCompressor, type CompressorOptions } from './compressor.js';
 import { type DecayConfig, DEFAULT_DECAY_CONFIG } from './decay.js';
 import { computeImportance, DEFAULT_IMPORTANCE_FACTORS, type ImportanceFactors } from './importance.js';
+import type { LearningLoopConfig } from './learning/loop-orchestrator.js';
 import { createLongTermMemory, type LongTermMemoryOptions } from './long-term-memory.js';
 import type { MemoryTierLike } from './memory-tier.js';
 import { createSensoryBuffer, type SensoryBufferOptions } from './sensory-buffer.js';
@@ -74,12 +75,20 @@ export interface MemoryEngineOptions {
     pubsub?: PubSubManager;
   };
   now?: (() => number) | undefined;
+  runLearningCycle?: boolean;
+  learningConfig?: Partial<LearningLoopConfig>;
 }
 
 export interface MemoryEngine {
   ingest(content: string, options?: MemoryEngineIngestOptions): string | null;
   recall(query?: MemoryEngineRecallOptions): TierReadResult[];
-  awaken(pendingEvents?: PendingEvent[]): Promise<AwakenResult>;
+  awaken(
+    pendingEvents?: PendingEvent[],
+    options?: {
+      runLearningCycle?: boolean;
+      learningConfig?: Partial<LearningLoopConfig>;
+    }
+  ): Promise<AwakenResult>;
   snapshot(): MemoryEngineSnapshot;
   stats(): MemoryEngineStats;
   reset(): void;
@@ -170,6 +179,8 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
   const budget = createTokenBudget(buildBudgetOptions(options));
   const scheduler = createTierScheduler(tiers, buildSchedulerOptions(options));
+  const runLearningCycle = options.runLearningCycle ?? false;
+  const learningConfig = options.learningConfig;
 
   // Create processing pipeline (used in tier bridges — Phase 5+)
   const _compressor = createCompressor({ ...options.compressor, now });
@@ -284,9 +295,28 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
     return results;
   }
 
-  async function doAwaken(events?: PendingEvent[]): Promise<AwakenResult> {
+  async function doAwaken(
+    events?: PendingEvent[],
+    awakenOptions?: {
+      runLearningCycle?: boolean;
+      learningConfig?: Partial<LearningLoopConfig>;
+    }
+  ): Promise<AwakenResult> {
     const allPending = [...pendingEvents, ...(events ?? [])];
     pendingEvents.length = 0;
+
+    const awakenOpts: import('./awaken.js').AwakenOptions = {
+      pendingEvents: allPending,
+      now
+    };
+    const effectiveRunLearningCycle = awakenOptions?.runLearningCycle ?? runLearningCycle;
+    if (effectiveRunLearningCycle) {
+      awakenOpts.runLearningCycle = effectiveRunLearningCycle;
+    }
+    const effectiveLearningConfig = awakenOptions?.learningConfig ?? learningConfig;
+    if (effectiveLearningConfig !== undefined) {
+      awakenOpts.learningConfig = effectiveLearningConfig;
+    }
 
     return await awaken(
       {
@@ -297,10 +327,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
           ingest(content, { importance, metadata }),
         getAllItems: () => getAllItemsFromTiers(tiers)
       },
-      {
-        pendingEvents: allPending,
-        now
-      }
+      awakenOpts
     );
   }
 

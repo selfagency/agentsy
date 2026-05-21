@@ -30,6 +30,11 @@
       "import": "./dist/cognitive.js",
       "require": "./dist/cognitive.cjs"
     },
+    "./learning": {
+      "types": "./dist/learning.d.ts",
+      "import": "./dist/learning.js",
+      "require": "./dist/learning.cjs"
+    },
     "./mcp": {
       "types": "./dist/mcp.d.ts",
       "import": "./dist/mcp.js",

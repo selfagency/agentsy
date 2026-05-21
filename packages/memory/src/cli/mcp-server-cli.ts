@@ -16,7 +16,7 @@ export async function runMcpServerCli(args: string[] = process.argv.slice(2)): P
     console.log(`
 @agentsy/memory mcp — Start the MCP memory server
 
-Usage: agentsy-memory-mcp [options]
+Usage: agentsy-memory mcp [options]
 
 Options:
   --transport <stdio|http>   MCP transport mode (default: stdio)
@@ -89,7 +89,7 @@ Environment variables:
   await server.start();
 }
 
-/** Main entrypoint for `agentsy-memory-mcp` CLI. */
+/** Main entrypoint for the MCP server CLI. */
 export async function main(): Promise<void> {
   try {
     await runMcpServerCli();
