@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@oclif/core':
+        specifier: ^4.11.3
+        version: 4.11.3
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
