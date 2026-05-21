@@ -11,7 +11,7 @@
     "streaming",
     "vscode"
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "author": "Selfagency",
   "repository": {
     "type": "git",

@@ -1,12 +1,22 @@
 import { describe, it, expect } from 'vitest';
 
 import { createMemoryEngine } from '../cognitive/memory-engine.js';
+import { createKnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
+import { createWikiManager } from '../wiki/wiki-manager.js';
 import { createMemoryMcpTools } from './tools.js';
 
 function setup() {
   const engine = createMemoryEngine();
-  const { definitions, handlers } = createMemoryMcpTools(engine);
+  const { definitions, handlers } = createMemoryMcpTools({ engine });
   return { engine, definitions, handlers };
+}
+
+function setupWithUnified() {
+  const engine = createMemoryEngine();
+  const wiki = createWikiManager();
+  const kb = createKnowledgeBaseManager();
+  const { definitions, handlers } = createMemoryMcpTools({ engine, wiki, kb });
+  return { engine, wiki, kb, definitions, handlers };
 }
 
 function getHandler(
@@ -210,5 +220,145 @@ describe('MCP Tools', () => {
 
     const stats = engine.stats();
     expect(stats.totalItems).toBe(1);
+  });
+
+  describe('unified search', () => {
+    it('memory_recall with scope=unified returns combined tier, wiki, and rag results', async () => {
+      const { engine, wiki, kb, handlers } = setupWithUnified();
+      engine.ingest('tier memory', { importance: 0.8 });
+      await wiki.upsertPage({ pageId: 'p1', title: 'Wiki Page', body: 'wiki memory', tags: ['t'] });
+      await kb.ingest({
+        sourceId: 's1',
+        sourceType: 'document',
+        title: 'RAG Doc',
+        content: 'rag memory',
+        updatedAt: new Date().toISOString()
+      });
+
+      const handler = getHandler(handlers, 'memory_recall');
+      const result = (await handler({ query: 'memory', scope: 'unified' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('[tier]');
+      expect(text).toContain('[wiki]');
+      expect(text).toContain('[rag]');
+      expect(text).toContain('Found');
+    });
+
+    it('memory_search with scope=unified returns combined results', async () => {
+      const { engine, wiki, kb, handlers } = setupWithUnified();
+      engine.ingest('searchable', { importance: 0.8 });
+      await wiki.upsertPage({ pageId: 'p1', title: 'Wiki', body: 'searchable wiki', tags: ['t'] });
+      await kb.ingest({
+        sourceId: 's1',
+        sourceType: 'document',
+        title: 'RAG',
+        content: 'searchable rag',
+        updatedAt: new Date().toISOString()
+      });
+
+      const handler = getHandler(handlers, 'memory_search');
+      const result = (await handler({ query: 'searchable', scope: 'unified' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('[tier]');
+      expect(text).toContain('[wiki]');
+      expect(text).toContain('[rag]');
+    });
+
+    it('memory_recall with scope=wiki returns only wiki results', async () => {
+      const { engine, wiki, kb, handlers } = setupWithUnified();
+      engine.ingest('tier data', { importance: 0.8 });
+      await wiki.upsertPage({ pageId: 'p1', title: 'Wiki Only', body: 'wiki data', tags: ['t'] });
+      await kb.ingest({
+        sourceId: 's1',
+        sourceType: 'document',
+        title: 'RAG',
+        content: 'rag data',
+        updatedAt: new Date().toISOString()
+      });
+
+      const handler = getHandler(handlers, 'memory_recall');
+      const result = (await handler({ query: 'data', scope: 'wiki' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('[wiki]');
+      expect(text).not.toContain('[tier]');
+      expect(text).not.toContain('[rag]');
+    });
+
+    it('memory_recall with scope=rag returns only rag results', async () => {
+      const { engine, wiki, kb, handlers } = setupWithUnified();
+      engine.ingest('tier data', { importance: 0.8 });
+      await wiki.upsertPage({ pageId: 'p1', title: 'Wiki', body: 'wiki data', tags: ['t'] });
+      await kb.ingest({
+        sourceId: 's1',
+        sourceType: 'document',
+        title: 'RAG Only',
+        content: 'rag data',
+        updatedAt: new Date().toISOString()
+      });
+
+      const handler = getHandler(handlers, 'memory_recall');
+      const result = (await handler({ query: 'data', scope: 'rag' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('[rag]');
+      expect(text).not.toContain('[tier]');
+      expect(text).not.toContain('[wiki]');
+    });
+
+    it('memory_recall with scope=tiers returns only tier results', async () => {
+      const { engine, wiki, kb, handlers } = setupWithUnified();
+      engine.ingest('tier data', { importance: 0.8 });
+      await wiki.upsertPage({ pageId: 'p1', title: 'Wiki', body: 'wiki data', tags: ['t'] });
+      await kb.ingest({
+        sourceId: 's1',
+        sourceType: 'document',
+        title: 'RAG',
+        content: 'rag data',
+        updatedAt: new Date().toISOString()
+      });
+
+      const handler = getHandler(handlers, 'memory_recall');
+      const result = (await handler({ query: 'data', scope: 'tiers' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('[tier]');
+      expect(text).not.toContain('[wiki]');
+      expect(text).not.toContain('[rag]');
+    });
+
+    it('memory_recall defaults to unified scope when omitted', async () => {
+      const { engine, wiki, handlers } = setupWithUnified();
+      engine.ingest('default scope', { importance: 0.8 });
+      await wiki.upsertPage({ pageId: 'p1', title: 'Wiki', body: 'default scope', tags: ['t'] });
+
+      const handler = getHandler(handlers, 'memory_recall');
+      const result = (await handler({ query: 'scope' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('[tier]');
+      expect(text).toContain('[wiki]');
+    });
+
+    it('falls back to tier-only recall when wiki and kb are not provided', async () => {
+      const { engine, handlers } = setup();
+      engine.ingest('fallback', { importance: 0.8 });
+
+      const handler = getHandler(handlers, 'memory_recall');
+      const result = (await handler({ query: 'fallback' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('fallback');
+      expect(text).toContain('[sensory_buffer]');
+    });
   });
 });

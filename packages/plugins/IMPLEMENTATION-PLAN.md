@@ -294,8 +294,8 @@ Every plugin or scaffold must have at least one minimal test (`src/index.test.ts
 - **CON-011**: `caveman-shrink` must not require any `@agentsy/*` packages at runtime.
 - **SEC-010**: `inputSchema` must never be altered by `caveman-shrink`; enforce with startup validation assertion.
 - **ADR-019**: Caveman as bundled SKILL.md, not runtime filter. Post-processing token compression is fragile and destructive; prompt-side compression leverages the model's own language capabilities at zero inference-time overhead.
-- **ASSUMPTION-009**: JuliusBrussee/caveman v1.7.0 SKILL.md files are MIT licensed and redistributable. Verify before TASK-F6-003.
-- **DEP-011**: JuliusBrussee/caveman v1.7.0 SKILL.md files — bundled as static assets. MIT license. No runtime import.
+- **ASSUMPTION-009**: JuliusBrussee/caveman v1.7.0 SKILL.md files are GPL-3.0-or-later licensed and redistributable. Verify before TASK-F6-003.
+- **DEP-011**: JuliusBrussee/caveman v1.7.0 SKILL.md files — bundled as static assets. GPL-3.0-or-later license. No runtime import.
 
 ### Types (`src/types.ts`)
 
@@ -310,7 +310,7 @@ const DEFAULT_CAVEMAN_MODE: CavemanMode = 'full';
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | TASK-F6-001 | Create `packages/caveman/`. Add `package.json` (`@agentsy/caveman`, peerDep: `@agentsy/core@workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`.                                                                                                                                   |
 | TASK-F6-002 | Define `CavemanMode` in `packages/caveman/src/types.ts`. Export `DEFAULT_CAVEMAN_MODE: CavemanMode = 'full'`.                                                                                                                                                                                       |
-| TASK-F6-003 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files under `packages/caveman/src/skills/`: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`. Each must include `source_url`, `version: "1.7.0"`, `license: "MIT"` frontmatter (GUD-008).                                              |
+| TASK-F6-003 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files under `packages/caveman/src/skills/`: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`. Each must include `source_url`, `version: "1.7.0"`, `license: "GPL-3.0-or-later"` frontmatter (GUD-008).                                 |
 | TASK-F6-004 | Bundle cavecrew subagent SKILL.md files under `packages/caveman/src/skills/cavecrew/`: `investigator.md`, `builder.md`, `reviewer.md`. Each targets ~60% fewer output tokens than vanilla equivalents.                                                                                              |
 | TASK-F6-005 | Create slash command SKILL.md files under `packages/caveman/src/skills/commands/`: `/caveman.md`, `/caveman-lite.md`, `/caveman-ultra.md`.                                                                                                                                                          |
 | TASK-F6-006 | Implement `CavemanManager` in `packages/caveman/src/manager.ts`. Methods: `activate(mode: CavemanMode): SkillContent`, `deactivate(): void`, `getActiveMode(): CavemanMode \| null`, `listSkills(): CavemanSkillManifest[]`. Export `createCavemanManager()` factory.                               |

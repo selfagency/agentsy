@@ -80,7 +80,7 @@ repositories[2]{id,name,repo,stars,forks}:
 
 **File extension:** `.toon`
 **Media type:** `text/toon; charset=utf-8`
-**License:** MIT
+**License:** GPL-3.0-or-later
 
 **Structure:**
 
@@ -228,7 +228,7 @@ const safe = encode(user, {
    - battle-tested production library
    - 24,261 GitHub stars, active development
    - TypeScript SDK streaming support
-   - MIT license
+   - GPL-3.0-or-later license
 
 2. **Apply TOON selectively based on tabular eligibility:**
    - Detect array uniformity (all objects have identical fields, primitive values)

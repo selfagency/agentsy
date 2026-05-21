@@ -2,6 +2,8 @@
 // No dependency on @modelcontextprotocol/sdk (Zod v4 heavy); uses protocol.ts
 
 import type { MemoryEngine } from '../cognitive/memory-engine.js';
+import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
+import type { WikiManager } from '../wiki/wiki-manager.js';
 import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOptions } from './protocol.js';
 import { createMemoryMcpTools } from './tools.js';
 
@@ -22,6 +24,13 @@ export interface MemoryMCPServerOptions {
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
 }
 
+export interface CreateMemoryMCPServerInput {
+  engine: MemoryEngine;
+  wiki?: WikiManager;
+  kb?: KnowledgeBaseManager;
+  options?: MemoryMCPServerOptions;
+}
+
 export interface MemoryMCPServer {
   server: McpServer;
   start(): Promise<void>;
@@ -35,11 +44,31 @@ export interface MemoryMCPServer {
  */
 export async function createMemoryMCPServer(
   engine: MemoryEngine,
-  options: MemoryMCPServerOptions = {}
+  options?: MemoryMCPServerOptions
+): Promise<MemoryMCPServer>;
+export async function createMemoryMCPServer(input: CreateMemoryMCPServerInput): Promise<MemoryMCPServer>;
+export async function createMemoryMCPServer(
+  engineOrInput: MemoryEngine | CreateMemoryMCPServerInput,
+  maybeOptions?: MemoryMCPServerOptions
 ): Promise<MemoryMCPServer> {
+  let engine: MemoryEngine;
+  let wiki: WikiManager | undefined;
+  let kb: KnowledgeBaseManager | undefined;
+  let options: MemoryMCPServerOptions;
+
+  if ('engine' in engineOrInput) {
+    engine = engineOrInput.engine;
+    wiki = engineOrInput.wiki;
+    kb = engineOrInput.kb;
+    options = engineOrInput.options ?? {};
+  } else {
+    engine = engineOrInput;
+    options = maybeOptions ?? {};
+  }
+
   const { transport = 'stdio', port = 4231, logLevel = 'info' } = options;
 
-  const { definitions, handlers } = createMemoryMcpTools(engine);
+  const { definitions, handlers } = createMemoryMcpTools({ engine, wiki, kb });
 
   const serverOptions: McpServerOptions = {
     name: 'agentsy-memory',

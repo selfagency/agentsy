@@ -4,6 +4,8 @@
 import { createMemoryEngine, type MemoryEngine, type MemoryEngineOptions } from './cognitive/memory-engine.js';
 import type { TierName } from './cognitive/tier-types.js';
 import { loadConfig, type MemoryConfig, DEFAULT_TIER_CONFIGS } from './config.js';
+import type { ConnectionOptions } from './database/connection.js';
+import { createDatabaseConnection, runMigrations, type MemoryDatabase } from './database/index.js';
 import { createMemoryMCPServer, type MemoryMCPServer, type MemoryMCPServerOptions } from './mcp/server.js';
 
 export interface InitOptions {
@@ -17,31 +19,48 @@ export interface InitOptions {
   skipDb?: boolean;
   /** Force overwrite existing files */
   force?: boolean;
+  /** Override database connection options */
+  db?: ConnectionOptions;
 }
 
 export interface InitResultWithServer {
   engine: MemoryEngine;
   config: MemoryConfig;
   server: MemoryMCPServer;
+  db?: MemoryDatabase;
 }
 
 export interface InitResultWithoutServer {
   engine: MemoryEngine;
   config: MemoryConfig;
+  db?: MemoryDatabase;
 }
 
 export type InitResult = InitResultWithServer | InitResultWithoutServer;
 
 /**
  * Initialize @agentsy/memory in standalone mode.
- * Creates a MemoryEngine with config, and optionally starts an MCP server.
+ * Creates a MemoryEngine with config, an optional SQLite database, and optionally starts an MCP server.
  */
 export async function initMemory(options: InitOptions = {}): Promise<InitResult> {
   const config = loadConfig(options.config);
 
+  let db: MemoryDatabase | undefined;
+
+  if (!options.skipDb) {
+    const dbPath = options.db?.path ?? config.db.path;
+    const { sqlite, db: drizzleDb } = createDatabaseConnection({
+      ...options.db,
+      path: dbPath
+    });
+    runMigrations(sqlite);
+    db = drizzleDb;
+  }
+
   // Build engine options from config
   const engineOptions: MemoryEngineOptions = {
-    ...options.engine
+    ...options.engine,
+    ...(db === undefined ? {} : { db })
   };
 
   // Apply tier configs if provided
@@ -101,10 +120,10 @@ export async function initMemory(options: InitOptions = {}): Promise<InitResult>
       ...config.mcp
     };
     const server = await createMemoryMCPServer(engine, serverOptions);
-    return { engine, config, server };
+    return { engine, config, server, ...(db === undefined ? {} : { db }) };
   }
 
-  return { engine, config };
+  return { engine, config, ...(db === undefined ? {} : { db }) };
 }
 
 export { loadConfig, DEFAULT_TIER_CONFIGS };

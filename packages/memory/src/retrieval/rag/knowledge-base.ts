@@ -1,6 +1,7 @@
+import type { MemoryDatabase } from '../../database/connection.js';
 import { createDocumentIngestor } from './document-ingest.js';
-import { createHybridRetriever } from './hybrid-retriever.js';
-import { createIndexManager } from './index-manager.js';
+import { createHybridRetriever, type HybridRetrieverOptions } from './hybrid-retriever.js';
+import { createIndexManager, type IndexManagerOptions } from './index-manager.js';
 import { createQueryPlanner } from './query-planner.js';
 import { rerankResults } from './reranker.js';
 import { sanitizeIngestSource } from './sanitization.js';
@@ -12,10 +13,14 @@ export interface KnowledgeBaseManager {
   search(input: { query: string; scope?: string; limit?: number; weights: RAGWeightConfig }): Promise<RAGEvidence[]>;
 }
 
-export function createKnowledgeBaseManager(): KnowledgeBaseManager {
+export interface KnowledgeBaseManagerOptions extends HybridRetrieverOptions, IndexManagerOptions {
+  db?: MemoryDatabase | undefined;
+}
+
+export function createKnowledgeBaseManager(options: KnowledgeBaseManagerOptions = {}): KnowledgeBaseManager {
   const ingestor = createDocumentIngestor();
-  const index = createIndexManager();
-  const retriever = createHybridRetriever();
+  const index = createIndexManager({ db: options.db });
+  const retriever = createHybridRetriever({ db: options.db });
   const planner = createQueryPlanner();
 
   return {

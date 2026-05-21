@@ -311,6 +311,9 @@ export {
   type OnResponseOutput
 } from './hooks/index.js';
 
+// Phase 5 — Unified query interface
+export { queryUnified, type UnifiedMemoryQuery, type UnifiedMemoryResult } from './unified-query.js';
+
 // Phase 7 — Configuration & initialization
 export { loadConfig, DEFAULT_TIER_CONFIGS, type MemoryConfig } from './config.js';
 export {

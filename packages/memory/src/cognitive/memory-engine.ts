@@ -1,6 +1,7 @@
 import { fingerprintContent } from '../content-addressing/fingerprint.js';
 import type { PubSubManager } from '../coordination/pub-sub-manager.js';
 import type { Scheduler } from '../coordination/scheduler.js';
+import type { MemoryDatabase } from '../database/connection.js';
 import { awaken, type AwakenResult, type PendingEvent } from './awaken.js';
 import { createCompressor, type CompressorOptions } from './compressor.js';
 import { type DecayConfig, DEFAULT_DECAY_CONFIG } from './decay.js';
@@ -77,6 +78,7 @@ export interface MemoryEngineOptions {
   now?: (() => number) | undefined;
   runLearningCycle?: boolean;
   learningConfig?: Partial<LearningLoopConfig>;
+  db?: MemoryDatabase | undefined;
 }
 
 export interface MemoryEngine {
@@ -154,19 +156,23 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
   const importanceFactors = options.importanceFactors ?? DEFAULT_IMPORTANCE_FACTORS;
 
   // Create tiers
-  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now });
+  const db = options.db;
+  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now, db });
   const sensoryRegister = createSensoryRegister({
     ...options.sensoryRegister,
-    now
+    now,
+    db
   });
-  const workingMemory = createWorkingMemory({ ...options.workingMemory, now });
+  const workingMemory = createWorkingMemory({ ...options.workingMemory, now, db });
   const shortTermMemory = createShortTermMemory({
     ...options.shortTermMemory,
-    now
+    now,
+    db
   });
   const longTermMemory = createLongTermMemory({
     ...options.longTermMemory,
-    now
+    now,
+    db
   });
 
   const tiers: Partial<Record<TierName, MemoryTierLike>> = {

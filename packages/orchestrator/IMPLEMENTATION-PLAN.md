@@ -100,7 +100,7 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 - **REQ-071**: Export three agent mode factories: `createCavemanManager`, `createSuperpowersActivator`, `createGarrysAgent`. Each implements `AgentModeFactory<TOptions, TActivator>`.
 - **REQ-072**: All SKILL.md files bundled directly inside `packages/agents/src/skills/`. No external caveman/superpowers packages.
-- **REQ-073**: Garry's mode bundles nine sprint SKILL.md files: `office-hours`, `plan-ceo-review`, `plan-eng-review`, `review`, `ship`, `qa`, `cso`, `investigate`, `autoplan`. Each includes `source_url`, `version`, `license: "MIT"` frontmatter.
+- **REQ-073**: Garry's mode bundles nine sprint SKILL.md files: `office-hours`, `plan-ceo-review`, `plan-eng-review`, `review`, `ship`, `qa`, `cso`, `investigate`, `autoplan`. Each includes `source_url`, `version`, `license: "GPL-3.0-or-later"` frontmatter.
 - **REQ-074**: `GarrysActivator.detectPhase(context)` infers sprint phase from context signals: PR diff present → `review`, test failures → `test`, open-ended product question → `think`.
 - **REQ-075**: `GarrysActivator.selectSkills(phase)` returns ≤3 `GarrysSkillManifest[]` for the given phase.
 - **REQ-076**: Garry's checkpoint emits `WIP:` prefixed commit after every tool-call turn (when `checkpointMode: true`). Commit body includes `[gstack-context]` block: decisions, remaining work, failed approaches.
@@ -113,7 +113,7 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 - **REQ-109**: Sprint phases implement Gate-Driven pattern: success gates declared in SKILL.md frontmatter as `success_gates: [...]`, verified by deterministic checks (tests, lints, compilation).
 - **SEC-017**: `safetyGuardrails: false` requires `{ override: 'I understand the risks' }` else throws.
 - **SEC-018**: Taste memory stores only `{ approved: boolean, dimensionKey: string, score: number, timestamp: number }` — no LLM free-text.
-- **CON-013**: No gstack source code vendored. SKILL.md files are adapted MIT-licensed content; gstack binary/runtime NOT imported.
+- **CON-013**: No gstack source code vendored. SKILL.md files are adapted GPL-3.0-or-later-licensed content; gstack binary/runtime NOT imported.
 - **CON-014**: No running gstack installation required. Sprint skills are self-contained SKILL.md prompts.
 - **CON-015**: No separate `@agentsy/caveman` or `@agentsy/superpowers` packages. `agentsy-features-v1.md` Phase 6 superseded.
 - **GUD-016**: `autoplan` SKILL.md enforces Discrete Phase Separation: no tool writes during plan phase.
@@ -131,20 +131,20 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 ### Phase AG2 — SKILL.md Files
 
-| Task         | Description                                                                                                                                                                                                                                                                          | Completed | Date |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-AG2-001 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`, `cavecrew/investigator.md`, `cavecrew/builder.md`, `cavecrew/reviewer.md`. All include `source_url`, `version: "1.7.0"`, `license: "MIT"`. Add `_manifest.ts`. |           |      |
-| TASK-AG2-002 | Bundle obra/superpowers v5.0.7 SKILL.md files: `brainstorming.md`, `git-worktrees.md`, `writing-plans.md`, `subagent-driven-development.md`, `tdd.md`, `code-review.md`, `finish-branch.md`. All include `source_url`, `version: "5.0.7"`, `license: "MIT"`. Add `_manifest.ts`.     |           |      |
-| TASK-AG2-003 | Add `_manifest.ts` to `garrys/` exporting `GARRYS_SKILLS_VERSION = '1.26.0'` and `GARRYS_SOURCE_URL`.                                                                                                                                                                                |           |      |
-| TASK-AG2-004 | Write `office-hours.md` — YC Office Hours: six forcing questions, three alternatives with effort estimates. `phase: "think"`.                                                                                                                                                        |           |      |
-| TASK-AG2-005 | Write `plan-ceo-review.md` — four modes (Expansion/Hold/Reduction), 10-section review. `phase: "think"`.                                                                                                                                                                             |           |      |
-| TASK-AG2-006 | Write `plan-eng-review.md` — ASCII diagrams, test matrix, edge cases, failure modes, security. `phase: "plan"`.                                                                                                                                                                      |           |      |
-| TASK-AG2-007 | Write `review.md` — staff engineer review, auto-fixes obvious issues. `phase: "review"`.                                                                                                                                                                                             |           |      |
-| TASK-AG2-008 | Write `ship.md` — sync main, run tests, audit coverage, push, open PR. `phase: "ship"`.                                                                                                                                                                                              |           |      |
-| TASK-AG2-009 | Write `qa.md` — systematic test-and-fix loop, auto-generates regression test per bug. `phase: "test"`.                                                                                                                                                                               |           |      |
-| TASK-AG2-010 | Write `cso.md` — OWASP Top 10 + STRIDE, 8/10+ confidence gate, exploit scenario per finding. `phase: "review"`.                                                                                                                                                                      |           |      |
-| TASK-AG2-011 | Write `investigate.md` — Iron Law: no fixes without investigation. Stops after three failed attempts. `phase: "build"`.                                                                                                                                                              |           |      |
-| TASK-AG2-012 | Write `autoplan.md` — pipeline: office-hours → plan-ceo-review → plan-eng-review in sequence. `phase: "think"`.                                                                                                                                                                      |           |      |
+| Task         | Description                                                                                                                                                                                                                                                                                       | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-AG2-001 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`, `cavecrew/investigator.md`, `cavecrew/builder.md`, `cavecrew/reviewer.md`. All include `source_url`, `version: "1.7.0"`, `license: "GPL-3.0-or-later"`. Add `_manifest.ts`. |           |      |
+| TASK-AG2-002 | Bundle obra/superpowers v5.0.7 SKILL.md files: `brainstorming.md`, `git-worktrees.md`, `writing-plans.md`, `subagent-driven-development.md`, `tdd.md`, `code-review.md`, `finish-branch.md`. All include `source_url`, `version: "5.0.7"`, `license: "GPL-3.0-or-later"`. Add `_manifest.ts`.     |           |      |
+| TASK-AG2-003 | Add `_manifest.ts` to `garrys/` exporting `GARRYS_SKILLS_VERSION = '1.26.0'` and `GARRYS_SOURCE_URL`.                                                                                                                                                                                             |           |      |
+| TASK-AG2-004 | Write `office-hours.md` — YC Office Hours: six forcing questions, three alternatives with effort estimates. `phase: "think"`.                                                                                                                                                                     |           |      |
+| TASK-AG2-005 | Write `plan-ceo-review.md` — four modes (Expansion/Hold/Reduction), 10-section review. `phase: "think"`.                                                                                                                                                                                          |           |      |
+| TASK-AG2-006 | Write `plan-eng-review.md` — ASCII diagrams, test matrix, edge cases, failure modes, security. `phase: "plan"`.                                                                                                                                                                                   |           |      |
+| TASK-AG2-007 | Write `review.md` — staff engineer review, auto-fixes obvious issues. `phase: "review"`.                                                                                                                                                                                                          |           |      |
+| TASK-AG2-008 | Write `ship.md` — sync main, run tests, audit coverage, push, open PR. `phase: "ship"`.                                                                                                                                                                                                           |           |      |
+| TASK-AG2-009 | Write `qa.md` — systematic test-and-fix loop, auto-generates regression test per bug. `phase: "test"`.                                                                                                                                                                                            |           |      |
+| TASK-AG2-010 | Write `cso.md` — OWASP Top 10 + STRIDE, 8/10+ confidence gate, exploit scenario per finding. `phase: "review"`.                                                                                                                                                                                   |           |      |
+| TASK-AG2-011 | Write `investigate.md` — Iron Law: no fixes without investigation. Stops after three failed attempts. `phase: "build"`.                                                                                                                                                                           |           |      |
+| TASK-AG2-012 | Write `autoplan.md` — pipeline: office-hours → plan-ceo-review → plan-eng-review in sequence. `phase: "think"`.                                                                                                                                                                                   |           |      |
 
 ### Phase AG3 — Manager + Activator Implementations
 
@@ -192,9 +192,9 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 - **DEP-012**: `@agentsy/core@workspace:*` — only required runtime dep
 - **DEP-013**: `@agentsy/memory@workspace:*` — peer dep for garry's taste memory only
-- **DEP-014**: JuliusBrussee/caveman v1.7.0 — SKILL.md static assets, MIT, no runtime import
-- **DEP-015**: obra/superpowers v5.0.7 — SKILL.md static assets, MIT, no runtime import
-- **DEP-016**: garrytan/gstack v1.26.0 — SKILL.md methodology, MIT, no runtime import
+- **DEP-014**: JuliusBrussee/caveman v1.7.0 — SKILL.md static assets, GPL-3.0-or-later, no runtime import
+- **DEP-015**: obra/superpowers v5.0.7 — SKILL.md static assets, GPL-3.0-or-later, no runtime import
+- **DEP-016**: garrytan/gstack v1.26.0 — SKILL.md methodology, GPL-3.0-or-later, no runtime import
 
 ### Risks
 
@@ -793,8 +793,8 @@ interface SlashCommandManifest {
 
 - **REQ-028**: `SuperpowersActivator` selects relevant SKILL.md bundles based on project context (test files present → TDD, diff present → code-review, open-ended plan → brainstorming).
 - **GUD-008**: All bundled SKILL.md files must include `source_url`, `version`, `license` frontmatter.
-- **ASSUMPTION-008**: obra/superpowers v5.0.7 SKILL.md files are MIT licensed and redistributable. Verify before TASK-F6-014.
-- **DEP-010**: obra/superpowers v5.0.7 SKILL.md files — bundled as static assets. MIT license.
+- **ASSUMPTION-008**: obra/superpowers v5.0.7 SKILL.md files are GPL-3.0-or-later licensed and redistributable. Verify before TASK-F6-014.
+- **DEP-010**: obra/superpowers v5.0.7 SKILL.md files — bundled as static assets. GPL-3.0-or-later license.
 
 ### Types (`src/types.ts`)
 

@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
+import { eq } from 'drizzle-orm';
+
+import type { MemoryDatabase } from '../database/connection.js';
+import { wikiBacklinks, wikiConcepts, wikiPageHistory, wikiPages, wikiVectors } from '../database/schema.js';
 import { createContentProcessor } from './content-processor.js';
 import type { ContentProcessor } from './content-processor.js';
 import { createEntityExtractor } from './entity-extractor.js';
@@ -104,7 +108,12 @@ export interface WikiManagerDependencies {
   embeddingEngine?: LocalEmbeddingEngine;
   versionTracker?: VersionTracker;
   navigation?: NavigationSystem;
+  db?: MemoryDatabase | undefined;
 }
+
+// ---------------------------------------------------------------------------
+// Shared helpers
+// ---------------------------------------------------------------------------
 
 function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
   const length = Math.min(a.length, b.length);
@@ -161,14 +170,17 @@ function ensureCanWrite(page: WikiPage, actorId: string): void {
   throw new Error(`Actor ${actorId} does not have write access to ${page.pageId}`);
 }
 
-function getHistoryBody(history: Map<string, WikiPageHistoryEntry[]>, pageId: string, version: number): string {
-  const pageHistory = history.get(pageId) ?? [];
-  const item = pageHistory.find(entry => entry.version === version);
-  if (!item) {
-    throw new Error(`Unknown version ${version} for page ${pageId}`);
-  }
+function getDiff(fromBody: string, toBody: string): PageDiff {
+  const fromLines = fromBody.split('\n');
+  const toLines = toBody.split('\n');
 
-  return item.body;
+  const fromSet = new Set(fromLines);
+  const toSet = new Set(toLines);
+
+  const addedLines = toLines.filter(line => !fromSet.has(line));
+  const removedLines = fromLines.filter(line => !toSet.has(line));
+
+  return { addedLines, removedLines };
 }
 
 function resolveWikiDependencies(dependencies: WikiManagerDependencies) {
@@ -181,7 +193,11 @@ function resolveWikiDependencies(dependencies: WikiManagerDependencies) {
   };
 }
 
-export function createWikiManager(dependencies: WikiManagerDependencies = {}): WikiManager {
+// ---------------------------------------------------------------------------
+// In-memory implementation
+// ---------------------------------------------------------------------------
+
+function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiManager {
   const { contentProcessor, entityExtractor, embeddingEngine, versionTracker, navigation } =
     resolveWikiDependencies(dependencies);
 
@@ -205,19 +221,15 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
     },
 
     async diffPageVersions(pageId, fromVersion, toVersion) {
-      const fromBody = getHistoryBody(history, pageId, fromVersion);
-      const toBody = getHistoryBody(history, pageId, toVersion);
+      const pageHistory = history.get(pageId) ?? [];
+      const fromItem = pageHistory.find(entry => entry.version === fromVersion);
+      const toItem = pageHistory.find(entry => entry.version === toVersion);
 
-      const fromLines = fromBody.split('\n');
-      const toLines = toBody.split('\n');
+      if (!fromItem || !toItem) {
+        throw new Error(`Unknown version for page ${pageId}`);
+      }
 
-      const fromSet = new Set(fromLines);
-      const toSet = new Set(toLines);
-
-      const addedLines = toLines.filter(line => !fromSet.has(line));
-      const removedLines = fromLines.filter(line => !toSet.has(line));
-
-      return { addedLines, removedLines };
+      return getDiff(fromItem.body, toItem.body);
     },
 
     async extractEntities(pageId) {
@@ -383,4 +395,306 @@ export function createWikiManager(dependencies: WikiManagerDependencies = {}): W
       });
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+// SQLite-backed implementation
+// ---------------------------------------------------------------------------
+
+function parseJsonArray(value: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed as string[];
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+function parseJsonNumberArray(value: string): number[] {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed as number[];
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+function rowToWikiPage(row: { [key: string]: unknown }): WikiPage {
+  return {
+    pageId: String(row.pageId),
+    title: String(row.title),
+    body: String(row.body),
+    tags: parseJsonArray(String(row.tags)),
+    format: String(row.format) as WikiPage['format'],
+    writerIds: parseJsonArray(String(row.writerIds)),
+    version: Number(row.version),
+    updatedAt: new Date(Number(row.updatedAt))
+  };
+}
+
+function rowToHistoryEntry(row: { [key: string]: unknown }): WikiPageHistoryEntry {
+  return {
+    version: Number(row.version),
+    body: String(row.body),
+    actorId: String(row.actorId),
+    editedAt: new Date(Number(row.editedAt))
+  };
+}
+
+function getNextVersion(db: MemoryDatabase, pageId: string): number {
+  const result = db.select({ version: wikiPages.version }).from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
+  return (result?.version ?? 0) + 1;
+}
+
+function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDependencies): WikiManager {
+  const { contentProcessor, entityExtractor, embeddingEngine } = resolveWikiDependencies(dependencies);
+
+  function insertHistory(pageId: string, version: number, body: string, actorId: string, editedAt: Date): void {
+    db.insert(wikiPageHistory)
+      .values({
+        pageId,
+        version,
+        body,
+        actorId,
+        editedAt: editedAt.getTime()
+      })
+      .run();
+  }
+
+  function insertPage(page: WikiPage): void {
+    db.insert(wikiPages)
+      .values({
+        pageId: page.pageId,
+        title: page.title,
+        body: page.body,
+        tags: JSON.stringify(page.tags),
+        format: page.format,
+        writerIds: JSON.stringify(page.writerIds),
+        version: page.version,
+        updatedAt: page.updatedAt.getTime()
+      })
+      .onConflictDoUpdate({
+        target: wikiPages.pageId,
+        set: {
+          title: page.title,
+          body: page.body,
+          tags: JSON.stringify(page.tags),
+          format: page.format,
+          writerIds: JSON.stringify(page.writerIds),
+          version: page.version,
+          updatedAt: page.updatedAt.getTime()
+        }
+      })
+      .run();
+  }
+
+  function insertVector(pageId: string, embedding: number[]): void {
+    db.insert(wikiVectors)
+      .values({ pageId, embedding: JSON.stringify(embedding) })
+      .onConflictDoUpdate({
+        target: wikiVectors.pageId,
+        set: { embedding: JSON.stringify(embedding) }
+      })
+      .run();
+  }
+
+  return {
+    async captureRaw(input: RawCaptureInput) {
+      const capture: RawCapture = {
+        content: input.content,
+        createdAt: new Date(),
+        id: randomUUID(),
+        normalizedContent: contentProcessor.normalize(input.content),
+        sourceId: input.sourceId,
+        sourceType: input.sourceType
+      };
+
+      return capture;
+    },
+
+    async diffPageVersions(pageId, fromVersion, toVersion) {
+      const fromItem = db
+        .select()
+        .from(wikiPageHistory)
+        .where(eq(wikiPageHistory.pageId, pageId))
+        .all()
+        .find(row => Number(row.version) === fromVersion);
+
+      const toItem = db
+        .select()
+        .from(wikiPageHistory)
+        .where(eq(wikiPageHistory.pageId, pageId))
+        .all()
+        .find(row => Number(row.version) === toVersion);
+
+      if (!fromItem || !toItem) {
+        throw new Error(`Unknown version for page ${pageId}`);
+      }
+
+      return getDiff(String(fromItem.body), String(toItem.body));
+    },
+
+    async extractEntities(pageId) {
+      const row = db.select().from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
+      if (!row) {
+        return [];
+      }
+
+      const page = rowToWikiPage(row);
+      const extracted = entityExtractor.extract(`${page.title}\n${page.body}`);
+      return extracted.entities.map(entity => entity.name);
+    },
+
+    async getBacklinks(pageId: string) {
+      const rows = db.select().from(wikiBacklinks).where(eq(wikiBacklinks.toPageId, pageId)).all();
+      return rows.map(row => String(row.fromPageId));
+    },
+
+    async getConceptRelations(pageId) {
+      const rows = db.select().from(wikiConcepts).where(eq(wikiConcepts.fromPageId, pageId)).all();
+      return rows.map(row => ({ toPageId: String(row.toPageId), relation: String(row.relation) }));
+    },
+
+    async getPage(pageId: string) {
+      const row = db.select().from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
+      if (!row) return null;
+      return rowToWikiPage(row);
+    },
+
+    async getPageHistory(pageId) {
+      const rows = db
+        .select()
+        .from(wikiPageHistory)
+        .where(eq(wikiPageHistory.pageId, pageId))
+        .orderBy(wikiPageHistory.version)
+        .all();
+      return rows.map(rowToHistoryEntry);
+    },
+
+    async linkConcepts(fromPageId, toPageId, relation) {
+      db.insert(wikiConcepts).values({ fromPageId, toPageId, relation }).onConflictDoNothing().run();
+    },
+
+    async linkPages(fromPageId: string, toPageId: string) {
+      db.insert(wikiBacklinks).values({ fromPageId, toPageId }).onConflictDoNothing().run();
+    },
+
+    async searchFullText(query, limit) {
+      const rows = db.select().from(wikiPages).all();
+      const scored = rows
+        .map(row => toSearchResult(String(row.pageId), scoreByFullText(query, rowToWikiPage(row), contentProcessor)))
+        .filter(item => item.score > 0)
+        .toSorted((left, right) => right.score - left.score);
+
+      return scored.slice(0, Math.max(0, limit));
+    },
+
+    async searchHybrid(query, queryEmbedding, limit) {
+      const vectorScores = await this.searchVector(queryEmbedding, Number.MAX_SAFE_INTEGER);
+      const vectorScoreMap = new Map<string, number>(vectorScores.map(item => [item.pageId, item.score]));
+
+      const rows = db.select().from(wikiPages).all();
+      const hybridScores = rows
+        .map(row => {
+          const page = rowToWikiPage(row);
+          const textScore = scoreByFullText(query, page, contentProcessor);
+          const vectorScore = vectorScoreMap.get(page.pageId) ?? 0;
+          const score = textScore * 0.5 + vectorScore * 0.5;
+          return toSearchResult(page.pageId, score);
+        })
+        .filter(item => item.score > 0)
+        .toSorted((left, right) => right.score - left.score);
+
+      return hybridScores.slice(0, Math.max(0, limit));
+    },
+
+    async searchVector(queryEmbedding: number[], limit: number) {
+      const rows = db.select().from(wikiVectors).all();
+      const scored: VectorSearchResult[] = rows
+        .map(row => {
+          const embedding = parseJsonNumberArray(String(row.embedding));
+          return {
+            pageId: String(row.pageId),
+            score: cosineSimilarity(queryEmbedding, embedding)
+          };
+        })
+        .toSorted((left, right) => right.score - left.score);
+
+      return scored.slice(0, Math.max(0, limit));
+    },
+
+    async updatePage(pageId, patch, actorId) {
+      const row = db.select().from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
+      if (!row) {
+        throw new Error(`Unknown page ${pageId}`);
+      }
+
+      const current = rowToWikiPage(row);
+      ensureCanWrite(current, actorId);
+
+      const nextVersion = getNextVersion(db, pageId);
+      const nextBody = patch.body ?? current.body;
+      const nextPage: WikiPage = {
+        ...current,
+        ...(patch.title === undefined ? {} : { title: patch.title }),
+        ...(patch.tags === undefined ? {} : { tags: [...patch.tags] }),
+        body: nextBody,
+        format: patch.format ?? current.format,
+        updatedAt: new Date(),
+        version: nextVersion
+      };
+
+      insertPage(nextPage);
+      insertVector(
+        pageId,
+        embeddingEngine.embed(`${nextPage.title}\n${contentProcessor.toSearchableText(nextPage.body)}`)
+      );
+      insertHistory(pageId, nextVersion, nextPage.body, actorId, nextPage.updatedAt);
+
+      return nextPage;
+    },
+
+    async upsertPage(input: WikiPageInput) {
+      const version = getNextVersion(db, input.pageId);
+      const actorId = input.actorId ?? 'system';
+      const format = input.format ?? contentProcessor.detectFormat(input.body);
+      const writerIds = [...(input.writerIds ?? [])];
+      const page: WikiPage = {
+        body: input.body,
+        format,
+        pageId: input.pageId,
+        tags: [...(input.tags ?? [])],
+        title: input.title,
+        updatedAt: new Date(),
+        version,
+        writerIds
+      };
+
+      insertPage(page);
+      insertVector(
+        page.pageId,
+        embeddingEngine.embed(`${page.title}\n${contentProcessor.toSearchableText(page.body)}`)
+      );
+      insertHistory(page.pageId, version, page.body, actorId, page.updatedAt);
+
+      return page;
+    },
+
+    async upsertVector(pageId: string, embedding: number[]) {
+      insertVector(pageId, embedding);
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
+
+export function createWikiManager(dependencies: WikiManagerDependencies = {}): WikiManager {
+  if (dependencies.db) {
+    return createSQLiteWikiManager(dependencies.db, dependencies);
+  }
+  return createInMemoryWikiManager(dependencies);
 }

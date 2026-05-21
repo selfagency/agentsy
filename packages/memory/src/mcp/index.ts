@@ -11,9 +11,14 @@ export {
   MCP_PROTOCOL_VERSION
 } from './protocol.js';
 
-export { createMemoryMcpTools, type MemoryMcpToolSet } from './tools.js';
+export { createMemoryMcpTools, type CreateMemoryMcpToolsOptions, type MemoryMcpToolSet } from './tools.js';
 
-export { createMemoryMCPServer, type MemoryMCPServer, type MemoryMCPServerOptions } from './server.js';
+export {
+  createMemoryMCPServer,
+  type CreateMemoryMCPServerInput,
+  type MemoryMCPServer,
+  type MemoryMCPServerOptions
+} from './server.js';
 
 export {
   startDaemon,

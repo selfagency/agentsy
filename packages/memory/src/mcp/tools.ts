@@ -1,5 +1,8 @@
 import type { MemoryEngine, MemoryEngineIngestOptions, MemoryEngineRecallOptions } from '../cognitive/memory-engine.js';
 import type { TierName } from '../cognitive/tier-types.js';
+import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
+import { queryUnified, type UnifiedMemoryQuery } from '../unified-query.js';
+import type { WikiManager } from '../wiki/wiki-manager.js';
 import type { McpToolDefinition, McpToolHandler } from './protocol.js';
 
 export interface MemoryMcpToolSet {
@@ -48,7 +51,14 @@ function coerceOptionalString(value: unknown): string | undefined {
   return undefined;
 }
 
-export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
+export interface CreateMemoryMcpToolsOptions {
+  engine: MemoryEngine;
+  wiki?: WikiManager | undefined;
+  kb?: KnowledgeBaseManager | undefined;
+}
+
+export function createMemoryMcpTools(options: CreateMemoryMcpToolsOptions): MemoryMcpToolSet {
+  const { engine, wiki, kb } = options;
   const definitions: Record<string, McpToolDefinition> = {};
   const handlers: Record<string, McpToolHandler> = {};
 
@@ -73,7 +83,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     return { content: [{ type: 'text', text: `Ingested: ${id}` }] };
   };
 
-  const recallHandler: McpToolHandler = async args => {
+  const tierRecallHandler: McpToolHandler = async args => {
     const opts = buildRecallOptions(args);
     const results = engine.recall(opts);
 
@@ -105,6 +115,54 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     }
     return {
       content: [{ type: 'text', text: `Found ${totalItems}:\n${lines.join('\n')}` }]
+    };
+  };
+
+  const unifiedSearchHandler: McpToolHandler = async args => {
+    if (!wiki || !kb) {
+      return {
+        content: [{ type: 'text', text: 'Error: unified search requires wiki and knowledge base' }],
+        isError: true
+      };
+    }
+
+    const query = coerceString(args.query);
+    const limit = typeof args.limit === 'number' ? args.limit : 10;
+    const scope = coerceOptionalString(args.scope) ?? 'unified';
+
+    const unifiedQuery: UnifiedMemoryQuery = {
+      query,
+      limit
+    };
+
+    if (scope === 'tiers') {
+      unifiedQuery.includeWiki = false;
+      unifiedQuery.includeRAG = false;
+    } else if (scope === 'wiki') {
+      unifiedQuery.includeTiers = false;
+      unifiedQuery.includeRAG = false;
+    } else if (scope === 'rag') {
+      unifiedQuery.includeTiers = false;
+      unifiedQuery.includeWiki = false;
+    }
+
+    const results = await queryUnified(engine, wiki, kb, unifiedQuery);
+
+    if (results.length === 0) {
+      return { content: [{ type: 'text', text: 'No results matched.' }] };
+    }
+
+    const lines: string[] = [];
+    for (const result of results) {
+      const prefix = `[${result.source}] ${result.id}`;
+      const titlePart = result.title ? ` | ${result.title}` : '';
+      const scorePart = ` (score: ${result.score.toFixed(3)})`;
+      const contentPreview = result.content.slice(0, 200);
+      lines.push(`${prefix}${titlePart}${scorePart}: ${contentPreview}`);
+    }
+
+    return {
+      content: [{ type: 'text', text: `Found ${results.length} results:\n${lines.join('\n')}` }]
     };
   };
 
@@ -144,11 +202,16 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
 
   definitions.memory_recall = {
     name: 'memory_recall',
-    description: 'Recall memories matching a query across cognitive tiers.',
+    description: 'Recall memories matching a query across cognitive tiers, wiki, and RAG.',
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Content filter substring' },
+        query: { type: 'string', description: 'Content filter or search term' },
+        scope: {
+          type: 'string',
+          description: 'Search scope: tiers, wiki, rag, or unified (default)',
+          enum: ['tiers', 'wiki', 'rag', 'unified']
+        },
         minImportance: {
           type: 'number',
           description: 'Minimum importance 0-1',
@@ -161,7 +224,12 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
       required: []
     }
   };
-  handlers.memory_recall = recallHandler;
+  handlers.memory_recall = async args => {
+    if (wiki && kb) {
+      return unifiedSearchHandler(args);
+    }
+    return tierRecallHandler(args);
+  };
 
   definitions.memory_awaken = {
     name: 'memory_awaken',
@@ -275,17 +343,27 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
 
   definitions.memory_search = {
     name: 'memory_search',
-    description: 'Search memories by content substring.',
+    description: 'Search memories by content substring across tiers, wiki, and RAG.',
     inputSchema: {
       type: 'object',
       properties: {
         query: { type: 'string', description: 'Search term' },
+        scope: {
+          type: 'string',
+          description: 'Search scope: tiers, wiki, rag, or unified (default)',
+          enum: ['tiers', 'wiki', 'rag', 'unified']
+        },
         limit: { type: 'number', description: 'Max results' }
       },
       required: ['query']
     }
   };
-  handlers.memory_search = recallHandler;
+  handlers.memory_search = async args => {
+    if (wiki && kb) {
+      return unifiedSearchHandler(args);
+    }
+    return tierRecallHandler(args);
+  };
 
   definitions.memory_capture = {
     name: 'memory_capture',
