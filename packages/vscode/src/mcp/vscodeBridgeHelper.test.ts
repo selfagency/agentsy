@@ -1,4 +1,5 @@
 import type { MCPTransport } from '@agentsy/core/processor';
+import { Readable } from 'node:stream';
 import { describe, it, expect, vi } from 'vitest';
 import type { CancellationToken, ChatResponseStream } from 'vscode';
 import { Uri } from 'vscode';
@@ -370,8 +371,6 @@ describe('VSCode MCP Bridge Helper', () => {
           push: vi.fn()
         } as unknown as ChatResponseStream;
 
-        // This test may fail if stream has fundamental locking issues
-        // But it documents the expected behavior
         expect(() => {
           helper._testHandlePush(mockChatStream);
         }).not.toThrow();
@@ -383,6 +382,99 @@ describe('VSCode MCP Bridge Helper', () => {
 
         expect(() => {
           helper._testHandlePush(mockChatStream);
+        }).not.toThrow();
+      });
+    });
+
+    describe('handleEvent', () => {
+      it('routes markdown events to handleMarkdown', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { markdown: vi.fn() } as unknown as ChatResponseStream;
+        (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+          { type: 'markdown', data: { value: 'hi' } },
+          mockChatStream
+        );
+        expect(mockChatStream.markdown).toHaveBeenCalledWith('hi');
+      });
+
+      it('routes progress events to handleProgress', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { progress: vi.fn() } as unknown as ChatResponseStream;
+        (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+          { type: 'progress', data: { value: '50%' } },
+          mockChatStream
+        );
+        expect(mockChatStream.progress).toHaveBeenCalledWith('50%');
+      });
+
+      it('routes anchor events to handleAnchor', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { anchor: vi.fn() } as unknown as ChatResponseStream;
+        (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+          { type: 'anchor', data: { anchorData: '#foo', title: 'Foo' } },
+          mockChatStream
+        );
+        expect(mockChatStream.anchor).toHaveBeenCalledWith(Uri.parse('#foo'), 'Foo');
+      });
+
+      it('routes button events to handleButton', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { button: vi.fn() } as unknown as ChatResponseStream;
+        (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+          { type: 'button', data: { command: 'cmd', title: 'Title' } },
+          mockChatStream
+        );
+        expect(mockChatStream.button).toHaveBeenCalledWith({ command: 'cmd', title: 'Title' });
+      });
+
+      it('routes filetree events to handleFiletree', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { filetree: vi.fn() } as unknown as ChatResponseStream;
+        (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+          { type: 'filetree', data: {} },
+          mockChatStream
+        );
+        expect(mockChatStream.filetree).toHaveBeenCalledWith([], Uri.file('/'));
+      });
+
+      it('routes reference events to handleReference', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { reference: vi.fn() } as unknown as ChatResponseStream;
+        (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+          { type: 'reference', data: { uri: 'file:///a' } },
+          mockChatStream
+        );
+        expect(mockChatStream.reference).toHaveBeenCalledWith(Uri.parse('file:///a'));
+      });
+
+      it('routes push events to handlePush', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        const mockChatStream = { push: vi.fn() } as unknown as ChatResponseStream;
+        expect(() => {
+          (helper as unknown as { handleEvent(e: unknown, s: ChatResponseStream): void }).handleEvent(
+            { type: 'push', data: {} },
+            mockChatStream
+          );
+        }).not.toThrow();
+      });
+    });
+
+    describe('pushEvent', () => {
+      it('writes to stdio transport when writable is available', () => {
+        const writeSpy = vi.fn();
+        const writable = Object.assign(new WritableStream({ write: writeSpy }), { write: writeSpy }) as unknown as NodeJS.WritableStream;
+        const stdioTransport: MCPTransport = { type: 'stdio', readable: new Readable(), writable };
+        const helper = new VSCodeMCPBridgeHelper(stdioTransport, mockCancellationToken);
+        (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({ type: 'markdown', data: { value: 'x' } });
+        expect(writeSpy).toHaveBeenCalledOnce();
+        const callArg = writeSpy.mock.calls[0]?.[0] as string;
+        expect(callArg).toContain('markdown');
+      });
+
+      it('does nothing for http transport', () => {
+        const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
+        expect(() => {
+          (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({ type: 'markdown', data: { value: 'x' } });
         }).not.toThrow();
       });
     });

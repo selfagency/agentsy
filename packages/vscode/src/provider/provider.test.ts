@@ -89,6 +89,34 @@ class TestProvider extends BaseLanguageModelChatProvider {
   }
 }
 
+class RealStreamProvider extends BaseLanguageModelChatProvider {
+  protected async buildRequest(
+    messages: ChatMessage[],
+    request: LanguageModelChatRequest
+  ): Promise<ProviderApiRequest> {
+    return {
+      body: { messages, model: request.model?.id ?? 'test' },
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      url: 'http://localhost:11434/api/chat'
+    };
+  }
+
+  protected normalizeStream(
+    response: AsyncIterable<ProviderStreamChunk>
+  ): AsyncIterable<LanguageModelChatResponseChunk> {
+    return (async function* () {
+      for await (const chunk of response) {
+        yield { part: { value: (chunk as Record<string, unknown>).content as string } };
+      }
+    })();
+  }
+
+  protected mapErrorToCode(): string {
+    return 'internal_error';
+  }
+}
+
 describe(BaseLanguageModelChatProvider, () => {
   describe('getters', () => {
     const ctx = makeExtensionContext();
@@ -211,6 +239,76 @@ describe(BaseLanguageModelChatProvider, () => {
       ).createErrorResponse(new Error('test'), 'User-facing message');
       const text = await response.text;
       expect(text).toBe('User-facing message');
+    });
+  });
+
+  describe('streamChat', () => {
+    it('streams chunks from a successful HTTP response', async () => {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(encoder.encode('data: {"content":"hello"}\n\n'));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: stream,
+        status: 200,
+        text: vi.fn()
+      });
+
+      const provider = new RealStreamProvider(makeExtensionContext(), config);
+      const token = makeCancellationToken();
+      const result = await provider.makeRequest({ messages: [] }, token);
+      const chunks: LanguageModelChatResponseChunk[] = [];
+      for await (const chunk of result.stream) {
+        chunks.push(chunk);
+      }
+      expect(chunks.length).toBeGreaterThan(0);
+    });
+
+    it('throws when URL is missing', async () => {
+      globalThis.fetch = vi.fn();
+      const provider = new RealStreamProvider(makeExtensionContext(), config);
+      const token = makeCancellationToken();
+      const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST' };
+      await expect(
+        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(req, token)
+      ).rejects.toThrow('Provider API request URL is required');
+    });
+
+    it('throws when response body is null', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: null,
+        status: 200,
+        text: vi.fn()
+      });
+
+      const provider = new RealStreamProvider(makeExtensionContext(), config);
+      const token = makeCancellationToken();
+      const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST', url: 'http://x' };
+      await expect(
+        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(req, token)
+      ).rejects.toThrow('HTTP response has no body');
+    });
+
+    it('throws on HTTP error response', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: vi.fn().mockResolvedValue('Server Error')
+      });
+
+      const provider = new RealStreamProvider(makeExtensionContext(), config);
+      const token = makeCancellationToken();
+      const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST', url: 'http://x' };
+      await expect(
+        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(req, token)
+      ).rejects.toThrow('HTTP 500: Server Error');
     });
   });
 });
