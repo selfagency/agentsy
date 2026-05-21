@@ -1,7 +1,8 @@
-import { createMemoryTier, type MemoryTierLike, type MemoryTierOptions } from './memory-tier.js';
+import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
 import type { TierConfig, TierLevel, TierName } from './tier-types.js';
 
-export type { MemoryTierLike, MemoryTierOptions, TierConfig };
+export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
+export type { TierConfig } from './tier-types.js';
 
 const LONG_TERM_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   compressionTarget: 0,

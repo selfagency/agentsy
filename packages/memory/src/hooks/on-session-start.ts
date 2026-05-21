@@ -1,8 +1,7 @@
 // on-session-start.ts — Lifecycle hook: agent session start
 // Calls awaken() to process idle-time decay, loads hot memories for immediate injection
 
-import type { AwakenResult } from '../cognitive/awaken.js';
-import type { PendingEvent } from '../cognitive/awaken.js';
+import type { AwakenResult, PendingEvent } from '../cognitive/awaken.js';
 import type { MemoryEngine } from '../cognitive/memory-engine.js';
 import type { MemoryItem, TierName } from '../cognitive/tier-types.js';
 

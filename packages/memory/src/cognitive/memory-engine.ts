@@ -44,7 +44,15 @@ export interface MemoryEngineSnapshot {
 export interface MemoryEngineStats {
   totalItems: number;
   totalTokens: number;
-  tierStats: Record<TierName, { items: number; usedTokens: number; maxTokens: number; utilization: number }>;
+  tierStats: Record<
+    TierName,
+    {
+      items: number;
+      usedTokens: number;
+      maxTokens: number;
+      utilization: number;
+    }
+  >;
   budgetUtilization: number;
 }
 
@@ -84,40 +92,21 @@ function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEngine {
-  const now = options.now ?? (() => performance.now());
-  const importanceFactors = options.importanceFactors ?? DEFAULT_IMPORTANCE_FACTORS;
-  const decayConfig = options.decayConfig ?? DEFAULT_DECAY_CONFIG;
-
-  // Create tiers
-  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now });
-  const sensoryRegister = createSensoryRegister({ ...options.sensoryRegister, now });
-  const workingMemory = createWorkingMemory({ ...options.workingMemory, now });
-  const shortTermMemory = createShortTermMemory({ ...options.shortTermMemory, now });
-  const longTermMemory = createLongTermMemory({ ...options.longTermMemory, now });
-
-  const tiers: Partial<Record<TierName, MemoryTierLike>> = {
-    sensory_buffer: sensoryBuffer,
-    sensory_register: sensoryRegister,
-    working_memory: workingMemory,
-    short_term_memory: shortTermMemory,
-    long_term_memory: longTermMemory
+function buildBudgetOptions(options: MemoryEngineOptions): TokenBudgetOptions {
+  const budgetOpts: TokenBudgetOptions = {
+    budgets: options.budget?.budgets ?? {}
   };
-
-  // Create token budget (exactOptionalPropertyTypes: avoid passing undefined)
-  const budgetOpts: TokenBudgetOptions = { budgets: options.budget?.budgets ?? {} };
   if (options.budget?.overprovisionFactor !== undefined) {
     budgetOpts.overprovisionFactor = options.budget.overprovisionFactor;
   }
-  const budget = createTokenBudget(budgetOpts);
+  return budgetOpts;
+}
 
-  // Create processing pipeline (used in tier bridges — Phase 5+)
-  const _compressor = createCompressor({ ...options.compressor, now });
-  const _synthesizer = createSynthesizer({ ...options.synthesizer, now });
-  const _summarizer = createSummarizer({ ...options.summarizer, now });
-
-  // Create tier scheduler (exactOptionalPropertyTypes: avoid passing undefined)
-  const schedulerOpts: TierSchedulerOptions = { decayConfig, now };
+function buildSchedulerOptions(options: MemoryEngineOptions): TierSchedulerOptions {
+  const schedulerOpts: TierSchedulerOptions = {
+    decayConfig: options.decayConfig ?? DEFAULT_DECAY_CONFIG,
+    now: options.now ?? (() => performance.now())
+  };
   if (options.scheduler?.intervalMs !== undefined) {
     schedulerOpts.intervalMs = options.scheduler.intervalMs;
   }
@@ -130,7 +119,62 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
   if (options.coordination?.pubsub !== undefined) {
     schedulerOpts.pubsub = options.coordination.pubsub;
   }
-  const scheduler = createTierScheduler(tiers, schedulerOpts);
+  return schedulerOpts;
+}
+
+function buildReadQuery(query: MemoryEngineRecallOptions): TierReadQuery {
+  const readQuery: TierReadQuery = {};
+  if (query.minImportance !== undefined) readQuery.minImportance = query.minImportance;
+  if (query.kind !== undefined) readQuery.kind = query.kind;
+  if (query.writeHeap !== undefined) readQuery.writeHeap = query.writeHeap;
+  if (query.limit !== undefined) readQuery.limit = query.limit;
+  return readQuery;
+}
+
+function getAllItemsFromTiers(tiers: Partial<Record<TierName, MemoryTierLike | undefined>>): MemoryItem[] {
+  const items: MemoryItem[] = [];
+  for (const tier of Object.values(tiers)) {
+    if (!tier) continue;
+    items.push(...tier.items());
+  }
+  return items;
+}
+
+export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEngine {
+  const now = options.now ?? (() => performance.now());
+  const importanceFactors = options.importanceFactors ?? DEFAULT_IMPORTANCE_FACTORS;
+
+  // Create tiers
+  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now });
+  const sensoryRegister = createSensoryRegister({
+    ...options.sensoryRegister,
+    now
+  });
+  const workingMemory = createWorkingMemory({ ...options.workingMemory, now });
+  const shortTermMemory = createShortTermMemory({
+    ...options.shortTermMemory,
+    now
+  });
+  const longTermMemory = createLongTermMemory({
+    ...options.longTermMemory,
+    now
+  });
+
+  const tiers: Partial<Record<TierName, MemoryTierLike>> = {
+    sensory_buffer: sensoryBuffer,
+    sensory_register: sensoryRegister,
+    working_memory: workingMemory,
+    short_term_memory: shortTermMemory,
+    long_term_memory: longTermMemory
+  };
+
+  const budget = createTokenBudget(buildBudgetOptions(options));
+  const scheduler = createTierScheduler(tiers, buildSchedulerOptions(options));
+
+  // Create processing pipeline (used in tier bridges — Phase 5+)
+  const _compressor = createCompressor({ ...options.compressor, now });
+  const _synthesizer = createSynthesizer({ ...options.synthesizer, now });
+  const _summarizer = createSummarizer({ ...options.summarizer, now });
 
   // Pending events queue for awaken
   const pendingEvents: PendingEvent[] = [];
@@ -176,7 +220,11 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
     if (written === null) {
       // Write failed (tier full), release budget and queue as pending
       budget.release(targetTierName, tokenCount);
-      pendingEvents.push({ content, importance: item.importance, metadata: item.metadata });
+      pendingEvents.push({
+        content,
+        importance: item.importance,
+        metadata: item.metadata
+      });
       return null;
     }
 
@@ -188,16 +236,9 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       query.tiers ??
       (['sensory_buffer', 'sensory_register', 'working_memory', 'short_term_memory', 'long_term_memory'] as TierName[]);
     const crossTier = query.crossTier ?? true;
-
-    // Build read query respecting exactOptionalPropertyTypes
-    const readQuery: TierReadQuery = {};
-    if (query.minImportance !== undefined) readQuery.minImportance = query.minImportance;
-    if (query.kind !== undefined) readQuery.kind = query.kind;
-    if (query.writeHeap !== undefined) readQuery.writeHeap = query.writeHeap;
-    if (query.limit !== undefined) readQuery.limit = query.limit;
+    const readQuery = buildReadQuery(query);
 
     if (crossTier) {
-      // Aggregate across all target tiers
       let allItems: MemoryItem[] = [];
 
       for (const tierName of targetTiers) {
@@ -207,7 +248,6 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
         allItems.push(...result.items);
       }
 
-      // Sort by importance across tiers
       allItems.sort((a, b) => b.importance - a.importance);
 
       if (query.limit !== undefined) {
@@ -218,14 +258,13 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       return [
         {
           items: allItems,
-          tierName: 'sensory_buffer' as TierName, // cross-tier, anchor to first
+          tierName: 'sensory_buffer' as TierName,
           tokenCount: finalTokens,
           overflowed: query.limit !== undefined && allItems.length > query.limit
         }
       ];
     }
 
-    // Per-tier recall
     const results: TierReadResult[] = [];
     for (const tierName of targetTiers) {
       const tier = tiers[tierName];
@@ -246,14 +285,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
         budgetRelease: (tier: TierName, tokens: number) => budget.release(tier, tokens),
         ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) =>
           ingest(content, { importance, metadata }),
-        getAllItems: () => {
-          const items: MemoryItem[] = [];
-          for (const tier of Object.values(tiers) as (MemoryTierLike | undefined)[]) {
-            if (!tier) continue;
-            items.push(...tier.items());
-          }
-          return items;
-        }
+        getAllItems: () => getAllItemsFromTiers(tiers)
       },
       {
         pendingEvents: allPending,
@@ -286,7 +318,12 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
     let totalTokens = 0;
     const tierStats = {} as Record<
       TierName,
-      { items: number; usedTokens: number; maxTokens: number; utilization: number }
+      {
+        items: number;
+        usedTokens: number;
+        maxTokens: number;
+        utilization: number;
+      }
     >;
 
     for (const [name, tier] of Object.entries(tiers) as [TierName, MemoryTierLike | undefined][]) {

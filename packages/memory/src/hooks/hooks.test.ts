@@ -1,17 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 
-import { createMemoryEngine } from '../cognitive/memory-engine.js';
-import { onResponse } from './on-response.js';
-import { onToolCall } from './on-tool-call.js';
+import { createMemoryEngine } from "../cognitive/memory-engine.js";
+import { onResponse } from "./on-response.js";
+import { onToolCall } from "./on-tool-call.js";
 
-describe('on-tool-call hook', () => {
-  it('should capture tool call as episodic memory', () => {
+function assertDefined<T>(value: T | undefined): asserts value is T {
+  expect(value).toBeDefined();
+}
+
+describe("on-tool-call hook", () => {
+  it("should capture tool call as episodic memory", () => {
     const engine = createMemoryEngine();
     const result = onToolCall({
       engine,
-      toolName: 'file_read',
-      toolInput: { path: '/tmp/test.txt' },
-      toolOutput: 'file contents here'
+      toolName: "file_read",
+      toolInput: { path: "/tmp/test.txt" },
+      toolOutput: "file contents here",
     });
 
     expect(result.memoryId).not.toBeNull();
@@ -21,127 +25,134 @@ describe('on-tool-call hook', () => {
     expect(stats.totalItems).toBe(1);
   });
 
-  it('should assign higher importance to write tools', () => {
+  it("should assign higher importance to write tools", () => {
     const engine = createMemoryEngine();
     const result = onToolCall({
       engine,
-      toolName: 'file_write',
-      toolInput: { path: '/tmp/output.txt' },
-      toolOutput: 'written successfully'
+      toolName: "file_write",
+      toolInput: { path: "/tmp/output.txt" },
+      toolOutput: "written successfully",
     });
 
     expect(result.importance).toBeGreaterThanOrEqual(0.7);
   });
 
-  it('should assign lower importance to read tools', () => {
+  it("should assign lower importance to read tools", () => {
     const engine = createMemoryEngine();
     const result = onToolCall({
       engine,
-      toolName: 'file_read',
-      toolInput: { path: '/tmp/data.txt' },
-      toolOutput: 'data contents'
+      toolName: "file_read",
+      toolInput: { path: "/tmp/data.txt" },
+      toolOutput: "data contents",
     });
 
     expect(result.importance).toBeLessThanOrEqual(0.4);
   });
 
-  it('should allow explicit importance override', () => {
+  it("should allow explicit importance override", () => {
     const engine = createMemoryEngine();
     const result = onToolCall({
       engine,
-      toolName: 'file_read',
-      toolInput: { path: '/tmp/important.txt' },
-      toolOutput: 'important data',
-      importance: 0.95
+      toolName: "file_read",
+      toolInput: { path: "/tmp/important.txt" },
+      toolOutput: "important data",
+      importance: 0.95,
     });
 
     expect(result.importance).toBe(0.95);
   });
 
-  it('should truncate long tool output', () => {
+  it("should truncate long tool output", () => {
     const engine = createMemoryEngine();
-    const longOutput = 'x'.repeat(500);
+    const longOutput = "x".repeat(500);
 
     onToolCall({
       engine,
-      toolName: 'data_fetch',
-      toolInput: { query: 'test' },
-      toolOutput: longOutput
+      toolName: "data_fetch",
+      toolInput: { query: "test" },
+      toolOutput: longOutput,
     });
 
     const recall = engine.recall({ crossTier: true, limit: 1 });
-    const item = recall[0]?.items[0];
-    expect(item).toBeDefined();
-    if (item) {
-      expect(item.content.length).toBeLessThan(longOutput.length + 50);
-    }
+    expect(recall.length).toBeGreaterThan(0);
+    const tier = recall[0];
+    assertDefined(tier);
+    expect(tier.items.length).toBeGreaterThan(0);
+    const item = tier.items[0];
+    assertDefined(item);
+    expect(item.content.length).toBeLessThan(longOutput.length + 50);
   });
 });
 
-describe('on-response hook', () => {
-  it('should capture response as episodic memory', () => {
+describe("on-response hook", () => {
+  it("should capture response as episodic memory", () => {
     const engine = createMemoryEngine();
     const result = onResponse({
       engine,
-      responseContent: 'Here is my answer to your question.',
-      responseTokens: 100
+      responseContent: "Here is my answer to your question.",
+      responseTokens: 100,
     });
 
     expect(result.memoryId).not.toBeNull();
     expect(result.importance).toBeGreaterThan(0);
   });
 
-  it('should assign higher importance to longer responses', () => {
+  it("should assign higher importance to longer responses", () => {
     const engine = createMemoryEngine();
 
     const shortResult = onResponse({
       engine,
-      responseContent: 'Short answer',
-      responseTokens: 50
+      responseContent: "Short answer",
+      responseTokens: 50,
     });
 
     const longResult = onResponse({
       engine,
-      responseContent: 'This is a much longer and more detailed answer with many tokens.',
-      responseTokens: 1500
+      responseContent:
+        "This is a much longer and more detailed answer with many tokens.",
+      responseTokens: 1500,
     });
 
     expect(longResult.importance).toBeGreaterThan(shortResult.importance);
   });
 
-  it('should include model family in metadata when provided', () => {
+  it("should include model family in metadata when provided", () => {
     const engine = createMemoryEngine();
     onResponse({
       engine,
-      responseContent: 'Answer',
+      responseContent: "Answer",
       responseTokens: 100,
-      modelFamily: 'gpt-4'
+      modelFamily: "gpt-4",
     });
 
     const recall = engine.recall({ crossTier: true, limit: 1 });
-    const item = recall[0]?.items[0];
-    expect(item).toBeDefined();
-    if (item) {
-      expect(item.metadata.modelFamily).toBe('gpt-4');
-      expect(item.metadata.responseTokens).toBe(100);
-    }
+    expect(recall.length).toBeGreaterThan(0);
+    const tier = recall[0];
+    assertDefined(tier);
+    expect(tier.items.length).toBeGreaterThan(0);
+    const item = tier.items[0];
+    assertDefined(item);
+    expect(item.metadata.modelFamily).toBe("gpt-4");
+    expect(item.metadata.responseTokens).toBe(100);
   });
 
-  it('should truncate long response content', () => {
+  it("should truncate long response content", () => {
     const engine = createMemoryEngine();
-    const longContent = 'x'.repeat(1000);
+    const longContent = "x".repeat(1000);
 
     onResponse({
       engine,
       responseContent: longContent,
-      responseTokens: 250
+      responseTokens: 250,
     });
 
     const recall = engine.recall({ crossTier: true, limit: 1 });
-    const item = recall[0]?.items[0];
-    expect(item).toBeDefined();
-    if (item) {
-      expect(item.content.length).toBeLessThan(longContent.length);
-    }
+    expect(recall.length).toBeGreaterThan(0);
+    const tier = recall[0];
+    assertDefined(tier);
+    expect(tier.items.length).toBeGreaterThan(0);
+    const item = tier.items[0];
+    assertDefined(item);
+    expect(item.content.length).toBeLessThan(longContent.length);
   });
 });

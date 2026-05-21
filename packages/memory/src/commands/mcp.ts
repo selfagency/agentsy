@@ -5,15 +5,15 @@ import { loadConfig } from '../config.js';
 import { createMemoryMCPServer } from '../mcp/server.js';
 
 export default class Mcp extends Command {
-  static description = 'Start the MCP memory server (stdio or http)';
+  static readonly description = 'Start the MCP memory server (stdio or http)';
 
-  static examples = [
+  static readonly examples = [
     '<%= config.bin %> mcp',
     '<%= config.bin %> mcp --transport http --port 4231',
     '<%= config.bin %> mcp --log-level debug'
   ];
 
-  static flags = {
+  static readonly flags = {
     transport: Flags.string({
       description: 'MCP transport mode',
       options: ['stdio', 'http'],

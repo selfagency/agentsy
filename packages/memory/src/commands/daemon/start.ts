@@ -3,15 +3,15 @@ import { Command, Flags } from '@oclif/core';
 import { startDaemon } from '../../mcp/daemon.js';
 
 export default class DaemonStart extends Command {
-  static description = 'Start the memory daemon with auto-restart';
+  static readonly description = 'Start the memory daemon with auto-restart';
 
-  static examples = [
+  static readonly examples = [
     '<%= config.bin %> daemon:start',
     '<%= config.bin %> daemon:start --transport http --port 4231',
     '<%= config.bin %> daemon:start --no-restart'
   ];
 
-  static flags = {
+  static readonly flags = {
     transport: Flags.string({
       description: 'MCP transport mode',
       options: ['stdio', 'http'],

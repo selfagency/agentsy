@@ -39,6 +39,159 @@ function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
+type Group = { items: MemoryItem[]; indices: number[] };
+type ItemEmbedding = { item: MemoryItem; embedding: number[] };
+type BudgetState = {
+  synthesized: MemoryItem[];
+  allSourceIds: string[];
+  discarded: MemoryItem[];
+  usedTokens: number;
+};
+
+function prepareEmbeddings(items: MemoryItem[], embedFn: (text: string) => number[]): ItemEmbedding[] {
+  return items.map(item => ({ item, embedding: embedFn(item.content) }));
+}
+
+function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], threshold: number): Group[] {
+  const assigned = new Set<number>();
+  const groups: Group[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    if (assigned.has(i)) continue;
+
+    const groupItem = items[i];
+    if (!groupItem) continue;
+
+    const group: Group = { items: [groupItem], indices: [i] };
+    assigned.add(i);
+
+    const embeddingI = embeddings[i]?.embedding;
+    if (!embeddingI) {
+      groups.push(group);
+      continue;
+    }
+
+    for (let j = i + 1; j < items.length; j++) {
+      if (assigned.has(j)) continue;
+
+      const embeddingJ = embeddings[j]?.embedding;
+      if (!embeddingJ) continue;
+
+      const sim = cosineSimilarity(embeddingI, embeddingJ);
+      if (sim >= threshold) {
+        const jItem = items[j];
+        if (jItem) {
+          group.items.push(jItem);
+          group.indices.push(j);
+          assigned.add(j);
+        }
+      }
+    }
+
+    groups.push(group);
+  }
+
+  return groups;
+}
+
+function handleBudgetOverflow(group: Group, budgetRemaining: number, state: BudgetState): void {
+  const sorted = [...group.items].sort((a, b) => b.importance - a.importance);
+  const kept = sorted[0];
+  if (!kept) return;
+
+  state.discarded.push(...sorted.slice(1));
+  const keptTokens = estimateTokens(kept.content);
+  if (keptTokens <= budgetRemaining) {
+    state.synthesized.push(kept);
+    state.allSourceIds.push(kept.id);
+    state.usedTokens += keptTokens;
+  } else {
+    state.discarded.push(kept);
+  }
+}
+
+function mergeGroup(
+  group: Group,
+  currentNow: number,
+  entityExtractor: {
+    extract: (text: string) => {
+      entities: unknown[];
+      relationships: unknown[];
+    };
+  }
+): MemoryItem {
+  const mergedContent = group.items.map(i => i.content).join('\n');
+  const sourceIds = group.items.map(i => i.id);
+  const maxImportance = Math.max(...group.items.map(i => i.importance));
+  const extraction = entityExtractor.extract(mergedContent);
+  const firstGroupItem = group.items[0];
+  if (firstGroupItem === undefined) {
+    throw new Error('Cannot synthesize empty group');
+  }
+
+  return {
+    id: `synth-${firstGroupItem.id}`,
+    kind: 'semantic',
+    content: mergedContent,
+    tokenCount: estimateTokens(mergedContent),
+    importance: Math.min(1, maxImportance + 0.1),
+    writeHeap: 'event',
+    reuseClass: 'warm',
+    createdAt: firstGroupItem.createdAt,
+    lastAccessedAt: currentNow,
+    accessCount: group.items.reduce((sum, i) => sum + i.accessCount, 0),
+    fingerprint: `synth-${group.items.map(i => i.fingerprint).join('+')}`,
+    metadata: {
+      sourceIds,
+      entityCount: extraction.entities.length,
+      relationshipCount: extraction.relationships.length,
+      _synthesized: true
+    }
+  };
+}
+
+function synthesizeGroups(
+  groups: Group[],
+  budget: number,
+  currentNow: number,
+  entityExtractor: {
+    extract: (text: string) => {
+      entities: unknown[];
+      relationships: unknown[];
+    };
+  },
+  originalTokens: number
+): SynthesizeResult {
+  const state: BudgetState = {
+    synthesized: [],
+    allSourceIds: [],
+    discarded: [],
+    usedTokens: 0
+  };
+
+  for (const group of groups) {
+    const merged = mergeGroup(group, currentNow, entityExtractor);
+
+    if (state.usedTokens + merged.tokenCount > budget) {
+      handleBudgetOverflow(group, budget - state.usedTokens, state);
+      continue;
+    }
+
+    state.synthesized.push(merged);
+    state.allSourceIds.push(...group.items.map(i => i.id));
+    state.usedTokens += merged.tokenCount;
+  }
+
+  const tokenReduction = originalTokens === 0 ? 0 : (originalTokens - state.usedTokens) / originalTokens;
+
+  return {
+    synthesized: state.synthesized,
+    sources: state.allSourceIds,
+    discarded: state.discarded,
+    tokenReduction
+  };
+}
+
 export function createSynthesizer(options: SynthesizerOptions = {}): Synthesizer {
   const now = options.now ?? (() => performance.now());
   const embeddingEngine = options.embeddingEngine ?? createLocalEmbeddingEngine();
@@ -48,129 +201,30 @@ export function createSynthesizer(options: SynthesizerOptions = {}): Synthesizer
   return {
     synthesize(items: MemoryItem[], budget: number): SynthesizeResult {
       if (items.length === 0) {
-        return { synthesized: [], sources: [], discarded: [], tokenReduction: 0 };
+        return {
+          synthesized: [],
+          sources: [],
+          discarded: [],
+          tokenReduction: 0
+        };
       }
 
       const firstItem = items[0];
       if (items.length === 1 && firstItem) {
-        return { synthesized: [firstItem], sources: [firstItem.id], discarded: [], tokenReduction: 0 };
+        return {
+          synthesized: [firstItem],
+          sources: [firstItem.id],
+          discarded: [],
+          tokenReduction: 0
+        };
       }
 
       const currentNow = now();
-      const embeddings = items.map(item => ({
-        item,
-        embedding: embeddingEngine.embed(item.content)
-      }));
+      const embeddings = prepareEmbeddings(items, text => embeddingEngine.embed(text));
+      const groups = groupBySimilarity(items, embeddings, similarityThreshold);
+      const originalTokens = items.reduce((sum, item) => sum + item.tokenCount, 0);
 
-      // Group items by similarity
-      const assigned = new Set<number>();
-      const groups: { items: MemoryItem[]; indices: number[] }[] = [];
-
-      for (let i = 0; i < items.length; i++) {
-        if (assigned.has(i)) continue;
-
-        const groupItem = items[i];
-        if (!groupItem) continue;
-
-        const group: { items: MemoryItem[]; indices: number[] } = {
-          items: [groupItem],
-          indices: [i]
-        };
-        assigned.add(i);
-
-        const embeddingI = embeddings[i]?.embedding;
-        if (!embeddingI) continue;
-
-        for (let j = i + 1; j < items.length; j++) {
-          if (assigned.has(j)) continue;
-
-          const embeddingJ = embeddings[j]?.embedding;
-          if (!embeddingJ) continue;
-
-          const sim = cosineSimilarity(embeddingI, embeddingJ);
-
-          if (sim >= similarityThreshold) {
-            const jItem = items[j];
-            if (jItem) {
-              group.items.push(jItem);
-              group.indices.push(j);
-              assigned.add(j);
-            }
-          }
-        }
-
-        groups.push(group);
-      }
-
-      // Synthesize each group
-      const synthesized: MemoryItem[] = [];
-      const allSourceIds: string[] = [];
-      const discarded: MemoryItem[] = [];
-      let usedTokens = 0;
-      let originalTokens = 0;
-
-      for (const item of items) {
-        originalTokens += item.tokenCount;
-      }
-
-      for (const group of groups) {
-        const mergedContent = group.items.map(i => i.content).join('\n');
-
-        const tokenCount = estimateTokens(mergedContent);
-
-        if (usedTokens + tokenCount > budget) {
-          // Keep highest-importance item from group, discard rest
-          const sorted = [...group.items].sort((a, b) => b.importance - a.importance);
-          const kept = sorted[0];
-          if (kept) {
-            discarded.push(...sorted.slice(1));
-            const keptTokens = estimateTokens(kept.content);
-            if (usedTokens + keptTokens <= budget) {
-              synthesized.push(kept);
-              allSourceIds.push(kept.id);
-              usedTokens += keptTokens;
-            } else {
-              discarded.push(kept);
-            }
-          }
-          continue;
-        }
-
-        const sourceIds = group.items.map(i => i.id);
-        const maxImportance = Math.max(...group.items.map(i => i.importance));
-        const extraction = entityExtractor.extract(mergedContent);
-
-        const firstGroupItem = group.items[0];
-        if (!firstGroupItem) continue;
-
-        const merged: MemoryItem = {
-          id: `synth-${firstGroupItem.id}`,
-          kind: 'semantic',
-          content: mergedContent,
-          tokenCount,
-          importance: Math.min(1, maxImportance + 0.1),
-          writeHeap: 'event',
-          reuseClass: 'warm',
-          createdAt: firstGroupItem.createdAt,
-          lastAccessedAt: currentNow,
-          accessCount: group.items.reduce((sum, i) => sum + i.accessCount, 0),
-          fingerprint: `synth-${group.items.map(i => i.fingerprint).join('+')}`,
-          metadata: {
-            sourceIds,
-            entityCount: extraction.entities.length,
-            relationshipCount: extraction.relationships.length,
-            _synthesized: true
-          }
-        };
-
-        synthesized.push(merged);
-        allSourceIds.push(...sourceIds);
-        usedTokens += tokenCount;
-      }
-
-      const tokenReduction = originalTokens === 0 ? 0 : (originalTokens - usedTokens) / originalTokens;
-
-      return { synthesized, sources: allSourceIds, discarded, tokenReduction };
+      return synthesizeGroups(groups, budget, currentNow, entityExtractor, originalTokens);
     }
   };
 }

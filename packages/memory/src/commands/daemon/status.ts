@@ -3,9 +3,9 @@ import { Command } from '@oclif/core';
 import { getDaemonStatus } from '../../mcp/daemon.js';
 
 export default class DaemonStatus extends Command {
-  static description = 'Check the status of the memory daemon';
+  static readonly description = 'Check the status of the memory daemon';
 
-  static examples = ['<%= config.bin %> daemon:status'];
+  static readonly examples = ['<%= config.bin %> daemon:status'];
 
   async run(): Promise<void> {
     const status = await getDaemonStatus();

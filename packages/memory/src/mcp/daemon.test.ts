@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { isDaemonRunning, getDaemonStatus } from './daemon.js';
 import { writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+import { isDaemonRunning, getDaemonStatus } from './daemon.js';
 
 describe('Daemon', () => {
   const testPidDir = join(tmpdir(), 'agentsy-memory-test-daemon');

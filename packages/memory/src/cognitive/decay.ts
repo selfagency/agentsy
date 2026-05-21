@@ -48,11 +48,16 @@ export function applyDecay(
 
   return items.map(item => {
     if (halfLife === Infinity) {
-      return { item, newImportance: item.importance, tier, action: 'keep' as const };
+      return {
+        item,
+        newImportance: item.importance,
+        tier,
+        action: 'keep' as const
+      };
     }
 
     const age = Math.max(0, now - item.createdAt);
-    const decayedImportance = item.importance * Math.pow(0.5, age / halfLife);
+    const decayedImportance = item.importance * 0.5 ** (age / halfLife);
     const newImportance = Math.max(0, decayedImportance);
 
     let action: DecayedItem['action'];

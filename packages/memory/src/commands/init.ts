@@ -4,15 +4,15 @@ import { initMemory } from '../init.js';
 import type { InitResult } from '../init.js';
 
 export default class Init extends Command {
-  static description = 'Initialize @agentsy/memory engine and configuration';
+  static readonly description = 'Initialize @agentsy/memory engine and configuration';
 
-  static examples = [
+  static readonly examples = [
     '<%= config.bin %> init',
     '<%= config.bin %> init --transport http --port 4231',
     '<%= config.bin %> init --skip-mcp --skip-db'
   ];
 
-  static flags = {
+  static readonly flags = {
     transport: Flags.string({
       description: 'MCP transport mode',
       options: ['stdio', 'http'],

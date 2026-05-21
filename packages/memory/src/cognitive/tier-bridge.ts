@@ -32,10 +32,9 @@ export function createTierBridge(options: TierBridgeOptions): TierBridge {
       return true;
     },
 
-    transfer(items: MemoryItem[], reason: 'consolidation' | 'eviction' | 'manual'): number {
+    transfer(items: MemoryItem[], _reason: 'consolidation' | 'eviction' | 'manual'): number {
       if (!this.canTransfer()) return 0;
       const transformed = transform(items);
-      void reason;
       return transformed.length;
     }
   };

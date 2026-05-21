@@ -47,7 +47,7 @@ Environment variables:
       case '--port': {
         configOverrides.mcp = configOverrides.mcp ?? {};
         const portVal = args[++i];
-        if (portVal) (configOverrides.mcp as Record<string, unknown>).port = parseInt(portVal, 10);
+        if (portVal) (configOverrides.mcp as Record<string, unknown>).port = Number.parseInt(portVal, 10);
         break;
       }
       case '--log-level': {

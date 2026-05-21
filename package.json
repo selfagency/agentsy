@@ -34,7 +34,7 @@
     "fallow": "fallow",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
-    "format": "turbo run format",
+    "format": "rumdl fmt && turbo run format",
     "test": "turbo run test",
     "test:release": "pnpm -C packages/scripts run release-test",
     "test:coverage": "turbo run coverage",

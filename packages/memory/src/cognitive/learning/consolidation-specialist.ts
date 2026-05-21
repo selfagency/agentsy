@@ -179,7 +179,7 @@ export function createConsolidationSpecialist(options: ConsolidationSpecialistOp
       // Truncate to fit budget
       const words = mergedSummary.split(' ');
       const allowedWords = Math.floor(maxTokenBudget / 1.5);
-      mergedSummary = words.slice(0, allowedWords).join(' ') + '...';
+      mergedSummary = `${words.slice(0, allowedWords).join(' ')}...`;
     }
 
     // Weight by confidence × (1 - redundancy)

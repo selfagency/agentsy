@@ -6,8 +6,7 @@ import {
   type LearningLoopOrchestrator
 } from './learning/loop-orchestrator.js';
 import type { MemoryTierLike } from './memory-tier.js';
-import type { TierName } from './tier-types.js';
-import type { MemoryItem } from './tier-types.js';
+import type { TierName, MemoryItem } from './tier-types.js';
 
 export interface AwakenResult {
   decayPass: {
@@ -82,11 +81,9 @@ export async function awaken(deps: AwakenDeps, options: AwakenOptions = {}): Pro
     }
 
     // Reclaim budget for discarded items
-    let reclaimedTokens = 0;
     for (const result of options.decayResults) {
       if (result.action === 'discard') {
         deps.budgetRelease(result.tier, result.item.tokenCount);
-        reclaimedTokens += result.item.tokenCount;
       }
     }
 
@@ -117,8 +114,6 @@ export async function awaken(deps: AwakenDeps, options: AwakenOptions = {}): Pro
         }
       }
     }
-
-    void reclaimedTokens;
   } else {
     const decayResult = deps.runDecayPass();
     kept = decayResult.kept;
@@ -175,8 +170,7 @@ export async function awaken(deps: AwakenDeps, options: AwakenOptions = {}): Pro
   for (const tierName of TIER_ORDER) {
     const tier = deps.tiers[tierName];
     if (!tier) continue;
-    const cap = tier.capacity();
-    void cap;
+    tier.capacity();
   }
 
   // Step 5: Optional learning cycle

@@ -5,11 +5,11 @@
 // 3. .agentsy/memory.env (project-level)
 // 4. Built-in defaults
 
-import type { DecayConfig } from './cognitive/decay.js';
-import { DEFAULT_DECAY_CONFIG } from './cognitive/decay.js';
-import type { TierName, TierConfig } from './cognitive/tier-types.js';
-import type { TokenBudgetOptions } from './cognitive/token-budget.js';
-import type { MemoryMCPServerOptions } from './mcp/server.js';
+import type { DecayConfig } from "./cognitive/decay.js";
+import { DEFAULT_DECAY_CONFIG } from "./cognitive/decay.js";
+import type { TierName, TierConfig } from "./cognitive/tier-types.js";
+import type { TokenBudgetOptions } from "./cognitive/token-budget.js";
+import type { MemoryMCPServerOptions } from "./mcp/server.js";
 
 export interface MemoryConfig {
   db: {
@@ -28,72 +28,78 @@ export interface MemoryConfig {
     onToolCall: boolean;
     onResponse: boolean;
   };
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  logLevel: "debug" | "info" | "warn" | "error";
 }
 
 const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
   sensory_buffer: {
     level: 1,
-    name: 'sensory_buffer',
+    name: "sensory_buffer",
     maxTokens: 200,
     maxItems: 50,
     ttlMs: 5_000,
     consolidationThreshold: 0.6,
-    compressionTarget: 0.5
+    compressionTarget: 0.5,
   },
   sensory_register: {
     level: 2,
-    name: 'sensory_register',
+    name: "sensory_register",
     maxTokens: 400,
     maxItems: 4,
     ttlMs: 2_000,
     consolidationThreshold: 0.5,
-    compressionTarget: 0.4
+    compressionTarget: 0.4,
   },
   working_memory: {
     level: 3,
-    name: 'working_memory',
+    name: "working_memory",
     maxTokens: 1_000,
     maxItems: 7,
     ttlMs: 30_000,
     consolidationThreshold: 0.4,
-    compressionTarget: 0.3
+    compressionTarget: 0.3,
   },
   short_term_memory: {
     level: 4,
-    name: 'short_term_memory',
+    name: "short_term_memory",
     maxTokens: 2_000,
     maxItems: 12,
     ttlMs: 3_600_000,
     consolidationThreshold: 0.3,
-    compressionTarget: 0.2
+    compressionTarget: 0.2,
   },
   long_term_memory: {
     level: 5,
-    name: 'long_term_memory',
+    name: "long_term_memory",
     maxTokens: Infinity,
     maxItems: Infinity,
     ttlMs: Infinity,
     consolidationThreshold: 0.0,
-    compressionTarget: 0.0
-  }
+    compressionTarget: 0.0,
+  },
 };
 
 function envString(key: string, fallback: string): string {
-  return process.env[key] ?? fallback;
+  const val = process.env[key];
+  if (typeof val === "string" && val.length > 0) return val;
+  return fallback;
 }
 
 function envNumber(key: string, fallback: number): number {
   const val = process.env[key];
-  if (val === undefined) return fallback;
-  const parsed = Number(val);
-  return Number.isFinite(parsed) ? parsed : fallback;
+  if (typeof val === "string" && val.length > 0) {
+    const parsed = Number(val);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
 }
 
 function envBool(key: string, fallback: boolean): boolean {
   const val = process.env[key];
-  if (val === undefined) return fallback;
-  return val === '1' || val === 'true' || val === 'yes';
+  if (typeof val === "string" && val.length > 0) {
+    return val === "1" || val === "true" || val === "yes";
+  }
+  return fallback;
 }
 
 /**
@@ -101,21 +107,32 @@ function envBool(key: string, fallback: boolean): boolean {
  * Priority: overrides > env vars > defaults
  */
 export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
-  const dbPath = overrides?.db?.path ?? envString('AGENTSY_MEMORY_DB', '.agentsy/memory.db');
-  const syncUrl = overrides?.db?.syncUrl ?? (process.env.AGENTSY_MEMORY_SYNC_URL || undefined);
-  const syncAuthToken = overrides?.db?.syncAuthToken ?? (process.env.AGENTSY_MEMORY_SYNC_AUTH_TOKEN || undefined);
-  const syncIntervalMs = overrides?.db?.syncIntervalMs ?? envNumber('AGENTSY_MEMORY_SYNC_INTERVAL_MS', 60_000);
+  const dbPath =
+    overrides?.db?.path ?? envString("AGENTSY_MEMORY_DB", ".agentsy/memory.db");
+  const syncUrl =
+    overrides?.db?.syncUrl ??
+    (process.env.AGENTSY_MEMORY_SYNC_URL || undefined);
+  const syncAuthToken =
+    overrides?.db?.syncAuthToken ??
+    (process.env.AGENTSY_MEMORY_SYNC_AUTH_TOKEN || undefined);
+  const syncIntervalMs =
+    overrides?.db?.syncIntervalMs ??
+    envNumber("AGENTSY_MEMORY_SYNC_INTERVAL_MS", 60_000);
 
-  const transport = overrides?.mcp?.transport ?? (envString('AGENTSY_MEMORY_TRANSPORT', 'stdio') as 'stdio' | 'http');
-  const port = overrides?.mcp?.port ?? envNumber('AGENTSY_MEMORY_PORT', 4231);
-  const logLevel = overrides?.logLevel ?? (envString('AGENTY_MEMORY_LOG_LEVEL', 'info') as MemoryConfig['logLevel']);
+  const transport =
+    overrides?.mcp?.transport ??
+    (envString("AGENTSY_MEMORY_TRANSPORT", "stdio") as "stdio" | "http");
+  const port = overrides?.mcp?.port ?? envNumber("AGENTSY_MEMORY_PORT", 4231);
+  const logLevel =
+    overrides?.logLevel ??
+    (envString("AGENTY_MEMORY_LOG_LEVEL", "info") as MemoryConfig["logLevel"]);
 
   return {
     db: {
       path: dbPath,
       ...(syncUrl !== undefined ? { syncUrl } : {}),
       ...(syncAuthToken !== undefined ? { syncAuthToken } : {}),
-      syncIntervalMs
+      syncIntervalMs,
     },
     tiers: overrides?.tiers ?? DEFAULT_TIER_CONFIGS,
     budget: overrides?.budget ?? { budgets: {} },
@@ -127,16 +144,26 @@ export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
       ...(syncUrl ? { syncUrl } : {}),
       ...(syncAuthToken ? { syncAuthToken } : {}),
       logLevel:
-        logLevel === 'debug' || logLevel === 'info' || logLevel === 'warn' || logLevel === 'error' ? logLevel : 'info'
+        logLevel === "debug" ||
+        logLevel === "info" ||
+        logLevel === "warn" ||
+        logLevel === "error"
+          ? logLevel
+          : "info",
     },
     hooks: overrides?.hooks ?? {
-      onSessionStart: envBool('AGENTSY_MEMORY_HOOK_SESSION_START', true),
-      onSessionEnd: envBool('AGENTSY_MEMORY_HOOK_SESSION_END', true),
-      onToolCall: envBool('AGENTSY_MEMORY_HOOK_TOOL_CALL', true),
-      onResponse: envBool('AGENTSY_MEMORY_HOOK_RESPONSE', true)
+      onSessionStart: envBool("AGENTSY_MEMORY_HOOK_SESSION_START", true),
+      onSessionEnd: envBool("AGENTSY_MEMORY_HOOK_SESSION_END", true),
+      onToolCall: envBool("AGENTSY_MEMORY_HOOK_TOOL_CALL", true),
+      onResponse: envBool("AGENTSY_MEMORY_HOOK_RESPONSE", true),
     },
     logLevel:
-      logLevel === 'debug' || logLevel === 'info' || logLevel === 'warn' || logLevel === 'error' ? logLevel : 'info'
+      logLevel === "debug" ||
+      logLevel === "info" ||
+      logLevel === "warn" ||
+      logLevel === "error"
+        ? logLevel
+        : "info",
   };
 }
 

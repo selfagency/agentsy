@@ -29,129 +29,137 @@ interface RawObservation {
   confidence: number;
 }
 
-// Heuristic extractors — pure functions mapping content string to raw observations
+type ExtractorFn = (content: string) => RawObservation[];
 
-function extractFactual(content: string): RawObservation[] {
+function extractByPattern(
+  content: string,
+  pattern: RegExp,
+  build: (match: RegExpExecArray) => RawObservation | null
+): RawObservation[] {
   const observations: RawObservation[] = [];
-  // Match "X is Y" or "X are Y" patterns
-  const isPattern = /\b([A-Z][A-Za-z0-9\s]{2,60})(?:\s+is\s+|\s+are\s+)([^.!?]+)/gu;
-  let match: RegExpExecArray | null;
-  while ((match = isPattern.exec(content)) !== null) {
-    const subject = match[1]?.trim();
-    const predicate = match[2]?.trim();
-    if (subject && predicate && predicate.length > 3) {
-      observations.push({
-        kind: 'factual',
-        content: `${subject} is ${predicate}`,
-        confidence: 0.7
-      });
-    }
+  let match = pattern.exec(content);
+  while (match !== null) {
+    const obs = build(match);
+    if (obs) observations.push(obs);
+    match = pattern.exec(content);
   }
   return observations;
 }
 
+// Heuristic extractors — pure functions mapping content string to raw observations
+
+function extractFactual(content: string): RawObservation[] {
+  const isPattern = /\b([A-Z][A-Za-z0-9\s]{2,60})(?:\s+is\s+|\s+are\s+)([^.!?]+)/gu;
+  return extractByPattern(content, isPattern, (match: RegExpExecArray) => {
+    const subject = match[1]?.trim();
+    const predicate = match[2]?.trim();
+    if (!subject || !predicate || predicate.length <= 3) return null;
+    return {
+      kind: 'factual',
+      content: `${subject} is ${predicate}`,
+      confidence: 0.7
+    };
+  });
+}
+
 function extractEmotional(content: string): RawObservation[] {
-  const observations: RawObservation[] = [];
-  const emotionalPatterns = [
-    { pattern: /\b(?:like|love|enjoy|prefer)\s+([^.,;]+)/giu, kind: 'factual' as ObservationKind, prefix: 'prefers' },
+  const emotionalPatterns: {
+    pattern: RegExp;
+    kind: ObservationKind;
+    prefix: string;
+  }[] = [
+    {
+      pattern: /\b(?:like|love|enjoy|prefer)\s+([^.,;]+)/giu,
+      kind: 'factual',
+      prefix: 'prefers'
+    },
     {
       pattern: /\b(?:dislike|hate|avoid|do not want)\s+([^.,;]+)/giu,
-      kind: 'emotional' as ObservationKind,
+      kind: 'emotional',
       prefix: 'dislikes'
     },
     {
       pattern: /\b(?:frustrated|annoyed|irritated)\s+(?:with|by|about)?\s*([^.,;]+)/giu,
-      kind: 'emotional' as ObservationKind,
+      kind: 'emotional',
       prefix: 'frustrated with'
     },
     {
       pattern: /\b(?:happy|pleased|satisfied)\s+(?:with|about)?\s*([^.,;]+)/giu,
-      kind: 'emotional' as ObservationKind,
+      kind: 'emotional',
       prefix: 'satisfied with'
     }
   ];
 
+  const observations: RawObservation[] = [];
   for (const { pattern, kind, prefix } of emotionalPatterns) {
-    let match: RegExpExecArray | null;
-    while ((match = pattern.exec(content)) !== null) {
-      const target = match[1]?.trim();
-      if (target && target.length > 2) {
-        observations.push({
-          kind,
-          content: `${prefix} ${target}`,
-          confidence: 0.6
-        });
-      }
-    }
+    observations.push(
+      ...extractByPattern(content, pattern, (match: RegExpExecArray) => {
+        const target = match[1]?.trim();
+        if (!target || target.length <= 2) return null;
+        return { kind, content: `${prefix} ${target}`, confidence: 0.6 };
+      })
+    );
   }
   return observations;
 }
 
 function extractProcedural(content: string): RawObservation[] {
-  const observations: RawObservation[] = [];
-  // Match "to do X, first Y then Z" or "step 1: ..." patterns
-  const proceduralPattern =
-    /\b(?:first|step\s*\d+|to\s+[^,]+,\s*(?:first|then|next|after)|how\s+to)\s+([^.;!?]{3,120})/giu;
-  let match: RegExpExecArray | null;
-  while ((match = proceduralPattern.exec(content)) !== null) {
+  const stepPattern = /\b(?:first|then|next|after)\s+([^.;!?]{3,120})/giu;
+  const howToPattern = /\bhow\s+to\s+([^.;!?]{3,120})/giu;
+
+  const build = (match: RegExpExecArray): RawObservation | null => {
     const step = match[1]?.trim();
-    if (step && step.length > 5) {
-      observations.push({
-        kind: 'procedural',
-        content: `procedure: ${step}`,
-        confidence: 0.65
-      });
-    }
-  }
-  return observations;
+    if (!step || step.length <= 5) return null;
+    return {
+      kind: 'procedural',
+      content: `procedure: ${step}`,
+      confidence: 0.65
+    };
+  };
+
+  return [...extractByPattern(content, stepPattern, build), ...extractByPattern(content, howToPattern, build)];
 }
 
 function extractCorrective(content: string): RawObservation[] {
-  const observations: RawObservation[] = [];
-  // Match correction patterns: "previously thought X, actually Y" or "not X, but Y"
   const correctionPatterns = [
     /\b(?:previously|before|thought|believed)\s+([^,;]+)(?:[,;]\s*)?(?:but\s+now|actually|instead|correction)[,;:]?\s*([^.;!?]+)/giu,
     /\b(?:not|no longer)\s+([^,;]+)(?:[,;]\s*)?(?:but|rather|instead)[,;:]?\s*([^.;!?]+)/giu
   ];
 
+  const observations: RawObservation[] = [];
   for (const pattern of correctionPatterns) {
-    let match: RegExpExecArray | null;
-    while ((match = pattern.exec(content)) !== null) {
-      const old = match[1]?.trim();
-      const corrected = match[2]?.trim();
-      if (old && corrected && old.length > 3 && corrected.length > 3) {
-        observations.push({
+    observations.push(
+      ...extractByPattern(content, pattern, (match: RegExpExecArray) => {
+        const old = match[1]?.trim();
+        const corrected = match[2]?.trim();
+        if (!old || !corrected || old.length <= 3 || corrected.length <= 3) return null;
+        return {
           kind: 'corrective',
           content: `correction: "${old}" is actually "${corrected}"`,
           confidence: 0.75
-        });
-      }
-    }
+        };
+      })
+    );
   }
   return observations;
 }
 
 function extractRelational(content: string): RawObservation[] {
-  const observations: RawObservation[] = [];
-  // Match "X met Y at Z" or "X works with Y" patterns
   const relationalPattern =
     /\b([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+(?:met|works with|collaborates with|knows|is related to)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\b/giu;
-  let match: RegExpExecArray | null;
-  while ((match = relationalPattern.exec(content)) !== null) {
+  return extractByPattern(content, relationalPattern, (match: RegExpExecArray) => {
     const from = match[1]?.trim();
     const to = match[2]?.trim();
-    if (from && to && from !== to) {
-      observations.push({
-        kind: 'relational',
-        content: `relationship: ${from} and ${to}`,
-        confidence: 0.55
-      });
-    }
-  }
-  return observations;
+    if (!from || !to || from === to) return null;
+    return {
+      kind: 'relational',
+      content: `relationship: ${from} and ${to}`,
+      confidence: 0.55
+    };
+  });
 }
 
-const EXTRACTORS: ((content: string) => RawObservation[])[] = [
+const EXTRACTORS: ExtractorFn[] = [
   extractFactual,
   extractEmotional,
   extractProcedural,

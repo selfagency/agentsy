@@ -48,7 +48,7 @@ export interface TokenBudget {
 }
 
 export function createTokenBudget(options: TokenBudgetOptions): TokenBudget {
-  const overprovision = options.overprovisionFactor ?? 1.0;
+  const overprovision = options.overprovisionFactor ?? 1;
   const maxByTier = new Map<TierName, number>();
   const usedByTier = new Map<TierName, number>();
 
