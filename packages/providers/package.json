@@ -22,27 +22,27 @@
   "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./adapters": {
-      "types": "./src/adapters/index.ts",
+      "types": "./dist/adapters.d.ts",
       "import": "./dist/adapters.js",
       "require": "./dist/adapters.cjs"
     },
     "./normalizers": {
-      "types": "./src/normalizers/index.ts",
+      "types": "./dist/normalizers.d.ts",
       "import": "./dist/normalizers.js",
       "require": "./dist/normalizers.cjs"
     },
     "./pipeline": {
-      "types": "./src/pipeline/index.ts",
+      "types": "./dist/pipeline.d.ts",
       "import": "./dist/pipeline.js",
       "require": "./dist/pipeline.cjs"
     },
     "./universal-client": {
-      "types": "./src/universal-client/index.ts",
+      "types": "./dist/universal-client.d.ts",
       "import": "./dist/universal-client.js",
       "require": "./dist/universal-client.cjs"
     }

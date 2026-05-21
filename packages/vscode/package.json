@@ -33,29 +33,29 @@
       "require": "./dist/index.cjs"
     },
     "./api-key-manager": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/api-key-manager.d.ts",
+      "import": "./dist/api-key-manager.js",
+      "require": "./dist/api-key-manager.cjs"
     },
     "./stream-bridge": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/stream-bridge.d.ts",
+      "import": "./dist/stream-bridge.js",
+      "require": "./dist/stream-bridge.cjs"
     },
     "./vscode-renderer": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/vscode-renderer.d.ts",
+      "import": "./dist/vscode-renderer.js",
+      "require": "./dist/vscode-renderer.cjs"
     },
     "./mcp": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/mcp.d.ts",
+      "import": "./dist/mcp.js",
+      "require": "./dist/mcp.cjs"
     },
     "./message-conversion": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/message-conversion.d.ts",
+      "import": "./dist/message-conversion.js",
+      "require": "./dist/message-conversion.cjs"
     }
   },
   "publishConfig": {

@@ -5,6 +5,8 @@ import type { MemoryEngine } from '../cognitive/memory-engine.js';
 import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOptions } from './protocol.js';
 import { createMemoryMcpTools } from './tools.js';
 
+const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
+
 export interface MemoryMCPServerOptions {
   /** Transport mode. Default: 'stdio' */
   transport?: 'stdio' | 'http';
@@ -123,7 +125,23 @@ export async function createMemoryMCPServer(
 
         if (req.method === 'POST' && req.url === '/message') {
           const chunks: Buffer[] = [];
+          let totalSize = 0;
           for await (const chunk of req) {
+            totalSize += (chunk as Buffer).length;
+            if (totalSize > MAX_BODY_SIZE) {
+              res.writeHead(413, { 'Content-Type': 'application/json' });
+              res.end(
+                JSON.stringify({
+                  jsonrpc: '2.0',
+                  id: null,
+                  error: {
+                    code: -32700,
+                    message: 'Request body exceeds maximum size of 10 MB'
+                  }
+                })
+              );
+              return;
+            }
             chunks.push(chunk as Buffer);
           }
           const body = Buffer.concat(chunks).toString('utf-8');

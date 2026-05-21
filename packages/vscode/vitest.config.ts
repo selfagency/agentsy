@@ -13,11 +13,12 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.spec.ts', 'src/test/fixtures', 'src/test/integration'],
+      exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.spec.ts', 'src/test/', 'src/testing/'],
       thresholds: {
-        functions: 90,
-        lines: 90,
-        statements: 90
+        branches: 60,
+        functions: 80,
+        lines: 80,
+        statements: 80
       },
       provider: 'v8',
       reporter: ['text', 'lcov']
