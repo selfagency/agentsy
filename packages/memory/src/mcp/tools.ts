@@ -7,12 +7,14 @@ export interface MemoryMcpToolSet {
   handlers: Record<string, McpToolHandler>;
 }
 
+const KIND_VALUES = ['semantic', 'episodic', 'procedural', 'sensory'] as const;
+type KindValue = (typeof KIND_VALUES)[number];
+
 function buildIngestOptions(args: Record<string, unknown>): MemoryEngineIngestOptions {
   const opts: MemoryEngineIngestOptions = {};
   if (typeof args.importance === 'number') opts.importance = args.importance;
-  const kindValues = ['semantic', 'episodic', 'procedural', 'sensory'] as const;
-  if (typeof args.kind === 'string' && kindValues.includes(args.kind as (typeof kindValues)[number])) {
-    opts.kind = args.kind as 'semantic' | 'episodic' | 'procedural' | 'sensory';
+  if (typeof args.kind === 'string' && (KIND_VALUES as readonly string[]).includes(args.kind)) {
+    opts.kind = args.kind as KindValue;
   }
   if (typeof args.targetTier === 'string') opts.targetTier = args.targetTier as TierName;
   return opts;
@@ -212,7 +214,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     const stats = engine.stats();
     const issues: string[] = [];
     if (stats.totalItems === 0) issues.push('No memories');
-    if (stats.budgetUtilization >= 1.0) issues.push('Budget exhausted');
+    if (stats.budgetUtilization >= 1) issues.push('Budget exhausted');
     for (const [name, tierStat] of Object.entries(stats.tierStats)) {
       if (tierStat.utilization >= 0.95) issues.push(`${name} near capacity`);
     }

@@ -34,7 +34,7 @@ export async function onSessionEnd(input: OnSessionEndInput): Promise<OnSessionE
       const opts: Record<string, unknown> = {};
       if (event.importance !== undefined) opts.importance = event.importance;
       if (event.metadata !== undefined) opts.metadata = event.metadata;
-      // NOSONAR: cast from Record<string, unknown> to ingest options is intentional — only valid keys are set above
+      // NOSONAR: cast is required to pass generic opts to engine.ingest()
       const id = engine.ingest(event.content, opts as Parameters<typeof engine.ingest>[1]);
       if (id !== null) {
         persisted++;

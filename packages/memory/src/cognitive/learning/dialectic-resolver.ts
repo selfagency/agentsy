@@ -105,11 +105,11 @@ function buildRepresentations(group: Observation[]): Representation[] {
 }
 
 function hasNewerWinner(sorted: Observation[], priority: ResolutionPriority): boolean {
-  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt)[0];
-  const highestSource = sorted[0];
-  return (
-    newest !== undefined && highestSource !== undefined && newest.id !== highestSource.id && priority.recencyBias > 0.5
-  );
+  if (sorted.length === 0) return false;
+  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt).at(0);
+  const highestSource = sorted.at(0);
+  if (!newest || !highestSource) return false;
+  return newest.id !== highestSource.id && priority.recencyBias > 0.5;
 }
 
 function determineResolutionMethod(sorted: Observation[], priority: ResolutionPriority): Resolution['method'] {

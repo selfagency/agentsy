@@ -97,7 +97,7 @@ function summarizeGroup(items: MemoryItem[], _now: number): string {
 
   // Deduplicate and take top sentences
   const unique = [...new Set(sentences)];
-  return unique.slice(0, 5).join('. ') + '.';
+  return `${unique.slice(0, 5).join('. ')}.`;
 }
 
 function groupByHeap(items: MemoryItem[]): Map<WriteHeap, MemoryItem[]> {

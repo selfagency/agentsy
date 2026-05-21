@@ -119,8 +119,8 @@ export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
   return {
     db: {
       path: dbPath,
-      ...(syncUrl !== undefined ? { syncUrl } : {}),
-      ...(syncAuthToken !== undefined ? { syncAuthToken } : {}),
+      ...(syncUrl ? { syncUrl } : {}),
+      ...(syncAuthToken ? { syncAuthToken } : {}),
       syncIntervalMs
     },
     tiers: overrides?.tiers ?? DEFAULT_TIER_CONFIGS,

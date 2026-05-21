@@ -267,6 +267,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       return [
         {
           items: allItems,
+          // NOSONAR: assertion is required to satisfy TierName union type
           tierName: 'sensory_buffer' as TierName,
           tokenCount: finalTokens,
           overflowed: query.limit !== undefined && allItems.length > query.limit

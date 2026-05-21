@@ -52,7 +52,7 @@ describe('awaken', () => {
         const current = releasedTokens.get(tier) ?? 0;
         releasedTokens.set(tier, current + tokens);
       },
-      ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => {
+      ingestItem: (content: string, importance: number, _metadata: Record<string, unknown>) => {
         const item = createTestMemoryItem({
           content,
           importance,
