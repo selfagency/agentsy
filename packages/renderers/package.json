@@ -18,24 +18,24 @@
       "require": "./dist/index.cjs"
     },
     "./ink": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/ink.d.ts",
+      "import": "./dist/ink.js",
+      "require": "./dist/ink.cjs"
     },
     "./cli": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js",
+      "require": "./dist/cli.cjs"
     },
     "./streaming-md": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/streaming-md.d.ts",
+      "import": "./dist/streaming-md.js",
+      "require": "./dist/streaming-md.cjs"
     },
     "./plain": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/plain.d.ts",
+      "import": "./dist/plain.js",
+      "require": "./dist/plain.cjs"
     }
   },
   "publishConfig": {

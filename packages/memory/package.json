@@ -49,6 +49,36 @@
       "types": "./dist/cli.d.ts",
       "import": "./dist/cli.js",
       "require": "./dist/cli.cjs"
+    },
+    "./init": {
+      "types": "./dist/init.d.ts",
+      "import": "./dist/init.js",
+      "require": "./dist/init.cjs"
+    },
+    "./commands/init": {
+      "types": "./dist/commands/init.d.ts",
+      "import": "./dist/commands/init.js",
+      "require": "./dist/commands/init.cjs"
+    },
+    "./commands/mcp": {
+      "types": "./dist/commands/mcp.d.ts",
+      "import": "./dist/commands/mcp.js",
+      "require": "./dist/commands/mcp.cjs"
+    },
+    "./commands/daemon/start": {
+      "types": "./dist/commands/daemon/start.d.ts",
+      "import": "./dist/commands/daemon/start.js",
+      "require": "./dist/commands/daemon/start.cjs"
+    },
+    "./commands/daemon/stop": {
+      "types": "./dist/commands/daemon/stop.d.ts",
+      "import": "./dist/commands/daemon/stop.js",
+      "require": "./dist/commands/daemon/stop.cjs"
+    },
+    "./commands/daemon/status": {
+      "types": "./dist/commands/daemon/status.d.ts",
+      "import": "./dist/commands/daemon/status.js",
+      "require": "./dist/commands/daemon/status.cjs"
     }
   },
   "scripts": {
@@ -62,7 +92,6 @@
   "dependencies": {
     "@agentsy/tokens": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "@oclif/core": "^4.11.3",
     "@tursodatabase/sync": "^0.6.0",
     "blake3-jit": "^1.1.0"

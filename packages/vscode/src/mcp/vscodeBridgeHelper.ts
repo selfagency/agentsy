@@ -10,7 +10,6 @@ import type { CancellationToken, ChatResponseStream } from 'vscode';
  * Extended MCP event types that can be emitted from the transport.
  * These map to MCP message types that should be converted to VS Code chat format.
  */
-// fallow-ignore-next-line unused-type
 export interface MCPStreamEvent {
   type: 'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push';
   data: unknown;
@@ -112,7 +111,6 @@ export class VSCodeMCPBridgeHelper {
    * This is the recommended pattern: pass in your VS Code ChatResponseStream
    * and this method will populate it with data from the MCP transport.
    */
-  // fallow-ignore-next-line unused-class-member
   public connectToStream(stream: ChatResponseStream): void {
     const transportStream = adaptTransportToStream(this.transport);
     void this.processRawStream(transportStream, stream);
