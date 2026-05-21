@@ -1,18 +1,13 @@
 // MCP stdio server — lightweight JSON-RPC 2.0 transport over stdin/stdout
 // No dependency on @modelcontextprotocol/sdk (Zod v4 heavy); uses protocol.ts
 
-import type { MemoryEngine } from "../cognitive/memory-engine.js";
-import {
-  createMcpServer,
-  type JsonRpcRequest,
-  type McpServer,
-  type McpServerOptions,
-} from "./protocol.js";
-import { createMemoryMcpTools } from "./tools.js";
+import type { MemoryEngine } from '../cognitive/memory-engine.js';
+import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOptions } from './protocol.js';
+import { createMemoryMcpTools } from './tools.js';
 
 export interface MemoryMCPServerOptions {
   /** Transport mode. Default: 'stdio' */
-  transport?: "stdio" | "http";
+  transport?: 'stdio' | 'http';
   /** Port for HTTP mode. Default: 4231 */
   port?: number;
   /** Database path for standalone mode */
@@ -22,7 +17,7 @@ export interface MemoryMCPServerOptions {
   /** Turso auth token */
   syncAuthToken?: string;
   /** Log level. Default: 'info' */
-  logLevel?: "debug" | "info" | "warn" | "error";
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
 }
 
 export interface MemoryMCPServer {
@@ -38,15 +33,15 @@ export interface MemoryMCPServer {
  */
 export async function createMemoryMCPServer(
   engine: MemoryEngine,
-  options: MemoryMCPServerOptions = {},
+  options: MemoryMCPServerOptions = {}
 ): Promise<MemoryMCPServer> {
-  const { transport = "stdio", port = 4231, logLevel = "info" } = options;
+  const { transport = 'stdio', port = 4231, logLevel = 'info' } = options;
 
   const { definitions, handlers } = createMemoryMcpTools(engine);
 
   const serverOptions: McpServerOptions = {
-    name: "agentsy-memory",
-    version: "0.1.0",
+    name: 'agentsy-memory',
+    version: '0.1.0',
     tools: Object.fromEntries(
       Object.entries(definitions).map(([name, def]) => {
         const handler = handlers[name];
@@ -54,23 +49,20 @@ export async function createMemoryMCPServer(
           throw new Error(`Missing handler for tool: ${name}`);
         }
         return [name, { definition: def, handler }];
-      }),
-    ),
+      })
+    )
   };
 
   const mcpServer = createMcpServer(serverOptions);
 
-  let readlineInterface: ReturnType<
-    typeof import("node:readline").createInterface
-  > | null = null;
-  let httpServer: ReturnType<typeof import("node:http").createServer> | null =
-    null;
+  let readlineInterface: ReturnType<typeof import('node:readline').createInterface> | null = null;
+  let httpServer: ReturnType<typeof import('node:http').createServer> | null = null;
 
   const LOG_LEVELS: Record<string, number> = {
     debug: 0,
     info: 1,
     warn: 2,
-    error: 3,
+    error: 3
   };
   const currentLevel = LOG_LEVELS[logLevel] ?? 1;
 
@@ -81,16 +73,16 @@ export async function createMemoryMCPServer(
   }
 
   async function start(): Promise<void> {
-    if (transport === "stdio") {
-      const readline = await import("node:readline");
+    if (transport === 'stdio') {
+      const readline = await import('node:readline');
       readlineInterface = readline.createInterface({
         input: process.stdin,
-        terminal: false,
+        terminal: false
       });
 
-      log("info", "Starting MCP server (stdio mode)");
+      log('info', 'Starting MCP server (stdio mode)');
 
-      readlineInterface.on("line", async (line: string) => {
+      readlineInterface.on('line', async (line: string) => {
         const trimmed = line.trim();
         if (!trimmed) return;
 
@@ -99,77 +91,73 @@ export async function createMemoryMCPServer(
           const result = await mcpServer.handleMessage(msg);
 
           if (result) {
-            process.stdout.write(JSON.stringify(result) + "\n");
+            process.stdout.write(JSON.stringify(result) + '\n');
           }
         } catch (err) {
           const errorResp = {
-            jsonrpc: "2.0",
+            jsonrpc: '2.0',
             id: null,
             error: {
               code: -32700,
-              message: `Parse error: ${err instanceof Error ? err.message : String(err)}`,
-            },
+              message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
+            }
           };
-          process.stdout.write(JSON.stringify(errorResp) + "\n");
+          process.stdout.write(JSON.stringify(errorResp) + '\n');
         }
       });
 
-      readlineInterface.on("close", () => {
-        log("info", "Stdin closed, shutting down");
+      readlineInterface.on('close', () => {
+        log('info', 'Stdin closed, shutting down');
       });
     } else {
       // HTTP mode — simple JSON-RPC over POST /message
-      const http = await import("node:http");
+      const http = await import('node:http');
 
       const httpInstance = http.createServer(async (req, res) => {
-        if (req.method === "GET" && req.url === "/health") {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", engine: engine.stats() }));
+        if (req.method === 'GET' && req.url === '/health') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: 'ok', engine: engine.stats() }));
           return;
         }
 
-        if (req.method === "POST" && req.url === "/message") {
+        if (req.method === 'POST' && req.url === '/message') {
           const chunks: Buffer[] = [];
           for await (const chunk of req) {
             chunks.push(chunk as Buffer);
           }
-          const body = Buffer.concat(chunks).toString("utf-8");
+          const body = Buffer.concat(chunks).toString('utf-8');
 
           try {
             const msg = JSON.parse(body) as JsonRpcRequest;
             const result = await mcpServer.handleMessage(msg);
 
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify(
-                result ?? { jsonrpc: "2.0", id: null, result: null },
-              ),
-            );
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result ?? { jsonrpc: '2.0', id: null, result: null }));
           } catch (err) {
-            res.writeHead(400, { "Content-Type": "application/json" });
+            res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(
               JSON.stringify({
-                jsonrpc: "2.0",
+                jsonrpc: '2.0',
                 id: null,
                 error: {
                   code: -32700,
-                  message: `Parse error: ${err instanceof Error ? err.message : String(err)}`,
-                },
-              }),
+                  message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
+                }
+              })
             );
           }
           return;
         }
 
         res.writeHead(404);
-        res.end("Not found");
+        res.end('Not found');
       });
 
       httpServer = httpInstance;
 
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         httpInstance.listen(port, () => {
-          log("info", `MCP server (HTTP mode) listening on port ${port}`);
+          log('info', `MCP server (HTTP mode) listening on port ${port}`);
           resolve();
         });
       });
@@ -183,13 +171,13 @@ export async function createMemoryMCPServer(
     }
     if (httpServer) {
       const toClose = httpServer;
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         toClose.close(() => resolve());
       });
       httpServer = null;
     }
     mcpServer.close();
-    log("info", "MCP server closed");
+    log('info', 'MCP server closed');
   }
 
   return { server: mcpServer, start, close };

@@ -1,12 +1,12 @@
-import type { DecayedItem } from "./decay.js";
+import type { DecayedItem } from './decay.js';
 import {
   createLearningLoopOrchestrator,
   type LearningCycleResult,
   type LearningLoopConfig,
-  type LearningLoopOrchestrator,
-} from "./learning/loop-orchestrator.js";
-import type { MemoryTierLike } from "./memory-tier.js";
-import type { TierName, MemoryItem } from "./tier-types.js";
+  type LearningLoopOrchestrator
+} from './learning/loop-orchestrator.js';
+import type { MemoryTierLike } from './memory-tier.js';
+import type { TierName, MemoryItem } from './tier-types.js';
 
 export interface AwakenResult {
   decayPass: {
@@ -41,11 +41,11 @@ export interface AwakenOptions {
 }
 
 const TIER_ORDER: TierName[] = [
-  "sensory_buffer",
-  "sensory_register",
-  "working_memory",
-  "short_term_memory",
-  "long_term_memory",
+  'sensory_buffer',
+  'sensory_register',
+  'working_memory',
+  'short_term_memory',
+  'long_term_memory'
 ];
 
 export interface AwakenDeps {
@@ -58,11 +58,7 @@ export interface AwakenDeps {
     durationMs: number;
   };
   budgetRelease: (tier: TierName, tokens: number) => void;
-  ingestItem: (
-    content: string,
-    importance: number,
-    metadata: Record<string, unknown>,
-  ) => string | null;
+  ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
   getAllItems?: (() => MemoryItem[]) | undefined;
 }
 
@@ -80,35 +76,29 @@ function countDecayActions(results: DecayedItem[]): DecayCounts {
   let discarded = 0;
 
   for (const result of results) {
-    if (result.action === "discard") discarded++;
-    else if (result.action === "promote") promoted++;
-    else if (result.action === "demote") demoted++;
+    if (result.action === 'discard') discarded++;
+    else if (result.action === 'promote') promoted++;
+    else if (result.action === 'demote') demoted++;
     else kept++;
   }
 
   return { kept, promoted, demoted, discarded };
 }
 
-function reclaimBudgetForDiscarded(
-  results: DecayedItem[],
-  budgetRelease: AwakenDeps["budgetRelease"],
-): void {
+function reclaimBudgetForDiscarded(results: DecayedItem[], budgetRelease: AwakenDeps['budgetRelease']): void {
   for (const result of results) {
-    if (result.action === "discard") {
+    if (result.action === 'discard') {
       budgetRelease(result.tier, result.item.tokenCount);
     }
   }
 }
 
-function applyDecayMoves(
-  results: DecayedItem[],
-  tiers: AwakenDeps["tiers"],
-): void {
+function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): void {
   for (const result of results) {
     const currentTier = tiers[result.tier];
     if (!currentTier) continue;
 
-    if (result.action === "promote") {
+    if (result.action === 'promote') {
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const nextIdx = currentIdx + 1;
       if (nextIdx < TIER_ORDER.length) {
@@ -118,7 +108,7 @@ function applyDecayMoves(
           currentTier.promote(1, nextTier);
         }
       }
-    } else if (result.action === "demote") {
+    } else if (result.action === 'demote') {
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const prevIdx = currentIdx - 1;
       if (prevIdx >= 0) {
@@ -145,7 +135,7 @@ function runDecayStep(options: AwakenOptions, deps: AwakenDeps): DecayCounts {
     kept: result.kept,
     promoted: result.promoted,
     demoted: result.demoted,
-    discarded: result.discarded,
+    discarded: result.discarded
   };
 }
 
@@ -155,7 +145,7 @@ interface ConsolidationCounts {
   summarized: number;
 }
 
-function runConsolidationStep(tiers: AwakenDeps["tiers"]): ConsolidationCounts {
+function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   let compressed = 0;
   let synthesized = 0;
   let summarized = 0;
@@ -170,13 +160,10 @@ function runConsolidationStep(tiers: AwakenDeps["tiers"]): ConsolidationCounts {
     if (!tier || !nextTier) continue;
 
     const cap = tier.capacity();
-    const utilizationRatio =
-      cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
+    const utilizationRatio = cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
 
     if (utilizationRatio >= tier.config.consolidationThreshold) {
-      const promoteCount = Math.ceil(
-        cap.usedItems * tier.config.compressionTarget,
-      );
+      const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
       const actuallyPromoted = tier.promote(promoteCount, nextTier);
       if (i < 2) {
         compressed += actuallyPromoted;
@@ -191,10 +178,7 @@ function runConsolidationStep(tiers: AwakenDeps["tiers"]): ConsolidationCounts {
   return { compressed, synthesized, summarized };
 }
 
-function ingestPendingEvents(
-  events: PendingEvent[],
-  ingestItem: AwakenDeps["ingestItem"],
-): number {
+function ingestPendingEvents(events: PendingEvent[], ingestItem: AwakenDeps['ingestItem']): number {
   let ingested = 0;
   for (const event of events) {
     const importance = event.importance ?? 0.5;
@@ -207,7 +191,7 @@ function ingestPendingEvents(
   return ingested;
 }
 
-function buildGetAllItems(tiers: AwakenDeps["tiers"]): () => MemoryItem[] {
+function buildGetAllItems(tiers: AwakenDeps['tiers']): () => MemoryItem[] {
   return () => {
     const items: MemoryItem[] = [];
     for (const tierName of TIER_ORDER) {
@@ -222,38 +206,31 @@ function buildGetAllItems(tiers: AwakenDeps["tiers"]): () => MemoryItem[] {
 async function runLearningCycle(
   deps: AwakenDeps,
   options: AwakenOptions,
-  getNow: () => number,
+  getNow: () => number
 ): Promise<LearningCycleResult | undefined> {
   if (!options.runLearningCycle) return undefined;
 
   const getAllItems = deps.getAllItems ?? buildGetAllItems(deps.tiers);
-  const orchestrator: LearningLoopOrchestrator = createLearningLoopOrchestrator(
-    { now: getNow },
-  );
+  const orchestrator: LearningLoopOrchestrator = createLearningLoopOrchestrator({ now: getNow });
   const allItems = getAllItems();
   const ltmTier = deps.tiers.long_term_memory;
 
   return orchestrator.runCycle(
     {
       getNewMemories: (limit: number) => allItems.slice(0, limit),
-      getLTMMemories: () => [...(ltmTier?.items() ?? [])],
+      getLTMMemories: () => [...(ltmTier?.items() ?? [])]
     },
-    options.learningConfig,
+    options.learningConfig
   );
 }
 
-export async function awaken(
-  deps: AwakenDeps,
-  options: AwakenOptions = {},
-): Promise<AwakenResult> {
+export async function awaken(deps: AwakenDeps, options: AwakenOptions = {}): Promise<AwakenResult> {
   const getNow = options.now ?? (() => performance.now());
   const start = getNow();
 
   const decayPass = runDecayStep(options, deps);
   const consolidation = runConsolidationStep(deps.tiers);
-  const pendingIngested = options.pendingEvents
-    ? ingestPendingEvents(options.pendingEvents, deps.ingestItem)
-    : 0;
+  const pendingIngested = options.pendingEvents ? ingestPendingEvents(options.pendingEvents, deps.ingestItem) : 0;
 
   const learningCycle = await runLearningCycle(deps, options, getNow);
 
@@ -265,6 +242,6 @@ export async function awaken(
     budgetReclaimed: 0,
     pendingIngested,
     durationMs,
-    ...(learningCycle ? { learningCycle } : {}),
+    ...(learningCycle ? { learningCycle } : {})
   };
 }

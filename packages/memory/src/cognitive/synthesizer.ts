@@ -1,9 +1,6 @@
-import { createEntityExtractor } from "../wiki/entity-extractor.js";
-import {
-  createLocalEmbeddingEngine,
-  type LocalEmbeddingEngine,
-} from "../wiki/local-embedding-engine.js";
-import type { MemoryItem } from "./tier-types.js";
+import { createEntityExtractor } from '../wiki/entity-extractor.js';
+import { createLocalEmbeddingEngine, type LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
+import type { MemoryItem } from './tier-types.js';
 
 export interface Synthesizer {
   synthesize(items: MemoryItem[], budget: number): SynthesizeResult;
@@ -51,11 +48,8 @@ type BudgetState = {
   usedTokens: number;
 };
 
-function prepareEmbeddings(
-  items: MemoryItem[],
-  embedFn: (text: string) => number[],
-): ItemEmbedding[] {
-  return items.map((item) => ({ item, embedding: embedFn(item.content) }));
+function prepareEmbeddings(items: MemoryItem[], embedFn: (text: string) => number[]): ItemEmbedding[] {
+  return items.map(item => ({ item, embedding: embedFn(item.content) }));
 }
 
 function tryAddToGroup(
@@ -65,7 +59,7 @@ function tryAddToGroup(
   embeddings: ItemEmbedding[],
   threshold: number,
   i: number,
-  j: number,
+  j: number
 ): void {
   if (assigned.has(j)) return;
 
@@ -86,11 +80,7 @@ function tryAddToGroup(
   assigned.add(j);
 }
 
-function groupBySimilarity(
-  items: MemoryItem[],
-  embeddings: ItemEmbedding[],
-  threshold: number,
-): Group[] {
+function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], threshold: number): Group[] {
   const assigned = new Set<number>();
   const groups: Group[] = [];
 
@@ -119,11 +109,7 @@ function groupBySimilarity(
   return groups;
 }
 
-function handleBudgetOverflow(
-  group: Group,
-  budgetRemaining: number,
-  state: BudgetState,
-): void {
+function handleBudgetOverflow(group: Group, budgetRemaining: number, state: BudgetState): void {
   const sorted = [...group.items].sort((a, b) => b.importance - a.importance);
   const kept = sorted[0];
   if (!kept) return;
@@ -147,35 +133,35 @@ function mergeGroup(
       entities: unknown[];
       relationships: unknown[];
     };
-  },
+  }
 ): MemoryItem {
-  const mergedContent = group.items.map((i) => i.content).join("\n");
-  const sourceIds = group.items.map((i) => i.id);
-  const maxImportance = Math.max(...group.items.map((i) => i.importance));
+  const mergedContent = group.items.map(i => i.content).join('\n');
+  const sourceIds = group.items.map(i => i.id);
+  const maxImportance = Math.max(...group.items.map(i => i.importance));
   const extraction = entityExtractor.extract(mergedContent);
   const firstGroupItem = group.items[0];
   if (firstGroupItem === undefined) {
-    throw new Error("Cannot synthesize empty group");
+    throw new Error('Cannot synthesize empty group');
   }
 
   return {
     id: `synth-${firstGroupItem.id}`,
-    kind: "semantic",
+    kind: 'semantic',
     content: mergedContent,
     tokenCount: estimateTokens(mergedContent),
     importance: Math.min(1, maxImportance + 0.1),
-    writeHeap: "event",
-    reuseClass: "warm",
+    writeHeap: 'event',
+    reuseClass: 'warm',
     createdAt: firstGroupItem.createdAt,
     lastAccessedAt: currentNow,
     accessCount: group.items.reduce((sum, i) => sum + i.accessCount, 0),
-    fingerprint: `synth-${group.items.map((i) => i.fingerprint).join("+")}`,
+    fingerprint: `synth-${group.items.map(i => i.fingerprint).join('+')}`,
     metadata: {
       sourceIds,
       entityCount: extraction.entities.length,
       relationshipCount: extraction.relationships.length,
-      _synthesized: true,
-    },
+      _synthesized: true
+    }
   };
 }
 
@@ -189,13 +175,13 @@ function synthesizeGroups(
       relationships: unknown[];
     };
   },
-  originalTokens: number,
+  originalTokens: number
 ): SynthesizeResult {
   const state: BudgetState = {
     synthesized: [],
     allSourceIds: [],
     discarded: [],
-    usedTokens: 0,
+    usedTokens: 0
   };
 
   for (const group of groups) {
@@ -207,29 +193,23 @@ function synthesizeGroups(
     }
 
     state.synthesized.push(merged);
-    state.allSourceIds.push(...group.items.map((i) => i.id));
+    state.allSourceIds.push(...group.items.map(i => i.id));
     state.usedTokens += merged.tokenCount;
   }
 
-  const tokenReduction =
-    originalTokens === 0
-      ? 0
-      : (originalTokens - state.usedTokens) / originalTokens;
+  const tokenReduction = originalTokens === 0 ? 0 : (originalTokens - state.usedTokens) / originalTokens;
 
   return {
     synthesized: state.synthesized,
     sources: state.allSourceIds,
     discarded: state.discarded,
-    tokenReduction,
+    tokenReduction
   };
 }
 
-export function createSynthesizer(
-  options: SynthesizerOptions = {},
-): Synthesizer {
+export function createSynthesizer(options: SynthesizerOptions = {}): Synthesizer {
   const now = options.now ?? (() => performance.now());
-  const embeddingEngine =
-    options.embeddingEngine ?? createLocalEmbeddingEngine();
+  const embeddingEngine = options.embeddingEngine ?? createLocalEmbeddingEngine();
   const similarityThreshold = options.similarityThreshold ?? 0.4;
   const entityExtractor = createEntityExtractor();
 
@@ -240,7 +220,7 @@ export function createSynthesizer(
           synthesized: [],
           sources: [],
           discarded: [],
-          tokenReduction: 0,
+          tokenReduction: 0
         };
       }
 
@@ -250,27 +230,16 @@ export function createSynthesizer(
           synthesized: [firstItem],
           sources: [firstItem.id],
           discarded: [],
-          tokenReduction: 0,
+          tokenReduction: 0
         };
       }
 
       const currentNow = now();
-      const embeddings = prepareEmbeddings(items, (text) =>
-        embeddingEngine.embed(text),
-      );
+      const embeddings = prepareEmbeddings(items, text => embeddingEngine.embed(text));
       const groups = groupBySimilarity(items, embeddings, similarityThreshold);
-      const originalTokens = items.reduce(
-        (sum, item) => sum + item.tokenCount,
-        0,
-      );
+      const originalTokens = items.reduce((sum, item) => sum + item.tokenCount, 0);
 
-      return synthesizeGroups(
-        groups,
-        budget,
-        currentNow,
-        entityExtractor,
-        originalTokens,
-      );
-    },
+      return synthesizeGroups(groups, budget, currentNow, entityExtractor, originalTokens);
+    }
   };
 }
