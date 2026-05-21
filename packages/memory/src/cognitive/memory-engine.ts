@@ -185,47 +185,55 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
     return `mem-${itemIdSeq}`;
   }
 
-  function ingest(content: string, ingestOptions: MemoryEngineIngestOptions = {}): string | null {
-    const tokenCount = estimateTokens(content);
-    const targetTierName = ingestOptions.targetTier ?? 'sensory_buffer';
-    const targetTier = tiers[targetTierName];
-
-    if (!targetTier) return null;
-
-    // Allocate budget
-    const allocation = budget.allocate(targetTierName, tokenCount);
-    if (!allocation.granted) return null;
-
-    const currentNow = now();
+  function buildMemoryItem(
+    content: string,
+    options: MemoryEngineIngestOptions,
+    currentNow: number,
+    tokenCount: number
+  ): MemoryItem {
     const fp = fingerprintContent(content);
     const item: MemoryItem = {
       id: nextItemId(),
-      kind: ingestOptions.kind ?? 'episodic',
+      kind: options.kind ?? 'episodic',
       content,
       tokenCount,
-      importance: ingestOptions.importance ?? 0.5,
-      writeHeap: ingestOptions.writeHeap ?? 'event',
+      importance: options.importance ?? 0.5,
+      writeHeap: options.writeHeap ?? 'event',
       reuseClass: 'hot',
       createdAt: currentNow,
       lastAccessedAt: currentNow,
       accessCount: 0,
       fingerprint: fp.value,
-      metadata: ingestOptions.metadata ?? {}
+      metadata: options.metadata ?? {}
     };
-
-    // Compute importance
     item.importance = computeImportance(item, importanceFactors, currentNow);
+    return item;
+  }
 
+  function handleWriteFailure(targetTierName: TierName, tokenCount: number, item: MemoryItem): null {
+    budget.release(targetTierName, tokenCount);
+    pendingEvents.push({
+      content: item.content,
+      importance: item.importance,
+      metadata: item.metadata
+    });
+    return null;
+  }
+
+  function ingest(content: string, ingestOptions: MemoryEngineIngestOptions = {}): string | null {
+    const targetTierName = ingestOptions.targetTier ?? 'sensory_buffer';
+    const targetTier = tiers[targetTierName];
+
+    if (!targetTier) return null;
+
+    const tokenCount = estimateTokens(content);
+    const allocation = budget.allocate(targetTierName, tokenCount);
+    if (!allocation.granted) return null;
+
+    const item = buildMemoryItem(content, ingestOptions, now(), tokenCount);
     const written = targetTier.write(item);
     if (written === null) {
-      // Write failed (tier full), release budget and queue as pending
-      budget.release(targetTierName, tokenCount);
-      pendingEvents.push({
-        content,
-        importance: item.importance,
-        metadata: item.metadata
-      });
-      return null;
+      return handleWriteFailure(targetTierName, tokenCount, item);
     }
 
     return written.id;

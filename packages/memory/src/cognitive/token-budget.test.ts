@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import type { TierName } from './tier-types.js';
 import { createTokenBudget, type TokenBudget } from './token-budget.js';
 
-describe('TokenBudget', () => {
-  function createDefaultBudget(): TokenBudget {
-    return createTokenBudget({ budgets: {} });
-  }
+function createDefaultBudget(): TokenBudget {
+  return createTokenBudget({ budgets: {} });
+}
 
+describe('TokenBudget', () => {
   describe('allocate', () => {
     it('grants allocation when tokens fit within budget', () => {
       const budget = createDefaultBudget();
@@ -87,7 +87,10 @@ describe('TokenBudget', () => {
 
   describe('overprovisionFactor', () => {
     it('multiplies budgets by the factor', () => {
-      const budget = createTokenBudget({ budgets: {}, overprovisionFactor: 2.0 });
+      const budget = createTokenBudget({
+        budgets: {},
+        overprovisionFactor: 2.0
+      });
       expect(budget.max('sensory_buffer')).toBe(400);
       expect(budget.max('long_term_memory')).toBe(20_000);
     });

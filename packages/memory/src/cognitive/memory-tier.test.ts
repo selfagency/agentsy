@@ -4,6 +4,19 @@ import { createMemoryTier, nextTierName, prevTierName } from './memory-tier.js';
 import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
 import type { TierConfig } from './tier-types.js';
 
+function makeConfig(overrides: Partial<TierConfig> = {}): TierConfig {
+  return {
+    level: 1,
+    name: 'sensory_buffer',
+    maxTokens: 200,
+    maxItems: 50,
+    ttlMs: 5_000,
+    consolidationThreshold: 0.6,
+    compressionTarget: 0.3,
+    ...overrides
+  };
+}
+
 describe('createMemoryTier', () => {
   let clock: ReturnType<typeof createTierTestClock>;
 
@@ -12,22 +25,13 @@ describe('createMemoryTier', () => {
     resetTestItemIdCounter();
   });
 
-  function makeConfig(overrides: Partial<TierConfig> = {}): TierConfig {
-    return {
-      level: 1,
-      name: 'sensory_buffer',
-      maxTokens: 200,
-      maxItems: 50,
-      ttlMs: 5_000,
-      consolidationThreshold: 0.6,
-      compressionTarget: 0.3,
-      ...overrides
-    };
-  }
-
   it('writes and reads an item', () => {
     const tier = createMemoryTier({ config: makeConfig(), now: clock.now });
-    const item = createTestMemoryItem({ tokenCount: 10, createdAt: clock.now(), lastAccessedAt: clock.now() });
+    const item = createTestMemoryItem({
+      tokenCount: 10,
+      createdAt: clock.now(),
+      lastAccessedAt: clock.now()
+    });
     const result = tier.write(item);
     expect(result).not.toBeNull();
     expect(tier.items()).toHaveLength(1);
@@ -35,14 +39,21 @@ describe('createMemoryTier', () => {
 
   it('rejects duplicate id', () => {
     const tier = createMemoryTier({ config: makeConfig(), now: clock.now });
-    const item = createTestMemoryItem({ id: 'dup', tokenCount: 10, createdAt: clock.now() });
+    const item = createTestMemoryItem({
+      id: 'dup',
+      tokenCount: 10,
+      createdAt: clock.now()
+    });
     tier.write(item);
     const result = tier.write({ ...item, content: 'updated' });
     expect(result).toBeNull();
   });
 
   it('rejects when maxItems exceeded', () => {
-    const tier = createMemoryTier({ config: makeConfig({ maxItems: 2 }), now: clock.now });
+    const tier = createMemoryTier({
+      config: makeConfig({ maxItems: 2 }),
+      now: clock.now
+    });
     tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
     tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
     const result = tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
@@ -50,7 +61,10 @@ describe('createMemoryTier', () => {
   });
 
   it('rejects when maxTokens exceeded', () => {
-    const tier = createMemoryTier({ config: makeConfig({ maxTokens: 25 }), now: clock.now });
+    const tier = createMemoryTier({
+      config: makeConfig({ maxTokens: 25 }),
+      now: clock.now
+    });
     tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
     const result = tier.write(createTestMemoryItem({ tokenCount: 20, createdAt: clock.now() }));
     expect(result).toBeNull();
@@ -85,8 +99,22 @@ describe('createMemoryTier', () => {
 
   it('evicts lowest-importance items', () => {
     const tier = createMemoryTier({ config: makeConfig(), now: clock.now });
-    tier.write(createTestMemoryItem({ id: 'low', importance: 0.1, tokenCount: 10, createdAt: clock.now() }));
-    tier.write(createTestMemoryItem({ id: 'high', importance: 0.9, tokenCount: 10, createdAt: clock.now() }));
+    tier.write(
+      createTestMemoryItem({
+        id: 'low',
+        importance: 0.1,
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
+    );
+    tier.write(
+      createTestMemoryItem({
+        id: 'high',
+        importance: 0.9,
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
+    );
     const evicted = tier.evict(1);
     expect(evicted).toHaveLength(1);
     expect(evicted[0]?.id).toBe('low');
@@ -94,7 +122,10 @@ describe('createMemoryTier', () => {
   });
 
   it('expires items past TTL on read/write', () => {
-    const tier = createMemoryTier({ config: makeConfig({ ttlMs: 1_000 }), now: clock.now });
+    const tier = createMemoryTier({
+      config: makeConfig({ ttlMs: 1_000 }),
+      now: clock.now
+    });
     tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
     expect(tier.items()).toHaveLength(1);
     clock.advance(2_000);
@@ -103,7 +134,10 @@ describe('createMemoryTier', () => {
   });
 
   it('capacity tracks usage', () => {
-    const tier = createMemoryTier({ config: makeConfig({ maxTokens: 100, maxItems: 10 }), now: clock.now });
+    const tier = createMemoryTier({
+      config: makeConfig({ maxTokens: 100, maxItems: 10 }),
+      now: clock.now
+    });
     tier.write(createTestMemoryItem({ tokenCount: 30, createdAt: clock.now() }));
     const cap = tier.capacity();
     expect(cap.usedTokens).toBe(30);
@@ -113,11 +147,27 @@ describe('createMemoryTier', () => {
   it('promotes items to higher tier', () => {
     const lower = createMemoryTier({ config: makeConfig(), now: clock.now });
     const higher = createMemoryTier({
-      config: makeConfig({ level: 2, name: 'sensory_register', maxTokens: 400 }),
+      config: makeConfig({
+        level: 2,
+        name: 'sensory_register',
+        maxTokens: 400
+      }),
       now: clock.now
     });
-    lower.write(createTestMemoryItem({ importance: 0.8, tokenCount: 10, createdAt: clock.now() }));
-    lower.write(createTestMemoryItem({ importance: 0.3, tokenCount: 10, createdAt: clock.now() }));
+    lower.write(
+      createTestMemoryItem({
+        importance: 0.8,
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
+    );
+    lower.write(
+      createTestMemoryItem({
+        importance: 0.3,
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
+    );
     const promoted = lower.promote(1, higher);
     expect(promoted).toBe(1);
     expect(lower.items()).toHaveLength(1);
@@ -127,12 +177,32 @@ describe('createMemoryTier', () => {
 
   it('demotes items from higher tier', () => {
     const higher = createMemoryTier({
-      config: makeConfig({ level: 2, name: 'sensory_register', maxTokens: 400, maxItems: 10 }),
+      config: makeConfig({
+        level: 2,
+        name: 'sensory_register',
+        maxTokens: 400,
+        maxItems: 10
+      }),
       now: clock.now
     });
-    const lower = createMemoryTier({ config: makeConfig({ maxTokens: 200, maxItems: 50 }), now: clock.now });
-    higher.write(createTestMemoryItem({ importance: 0.1, tokenCount: 10, createdAt: clock.now() }));
-    higher.write(createTestMemoryItem({ importance: 0.9, tokenCount: 10, createdAt: clock.now() }));
+    const lower = createMemoryTier({
+      config: makeConfig({ maxTokens: 200, maxItems: 50 }),
+      now: clock.now
+    });
+    higher.write(
+      createTestMemoryItem({
+        importance: 0.1,
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
+    );
+    higher.write(
+      createTestMemoryItem({
+        importance: 0.9,
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
+    );
     const demoted = lower.demote(1, higher);
     expect(demoted).toBe(1);
   });

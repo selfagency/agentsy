@@ -4,39 +4,39 @@ import type { MemoryItem } from '../tier-types.js';
 import { createCanaryDetector } from './canary-detector.js';
 import type { Observation } from './observation-extractor.js';
 
+function makeMemory(id: string, content: string, importance: number = 0.8, accessCount: number = 5): MemoryItem {
+  const now = 1_000_000;
+  return {
+    id,
+    kind: 'semantic',
+    content,
+    tokenCount: 10,
+    importance,
+    writeHeap: 'event',
+    reuseClass: 'hot',
+    createdAt: now - 1_000,
+    lastAccessedAt: now - 100,
+    accessCount,
+    fingerprint: `fp-${id}`,
+    metadata: { originalImportance: importance }
+  };
+}
+
+function makeObs(id: string, content: string): Observation {
+  return {
+    id,
+    kind: 'factual',
+    content,
+    sourceMemoryId: 'mem-test',
+    confidence: 0.7,
+    contradictsWith: [],
+    supportsIds: [],
+    extractedAt: 1_000_000
+  };
+}
+
 describe('CanaryDetector', () => {
   const detector = createCanaryDetector();
-
-  function makeMemory(id: string, content: string, importance: number = 0.8, accessCount: number = 5): MemoryItem {
-    const now = 1_000_000;
-    return {
-      id,
-      kind: 'semantic',
-      content,
-      tokenCount: 10,
-      importance,
-      writeHeap: 'event',
-      reuseClass: 'hot',
-      createdAt: now - 1_000,
-      lastAccessedAt: now - 100,
-      accessCount,
-      fingerprint: `fp-${id}`,
-      metadata: { originalImportance: importance }
-    };
-  }
-
-  function makeObs(id: string, content: string): Observation {
-    return {
-      id,
-      kind: 'factual',
-      content,
-      sourceMemoryId: 'mem-test',
-      confidence: 0.7,
-      contradictsWith: [],
-      supportsIds: [],
-      extractedAt: 1_000_000
-    };
-  }
 
   it('marks healthy memory as keep', () => {
     const memory = makeMemory('1', 'User likes dark mode');

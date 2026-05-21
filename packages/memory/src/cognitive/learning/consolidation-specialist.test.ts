@@ -3,26 +3,26 @@ import { describe, expect, it } from 'vitest';
 import { createConsolidationSpecialist } from './consolidation-specialist.js';
 import type { Observation } from './observation-extractor.js';
 
+function makeObs(
+  id: string,
+  content: string,
+  kind: Observation['kind'] = 'factual',
+  confidence: number = 0.7
+): Observation {
+  return {
+    id,
+    kind,
+    content,
+    sourceMemoryId: 'mem-test',
+    confidence,
+    contradictsWith: [],
+    supportsIds: [],
+    extractedAt: 10_000
+  };
+}
+
 describe('ConsolidationSpecialist', () => {
   const specialist = createConsolidationSpecialist();
-
-  function makeObs(
-    id: string,
-    content: string,
-    kind: Observation['kind'] = 'factual',
-    confidence: number = 0.7
-  ): Observation {
-    return {
-      id,
-      kind,
-      content,
-      sourceMemoryId: 'mem-test',
-      confidence,
-      contradictsWith: [],
-      supportsIds: [],
-      extractedAt: 10_000
-    };
-  }
 
   it('runs deduction specialist', async () => {
     const obs = [makeObs('1', 'X is Y'), makeObs('2', 'X is Y')];

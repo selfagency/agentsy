@@ -41,23 +41,40 @@ export interface TestMemoryItemOptions {
 
 let itemIdCounter = 0;
 
-export function createTestMemoryItem(options: TestMemoryItemOptions = {}): MemoryItem {
+function nextTestId(): string {
   itemIdCounter++;
-  const now = options.createdAt ?? performance.now();
+  return `test-item-${itemIdCounter}`;
+}
+
+export function createTestMemoryItem({
+  id,
+  kind = 'episodic',
+  content,
+  tokenCount = 10,
+  importance = 0.5,
+  writeHeap = 'event',
+  reuseClass = 'warm',
+  createdAt,
+  lastAccessedAt,
+  accessCount = 0,
+  fingerprint,
+  metadata = {}
+}: TestMemoryItemOptions = {}): MemoryItem {
+  const now = createdAt ?? performance.now();
 
   return {
-    id: options.id ?? `test-item-${itemIdCounter}`,
-    kind: options.kind ?? 'episodic',
-    content: options.content ?? `Test content ${itemIdCounter}`,
-    tokenCount: options.tokenCount ?? 10,
-    importance: options.importance ?? 0.5,
-    writeHeap: options.writeHeap ?? 'event',
-    reuseClass: options.reuseClass ?? 'warm',
+    id: id ?? nextTestId(),
+    kind,
+    content: content ?? `Test content ${itemIdCounter}`,
+    tokenCount,
+    importance,
+    writeHeap,
+    reuseClass,
     createdAt: now,
-    lastAccessedAt: options.lastAccessedAt ?? now,
-    accessCount: options.accessCount ?? 0,
-    fingerprint: options.fingerprint ?? `fp-${itemIdCounter}`,
-    metadata: options.metadata ?? {}
+    lastAccessedAt: lastAccessedAt ?? now,
+    accessCount,
+    fingerprint: fingerprint ?? `fp-${itemIdCounter}`,
+    metadata
   };
 }
 

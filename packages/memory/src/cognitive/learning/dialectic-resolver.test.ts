@@ -3,26 +3,26 @@ import { describe, expect, it } from 'vitest';
 import { createDialecticResolver } from './dialectic-resolver.js';
 import type { Observation } from './observation-extractor.js';
 
+function makeObs(
+  id: string,
+  content: string,
+  confidence: number = 0.7,
+  kind: Observation['kind'] = 'factual'
+): Observation {
+  return {
+    id,
+    kind,
+    content,
+    sourceMemoryId: 'mem-test',
+    confidence,
+    contradictsWith: [],
+    supportsIds: [],
+    extractedAt: 10_000
+  };
+}
+
 describe('DialecticResolver', () => {
   const resolver = createDialecticResolver();
-
-  function makeObs(
-    id: string,
-    content: string,
-    confidence: number = 0.7,
-    kind: Observation['kind'] = 'factual'
-  ): Observation {
-    return {
-      id,
-      kind,
-      content,
-      sourceMemoryId: 'mem-test',
-      confidence,
-      contradictsWith: [],
-      supportsIds: [],
-      extractedAt: 10_000
-    };
-  }
 
   it('returns empty contradictions for non-contradictory observations', () => {
     const obs = [makeObs('1', 'The sky is blue'), makeObs('2', 'Grass is green')];
