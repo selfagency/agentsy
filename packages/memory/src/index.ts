@@ -288,3 +288,35 @@ export * from './filesystem/agentfs/audit-trail.js';
 export * from './filesystem/agentfs/kv-store.js';
 export * from './filesystem/agentfs/manager.js';
 export * from './filesystem/agentfs/snapshots.js';
+
+// Phase 1 v2 — Cognitive tier engine
+export * from './cognitive/index.js';
+
+// Phase 6 — MCP server surface
+export * from './mcp/index.js';
+
+// Phase 7 — Lifecycle hooks
+export {
+  onSessionStart,
+  type OnSessionStartInput,
+  type OnSessionStartOutput,
+  onSessionEnd,
+  type OnSessionEndInput,
+  type OnSessionEndOutput,
+  onToolCall,
+  type OnToolCallInput,
+  type OnToolCallOutput,
+  onResponse,
+  type OnResponseInput,
+  type OnResponseOutput
+} from './hooks/index.js';
+
+// Phase 7 — Configuration & initialization
+export { loadConfig, DEFAULT_TIER_CONFIGS, type MemoryConfig } from './config.js';
+export {
+  initMemory,
+  type InitOptions,
+  type InitResult,
+  type InitResultWithServer,
+  type InitResultWithoutServer
+} from './init.js';

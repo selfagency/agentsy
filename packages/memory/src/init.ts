@@ -1,0 +1,111 @@
+// Programmatic initialization for @agentsy/memory standalone mode
+// Sets up engine, config, and optionally starts the MCP server
+
+import { createMemoryEngine, type MemoryEngine, type MemoryEngineOptions } from './cognitive/memory-engine.js';
+import type { TierName } from './cognitive/tier-types.js';
+import { loadConfig, type MemoryConfig, DEFAULT_TIER_CONFIGS } from './config.js';
+import { createMemoryMCPServer, type MemoryMCPServer, type MemoryMCPServerOptions } from './mcp/server.js';
+
+export interface InitOptions {
+  /** Override config with constructor options */
+  config?: Partial<MemoryConfig>;
+  /** Override engine creation options */
+  engine?: MemoryEngineOptions;
+  /** Skip MCP server startup */
+  skipMcp?: boolean;
+  /** Skip database initialization */
+  skipDb?: boolean;
+  /** Force overwrite existing files */
+  force?: boolean;
+}
+
+export interface InitResultWithServer {
+  engine: MemoryEngine;
+  config: MemoryConfig;
+  server: MemoryMCPServer;
+}
+
+export interface InitResultWithoutServer {
+  engine: MemoryEngine;
+  config: MemoryConfig;
+}
+
+export type InitResult = InitResultWithServer | InitResultWithoutServer;
+
+/**
+ * Initialize @agentsy/memory in standalone mode.
+ * Creates a MemoryEngine with config, and optionally starts an MCP server.
+ */
+export async function initMemory(options: InitOptions = {}): Promise<InitResult> {
+  const config = loadConfig(options.config);
+
+  // Build engine options from config
+  const engineOptions: MemoryEngineOptions = {
+    ...options.engine
+  };
+
+  // Apply tier configs if provided
+  if (options.config?.tiers && options.config.tiers !== DEFAULT_TIER_CONFIGS) {
+    for (const [tierName, tierConfig] of Object.entries(options.config.tiers)) {
+      const name = tierName as TierName;
+      switch (name) {
+        case 'sensory_buffer':
+          engineOptions.sensoryBuffer = {
+            ...tierConfig,
+            now: engineOptions.now
+          };
+          break;
+        case 'sensory_register':
+          engineOptions.sensoryRegister = {
+            ...tierConfig,
+            now: engineOptions.now
+          };
+          break;
+        case 'working_memory':
+          engineOptions.workingMemory = {
+            ...tierConfig,
+            now: engineOptions.now
+          };
+          break;
+        case 'short_term_memory':
+          engineOptions.shortTermMemory = {
+            ...tierConfig,
+            now: engineOptions.now
+          };
+          break;
+        case 'long_term_memory':
+          engineOptions.longTermMemory = {
+            ...tierConfig,
+            now: engineOptions.now
+          };
+          break;
+      }
+    }
+  }
+
+  // Apply budget config
+  if (options.config?.budget) {
+    engineOptions.budget = config.budget;
+  }
+
+  // Apply decay config
+  if (options.config?.decay) {
+    engineOptions.decayConfig = config.decay;
+  }
+
+  const engine = createMemoryEngine(engineOptions);
+
+  // Optionally create MCP server
+  if (!options.skipMcp) {
+    const serverOptions: MemoryMCPServerOptions = {
+      ...config.mcp
+    };
+    const server = await createMemoryMCPServer(engine, serverOptions);
+    return { engine, config, server };
+  }
+
+  return { engine, config };
+}
+
+export { loadConfig, DEFAULT_TIER_CONFIGS };
+export type { MemoryConfig };

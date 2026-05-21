@@ -34,7 +34,7 @@
     "fallow": "fallow",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
-    "format": "turbo run format",
+    "format": "rumdl fmt && turbo run format",
     "test": "turbo run test",
     "test:release": "pnpm -C packages/scripts run release-test",
     "test:coverage": "turbo run coverage",
@@ -46,6 +46,7 @@
     "fix": "ultracite fix"
   },
   "dependencies": {
+    "@oclif/core": "^4.11.3",
     "@opentelemetry/api": "^1.9.1"
   },
   "devDependencies": {
