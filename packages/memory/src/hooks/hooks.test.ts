@@ -14,7 +14,7 @@ describe("on-tool-call hook", () => {
     const result = onToolCall({
       engine,
       toolName: "file_read",
-      toolInput: { path: "/tmp/test.txt" },
+      toolInput: { path: "/home/user/test.txt" },
       toolOutput: "file contents here",
     });
 
@@ -30,7 +30,7 @@ describe("on-tool-call hook", () => {
     const result = onToolCall({
       engine,
       toolName: "file_write",
-      toolInput: { path: "/tmp/output.txt" },
+      toolInput: { path: "/home/user/output.txt" },
       toolOutput: "written successfully",
     });
 
@@ -42,7 +42,7 @@ describe("on-tool-call hook", () => {
     const result = onToolCall({
       engine,
       toolName: "file_read",
-      toolInput: { path: "/tmp/data.txt" },
+      toolInput: { path: "/home/user/data.txt" },
       toolOutput: "data contents",
     });
 
@@ -54,7 +54,7 @@ describe("on-tool-call hook", () => {
     const result = onToolCall({
       engine,
       toolName: "file_read",
-      toolInput: { path: "/tmp/important.txt" },
+      toolInput: { path: "/home/user/important.txt" },
       toolOutput: "important data",
       importance: 0.95,
     });

@@ -49,6 +49,17 @@ const DEFAULT_PRIORITY: ResolutionPriority = {
   confidenceThreshold: 0.3,
 };
 
+function extractPolarity(content: string): number {
+  const polarityPatterns = [
+    /\b(?:like|love|enjoy|prefer)s?\b/giu,
+    /\b(?:dislike|hate|avoid|not)s?\b/giu,
+  ];
+  for (let i = 0; i < polarityPatterns.length; i++) {
+    if (polarityPatterns[i]?.test(content)) return i + 1;
+  }
+  return 0;
+}
+
 function observationsOverlap(a: Observation, b: Observation): boolean {
   // Check if two observations contradict by similar content
   const aWords = new Set(a.content.toLowerCase().split(/\s+/u));
@@ -58,16 +69,8 @@ function observationsOverlap(a: Observation, b: Observation): boolean {
   const jaccard = intersection.length / Math.max(1, union.size);
 
   // If they share significant vocabulary but have different polarity (e.g., like/dislike)
-  const polarityPatterns = [
-    /\b(?:like|love|enjoy|prefer)s?\b/giu,
-    /\b(?:dislike|hate|avoid|not)s?\b/giu,
-  ];
-  let aPolarity = 0;
-  let bPolarity = 0;
-  for (let i = 0; i < polarityPatterns.length; i++) {
-    if (polarityPatterns[i]?.test(a.content)) aPolarity = i + 1;
-    if (polarityPatterns[i]?.test(b.content)) bPolarity = i + 1;
-  }
+  const aPolarity = extractPolarity(a.content);
+  const bPolarity = extractPolarity(b.content);
 
   return (
     jaccard > 0.3 && aPolarity !== bPolarity && aPolarity > 0 && bPolarity > 0
@@ -119,18 +122,25 @@ function buildRepresentations(group: Observation[]): Representation[] {
   return representations;
 }
 
+function hasNewerWinner(
+  sorted: Observation[],
+  priority: ResolutionPriority,
+): boolean {
+  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt)[0];
+  const highestSource = sorted[0];
+  return (
+    newest !== undefined &&
+    highestSource !== undefined &&
+    newest.id !== highestSource.id &&
+    priority.recencyBias > 0.5
+  );
+}
+
 function determineResolutionMethod(
   sorted: Observation[],
   priority: ResolutionPriority,
 ): Resolution["method"] {
-  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt)[0];
-  const highestSource = sorted[0];
-  if (
-    newest &&
-    highestSource &&
-    newest.id !== highestSource.id &&
-    priority.recencyBias > 0.5
-  ) {
+  if (hasNewerWinner(sorted, priority)) {
     return "temporal";
   }
   return "source_priority";

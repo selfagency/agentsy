@@ -1,8 +1,8 @@
 // on-session-end.ts — Lifecycle hook: agent session end
 // Ingests remainder of session events, runs final consolidation
 
-import type { PendingEvent } from '../cognitive/awaken.js';
-import type { MemoryEngine } from '../cognitive/memory-engine.js';
+import type { PendingEvent } from "../cognitive/awaken.js";
+import type { MemoryEngine } from "../cognitive/memory-engine.js";
 
 export interface OnSessionEndInput {
   engine: MemoryEngine;
@@ -22,9 +22,11 @@ export interface OnSessionEndOutput {
  * - Runs final consolidation pass via awaken()
  * - Returns summary for agent logging
  */
-export async function onSessionEnd(input: OnSessionEndInput): Promise<OnSessionEndOutput> {
+export async function onSessionEnd(
+  input: OnSessionEndInput,
+): Promise<OnSessionEndOutput> {
   const start = performance.now();
-  const { engine, sessionEvents, persist = true } = input;
+  const { engine, sessionEvents, persist: _persist } = input;
 
   let persisted = 0;
 
@@ -34,7 +36,10 @@ export async function onSessionEnd(input: OnSessionEndInput): Promise<OnSessionE
       const opts: Record<string, unknown> = {};
       if (event.importance !== undefined) opts.importance = event.importance;
       if (event.metadata !== undefined) opts.metadata = event.metadata;
-      const id = engine.ingest(event.content, opts as Parameters<typeof engine.ingest>[1]);
+      const id = engine.ingest(
+        event.content,
+        opts as Parameters<typeof engine.ingest>[1],
+      );
       if (id !== null) {
         persisted++;
       }
@@ -45,9 +50,10 @@ export async function onSessionEnd(input: OnSessionEndInput): Promise<OnSessionE
   const result = await engine.awaken();
 
   const consolidated =
-    result.consolidation.compressed + result.consolidation.synthesized + result.consolidation.summarized;
+    result.consolidation.compressed +
+    result.consolidation.synthesized +
+    result.consolidation.summarized;
 
-  void persist;
   const durationMs = performance.now() - start;
 
   return { consolidated, persisted, durationMs };

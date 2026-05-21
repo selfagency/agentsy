@@ -114,16 +114,27 @@ export async function getDaemonStatus(pidFile?: string): Promise<DaemonStatus> {
   };
 }
 
+function withDefault<T>(value: T | undefined, fallback: T): T {
+  return value ?? fallback;
+}
+
 function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
   return {
-    pidFile: daemonConfig.pidFile ?? DEFAULT_DAEMON_CONFIG.pidFile,
-    logFile: daemonConfig.logFile ?? DEFAULT_DAEMON_CONFIG.logFile,
-    restart: daemonConfig.restart ?? DEFAULT_DAEMON_CONFIG.restart,
-    restartDelay:
-      daemonConfig.restartDelay ?? DEFAULT_DAEMON_CONFIG.restartDelay,
-    maxRestarts: daemonConfig.maxRestarts ?? DEFAULT_DAEMON_CONFIG.maxRestarts,
-    restartWindow:
-      daemonConfig.restartWindow ?? DEFAULT_DAEMON_CONFIG.restartWindow,
+    pidFile: withDefault(daemonConfig.pidFile, DEFAULT_DAEMON_CONFIG.pidFile),
+    logFile: withDefault(daemonConfig.logFile, DEFAULT_DAEMON_CONFIG.logFile),
+    restart: withDefault(daemonConfig.restart, DEFAULT_DAEMON_CONFIG.restart),
+    restartDelay: withDefault(
+      daemonConfig.restartDelay,
+      DEFAULT_DAEMON_CONFIG.restartDelay,
+    ),
+    maxRestarts: withDefault(
+      daemonConfig.maxRestarts,
+      DEFAULT_DAEMON_CONFIG.maxRestarts,
+    ),
+    restartWindow: withDefault(
+      daemonConfig.restartWindow,
+      DEFAULT_DAEMON_CONFIG.restartWindow,
+    ),
   };
 }
 
@@ -205,13 +216,12 @@ export async function startDaemon(
 
       // Re-create engine and server for clean state
       const newEngine = createMemoryEngine(engineOptions);
-      const _newServer = await createMemoryMCPServer(newEngine, {
+      await createMemoryMCPServer(newEngine, {
         ...serverOptions,
         ...fullConfig.mcp,
       });
-      // Replace server reference — note: this won't update the closure above
-      // In a production daemon, we'd restructure to allow this
-      void _newServer;
+      // Note: the new server is not wired into this closure; production code
+      // would restructure to allow swapping the server reference.
 
       return runWithRestart();
     }

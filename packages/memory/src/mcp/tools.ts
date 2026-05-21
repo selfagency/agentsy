@@ -53,6 +53,20 @@ function buildRecallOptions(
   return opts;
 }
 
+function coerceString(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
+  return "";
+}
+
+function coerceOptionalString(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
+  return undefined;
+}
+
 export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
   const definitions: Record<string, McpToolDefinition> = {};
   const handlers: Record<string, McpToolHandler> = {};
@@ -60,13 +74,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
   // --- Handler functions (defined first to avoid forward-reference issues) ---
 
   const ingestHandler: McpToolHandler = async (args) => {
-    const rawContent = args.content;
-    const content =
-      typeof rawContent === "string"
-        ? rawContent
-        : typeof rawContent === "number" || typeof rawContent === "boolean"
-          ? String(rawContent)
-          : "";
+    const content = coerceString(args.content);
     if (!content) {
       return {
         content: [{ type: "text", text: "Error: content is required" }],
@@ -89,13 +97,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     const results = engine.recall(opts);
 
     let filtered = results;
-    const rawQuery = args.query;
-    const query =
-      typeof rawQuery === "string"
-        ? rawQuery
-        : typeof rawQuery === "number" || typeof rawQuery === "boolean"
-          ? String(rawQuery)
-          : undefined;
+    const query = coerceOptionalString(args.query);
     if (query) {
       const q = query.toLowerCase();
       filtered = results

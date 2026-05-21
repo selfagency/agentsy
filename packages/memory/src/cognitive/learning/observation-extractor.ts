@@ -1,7 +1,12 @@
-import { fingerprintContent } from '../../content-addressing/fingerprint.js';
-import type { MemoryItem } from '../tier-types.js';
+import { fingerprintContent } from "../../content-addressing/fingerprint.js";
+import type { MemoryItem } from "../tier-types.js";
 
-export type ObservationKind = 'factual' | 'emotional' | 'procedural' | 'corrective' | 'relational';
+export type ObservationKind =
+  | "factual"
+  | "emotional"
+  | "procedural"
+  | "corrective"
+  | "relational";
 
 export interface Observation {
   id: string;
@@ -34,7 +39,7 @@ type ExtractorFn = (content: string) => RawObservation[];
 function extractByPattern(
   content: string,
   pattern: RegExp,
-  build: (match: RegExpExecArray) => RawObservation | null
+  build: (match: RegExpExecArray) => RawObservation | null,
 ): RawObservation[] {
   const observations: RawObservation[] = [];
   let match = pattern.exec(content);
@@ -49,15 +54,16 @@ function extractByPattern(
 // Heuristic extractors — pure functions mapping content string to raw observations
 
 function extractFactual(content: string): RawObservation[] {
-  const isPattern = /\b([A-Z][A-Za-z0-9\s]{2,60})(?:\s+is\s+|\s+are\s+)([^.!?]+)/gu;
+  const isPattern =
+    /\b([A-Z][A-Za-z0-9\s]{2,60})(?:\s+is\s+|\s+are\s+)([^.!?]+)/gu;
   return extractByPattern(content, isPattern, (match: RegExpExecArray) => {
     const subject = match[1]?.trim();
     const predicate = match[2]?.trim();
     if (!subject || !predicate || predicate.length <= 3) return null;
     return {
-      kind: 'factual',
+      kind: "factual",
       content: `${subject} is ${predicate}`,
-      confidence: 0.7
+      confidence: 0.7,
     };
   });
 }
@@ -70,24 +76,25 @@ function extractEmotional(content: string): RawObservation[] {
   }[] = [
     {
       pattern: /\b(?:like|love|enjoy|prefer)\s+([^.,;]+)/giu,
-      kind: 'factual',
-      prefix: 'prefers'
+      kind: "factual",
+      prefix: "prefers",
     },
     {
       pattern: /\b(?:dislike|hate|avoid|do not want)\s+([^.,;]+)/giu,
-      kind: 'emotional',
-      prefix: 'dislikes'
+      kind: "emotional",
+      prefix: "dislikes",
     },
     {
-      pattern: /\b(?:frustrated|annoyed|irritated)\s+(?:with|by|about)?\s*([^.,;]+)/giu,
-      kind: 'emotional',
-      prefix: 'frustrated with'
+      pattern:
+        /\b(?:frustrated|annoyed|irritated)\s+(?:with|by|about)?\s*([^.,;]+)/giu,
+      kind: "emotional",
+      prefix: "frustrated with",
     },
     {
       pattern: /\b(?:happy|pleased|satisfied)\s+(?:with|about)?\s*([^.,;]+)/giu,
-      kind: 'emotional',
-      prefix: 'satisfied with'
-    }
+      kind: "emotional",
+      prefix: "satisfied with",
+    },
   ];
 
   const observations: RawObservation[] = [];
@@ -97,33 +104,38 @@ function extractEmotional(content: string): RawObservation[] {
         const target = match[1]?.trim();
         if (!target || target.length <= 2) return null;
         return { kind, content: `${prefix} ${target}`, confidence: 0.6 };
-      })
+      }),
     );
   }
   return observations;
+}
+
+function buildProceduralObservation(
+  match: RegExpExecArray,
+): RawObservation | null {
+  const step = match[1]?.trim();
+  if (!step || step.length <= 5) return null;
+  return {
+    kind: "procedural",
+    content: `procedure: ${step}`,
+    confidence: 0.65,
+  };
 }
 
 function extractProcedural(content: string): RawObservation[] {
   const stepPattern = /\b(?:first|then|next|after)\s+([^.;!?]{3,120})/giu;
   const howToPattern = /\bhow\s+to\s+([^.;!?]{3,120})/giu;
 
-  const build = (match: RegExpExecArray): RawObservation | null => {
-    const step = match[1]?.trim();
-    if (!step || step.length <= 5) return null;
-    return {
-      kind: 'procedural',
-      content: `procedure: ${step}`,
-      confidence: 0.65
-    };
-  };
-
-  return [...extractByPattern(content, stepPattern, build), ...extractByPattern(content, howToPattern, build)];
+  return [
+    ...extractByPattern(content, stepPattern, buildProceduralObservation),
+    ...extractByPattern(content, howToPattern, buildProceduralObservation),
+  ];
 }
 
 function extractCorrective(content: string): RawObservation[] {
   const correctionPatterns = [
     /\b(?:previously|before|thought|believed)\s+([^,;]+)(?:[,;]\s*)?(?:but\s+now|actually|instead|correction)[,;:]?\s*([^.;!?]+)/giu,
-    /\b(?:not|no longer)\s+([^,;]+)(?:[,;]\s*)?(?:but|rather|instead)[,;:]?\s*([^.;!?]+)/giu
+    /\b(?:not|no longer)\s+([^,;]+)(?:[,;]\s*)?(?:but|rather|instead)[,;:]?\s*([^.;!?]+)/giu,
   ];
 
   const observations: RawObservation[] = [];
@@ -132,13 +144,14 @@ function extractCorrective(content: string): RawObservation[] {
       ...extractByPattern(content, pattern, (match: RegExpExecArray) => {
         const old = match[1]?.trim();
         const corrected = match[2]?.trim();
-        if (!old || !corrected || old.length <= 3 || corrected.length <= 3) return null;
+        if (!old || !corrected || old.length <= 3 || corrected.length <= 3)
+          return null;
         return {
-          kind: 'corrective',
+          kind: "corrective",
           content: `correction: "${old}" is actually "${corrected}"`,
-          confidence: 0.75
+          confidence: 0.75,
         };
-      })
+      }),
     );
   }
   return observations;
@@ -147,16 +160,20 @@ function extractCorrective(content: string): RawObservation[] {
 function extractRelational(content: string): RawObservation[] {
   const relationalPattern =
     /\b([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+(?:met|works with|collaborates with|knows|is related to)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\b/giu;
-  return extractByPattern(content, relationalPattern, (match: RegExpExecArray) => {
-    const from = match[1]?.trim();
-    const to = match[2]?.trim();
-    if (!from || !to || from === to) return null;
-    return {
-      kind: 'relational',
-      content: `relationship: ${from} and ${to}`,
-      confidence: 0.55
-    };
-  });
+  return extractByPattern(
+    content,
+    relationalPattern,
+    (match: RegExpExecArray) => {
+      const from = match[1]?.trim();
+      const to = match[2]?.trim();
+      if (!from || !to || from === to) return null;
+      return {
+        kind: "relational",
+        content: `relationship: ${from} and ${to}`,
+        confidence: 0.55,
+      };
+    },
+  );
 }
 
 const EXTRACTORS: ExtractorFn[] = [
@@ -164,10 +181,12 @@ const EXTRACTORS: ExtractorFn[] = [
   extractEmotional,
   extractProcedural,
   extractCorrective,
-  extractRelational
+  extractRelational,
 ];
 
-function deduplicateObservations(observations: RawObservation[]): RawObservation[] {
+function deduplicateObservations(
+  observations: RawObservation[],
+): RawObservation[] {
   const seen = new Set<string>();
   const result: RawObservation[] = [];
   for (const obs of observations) {
@@ -179,7 +198,9 @@ function deduplicateObservations(observations: RawObservation[]): RawObservation
   return result;
 }
 
-export function createObservationExtractor(options: ObservationExtractorOptions = {}): ObservationExtractor {
+export function createObservationExtractor(
+  options: ObservationExtractorOptions = {},
+): ObservationExtractor {
   const now = options.now ?? (() => performance.now());
 
   function extractSingle(memoryItem: MemoryItem): Observation[] {
@@ -199,7 +220,7 @@ export function createObservationExtractor(options: ObservationExtractorOptions 
       confidence: raw.confidence,
       contradictsWith: [],
       supportsIds: [],
-      extractedAt: currentNow
+      extractedAt: currentNow,
     }));
   }
 
@@ -214,6 +235,6 @@ export function createObservationExtractor(options: ObservationExtractorOptions 
         results.push(...extractSingle(item));
       }
       return results;
-    }
+    },
   };
 }
