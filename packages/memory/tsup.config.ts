@@ -6,6 +6,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     cognitive: 'src/cognitive/index.ts',
+    learning: 'src/cognitive/learning/index.ts',
     mcp: 'src/mcp/index.ts',
     hooks: 'src/hooks/index.ts',
     config: 'src/config.ts',
