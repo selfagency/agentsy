@@ -104,7 +104,7 @@ Any package that is valuable outside the framework must also behave as a reusabl
 
 1. **models.dev** - Model selection engine with 100+ providers and complete capability/cost data
 2. **Honker** - SQLite extension for pub/sub and task queues (local-first with Turso sync)
-3. **AgentFS** - Agent-specific filesystem with tool call tracking and audit trails (PRIMARY)
+3. **AgentFS** - Agent-specific filesystem with tool call tracking and audit trails (PRIMARY). See `plan/MEMORY-AGENTFS-PLAN.md` for the `@agentsy/memory` migration plan.
 4. **tldw_server** (CONDITIONAL) - Media analysis capabilities only if critically needed
 5. **mcp-rag-server** - Zero-ceremony RAG with local LLM support (PRIMARY)
 6. **Mirage** (CONDITIONAL) - Multi-resource unification only if external resource access needed
