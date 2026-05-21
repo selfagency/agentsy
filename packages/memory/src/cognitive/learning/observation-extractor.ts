@@ -149,7 +149,7 @@ function extractCorrective(content: string): RawObservation[] {
 
 function extractRelational(content: string): RawObservation[] {
   const relationalPattern =
-    /\b([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+(?:met|works with|collaborates with|knows|is related to)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\b/giu;
+    /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:met|works with|collaborates with|knows|is related to)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/giu;
   return extractByPattern(content, relationalPattern, (match: RegExpExecArray) => {
     const from = match[1]?.trim();
     const to = match[2]?.trim();

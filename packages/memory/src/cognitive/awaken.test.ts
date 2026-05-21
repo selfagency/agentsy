@@ -20,7 +20,6 @@ describe('awaken', () => {
   let longTermMemory: MemoryTierLike;
   let tiers: Partial<Record<TierName, MemoryTierLike>>;
   let releasedTokens: Map<TierName, number>;
-  let ingestedItems: { content: string; importance: number; metadata: Record<string, unknown> }[];
 
   beforeEach(() => {
     resetTestItemIdCounter();
@@ -43,7 +42,6 @@ describe('awaken', () => {
     };
 
     releasedTokens = new Map();
-    ingestedItems = [];
   }
 
   function createDeps(): AwakenDeps {
@@ -55,7 +53,6 @@ describe('awaken', () => {
         releasedTokens.set(tier, current + tokens);
       },
       ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => {
-        ingestedItems.push({ content, importance, metadata });
         const item = createTestMemoryItem({
           content,
           importance,

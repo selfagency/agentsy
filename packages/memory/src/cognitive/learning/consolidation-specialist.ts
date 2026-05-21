@@ -73,8 +73,7 @@ function runInductionSpecialist(observations: Observation[]): string {
 
 function runSurprisalSpecialist(observations: Observation[]): string {
   // Find corrective observations (surprising/contradicting)
-  const correctives = observations.filter(o => o.kind === 'corrective');
-  const firstCorrective = correctives[0];
+  const firstCorrective = observations.find(o => o.kind === 'corrective');
   if (firstCorrective) {
     return `Lesson learned: ${firstCorrective.content} (confidence: ${firstCorrective.confidence.toFixed(2)})`;
   }
@@ -92,8 +91,7 @@ function runTemporalSpecialist(observations: Observation[]): string {
   if (sorted.length >= 2) {
     // nosemgrep: [0] is on a non-empty array checked by length >= 2
     const first = sorted[0];
-    // nosemgrep: [sorted.length - 1] is on a non-empty array
-    const last = sorted[sorted.length - 1];
+    const last = sorted.at(-1);
     if (first && last) {
       return `Temporal trend from "${first.content.slice(0, 40)}..." to "${last.content.slice(0, 40)}..." over ${observations.length} observations.`;
     }

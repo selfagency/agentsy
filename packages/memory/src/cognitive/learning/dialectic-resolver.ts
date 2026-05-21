@@ -70,7 +70,7 @@ function scoreObservation(obs: Observation, priority: ResolutionPriority): numbe
   // nosemgrep: sourceMemoryId key is from controlled Observation type, has fallback
   // NOSONAR: type cast is required by strict TS for Record<WriteHeap, number> index
   const sourceWeight = priority.sourceWeights[obs.sourceMemoryId as WriteHeap] ?? 0.5;
-  const _recencyScore = 1.0; // We don't have extractedAt age here; caller handles temporal
+  const _recencyScore = 1; // We don't have extractedAt age here; caller handles temporal
   const confidenceScore = obs.confidence;
   return sourceWeight * (1 - priority.recencyBias) + confidenceScore * priority.recencyBias;
 }

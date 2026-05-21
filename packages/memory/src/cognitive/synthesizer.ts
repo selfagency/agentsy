@@ -29,8 +29,8 @@ function cosineSimilarity(a: number[], b: number[]): number {
     const ai = a[i];
     // nosemgrep: numeric array index verified by loop bounds
     const bi = b[i];
-    const aiVal = ai !== undefined ? ai : 0;
-    const biVal = bi !== undefined ? bi : 0;
+    const aiVal = ai ?? 0;
+    const biVal = bi ?? 0;
     dot += aiVal * biVal;
     normA += aiVal * aiVal;
     normB += biVal * biVal;

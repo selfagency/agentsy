@@ -92,7 +92,7 @@ export async function createMemoryMCPServer(
           const result = await mcpServer.handleMessage(msg);
 
           if (result) {
-            process.stdout.write(JSON.stringify(result) + '\n');
+            process.stdout.write(`${JSON.stringify(result)}\n`);
           }
         } catch (err) {
           const errorResp = {
@@ -103,7 +103,7 @@ export async function createMemoryMCPServer(
               message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
             }
           };
-          process.stdout.write(JSON.stringify(errorResp) + '\n');
+          process.stdout.write(`${JSON.stringify(errorResp)}\n`);
         }
       });
 

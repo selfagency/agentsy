@@ -251,7 +251,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       let allItems: MemoryItem[] = [];
 
       for (const tierName of targetTiers) {
-        const tier = tiers[tierName as TierName];
+        const tier = tiers[tierName];
         if (!tier) continue;
         const result = tier.read(readQuery);
         allItems.push(...result.items);
@@ -276,7 +276,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
     const results: TierReadResult[] = [];
     for (const tierName of targetTiers) {
-      const tier = tiers[tierName as TierName];
+      const tier = tiers[tierName];
       if (!tier) continue;
       results.push(tier.read(readQuery));
     }
