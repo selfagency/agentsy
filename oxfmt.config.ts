@@ -1,16 +1,11 @@
 import { defineConfig } from 'oxfmt';
 import ultracite from 'ultracite/oxfmt';
 
+import prettierConfig from './prettier.config.ts';
+
 export default defineConfig({
   ...ultracite,
-  arrowParens: 'avoid',
-  bracketSpacing: true,
-  printWidth: 120,
-  proseWrap: 'preserve',
-  semi: true,
-  singleQuote: true,
-  tabWidth: 2,
-  trailingComma: 'none',
+  ...prettierConfig,
   ignorePatterns: [
     ...(ultracite.ignorePatterns ?? []),
     'node_modules',

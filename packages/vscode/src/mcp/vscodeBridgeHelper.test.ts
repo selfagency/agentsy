@@ -1,5 +1,6 @@
-import type { MCPTransport } from '@agentsy/core/processor';
 import { Readable } from 'node:stream';
+
+import type { MCPTransport } from '@agentsy/core/processor';
 import { describe, it, expect, vi } from 'vitest';
 import type { CancellationToken, ChatResponseStream } from 'vscode';
 import { Uri } from 'vscode';
@@ -462,7 +463,9 @@ describe('VSCode MCP Bridge Helper', () => {
     describe('pushEvent', () => {
       it('writes to stdio transport when writable is available', () => {
         const writeSpy = vi.fn();
-        const writable = Object.assign(new WritableStream({ write: writeSpy }), { write: writeSpy }) as unknown as NodeJS.WritableStream;
+        const writable = Object.assign(new WritableStream({ write: writeSpy }), {
+          write: writeSpy
+        }) as unknown as NodeJS.WritableStream;
         const stdioTransport: MCPTransport = { type: 'stdio', readable: new Readable(), writable };
         const helper = new VSCodeMCPBridgeHelper(stdioTransport, mockCancellationToken);
         (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({ type: 'markdown', data: { value: 'x' } });
