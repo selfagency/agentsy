@@ -12,7 +12,7 @@ const SENSORY_REGISTER_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: 2_000
 };
 
-export interface SensoryRegisterOptions extends Pick<MemoryTierOptions, 'now' | 'db'> {
+export interface SensoryRegisterOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
 }
 
@@ -24,5 +24,5 @@ export function createSensoryRegister(options: SensoryRegisterOptions = {}): Mem
     name: 'sensory_register'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db });
+  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
 }

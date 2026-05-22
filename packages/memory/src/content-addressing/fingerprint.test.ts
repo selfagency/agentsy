@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { fingerprintContent, fingerprintsEqual } from './fingerprint.js';
 
-describe(fingerprintContent, () => {
+describe('fingerprintContent', () => {
   it('returns blake3 algorithm', () => {
     const fp = fingerprintContent('hello');
     expect(fp.algorithm).toBe('blake3');
@@ -44,7 +44,7 @@ describe(fingerprintContent, () => {
   });
 });
 
-describe(fingerprintsEqual, () => {
+describe('fingerprintsEqual', () => {
   it('returns true for same content', () => {
     const a = fingerprintContent('equal');
     const b = fingerprintContent('equal');

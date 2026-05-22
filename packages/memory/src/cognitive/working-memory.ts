@@ -12,7 +12,7 @@ const WORKING_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: 30_000
 };
 
-export interface WorkingMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db'> {
+export interface WorkingMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
 }
 
@@ -24,5 +24,5 @@ export function createWorkingMemory(options: WorkingMemoryOptions = {}): MemoryT
     name: 'working_memory'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db });
+  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
 }

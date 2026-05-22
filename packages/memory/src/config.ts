@@ -5,6 +5,9 @@
 // 3. .agentsy/memory.env (project-level)
 // 4. Built-in defaults
 
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+
 import type { DecayConfig } from './cognitive/decay.js';
 import { DEFAULT_DECAY_CONFIG } from './cognitive/decay.js';
 import type { TierName, TierConfig } from './cognitive/tier-types.js';
@@ -107,7 +110,8 @@ function envBool(key: string, fallback: boolean): boolean {
  * Priority: overrides > env vars > defaults
  */
 export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
-  const dbPath = overrides?.db?.path ?? envString('AGENTSY_MEMORY_DB', '.agentsy/memory.db');
+  const defaultDbPath = join(homedir(), '.agentsy', 'memory.db');
+  const dbPath = overrides?.db?.path ?? envString('AGENTSY_MEMORY_DB', defaultDbPath);
   const syncUrl = overrides?.db?.syncUrl ?? (process.env.AGENTSY_MEMORY_SYNC_URL || undefined);
   const syncAuthToken = overrides?.db?.syncAuthToken ?? (process.env.AGENTSY_MEMORY_SYNC_AUTH_TOKEN || undefined);
   const syncIntervalMs = overrides?.db?.syncIntervalMs ?? envNumber('AGENTSY_MEMORY_SYNC_INTERVAL_MS', 60_000);

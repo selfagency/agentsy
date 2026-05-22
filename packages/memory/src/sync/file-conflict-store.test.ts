@@ -43,7 +43,7 @@ afterEach(async () => {
   );
 });
 
-describe(createFileConflictStore, () => {
+describe('createFileConflictStore', () => {
   it('persists conflicts across store instances', async () => {
     const filePath = await createStorePath();
     const first = createFileConflictStore({ filePath });

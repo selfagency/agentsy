@@ -10,7 +10,7 @@ function createState(records: SyncRecord[]) {
   };
 }
 
-describe(createBackupManager, () => {
+describe('createBackupManager', () => {
   it('creates and verifies snapshots', async () => {
     const state = createState([
       {
@@ -21,7 +21,9 @@ describe(createBackupManager, () => {
       }
     ]);
     const manager = createBackupManager({
-      applySnapshot: async () => {},
+      applySnapshot: async () => {
+        /* no-op */
+      },
       databaseId: 'agentsy-memory',
       getCurrentState: async () => state,
       schemaVersion: 1

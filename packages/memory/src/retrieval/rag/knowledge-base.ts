@@ -1,3 +1,4 @@
+import { createRagFsAdapter } from '../../agentfs/rag-adapter.js';
 import type { MemoryDatabase } from '../../database/connection.js';
 import { createDocumentIngestor } from './document-ingest.js';
 import { createHybridRetriever, type HybridRetrieverOptions } from './hybrid-retriever.js';
@@ -15,9 +16,15 @@ export interface KnowledgeBaseManager {
 
 export interface KnowledgeBaseManagerOptions extends HybridRetrieverOptions, IndexManagerOptions {
   db?: MemoryDatabase | undefined;
+  /** Use AgentFS kv_store instead of legacy rag tables when db is present. */
+  useAgentFs?: boolean | undefined;
 }
 
 export function createKnowledgeBaseManager(options: KnowledgeBaseManagerOptions = {}): KnowledgeBaseManager {
+  if (options.db && options.useAgentFs) {
+    return createRagFsAdapter({ db: options.db });
+  }
+
   const ingestor = createDocumentIngestor();
   const index = createIndexManager({ db: options.db });
   const retriever = createHybridRetriever({ db: options.db });

@@ -1,4 +1,4 @@
-import { index, integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { blob, index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // ---------------------------------------------------------------------------
 // Cognitive tier storage
@@ -135,3 +135,95 @@ export const syncConflicts = sqliteTable('sync_conflicts', {
   remoteRecord: text('remote_record').notNull(),
   createdAt: integer('created_at').notNull()
 });
+
+// ---------------------------------------------------------------------------
+// AgentFS base tables (Phase 8)
+// ---------------------------------------------------------------------------
+
+export const fsConfig = sqliteTable('fs_config', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull()
+});
+
+export const fsInode = sqliteTable('fs_inode', {
+  ino: integer('ino').primaryKey({ autoIncrement: true }),
+  mode: integer('mode').notNull(),
+  nlink: integer('nlink').notNull().default(0),
+  uid: integer('uid').notNull().default(0),
+  gid: integer('gid').notNull().default(0),
+  size: integer('size').notNull().default(0),
+  atime: integer('atime').notNull(),
+  mtime: integer('mtime').notNull(),
+  ctime: integer('ctime').notNull(),
+  rdev: integer('rdev').notNull().default(0),
+  atimeNsec: integer('atime_nsec').notNull().default(0),
+  mtimeNsec: integer('mtime_nsec').notNull().default(0),
+  ctimeNsec: integer('ctime_nsec').notNull().default(0)
+});
+
+export const fsDentry = sqliteTable(
+  'fs_dentry',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    name: text('name').notNull(),
+    parentIno: integer('parent_ino').notNull(),
+    ino: integer('ino').notNull()
+  },
+  table => [uniqueIndex('idx_fs_dentry_parent').on(table.parentIno, table.name)]
+);
+
+export const fsData = sqliteTable(
+  'fs_data',
+  {
+    ino: integer('ino').notNull(),
+    chunkIndex: integer('chunk_index').notNull(),
+    data: blob('data').notNull()
+  },
+  table => [primaryKey({ columns: [table.ino, table.chunkIndex] })]
+);
+
+export const fsSymlink = sqliteTable('fs_symlink', {
+  ino: integer('ino').primaryKey(),
+  target: text('target').notNull()
+});
+
+export const kvStore = sqliteTable(
+  'kv_store',
+  {
+    key: text('key').primaryKey(),
+    value: text('value').notNull(),
+    createdAt: integer('created_at'),
+    updatedAt: integer('updated_at')
+  },
+  table => [index('idx_kv_store_created_at').on(table.createdAt)]
+);
+
+export const fsWhiteout = sqliteTable(
+  'fs_whiteout',
+  {
+    path: text('path').primaryKey(),
+    parentPath: text('parent_path').notNull(),
+    createdAt: integer('created_at').notNull()
+  },
+  table => [index('idx_fs_whiteout_parent').on(table.parentPath)]
+);
+
+export const fsOrigin = sqliteTable('fs_origin', {
+  deltaIno: integer('delta_ino').primaryKey(),
+  baseIno: integer('base_ino').notNull()
+});
+
+export const toolCalls = sqliteTable(
+  'tool_calls',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    name: text('name').notNull(),
+    parameters: text('parameters'),
+    result: text('result'),
+    error: text('error'),
+    startedAt: integer('started_at').notNull(),
+    completedAt: integer('completed_at').notNull(),
+    durationMs: integer('duration_ms').notNull()
+  },
+  table => [index('idx_tool_calls_name').on(table.name), index('idx_tool_calls_started_at').on(table.startedAt)]
+);

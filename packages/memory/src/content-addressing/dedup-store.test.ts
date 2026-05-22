@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createDedupStore } from './dedup-store.js';
 import { fingerprintContent } from './fingerprint.js';
 
-describe(createDedupStore, () => {
+describe('createDedupStore', () => {
   it('interns content and returns a fingerprint', () => {
     const store = createDedupStore();
     const fp = store.intern('hello');

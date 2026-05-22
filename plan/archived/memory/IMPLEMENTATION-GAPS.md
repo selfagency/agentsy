@@ -637,7 +637,7 @@ When `scope` is `"unified"` or omitted, search all three layers.
 
 Create command files under `src/commands/`:
 
-```
+```text
 src/commands/
   wiki/
     page.ts
@@ -1062,7 +1062,7 @@ Create test files:
 
 ## Files to create
 
-```
+```text
 src/database/
   adapter.ts              # DatabaseAdapter interface
   sqlite-adapter.ts       # SQLite implementation
@@ -1114,7 +1114,7 @@ src/commands/
 
 ## Files to modify
 
-```
+```text
 src/cognitive/memory-engine.ts      # Add dbAdapter option
 src/cognitive/memory-tier.ts       # Add dbAdapter option
 cognitive/sensory-buffer.ts        # Pass dbAdapter

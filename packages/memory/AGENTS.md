@@ -381,13 +381,17 @@ Before you shut down or the session ends:
 
 1. **Ingest any remaining events** that have not yet been captured.
 2. **Trigger consolidation:**
+
    ```json
    { "tool": "memory_awaken", "arguments": {} }
    ```
+
 3. **Log the final state:**
+
    ```json
    { "tool": "memory_stats", "arguments": {} }
    ```
+
    Report total items and budget utilization if the host asks for a summary.
 
 ---

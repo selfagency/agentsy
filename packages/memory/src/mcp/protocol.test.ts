@@ -58,6 +58,7 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
+    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -95,6 +96,7 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
+    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -120,6 +122,7 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
+    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -175,7 +178,7 @@ describe('MCP Protocol', () => {
 
     const caps = server.capabilities();
     expect(caps).toHaveProperty('tools');
-    expect(caps).toHaveProperty('logging');
+    expect(caps.tools).toEqual({ listChanged: false });
   });
 
   it('should close and reset initialization state', async () => {
@@ -186,6 +189,7 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
+    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
     server.close();
 
     const response = await server.handleMessage({
@@ -217,6 +221,7 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
+    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -237,6 +242,7 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
+    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',

@@ -12,7 +12,7 @@ const SHORT_TERM_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: 3_600_000
 };
 
-export interface ShortTermMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db'> {
+export interface ShortTermMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
 }
 
@@ -24,5 +24,5 @@ export function createShortTermMemory(options: ShortTermMemoryOptions = {}): Mem
     name: 'short_term_memory'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db });
+  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
 }

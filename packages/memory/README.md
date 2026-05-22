@@ -8,18 +8,19 @@ Cognitive memory engine for AI agents with tiered memory (sensory → working �
 
 **Key components:**
 
-- **Cognitive tier engine** — 5-tier memory with token budgets, decay, and promotion/demotion.
+- **Cognitive tier engine** — 5-tier memory with token budgets, decay, and promotion/demotion. Now backed by SQLite with optional AgentFS schema.
 - **Wiki pipeline** — Raw capture → content processing → versioned pages → vector embeddings.
 - **RAG knowledge base** — Document ingestion, hybrid retrieval, evidence packing, citation-preserving context assembly.
-- **Sync layer** — Local SQLite with Turso bidirectional sync, conflict resolution, and backups.
-- **MCP server** — Exposes memory tools to any Model Context Protocol consumer (Claude Desktop, Cline, Zed, etc.).
+- **Sync layer** — Local SQLite with optional Turso bidirectional sync via `@tursodatabase/sync`, conflict resolution, and backups.
+- **MCP server** — Exposes memory, wiki, and knowledge base tools to any Model Context Protocol consumer (Claude Desktop, Cline, Zed, etc.).
 - **Lifecycle hooks** — Session start/end, tool-call capture, response capture for automatic memory management.
+- **AgentFS schema** — Native SQLite tables (`kv_store`, `fs_*`, `tool_calls`) for agent filesystem operations and audit trails.
 
 ---
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │  Agent Environment (events, user input, tool output, responses)  │
 └──────────────────────┬──────────────────────────────────────────┘
@@ -166,7 +167,7 @@ Then connect your client:
 ```typescript
 import { initMemory } from '@agentsy/memory/init';
 
-const { engine, server } = await initMemory({
+const { engine, wiki, knowledgeBase, server } = await initMemory({
   config: { mcp: { transport: 'stdio' } }
 });
 
@@ -176,6 +177,14 @@ const id = engine.ingest('User prefers dark mode', {
 });
 
 const results = engine.recall({ query: 'dark mode', crossTier: true });
+
+// Unified search across tiers, wiki, and knowledge base
+import { queryUnified } from '@agentsy/memory';
+const unified = await queryUnified(engine, wiki, knowledgeBase, {
+  query: 'dark mode',
+  scope: 'unified'
+});
+
 await engine.awaken();
 await server.start();
 ```
@@ -223,16 +232,22 @@ agentsy-memory daemon:stop
 
 When connected via MCP, these tools are available:
 
-| Tool             | What it does                                     |
-| ---------------- | ------------------------------------------------ |
-| `memory_ingest`  | Store a memory (content, importance, kind, tier) |
-| `memory_recall`  | Retrieve memories by query across tiers          |
-| `memory_search`  | Search memories by content substring             |
-| `memory_list`    | List memories in a specific tier                 |
-| `memory_capture` | Capture raw content as a memory                  |
-| `memory_awaken`  | Trigger consolidation and decay cycle            |
-| `memory_stats`   | Show tier utilization and budget                 |
-| `memory_lint`    | Health check                                     |
+| Tool               | What it does                                           |
+| ------------------ | ------------------------------------------------------ |
+| `memory_ingest`    | Store a memory (content, importance, kind, tier)       |
+| `memory_recall`    | Retrieve memories by query across tiers, wiki, and RAG |
+| `memory_search`    | Search memories by content substring                   |
+| `memory_list`      | List memories in a specific tier                       |
+| `memory_capture`   | Capture raw content as a memory                        |
+| `memory_awaken`    | Trigger consolidation and decay cycle                  |
+| `memory_stats`     | Show tier utilization and budget                       |
+| `memory_lint`      | Health check                                           |
+| `wiki_upsert_page` | Create or update a wiki page                           |
+| `wiki_search`      | Search wiki pages by full text                         |
+| `kb_ingest`        | Ingest a document into the knowledge base              |
+| `kb_search`        | Search the knowledge base for evidence                 |
+
+**Unified query:** `memory_recall` with `"scope": "unified"` searches cognitive tiers, wiki pages, and the knowledge base simultaneously.
 
 ---
 
@@ -249,6 +264,7 @@ import { createMemoryMCPServer } from '@agentsy/memory/mcp';
 import { createWikiManager } from '@agentsy/memory';
 import { createKnowledgeBaseManager, createRAGConfig } from '@agentsy/memory';
 import { createTursoManager } from '@agentsy/memory';
+import { queryUnified } from '@agentsy/memory';
 ```
 
 ---
@@ -312,8 +328,9 @@ pnpm format       # oxfmt
 - Phase 5 (persona memory, knowledge graph): ✅ Complete
 - Phase 6 (learning loop): ✅ Complete
 - Phase 7 (MCP server, daemon, hooks, CLI): ✅ Complete
-
-**Note:** The cognitive tier engine, wiki, and RAG layers currently operate in-memory. SQLite-backed persistence is the intended architecture. The sync layer works for snapshot-based replication today.
+- Phase 8 (AgentFS schema migration, storage adapters): ✅ Complete
+- Phase 9 (wiki-validated learning, auto-wiki-updates): ✅ Complete
+- Phase 10 (documentation, testing): ✅ Complete
 
 ---
 

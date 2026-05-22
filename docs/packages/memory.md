@@ -23,7 +23,7 @@ The entire system is designed to run on a **local SQLite database** (`.agentsy/m
 
 ## Architecture overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │  Agent Environment (events, user input, tool output, responses)  │
 └──────────────────────┬──────────────────────────────────────────┘
@@ -224,7 +224,7 @@ agentsy-memory daemon:stop
 
 ### Importance scoring
 
-```
+```text
 importance = recency × 0.3 + frequency × 0.2 + contentType × 0.5 + reliability × 0.2 + relationalBoost × 0.1
 ```
 
@@ -266,7 +266,7 @@ Call `awaken()`:
 
 The wiki pipeline turns raw captures into navigable, versioned knowledge pages:
 
-```
+```text
 Raw Capture → ContentProcessor → WikiPage → LocalEmbeddingEngine → VectorStore
                 │                                │
                 ▼                                ▼

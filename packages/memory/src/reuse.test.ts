@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { rankReusableMemoryBlocks } from './index.js';
 
-describe(rankReusableMemoryBlocks, () => {
+describe('rankReusableMemoryBlocks', () => {
   it('prefers blocks with matching fingerprints and better reuse signals', () => {
     const ranked = rankReusableMemoryBlocks(
       [

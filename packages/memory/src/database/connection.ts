@@ -1,3 +1,6 @@
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
@@ -23,6 +26,10 @@ export function createDatabaseConnection(options: ConnectionOptions = {}): {
 } {
   const path = options.path ?? ':memory:';
   const walMode = options.walMode ?? true;
+
+  if (path !== ':memory:') {
+    mkdirSync(dirname(path), { recursive: true });
+  }
 
   const sqlite = new Database(path);
 

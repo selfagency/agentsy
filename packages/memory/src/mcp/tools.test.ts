@@ -29,9 +29,9 @@ function getHandler(
 }
 
 describe('MCP Tools', () => {
-  it('should create all 8 tool definitions', () => {
+  it('should create all 12 tool definitions', () => {
     const { definitions } = setup();
-    expect(Object.keys(definitions)).toHaveLength(8);
+    expect(Object.keys(definitions)).toHaveLength(12);
     expect(definitions.memory_ingest).toBeDefined();
     expect(definitions.memory_recall).toBeDefined();
     expect(definitions.memory_awaken).toBeDefined();
@@ -40,6 +40,10 @@ describe('MCP Tools', () => {
     expect(definitions.memory_list).toBeDefined();
     expect(definitions.memory_search).toBeDefined();
     expect(definitions.memory_capture).toBeDefined();
+    expect(definitions.wiki_upsert_page).toBeDefined();
+    expect(definitions.wiki_search).toBeDefined();
+    expect(definitions.kb_ingest).toBeDefined();
+    expect(definitions.kb_search).toBeDefined();
   });
 
   it('should ingest content via memory_ingest', async () => {
@@ -359,6 +363,75 @@ describe('MCP Tools', () => {
       const text = result.content[0]?.text ?? '';
       expect(text).toContain('fallback');
       expect(text).toContain('[sensory_buffer]');
+    });
+  });
+
+  describe('wiki tools', () => {
+    it('wiki_upsert_page creates a wiki page', async () => {
+      const { wiki, handlers } = setupWithUnified();
+      const handler = getHandler(handlers, 'wiki_upsert_page');
+      const result = (await handler({
+        pageId: 'hello-world',
+        title: 'Hello World',
+        body: 'This is a test page.'
+      })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('Upserted wiki page: hello-world');
+
+      const page = await wiki.getPage('hello-world');
+      expect(page?.title).toBe('Hello World');
+    });
+
+    it('wiki_search finds pages by content', async () => {
+      const { handlers } = setupWithUnified();
+      const upsertHandler = getHandler(handlers, 'wiki_upsert_page');
+      await upsertHandler({ pageId: 'alpha', title: 'Alpha', body: 'alpha content' });
+      await upsertHandler({ pageId: 'beta', title: 'Beta', body: 'beta content' });
+
+      const searchHandler = getHandler(handlers, 'wiki_search');
+      const result = (await searchHandler({ query: 'alpha' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('alpha');
+    });
+  });
+
+  describe('kb tools', () => {
+    it('kb_ingest adds a document', async () => {
+      const { handlers } = setupWithUnified();
+      const handler = getHandler(handlers, 'kb_ingest');
+      const result = (await handler({
+        sourceId: 'doc-1',
+        sourceType: 'document',
+        title: 'Test Doc',
+        content: 'This is test content.'
+      })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('Ingested:');
+      expect(text).toContain('new');
+    });
+
+    it('kb_search finds evidence', async () => {
+      const { handlers } = setupWithUnified();
+      const ingestHandler = getHandler(handlers, 'kb_ingest');
+      await ingestHandler({
+        sourceId: 'doc-1',
+        sourceType: 'document',
+        title: 'Searchable Doc',
+        content: 'This is searchable content about agents.'
+      });
+
+      const searchHandler = getHandler(handlers, 'kb_search');
+      const result = (await searchHandler({ query: 'agents' })) as {
+        content: Array<{ type: string; text: string }>;
+      };
+      const text = result.content[0]?.text ?? '';
+      expect(text).toContain('Found');
     });
   });
 });

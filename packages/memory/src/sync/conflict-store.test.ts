@@ -24,7 +24,7 @@ function createConflict(id: string): ConflictRecord {
   };
 }
 
-describe(createConflictStore, () => {
+describe('createConflictStore', () => {
   it('stores and lists unresolved conflicts', async () => {
     const store = createConflictStore();
     const first = createConflict('conflict-1');

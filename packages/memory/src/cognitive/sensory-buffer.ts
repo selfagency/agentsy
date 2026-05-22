@@ -12,7 +12,7 @@ const SENSORY_BUFFER_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: 5_000
 };
 
-export interface SensoryBufferOptions extends Pick<MemoryTierOptions, 'now' | 'db'> {
+export interface SensoryBufferOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
 }
 
@@ -24,5 +24,5 @@ export function createSensoryBuffer(options: SensoryBufferOptions = {}): MemoryT
     name: 'sensory_buffer'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db });
+  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
 }

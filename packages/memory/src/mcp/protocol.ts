@@ -1,4 +1,5 @@
 // Lightweight MCP JSON-RPC 2.0 protocol handler — stdio-based
+// Aligned with MCP specification 2025-11-25
 // Does not depend on @modelcontextprotocol/sdk Zod schemas
 
 export type JsonRpcId = string | number | null | undefined;
@@ -27,7 +28,7 @@ export type McpNotification = {
   params?: Record<string, unknown>;
 };
 
-export const MCP_PROTOCOL_VERSION = '2024-11-05';
+export const MCP_PROTOCOL_VERSION = '2025-11-25';
 
 export interface McpToolDefinition {
   name: string;
@@ -60,15 +61,13 @@ export function createMcpServer(options: McpServerOptions): McpServer {
   const { tools } = options;
 
   async function handleInitialize(id: Exclude<JsonRpcId, undefined>): Promise<JsonRpcResponse> {
-    initialized = true;
     return {
       jsonrpc: '2.0',
       id,
       result: {
         protocolVersion: MCP_PROTOCOL_VERSION,
         capabilities: {
-          tools: {},
-          logging: {}
+          tools: { listChanged: false }
         },
         serverInfo: {
           name: options.name,
@@ -78,8 +77,21 @@ export function createMcpServer(options: McpServerOptions): McpServer {
     };
   }
 
-  function handleToolsList(id: Exclude<JsonRpcId, undefined>): JsonRpcResponse {
+  function handlePing(id: Exclude<JsonRpcId, undefined>): JsonRpcResponse {
+    return { jsonrpc: '2.0', id, result: {} };
+  }
+
+  function handleToolsList(id: Exclude<JsonRpcId, undefined>, params: Record<string, unknown>): JsonRpcResponse {
     const toolList = Object.values(tools).map(t => t.definition);
+    // Pagination: if cursor provided, return empty to signal end of list
+    const cursor = typeof params.cursor === 'string' ? params.cursor : undefined;
+    if (cursor) {
+      return {
+        jsonrpc: '2.0',
+        id,
+        result: { tools: [], nextCursor: undefined }
+      };
+    }
     return {
       jsonrpc: '2.0',
       id,
@@ -124,14 +136,18 @@ export function createMcpServer(options: McpServerOptions): McpServer {
         case 'initialize':
           return handleInitialize(id);
         case 'initialized':
+        case 'notifications/initialized':
           initialized = true;
           return undefined;
-        case 'notifications/initialized':
-          return undefined;
+        case 'ping': {
+          const initErr = requireInitialized(id);
+          if (initErr) return initErr;
+          return handlePing(id);
+        }
         case 'tools/list': {
           const initErr = requireInitialized(id);
           if (initErr) return initErr;
-          return handleToolsList(id);
+          return handleToolsList(id, msg.params ?? {});
         }
         case 'tools/call': {
           const initErr = requireInitialized(id);
@@ -145,8 +161,7 @@ export function createMcpServer(options: McpServerOptions): McpServer {
 
     capabilities(): Record<string, unknown> {
       return {
-        tools: {},
-        logging: {}
+        tools: { listChanged: false }
       };
     },
 

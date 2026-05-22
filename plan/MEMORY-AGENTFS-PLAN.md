@@ -133,7 +133,7 @@ Our `SnapshotStore` (`filesystem/agentfs/snapshots.ts`) clones a Map.
 
 ## 3. Architecture After Migration
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                     @agentsy/memory                          │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐│
@@ -201,7 +201,7 @@ This means:
 
 **Schema files to create:**
 
-```
+```text
 packages/memory/src/agentfs/
   schema.ts              # AgentFS base tables (fs_*, kv_store, tool_calls)
   schema-domain.ts       # Views/triggers mapping our domain to AgentFS
@@ -411,7 +411,7 @@ The existing `packages/memory/src/filesystem/agentfs/` is **not** Turso AgentFS.
 
 **Action:** Rename to avoid confusion.
 
-```
+```text
 packages/memory/src/filesystem/agentfs/
   -> packages/memory/src/filesystem/internal-store/
 ```
@@ -441,7 +441,7 @@ The tables in `packages/memory/src/database/schema.ts` are replaced by AgentFS b
 
 ### New files
 
-```
+```text
 packages/memory/src/agentfs/
   schema.ts              # AgentFS base SQL schema
   schema-domain.ts       # Domain views and triggers
@@ -463,7 +463,7 @@ packages/memory/src/agentfs/
 
 ### Modified files
 
-```
+```text
 packages/memory/src/database/schema.ts
   # Add AgentFS base tables; mark custom tables deprecated
 
@@ -491,7 +491,7 @@ packages/memory/src/index.ts
 
 ### Renamed files
 
-```
+```text
 packages/memory/src/filesystem/agentfs/
   -> packages/memory/src/filesystem/internal-store/
 ```

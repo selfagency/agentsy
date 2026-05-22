@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
 
+import { createWikiFsAdapter } from '../agentfs/wiki-adapter.js';
 import type { MemoryDatabase } from '../database/connection.js';
 import { wikiBacklinks, wikiConcepts, wikiPageHistory, wikiPages, wikiVectors } from '../database/schema.js';
 import { createContentProcessor } from './content-processor.js';
@@ -109,6 +110,8 @@ export interface WikiManagerDependencies {
   versionTracker?: VersionTracker;
   navigation?: NavigationSystem;
   db?: MemoryDatabase | undefined;
+  /** Use AgentFS kv_store instead of legacy wiki tables when db is present. */
+  useAgentFs?: boolean | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -693,6 +696,9 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
 // ---------------------------------------------------------------------------
 
 export function createWikiManager(dependencies: WikiManagerDependencies = {}): WikiManager {
+  if (dependencies.db && dependencies.useAgentFs) {
+    return createWikiFsAdapter({ db: dependencies.db });
+  }
   if (dependencies.db) {
     return createSQLiteWikiManager(dependencies.db, dependencies);
   }

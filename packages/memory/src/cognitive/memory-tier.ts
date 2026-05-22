@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
+import { createTierFsAdapter } from '../agentfs/tier-adapter.js';
 import type { MemoryDatabase } from '../database/connection.js';
 import { memoryItems } from '../database/schema.js';
 import type { MemoryItem, TierConfig, TierLevel, TierName, TierReadQuery, TierReadResult } from './tier-types.js';
@@ -28,6 +29,8 @@ export interface MemoryTierOptions {
   config: TierConfig;
   now?: (() => number) | undefined;
   db?: MemoryDatabase | undefined;
+  /** Use AgentFS kv_store instead of legacy memory_items table when db is present. */
+  useAgentFs?: boolean | undefined;
 }
 
 function sortByPromotionPriority(now: () => number, item: MemoryItem): number {
@@ -415,6 +418,14 @@ function createSQLiteMemoryTier(db: MemoryDatabase, config: TierConfig, nowFn?: 
 // ---------------------------------------------------------------------------
 
 export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
+  if (options.db && options.useAgentFs) {
+    return createTierFsAdapter({
+      db: options.db,
+      tierName: options.config.name,
+      config: options.config,
+      now: options.now
+    });
+  }
   if (options.db) {
     return createSQLiteMemoryTier(options.db, options.config, options.now);
   }

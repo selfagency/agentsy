@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createAgentFsManager } from './manager.js';
 import { createSnapshotStore } from './snapshots.js';
 
-describe(createSnapshotStore, () => {
+describe('createSnapshotStore', () => {
   it('captures a snapshot of current manager state', () => {
     const mgr = createAgentFsManager();
     mgr.write('/a.txt', 'hello');
