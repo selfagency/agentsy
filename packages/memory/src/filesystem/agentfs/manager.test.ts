@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { __globalStoreForTests, createAgentFsManager } from './manager.js';
 
-describe(createAgentFsManager, () => {
+describe('createAgentFsManager', () => {
   afterEach(() => {
     __globalStoreForTests.clear();
   });

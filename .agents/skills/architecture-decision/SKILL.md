@@ -1,7 +1,7 @@
 ---
 name: architecture-decision
 description: "Systematically evaluate architecture decisions, document trade-offs, and select appropriate patterns. This skill should be used when the user asks about 'architecture decision', 'ADR', 'design pattern selection', 'technology choice', or needs to evaluate architectural trade-offs. Keywords: architecture, ADR, patterns, trade-offs, technical debt, quality attributes, decision record."
-license: MIT
+license: GPL-3.0-or-later
 compatibility: Works with any project. Integrates with system-design for ADR templates.
 metadata:
   author: jwynia

@@ -12,7 +12,7 @@ const SAFE_UNICODE_HONKER_PATH = join(SAFE_TEST_ROOT, '扩展', 'honker.so');
 const SAFE_UNICODE_BLAKE3_PATH = join(SAFE_TEST_ROOT, '扩展', 'blake3.so');
 
 describe('HonkerExtensionLoader', () => {
-  describe(loadHonkerExtension, () => {
+  describe('loadHonkerExtension', () => {
     it('should return result with detected mode', async () => {
       const options: HonkerLoadOptions = {
         blake3ExtensionPath: '/nonexistent/blake3.so',

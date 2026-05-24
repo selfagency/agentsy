@@ -29,7 +29,7 @@ v1.2.3
 void print_version(void) {
     printf("mytool 1.2.3\n");
     printf("Copyright (C) 2024 Example Corporation\n");
-    printf("License MIT: <https://opensource.org/licenses/MIT>\n");
+    printf("License GPL-3.0-or-later: <https://opensource.org/licenses/GPL-3.0-or-later>\n");
     printf("This is free software: you are free to change and redistribute it.\n");
     printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
     printf("Written by Jane Developer.\n");
@@ -40,7 +40,7 @@ void print_version(void) {
 $ mytool --version
 mytool 1.2.3
 Copyright (C) 2024 Example Corporation
-License MIT: <https://opensource.org/licenses/MIT>
+License GPL-3.0-or-later: <https://opensource.org/licenses/GPL-3.0-or-later>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 

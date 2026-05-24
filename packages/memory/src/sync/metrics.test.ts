@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createSyncMetricsRegistry } from './metrics.js';
 
-describe(createSyncMetricsRegistry, () => {
+describe('createSyncMetricsRegistry', () => {
   it('tracks sync, conflict, backup, and restore counters', () => {
     const metrics = createSyncMetricsRegistry();
 

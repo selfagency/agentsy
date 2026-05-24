@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/selfagency/agentsy/issues"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "author": "Daniel Sieradski <daniel@self.agency>",
   "repository": {
     "type": "git",

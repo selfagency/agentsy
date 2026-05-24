@@ -7,7 +7,7 @@
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"
@@ -99,9 +99,13 @@
     "@agentsy/types": "workspace:*",
     "@oclif/core": "^4.11.3",
     "@tursodatabase/sync": "^0.6.0",
-    "blake3-jit": "^1.1.0"
+    "better-sqlite3": "^12.1.0",
+    "blake3-jit": "^1.1.0",
+    "drizzle-orm": "^0.43.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "msw": "^2.14.6",

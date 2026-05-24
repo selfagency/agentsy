@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createKvStore } from './kv-store.js';
 
-describe(createKvStore, () => {
+describe('createKvStore', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

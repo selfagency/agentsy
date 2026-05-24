@@ -15,7 +15,7 @@ SKILL.md frontmatter must only contain recognized fields. The skills-ref validat
 |-------|----------|------------|-------------|
 | `name` | Yes | 64 chars | Skill identifier (lowercase, hyphens, digits) |
 | `description` | Yes | 1024 chars | What the skill does and when to use it |
-| `license` | No | - | License identifier (e.g., MIT, Apache-2.0) |
+| `license` | No | - | License identifier (e.g., GPL-3.0-or-later, Apache-2.0) |
 | `allowed-tools` | No | - | Tool patterns the skill requires (experimental) |
 | `metadata` | No | - | Custom key-value pairs for client-specific data |
 | `compatibility` | No | 500 chars | Version or platform compatibility info |
@@ -40,7 +40,7 @@ version: 1.0.0
 ---
 name: code-review
 description: Reviews code for quality issues, security vulnerabilities, and performance problems. Use when reviewing PRs or auditing code.
-license: MIT
+license: GPL-3.0-or-later
 metadata:
   author: John Doe
   version: 1.0.0

@@ -23,6 +23,7 @@ export {
   type TursoHttpClientConfig,
   type TursoSyncClientConfig
 } from './turso-client.js';
+export { createTursoSyncEngine, type TursoSyncEngine, type TursoSyncEngineConfig } from './turso-sync-engine.js';
 export { createTursoManager, TursoManager } from './turso-manager.js';
 export type {
   BackupManager,

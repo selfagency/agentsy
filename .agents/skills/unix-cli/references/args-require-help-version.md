@@ -39,7 +39,7 @@ static void print_help(const char *progname) {
 static void print_version(void) {
     printf("mytool 1.0.0\n");
     printf("Copyright (C) 2024 Example Inc.\n");
-    printf("License GPLv3+: GNU GPL version 3 or later\n");
+    printf("License GPL-3.0-or-later+: GNU GPL version 3 or later\n");
 }
 
 int main(int argc, char *argv[]) {

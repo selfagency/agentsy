@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createRAGConfig } from './config.js';
 
-describe(createRAGConfig, () => {
+describe('createRAGConfig', () => {
   it('defaults to local-only retrieval and disabled web augmentation', () => {
     const config = createRAGConfig({});
 

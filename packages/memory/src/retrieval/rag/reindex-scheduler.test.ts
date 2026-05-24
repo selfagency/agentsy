@@ -5,7 +5,9 @@ import { createReindexScheduler } from './reindex-scheduler.js';
 describe('ReindexScheduler', () => {
   it('starts, triggers, and stops without duplicate intervals', async () => {
     vi.useFakeTimers();
-    const run = vi.fn<() => Promise<void>>(async () => {});
+    const run = vi.fn<() => Promise<void>>(async () => {
+      /* no-op */
+    });
     const scheduler = createReindexScheduler({ intervalMs: 300, run });
 
     scheduler.start();

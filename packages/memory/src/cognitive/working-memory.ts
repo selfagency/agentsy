@@ -1,4 +1,4 @@
-import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
+import { createMemoryTier, type MemoryTierLike, type MemoryTierOptions } from './memory-tier.js';
 import type { TierConfig } from './tier-types.js';
 
 export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
@@ -12,9 +12,8 @@ const WORKING_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: 30_000
 };
 
-export interface WorkingMemoryOptions {
+export interface WorkingMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
-  now?: (() => number) | undefined;
 }
 
 export function createWorkingMemory(options: WorkingMemoryOptions = {}): MemoryTierLike {
@@ -25,5 +24,5 @@ export function createWorkingMemory(options: WorkingMemoryOptions = {}): MemoryT
     name: 'working_memory'
   };
 
-  return createMemoryTier({ config, now: options.now });
+  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
 }

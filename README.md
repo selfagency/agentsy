@@ -4,7 +4,7 @@ Composable infrastructure for LLM and agentic systems.
 
 Agentsy is a pnpm/turborepo monorepo of focused `@agentsy/*` packages for stream processing, provider integration, orchestration/runtime execution, state/memory systems, and integration surfaces.
 
-[![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/selfagency/agentsy/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/agentsy) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/selfagency/agentsy/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/agentsy) [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
 ## Current repository state
 

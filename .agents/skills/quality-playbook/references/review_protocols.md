@@ -369,6 +369,10 @@ Where possible, encode checks as automated tests:
 
 ```text
 
+```text
+
+```text
+
 ## Manual Verification Steps
 
 [Any checks requiring external systems, human judgment, or manual inspection]

@@ -8,7 +8,7 @@
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"

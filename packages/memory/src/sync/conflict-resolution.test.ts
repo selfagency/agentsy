@@ -44,7 +44,7 @@ function createConflict(overrides: Partial<ConflictRecord> = {}): ConflictRecord
   };
 }
 
-describe(collectConflicts, () => {
+describe('collectConflicts', () => {
   it('collects normalized conflicts with stable ids', () => {
     const conflicts = collectConflicts(
       [
@@ -104,7 +104,7 @@ describe(collectConflicts, () => {
   });
 });
 
-describe(resolveConflict, () => {
+describe('resolveConflict', () => {
   it('supports lastWriteWins', () => {
     const result = resolveConflict(createConflict(), 'lastWriteWins');
 

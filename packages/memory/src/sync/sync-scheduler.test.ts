@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSyncScheduler } from './sync-scheduler.js';
 import type { SyncRunResult, SyncSnapshot } from './types.js';
 
-describe(createSyncScheduler, () => {
+describe('createSyncScheduler', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-15T00:00:00.000Z'));

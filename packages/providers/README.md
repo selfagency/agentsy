@@ -287,4 +287,4 @@ When adding new provider support:
 
 ## License
 
-MIT
+GPL-3.0-or-later

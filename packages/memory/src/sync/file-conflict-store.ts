@@ -55,8 +55,12 @@ class FileConflictStore implements ConflictStore {
   async #withLock<T>(operation: () => Promise<T>): Promise<T> {
     const next = this.#writeQueue.then(operation, operation);
     this.#writeQueue = next.then(
-      () => {},
-      () => {}
+      () => {
+        /* no-op */
+      },
+      () => {
+        /* no-op */
+      }
     );
     return await next;
   }

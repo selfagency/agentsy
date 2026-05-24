@@ -1,3 +1,5 @@
+import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
+import type { WikiManager } from '../wiki/wiki-manager.js';
 import type { DecayedItem } from './decay.js';
 import {
   createLearningLoopOrchestrator,
@@ -60,6 +62,8 @@ export interface AwakenDeps {
   budgetRelease: (tier: TierName, tokens: number) => void;
   ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
   getAllItems?: (() => MemoryItem[]) | undefined;
+  wiki?: WikiManager | undefined;
+  knowledgeBase?: KnowledgeBaseManager | undefined;
 }
 
 interface DecayCounts {
@@ -227,7 +231,9 @@ async function runLearningCycle(
   return orchestrator.runCycle(
     {
       getNewMemories: (limit: number) => allItems.slice(0, limit),
-      getLTMMemories: () => [...(ltmTier?.items() ?? [])]
+      getLTMMemories: () => [...(ltmTier?.items() ?? [])],
+      wiki: deps.wiki,
+      knowledgeBase: deps.knowledgeBase
     },
     options.learningConfig
   );

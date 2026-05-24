@@ -1,7 +1,11 @@
 // MCP stdio server — lightweight JSON-RPC 2.0 transport over stdin/stdout
 // No dependency on @modelcontextprotocol/sdk (Zod v4 heavy); uses protocol.ts
 
+import { createToolAuditor } from '../agentfs/tool-auditor.js';
 import type { MemoryEngine } from '../cognitive/memory-engine.js';
+import type { MemoryDatabase } from '../database/connection.js';
+import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
+import type { WikiManager } from '../wiki/wiki-manager.js';
 import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOptions } from './protocol.js';
 import { createMemoryMcpTools } from './tools.js';
 
@@ -20,6 +24,15 @@ export interface MemoryMCPServerOptions {
   syncAuthToken?: string;
   /** Log level. Default: 'info' */
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  /** Optional database connection for tool call auditing. */
+  db?: MemoryDatabase | undefined;
+}
+
+export interface CreateMemoryMCPServerInput {
+  engine: MemoryEngine;
+  wiki?: WikiManager | undefined;
+  kb?: KnowledgeBaseManager | undefined;
+  options?: MemoryMCPServerOptions | undefined;
 }
 
 export interface MemoryMCPServer {
@@ -35,11 +48,33 @@ export interface MemoryMCPServer {
  */
 export async function createMemoryMCPServer(
   engine: MemoryEngine,
-  options: MemoryMCPServerOptions = {}
+  options?: MemoryMCPServerOptions
+): Promise<MemoryMCPServer>;
+export async function createMemoryMCPServer(input: CreateMemoryMCPServerInput): Promise<MemoryMCPServer>;
+export async function createMemoryMCPServer(
+  engineOrInput: MemoryEngine | CreateMemoryMCPServerInput,
+  maybeOptions?: MemoryMCPServerOptions
 ): Promise<MemoryMCPServer> {
-  const { transport = 'stdio', port = 4231, logLevel = 'info' } = options;
+  let engine: MemoryEngine;
+  let wiki: WikiManager | undefined;
+  let kb: KnowledgeBaseManager | undefined;
+  let options: MemoryMCPServerOptions;
 
-  const { definitions, handlers } = createMemoryMcpTools(engine);
+  if ('engine' in engineOrInput) {
+    engine = engineOrInput.engine;
+    wiki = engineOrInput.wiki;
+    kb = engineOrInput.kb;
+    options = engineOrInput.options ?? {};
+  } else {
+    engine = engineOrInput;
+    options = maybeOptions ?? {};
+  }
+
+  const { transport = 'stdio', port = 4231, logLevel = 'info', db } = options;
+
+  const { definitions, handlers } = createMemoryMcpTools({ engine, wiki, kb });
+
+  const auditor = db ? createToolAuditor({ db }) : null;
 
   const serverOptions: McpServerOptions = {
     name: 'agentsy-memory',
@@ -50,7 +85,8 @@ export async function createMemoryMCPServer(
         if (!handler) {
           throw new Error(`Missing handler for tool: ${name}`);
         }
-        return [name, { definition: def, handler }];
+        const wrappedHandler = auditor ? auditor(name, handler) : handler;
+        return [name, { definition: def, handler: wrappedHandler }];
       })
     )
   };

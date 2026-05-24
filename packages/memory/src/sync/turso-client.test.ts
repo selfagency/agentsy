@@ -47,12 +47,20 @@ function createSnapshot(cursor = 'cursor-1'): SyncSnapshot {
 
 function createFakeDatabase(): FakeDatabase {
   return {
-    checkpoint: vi.fn(async () => {}),
-    close: vi.fn(async () => {}),
-    connect: vi.fn(async () => {}),
+    checkpoint: vi.fn(async () => {
+      /* no-op */
+    }),
+    close: vi.fn(async () => {
+      /* no-op */
+    }),
+    connect: vi.fn(async () => {
+      /* no-op */
+    }),
     get: vi.fn(async () => null),
     pull: vi.fn(async () => true),
-    push: vi.fn(async () => {}),
+    push: vi.fn(async () => {
+      /* no-op */
+    }),
     run: vi.fn(async () => ({ changes: 1, lastInsertRowid: 1 })),
     stats: vi.fn(async () => ({ pendingChanges: 0 }))
   };

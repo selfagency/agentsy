@@ -78,7 +78,9 @@ describe('memory state serialization', () => {
 
   it('creates an adapter that bridges memory state and sync snapshots', async () => {
     const state = createState();
-    const applyState = vi.fn(async () => {});
+    const applyState = vi.fn(async () => {
+      /* no-op */
+    });
     const adapter = createMemoryStateAdapter({
       applyState,
       getCursor: () => 'cursor-2',

@@ -1,6 +1,9 @@
 import { fingerprintContent } from '../content-addressing/fingerprint.js';
 import type { PubSubManager } from '../coordination/pub-sub-manager.js';
 import type { Scheduler } from '../coordination/scheduler.js';
+import type { MemoryDatabase } from '../database/connection.js';
+import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
+import type { WikiManager } from '../wiki/wiki-manager.js';
 import { awaken, type AwakenResult, type PendingEvent } from './awaken.js';
 import { createCompressor, type CompressorOptions } from './compressor.js';
 import { type DecayConfig, DEFAULT_DECAY_CONFIG } from './decay.js';
@@ -77,6 +80,13 @@ export interface MemoryEngineOptions {
   now?: (() => number) | undefined;
   runLearningCycle?: boolean;
   learningConfig?: Partial<LearningLoopConfig>;
+  db?: MemoryDatabase | undefined;
+  /** Use AgentFS kv_store instead of legacy memory_items table when db is present. */
+  useAgentFs?: boolean | undefined;
+  /** Optional wiki manager for learning cycle validation and auto-updates. */
+  wiki?: WikiManager | undefined;
+  /** Optional knowledge base manager for learning cycle validation. */
+  knowledgeBase?: KnowledgeBaseManager | undefined;
 }
 
 export interface MemoryEngine {
@@ -154,19 +164,27 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
   const importanceFactors = options.importanceFactors ?? DEFAULT_IMPORTANCE_FACTORS;
 
   // Create tiers
-  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now });
+  const db = options.db;
+  const useAgentFs = options.useAgentFs;
+  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now, db, useAgentFs });
   const sensoryRegister = createSensoryRegister({
     ...options.sensoryRegister,
-    now
+    now,
+    db,
+    useAgentFs
   });
-  const workingMemory = createWorkingMemory({ ...options.workingMemory, now });
+  const workingMemory = createWorkingMemory({ ...options.workingMemory, now, db, useAgentFs });
   const shortTermMemory = createShortTermMemory({
     ...options.shortTermMemory,
-    now
+    now,
+    db,
+    useAgentFs
   });
   const longTermMemory = createLongTermMemory({
     ...options.longTermMemory,
-    now
+    now,
+    db,
+    useAgentFs
   });
 
   const tiers: Partial<Record<TierName, MemoryTierLike>> = {
@@ -181,6 +199,8 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
   const scheduler = createTierScheduler(tiers, buildSchedulerOptions(options));
   const runLearningCycle = options.runLearningCycle ?? false;
   const learningConfig = options.learningConfig;
+  const wiki = options.wiki;
+  const knowledgeBase = options.knowledgeBase;
 
   // Create processing pipeline (used in tier bridges — Phase 5+)
   const _compressor = createCompressor({ ...options.compressor, now });
@@ -325,7 +345,9 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
         budgetRelease: (tier: TierName, tokens: number) => budget.release(tier, tokens),
         ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) =>
           ingest(content, { importance, metadata }),
-        getAllItems: () => getAllItemsFromTiers(tiers)
+        getAllItems: () => getAllItemsFromTiers(tiers),
+        wiki,
+        knowledgeBase
       },
       awakenOpts
     );

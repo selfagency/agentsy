@@ -398,7 +398,7 @@ const normalize = createChunkNormalizerStub<{ text: string }>(event => ({
 
 ## License
 
-MIT
+GPL-3.0-or-later
 
 ## See Also
 

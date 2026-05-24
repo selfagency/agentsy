@@ -32,7 +32,7 @@ export default defineConfig({
     },
     footer: {
       copyright: 'Copyright © 2026 Agentsy Contributors',
-      message: 'Open source under MIT License'
+      message: 'Open source under GPL-3.0-or-later License'
     },
     logo: '🤖',
     nav: [

@@ -115,6 +115,28 @@ export {
   type AgentFsOptions
 } from './filesystem/agentfs/manager.js';
 
+// Phase 8 — AgentFS schema adapters
+export {
+  createRagFsAdapter,
+  createSnapshot,
+  createTierFsAdapter,
+  createToolAuditor,
+  createWikiFsAdapter,
+  detectAgentFs,
+  initAgentFs,
+  restoreSnapshot,
+  type AgentFsInitOptions,
+  type AgentFsRestoreResult,
+  type AgentFsSnapshotResult,
+  type AgentFsStatus,
+  type RagFsAdapterOptions,
+  type RestoreOptions,
+  type SnapshotOptions,
+  type TierFsAdapterOptions,
+  type ToolAuditorOptions,
+  type WikiFsAdapterOptions
+} from './agentfs/index.js';
+
 export {
   createScopeManager,
   type MemoryScope,
@@ -140,6 +162,7 @@ export {
   createTursoHttpClient,
   createTursoManager,
   createTursoSyncClient,
+  createTursoSyncEngine,
   deserializeMemoryState,
   redactSyncSecrets,
   resolveConflict,
@@ -184,6 +207,8 @@ export {
   type TursoHttpClientConfig,
   type TursoSyncClientConfig,
   type TursoSyncConfig,
+  type TursoSyncEngine,
+  type TursoSyncEngineConfig,
   type TursoUploadResult
 } from './sync/index.js';
 export {
@@ -310,6 +335,9 @@ export {
   type OnResponseInput,
   type OnResponseOutput
 } from './hooks/index.js';
+
+// Phase 5 — Unified query interface
+export { queryUnified, type UnifiedMemoryQuery, type UnifiedMemoryResult } from './unified-query.js';
 
 // Phase 7 — Configuration & initialization
 export { loadConfig, DEFAULT_TIER_CONFIGS, type MemoryConfig } from './config.js';

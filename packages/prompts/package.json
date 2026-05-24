@@ -9,7 +9,7 @@
     "prompt",
     "reasoning"
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "author": "Agentsy Contributors",
   "files": [
     "dist",
