@@ -1,32 +1,16 @@
 ---
-goal Dogfood-first production implementation order for the final @agentsy CLI app
-version
-date_created 2026-05-15
-last_updated 2026-05-22
-owner agentsy-core
-status In progress - Revised based on compliance audit
-tags dogfood,production,critical-blockers: [feature, architecture, cli, tui, runtime, providers, models, memory, retrieval, production]
+goal: Dogfood-first production implementation order for the final @agentsy CLI app
+version: 2.1
+date_created: 2026-05-15
+last_updated: 2026-05-24
+owner: agentsy-core
+status: In progress
+tags: [feature, architecture, cli, tui, runtime, providers, models, memory, retrieval, production]
 ---
 
 # Introduction
 
 ![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
-
-## 🚨 Critical Compliance Status (Updated 2026-05-22)
-
-Per the compliance audit in `plan/MASTER-IMPLEMENTATION-PLAN.md`, this plan must address foundational gaps before proceeding with advanced features:
-
-| Package                    | Status      | Gap                                     | Production Impact                                                                      |
-| -------------------------- | ----------- | --------------------------------------- | -------------------------------------------------------------------------------------- |
-| **@agentsy/tools**         | 🔴 CRITICAL | 0% functional (only 2 stubs)            | Cannot execute REPL/file/shell/web/MCP operations - blocks all agent tool capabilities |
-| **@agentsy/secrets**       | 🔴 CRITICAL | 8% complete (no persistence/encryption) | In-memory secrets only - security and deployment risk                                  |
-| **@agentsy/guardrails**    | 🔴 CRITICAL | 12% complete (no policy engine)         | Cannot enforce safety policies - compliance and safety risk                            |
-| **@agentsy/observability** | 🟠 HIGH     | 30% complete (only type stubs)          | No implementation behind types - limits operational debugging                          |
-| **@agentsy/memory**        | ✅ COMPLETE | 98% complete (51/52 tasks)              | Foundation complete - plans archived to `plan/archived/memory/`                        |
-
-**Immediate Action Required**: Critical blockers must reach minimum 50% completion before proceeding beyond Phase 4.
-
----
 
 This plan defines the canonical production order for building `@agentsy` by dogfooding `@agentsy/cli` as early as possible. The sequence is intentionally vertical-slice first: establish a usable TUI chat loop immediately, then incrementally attach model selection, stream processing, tools, approvals, memory, retrieval, observability, integrations, and hardening until the CLI itself becomes the primary environment used to build and operate the rest of the platform.
 
@@ -97,50 +81,50 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 
 ### Package Coverage Matrix (authoritative)
 
-| Package                  | Coverage in this plan                                          |
-| ------------------------ | -------------------------------------------------------------- |
-| `packages/cli`           | Phases 2-12                                                    |
-| `packages/connectors`    | 🟡 MEDIUM (10% complete) - Phase 10                            |
-| `packages/core`          | Phases 2, 7                                                    |
-| `packages/guardrails`    | 🔴 CRITICAL BLOCKER (12% - no policy engine) - Phases 5, 10    |
-| `packages/mcp`           | 🟡 MEDIUM (5% complete) - Phase 10                             |
-| `packages/memory`        | ✅ COMPLETE (98% - 51/52 tasks) - Phases 7, 8 archived         |
-| `packages/models`        | Phase 3                                                        |
-| `packages/observability` | 🟠 HIGH GAP (30% - only type stubs) - Phases 5, 9              |
-| `packages/orchestrator`  | Phase 4                                                        |
-| `packages/plugins`       | Phase 4                                                        |
-| `packages/prompts`       | Phase 4                                                        |
-| `packages/providers`     | Phases 2, 3                                                    |
-| `packages/renderers`     | Phases 2, 5                                                    |
-| `packages/retrieval`     | 🟡 MEDIUM (30% complete) - Phases 8, 10                        |
-| `packages/runtime`       | Phases 2, 4, 5, 6, 7, 9                                        |
-| `packages/scripts`       | Phase 12                                                       |
-| `packages/secrets`       | 🔴 CRITICAL BLOCKER (8% - no persistence/encryption) - Phase 4 |
-| `packages/session`       | Phases 6, 7                                                    |
-| `packages/testing`       | Phases 8, 11                                                   |
-| `packages/tokens`        | Phases 1, 4, 9                                                 |
-| `packages/tools`         | 🔴 CRITICAL BLOCKER (15% - only stubs) - Phases 5, 9           |
-| `packages/types`         | Phase 1 (cross-package contract stabilization)                 |
-| `packages/ui`            | Phases 5, 9                                                    |
-| `packages/vscode`        | Phase 12 (cross-surface parity and release validation)         |
+| Package                  | Coverage in this plan                                  |
+| ------------------------ | ------------------------------------------------------ |
+| `packages/cli`           | Phases 2-12                                            |
+| `packages/connectors`    | Phase 10                                               |
+| `packages/core`          | Phases 2, 7                                            |
+| `packages/guardrails`    | Phases 5, 10                                           |
+| `packages/mcp`           | Phase 10                                               |
+| `packages/memory`        | Phases 7, 8                                            |
+| `packages/load-balancer` | Phase 3.5                                              |
+| `packages/models`        | Phase 3                                                |
+| `packages/observability` | Phases 5, 9                                            |
+| `packages/orchestrator`  | Phase 4                                                |
+| `packages/plugins`       | Phase 4                                                |
+| `packages/prompts`       | Phase 4                                                |
+| `packages/providers`     | Phases 2, 3                                            |
+| `packages/renderers`     | Phases 2, 5                                            |
+| `packages/retrieval`     | Phases 8, 10                                           |
+| `packages/runtime`       | Phases 2, 4, 5, 6, 7, 9                                |
+| `packages/scripts`       | Phase 12                                               |
+| `packages/secrets`       | Phase 4                                                |
+| `packages/session`       | Phases 6, 7                                            |
+| `packages/testing`       | Phases 8, 11                                           |
+| `packages/tokens`        | Phases 1, 4, 9                                         |
+| `packages/tools`         | Phases 5, 9                                            |
+| `packages/types`         | Phase 1 (cross-package contract stabilization)         |
+| `packages/ui`            | Phases 5, 9                                            |
+| `packages/vscode`        | Phase 12 (cross-surface parity and release validation) |
 
 ### Implementation Phase 1
 
-- GOAL-001: Establish baseline and lock dogfood architecture gates (completed foundations per compliance audit).
+- GOAL-001: Establish baseline and lock dogfood architecture gates (already in progress/completed foundations).
 
-| Task     | Description                                                                                                                                                                                                                  | Completed | Date       |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
-| TASK-001 | Confirm canonical package boundaries and execution authority across `plan/MASTER-IMPLEMENTATION-PLAN.md`, `plan/IMPLEMENTATION-PRIORITY.md`, and package plan files.                                                         | ✅        | 2026-05-15 |
-| TASK-002 | Confirm Phase 0 token compression APIs and CLI flows are validated in `packages/tokens`, `packages/core/context`, and `packages/cli`.                                                                                        | ✅        | 2026-05-15 |
-| TASK-003 | Confirm Phase 1 memory foundation modules and tests in `packages/memory/src/{coordination,wiki,retrieval,scope,tools,observability}` are in place. ✅ **COMPLETE** - Memory package archived to plan/archived/memory/        | ✅        | 2026-05-15 |
-| TASK-097 | **CRITICAL BLOCKER ASSESSMENT**: Per compliance audit (2026-05-22), identify foundational gaps: tools (0% functional), secrets (8% - no persistence), guardrails (12% - no policy engine), observability (30% - only stubs). | ✅        | 2026-05-22 |
-| TASK-018 | Normalize the CLI implementation plan around `@oclif/core` command/plugin lifecycle and Rune-style presentation layers.                                                                                                      | ✅        | 2026-05-15 |
-| TASK-004 | Freeze a dogfood release contract document at `docs/developers/integration-copilot.md` + `docs/developer-guide.md` describing “CLI is primary integration surface”.                                                          |           |            |
-| TASK-005 | Add milestone tracker section in `README.md` linking this plan as canonical execution order for production CLI delivery.                                                                                                     |           |            |
-| TASK-006 | Add explicit CLI-first release checklist template in `packages/cli/README.md` for all subsequent phases.                                                                                                                     |           |            |
-| TASK-067 | Add types-contract stabilization checkpoints for `packages/types` and downstream compile-time contract snapshots used by `core/providers/runtime/ui/renderers`.                                                              |           |            |
-| TASK-090 | Audit manifest-bearing packages for reusable external APIs (`index` exports, typed factories, documented examples, and stable entry points) so framework-agnostic packages can be imported directly by external projects.    |           |            |
-| TASK-091 | Define the official superagents plugin contract in `packages/plugins` with reusable `research`, `plan`, and `agent` mode manifests, provenance metadata, and external-installation semantics.                                |           |            |
+| Task     | Description                                                                                                                                                                                                               | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| TASK-001 | Confirm canonical package boundaries and execution authority across `plan/MASTER-IMPLEMENTATION-PLAN.md`, `plan/IMPLEMENTATION-PRIORITY.md`, and package plan files.                                                      | ✅        | 2026-05-15 |
+| TASK-002 | Confirm Phase 0 token compression APIs and CLI flows are validated in `packages/tokens`, `packages/core/context`, and `packages/cli`.                                                                                     | ✅        | 2026-05-15 |
+| TASK-003 | Confirm Phase 1 memory foundation modules and tests in `packages/memory/src/{coordination,wiki,retrieval,scope,tools,observability}` are in place.                                                                        | ✅        | 2026-05-15 |
+| TASK-018 | Normalize the CLI implementation plan around `@oclif/core` command/plugin lifecycle and Rune-style presentation layers.                                                                                                   | ✅        | 2026-05-15 |
+| TASK-004 | Freeze a dogfood release contract document at `docs/developers/integration-copilot.md` + `docs/developer-guide.md` describing “CLI is primary integration surface”.                                                       |           |            |
+| TASK-005 | Add milestone tracker section in `README.md` linking this plan as canonical execution order for production CLI delivery.                                                                                                  |           |            |
+| TASK-006 | Add explicit CLI-first release checklist template in `packages/cli/README.md` for all subsequent phases.                                                                                                                  |           |            |
+| TASK-067 | Add types-contract stabilization checkpoints for `packages/types` and downstream compile-time contract snapshots used by `core/providers/runtime/ui/renderers`.                                                           |           |            |
+| TASK-090 | Audit manifest-bearing packages for reusable external APIs (`index` exports, typed factories, documented examples, and stable entry points) so framework-agnostic packages can be imported directly by external projects. |           |            |
+| TASK-091 | Define the official superagents plugin contract in `packages/plugins` with reusable `research`, `plan`, and `agent` mode manifests, provenance metadata, and external-installation semantics.                             |           |            |
 
 ### Implementation Phase 2
 
@@ -173,6 +157,33 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 | TASK-016 | Implement local provider discovery/probing in `packages/models/src/` (Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel) with health/status output to TUI.                                                                                      |           |      |
 | TASK-017 | Add first-party local adapter contract in `packages/providers/src/` for `node-llama-cpp` route option and selection metadata path.                                                                                                                               |           |      |
 | TASK-018 | Add tests `packages/models/src/model-selector.integration.test.ts` and CLI tests for deterministic model routing/override behavior.                                                                                                                              |           |      |
+
+### Implementation Phase 3.5 — Load balancer scaffold and CLI provider routing integration
+
+- GOAL-003.5: Scaffold `@agentsy/load-balancer`, implement foundation (Phase 1 of LB plan), and wire `LoadBalancedClient` as the default provider client in the CLI.
+
+| Task        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-LB-001 | Create `packages/load-balancer/` package scaffold: `package.json` (`@agentsy/load-balancer`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`. Add to monorepo turbo pipeline.                                                                                                                                                                                                                                                                                                                                      |           |      |
+| TASK-LB-002 | Define `ProviderProfileConfigSchema` (Zod) and `ProviderProfile` code interface in `packages/load-balancer/src/profiles/types.ts`. Types must be consistent with `NormalizerProvider` from `packages/providers/src/pipeline/create-pipeline.ts` and `ProviderCapabilities` from `packages/types/src/providers.ts`.                                                                                                                                                                                                        |           |      |
+| TASK-LB-003 | Implement `fromConfig()` converter (`ProviderProfileConfig → ProviderProfile`) in `packages/load-balancer/src/profiles/from-config.ts`, `genericHeaderParser()`, `genericErrorClassifier()`, and `genericProbe()`.                                                                                                                                                                                                                                                                                                        |           |      |
+| TASK-LB-004 | Implement `ProfileRegistry` (`register`, `get`, `detectFromUrl`, `detectFromHeaders`) in `packages/load-balancer/src/profiles/registry.ts`.                                                                                                                                                                                                                                                                                                                                                                               |           |      |
+| TASK-LB-005 | Implement built-in provider profile configs in `packages/load-balancer/src/profiles/builtins/`: `generic-openai.ts` (covers 15+ providers), plus Tier 0 (`ollama-local.ts`, `zai.ts`), Tier 1 (`openai.ts`, `anthropic.ts`, `gemini.ts`, `bedrock.ts`, `mistral.ts`, `deepseek.ts`, `xai.ts`, `perplexity.ts`, `ollama-cloud.ts`), and Tier 2 (`deepinfra.ts`).                                                                                                                                                           |           |      |
+| TASK-LB-006 | Implement `ModelAliasMap` (`packages/load-balancer/src/registry/model-alias.ts`) for logical model name → per-provider model name mapping. Seed with aliases for `gpt-4o`, `claude-opus-4`, `gemini-2.5-pro`, `llama-3.3-70b`. Consume `ModelSelector` from `packages/models/src/index.ts` to inform routing weights.                                                                                                                                                                                                     |           |      |
+| TASK-LB-007 | Implement `ProviderRegistry` (`packages/load-balancer/src/registry/index.ts`) that creates a `UniversalClient` instance (from `packages/providers/src/universal-client/client.ts`) per provider entry. Entries are sourced from `LoadBalancerConfig.providers` after profile resolution. Wire API key retrieval via `@agentsy/secrets` keychain — **never accept raw keys in config at runtime**.                                                                                                                         |           |      |
+| TASK-LB-008 | Implement the `LoadBalancedClient` interface (`packages/load-balancer/src/client.ts`) as a drop-in replacement for `UniversalClient`. Phase 3.5 implementation: single-provider passthrough with `getRoutingState()`, `markProviderUnhealthy()`, `markProviderHealthy()`, `getUsageSnapshot()`, and `shutdown()` stubs returning safe no-ops.                                                                                                                                                                             |           |      |
+| TASK-LB-009 | Define `LoadBalancerConfigSchema` (Zod) in `packages/load-balancer/src/config.ts` covering: `providers` (array of `ProviderEntrySchema`), `strategy` (`StrategyNameSchema` — default `adaptive`), `model` (alias string), `circuitBreaker` (`CircuitBreakerConfigSchema`), `retry` (`RetryConfigSchema`). Re-export `ProviderRetryPolicy` from `packages/types` or `packages/providers` rather than re-defining it.                                                                                                       |           |      |
+| TASK-LB-010 | Update `packages/cli/src/providers/resolve-provider.ts` (TASK-008-A) to call `createLoadBalancedClient(config)` instead of `createUniversalClient()` directly. The `LoadBalancerConfig` is built from the CLI config's `providers` array (supporting multiple entries per model). Fall back to single-provider `LoadBalancedClient` when only one provider is configured — behaviour is identical.                                                                                                                        |           |      |
+| TASK-LB-011 | Implement `CircuitBreaker` state machine (CLOSED/OPEN/HALF-OPEN), `HealthTracker` (error counting, latency tracking), and `LatencyTracker` (rolling percentile window) in `packages/load-balancer/src/health/`. Wire health-aware provider filtering into the selection pipeline. Reuse `ProviderErrorCode.RateLimited` from `packages/vscode/src/types/errors.ts` and `STATUS_TO_ERROR_CODE` from `packages/vscode/src/error-handling/error-mapper.ts` for error classification.                                         |           |      |
+| TASK-LB-012 | Implement `parseRateLimitHeaders()` for OpenAI, Anthropic, Meta, and generic profiles in `packages/load-balancer/src/usage/header-parser.ts`. Create `__tests__/fixtures/header-samples.ts` with real header examples. Implement `LocalCounter` (RPM/TPM/concurrency window), `UsageTracker`, and `QuotaChecker` (pre-flight quota validation) in `packages/load-balancer/src/usage/`.                                                                                                                                    |           |      |
+| TASK-LB-013 | Implement all six routing strategies in `packages/load-balancer/src/strategies/`: `RoundRobinStrategy`, `WeightedStrategy`, `LeastConnectionsStrategy`, `LatencyBasedStrategy`, `PriorityFallbackStrategy`, `CostBasedStrategy`, and `AdaptiveStrategy` (composite scorer). Strategy is selected via `LoadBalancerConfig.strategy`. Adaptive is the default.                                                                                                                                                              |           |      |
+| TASK-LB-014 | Implement `retryWithFailover()` and `retryStreamWithFailover()` in `packages/load-balancer/src/retry/`. Reuse `retry()` from `packages/core/src/retry/index.ts` for exponential backoff. Throw `AllProvidersExhaustedError` (with full diagnostic payload) when all providers fail. Wire into `LoadBalancedClient.complete()` and `LoadBalancedClient.stream()`.                                                                                                                                                          |           |      |
+| TASK-LB-015 | Implement active usage probing (`packages/load-balancer/src/probes/`) using the `usageProbe` config field from each `ProviderProfileConfig`. Probes call provider usage APIs (e.g. DeepInfra `GET /v1/me/rate_limit`) on a configurable interval and update `UsageTracker`. Adding a new provider's probe requires only a 3-line config addition — no TypeScript code.                                                                                                                                                    |           |      |
+| TASK-LB-016 | Add `agentsy lb status` command (`packages/cli/src/commands/lb-status.ts`) that calls `client.getRoutingState()` and `client.getUsageSnapshot()` and prints a color-coded per-provider table (circuit state, RPM/TPM remaining, average latency, error rate, last used).                                                                                                                                                                                                                                                  |           |      |
+| TASK-LB-017 | Register `/lb status`, `/lb providers`, `/lb strategy <name>`, `/lb reset <providerId>` slash commands in `packages/plugins/src/slash-commands/registry.ts`. Handlers delegate to the session-scoped `LoadBalancedClient` instance.                                                                                                                                                                                                                                                                                       |           |      |
+| TASK-LB-018 | Add `packages/load-balancer/src/__tests__/` unit tests covering: config validation and `fromConfig()` conversion; `ProfileRegistry` lookup; model alias resolution; circuit breaker state transitions; header parsing for all built-in providers (using `header-samples.ts` fixtures); quota check pre-flight; each routing strategy with varied provider states; `retryWithFailover` exhaustion producing `AllProvidersExhaustedError`.                                                                                  |           |      |
+| TASK-LB-019 | Add `packages/cli/src/e2e/load-balancer.e2e.test.ts` covering: (a) primary provider returns 429 → automatic failover to secondary, transcript uninterrupted; (b) all providers exhausted → `AllProvidersExhaustedError` surfaces as user-facing message in CLI; (c) circuit breaker opens after 5 consecutive 500 errors → provider skipped; (d) `/lb strategy round-robin` changes strategy mid-session; (e) cost-based routing selects cheapest healthy provider. Use `packages/testing/src/msw/providers.ts` handlers. |           |      |
+| TASK-LB-020 | Add `packages/load-balancer/src/index.ts` public exports: `createLoadBalancedClient`, `LoadBalancedClient`, `LoadBalancerConfig`, `LoadBalancerConfigSchema`, `ProviderEntry`, `RoutingState`, `ProviderStatus`, `ProviderUsageSnapshot`, `StrategyName`, `AllProvidersExhaustedError`. Add TSDoc to all public symbols. Add `packages/load-balancer/README.md` with migration guide (from direct `UniversalClient` to `LoadBalancedClient`), zero-config example, and multi-key failover configuration example.          |           |      |
 
 ### Implementation Phase 4
 
@@ -252,16 +263,17 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 
 - GOAL-009: Add observability-first operations so CLI is production-debuggable and cost-governed.
 
-| Task     | Description                                                                                                                                                                                                    | Completed | Date |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-043 | Standardize runtime/event tracing instrumentation across `packages/runtime`, `packages/orchestrator`, `packages/tools`, `packages/memory`, and `packages/providers`.                                           |           |      |
-| TASK-094 | Standardize structured logging across CLI/runtime/orchestrator/tools/memory/providers/ui adapters using `@agentsy/observability` logger factories backed by `tslog` sub-loggers and shared correlation fields. |           |      |
-| TASK-044 | Add token/cost telemetry integration from `packages/tokens` into CLI status bar and post-turn summaries (input/output/cost/latency).                                                                           |           |      |
-| TASK-045 | Add `agentsy status --json`, `agentsy trace`, and UI-focused slash commands (`/trace`, `/events`, `/terminal`, `/worktrees`) for machine-readable operations and debugging.                                    |           |      |
-| TASK-046 | Add redaction processor defaults in `packages/observability/src/` ensuring traces are safe to export.                                                                                                          |           |      |
-| TASK-047 | Add regression tests for trace completeness (model selected, provider used, tools called, approvals requested, memory injected, retrieval source counts).                                                      |           |      |
-| TASK-048 | Update docs `docs/packages/observability.md` and examples for production incident diagnosis from CLI traces.                                                                                                   |           |      |
-| TASK-069 | Add `packages/ui` and `packages/tools` observability hooks so UI state transitions and tool lifecycle telemetry are emitted in the same trace graph.                                                           |           |      |
+| Task        | Description                                                                                                                                                                                                                                                                                                                                                                                                                     | Completed | Date |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-043    | Standardize runtime/event tracing instrumentation across `packages/runtime`, `packages/orchestrator`, `packages/tools`, `packages/memory`, and `packages/providers`.                                                                                                                                                                                                                                                            |           |      |
+| TASK-094    | Standardize structured logging across CLI/runtime/orchestrator/tools/memory/providers/ui adapters using `@agentsy/observability` logger factories backed by `tslog` sub-loggers and shared correlation fields.                                                                                                                                                                                                                  |           |      |
+| TASK-044    | Add token/cost telemetry integration from `packages/tokens` into CLI status bar and post-turn summaries (input/output/cost/latency).                                                                                                                                                                                                                                                                                            |           |      |
+| TASK-045    | Add `agentsy status --json`, `agentsy trace`, and UI-focused slash commands (`/trace`, `/events`, `/terminal`, `/worktrees`) for machine-readable operations and debugging.                                                                                                                                                                                                                                                     |           |      |
+| TASK-046    | Add redaction processor defaults in `packages/observability/src/` ensuring traces are safe to export.                                                                                                                                                                                                                                                                                                                           |           |      |
+| TASK-047    | Add regression tests for trace completeness (model selected, provider used, tools called, approvals requested, memory injected, retrieval source counts).                                                                                                                                                                                                                                                                       |           |      |
+| TASK-048    | Update docs `docs/packages/observability.md` and examples for production incident diagnosis from CLI traces.                                                                                                                                                                                                                                                                                                                    |           |      |
+| TASK-069    | Add `packages/ui` and `packages/tools` observability hooks so UI state transitions and tool lifecycle telemetry are emitted in the same trace graph.                                                                                                                                                                                                                                                                            |           |      |
+| TASK-LB-OBS | Implement `MetricsCollector` in `packages/load-balancer/src/metrics/` with per-provider and per-model breakdowns (requests, tokens, latency percentiles, failover counts, circuit-open durations). Integrate with `@agentsy/observability` OpenTelemetry exporter when available. Add `getRoutingState()` and `getUsageSnapshot()` as structured log fields on every agent-loop turn via `packages/observability/src/audit.ts`. |           |      |
 
 ### Implementation Phase 10
 
@@ -416,15 +428,6 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 
 ## 7. Risks & Assumptions
 
-### Critical Blocker Risks (Added 2026-05-22)
-
-- **RISK-012**: **Tools package at 0% functional** - Only 2 stub implementations exist. Cannot execute REPL/file/shell/web/MCP bridge operations. Blocks all agent capabilities that require tool execution.
-- **RISK-013**: **Secrets package at 8% complete** - No persistent storage or encryption. Secrets are in-memory only, creating security and production deployment risks.
-- **RISK-014**: **Guardrails package at 12% complete** - Only 2 error classes, no policy engine. Cannot enforce safety policies, creating compliance and safety risks.
-- **RISK-015**: **Observability package at 30% complete** - Only type stubs with no implementation. Limits operational debugging and production incident diagnosis.
-
-### Existing Risks
-
 - **RISK-001**: Early TUI coupling could lock poor UX patterns; mitigate via renderer abstraction and integration tests.
 - **RISK-002**: Provider/model fragmentation could cause routing drift; mitigate via explicit selector contracts and snapshot tests.
 - **RISK-003**: Tool capability growth could outpace policy controls; mitigate by blocking merge without approval-path tests.
@@ -436,14 +439,10 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **RISK-009**: Rich Ink surface area may become brittle; mitigate with pane-scoped components, UI-store contracts, and dedicated component tests.
 - **RISK-010**: Interactive config editing may encourage plaintext secret storage; mitigate by forcing secret indirection through `@agentsy/secrets`.
 - **RISK-011**: Project-specific instruction and skill precedence may become ambiguous; mitigate with explicit merge order, diagnostics, and test fixtures.
-
-### Assumptions
-
-- **ASSUMPTION-001**: ~~Phase 0/1 completion artifacts accurately reflect current branch baseline.~~ **REVISED 2026-05-22**: FALSE - Compliance audit reveals critical gaps in tools (0%), secrets (8%), guardrails (12%), observability (30%). Foundational packages require completion before proceeding.
+- **ASSUMPTION-001**: Phase 0/1 completion artifacts accurately reflect current branch baseline.
 - **ASSUMPTION-002**: Existing package-level implementation plans remain aligned with master architecture boundaries.
 - **ASSUMPTION-003**: Node 22 + pnpm + turbo workflow remains stable across all planned phases.
 - **ASSUMPTION-004**: Local-first operation is mandatory baseline even when optional cloud integrations are enabled.
-- **ASSUMPTION-005** (Added 2026-05-22): Critical blockers (tools, secrets, guardrails, observability) must reach minimum viable thresholds (50%+) before advancing beyond Phase 4.
 
 ## 8. Related Specifications / Further Reading
 
@@ -452,18 +451,18 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - `plan/PHASE-0-COMPLETION.md`
 - `plan/PHASE-1-COMPLETION.md`
 - `plan/2026-05-15-cache-aware-context-reuse.md`
-- `plan/archived/memory/` (Memory package implementation plans - completed 98%)
 - `packages/cli/IMPLEMENTATION-PLAN.md`
 - `packages/runtime/IMPLEMENTATION-PLAN.md`
 - `packages/providers/IMPLEMENTATION-PLAN.md`
 - `packages/models/IMPLEMENTATION-PLAN.md`
 - `packages/core/IMPLEMENTATION-PLAN.md`
 - `packages/session/IMPLEMENTATION-PLAN.md`
+- `packages/memory/IMPLEMENTATION-PLAN.md`
 - `packages/retrieval/IMPLEMENTATION-PLAN.md`
 - `packages/observability/IMPLEMENTATION-PLAN.md`
+- `https://tslog.js.org`
+- `https://mswjs.io/docs`
 - `packages/tools/IMPLEMENTATION-PLAN.md`
-- `packages/secrets/IMPLEMENTATION-PLAN.md`
-- `packages/guardrails/IMPLEMENTATION-PLAN.md`
 - `packages/vscode/IMPLEMENTATION-PLAN.md`
 - `docs/getting-started.md`
 - `ETHICS.md`
