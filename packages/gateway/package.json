@@ -1,10 +1,10 @@
 {
-  "name": "@agentsy/load-balancer",
+  "name": "@agentsy/gateway",
   "version": "0.1.0",
-  "description": "Load-balanced provider routing and failover for @agentsy",
+  "description": "LLM Gateway — multi-provider routing, failover, and health tracking",
   "keywords": [
     "agentsy",
-    "load-balancing",
+    "gateway",
     "providers",
     "typescript"
   ],
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git",
-    "directory": "packages/load-balancer"
+    "directory": "packages/gateway"
   },
   "files": [
     "dist",

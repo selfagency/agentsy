@@ -1,11 +1,11 @@
-# `@agentsy/load-balancer`
+# `@agentsy/gateway`
 
 - **Status:** Internal
 - **Role:** Provider pooling, health tracking, circuit breaking, routing, and failover orchestration
 
 ## Where it fits
 
-`@agentsy/load-balancer` sits between config-driven provider selection and the canonical provider HTTP client. It stays focused on routing decisions, health state, and failover policy; it does not own provider transport itself.
+`@agentsy/gateway` sits between config-driven provider selection and the canonical provider HTTP client. It stays focused on routing decisions, health state, and failover policy; it does not own provider transport itself.
 
 ## Key exports
 
@@ -34,7 +34,7 @@
 ## Example
 
 ```ts
-import { createLoadBalancedClient } from '@agentsy/load-balancer';
+import { createLoadBalancedClient } from '@agentsy/gateway';
 
 const client = createLoadBalancedClient({
   providers: [

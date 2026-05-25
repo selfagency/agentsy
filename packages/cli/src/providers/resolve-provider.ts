@@ -1,4 +1,4 @@
-import { createLoadBalancedClient, type LoadBalancerConfig, type LoadBalancedClient } from '@agentsy/load-balancer';
+import { createLoadBalancedClient, type LoadBalancerConfig, type LoadBalancedClient } from '@agentsy/gateway';
 
 export interface CliProviderConfig {
   providers: LoadBalancerConfig['providers'];

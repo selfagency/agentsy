@@ -36,7 +36,7 @@ For the high-level architecture behind these packages, start with the [Architect
 
 | Package                 | Role                                                     | Status    | Docs                                         |
 | ----------------------- | -------------------------------------------------------- | --------- | -------------------------------------------- |
-| `@agentsy/load-balancer` | Provider pooling, health tracking, and failover routing  | Internal  | [Package page](./packages/load-balancer.md)  |
+| `@agentsy/gateway` | Multi-provider routing, failover, and health tracking  | Internal  | [Package page](./packages/gateway.md)  |
 
 ## Core parsing and shaping utilities
 

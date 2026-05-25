@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/load-balancer": "workspace:*",
+    "@agentsy/gateway": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",

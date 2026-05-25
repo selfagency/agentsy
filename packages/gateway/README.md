@@ -1,4 +1,4 @@
-# @agentsy/load-balancer
+# @agentsy/gateway
 
 Load-balanced provider routing, health tracking, and failover primitives for `@agentsy`.
 

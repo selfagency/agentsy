@@ -21,7 +21,7 @@ This workspace currently contains:
 - `@agentsy/guardrails`
 - `@agentsy/mcp`
 - `@agentsy/memory`
-- `@agentsy/load-balancer`
+- `@agentsy/gateway`
 - `@agentsy/observability`
 - `@agentsy/orchestrator`
 - `@agentsy/plugins`

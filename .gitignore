@@ -254,3 +254,6 @@ fallow-dupes*
 package-lock.json
 test-report.junit.xml
 tmp/
+
+# Temporary files
+.tmp/
