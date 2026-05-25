@@ -186,7 +186,7 @@ describe('createStreamEventAdapter', () => {
     );
 
     expect(onEvent).toHaveBeenCalled();
-    const types = onEvent.mock.calls.map(([e]: [StreamRuntimeEvent]) => e.type);
+    const types = onEvent.mock.calls.map(args => (args[0] as StreamRuntimeEvent).type);
     expect(types).toContain('text-delta');
     expect(types).toContain('done');
   });

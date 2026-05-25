@@ -48,7 +48,11 @@ function buildNoopClient(): LoadBalancedClient {
       return { content: '', model: '', usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } };
     },
     async stream(_request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
-      return new ReadableStream<NormalizedChunk>({ start(controller) { controller.close(); } });
+      return new ReadableStream<NormalizedChunk>({
+        start(controller) {
+          controller.close();
+        }
+      });
     },
     getRoutingState(): RoutingState {
       return routingState;
@@ -67,9 +71,10 @@ function buildNoopClient(): LoadBalancedClient {
 export function createProviderRegistry(config: LoadBalancerConfig): ProviderRegistry {
   const registry = new ProviderRegistry();
   for (const provider of config.providers) {
-    const clientConfig = provider.baseUrl === undefined
-      ? { provider: provider.provider }
-      : { baseUrl: provider.baseUrl, provider: provider.provider };
+    const clientConfig =
+      provider.baseUrl === undefined
+        ? { provider: provider.provider }
+        : { baseUrl: provider.baseUrl, provider: provider.provider };
     registry.register(provider.id, createUniversalClient(clientConfig));
   }
   return registry;
@@ -87,9 +92,13 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
   }
 
   const primaryEntry = registry.get(primary.id);
-  const client = primaryEntry?.client ?? createUniversalClient(primary.baseUrl === undefined
-    ? { provider: primary.provider }
-    : { baseUrl: primary.baseUrl, provider: primary.provider });
+  const client =
+    primaryEntry?.client ??
+    createUniversalClient(
+      primary.baseUrl === undefined
+        ? { provider: primary.provider }
+        : { baseUrl: primary.baseUrl, provider: primary.provider }
+    );
 
   return {
     async complete(request: CompletionRequest): Promise<CompletionResponse> {

@@ -3,7 +3,12 @@
  */
 
 export { createLoadBalancedClient } from './client.js';
-export { AdaptiveStrategyConfigSchema, CircuitBreakerConfigSchema, LoadBalancerConfigSchema, RetryConfigSchema } from './config.js';
+export {
+  AdaptiveStrategyConfigSchema,
+  CircuitBreakerConfigSchema,
+  LoadBalancerConfigSchema,
+  RetryConfigSchema
+} from './config.js';
 export { CircuitBreaker } from './health/circuit-breaker.js';
 export { HealthTracker } from './health/health-tracker.js';
 export { LatencyTracker } from './health/latency-tracker.js';

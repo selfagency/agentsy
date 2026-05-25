@@ -3,7 +3,11 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   clean: true,
   dts: true,
-  entry: ['src/index.ts', 'src/ag-ui/index.ts'],
+  entry: {
+    index: 'src/index.ts',
+    'ag-ui': 'src/ag-ui/index.ts',
+    loop: 'src/loop/index.ts'
+  },
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,

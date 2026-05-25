@@ -36,6 +36,11 @@
       "types": "./dist/plain.d.ts",
       "import": "./dist/plain.js",
       "require": "./dist/plain.cjs"
+    },
+    "./adapters": {
+      "types": "./dist/adapters.d.ts",
+      "import": "./dist/adapters.js",
+      "require": "./dist/adapters.cjs"
     }
   },
   "publishConfig": {

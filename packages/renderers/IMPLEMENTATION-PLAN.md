@@ -43,17 +43,17 @@ This plan defines the production implementation order for `@agentsy/renderers` a
 
 - GOAL-RENDERERS-002: Core adapter and Ink suite implementation.
 
-| Task               | Description                                                                                                                                                   | Completed | Date |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| Task               | Description                                                                                                                                                                                                 | Completed | Date |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-089           | DOGFOOD Phase 2: Establish acid ANSI BBS visual system — semantic palette tokens (palette.ts), chromed frame primitives (frames.ts), ASCII banner support (ascii.ts), reduced-motion fallbacks (motion.ts). |           |      |
-| TASK-072           | DOGFOOD Phase 2: Implement Ink chat/dialog components — transcript (transcript.tsx), message-bubble (message-bubble.tsx), streaming-cursor, token-meter, status-footer. |           |      |
-| TASK-073           | DOGFOOD Phase 2: Implement Ink stream-event components — model-delta, thinking-block (expandable/collapsible), tool-lifecycle (status indicators), approval-state. |           |      |
-| TASK-085           | DOGFOOD Phase 2: Implement Ink provider/model chooser — search-input, provider-list (capability badges), model-select, scope-toggle (local/cloud).            |           |      |
-| TASK-011           | DOGFOOD Phase 2: Implement renderer bridge for CLI streaming — createCliStreamBridge(), renderStreamToInk(), createInkSessionRenderer(). Located in renderers/src/adapters/cli-bridge.ts. |           |      |
-| TASK-RENDERERS-004 | Complete adapter implementations for CLI/plain/browser/vscode contracts.                                                                                      |           |      |
-| TASK-RENDERERS-005 | Implement Ink chat/chooser/diff/document/worktree/terminal components on shared visual system.                                                                |           |      |
-| TASK-RENDERERS-006 | Implement banner/motion system with reduced-motion and low-color fallbacks.                                                                                   |           |      |
-| TASK-RENDERERS-013 | Implement renderer-owned Ink agent-mode picker/search component with provenance badges (`bundled`, `user`, `workspace`, `external`) and calm fallback output. |           |      |
+| TASK-072           | DOGFOOD Phase 2: Implement Ink chat/dialog components — transcript (transcript.tsx), message-bubble (message-bubble.tsx), streaming-cursor, token-meter, status-footer.                                     |           |      |
+| TASK-073           | DOGFOOD Phase 2: Implement Ink stream-event components — model-delta, thinking-block (expandable/collapsible), tool-lifecycle (status indicators), approval-state.                                          |           |      |
+| TASK-085           | DOGFOOD Phase 2: Implement Ink provider/model chooser — search-input, provider-list (capability badges), model-select, scope-toggle (local/cloud).                                                          |           |      |
+| TASK-011           | DOGFOOD Phase 2: Implement renderer bridge for CLI streaming — createCliStreamBridge(), renderStreamToInk(), createInkSessionRenderer(). Located in renderers/src/adapters/cli-bridge.ts.                   |           |      |
+| TASK-RENDERERS-004 | Complete adapter implementations for CLI/plain/browser/vscode contracts.                                                                                                                                    |           |      |
+| TASK-RENDERERS-005 | Implement Ink chat/chooser/diff/document/worktree/terminal components on shared visual system.                                                                                                              |           |      |
+| TASK-RENDERERS-006 | Implement banner/motion system with reduced-motion and low-color fallbacks.                                                                                                                                 |           |      |
+| TASK-RENDERERS-013 | Implement renderer-owned Ink agent-mode picker/search component with provenance badges (`bundled`, `user`, `workspace`, `external`) and calm fallback output.                                               |           |      |
 
 ### Implementation Phase 3
 
@@ -80,11 +80,11 @@ This plan defines the production implementation order for `@agentsy/renderers` a
 
 - GOAL-RENDERERS-004.5: Implement Ink agent picker component for agent mode selection in CLI.
 
-| Task               | Description                                                                                                                                                          | Completed | Date |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-RENDERERS-015 | Implement `AgentPickerComponent` in `src/ink/components/agent-picker/` — searchable list with provenance badges (bundled, user, workspace), arrow-key navigation, Enter to select. |           |      |
+| Task               | Description                                                                                                                                                                           | Completed | Date |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RENDERERS-015 | Implement `AgentPickerComponent` in `src/ink/components/agent-picker/` — searchable list with provenance badges (bundled, user, workspace), arrow-key navigation, Enter to select.    |           |      |
 | TASK-RENDERERS-016 | Define component props interface: `agents: AgentPickerRow[]`, `onSelect(id: string)`, `onCancel()`, `filter: string`. Each row shows name, description, model preference, tool count. |           |      |
-| TASK-RENDERERS-017 | Add renderer integration tests: snapshot for empty, partial, full agent lists; keyboard navigation; non-TTY fallback text rendering.                                 |           |      |
+| TASK-RENDERERS-017 | Add renderer integration tests: snapshot for empty, partial, full agent lists; keyboard navigation; non-TTY fallback text rendering.                                                  |           |      |
 
 ## 3. Acceptance Criteria
 

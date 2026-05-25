@@ -40,6 +40,17 @@ export {
   type RuntimeMemoryInjectionOptions
 } from './memory-injection.js';
 
+// Hook registry and lifecycle events
+export { createRuntimeHookRegistry } from './hooks/index.js';
+export type { HookHandler, HookRegistry, HookResult, RuntimeHookEvent } from './hooks/index.js';
+export type { InputGuardrail, OutputGuardrail, ToolGuardrail, GuardrailResult } from './guardrails/index.js';
+
+// Interruption and checkpoint
+export { createInterruption, resumeFromCheckpoint } from './interruption.js';
+export type { InterruptionCheckpoint } from './interruption.js';
+export { checkpoint, loadCheckpoint, clearCheckpoint } from './checkpoint.js';
+export type { RuntimeCheckpoint } from './checkpoint.js';
+
 export type RuntimeLoopOptions = Omit<BaseRuntimeLoopOptions, 'sessionStore'> & {
   sessionStore?: SessionStore;
 };

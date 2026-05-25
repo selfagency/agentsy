@@ -106,3 +106,10 @@ export {
   type AgentEntry,
   type AgentProvenance
 } from './components/agent-picker/index.tsx';
+
+/* ── Agent renderer (TASK-007) ──────────────────────────────────────── */
+export {
+  createInkAgentRenderer,
+  type InkAgentRendererHandle,
+  type InkAgentRendererOptions
+} from './create-ink-agent-renderer.ts';

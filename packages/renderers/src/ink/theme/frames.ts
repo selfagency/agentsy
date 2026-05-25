@@ -17,7 +17,7 @@ export interface FrameStyle {
   vertical: string;
 }
 
-export const frameStyles: Record<string, FrameStyle> = {
+export const frameStyles = {
   light: {
     topLeft: '┌',
     topRight: '┐',
@@ -50,7 +50,7 @@ export const frameStyles: Record<string, FrameStyle> = {
     horizontal: '─',
     vertical: '│'
   }
-};
+} as const satisfies Record<string, FrameStyle>;
 
 export type FrameStyleName = keyof typeof frameStyles;
 

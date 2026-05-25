@@ -18,7 +18,7 @@ This plan defines the full cross-package architecture for skills discovery, inst
 
 ### 2.1 Three-layer system
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    @agentsy/prompts                          │
 │  Instructions Layer ── Skills Layer ── Conversation History │
@@ -70,7 +70,7 @@ Instructions consume from the unconditional instruction budget (`BASELINE_TOKENS
 
 ### 3.1 Skill discovery roots
 
-```
+```text
 Priority 1 (highest): <project-root>/.agents/          ← project-scoped, version-controlled
 Priority 2:           ~/.agents/                        ← user-scoped global
 Priority 3:           ~/.config/agentsy/skills/         ← config-dir
@@ -82,7 +82,7 @@ Priority 5 (lowest):  bundled package skills             ← shipped defaults
 
 All discovered and merged; highest priority wins on conflict:
 
-```
+```text
 <project-root>/AGENTS.md
 <project-root>/CLAUDE.md
 <project-root>/.github/copilot-instructions.md
@@ -93,7 +93,7 @@ All discovered and merged; highest priority wins on conflict:
 
 ### 3.3 Agent definition discovery roots
 
-```
+```text
 <project-root>/.agents/AGENT.md
 ~/.agents/AGENT.md
 ~/.config/agentsy/agents/AGENT.md
@@ -107,11 +107,9 @@ All discovered and merged; highest priority wins on conflict:
 - `src/skills/discoverer.ts` — `SkillDiscoverer`: walks roots, parses frontmatter only, builds `SkillMetadata[]` index
 - `src/skills/activator.ts` — `SkillActivator`: receives `SkillMetadata[]` + turn intent, returns `ActiveSkill[]` with full body loaded
 - `src/skills/hook.ts` — `createSkillsHook(discoverer, activator)`: returns `prepareStep` callback
-
 - `src/instructions/types.ts` — `InstructionFile` type: `path`, `scope`, `alwaysInject`, `content`, `priority`, `applyTo`
 - `src/instructions/discoverer.ts` — `InstructionsDiscoverer`: walks standard instruction files, returns `InstructionFile[]`
 - `src/instructions/hook.ts` — `createInstructionsHook(discoverer)`: returns `beforeInit` callback
-
 - `src/agents/definition.ts` — `AgentDefinition` Zod schema: `id`, `name`, `description`, `systemPromptTemplate`, `allowedTools`, `memoryScopes`, `orchestrationMode`, `defaultModel`, `hooks`, `source`
 - `src/agents/loader.ts` — `AgentLoader`: discovers `AGENT.md` files, parses frontmatter, merges with built-ins
 - `src/agents/builtins/default.ts` — Built-in agent definitions (default, research, code, plan, superagent)

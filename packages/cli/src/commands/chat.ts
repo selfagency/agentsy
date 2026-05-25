@@ -18,7 +18,8 @@
 
 import { createInterface } from 'node:readline/promises';
 
-import type { CompletionMessage, CompletionRequest, NormalizedChunk } from '@agentsy/types';
+import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
+import type { TurnHandler } from '@agentsy/runtime/loop';
 
 import type { CliIO } from '../index.js';
 import { createMockClient } from '../providers/mock.js';
@@ -144,7 +145,8 @@ export async function runChatCommand(
     stderr(dim(`model=${model}\n`));
   }
 
-  const messages: CompletionMessage[] = [{ role: 'system', content: 'You are a helpful assistant.' }];
+  const handler: TurnHandler = { stream: req => client.stream(req) };
+  const loop = createSimpleTurnLoop({ handler, model, systemPrompt: 'You are a helpful assistant.' });
 
   const rl = createInterface({
     input: process.stdin,
@@ -164,7 +166,7 @@ export async function runChatCommand(
 
       if (trimmed === '/clear') {
         console.clear();
-        messages.length = 1;
+        loop.reset();
         rl.prompt();
         continue;
       }
@@ -180,57 +182,30 @@ export async function runChatCommand(
         continue;
       }
 
-      messages.push({ role: 'user', content: trimmed });
-
       process.stdout.write(`${headers.prefix}\n`);
 
-      let assistantContent = '';
-
       try {
-        const request: CompletionRequest = {
-          messages: [...messages],
-          model,
-          stream: true
-        };
-
-        const stream = await client.stream(request);
-        const reader = stream.getReader();
-
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            break;
-          }
-
-          const chunk = value as NormalizedChunk;
-
-          if (chunk.content) {
-            assistantContent += chunk.content;
-            process.stdout.write(chunk.content);
-          }
-
-          if (chunk.thinking) {
-            process.stdout.write(dim(chunk.thinking));
-          }
-
-          if (chunk.done) {
-            const usageStr = formatUsage(chunk.usage?.inputTokens, chunk.usage?.outputTokens);
+        await loop.run(trimmed, {
+          onText: delta => {
+            process.stdout.write(delta);
+          },
+          onThinking: delta => {
+            process.stdout.write(dim(delta));
+          },
+          onDone: (_finishReason, usage) => {
+            const usageStr = formatUsage(usage?.inputTokens, usage?.outputTokens);
             if (usageStr) {
               process.stdout.write(`\n${dim('\u2500\u2500\u2500')} ${yellow(usageStr)} ${dim('\u2500\u2500\u2500')}\n`);
             }
-            break;
+          },
+          onError: error => {
+            stderr(`\n${dim('[error]')} ${error.message}\n`);
           }
-        }
-
+        });
         process.stdout.write('\n');
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         stderr(`\n${dim('[error]')} ${message}\n`);
-      }
-
-      if (assistantContent) {
-        messages.push({ role: 'assistant', content: assistantContent });
       }
 
       rl.prompt();

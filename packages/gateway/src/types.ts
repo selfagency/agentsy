@@ -1,9 +1,16 @@
+import type { NormalizerProvider, UniversalClient } from '@agentsy/providers';
+import type { CompletionRequest, CompletionResponse, ProviderCapabilities, ProviderRetryPolicy } from '@agentsy/types';
 import { z } from 'zod';
 
-import type { CompletionRequest, CompletionResponse, ProviderCapabilities, ProviderRetryPolicy } from '@agentsy/types';
-import type { NormalizerProvider, UniversalClient } from '@agentsy/providers';
-
-export const StrategyNameSchema = z.enum(['adaptive', 'round-robin', 'weighted', 'least-connections', 'latency', 'priority-fallback', 'cost-based']);
+export const StrategyNameSchema = z.enum([
+  'adaptive',
+  'round-robin',
+  'weighted',
+  'least-connections',
+  'latency',
+  'priority-fallback',
+  'cost-based'
+]);
 export const ProviderStatusSchema = z.enum(['healthy', 'degraded', 'unhealthy', 'unknown']);
 
 export const ProviderEntrySchema = z.object({

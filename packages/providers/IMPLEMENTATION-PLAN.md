@@ -42,20 +42,20 @@ This plan defines the production implementation order for `@agentsy/providers` a
 
 - GOAL-PROVIDERS-002: Core provider infrastructure completion.
 
-| Task               | Description                                                                            | Completed  | Date       |
-| ------------------ | -------------------------------------------------------------------------------------- | ---------- | ---------- |
-| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                           | ✅         | 2026-05-17 |
-| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                     | ⚠️ partial | 2026-05-17 |
-| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. | ✅         | 2026-05-17 |
+| Task               | Description                                                                                                                                                                               | Completed  | Date       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                                                                                                                              | ✅         | 2026-05-17 |
+| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                                                                                                                        | ⚠️ partial | 2026-05-17 |
+| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces.                                                                                                    | ✅         | 2026-05-17 |
 | TASK-008           | DOGFOOD Phase 2: Wire provider request path (minimum OpenAI-compatible + mock provider) with stable adapter interface consumed by runtime. Mock provider built in cli (createMockClient). | ⚠️ partial | 2026-05-25 |
 
 ### Implementation Phase 2.5 — LLM Gateway Integration (DOGFOOD Phase 3.5)
 
 - GOAL-PROVIDERS-002.5: Integrate with `@agentsy/llm-gateway` for multi-provider routing, circuit-breaking, and failover.
 
-| Task               | Description                                                                                                                                                | Completed | Date |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-LB-010        | Update `packages/cli/src/providers/resolve-provider.ts` to call `createLLMGatewayClient(config)` instead of `createUniversalClient()` directly.             |           |      |
+| Task               | Description                                                                                                                                                              | Completed | Date |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-LB-010        | Update `packages/cli/src/providers/resolve-provider.ts` to call `createLLMGatewayClient(config)` instead of `createUniversalClient()` directly.                          |           |      |
 | TASK-PROVIDERS-013 | Expose provider metadata (capabilities, auth state, connectivity, protocol family) in structured form consumed by `@agentsy/models` and `@agentsy/renderers` chooser UI. |           |      |
 
 ### Implementation Phase 3

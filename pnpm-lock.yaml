@@ -320,6 +320,9 @@ importers:
 
   packages/observability:
     dependencies:
+      '@agentsy/types':
+        specifier: workspace:*
+        version: link:../types
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1

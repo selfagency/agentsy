@@ -191,14 +191,16 @@ export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): 
           chunkIndex,
           timestamp: now,
           payload: {
-            finishReason: value.finishReason,
-            usage: value.usage
+            ...(value.finishReason !== undefined ? { finishReason: value.finishReason } : {}),
+            ...(value.usage !== undefined
               ? {
-                  inputTokens: value.usage.inputTokens ?? 0,
-                  outputTokens: value.usage.outputTokens ?? 0,
-                  totalTokens: (value.usage.inputTokens ?? 0) + (value.usage.outputTokens ?? 0)
+                  usage: {
+                    inputTokens: value.usage.inputTokens ?? 0,
+                    outputTokens: value.usage.outputTokens ?? 0,
+                    totalTokens: (value.usage.inputTokens ?? 0) + (value.usage.outputTokens ?? 0)
+                  }
                 }
-              : undefined
+              : {})
           }
         };
       }

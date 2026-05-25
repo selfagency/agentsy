@@ -217,6 +217,11 @@ async function handleChatCommand(rest: readonly string[], io: CliIO): Promise<nu
   return runChatCommand(rest, io);
 }
 
+async function handleTuiCommand(argv: readonly string[], io: CliIO): Promise<number> {
+  const { runTuiCommand } = await import('./commands/tui.js');
+  return runTuiCommand(argv, io);
+}
+
 async function handleContentAddressStatsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
   return runContentAddressStatsCommand(rest, io);
@@ -225,13 +230,22 @@ async function handleContentAddressStatsCommand(rest: readonly string[], io: Cli
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, chat, content-address-stats'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
   );
   return 1;
 }
 
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
   const [command, ...rest] = argv;
+
+  // Default entry-point: no subcommand → Ink TUI agent IDE
+  if (command === undefined) {
+    return handleTuiCommand(argv, io);
+  }
+
+  if (command === 'tui') {
+    return handleTuiCommand(rest, io);
+  }
 
   if (command === 'compress') {
     return await handleCompressCommand(rest, io);

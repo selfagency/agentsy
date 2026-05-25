@@ -73,13 +73,13 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 
 - GOAL-RUNTIME-005: Wire all memory layers as first-class pre-turn and post-turn hooks in the runtime agentic loop.
 
-| Task             | Description                                                                                                                                         | Completed | Date |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| Task             | Description                                                                                                                                          | Completed | Date |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-RUNTIME-013 | Implement `createMemoryPreTurnHook()` in `src/hooks/` — retrieves relevant episodic, semantic, and procedural context and packs into prompt payload. |           |      |
-| TASK-RUNTIME-014 | Implement `createMemoryPostTurnHook()` in `src/hooks/` — captures turn observations for episodic (event log) and semantic (wiki) memory layers.     |           |      |
-| TASK-RUNTIME-015 | Implement `createWikiMemoryHook()` in `src/hooks/` — triggers wiki synthesis summarization when turn count threshold or relevance change is met.    |           |      |
-| TASK-RUNTIME-016 | Export all hook factory functions from `src/hooks/index.ts` for use by orchestrator's builtin hook registry.                                        |           |      |
-| TASK-RUNTIME-017 | Add integration tests: pre-turn context retrieval from all memory layers, post-turn capture triggers, wiki synthesis threshold behavior.            |           |      |
+| TASK-RUNTIME-014 | Implement `createMemoryPostTurnHook()` in `src/hooks/` — captures turn observations for episodic (event log) and semantic (wiki) memory layers.      |           |      |
+| TASK-RUNTIME-015 | Implement `createWikiMemoryHook()` in `src/hooks/` — triggers wiki synthesis summarization when turn count threshold or relevance change is met.     |           |      |
+| TASK-RUNTIME-016 | Export all hook factory functions from `src/hooks/index.ts` for use by orchestrator's builtin hook registry.                                         |           |      |
+| TASK-RUNTIME-017 | Add integration tests: pre-turn context retrieval from all memory layers, post-turn capture triggers, wiki synthesis threshold behavior.             |           |      |
 
 Auto-compaction is a runtime-owned primitive. The runtime owns the compact cycle schedule and calls PreCompact hooks. Memory layer registers a PreCompact handler; it does not own the schedule.
 

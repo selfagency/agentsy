@@ -26,6 +26,11 @@
       "types": "./dist/ag-ui/index.d.ts",
       "import": "./dist/ag-ui/index.js",
       "require": "./dist/ag-ui/index.cjs"
+    },
+    "./loop": {
+      "types": "./dist/loop.d.ts",
+      "import": "./dist/loop.js",
+      "require": "./dist/loop.cjs"
     }
   },
   "scripts": {
