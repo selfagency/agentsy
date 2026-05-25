@@ -2,7 +2,7 @@
 goal: @agentsy/orchestrator production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: orchestrator-maintainers
 status: In progress
 tags: [feature, architecture, orchestrator, planning, autonomy]
@@ -68,6 +68,20 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 | TASK-ORCH-010 | Add regressions for autonomy safety, persistence recovery, and race conditions. |           |      |
 | TASK-ORCH-011 | Align docs and custom-agent guidance with shipped behavior.                     |           |      |
 | TASK-ORCH-012 | Pass package and monorepo release gates.                                        |           |      |
+| TASK-061      | DOGFOOD Phase 4: Integrate orchestrator entrypoints in CLI/runtime path for multi-step plan→act execution. |           |      |
+| TASK-062      | DOGFOOD Phase 4: Add explicit execution modes in CLI (/mode single, /mode orchestrated, /mode autonomous) backed by orchestrator policy profiles. |           |      |
+
+### Implementation Phase 4.5 — Hook registry and agent session orchestration
+
+- GOAL-ORCH-004.5: Implement named hook registry, compileHooks, and createAgentSession for the skills/instructions/agent system.
+
+| Task          | Description                                                                                                                                    | Completed | Date |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-013 | Define `HookDefinition` type (name, event, handler, priority, enabled) and implement `HookRegistry` class in `src/hooks/` — register, unregister, enable, disable, getHandlersForEvent. |           |      |
+| TASK-ORCH-014 | Implement `compileHooks(registry, baseOptions)` in `src/hooks/compile.ts` — iterates all registered hooks, merges handlers into AgentLoopOptions callbacks in priority order.                  |           |      |
+| TASK-ORCH-015 | Register all first-party builtin hooks in `src/hooks/builtins/` — memory pre-turn retrieval, memory post-turn capture, skills lazy-load, instructions injection, budget enforcement, approval, observability. |           |      |
+| TASK-ORCH-016 | Implement `createAgentSession(agentDef, config)` in `src/session.ts` — loads agent definition, builds hook registry, compiles hooks, returns `AgentLoopHandle`.                                             |           |      |
+| TASK-ORCH-017 | Add integration tests: hook lifecycle (register/unregister/disable), compile merge order, builtin hook coverage, agent session creation with all builtin hooks.                                              |           |      |
 
 ## 3. Acceptance Criteria
 

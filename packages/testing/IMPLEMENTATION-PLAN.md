@@ -256,6 +256,14 @@ export function createMockLLM(responses);
 - Add chaos suites for timeout/429/network partition/partial result/DAG mid-failure recovery.
 - Keep external API calls mocked in scenario tests (`FaultInjector`, `vi.fn()`).
 
+### Agent-level evaluation
+
+Agent-level evaluation evaluates the full orchestration loop: session init → hook execution → tool selection → response generation → post-turn hooks. Agent eval tests use baseline models and fixture sessions.
+
+### Session-level assertions
+
+Test framework supports session-level assertions: assert hook call order, assert tool was/wasn't called, assert token budget was respected, assert plan vs execute mode behaved correctly.
+
 ## Sources Synthesized
 
 `agentsy-testing-plan.md`, `owasp-security-testing-1.md`, `alignment-report-5-11-26.md`, `packages/testing/IMPLEMENTATION-PLAN.md`.

@@ -32,6 +32,12 @@ For the high-level architecture behind these packages, start with the [Architect
 | `@agentsy/providers/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
 | `@agentsy/renderers`             | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
 
+## Routing and provider operations packages
+
+| Package                 | Role                                                     | Status    | Docs                                         |
+| ----------------------- | -------------------------------------------------------- | --------- | -------------------------------------------- |
+| `@agentsy/load-balancer` | Provider pooling, health tracking, and failover routing  | Internal  | [Package page](./packages/load-balancer.md)  |
+
 ## Core parsing and shaping utilities
 
 | Package                    | Role                                                       | Status    | Docs                                     |

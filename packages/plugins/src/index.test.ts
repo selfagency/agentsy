@@ -9,7 +9,35 @@ describe('@agentsy/plugins package entrypoints', () => {
     expect(agents).toBeDefined();
   });
 
-  it('currently exposes no concrete agent exports from scaffolded module', () => {
-    expect(Object.keys(agents)).toStrictEqual([]);
+  it('exposes builtin agent manifest exports from agents sub-module', () => {
+    expect(Object.keys(agents)).toContain('researchAgentManifest');
+    expect(Object.keys(agents)).toContain('planAgentManifest');
+    expect(Object.keys(agents)).toContain('agentManifest');
+    expect(Object.keys(agents)).toContain('BUILTIN_AGENT_MANIFESTS');
+  });
+
+  it('exposes manifest type and registry exports from root module', () => {
+    expect(plugins.createAgentManifestRegistry).toBeDefined();
+  });
+
+  it('researchAgentManifest has the correct mode', () => {
+    expect(agents.researchAgentManifest.mode).toBe('research');
+  });
+
+  it('planAgentManifest has the correct mode', () => {
+    expect(agents.planAgentManifest.mode).toBe('plan');
+  });
+
+  it('agentManifest has the correct mode', () => {
+    expect(agents.agentManifest.mode).toBe('agent');
+  });
+
+  it('BUILTIN_AGENT_MANIFESTS contains all three built-in manifests', () => {
+    expect(agents.BUILTIN_AGENT_MANIFESTS).toHaveLength(3);
+  });
+
+  it('createAgentManifestRegistry creates an empty registry', () => {
+    const registry = plugins.createAgentManifestRegistry();
+    expect(registry.list()).toStrictEqual([]);
   });
 });

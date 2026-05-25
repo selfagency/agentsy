@@ -187,6 +187,14 @@ Add framework-specific wrappers as subpath exports:
 - `isStreaming` flag on `UIStore` — `true` while a processor stream is active
 - Tracks pending tool calls
 
+### AG-UI Events
+
+Support AG-UI event protocol for real-time UI updates. Events include: session_start, chunk_received, tool_call_start, tool_call_end, session_end, error. Each event has typed payloads that UI components can react to.
+
+### Optimistic Streaming
+
+UI should render responses optimistically during streaming — show the response container immediately on first token, show tool calls as they execute (not after completion), and show skeleton states during loading. StreamEvent stream drives this.
+
 ## Testing
 
 - `src/ui.test.ts` — unit tests for event sourcing and store

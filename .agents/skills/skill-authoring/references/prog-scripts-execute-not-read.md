@@ -56,6 +56,8 @@ def process_data(input_file, output_format):
 
 ```text
 
+```text
+
 Use this logic to process user's data.
 
 ```text
@@ -80,6 +82,8 @@ Process data using the bundled script:
 python scripts/process.py --input data.csv --format json
 ```
 ```
+
+```text
 
 ```text
 

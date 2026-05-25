@@ -2,7 +2,7 @@
 goal: @agentsy/providers production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: providers-maintainers
 status: In progress
 tags: [feature, architecture, providers, adapters, routing]
@@ -47,6 +47,16 @@ This plan defines the production implementation order for `@agentsy/providers` a
 | TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                           | ✅         | 2026-05-17 |
 | TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                     | ⚠️ partial | 2026-05-17 |
 | TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. | ✅         | 2026-05-17 |
+| TASK-008           | DOGFOOD Phase 2: Wire provider request path (minimum OpenAI-compatible + mock provider) with stable adapter interface consumed by runtime. Mock provider built in cli (createMockClient). | ⚠️ partial | 2026-05-25 |
+
+### Implementation Phase 2.5 — LLM Gateway Integration (DOGFOOD Phase 3.5)
+
+- GOAL-PROVIDERS-002.5: Integrate with `@agentsy/llm-gateway` for multi-provider routing, circuit-breaking, and failover.
+
+| Task               | Description                                                                                                                                                | Completed | Date |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-LB-010        | Update `packages/cli/src/providers/resolve-provider.ts` to call `createLLMGatewayClient(config)` instead of `createUniversalClient()` directly.             |           |      |
+| TASK-PROVIDERS-013 | Expose provider metadata (capabilities, auth state, connectivity, protocol family) in structured form consumed by `@agentsy/models` and `@agentsy/renderers` chooser UI. |           |      |
 
 ### Implementation Phase 3
 
@@ -199,6 +209,14 @@ interface ProviderStrategy {
 | Qwen         | OpenAI/Ollama-compatible | `tool_calls` + `delta`           | Inline tags in `content` | Partial       | Parse `<tool_call>` from content safely |
 | Llama (Meta) | OpenAI/Ollama-compatible | `tool_calls` + `delta`           | N/A                      | No            | Standard OpenAI-compatible behavior     |
 | Granite      | OpenAI-compatible        | `tool_calls` + `delta`           | N/A                      | No            | IBM Granite compatibility path          |
+
+### Capability routing metadata
+
+Expose capability metadata per provider/model for the LLM Gateway's routing layer: supported tool types, context window, modalities (text/image/audio), streaming support, rate limits, latency percentile data.
+
+### Cross-ref LLM Gateway
+
+This package provides the model capability metadata that feeds the LLM Gateway's routing decisions. The Gateway does not live in this package — it consumes provider metadata via a narrow interface in @agentsy/types.
 
 ### Internal contract mapping
 

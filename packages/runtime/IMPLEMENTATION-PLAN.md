@@ -23,6 +23,7 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 - **REQ-RUNTIME-005**: Token budget enforcement fails closed on hard-limit breaches.
 - **SEC-RUNTIME-001**: Sandbox pathways isolate side effects according to policy profile.
 - **SEC-RUNTIME-002**: Approval and execution events are auditable with redacted payloads.
+- **SEC-RUNTIME-003**: Hooks execute under default-deny — no hook runs unless explicitly registered in the HookRegistry. The runtime enforces this through compileHooks() which only activates registered hooks for the current session.
 - **CON-RUNTIME-001**: Multi-step planning remains in `@agentsy/orchestrator`.
 - **CON-RUNTIME-002**: Provider protocol mechanics remain in providers/core.
 
@@ -67,6 +68,20 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 | TASK-RUNTIME-010 | Add stress/failure-mode suites for streaming interruption and tool failures. | ✅        | 2026-05-17 |
 | TASK-RUNTIME-011 | Update docs/examples for operator-safe runtime behavior.                     | ✅        | 2026-05-17 |
 | TASK-RUNTIME-012 | Pass package and monorepo release gates.                                     | ✅        | 2026-05-17 |
+
+### Implementation Phase 5 — Memory hook wiring
+
+- GOAL-RUNTIME-005: Wire all memory layers as first-class pre-turn and post-turn hooks in the runtime agentic loop.
+
+| Task             | Description                                                                                                                                         | Completed | Date |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-013 | Implement `createMemoryPreTurnHook()` in `src/hooks/` — retrieves relevant episodic, semantic, and procedural context and packs into prompt payload. |           |      |
+| TASK-RUNTIME-014 | Implement `createMemoryPostTurnHook()` in `src/hooks/` — captures turn observations for episodic (event log) and semantic (wiki) memory layers.     |           |      |
+| TASK-RUNTIME-015 | Implement `createWikiMemoryHook()` in `src/hooks/` — triggers wiki synthesis summarization when turn count threshold or relevance change is met.    |           |      |
+| TASK-RUNTIME-016 | Export all hook factory functions from `src/hooks/index.ts` for use by orchestrator's builtin hook registry.                                        |           |      |
+| TASK-RUNTIME-017 | Add integration tests: pre-turn context retrieval from all memory layers, post-turn capture triggers, wiki synthesis threshold behavior.            |           |      |
+
+Auto-compaction is a runtime-owned primitive. The runtime owns the compact cycle schedule and calls PreCompact hooks. Memory layer registers a PreCompact handler; it does not own the schedule.
 
 ## 3. Acceptance Criteria
 
@@ -121,6 +136,8 @@ The package fulfills its role by implementing a stateful agent loop with the fol
 3. **Approval Workflows**: Implementing Human-in-the-loop (HITL) gates for destructive actions.
 4. **AG-UI Protocol**: A dedicated subpath (`@agentsy/runtime/ag-ui`) for real-time UI synchronization.
 5. **Hook System**: Allowing extensions to tap into lifecycle events (e.g., `before_tool`, `after_turn`).
+
+**Blast-radius principle:** Hook execution errors are isolated per hook — a failing post-turn hook (e.g., memory persistence) must not crash pre-turn hooks or the main execution loop. Each hook is wrapped in try/catch with individual error reporting.
 
 ## Detailed Functionality
 
@@ -408,6 +425,7 @@ healthCheck(): Promise<HealthStatus>;
     - Approval hooks
     - Monitoring hooks
     - Custom hook registration
+    - Hooks follow a typed taxonomy: PreTurn (read-only observer), PostTurn (side-effecting), PreCompact (compaction budget), PreToolCall (guard/approval), PostToolCall (result logging), OnSessionCreate (initialization), OnSessionEnd (cleanup), OnError (error recovery). Each hook type has a dedicated interface in @agentsy/types.
 
     ### Dependencies (merged from agentic-loop)
 

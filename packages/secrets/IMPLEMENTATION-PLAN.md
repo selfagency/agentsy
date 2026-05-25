@@ -178,6 +178,8 @@ export interface ProviderCredentials {
 }
 ```
 
+Each credential carries an identity context (user, agent, service) so that the same secret store can serve multiple principals with different access levels.
+
 ## Implementation Details
 
 ### Source Precedence
@@ -204,6 +206,7 @@ Sensitive data should be cleared from memory as soon as it is no longer needed. 
 - Secure key derivation for file encryption
 - Platform-specific secure storage APIs
 - Audit trail for secret access (optional)
+- When a credential fails with an auth error, automatically trigger credential rotation and retry once. If rotation also fails, surface a credential-rotation-failed event to observability and fail gracefully.
 
 ### Source Plan References
 
@@ -234,6 +237,8 @@ Sensitive data should be cleared from memory as soon as it is no longer needed. 
 - [ ] Migration tools between stores
 - [ ] Redaction utilities for logging
 - [ ] CLI integration commands
+- [ ] Support dynamic credentials that resolve at time of use rather than at session start. Credential providers may register resolvers that fetch tokens on demand.
+- [ ] Support OAuth 2.1 device authorization flow and client credentials grant for long-running agent sessions. Token refresh must be transparent to the caller.
 
 #### Phase 4: Security Hardening
 

@@ -240,6 +240,10 @@ The system should use `@opentelemetry/api` internally. This allows Agentsy trace
 
 Redaction must happen at the `SpanProcessor` level, ensuring that sensitive data never leaves the local process in plaintext, even if a user incorrectly includes an API key in a prompt.
 
+### OTel Gap
+
+OpenTelemetry integration is a known gap. The events pipeline is currently internal-only. OTel exporters (console, OTLP) will be added in a follow-up phase. Track at REQ-OBS-GAP-001.
+
 ## Sources Synthesized
 
 `agentsy-testing-plan.md`, `agentsy-prd.md`, `alignment-report-5-11-26.md`, `research/INFRASTRUCTURE-ANALYSIS.md`, `packages/observability/IMPLEMENTATION-PLAN.md`.
@@ -373,6 +377,10 @@ satisfaction: number;
         selfCritiques: SelfCritique[];
       };
     }
+
+#### 6. Semantic Quality Events
+
+Emit semantic quality events — not just raw metrics. Events capture: response coherence score, tool-call success rate, hallucination likelihood signals, and user-feedback sentiment when available.
 
 ### Advanced Features
 
@@ -703,6 +711,10 @@ satisfaction: number;
 - **session**: Track user sessions and conversation flow
 - **subagents**: Monitor local agent execution
 - **a2a**: Track remote agent communication
+
+### Session eval hooks
+
+Observability registers hooks at session boundaries (OnSessionCreate, OnSessionEnd) to pre-attach session metadata to all events and to flush/aggregate before session close.
 
 ### Package Rename
 

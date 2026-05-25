@@ -212,6 +212,11 @@ async function handleSandboxDiagnosticsCommand(rest: readonly string[], io: CliI
   return runSandboxDiagnosticsCommand(rest, io);
 }
 
+async function handleChatCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runChatCommand } = await import('./commands/chat.js');
+  return runChatCommand(rest, io);
+}
+
 async function handleContentAddressStatsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
   return runContentAddressStatsCommand(rest, io);
@@ -220,7 +225,7 @@ async function handleContentAddressStatsCommand(rest: readonly string[], io: Cli
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
+    'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, chat, content-address-stats'
   );
   return 1;
 }
@@ -242,6 +247,10 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
   if (command === 'sandbox-diagnostics') {
     return await handleSandboxDiagnosticsCommand(rest, io);
+  }
+
+  if (command === 'chat') {
+    return await handleChatCommand(rest, io);
   }
 
   if (command === 'content-address-stats') {

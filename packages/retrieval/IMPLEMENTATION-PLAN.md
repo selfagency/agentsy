@@ -113,7 +113,7 @@ The package fulfills its role by implementing a high-performance RAG engine:
 1. **Multi-modal Indexing**: Specialized strategies for code (Syntactic/AST), text (Semantic), and web content.
 2. **Hybrid Search**: Fusing SQL precision (filtering by path, type, or tags) with Vector similarity (semantic match).
 3. **Re-ranking**: Using cross-encoders to refine the top-k results for higher precision.
-4. **Chunking Strategies**: Pluggable logic for fixed-size, semantic, and syntactic chunking.
+4. **Chunking Strategies**: Pluggable logic for fixed-size, semantic, and syntactic chunking. Use semantic chunking that respects document boundaries (sections, paragraphs, code blocks) rather than fixed token windows. Embed each chunk independently.
 
 ## Detailed Functionality
 
@@ -130,7 +130,11 @@ The package fulfills its role by implementing a high-performance RAG engine:
 - **Fusion Logic**: Implements RRF (Reciprocal Rank Fusion) to combine results from BM25 (keyword) and Dense Vector (semantic) searches.
 - **Filtering**: Allows agents to restrict search to specific file patterns or time ranges.
 
-### 2.1 Backend strategy and external adapters
+### 2.1 Query Rewriting
+
+Support multi-perspective query rewriting — the original query is expanded into 2-3 variants (e.g., a keyword variant, a natural language variant, a code-aware variant for code queries) to improve recall.
+
+### 2.2 Backend strategy and external adapters
 
 Retrieval should stay local-first by default, with small adapter points for managed backends.
 
@@ -171,6 +175,8 @@ If media analysis becomes a first-class requirement, add a secondary retrieval a
 5. Relationships (e.g., imports/exports) are extracted and indexed as graph edges.
 
 ### 2. The Retrieval Flow
+
+Retrieval follows a 4-stage pipeline: (1) **Query rewriting** — expand/rewrite the raw query for better recall; (2) **Candidate retrieval** — fetch from vector, keyword, and knowledge graph indexes in parallel; (3) **Fusion** — merge and deduplicate results; (4) **Reranking** — apply cross-encoder or LLM-based re-ranker.
 
 1. `@agentsy/runtime` calls `RetrievalEngine.search(query)`.
 2. The engine executes a parallel search:

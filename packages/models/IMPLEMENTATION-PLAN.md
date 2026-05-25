@@ -387,6 +387,10 @@ The recommendation output should be able to hint at the intended runtime family,
 
 The models package must never decide how to spawn the process or manage the upstream server lifecycle.
 
+### 7) Capability deprecation tracking
+
+Track model capability deprecation (e.g., GPT-4 Vision -> GPT-4o Vision, Claude Opus tool style changes). When a capability is deprecated, emit a RecommendationEvent and surface migration guidance to the caller. Deprecation data is stored in the model registry with sunset dates.
+
 ## Implementation Priorities
 
 ### Phase 1 (Weeks 1-3): Contract hardening + deterministic tests

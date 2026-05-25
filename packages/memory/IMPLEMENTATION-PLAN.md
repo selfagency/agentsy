@@ -161,11 +161,13 @@ The package fulfills its role by implementing a hierarchical memory model:
 - honker queue and time-trigger scheduling primitives may be used here as coordination infrastructure, but not as the domain owner of task semantics.
 - Memory should store only promoted durable task knowledge: completed-task summaries, learned procedures, explicit user-pinned backlog items, and long-lived project reminders.
 - Active per-run todos/checklists belong to orchestrator and are snapshotted by session.
+- Enforce a clear boundary between session state (transient, in-memory, per-conversation) and memory (durable, persisted, cross-session). Auto-compaction operates on session state; memory layer is updated post-turn independently.
 
 ### 4. Synthesis & Compression (`src/synthesis/`)
 
 - **Mechanism**: Periodic review of episodic logs to generate or update semantic wiki pages.
 - **Goal**: 75-99% token reduction in long-running sessions via tree-based navigation and delta versioning (RemindB pattern).
+- During compaction, entries are ranked by semantic relevance to the current session context, not by recency. The semantic ranker uses embedding similarity against recent session context.
 
 ### 5. Cache-aware memory reuse (LMCache-inspired)
 
@@ -221,6 +223,8 @@ export interface MemoryStore {
   compact(): Promise<void>;
 }
 ```
+
+Memory layer registers a PreCompact hook handler that the runtime calls before each compact cycle. The handler evaluates which memory entries to retain vs discard based on relevance scoring.
 
 ### MemoryEntry
 

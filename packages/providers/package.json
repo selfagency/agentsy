@@ -41,6 +41,11 @@
       "import": "./dist/pipeline.js",
       "require": "./dist/pipeline.cjs"
     },
+    "./request-path": {
+      "types": "./dist/request-path.d.ts",
+      "import": "./dist/request-path.js",
+      "require": "./dist/request-path.cjs"
+    },
     "./universal-client": {
       "types": "./dist/universal-client.d.ts",
       "import": "./dist/universal-client.js",

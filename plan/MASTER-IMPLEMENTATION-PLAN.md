@@ -82,6 +82,8 @@ Current exports from providers include:
 5. **Rendering and interaction surfaces** — `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`
 6. **Extensibility and policy** — `@agentsy/plugins`, plus planned domains (`connectors`, `guardrails`, `mcp`, `retrieval`)
 
+**Plan mode as first-class execution mode:** Plan mode is a first-class execution mode alongside chat and continue. In plan mode, the orchestrator initializes a session, activates the `--plan` flag, skips tool execution, and returns the plan as structured output. All hooks run in plan mode; tool-call hooks short-circuit.
+
 ### 3.2 Data flow (canonical)
 
 1. Provider outputs normalize via `@agentsy/providers/*`
@@ -310,6 +312,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - Maki tree-sitter tool efficiency in `@agentsy/tools`
 - Role-based orchestration in `@agentsy/orchestrator`
 - Task delegation with isolated history in `@agentsy/runtime`
+- **Auto-compaction runtime primitive:** Auto-compaction is a first-class runtime primitive, not a memory layer concern. The runtime calls PreCompact hook before each compact cycle; the memory layer registers a handler.
 - **ROI:** 60% total cost reduction, 3x faster responses
 
 **Phase 1 (Weeks 1-8): Memory & Coordination Enhancement**
@@ -348,6 +351,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - **ACP integration:** Editor integration server/client patterns (NEW)
 - **Enhanced MCP 1.0:** Dynamic tool loading, enterprise gateway configuration
 - **Skills Protocol:** Modular capability framework (NEW)
+- **Hooks deterministic execution principle:** Hooks must be deterministic and non-side-effecting in pre-turn execution — they are read-only observers that inform routing decisions. Side-effecting hooks (memory persistence, logging) execute only in post-turn phase.
 - **Structured output handler:** adopt schema-first + grammar-backed structured generation patterns from Outlines/llguidance
 - **Other standards:** Ratify identity, AP2 payments (domain-specific)
 

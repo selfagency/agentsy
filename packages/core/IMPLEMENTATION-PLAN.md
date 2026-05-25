@@ -2,7 +2,7 @@
 goal: @agentsy/core production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: core-maintainers
 status: In progress
 tags: [feature, architecture, core, streaming, contracts]
@@ -33,6 +33,7 @@ This plan defines the canonical production implementation order for `@agentsy/co
 
 | Task          | Description                                                          | Completed | Date |
 | ------------- | -------------------------------------------------------------------- | --------- | ---- |
+| TASK-009      | DOGFOOD Phase 2: Wire stream normalization and chunk processing through adapters/normalizers/processor into runtime events. |           |      |
 | TASK-CORE-001 | Freeze normalized chunk/event type contracts and adapter boundaries. |           |      |
 | TASK-CORE-002 | Add compile-time snapshots for processor and normalizer interfaces.  |           |      |
 | TASK-CORE-003 | Document ownership boundaries in package docs and exports map.       |           |      |
@@ -470,3 +471,11 @@ interface ContextManagement {
   };
 }
 ```
+
+### Auto-compaction Primitive
+
+Auto-compaction is elevated from a memory-layer concern to a first-class runtime primitive. The runtime owns the compact cycle; core provides the `compact(session, context)` function that the PreCompact hook calls into.
+
+### BASELINE_TOKENS Constant
+
+Define `BASELINE_TOKENS` as a derived constant computed from model context window minus instruction overhead. This is the token budget available for task reasoning after instruction injection.

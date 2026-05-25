@@ -58,6 +58,11 @@
       "import": "./dist/sse.js",
       "require": "./dist/sse.cjs"
     },
+    "./stream-to-events": {
+      "types": "./dist/stream-to-events.d.ts",
+      "import": "./dist/stream-to-events.js",
+      "require": "./dist/stream-to-events.cjs"
+    },
     "./structured": {
       "types": "./dist/structured.d.ts",
       "import": "./dist/structured.js",

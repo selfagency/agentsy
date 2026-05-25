@@ -2,7 +2,7 @@
 goal: @agentsy/types production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: types-maintainers
 status: In progress
 tags: [feature, architecture, types, contracts, semver]
@@ -33,7 +33,8 @@ This plan defines the production implementation order for `@agentsy/types` as th
 
 | Task           | Description                                                       | Completed | Date |
 | -------------- | ----------------------------------------------------------------- | --------- | ---- |
-| TASK-TYPES-001 | Audit and stabilize exported type surface and versioning markers. |           |      |
+| TASK-TYPES-001 | Audit and stabilize exported type surface and versioning markers. | ✅        | 2026-05-25 |
+| TASK-067       | DOGFOOD: Types-contract stabilization — 17 modules audited, 0 strict-mode violations, +7 TSDoc annotations, duplicate export removed from index.ts, typo fixed in memory.ts. | ✅        | 2026-05-25 |
 | TASK-TYPES-002 | Add type-level tests for invariants and narrowing guarantees.     |           |      |
 | TASK-TYPES-003 | Document ownership boundaries and semver policy.                  |           |      |
 

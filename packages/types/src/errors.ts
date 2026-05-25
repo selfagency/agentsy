@@ -18,6 +18,12 @@ export class AgentsyError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 
+  /**
+   * Serializes the error to a plain JSON object for structured logging
+   * and wire transfer.
+   *
+   * @returns A JSON-serializable object with `name`, `message`, `code`, and `details`.
+   */
   toJSON(): {
     name: string;
     message: string;

@@ -45,11 +45,7 @@ export interface MemoryStore {
 }
 
 /**
- * Path in the agent filesystem.
- */
-
-/**
- * Single entry in the agent filesystem.
+ * Single entry in the agent virtual filesystem.
  */
 export interface AgentFsEntry {
   /** Full path including filename. */
@@ -88,7 +84,7 @@ export interface AgentFsManager {
   list(): AgentFsEntry[];
   /** Check if a path exists. */
   has(path: string): boolean;
-  /** Remote all entries. */
+  /** Remove all entries. */
   clear(): void;
   /** Bulk import existing entries, preserving timestamps. */
   import(entries: AgentFsEntry[]): void;

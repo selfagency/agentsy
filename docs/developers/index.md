@@ -9,6 +9,10 @@ This document covers local development, testing, and release operations for the 
 
 ## Quick Start
 
+### Primary implementation order
+
+The active CLI-first execution order is tracked in [`plan/DOGFOOD-PLAN.md`](../../plan/DOGFOOD-PLAN.md). Use it for phase sequencing, package promotion order, and cross-package dependencies.
+
 ### 1. Install dependencies
 
 ```bash

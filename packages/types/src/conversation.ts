@@ -1,3 +1,10 @@
+/**
+ * Conversation event types for state machine transitions.
+ *
+ * These events drive conversation state transitions in response to LLM
+ * streaming output, tool execution, and user interactions.
+ */
+
 import type { JsonObject } from 'type-fest';
 
 import type { FinishReason, ToolCallState } from './tool-calls.js';

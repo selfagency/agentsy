@@ -923,6 +923,10 @@ export enum ModelName {
 
 **Scope:** Accurate pricing estimation across model endpoints
 
+Support a separate reasoning budget for the model's internal reasoning/chain-of-thought tokens, which is tracked independently of output tokens. The reasoning budget defaults to 25% of the total output budget.
+
+The token counter tracks instruction overhead separately from task tokens. BASELINE_TOKENS represents the remaining budget after all always-injected instructions are accounted for. Include reporting for overhead-vs-reasoning breakdown.
+
 ```typescript
 // packages/tokens/src/budget/cost-estimator.ts
 export interface CostEstimateOptions {
