@@ -45,7 +45,6 @@ const DEFAULT_PRIORITY: ResolutionPriority = {
 function extractPolarity(content: string): number {
   const polarityPatterns = [/\b(?:like|love|enjoy|prefer)s?\b/giu, /\b(?:dislike|hate|avoid|not)s?\b/giu];
   for (let i = 0; i < polarityPatterns.length; i++) {
-    // nosemgrep: numeric array index verified by loop bounds
     if (polarityPatterns[i]?.test(content)) return i + 1;
   }
   return 0;
@@ -67,10 +66,8 @@ function observationsOverlap(a: Observation, b: Observation): boolean {
 }
 
 function scoreObservation(obs: Observation, priority: ResolutionPriority): number {
-  // nosemgrep: sourceMemoryId key is from controlled Observation type, has fallback
-  // NOSONAR: type cast is required by strict TS for Record<WriteHeap, number> index
   const sourceWeight = priority.sourceWeights[obs.sourceMemoryId as WriteHeap] ?? 0.5;
-  const _recencyScore = 1; // We don't have extractedAt age here; caller handles temporal
+  const _recencyScore = 1.0; // We don't have extractedAt age here; caller handles temporal
   const confidenceScore = obs.confidence;
   return sourceWeight * (1 - priority.recencyBias) + confidenceScore * priority.recencyBias;
 }
@@ -92,9 +89,8 @@ function buildRepresentations(group: Observation[]): Representation[] {
 
   // Contradiction view: summarize the conflict
   const contradictionSummary = group.map(o => o.content).join(' vs ');
-  const firstId = group[0];
   representations.push({
-    id: `rep-contra-${firstId?.id ?? 'unknown'}`,
+    id: `rep-contra-${group[0]?.id ?? 'unknown'}`,
     observationIds: group.map(o => o.id),
     view: 'contradiction',
     summary: contradictionSummary,
@@ -105,11 +101,11 @@ function buildRepresentations(group: Observation[]): Representation[] {
 }
 
 function hasNewerWinner(sorted: Observation[], priority: ResolutionPriority): boolean {
-  if (sorted.length === 0) return false;
-  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt).at(0);
-  const highestSource = sorted.at(0);
-  if (!newest || !highestSource) return false;
-  return newest.id !== highestSource.id && priority.recencyBias > 0.5;
+  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt)[0];
+  const highestSource = sorted[0];
+  return (
+    newest !== undefined && highestSource !== undefined && newest.id !== highestSource.id && priority.recencyBias > 0.5
+  );
 }
 
 function determineResolutionMethod(sorted: Observation[], priority: ResolutionPriority): Resolution['method'] {
@@ -145,9 +141,7 @@ function detectContradictionsInternal(observations: Observation[]): Observation[
 
   for (let i = 0; i < observations.length; i++) {
     if (visited.has(i)) continue;
-    const obsI = observations[i];
-    if (!obsI) continue;
-    const group: Observation[] = [obsI];
+    const group: Observation[] = [observations[i] as Observation];
     visited.add(i);
 
     for (let j = i + 1; j < observations.length; j++) {

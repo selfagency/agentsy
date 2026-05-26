@@ -73,7 +73,8 @@ function runInductionSpecialist(observations: Observation[]): string {
 
 function runSurprisalSpecialist(observations: Observation[]): string {
   // Find corrective observations (surprising/contradicting)
-  const firstCorrective = observations.find(o => o.kind === 'corrective');
+  const correctives = observations.filter(o => o.kind === 'corrective');
+  const firstCorrective = correctives[0];
   if (firstCorrective) {
     return `Lesson learned: ${firstCorrective.content} (confidence: ${firstCorrective.confidence.toFixed(2)})`;
   }
@@ -89,9 +90,8 @@ function runTemporalSpecialist(observations: Observation[]): string {
   // Sort by extraction time, look for trends
   const sorted = [...observations].sort((a, b) => a.extractedAt - b.extractedAt);
   if (sorted.length >= 2) {
-    // nosemgrep: [0] is on a non-empty array checked by length >= 2
     const first = sorted[0];
-    const last = sorted.at(-1);
+    const last = sorted[sorted.length - 1];
     if (first && last) {
       return `Temporal trend from "${first.content.slice(0, 40)}..." to "${last.content.slice(0, 40)}..." over ${observations.length} observations.`;
     }
@@ -165,8 +165,7 @@ export function createConsolidationSpecialist(options: ConsolidationSpecialistOp
     const unique = new Map<string, ConsolidationResult>();
     for (const r of results) {
       const key = r.output.slice(0, 60);
-      const existing = unique.get(key);
-      if (!existing || (existing.confidence ?? 0) < r.confidence) {
+      if (!unique.has(key) || (unique.get(key)?.confidence ?? 0) < r.confidence) {
         unique.set(key, r);
       }
     }

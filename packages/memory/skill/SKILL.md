@@ -231,8 +231,8 @@ The engine includes a 5-step learning cycle that runs during `awaken()` when ena
 | Command                                           | Description                         |
 | ------------------------------------------------- | ----------------------------------- |
 | `agentsy-memory init`                             | Initialize memory engine and config |
-| `agentsy-memory mcp`                              | Start MCP server (stdio mode)       |
-| `agentsy-memory mcp --transport http --port 4231` | Start MCP server (HTTP mode)        |
+| `agentsy-memory-mcp`                              | Start MCP server (stdio mode)       |
+| `agentsy-memory-mcp --transport http --port 4231` | Start MCP server (HTTP mode)        |
 
 ## Environment Variables
 

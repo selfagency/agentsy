@@ -1,5 +1,5 @@
-import { createMemoryTier, type MemoryTierLike, type MemoryTierOptions } from './memory-tier.js';
-import type { TierConfig } from './tier-types.js';
+import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
+import type { TierConfig, TierLevel, TierName } from './tier-types.js';
 
 export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
 export type { TierConfig } from './tier-types.js';
@@ -12,8 +12,9 @@ const SENSORY_BUFFER_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: 5_000
 };
 
-export interface SensoryBufferOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
+export interface SensoryBufferOptions {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
+  now?: (() => number) | undefined;
 }
 
 export function createSensoryBuffer(options: SensoryBufferOptions = {}): MemoryTierLike {
@@ -24,5 +25,5 @@ export function createSensoryBuffer(options: SensoryBufferOptions = {}): MemoryT
     name: 'sensory_buffer'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
+  return createMemoryTier({ config, now: options.now });
 }

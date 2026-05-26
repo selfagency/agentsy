@@ -36,7 +36,6 @@ export function computeImportance(item: MemoryItem, factors: ImportanceFactors, 
   const frequencyScore = Math.min(1, item.accessCount / 10);
 
   // Content type: based on writeHeap
-  // nosemgrep: writeHeap key comes from MemoryItem.writeHeap enum, known to exist
   const contentTypeScore = CONTENT_TYPE_WEIGHTS[item.writeHeap] ?? factors.contentTypeWeight;
 
   // Weighted sum

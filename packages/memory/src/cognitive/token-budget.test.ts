@@ -89,7 +89,7 @@ describe('TokenBudget', () => {
     it('multiplies budgets by the factor', () => {
       const budget = createTokenBudget({
         budgets: {},
-        overprovisionFactor: 2
+        overprovisionFactor: 2.0
       });
       expect(budget.max('sensory_buffer')).toBe(400);
       expect(budget.max('long_term_memory')).toBe(20_000);

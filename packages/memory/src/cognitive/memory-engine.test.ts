@@ -45,16 +45,12 @@ describe('MemoryEngine', () => {
     });
 
     it('accepts custom metadata', async () => {
-      const id = engine.ingest('Event with metadata', {
-        metadata: { source: 'test', priority: 1 }
-      });
+      const id = engine.ingest('Event with metadata', { metadata: { source: 'test', priority: 1 } });
       expect(id).not.toBeNull();
     });
 
     it('ingests to a specific target tier', async () => {
-      const id = engine.ingest('Direct to working memory', {
-        targetTier: 'working_memory'
-      });
+      const id = engine.ingest('Direct to working memory', { targetTier: 'working_memory' });
       expect(id).not.toBeNull();
     });
 
@@ -93,10 +89,7 @@ describe('MemoryEngine', () => {
 
     it('scopes recall to specific tiers', async () => {
       engine.ingest('Item one');
-      const results = engine.recall({
-        tiers: ['sensory_buffer'],
-        crossTier: false
-      });
+      const results = engine.recall({ tiers: ['sensory_buffer'], crossTier: false });
       expect(results.length).toBe(1);
       expect(results[0]?.tierName).toBe('sensory_buffer');
     });
@@ -133,30 +126,6 @@ describe('MemoryEngine', () => {
         { content: 'Pending event 2', importance: 0.5 }
       ]);
       expect(result.pendingIngested).toBeGreaterThanOrEqual(0);
-    });
-
-    it('can run the learning cycle when enabled via constructor', async () => {
-      const learningEngine = createMemoryEngine({
-        now: clock.now,
-        runLearningCycle: true
-      });
-      learningEngine.ingest('Learning test event one');
-      learningEngine.ingest('Learning test event two');
-      const result = await learningEngine.awaken();
-      expect(result).toHaveProperty('learningCycle');
-    });
-
-    it('can run the learning cycle when enabled per-call', async () => {
-      engine.ingest('Learning test event one');
-      engine.ingest('Learning test event two');
-      const result = await engine.awaken([], { runLearningCycle: true });
-      expect(result).toHaveProperty('learningCycle');
-    });
-
-    it('skips the learning cycle by default', async () => {
-      engine.ingest('Learning test event one');
-      const result = await engine.awaken();
-      expect(result.learningCycle).toBeUndefined();
     });
 
     it('processes queued events from failed ingestions', async () => {

@@ -2083,7 +2083,7 @@ Stdio-based MCP server using the `@modelcontextprotocol/sdk` package (already a 
 
 ## File Structure Summary
 
-```
+```text
 src/
 ├── cognitive/                    # NEW — Phase 1-4
 │   ├── tier-types.ts             # TierLevel, TierName, TierConfig, MemoryItem, etc.
@@ -2119,7 +2119,7 @@ src/
 
 ## Dependency Map
 
-```
+```text
 cognitive/tier-types  ←── cognitive/memory-tier ←── cognitive/sensory-buffer, sensory-register, working-memory, short-term-memory, long-term-memory
 cognitive/tier-bridge ←── cognitive/memory-tier
 cognitive/compressor  ←── wiki/content-processor, content-addressing/fingerprint
@@ -2848,7 +2848,7 @@ When `runLearningCycle` is true, `awaken()` calls `LearningLoopOrchestrator.runC
 
 ## Updated File Structure Summary
 
-```
+```text
 src/
 ├── cognitive/                    # Phase 1-4
 │   ├── tier-types.ts
@@ -2963,7 +2963,7 @@ entry: {
 
 ## Dependency Map (Updated)
 
-```
+```text
 cognitive/*           ←── cognitive/tier-types, content-addressing/fingerprint, wiki/content-processor, wiki/entity-extractor, wiki/local-embedding-engine, coordination/scheduler, coordination/pub-sub-manager, scope/scope-manager
 cognitive/learning/*  ←── cognitive/tier-types, cognitive/memory-engine, cognitive/importance, cognitive/decay, cognitive/tier-bridge, wiki/entity-extractor, retrieval/retriever, content-addressing/fingerprint
 hooks/*               ←── cognitive/memory-engine, cognitive/tier-types, cognitive/learning/loop-orchestrator

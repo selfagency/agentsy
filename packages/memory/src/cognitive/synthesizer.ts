@@ -25,15 +25,11 @@ function cosineSimilarity(a: number[], b: number[]): number {
   let normA = 0;
   let normB = 0;
   for (let i = 0; i < a.length; i++) {
-    // nosemgrep: numeric array index verified by loop bounds
-    const ai = a[i];
-    // nosemgrep: numeric array index verified by loop bounds
-    const bi = b[i];
-    const aiVal = ai ?? 0;
-    const biVal = bi ?? 0;
-    dot += aiVal * biVal;
-    normA += aiVal * aiVal;
-    normB += biVal * biVal;
+    const ai = a[i] ?? 0;
+    const bi = b[i] ?? 0;
+    dot += ai * bi;
+    normA += ai * ai;
+    normB += bi * bi;
   }
   const denom = Math.sqrt(normA) * Math.sqrt(normB);
   return denom === 0 ? 0 : dot / denom;
@@ -67,18 +63,15 @@ function tryAddToGroup(
 ): void {
   if (assigned.has(j)) return;
 
-  // nosemgrep: j is verified as valid index before calling this function
-  const embeddingJ = embeddings[j];
-  if (!embeddingJ?.embedding) return;
+  const embeddingJ = embeddings[j]?.embedding;
+  if (!embeddingJ) return;
 
-  // nosemgrep: i is from loop index, verified against items.length
-  const embeddingI = embeddings[i];
-  if (!embeddingI?.embedding) return;
+  const embeddingI = embeddings[i]?.embedding;
+  if (!embeddingI) return;
 
-  const sim = cosineSimilarity(embeddingI.embedding, embeddingJ.embedding);
+  const sim = cosineSimilarity(embeddingI, embeddingJ);
   if (sim < threshold) return;
 
-  // nosemgrep: j is verified as valid index before calling this function
   const jItem = items[j];
   if (!jItem) return;
 
@@ -100,8 +93,8 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
     const group: Group = { items: [groupItem], indices: [i] };
     assigned.add(i);
 
-    const embeddingI = embeddings[i];
-    if (!embeddingI?.embedding) {
+    const embeddingI = embeddings[i]?.embedding;
+    if (!embeddingI) {
       groups.push(group);
       continue;
     }

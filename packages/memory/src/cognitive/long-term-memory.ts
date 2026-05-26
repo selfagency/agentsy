@@ -1,5 +1,5 @@
-import { createMemoryTier, type MemoryTierLike, type MemoryTierOptions } from './memory-tier.js';
-import type { TierConfig } from './tier-types.js';
+import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
+import type { TierConfig, TierLevel, TierName } from './tier-types.js';
 
 export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
 export type { TierConfig } from './tier-types.js';
@@ -12,8 +12,9 @@ const LONG_TERM_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   ttlMs: Infinity
 };
 
-export interface LongTermMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
+export interface LongTermMemoryOptions {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
+  now?: (() => number) | undefined;
 }
 
 export function createLongTermMemory(options: LongTermMemoryOptions = {}): MemoryTierLike {
@@ -24,5 +25,5 @@ export function createLongTermMemory(options: LongTermMemoryOptions = {}): Memor
     name: 'long_term_memory'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
+  return createMemoryTier({ config, now: options.now });
 }

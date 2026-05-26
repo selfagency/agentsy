@@ -1,6 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 
-import { initMemory } from '../init.js';
+import { createMemoryEngine } from '../cognitive/memory-engine.js';
+import { loadConfig } from '../config.js';
+import { createMemoryMCPServer } from '../mcp/server.js';
 
 export default class Mcp extends Command {
   static readonly description = 'Start the MCP memory server (stdio or http)';
@@ -31,38 +33,29 @@ export default class Mcp extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(Mcp);
 
-    const result = await initMemory({
-      config: {
-        mcp: {
-          transport: flags.transport as 'stdio' | 'http',
-          port: flags.port,
-          logLevel: flags['log-level'] as 'debug' | 'info' | 'warn' | 'error'
-        }
+    const config = loadConfig({
+      mcp: {
+        transport: flags.transport as 'stdio' | 'http',
+        port: flags.port,
+        logLevel: flags['log-level'] as 'debug' | 'info' | 'warn' | 'error'
       }
     });
 
-    this.log(`✓ MCP server ready (${flags.transport})`);
-    this.log(`  DB: ${result.config.db.path}`);
-    if (result.wiki) this.log('  Wiki: enabled');
-    if (result.knowledgeBase) this.log('  Knowledge base: enabled');
-    if (result.tursoSyncEngine) this.log('  Turso sync: enabled');
+    const engine = createMemoryEngine();
+    const server = await createMemoryMCPServer(engine, config.mcp);
 
-    // Handle graceful shutdown — close server and let process exit naturally.
-    // Avoid this.exit() which throws oclif ExitError even for code 0.
+    // Handle graceful shutdown
     let shuttingDown = false;
     const shutdown = async (): Promise<void> => {
       if (shuttingDown) return;
       shuttingDown = true;
-      if ('server' in result) {
-        await result.server.close();
-      }
+      await server.close();
+      this.exit(0);
     };
 
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
 
-    if ('server' in result) {
-      await result.server.start();
-    }
+    await server.start();
   }
 }

@@ -1,15 +1,9 @@
 // MCP stdio server — lightweight JSON-RPC 2.0 transport over stdin/stdout
 // No dependency on @modelcontextprotocol/sdk (Zod v4 heavy); uses protocol.ts
 
-import { createToolAuditor } from '../agentfs/tool-auditor.js';
 import type { MemoryEngine } from '../cognitive/memory-engine.js';
-import type { MemoryDatabase } from '../database/connection.js';
-import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
-import type { WikiManager } from '../wiki/wiki-manager.js';
 import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOptions } from './protocol.js';
 import { createMemoryMcpTools } from './tools.js';
-
-const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export interface MemoryMCPServerOptions {
   /** Transport mode. Default: 'stdio' */
@@ -24,15 +18,6 @@ export interface MemoryMCPServerOptions {
   syncAuthToken?: string;
   /** Log level. Default: 'info' */
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
-  /** Optional database connection for tool call auditing. */
-  db?: MemoryDatabase | undefined;
-}
-
-export interface CreateMemoryMCPServerInput {
-  engine: MemoryEngine;
-  wiki?: WikiManager | undefined;
-  kb?: KnowledgeBaseManager | undefined;
-  options?: MemoryMCPServerOptions | undefined;
 }
 
 export interface MemoryMCPServer {
@@ -48,33 +33,11 @@ export interface MemoryMCPServer {
  */
 export async function createMemoryMCPServer(
   engine: MemoryEngine,
-  options?: MemoryMCPServerOptions
-): Promise<MemoryMCPServer>;
-export async function createMemoryMCPServer(input: CreateMemoryMCPServerInput): Promise<MemoryMCPServer>;
-export async function createMemoryMCPServer(
-  engineOrInput: MemoryEngine | CreateMemoryMCPServerInput,
-  maybeOptions?: MemoryMCPServerOptions
+  options: MemoryMCPServerOptions = {}
 ): Promise<MemoryMCPServer> {
-  let engine: MemoryEngine;
-  let wiki: WikiManager | undefined;
-  let kb: KnowledgeBaseManager | undefined;
-  let options: MemoryMCPServerOptions;
+  const { transport = 'stdio', port = 4231, logLevel = 'info' } = options;
 
-  if ('engine' in engineOrInput) {
-    engine = engineOrInput.engine;
-    wiki = engineOrInput.wiki;
-    kb = engineOrInput.kb;
-    options = engineOrInput.options ?? {};
-  } else {
-    engine = engineOrInput;
-    options = maybeOptions ?? {};
-  }
-
-  const { transport = 'stdio', port = 4231, logLevel = 'info', db } = options;
-
-  const { definitions, handlers } = createMemoryMcpTools({ engine, wiki, kb });
-
-  const auditor = db ? createToolAuditor({ db }) : null;
+  const { definitions, handlers } = createMemoryMcpTools(engine);
 
   const serverOptions: McpServerOptions = {
     name: 'agentsy-memory',
@@ -85,8 +48,7 @@ export async function createMemoryMCPServer(
         if (!handler) {
           throw new Error(`Missing handler for tool: ${name}`);
         }
-        const wrappedHandler = auditor ? auditor(name, handler) : handler;
-        return [name, { definition: def, handler: wrappedHandler }];
+        return [name, { definition: def, handler }];
       })
     )
   };
@@ -102,7 +64,6 @@ export async function createMemoryMCPServer(
     warn: 2,
     error: 3
   };
-  // nosemgrep: logLevel is from MemoryConfig type with safe fallback
   const currentLevel = LOG_LEVELS[logLevel] ?? 1;
 
   function log(level: string, msg: string) {
@@ -130,7 +91,7 @@ export async function createMemoryMCPServer(
           const result = await mcpServer.handleMessage(msg);
 
           if (result) {
-            process.stdout.write(`${JSON.stringify(result)}\n`);
+            process.stdout.write(JSON.stringify(result) + '\n');
           }
         } catch (err) {
           const errorResp = {
@@ -141,7 +102,7 @@ export async function createMemoryMCPServer(
               message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
             }
           };
-          process.stdout.write(`${JSON.stringify(errorResp)}\n`);
+          process.stdout.write(JSON.stringify(errorResp) + '\n');
         }
       });
 
@@ -161,23 +122,7 @@ export async function createMemoryMCPServer(
 
         if (req.method === 'POST' && req.url === '/message') {
           const chunks: Buffer[] = [];
-          let totalSize = 0;
           for await (const chunk of req) {
-            totalSize += (chunk as Buffer).length;
-            if (totalSize > MAX_BODY_SIZE) {
-              res.writeHead(413, { 'Content-Type': 'application/json' });
-              res.end(
-                JSON.stringify({
-                  jsonrpc: '2.0',
-                  id: null,
-                  error: {
-                    code: -32700,
-                    message: 'Request body exceeds maximum size of 10 MB'
-                  }
-                })
-              );
-              return;
-            }
             chunks.push(chunk as Buffer);
           }
           const body = Buffer.concat(chunks).toString('utf-8');

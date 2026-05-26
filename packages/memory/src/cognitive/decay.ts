@@ -34,9 +34,7 @@ const TIER_HALF_LIVES: Record<TierName, keyof DecayConfig> = {
 };
 
 function getHalfLife(tier: TierName, config: DecayConfig): number {
-  // nosemgrep: tier key comes from TierName enum, verified to exist in TIER_HALF_LIVES
   const key = TIER_HALF_LIVES[tier];
-  // nosemgrep: key is a known keyof DecayConfig, safe to access
   return config[key] ?? Infinity;
 }
 

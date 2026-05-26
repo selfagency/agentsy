@@ -37,27 +37,20 @@ Environment variables:
   const options: InitOptions = {};
 
   for (let i = 0; i < args.length; i++) {
-    // nosemgrep: args[i] is from process.argv with loop bounds check
     const arg = args[i];
     switch (arg) {
       case '--transport': {
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const transportVal = args[++i];
-        if (transportVal && typeof transportVal === 'string') {
-          options.config.mcp.transport = transportVal as 'stdio' | 'http';
-        }
+        if (transportVal) options.config.mcp.transport = transportVal as 'stdio' | 'http';
         break;
       }
       case '--port': {
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const portVal = args[++i];
-        if (portVal && typeof portVal === 'string') {
-          options.config.mcp.port = Number.parseInt(portVal, 10);
-        }
+        if (portVal) options.config.mcp.port = parseInt(portVal, 10);
         break;
       }
       case '--skip-mcp':

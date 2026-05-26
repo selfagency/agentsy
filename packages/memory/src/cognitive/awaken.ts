@@ -1,5 +1,3 @@
-import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
-import type { WikiManager } from '../wiki/wiki-manager.js';
 import type { DecayedItem } from './decay.js';
 import {
   createLearningLoopOrchestrator,
@@ -62,8 +60,6 @@ export interface AwakenDeps {
   budgetRelease: (tier: TierName, tokens: number) => void;
   ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
   getAllItems?: (() => MemoryItem[]) | undefined;
-  wiki?: WikiManager | undefined;
-  knowledgeBase?: KnowledgeBaseManager | undefined;
 }
 
 interface DecayCounts {
@@ -99,7 +95,6 @@ function reclaimBudgetForDiscarded(results: DecayedItem[], budgetRelease: Awaken
 
 function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): void {
   for (const result of results) {
-    // nosemgrep: result.tier is from DecayedItem, comes from controlled iteration
     const currentTier = tiers[result.tier];
     if (!currentTier) continue;
 
@@ -107,9 +102,7 @@ function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): vo
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const nextIdx = currentIdx + 1;
       if (nextIdx < TIER_ORDER.length) {
-        // nosemgrep: nextIdx is a numeric array index verified by length check
         const nextTierName = TIER_ORDER[nextIdx];
-        // nosemgrep: nextTierName comes from TIER_ORDER enum, not user-controlled
         const nextTier = nextTierName ? tiers[nextTierName] : undefined;
         if (nextTier) {
           currentTier.promote(1, nextTier);
@@ -119,9 +112,7 @@ function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): vo
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const prevIdx = currentIdx - 1;
       if (prevIdx >= 0) {
-        // nosemgrep: prevIdx is a numeric array index verified by bounds check
         const prevTierName = TIER_ORDER[prevIdx];
-        // nosemgrep: prevTierName comes from TIER_ORDER enum, not user-controlled
         const prevTier = prevTierName ? tiers[prevTierName] : undefined;
         if (prevTier) {
           currentTier.demote(1, prevTier);
@@ -160,9 +151,7 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   let summarized = 0;
 
   for (let i = 0; i < TIER_ORDER.length - 1; i++) {
-    // nosemgrep: numeric array index verified by loop bounds
     const tierName = TIER_ORDER[i];
-    // nosemgrep: numeric array index verified by loop bounds
     const nextTierName = TIER_ORDER[i + 1];
     if (!tierName || !nextTierName) continue;
 
@@ -176,7 +165,6 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
     if (utilizationRatio >= tier.config.consolidationThreshold) {
       const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
       const actuallyPromoted = tier.promote(promoteCount, nextTier);
-      // nosemgrep: numeric index from loop counter, bounds-checked by conditions
       if (i < 2) {
         compressed += actuallyPromoted;
       } else if (i < 3) {
@@ -207,7 +195,6 @@ function buildGetAllItems(tiers: AwakenDeps['tiers']): () => MemoryItem[] {
   return () => {
     const items: MemoryItem[] = [];
     for (const tierName of TIER_ORDER) {
-      // nosemgrep: tierName comes from TIER_ORDER enum, not user-controlled
       const tier = tiers[tierName];
       if (!tier) continue;
       items.push(...tier.items());
@@ -231,9 +218,7 @@ async function runLearningCycle(
   return orchestrator.runCycle(
     {
       getNewMemories: (limit: number) => allItems.slice(0, limit),
-      getLTMMemories: () => [...(ltmTier?.items() ?? [])],
-      wiki: deps.wiki,
-      knowledgeBase: deps.knowledgeBase
+      getLTMMemories: () => [...(ltmTier?.items() ?? [])]
     },
     options.learningConfig
   );

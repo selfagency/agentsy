@@ -37,17 +37,17 @@ export interface KnowledgeGraphOptions {
   entityExtractor?: EntityExtractor;
 }
 
-function nodeKey(label: string): string {
-  return fingerprintContent(label.toLowerCase()).value;
-}
-
-function edgeKey(from: string, to: string, relation: string): string {
-  return `${from}|${relation}|${to}`;
-}
-
 export function createKnowledgeGraph(_options: KnowledgeGraphOptions = {}): KnowledgeGraph {
   const nodes = new Map<string, GraphNode>();
   const edges = new Map<string, GraphEdge>();
+
+  function nodeKey(label: string): string {
+    return fingerprintContent(label.toLowerCase()).value;
+  }
+
+  function edgeKey(from: string, to: string, relation: string): string {
+    return `${from}|${relation}|${to}`;
+  }
 
   return {
     addNode(node: GraphNode): void {
@@ -84,10 +84,7 @@ export function createKnowledgeGraph(_options: KnowledgeGraphOptions = {}): Know
       }
 
       walk(entityId, 0);
-      return {
-        nodes: [...resultNodes.values()],
-        edges: [...resultEdges.values()]
-      };
+      return { nodes: [...resultNodes.values()], edges: [...resultEdges.values()] };
     },
 
     merge(other: KnowledgeGraph): number {
@@ -156,7 +153,6 @@ export function createGraphBuilder(options: GraphBuilderOptions = {}): GraphBuil
     };
 
     for (const entity of extraction.entities) {
-      // nosemgrep: entity.kind lookup in kindMap with safe fallback to 'unknown'
       const kind = kindMap[entity.kind] ?? 'unknown';
       graph.addNode({
         id: fingerprintContent(entity.name.toLowerCase()).value,
