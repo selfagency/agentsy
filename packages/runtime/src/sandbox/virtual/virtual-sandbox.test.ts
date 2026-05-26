@@ -33,9 +33,7 @@ describe('VirtualSandbox', () => {
       unref: vi.fn()
     };
 
-    vi.mocked(Worker).mockImplementation(function () {
-      return mockWorkerInstance as unknown as Worker;
-    });
+    vi.mocked(Worker).mockImplementation(() => mockWorkerInstance as unknown as Worker);
 
     vi.useFakeTimers();
   });

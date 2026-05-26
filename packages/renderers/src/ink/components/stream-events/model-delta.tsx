@@ -3,12 +3,12 @@ import { Box, Text } from 'ink';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export interface ModelDeltaProps {
-  /** Text delta from the model. */
-  readonly text: string;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
   /** Whether this is an incremental delta (vs full text). */
   readonly isDelta: boolean;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Text delta from the model. */
+  readonly text: string;
 }
 
 /**

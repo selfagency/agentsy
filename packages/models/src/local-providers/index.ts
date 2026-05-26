@@ -3,7 +3,6 @@
  */
 
 export { probeOllama } from './ollama.js';
-export { probeVllm } from './vllm.js';
 export type {
   LocalModelInfo,
   LocalProviderDiscoveryResult,
@@ -11,6 +10,7 @@ export type {
   OllamaProbeOptions,
   VllmProbeOptions
 } from './types.js';
+export { probeVllm } from './vllm.js';
 
 import { probeOllama } from './ollama.js';
 import type { LocalProviderDiscoveryResult, OllamaProbeOptions, VllmProbeOptions } from './types.js';
@@ -20,14 +20,11 @@ import { probeVllm } from './vllm.js';
  * Discover all available local providers (Ollama, vLLM)
  */
 export async function discoverLocalProviders(
-  options: {
-    ollama?: OllamaProbeOptions;
-    vllm?: VllmProbeOptions;
-  } = {}
+  options: { ollama?: OllamaProbeOptions; vllm?: VllmProbeOptions } = {}
 ): Promise<LocalProviderDiscoveryResult> {
   const [ollama, vllm] = await Promise.all([probeOllama(options.ollama), probeVllm(options.vllm)]);
 
-  const discovered = [];
+  const discovered: { provider: 'ollama' | 'vllm'; models: string[] }[] = [];
 
   if (ollama.available && ollama.models.length > 0) {
     discovered.push({

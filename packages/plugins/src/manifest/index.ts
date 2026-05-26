@@ -8,12 +8,11 @@
  * @module @agentsy/plugins/manifest
  */
 
+export { createAgentManifestRegistry } from './registry.js';
 export type {
-  AgentMode,
   AgentManifest,
   AgentManifestRegistry,
+  AgentMode,
   ExternalInstallation,
   PluginProvenance
 } from './types.js';
-
-export { createAgentManifestRegistry } from './registry.js';

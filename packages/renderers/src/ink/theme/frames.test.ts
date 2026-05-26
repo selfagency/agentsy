@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { topBorder, bottomBorder, separatorLine, inkBorderStyle, frameStyles } from './frames.ts';
-import { defaultAcidPalette } from './palette.ts';
+import { bottomBorder, frameStyles, inkBorderStyle, separatorLine, topBorder } from './frames.ts';
 
 describe('frames', () => {
   it('topBorder builds with title', () => {

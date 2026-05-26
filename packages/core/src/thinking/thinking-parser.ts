@@ -1,7 +1,7 @@
 /** Options for customising the thinking tag pair recognised by `ThinkingParser`. */
 export interface ThinkingParserOptions {
-  openingTag?: string;
   closingTag?: string;
+  openingTag?: string;
 }
 
 export type ThinkingTagPair = readonly [openingTag: string, closingTag: string];
@@ -111,6 +111,9 @@ export class ThinkingParser {
       }
       case 'thinkingDone': {
         return ['', acc];
+      }
+      default: {
+        break;
       }
     }
 
@@ -246,6 +249,9 @@ export class ThinkingParser {
 
       case 'thinkingDone': {
         return this._eatThinkingDone();
+      }
+      default: {
+        break;
       }
     }
 

@@ -6,12 +6,12 @@ import { createLocalEmbeddingEngine } from './wiki/local-embedding-engine.js';
 import type { WikiManager } from './wiki/wiki-manager.js';
 
 export interface UnifiedMemoryQuery {
-  query: string;
-  limit?: number;
+  includeRAG?: boolean;
   includeTiers?: TierName[] | false;
   includeWiki?: boolean;
-  includeRAG?: boolean;
+  limit?: number;
   minImportance?: number;
+  query: string;
   weights?: {
     tierMemory: number;
     wiki: number;
@@ -20,31 +20,35 @@ export interface UnifiedMemoryQuery {
 }
 
 export interface UnifiedMemoryResult {
-  source: 'tier' | 'wiki' | 'rag';
-  id: string;
-  title?: string;
-  content: string;
-  score: number;
-  tier?: TierName;
-  pageId?: string;
   citations?: RAGEvidenceCitation[];
+  content: string;
+  id: string;
+  pageId?: string;
+  score: number;
+  source: 'tier' | 'wiki' | 'rag';
+  tier?: TierName;
+  title?: string;
 }
 
 function getWeightForSource(
   source: UnifiedMemoryResult['source'],
   weights: NonNullable<UnifiedMemoryQuery['weights']>
 ): number {
-  if (source === 'tier') return weights.tierMemory;
+  if (source === 'tier') {
+    return weights.tierMemory;
+  }
   return weights[source] ?? 0.3;
 }
 
-async function queryTiers(
+function queryTiers(
   engine: MemoryEngine,
   query: UnifiedMemoryQuery,
   results: UnifiedMemoryResult[],
   limit: number
-): Promise<void> {
-  if (query.includeTiers === false) return;
+): void {
+  if (query.includeTiers === false) {
+    return;
+  }
 
   const recallOpts: MemoryEngineRecallOptions = {
     crossTier: false,
@@ -78,7 +82,9 @@ async function queryWiki(
   results: UnifiedMemoryResult[],
   limit: number
 ): Promise<void> {
-  if (query.includeWiki === false) return;
+  if (query.includeWiki === false) {
+    return;
+  }
 
   const embeddingEngine = createLocalEmbeddingEngine({ dimensions: 64 });
   const wikiResults = await wiki.searchHybrid(query.query, embeddingEngine.embed(query.query), limit);
@@ -103,7 +109,9 @@ async function queryRag(
   results: UnifiedMemoryResult[],
   limit: number
 ): Promise<void> {
-  if (query.includeRAG === false) return;
+  if (query.includeRAG === false) {
+    return;
+  }
 
   const ragResults = await kb.search({
     query: query.query,
@@ -145,7 +153,7 @@ export async function queryUnified(
   const results: UnifiedMemoryResult[] = [];
   const limit = query.limit ?? 10;
 
-  await queryTiers(engine, query, results, limit);
+  queryTiers(engine, query, results, limit);
   await queryWiki(wiki, query, results, limit);
   await queryRag(kb, query, results, limit);
 

@@ -1,3 +1,4 @@
+import type { StreamChunk } from '@agentsy/core';
 import { describe, expect, it } from 'vitest';
 
 import { isStepCount } from './agent/index.js';
@@ -24,7 +25,7 @@ describe(createOrchestratorLoop, () => {
     expect(loop.listScheduledTasks({ lane: 'nightly' })).toHaveLength(1);
     expect(loop.cancelScheduledTask('task-1')?.status).toBe('cancelled');
 
-    const parts = [];
+    const parts: StreamChunk[] = [];
     for await (const part of loop.run([])) {
       parts.push(part);
     }

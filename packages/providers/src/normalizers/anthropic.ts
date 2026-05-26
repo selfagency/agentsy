@@ -5,7 +5,7 @@ import { isObject, toNumber } from './utils.js';
 
 function mapAnthropicStopReason(reason: string | null): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'end_turn') {
     return 'stop';

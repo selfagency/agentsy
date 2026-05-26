@@ -24,6 +24,11 @@ import type { InkRuntimeListeners } from '../ink/ink-runtime-state.js';
  * `@agentsy/runtime`.
  */
 export interface CliStreamBridgeEvents {
+  onDone?: (
+    finishReason?: string,
+    usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number }
+  ) => void;
+  onError?: (error: Error) => void;
   onText?: (delta: string) => void;
   onThinking?: (delta: string) => void;
   /**
@@ -32,11 +37,6 @@ export interface CliStreamBridgeEvents {
    * value accumulated from the provider stream.
    */
   onToolCall?: (id: string, name: string, args: unknown) => void;
-  onDone?: (
-    finishReason?: string,
-    usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number }
-  ) => void;
-  onError?: (error: Error) => void;
 }
 
 // ── Factory ──────────────────────────────────────────────────────────────────
@@ -58,10 +58,9 @@ export interface CliStreamBridgeEvents {
  */
 export function createCliStreamBridge(listeners: InkRuntimeListeners): CliStreamBridgeEvents {
   return {
-    onDone(finishReason) {
+    onDone(_finishReason) {
       listeners.done();
       // finishReason / usage not consumed by InkRuntimeListeners — no-op
-      void finishReason;
     },
 
     onError(error) {

@@ -1,7 +1,6 @@
 import type { Skill } from '../types/index.js';
 
 export interface SkillMatchResult {
-  score: number;
   matchedSkills: string[];
   missingSkills: string[];
   proficiencyGaps: {
@@ -9,6 +8,7 @@ export interface SkillMatchResult {
     required: string;
     available: string;
   }[];
+  score: number;
 }
 
 export type ProficiencyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';

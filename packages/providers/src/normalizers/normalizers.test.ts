@@ -7,13 +7,13 @@ import { normalizeGeminiChunk } from './gemini.js';
 import { normalizeHuggingFaceTGIChunk } from './hf-tgi.js';
 import { normalizeMistralChunk } from './mistral.js';
 import { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
+import { normalizeOpenAIChatChunk } from './openai.js';
 import {
-  OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS,
   isOpenAICompatibleNormalizerProvider,
-  normalizeOpenAICompatibleChunk
+  normalizeOpenAICompatibleChunk,
+  OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS
 } from './openai-compatible.js';
 import { normalizeOpenAIResponseEvent } from './openai-responses.js';
-import { normalizeOpenAIChatChunk } from './openai.js';
 import { normalizeZAiChunk } from './zai.js';
 
 // ---------------------------------------------------------------------------
@@ -1437,7 +1437,6 @@ describe('normalizeHuggingFaceTGIChunk', () => {
   });
 
   it('sets done=true for stop_sequence and length finish reasons', () => {
-    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const make = (finish_reason: string) =>
       normalizeHuggingFaceTGIChunk({
         details: { finish_reason, generated_tokens: 1, input_length: 5 },

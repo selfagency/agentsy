@@ -1,22 +1,22 @@
 import type { CancellationToken, ChatResponseStream, Location, Uri } from 'vscode';
 
 export interface FileTreeEntry {
+  children?: FileTreeEntry[];
   name: string;
   path?: string;
-  children?: FileTreeEntry[];
 }
 
 /**
  * Extended ChatResponseStream interface with additional VS Code-specific overloads.
  */
 export interface VSCodeChatResponseStream extends ChatResponseStream {
-  markdown(value: string, metadata?: Record<string, unknown>): void;
   anchor(value: Uri | Location, title?: string): void;
   button(command: string | { command: string; title: string; arguments?: unknown[] }): void;
   filetree(value: FileTreeEntry[], baseUri: Uri, options?: { showRoot?: boolean }): void;
+  markdown(value: string, metadata?: Record<string, unknown>): void;
   progress(value: string, context?: { step?: number; total?: number }): void;
-  reference(value: Uri | Location, iconPath?: Uri): void;
   push(part: unknown, options?: { validate?: boolean }): void;
+  reference(value: Uri | Location, iconPath?: Uri): void;
 }
 
 /**
@@ -39,25 +39,39 @@ export function createVSCodeChatResponseStream(cancellationToken: CancellationTo
 
   const stream: VSCodeChatResponseStream = {
     anchor: (_value: Uri | Location, _title?: string) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     },
     button: (_command: string | { command: string; title: string; arguments?: unknown[] }) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     },
     filetree: (_value: FileTreeEntry[], _baseUri: Uri, _options?: { showRoot?: boolean }) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     },
     markdown: (_value: string, _metadata?: Record<string, unknown>) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     },
     progress: (_value: string, _context?: { step?: number; total?: number }) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     },
     push: (_part: unknown, _options?: { validate?: boolean }) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     },
     reference: (_value: Uri | Location, _iconPath?: Uri) => {
-      runIfActive(() => {});
+      runIfActive(() => {
+        /* noop */
+      });
     }
   };
 

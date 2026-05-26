@@ -2,9 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
-
-import { runRetrievalBenchmark } from './benchmarks/retrieval-quality.js';
 import type { RetrievalBenchmarkDocument } from './benchmarks/retrieval-quality.js';
+import { runRetrievalBenchmark } from './benchmarks/retrieval-quality.js';
 
 async function loadCorpus(): Promise<RetrievalBenchmarkDocument[]> {
   const currentDir = import.meta.dirname;

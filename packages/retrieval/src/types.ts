@@ -1,18 +1,18 @@
 export type ChunkingStrategy = 'semantic' | 'fixed' | 'ast';
 
 export interface Chunk {
-  id: string;
   content: string;
+  id: string;
   metadata: ChunkMetadata;
 }
 
 export interface ChunkMetadata {
+  createdAt?: Date;
+  endLine: number;
+  language?: string;
   source: string;
   startLine: number;
-  endLine: number;
   strategy: ChunkingStrategy;
-  language?: string;
-  createdAt?: Date;
   updatedAt?: Date;
 }
 
@@ -35,9 +35,9 @@ export const _ChunkMetadata: ChunkMetadata = {
 };
 
 export interface DataSource {
-  type: 'file' | 'url' | 'repository' | 'database';
-  path?: string;
   content?: string;
+  path?: string;
+  type: 'file' | 'url' | 'repository' | 'database';
 }
 
 export const _DataSource: DataSource = {
@@ -45,10 +45,10 @@ export const _DataSource: DataSource = {
 };
 
 export interface RetrievalQuery {
+  embedding?: number[];
+  minSimilarity?: number;
   query: string;
   topK?: number;
-  minSimilarity?: number;
-  embedding?: number[];
 }
 
 export const _RetrievalQuery: RetrievalQuery = {
@@ -57,8 +57,8 @@ export const _RetrievalQuery: RetrievalQuery = {
 
 export interface SearchResult {
   documents: SearchDocument[];
-  total: number;
   queryTime: number;
+  total: number;
 }
 
 export const _SearchResult: SearchResult = {
@@ -68,9 +68,9 @@ export const _SearchResult: SearchResult = {
 };
 
 export interface SearchDocument {
-  id: string;
-  content: string;
   chunkId?: string;
+  content: string;
+  id: string;
   score?: number;
   similarity?: number;
 }
@@ -81,11 +81,11 @@ export const _SearchDocument: SearchDocument = {
 };
 
 export interface Document {
-  id: string;
-  content: string;
   chunks: Chunk[];
-  source?: string;
+  content: string;
+  id: string;
   metadata?: DocumentMetadata;
+  source?: string;
 }
 
 export const _Document: Document = {

@@ -13,7 +13,7 @@ function makeMemory(id: string, content: string): MemoryItem {
     importance: 0.7,
     writeHeap: 'event',
     reuseClass: 'hot',
-    createdAt: now - 1_000,
+    createdAt: now - 1000,
     lastAccessedAt: now - 100,
     accessCount: 3,
     fingerprint: `fp-${id}`,

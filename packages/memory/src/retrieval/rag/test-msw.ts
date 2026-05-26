@@ -4,8 +4,8 @@ import { setupServer } from 'msw/node';
 import type { RAGSearchResult, RAGServerDocument } from './types.js';
 
 export interface MockRAGState {
-  healthy: boolean;
   documents: Map<string, RAGServerDocument>;
+  healthy: boolean;
   searchResults: RAGSearchResult[];
 }
 

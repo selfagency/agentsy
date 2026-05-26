@@ -5,14 +5,14 @@ import type { AcidPalette } from '../../theme/palette.ts';
 export interface TokenMeterProps {
   /** Input token count. */
   readonly input: number;
-  /** Output token count (streamed so far). */
-  readonly output: number;
-  /** Total token count (or undefined if not tracked). */
-  readonly total?: number;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
   /** Optional label override. */
   readonly label?: string;
+  /** Output token count (streamed so far). */
+  readonly output: number;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Total token count (or undefined if not tracked). */
+  readonly total?: number;
 }
 
 /**
@@ -24,7 +24,7 @@ export function TokenMeter({ input, output, total, palette, label }: TokenMeterP
   return (
     <Box>
       {label ? (
-        <Text color={palette.frameDim} bold>
+        <Text bold color={palette.frameDim}>
           {' '}
           {label}{' '}
         </Text>
@@ -33,12 +33,12 @@ export function TokenMeter({ input, output, total, palette, label }: TokenMeterP
       <Text color={palette.emphasis}>{input.toLocaleString()}</Text>
       <Text color={palette.frameDim}>{' · out: '}</Text>
       <Text color={palette.assistantAccent}>{output.toLocaleString()}</Text>
-      {total !== undefined ? (
+      {total === undefined ? null : (
         <>
           <Text color={palette.frameDim}>{' · total: '}</Text>
           <Text color={palette.info}>{total.toLocaleString()}</Text>
         </>
-      ) : null}
+      )}
     </Box>
   );
 }

@@ -13,7 +13,7 @@ describe('TokenMeter', () => {
   });
 
   it('displays total when provided', () => {
-    const { lastFrame } = render(<TokenMeter input={100} output={50} total={150} palette={defaultAcidPalette} />);
+    const { lastFrame } = render(<TokenMeter input={100} output={50} palette={defaultAcidPalette} total={150} />);
     const frame = lastFrame();
     expect(frame).toContain('100');
     expect(frame).toContain('50');
@@ -21,7 +21,7 @@ describe('TokenMeter', () => {
   });
 
   it('renders custom label', () => {
-    const { lastFrame } = render(<TokenMeter input={5} output={10} palette={defaultAcidPalette} label="tokens:" />);
+    const { lastFrame } = render(<TokenMeter input={5} label="tokens:" output={10} palette={defaultAcidPalette} />);
     expect(lastFrame()).toContain('tokens:');
   });
 });

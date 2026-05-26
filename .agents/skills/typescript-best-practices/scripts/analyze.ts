@@ -22,27 +22,27 @@ const SCRIPT_NAME = "analyze";
 
 // === Types ===
 interface AnalyzeOptions {
+  fixHints: boolean;
+  json: boolean;
   path: string;
   strict: boolean;
-  json: boolean;
-  fixHints: boolean;
 }
 
 interface Issue {
-  severity: "critical" | "high" | "medium" | "low";
   category: string;
-  message: string;
-  file: string;
-  line: number;
-  column: number;
   code: string;
+  column: number;
+  file: string;
   fix?: string;
+  line: number;
+  message: string;
+  severity: "critical" | "high" | "medium" | "low";
 }
 
 interface AnalysisResult {
-  path: string;
   filesAnalyzed: number;
   issues: Issue[];
+  path: string;
   summary: {
     critical: number;
     high: number;
@@ -62,7 +62,7 @@ const PATTERNS: Array<{
 }> = [
   {
     name: "any-type",
-    pattern: /:\s*any\b(?!\s*\[)/ug,
+    pattern: /:\s*any\b(?!\s*\[)/gu,
     severity: "critical",
     category: "Type Safety",
     message: "Avoid using 'any' type - it disables type checking",
@@ -70,7 +70,7 @@ const PATTERNS: Array<{
   },
   {
     name: "any-array",
-    pattern: /:\s*any\s*\[\]/ug,
+    pattern: /:\s*any\s*\[\]/gu,
     severity: "critical",
     category: "Type Safety",
     message: "Avoid using 'any[]' type",
@@ -78,7 +78,7 @@ const PATTERNS: Array<{
   },
   {
     name: "non-null-assertion",
-    pattern: /\w+!/ug,
+    pattern: /\w+!/gu,
     severity: "high",
     category: "Type Safety",
     message: "Non-null assertion (!) can cause runtime errors",
@@ -86,7 +86,7 @@ const PATTERNS: Array<{
   },
   {
     name: "type-assertion-as",
-    pattern: /\bas\s+(?!const\b)\w+/ug,
+    pattern: /\bas\s+(?!const\b)\w+/gu,
     severity: "medium",
     category: "Type Safety",
     message: "Type assertions with 'as' bypass type checking",
@@ -94,7 +94,7 @@ const PATTERNS: Array<{
   },
   {
     name: "object-any",
-    pattern: /:\s*object\b/ug,
+    pattern: /:\s*object\b/gu,
     severity: "medium",
     category: "Type Safety",
     message: "The 'object' type is too broad",
@@ -102,7 +102,7 @@ const PATTERNS: Array<{
   },
   {
     name: "Function-type",
-    pattern: /:\s*Function\b/ug,
+    pattern: /:\s*Function\b/gu,
     severity: "medium",
     category: "Type Safety",
     message: "The 'Function' type is too broad",
@@ -110,7 +110,7 @@ const PATTERNS: Array<{
   },
   {
     name: "implicit-any-param",
-    pattern: /\(\s*\w+\s*\)\s*=>/ug,
+    pattern: /\(\s*\w+\s*\)\s*=>/gu,
     severity: "medium",
     category: "Type Safety",
     message: "Arrow function parameter may have implicit 'any'",
@@ -118,7 +118,7 @@ const PATTERNS: Array<{
   },
   {
     name: "ts-ignore",
-    pattern: /@ts-ignore/ug,
+    pattern: /@ts-ignore/gu,
     severity: "high",
     category: "Type Safety",
     message: "@ts-ignore suppresses all errors on the next line",
@@ -126,7 +126,7 @@ const PATTERNS: Array<{
   },
   {
     name: "ts-nocheck",
-    pattern: /@ts-nocheck/ug,
+    pattern: /@ts-nocheck/gu,
     severity: "critical",
     category: "Type Safety",
     message: "@ts-nocheck disables type checking for entire file",
@@ -134,7 +134,7 @@ const PATTERNS: Array<{
   },
   {
     name: "console-log",
-    pattern: /console\.(log|debug|info)\(/ug,
+    pattern: /console\.(log|debug|info)\(/gu,
     severity: "low",
     category: "Code Quality",
     message: "Console statements should be removed in production",
@@ -142,7 +142,7 @@ const PATTERNS: Array<{
   },
   {
     name: "todo-comment",
-    pattern: /\/\/\s*(TODO|FIXME|HACK|XXX):/ugi,
+    pattern: /\/\/\s*(TODO|FIXME|HACK|XXX):/giu,
     severity: "low",
     category: "Code Quality",
     message: "Unresolved TODO/FIXME comment",
@@ -150,7 +150,7 @@ const PATTERNS: Array<{
   },
   {
     name: "var-keyword",
-    pattern: /\bvar\s+\w+/ug,
+    pattern: /\bvar\s+\w+/gu,
     severity: "medium",
     category: "Code Quality",
     message: "'var' has function scope which can cause bugs",
@@ -158,7 +158,7 @@ const PATTERNS: Array<{
   },
   {
     name: "triple-slash",
-    pattern: /\/\/\/\s*<reference/ug,
+    pattern: /\/\/\/\s*<reference/gu,
     severity: "low",
     category: "Code Quality",
     message: "Triple-slash references are outdated",
@@ -166,7 +166,7 @@ const PATTERNS: Array<{
   },
   {
     name: "eval-usage",
-    pattern: /\beval\s*\(/ug,
+    pattern: /\beval\s*\(/gu,
     severity: "critical",
     category: "Security",
     message: "eval() is a security risk and prevents optimization",
@@ -174,7 +174,7 @@ const PATTERNS: Array<{
   },
   {
     name: "new-Function",
-    pattern: /new\s+Function\s*\(/ug,
+    pattern: /new\s+Function\s*\(/gu,
     severity: "high",
     category: "Security",
     message: "new Function() is similar to eval() - security risk",
@@ -182,7 +182,7 @@ const PATTERNS: Array<{
   },
   {
     name: "innerHTML",
-    pattern: /\.innerHTML\s*=/ug,
+    pattern: /\.innerHTML\s*=/gu,
     severity: "high",
     category: "Security",
     message: "innerHTML can introduce XSS vulnerabilities",
@@ -190,7 +190,7 @@ const PATTERNS: Array<{
   },
   {
     name: "async-no-await",
-    pattern: /async\s+(?:function\s+\w+|\w+\s*=\s*async)\s*\([^)]*\)\s*(?::\s*\w+)?\s*\{[^}]*\}/ug,
+    pattern: /async\s+(?:function\s+\w+|\w+\s*=\s*async)\s*\([^)]*\)\s*(?::\s*\w+)?\s*\{[^}]*\}/gu,
     severity: "medium",
     category: "Async",
     message: "Async function may not contain await",
@@ -198,7 +198,7 @@ const PATTERNS: Array<{
   },
   {
     name: "promise-constructor",
-    pattern: /new\s+Promise\s*\(\s*(?:async|function)/ug,
+    pattern: /new\s+Promise\s*\(\s*(?:async|function)/gu,
     severity: "medium",
     category: "Async",
     message: "Unnecessary Promise constructor (async executor or can be simplified)",
@@ -206,7 +206,7 @@ const PATTERNS: Array<{
   },
   {
     name: "for-in-array",
-    pattern: /for\s*\(\s*(?:const|let|var)\s+\w+\s+in\s+\w+\)/ug,
+    pattern: /for\s*\(\s*(?:const|let|var)\s+\w+\s+in\s+\w+\)/gu,
     severity: "medium",
     category: "Iteration",
     message: "for...in iterates over all enumerable properties, not just indices",
@@ -214,7 +214,7 @@ const PATTERNS: Array<{
   },
   {
     name: "delete-operator",
-    pattern: /\bdelete\s+\w+(\.\w+|\[\w+\])/ug,
+    pattern: /\bdelete\s+\w+(\.\w+|\[\w+\])/gu,
     severity: "low",
     category: "Performance",
     message: "delete operator can deoptimize objects",
@@ -222,7 +222,7 @@ const PATTERNS: Array<{
   },
   {
     name: "magic-number",
-    pattern: /(?<![\w.])(?:0|[1-9]\d{2,})(?!\d)/ug,
+    pattern: /(?<![\w.])(?:0|[1-9]\d{2,})(?!\d)/gu,
     severity: "low",
     category: "Code Quality",
     message: "Magic numbers reduce code readability",
@@ -271,11 +271,7 @@ async function findTypeScriptFiles(path: string): Promise<string[]> {
 }
 
 // === Analysis ===
-function analyzeFile(
-  filePath: string,
-  content: string,
-  options: AnalyzeOptions
-): Issue[] {
+function analyzeFile(filePath: string, content: string, options: AnalyzeOptions): Issue[] {
   const issues: Issue[] = [];
   const lines = content.split("\n");
 
@@ -311,8 +307,8 @@ function analyzeFile(
             continue;
           }
           // Check if inside string
-          const beforeQuotes = (before.match(/"/ug) || []).length;
-          const beforeSingleQuotes = (before.match(/'/ug) || []).length;
+          const beforeQuotes = (before.match(/"/gu) || []).length;
+          const beforeSingleQuotes = (before.match(/'/gu) || []).length;
           if (beforeQuotes % 2 === 1 || beforeSingleQuotes % 2 === 1) {
             continue;
           }

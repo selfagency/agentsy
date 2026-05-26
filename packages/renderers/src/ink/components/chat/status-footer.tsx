@@ -6,16 +6,16 @@ import type { AcidPalette } from '../../theme/palette.ts';
 export type ConnectionStatus = 'connecting' | 'connected' | 'streaming' | 'idle' | 'error';
 
 export interface StatusFooterProps {
-  /** Current connection/streaming status. */
-  readonly status: ConnectionStatus;
-  /** Active model name (e.g. "claude-sonnet-4"). */
-  readonly modelName?: string;
   /** Elapsed time in seconds. */
   readonly elapsedSec?: number;
+  /** Active model name (e.g. "claude-sonnet-4"). */
+  readonly modelName?: string;
   /** Semantic palette. */
   readonly palette: AcidPalette;
   /** Provider name (e.g. "anthropic", "openai"). */
   readonly provider?: string;
+  /** Current connection/streaming status. */
+  readonly status: ConnectionStatus;
 }
 
 const statusSymbols: Record<ConnectionStatus, string> = {
@@ -49,7 +49,7 @@ export function StatusFooter({ status, modelName, elapsedSec, palette, provider 
     return m > 0 ? `${m}m ${s}s` : `${s}s`;
   };
 
-  const parts: string[] = [];
+  const _parts: string[] = [];
 
   const symbol = reducedMotion() ? '●' : statusSymbols[status];
 
@@ -69,12 +69,12 @@ export function StatusFooter({ status, modelName, elapsedSec, palette, provider 
           <Text color={palette.info}>{provider}</Text>
         </>
       ) : null}
-      {elapsedSec !== undefined ? (
+      {elapsedSec === undefined ? null : (
         <>
           <Text color={palette.frameDim}> · </Text>
           <Text color={palette.frameBright}>{formatTime(elapsedSec)}</Text>
         </>
-      ) : null}
+      )}
     </Box>
   );
 }

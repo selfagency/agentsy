@@ -21,8 +21,8 @@ export type GuardrailResult<T> = { allowed: true; transformed?: T } | { allowed:
  * Guards that run before any model interaction, on raw user input.
  */
 export interface InputGuardrail<T = unknown> {
-  name: string;
   check(input: T): Promise<GuardrailResult<T>>;
+  name: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export interface InputGuardrail<T = unknown> {
  * the user.
  */
 export interface OutputGuardrail<T = unknown> {
-  name: string;
   check(output: T): Promise<GuardrailResult<T>>;
+  name: string;
 }
 
 /**
@@ -42,6 +42,6 @@ export interface OutputGuardrail<T = unknown> {
  */
 export interface ToolGuardrail {
   name: string;
-  preCheck(toolName: string, args: unknown): Promise<GuardrailResult<unknown>>;
   postCheck(toolName: string, result: unknown): Promise<GuardrailResult<unknown>>;
+  preCheck(toolName: string, args: unknown): Promise<GuardrailResult<unknown>>;
 }

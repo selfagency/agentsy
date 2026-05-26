@@ -11,17 +11,17 @@ const DEEPSEEK_FINISH_REASON_MAP: Record<string, FinishReason> = {
 };
 
 interface DeepSeekToolCallDeltaRaw {
-  index: number;
-  id?: string;
   function?: {
     name?: string;
     arguments?: string;
   };
+  id?: string;
+  index: number;
 }
 
 function mapDeepSeekFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   return DEEPSEEK_FINISH_REASON_MAP[reason] ?? 'other';
 }
@@ -45,7 +45,7 @@ function toNativeToolCallDelta(raw: DeepSeekToolCallDeltaRaw): NativeToolCallDel
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
   if (raw === null || typeof raw !== 'object') {
-    return undefined;
+    return;
   }
   const usage = raw as Record<string, unknown>;
 

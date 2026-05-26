@@ -3,12 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createDialecticResolver } from './dialectic-resolver.js';
 import type { Observation } from './observation-extractor.js';
 
-function makeObs(
-  id: string,
-  content: string,
-  confidence: number = 0.7,
-  kind: Observation['kind'] = 'factual'
-): Observation {
+function makeObs(id: string, content: string, confidence = 0.7, kind: Observation['kind'] = 'factual'): Observation {
   return {
     id,
     kind,

@@ -88,7 +88,7 @@ Cross-package and surface integration with instrumentation modules.
 
 ## 4. Current Status Summary
 
-**Phase 1 Foundation — COMPLETE ✅ (2026-05-25)**
+## Phase 1 Foundation — COMPLETE ✅ (2026-05-25)
 
 - Tracer singleton with OTEL-compatible API ✅
 - tslog-backed logger factory with sub-loggers ✅
@@ -96,7 +96,7 @@ Cross-package and surface integration with instrumentation modules.
 - Exporter adapters (console, OTLP, Langfuse) ✅
 - Runtime + provider instrumentation ✅
 
-**Phase 2-4 Remaining (as planned)**
+## Phase 2-4 Remaining (as planned)
 
 - Token/cost/latency metric aggregation (Phase 9 — deferred as planned)
 - Full redaction pipeline (Phase 4)

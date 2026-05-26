@@ -5,14 +5,14 @@ import type { SettingsValidationResult } from '../types/settings.js';
  * Supports type, required, properties, minimum, maximum, and enum.
  */
 export interface SchemaProperty {
-  type?: 'string' | 'number' | 'boolean' | 'object' | 'array';
-  required?: string[];
-  properties?: Record<string, SchemaProperty>;
-  minimum?: number;
-  maximum?: number;
-  enum?: unknown[];
   default?: unknown;
   description?: string;
+  enum?: unknown[];
+  maximum?: number;
+  minimum?: number;
+  properties?: Record<string, SchemaProperty>;
+  required?: string[];
+  type?: 'string' | 'number' | 'boolean' | 'object' | 'array';
 }
 
 export type SettingsSchema = SchemaProperty;

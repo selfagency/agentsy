@@ -1,10 +1,10 @@
 import type { CapturedMemoryRecord } from './memory-capture.js';
 
 export interface MemoryLintIssue {
-  recordId: string;
   code: 'secret-like-pattern' | 'oversized-record';
-  severity: 'warning' | 'error';
   message: string;
+  recordId: string;
+  severity: 'warning' | 'error';
 }
 
 export interface MemoryLintResult {

@@ -1,20 +1,20 @@
 import { Box, Text } from 'ink';
 import { useEffect, useState } from 'react';
 
-import { animationInterval, spinnerFrames, reducedMotion } from '../../theme/motion.ts';
+import { animationInterval, reducedMotion, spinnerFrames } from '../../theme/motion.ts';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export interface StreamThinkingBlockProps {
-  /** Thinking text content. */
-  readonly text: string;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
-  /** Whether thinking is still in progress. */
-  readonly isInProgress: boolean;
   /** Whether to expand the thinking block. */
   readonly expanded?: boolean;
+  /** Whether thinking is still in progress. */
+  readonly isInProgress: boolean;
   /** Toggle expand/collapse handler. */
   onToggle?: () => void;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Thinking text content. */
+  readonly text: string;
 }
 
 const thinkingSpinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -31,7 +31,7 @@ export function StreamThinkingBlock({
   palette,
   isInProgress,
   expanded = false,
-  onToggle
+  onToggle: _onToggle
 }: StreamThinkingBlockProps) {
   const [frame, setFrame] = useState(0);
   const frames = spinnerFrames(thinkingSpinner);
@@ -52,15 +52,15 @@ export function StreamThinkingBlock({
 
   if (!expanded) {
     return (
-      <Box borderStyle={borderStyleVal} borderColor={borderColor} paddingX={1} marginBottom={1}>
+      <Box borderColor={borderColor} borderStyle={borderStyleVal} marginBottom={1} paddingX={1}>
         <Text color={palette.pending}>{isInProgress ? `${spinner} thinking…` : '◈ thinking complete'}</Text>
       </Box>
     );
   }
 
   return (
-    <Box borderStyle={borderStyleVal} borderColor={borderColor} paddingX={1} marginBottom={1} flexDirection="column">
-      <Text color={palette.pending} bold>
+    <Box borderColor={borderColor} borderStyle={borderStyleVal} flexDirection="column" marginBottom={1} paddingX={1}>
+      <Text bold color={palette.pending}>
         {isInProgress ? `${spinner} thinking…` : '◈ thinking'}
       </Text>
       <Text color={palette.assistantDim} dimColor>

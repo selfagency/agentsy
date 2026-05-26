@@ -5,27 +5,27 @@ import type { AcidPalette } from '../../theme/palette.js';
 export type TaskStatus = 'pending' | 'running' | 'done' | 'error' | 'cancelled';
 
 export interface ActiveTask {
+  /** Optional byte/token count. */
+  readonly bytes?: string;
+  /** Elapsed time string (e.g. '1.2s'). */
+  readonly elapsed?: string;
   /** Unique task id. */
   readonly id: string;
   /** Tool or operation name. */
   readonly name: string;
-  /** Current status. */
-  readonly status: TaskStatus;
   /** Progress description (streaming output, current step). */
   readonly progress?: string;
-  /** Elapsed time string (e.g. '1.2s'). */
-  readonly elapsed?: string;
-  /** Optional byte/token count. */
-  readonly bytes?: string;
+  /** Current status. */
+  readonly status: TaskStatus;
 }
 
 export interface TaskProgressProps {
-  /** Active tasks to display. */
-  readonly tasks: readonly ActiveTask[];
   /** Semantic palette. */
   readonly palette: AcidPalette;
   /** Spinner frame (caller manages animation tick). */
   readonly spinnerFrame?: string;
+  /** Active tasks to display. */
+  readonly tasks: readonly ActiveTask[];
 }
 
 const STATUS_ICONS: Record<TaskStatus, string> = {
@@ -66,7 +66,7 @@ export function TaskProgress({ tasks, palette, spinnerFrame = '◉' }: TaskProgr
       <Box flexDirection="column">
         <Box>
           <Text color={palette.frameBorder}>{'═'}</Text>
-          <Text color={palette.frameBright} bold>
+          <Text bold color={palette.frameBright}>
             {'Active Tasks'}
           </Text>
           <Text color={palette.frameBorder}>{'═'}</Text>
@@ -83,7 +83,7 @@ export function TaskProgress({ tasks, palette, spinnerFrame = '◉' }: TaskProgr
       {/* Header */}
       <Box>
         <Text color={palette.frameBorder}>{'═'}</Text>
-        <Text color={palette.frameBright} bold>
+        <Text bold color={palette.frameBright}>
           {'Active Tasks'}
         </Text>
         <Text color={palette.frameBorder}>{'═'}</Text>
@@ -101,14 +101,14 @@ export function TaskProgress({ tasks, palette, spinnerFrame = '◉' }: TaskProgr
         const icon = task.status === 'running' ? spinnerFrame : (STATUS_ICONS[task.status] ?? '○');
 
         return (
-          <Box key={task.id} flexDirection="column">
+          <Box flexDirection="column" key={task.id}>
             <Box flexDirection="row">
               {/* Status icon */}
-              <Text color={color} bold>
+              <Text bold color={color}>
                 {icon}{' '}
               </Text>
               {/* Tool name — fixed 20-char column */}
-              <Text color={palette.frameBright} bold>
+              <Text bold color={palette.frameBright}>
                 {task.name.padEnd(20).slice(0, 20)}
               </Text>
               {/* Progress/description */}

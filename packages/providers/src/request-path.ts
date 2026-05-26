@@ -1,4 +1,4 @@
-import { ReadableStream } from 'node:stream/web';
+import type { ReadableStream } from 'node:stream/web';
 
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
@@ -12,18 +12,18 @@ import { createUniversalClient, type UniversalClientConfig } from './universal-c
  * by the RequestHandler based on model matching.
  */
 export interface RequestPathProvider {
-  /** Unique identifier for this provider entry */
-  id: string;
-  /** Human-readable name for display in UI/logs */
-  name: string;
-  /** Provider type (openai, anthropic, gemini, ollama, etc.) */
-  provider: NormalizerProvider;
   /** API key for authentication */
   apiKey?: string;
   /** Base URL override (defaults to provider-specific default) */
   baseUrl?: string;
+  /** Unique identifier for this provider entry */
+  id: string;
   /** Default model for this provider entry */
   model?: string;
+  /** Human-readable name for display in UI/logs */
+  name: string;
+  /** Provider type (openai, anthropic, gemini, ollama, etc.) */
+  provider: NormalizerProvider;
   /** Request timeout in milliseconds */
   timeoutMs?: number;
 }
@@ -32,10 +32,10 @@ export interface RequestPathProvider {
  * Options for creating a RequestHandler.
  */
 export interface RequestHandlerOptions {
-  /** Provider entries to select from */
-  providers: RequestPathProvider[];
   /** Default model when the request doesn't specify one */
   defaultModel?: string;
+  /** Provider entries to select from */
+  providers: RequestPathProvider[];
 }
 
 /**
@@ -108,9 +108,15 @@ export function createRequestHandler(options: RequestHandlerOptions): RequestHan
   const configs = new Map<string, UniversalClientConfig>();
   for (const entry of providers) {
     const cfg: UniversalClientConfig = { provider: entry.provider };
-    if (entry.apiKey !== undefined) cfg.apiKey = entry.apiKey;
-    if (entry.baseUrl !== undefined) cfg.baseUrl = entry.baseUrl;
-    if (entry.timeoutMs !== undefined) cfg.timeoutMs = entry.timeoutMs;
+    if (entry.apiKey !== undefined) {
+      cfg.apiKey = entry.apiKey;
+    }
+    if (entry.baseUrl !== undefined) {
+      cfg.baseUrl = entry.baseUrl;
+    }
+    if (entry.timeoutMs !== undefined) {
+      cfg.timeoutMs = entry.timeoutMs;
+    }
     configs.set(entry.id, cfg);
   }
 
@@ -134,12 +140,12 @@ export function createRequestHandler(options: RequestHandlerOptions): RequestHan
     // Fall back to first available provider
     const first = providers[0];
     if (!first) {
-      return undefined;
+      return;
     }
 
     const config = configs.get(first.id);
     if (!config) {
-      return undefined;
+      return;
     }
 
     return { entry: first, config };

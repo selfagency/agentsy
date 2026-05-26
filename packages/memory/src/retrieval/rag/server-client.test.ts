@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, afterEach, afterAll } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { createRAGServerClient } from './server-client.js';
 import { createMockRAGState, createRAGMockServer } from './test-msw.js';

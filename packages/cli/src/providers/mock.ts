@@ -17,17 +17,16 @@ const DEFAULT_MOCK_RESPONSE = 'Hello! I am a mock LLM response. This simulates a
 
 export interface MockClientOptions {
   /**
-   * The text content the mock client should return.
-   * @default 'Hello! I am a mock LLM response. This simulates a streaming reply.'
-   */
-  responseText?: string | undefined;
-
-  /**
    * Delay between emitted chunks in milliseconds.
    * Set to 0 for tests, >0 for realistic simulation.
    * @default 15
    */
   chunkDelayMs?: number | undefined;
+  /**
+   * The text content the mock client should return.
+   * @default 'Hello! I am a mock LLM response. This simulates a streaming reply.'
+   */
+  responseText?: string | undefined;
 }
 
 /**
@@ -44,6 +43,7 @@ export function createMockClient(options: MockClientOptions = {}): {
   const chunkDelayMs = options.chunkDelayMs ?? DEFAULT_CHUNK_DELAY_MS;
 
   return {
+    // biome-ignore lint/suspicious/useAwait: must match interface return type Promise<CompletionResponse>
     async complete(_request: CompletionRequest): Promise<CompletionResponse> {
       return {
         content: responseText,
@@ -56,6 +56,7 @@ export function createMockClient(options: MockClientOptions = {}): {
       };
     },
 
+    // biome-ignore lint/suspicious/useAwait: must match interface return type Promise<ReadableStream<NormalizedChunk>>
     async stream(_request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
       return new ReadableStream<NormalizedChunk>({
         async start(controller): Promise<void> {
@@ -77,7 +78,11 @@ export function createMockClient(options: MockClientOptions = {}): {
           controller.enqueue({
             done: true,
             finishReason: 'stop',
-            usage: { inputTokens: 10, outputTokens: allWords.length, totalTokens: 10 + allWords.length }
+            usage: {
+              inputTokens: 10,
+              outputTokens: allWords.length,
+              totalTokens: 10 + allWords.length
+            }
           });
 
           controller.close();

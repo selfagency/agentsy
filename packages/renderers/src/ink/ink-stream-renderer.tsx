@@ -10,6 +10,18 @@ import { ToolCallBlock } from './components/tool-call-block.js';
 import type { Theme } from './themes/types.js';
 
 interface InkStreamRendererProps {
+  readonly forceUpdateRef: { current: () => void };
+  readonly options: {
+    readonly showThinking?: boolean | undefined;
+    readonly thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
+    readonly showToolCalls?: boolean | undefined;
+    readonly markdown?: boolean | undefined;
+    readonly theme: Theme;
+    readonly screenReader?: boolean | undefined;
+    readonly syntaxHighlight?: boolean | undefined;
+    readonly keyboard?: KeyboardOptions | undefined;
+  };
+  readonly setForceUpdate: (fn: () => void) => void;
   readonly stateRef: {
     text: string;
     thinking: string;
@@ -21,28 +33,16 @@ interface InkStreamRendererProps {
     }[];
     isStreaming: boolean;
   };
-  readonly forceUpdateRef: { current: () => void };
-  readonly setForceUpdate: (fn: () => void) => void;
-  readonly options: {
-    readonly showThinking?: boolean | undefined;
-    readonly thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
-    readonly showToolCalls?: boolean | undefined;
-    readonly markdown?: boolean | undefined;
-    readonly theme: Theme;
-    readonly screenReader?: boolean | undefined;
-    readonly syntaxHighlight?: boolean | undefined;
-    readonly keyboard?: KeyboardOptions | undefined;
-  };
 }
 
 interface RenderOptions {
-  readonly showThinking: boolean;
-  readonly thinkingStyle: 'blockquote' | 'inline' | 'suppress';
-  readonly showToolCalls: boolean;
   readonly markdown: boolean;
-  readonly theme: Theme;
   readonly screenReader: boolean;
+  readonly showThinking: boolean;
+  readonly showToolCalls: boolean;
   readonly syntaxHighlight: boolean;
+  readonly theme: Theme;
+  readonly thinkingStyle: 'blockquote' | 'inline' | 'suppress';
 }
 
 function ToolCallsRenderer({
@@ -65,7 +65,7 @@ function ToolCallsRenderer({
   return (
     <>
       {toolCalls.map(call => (
-        <ToolCallBlock key={call.id} call={call} theme={theme} screenReader={screenReader} />
+        <ToolCallBlock call={call} key={call.id} screenReader={screenReader} theme={theme} />
       ))}
     </>
   );
@@ -80,16 +80,16 @@ function ThinkingSection({
   readonly isStreaming: boolean;
   readonly options: RenderOptions;
 }) {
-  if (!options.showThinking || !thinking) {
+  if (!(options.showThinking && thinking)) {
     return null;
   }
   return (
     <ThinkingBlock
-      text={thinking}
-      style={options.thinkingStyle}
       isStreaming={isStreaming}
-      theme={options.theme}
       screenReader={options.screenReader}
+      style={options.thinkingStyle}
+      text={thinking}
+      theme={options.theme}
     />
   );
 }
@@ -109,7 +109,7 @@ function ToolCallsSection({
   if (!options.showToolCalls) {
     return null;
   }
-  return <ToolCallsRenderer toolCalls={toolCalls} theme={options.theme} screenReader={options.screenReader} />;
+  return <ToolCallsRenderer screenReader={options.screenReader} theme={options.theme} toolCalls={toolCalls} />;
 }
 
 function ThinkingContent({
@@ -121,7 +121,7 @@ function ThinkingContent({
   readonly isStreaming: boolean;
   readonly options: RenderOptions;
 }) {
-  return <ThinkingSection thinking={thinking} isStreaming={isStreaming} options={options} />;
+  return <ThinkingSection isStreaming={isStreaming} options={options} thinking={thinking} />;
 }
 
 function ToolCallsContent({
@@ -136,7 +136,7 @@ function ToolCallsContent({
   }[];
   readonly options: RenderOptions;
 }) {
-  return <ToolCallsSection toolCalls={toolCalls} options={options} />;
+  return <ToolCallsSection options={options} toolCalls={toolCalls} />;
 }
 
 function TextContent({
@@ -150,12 +150,12 @@ function TextContent({
 }) {
   return (
     <StreamingText
-      text={text}
-      markdown={options.markdown}
       isStreaming={isStreaming}
-      theme={options.theme}
+      markdown={options.markdown}
       screenReader={options.screenReader}
       syntaxHighlight={options.syntaxHighlight}
+      text={text}
+      theme={options.theme}
     />
   );
 }
@@ -180,9 +180,9 @@ function ContentRenderer({
 }) {
   return (
     <Box flexDirection="column">
-      <ThinkingContent thinking={thinking} isStreaming={isStreaming} options={options} />
-      <ToolCallsContent toolCalls={toolCalls} options={options} />
-      <TextContent text={text} isStreaming={isStreaming} options={options} />
+      <ThinkingContent isStreaming={isStreaming} options={options} thinking={thinking} />
+      <ToolCallsContent options={options} toolCalls={toolCalls} />
+      <TextContent isStreaming={isStreaming} options={options} text={text} />
     </Box>
   );
 }
@@ -221,11 +221,11 @@ export default function InkStreamRenderer({
   return (
     <Box flexDirection="column">
       <ContentRenderer
+        isStreaming={stateRef.isStreaming}
+        options={renderOptions}
         text={stateRef.text}
         thinking={stateRef.thinking}
         toolCalls={stateRef.toolCalls}
-        isStreaming={stateRef.isStreaming}
-        options={renderOptions}
       />
       {options.keyboard?.enabled === true && <KeyboardHandler keyboard={options.keyboard} />}
     </Box>

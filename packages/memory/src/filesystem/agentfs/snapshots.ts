@@ -1,18 +1,18 @@
 import type { AgentFsEntry, AgentFsManager } from './manager.js';
 
 export interface Snapshot {
+  readonly entries: readonly AgentFsEntry[];
   readonly id: string;
   readonly label?: string;
   readonly timestamp: number;
-  readonly entries: readonly AgentFsEntry[];
 }
 
 export interface SnapshotStore {
   capture(manager: AgentFsManager, label?: string): Snapshot;
-  restore(snapshotId: string, manager: AgentFsManager): boolean;
-  list(): Snapshot[];
-  get(snapshotId: string): Snapshot | undefined;
   delete(snapshotId: string): boolean;
+  get(snapshotId: string): Snapshot | undefined;
+  list(): Snapshot[];
+  restore(snapshotId: string, manager: AgentFsManager): boolean;
 }
 
 let snapCounter = 0;

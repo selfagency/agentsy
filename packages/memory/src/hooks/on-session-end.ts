@@ -6,14 +6,14 @@ import type { MemoryEngine } from '../cognitive/memory-engine.js';
 
 export interface OnSessionEndInput {
   engine: MemoryEngine;
-  sessionEvents?: PendingEvent[];
   persist?: boolean;
+  sessionEvents?: PendingEvent[];
 }
 
 export interface OnSessionEndOutput {
   consolidated: number;
-  persisted: number;
   durationMs: number;
+  persisted: number;
 }
 
 /**
@@ -32,8 +32,12 @@ export async function onSessionEnd(input: OnSessionEndInput): Promise<OnSessionE
   if (sessionEvents && sessionEvents.length > 0) {
     for (const event of sessionEvents) {
       const opts: Record<string, unknown> = {};
-      if (event.importance !== undefined) opts.importance = event.importance;
-      if (event.metadata !== undefined) opts.metadata = event.metadata;
+      if (event.importance !== undefined) {
+        opts.importance = event.importance;
+      }
+      if (event.metadata !== undefined) {
+        opts.metadata = event.metadata;
+      }
       const id = engine.ingest(event.content, opts as Parameters<typeof engine.ingest>[1]);
       if (id !== null) {
         persisted++;

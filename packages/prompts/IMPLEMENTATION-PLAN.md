@@ -178,7 +178,7 @@ packages/prompts/
 
 ```typescript
 // Token budget aware optimization
-import { TokenBudget, TokenCounter } from '@agentsy/tokens';
+import { TokenBudget, TokenCounter } from "@agentsy/tokens";
 
 interface OptimizedPrompt {
   chunks: PromptChunk[];
@@ -190,7 +190,7 @@ interface OptimizedPrompt {
 class PromptOptimizer {
   constructor(
     private tokenCounter: TokenCounter,
-    private budget: TokenBudget
+    private budget: TokenBudget,
   ) {}
 
   optimize(prompt: string, constraints: OptimizationConstraints): OptimizedPrompt {
@@ -203,12 +203,12 @@ class PromptOptimizer {
 
 ```typescript
 // Persistent prompt storage and retrieval
-import { MemoryStore, MemoryRetrieval } from '@agentsy/memory';
+import { MemoryStore, MemoryRetrieval } from "@agentsy/memory";
 
 class PromptStorage {
   constructor(
     private memoryStore: MemoryStore,
-    private retrieval: MemoryRetrieval
+    private retrieval: MemoryRetrieval,
   ) {}
 
   async storeSystemPrompt(prompt: SystemPrompt): Promise<void> {

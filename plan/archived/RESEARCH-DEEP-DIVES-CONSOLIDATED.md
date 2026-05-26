@@ -662,4 +662,4 @@ For detailed analysis, see:
 
 ---
 
-**End of consolidated research synthesis**
+## End of consolidated research synthesis

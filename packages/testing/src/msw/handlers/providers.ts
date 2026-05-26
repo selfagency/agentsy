@@ -7,8 +7,7 @@
  * @module @agentsy/testing/msw/handlers/providers
  */
 
-import { HttpResponse, http } from 'msw';
-import { type HttpHandler } from 'msw';
+import { type HttpHandler, HttpResponse, http } from 'msw';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -160,7 +159,11 @@ function openaiCompleteBody(content: string): string {
     id: 'chatcmpl-mock',
     model: 'gpt-4o-mock',
     object: 'chat.completion',
-    usage: { completion_tokens: content.length, prompt_tokens: 20, total_tokens: 20 + content.length }
+    usage: {
+      completion_tokens: content.length,
+      prompt_tokens: 20,
+      total_tokens: 20 + content.length
+    }
   });
 }
 
@@ -171,10 +174,10 @@ function openaiCompleteBody(content: string): string {
 export interface ProviderStreamingOptions {
   /** Content chunks to stream (default: ['Hello', ', world!']) */
   chunks?: string[];
-  /** Simulate an error response instead of streaming */
-  simulateError?: { status: number; statusText: string; body?: string };
   /** Response delay in ms (default: 0) */
   delay?: number;
+  /** Simulate an error response instead of streaming */
+  simulateError?: { status: number; statusText: string; body?: string };
 }
 
 /**
@@ -184,12 +187,15 @@ export interface ProviderStreamingOptions {
  * receives an SSE stream of delta chunks.
  */
 export function createOpenAIHandler(options?: ProviderStreamingOptions): HttpHandler {
-  const { chunks = ['Hello', ', world!'], simulateError, delay = 0 } = options ?? {};
+  const { chunks = ['Hello', ', world!'], simulateError } = options ?? {};
   const body = simulateError ? (simulateError.body ?? '') : openaiStreamBody(chunks);
 
   return http.post('https://api.openai.com/v1/chat/completions', async () => {
     if (simulateError) {
-      return new HttpResponse(body, { status: simulateError.status, statusText: simulateError.statusText });
+      return new HttpResponse(body, {
+        status: simulateError.status,
+        statusText: simulateError.statusText
+      });
     }
 
     return new HttpResponse(body, {
@@ -206,9 +212,9 @@ export function createOpenAIHandler(options?: ProviderStreamingOptions): HttpHan
  * returns a JSON completion body.
  */
 export function createOpenAICompleteHandler(content?: string): HttpHandler {
-  return http.post('https://api.openai.com/v1/chat/completions', () => {
-    return HttpResponse.json(JSON.parse(openaiCompleteBody(content ?? 'Mock response')));
-  });
+  return http.post('https://api.openai.com/v1/chat/completions', () =>
+    HttpResponse.json(JSON.parse(openaiCompleteBody(content ?? 'Mock response')))
+  );
 }
 
 /**
@@ -218,12 +224,15 @@ export function createOpenAICompleteHandler(content?: string): HttpHandler {
  * of Anthropic-format events.
  */
 export function createAnthropicHandler(options?: ProviderStreamingOptions): HttpHandler {
-  const { chunks = ['Hello', ' from Anthropic'], simulateError, delay = 0 } = options ?? {};
+  const { chunks = ['Hello', ' from Anthropic'], simulateError } = options ?? {};
   const body = simulateError ? (simulateError.body ?? '') : anthropicStreamBody(chunks);
 
   return http.post('https://api.anthropic.com/v1/messages', async () => {
     if (simulateError) {
-      return new HttpResponse(body, { status: simulateError.status, statusText: simulateError.statusText });
+      return new HttpResponse(body, {
+        status: simulateError.status,
+        statusText: simulateError.statusText
+      });
     }
 
     return new HttpResponse(body, {
@@ -240,12 +249,15 @@ export function createAnthropicHandler(options?: ProviderStreamingOptions): Http
  * an SSE stream of Gemini-format candidates.
  */
 export function createGeminiHandler(options?: ProviderStreamingOptions): HttpHandler {
-  const { chunks = ['Gemini', ' streaming'], simulateError, delay = 0 } = options ?? {};
+  const { chunks = ['Gemini', ' streaming'], simulateError } = options ?? {};
   const body = simulateError ? (simulateError.body ?? '') : geminiStreamBody(chunks);
 
   return http.post('https://generativelanguage.googleapis.com/v1beta/models*', async () => {
     if (simulateError) {
-      return new HttpResponse(body, { status: simulateError.status, statusText: simulateError.statusText });
+      return new HttpResponse(body, {
+        status: simulateError.status,
+        statusText: simulateError.statusText
+      });
     }
 
     return new HttpResponse(body, {

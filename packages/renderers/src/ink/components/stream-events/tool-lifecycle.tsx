@@ -1,22 +1,22 @@
 import { Box, Text } from 'ink';
 import { useEffect, useState } from 'react';
 
-import { animationInterval, spinnerFrames, reducedMotion } from '../../theme/motion.ts';
+import { animationInterval, reducedMotion, spinnerFrames } from '../../theme/motion.ts';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export type ToolCallStatus = 'pending' | 'executing' | 'done' | 'failed';
 
 export interface ToolCallEvent {
-  /** Tool name (e.g. "read_file"). */
-  readonly name: string;
-  /** Tool call ID. */
-  readonly id: string;
   /** Arguments (JSON string or object). */
   readonly args?: Record<string, unknown>;
-  /** Current status. */
-  readonly status: ToolCallStatus;
+  /** Tool call ID. */
+  readonly id: string;
+  /** Tool name (e.g. "read_file"). */
+  readonly name: string;
   /** Result text (present when done/failed). */
   readonly result?: string;
+  /** Current status. */
+  readonly status: ToolCallStatus;
 }
 
 export interface ToolLifecycleProps {
@@ -74,17 +74,17 @@ export function ToolLifecycle({ calls, palette }: ToolLifecycleProps) {
 
         return (
           <Box
-            key={call.id}
-            borderStyle={borderStyleVal}
             borderColor={color}
-            paddingX={1}
-            marginBottom={idx < calls.length - 1 ? 1 : 0}
+            borderStyle={borderStyleVal}
             flexDirection="column"
+            key={call.id}
+            marginBottom={idx < calls.length - 1 ? 1 : 0}
+            paddingX={1}
           >
             {/* Header line: symbol + name */}
             <Box>
               <Text color={color}>{symbol} </Text>
-              <Text color={color} bold>
+              <Text bold color={color}>
                 {call.name}
               </Text>
             </Box>

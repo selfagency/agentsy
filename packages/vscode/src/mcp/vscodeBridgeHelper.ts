@@ -3,16 +3,16 @@ import type { ReadableStream } from 'node:stream/web';
 import type { MCPTransport } from '@agentsy/core/processor';
 import { adaptTransportToStream } from '@agentsy/core/processor';
 import { parseSSEStream } from '@agentsy/core/sse';
-import { ChatResponseProgressPart, Uri } from 'vscode';
 import type { CancellationToken, ChatResponseStream } from 'vscode';
+import { ChatResponseProgressPart, Uri } from 'vscode';
 
 /**
  * Extended MCP event types that can be emitted from the transport.
  * These map to MCP message types that should be converted to VS Code chat format.
  */
 export interface MCPStreamEvent {
-  type: 'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push';
   data: unknown;
+  type: 'markdown' | 'anchor' | 'button' | 'filetree' | 'progress' | 'reference' | 'push';
 }
 
 /**
@@ -52,7 +52,9 @@ export class VSCodeMCPBridgeHelper {
     const transportStream = adaptTransportToStream(this.transport);
 
     // Process raw stream chunks and forward to target stream
-    void this.processRawStream(transportStream, target);
+    this.processRawStream(transportStream, target).catch(() => {
+      // Stream processing errors are handled internally
+    });
 
     return target;
   }
@@ -91,8 +93,12 @@ export class VSCodeMCPBridgeHelper {
         this.pushEvent({ data: part, type: 'push' });
       },
       reference: (value, iconPath) => {
-        const resolvedIconPath =
-          iconPath && typeof iconPath === 'string' ? iconPath : iconPath ? String(iconPath) : undefined;
+        let resolvedIconPath: string | undefined;
+        if (iconPath && typeof iconPath === 'string') {
+          resolvedIconPath = iconPath;
+        } else if (iconPath) {
+          resolvedIconPath = String(iconPath);
+        }
         this.pushEvent({
           data: {
             iconPath: resolvedIconPath,
@@ -113,7 +119,9 @@ export class VSCodeMCPBridgeHelper {
    */
   public connectToStream(stream: ChatResponseStream): void {
     const transportStream = adaptTransportToStream(this.transport);
-    void this.processRawStream(transportStream, stream);
+    this.processRawStream(transportStream, stream).catch(() => {
+      // Stream processing errors are handled internally
+    });
   }
 
   /**
@@ -194,6 +202,9 @@ export class VSCodeMCPBridgeHelper {
       }
       case 'push': {
         this.handlePush(chatStream);
+        break;
+      }
+      default: {
         break;
       }
     }

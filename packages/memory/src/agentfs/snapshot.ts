@@ -1,13 +1,13 @@
 import type Database from 'better-sqlite3';
 
 export interface SnapshotOptions {
-  sqlite: Database.Database;
   destinationPath: string;
+  sqlite: Database.Database;
 }
 
 export interface RestoreOptions {
-  sqlite: Database.Database;
   sourcePath: string;
+  sqlite: Database.Database;
 }
 
 export interface AgentFsSnapshotResult {
@@ -16,8 +16,8 @@ export interface AgentFsSnapshotResult {
 }
 
 export interface AgentFsRestoreResult {
-  sourcePath: string;
   pageCount: number;
+  sourcePath: string;
 }
 
 /**

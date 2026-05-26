@@ -1,7 +1,6 @@
 import type { ReadableStream } from 'node:stream/web';
-
-import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { ProcessorOptions, StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { parseSSEStream } from '@agentsy/core/sse';
 import { parseJson } from '@agentsy/core/structured';
 import type { JsonObject } from '@agentsy/types';
@@ -30,20 +29,20 @@ export type NormalizerProvider =
   | 'zai';
 
 export interface PipelineOptions extends ProcessorOptions {
-  provider: NormalizerProvider;
   /** Maximum nesting depth for SSE JSON payloads (default: 64) */
   maxJsonDepth?: number;
   /** Maximum number of keys in SSE JSON payloads (default: 10000) */
   maxJsonKeys?: number;
+  provider: NormalizerProvider;
 }
 
 export interface PipelineEvent {
-  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   content?: string;
-  thinking?: string;
-  tool_call?: { name: string; parameters: JsonObject };
   message?: string;
   provider: NormalizerProvider;
+  thinking?: string;
+  tool_call?: { name: string; parameters: JsonObject };
+  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
 }
 
 type Normalizer = (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null;

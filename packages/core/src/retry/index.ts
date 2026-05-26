@@ -5,10 +5,10 @@
  */
 
 export interface RetryOptions {
-  maxAttempts?: number;
-  initialDelay?: number;
-  maxDelay?: number;
   backoffFactor?: number;
+  initialDelay?: number;
+  maxAttempts?: number;
+  maxDelay?: number;
   signal?: AbortSignal;
 }
 
@@ -89,12 +89,16 @@ export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {})
         } else {
           const delay = Math.min(initialDelay * backoffFactor ** (attempt - 1), maxDelay);
           timeoutId = setTimeout(() => {
-            void attemptRetry();
+            attemptRetry().catch(() => {
+              // Retry errors are handled internally
+            });
           }, delay);
         }
       }
     };
 
-    void attemptRetry();
+    attemptRetry().catch(() => {
+      // Initial retry errors are handled internally
+    });
   });
 }

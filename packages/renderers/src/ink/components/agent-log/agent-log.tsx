@@ -16,27 +16,27 @@ export type LogEventKind =
   | 'approval-rejected';
 
 export interface LogEvent {
+  /** Optional detail (truncated, shown dimmed). */
+  readonly detail?: string;
   /** Unique event id. */
   readonly id: string;
   /** Event kind — affects icon and color. */
   readonly kind: LogEventKind;
-  /** Timestamp string (e.g. '12:43p'). */
-  readonly timestamp: string;
-  /** Source label (e.g. 'TOOL', 'AGENT', 'SYSTEM'). */
-  readonly source: string;
   /** Event message. */
   readonly message: string;
-  /** Optional detail (truncated, shown dimmed). */
-  readonly detail?: string;
+  /** Source label (e.g. 'TOOL', 'AGENT', 'SYSTEM'). */
+  readonly source: string;
+  /** Timestamp string (e.g. '12:43p'). */
+  readonly timestamp: string;
 }
 
 export interface AgentLogProps {
   /** Log events to display. */
   readonly events: readonly LogEvent[];
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
   /** Max visible rows (default 20). */
   readonly maxRows?: number;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
 }
 
 const KIND_ICONS: Record<LogEventKind, string> = {
@@ -91,7 +91,7 @@ export function AgentLog({ events, palette, maxRows = 20 }: AgentLogProps) {
       {/* Header */}
       <Box marginBottom={0}>
         <Text color={palette.frameBorder}>{'═'}</Text>
-        <Text color={palette.frameBright} bold>
+        <Text bold color={palette.frameBright}>
           {'Agent Log'}
         </Text>
         <Text color={palette.frameBorder}>{'═'}</Text>
@@ -103,7 +103,7 @@ export function AgentLog({ events, palette, maxRows = 20 }: AgentLogProps) {
       </Box>
 
       {/* Log rows — Static prevents re-render of settled events */}
-      <Static items={visible}>{event => <LogRow key={event.id} event={event} palette={palette} />}</Static>
+      <Static items={visible}>{event => <LogRow event={event} key={event.id} palette={palette} />}</Static>
     </Box>
   );
 }
@@ -126,12 +126,12 @@ function LogRow({ event, palette }: LogRowProps) {
         {'  '}
       </Text>
       {/* Source label — fixed 7-char column */}
-      <Text color={palette.frameBright} bold>
+      <Text bold color={palette.frameBright}>
         {event.source.padEnd(7).slice(0, 7)}
       </Text>
       <Text color={palette.frameDim}>{'  '}</Text>
       {/* Icon */}
-      <Text color={color} bold>
+      <Text bold color={color}>
         {icon}{' '}
       </Text>
       {/* Message */}

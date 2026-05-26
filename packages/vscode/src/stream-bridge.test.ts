@@ -1,7 +1,7 @@
 import type { StreamChunk } from '@agentsy/core/processor';
 import { describe, expect, it, vi } from 'vitest';
-
-import { VSCodeStreamBridge, bridgeStream } from './stream-bridge.js';
+import type { LanguageModelChatResponseChunk } from './provider/base-language-model-chat-provider.js';
+import { bridgeStream, VSCodeStreamBridge } from './stream-bridge.js';
 
 async function* sourceChunks(): AsyncIterable<StreamChunk> {
   yield { content: 'a' };
@@ -37,7 +37,7 @@ describe(VSCodeStreamBridge, () => {
 
 describe(bridgeStream, () => {
   it('yields mapped VS Code chunks from stream source', async () => {
-    const out = [];
+    const out: LanguageModelChatResponseChunk[] = [];
     for await (const chunk of bridgeStream(sourceChunks())) {
       out.push(chunk);
     }

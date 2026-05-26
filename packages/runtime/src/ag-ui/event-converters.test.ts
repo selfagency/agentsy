@@ -5,6 +5,7 @@
  */
 
 import type {
+  AgUiEvent,
   ReasoningMessageContentEvent,
   RunErrorEvent,
   RunFinishedEvent,
@@ -17,10 +18,9 @@ import type {
   ToolCallStartEvent
 } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
-import { describe, expect, it, expectTypeOf } from 'vitest';
-
-import { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { CopilotKitEvent, CustomUIEvent } from './event-converters.js';
+import { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
 
 // Test fixtures
 async function createMockStream() {
@@ -416,7 +416,7 @@ describe('convertEventStream', () => {
     const source = await createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
-    const results = [];
+    const results: AgUiEvent[] = [];
     for await (const event of converted) {
       results.push(event);
     }
@@ -463,7 +463,7 @@ describe('convertEventStream', () => {
     const first = results[0];
     const second = results[1];
     const third = results[2];
-    if (!first || !second || !third) {
+    if (!(first && second && third)) {
       throw new Error('Expected 3 results');
     }
     expect((first as CustomUIEvent).runId).toBe('run_a');

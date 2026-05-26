@@ -1,8 +1,8 @@
 import type { Chunk, ChunkingStrategy, DataSource, Document } from '../types.js';
 
 export interface IndexingPipelineOptions {
-  chunkSize?: number;
   chunkOverlap?: number;
+  chunkSize?: number;
   semanticThreshold?: number;
 }
 

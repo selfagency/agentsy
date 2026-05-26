@@ -3,23 +3,23 @@ import { Box, Text } from 'ink';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export interface ProviderEntry {
+  /** Available capability tags. */
+  readonly capabilities: readonly string[];
   /** Provider identifier (e.g. "anthropic"). */
   readonly id: string;
   /** Display name. */
   readonly name: string;
-  /** Available capability tags. */
-  readonly capabilities: readonly string[];
   /** Whether this provider is currently selected. */
   readonly selected: boolean;
 }
 
 export interface ProviderListProps {
-  /** List of available providers. */
-  readonly providers: readonly ProviderEntry[];
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
   /** Currently highlighted index. */
   readonly highlightIndex: number;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** List of available providers. */
+  readonly providers: readonly ProviderEntry[];
 }
 
 /**
@@ -39,18 +39,25 @@ export function ProviderList({ providers, palette, highlightIndex }: ProviderLis
       {providers.map((provider, idx) => {
         const isHighlighted = idx === highlightIndex;
         const arrow = isHighlighted ? '▸' : ' ';
-        const nameColor = provider.selected ? palette.success : isHighlighted ? palette.emphasis : palette.frameBright;
+        let nameColor: string;
+        if (provider.selected) {
+          nameColor = palette.success;
+        } else if (isHighlighted) {
+          nameColor = palette.emphasis;
+        } else {
+          nameColor = palette.frameBright;
+        }
 
         return (
           <Box key={provider.id}>
             <Text color={palette.assistantAccent}>{arrow} </Text>
-            <Text color={nameColor} bold={isHighlighted}>
+            <Text bold={isHighlighted} color={nameColor}>
               {provider.name}
             </Text>
             {provider.capabilities.length > 0 ? (
               <Box marginLeft={1}>
                 {provider.capabilities.map(cap => (
-                  <Text key={cap} color={palette.info}>
+                  <Text color={palette.info} key={cap}>
                     {' ['}
                     {cap}
                     {']'}

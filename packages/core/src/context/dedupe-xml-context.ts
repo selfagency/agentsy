@@ -7,8 +7,8 @@ const XML_CONTEXT_MAX_PART_LENGTH = 1_000_000;
 const OPEN_TAG_RE = /<([a-z_][a-z0-9_.-]{0,50})[^>]*>/giu;
 
 interface TagMatch {
-  tagName: string;
   fullMatch: string;
+  tagName: string;
 }
 
 // Valid XML tag names: start with letter/underscore, followed by alphanumeric/underscore/hyphen/dot/colon

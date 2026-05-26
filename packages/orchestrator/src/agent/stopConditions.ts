@@ -70,6 +70,6 @@ export function isLoopFinished(): StopCondition {
  * Uses the agent loop's deep-equality check via consecutiveIdenticalCalls counter.
  * Defaults to 3 consecutive identical calls.
  */
-export function detectDoomLoop(threshold: number = 3): StopCondition {
+export function detectDoomLoop(threshold = 3): StopCondition {
   return (state: AgentLoopState): boolean => state.consecutiveIdenticalCalls >= threshold;
 }

@@ -83,10 +83,12 @@ function validateSyncConfig(config: TursoSyncConfig): void {
 export class TursoManager {
   readonly #client: TursoClient;
   readonly #metrics: SyncMetrics;
+  readonly #config: TursoSyncConfig;
   #status: SyncStatus;
 
-  constructor(private readonly config: TursoSyncConfig) {
+  constructor(config: TursoSyncConfig) {
     validateSyncConfig(config);
+    this.#config = config;
     this.#client = config.client ?? createDefaultTursoClient(config);
     this.#metrics = { ...INITIAL_SYNC_METRICS };
     this.#status = 'idle';
@@ -164,7 +166,7 @@ export class TursoManager {
 
     try {
       const remoteSnapshot = await this.download(localState.cursor);
-      const mergePolicy = this.config.mergePolicy ?? 'lastWriteWins';
+      const mergePolicy = this.#config.mergePolicy ?? 'lastWriteWins';
       const conflicts = collectConflicts(localState.records, remoteSnapshot.records, {
         policy: mergePolicy
       });
@@ -178,8 +180,8 @@ export class TursoManager {
         if (resolution.status === 'manual') {
           unresolvedConflicts += 1;
           manualConflictIds.add(createRecordKey(conflict.local));
-          if (this.config.conflictStore) {
-            await this.config.conflictStore.save(conflict);
+          if (this.#config.conflictStore) {
+            await this.#config.conflictStore.save(conflict);
           }
           continue;
         }
@@ -209,7 +211,7 @@ export class TursoManager {
     } catch (error) {
       const envelope = createSecureSyncErrorEnvelope(error, {
         code: 'SYNC_FAILED',
-        retryable: this.config.maxRetries > 0
+        retryable: this.#config.maxRetries > 0
       });
       this.#metrics.failures += 1;
       this.#status = 'error';

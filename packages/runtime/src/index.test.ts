@@ -1,6 +1,6 @@
 import { createSessionStore } from '@agentsy/session';
 import { describe, expect, it, vi } from 'vitest';
-
+import type { RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 import {
   createRuntimeExecutor,
   createRuntimeLoop,
@@ -8,7 +8,6 @@ import {
   loadRuntimeSnapshotFromSession,
   saveRuntimeSnapshotToSession
 } from './index.js';
-import type { RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 
 describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {
@@ -83,7 +82,7 @@ describe('createRuntimeExecutor', () => {
     const task: RuntimeTask = {
       id: 'a',
       run: async () => {
-        throw 'boom';
+        throw new Error('boom');
       }
     };
 
@@ -101,7 +100,9 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
-        run: async () => {}
+        run: async () => {
+          /* noop */
+        }
       },
       {
         id: 'b',
@@ -188,7 +189,14 @@ describe('createRuntimeLoop', () => {
     const loop = createRuntimeLoop({ onTaskComplete, onTaskStart });
 
     // oxlint-disable-next-line no-empty-function -- no-op task for lifecycle callback test
-    await loop.execute([{ id: 'task-1', run: async () => {} }]);
+    await loop.execute([
+      {
+        id: 'task-1',
+        run: async () => {
+          /* noop */
+        }
+      }
+    ]);
 
     expect(onTaskStart).toHaveBeenCalledOnce();
     expect(onTaskComplete).toHaveBeenCalledOnce();
@@ -275,7 +283,9 @@ describe('createRuntimeLoop', () => {
         {
           id: 'child',
           // oxlint-disable-next-line no-empty-function -- no-op child task for depth test
-          run: async () => {}
+          run: async () => {
+            /* noop */
+          }
         }
       ])
     ).rejects.toThrow('Runtime spawn depth exceeded maxDepth');
@@ -352,7 +362,13 @@ describe('createRuntimeWorkflowExecutor', () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
       // oxlint-disable-next-line no-empty-function -- no-op task for missing-dependency error test
-      { dependsOn: ['build'], id: 'deploy', run: async () => {} }
+      {
+        dependsOn: ['build'],
+        id: 'deploy',
+        run: async () => {
+          /* noop */
+        }
+      }
     ];
 
     await expect(workflow.execute(tasks)).rejects.toThrow('depends on missing task');
@@ -362,9 +378,21 @@ describe('createRuntimeWorkflowExecutor', () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
       // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
-      { dependsOn: ['b'], id: 'a', run: async () => {} },
+      {
+        dependsOn: ['b'],
+        id: 'a',
+        run: async () => {
+          /* noop */
+        }
+      },
       // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
-      { dependsOn: ['a'], id: 'b', run: async () => {} }
+      {
+        dependsOn: ['a'],
+        id: 'b',
+        run: async () => {
+          /* noop */
+        }
+      }
     ];
 
     await expect(workflow.execute(tasks)).rejects.toThrow('contains a cycle');

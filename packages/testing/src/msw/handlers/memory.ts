@@ -7,8 +7,7 @@
  * @module @agentsy/testing/msw/handlers/memory
  */
 
-import { HttpResponse, http } from 'msw';
-import { type HttpHandler } from 'msw';
+import { type HttpHandler, HttpResponse, http } from 'msw';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,10 +51,10 @@ export function createMockMemoryState(): MockMemoryState {
 export interface MemoryHandlerOptions {
   /** Base URL for the RAG server (default: http://localhost:3080) */
   baseUrl?: string;
-  /** Shared mutable state */
-  state?: MockMemoryState;
   /** Response delay in ms (default: 0) */
   delay?: number;
+  /** Shared mutable state */
+  state?: MockMemoryState;
 }
 
 /**

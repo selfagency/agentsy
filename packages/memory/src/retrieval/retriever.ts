@@ -1,41 +1,41 @@
 import type { MemoryScope } from '../scope/scope-manager.js';
-import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 import type { LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
+import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 
 export interface MemorySearchRecord {
+  content: string;
+  createdAt: Date;
   id: string;
   scope: MemoryScope;
-  content: string;
-  title?: string;
   tags?: string[];
-  createdAt: Date;
+  title?: string;
   updatedAt?: Date;
 }
 
 export interface MemorySearchHit {
+  reasons: string[];
   record: MemorySearchRecord;
   score: number;
-  reasons: string[];
 }
 
 export interface MemorySearchInput {
-  query: string;
-  scope?: MemoryScope;
   actorId?: string;
   limit?: number;
   now?: Date;
+  query: string;
+  scope?: MemoryScope;
 }
 
 export interface MemoryRetriever {
-  upsert(record: MemorySearchRecord): void;
-  remove(recordId: string): void;
   list(): MemorySearchRecord[];
+  remove(recordId: string): void;
   search(input: MemorySearchInput): Promise<MemorySearchHit[]>;
+  upsert(record: MemorySearchRecord): void;
 }
 
 export interface MemoryRetrieverOptions {
-  embeddingEngine?: LocalEmbeddingEngine;
   canReadScope?: (actorId: string, scope: MemoryScope) => boolean;
+  embeddingEngine?: LocalEmbeddingEngine;
 }
 
 function normalizeQueryTerms(query: string): string[] {
@@ -124,6 +124,7 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
       embeddings.delete(recordId);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements MemoryRetriever interface requiring Promise return
     async search(input) {
       const queryTerms = normalizeQueryTerms(input.query);
       const queryEmbedding = embeddingEngine.embed(input.query);

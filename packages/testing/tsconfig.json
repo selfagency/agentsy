@@ -16,7 +16,9 @@
       "@agentsy/core/xml-filter": ["../core/src/xml-filter/index.ts"],
       "@agentsy/providers": ["../providers/src/index.ts"],
       "@agentsy/providers/adapters": ["../providers/src/adapters/index.ts"],
-      "@agentsy/providers/normalizers": ["../providers/src/normalizers/index.ts"],
+      "@agentsy/providers/normalizers": [
+        "../providers/src/normalizers/index.ts"
+      ],
       "@agentsy/providers/pipeline": ["../providers/src/pipeline/index.ts"],
       "@agentsy/memory": ["../memory/src/index.ts"],
       "@agentsy/renderers": ["../renderers/src/index.ts"]

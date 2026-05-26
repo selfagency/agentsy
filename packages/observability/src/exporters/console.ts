@@ -18,12 +18,12 @@ import type { MetricData, ObservabilitySink, SpanData } from '../core/types.js';
 
 /** Options for {@link ConsoleExporter}. */
 export interface ConsoleExporterOptions {
+  /** Prefix for all output lines. */
+  prefix?: string;
   /** When true, outputs human-readable lines. When false, compact JSON. Default: true. */
   pretty?: boolean;
   /** Writes to a specific stream (default: stdout via console.log). */
   write?: (line: string) => void;
-  /** Prefix for all output lines. */
-  prefix?: string;
 }
 
 const PREFIX = '[observability]';

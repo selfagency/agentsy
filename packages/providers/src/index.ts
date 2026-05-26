@@ -4,30 +4,30 @@ export * from './pipeline/index.js';
 export * from './universal-client/index.js';
 
 export interface ProviderRetryPolicy {
-  maxAttempts: number;
-  initialDelayMs: number;
-  maxDelayMs: number;
   backoffFactor: number;
+  initialDelayMs: number;
+  maxAttempts: number;
+  maxDelayMs: number;
 }
 
 export interface ProviderCapabilities {
-  streaming?: boolean | undefined;
-  toolCalling?: boolean | undefined;
   batching?: boolean | undefined;
-  reasoning?: boolean | undefined;
-  retry?: ProviderRetryPolicy | undefined;
   budgeting?:
     | {
         supportsCostTracking?: boolean | undefined;
         supportsTokenBudgeting?: boolean | undefined;
       }
     | undefined;
+  reasoning?: boolean | undefined;
+  retry?: ProviderRetryPolicy | undefined;
+  streaming?: boolean | undefined;
+  toolCalling?: boolean | undefined;
 }
 
 export interface ProviderDefinition {
+  capabilities?: ProviderCapabilities | undefined;
   id: string;
   name: string;
-  capabilities?: ProviderCapabilities | undefined;
 }
 
 // Capability bridge exports

@@ -1,9 +1,9 @@
 import type { UsageInfo } from '@agentsy/types';
 
 export interface VSCodeUsage {
-  promptTokens: number;
   completionTokens: number;
   outputBuffer?: number;
+  promptTokens: number;
 }
 
 /**
@@ -11,7 +11,7 @@ export interface VSCodeUsage {
  */
 export function mapUsageToVSCode(usage: UsageInfo | undefined): VSCodeUsage | undefined {
   if (usage === undefined) {
-    return undefined;
+    return;
   }
 
   return {

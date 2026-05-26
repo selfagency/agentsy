@@ -1,50 +1,50 @@
 export type RAGSourceType = 'wiki' | 'file' | 'document' | 'web';
 
 export interface RAGWeightConfig {
-  vector: number;
-  lexical: number;
   entity: number;
+  lexical: number;
   temporal: number;
+  vector: number;
 }
 
 export interface RAGWebConfig {
-  enabled: boolean;
   allowHosts: string[];
+  enabled: boolean;
 }
 
 export interface RAGConfig {
   localOnly: boolean;
   serverBaseUrl: string;
   timeoutMs: number;
-  weights: RAGWeightConfig;
   web: RAGWebConfig;
+  weights: RAGWeightConfig;
 }
 
 export interface RAGServerDocument {
+  chunkIndex: number;
+  content: string;
   id: string;
+  metadata?: Record<string, unknown>;
   sourceId: string;
   sourceType: RAGSourceType;
   title: string;
-  content: string;
-  chunkIndex: number;
   updatedAt: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface RAGSearchRequest {
-  query: string;
   limit?: number;
+  query: string;
 }
 
 export interface RAGSearchResult {
+  content: string;
   id: string;
+  metadata?: Record<string, unknown>;
+  score: number;
   sourceId: string;
   sourceType: RAGSourceType;
   title: string;
-  content: string;
-  score: number;
   updatedAt: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface RAGHealthResult {
@@ -53,17 +53,17 @@ export interface RAGHealthResult {
 }
 
 export interface RAGDeleteResult {
-  id: string;
   deleted: boolean;
+  id: string;
 }
 
 export interface IngestSource {
+  content: string;
+  metadata?: Record<string, unknown>;
   sourceId: string;
   sourceType: RAGSourceType;
   title?: string;
-  content: string;
   updatedAt?: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface IngestOutput {
@@ -72,65 +72,65 @@ export interface IngestOutput {
 
 export interface IngestSummary {
   inserted: number;
-  updated: number;
   skipped: number;
+  updated: number;
 }
 
 export interface BootstrapSummary {
-  totalSources: number;
   totalInserted: number;
-  totalUpdated: number;
   totalSkipped: number;
+  totalSources: number;
+  totalUpdated: number;
 }
 
 export interface RAGEvidenceCitation {
+  chunkIndex?: number;
   sourceId: string;
   sourceType: RAGSourceType;
   title?: string;
-  chunkIndex?: number;
   url?: string;
 }
 
 export interface RAGScoreBreakdown {
-  vector: number;
-  lexical: number;
   entity: number;
-  temporal: number;
   final: number;
+  lexical: number;
+  temporal: number;
+  vector: number;
 }
 
 export interface RAGEvidence {
+  citations: RAGEvidenceCitation[];
+  confidence: number;
+  content: string;
   id: string;
+  metadata?: Record<string, unknown>;
+  score: number;
+  scoreBreakdown: RAGScoreBreakdown;
   sourceId: string;
   sourceType: RAGSourceType;
   title: string;
-  content: string;
-  score: number;
-  confidence: number;
   updatedAt: string;
-  scoreBreakdown: RAGScoreBreakdown;
-  citations: RAGEvidenceCitation[];
-  metadata?: Record<string, unknown>;
 }
 
 export interface PlannedQuery {
+  entities: string[];
+  expandedTerms: string[];
+  limit: number;
   query: string;
   scope?: string;
-  expandedTerms: string[];
-  entities: string[];
-  limit: number;
 }
 
 export interface ContextPackedEvidence {
-  id: string;
-  title: string;
-  content: string;
-  score: number;
   citations: RAGEvidenceCitation[];
+  content: string;
+  id: string;
+  score: number;
+  title: string;
 }
 
 export interface ContextPackResult {
   items: ContextPackedEvidence[];
-  usedTokens: number;
   maxTokens: number;
+  usedTokens: number;
 }

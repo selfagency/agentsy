@@ -9,20 +9,30 @@ export interface MemoryMcpToolSet {
 
 function buildIngestOptions(args: Record<string, unknown>): MemoryEngineIngestOptions {
   const opts: MemoryEngineIngestOptions = {};
-  if (typeof args.importance === 'number') opts.importance = args.importance;
+  if (typeof args.importance === 'number') {
+    opts.importance = args.importance;
+  }
   const kindValues = ['semantic', 'episodic', 'procedural', 'sensory'] as const;
   if (typeof args.kind === 'string' && kindValues.includes(args.kind as (typeof kindValues)[number])) {
     opts.kind = args.kind as 'semantic' | 'episodic' | 'procedural' | 'sensory';
   }
-  if (typeof args.targetTier === 'string') opts.targetTier = args.targetTier as TierName;
+  if (typeof args.targetTier === 'string') {
+    opts.targetTier = args.targetTier as TierName;
+  }
   return opts;
 }
 
 function buildRecallOptions(args: Record<string, unknown>): MemoryEngineRecallOptions {
   const opts: MemoryEngineRecallOptions = {};
-  if (typeof args.minImportance === 'number') opts.minImportance = args.minImportance;
-  if (typeof args.limit === 'number') opts.limit = args.limit;
-  if (typeof args.crossTier === 'boolean') opts.crossTier = args.crossTier;
+  if (typeof args.minImportance === 'number') {
+    opts.minImportance = args.minImportance;
+  }
+  if (typeof args.limit === 'number') {
+    opts.limit = args.limit;
+  }
+  if (typeof args.crossTier === 'boolean') {
+    opts.crossTier = args.crossTier;
+  }
   const kindValues = ['semantic', 'episodic', 'procedural', 'sensory'] as const;
   if (typeof args.kind === 'string' && kindValues.includes(args.kind as (typeof kindValues)[number])) {
     opts.kind = args.kind as 'semantic' | 'episodic' | 'procedural' | 'sensory';
@@ -35,15 +45,23 @@ function buildRecallOptions(args: Record<string, unknown>): MemoryEngineRecallOp
 }
 
 function coerceString(value: unknown): string {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
   return '';
 }
 
 function coerceOptionalString(value: unknown): string | undefined {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return undefined;
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return;
 }
 
 export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
@@ -52,6 +70,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
 
   // --- Handler functions (defined first to avoid forward-reference issues) ---
 
+  // biome-ignore lint/suspicious/useAwait: McpToolHandler requires Promise return
   const ingestHandler: McpToolHandler = async args => {
     const content = coerceString(args.content);
     if (!content) {
@@ -71,6 +90,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     return { content: [{ type: 'text', text: `Ingested: ${id}` }] };
   };
 
+  // biome-ignore lint/suspicious/useAwait: McpToolHandler requires Promise return
   const recallHandler: McpToolHandler = async args => {
     const opts = buildRecallOptions(args);
     const results = engine.recall(opts);
@@ -190,6 +210,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     description: 'Get tier utilization and budget statistics.',
     inputSchema: { type: 'object', properties: {}, required: [] }
   };
+  // biome-ignore lint/suspicious/useAwait: McpToolHandler requires Promise return
   handlers.memory_stats = async _args => {
     const stats = engine.stats();
     const snap = engine.snapshot();
@@ -208,13 +229,20 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     description: 'Check memory health.',
     inputSchema: { type: 'object', properties: {}, required: [] }
   };
+  // biome-ignore lint/suspicious/useAwait: McpToolHandler requires Promise return
   handlers.memory_lint = async _args => {
     const stats = engine.stats();
     const issues: string[] = [];
-    if (stats.totalItems === 0) issues.push('No memories');
-    if (stats.budgetUtilization >= 1.0) issues.push('Budget exhausted');
+    if (stats.totalItems === 0) {
+      issues.push('No memories');
+    }
+    if (stats.budgetUtilization >= 1.0) {
+      issues.push('Budget exhausted');
+    }
     for (const [name, tierStat] of Object.entries(stats.tierStats)) {
-      if (tierStat.utilization >= 0.95) issues.push(`${name} near capacity`);
+      if (tierStat.utilization >= 0.95) {
+        issues.push(`${name} near capacity`);
+      }
     }
     if (issues.length === 0) {
       return { content: [{ type: 'text', text: 'Health: OK' }] };
@@ -246,13 +274,16 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
       required: ['tier']
     }
   };
+  // biome-ignore lint/suspicious/useAwait: McpToolHandler requires Promise return
   handlers.memory_list = async args => {
     const tier = String(args.tier) as TierName;
     const listOpts: MemoryEngineRecallOptions = {
       tiers: [tier],
       crossTier: false
     };
-    if (typeof args.limit === 'number') listOpts.limit = args.limit;
+    if (typeof args.limit === 'number') {
+      listOpts.limit = args.limit;
+    }
     const results = engine.recall(listOpts);
     const result = results[0];
     if (!result || result.items.length === 0) {

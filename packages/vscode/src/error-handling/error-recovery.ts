@@ -5,14 +5,13 @@ import { errorToProviderCode } from './error-mapper.js';
  * Options for retryable operations.
  */
 export interface RetryOptions {
-  /** Maximum number of attempts (default: 3) */
-  maxAttempts?: number;
+  /** Backoff multiplier (default: 2) */
+  backoffMultiplier?: number;
 
   /** Initial delay in milliseconds (default: 1000) */
   initialDelayMs?: number;
-
-  /** Backoff multiplier (default: 2) */
-  backoffMultiplier?: number;
+  /** Maximum number of attempts (default: 3) */
+  maxAttempts?: number;
 
   /** Maximum delay in milliseconds (default: 30000) */
   maxDelayMs?: number;

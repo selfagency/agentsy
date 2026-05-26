@@ -1,5 +1,5 @@
 import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
-import type { TierConfig, TierLevel, TierName } from './tier-types.js';
+import type { TierConfig } from './tier-types.js';
 
 export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
 export type { TierConfig } from './tier-types.js';
@@ -9,7 +9,7 @@ const SENSORY_REGISTER_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   consolidationThreshold: 0.5,
   maxItems: 4,
   maxTokens: 400,
-  ttlMs: 2_000
+  ttlMs: 2000
 };
 
 export interface SensoryRegisterOptions {

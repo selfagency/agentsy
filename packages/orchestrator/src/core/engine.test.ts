@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { AgentRegistry } from '../agents/registry.js';
 import type { AgentCapabilities, WorkflowSpec } from '../types/index.js';
 import { NodeType, WorkflowStatus } from '../types/index.js';
-import { OrchestrationEngine } from './engine.js';
 import type { TaskScheduler } from './engine.js';
+import { OrchestrationEngine } from './engine.js';
 
 function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilities {
   return {

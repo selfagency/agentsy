@@ -1,7 +1,7 @@
 import { createUniversalClient } from '@agentsy/providers';
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
-import type { LoadBalancerConfig, LoadBalancedClient, RoutingState } from '../types.js';
+import type { LoadBalancedClient, LoadBalancerConfig, RoutingState } from '../types.js';
 
 export interface ProviderRegistryEntry {
   client: ReturnType<typeof createUniversalClient>;
@@ -9,7 +9,7 @@ export interface ProviderRegistryEntry {
 }
 
 export class ProviderRegistry {
-  #entries = new Map<string, ProviderRegistryEntry>();
+  readonly #entries = new Map<string, ProviderRegistryEntry>();
 
   register(providerId: string, client: ReturnType<typeof createUniversalClient>): void {
     this.#entries.set(providerId, { client, providerId });
@@ -60,8 +60,12 @@ function buildNoopClient(): LoadBalancedClient {
     getUsageSnapshot() {
       return [];
     },
-    markProviderHealthy(_providerId: string): void {},
-    markProviderUnhealthy(_providerId: string): void {},
+    markProviderHealthy(_providerId: string): void {
+      /* noop */
+    },
+    markProviderUnhealthy(_providerId: string): void {
+      /* noop */
+    },
     shutdown(): Promise<void> {
       return Promise.resolve();
     }
@@ -113,8 +117,12 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     getUsageSnapshot() {
       return registry.list().map(entry => ({ providerId: entry.providerId }));
     },
-    markProviderHealthy(_providerId: string): void {},
-    markProviderUnhealthy(_providerId: string): void {},
+    markProviderHealthy(_providerId: string): void {
+      /* noop */
+    },
+    markProviderUnhealthy(_providerId: string): void {
+      /* noop */
+    },
     shutdown(): Promise<void> {
       return Promise.resolve();
     }

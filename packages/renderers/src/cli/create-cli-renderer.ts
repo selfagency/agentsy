@@ -98,11 +98,9 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
     for (const part of parts) {
       if (part.type === 'text' && part.text) {
         accumulatedMarkdown += part.text;
-      } else if (part.type === 'thinking' && showThinking && part.text) {
-        if (thinkingStyle === 'blockquote') {
-          accumulatedMarkdown += appendToBlockquote(part.text, true);
-          accumulatedMarkdown += '\n';
-        }
+      } else if (part.type === 'thinking' && showThinking && part.text && thinkingStyle === 'blockquote') {
+        accumulatedMarkdown += appendToBlockquote(part.text, true);
+        accumulatedMarkdown += '\n';
       }
     }
   }
@@ -141,7 +139,7 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       }
     },
 
-    async write(chunk: string): Promise<void> {
+    write(chunk: string): void {
       try {
         const result = llmProcessor.process({ content: chunk });
         processParts(result.parts);

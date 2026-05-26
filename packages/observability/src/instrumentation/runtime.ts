@@ -16,7 +16,6 @@
  */
 
 import type { RuntimeOptions, RuntimeTask, RuntimeTaskResult } from '@agentsy/types';
-import * as api from '@opentelemetry/api';
 
 import type { Span, Tracer } from '../core/types.js';
 
@@ -35,12 +34,12 @@ export const RuntimeSpanAttributes = {
 
 /** Options for {@link instrumentRuntime}. */
 export interface InstrumentRuntimeOptions {
+  /** Additional attributes merged into every task span. */
+  globalAttributes?: Record<string, string | number | boolean>;
   /** Service name attached to all root spans. */
   serviceName?: string;
   /** Session identifier, if known, attached to all task spans. */
   sessionId?: string;
-  /** Additional attributes merged into every task span. */
-  globalAttributes?: Record<string, string | number | boolean>;
 }
 
 /**

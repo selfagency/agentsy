@@ -1,17 +1,15 @@
 import { Box, Text } from 'ink';
-
-import { inkBorderStyle } from '../../theme/frames.ts';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export interface ModelEntry {
-  /** Model identifier (e.g. "claude-sonnet-4-20250514"). */
-  readonly id: string;
-  /** Display name. */
-  readonly name: string;
   /** Model capabilities. */
   readonly capabilities: readonly string[];
   /** Context window size. */
   readonly contextWindow?: number;
+  /** Model identifier (e.g. "claude-sonnet-4-20250514"). */
+  readonly id: string;
+  /** Display name. */
+  readonly name: string;
   /** Provider name this model belongs to. */
   readonly provider: string;
   /** Whether model supports streaming. */
@@ -19,18 +17,18 @@ export interface ModelEntry {
 }
 
 export interface ModelSelectProps {
-  /** Available models. */
-  readonly models: readonly ModelEntry[];
-  /** Currently selected model ID. */
-  readonly selectedId?: string;
   /** Highlighted index for keyboard navigation. */
   readonly highlightIndex: number;
+  /** Available models. */
+  readonly models: readonly ModelEntry[];
   /** Semantic palette. */
   readonly palette: AcidPalette;
   /** Whether scope is local or cloud. */
   readonly scope?: 'local' | 'cloud';
   /** Scope toggle handler label. */
   readonly scopeLabel?: string;
+  /** Currently selected model ID. */
+  readonly selectedId?: string;
 }
 
 /**
@@ -58,9 +56,9 @@ export function ModelSelect({
   return (
     <Box flexDirection="column">
       {/* Scope indicator */}
-      <Box paddingX={1} marginBottom={1}>
+      <Box marginBottom={1} paddingX={1}>
         <Text color={palette.frameDim}>scope: </Text>
-        <Text color={scope === 'cloud' ? palette.info : palette.success} bold>
+        <Text bold color={scope === 'cloud' ? palette.info : palette.success}>
           {scope}
         </Text>
         {scopeLabel ? <Text color={palette.muted}> ({scopeLabel})</Text> : null}
@@ -71,12 +69,19 @@ export function ModelSelect({
         const isSelected = model.id === selectedId;
         const isHighlighted = idx === highlightIndex;
         const arrow = isHighlighted ? '▸' : ' ';
-        const nameColor = isSelected ? palette.success : isHighlighted ? palette.emphasis : palette.assistantText;
+        let nameColor: string;
+        if (isSelected) {
+          nameColor = palette.success;
+        } else if (isHighlighted) {
+          nameColor = palette.emphasis;
+        } else {
+          nameColor = palette.assistantText;
+        }
 
         return (
           <Box key={model.id} paddingX={1}>
             <Text color={palette.assistantAccent}>{arrow} </Text>
-            <Text color={nameColor} bold={isHighlighted || isSelected}>
+            <Text bold={isHighlighted || isSelected} color={nameColor}>
               {model.name}
             </Text>
 
@@ -90,7 +95,7 @@ export function ModelSelect({
 
             {/* Capability badges */}
             {model.capabilities.map(cap => (
-              <Text key={cap} color={palette.info}>
+              <Text color={palette.info} key={cap}>
                 {' ['}
                 {cap}
                 {']'}

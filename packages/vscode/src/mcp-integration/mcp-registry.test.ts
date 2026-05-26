@@ -107,7 +107,9 @@ describe(McpServerRegistry, () => {
 
   it('registerWithVscode serializes and writes server configuration without persisting secrets', async () => {
     vi.resetModules();
-    const update = vi.fn(async () => {});
+    const update = vi.fn(async () => {
+      /* noop */
+    });
     const get = vi.fn(() => ({ existing: { command: 'existing-cmd' } }));
 
     vi.doMock('vscode', () => ({

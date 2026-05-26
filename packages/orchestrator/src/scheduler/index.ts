@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto';
 export type SchedulerTaskStatus = 'pending' | 'scheduled' | 'cancelled';
 
 export interface SchedulerTaskRequest {
-  taskInfo: unknown;
   agents: unknown[];
+  taskInfo: unknown;
 }
 
 export type SchedulerExecutionInput<T> = (() => Promise<T>) | SchedulerTaskRequest;
@@ -22,10 +22,10 @@ export interface SchedulerAssignment {
 
 export interface SchedulerTaskDefinition {
   id: string;
-  prompt: string;
-  runAt?: number;
   lane?: string;
   metadata?: Record<string, unknown>;
+  prompt: string;
+  runAt?: number;
 }
 
 export interface SchedulerTaskRecord extends SchedulerTaskDefinition {
@@ -35,21 +35,21 @@ export interface SchedulerTaskRecord extends SchedulerTaskDefinition {
 
 interface SchedulerTaskInfo {
   id?: string;
-  name?: string;
   input?: unknown;
+  name?: string;
   runAt?: number;
 }
 
 interface SchedulableAgent {
-  id: string;
   available?: boolean;
+  id: string;
 }
 
 export interface SchedulerRegistry {
-  register(task: SchedulerTaskDefinition): SchedulerTaskRecord;
   cancel(taskId: string): SchedulerTaskRecord | null;
   get(taskId: string): SchedulerTaskRecord | null;
   list(options?: { lane?: string; status?: SchedulerTaskStatus }): SchedulerTaskRecord[];
+  register(task: SchedulerTaskDefinition): SchedulerTaskRecord;
 }
 
 function createScheduledTaskId(): string {

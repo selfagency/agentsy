@@ -6,35 +6,37 @@
 
 import type { Logger } from '../core/types.js';
 
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3
-}
+export const LogLevel = {
+  DEBUG: 0,
+  INFO: 1,
+  WARN: 2,
+  ERROR: 3
+} as const;
+
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 /**
  * Logger configuration
  */
 export interface LoggerConfig {
-  /** Minimum log level to output */
-  minLevel?: LogLevel;
   /** Whether to include timestamps */
   includeTimestamp?: boolean;
   /** Optional custom log level names */
   levelNames?: Record<LogLevel, string>;
+  /** Minimum log level to output */
+  minLevel?: LogLevel;
 }
 
 /**
  * Log entry with metadata
  */
 export interface LogEntry {
+  attributes?: Record<string, unknown>;
+  error?: unknown;
   level: LogLevel;
   levelName: string;
   message: string;
   timestamp: number;
-  attributes?: Record<string, unknown>;
-  error?: unknown;
 }
 
 /**

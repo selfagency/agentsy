@@ -1,7 +1,6 @@
 import { Command, Flags } from '@oclif/core';
-
-import { initMemory } from '../init.js';
 import type { InitResult } from '../init.js';
+import { initMemory } from '../init.js';
 
 export default class Init extends Command {
   static readonly description = 'Initialize @agentsy/memory engine and configuration';

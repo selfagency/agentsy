@@ -7,20 +7,22 @@ export interface Synthesizer {
 }
 
 export interface SynthesizeResult {
-  synthesized: MemoryItem[];
-  sources: string[];
   discarded: MemoryItem[];
+  sources: string[];
+  synthesized: MemoryItem[];
   tokenReduction: number;
 }
 
 export interface SynthesizerOptions {
-  now?: (() => number) | undefined;
   embeddingEngine?: LocalEmbeddingEngine;
+  now?: (() => number) | undefined;
   similarityThreshold?: number;
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) return 0;
+  if (a.length !== b.length) {
+    return 0;
+  }
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -39,14 +41,20 @@ function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-type Group = { items: MemoryItem[]; indices: number[] };
-type ItemEmbedding = { item: MemoryItem; embedding: number[] };
-type BudgetState = {
-  synthesized: MemoryItem[];
+interface Group {
+  indices: number[];
+  items: MemoryItem[];
+}
+interface ItemEmbedding {
+  embedding: number[];
+  item: MemoryItem;
+}
+interface BudgetState {
   allSourceIds: string[];
   discarded: MemoryItem[];
+  synthesized: MemoryItem[];
   usedTokens: number;
-};
+}
 
 function prepareEmbeddings(items: MemoryItem[], embedFn: (text: string) => number[]): ItemEmbedding[] {
   return items.map(item => ({ item, embedding: embedFn(item.content) }));
@@ -61,19 +69,29 @@ function tryAddToGroup(
   i: number,
   j: number
 ): void {
-  if (assigned.has(j)) return;
+  if (assigned.has(j)) {
+    return;
+  }
 
   const embeddingJ = embeddings[j]?.embedding;
-  if (!embeddingJ) return;
+  if (!embeddingJ) {
+    return;
+  }
 
   const embeddingI = embeddings[i]?.embedding;
-  if (!embeddingI) return;
+  if (!embeddingI) {
+    return;
+  }
 
   const sim = cosineSimilarity(embeddingI, embeddingJ);
-  if (sim < threshold) return;
+  if (sim < threshold) {
+    return;
+  }
 
   const jItem = items[j];
-  if (!jItem) return;
+  if (!jItem) {
+    return;
+  }
 
   group.items.push(jItem);
   group.indices.push(j);
@@ -85,10 +103,14 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
   const groups: Group[] = [];
 
   for (let i = 0; i < items.length; i++) {
-    if (assigned.has(i)) continue;
+    if (assigned.has(i)) {
+      continue;
+    }
 
     const groupItem = items[i];
-    if (!groupItem) continue;
+    if (!groupItem) {
+      continue;
+    }
 
     const group: Group = { items: [groupItem], indices: [i] };
     assigned.add(i);
@@ -112,7 +134,9 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
 function handleBudgetOverflow(group: Group, budgetRemaining: number, state: BudgetState): void {
   const sorted = [...group.items].sort((a, b) => b.importance - a.importance);
   const kept = sorted[0];
-  if (!kept) return;
+  if (!kept) {
+    return;
+  }
 
   state.discarded.push(...sorted.slice(1));
   const keptTokens = estimateTokens(kept.content);

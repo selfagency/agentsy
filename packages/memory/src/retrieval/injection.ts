@@ -1,22 +1,22 @@
 export interface MemoryContextCandidate {
+  content: string;
   id: string;
   scope: string;
   score: number;
   title?: string;
-  content: string;
 }
 
 export interface FormatMemoryContextOptions {
-  maxItems?: number;
   maxContentChars?: number;
+  maxItems?: number;
 }
 
 export interface XmlContextContracts {
+  dedupeXmlContextBlocksByTag(blocks: string[]): string[];
   splitLeadingXmlContextBlocks(input: string): {
     contextBlocks: string[];
     remaining: string;
   };
-  dedupeXmlContextBlocksByTag(blocks: string[]): string[];
 }
 
 const DEFAULT_MAX_ITEMS = 8;

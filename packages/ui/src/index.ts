@@ -31,10 +31,10 @@
 export { applyConversationEvent } from './eventSourcing.js';
 export {
   bindProcessorToConversationStore,
-  createConversationStoreFromProcessor,
-  type ConversationStoreBridge
+  type ConversationStoreBridge,
+  createConversationStoreFromProcessor
 } from './processorBridge.js';
-export { createConversationStore, type ConversationStore, type StoreListener } from './store.js';
+export { type ConversationStore, createConversationStore, type StoreListener } from './store.js';
 export type {
   ConversationEvent,
   UIConversation,

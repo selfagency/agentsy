@@ -180,7 +180,7 @@ export interface ScenarioRunner {
 
 ```typescript
 export function passKScore(k: number, results: EvaluationResult[]): boolean {
-  const successes = results.filter(r => r.score >= SUCCESS_THRESHOLD).length;
+  const successes = results.filter((r) => r.score >= SUCCESS_THRESHOLD).length;
   return successes >= k;
 }
 ```

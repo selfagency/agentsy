@@ -13,25 +13,25 @@ export interface TurnHandler {
 }
 
 export interface TurnEventOptions {
+  onDone?: (finishReason?: string, usage?: UsageInfo) => void;
+  onError?: (error: Error) => void;
   onText?: (delta: string) => void;
   onThinking?: (delta: string) => void;
   onToolCall?: (id: string, name: string, args: unknown) => void;
-  onDone?: (finishReason?: string, usage?: UsageInfo) => void;
-  onError?: (error: Error) => void;
 }
 
 export interface TurnResult {
+  finishReason?: string;
   text: string;
   thinking: string;
-  finishReason?: string;
   usage?: UsageInfo;
 }
 
 export interface SimpleTurnLoop {
-  run(userInput: string, events?: TurnEventOptions): Promise<TurnResult>;
+  abort(): void;
   getMessages(): readonly CompletionMessage[];
   reset(): void;
-  abort(): void;
+  run(userInput: string, events?: TurnEventOptions): Promise<TurnResult>;
 }
 
 export interface SimpleTurnLoopOptions {
@@ -47,6 +47,7 @@ export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurn
 
   let activeReader: ReadableStreamDefaultReader<NormalizedChunk> | null = null;
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
   const run = async (userInput: string, events: TurnEventOptions = {}): Promise<TurnResult> => {
     const { onText, onThinking, onToolCall, onDone, onError } = events;
 
@@ -64,7 +65,9 @@ export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurn
 
       while (true) {
         const { done, value: chunk } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
 
         if (chunk.content) {
           accText += chunk.content;
@@ -115,8 +118,8 @@ export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurn
     const result: TurnResult = {
       text: accText,
       thinking: accThinking,
-      ...(finishReason !== undefined ? { finishReason } : {}),
-      ...(usage !== undefined ? { usage } : {})
+      ...(finishReason === undefined ? {} : { finishReason }),
+      ...(usage === undefined ? {} : { usage })
     };
     onDone?.(finishReason, usage);
     return result;
@@ -133,7 +136,7 @@ export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurn
 
   const abort = (): void => {
     if (activeReader) {
-      void activeReader.cancel();
+      activeReader.cancel();
       activeReader = null;
     }
   };

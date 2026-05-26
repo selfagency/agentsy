@@ -2,59 +2,59 @@
  * MCP Tool definition for tool invocation
  */
 export interface McpTool {
-  name: string;
   description: string;
-  inputSchema?: Record<string, unknown>;
   handler: (input: unknown) => Promise<unknown>;
+  inputSchema?: Record<string, unknown>;
+  name: string;
 }
 
 /**
  * MCP Resource definition for data access
  */
 export interface McpResource {
-  uri: string;
-  name: string;
   description: string;
   mimeType?: string;
+  name: string;
+  uri: string;
 }
 
 /**
  * MCP Prompt template for structured prompts
  */
 export interface McpPrompt {
-  name: string;
-  description: string;
   arguments?: Record<string, string>;
+  description: string;
+  name: string;
 }
 
 /**
  * MCP Server configuration
  */
 export interface McpServerConfig {
-  name: string;
-  version?: string;
-  tools?: McpTool[];
-  resources?: McpResource[];
-  prompts?: McpPrompt[];
   capabilities?: McpCapabilities;
+  name: string;
+  prompts?: McpPrompt[];
+  resources?: McpResource[];
+  tools?: McpTool[];
+  version?: string;
 }
 
 /**
  * MCP Server capabilities
  */
 export interface McpCapabilities {
-  tools?: boolean;
-  resources?: boolean;
   prompts?: boolean;
+  resources?: boolean;
   streaming?: boolean;
+  tools?: boolean;
 }
 
 /**
  * MCP Tool invocation parameters
  */
 export interface McpToolInvocation {
-  toolName: string;
   arguments?: Record<string, unknown>;
+  toolName: string;
 }
 
 /**

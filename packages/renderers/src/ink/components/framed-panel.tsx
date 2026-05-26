@@ -4,16 +4,16 @@ import type { ReactNode } from 'react';
 import type { AcidPalette } from '../theme/palette.ts';
 
 export interface FramedPanelProps {
-  /** Panel title (appears as a title bar inside the bold frame). */
-  readonly title?: string;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
   /** Panel content. */
   readonly children: ReactNode;
   /** Optional bottom margin. Default: 1. */
   readonly marginBottom?: number;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
   /** Whether to show a thin separator line below the title. Default: true. */
   readonly showTitleSeparator?: boolean;
+  /** Panel title (appears as a title bar inside the bold frame). */
+  readonly title?: string;
 }
 
 /**
@@ -36,16 +36,16 @@ export function FramedPanel({
 }: FramedPanelProps) {
   return (
     <Box
-      flexDirection="column"
-      borderStyle="bold"
       borderColor={palette.frameBorder}
-      paddingX={1}
+      borderStyle="bold"
+      flexDirection="column"
       marginBottom={marginBottom}
+      paddingX={1}
     >
       {title ? (
         <Box flexDirection="column">
           <Box>
-            <Text color={palette.frameBright} bold>
+            <Text bold color={palette.frameBright}>
               {title}
             </Text>
           </Box>

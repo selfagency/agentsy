@@ -19,7 +19,9 @@ export function createFinishReasonTest(
 ): void {
   for (const { input, expectedFinishReason, expectedDone } of testCases) {
     const result = normalizer(createInput(input));
+    // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
     expect(result?.chunk.finishReason).toBe(expectedFinishReason);
+    // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
     expect(result?.chunk.done).toBe(expectedDone);
   }
 }
@@ -35,7 +37,9 @@ export function testContentMapping(
   expectedValue: string
 ): void {
   const result = normalizer(setupInput(expectedValue));
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(result?.chunk[expectedField as keyof typeof result.chunk]).toBe(expectedValue);
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(result?.chunk.done).toBeFalsy();
 }
 
@@ -48,6 +52,8 @@ export function testMidStreamNoFinishReason(
   setupInput: () => Record<string, unknown>
 ): void {
   const result = normalizer(setupInput());
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(result?.chunk.finishReason).toBeUndefined();
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(result?.chunk.done).not.toBe(true);
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import type { ContainerSandbox } from '../container/rivet-sandbox.js';
 import type { SandboxTriggerDecision } from './dynamic-trigger.js';
@@ -12,7 +12,9 @@ function makeDecision(mode: SandboxTriggerDecision['mode']): SandboxTriggerDecis
 function makeContainerStub(): ContainerSandbox {
   return {
     // oxlint-disable-next-line no-empty-function -- stub implementation for routing test
-    async destroy(): Promise<void> {},
+    async destroy(): Promise<void> {
+      /* noop */
+    },
     async execute(_input: SandboxInput): Promise<SandboxOutput> {
       return {
         durationMs: 0,

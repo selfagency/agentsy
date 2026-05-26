@@ -33,7 +33,7 @@ function splitIntoChunks(content: string, maxChunkSize = 280): string[] {
 
 export function createDocumentIngestor(): DocumentIngestor {
   return {
-    async ingest(source) {
+    ingest(source) {
       const chunks = splitIntoChunks(source.content);
       const updatedAt = source.updatedAt ?? new Date().toISOString();
 
@@ -51,7 +51,7 @@ export function createDocumentIngestor(): DocumentIngestor {
         };
       });
 
-      return { documents };
+      return Promise.resolve({ documents });
     }
   };
 }

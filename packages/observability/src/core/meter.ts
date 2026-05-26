@@ -4,7 +4,17 @@
  * OpenTelemetry-based meter implementation for metrics collection
  */
 
-import * as api from '@opentelemetry/api';
+import {
+  type Attributes,
+  type BatchObservableResult,
+  metrics,
+  type ObservableResult,
+  type Counter as OtelCounter,
+  type Gauge as OtelGauge,
+  type Histogram as OtelHistogram,
+  type Meter as OtelMeter,
+  type MetricOptions as OtelMetricOptions
+} from '@opentelemetry/api';
 
 import type {
   AttributeValue,
@@ -20,7 +30,7 @@ import type {
  * Base implementation for shared utility methods
  */
 abstract class BaseMetric {
-  protected _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): api.Attributes {
+  protected _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): Attributes {
     return attributes;
   }
 }
@@ -29,9 +39,9 @@ abstract class BaseMetric {
  * Counter implementation
  */
 class CounterImpl extends BaseMetric implements Counter {
-  private readonly _otelCounter: api.Counter;
+  private readonly _otelCounter: OtelCounter;
 
-  constructor(otelCounter: api.Counter) {
+  constructor(otelCounter: OtelCounter) {
     super();
     this._otelCounter = otelCounter;
   }
@@ -51,9 +61,9 @@ class CounterImpl extends BaseMetric implements Counter {
  * Histogram implementation
  */
 class HistogramImpl extends BaseMetric implements Histogram {
-  private readonly _otelHistogram: api.Histogram;
+  private readonly _otelHistogram: OtelHistogram;
 
-  constructor(otelHistogram: api.Histogram) {
+  constructor(otelHistogram: OtelHistogram) {
     super();
     this._otelHistogram = otelHistogram;
   }
@@ -68,9 +78,9 @@ class HistogramImpl extends BaseMetric implements Histogram {
  * Gauge implementation with increment/decrement support
  */
 class GaugeImpl extends BaseMetric implements Gauge {
-  private readonly _otelGauge: api.Gauge;
+  private readonly _otelGauge: OtelGauge;
 
-  constructor(otelGauge: api.Gauge) {
+  constructor(otelGauge: OtelGauge) {
     super();
     this._otelGauge = otelGauge;
   }
@@ -95,7 +105,7 @@ class GaugeImpl extends BaseMetric implements Gauge {
   /**
    * Helper method to safely record using the add method if available
    */
-  private _recordWithAdd(amount: number, attributes: api.Attributes): void {
+  private _recordWithAdd(amount: number, attributes: Attributes): void {
     const gauge = this._otelGauge;
     // Check if the gauge supports the add method
     if ('add' in gauge && typeof gauge.add === 'function') {
@@ -103,7 +113,7 @@ class GaugeImpl extends BaseMetric implements Gauge {
       // and is a function above
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       const gaugeWithAdd = gauge as {
-        add: (amount: number, attributes?: api.Attributes) => void;
+        add: (amount: number, attributes?: Attributes) => void;
       };
       gaugeWithAdd.add(amount, attributes);
     }
@@ -114,9 +124,9 @@ class GaugeImpl extends BaseMetric implements Gauge {
  * Observable gauge implementation
  */
 class ObservableGaugeImpl extends BaseMetric implements ObservableGauge {
-  private readonly _observableResult: api.ObservableResult;
+  private readonly _observableResult: ObservableResult;
 
-  constructor(observableResult: api.ObservableResult) {
+  constructor(observableResult: ObservableResult) {
     super();
     this._observableResult = observableResult;
   }
@@ -131,14 +141,14 @@ class ObservableGaugeImpl extends BaseMetric implements ObservableGauge {
  * Meter implementation wrapping OpenTelemetry meter
  */
 export class MeterImpl implements Meter {
-  private readonly _otelMeter: api.Meter;
+  private readonly _otelMeter: OtelMeter;
 
   constructor() {
-    this._otelMeter = api.metrics.getMeter('agentsy');
+    this._otelMeter = metrics.getMeter('agentsy');
   }
 
   createCounter(name: string, options?: MetricOptions): Counter {
-    const otelOptions: api.MetricOptions = {};
+    const otelOptions: OtelMetricOptions = {};
     if (options?.description) {
       otelOptions.description = options.description;
     }
@@ -151,7 +161,7 @@ export class MeterImpl implements Meter {
   }
 
   createHistogram(name: string, options?: MetricOptions): Histogram {
-    const otelOptions: api.MetricOptions = {};
+    const otelOptions: OtelMetricOptions = {};
     if (options?.description) {
       otelOptions.description = options.description;
     }
@@ -164,7 +174,7 @@ export class MeterImpl implements Meter {
   }
 
   createGauge(name: string, options?: MetricOptions): Gauge {
-    const otelOptions: api.MetricOptions = {};
+    const otelOptions: OtelMetricOptions = {};
     if (options?.description) {
       otelOptions.description = options.description;
     }
@@ -181,7 +191,7 @@ export class MeterImpl implements Meter {
     callback: (observable: ObservableGauge) => void,
     options?: MetricOptions
   ): ObservableGauge {
-    const otelOptions: api.MetricOptions = {};
+    const otelOptions: OtelMetricOptions = {};
     if (options?.description) {
       otelOptions.description = options.description;
     }
@@ -189,19 +199,21 @@ export class MeterImpl implements Meter {
       otelOptions.unit = options.unit;
     }
 
-    this._otelMeter.addBatchObservableCallback(async (_batch: api.BatchObservableResult) => {
+    this._otelMeter.addBatchObservableCallback(async (_batch: BatchObservableResult) => {
       // Real implementation would be more complex.
     }, []);
 
     const otelObservable = this._otelMeter.createObservableGauge(name, otelOptions);
-    otelObservable.addCallback((result: api.ObservableResult) => {
+    otelObservable.addCallback((result: ObservableResult) => {
       callback(new ObservableGaugeImpl(result));
     });
 
     // We need to return a dummy ObservableGauge that doesn't actually do anything
     // since the real recording happens in the callback.
     return {
-      record: (_amount: number, _attributes?: Record<string, AttributeValue>) => {}
+      record: (_amount: number, _attributes?: Record<string, AttributeValue>) => {
+        /* noop */
+      }
     };
   }
 }

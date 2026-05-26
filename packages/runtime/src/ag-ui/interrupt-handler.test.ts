@@ -5,7 +5,7 @@
  */
 
 import { EventType } from '@agentsy/types';
-import { beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import {
   createInterruptAbortController,

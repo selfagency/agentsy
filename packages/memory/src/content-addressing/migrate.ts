@@ -2,8 +2,8 @@ import type { DedupStore } from './dedup-store.js';
 import { fingerprintContent } from './fingerprint.js';
 
 export interface MigrateStats {
-  readonly total: number;
   readonly deduped: number;
+  readonly total: number;
   readonly unique: number;
 }
 

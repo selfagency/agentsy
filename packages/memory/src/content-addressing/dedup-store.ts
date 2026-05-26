@@ -2,22 +2,22 @@ import type { ContentFingerprint } from './fingerprint.js';
 import { fingerprintContent } from './fingerprint.js';
 
 export interface DedupEntry {
-  readonly fingerprint: ContentFingerprint;
   readonly content: string;
+  readonly fingerprint: ContentFingerprint;
   refCount: number;
 }
 
 export interface DedupStore {
+  entries(): DedupEntry[];
   /** Intern content, increment ref count, and return its fingerprint. */
   intern(content: string): ContentFingerprint;
-  /** Retrieve content by fingerprint value string. */
-  retrieve(fingerprintValue: string): string | undefined;
-  /** Decrement ref count; remove if zero. Returns true if removed. */
-  release(fingerprintValue: string): boolean;
-  size(): number;
-  entries(): DedupEntry[];
   /** Remove entries with refCount <= 0 and return the count purged. */
   purgeOrphans(): number;
+  /** Decrement ref count; remove if zero. Returns true if removed. */
+  release(fingerprintValue: string): boolean;
+  /** Retrieve content by fingerprint value string. */
+  retrieve(fingerprintValue: string): string | undefined;
+  size(): number;
 }
 
 export function createDedupStore(): DedupStore {

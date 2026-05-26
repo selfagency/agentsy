@@ -1,18 +1,21 @@
 export class LatencyTracker {
-  #values: number[] = [];
+  readonly #values: number[] = [];
+  readonly #windowSize: number;
 
-  constructor(private readonly windowSize = 50) {}
+  constructor(windowSize = 50) {
+    this.#windowSize = windowSize;
+  }
 
   record(latencyMs: number): void {
     this.#values.push(latencyMs);
-    if (this.#values.length > this.windowSize) {
+    if (this.#values.length > this.#windowSize) {
       this.#values.shift();
     }
   }
 
   average(): number | undefined {
     if (this.#values.length === 0) {
-      return undefined;
+      return;
     }
 
     const total = this.#values.reduce((sum, value) => sum + value, 0);
@@ -21,7 +24,7 @@ export class LatencyTracker {
 
   percentile(percentile: number): number | undefined {
     if (this.#values.length === 0) {
-      return undefined;
+      return;
     }
 
     const sorted = [...this.#values].sort((a, b) => a - b);

@@ -1,52 +1,80 @@
 // @agentsy/memory — Three-layer memory engine (raw event log, synthesized wiki, vector retrieval)
 // Phase 1 foundation: coordination contracts + three-tier wiki primitives.
 
+// Phase 8 — AgentFS schema adapters
 export {
-  createContextFingerprint,
-  createMemoryReuseHint,
-  type ContextFingerprint,
-  type CreateContextFingerprintInput,
-  type CreateMemoryReuseHintInput,
-  type MemoryReuseHint
-} from './types.js';
+  type AgentFsInitOptions,
+  type AgentFsRestoreResult,
+  type AgentFsSnapshotResult,
+  type AgentFsStatus,
+  createRagFsAdapter,
+  createSnapshot,
+  createTierFsAdapter,
+  createToolAuditor,
+  createWikiFsAdapter,
+  detectAgentFs,
+  initAgentFs,
+  type RagFsAdapterOptions,
+  type RestoreOptions,
+  restoreSnapshot,
+  type SnapshotOptions,
+  type TierFsAdapterOptions,
+  type ToolAuditorOptions,
+  type WikiFsAdapterOptions
+} from './agentfs/index.js';
 
 export {
-  createAtomicWorkflowCoordinator,
   type AtomicWorkflowContext,
   type AtomicWorkflowCoordinator,
   type AtomicWorkflowResult,
-  type AtomicWorkflowStep
+  type AtomicWorkflowStep,
+  createAtomicWorkflowCoordinator
 } from './coordination/atomic-workflows.js';
 export {
-  loadHonkerExtension,
   type HonkerLoadFeatures,
   type HonkerLoadOptions,
-  type HonkerLoadResult
+  type HonkerLoadResult,
+  loadHonkerExtension
 } from './coordination/honker/loader.js';
 export {
-  createInMemoryPubSubManager,
   type ChannelListener,
+  createInMemoryPubSubManager,
   type PubSubManager
 } from './coordination/pub-sub-manager.js';
 export { createInMemoryScheduler, type Scheduler } from './coordination/scheduler.js';
-export { createInMemoryTaskQueue, type CoordinationTask, type TaskQueue } from './coordination/task-queue.js';
 export {
-  createMemoryMetrics,
-  redactSecretLikeValues,
+  type CoordinationTask,
+  createInMemoryTaskQueue,
+  type TaskQueue
+} from './coordination/task-queue.js';
+export {
+  type AgentFsEntry,
+  type AgentFsManager,
+  type AgentFsOptions,
+  createAgentFsManager
+} from './filesystem/agentfs/manager.js';
+export {
   type CoordinationLatencyStats,
+  createMemoryMetrics,
   type InjectionMetricsInput,
   type MemoryMetrics,
   type MemoryMetricsSnapshot,
-  type RetrievalMetricsInput
+  type RetrievalMetricsInput,
+  redactSecretLikeValues
 } from './observability/metrics.js';
 export {
+  type FormatMemoryContextOptions,
   formatMemoryContextXml,
   injectMemoryContext,
-  type FormatMemoryContextOptions,
   type MemoryContextCandidate,
   type XmlContextContracts
 } from './retrieval/injection.js';
 export {
+  type BootstrapSummary,
+  type ContextPackedEvidence,
+  type ContextPackerOptions,
+  type ContextPackResult,
+  type CreateRAGConfigInput,
   createDocumentIngestor,
   createHybridRetriever,
   createIndexManager,
@@ -58,14 +86,6 @@ export {
   createRAGServerClient,
   createReindexScheduler,
   createSourceConnectors,
-  packEvidenceForContext,
-  rerankResults,
-  sanitizeIngestSource,
-  type BootstrapSummary,
-  type ContextPackedEvidence,
-  type ContextPackerOptions,
-  type ContextPackResult,
-  type CreateRAGConfigInput,
   type DocumentIngestor,
   type HybridRetriever,
   type IndexedDocumentRecord,
@@ -75,6 +95,7 @@ export {
   type IngestSummary,
   type KnowledgeBaseManager,
   type PlannedQuery,
+  packEvidenceForContext,
   type QueryPlanner,
   type RAGConfig,
   type RAGDeleteResult,
@@ -95,8 +116,10 @@ export {
   type RAGWeightConfig,
   type ReindexScheduler,
   type ReindexSchedulerOptions,
+  rerankResults,
   type SourceConnectorOptions,
-  type SourceConnectors
+  type SourceConnectors,
+  sanitizeIngestSource
 } from './retrieval/rag/index.js';
 export {
   createMemoryRetriever,
@@ -106,37 +129,7 @@ export {
   type MemorySearchInput,
   type MemorySearchRecord
 } from './retrieval/retriever.js';
-export { rankReusableMemoryBlocks, type ReusableMemoryBlock } from './reuse.js';
-
-export {
-  createAgentFsManager,
-  type AgentFsEntry,
-  type AgentFsManager,
-  type AgentFsOptions
-} from './filesystem/agentfs/manager.js';
-
-// Phase 8 — AgentFS schema adapters
-export {
-  createRagFsAdapter,
-  createSnapshot,
-  createTierFsAdapter,
-  createToolAuditor,
-  createWikiFsAdapter,
-  detectAgentFs,
-  initAgentFs,
-  restoreSnapshot,
-  type AgentFsInitOptions,
-  type AgentFsRestoreResult,
-  type AgentFsSnapshotResult,
-  type AgentFsStatus,
-  type RagFsAdapterOptions,
-  type RestoreOptions,
-  type SnapshotOptions,
-  type TierFsAdapterOptions,
-  type ToolAuditorOptions,
-  type WikiFsAdapterOptions
-} from './agentfs/index.js';
-
+export { type ReusableMemoryBlock, rankReusableMemoryBlocks } from './reuse.js';
 export {
   createScopeManager,
   type MemoryScope,
@@ -147,6 +140,14 @@ export {
   type ScopePolicy
 } from './scope/scope-manager.js';
 export {
+  type BackupManager,
+  type BackupManagerOptions,
+  type BackupManifest,
+  type BackupSnapshot,
+  type ConflictRecord,
+  type ConflictResolutionResult,
+  type ConflictStore,
+  type CredentialSource,
   collectConflicts,
   computeSyncChecksum,
   createBackupManager,
@@ -164,22 +165,6 @@ export {
   createTursoSyncClient,
   createTursoSyncEngine,
   deserializeMemoryState,
-  redactSyncSecrets,
-  resolveConflict,
-  serializeMemoryState,
-  TursoManager,
-  validateCredentialSource,
-  validateRemoteSnapshot,
-  verifyBackupManifest,
-  verifySyncChecksum,
-  type BackupManager,
-  type BackupManagerOptions,
-  type BackupManifest,
-  type BackupSnapshot,
-  type ConflictRecord,
-  type ConflictResolutionResult,
-  type ConflictStore,
-  type CredentialSource,
   type FileConflictStoreOptions,
   type MemoryState,
   type MemoryStateAdapter,
@@ -189,6 +174,8 @@ export {
   type RemoteValidationResult,
   type RestoreResult,
   type RestoreSnapshotOptions,
+  redactSyncSecrets,
+  resolveConflict,
   type SecureSyncErrorEnvelope,
   type SecureSyncErrorOptions,
   type SyncError,
@@ -203,17 +190,23 @@ export {
   type SyncSchedulerOptions,
   type SyncSnapshot,
   type SyncStatus,
+  serializeMemoryState,
   type TursoClient,
   type TursoHttpClientConfig,
+  TursoManager,
   type TursoSyncClientConfig,
   type TursoSyncConfig,
   type TursoSyncEngine,
   type TursoSyncEngineConfig,
-  type TursoUploadResult
+  type TursoUploadResult,
+  validateCredentialSource,
+  validateRemoteSnapshot,
+  verifyBackupManifest,
+  verifySyncChecksum
 } from './sync/index.js';
 export {
-  createMemoryCaptureTool,
   type CapturedMemoryRecord,
+  createMemoryCaptureTool,
   type MemoryCaptureInput,
   type MemoryCaptureResult,
   type MemoryCaptureTool,
@@ -247,7 +240,15 @@ export {
   type MemoryStatsTool,
   type MemoryStatsToolDeps
 } from './tools/memory-stats.js';
-export { createContentProcessor, type ContentProcessor } from './wiki/content-processor.js';
+export {
+  type ContextFingerprint,
+  type CreateContextFingerprintInput,
+  type CreateMemoryReuseHintInput,
+  createContextFingerprint,
+  createMemoryReuseHint,
+  type MemoryReuseHint
+} from './types.js';
+export { type ContentProcessor, createContentProcessor } from './wiki/content-processor.js';
 export {
   createEntityExtractor,
   type EntityExtractionResult,
@@ -264,8 +265,8 @@ export {
 export { createNavigationSystem, type NavigationSystem } from './wiki/navigation-system.js';
 export { createVersionTracker, type VersionTracker } from './wiki/version-tracker.js';
 export {
-  createWikiManager,
   type ConceptRelation,
+  createWikiManager,
   type PageDiff,
   type RawCapture,
   type RawCaptureInput,
@@ -280,15 +281,15 @@ export {
 } from './wiki/wiki-manager.js';
 
 export interface MemoryRecord {
-  id: string;
   content: string;
+  id: string;
   metadata?: Record<string, unknown>;
 }
 
 export interface MemoryStore {
-  put(record: MemoryRecord): void;
   get(id: string): MemoryRecord | undefined;
   list(): MemoryRecord[];
+  put(record: MemoryRecord): void;
 }
 
 export function createMemoryStore(): MemoryStore {
@@ -307,6 +308,10 @@ export function createMemoryStore(): MemoryStore {
   };
 }
 
+// Phase 1 v2 — Cognitive tier engine
+export * from './cognitive/index.js';
+// Phase 7 — Configuration & initialization
+export { DEFAULT_TIER_CONFIGS, loadConfig, type MemoryConfig } from './config.js';
 // Phase 4 — AgentFS, content-addressing
 export * from './content-addressing/index.js';
 export * from './filesystem/agentfs/audit-trail.js';
@@ -314,34 +319,27 @@ export * from './filesystem/agentfs/kv-store.js';
 export * from './filesystem/agentfs/manager.js';
 export * from './filesystem/agentfs/snapshots.js';
 
-// Phase 1 v2 — Cognitive tier engine
-export * from './cognitive/index.js';
-
-// Phase 6 — MCP server surface
-export * from './mcp/index.js';
-
 // Phase 7 — Lifecycle hooks
 export {
-  onSessionStart,
-  type OnSessionStartInput,
-  type OnSessionStartOutput,
-  onSessionEnd,
+  type OnResponseInput,
+  type OnResponseOutput,
   type OnSessionEndInput,
   type OnSessionEndOutput,
-  onToolCall,
+  type OnSessionStartInput,
+  type OnSessionStartOutput,
   type OnToolCallInput,
   type OnToolCallOutput,
   onResponse,
-  type OnResponseInput,
-  type OnResponseOutput
+  onSessionEnd,
+  onSessionStart,
+  onToolCall
 } from './hooks/index.js';
-
-// Phase 7 — Configuration & initialization
-export { loadConfig, DEFAULT_TIER_CONFIGS, type MemoryConfig } from './config.js';
 export {
-  initMemory,
   type InitOptions,
   type InitResult,
+  type InitResultWithoutServer,
   type InitResultWithServer,
-  type InitResultWithoutServer
+  initMemory
 } from './init.js';
+// Phase 6 — MCP server surface
+export * from './mcp/index.js';

@@ -81,7 +81,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     const onFinish = vi.fn<NonNullable<BaseRendererOptions['onFinish']>>();
     const renderer = createPlainTextRenderer({
       onFinish,
-      output: () => {}
+      output: () => {
+        /* noop */
+      }
     });
 
     await renderer.writeChunk({
@@ -106,7 +108,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
 
     const renderer = createPlainTextRenderer({
       onToolCall,
-      output: () => {},
+      output: () => {
+        /* noop */
+      },
       processor
     });
 
@@ -171,7 +175,9 @@ describe('createSharedRendererHandle' as const, () => {
         onText: async (t: string): Promise<void> => {
           texts.push(t);
         },
-        onThinking: async (): Promise<void> => {}
+        onThinking: async (): Promise<void> => {
+          /* noop */
+        }
       }
     );
 
@@ -192,7 +198,14 @@ describe('createSharedRendererHandle' as const, () => {
           finishArgs.push([reason, usage]);
         }
       },
-      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
+      {
+        onText: async (): Promise<void> => {
+          /* noop */
+        },
+        onThinking: async (): Promise<void> => {
+          /* noop */
+        }
+      }
     );
 
     await handle.writeChunk({

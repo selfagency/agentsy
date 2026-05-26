@@ -6,7 +6,7 @@ import { createIndexManager, type IndexManagerOptions } from './index-manager.js
 import { createQueryPlanner } from './query-planner.js';
 import { rerankResults } from './reranker.js';
 import { sanitizeIngestSource } from './sanitization.js';
-import type { IngestSource, IngestSummary, RAGWeightConfig, RAGEvidence } from './types.js';
+import type { IngestSource, IngestSummary, RAGEvidence, RAGWeightConfig } from './types.js';
 
 export interface KnowledgeBaseManager {
   ingest(source: IngestSource): Promise<IngestSummary>;
@@ -51,9 +51,9 @@ export function createKnowledgeBaseManager(options: KnowledgeBaseManagerOptions 
       return summary;
     },
 
-    async remove(documentId) {
+    remove(documentId) {
       retriever.remove(documentId);
-      return index.remove(documentId);
+      return Promise.resolve(index.remove(documentId));
     },
 
     async search(input) {

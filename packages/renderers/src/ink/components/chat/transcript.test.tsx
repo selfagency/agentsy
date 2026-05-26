@@ -12,7 +12,7 @@ describe('Transcript', () => {
 
   it('renders conversation turns', () => {
     const { lastFrame } = render(
-      <Transcript turns={sampleTurns} palette={defaultAcidPalette} isStreaming={false} status="idle" />
+      <Transcript isStreaming={false} palette={defaultAcidPalette} status="idle" turns={sampleTurns} />
     );
     const frame = lastFrame();
     expect(frame).toContain('hello');
@@ -21,14 +21,14 @@ describe('Transcript', () => {
 
   it('shows status idle', () => {
     const { lastFrame } = render(
-      <Transcript turns={sampleTurns} palette={defaultAcidPalette} isStreaming={false} status="idle" />
+      <Transcript isStreaming={false} palette={defaultAcidPalette} status="idle" turns={sampleTurns} />
     );
     expect(lastFrame()).toContain('idle');
   });
 
   it('shows streaming cursor when streaming', () => {
     const { lastFrame } = render(
-      <Transcript turns={sampleTurns} palette={defaultAcidPalette} isStreaming={true} status="streaming" />
+      <Transcript isStreaming={true} palette={defaultAcidPalette} status="streaming" turns={sampleTurns} />
     );
     const frame = lastFrame();
     expect(frame).toBeDefined();
@@ -37,12 +37,12 @@ describe('Transcript', () => {
   it('shows token meter when tokens provided', () => {
     const { lastFrame } = render(
       <Transcript
-        turns={sampleTurns}
-        palette={defaultAcidPalette}
-        isStreaming={false}
-        status="idle"
         inputTokens={42}
+        isStreaming={false}
         outputTokens={7}
+        palette={defaultAcidPalette}
+        status="idle"
+        turns={sampleTurns}
       />
     );
     const frame = lastFrame();

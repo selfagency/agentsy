@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createInMemoryPubSubManager } from '../coordination/pub-sub-manager.js';
 import { createInMemoryScheduler } from '../coordination/scheduler.js';
@@ -6,7 +6,7 @@ import { createLongTermMemory } from './long-term-memory.js';
 import { createSensoryBuffer } from './sensory-buffer.js';
 import { createSensoryRegister } from './sensory-register.js';
 import { createShortTermMemory } from './short-term-memory.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import { createTierScheduler } from './tier-scheduler.js';
 import { createWorkingMemory } from './working-memory.js';
 
@@ -33,7 +33,11 @@ describe('createTierScheduler', () => {
     longTermMemory.write(createTestMemoryItem({ importance: 0.9, tokenCount: 20, createdAt: clock.now() }));
 
     const tierScheduler = createTierScheduler(
-      { sensory_buffer: sensoryBuffer, working_memory: workingMemory, long_term_memory: longTermMemory },
+      {
+        sensory_buffer: sensoryBuffer,
+        working_memory: workingMemory,
+        long_term_memory: longTermMemory
+      },
       { now: clock.now }
     );
 

@@ -151,7 +151,7 @@ Follow the root `tsconfig.json` as source of truth.
 
 ## Linting and Formatting
 
-The repo uses **oxlint** and **oxfmt** via the ultracite preset (oxfmt.config.ts extends ultracite).
+The repo uses **Biome** via the ultracite preset (oxfmt.config.ts extends ultracite). See .agents/instructions/code-standards.md for coding standards.
 
 ### Formatter conventions (oxfmt.config.ts)
 
@@ -250,13 +250,13 @@ Follow existing patterns throughout the repo:
 
 ```typescript
 // Value exports
-export { createFoo, type Bar } from './foo.js';
+export { createFoo, type Bar } from "./foo.js";
 
 // Type-only exports (favored when module exports only types)
-export type * from './types.js';
+export type * from "./types.js";
 
 // Re-exports from sub-modules
-export * from './subpath/index.js';
+export * from "./subpath/index.js";
 ```
 
 ### Entry points and tsup configuration
@@ -266,15 +266,15 @@ Packages define multiple entry points in `tsup.config.ts`:
 ```typescript
 export default defineConfig({
   entry: {
-    index: 'src/index.ts',
-    processor: 'src/processor/index.ts',
-    'xml-filter': 'src/xml-filter/index.ts'
+    index: "src/index.ts",
+    processor: "src/processor/index.ts",
+    "xml-filter": "src/xml-filter/index.ts",
     // ...
   },
-  external: ['@agentsy/types', 'zod'], // Workspace and peer deps
-  format: ['esm', 'cjs'],
-  target: 'node18',
-  treeshake: true
+  external: ["@agentsy/types", "zod"], // Workspace and peer deps
+  format: ["esm", "cjs"],
+  target: "node18",
+  treeshake: true,
 });
 ```
 
@@ -355,7 +355,7 @@ Use **Vitest**. Tests are colocated as `*.test.ts` files beside source.
 
 ```typescript
 /* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from "vitest";
 ```
 
 ## Stream Processing Patterns

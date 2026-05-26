@@ -45,7 +45,7 @@ async function* mockErrorGenerator() {
 describe('createSSEStream', () => {
   it('should convert async generator to SSE stream', async () => {
     const stream = createSSEStream(mockEventGenerator());
-    const chunks = [];
+    const chunks: Uint8Array[] = [];
 
     for await (const chunk of stream) {
       chunks.push(chunk);
@@ -59,7 +59,7 @@ describe('createSSEStream', () => {
 
   it('should handle empty event stream', async () => {
     const stream = createSSEStream(emptyGenerator());
-    const chunks = [];
+    const chunks: Uint8Array[] = [];
 
     for await (const chunk of stream) {
       chunks.push(chunk);
@@ -175,7 +175,7 @@ describe('createExpressMiddleware', () => {
       })),
       write: vi.fn()
     };
-    const req = {};
+    const req: Record<string, unknown> = {};
 
     await middleware(req, res);
 
@@ -194,7 +194,7 @@ describe('createExpressMiddleware', () => {
       })),
       write: vi.fn()
     };
-    const req = {};
+    const req: Record<string, unknown> = {};
 
     await middleware(req, res);
 

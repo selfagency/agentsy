@@ -1,9 +1,8 @@
 import { join } from 'node:path';
 
-import { describe, expect, it, expectTypeOf } from 'vitest';
-
-import { loadHonkerExtension } from './loader.js';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { HonkerLoadOptions } from './loader.js';
+import { loadHonkerExtension } from './loader.js';
 
 const SAFE_TEST_ROOT = join(process.cwd(), '.agentsy-test-artifacts');
 const SAFE_DB_PATH = join(SAFE_TEST_ROOT, 'test.db');

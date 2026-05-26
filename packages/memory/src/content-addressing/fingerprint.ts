@@ -2,8 +2,8 @@ import { hash as blake3 } from 'blake3-jit';
 
 export interface ContentFingerprint {
   readonly algorithm: 'blake3';
-  readonly value: string;
   readonly size: number;
+  readonly value: string;
 }
 
 export function fingerprintContent(content: string | Uint8Array): ContentFingerprint {

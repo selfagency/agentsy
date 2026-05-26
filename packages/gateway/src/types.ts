@@ -28,31 +28,31 @@ export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;
 export type ProviderEntry = z.infer<typeof ProviderEntrySchema>;
 
 export interface ProviderUsageSnapshot {
+  averageLatencyMs?: number;
+  concurrencyRemaining?: number;
+  errorRate?: number;
+  lastUsedAt?: string;
   providerId: string;
   rpmRemaining?: number;
   tpmRemaining?: number;
-  concurrencyRemaining?: number;
-  averageLatencyMs?: number;
-  errorRate?: number;
-  lastUsedAt?: string;
 }
 
 export interface RoutingState {
-  strategy: StrategyName;
+  providerCount: number;
   providerId: string;
   providerStatus: ProviderStatus;
-  providerCount: number;
+  strategy: StrategyName;
 }
 
 export interface LoadBalancerConfig {
-  providers: ProviderEntry[];
-  strategy?: StrategyName;
-  model?: string;
   circuitBreaker?: {
     failureThreshold?: number;
     resetAfterMs?: number;
   };
+  model?: string;
+  providers: ProviderEntry[];
   retry?: ProviderRetryPolicy;
+  strategy?: StrategyName;
 }
 
 export interface LoadBalancedClient extends UniversalClient {

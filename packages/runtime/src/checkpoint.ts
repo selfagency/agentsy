@@ -8,15 +8,15 @@ import type { SessionStore } from '@agentsy/types';
  */
 export interface RuntimeCheckpoint {
   id: string;
-  timestamp: number;
-  /** Ordered list of pending tool calls at the checkpoint moment. */
-  pendingToolCalls: { id: string; name: string; args: unknown }[];
   /** Queue of messages leading up to this point. */
   messageQueue: { role: string; content: string }[];
-  /** Active subagents and their state summaries. */
-  subagentStates: { id: string; status: string; result?: unknown }[];
   /** Arbitrary metadata for extensions (guardrails, memory, etc.). */
   metadata?: Record<string, unknown>;
+  /** Ordered list of pending tool calls at the checkpoint moment. */
+  pendingToolCalls: { id: string; name: string; args: unknown }[];
+  /** Active subagents and their state summaries. */
+  subagentStates: { id: string; status: string; result?: unknown }[];
+  timestamp: number;
 }
 
 let _checkpointCounter = 0;
@@ -64,7 +64,9 @@ export async function checkpoint(
  */
 export function loadCheckpoint(sessionStore: Pick<SessionStore, 'getValue'>): RuntimeCheckpoint | null {
   const raw = sessionStore.getValue(CHECKPOINT_KEY);
-  if (!raw) return null;
+  if (!raw) {
+    return null;
+  }
 
   const cp = raw as RuntimeCheckpoint;
   if (typeof cp.id !== 'string' || typeof cp.timestamp !== 'number' || !Array.isArray(cp.pendingToolCalls)) {

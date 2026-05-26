@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { applyDecay, applyDecayToAllTiers, DEFAULT_DECAY_CONFIG, type DecayConfig } from './decay.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import type { MemoryItem, TierName } from './tier-types.js';
 
 describe('applyDecay', () => {
@@ -44,7 +44,7 @@ describe('applyDecay', () => {
 
   it('marks items as demote or discard when importance drops significantly', () => {
     const items = [createTestMemoryItem({ importance: 0.9, createdAt: clock.now() })];
-    clock.advance(6_000);
+    clock.advance(6000);
     const results = applyDecay(items, 'sensory_buffer', clock.now());
     expect(results).toHaveLength(1);
     // After 6s with 2.5s half-life, 0.9 decays to ~0.055 → demote or discard
@@ -80,7 +80,7 @@ describe('applyDecayToAllTiers', () => {
       ['long_term_memory', [createTestMemoryItem({ importance: 0.9, createdAt: clock.now() })]]
     ]);
 
-    clock.advance(5_000);
+    clock.advance(5000);
     const results = applyDecayToAllTiers(itemsByTier, clock.now());
     expect(results.length).toBe(3);
     const ltmResult = results.find(r => r.tier === 'long_term_memory');

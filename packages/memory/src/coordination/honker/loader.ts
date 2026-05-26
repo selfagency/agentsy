@@ -1,22 +1,22 @@
 import { access } from 'node:fs/promises';
 
 export interface HonkerLoadOptions {
+  blake3ExtensionPath: string;
   dbPath: string;
   extensionPath: string;
-  blake3ExtensionPath: string;
 }
 
 export interface HonkerLoadFeatures {
-  pubSub: boolean;
-  taskQueue: boolean;
-  scheduler: boolean;
   blake3: boolean;
+  pubSub: boolean;
+  scheduler: boolean;
+  taskQueue: boolean;
 }
 
 export interface HonkerLoadResult {
-  mode: 'native' | 'fallback';
   dbPath: string;
   features: HonkerLoadFeatures;
+  mode: 'native' | 'fallback';
   reason?: string;
 }
 

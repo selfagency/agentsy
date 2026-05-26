@@ -2,10 +2,10 @@ import type { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { CancellationToken } from '@agentsy/renderers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
-import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
-import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
-import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
+import { cancellationTokenToAbortSignal } from './cancellation-token-to-abort-signal.js';
+import { createVSCodeAgentLoop } from './create-vs-code-agent-loop.js';
+import type { ChatResponseStream } from './create-vs-code-chat-renderer.js';
+import { createVSCodeChatRenderer } from './create-vs-code-chat-renderer.js';
 
 /** Factory function to create a mock LLMStreamProcessor for testing */
 function createFakeProcessor(processParts: Record<string, unknown>[] = [], customFlush?: ReturnType<typeof vi.fn>) {
@@ -65,7 +65,7 @@ describe('VS Code Chat Renderer', () => {
     }).toThrow('ChatResponseStream is required');
   });
 
-  it('creates renderer with stream', async () => {
+  it('creates renderer with stream', () => {
     const renderer = createVSCodeChatRenderer({ stream: mockStream });
 
     expect(renderer).toBeDefined();
@@ -232,7 +232,9 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(mockStream.beginToolInvocation).toHaveBeenCalledOnce();
-      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', { city: 'NYC' });
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', {
+        city: 'NYC'
+      });
     });
 
     it('fires onToolCallDelta callback', async () => {
@@ -431,24 +433,24 @@ describe('VS Code Chat Renderer', () => {
       expect(onFinish).toHaveBeenCalledOnce();
     });
 
-    it('calls onStep when stepIndex changes in writeChunk', async () => {
+    it('calls onStep when stepIndex changes in writeChunk', () => {
       const onStep = vi.fn();
       const renderer = createVSCodeChatRenderer({
         onStep,
         stream: mockStream
       });
 
-      await renderer.writeChunk({
+      renderer.writeChunk({
         content: 'Step 0',
         stepIndex: 0,
         stepUsage: { outputTokens: 2 }
       });
-      await renderer.writeChunk({
+      renderer.writeChunk({
         content: 'Still step 0',
         stepIndex: 0,
         stepUsage: { outputTokens: 3 }
       });
-      await renderer.writeChunk({
+      renderer.writeChunk({
         content: 'Step 1',
         stepIndex: 1,
         usage: { inputTokens: 1, outputTokens: 4 }
@@ -573,7 +575,7 @@ describe('VS Code Agent Loop', () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it('defaults showThinking to true for agent loops', async () => {
+  it('defaults showThinking to true for agent loops', () => {
     const renderer = createVSCodeAgentLoop({
       stream: mockStream
     });
@@ -660,7 +662,9 @@ describe('VS Code Agent Loop', () => {
   });
 
   it('logs error stack when abort cleanup fails', async () => {
-    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
+      /* noop */
+    });
     const testError = new Error('Renderer end failed');
     testError.stack = 'Error: Renderer end failed\n  at test (test.ts:1:1)';
 
@@ -741,7 +745,7 @@ describe('Cancellation Token Bridge', () => {
     expect(signal.aborted).toBeTruthy();
   });
 
-  it('aborts signal when token fires cancellation', async () => {
+  it('aborts signal when token fires cancellation', () => {
     const listeners: ((e: unknown) => void)[] = [];
 
     const mockToken: CancellationToken = {

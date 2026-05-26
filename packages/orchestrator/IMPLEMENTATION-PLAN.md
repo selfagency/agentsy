@@ -664,30 +664,30 @@ src/
 
 ```typescript
 const workflow = new WorkflowBuilder()
-  .name('Code Review Orchestration')
-  .requireSkill('code-analysis')
-  .requireSkill('security-review')
+  .name("Code Review Orchestration")
+  .requireSkill("code-analysis")
+  .requireSkill("security-review")
 
   .sequence([
-    new TaskNode('analyze', {
-      agent: 'code-analyzer',
-      input: 'code-changes'
+    new TaskNode("analyze", {
+      agent: "code-analyzer",
+      input: "code-changes",
     }),
     new ParallelNode([
-      new TaskNode('security', {
-        agent: 'security-reviewer',
-        input: 'analysis-results'
+      new TaskNode("security", {
+        agent: "security-reviewer",
+        input: "analysis-results",
       }),
-      new TaskNode('quality', {
-        agent: 'quality-reviewer',
-        input: 'analysis-results'
-      })
+      new TaskNode("quality", {
+        agent: "quality-reviewer",
+        input: "analysis-results",
+      }),
     ]),
-    new MergeNode('combine'),
-    new TaskNode('report', {
-      agent: 'report-generator',
-      input: 'combined-results'
-    })
+    new MergeNode("combine"),
+    new TaskNode("report", {
+      agent: "report-generator",
+      input: "combined-results",
+    }),
   ])
 
   .timeout(Duration.minutes(30))
@@ -699,18 +699,18 @@ const workflow = new WorkflowBuilder()
 
 ```typescript
 const registry = new AgentRegistry()
-  .register('code-analyzer', {
-    skills: ['typescript', 'security', 'performance'],
+  .register("code-analyzer", {
+    skills: ["typescript", "security", "performance"],
     capacity: 10,
-    cost: 0.001
+    cost: 0.001,
   })
-  .register('security-reviewer', {
-    skills: ['security', 'vulnerability-scanning'],
+  .register("security-reviewer", {
+    skills: ["security", "vulnerability-scanning"],
     capacity: 5,
-    cost: 0.002
+    cost: 0.002,
   })
-  .discover('local://agents')
-  .discover('remote://production-agents');
+  .discover("local://agents")
+  .discover("remote://production-agents");
 ```
 
 #### 3. Orchestration Execution
@@ -719,14 +719,14 @@ const registry = new AgentRegistry()
 const orchestrator = new OrchestrationEngine({
   registry,
   scheduler: new AdaptiveScheduler(),
-  coordinator: new AsyncCoordinator()
+  coordinator: new AsyncCoordinator(),
 });
 
 const result = await orchestrator.execute(workflow, {
-  context: 'code-review',
+  context: "code-review",
   resourceLimits: { maxAgents: 5, maxCost: 0.01 },
   monitoring: true,
-  recovery: true
+  recovery: true,
 });
 ```
 
@@ -1061,7 +1061,9 @@ type StopConditionState = {
 
 type StopCondition = (state: StopConditionState) => Promise<boolean> | boolean;
 
-type PrepareStepFn = (step: StepState) => Promise<Partial<AgentLoopOptions>> | Partial<AgentLoopOptions>;
+type PrepareStepFn = (
+  step: StepState,
+) => Promise<Partial<AgentLoopOptions>> | Partial<AgentLoopOptions>;
 ```
 
 ### Required built-ins from technical design

@@ -1,4 +1,3 @@
-import Saxophone from './saxophone/index.js';
 import type {
   SaxophoneCData,
   SaxophoneComment,
@@ -6,19 +5,20 @@ import type {
   SaxophoneTagClose,
   SaxophoneText
 } from './saxophone/index.js';
+import Saxophone from './saxophone/index.js';
 import { DEFAULT_SCRUB_TAG_NAMES, PRIVACY_TAG_NAMES } from './tag-lists.js';
 
 export interface XmlStreamFilter {
-  write(chunk: string): string;
   end(): string;
+  write(chunk: string): string;
 }
 
 export interface CreateXmlStreamFilterOptions {
-  extraScrubTags?: Set<string>;
-  overrideScrubTags?: Set<string>;
   enforcePrivacyTags?: boolean;
+  extraScrubTags?: Set<string>;
   maxXmlNestingDepth?: number;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
+  overrideScrubTags?: Set<string>;
 }
 
 const DEFAULT_MAX_XML_NESTING_DEPTH = 64;
@@ -58,6 +58,7 @@ export function createXmlStreamFilter(options: CreateXmlStreamFilterOptions = {}
   let overflowStartDepth: number | null = null;
   let buffer = '';
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
   parser.on('tagopen', (tag: SaxophoneTag) => {
     if (!tag.isSelfClosing) {
       parseDepth++;

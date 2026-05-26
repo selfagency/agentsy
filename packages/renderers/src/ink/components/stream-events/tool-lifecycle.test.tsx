@@ -2,7 +2,7 @@ import { render } from 'ink-testing-library';
 import { describe, expect, it } from 'vitest';
 
 import { defaultAcidPalette } from '../../theme/palette.ts';
-import { ToolLifecycle, type ToolCallEvent } from './tool-lifecycle.tsx';
+import { type ToolCallEvent, ToolLifecycle } from './tool-lifecycle.tsx';
 
 describe('ToolLifecycle', () => {
   it('renders nothing for empty calls', () => {

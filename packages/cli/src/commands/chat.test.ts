@@ -9,7 +9,7 @@ import { runChatCommand } from './chat.js';
  */
 function makeMockStdin(lines: string[]): NodeJS.ReadableStream {
   return Readable.from(
-    (async function* () {
+    (function* () {
       for (const line of lines) {
         yield `${line}\n`;
       }

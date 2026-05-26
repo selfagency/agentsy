@@ -1,7 +1,7 @@
-import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { ProcessedOutput, ProcessorOptions, StreamChunk } from '@agentsy/core/processor';
-import { validateJsonSchema } from '@agentsy/core/structured';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { ValidateJsonSchemaOptions } from '@agentsy/core/structured';
+import { validateJsonSchema } from '@agentsy/core/structured';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
 
@@ -46,13 +46,13 @@ export async function* processRawStream<TRawChunk>(
 }
 
 export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk> {
-  source: AsyncIterable<TRawChunk>;
   normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined;
-  schema: JsonObject;
-  processorOptions?: ProcessorOptions;
-  validationOptions?: ValidateJsonSchemaOptions;
   onOutput?: (_output: ProcessedOutput) => void | Promise<void>;
+  processorOptions?: ProcessorOptions;
+  schema: JsonObject;
   selectValidationText?: (_context: { processor: LLMStreamProcessor; finalOutput: ProcessedOutput }) => string;
+  source: AsyncIterable<TRawChunk>;
+  validationOptions?: ValidateJsonSchemaOptions;
 }
 
 export type StructuredDecisionResult<TDecision> =
@@ -114,9 +114,9 @@ export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = 
 }
 
 export interface ApplyDecisionActionOptions<TDecision, TResult> {
-  shouldAct: (_decision: TDecision) => boolean;
   action: (_decision: TDecision) => Promise<TResult> | TResult;
   onSkip?: (_decision: TDecision) => void | Promise<void>;
+  shouldAct: (_decision: TDecision) => boolean;
 }
 
 export type ApplyDecisionActionResult<TResult> =
@@ -144,11 +144,11 @@ export async function applyDecisionAction<TDecision, TResult>(
 }
 
 export interface GenericAdapterCallbacks {
-  onThinking?: (_text: string) => void | Promise<void>;
   onContent?: (_text: string) => void | Promise<void>;
-  onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
   onDone?: () => void | Promise<void>;
   onError?: (_error: Error, _context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
+  onThinking?: (_text: string) => void | Promise<void>;
+  onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
@@ -188,7 +188,7 @@ export function createGenericAdapter(
         () => callbacks.onThinking?.(output.thinking) ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, {
+          callbacks.onError?.(error, {
             type: 'thinking',
             ...(chunk !== undefined && { chunk })
           });
@@ -201,7 +201,7 @@ export function createGenericAdapter(
         () => callbacks.onContent?.(output.content) ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, {
+          callbacks.onError?.(error, {
             type: 'content',
             ...(chunk !== undefined && { chunk })
           });
@@ -214,7 +214,7 @@ export function createGenericAdapter(
         () => callbacks.onToolCall?.(toolCall) ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, {
+          callbacks.onError?.(error, {
             type: 'tool_call',
             ...(chunk !== undefined && { chunk })
           });
@@ -230,7 +230,7 @@ export function createGenericAdapter(
         async () => callbacks.onDone?.() ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, { type: 'done' });
+          callbacks.onError?.(error, { type: 'done' });
         }
       );
     },

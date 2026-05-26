@@ -1,1 +1,1 @@
-export { createCliStreamBridge, type CliStreamBridgeEvents } from './cli-bridge.js';
+export { type CliStreamBridgeEvents, createCliStreamBridge } from './cli-bridge.js';

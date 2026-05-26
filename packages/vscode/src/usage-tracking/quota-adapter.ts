@@ -3,11 +3,11 @@ import type { IQuotaDataSource, UsageQuota } from '../types/errors.js';
 export type QuotaWindow = UsageQuota['window'];
 
 export interface QuotaWindowValue {
-  used: number;
-  total: number;
-  window: QuotaWindow;
-  unit: UsageQuota['unit'];
   expiresAt?: Date;
+  total: number;
+  unit: UsageQuota['unit'];
+  used: number;
+  window: QuotaWindow;
 }
 
 export type ActiveQuotaWindowStrategy = 'most-constrained' | 'highest-percent' | 'preferred-order';
@@ -15,8 +15,8 @@ export type ActiveQuotaWindowStrategy = 'most-constrained' | 'highest-percent' |
 export interface QuotaAdapterOptions<TPayload> {
   fetch: () => Promise<TPayload>;
   mapWindows: (payload: TPayload) => QuotaWindowValue[];
-  strategy?: ActiveQuotaWindowStrategy;
   preferredOrder?: QuotaWindow[];
+  strategy?: ActiveQuotaWindowStrategy;
 }
 
 const DEFAULT_WINDOW_ORDER: QuotaWindow[] = ['hourly', 'daily', 'weekly', 'monthly'];

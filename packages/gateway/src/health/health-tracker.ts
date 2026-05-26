@@ -3,14 +3,14 @@ import { LatencyTracker } from './latency-tracker.js';
 
 export interface HealthSnapshot {
   averageLatencyMs: number | undefined;
-  errorCount: number;
   circuitState: CircuitBreakerState;
+  errorCount: number;
 }
 
 export class HealthTracker {
-  #breaker: CircuitBreaker;
+  readonly #breaker: CircuitBreaker;
   #errors = 0;
-  #latency = new LatencyTracker();
+  readonly #latency = new LatencyTracker();
 
   constructor(config: CircuitBreakerConfig = {}) {
     this.#breaker = new CircuitBreaker(config);

@@ -19,15 +19,15 @@ export type RequestType = 'completion' | 'embedding' | 'fine-tuning';
 
 export interface TokenBudget {
   id: string;
-  name: string;
-  provider: string;
-  model: string;
-  maxTokens: number;
   maxCost: number;
-  periodMs: number;
-  resetStrategy: BudgetResetStrategy;
-  priority: BudgetPriority;
+  maxTokens: number;
   metadata?: Record<string, unknown>;
+  model: string;
+  name: string;
+  periodMs: number;
+  priority: BudgetPriority;
+  provider: string;
+  resetStrategy: BudgetResetStrategy;
 }
 
 export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
@@ -35,40 +35,40 @@ export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
 }
 
 export interface BudgetFilter {
-  provider?: string;
   model?: string;
   priority?: BudgetPriority;
+  provider?: string;
 }
 
 export interface TokenUsage {
   budgetId: string;
-  provider: string;
-  model: string;
-  tokensUsed: number;
   cost: number;
-  timestamp: Date;
-  requestType: RequestType;
   metadata?: Record<string, unknown>;
+  model: string;
+  provider: string;
+  requestType: RequestType;
+  timestamp: Date;
+  tokensUsed: number;
 }
 
 export interface UsageFilter {
   budgetId?: string;
-  provider?: string;
-  model?: string;
-  requestType?: RequestType;
   from?: Date;
+  model?: string;
+  provider?: string;
+  requestType?: RequestType;
   to?: Date;
 }
 
 export interface TokenRequest {
   budgetId?: string;
-  provider: string;
-  model: string;
-  estimatedTokens: number;
   estimatedCost?: number;
-  priority?: BudgetPriority;
-  requestType: RequestType;
+  estimatedTokens: number;
   metadata?: Record<string, unknown>;
+  model: string;
+  priority?: BudgetPriority;
+  provider: string;
+  requestType: RequestType;
 }
 
 export interface AllocationCondition {
@@ -77,100 +77,100 @@ export interface AllocationCondition {
 }
 
 export interface TokenAllocation {
-  id: string;
-  budgetId: string;
-  allocatedTokens: number;
   allocatedCost: number;
-  expiresAt: Date;
+  allocatedTokens: number;
+  budgetId: string;
   conditions?: AllocationCondition[];
+  expiresAt: Date;
+  id: string;
 }
 
 export interface CostAnalysisBudgetSummary {
   budgetId: string;
-  totalTokens: number;
-  totalCost: number;
   requestCount: number;
+  totalCost: number;
+  totalTokens: number;
 }
 
 export interface CostAnalysis {
-  totalTokens: number;
-  totalCost: number;
-  requestCount: number;
   budgets: CostAnalysisBudgetSummary[];
+  requestCount: number;
+  totalCost: number;
+  totalTokens: number;
 }
 
 export interface OptimizationSuggestion {
   budgetId: string;
-  type: 'reduce-tokens' | 'reduce-cost' | 'rate-limit';
   message: string;
+  type: 'reduce-tokens' | 'reduce-cost' | 'rate-limit';
 }
 
 export interface TokenManager {
   createBudget(config: TokenBudgetConfig): Promise<TokenBudget>;
-  getBudget(id: string): Promise<TokenBudget | null>;
-  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
   deleteBudget(id: string): Promise<void>;
-  listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
-  requestTokens(request: TokenRequest): Promise<TokenAllocation>;
-  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
-  recordUsage(usage: TokenUsage): Promise<void>;
-  getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
+  getBudget(id: string): Promise<TokenBudget | null>;
   getCostAnalysis(periodMs: number): Promise<CostAnalysis>;
   getOptimizationSuggestions(budgetId: string): Promise<OptimizationSuggestion[]>;
+  getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
+  listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
+  recordUsage(usage: TokenUsage): Promise<void>;
+  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
+  requestTokens(request: TokenRequest): Promise<TokenAllocation>;
+  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
 }
 
 export interface CompressionOptions<TMessage> {
+  estimateTokens?: (message: TMessage) => number;
   maxTokens: number;
   preserveLast?: number;
-  estimateTokens?: (message: TMessage) => number;
 }
 
 export interface CompressionResult<TMessage> {
-  messages: TMessage[];
+  compressed: boolean;
   droppedCount: number;
   estimatedTokens: number;
-  compressed: boolean;
+  messages: TMessage[];
 }
 
 export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
 
 export interface OutputCompressionOptions {
+  intensity?: number;
   level: OutputCompressionLevel;
   preserve?: ('code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors')[];
-  intensity?: number;
 }
 
 export interface OutputCompressionResult {
-  original: string;
   compressed: string;
-  originalTokens: number;
   compressedTokens: number;
+  original: string;
+  originalTokens: number;
   savingsRatio: number;
 }
 
 export interface RateLimit {
-  windowMs: number;
   maxRequests: number;
+  windowMs: number;
 }
 
 export interface RateLimitStatus {
   allowed: boolean;
   limit: number;
   remaining: number;
-  windowMs: number;
   retryAfterMs: number;
+  windowMs: number;
 }
 
 export interface PacingFeedback {
-  provider: string;
   overloaded?: boolean;
+  provider: string;
   retryAfterMs?: number;
 }
 
 interface AllocationRecord {
   allocation: TokenAllocation;
-  request: TokenRequest;
   createdAt: number;
+  request: TokenRequest;
 }
 
 function getBudgetPriorityRank(priority: BudgetPriority): number {
@@ -182,6 +182,9 @@ function getBudgetPriorityRank(priority: BudgetPriority): number {
       return 1;
     }
     case 'low': {
+      return 0;
+    }
+    default: {
       return 0;
     }
   }
@@ -638,6 +641,9 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
           .replaceAll(/ ([,.])/gu, '$1')
           .trim()
       );
+    }
+    default: {
+      return response;
     }
   }
 }

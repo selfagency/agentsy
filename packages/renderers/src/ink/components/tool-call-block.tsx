@@ -10,8 +10,8 @@ interface ToolCallBlockProps {
     readonly arguments: Record<string, unknown>;
     readonly done: boolean;
   };
-  readonly theme: Theme;
   readonly screenReader?: boolean;
+  readonly theme: Theme;
 }
 
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];

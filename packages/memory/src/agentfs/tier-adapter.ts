@@ -6,11 +6,11 @@ import type { MemoryDatabase } from '../database/connection.js';
 import { kvStore } from '../database/schema.js';
 
 export interface TierFsAdapterOptions {
-  db: MemoryDatabase;
-  tierName: TierName;
   config: TierConfig;
-  now?: (() => number) | undefined;
+  db: MemoryDatabase;
   namespace?: string | undefined;
+  now?: (() => number) | undefined;
+  tierName: TierName;
 }
 
 function sortByPromotionPriority(now: () => number, item: MemoryItem): number {
@@ -59,7 +59,9 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
   }
 
   function isExpired(item: MemoryItem): boolean {
-    if (config.ttlMs === Infinity) return false;
+    if (config.ttlMs === Number.POSITIVE_INFINITY) {
+      return false;
+    }
     return now() - item.createdAt > config.ttlMs;
   }
 
@@ -146,11 +148,17 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
         .where(eq(kvStore.key, keyFor(item.id)))
         .get();
 
-      if (existing) return null;
+      if (existing) {
+        return null;
+      }
 
       const { usedItems, usedTokens } = getCapacityStats();
-      if (config.maxItems !== Infinity && usedItems >= config.maxItems) return null;
-      if (config.maxTokens !== Infinity && usedTokens + item.tokenCount > config.maxTokens) return null;
+      if (config.maxItems !== Number.POSITIVE_INFINITY && usedItems >= config.maxItems) {
+        return null;
+      }
+      if (config.maxTokens !== Number.POSITIVE_INFINITY && usedTokens + item.tokenCount > config.maxTokens) {
+        return null;
+      }
 
       db.insert(kvStore)
         .values({
@@ -166,8 +174,8 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
     read(query: TierReadQuery = {}): TierReadResult {
       const items = readItemsFiltered(query);
       const limitIsDefined = query.limit !== undefined;
-      const overflowed = limitIsDefined && items.length > query.limit;
-      const limited = limitIsDefined ? items.slice(0, query.limit) : items;
+      const overflowed = limitIsDefined && items.length > (query.limit ?? 0);
+      const limited = limitIsDefined ? items.slice(0, query.limit ?? 0) : items;
       const tokenCount = limited.reduce((sum, i) => sum + i.tokenCount, 0);
 
       return { items: limited, overflowed, tierName, tokenCount };
@@ -201,7 +209,9 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
 
       let promoted = 0;
       for (const item of items) {
-        if (promoted >= count) break;
+        if (promoted >= count) {
+          break;
+        }
 
         const written = to.write({
           ...item,
@@ -225,7 +235,9 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
       let demoted = 0;
 
       for (const item of sorted) {
-        if (demoted >= count) break;
+        if (demoted >= count) {
+          break;
+        }
 
         const written = this.write({
           ...item,
@@ -233,7 +245,9 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
           accessCount: item.accessCount + 1
         });
 
-        if (written !== null) demoted++;
+        if (written !== null) {
+          demoted++;
+        }
       }
 
       return demoted;

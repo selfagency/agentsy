@@ -149,7 +149,10 @@ describe('createRuntimeHookRegistry', () => {
   it('list returns all registered handlers', async () => {
     const registry = createRuntimeHookRegistry();
 
-    registry.register('UserPromptSubmit', async () => ({ continue: true }), { id: 'a', priority: 1 });
+    registry.register('UserPromptSubmit', async () => ({ continue: true }), {
+      id: 'a',
+      priority: 1
+    });
     registry.register('Stop', async () => ({ continue: true }), { id: 'b', priority: 2 });
 
     const entries = registry.list();

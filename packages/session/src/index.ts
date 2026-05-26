@@ -5,30 +5,30 @@ import { createHash } from 'node:crypto';
 
 export interface ReusableSessionSegment {
   fingerprint: string;
-  reuseClass: 'hot' | 'warm' | 'cold';
   invalidations: string[];
+  reuseClass: 'hot' | 'warm' | 'cold';
 }
 
 export interface SessionState {
   id: string;
-  values: Record<string, unknown>;
   modelFamily?: string;
   reusableSegments?: ReusableSessionSegment[];
+  values: Record<string, unknown>;
 }
 
 export interface SessionSnapshot {
-  sessionId: string;
-  timestamp: Date;
   checksum: string;
-  state: SessionState;
   schemaVersion: number;
+  sessionId: string;
+  state: SessionState;
+  timestamp: Date;
 }
 
 export interface CreateSessionSnapshotInput {
   id: string;
-  values: Record<string, unknown>;
   modelFamily?: string;
   reusableSegments?: ReusableSessionSegment[];
+  values: Record<string, unknown>;
 }
 
 export function createSessionSnapshot(input: CreateSessionSnapshotInput): SessionSnapshot {

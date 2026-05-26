@@ -104,7 +104,7 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
 
 **Location:** `packages/renderers/src/ink/components/`
 
-**TASK-089 — Acid ANSI BBS Visual System**
+## TASK-089 — Acid ANSI BBS Visual System
 
 - Create `packages/renderers/src/ink/theme/` with:
   - `palette.ts` — Semantic ANSI palette tokens (cyan=assistant, green=success, yellow=warning, red=error, dim=secondary, bright=emphasis)
@@ -113,7 +113,7 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
   - `motion.ts` — Reduced-motion fallbacks, accessibility-safe animation rules
 - Tokens consumed by all Ink components
 
-**TASK-072 — Ink Chat/Dialog Components**
+## TASK-072 — Ink Chat/Dialog Components
 
 - Create `packages/renderers/src/ink/components/chat/`:
   - `transcript.tsx` — Scrollable transcript with alternating user/assistant turns
@@ -123,7 +123,7 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
   - `status-footer.tsx` — Connection status, model name, elapsed time
 - Each component: pure Ink functional component, uses theme palette, keyboard-navigable
 
-**TASK-073 — Ink Stream-Event Components**
+## TASK-073 — Ink Stream-Event Components
 
 - Create `packages/renderers/src/ink/components/stream-events/`:
   - `model-delta.tsx` — Inline model response delta rendering
@@ -132,7 +132,7 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
   - `approval-state.tsx` — Pending/approved/rejected state with countdown
 - Components receive `StreamChunk` events and render progressively
 
-**TASK-085 — Ink Provider/Model Chooser**
+## TASK-085 — Ink Provider/Model Chooser
 
 - Create `packages/renderers/src/ink/components/model-picker/`:
   - `search-input.tsx` — Search field with inline results
@@ -146,11 +146,11 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
   - `index.tsx` — Searchable agent list with provenance badges (bundled/user/workspace)
   - Arrow-key navigation, model preference display, tool access summary
 
-#### Step 2: Wire Provider Path in providers
+### Step 2: Wire Provider Path in providers
 
 **Location:** `packages/providers/src/`
 
-**TASK-008 — Provider Request Path**
+## TASK-008 — Provider Request Path
 
 - Create `packages/providers/src/request-path.ts`:
   - `createRequestHandler(providers, model?)` — Returns handler that selects provider, builds request, calls `complete()` or `stream()`
@@ -158,22 +158,22 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
   - Response parser: takes raw provider response, returns unified `CompletionResponse`
 - Mock provider already exists in `packages/cli/src/providers/mock.ts`
 
-#### Step 3: Stream Normalization in core
+### Step 3: Stream Normalization in core
 
 **Location:** `packages/core/src/`
 
-**TASK-009 — Stream Normalization → Runtime Events**
+## TASK-009 — Stream Normalization → Runtime Events
 
 - Create `packages/core/src/stream-to-events.ts`:
   - `createStreamEventAdapter()` — Takes `ReadableStream<NormalizedChunk>`, emits typed runtime events
   - Event types: `text-delta`, `thinking-delta`, `tool-call-start`, `tool-call-end`, `error`, `done`
   - Each event carries: `chunkIndex`, `timestamp`, `payload`
 
-#### Step 4: Runtime Turn Loop
+### Step 4: Runtime Turn Loop
 
 **Location:** `packages/runtime/src/loop/`
 
-**TASK-010 — Text-Only Turn Execution**
+## TASK-010 — Text-Only Turn Execution
 
 - Create `packages/runtime/src/loop/simple-turn.ts`:
   - `createSimpleTurnLoop(options)` — Single turn: accept message → call provider → stream response → return
@@ -181,34 +181,34 @@ renderers Ink TUI  →  providers wire path  →  core stream norm
   - Supports `onText`, `onThinking`, `onToolCall`, `onDone` callbacks
   - No tool execution yet (Phase 2 constraint)
 
-#### Step 5: Renderer Bridge for CLI
+### Step 5: Renderer Bridge for CLI
 
 **Location:** `packages/renderers/src/adapters/`
 
-**TASK-011 — CLI Renderer Bridge**
+## TASK-011 — CLI Renderer Bridge
 
 - Create `packages/renderers/src/adapters/cli-bridge.ts`:
   - `createCliStreamBridge()` — Takes stream events, renders via Ink components
   - `renderStreamToInk(events, options)` — Maps stream events to Ink component props
   - `createInkSessionRenderer()` — Full-session renderer with transcript + status
 
-#### Step 6: CLI Integration + Tests
+### Step 6: CLI Integration + Tests
 
 **Location:** `packages/cli/src/`
 
-**TASK-007 — Interactive Shell Loop (Complete)**
+## TASK-007 — Interactive Shell Loop (Complete)
 
 - Existing chat.ts is readline-based. Add input state manager:
   - `packages/cli/src/tui/input-state.ts` — Prompt history, mode display, input buffer
   - Wire Ink components when terminal supports it, fall back to readline
 
-**TASK-012 — E2E Streaming Test**
+## TASK-012 — E2E Streaming Test
 
 - Create `packages/cli/src/e2e/chat-streaming.e2e.test.ts`:
   - Mock provider → request path → stream events → renderer bridge → CLI output
   - Validate: streaming content appears, thinking blocks render, token meter updates, done state reached
 
-**TASK-095 — MSW Bootstrap**
+## TASK-095 — MSW Bootstrap
 
 - Create `packages/testing/src/msw/`:
   - `handlers.ts` — Reusable HTTP handlers for provider API mocks
@@ -317,7 +317,7 @@ Continue to DOGFOOD Phase 3, 3.5, 5, etc.
 | R3 Phase D | prompts layers                     | 3-4 source   | 4-5 test   | ~1.5 hours  |
 | R3 Phase E | CLI agent/skills commands          | 4-5 source   | 5-6 test   | ~2 hours    |
 
-**Total estimated: ~24 hours of implementation work**
+## Total estimated: ~24 hours of implementation work
 
 ## 7. Acceptance Criteria
 

@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { applyConversationEvent } from './eventSourcing.js';
 import { createConversationStoreFromProcessor } from './processorBridge.js';
-import { createConversationStore } from './store.js';
 import type { StoreListener } from './store.js';
+import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 
 // Helper functions for ConversationStore tests

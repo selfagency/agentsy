@@ -11,19 +11,18 @@ import type { ProviderCapabilities } from './index.js';
  * Model capability requirements from @agentsy/models
  */
 export interface ModelCapabilities {
-  streaming?: boolean;
-  toolCalling?: boolean;
-  reasoning?: boolean;
   batching?: boolean;
   costTracking?: boolean;
+  reasoning?: boolean;
+  streaming?: boolean;
   tokenBudgeting?: boolean;
+  toolCalling?: boolean;
 }
 
 /**
  * Provider capability profile with metadata
  */
 export interface ProviderCapabilityProfile {
-  providerId: string;
   capabilities: ProviderCapabilities;
   metadata?:
     | {
@@ -33,15 +32,16 @@ export interface ProviderCapabilityProfile {
         requiresSetup?: boolean | undefined;
       }
     | undefined;
+  providerId: string;
 }
 
 /**
  * Capability match result
  */
 export interface CapabilityMatchResult {
-  providerId: string;
   matches: boolean;
   missingCapabilities: string[];
+  providerId: string;
   score: number; // 0-1, higher is better
 }
 
@@ -68,6 +68,7 @@ export function modelCapabilitiesToProviderRequirements(modelCapabilities: Model
 /**
  * Check if a provider's capabilities match model requirements
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 export function matchCapabilities(
   required: ProviderCapabilities,
   provided: ProviderCapabilities

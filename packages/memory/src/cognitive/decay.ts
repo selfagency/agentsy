@@ -1,28 +1,28 @@
 import type { MemoryItem, TierName } from './tier-types.js';
 
 export interface DecayConfig {
-  sensoryBufferHalfLife: number;
-  sensoryRegisterHalfLife: number;
-  workingMemoryHalfLife: number;
-  shortTermHalfLife: number;
   longTermHalfLife: number;
   minimumImportance: number;
+  sensoryBufferHalfLife: number;
+  sensoryRegisterHalfLife: number;
+  shortTermHalfLife: number;
+  workingMemoryHalfLife: number;
 }
 
 export const DEFAULT_DECAY_CONFIG: DecayConfig = {
-  sensoryBufferHalfLife: 2_500,
-  sensoryRegisterHalfLife: 1_000,
+  sensoryBufferHalfLife: 2500,
+  sensoryRegisterHalfLife: 1000,
   workingMemoryHalfLife: 15_000,
   shortTermHalfLife: 1_800_000,
-  longTermHalfLife: Infinity,
+  longTermHalfLife: Number.POSITIVE_INFINITY,
   minimumImportance: 0.05
 };
 
 export interface DecayedItem {
+  action: 'keep' | 'promote' | 'demote' | 'discard';
   item: MemoryItem;
   newImportance: number;
   tier: TierName;
-  action: 'keep' | 'promote' | 'demote' | 'discard';
 }
 
 const TIER_HALF_LIVES: Record<TierName, keyof DecayConfig> = {
@@ -35,7 +35,7 @@ const TIER_HALF_LIVES: Record<TierName, keyof DecayConfig> = {
 
 function getHalfLife(tier: TierName, config: DecayConfig): number {
   const key = TIER_HALF_LIVES[tier];
-  return config[key] ?? Infinity;
+  return config[key] ?? Number.POSITIVE_INFINITY;
 }
 
 export function applyDecay(
@@ -47,7 +47,7 @@ export function applyDecay(
   const halfLife = getHalfLife(tier, config);
 
   return items.map(item => {
-    if (halfLife === Infinity) {
+    if (halfLife === Number.POSITIVE_INFINITY) {
       return {
         item,
         newImportance: item.importance,

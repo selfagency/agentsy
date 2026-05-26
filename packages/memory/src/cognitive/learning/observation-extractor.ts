@@ -4,14 +4,14 @@ import type { MemoryItem } from '../tier-types.js';
 export type ObservationKind = 'factual' | 'emotional' | 'procedural' | 'corrective' | 'relational';
 
 export interface Observation {
+  confidence: number;
+  content: string;
+  contradictsWith: string[];
+  extractedAt: number;
   id: string;
   kind: ObservationKind;
-  content: string;
   sourceMemoryId: string;
-  confidence: number;
-  contradictsWith: string[];
   supportsIds: string[];
-  extractedAt: number;
 }
 
 export interface ObservationExtractor {
@@ -24,9 +24,9 @@ export interface ObservationExtractorOptions {
 }
 
 interface RawObservation {
-  kind: ObservationKind;
-  content: string;
   confidence: number;
+  content: string;
+  kind: ObservationKind;
 }
 
 type ExtractorFn = (content: string) => RawObservation[];
@@ -40,7 +40,9 @@ function extractByPattern(
   let match = pattern.exec(content);
   while (match !== null) {
     const obs = build(match);
-    if (obs) observations.push(obs);
+    if (obs) {
+      observations.push(obs);
+    }
     match = pattern.exec(content);
   }
   return observations;
@@ -53,7 +55,9 @@ function extractFactual(content: string): RawObservation[] {
   return extractByPattern(content, isPattern, (match: RegExpExecArray) => {
     const subject = match[1]?.trim();
     const predicate = match[2]?.trim();
-    if (!subject || !predicate || predicate.length <= 3) return null;
+    if (!(subject && predicate) || predicate.length <= 3) {
+      return null;
+    }
     return {
       kind: 'factual',
       content: `${subject} is ${predicate}`,
@@ -95,7 +99,9 @@ function extractEmotional(content: string): RawObservation[] {
     observations.push(
       ...extractByPattern(content, pattern, (match: RegExpExecArray) => {
         const target = match[1]?.trim();
-        if (!target || target.length <= 2) return null;
+        if (!target || target.length <= 2) {
+          return null;
+        }
         return { kind, content: `${prefix} ${target}`, confidence: 0.6 };
       })
     );
@@ -105,7 +111,9 @@ function extractEmotional(content: string): RawObservation[] {
 
 function buildProceduralObservation(match: RegExpExecArray): RawObservation | null {
   const step = match[1]?.trim();
-  if (!step || step.length <= 5) return null;
+  if (!step || step.length <= 5) {
+    return null;
+  }
   return {
     kind: 'procedural',
     content: `procedure: ${step}`,
@@ -135,7 +143,9 @@ function extractCorrective(content: string): RawObservation[] {
       ...extractByPattern(content, pattern, (match: RegExpExecArray) => {
         const old = match[1]?.trim();
         const corrected = match[2]?.trim();
-        if (!old || !corrected || old.length <= 3 || corrected.length <= 3) return null;
+        if (!(old && corrected) || old.length <= 3 || corrected.length <= 3) {
+          return null;
+        }
         return {
           kind: 'corrective',
           content: `correction: "${old}" is actually "${corrected}"`,
@@ -153,7 +163,9 @@ function extractRelational(content: string): RawObservation[] {
   return extractByPattern(content, relationalPattern, (match: RegExpExecArray) => {
     const from = match[1]?.trim();
     const to = match[2]?.trim();
-    if (!from || !to || from === to) return null;
+    if (!(from && to) || from === to) {
+      return null;
+    }
     return {
       kind: 'relational',
       content: `relationship: ${from} and ${to}`,
@@ -175,7 +187,9 @@ function deduplicateObservations(observations: RawObservation[]): RawObservation
   const result: RawObservation[] = [];
   for (const obs of observations) {
     const fp = fingerprintContent(obs.content).value;
-    if (seen.has(fp)) continue;
+    if (seen.has(fp)) {
+      continue;
+    }
     seen.add(fp);
     result.push(obs);
   }

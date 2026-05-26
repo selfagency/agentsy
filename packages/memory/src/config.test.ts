@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { loadConfig, DEFAULT_TIER_CONFIGS } from './config.js';
+import { DEFAULT_TIER_CONFIGS, loadConfig } from './config.js';
 
 describe('loadConfig', () => {
   it('should return defaults when no overrides provided', () => {

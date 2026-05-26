@@ -10,9 +10,9 @@ import { sanitizeIngestSource } from '../retrieval/rag/sanitization.js';
 import type {
   IngestSource,
   IngestSummary,
-  RAGWeightConfig,
   RAGEvidence,
-  RAGServerDocument
+  RAGServerDocument,
+  RAGWeightConfig
 } from '../retrieval/rag/types.js';
 import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 
@@ -62,23 +62,31 @@ function cosineSimilarity(a: number[], b: number[]): number {
     normA += ai * ai;
     normB += bi * bi;
   }
-  if (normA === 0 || normB === 0) return 0;
+  if (normA === 0 || normB === 0) {
+    return 0;
+  }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 function lexicalScore(queryTerms: string[], text: string): number {
-  if (queryTerms.length === 0) return 0;
+  if (queryTerms.length === 0) {
+    return 0;
+  }
   const lowered = text.toLowerCase();
   let hits = 0;
   for (const term of queryTerms) {
-    if (lowered.includes(term)) hits++;
+    if (lowered.includes(term)) {
+      hits++;
+    }
   }
   return hits / queryTerms.length;
 }
 
 function temporalScore(updatedAtIso: string): number {
   const updatedAtMs = Date.parse(updatedAtIso);
-  if (Number.isNaN(updatedAtMs)) return 0;
+  if (Number.isNaN(updatedAtMs)) {
+    return 0;
+  }
   const ageHours = Math.max(0, Date.now() - updatedAtMs) / (1000 * 60 * 60);
   return 1 / (1 + ageHours / 24);
 }
@@ -123,7 +131,9 @@ export function createRagFsAdapter(options: RagFsAdapterOptions): KnowledgeBaseM
     for (const row of rows) {
       try {
         const docId = row.key.split(':').pop();
-        if (docId) map.set(docId, parseVector(row.value));
+        if (docId) {
+          map.set(docId, parseVector(row.value));
+        }
       } catch {
         // skip malformed
       }
@@ -195,6 +205,7 @@ export function createRagFsAdapter(options: RagFsAdapterOptions): KnowledgeBaseM
       return { inserted, updated, skipped };
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements KnowledgeBaseManager interface requiring Promise return
     async remove(documentId: string): Promise<boolean> {
       const docExists = db
         .select({ key: kvStore.key })
@@ -202,7 +213,9 @@ export function createRagFsAdapter(options: RagFsAdapterOptions): KnowledgeBaseM
         .where(eq(kvStore.key, makeDocKey(namespace, documentId)))
         .get();
 
-      if (!docExists) return false;
+      if (!docExists) {
+        return false;
+      }
 
       db.delete(kvStore)
         .where(eq(kvStore.key, makeDocKey(namespace, documentId)))
@@ -213,6 +226,7 @@ export function createRagFsAdapter(options: RagFsAdapterOptions): KnowledgeBaseM
       return true;
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements KnowledgeBaseManager interface requiring Promise return
     async search(input: {
       query: string;
       scope?: string;

@@ -1,24 +1,26 @@
 import type { JsonObject } from '@agentsy/types';
 
 export interface XmlToolCall {
-  name: string;
-  parameters: JsonObject;
   /** How this tool call was encoded in the stream. */
   format: 'bare-xml' | 'json-wrapped' | 'native-json';
   /** Provider-assigned call ID, present when the provider supplies one (e.g. OpenAI, Anthropic, Bedrock). */
   id?: string;
+  name: string;
+  parameters: JsonObject;
 }
 
 const MAX_XML_TOOL_CALL_INPUT_LENGTH = 1_000_000;
 
 const VALID_TAG_START_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
+const VALID_PARAM_NAME_REGEX = /^[A-Za-z_]\w*$/;
+const JSON_START_REGEX = /[{[]/;
 
 const VALID_TAG_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_:-';
 
 interface ParsedXmlElement {
-  name: string;
-  inner: string;
   endIndex: number;
+  inner: string;
+  name: string;
 }
 
 function isValidTagStartCharacter(char: string): boolean {
@@ -102,7 +104,7 @@ function parseXmlElement(text: string, startIndex: number): ParsedXmlElement | n
 }
 
 function extractBareXmlParams(inner: string): JsonObject {
-  const VALID_PARAM_NAME = /^[A-Za-z_]\w*$/;
+  const VALID_PARAM_NAME = VALID_PARAM_NAME_REGEX;
   const params: JsonObject = {} as JsonObject;
   let cursor = 0;
 
@@ -163,7 +165,7 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
   // before the raw JSON. Strip common fences and then find the first JSON
   // object/array opening and attempt to parse from there.
   const normalized = stripMarkdownCodeFence(text);
-  const firstBracket = normalized.search(/[{[]/);
+  const firstBracket = normalized.search(JSON_START_REGEX);
   if (firstBracket === -1) {
     return [];
   }
@@ -186,7 +188,7 @@ function extractBareJsonToolCalls(text: string, knownTools: Set<string>): XmlToo
     }
     const obj: Record<string, unknown> = candidate as Record<string, unknown>;
     const name = typeof obj.name === 'string' ? obj.name : null;
-    if (!name || !knownTools.has(name)) {
+    if (!(name && knownTools.has(name))) {
       continue;
     }
     const args = obj.arguments ?? obj.parameters ?? {};
@@ -228,7 +230,11 @@ function isJsonToolCallWrapper(rawTag: string): boolean {
 
 function parseJsonToolCallPayload(inner: string): { name?: unknown; arguments?: unknown; parameters?: unknown } | null {
   try {
-    return JSON.parse(inner.trim()) as { name?: unknown; arguments?: unknown; parameters?: unknown };
+    return JSON.parse(inner.trim()) as {
+      name?: unknown;
+      arguments?: unknown;
+      parameters?: unknown;
+    };
   } catch {
     return null;
   }

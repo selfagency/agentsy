@@ -272,7 +272,7 @@ describe('createXmlStreamFilter', () => {
     expect(out).toContain('visible');
     expect(onWarning).toHaveBeenCalledWith(
       expect.stringContaining('Privacy-sensitive'),
-      expect.objectContaining({ missingPrivacyTags: expect.any(Array) as Array<unknown> })
+      expect.objectContaining({ missingPrivacyTags: expect.any(Array) as unknown[] })
     );
   });
 

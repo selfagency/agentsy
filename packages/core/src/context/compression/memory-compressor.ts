@@ -7,17 +7,17 @@ import { compressProse, protectPattern, restoreProtectedSegments } from './prose
 export type MemoryCompressionLevel = CompressionLevel;
 
 export interface MemoryCompressionOptions {
-  level?: MemoryCompressionLevel;
   backup?: boolean;
+  level?: MemoryCompressionLevel;
 }
 
 export interface MemoryCompressionResult {
-  original: string;
-  compressed: string;
-  originalChars: number;
-  compressedChars: number;
-  savingsRatio: number;
   backupPath?: string;
+  compressed: string;
+  compressedChars: number;
+  original: string;
+  originalChars: number;
+  savingsRatio: number;
 }
 
 const SENSITIVE_NAME_TOKENS = [

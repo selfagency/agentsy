@@ -21,20 +21,23 @@ function createRestoreResult(snapshotId: string, restoredCount: number, rollback
 class InMemoryBackupManager implements BackupManager {
   readonly #snapshots = new Map<string, StoredSnapshot>();
   readonly #restorePoints = new Map<string, SyncSnapshot>();
+  readonly #options: BackupManagerOptions;
 
-  constructor(private readonly options: BackupManagerOptions) {}
+  constructor(options: BackupManagerOptions) {
+    this.#options = options;
+  }
 
   async createSnapshot(): Promise<BackupManifest> {
-    const current = cloneSyncSnapshot(await this.options.getCurrentState());
-    const now = (this.options.now ?? (() => new Date()))().toISOString();
-    const snapshotId = (this.options.createId ?? randomUUID)();
+    const current = cloneSyncSnapshot(await this.#options.getCurrentState());
+    const now = (this.#options.now ?? (() => new Date()))().toISOString();
+    const snapshotId = (this.#options.createId ?? randomUUID)();
     const manifest = createBackupManifest({
       createdAt: now,
       records: current.records,
-      schemaVersion: this.options.schemaVersion,
+      schemaVersion: this.#options.schemaVersion,
       snapshotId,
       sourceVersion: 1,
-      targetDatabaseId: this.options.databaseId
+      targetDatabaseId: this.#options.databaseId
     });
 
     this.#snapshots.set(snapshotId, {
@@ -45,13 +48,13 @@ class InMemoryBackupManager implements BackupManager {
     return manifest;
   }
 
-  async verifySnapshot(snapshotId: string): Promise<boolean> {
+  verifySnapshot(snapshotId: string): Promise<boolean> {
     const stored = this.#snapshots.get(snapshotId);
     if (!stored) {
-      return false;
+      return Promise.resolve(false);
     }
 
-    return verifyBackupManifest(stored.manifest, stored.snapshot.records);
+    return Promise.resolve(verifyBackupManifest(stored.manifest, stored.snapshot.records));
   }
 
   async restoreSnapshot(
@@ -70,7 +73,7 @@ class InMemoryBackupManager implements BackupManager {
     const targetMatches = stored.manifest.targetDatabaseId === options.targetDatabaseId;
     const schemaMatches = stored.manifest.schemaVersion === options.schemaVersion;
 
-    if ((!targetMatches || !schemaMatches) && !options.force) {
+    if (!((targetMatches && schemaMatches) || options.force)) {
       if (!targetMatches) {
         throw new Error('Restore target database identity does not match the snapshot target database identity.');
       }
@@ -78,9 +81,9 @@ class InMemoryBackupManager implements BackupManager {
       throw new Error('Restore schema version is incompatible with the snapshot schema version.');
     }
 
-    const restorePointId = (this.options.createId ?? randomUUID)();
-    this.#restorePoints.set(restorePointId, cloneSyncSnapshot(await this.options.getCurrentState()));
-    await this.options.applySnapshot(cloneSyncSnapshot(stored.snapshot));
+    const restorePointId = (this.#options.createId ?? randomUUID)();
+    this.#restorePoints.set(restorePointId, cloneSyncSnapshot(await this.#options.getCurrentState()));
+    await this.#options.applySnapshot(cloneSyncSnapshot(stored.snapshot));
 
     return createRestoreResult(snapshotId, stored.snapshot.records.length, restorePointId);
   }
@@ -91,7 +94,7 @@ class InMemoryBackupManager implements BackupManager {
       throw new Error(`Unknown restore point ${restorePointId}`);
     }
 
-    await this.options.applySnapshot(cloneSyncSnapshot(restorePoint));
+    await this.#options.applySnapshot(cloneSyncSnapshot(restorePoint));
     this.#restorePoints.delete(restorePointId);
 
     return createRestoreResult(restorePointId, restorePoint.records.length);

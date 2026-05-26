@@ -302,7 +302,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 
 #### E) Implementation Priority Phases
 
-**Phase 0 (Weeks 1-16): Token Optimization Foundation (CRITICAL)**
+## Phase 0 (Weeks 1-16): Token Optimization Foundation (CRITICAL)
 
 - Output compression (75% savings) in `@agentsy/tokens`
 - Memory file compression (46% savings) in `@agentsy/core/context`
@@ -315,7 +315,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - **Auto-compaction runtime primitive:** Auto-compaction is a first-class runtime primitive, not a memory layer concern. The runtime calls PreCompact hook before each compact cycle; the memory layer registers a handler.
 - **ROI:** 60% total cost reduction, 3x faster responses
 
-**Phase 1 (Weeks 1-8): Memory & Coordination Enhancement**
+## Phase 1 (Weeks 1-8): Memory & Coordination Enhancement
 
 - **Turso + Honker Hybrid:** Local SQLite with honk extension for coordination (1-5ms latency)
 - **Integration Pattern:** Local honker for events/queues/scheduling, Turso for cloud sync/backup
@@ -325,7 +325,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - **mcp-rag-server integration:** Zero-ceremony RAG, local-only processing, MCP-native design
 - **Context reuse:** fingerprinted stable segments and cache-aware memory assembly inspired by LMCache
 
-**Phase 2 (Weeks 9-26): Tool & Resource Integration**
+## Phase 2 (Weeks 9-26): Tool & Resource Integration
 
 - **AgentFS PRIMARY:** Agent-specific filesystem (Turso-native, KV store, toolcall audit trails)
 - **mirage CONDITIONAL:** Multi-resource unification (S3, GitHub, Notion, Linear, Slack) only if needed
@@ -334,7 +334,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - **Tool coordination:** honker pub/sub for memory updates, task queues for background workflows
 - **Maki integration:** Tree-sitter tools (59 token cost vs 224 reads), permission inference
 
-**Phase 3 (Weeks 1-24): Model Selection & Analytics**
+## Phase 3 (Weeks 1-24): Model Selection & Analytics
 
 - **models.dev integration:** New `@agentsy/models` package with 100+ provider support
 - **Local LLM provider profiles:** Full support matrix (Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel)
@@ -346,7 +346,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - **Codeburn analytics:** Cost-yield analysis, deterministic optimization suggestions
 - **Varlock secrets:** Schema-first validation, runtime leak prevention
 
-**Phase 4 (Weeks 1-24): Standards & Protocol Integration**
+## Phase 4 (Weeks 1-24): Standards & Protocol Integration
 
 - **ACP integration:** Editor integration server/client patterns (NEW)
 - **Enhanced MCP 1.0:** Dynamic tool loading, enterprise gateway configuration
@@ -355,7 +355,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - **Structured output handler:** adopt schema-first + grammar-backed structured generation patterns from Outlines/llguidance
 - **Other standards:** Ratify identity, AP2 payments (domain-specific)
 
-#### F) Expected Combined Benefits
+### F) Expected Combined Benefits
 
 **Efficiency:**
 

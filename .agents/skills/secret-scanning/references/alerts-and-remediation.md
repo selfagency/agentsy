@@ -250,4 +250,4 @@ paths-ignore:
 - File must be under 1 MB
 - Excluded paths are also excluded from push protection
 
-**Alerts for excluded paths are closed as "ignored by configuration."**
+## Alerts for excluded paths are closed as "ignored by configuration."

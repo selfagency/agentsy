@@ -6,10 +6,13 @@ import type { McpServerDefinition, McpServerRegistryConfig } from '../types/erro
  * Uses dynamic import to degrade gracefully when VS Code is unavailable.
  */
 export class McpServerRegistry {
+  private readonly config: McpServerRegistryConfig;
   private readonly servers = new Map<string, McpServerDefinition>();
   private readonly disposables: { dispose(): void }[] = [];
 
-  constructor(private readonly config: McpServerRegistryConfig) {}
+  constructor(config: McpServerRegistryConfig) {
+    this.config = config;
+  }
 
   /**
    * Register a single MCP server definition.

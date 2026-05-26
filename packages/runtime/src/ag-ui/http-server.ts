@@ -23,14 +23,14 @@ export interface SSEStreamOptions {
   formatEvent?: (event: AgUiEvent) => string;
 
   /**
-   * Whether to include comments (default: false).
-   */
-  includeComments?: boolean;
-
-  /**
    * Heartbeat interval in ms to keep connection alive (default: 30000).
    */
   heartbeatInterval?: number;
+
+  /**
+   * Whether to include comments (default: false).
+   */
+  includeComments?: boolean;
 }
 
 /**

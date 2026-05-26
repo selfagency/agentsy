@@ -42,7 +42,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders nothing for suppress style', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="thinking..." style="suppress" isStreaming={true} theme={mockTheme} />
+      <ThinkingBlock isStreaming={true} style="suppress" text="thinking..." theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -51,7 +51,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders inline thinking text', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="reasoning process" style="inline" isStreaming={false} theme={mockTheme} />
+      <ThinkingBlock isStreaming={false} style="inline" text="reasoning process" theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -60,7 +60,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders inline thinking with streaming indicator', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="reasoning" style="inline" isStreaming={true} theme={mockTheme} />
+      <ThinkingBlock isStreaming={true} style="inline" text="reasoning" theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -69,7 +69,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders blockquote thinking with spinner', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="thinking..." style="blockquote" isStreaming={true} theme={mockTheme} />
+      <ThinkingBlock isStreaming={true} style="blockquote" text="thinking..." theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -78,7 +78,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders blockquote thinking without text when streaming', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="partial thought" style="blockquote" isStreaming={true} theme={mockTheme} />
+      <ThinkingBlock isStreaming={true} style="blockquote" text="partial thought" theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -88,7 +88,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders full blockquote thinking text when not streaming', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="complete thought" style="blockquote" isStreaming={false} theme={mockTheme} />
+      <ThinkingBlock isStreaming={false} style="blockquote" text="complete thought" theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -97,7 +97,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('animates spinner during streaming blockquote', async () => {
     const { lastFrame, unmount } = render(
-      <ThinkingBlock text="thinking" style="blockquote" isStreaming={true} theme={mockTheme} />
+      <ThinkingBlock isStreaming={true} style="blockquote" text="thinking" theme={mockTheme} />
     );
 
     const frame1 = lastFrame();
@@ -115,7 +115,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders screen reader friendly inline thinking', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="SR reasoning" style="inline" isStreaming={false} theme={mockTheme} screenReader={true} />
+      <ThinkingBlock isStreaming={false} screenReader={true} style="inline" text="SR reasoning" theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -125,7 +125,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('renders screen reader friendly blockquote thinking', () => {
     const { lastFrame } = render(
-      <ThinkingBlock text="SR thought" style="blockquote" isStreaming={false} theme={mockTheme} screenReader={true} />
+      <ThinkingBlock isStreaming={false} screenReader={true} style="blockquote" text="SR thought" theme={mockTheme} />
     );
 
     const output = lastFrame();
@@ -143,7 +143,7 @@ describe('ThinkingBlock' as const, () => {
     };
 
     const { lastFrame } = render(
-      <ThinkingBlock text="colored thought" style="inline" isStreaming={false} theme={customTheme} />
+      <ThinkingBlock isStreaming={false} style="inline" text="colored thought" theme={customTheme} />
     );
 
     const output = lastFrame();
@@ -151,7 +151,7 @@ describe('ThinkingBlock' as const, () => {
   });
 
   it('handles empty thinking text', () => {
-    const { lastFrame } = render(<ThinkingBlock text="" style="inline" isStreaming={true} theme={mockTheme} />);
+    const { lastFrame } = render(<ThinkingBlock isStreaming={true} style="inline" text="" theme={mockTheme} />);
 
     const output = lastFrame();
     expect(output).toContain('[Thinking]');
@@ -159,7 +159,7 @@ describe('ThinkingBlock' as const, () => {
 
   it('stops spinner animation when not streaming', () => {
     const { lastFrame, unmount } = render(
-      <ThinkingBlock text="thought" style="blockquote" isStreaming={true} theme={mockTheme} />
+      <ThinkingBlock isStreaming={true} style="blockquote" text="thought" theme={mockTheme} />
     );
 
     vi.advanceTimersByTime(160); // Advance past animation
@@ -168,7 +168,7 @@ describe('ThinkingBlock' as const, () => {
     // Re-render without streaming
     unmount();
     const { lastFrame: finalFrame } = render(
-      <ThinkingBlock text="thought" style="blockquote" isStreaming={false} theme={mockTheme} />
+      <ThinkingBlock isStreaming={false} style="blockquote" text="thought" theme={mockTheme} />
     );
 
     const nonStreamingFrame = finalFrame();

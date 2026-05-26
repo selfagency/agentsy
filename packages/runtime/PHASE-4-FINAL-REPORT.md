@@ -9,8 +9,8 @@
 **Solution:** Changed `src/index.ts` to export runtime enums:
 
 ```typescript
-export * from './observability.js';
-export type * from './observability.js';
+export * from "./observability.js";
+export type * from "./observability.js";
 ```
 
 **Result:** All 87 test failures resolved immediately

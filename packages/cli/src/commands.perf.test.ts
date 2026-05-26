@@ -61,7 +61,9 @@ describe('Phase 0: CLI Commands Validation', () => {
       };
 
       capturedOutput = [];
-      const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], { stdout });
+      const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], {
+        stdout
+      });
 
       expect(exitCode).toBe(0);
       if (currentLevelOutput.length === 0) {

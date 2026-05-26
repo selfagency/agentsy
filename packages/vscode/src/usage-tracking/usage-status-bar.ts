@@ -12,10 +12,13 @@ const DEFAULT_ERROR_THRESHOLD = 0.95;
 export class UsageStatusBar {
   // Use unknown to avoid type compatibility issues with VS Code's StatusBarItem
   private statusBarItem: unknown = undefined;
+  private readonly config: UsageStatusBarConfig;
   private refreshTimer: ReturnType<typeof setTimeout> | undefined;
   private readonly disposables: { dispose(): void }[] = [];
 
-  constructor(private readonly config: UsageStatusBarConfig) {}
+  constructor(config: UsageStatusBarConfig) {
+    this.config = config;
+  }
 
   /**
    * Initialize and show the status bar item.
@@ -51,7 +54,7 @@ export class UsageStatusBar {
       this.updateDisplay(quota);
       return quota;
     } catch {
-      return undefined;
+      return;
     }
   }
 
@@ -119,7 +122,9 @@ export class UsageStatusBar {
   private startAutoRefresh(): void {
     const interval = this.config.refreshIntervalMs ?? DEFAULT_REFRESH_INTERVAL;
     this.refreshTimer = setInterval(() => {
-      void this.refresh();
+      this.refresh().catch(() => {
+        // Refresh errors are handled internally
+      });
     }, interval);
   }
 

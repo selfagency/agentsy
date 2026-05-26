@@ -8,14 +8,13 @@
  * @module @agentsy/testing/msw
  */
 
-import { type HttpHandler } from 'msw';
+import type { HttpHandler } from 'msw';
 import { setupServer } from 'msw/node';
-
-import { createMemoryHandlers, createMockMemoryState } from './handlers/memory.js';
 import type { MockMemoryState } from './handlers/memory.js';
+import { createMemoryHandlers, createMockMemoryState } from './handlers/memory.js';
 import { createAllProviderHandlers } from './handlers/providers.js';
-import { createRetrievalHandlers, createMockRetrievalState } from './handlers/retrieval.js';
 import type { MockRetrievalState } from './handlers/retrieval.js';
+import { createMockRetrievalState, createRetrievalHandlers } from './handlers/retrieval.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,29 +25,29 @@ type SetupServerApi = ReturnType<typeof setupServer>;
 export interface TestServerConfig {
   /** Extra MSW handlers to register beyond the defaults */
   extraHandlers?: HttpHandler[];
-  /** Whether to include provider API handlers (default: true) */
-  includeProviders?: boolean;
   /** Whether to include memory/RAG handlers (default: true) */
   includeMemory?: boolean;
+  /** Whether to include provider API handlers (default: true) */
+  includeProviders?: boolean;
   /** Whether to include retrieval/embedding handlers (default: true) */
   includeRetrieval?: boolean;
-  /** Pre-populated memory state */
-  memoryState?: MockMemoryState;
-  /** Pre-populated retrieval state */
-  retrievalState?: MockRetrievalState;
   /** Base URL for memory handlers */
   memoryBaseUrl?: string;
+  /** Pre-populated memory state */
+  memoryState?: MockMemoryState;
   /** Base URL for retrieval handlers */
   retrievalBaseUrl?: string;
+  /** Pre-populated retrieval state */
+  retrievalState?: MockRetrievalState;
 }
 
 export interface TestServer {
-  /** The underlying MSW SetupServerApi instance */
-  server: SetupServerApi;
   /** Memory/RAG state (mutate to control test scenarios) */
   memoryState: MockMemoryState;
   /** Retrieval state (mutate to control test scenarios) */
   retrievalState: MockRetrievalState;
+  /** The underlying MSW SetupServerApi instance */
+  server: SetupServerApi;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,7 +84,7 @@ export function createTestServer(config?: TestServerConfig): TestServer {
     handlers.push(
       ...createMemoryHandlers({
         state: memoryState,
-        ...(config?.memoryBaseUrl !== undefined ? { baseUrl: config.memoryBaseUrl } : {})
+        ...(config?.memoryBaseUrl === undefined ? {} : { baseUrl: config.memoryBaseUrl })
       })
     );
   }
@@ -95,7 +94,7 @@ export function createTestServer(config?: TestServerConfig): TestServer {
     handlers.push(
       ...createRetrievalHandlers({
         state: retrievalState,
-        ...(config?.retrievalBaseUrl !== undefined ? { baseUrl: config.retrievalBaseUrl } : {})
+        ...(config?.retrievalBaseUrl === undefined ? {} : { baseUrl: config.retrievalBaseUrl })
       })
     );
   }

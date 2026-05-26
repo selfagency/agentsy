@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 
 import type { AgentRegistry } from '../agents/registry.js';
-import { createTaskScheduler } from '../scheduler/index.js';
 import type { TaskScheduler } from '../scheduler/index.js';
+import { createTaskScheduler } from '../scheduler/index.js';
 import type { AgentCapabilities, WorkflowResult, WorkflowSpec } from '../types/index.js';
 import { NodeType, WorkflowStatus } from '../types/index.js';
 
@@ -17,39 +17,41 @@ export type { TaskScheduler } from '../scheduler/index.js';
 
 // Exported interfaces for public API
 export interface WorkflowContext {
-  workflow: Workflow;
-  status: WorkflowStatus;
-  startTime: Date | null;
-  endTime: Date | null;
   context: Record<string, unknown>;
+  endTime: Date | null;
+  startTime: Date | null;
+  status: WorkflowStatus;
+  workflow: Workflow;
 }
 
 export interface ExecutionOptions {
+  monitoring?: boolean;
+  recovery?: boolean;
   registry?: AgentRegistry;
-  scheduler?: TaskScheduler;
   resourceLimits?: {
     maxAgents?: number;
     maxCost?: number;
     maxDuration?: number;
   };
-  monitoring?: boolean;
-  recovery?: boolean;
+  scheduler?: TaskScheduler;
 }
 
 // fallow-ignore-next-line unused-export
 export class Workflow {
   public id: string;
+  readonly #spec: WorkflowSpec;
+  readonly #registry: AgentRegistry;
+  readonly #scheduler: TaskScheduler;
 
-  constructor(
-    private readonly spec: WorkflowSpec,
-    private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler
-  ) {
+  constructor(spec: WorkflowSpec, registry: AgentRegistry, scheduler: TaskScheduler) {
     this.id = spec.id;
+    this.#spec = spec;
+    this.#registry = registry;
+    this.#scheduler = scheduler;
   }
 
   getSpec(): WorkflowSpec {
-    return this.spec;
+    return this.#spec;
   }
 
   getId(): string {
@@ -57,45 +59,49 @@ export class Workflow {
   }
 
   getRegistry(): AgentRegistry {
-    return this.registry;
+    return this.#registry;
   }
 
   getScheduler(): TaskScheduler {
-    return this.scheduler;
+    return this.#scheduler;
   }
 }
 
 // fallow-ignore-next-line unused-export
 export class WorkflowMonitor {
-  constructor(private readonly context: WorkflowContext) {}
+  readonly #context: WorkflowContext;
+
+  constructor(context: WorkflowContext) {
+    this.#context = context;
+  }
 
   getStatus(): WorkflowStatus {
-    return this.context.status;
+    return this.#context.status;
   }
 
   getDuration(): number | null {
-    if (!this.context.startTime) {
+    if (!this.#context.startTime) {
       return null;
     }
-    const endTime = this.context.endTime ?? new Date();
-    return endTime.getTime() - this.context.startTime.getTime();
+    const endTime = this.#context.endTime ?? new Date();
+    return endTime.getTime() - this.#context.startTime.getTime();
   }
 
   isRunning(): boolean {
-    return this.context.status === WorkflowStatus.RUNNING;
+    return this.#context.status === WorkflowStatus.RUNNING;
   }
 
   isCompleted(): boolean {
-    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED].includes(this.context.status);
+    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED].includes(this.#context.status);
   }
 }
 
 // Internal interfaces (not exported)
 interface WorkflowExecution {
-  workflow: Workflow;
+  cancel(): Promise<void>;
   options: ExecutionOptions;
   run(): Promise<WorkflowResult>;
-  cancel(): Promise<void>;
+  workflow: Workflow;
 }
 
 // Workflow execution factory
@@ -245,12 +251,16 @@ async function executeDecisionNode(
   nodeResults: Map<string, unknown>
 ): Promise<unknown> {
   const condition = node.condition.trim();
-  const decision =
-    condition === 'true'
-      ? true
-      : condition === 'false'
-        ? false
-        : Boolean(nodeResults.get(condition.startsWith('result:') ? condition.slice('result:'.length) : condition));
+  const decision = (() => {
+    if (condition === 'true') {
+      return true;
+    }
+    if (condition === 'false') {
+      return false;
+    }
+    const resultKey = condition.startsWith('result:') ? condition.slice('result:'.length) : condition;
+    return Boolean(nodeResults.get(resultKey));
+  })();
 
   const selectedBranch = decision ? node.trueBranch : node.falseBranch;
   const results: unknown[] = [];
@@ -433,16 +443,17 @@ function validateNodeReferences(node: RuntimeWorkflowNode, nodeIds: Set<string>)
 export class OrchestrationEngine extends EventEmitter {
   private readonly workflows = new Map<string, WorkflowContext>();
   private readonly activeExecutions = new Map<string, WorkflowExecution>();
+  readonly #registry: AgentRegistry;
+  readonly #scheduler: TaskScheduler;
 
-  constructor(
-    private readonly registry: AgentRegistry,
-    private readonly scheduler: TaskScheduler = createTaskScheduler()
-  ) {
+  constructor(registry: AgentRegistry, scheduler: TaskScheduler = createTaskScheduler()) {
     super();
+    this.#registry = registry;
+    this.#scheduler = scheduler;
   }
 
   async create(spec: WorkflowSpec): Promise<Workflow> {
-    const workflow = new Workflow(spec, this.registry, this.scheduler);
+    const workflow = new Workflow(spec, this.#registry, this.#scheduler);
 
     // Validate workflow
     this.validateWorkflow(workflow);

@@ -90,11 +90,11 @@ For each shared concept:
 
 ## Combined Summary
 
-| Source | Finding | Severity | Status |
-|--------|---------|----------|--------|
-| Pass 1 | [structural finding] | [severity] | BUG / QUESTION |
-| Pass 2, REQ-N | [requirement violation] | [severity] | VIOLATED |
-| Pass 3, REQ-X vs REQ-Y | [consistency issue] | [severity] | INCONSISTENT |
+| Source                 | Finding                 | Severity   | Status         |
+| ---------------------- | ----------------------- | ---------- | -------------- |
+| Pass 1                 | [structural finding]    | [severity] | BUG / QUESTION |
+| Pass 2, REQ-N          | [requirement violation] | [severity] | VIOLATED       |
+| Pass 3, REQ-X vs REQ-Y | [consistency issue]     | [severity] | INCONSISTENT   |
 
 - Total findings by pass and severity
 - Overall assessment: SHIP / FIX BEFORE MERGE / BLOCK
@@ -118,11 +118,11 @@ For each shared concept:
 
 ### Adversarial stance when documentation is available
 
-If the playbook was generated with supplemental documentation (reference_docs/, community docs, user guides, API references), the code review must use that documentation *against* the code, not in its defense. Documentation tells you what the code is supposed to do. Your job is to find where it doesn't.
+If the playbook was generated with supplemental documentation (reference_docs/, community docs, user guides, API references), the code review must use that documentation _against_ the code, not in its defense. Documentation tells you what the code is supposed to do. Your job is to find where it doesn't.
 
-**Do not let documentation explanations excuse code defects.** If the docs say "the library handles X gracefully" but the code doesn't check for X, that's a bug — the documentation makes it *more* of a bug, not less. A richer understanding of intent should make you *harder* on the code, not softer.
+**Do not let documentation explanations excuse code defects.** If the docs say "the library handles X gracefully" but the code doesn't check for X, that's a bug — the documentation makes it _more_ of a bug, not less. A richer understanding of intent should make you _harder_ on the code, not softer.
 
-The failure mode this addresses: when models have access to documentation, they build a richer mental model of the software and become more *forgiving* of code that approximately matches that model. The documentation gives the model reasons to believe the code works, which suppresses detections. Fight this by treating documentation as the prosecution's evidence — it defines what the code promised, and your job is to find broken promises.
+The failure mode this addresses: when models have access to documentation, they build a richer mental model of the software and become more _forgiving_ of code that approximately matches that model. The documentation gives the model reasons to believe the code works, which suppresses detections. Fight this by treating documentation as the prosecution's evidence — it defines what the code promised, and your job is to find broken promises.
 
 ### Test-finding alignment check
 
@@ -296,7 +296,7 @@ The "no style changes" rule keeps reviews focused on correctness. Style suggesti
 
 ### Template
 
-```markdown
+````markdown
 # Integration Test Protocol: [Project Name]
 
 ## Working Directory
@@ -323,13 +323,13 @@ Before running integration tests, verify:
 
 ## Test Matrix
 
-| Check | Method | Pass Criteria |
-|-------|--------|---------------|
-| [Happy path flow] | [Specific command or test] | [Specific expected result] |
-| [Variant A end-to-end] | [Command] | [Expected result] |
-| [Variant B end-to-end] | [Command] | [Expected result] |
-| [Output correctness] | [Specific assertion] | [Expected property] |
-| [Component boundary A→B] | [Command] | [Expected result] |
+| Check                    | Method                     | Pass Criteria              |
+| ------------------------ | -------------------------- | -------------------------- |
+| [Happy path flow]        | [Specific command or test] | [Specific expected result] |
+| [Variant A end-to-end]   | [Command]                  | [Expected result]          |
+| [Variant B end-to-end]   | [Command]                  | [Expected result]          |
+| [Output correctness]     | [Specific assertion]       | [Expected property]        |
+| [Component boundary A→B] | [Command]                  | [Expected result]          |
 
 ### Design Principles for Integration Checks
 
@@ -345,7 +345,9 @@ Where possible, encode checks as automated tests:
 ```bash
 [test runner] [integration test file] --verbose
 ```
-```
+````
+
+````text
 
 ```text
 
@@ -384,7 +386,7 @@ Before running anything, show the user what's about to happen:
 | ... | | | |
 
 **Total:** N tests, estimated M minutes
-```
+````
 
 This gives the user a chance to say "skip test 4" or "actually, don't run the live API tests" before anything starts.
 
@@ -427,9 +429,9 @@ Save results to `quality/results/YYYY-MM-DD-integration.md`
 
 ### Summary Table
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| ... | PASS/FAIL | ... |
+| Check | Result    | Notes |
+| ----- | --------- | ----- |
+| ...   | PASS/FAIL | ...   |
 
 ### Detailed Findings
 
@@ -521,25 +523,25 @@ Before writing any quality gate that references output field names, build a **Fi
 
 Schema: pipelines/WeatherForecast/schemas/analyze.json
 
-| Field | Type | Constraints |
-|-------|------|-------------|
-| region_name | string | — |
-| temperature | number | min: -50, max: 60 |
-| condition | string | enum: ["sunny", "cloudy", "rain", "snow"] |
+| Field       | Type   | Constraints                               |
+| ----------- | ------ | ----------------------------------------- |
+| region_name | string | —                                         |
+| temperature | number | min: -50, max: 60                         |
+| condition   | string | enum: ["sunny", "cloudy", "rain", "snow"] |
 
 ### Pipeline: SentimentAnalysis
 
 Schema: pipelines/SentimentAnalysis/schemas/evaluate.json
 
-| Field | Type | Constraints |
-|-------|------|-------------|
-| document_id | string | — |
-| sentiment_score | number | min: -1.0, max: 1.0 |
-| classification | string | enum: ["positive", "negative", "neutral"] |
+| Field           | Type   | Constraints                               |
+| --------------- | ------ | ----------------------------------------- |
+| document_id     | string | —                                         |
+| sentiment_score | number | min: -1.0, max: 1.0                       |
+| classification  | string | enum: ["positive", "negative", "neutral"] |
 
 ...
 
-```text
+````text
 
 **The process:**
 1. **Re-read each schema file IMMEDIATELY before writing each table row.** Do not write any row from memory. The file read and the table row must be adjacent — read the file, write the row, read the next file, write the next row. If you read all schemas earlier in the conversation, that doesn't count — you must read them AGAIN here because your memory of field names drifts over thousands of tokens.
@@ -602,7 +604,7 @@ cp -r path/to/skill/.github test-repo/.github
 cd test-repo
 gh copilot -p "Read .github/skills/SKILL.md and its reference files. Execute the quality playbook for this project." \
     --model gpt-5.4 --yolo > quality_run.output.txt 2>&1
-```
+````
 
 ### Structural Verification (automated)
 
@@ -650,3 +652,4 @@ A run that completes without errors may still be wrong. For each integration tes
 6. **UI-level (if applicable):** If the project has a dashboard/TUI/UI, verify the run appears correctly there.
 
 Include all applicable levels in the generated protocol's post-run checklist. The common failure is stopping at level 2 (process completed) without checking levels 3–5.
+```

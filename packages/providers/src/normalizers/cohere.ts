@@ -4,7 +4,7 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 
 function mapCohereFinishReason(reason: string | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'COMPLETE' || reason === 'STOP_SEQUENCE') {
     return 'stop';
@@ -27,17 +27,17 @@ function mapCohereFinishReason(reason: string | undefined): FinishReason | undef
 
 interface CohereDeltaMessage {
   content?: { text?: string };
-  tool_plan?: string;
   tool_calls?: {
     id?: string;
     type?: string;
     function?: { name?: string; arguments?: string };
   };
+  tool_plan?: string;
 }
 
 interface CohereDelta {
-  message?: CohereDeltaMessage;
   finish_reason?: string;
+  message?: CohereDeltaMessage;
   usage?: {
     billed_units?: { input_tokens?: number; output_tokens?: number };
     tokens?: { input_tokens?: number; output_tokens?: number };
@@ -45,9 +45,9 @@ interface CohereDelta {
 }
 
 interface CohereEvent {
-  type: string;
-  index?: number;
   delta?: CohereDelta;
+  index?: number;
+  type: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ function isCohereEvent(value: unknown): value is CohereEvent {
 function buildCohereUsage(delta: CohereDelta | undefined): UsageInfo | undefined {
   const tokens = delta?.usage?.tokens;
   if (!tokens) {
-    return undefined;
+    return;
   }
   const usage: UsageInfo = {};
   if (typeof tokens.input_tokens === 'number') {

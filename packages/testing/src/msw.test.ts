@@ -5,7 +5,7 @@
  * to provider, memory, and retrieval endpoints.
  */
 
-import { describe, expect, it, afterEach, afterAll, beforeAll } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { createTestServer } from './msw/index.js';
 
@@ -23,7 +23,11 @@ describe('MSW test server', () => {
   describe('provider handlers', () => {
     it('intercepts OpenAI streaming request and returns SSE chunks', async () => {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        body: JSON.stringify({ model: 'gpt-4o', messages: [{ content: 'hi', role: 'user' }], stream: true }),
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [{ content: 'hi', role: 'user' }],
+          stream: true
+        }),
         headers: { Authorization: 'Bearer mock-key', 'Content-Type': 'application/json' },
         method: 'POST'
       });
@@ -134,7 +138,9 @@ describe('MSW test server', () => {
         method: 'POST'
       });
       expect(response.status).toBe(200);
-      const data = (await response.json()) as { embeddings: { embedding: number[]; index: number }[] };
+      const data = (await response.json()) as {
+        embeddings: { embedding: number[]; index: number }[];
+      };
       expect(data.embeddings).toHaveLength(2);
       expect(data.embeddings[0]?.embedding).toHaveLength(1536);
     });
@@ -149,7 +155,9 @@ describe('MSW test server', () => {
         method: 'POST'
       });
       expect(response.status).toBe(200);
-      const data = (await response.json()) as { results: { index: number; relevance_score: number }[] };
+      const data = (await response.json()) as {
+        results: { index: number; relevance_score: number }[];
+      };
       expect(data.results).toHaveLength(3);
       // "Pizza is a delicious food" contains "food" → scores 0.95 - 1*0.05 = 0.90
       const foodDoc = data.results.find(r => r.index === 1);

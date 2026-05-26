@@ -50,7 +50,9 @@ function cosineSimilarity(a: number[], b: number[]): number {
     normA += ai * ai;
     normB += bi * bi;
   }
-  if (normA === 0 || normB === 0) return 0;
+  if (normA === 0 || normB === 0) {
+    return 0;
+  }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
@@ -106,6 +108,7 @@ function getDiff(fromBody: string, toBody: string): PageDiff {
   return { addedLines, removedLines };
 }
 
+// biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
 async function captureRaw(input: RawCaptureInput): Promise<RawCapture> {
   return {
     id: `capture-${Date.now()}`,
@@ -129,6 +132,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
   const conceptPrefix = `wiki:${namespace}:concept:`;
   const backlinkPrefix = `wiki:${namespace}:backlink:`;
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function getPage(pageId: string): Promise<WikiPage | null> {
     const row = db
       .select({ value: kvStore.value })
@@ -136,7 +140,9 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
       .where(eq(kvStore.key, makePageMetaKey(namespace, pageId)))
       .get();
 
-    if (!row) return null;
+    if (!row) {
+      return null;
+    }
     try {
       return parseMeta(row.value);
     } catch {
@@ -203,10 +209,10 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     const nextVersion = existing.version + 1;
     const page: WikiPage = {
       ...existing,
-      ...(patch.title !== undefined ? { title: patch.title } : {}),
-      ...(patch.body !== undefined ? { body: patch.body } : {}),
-      ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
-      ...(patch.format !== undefined ? { format: patch.format } : {}),
+      ...(patch.title === undefined ? {} : { title: patch.title }),
+      ...(patch.body === undefined ? {} : { body: patch.body }),
+      ...(patch.tags === undefined ? {} : { tags: patch.tags }),
+      ...(patch.format === undefined ? {} : { format: patch.format }),
       version: nextVersion,
       updatedAt: new Date(now)
     };
@@ -240,6 +246,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     return page;
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function getPageHistory(pageId: string): Promise<WikiPageHistoryEntry[]> {
     const rows = db
       .select({ value: kvStore.value })
@@ -259,6 +266,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     return entries;
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function diffPageVersions(pageId: string, fromVersion: number, toVersion: number): Promise<PageDiff> {
     const fromRow = db
       .select({ value: kvStore.value })
@@ -272,7 +280,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
       .where(eq(kvStore.key, makeHistoryKey(namespace, pageId, toVersion)))
       .get();
 
-    if (!fromRow || !toRow) {
+    if (!(fromRow && toRow)) {
       throw new Error('One or both versions not found');
     }
 
@@ -281,6 +289,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     return getDiff(fromBody, toBody);
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function upsertVector(pageId: string, embedding: number[]): Promise<void> {
     const now = Date.now();
     db.insert(kvStore)
@@ -296,6 +305,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
       .run();
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function searchVector(queryEmbedding: number[], limit: number): Promise<VectorSearchResult[]> {
     const rows = db
       .select({ key: kvStore.key, value: kvStore.value })
@@ -308,7 +318,9 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
       try {
         const embedding = parseVector(row.value);
         const pageId = row.key.split(':')[3];
-        if (!pageId) continue;
+        if (!pageId) {
+          continue;
+        }
         const score = cosineSimilarity(queryEmbedding, embedding);
         scored.push({ pageId, score });
       } catch {
@@ -320,6 +332,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     return scored.slice(0, limit);
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function searchFullText(query: string, limit: number): Promise<VectorSearchResult[]> {
     const q = query.toLowerCase();
     const rows = db
@@ -379,12 +392,15 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
 
   async function extractEntities(pageId: string): Promise<string[]> {
     const page = await getPage(pageId);
-    if (!page) return [];
+    if (!page) {
+      return [];
+    }
     // Basic entity extraction: capitalize words that look like proper nouns
     const matches = page.body.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/gu);
     return [...new Set(matches ?? [])];
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function linkConcepts(fromPageId: string, toPageId: string, relation: string): Promise<void> {
     const now = Date.now();
     db.insert(kvStore)
@@ -396,6 +412,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
       .run();
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function getConceptRelations(pageId: string): Promise<ConceptRelation[]> {
     const rows = db
       .select({ value: kvStore.value })
@@ -418,6 +435,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     return relations;
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function linkPages(fromPageId: string, toPageId: string): Promise<void> {
     const now = Date.now();
     db.insert(kvStore)
@@ -429,6 +447,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
       .run();
   }
 
+  // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
   async function getBacklinks(pageId: string): Promise<string[]> {
     const rows = db
       .select({ value: kvStore.value })

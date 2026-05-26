@@ -85,7 +85,7 @@ export function checkTrustedPublishReadiness(input: {
     return {
       error:
         `Release blocked: ${input.packageName} is '${packageState}', not '${expectedState}'. ` +
-        `Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.`,
+        'Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.',
       ok: false
     };
   }
@@ -138,7 +138,7 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
   const workflowFilename = args['workflow-filename'] ?? 'release.yml';
   const expectedState = args['expected-state'] ?? 'oidc-ready';
 
-  if (!packageName || !packageDir || !expectedRepo) {
+  if (!(packageName && packageDir && expectedRepo)) {
     console.error(
       'Usage: node scripts/trusted-publish-readiness.js --package-name <name> --package-dir <dir> --expected-repo <owner/repo> [--release-state-path <path>] [--workflow-filename release.yml] [--expected-state oidc-ready]'
     );

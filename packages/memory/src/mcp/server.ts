@@ -6,24 +6,24 @@ import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOpt
 import { createMemoryMcpTools } from './tools.js';
 
 export interface MemoryMCPServerOptions {
-  /** Transport mode. Default: 'stdio' */
-  transport?: 'stdio' | 'http';
-  /** Port for HTTP mode. Default: 4231 */
-  port?: number;
   /** Database path for standalone mode */
   dbPath?: string;
-  /** Turso sync URL */
-  syncUrl?: string;
-  /** Turso auth token */
-  syncAuthToken?: string;
   /** Log level. Default: 'info' */
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  /** Port for HTTP mode. Default: 4231 */
+  port?: number;
+  /** Turso auth token */
+  syncAuthToken?: string;
+  /** Turso sync URL */
+  syncUrl?: string;
+  /** Transport mode. Default: 'stdio' */
+  transport?: 'stdio' | 'http';
 }
 
 export interface MemoryMCPServer {
+  close(): Promise<void>;
   server: McpServer;
   start(): Promise<void>;
-  close(): Promise<void>;
 }
 
 /**
@@ -84,25 +84,27 @@ export async function createMemoryMCPServer(
 
       readlineInterface.on('line', async (line: string) => {
         const trimmed = line.trim();
-        if (!trimmed) return;
+        if (!trimmed) {
+          return;
+        }
 
         try {
           const msg = JSON.parse(trimmed) as JsonRpcRequest;
           const result = await mcpServer.handleMessage(msg);
 
           if (result) {
-            process.stdout.write(JSON.stringify(result) + '\n');
+            process.stdout.write(`${JSON.stringify(result)}\n`);
           }
         } catch (err) {
           const errorResp = {
             jsonrpc: '2.0',
             id: null,
             error: {
-              code: -32700,
+              code: -32_700,
               message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
             }
           };
-          process.stdout.write(JSON.stringify(errorResp) + '\n');
+          process.stdout.write(`${JSON.stringify(errorResp)}\n`);
         }
       });
 
@@ -113,6 +115,7 @@ export async function createMemoryMCPServer(
       // HTTP mode — simple JSON-RPC over POST /message
       const http = await import('node:http');
 
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
       const httpInstance = http.createServer(async (req, res) => {
         if (req.method === 'GET' && req.url === '/health') {
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -140,7 +143,7 @@ export async function createMemoryMCPServer(
                 jsonrpc: '2.0',
                 id: null,
                 error: {
-                  code: -32700,
+                  code: -32_700,
                   message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
                 }
               })

@@ -5,10 +5,10 @@ import type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,
+  ModelSelectionResult,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
-  ModelSelectionResult,
   SystemCapabilities,
   TaskRequirements
 } from './types.js';
@@ -17,18 +17,18 @@ export type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,
+  ModelSelectionResult,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
-  ModelSelectionResult,
   SystemCapabilities,
   TaskRequirements
 };
 
 // Cache structure
 interface CacheData {
-  timestamp: number;
   data: ModelsDevAPI;
+  timestamp: number;
 }
 
 function isCacheData(value: unknown): value is CacheData {
@@ -74,7 +74,7 @@ function clamp01(value: number): number {
 function parseParamsBillionsFromId(modelId: string): number | undefined {
   const match = PARAMS_B_PATTERN.exec(modelId);
   if (!match?.[1]) {
-    return undefined;
+    return;
   }
 
   const parsed = Number(match[1]);
@@ -148,7 +148,7 @@ function resolveModelsDevModel(
     }
   }
 
-  return undefined;
+  return;
 }
 
 function getCategoryBenchmarkScore(
@@ -176,12 +176,12 @@ function getAvailableVram(systemCapabilities: SystemCapabilities): number {
 }
 
 interface RecommendationInputs {
-  entry: LLMStatsLocalModel;
-  criteria: LocalRecommendationCriteria;
+  availableVram: number;
   category: NonNullable<LocalRecommendationCriteria['taskCategory']>;
+  criteria: LocalRecommendationCriteria;
+  entry: LLMStatsLocalModel;
   modelsDevData: ModelsDevAPI;
   systemCapabilities: SystemCapabilities;
-  availableVram: number;
 }
 
 function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendationCriteria): boolean {
@@ -231,7 +231,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   const ramFits = requiredRamGb <= systemCapabilities.ramGb;
   const vramFits = requiredVramGb <= availableVram || availableVram === 0;
 
-  if (!ramFits || !vramFits) {
+  if (!(ramFits && vramFits)) {
     return null;
   }
 
@@ -396,12 +396,12 @@ export class ModelsDevClient {
    */
   getProvider(providerId: string): ModelsDevProvider | undefined {
     if (!isSafeLookupKey(providerId)) {
-      return undefined;
+      return;
     }
 
     const { cache } = this;
-    if (!cache || !Object.hasOwn(cache, providerId)) {
-      return undefined;
+    if (!(cache && Object.hasOwn(cache, providerId))) {
+      return;
     }
 
     return cache[providerId];
@@ -428,7 +428,7 @@ export class ModelsDevClient {
 
     // Search for model ID across all providers
     if (!isSafeLookupKey(modelId)) {
-      return undefined;
+      return;
     }
 
     for (const provider of Object.values(this.cache ?? {})) {
@@ -436,17 +436,17 @@ export class ModelsDevClient {
         return provider.models[modelId];
       }
     }
-    return undefined;
+    return;
   }
 
   private getModelFromProvider(providerId: string, modelName: string): ModelsDevModel | undefined {
-    if (!isSafeLookupKey(providerId) || !isSafeLookupKey(modelName)) {
-      return undefined;
+    if (!(isSafeLookupKey(providerId) && isSafeLookupKey(modelName))) {
+      return;
     }
 
     const provider = this.getProvider(providerId);
-    if (!provider || !Object.hasOwn(provider.models, modelName)) {
-      return undefined;
+    if (!(provider && Object.hasOwn(provider.models, modelName))) {
+      return;
     }
 
     return provider.models[modelName];
@@ -779,11 +779,6 @@ export class ModelSelector {
     }
 
     return reasons.join(', ') || 'Selected based on requirements';
-  }
-
-  // Helper method to get cache for findProviderForModel
-  private get cache(): ModelsDevAPI | undefined {
-    return this.getClient().getCachedData();
   }
 }
 

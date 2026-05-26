@@ -1,10 +1,10 @@
-import { writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
+import { mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { isDaemonRunning, getDaemonStatus } from './daemon.js';
+import { getDaemonStatus, isDaemonRunning } from './daemon.js';
 
 describe('Daemon', () => {
   const testPidDir = join(tmpdir(), 'agentsy-memory-test-daemon');
@@ -16,7 +16,9 @@ describe('Daemon', () => {
 
   afterEach(() => {
     try {
-      if (testPidFile) unlinkSync(testPidFile);
+      if (testPidFile) {
+        unlinkSync(testPidFile);
+      }
     } catch {
       // Ignore
     }

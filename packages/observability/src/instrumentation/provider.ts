@@ -24,7 +24,7 @@
 
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
-import type { Span, Tracer } from '../core/types.js';
+import type { Tracer } from '../core/types.js';
 
 /**
  * Semantic attribute keys for provider call instrumentation.
@@ -74,19 +74,23 @@ function estimateCost(model: string, inputTokens: number, outputTokens: number):
   let rates = MODEL_COST_ESTIMATES[model];
   if (!rates) {
     const prefix = Object.keys(MODEL_COST_ESTIMATES).find(k => model.startsWith(k));
-    if (prefix) rates = MODEL_COST_ESTIMATES[prefix];
+    if (prefix) {
+      rates = MODEL_COST_ESTIMATES[prefix];
+    }
   }
-  if (!rates) return undefined;
+  if (!rates) {
+    return;
+  }
 
   return (inputTokens / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output;
 }
 
 /** Options for {@link instrumentProviderClient}. */
 export interface InstrumentProviderOptions {
-  /** Human-readable provider name (e.g. 'openai', 'anthropic'). */
-  providerName: string;
   /** Default model name attached to all spans. */
   modelName?: string;
+  /** Human-readable provider name (e.g. 'openai', 'anthropic'). */
+  providerName: string;
 }
 
 /**
@@ -170,6 +174,7 @@ export function instrumentProviderClient<
 
         // Wrap the stream to capture usage on the final chunk
         const wrappedStream = new ReadableStream<NormalizedChunk>({
+          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
           async start(controller) {
             const reader = stream.getReader();
             let inputTokens = 0;
@@ -178,7 +183,9 @@ export function instrumentProviderClient<
             try {
               while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                  break;
+                }
 
                 if (value.usage) {
                   inputTokens = value.usage.inputTokens ?? inputTokens;

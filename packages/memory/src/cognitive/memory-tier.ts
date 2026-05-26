@@ -2,17 +2,17 @@ import type { MemoryItem, TierConfig, TierLevel, TierName, TierReadQuery, TierRe
 import { TIER_LEVELS, TIER_NAMES } from './tier-types.js';
 
 export interface MemoryTierLike {
-  readonly name: TierName;
-  readonly level: TierLevel;
-  readonly config: TierConfig;
-  write(item: MemoryItem): MemoryItem | null;
-  read(query?: TierReadQuery): TierReadResult;
   capacity(): { usedTokens: number; maxTokens: number; usedItems: number; maxItems: number };
-  evict(count: number): MemoryItem[];
-  promote(count: number, to: MemoryTierLike): number;
-  demote(count: number, from: MemoryTierLike): number;
   clear(): void;
+  readonly config: TierConfig;
+  demote(count: number, from: MemoryTierLike): number;
+  evict(count: number): MemoryItem[];
   items(): readonly MemoryItem[];
+  readonly level: TierLevel;
+  readonly name: TierName;
+  promote(count: number, to: MemoryTierLike): number;
+  read(query?: TierReadQuery): TierReadResult;
+  write(item: MemoryItem): MemoryItem | null;
 }
 
 export interface MemoryTierOptions {
@@ -28,7 +28,9 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
   let usedTokens = 0;
 
   function isExpired(item: MemoryItem): boolean {
-    if (config.ttlMs === Infinity) return false;
+    if (config.ttlMs === Number.POSITIVE_INFINITY) {
+      return false;
+    }
     return now() - item.createdAt > config.ttlMs;
   }
 
@@ -61,9 +63,15 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
     write(item: MemoryItem): MemoryItem | null {
       evictExpired();
 
-      if (items.has(item.id)) return null;
-      if (config.maxItems !== Infinity && items.size >= config.maxItems) return null;
-      if (config.maxTokens !== Infinity && usedTokens + item.tokenCount > config.maxTokens) return null;
+      if (items.has(item.id)) {
+        return null;
+      }
+      if (config.maxItems !== Number.POSITIVE_INFINITY && items.size >= config.maxItems) {
+        return null;
+      }
+      if (config.maxTokens !== Number.POSITIVE_INFINITY && usedTokens + item.tokenCount > config.maxTokens) {
+        return null;
+      }
 
       items.set(item.id, { ...item });
       usedTokens += item.tokenCount;
@@ -101,7 +109,12 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
     },
 
     capacity() {
-      return { maxItems: config.maxItems, maxTokens: config.maxTokens, usedItems: items.size, usedTokens };
+      return {
+        maxItems: config.maxItems,
+        maxTokens: config.maxTokens,
+        usedItems: items.size,
+        usedTokens
+      };
     },
 
     evict(count: number): MemoryItem[] {
@@ -125,7 +138,9 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
 
       let promoted = 0;
       for (const item of sorted) {
-        if (promoted >= count) break;
+        if (promoted >= count) {
+          break;
+        }
 
         const written = to.write({
           ...item,
@@ -148,7 +163,9 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
       let demoted = 0;
 
       for (const item of sorted) {
-        if (demoted >= count) break;
+        if (demoted >= count) {
+          break;
+        }
 
         const written = this.write({
           ...item,
@@ -156,7 +173,9 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
           accessCount: item.accessCount + 1
         });
 
-        if (written !== null) demoted++;
+        if (written !== null) {
+          demoted++;
+        }
       }
 
       return demoted;
@@ -175,12 +194,16 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
 
 export function nextTierName(current: TierName): TierName | null {
   const level = TIER_LEVELS[current];
-  if (level >= 5) return null;
+  if (level >= 5) {
+    return null;
+  }
   return TIER_NAMES[(level + 1) as TierLevel];
 }
 
 export function prevTierName(current: TierName): TierName | null {
   const level = TIER_LEVELS[current];
-  if (level <= 1) return null;
+  if (level <= 1) {
+    return null;
+  }
   return TIER_NAMES[(level - 1) as TierLevel];
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-
+import type { CoordinationTask } from './task-queue.js';
 import { createInMemoryTaskQueue } from './task-queue.js';
 
 describe('TaskQueue', () => {
@@ -210,7 +210,7 @@ describe('TaskQueue', () => {
       }
 
       // Consumer: dequeue all tasks
-      const consumed = [];
+      const consumed: CoordinationTask[] = [];
       while (true) {
         const task = await queue.dequeue();
         if (task === null) {

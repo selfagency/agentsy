@@ -29,7 +29,9 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
     const clampedDelay = Math.max(0, delayMs);
     nextRunAt = new Date(now().getTime() + clampedDelay);
     timeout = setTimeout(() => {
-      void executeRun();
+      executeRun().catch(() => {
+        // Sync execution errors are handled internally
+      });
     }, clampedDelay);
   }
 

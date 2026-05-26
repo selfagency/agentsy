@@ -1,7 +1,7 @@
 import { createUniversalClient } from '@agentsy/providers';
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
-import type { LoadBalancerConfig, LoadBalancedClient, RoutingState } from './types.js';
+import type { LoadBalancedClient, LoadBalancerConfig, RoutingState } from './types.js';
 
 function buildRoutingState(config: LoadBalancerConfig): RoutingState {
   const provider = config.providers[0];
@@ -43,8 +43,12 @@ function buildNoopClient(): LoadBalancedClient {
     getUsageSnapshot() {
       return [];
     },
-    markProviderHealthy(_providerId: string): void {},
-    markProviderUnhealthy(_providerId: string): void {},
+    markProviderHealthy(_providerId: string): void {
+      /* noop */
+    },
+    markProviderUnhealthy(_providerId: string): void {
+      /* noop */
+    },
     shutdown(): Promise<void> {
       return Promise.resolve();
     }
@@ -80,8 +84,12 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     getUsageSnapshot() {
       return config.providers.map(entry => ({ providerId: entry.id }));
     },
-    markProviderHealthy(_providerId: string): void {},
-    markProviderUnhealthy(_providerId: string): void {},
+    markProviderHealthy(_providerId: string): void {
+      /* noop */
+    },
+    markProviderUnhealthy(_providerId: string): void {
+      /* noop */
+    },
     shutdown(): Promise<void> {
       return Promise.resolve();
     }

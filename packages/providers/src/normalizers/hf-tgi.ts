@@ -4,7 +4,7 @@ import type { NormalizerResult, UsageInfo } from './types.js';
 
 function mapHFFinishReason(reason: string | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'length') {
     return 'length';
@@ -21,23 +21,23 @@ function mapHFFinishReason(reason: string | undefined): FinishReason | undefined
 
 interface HFToken {
   id?: number;
-  text?: string;
   logprob?: number;
   special?: boolean;
+  text?: string;
 }
 
 interface HFDetails {
   finish_reason?: string;
   generated_tokens?: number;
-  seed?: number | null;
   input_length?: number;
+  seed?: number | null;
 }
 
 interface HFTGIStreamResponse {
+  details?: HFDetails | null;
+  generated_text?: string | null;
   index?: number;
   token?: HFToken;
-  generated_text?: string | null;
-  details?: HFDetails | null;
 }
 
 // ---------------------------------------------------------------------------

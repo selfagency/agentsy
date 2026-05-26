@@ -4,7 +4,11 @@ import type { Event, ExtensionContext, Memento, SecretStorage, SecretStorageChan
  * Mock Event implementation for testing.
  */
 function createMockEvent<T>(): Event<T> {
-  return (_listener: (e: T) => void) => ({ dispose: () => {} });
+  return (_listener: (e: T) => void) => ({
+    dispose: () => {
+      /* noop */
+    }
+  });
 }
 
 /**
@@ -91,7 +95,9 @@ export function createMockExtensionContext(): ExtensionContext {
     asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
     environmentVariableCollection: {} as unknown,
     extension: {
-      activate: async () => {},
+      activate: async () => {
+        /* noop */
+      },
       exports: undefined,
       extensionPath: '/mock/path',
       extensionUri: mockUri,

@@ -4,12 +4,12 @@ import type { RendererHandle } from '@agentsy/renderers';
 import type { ApiKeyChangeListener } from '../types/index.js';
 
 export interface MockApiKeyManager {
-  initialize(): Promise<void>;
-  getApiKey(): Promise<string | undefined>;
-  setApiKey(key?: string): Promise<void>;
   deleteApiKey(): Promise<void>;
-  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void };
+  getApiKey(): Promise<string | undefined>;
   hasApiKey(): Promise<boolean>;
+  initialize(): Promise<void>;
+  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void };
+  setApiKey(key?: string): Promise<void>;
 }
 
 /**
@@ -55,9 +55,9 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
 }
 
 export interface MockRendererHandle extends RendererHandle {
-  writes: string[];
   chunks: StreamChunk[];
   ended: boolean;
+  writes: string[];
 }
 
 /**

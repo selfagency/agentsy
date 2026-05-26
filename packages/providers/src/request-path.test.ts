@@ -20,7 +20,7 @@ describe('createRequestHandler', () => {
     model: 'claude-sonnet-4'
   };
 
-  const baseRequest: CompletionRequest = {
+  const _baseRequest: CompletionRequest = {
     model: 'gpt-4',
     messages: [{ role: 'user', content: 'Hello' }]
   };

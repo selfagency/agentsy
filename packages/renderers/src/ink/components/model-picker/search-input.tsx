@@ -4,14 +4,14 @@ import { showAnimatedCursor } from '../../theme/motion.ts';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export interface SearchInputProps {
-  /** Current query text. */
-  readonly query: string;
+  /** Whether the input is focused. */
+  readonly focused?: boolean;
   /** Semantic palette. */
   readonly palette: AcidPalette;
   /** Placeholder shown when query is empty. */
   readonly placeholder?: string;
-  /** Whether the input is focused. */
-  readonly focused?: boolean;
+  /** Current query text. */
+  readonly query: string;
 }
 
 /**

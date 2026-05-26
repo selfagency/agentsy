@@ -3,37 +3,37 @@ import { Box, Text, useInput } from 'ink';
 import type { AcidPalette } from '../../theme/palette.js';
 
 export interface AgentConfig {
-  /** Agent name/id. */
-  readonly name: string;
-  /** Model identifier. */
-  readonly model: string;
-  /** Session id. */
-  readonly sessionId: string;
-  /** Max tokens budget. */
-  readonly maxTokens?: number;
-  /** Current token usage. */
-  readonly tokensUsed?: number;
-  /** Agent status. */
-  readonly status: 'idle' | 'running' | 'paused' | 'error';
   /** Active tool count. */
   readonly activeTools?: number;
+  /** Max tokens budget. */
+  readonly maxTokens?: number;
+  /** Model identifier. */
+  readonly model: string;
+  /** Agent name/id. */
+  readonly name: string;
+  /** Session id. */
+  readonly sessionId: string;
+  /** Agent status. */
+  readonly status: 'idle' | 'running' | 'paused' | 'error';
+  /** Current token usage. */
+  readonly tokensUsed?: number;
 }
 
 export interface OrchestratorConsoleProps {
   /** Current agent configuration. */
   readonly agent: AgentConfig;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
+  /** Whether this console is focused. */
+  readonly isFocused?: boolean;
+  /** Called when config is opened (C key). */
+  readonly onConfig?: () => void;
   /** Called when model change is requested (M key). */
   readonly onModelChange?: () => void;
   /** Called when session reset is requested (R key). */
   readonly onReset?: () => void;
   /** Called when agent is paused/resumed (P key). */
   readonly onTogglePause?: () => void;
-  /** Called when config is opened (C key). */
-  readonly onConfig?: () => void;
-  /** Whether this console is focused. */
-  readonly isFocused?: boolean;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
 }
 
 const STATUS_COLORS: Record<AgentConfig['status'], keyof AcidPalette> = {
@@ -79,10 +79,15 @@ export function OrchestratorConsole({
   useInput(
     input => {
       const lower = input.toLowerCase();
-      if (lower === 'm') onModelChange?.();
-      else if (lower === 'r') onReset?.();
-      else if (lower === 'p') onTogglePause?.();
-      else if (lower === 'c') onConfig?.();
+      if (lower === 'm') {
+        onModelChange?.();
+      } else if (lower === 'r') {
+        onReset?.();
+      } else if (lower === 'p') {
+        onTogglePause?.();
+      } else if (lower === 'c') {
+        onConfig?.();
+      }
     },
     { isActive: isFocused }
   );
@@ -99,7 +104,7 @@ export function OrchestratorConsole({
       {/* Header */}
       <Box>
         <Text color={palette.frameBorder}>{'═'}</Text>
-        <Text color={palette.frameBright} bold>
+        <Text bold color={palette.frameBright}>
           {'Orchestrator'}
         </Text>
         <Text color={palette.frameBorder}>{'═'}</Text>
@@ -108,11 +113,11 @@ export function OrchestratorConsole({
       {/* Agent row */}
       <Box flexDirection="row">
         <Text color={palette.muted}>{'Agent    : '}</Text>
-        <Text color={palette.frameBright} bold>
+        <Text bold color={palette.frameBright}>
           {agent.name}
         </Text>
         <Box flexGrow={1} />
-        <Text color={statusColor} bold>
+        <Text bold color={statusColor}>
           {'● '}
           {statusLabel}
         </Text>
@@ -135,7 +140,7 @@ export function OrchestratorConsole({
       </Box>
 
       {/* Token usage row */}
-      {agent.maxTokens !== undefined ? (
+      {agent.maxTokens === undefined ? null : (
         <Box flexDirection="row">
           <Text color={palette.muted}>{'Tokens   : '}</Text>
           <Text color={palette.frameBright}>
@@ -148,10 +153,10 @@ export function OrchestratorConsole({
           <Box flexGrow={1} />
           <Text color={palette.frameDim}>{'[P] Pause'}</Text>
         </Box>
-      ) : null}
+      )}
 
       {/* Active tools row */}
-      {agent.activeTools !== undefined ? (
+      {agent.activeTools === undefined ? null : (
         <Box flexDirection="row">
           <Text color={palette.muted}>{'Tools    : '}</Text>
           <Text color={agent.activeTools > 0 ? palette.warning : palette.muted}>
@@ -161,7 +166,7 @@ export function OrchestratorConsole({
           <Box flexGrow={1} />
           <Text color={palette.frameDim}>{'[C] Config'}</Text>
         </Box>
-      ) : null}
+      )}
 
       {/* Separator */}
       <Text color={palette.frameDim}>{'─'.repeat(40)}</Text>
@@ -175,7 +180,7 @@ export function OrchestratorConsole({
           { key: 'C', label: 'onfig' }
         ].map((cmd, i) => (
           <Box key={cmd.key} marginRight={i < 3 ? 2 : 0}>
-            <Text color={palette.assistantAccent} bold>
+            <Text bold color={palette.assistantAccent}>
               {'['}
               {cmd.key}
               {']'}
@@ -188,14 +193,14 @@ export function OrchestratorConsole({
   );
 }
 
-function buildTokenBar(used: number | undefined, max: number | undefined, palette: AcidPalette): string {
-  if (used === undefined || max === undefined || max === 0) return '';
+function buildTokenBar(used: number | undefined, max: number | undefined, _palette: AcidPalette): string {
+  if (used === undefined || max === undefined || max === 0) {
+    return '';
+  }
   const pct = Math.min(1, used / max);
   const width = 8;
   const filled = Math.round(pct * width);
   const empty = width - filled;
-  const fillColor = pct > 0.8 ? palette.error : pct > 0.5 ? palette.warning : palette.success;
   // Return plain string — color applied by caller if needed
-  void fillColor;
   return '█'.repeat(filled) + '░'.repeat(empty);
 }

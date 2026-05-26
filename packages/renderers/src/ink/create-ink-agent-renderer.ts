@@ -5,8 +5,8 @@ import type { Theme } from './themes/types.js';
 export interface InkAgentRendererOptions {
   controller: InkRuntimeController;
   onInput(text: string): Promise<void>;
-  theme?: Theme;
   palette?: AcidPalette;
+  theme?: Theme;
 }
 
 export interface InkAgentRendererHandle {
@@ -15,9 +15,9 @@ export interface InkAgentRendererHandle {
 }
 
 interface HistoryEntry {
+  id: string;
   role: 'user' | 'assistant';
   text: string;
-  id: string;
 }
 
 export async function createInkAgentRenderer(options: InkAgentRendererOptions): Promise<InkAgentRendererHandle> {
@@ -47,13 +47,18 @@ export async function createInkAgentRenderer(options: InkAgentRendererOptions): 
     const { exit } = useApp();
 
     useInput(
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
       useCallback(
         (input: string, key: { return: boolean; backspace: boolean; delete: boolean; ctrl: boolean }) => {
-          if (isStreaming) return;
+          if (isStreaming) {
+            return;
+          }
 
           if (key.return) {
             const text = inputBuffer.trim();
-            if (!text || submittingRef.current) return;
+            if (!text || submittingRef.current) {
+              return;
+            }
 
             submittingRef.current = true;
             setInputBuffer('');
@@ -66,7 +71,7 @@ export async function createInkAgentRenderer(options: InkAgentRendererOptions): 
             controller.stateRef.isStreaming = true;
             setIsStreaming(true);
 
-            void onInput(text)
+            onInput(text)
               .then(() => {
                 const assistantText = controller.stateRef.text;
                 setHistory(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', text: assistantText }]);
@@ -130,15 +135,15 @@ export async function createInkAgentRenderer(options: InkAgentRendererOptions): 
           })
         : null,
       // Input prompt (only when not streaming)
-      !isStreaming
-        ? h(
+      isStreaming
+        ? null
+        : h(
             Box,
             { flexDirection: 'row', marginTop: 1 },
             h(Text, { color: palette.userText, bold: true }, '\u25B8 '),
             h(Text, {}, inputBuffer),
             h(Text, { color: palette.frameDim }, '\u2587')
           )
-        : null
     );
   }
 

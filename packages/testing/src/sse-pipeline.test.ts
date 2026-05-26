@@ -1,5 +1,5 @@
-import { createPipeline } from '@agentsy/providers/pipeline';
 import type { PipelineEvent } from '@agentsy/providers/pipeline';
+import { createPipeline } from '@agentsy/providers/pipeline';
 /**
  * Integration: SSE text → createPipeline → PipelineEvents
  *

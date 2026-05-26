@@ -22,7 +22,7 @@ export class AgentRegistry extends EventEmitter {
     this.agents.set(agent.id, agent);
 
     // Update skill mapping
-    agent.skills.forEach(skill => {
+    for (const skill of agent.skills) {
       if (!this.skillMap.has(skill.name)) {
         this.skillMap.set(skill.name, new Set());
       }
@@ -30,7 +30,7 @@ export class AgentRegistry extends EventEmitter {
       if (skillAgents) {
         skillAgents.add(agent.id);
       }
-    });
+    }
 
     // Update resource mapping
     agent.maxConcurrency = agent.maxConcurrency || 1;
@@ -44,7 +44,7 @@ export class AgentRegistry extends EventEmitter {
       this.agents.delete(agentId);
 
       // Update skill mapping
-      agent.skills.forEach(skill => {
+      for (const skill of agent.skills) {
         const agents = this.skillMap.get(skill.name);
         if (agents) {
           agents.delete(agentId);
@@ -52,7 +52,7 @@ export class AgentRegistry extends EventEmitter {
             this.skillMap.delete(skill.name);
           }
         }
-      });
+      }
 
       this.emit('agent:unregistered', agentId);
     }

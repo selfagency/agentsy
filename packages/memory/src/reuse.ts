@@ -1,8 +1,8 @@
 export interface ReusableMemoryBlock {
   fingerprint: string;
-  reuseClass: 'hot' | 'warm' | 'cold';
   hitCount: number;
   invalidations: string[];
+  reuseClass: 'hot' | 'warm' | 'cold';
 }
 
 function reuseRank(reuseClass: ReusableMemoryBlock['reuseClass']): number {

@@ -4,7 +4,7 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 
 function mapOpenAIFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'stop') {
     return 'stop';
@@ -26,37 +26,37 @@ function mapOpenAIFinishReason(reason: string | null | undefined): FinishReason 
 // ---------------------------------------------------------------------------
 
 interface OpenAIToolCallDelta {
-  index: number;
-  id?: string | null;
-  type?: string;
   function?: { name?: string | null; arguments?: string | null };
+  id?: string | null;
+  index: number;
+  type?: string;
 }
 
 interface OpenAIDelta {
-  role?: string;
   content?: string | null;
   reasoning_content?: string | null;
+  role?: string;
   tool_calls?: OpenAIToolCallDelta[];
 }
 
 interface OpenAIChoice {
-  index: number;
   delta: OpenAIDelta;
   finish_reason: string | null;
+  index: number;
 }
 
 interface OpenAIUsage {
-  prompt_tokens?: number;
   completion_tokens?: number;
+  prompt_tokens?: number;
   total_tokens?: number;
 }
 
 interface OpenAIChatChunk {
-  id?: string;
-  object?: string;
-  created?: number;
-  model?: string;
   choices: OpenAIChoice[];
+  created?: number;
+  id?: string;
+  model?: string;
+  object?: string;
   usage?: OpenAIUsage | null;
 }
 
@@ -138,7 +138,7 @@ function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCall
       .map(mapOpenAIToolCallDelta);
   }
 
-  return undefined;
+  return;
 }
 
 function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {

@@ -1,2 +1,2 @@
+export type { CommandEntry, CommandGroup, CommandPaletteProps } from './command-palette.js';
 export { CommandPalette } from './command-palette.js';
-export type { CommandPaletteProps, CommandEntry, CommandGroup } from './command-palette.js';

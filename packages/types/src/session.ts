@@ -10,17 +10,19 @@ export interface SessionState {
   /** Session identifier. */
   id: SessionId;
 
-  /** Key-value state store. */
-  values: Record<string, unknown>;
-
   /** Optional metadata. */
   metadata?: Record<string, unknown>;
+
+  /** Key-value state store. */
+  values: Record<string, unknown>;
 }
 
 /**
  * Session store interface for persistence.
  */
 export interface SessionStore {
+  /** Clear entire session. */
+  clear(): void;
   /** Get full session state. */
   getState(): SessionState;
 
@@ -28,12 +30,9 @@ export interface SessionStore {
   // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
   getValue<T>(key: string): T | undefined;
 
-  /** Set a value. */
-  setValue(key: string, value: unknown): void;
-
   /** Remove a value. */
   removeValue(key: string): void;
 
-  /** Clear entire session. */
-  clear(): void;
+  /** Set a value. */
+  setValue(key: string, value: unknown): void;
 }

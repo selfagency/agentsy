@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 // Since KeyboardHandler may not be directly testable without Ink's actual DOM,
 // we test its prop structure and factory function
@@ -41,9 +41,9 @@ describe('KeyboardHandler Component Props', () => {
       ];
 
       expect(configs).toHaveLength(4);
-      configs.forEach(config => {
+      for (const config of configs) {
         expectTypeOf(config.enabled).toBeBoolean();
-      });
+      }
     });
   });
 
@@ -183,11 +183,11 @@ describe('KeyboardHandler Component Props', () => {
       ];
 
       // Simulate concurrent calls
-      options.forEach(opt => {
+      for (const opt of options) {
         if (opt.onInterrupt) {
           opt.onInterrupt();
         }
-      });
+      }
 
       expect(onInterrupt).toHaveBeenCalledTimes(3);
     });

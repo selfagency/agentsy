@@ -1,14 +1,14 @@
 import { readFile } from 'node:fs/promises';
 
 import { compressMemoryFile } from '@agentsy/core/context';
-import { compressOutput } from '@agentsy/tokens';
 import type { OutputCompressionLevel } from '@agentsy/tokens';
+import { compressOutput } from '@agentsy/tokens';
 
 export const name = 'cli';
 
 export interface CliIO {
-  stdout?: (message: string) => void;
   stderr?: (message: string) => void;
+  stdout?: (message: string) => void;
 }
 
 const DEFAULT_IO: Required<CliIO> = {
@@ -34,18 +34,18 @@ function hasFlag(args: readonly string[], flag: string): boolean {
 }
 
 interface MemorySyncDevExample {
-  serverDbPath: string;
-  replicaDbPath: string;
   bindAddress: string;
-  serverUrl: string;
-  syncIntervalMs: number;
-  startCommand: string;
   env: {
     TURSO_DATABASE_URL: string;
     TURSO_AUTH_TOKEN: string;
     AGENTSY_MEMORY_SYNC_INTERVAL_MS: string;
   };
   managerExample: string;
+  replicaDbPath: string;
+  serverDbPath: string;
+  serverUrl: string;
+  startCommand: string;
+  syncIntervalMs: number;
 }
 
 const DEFAULT_MEMORY_SYNC_SERVER_DB = './.agentsy/local-sync-server.db';

@@ -6,20 +6,20 @@ import type { AcidPalette } from '../../theme/palette.js';
 export type ApprovalAction = 'approve' | 'reject' | 'edit';
 
 export interface ApprovalGateProps {
-  /** Title of the approval request. */
-  readonly title: string;
-  /** Description / detail of what needs approval. */
-  readonly description: string;
-  /** Optional code/command preview to show. */
-  readonly preview?: string;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
-  /** Called when user makes a choice. */
-  readonly onAction: (action: ApprovalAction) => void;
-  /** Whether this modal is visible/focused. */
-  readonly isOpen?: boolean;
   /** Optional additional context content. */
   readonly children?: ReactNode;
+  /** Description / detail of what needs approval. */
+  readonly description: string;
+  /** Whether this modal is visible/focused. */
+  readonly isOpen?: boolean;
+  /** Called when user makes a choice. */
+  readonly onAction: (action: ApprovalAction) => void;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Optional code/command preview to show. */
+  readonly preview?: string;
+  /** Title of the approval request. */
+  readonly title: string;
 }
 
 /**
@@ -66,20 +66,22 @@ export function ApprovalGate({
     { isActive: isOpen }
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <Box flexDirection="column" borderStyle="double" borderColor={palette.warning} paddingX={2} paddingY={1}>
+    <Box borderColor={palette.warning} borderStyle="double" flexDirection="column" paddingX={2} paddingY={1}>
       {/* Header */}
       <Box flexDirection="row" marginBottom={1}>
-        <Text color={palette.warning} bold>
+        <Text bold color={palette.warning}>
           {'⚠  APPROVAL REQUIRED'}
         </Text>
       </Box>
 
       {/* Title */}
       <Box marginBottom={0}>
-        <Text color={palette.frameBright} bold>
+        <Text bold color={palette.frameBright}>
           {title}
         </Text>
       </Box>
@@ -91,7 +93,7 @@ export function ApprovalGate({
 
       {/* Code preview */}
       {preview ? (
-        <Box flexDirection="column" borderStyle="single" borderColor={palette.frameDim} paddingX={1} marginBottom={1}>
+        <Box borderColor={palette.frameDim} borderStyle="single" flexDirection="column" marginBottom={1} paddingX={1}>
           <Text color={palette.assistantAccent}>
             {'> '}
             {preview}
@@ -108,19 +110,19 @@ export function ApprovalGate({
       {/* Action strip */}
       <Box flexDirection="row" marginTop={1}>
         <Box marginRight={3}>
-          <Text color={palette.success} bold>
+          <Text bold color={palette.success}>
             {'[A]'}
           </Text>
           <Text color={palette.frameBright}>{' Approve'}</Text>
         </Box>
         <Box marginRight={3}>
-          <Text color={palette.error} bold>
+          <Text bold color={palette.error}>
             {'[R]'}
           </Text>
           <Text color={palette.frameBright}>{' Reject'}</Text>
         </Box>
         <Box>
-          <Text color={palette.warning} bold>
+          <Text bold color={palette.warning}>
             {'[E]'}
           </Text>
           <Text color={palette.frameBright}>{' Edit'}</Text>

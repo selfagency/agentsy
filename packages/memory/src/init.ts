@@ -3,7 +3,7 @@
 
 import { createMemoryEngine, type MemoryEngine, type MemoryEngineOptions } from './cognitive/memory-engine.js';
 import type { TierName } from './cognitive/tier-types.js';
-import { loadConfig, type MemoryConfig, DEFAULT_TIER_CONFIGS } from './config.js';
+import { DEFAULT_TIER_CONFIGS, loadConfig, type MemoryConfig } from './config.js';
 import { createMemoryMCPServer, type MemoryMCPServer, type MemoryMCPServerOptions } from './mcp/server.js';
 
 export interface InitOptions {
@@ -11,23 +11,23 @@ export interface InitOptions {
   config?: Partial<MemoryConfig>;
   /** Override engine creation options */
   engine?: MemoryEngineOptions;
-  /** Skip MCP server startup */
-  skipMcp?: boolean;
-  /** Skip database initialization */
-  skipDb?: boolean;
   /** Force overwrite existing files */
   force?: boolean;
+  /** Skip database initialization */
+  skipDb?: boolean;
+  /** Skip MCP server startup */
+  skipMcp?: boolean;
 }
 
 export interface InitResultWithServer {
-  engine: MemoryEngine;
   config: MemoryConfig;
+  engine: MemoryEngine;
   server: MemoryMCPServer;
 }
 
 export interface InitResultWithoutServer {
-  engine: MemoryEngine;
   config: MemoryConfig;
+  engine: MemoryEngine;
 }
 
 export type InitResult = InitResultWithServer | InitResultWithoutServer;
@@ -79,6 +79,8 @@ export async function initMemory(options: InitOptions = {}): Promise<InitResult>
             now: engineOptions.now
           };
           break;
+        default:
+          break;
       }
     }
   }
@@ -107,5 +109,5 @@ export async function initMemory(options: InitOptions = {}): Promise<InitResult>
   return { engine, config };
 }
 
-export { loadConfig, DEFAULT_TIER_CONFIGS };
 export type { MemoryConfig };
+export { DEFAULT_TIER_CONFIGS, loadConfig };

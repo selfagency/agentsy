@@ -204,9 +204,9 @@ UI should render responses optimistically during streaming — show the response
 
 ```ts
 // packages/ui/src/index.ts
-export { createUIStore } from './store.js';
-export { bridgeProcessorToStore } from './processorBridge.js';
-export { applyEvent } from './eventSourcing.js';
-export * from './types.js';
-export * from './eventHelpers.js';
+export { createUIStore } from "./store.js";
+export { bridgeProcessorToStore } from "./processorBridge.js";
+export { applyEvent } from "./eventSourcing.js";
+export * from "./types.js";
+export * from "./eventHelpers.js";
 ```

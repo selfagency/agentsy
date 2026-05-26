@@ -45,7 +45,9 @@ describe('MemoryEngine', () => {
     });
 
     it('accepts custom metadata', async () => {
-      const id = engine.ingest('Event with metadata', { metadata: { source: 'test', priority: 1 } });
+      const id = engine.ingest('Event with metadata', {
+        metadata: { source: 'test', priority: 1 }
+      });
       expect(id).not.toBeNull();
     });
 

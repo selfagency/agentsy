@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { createMemoryEngine } from './cognitive/memory-engine.js';
 import { createKnowledgeBaseManager } from './retrieval/rag/knowledge-base.js';
@@ -36,7 +36,7 @@ describe('queryUnified', () => {
 
     expect(results.some(r => r.source === 'tier')).toBe(true);
     expect(results.some(r => r.source === 'wiki')).toBe(true);
-    expect(results.every(r => r.source === 'rag')).toBe(true);
+    expect(results.some(r => r.source === 'rag')).toBe(true);
   });
 
   it('uses default weights when none provided', async () => {
@@ -100,7 +100,12 @@ describe('queryUnified', () => {
     const localEngine = createMemoryEngine();
     const localWiki = createWikiManager();
     const localKb = createKnowledgeBaseManager();
-    await localWiki.upsertPage({ pageId: 'p1', title: 'Only Wiki', body: 'wiki here', tags: ['t'] });
+    await localWiki.upsertPage({
+      pageId: 'p1',
+      title: 'Only Wiki',
+      body: 'wiki here',
+      tags: ['t']
+    });
     await localKb.ingest({
       sourceId: 's1',
       sourceType: 'document',
@@ -218,7 +223,9 @@ describe('queryUnified', () => {
       updatedAt: new Date().toISOString()
     });
 
-    const results = await queryUnified(localEngine, localWiki, localKb, { query: 'machine learning' });
+    const results = await queryUnified(localEngine, localWiki, localKb, {
+      query: 'machine learning'
+    });
 
     const tierResults = results.filter(r => r.source === 'tier');
     const wikiResults = results.filter(r => r.source === 'wiki');

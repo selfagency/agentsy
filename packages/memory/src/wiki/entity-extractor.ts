@@ -1,16 +1,16 @@
 export type EntityKind = 'technology' | 'organization' | 'person' | 'concept' | 'unknown';
 
 export interface ExtractedEntity {
-  name: string;
-  kind: EntityKind;
   confidence: number;
+  kind: EntityKind;
+  name: string;
 }
 
 export interface EntityRelationship {
-  from: string;
-  to: string;
-  relation: 'co_occurs_with';
   confidence: number;
+  from: string;
+  relation: 'co_occurs_with';
+  to: string;
 }
 
 export interface EntityExtractionResult {
@@ -50,6 +50,7 @@ function normalizeSentence(sentence: string): string {
 
 export function createEntityExtractor(): EntityExtractor {
   return {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
     extract(content) {
       const frequency = new Map<string, number>();
       const matches = content.match(TOKEN_PATTERN) ?? [];
@@ -80,7 +81,7 @@ export function createEntityExtractor(): EntityExtractor {
           for (let j = i + 1; j < sentenceEntities.length; j += 1) {
             const from = sentenceEntities[i];
             const to = sentenceEntities[j];
-            if (!from || !to) {
+            if (!(from && to)) {
               continue;
             }
 

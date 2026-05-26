@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createMemoryEngine } from '../cognitive/memory-engine.js';
 import { createMemoryMcpTools } from './tools.js';
@@ -14,6 +14,7 @@ function getHandler(
   name: string
 ): (args: Record<string, unknown>) => Promise<unknown> {
   const handler = handlers[name];
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Assertion guards used inside it() blocks
   expect(handler).toBeDefined();
   return handler as (args: Record<string, unknown>) => Promise<unknown>;
 }

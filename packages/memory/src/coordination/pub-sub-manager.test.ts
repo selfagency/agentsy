@@ -253,17 +253,17 @@ describe('PubSubManager', () => {
       const manager = createInMemoryPubSubManager();
       const listeners = Array.from({ length: 100 }, () => vi.fn<(payload: unknown) => void>());
 
-      listeners.forEach(listener => {
+      for (const listener of listeners) {
         manager.subscribe('broadcast', listener);
-      });
+      }
 
       const payload = { broadcast: true };
       await manager.publish('broadcast', payload);
 
-      listeners.forEach(listener => {
+      for (const listener of listeners) {
         expect(listener).toHaveBeenCalledWith(payload);
         expect(listener).toHaveBeenCalledOnce();
-      });
+      }
     });
 
     it('should isolate channels completely', async () => {

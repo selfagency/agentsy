@@ -4,7 +4,7 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 
 function mapBedrockStopReason(reason: string | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'end_turn') {
     return 'stop';

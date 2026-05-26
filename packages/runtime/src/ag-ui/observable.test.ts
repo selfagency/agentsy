@@ -4,7 +4,7 @@
  * Verifies AsyncGenerator to Observable conversion without hard RxJS dependency
  */
 
-import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { toObservable } from './observable.js';
 
@@ -118,8 +118,9 @@ describe('toObservable', () => {
       complete: () => {
         completed = true;
       },
-      // oxlint-disable-next-line no-empty-function -- intentional no-op for complete-only subscription test
-      next: () => {}
+      next: () => {
+        /* noop */
+      }
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -187,7 +188,9 @@ describe('toObservable', () => {
 
   it('should return subscription object', () => {
     // oxlint-disable-next-line no-empty-function -- intentional no-op subscriber
-    const subscription = toObservable(sourceSingle()).subscribe(() => {});
+    const subscription = toObservable(sourceSingle()).subscribe(() => {
+      /* noop */
+    });
 
     // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
     expectTypeOf(subscription.unsubscribe).toBeFunction();

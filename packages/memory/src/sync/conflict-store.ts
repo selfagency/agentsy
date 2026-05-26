@@ -3,23 +3,23 @@ import type { ConflictRecord, ConflictStore } from './types.js';
 class InMemoryConflictStore implements ConflictStore {
   readonly #conflicts = new Map<string, ConflictRecord>();
 
-  async save(conflict: ConflictRecord): Promise<void> {
+  save(conflict: ConflictRecord): void {
     this.#conflicts.set(conflict.id, conflict);
   }
 
-  async get(id: string): Promise<ConflictRecord | null> {
+  get(id: string): ConflictRecord | null {
     return this.#conflicts.get(id) ?? null;
   }
 
-  async list(): Promise<ConflictRecord[]> {
+  list(): ConflictRecord[] {
     return [...this.#conflicts.values()];
   }
 
-  async resolve(id: string): Promise<void> {
+  resolve(id: string): void {
     this.#conflicts.delete(id);
   }
 
-  async pendingCount(): Promise<number> {
+  pendingCount(): number {
     return this.#conflicts.size;
   }
 }

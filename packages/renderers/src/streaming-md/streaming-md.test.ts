@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // oxlint-disable-next-line typescript/no-unsafe-call typescript/no-unsafe-assignment
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { testOnStepCall } from '../shared.test-utils.js';
 import { createStreamingMarkdownRenderer } from './create-streaming-markdown-renderer.js';
@@ -54,7 +54,7 @@ describe('Streaming Markdown Renderer', () => {
     }).toThrow('Target element is required');
   });
 
-  it('creates renderer with target', async () => {
+  it('creates renderer with target', () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
     expect(renderer).toBeDefined();

@@ -1,9 +1,9 @@
 export type {
-  TurnHandler,
-  TurnEventOptions,
-  TurnResult,
   SimpleTurnLoop,
-  SimpleTurnLoopOptions
+  SimpleTurnLoopOptions,
+  TurnEventOptions,
+  TurnHandler,
+  TurnResult
 } from './simple-turn.js';
 
 export { createSimpleTurnLoop } from './simple-turn.js';

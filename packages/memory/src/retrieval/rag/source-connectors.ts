@@ -8,8 +8,8 @@ export interface SourceConnectorOptions {
 }
 
 export interface SourceConnectors {
-  readLocalFile(filePath: string): Promise<string>;
   fetchWebSource(url: string): Promise<string>;
+  readLocalFile(filePath: string): Promise<string>;
 }
 
 function assertAllowedHost(url: URL, allowHosts: readonly string[]): void {

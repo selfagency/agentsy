@@ -328,17 +328,17 @@ describe('Scheduler', () => {
     it('should handle concurrent jobs with different timings', async () => {
       const jobs = Array.from({ length: 5 }, () => vi.fn<() => void>());
 
-      jobs.forEach((job, index) => {
+      for (const [index, job] of jobs.entries()) {
         scheduler.schedule(`job-${index}`, 30 + index * 20, job);
-      });
+      }
 
       expect(scheduler.pendingCount()).toBe(5);
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      jobs.forEach(job => {
+      for (const job of jobs) {
         expect(job).toHaveBeenCalledWith();
-      });
+      }
       expect(scheduler.pendingCount()).toBe(0);
     });
 
@@ -349,12 +349,12 @@ describe('Scheduler', () => {
       }));
 
       // Schedule all jobs
-      jobs.forEach(({ id, fn }) => {
+      for (const { id, fn } of jobs) {
         // nosemgrep: insecure-randomness-test-jitter
         // Math.random() is used only for scheduling jitter in unit tests;
         // no security-sensitive operation depends on this value.
         scheduler.schedule(id, 100 + Math.random() * 50, fn);
-      });
+      }
 
       expect(scheduler.pendingCount()).toBe(50);
 
@@ -374,7 +374,7 @@ describe('Scheduler', () => {
       // Check results
       let cancelledCount = 0;
       let executedCount = 0;
-      jobs.forEach(({ fn }, index) => {
+      for (const [index, { fn }] of jobs.entries()) {
         if (index % 2 === 0) {
           if (fn.mock.calls.length === 0) {
             cancelledCount++;
@@ -382,7 +382,7 @@ describe('Scheduler', () => {
         } else if (fn.mock.calls.length > 0) {
           executedCount++;
         }
-      });
+      }
 
       expect(cancelledCount).toBe(25);
       expect(executedCount).toBe(25);

@@ -35,26 +35,35 @@ Environment variables:
 
   const configOverrides: Partial<MemoryConfig> = {};
 
+  // biome-ignore lint/style/useForOf: index-based iteration needed for args[++i] consumption
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
       case '--transport': {
         configOverrides.mcp = configOverrides.mcp ?? {};
         const transportVal = args[++i];
-        if (transportVal) (configOverrides.mcp as Record<string, unknown>).transport = transportVal;
+        if (transportVal) {
+          (configOverrides.mcp as Record<string, unknown>).transport = transportVal;
+        }
         break;
       }
       case '--port': {
         configOverrides.mcp = configOverrides.mcp ?? {};
         const portVal = args[++i];
-        if (portVal) (configOverrides.mcp as Record<string, unknown>).port = Number.parseInt(portVal, 10);
+        if (portVal) {
+          (configOverrides.mcp as Record<string, unknown>).port = Number.parseInt(portVal, 10);
+        }
         break;
       }
       case '--log-level': {
         const logVal = args[++i];
-        if (logVal) configOverrides.logLevel = logVal as MemoryConfig['logLevel'];
+        if (logVal) {
+          configOverrides.logLevel = logVal as MemoryConfig['logLevel'];
+        }
         break;
       }
+      default:
+        break;
     }
   }
 
@@ -66,7 +75,9 @@ Environment variables:
   // Handle graceful shutdown
   let shuttingDown = false;
   async function shutdown(): Promise<void> {
-    if (shuttingDown) return;
+    if (shuttingDown) {
+      return;
+    }
     shuttingDown = true;
     await server.close();
     process.exit(0);

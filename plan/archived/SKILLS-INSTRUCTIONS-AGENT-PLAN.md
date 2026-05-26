@@ -266,7 +266,7 @@ interface InstructionFile {
 ### Phase 7 — Agent mode picker (@agentsy/renderers + @agentsy/cli)
 
 | Task         | Description                                                                               |
-| ------------ | ----------------------------------------------------------------------------------------- | ----------------------- |
+| ------------ | ----------------------------------------------------------------------------------------- |
 | TASK-SIA-022 | Implement `AgentPickerComponent` in `packages/renderers/src/ink/components/agent-picker/` |
 | TASK-SIA-023 | Add `--agent <id>` flag and `/agent <id                                                   | ?>` to CLI chat command |
 | TASK-SIA-024 | Add `agentsy agents list` and `agentsy agents show <id>` commands                         |

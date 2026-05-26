@@ -1,9 +1,9 @@
 export interface ContentProcessor {
-  normalize(content: string): string;
-  extractCodeBlocks(content: string): string[];
   detectFormat(content: string): 'markdown' | 'text' | 'code' | 'json';
-  toSearchableText(content: string): string;
+  extractCodeBlocks(content: string): string[];
   extractEntities(content: string): string[];
+  normalize(content: string): string;
+  toSearchableText(content: string): string;
 }
 
 const CODE_BLOCK_PATTERN = /```[\s\S]*?```/gu;

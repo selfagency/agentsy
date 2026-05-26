@@ -3,9 +3,9 @@ import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
 
 export interface MemorySearchToolInput {
   actorId?: string;
+  limit?: number;
   query: string;
   scope?: MemoryScope;
-  limit?: number;
 }
 
 export interface MemorySearchToolResult {
@@ -17,8 +17,8 @@ export interface MemorySearchTool {
 }
 
 export interface MemorySearchToolDeps {
-  search(input: { query: string; scope?: MemoryScope; actorId?: string; limit?: number }): Promise<MemorySearchHit[]>;
   scopeManager?: ScopeManager;
+  search(input: { query: string; scope?: MemoryScope; actorId?: string; limit?: number }): Promise<MemorySearchHit[]>;
 }
 
 export function createMemorySearchTool(deps: MemorySearchToolDeps): MemorySearchTool {

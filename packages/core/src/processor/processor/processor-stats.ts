@@ -5,23 +5,37 @@
  */
 
 export interface ProcessorStats {
-  /** Total number of chunks processed */
-  chunksProcessed: number;
+  /** Average chunk size in bytes */
+  averageChunkSize: number;
 
   /** Total bytes processed across all chunks */
   bytesProcessed: number;
+  /** Total number of chunks processed */
+  chunksProcessed: number;
+
+  /** Number of content deltas emitted */
+  contentDeltasCount: number;
 
   /** Current buffer size in bytes */
   currentBufferSize: number;
 
-  /** Peak buffer size observed so far */
-  peakBufferSize: number;
+  /** Number of errors encountered during processing */
+  errorsCount: number;
 
-  /** Average chunk size in bytes */
-  averageChunkSize: number;
+  /** Timestamp of first chunk processed */
+  firstChunkAt?: Date;
+
+  /** Timestamp of last chunk processed */
+  lastChunkAt?: Date;
 
   /** Total time spent in parse operations (milliseconds) */
   parseTimeMs: number;
+
+  /** Peak buffer size observed so far */
+  peakBufferSize: number;
+
+  /** Timestamp when stats were last reset */
+  resetAt: Date;
 
   /** Number of thinking blocks extracted */
   thinkingBlocksCount: number;
@@ -29,23 +43,8 @@ export interface ProcessorStats {
   /** Number of tool calls extracted */
   toolCallsCount: number;
 
-  /** Number of content deltas emitted */
-  contentDeltasCount: number;
-
-  /** Number of errors encountered during processing */
-  errorsCount: number;
-
   /** Number of warnings emitted during processing */
   warningsCount: number;
-
-  /** Timestamp when stats were last reset */
-  resetAt: Date;
-
-  /** Timestamp of first chunk processed */
-  firstChunkAt?: Date;
-
-  /** Timestamp of last chunk processed */
-  lastChunkAt?: Date;
 }
 
 /**

@@ -6,11 +6,11 @@ import type { RuntimeSnapshot } from '@agentsy/types';
  */
 export interface InterruptionCheckpoint {
   id: string;
-  sessionId: string;
-  reason: string;
-  timestamp: number;
-  snapshot: RuntimeSnapshot;
   metadata?: Record<string, unknown>;
+  reason: string;
+  sessionId: string;
+  snapshot: RuntimeSnapshot;
+  timestamp: number;
 }
 
 let _checkpointCounter = 0;
@@ -74,7 +74,9 @@ export async function resumeFromCheckpoint(
   sessionStore: Pick<SessionStore, 'getValue'>
 ): Promise<InterruptionCheckpoint | null> {
   const raw = sessionStore.getValue(`${CHECKPOINT_KEY_PREFIX}${checkpointId}`);
-  if (!raw) return null;
+  if (!raw) {
+    return null;
+  }
 
   const checkpoint = raw as InterruptionCheckpoint;
 

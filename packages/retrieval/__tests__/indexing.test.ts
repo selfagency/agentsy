@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, expectTypeOf } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 
 import { IndexingPipeline } from '../src/indexing';
 import type { DataSource } from '../src/types';
@@ -72,11 +72,11 @@ describe(IndexingPipeline, () => {
     it('should include metadata in chunks', async () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
 
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.metadata).toBeDefined();
         expect(chunk.metadata.source).toBe(testDataSource.path);
         expect(chunk.metadata.strategy).toBeDefined();
-      });
+      }
     });
   });
 
@@ -86,10 +86,10 @@ describe(IndexingPipeline, () => {
       const chunks = pipeline.semanticChunk(content, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.content.length).toBeGreaterThan(0);
         expect(chunk.metadata.strategy).toBe('semantic');
-      });
+      }
     });
 
     it('should generate chunk IDs based on content hash', () => {
@@ -107,11 +107,11 @@ describe(IndexingPipeline, () => {
       const chunks = pipeline.fixedSizeChunk(fiftyWordContent, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.metadata.strategy).toBe('fixed');
         const wordsInChunk = chunk.content.split(/\s+/u);
         expect(wordsInChunk.length).toBeLessThanOrEqual(100);
-      });
+      }
     });
 
     it('should overlap consecutive chunks by configured word overlap', async () => {
@@ -128,7 +128,7 @@ describe(IndexingPipeline, () => {
       expect(firstChunk).toBeDefined();
       expect(secondChunk).toBeDefined();
 
-      if (!firstChunk || !secondChunk) {
+      if (!(firstChunk && secondChunk)) {
         return;
       }
 
@@ -138,9 +138,9 @@ describe(IndexingPipeline, () => {
       // Chunk 1: words 0-4, Chunk 2: words 3-7
       const overlapRegionFirst = firstChunkWords.slice(-2);
 
-      overlapRegionFirst.forEach(word => {
+      for (const word of overlapRegionFirst) {
         expect(secondChunkWords).toContain(word);
-      });
+      }
     });
   });
 
@@ -158,9 +158,9 @@ export const result = example();
       const chunks = pipeline.astChunk(tsCode, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.metadata.strategy).toBe('ast');
-      });
+      }
     });
 
     it('should preserve function boundaries when chunking multiple functions', () => {

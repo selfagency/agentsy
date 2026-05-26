@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createBanner, agentsyBanner, agentsyBannerCompact, loadingBanner, pickBanner } from './ascii.ts';
+import { agentsyBanner, agentsyBannerCompact, createBanner, loadingBanner, pickBanner } from './ascii.ts';
 
 describe('ascii', () => {
   it('createBanner creates consistent AsciiBanner', () => {

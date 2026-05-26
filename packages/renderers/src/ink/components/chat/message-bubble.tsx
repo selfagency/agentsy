@@ -3,16 +3,16 @@ import { Box, Text } from 'ink';
 import type { AcidPalette } from '../../theme/palette.ts';
 
 export interface MessageBubbleProps {
-  /** Message content text. */
-  readonly text: string;
-  /** Message role — determines alignment and colour. */
-  readonly role: 'user' | 'assistant' | 'system';
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
-  /** Optional timestamp string (e.g. "12:34:56"). */
-  readonly timestamp?: string;
   /** Whether to dim the text (e.g., for thinking/metadata). */
   readonly dim?: boolean;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Message role — determines alignment and colour. */
+  readonly role: 'user' | 'assistant' | 'system';
+  /** Message content text. */
+  readonly text: string;
+  /** Optional timestamp string (e.g. "12:34:56"). */
+  readonly timestamp?: string;
 }
 
 /**
@@ -22,20 +22,36 @@ export function MessageBubble({ text, role, palette, timestamp, dim = false }: M
   const isUser = role === 'user';
   const isSystem = role === 'system';
 
-  const textColor = isSystem ? palette.warning : isUser ? palette.userText : palette.assistantText;
+  let textColor: string;
+  if (isSystem) {
+    textColor = palette.warning;
+  } else if (isUser) {
+    textColor = palette.userText;
+  } else {
+    textColor = palette.assistantText;
+  }
+
+  let roleLabel: string;
+  if (isUser) {
+    roleLabel = '▸ you';
+  } else if (isSystem) {
+    roleLabel = '◆ system';
+  } else {
+    roleLabel = '◈ assistant';
+  }
 
   return (
-    <Box flexDirection="column" alignItems={isUser ? 'flex-end' : 'flex-start'} marginBottom={1}>
+    <Box alignItems={isUser ? 'flex-end' : 'flex-start'} flexDirection="column" marginBottom={1}>
       {/* Role label */}
       <Box>
-        <Text color={textColor} bold>
-          {isUser ? '▸ you' : isSystem ? '◆ system' : '◈ assistant'}
+        <Text bold color={textColor}>
+          {roleLabel}
         </Text>
         {timestamp ? <Text color={palette.frameDim}> {timestamp}</Text> : null}
       </Box>
 
       {/* Bubble content — BBS heavy box-drawing */}
-      <Box borderStyle="bold" borderColor={textColor} paddingX={1} marginTop={0} flexDirection="column">
+      <Box borderColor={textColor} borderStyle="bold" flexDirection="column" marginTop={0} paddingX={1}>
         <Text color={textColor} dimColor={dim}>
           {text}
         </Text>

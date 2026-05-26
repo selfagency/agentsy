@@ -214,9 +214,9 @@ export interface Renderer {
 
 ```typescript
 export interface RendererOptions {
-  theme: 'dark' | 'light' | 'mono';
+  theme: "dark" | "light" | "mono";
   color: boolean;
-  verbosity: 'quiet' | 'normal' | 'verbose';
+  verbosity: "quiet" | "normal" | "verbose";
   typingSpeed: number; // ms per chunk
 }
 ```

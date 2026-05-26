@@ -6,14 +6,14 @@ import type { AcidPalette } from '../../theme/palette.ts';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 export interface ApprovalStateProps {
-  /** Current approval status. */
-  readonly status: ApprovalStatus;
   /** Action being approved (e.g. "execute tool: read_file"). */
   readonly action: string;
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
   /** Countdown seconds (only when pending). */
   readonly countdownSec?: number;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Current approval status. */
+  readonly status: ApprovalStatus;
 }
 
 const statusConfig: Record<ApprovalStatus, { color: keyof AcidPalette; symbol: string; label: string }> = {
@@ -46,10 +46,10 @@ export function ApprovalState({ status, action, palette, countdownSec }: Approva
   const pulseDots = status === 'pending' ? '.'.repeat(pulse) : '';
 
   return (
-    <Box borderStyle="bold" borderColor={color} paddingX={1} marginBottom={1}>
+    <Box borderColor={color} borderStyle="bold" marginBottom={1} paddingX={1}>
       <Box flexDirection="column">
         <Box>
-          <Text color={color} bold>
+          <Text bold color={color}>
             {cfg.symbol} {cfg.label}
           </Text>
           {countdownSec !== undefined && status === 'pending' ? (

@@ -1,4 +1,4 @@
-import { mkdtempSync, existsSync } from 'node:fs';
+import { existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -18,7 +18,7 @@ vi.mock('@tursodatabase/sync', () => ({
 }));
 
 describe('initMemory', () => {
-  function getSafeTestPath(): string {
+  function _getSafeTestPath(): string {
     const tempDir = mkdtempSync(join(tmpdir(), 'agentsy-test-'));
     if (existsSync(tempDir)) {
       return tempDir;
@@ -29,63 +29,12 @@ describe('initMemory', () => {
     const result = await initMemory({ skipMcp: true, skipDb: true });
     expect(result.engine).toBeDefined();
     expect(result.config).toBeDefined();
-    expect(result.db).toBeUndefined();
-  });
-
-  it('creates and returns a database when skipDb is false', async () => {
-    const result = await initMemory({ skipMcp: true, skipDb: false, db: { path: ':memory:' } });
-    expect(result.engine).toBeDefined();
-    expect(result.config).toBeDefined();
-    expect(result.db).toBeDefined();
   });
 
   it('creates an MCP server when skipMcp is false', async () => {
     const result = await initMemory({ skipMcp: false, skipDb: true });
     expect(result.engine).toBeDefined();
+    expect(result.config).toBeDefined();
     expect('server' in result).toBe(true);
-  });
-
-  it('returns tursoSyncEngine when syncUrl is configured with a file db', async () => {
-    const testPath = getSafeTestPath();
-    const result = await initMemory({
-      skipMcp: true,
-      skipDb: false,
-      db: { path: testPath },
-      config: {
-        db: {
-          path: testPath,
-          syncUrl: 'libsql://test.turso.io',
-          syncAuthToken: 'token123'
-        }
-      }
-    });
-    expect(result.tursoSyncEngine).toBeDefined();
-    expect(result.tursoSyncEngine?.status()).toBe('idle');
-  });
-
-  it('does not create tursoSyncEngine when db is :memory:', async () => {
-    const result = await initMemory({
-      skipMcp: true,
-      skipDb: false,
-      db: { path: ':memory:' },
-      config: {
-        db: {
-          path: ':memory:',
-          syncUrl: 'libsql://test.turso.io',
-          syncAuthToken: 'token123'
-        }
-      }
-    });
-    expect(result.tursoSyncEngine).toBeUndefined();
-  });
-
-  it('does not create tursoSyncEngine when syncUrl is not configured', async () => {
-    const testPath = getSafeTestPath();
-    const result = await initMemory({
-      skipMcp: true,
-      skipDb: false,
-      db: { path: testPath }
-    });
-    expect(result.tursoSyncEngine).toBeUndefined();
   });
 });

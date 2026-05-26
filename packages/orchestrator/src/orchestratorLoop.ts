@@ -1,23 +1,23 @@
-import { createAgentLoop } from './agent/index.js';
 import type { AgentLoopHandle, AgentLoopOptions } from './agent/index.js';
-import { createSchedulerRegistry } from './scheduler/index.js';
+import { createAgentLoop } from './agent/index.js';
 import type {
   SchedulerRegistry,
   SchedulerTaskDefinition,
   SchedulerTaskRecord,
   SchedulerTaskStatus
 } from './scheduler/index.js';
+import { createSchedulerRegistry } from './scheduler/index.js';
 
 export interface OrchestratorConfig extends AgentLoopOptions {
-  scheduler?: SchedulerRegistry;
   initialScheduledTasks?: SchedulerTaskDefinition[];
+  scheduler?: SchedulerRegistry;
 }
 
 export interface OrchestratorLoop extends AgentLoopHandle {
-  scheduleTask(task: SchedulerTaskDefinition): SchedulerTaskRecord;
   cancelScheduledTask(taskId: string): SchedulerTaskRecord | null;
   getScheduledTask(taskId: string): SchedulerTaskRecord | null;
   listScheduledTasks(options?: { lane?: string; status?: SchedulerTaskStatus }): SchedulerTaskRecord[];
+  scheduleTask(task: SchedulerTaskDefinition): SchedulerTaskRecord;
 }
 
 export function createOrchestratorLoop(config: OrchestratorConfig): OrchestratorLoop {

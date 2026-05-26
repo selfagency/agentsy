@@ -7,8 +7,7 @@
  * @module @agentsy/testing/msw/handlers/retrieval
  */
 
-import { HttpResponse, http } from 'msw';
-import { type HttpHandler } from 'msw';
+import { type HttpHandler, HttpResponse, http } from 'msw';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,10 +43,10 @@ export function createMockRetrievalState(): MockRetrievalState {
 export interface RetrievalHandlerOptions {
   /** Base URL for the retrieval service (default: http://localhost:3081) */
   baseUrl?: string;
-  /** Shared mutable state */
-  state?: MockRetrievalState;
   /** Response delay in ms (default: 0) */
   delay?: number;
+  /** Shared mutable state */
+  state?: MockRetrievalState;
 }
 
 /**
@@ -82,7 +81,7 @@ export function createRetrievalHandlers(options?: RetrievalHandlerOptions): Http
       }
       const payload = (await request.json()) as { texts?: string[] };
       const texts = payload.texts ?? [];
-      const embeddings: EmbeddingResult[] = texts.map((text, index) => ({
+      const embeddings: EmbeddingResult[] = texts.map((_text, index) => ({
         embedding: Array.from({ length: dims }, (_, i) => ((index + 1) * (i + 1)) / dims),
         index
       }));

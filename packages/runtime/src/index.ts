@@ -2,9 +2,9 @@ import { randomUUID } from 'node:crypto';
 
 import type { SessionStore } from '@agentsy/session';
 import type {
+  RuntimeLoopOptions as BaseRuntimeLoopOptions,
   RuntimeExecutor,
   RuntimeLoop,
-  RuntimeLoopOptions as BaseRuntimeLoopOptions,
   RuntimeOptions,
   RuntimeSnapshot,
   RuntimeTask,
@@ -27,11 +27,25 @@ export type {
 } from '@agentsy/types';
 
 export {
-  buildRuntimeContext,
   type BuildRuntimeContextInput,
+  buildRuntimeContext,
   type RuntimeContextReuse,
   type RuntimeReusableSegment
 } from './cache-aware-context.js';
+export type { RuntimeCheckpoint } from './checkpoint.js';
+export { checkpoint, clearCheckpoint, loadCheckpoint } from './checkpoint.js';
+export type {
+  GuardrailResult,
+  InputGuardrail,
+  OutputGuardrail,
+  ToolGuardrail
+} from './guardrails/index.js';
+export type { HookHandler, HookRegistry, HookResult, RuntimeHookEvent } from './hooks/index.js';
+// Hook registry and lifecycle events
+export { createRuntimeHookRegistry } from './hooks/index.js';
+export type { InterruptionCheckpoint } from './interruption.js';
+// Interruption and checkpoint
+export { createInterruption, resumeFromCheckpoint } from './interruption.js';
 export {
   buildRuntimeMemoryContextXml,
   injectRuntimeMemoryContext,
@@ -39,17 +53,6 @@ export {
   type RuntimeMemoryEvidence,
   type RuntimeMemoryInjectionOptions
 } from './memory-injection.js';
-
-// Hook registry and lifecycle events
-export { createRuntimeHookRegistry } from './hooks/index.js';
-export type { HookHandler, HookRegistry, HookResult, RuntimeHookEvent } from './hooks/index.js';
-export type { InputGuardrail, OutputGuardrail, ToolGuardrail, GuardrailResult } from './guardrails/index.js';
-
-// Interruption and checkpoint
-export { createInterruption, resumeFromCheckpoint } from './interruption.js';
-export type { InterruptionCheckpoint } from './interruption.js';
-export { checkpoint, loadCheckpoint, clearCheckpoint } from './checkpoint.js';
-export type { RuntimeCheckpoint } from './checkpoint.js';
 
 export type RuntimeLoopOptions = Omit<BaseRuntimeLoopOptions, 'sessionStore'> & {
   sessionStore?: SessionStore;
@@ -120,7 +123,7 @@ function cloneSnapshot(snapshot: RuntimeSnapshot): RuntimeSnapshot {
 
 export function loadRuntimeSnapshotFromSession(
   sessionStore: Pick<SessionStore, 'getValue'>,
-  snapshotKey: string = 'runtimeSnapshot'
+  snapshotKey = 'runtimeSnapshot'
 ): RuntimeSnapshot | null {
   const snapshot = sessionStore.getValue(snapshotKey);
   return isRuntimeSnapshot(snapshot) ? cloneSnapshot(snapshot) : null;
@@ -129,7 +132,7 @@ export function loadRuntimeSnapshotFromSession(
 export function saveRuntimeSnapshotToSession(
   sessionStore: Pick<SessionStore, 'setValue'>,
   snapshot: RuntimeSnapshot,
-  snapshotKey: string = 'runtimeSnapshot'
+  snapshotKey = 'runtimeSnapshot'
 ): void {
   sessionStore.setValue(snapshotKey, cloneSnapshot(snapshot));
 }

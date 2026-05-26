@@ -1,6 +1,6 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { reducedMotion, resetReducedMotionCache, prefersReducedMotion } from './motion.ts';
+import { prefersReducedMotion, reducedMotion, resetReducedMotionCache } from './motion.ts';
 
 describe('motion', () => {
   beforeEach(() => {

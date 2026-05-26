@@ -1,5 +1,5 @@
 import type { MCPTransport } from '@agentsy/core/processor';
-import type { ChatResponseStream, CancellationToken } from 'vscode';
+import type { CancellationToken, ChatResponseStream } from 'vscode';
 
 import { VSCodeMCPBridgeHelper } from '../mcp/vscodeBridgeHelper.js';
 

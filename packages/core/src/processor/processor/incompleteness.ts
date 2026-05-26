@@ -17,7 +17,7 @@ function hasUnclosedXmlTags(content: string): boolean {
   let depth = 0;
   // Security: Limit tag name length to 50 chars and attribute length to 100
   // to prevent ReDoS attacks. Limited quantifier scope avoids backtracking.
-  // biome-ignore lint/security/noReDoubleSlash: Limited quantifiers prevent ReDoS
+
   const tagRe = /<(\/?)[\sA-Za-z][A-Za-z0-9_.-]{0,50}(?:\s[^>]{0,100})?\s*(\/?)>/gu;
 
   for (const m of content.matchAll(tagRe)) {

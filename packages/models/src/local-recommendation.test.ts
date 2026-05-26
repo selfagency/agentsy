@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
-import { recommendLocalModelsBySystemCapabilities } from './index.js';
 import type { LLMStatsLocalModel, ModelsDevAPI, SystemCapabilities } from './index.js';
+import { recommendLocalModelsBySystemCapabilities } from './index.js';
 
 const modelsDevFixture: ModelsDevAPI = {
   openai: {

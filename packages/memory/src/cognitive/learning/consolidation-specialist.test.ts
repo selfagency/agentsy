@@ -3,12 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createConsolidationSpecialist } from './consolidation-specialist.js';
 import type { Observation } from './observation-extractor.js';
 
-function makeObs(
-  id: string,
-  content: string,
-  kind: Observation['kind'] = 'factual',
-  confidence: number = 0.7
-): Observation {
+function makeObs(id: string, content: string, kind: Observation['kind'] = 'factual', confidence = 0.7): Observation {
   return {
     id,
     kind,

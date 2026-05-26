@@ -17,5 +17,5 @@
  * @module @agentsy/testing/msw/setup
  */
 
-export { createTestServer } from './index.js';
 export type { TestServer, TestServerConfig } from './index.js';
+export { createTestServer } from './index.js';

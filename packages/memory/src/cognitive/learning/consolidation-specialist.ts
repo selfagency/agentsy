@@ -3,26 +3,26 @@ import type { Observation } from './observation-extractor.js';
 export type SpecialistRole = 'deduction' | 'induction' | 'surprisal' | 'temporal';
 
 export interface ConsolidationResult {
-  id: string;
-  role: SpecialistRole;
-  inputObservationIds: string[];
-  output: string;
   confidence: number;
+  id: string;
+  inputObservationIds: string[];
   noveltyScore: number;
+  output: string;
+  role: SpecialistRole;
   tokenCost: number;
 }
 
 export interface MergedConsolidation {
-  id: string;
-  specialistResults: ConsolidationResult[];
-  mergedSummary: string;
   finalConfidence: number;
+  id: string;
+  mergedSummary: string;
   sourceObservationIds: string[];
+  specialistResults: ConsolidationResult[];
 }
 
 export interface SpecialistProvider {
-  readonly role: SpecialistRole;
   consolidate(input: string, observations: Observation[]): Promise<string>;
+  readonly role: SpecialistRole;
 }
 
 export interface ConsolidationSpecialist {
@@ -91,7 +91,7 @@ function runTemporalSpecialist(observations: Observation[]): string {
   const sorted = [...observations].sort((a, b) => a.extractedAt - b.extractedAt);
   if (sorted.length >= 2) {
     const first = sorted[0];
-    const last = sorted[sorted.length - 1];
+    const last = sorted.at(-1);
     if (first && last) {
       return `Temporal trend from "${first.content.slice(0, 40)}..." to "${last.content.slice(0, 40)}..." over ${observations.length} observations.`;
     }
@@ -116,7 +116,7 @@ function runSpecialist(role: SpecialistRole, observations: Observation[]): strin
 
 export function createConsolidationSpecialist(options: ConsolidationSpecialistOptions = {}): ConsolidationSpecialist {
   const now = options.now ?? (() => performance.now());
-  const maxTokenBudget = options.maxTokenBudgetPerCycle ?? 2_000;
+  const maxTokenBudget = options.maxTokenBudgetPerCycle ?? 2000;
   const providers = new Map<SpecialistRole, SpecialistProvider>();
 
   async function consolidate(role: SpecialistRole, observations: Observation[]): Promise<ConsolidationResult> {
@@ -150,15 +150,15 @@ export function createConsolidationSpecialist(options: ConsolidationSpecialistOp
     };
   }
 
-  async function merge(results: ConsolidationResult[]): Promise<MergedConsolidation> {
+  function merge(results: ConsolidationResult[]): Promise<MergedConsolidation> {
     if (results.length === 0) {
-      return {
+      return Promise.resolve({
         id: `merge-${now()}`,
         specialistResults: [],
         mergedSummary: '',
         finalConfidence: 0,
         sourceObservationIds: []
-      };
+      });
     }
 
     // Deduplicate overlapping summaries
@@ -189,13 +189,13 @@ export function createConsolidationSpecialist(options: ConsolidationSpecialistOp
 
     const allSourceIds = [...new Set(uniqueResults.flatMap(r => r.inputObservationIds))];
 
-    return {
+    return Promise.resolve({
       id: `merge-${now()}`,
       specialistResults: uniqueResults,
       mergedSummary,
       finalConfidence,
       sourceObservationIds: allSourceIds
-    };
+    });
   }
 
   return {

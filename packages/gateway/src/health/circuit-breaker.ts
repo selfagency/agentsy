@@ -9,8 +9,11 @@ export class CircuitBreaker {
   #failures = 0;
   #openedAt = 0;
   #state: CircuitBreakerState = 'closed';
+  readonly #config: CircuitBreakerConfig;
 
-  constructor(private readonly config: CircuitBreakerConfig = {}) {}
+  constructor(config: CircuitBreakerConfig = {}) {
+    this.#config = config;
+  }
 
   get state(): CircuitBreakerState {
     return this.#state;
@@ -24,7 +27,7 @@ export class CircuitBreaker {
 
   recordFailure(now = Date.now()): void {
     this.#failures += 1;
-    if (this.#failures >= (this.config.failureThreshold ?? 5)) {
+    if (this.#failures >= (this.#config.failureThreshold ?? 5)) {
       this.#state = 'open';
       this.#openedAt = now;
     }
@@ -36,7 +39,7 @@ export class CircuitBreaker {
     }
 
     if (this.#state === 'open') {
-      const resetAfterMs = this.config.resetAfterMs ?? 30_000;
+      const resetAfterMs = this.#config.resetAfterMs ?? 30_000;
       if (now - this.#openedAt >= resetAfterMs) {
         this.#state = 'half-open';
         return true;

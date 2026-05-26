@@ -1,9 +1,9 @@
 export { mapUsageToVSCode, type VSCodeUsage } from './map-usage.js';
 export {
+  type ActiveQuotaWindowStrategy,
   createQuotaDataSourceAdapter,
   formatStandardQuotaTooltip,
   pickActiveQuotaWindow,
-  type ActiveQuotaWindowStrategy,
   type QuotaAdapterOptions,
   type QuotaWindow,
   type QuotaWindowValue

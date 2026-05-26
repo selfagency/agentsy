@@ -173,7 +173,7 @@ describe('message-adapter', () => {
       const result = convertMessages(msgs);
       expect(result).toHaveLength(2);
       const [firstMessage, secondMessage] = result;
-      if (!firstMessage || !secondMessage) {
+      if (!(firstMessage && secondMessage)) {
         throw new Error('Expected two messages to be converted');
       }
       expect(firstMessage.role).toBe('user');

@@ -1,9 +1,9 @@
 import type { MemoryItem } from '../tier-types.js';
-import { createCanaryDetector, type CanaryDetector, type CanaryResult } from './canary-detector.js';
+import { type CanaryDetector, type CanaryResult, createCanaryDetector } from './canary-detector.js';
 import {
-  createConsolidationSpecialist,
   type ConsolidationResult,
   type ConsolidationSpecialist,
+  createConsolidationSpecialist,
   type SpecialistRole
 } from './consolidation-specialist.js';
 import {
@@ -22,39 +22,39 @@ import {
 } from './solidifier.js';
 
 export interface LearningLoopConfig {
-  observation: {
-    extractors: ('factual' | 'emotional' | 'procedural' | 'corrective' | 'relational')[];
-    batchSize: number;
-  };
-  dialectic: {
-    priorityRules: ResolutionPriority;
-  };
-  consolidation: {
-    specialists: SpecialistRole[];
-    maxTokenBudgetPerCycle: number;
-  };
-  solidification: SolidifierOptions;
   canary: {
     staleThreshold: number;
     degradationThreshold: number;
     checkInterval: number;
   };
+  consolidation: {
+    specialists: SpecialistRole[];
+    maxTokenBudgetPerCycle: number;
+  };
+  dialectic: {
+    priorityRules: ResolutionPriority;
+  };
+  observation: {
+    extractors: ('factual' | 'emotional' | 'procedural' | 'corrective' | 'relational')[];
+    batchSize: number;
+  };
+  solidification: SolidifierOptions;
 }
 
 export interface LearningCycleResult {
-  observationsExtracted: number;
-  contradictionsFound: number;
-  resolutionsProduced: number;
-  consolidationsProduced: number;
-  solidificationActions: SolidificationResult[];
   canaryActions: CanaryResult[];
+  consolidationsProduced: number;
+  contradictionsFound: number;
   durationMs: number;
+  observationsExtracted: number;
+  resolutionsProduced: number;
+  solidificationActions: SolidificationResult[];
 }
 
 export interface LearningLoopDeps {
-  getNewMemories(limit: number): MemoryItem[];
-  getLTMMemories(): MemoryItem[];
   emitEvent?: ((event: { type: string; payload: Record<string, unknown> }) => void) | undefined;
+  getLTMMemories(): MemoryItem[];
+  getNewMemories(limit: number): MemoryItem[];
 }
 
 export interface LearningLoopOrchestrator {
@@ -79,20 +79,20 @@ export const DEFAULT_LEARNING_CONFIG: LearningLoopConfig = {
   },
   consolidation: {
     specialists: ['deduction', 'induction', 'surprisal', 'temporal'],
-    maxTokenBudgetPerCycle: 2_000
+    maxTokenBudgetPerCycle: 2000
   },
   solidification: {
     promotionThreshold: 0.75,
     demotionThreshold: 0.3,
     mergeSimilarityThreshold: 0.85,
     archiveAccessThreshold: 2,
-    maxAgeBeforeArchive: 30 * 24 * 60 * 60 * 1_000,
-    minAgeForDemotion: 7 * 24 * 60 * 60 * 1_000
+    maxAgeBeforeArchive: 30 * 24 * 60 * 60 * 1000,
+    minAgeForDemotion: 7 * 24 * 60 * 60 * 1000
   },
   canary: {
-    staleThreshold: 7 * 24 * 60 * 60 * 1_000,
+    staleThreshold: 7 * 24 * 60 * 60 * 1000,
     degradationThreshold: 0.4,
-    checkInterval: 60 * 60 * 1_000
+    checkInterval: 60 * 60 * 1000
   }
 };
 

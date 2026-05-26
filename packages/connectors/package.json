@@ -54,8 +54,8 @@
     "dev": "tsup --watch",
     "test": "vitest --run --passWithNoTests",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt --write ."
+    "lint": "biome lint",
+    "format": "biome format"
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
@@ -64,8 +64,7 @@
   "devDependencies": {
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
-    "oxfmt": "^0.50.0",
-    "oxlint": "^1.65.0",
+    "@biomejs/biome": "^2.4.15",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"

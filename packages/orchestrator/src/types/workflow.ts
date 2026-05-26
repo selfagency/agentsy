@@ -1,62 +1,66 @@
-export enum NodeType {
-  TASK = 'task',
-  DECISION = 'decision',
-  PARALLEL = 'parallel',
-  SEQUENCE = 'sequence',
-  MERGE = 'merge'
-}
+export const NodeType = {
+  TASK: 'task',
+  DECISION: 'decision',
+  PARALLEL: 'parallel',
+  SEQUENCE: 'sequence',
+  MERGE: 'merge'
+} as const;
 
-export enum WorkflowStatus {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled'
-}
+export type NodeType = (typeof NodeType)[keyof typeof NodeType];
+
+export const WorkflowStatus = {
+  PENDING: 'pending',
+  RUNNING: 'running',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled'
+} as const;
+
+export type WorkflowStatus = (typeof WorkflowStatus)[keyof typeof WorkflowStatus];
 
 export interface TaskNode {
-  type: NodeType.TASK;
-  id: string;
-  name: string;
   agent: string;
+  id: string;
   input: Record<string, unknown>;
+  name: string;
   output: Record<string, unknown>;
-  timeout?: number;
   retryPolicy?: RetryPolicy;
+  timeout?: number;
+  type: NodeType.TASK;
 }
 
 export interface DecisionNode {
-  type: NodeType.DECISION;
+  condition: string;
+  falseBranch: string[];
   id: string;
   name: string;
-  condition: string;
   trueBranch: string[];
-  falseBranch: string[];
+  type: NodeType.DECISION;
 }
 
 export interface ParallelNode {
-  type: NodeType.PARALLEL;
-  id: string;
-  name: string;
   branches: string[];
-  maxConcurrency?: number;
   failFast?: boolean;
+  id: string;
+  maxConcurrency?: number;
+  name: string;
+  type: NodeType.PARALLEL;
 }
 
 export interface SequenceNode {
-  type: NodeType.SEQUENCE;
+  continueOnError?: boolean;
   id: string;
   name: string;
   steps: string[];
-  continueOnError?: boolean;
+  type: NodeType.SEQUENCE;
 }
 
 export interface MergeNode {
-  type: NodeType.MERGE;
   id: string;
-  name: string;
   inputs: string[];
+  name: string;
   strategy: MergeStrategy;
+  type: NodeType.MERGE;
 }
 
 export type WorkflowNode = TaskNode | DecisionNode | ParallelNode | SequenceNode | MergeNode;
@@ -64,9 +68,9 @@ export type WorkflowNode = TaskNode | DecisionNode | ParallelNode | SequenceNode
 export type MergeStrategy = 'join' | 'first' | 'all' | 'majority';
 
 export interface RetryPolicy {
-  maxAttempts: number;
   backoffStrategy: 'linear' | 'exponential' | 'fixed';
   baseDelay: number;
+  maxAttempts: number;
   maxDelay: number;
 }
 
@@ -81,19 +85,19 @@ export interface Constraint {
 }
 
 export interface EventTrigger {
+  condition?: string;
   event: string;
   source: string;
-  condition?: string;
 }
 
 export interface EventHandler {
+  async?: boolean;
   event: string;
   handler: string;
-  async?: boolean;
 }
 
 export interface EventFilter {
-  event: string;
-  condition: string;
   action: string;
+  condition: string;
+  event: string;
 }

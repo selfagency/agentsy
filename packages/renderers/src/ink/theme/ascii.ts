@@ -8,18 +8,16 @@
  * via Ink's <Text> component with the semantic palette.
  */
 
-import type { AcidPalette } from './palette.ts';
-
 /**
  * A fixed-width ASCII banner — an array of lines, each same width.
  */
 export interface AsciiBanner {
+  /** Character height (line count). */
+  height: number;
   /** Lines of ASCII art (top-to-bottom). */
   lines: readonly string[];
   /** Character width of the banner (all lines equal). */
   width: number;
-  /** Character height (line count). */
-  height: number;
 }
 
 /**

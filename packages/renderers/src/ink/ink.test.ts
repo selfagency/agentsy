@@ -1,5 +1,5 @@
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { afterEach, beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { createInkRenderer } from './create-ink-renderer.js';
 

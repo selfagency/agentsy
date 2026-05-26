@@ -1,5 +1,5 @@
 import React from 'react';
-import { beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { darkTheme, defaultTheme } from '../themes/index.ts';
 import { StreamingText } from './streaming-text.tsx';

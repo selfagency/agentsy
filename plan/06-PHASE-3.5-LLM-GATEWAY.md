@@ -412,7 +412,7 @@ Run with MSW mock server from Phase 1.
 
 **Effort:** ~0.5 hours
 
-**README.md**
+## README.md
 
 ````markdown
 # @agentsy/llm-gateway
@@ -437,7 +437,7 @@ const client = createLLMGatewayClient(config);
 ```
 ````
 
-````
+````text
 
 ...
 

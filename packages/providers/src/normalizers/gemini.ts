@@ -5,7 +5,7 @@ import { isObject, toNumber } from './utils.js';
 
 function mapGeminiFinishReason(reason: string | null): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'STOP') {
     return 'stop';
@@ -44,9 +44,9 @@ const FINISH_REASONS_DONE = new Set(['STOP', 'MAX_TOKENS', 'SAFETY', 'RECITATION
 // ---------------------------------------------------------------------------
 
 interface GeminiPartsResult {
+  nativeToolCallList: NativeToolCallDelta[];
   textContent: string | undefined;
   thinking: string | undefined;
-  nativeToolCallList: NativeToolCallDelta[];
 }
 
 // #lizard forgives
@@ -96,7 +96,7 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
 function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined {
   const { usageMetadata } = raw;
   if (!isObject(usageMetadata)) {
-    return undefined;
+    return;
   }
   const usage: UsageInfo = {};
   const input = toNumber(usageMetadata.promptTokenCount);
@@ -142,7 +142,7 @@ function getFirstCandidate(
     parts?: unknown[];
   }>;
   const candidate = candidates.length > 0 ? candidates[0] : undefined;
-  if (!candidate || !isObject(candidate)) {
+  if (!(candidate && isObject(candidate))) {
     return null;
   }
   return candidate;

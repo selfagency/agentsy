@@ -1,7 +1,7 @@
 import type { NormalizedChunk } from '@agentsy/types';
 import { describe, expect, it, vi } from 'vitest';
 
-import { streamToEvents, createStreamEventAdapter, type StreamRuntimeEvent } from './stream-to-events.js';
+import { createStreamEventAdapter, type StreamRuntimeEvent, streamToEvents } from './stream-to-events.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -157,7 +157,7 @@ describe('streamToEvents', () => {
 
     const indices = events.map(e => e.chunkIndex);
     for (let i = 1; i < indices.length; i++) {
-      expect(indices[i]).toBeGreaterThanOrEqual(indices[i - 1]!);
+      expect(indices[i]).toBeGreaterThanOrEqual(indices[i - 1] ?? 0);
     }
   });
 

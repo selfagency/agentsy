@@ -1,17 +1,20 @@
 export interface ParseJsonOptions {
-  selectMostComprehensive?: boolean;
-  repairIncomplete?: boolean;
   maxJsonDepth?: number;
   maxJsonKeys?: number;
+  repairIncomplete?: boolean;
+  selectMostComprehensive?: boolean;
 }
 
 export const DEFAULT_MAX_JSON_DEPTH = 64;
 export const DEFAULT_MAX_JSON_KEYS = 10_000;
 
+const CODE_FENCE_STRIP_REGEX = /```(?:json)?\s*([\s\S]*?)```/giu;
+const JSON_START_BRACKET_REGEX = /[[{]/;
+
 function stripCodeFences(text: string): string {
   // nosemgrep: regex-dos-code-fences
   // Input is bounded LLM output chunks; lazy quantifier limits backtracking.
-  return text.replaceAll(/```(?:json)?\s*([\s\S]*?)```/giu, '$1').trim();
+  return text.replaceAll(CODE_FENCE_STRIP_REGEX, '$1').trim();
 }
 
 function processBracketChar(
@@ -28,13 +31,11 @@ function processBracketChar(
     return newStart;
   }
 
-  if ((char === '}' || char === ']') && stack.length > 0) {
-    if (stack.at(-1) === char) {
-      stack.pop();
-      if (stack.length === 0 && start >= 0) {
-        candidates.push(text.slice(start, i + 1));
-        return -1;
-      }
+  if ((char === '}' || char === ']') && stack.length > 0 && stack.at(-1) === char) {
+    stack.pop();
+    if (stack.length === 0 && start >= 0) {
+      candidates.push(text.slice(start, i + 1));
+      return -1;
     }
   }
   return start;
@@ -129,7 +130,7 @@ function consumeRepairChar(
 }
 
 function tryRepairCandidate(text: string): string | null {
-  const start = text.search(/[[{]/);
+  const start = text.search(JSON_START_BRACKET_REGEX);
   if (start === -1) {
     return null;
   }

@@ -1,25 +1,25 @@
 import { createHash } from 'node:crypto';
 
 export interface ContextFingerprint {
-  value: string;
   modelFamily: string;
-  templateVersion: string;
   schemaVersion: number;
+  templateVersion: string;
+  value: string;
 }
 
 export interface ContextSegment {
   content: string;
   fingerprint: ContextFingerprint;
-  reuseClass: 'hot' | 'warm' | 'cold';
   invalidations: string[];
+  reuseClass: 'hot' | 'warm' | 'cold';
 }
 
 export interface BuildContextSegmentsInput {
-  systemPrompt: string;
-  toolSchema?: Record<string, unknown>;
   memorySummary?: string;
   modelFamily: string;
+  systemPrompt: string;
   templateVersion: string;
+  toolSchema?: Record<string, unknown>;
 }
 
 function fingerprintValue(parts: (string | undefined)[]): string {

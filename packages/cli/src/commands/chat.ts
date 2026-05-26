@@ -18,10 +18,9 @@
 
 import { createInterface } from 'node:readline/promises';
 
-import { ModelSelector, discoverLocalProviders } from '@agentsy/models';
-import { filterProvidersByCapabilities, modelCapabilitiesToProviderRequirements } from '@agentsy/providers';
-import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
+import { discoverLocalProviders } from '@agentsy/models';
 import type { TurnHandler } from '@agentsy/runtime/loop';
+import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
 
 import type { CliIO } from '../index.js';
 import { createMockClient } from '../providers/mock.js';
@@ -88,14 +87,14 @@ export interface ChatHeaders {
  * Options for fine-tuning chat command behaviour.
  */
 export interface ChatCommandOptions {
-  /** Custom provider configuration (for testing / programmatic use). */
-  providerConfig?: CliProviderConfig | undefined;
-  /** Custom mock client response text (for testing). */
-  mockResponseText?: string | undefined;
-  /** Delay between mock chunks in ms (for testing). Set to 0 for fastest test. */
-  mockChunkDelayMs?: number | undefined;
   /** Headers printed before each assistant response block. */
   headers?: ChatHeaders | undefined;
+  /** Delay between mock chunks in ms (for testing). Set to 0 for fastest test. */
+  mockChunkDelayMs?: number | undefined;
+  /** Custom mock client response text (for testing). */
+  mockResponseText?: string | undefined;
+  /** Custom provider configuration (for testing / programmatic use). */
+  providerConfig?: CliProviderConfig | undefined;
 }
 
 const DEFAULT_HEADERS: ChatHeaders = {
@@ -129,6 +128,7 @@ function createProviderClient(isMock: boolean, argv: readonly string[], options?
 /**
  * Execute the chat command.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: chat loop with multi-provider IO is inherently complex; refactoring deferred
 export async function runChatCommand(
   argv: readonly string[],
   io: CliIO,
@@ -148,7 +148,11 @@ export async function runChatCommand(
   }
 
   const handler: TurnHandler = { stream: req => client.stream(req) };
-  const loop = createSimpleTurnLoop({ handler, model, systemPrompt: 'You are a helpful assistant.' });
+  const loop = createSimpleTurnLoop({
+    handler,
+    model,
+    systemPrompt: 'You are a helpful assistant.'
+  });
 
   const rl = createInterface({
     input: process.stdin,
@@ -199,7 +203,7 @@ export async function runChatCommand(
       }
 
       if (trimmed === '/provider') {
-        stderr(dim(`[provider] discovering local providers...\n`));
+        stderr(dim('[provider] discovering local providers...\n'));
         try {
           const discovery = await discoverLocalProviders();
           if (discovery.discovered.length > 0) {
@@ -214,7 +218,7 @@ export async function runChatCommand(
               }
             }
           } else {
-            stderr(dim(`[provider] no local providers found\n`));
+            stderr(dim('[provider] no local providers found\n'));
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);

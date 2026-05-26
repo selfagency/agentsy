@@ -17,17 +17,17 @@ export { genericErrorClassifier } from './profiles/generic-error-classifier.js';
 export { genericHeaderParser } from './profiles/generic-header-parser.js';
 export { genericProbe } from './profiles/generic-probe.js';
 export { ProfileRegistry } from './profiles/registry.js';
+export { createProviderRegistry, ProviderRegistry } from './registry/index.js';
 export { ModelAliasMap } from './registry/model-alias.js';
-export { ProviderRegistry, createProviderRegistry } from './registry/index.js';
 export {
-  ProviderEntrySchema,
-  ProviderStatusSchema,
-  StrategyNameSchema,
   type LoadBalancedClient,
   type LoadBalancerConfig,
   type ProviderEntry,
+  ProviderEntrySchema,
   type ProviderStatus,
+  ProviderStatusSchema,
   type ProviderUsageSnapshot,
   type RoutingState,
-  type StrategyName
+  type StrategyName,
+  StrategyNameSchema
 } from './types.js';

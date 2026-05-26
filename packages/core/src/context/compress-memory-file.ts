@@ -10,13 +10,17 @@ export interface MemoryFileCompressionOptions {
 }
 
 export interface MemoryFileCompressionResult {
-  original: string;
-  compressed: string;
-  savingsRatio: number;
   backupPath?: string;
+  compressed: string;
+  original: string;
+  savingsRatio: number;
 }
 
 const CODE_FENCE_PATTERN = /```[\s\S]*?```/gu;
+const URL_PATH_REGEX = /https?:\/\//;
+const FS_PATH_REGEX = /(^|\s)(\.?\.?\/|~\/|\/[A-Za-z0-9._-])/;
+const MULTI_SPACE_REGEX = /\s{2,}/gu;
+const MULTI_NEWLINE_REGEX = /\n{3,}/gu;
 
 function compressPlainSegment(segment: string): string {
   const lines = segment.split('\n');
@@ -40,7 +44,7 @@ function compressPlainSegment(segment: string): string {
     previousWasBlank = false;
 
     // Preserve URLs and filesystem-like paths exactly.
-    if (/https?:\/\//.test(line) || /(^|\s)(\.?\.?\/|~\/|\/[A-Za-z0-9._-])/.test(line)) {
+    if (URL_PATH_REGEX.test(line) || FS_PATH_REGEX.test(line)) {
       output.push(line);
       lastComparable = comparable;
       continue;
@@ -51,13 +55,10 @@ function compressPlainSegment(segment: string): string {
     }
 
     lastComparable = comparable;
-    output.push(line.replaceAll(/\s{2,}/gu, ' '));
+    output.push(line.replaceAll(MULTI_SPACE_REGEX, ' '));
   }
 
-  return output
-    .join('\n')
-    .replaceAll(/\n{3,}/gu, '\n\n')
-    .trim();
+  return output.join('\n').replaceAll(MULTI_NEWLINE_REGEX, '\n\n').trim();
 }
 
 function compressMemoryContent(content: string): string {
@@ -84,7 +85,7 @@ function compressMemoryContent(content: string): string {
   return chunks
     .map(chunk => (chunk.kind === 'code' ? chunk.value : compressPlainSegment(chunk.value)))
     .join('\n')
-    .replaceAll(/\n{3,}/gu, '\n\n')
+    .replaceAll(MULTI_NEWLINE_REGEX, '\n\n')
     .trim();
 }
 

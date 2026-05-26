@@ -6,17 +6,17 @@ export interface RuntimeCitation {
 }
 
 export interface RuntimeMemoryEvidence {
+  citations: RuntimeCitation[];
+  content: string;
   id: string;
   scope: string;
   score: number;
   title: string;
-  content: string;
-  citations: RuntimeCitation[];
 }
 
 export interface RuntimeMemoryInjectionOptions {
-  maxItems?: number;
   maxContentChars?: number;
+  maxItems?: number;
 }
 
 function escapeXml(value: string): string {

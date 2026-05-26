@@ -1,10 +1,10 @@
 import type { JsonObject } from '@agentsy/types';
 
 export interface BuildRepairPromptOptions {
-  failedOutput: string;
   error: string;
-  schema?: JsonObject;
+  failedOutput: string;
   originalPrompt?: string;
+  schema?: JsonObject;
 }
 
 export function buildRepairPrompt(options: BuildRepairPromptOptions): string {

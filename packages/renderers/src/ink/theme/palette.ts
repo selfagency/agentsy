@@ -17,45 +17,45 @@
  * underlying ANSI value.
  */
 export interface AcidPalette {
+  /** Assistant accent (highlighted tokens, cursors). */
+  assistantAccent: string;
+  /** Dimmed assistant text (thinking, metadata) — applied via dimColor on Text. */
+  assistantDim: string;
   /* ── Assistant (model response) ──────────────────────────────── */
   /** Primary assistant text colour (cyan family). */
   assistantText: string;
-  /** Dimmed assistant text (thinking, metadata) — applied via dimColor on Text. */
-  assistantDim: string;
-  /** Assistant accent (highlighted tokens, cursors). */
-  assistantAccent: string;
-
-  /* ── User (human input) ──────────────────────────────────────── */
-  /** Primary user text colour (green family). */
-  userText: string;
-  /** Dimmed user text (timestamps, metadata). */
-  userDim: string;
+  /** Emphasis/highlight on demand. */
+  emphasis: string;
+  /** Error/stop colour (red family). */
+  error: string;
 
   /* ── System (status, frames, borders) ─────────────────────────── */
   /** Primary frame/border colour. */
   frameBorder: string;
-  /** Dimmed frame elements (separators, continuations). */
-  frameDim: string;
   /** Bright frame highlights (title bars, active borders). */
   frameBright: string;
-
-  /* ── Accents ──────────────────────────────────────────────────── */
-  /** Warning/highlight colour (yellow family). */
-  warning: string;
-  /** Error/stop colour (red family). */
-  error: string;
-  /** Success/complete colour (green family). */
-  success: string;
+  /** Dimmed frame elements (separators, continuations). */
+  frameDim: string;
   /** Info/neutral colour (blue family). */
   info: string;
+  /** Disabled/muted elements. */
+  muted: string;
 
   /* ── Status indicators ────────────────────────────────────────── */
   /** Pending/spinner colour. */
   pending: string;
-  /** Disabled/muted elements. */
-  muted: string;
-  /** Emphasis/highlight on demand. */
-  emphasis: string;
+  /** Success/complete colour (green family). */
+  success: string;
+  /** Dimmed user text (timestamps, metadata). */
+  userDim: string;
+
+  /* ── User (human input) ──────────────────────────────────────── */
+  /** Primary user text colour (green family). */
+  userText: string;
+
+  /* ── Accents ──────────────────────────────────────────────────── */
+  /** Warning/highlight colour (yellow family). */
+  warning: string;
 }
 
 /**

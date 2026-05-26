@@ -113,7 +113,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - GOAL-CLI-004.5: Add agent mode selection and skills/agents CLI commands.
 
 | Task         | Description                                                                                                                                                          | Completed                                                                                                                                                                   | Date |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | --- |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | TASK-CLI-034 | Add `--agent <id>` startup flag and `/agent <id                                                                                                                      | ?>`slash command to select agent mode at launch or mid-session. Integrate with`AgentPickerComponent`from`@agentsy/renderers` for interactive selection when no ID is given. |      |     |
 | TASK-CLI-035 | Add `agentsy agents list` and `agentsy agents show <id>` commands — lists discovered agents with provenance, model preferences, tool access summary.                 |                                                                                                                                                                             |      |
 | TASK-CLI-036 | Add `agentsy skills list` and `agentsy skills show <id>` commands — lists discovered skills with names, descriptions, triggers, activation status.                   |                                                                                                                                                                             |      |
@@ -313,16 +313,16 @@ The CLI must handle ANSI sequences correctly, ensuring that streaming output doe
 interface HybridSearchEngine {
   // SQL queries for precise filtering
   sqlQueries: {
-    byProject: 'SELECT * FROM documents WHERE project_root = ?';
-    byFileType: 'SELECT * FROM documents WHERE file_type = ?';
-    byDependencies: 'SELECT * FROM documents WHERE JSON_search(dependencies, ?, ?)';
-    byAccessPattern: 'SELECT * FROM documents ORDER BY access_count DESC';
-    byRecency: 'SELECT * FROM documents WHERE updated_at > ?';
+    byProject: "SELECT * FROM documents WHERE project_root = ?";
+    byFileType: "SELECT * FROM documents WHERE file_type = ?";
+    byDependencies: "SELECT * FROM documents WHERE JSON_search(dependencies, ?, ?)";
+    byAccessPattern: "SELECT * FROM documents ORDER BY access_count DESC";
+    byRecency: "SELECT * FROM documents WHERE updated_at > ?";
   };
 
   // Vector search for semantic similarity
   vectorSearch: {
-    embeddingModel: 'text-embedding-3-small' | 'local-embeddings';
+    embeddingModel: "text-embedding-3-small" | "local-embeddings";
     similarityThreshold: 0.7;
     maxResults: 10;
     rerankByRecency: boolean;
@@ -331,10 +331,10 @@ interface HybridSearchEngine {
 
   // Combined query optimization
   hybridQueries: {
-    semanticPrecise: 'Vector + SQL by project/file type';
-    contextualAware: 'Vector + conversation history + recent access';
-    dependencyAware: 'Vector + import graph + package structure';
-    trending: 'Vector + access frequency + recency';
+    semanticPrecise: "Vector + SQL by project/file type";
+    contextualAware: "Vector + conversation history + recent access";
+    dependencyAware: "Vector + import graph + package structure";
+    trending: "Vector + access frequency + recency";
   };
 }
 ```

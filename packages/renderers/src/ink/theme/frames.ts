@@ -9,11 +9,11 @@
 import type { AcidPalette } from './palette.ts';
 
 export interface FrameStyle {
-  topLeft: string;
-  topRight: string;
   bottomLeft: string;
   bottomRight: string;
   horizontal: string;
+  topLeft: string;
+  topRight: string;
   vertical: string;
 }
 
@@ -115,8 +115,8 @@ export function inkBorderColor(palette: AcidPalette): string {
  * Get the Ink-compatible border style and colour for a <Box> declarative border.
  */
 export interface BorderConfig {
-  readonly style: 'single' | 'double' | 'round';
   readonly color: string;
+  readonly style: 'single' | 'double' | 'round';
 }
 
 export function resolveBorderConfig(styleName: FrameStyleName, palette: AcidPalette): BorderConfig {

@@ -21,20 +21,20 @@ import { OtlpExporter, type OtlpExporterOptions } from './otlp.js';
 
 /** Options for {@link LangfuseExporter}. */
 export interface LangfuseExporterOptions {
-  /** Langfuse public key (sent as username in Basic auth). */
-  publicKey: string;
-  /** Langfuse secret key (sent as password in Basic auth). */
-  secretKey: string;
-  /** Langfuse project ID or name. */
-  projectId?: string;
   /** Custom Langfuse endpoint (default: 'https://cloud.langfuse.com/api/public/otlp/v1/traces'). */
   endpoint?: string;
+  /** Flush interval in milliseconds (default: 5000). */
+  flushIntervalMs?: number;
   /** Custom headers merged into every export request. */
   headers?: Record<string, string>;
   /** Maximum batch size before forcing a flush (default: 64). */
   maxBatchSize?: number;
-  /** Flush interval in milliseconds (default: 5000). */
-  flushIntervalMs?: number;
+  /** Langfuse project ID or name. */
+  projectId?: string;
+  /** Langfuse public key (sent as username in Basic auth). */
+  publicKey: string;
+  /** Langfuse secret key (sent as password in Basic auth). */
+  secretKey: string;
 }
 
 const DEFAULT_LANGFUSE_ENDPOINT = 'https://cloud.langfuse.com/api/public/otlp/v1/traces';
@@ -56,8 +56,8 @@ export class LangfuseExporter extends OtlpExporter {
         ...(options.projectId ? { 'X-Langfuse-Project': options.projectId } : {}),
         ...options.headers
       },
-      ...(options.maxBatchSize !== undefined ? { maxBatchSize: options.maxBatchSize } : {}),
-      ...(options.flushIntervalMs !== undefined ? { flushIntervalMs: options.flushIntervalMs } : {})
+      ...(options.maxBatchSize === undefined ? {} : { maxBatchSize: options.maxBatchSize }),
+      ...(options.flushIntervalMs === undefined ? {} : { flushIntervalMs: options.flushIntervalMs })
     };
 
     super(otlpOptions);

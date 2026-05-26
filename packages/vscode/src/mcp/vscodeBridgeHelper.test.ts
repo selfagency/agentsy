@@ -1,11 +1,11 @@
 import { Readable } from 'node:stream';
 
 import type { MCPTransport } from '@agentsy/core/processor';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { CancellationToken, ChatResponseStream } from 'vscode';
 import { Uri } from 'vscode';
 
-import { VSCodeMCPBridgeHelper, createVSCodeMCPBridge } from './vscodeBridgeHelper.js';
+import { createVSCodeMCPBridge, VSCodeMCPBridgeHelper } from './vscodeBridgeHelper.js';
 
 describe('VSCode MCP Bridge Helper', () => {
   const mockTransport: MCPTransport = {
@@ -468,7 +468,10 @@ describe('VSCode MCP Bridge Helper', () => {
         }) as unknown as NodeJS.WritableStream;
         const stdioTransport: MCPTransport = { type: 'stdio', readable: new Readable(), writable };
         const helper = new VSCodeMCPBridgeHelper(stdioTransport, mockCancellationToken);
-        (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({ type: 'markdown', data: { value: 'x' } });
+        (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({
+          type: 'markdown',
+          data: { value: 'x' }
+        });
         expect(writeSpy).toHaveBeenCalledOnce();
         const callArg = writeSpy.mock.calls[0]?.[0] as string;
         expect(callArg).toContain('markdown');
@@ -477,7 +480,10 @@ describe('VSCode MCP Bridge Helper', () => {
       it('does nothing for http transport', () => {
         const helper = new VSCodeMCPBridgeHelper(mockTransport, mockCancellationToken);
         expect(() => {
-          (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({ type: 'markdown', data: { value: 'x' } });
+          (helper as unknown as { pushEvent(e: unknown): void }).pushEvent({
+            type: 'markdown',
+            data: { value: 'x' }
+          });
         }).not.toThrow();
       });
     });

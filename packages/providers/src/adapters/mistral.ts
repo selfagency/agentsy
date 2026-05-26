@@ -1,12 +1,12 @@
 export type MistralContentPart = { type: 'text'; text: string } | { type: 'image_url'; imageUrl: string };
 
 export interface MistralToolCall {
-  id: string;
-  type: 'function';
   function: {
     name: string;
     arguments: string;
   };
+  id: string;
+  type: 'function';
 }
 
 export type MistralMessage =
@@ -31,8 +31,8 @@ export type MistralOutboundPart =
   | { type: 'tool-result'; callId: string; content: string };
 
 export interface MistralOutboundMessage {
-  role: 'system' | 'user' | 'assistant';
   parts: MistralOutboundPart[];
+  role: 'system' | 'user' | 'assistant';
 }
 
 export interface MistralOutboundAdapterOptions {
@@ -43,8 +43,8 @@ export interface MistralOutboundAdapterOptions {
 }
 
 interface CollectedMessageParts {
-  text: string;
   imageParts: MistralContentPart[];
+  text: string;
   toolCalls: MistralToolCall[];
   toolResults: { callId: string; content: string }[];
 }
@@ -172,7 +172,7 @@ function buildContentForMistralMessage(
     return null;
   }
 
-  return undefined;
+  return;
 }
 
 function emitSystemMessage(

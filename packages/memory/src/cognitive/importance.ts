@@ -1,11 +1,11 @@
 import type { MemoryItem } from './tier-types.js';
 
 export interface ImportanceFactors {
-  recencyWeight: number;
-  frequencyWeight: number;
-  sourceReliability: number;
   contentTypeWeight: number;
+  frequencyWeight: number;
+  recencyWeight: number;
   relationalBoost: number;
+  sourceReliability: number;
 }
 
 export const DEFAULT_IMPORTANCE_FACTORS: ImportanceFactors = {

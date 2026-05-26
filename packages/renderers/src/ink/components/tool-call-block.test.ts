@@ -67,7 +67,7 @@ describe('ToolCallBlock Component', () => {
   describe('tool call properties', () => {
     it('handles different tool names', () => {
       const names = ['search', 'calculate', 'fetch', 'parse', 'generate'];
-      names.forEach(name => {
+      for (const name of names) {
         const call = { arguments: {}, done: false, id: '1', name };
         const element = React.createElement(ToolCallBlock, {
           call,
@@ -75,7 +75,7 @@ describe('ToolCallBlock Component', () => {
           theme: darkTheme
         });
         expect(element.props.call.name).toBe(name);
-      });
+      }
     });
 
     it('handles various argument types', () => {
@@ -86,7 +86,7 @@ describe('ToolCallBlock Component', () => {
         { array: [1, 2, 3] },
         {}
       ];
-      argumentSets.forEach(args => {
+      for (const args of argumentSets) {
         const call = { arguments: args, done: false, id: '1', name: 'tool' };
         const element = React.createElement(ToolCallBlock, {
           call,
@@ -94,12 +94,12 @@ describe('ToolCallBlock Component', () => {
           theme: darkTheme
         });
         expect(element.props.call.arguments).toStrictEqual(args);
-      });
+      }
     });
 
     it('preserves unique tool IDs', () => {
       const ids = ['id1', 'id2', 'id-with-dashes', 'id_with_underscores'];
-      ids.forEach(id => {
+      for (const id of ids) {
         const call = { arguments: {}, done: true, id, name: 'tool' };
         const element = React.createElement(ToolCallBlock, {
           call,
@@ -107,7 +107,7 @@ describe('ToolCallBlock Component', () => {
           theme: darkTheme
         });
         expect(element.props.call.id).toBe(id);
-      });
+      }
     });
   });
 

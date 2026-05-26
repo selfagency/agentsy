@@ -25,7 +25,7 @@ export interface MemoryTierLike {
   get(id: string): MemoryItem | undefined;
   update(
     id: string,
-    updates: Partial<Pick<MemoryItem, 'content' | 'importance' | 'metadata' | 'kind'>>
+    updates: Partial<Pick<MemoryItem, "content" | "importance" | "metadata" | "kind">>,
   ): MemoryItem | null;
   remove(id: string): MemoryItem | null;
 }
@@ -39,7 +39,10 @@ export interface MemoryEngine {
   // ... existing methods ...
   get(id: string): MemoryItem | undefined;
   search(query: string, options?: { tiers?: TierName[]; limit?: number }): MemoryItem[];
-  update(id: string, updates: Partial<Pick<MemoryItem, 'content' | 'importance' | 'metadata' | 'kind'>>): boolean;
+  update(
+    id: string,
+    updates: Partial<Pick<MemoryItem, "content" | "importance" | "metadata" | "kind">>,
+  ): boolean;
   delete(id: string): boolean;
 }
 ```
@@ -88,7 +91,7 @@ Add new oclif commands as top-level commands (no topic namespace). These are the
 ### Command list
 
 | Command                         | Description                 | Key flags                                                                               |
-| ------------------------------- | --------------------------- | --------------------------------------------------------------------------------------- | ------ |
+| ------------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
 | `agentsy-memory list`           | List all memories           | `--tier`, `--kind`, `--min-importance`, `--limit`, `--format=json                       | table` |
 | `agentsy-memory get <id>`       | Get a single memory by ID   | `--format=json                                                                          | table` |
 | `agentsy-memory add`            | Add a memory                | `--content`, `--importance`, `--kind`, `--tier`, `--metadata` (interactive if no flags) |
@@ -254,13 +257,13 @@ Reuse `@agentsy/renderers/src/ink/themes/` for colors. Define memory-specific se
 ```typescript
 const memoryTheme = {
   tierColors: {
-    sensory_buffer: '#ff6b6b',
-    sensory_register: '#feca57',
-    working_memory: '#48dbfb',
-    short_term_memory: '#1dd1a1',
-    long_term_memory: '#5f27cd'
+    sensory_buffer: "#ff6b6b",
+    sensory_register: "#feca57",
+    working_memory: "#48dbfb",
+    short_term_memory: "#1dd1a1",
+    long_term_memory: "#5f27cd",
   },
-  importanceGradient: ['#ff4757', '#ffa502', '#2ed573'] // low → medium → high
+  importanceGradient: ["#ff4757", "#ffa502", "#2ed573"], // low → medium → high
   // ... plus base renderer theme colors
 };
 ```

@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { RetrievalEngine } from '../src/search';
-import type { RetrievalQuery, Document } from '../src/types';
+import type { Document, RetrievalQuery } from '../src/types';
 
 describe(RetrievalEngine, () => {
   let engine: RetrievalEngine;
@@ -232,9 +232,9 @@ describe(RetrievalEngine, () => {
 
       const result = engine.vectorSearch(query);
 
-      result.documents.forEach(doc => {
+      for (const doc of result.documents) {
         expect(doc.similarity).toBeGreaterThanOrEqual(0.9);
-      });
+      }
     });
 
     it('should return results with similarity scores', async () => {
@@ -245,11 +245,11 @@ describe(RetrievalEngine, () => {
 
       const result = engine.vectorSearch(query);
 
-      result.documents.forEach(doc => {
+      for (const doc of result.documents) {
         expect(doc.similarity).toBeDefined();
         expect(doc.similarity).toBeGreaterThanOrEqual(0);
         expect(doc.similarity).toBeLessThanOrEqual(1);
-      });
+      }
     });
   });
 

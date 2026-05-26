@@ -2,8 +2,8 @@
  * Settings validation result.
  */
 export interface SettingsValidationResult {
-  valid: boolean;
   errors?: string[];
+  valid: boolean;
   warnings?: string[];
 }
 
@@ -12,8 +12,8 @@ export interface SettingsValidationResult {
  */
 export interface SettingsChangeEvent {
   key: string;
-  oldValue: unknown;
   newValue: unknown;
+  oldValue: unknown;
 }
 
 /**

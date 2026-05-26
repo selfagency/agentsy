@@ -1,14 +1,15 @@
+import type { SessionStore } from '@agentsy/types';
 import { describe, expect, it, vi } from 'vitest';
 
-import { checkpoint, loadCheckpoint, clearCheckpoint } from './checkpoint.js';
+import { checkpoint, clearCheckpoint, loadCheckpoint } from './checkpoint.js';
 
 describe('checkpoint', () => {
   it('saves a checkpoint to the store', async () => {
-    const store = { setValue: vi.fn(), getValue: vi.fn(), deleteValue: vi.fn() };
+    const store: Pick<SessionStore, 'setValue'> = { setValue: vi.fn() };
 
     const cp = await checkpoint(
       {
-        pendingToolCalls: [{ id: 'call_1', name: 'search', args: { q: 'hello' } }],
+        pendingToolCalls: [{ id: 'call_1', name: 'search', args: ['hello'] }],
         messageQueue: [{ role: 'user', content: 'hello' }],
         subagentStates: []
       },
@@ -25,7 +26,7 @@ describe('checkpoint', () => {
 
 describe('loadCheckpoint', () => {
   it('returns null when no checkpoint exists', () => {
-    const store = { getValue: vi.fn().mockReturnValue(null) } as any;
+    const store: Pick<SessionStore, 'getValue'> = { getValue: vi.fn().mockReturnValue(null) };
     expect(loadCheckpoint(store)).toBeNull();
   });
 
@@ -37,21 +38,23 @@ describe('loadCheckpoint', () => {
       messageQueue: [],
       subagentStates: []
     };
-    const store = { getValue: vi.fn().mockReturnValue(cp) } as any;
+    const store: Pick<SessionStore, 'getValue'> = { getValue: vi.fn().mockReturnValue(cp) };
 
     const result = loadCheckpoint(store);
     expect(result).toEqual(cp);
   });
 
   it('returns null for invalid structure', () => {
-    const store = { getValue: vi.fn().mockReturnValue({ id: 123 }) } as any;
+    const store: Pick<SessionStore, 'getValue'> = {
+      getValue: vi.fn().mockReturnValue({ id: 123 })
+    };
     expect(loadCheckpoint(store)).toBeNull();
   });
 });
 
 describe('clearCheckpoint', () => {
   it('deletes the checkpoint key', () => {
-    const store = { removeValue: vi.fn() } as any;
+    const store: Pick<SessionStore, 'removeValue'> = { removeValue: vi.fn() };
     clearCheckpoint(store);
     expect(store.removeValue).toHaveBeenCalledWith('runtime_checkpoint');
   });

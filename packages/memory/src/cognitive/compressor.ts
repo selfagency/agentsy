@@ -13,8 +13,8 @@ export interface CompressResult {
 }
 
 export interface CompressorOptions {
-  targetTierName?: TierName;
   now?: (() => number) | undefined;
+  targetTierName?: TierName;
 }
 
 const CONTENT_TYPE_WEIGHTS: Record<WriteHeap, number> = {

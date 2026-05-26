@@ -1,7 +1,7 @@
 import type { ProviderProfile } from './types.js';
 
 export class ProfileRegistry {
-  #profiles = new Map<string, ProviderProfile>();
+  readonly #profiles = new Map<string, ProviderProfile>();
 
   register(profile: ProviderProfile): void {
     this.#profiles.set(profile.id, profile);
@@ -17,7 +17,7 @@ export class ProfileRegistry {
         return profile;
       }
     }
-    return undefined;
+    return;
   }
 
   detectFromHeaders(headers: Record<string, string>): ProviderProfile | undefined {
@@ -29,6 +29,6 @@ export class ProfileRegistry {
         }
       }
     }
-    return undefined;
+    return;
   }
 }

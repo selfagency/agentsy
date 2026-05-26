@@ -3,39 +3,39 @@ import { Box } from 'ink';
 import type { AcidPalette } from '../../theme/palette.ts';
 import { FramedPanel } from '../framed-panel.tsx';
 import { MessageBubble } from './message-bubble.tsx';
-import { StatusFooter, type ConnectionStatus } from './status-footer.tsx';
+import { type ConnectionStatus, StatusFooter } from './status-footer.tsx';
 import { StreamingCursor } from './streaming-cursor.tsx';
 import { TokenMeter } from './token-meter.tsx';
 
 export interface TranscriptTurn {
+  readonly dim?: boolean;
   readonly id: string;
   readonly role: 'user' | 'assistant' | 'system';
   readonly text: string;
   readonly timestamp?: string;
-  readonly dim?: boolean;
 }
 
 export interface TranscriptProps {
-  /** Ordered list of conversation turns. */
-  readonly turns: readonly TranscriptTurn[];
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
-  /** Whether streaming is in progress. */
-  readonly isStreaming: boolean;
-  /** Active model name. */
-  readonly modelName?: string;
-  /** Provider name. */
-  readonly provider?: string;
-  /** Current connection status. */
-  readonly status: ConnectionStatus;
+  /** Cursor symbol while streaming. */
+  readonly cursorSymbol?: string;
   /** Elapsed time in seconds. */
   readonly elapsedSec?: number;
   /** Input token count. */
   readonly inputTokens?: number;
+  /** Whether streaming is in progress. */
+  readonly isStreaming: boolean;
+  /** Active model name. */
+  readonly modelName?: string;
   /** Output token count. */
   readonly outputTokens?: number;
-  /** Cursor symbol while streaming. */
-  readonly cursorSymbol?: string;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Provider name. */
+  readonly provider?: string;
+  /** Current connection status. */
+  readonly status: ConnectionStatus;
+  /** Ordered list of conversation turns. */
+  readonly turns: readonly TranscriptTurn[];
 }
 
 /**
@@ -55,17 +55,17 @@ export function Transcript({
   cursorSymbol
 }: TranscriptProps) {
   return (
-    <FramedPanel title="CONVERSATION" palette={palette} showTitleSeparator={true}>
+    <FramedPanel palette={palette} showTitleSeparator={true} title="CONVERSATION">
       <Box flexDirection="column" paddingX={1}>
         {/* Conversation turns */}
         {turns.map(turn => (
           <MessageBubble
             key={turn.id}
-            text={turn.text}
-            role={turn.role}
             palette={palette}
-            {...(turn.timestamp !== undefined ? { timestamp: turn.timestamp } : {})}
-            {...(turn.dim !== undefined ? { dim: turn.dim } : {})}
+            role={turn.role}
+            text={turn.text}
+            {...(turn.timestamp === undefined ? {} : { timestamp: turn.timestamp })}
+            {...(turn.dim === undefined ? {} : { dim: turn.dim })}
           />
         ))}
 
@@ -75,7 +75,7 @@ export function Transcript({
             <StreamingCursor
               color={palette.assistantAccent}
               isStreaming={isStreaming}
-              {...(cursorSymbol !== undefined ? { symbol: cursorSymbol } : {})}
+              {...(cursorSymbol === undefined ? {} : { symbol: cursorSymbol })}
             />
           </Box>
         ) : null}
@@ -87,11 +87,11 @@ export function Transcript({
 
         {/* Status footer */}
         <StatusFooter
-          status={status}
           palette={palette}
-          {...(modelName !== undefined ? { modelName } : {})}
-          {...(elapsedSec !== undefined ? { elapsedSec } : {})}
-          {...(provider !== undefined ? { provider } : {})}
+          status={status}
+          {...(modelName === undefined ? {} : { modelName })}
+          {...(elapsedSec === undefined ? {} : { elapsedSec })}
+          {...(provider === undefined ? {} : { provider })}
         />
       </Box>
     </FramedPanel>

@@ -1,7 +1,6 @@
 import { expect, expectTypeOf, test } from 'vitest';
-
-import { ItemDoneStreaming, isStreamingDone, markStreamingDone } from './types.js';
 import type { DeepPartial, StreamingPartial } from './types.js';
+import { ItemDoneStreaming, isStreamingDone, markStreamingDone } from './types.js';
 
 test('DeepPartial preserves nested array partials', () => {
   interface Input {

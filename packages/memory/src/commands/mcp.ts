@@ -47,7 +47,9 @@ export default class Mcp extends Command {
     // Handle graceful shutdown
     let shuttingDown = false;
     const shutdown = async (): Promise<void> => {
-      if (shuttingDown) return;
+      if (shuttingDown) {
+        return;
+      }
       shuttingDown = true;
       await server.close();
       this.exit(0);

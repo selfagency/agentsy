@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { awaken, type AwakenDeps } from './awaken.js';
+import { type AwakenDeps, awaken } from './awaken.js';
 import type { DecayedItem } from './decay.js';
 import { createLongTermMemory } from './long-term-memory.js';
 import type { MemoryTierLike } from './memory-tier.js';
 import { createSensoryBuffer } from './sensory-buffer.js';
 import { createSensoryRegister } from './sensory-register.js';
 import { createShortTermMemory } from './short-term-memory.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import type { TierName } from './tier-types.js';
 import { createWorkingMemory } from './working-memory.js';
 

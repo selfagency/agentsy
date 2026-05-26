@@ -12,62 +12,62 @@ export type HookResult = { continue: true } | { continue: false; reason: string 
 
 /** Fired when raw user input arrives, before any model call. */
 export interface UserPromptSubmitEvent {
-  type: 'UserPromptSubmit';
   input: string;
   sessionId: string;
+  type: 'UserPromptSubmit';
 }
 
 /** Fired before a tool call executes. Deterministic — never prompt-based. */
 export interface PreToolCallEvent {
-  type: 'PreToolCall';
-  toolName: string;
   args: unknown;
   sessionId: string;
+  toolName: string;
+  type: 'PreToolCall';
 }
 
 /** Fired after a tool call completes with its result. */
 export interface PostToolCallEvent {
-  type: 'PostToolCall';
-  toolName: string;
   args: unknown;
   result: unknown;
   sessionId: string;
+  toolName: string;
+  type: 'PostToolCall';
 }
 
 /** Fired before context compaction, allowing critical items to be pinned. */
 export interface PreCompactEvent {
-  type: 'PreCompact';
   contextSize: number;
   sessionId: string;
+  type: 'PreCompact';
 }
 
 /** Fired when a spawned subagent terminates. */
 export interface SubagentStopEvent {
-  type: 'SubagentStop';
-  subagentId: string;
   result: unknown;
   sessionId: string;
+  subagentId: string;
+  type: 'SubagentStop';
 }
 
 /** Fired when the session ends. */
 export interface StopEvent {
-  type: 'Stop';
   reason: string;
   sessionId: string;
+  type: 'Stop';
 }
 
 /** Fired before a model response is returned to the user. */
 export interface PreResponseEvent {
-  type: 'PreResponse';
   response: unknown;
   sessionId: string;
+  type: 'PreResponse';
 }
 
 /** Fired after a response has been delivered to the user. */
 export interface PostResponseEvent {
-  type: 'PostResponse';
   response: unknown;
   sessionId: string;
+  type: 'PostResponse';
 }
 
 /** Union of all runtime hook events. */

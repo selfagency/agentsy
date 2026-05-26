@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  PacingController,
   compressConversation,
   compressOutput,
   createInMemoryTokenManager,
-  createTokenLedger
+  createTokenLedger,
+  PacingController
 } from './index.js';
 
 describe('createTokenLedger', () => {

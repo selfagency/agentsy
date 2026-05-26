@@ -1,16 +1,16 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 
 describe('createTierTestClock', () => {
   it('starts at given time', () => {
-    const clock = createTierTestClock(5_000);
-    expect(clock.now()).toBe(5_000);
+    const clock = createTierTestClock(5000);
+    expect(clock.now()).toBe(5000);
   });
 
   it('advances time', () => {
     const clock = createTierTestClock(10_000);
-    clock.advance(1_500);
+    clock.advance(1500);
     expect(clock.now()).toBe(11_500);
   });
 

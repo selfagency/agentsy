@@ -2,9 +2,9 @@ export type MemoryScope = 'session' | 'user' | 'project' | 'team' | 'global';
 export type ScopeAction = 'read' | 'write';
 
 export interface ScopeGrant {
-  scope: MemoryScope;
   actions: ScopeAction[];
   includeDescendants?: boolean;
+  scope: MemoryScope;
 }
 
 export interface ScopePolicy {
@@ -13,17 +13,17 @@ export interface ScopePolicy {
 }
 
 export interface ScopeAccessRequest {
-  actorId: string;
   action: ScopeAction;
+  actorId: string;
   scope: MemoryScope;
 }
 
 export interface ScopeManager {
-  setPolicy(policy: ScopePolicy): void;
-  removePolicy(actorId: string): void;
-  canAccess(request: ScopeAccessRequest): boolean;
   assertAccess(request: ScopeAccessRequest): void;
+  canAccess(request: ScopeAccessRequest): boolean;
   filterAccessibleScopes(actorId: string, action: ScopeAction, scopes: MemoryScope[]): MemoryScope[];
+  removePolicy(actorId: string): void;
+  setPolicy(policy: ScopePolicy): void;
 }
 
 const SCOPE_DESCENDANTS: Record<MemoryScope, readonly MemoryScope[]> = {

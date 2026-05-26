@@ -58,7 +58,7 @@ Registration without complete annotations throws `ToolAnnotationError` at regist
 
 #### Baseline Tools
 
-**1. REPL Execution**
+## 1. REPL Execution
 
 ```typescript
 {
@@ -80,7 +80,7 @@ Registration without complete annotations throws `ToolAnnotationError` at regist
 
 Kernel lifecycle: one per session, state persists across turns, `kernel.reset()` available as tool.
 
-**2. File Operations (Maki Tree-Sitter Aware)**
+## 2. File Operations (Maki Tree-Sitter Aware)
 
 ```typescript
 {
@@ -139,7 +139,7 @@ Kernel lifecycle: one per session, state persists across turns, `kernel.reset()`
 }
 ```
 
-**3. Shell Wrapper**
+## 3. Shell Wrapper
 
 ```typescript
 {
@@ -165,7 +165,7 @@ Kernel lifecycle: one per session, state persists across turns, `kernel.reset()`
 }
 ```
 
-**4. HTTP Fetch**
+## 4. HTTP Fetch
 
 ```typescript
 {
@@ -195,7 +195,7 @@ Kernel lifecycle: one per session, state persists across turns, `kernel.reset()`
 }
 ```
 
-**5. MCP Bridge**
+## 5. MCP Bridge
 
 ```typescript
 {
@@ -215,7 +215,7 @@ Kernel lifecycle: one per session, state persists across turns, `kernel.reset()`
 }
 ```
 
-#### Tool Registry Interface
+### Tool Registry Interface
 
 ```typescript
 export class ToolRegistry {

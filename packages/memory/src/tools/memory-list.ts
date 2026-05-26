@@ -40,7 +40,7 @@ export function createMemoryListTool(deps: MemoryListToolDeps): MemoryListTool {
           return false;
         }
 
-        if (!input.actorId || !deps.scopeManager) {
+        if (!(input.actorId && deps.scopeManager)) {
           return true;
         }
 

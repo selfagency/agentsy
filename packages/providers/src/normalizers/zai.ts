@@ -13,25 +13,25 @@ const ZAI_FINISH_REASON_MAP: Record<string, FinishReason> = {
 
 function mapZAiFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   return ZAI_FINISH_REASON_MAP[reason] ?? 'other';
 }
 
 interface ZAiToolCallDelta {
-  index: number;
-  id?: string | null;
   function?: { name?: string | null; arguments?: string | null };
+  id?: string | null;
+  index: number;
 }
 
 interface ZAiChoice {
-  index?: number;
-  finish_reason?: string | null;
   delta?: {
     content?: string | null;
     reasoning_content?: string | null;
     tool_calls?: ZAiToolCallDelta[];
   };
+  finish_reason?: string | null;
+  index?: number;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -71,7 +71,7 @@ function isZAiToolCallDelta(value: unknown): value is ZAiToolCallDelta {
 
 function extractNativeToolCallDeltas(delta: ZAiChoice['delta']): NativeToolCallDelta[] | undefined {
   if (!Array.isArray(delta?.tool_calls) || delta.tool_calls.length === 0) {
-    return undefined;
+    return;
   }
 
   const mapped = delta.tool_calls.filter(isZAiToolCallDelta).map(mapToolCallDelta);
@@ -110,7 +110,7 @@ function buildChunkFromParts(parts: {
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
   if (!isRecord(raw)) {
-    return undefined;
+    return;
   }
 
   const usage: UsageInfo = {};

@@ -14,12 +14,12 @@ description: >
 ### Programmatic
 
 ```typescript
-import { createMemoryEngine } from '@agentsy/memory';
+import { createMemoryEngine } from "@agentsy/memory";
 
 const engine = createMemoryEngine();
 
 // Ingest a memory
-const id = engine.ingest('User prefers dark mode', { importance: 0.8, kind: 'semantic' });
+const id = engine.ingest("User prefers dark mode", { importance: 0.8, kind: "semantic" });
 
 // Recall memories
 const results = engine.recall({ minImportance: 0.5, crossTier: true });
@@ -47,11 +47,11 @@ npx @agentsy/memory init
 ### MCP Server (Programmatic)
 
 ```typescript
-import { createMemoryMCPServer } from '@agentsy/memory/mcp';
-import { createMemoryEngine } from '@agentsy/memory';
+import { createMemoryMCPServer } from "@agentsy/memory/mcp";
+import { createMemoryEngine } from "@agentsy/memory";
 
 const engine = createMemoryEngine();
-const server = await createMemoryMCPServer(engine, { transport: 'stdio' });
+const server = await createMemoryMCPServer(engine, { transport: "stdio" });
 await server.start();
 ```
 
@@ -140,9 +140,12 @@ When a write fails due to budget exhaustion, the content is queued as a pending 
 ### On Session Start
 
 ```typescript
-import { onSessionStart } from '@agentsy/memory/hooks';
+import { onSessionStart } from "@agentsy/memory/hooks";
 
-const { warmMemories, tierCapacity, budgetAvailable, awakenResult } = await onSessionStart({ engine, pendingEvents });
+const { warmMemories, tierCapacity, budgetAvailable, awakenResult } = await onSessionStart({
+  engine,
+  pendingEvents,
+});
 ```
 
 This runs `awaken()` to process idle-time decay and returns pre-loaded hot memories for immediate context injection.
@@ -150,7 +153,7 @@ This runs `awaken()` to process idle-time decay and returns pre-loaded hot memor
 ### On Session End
 
 ```typescript
-import { onSessionEnd } from '@agentsy/memory/hooks';
+import { onSessionEnd } from "@agentsy/memory/hooks";
 
 const { consolidated, persisted, durationMs } = await onSessionEnd({ engine, sessionEvents });
 ```
@@ -160,13 +163,13 @@ Ingests remaining session events and runs a final consolidation pass.
 ### On Tool Call
 
 ```typescript
-import { onToolCall } from '@agentsy/memory/hooks';
+import { onToolCall } from "@agentsy/memory/hooks";
 
 const { memoryId, importance } = onToolCall({
   engine,
-  toolName: 'file_write',
-  toolInput: { path: '/tmp/out.txt' },
-  toolOutput: 'written successfully'
+  toolName: "file_write",
+  toolInput: { path: "/tmp/out.txt" },
+  toolOutput: "written successfully",
 });
 ```
 
@@ -175,13 +178,13 @@ Automatically captures tool call results as episodic memories with heuristic imp
 ### On Response
 
 ```typescript
-import { onResponse } from '@agentsy/memory/hooks';
+import { onResponse } from "@agentsy/memory/hooks";
 
 const { memoryId, importance } = onResponse({
   engine,
-  responseContent: 'Here is my answer...',
+  responseContent: "Here is my answer...",
   responseTokens: 1500,
-  modelFamily: 'gpt-4'
+  modelFamily: "gpt-4",
 });
 ```
 
@@ -192,21 +195,21 @@ Captures agent responses as episodic memories with length-based importance scori
 ### Persona Store
 
 ```typescript
-import { createPersonaStore } from '@agentsy/memory/cognitive';
+import { createPersonaStore } from "@agentsy/memory/cognitive";
 
 const store = createPersonaStore({ store: kvStore });
-await store.mergeAttribute('user:alice', 'preferred_theme', 'dark', 0.9, ['session-42']);
+await store.mergeAttribute("user:alice", "preferred_theme", "dark", 0.9, ["session-42"]);
 ```
 
 ### Knowledge Graph
 
 ```typescript
-import { createKnowledgeGraph } from '@agentsy/memory/cognitive';
+import { createKnowledgeGraph } from "@agentsy/memory/cognitive";
 
 const graph = createKnowledgeGraph();
-graph.addNode('react', { type: 'technology', category: 'frontend' });
-graph.addEdge('react', 'typescript', 'uses', { weight: 0.9 });
-const subgraph = graph.query('react');
+graph.addNode("react", { type: "technology", category: "frontend" });
+graph.addEdge("react", "typescript", "uses", { weight: 0.9 });
+const subgraph = graph.query("react");
 ```
 
 ## Learning Loop

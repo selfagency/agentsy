@@ -1,12 +1,11 @@
 import type { LLMStreamProcessor, StreamEventMap } from '@agentsy/core/processor';
-
-import { createConversationStore } from './store.js';
 import type { ConversationStore } from './store.js';
+import { createConversationStore } from './store.js';
 import type { ConversationEvent } from './types.js';
 
 export interface ConversationStoreBridge {
-  store: ConversationStore;
   dispose(): void;
+  store: ConversationStore;
 }
 
 interface BridgeOptions {

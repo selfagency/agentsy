@@ -88,10 +88,10 @@ export function errorCodeToMessage(code: ProviderErrorCode): string {
 }
 
 export interface CreateProviderErrorOptions {
-  /** Include details from the original runtime error message in the returned message. */
-  preserveOriginalMessage?: boolean;
   /** Attach provider error code metadata to the error object and message prefix. */
   attachCode?: boolean;
+  /** Include details from the original runtime error message in the returned message. */
+  preserveOriginalMessage?: boolean;
 }
 
 /**

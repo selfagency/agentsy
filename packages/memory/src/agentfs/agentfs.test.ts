@@ -2,11 +2,11 @@ import { mkdtempSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { TierConfig } from '../cognitive/tier-types.js';
 import { createDatabaseConnection } from '../database/connection.js';
-import { initAgentFs, detectAgentFs, createRagFsAdapter, createTierFsAdapter, createWikiFsAdapter } from './index.js';
+import { createRagFsAdapter, createTierFsAdapter, createWikiFsAdapter, detectAgentFs, initAgentFs } from './index.js';
 import { createSnapshot, restoreSnapshot } from './snapshot.js';
 
 describe('AgentFS init', () => {
@@ -39,7 +39,7 @@ describe('TierFsAdapter', () => {
       level: 4,
       maxItems: 100,
       maxTokens: 1000,
-      ttlMs: Infinity,
+      ttlMs: Number.POSITIVE_INFINITY,
       consolidationThreshold: 0.5,
       compressionTarget: 0.8
     };
@@ -241,7 +241,10 @@ describe('AgentFS snapshot', () => {
     expect(snap.destinationPath).toBe(snapshotPath);
 
     // Verify snapshot file exists by trying to open it
-    const { sqlite: restoredSqlite } = createDatabaseConnection({ path: snapshotPath, walMode: false });
+    const { sqlite: restoredSqlite } = createDatabaseConnection({
+      path: snapshotPath,
+      walMode: false
+    });
     const row = restoredSqlite.prepare("SELECT value FROM fs_config WHERE key = 'test_key'").get() as
       | { value: string }
       | undefined;

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type {
   Chunk,
-  ChunkMetadata,
   ChunkingStrategy,
+  ChunkMetadata,
   DataSource,
   Document,
   RetrievalQuery,

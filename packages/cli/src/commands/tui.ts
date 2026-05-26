@@ -20,9 +20,9 @@
  */
 
 import { createCliStreamBridge } from '@agentsy/renderers/adapters';
-import { createInkRuntimeController, createInkAgentRenderer } from '@agentsy/renderers/ink';
-import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
+import { createInkAgentRenderer, createInkRuntimeController } from '@agentsy/renderers/ink';
 import type { TurnHandler } from '@agentsy/runtime/loop';
+import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
 
 import type { CliIO } from '../index.js';
 import { createMockClient } from '../providers/mock.js';
@@ -76,7 +76,11 @@ export async function runTuiCommand(argv: readonly string[], _io: CliIO): Promis
   const handler: TurnHandler = { stream: req => client.stream(req) };
   const loop = createSimpleTurnLoop({ handler, model });
 
-  const controller = createInkRuntimeController({ onWarning: () => {} });
+  const controller = createInkRuntimeController({
+    onWarning: () => {
+      /* noop */
+    }
+  });
   const bridgeEvents = createCliStreamBridge(controller.listeners);
 
   const handle = await createInkAgentRenderer({

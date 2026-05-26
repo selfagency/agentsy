@@ -352,35 +352,35 @@ Implement a first-party provider adapter for fully local inference and embedding
 
 ### Delivery phases
 
-**P1 — Adapter scaffolding + conformance tests**
+## P1 — Adapter scaffolding + conformance tests
 
 - define local adapter interface shared by all local providers
 - add fixture-backed protocol tests for OpenAI-compatible and Ollama-native paths
 
-**P2 — External local adapters**
+## P2 — External local adapters
 
 - implement adapters for Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel
 - include health checks and model discovery contracts
 
-**P2.5 — Runner source adapters**
+## P2.5 — Runner source adapters
 
 - implement Hugging Face/Ollama/open-provider source adapters
 - define retry, checksum validation, and partial-download resume semantics
 - add adapter contracts shared with runtime acquisition service
 
-**P2.6 — llama-swap runtime adapter**
+## P2.6 — llama-swap runtime adapter
 
 - add config rendering for model-to-backend swap rules
 - add request/response compatibility checks for OpenAI and Anthropic endpoints
 - add log and health endpoint wiring for runtime diagnostics
 
-**P3 — node-llama-cpp first-party adapter**
+## P3 — node-llama-cpp first-party adapter
 
 - implement chat/streaming completion path
 - add embeddings support
 - add lifecycle management (`load`, `ready`, `dispose`)
 
-**P4 — Fallback and policy integration**
+## P4 — Fallback and policy integration
 
 - integrate local adapter chain fallback policies
 - expose latency/error/capability metrics to `@agentsy/observability`

@@ -4,35 +4,35 @@ import { useState } from 'react';
 import type { AcidPalette } from '../../theme/palette.js';
 
 export interface TreeNode {
-  /** Unique node id. */
-  readonly id: string;
-  /** Display name. */
-  readonly name: string;
-  /** Node type — affects icon and color. */
-  readonly type: 'directory' | 'file' | 'agent-workspace' | 'modified' | 'untracked';
   /** Nesting depth (0 = root). */
   readonly depth: number;
   /** Whether this directory is expanded. */
   readonly expanded?: boolean;
+  /** Unique node id. */
+  readonly id: string;
   /** Optional metadata (size, git status, etc.). */
   readonly meta?: string;
+  /** Display name. */
+  readonly name: string;
+  /** Node type — affects icon and color. */
+  readonly type: 'directory' | 'file' | 'agent-workspace' | 'modified' | 'untracked';
 }
 
 export interface WorkspaceTreeProps {
+  /** Controlled cursor index. */
+  readonly cursorIndex?: number;
+  /** Whether this tree is focused. */
+  readonly isFocused?: boolean;
   /** Flat list of tree nodes (pre-ordered, depth-indented). */
   readonly nodes: readonly TreeNode[];
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
+  /** Called when diff is requested (D key). */
+  readonly onDiff?: (node: TreeNode) => void;
   /** Called when a node is selected (Enter). */
   readonly onSelect?: (node: TreeNode) => void;
   /** Called when a node is toggled (expand/collapse). */
   readonly onToggle?: (node: TreeNode) => void;
-  /** Called when diff is requested (D key). */
-  readonly onDiff?: (node: TreeNode) => void;
-  /** Whether this tree is focused. */
-  readonly isFocused?: boolean;
-  /** Controlled cursor index. */
-  readonly cursorIndex?: number;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
 }
 
 const NODE_ICONS: Record<TreeNode['type'], string> = {
@@ -95,7 +95,9 @@ export function WorkspaceTree({
         }
       } else if (input === 'd' || input === 'D') {
         const node = nodes[cursor];
-        if (node) onDiff?.(node);
+        if (node) {
+          onDiff?.(node);
+        }
       }
     },
     { isActive: isFocused }
@@ -106,7 +108,7 @@ export function WorkspaceTree({
       {/* Header */}
       <Box marginBottom={0}>
         <Text color={palette.frameBorder}>{'═'}</Text>
-        <Text color={palette.frameBright} bold>
+        <Text bold color={palette.frameBright}>
           {'Workspace'}
         </Text>
         <Text color={palette.frameBorder}>{'═'}</Text>
@@ -125,12 +127,12 @@ export function WorkspaceTree({
         const color = palette[colorKey] as string;
 
         return (
-          <Box key={node.id} flexDirection="row">
+          <Box flexDirection="row" key={node.id}>
             {/* Cursor indicator */}
             <Text color={palette.assistantAccent}>{isActive ? '▶' : ' '}</Text>
             {/* Indent + icon */}
             <Text color={palette.frameDim}>{indent}</Text>
-            <Text color={isActive ? palette.frameBright : color} bold={isActive}>
+            <Text bold={isActive} color={isActive ? palette.frameBright : color}>
               {icon} {node.name}
             </Text>
             {/* Meta column — right-aligned */}

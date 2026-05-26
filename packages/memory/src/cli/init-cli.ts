@@ -1,9 +1,9 @@
 // CLI: @agentsy/memory init — standalone initialization entrypoint
 
-import { initMemory } from '../init.js';
 import type { InitOptions, InitResult } from '../init.js';
+import { initMemory } from '../init.js';
 
-export { initMemory, type InitOptions, type InitResult };
+export { type InitOptions, type InitResult, initMemory };
 
 /**
  * Run the init CLI with parsed arguments.
@@ -36,6 +36,7 @@ Environment variables:
 
   const options: InitOptions = {};
 
+  // biome-ignore lint/style/useForOf: index-based iteration needed for args[++i] consumption
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
@@ -43,14 +44,18 @@ Environment variables:
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
         const transportVal = args[++i];
-        if (transportVal) options.config.mcp.transport = transportVal as 'stdio' | 'http';
+        if (transportVal) {
+          options.config.mcp.transport = transportVal as 'stdio' | 'http';
+        }
         break;
       }
       case '--port': {
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
         const portVal = args[++i];
-        if (portVal) options.config.mcp.port = parseInt(portVal, 10);
+        if (portVal) {
+          options.config.mcp.port = Number.parseInt(portVal, 10);
+        }
         break;
       }
       case '--skip-mcp':
@@ -61,6 +66,8 @@ Environment variables:
         break;
       case '--force':
         options.force = true;
+        break;
+      default:
         break;
     }
   }

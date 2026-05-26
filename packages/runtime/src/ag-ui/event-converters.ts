@@ -23,10 +23,10 @@ export interface CopilotKitEvent {
  */
 export interface CustomUIEvent {
   eventType: string;
+  payload: Record<string, unknown>;
   runId: string;
   threadId?: string;
   timestamp: string;
-  payload: Record<string, unknown>;
 }
 
 /**
@@ -177,7 +177,8 @@ export function createEventConverter(
 ): (event: AgUiEvent) => CopilotKitEvent | CustomUIEvent {
   if (format === 'copilot-kit') {
     return toCopilotKitEvent;
-  } else if (format === 'custom') {
+  }
+  if (format === 'custom') {
     return toCustomUIEvent;
   }
   throw new Error(`Unknown format: ${String(format)}`);

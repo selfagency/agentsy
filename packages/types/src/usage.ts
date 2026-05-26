@@ -7,8 +7,8 @@ export interface UsageInfo {
 
 /** A streaming delta for a native (JSON-format) tool call from a provider. */
 export interface NativeToolCallDelta {
-  index: number;
-  id?: string;
-  name?: string;
   argumentsDelta?: string;
+  id?: string;
+  index: number;
+  name?: string;
 }

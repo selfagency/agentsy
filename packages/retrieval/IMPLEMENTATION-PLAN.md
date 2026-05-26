@@ -240,7 +240,7 @@ interface RetrievalEngine {
   removePage(pageId: string): Promise<void>;
   search(
     query: string,
-    options?: { topK?: number; minSimilarity?: number }
+    options?: { topK?: number; minSimilarity?: number },
   ): Promise<Array<WikiPage & { similarity: number }>>;
 }
 ```

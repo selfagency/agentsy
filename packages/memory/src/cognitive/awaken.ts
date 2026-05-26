@@ -6,24 +6,24 @@ import {
   type LearningLoopOrchestrator
 } from './learning/loop-orchestrator.js';
 import type { MemoryTierLike } from './memory-tier.js';
-import type { TierName, MemoryItem } from './tier-types.js';
+import type { MemoryItem, TierName } from './tier-types.js';
 
 export interface AwakenResult {
+  budgetReclaimed: number;
+  consolidation: {
+    compressed: number;
+    synthesized: number;
+    summarized: number;
+  };
   decayPass: {
     kept: number;
     promoted: number;
     demoted: number;
     discarded: number;
   };
-  consolidation: {
-    compressed: number;
-    synthesized: number;
-    summarized: number;
-  };
-  budgetReclaimed: number;
-  pendingIngested: number;
   durationMs: number;
   learningCycle?: LearningCycleResult;
+  pendingIngested: number;
 }
 
 export interface PendingEvent {
@@ -33,11 +33,11 @@ export interface PendingEvent {
 }
 
 export interface AwakenOptions {
-  pendingEvents?: PendingEvent[];
   decayResults?: DecayedItem[];
-  now?: () => number;
-  runLearningCycle?: boolean;
   learningConfig?: Partial<LearningLoopConfig>;
+  now?: () => number;
+  pendingEvents?: PendingEvent[];
+  runLearningCycle?: boolean;
 }
 
 const TIER_ORDER: TierName[] = [
@@ -49,7 +49,9 @@ const TIER_ORDER: TierName[] = [
 ];
 
 export interface AwakenDeps {
-  tiers: Partial<Record<TierName, MemoryTierLike>>;
+  budgetRelease: (tier: TierName, tokens: number) => void;
+  getAllItems?: (() => MemoryItem[]) | undefined;
+  ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
   runDecayPass: () => {
     kept: number;
     promoted: number;
@@ -57,16 +59,14 @@ export interface AwakenDeps {
     discarded: number;
     durationMs: number;
   };
-  budgetRelease: (tier: TierName, tokens: number) => void;
-  ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
-  getAllItems?: (() => MemoryItem[]) | undefined;
+  tiers: Partial<Record<TierName, MemoryTierLike>>;
 }
 
 interface DecayCounts {
-  kept: number;
-  promoted: number;
   demoted: number;
   discarded: number;
+  kept: number;
+  promoted: number;
 }
 
 function countDecayActions(results: DecayedItem[]): DecayCounts {
@@ -76,10 +76,15 @@ function countDecayActions(results: DecayedItem[]): DecayCounts {
   let discarded = 0;
 
   for (const result of results) {
-    if (result.action === 'discard') discarded++;
-    else if (result.action === 'promote') promoted++;
-    else if (result.action === 'demote') demoted++;
-    else kept++;
+    if (result.action === 'discard') {
+      discarded++;
+    } else if (result.action === 'promote') {
+      promoted++;
+    } else if (result.action === 'demote') {
+      demoted++;
+    } else {
+      kept++;
+    }
   }
 
   return { kept, promoted, demoted, discarded };
@@ -93,10 +98,13 @@ function reclaimBudgetForDiscarded(results: DecayedItem[], budgetRelease: Awaken
   }
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): void {
   for (const result of results) {
     const currentTier = tiers[result.tier];
-    if (!currentTier) continue;
+    if (!currentTier) {
+      continue;
+    }
 
     if (result.action === 'promote') {
       const currentIdx = TIER_ORDER.indexOf(result.tier);
@@ -141,8 +149,8 @@ function runDecayStep(options: AwakenOptions, deps: AwakenDeps): DecayCounts {
 
 interface ConsolidationCounts {
   compressed: number;
-  synthesized: number;
   summarized: number;
+  synthesized: number;
 }
 
 function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
@@ -153,11 +161,15 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   for (let i = 0; i < TIER_ORDER.length - 1; i++) {
     const tierName = TIER_ORDER[i];
     const nextTierName = TIER_ORDER[i + 1];
-    if (!tierName || !nextTierName) continue;
+    if (!(tierName && nextTierName)) {
+      continue;
+    }
 
     const tier = tiers[tierName];
     const nextTier = tiers[nextTierName];
-    if (!tier || !nextTier) continue;
+    if (!(tier && nextTier)) {
+      continue;
+    }
 
     const cap = tier.capacity();
     const utilizationRatio = cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
@@ -196,31 +208,37 @@ function buildGetAllItems(tiers: AwakenDeps['tiers']): () => MemoryItem[] {
     const items: MemoryItem[] = [];
     for (const tierName of TIER_ORDER) {
       const tier = tiers[tierName];
-      if (!tier) continue;
+      if (!tier) {
+        continue;
+      }
       items.push(...tier.items());
     }
     return items;
   };
 }
 
-async function runLearningCycle(
+function runLearningCycle(
   deps: AwakenDeps,
   options: AwakenOptions,
   getNow: () => number
 ): Promise<LearningCycleResult | undefined> {
-  if (!options.runLearningCycle) return undefined;
+  if (!options.runLearningCycle) {
+    return Promise.resolve(undefined);
+  }
 
   const getAllItems = deps.getAllItems ?? buildGetAllItems(deps.tiers);
   const orchestrator: LearningLoopOrchestrator = createLearningLoopOrchestrator({ now: getNow });
   const allItems = getAllItems();
   const ltmTier = deps.tiers.long_term_memory;
 
-  return orchestrator.runCycle(
-    {
-      getNewMemories: (limit: number) => allItems.slice(0, limit),
-      getLTMMemories: () => [...(ltmTier?.items() ?? [])]
-    },
-    options.learningConfig
+  return Promise.resolve(
+    orchestrator.runCycle(
+      {
+        getNewMemories: (limit: number) => allItems.slice(0, limit),
+        getLTMMemories: () => [...(ltmTier?.items() ?? [])]
+      },
+      options.learningConfig
+    )
   );
 }
 

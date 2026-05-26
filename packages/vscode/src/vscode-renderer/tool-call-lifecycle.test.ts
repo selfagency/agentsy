@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { ToolCallDeltaAccumulator, accumulateToolCallDeltas, toVSCodeToolCallPart } from './tool-call-lifecycle.js';
+import { accumulateToolCallDeltas, ToolCallDeltaAccumulator, toVSCodeToolCallPart } from './tool-call-lifecycle.js';
 
 describe(toVSCodeToolCallPart, () => {
   it('maps processor tool_call part to VS Code-style tool call payload', () => {

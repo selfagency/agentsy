@@ -1,18 +1,18 @@
-import { parseJson } from './parse-json.js';
 import type { ParseJsonOptions } from './parse-json.js';
+import { parseJson } from './parse-json.js';
 import type { StreamingPartial } from './types.js';
 
 export interface StreamJsonOptions extends ParseJsonOptions {
-  /**
-   * When true, emits partial objects by attempting to repair incomplete JSON
-   * at each chunk boundary. Defaults to true.
-   */
-  emitPartials?: boolean;
   /**
    * When true, computes newly-populated or changed fields on each emission and
    * includes them in `newFields`. Defaults to false.
    */
   emitFields?: boolean;
+  /**
+   * When true, emits partial objects by attempting to repair incomplete JSON
+   * at each chunk boundary. Defaults to true.
+   */
+  emitPartials?: boolean;
   /**
    * When true, stops emitting after the root JSON object/array closes,
    * ignoring any trailing LLM prose. Defaults to false.
@@ -27,34 +27,34 @@ export interface StreamJsonOptions extends ParseJsonOptions {
  */
 export interface StreamJsonField {
   /**
-   * Dot-notation path to the field, e.g. `"name"`, `"address.city"`, or `"items[0]"`.
-   * Top-level scalar values use `""` (empty string).
-   */
-  path: string;
-  /** The current value at this path. */
-  value: unknown;
-  /**
    * Whether the value at this path is considered complete (no more streaming
    * changes expected at this exact path). A string field that is still arriving
    * chunk by chunk will have `isComplete: false` until the surrounding object is
    * confirmed complete.
    */
   isComplete: boolean;
+  /**
+   * Dot-notation path to the field, e.g. `"name"`, `"address.city"`, or `"items[0]"`.
+   * Top-level scalar values use `""` (empty string).
+   */
+  path: string;
+  /** The current value at this path. */
+  value: unknown;
 }
 
 export interface StreamJsonResult<T = unknown> {
-  /** The latest parsed value. May be partial if `emitPartials` is enabled. */
-  value: T;
   /** Whether the value was obtained from repaired (incomplete) JSON. */
   isPartial: boolean;
-  /** `'partial'` while JSON is still being received; `'completed'` on the final complete parse. */
-  status: 'partial' | 'completed';
   /**
    * Fields that were newly added or whose value changed since the previous emission.
    * Always present; empty when `emitFields: false` (the default) or when no fields
    * changed since the previous emission.
    */
   newFields: StreamJsonField[];
+  /** `'partial'` while JSON is still being received; `'completed'` on the final complete parse. */
+  status: 'partial' | 'completed';
+  /** The latest parsed value. May be partial if `emitPartials` is enabled. */
+  value: T;
 }
 
 interface StreamJsonLoopState {
@@ -65,8 +65,8 @@ interface StreamJsonLoopState {
 }
 
 interface StreamJsonEmission<T> {
-  state: StreamJsonLoopState;
   result?: StreamJsonResult<StreamingPartial<T>>;
+  state: StreamJsonLoopState;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
   }
 
   // Compare objects
-  if (!Array.isArray(a) && !Array.isArray(b)) {
+  if (!(Array.isArray(a) || Array.isArray(b))) {
     // nosemgrep: typescript-unnecessary-assertion
     // TypeScript narrows to `object` after Array.isArray checks, but Object.keys and property
     // access require `Record<string, unknown>`. The cast is required for type safety.
@@ -185,7 +185,7 @@ function collectPaths(value: unknown, prefix: string, out: Map<string, unknown>)
 function diffPaths(prev: Map<string, unknown>, next: Map<string, unknown>): string[] {
   const changed: string[] = [];
   for (const [path, val] of next) {
-    if (!prev.has(path) || !deepEqual(prev.get(path), val)) {
+    if (!(prev.has(path) && deepEqual(prev.get(path), val))) {
       changed.push(path);
     }
   }

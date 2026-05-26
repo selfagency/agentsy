@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { AgentLoopState, OutputPart, StepResult } from './index.js';
 
-type Message = { content: string; role: string };
+interface Message {
+  content: string;
+  role: string;
+}
+
 import {
   createAgentLoop,
   detectDoomLoop,
@@ -777,11 +781,18 @@ describe('createAgentLoop', () => {
 
     expect(afterToolCall).toHaveBeenCalledOnce();
     expect(
-      (afterToolCall.mock.calls[0]?.[0] as { approvedToolCalls: { name: string; parameters: object }[] })
-        .approvedToolCalls
+      (
+        afterToolCall.mock.calls[0]?.[0] as {
+          approvedToolCalls: { name: string; parameters: object }[];
+        }
+      ).approvedToolCalls
     ).toMatchObject([{ name: 'search', parameters: { query: 'docs' } }]);
     expect(
-      (afterToolCall.mock.calls[0]?.[0] as { deniedToolCalls: { name: string; parameters: object }[] }).deniedToolCalls
+      (
+        afterToolCall.mock.calls[0]?.[0] as {
+          deniedToolCalls: { name: string; parameters: object }[];
+        }
+      ).deniedToolCalls
     ).toMatchObject([{ name: 'fetch', parameters: { url: 'https://example.com' } }]);
   });
 

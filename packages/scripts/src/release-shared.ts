@@ -27,16 +27,16 @@ export type GitHubWorkflowRun = Awaited<
 export type WorkflowSpinner = ReturnType<typeof ora>;
 
 export interface WaitForWorkflowOptions {
-  timeoutMs?: number;
-  pollMs?: number;
   autoDispatch?: boolean;
   branch?: string | undefined;
+  pollMs?: number;
+  timeoutMs?: number;
 }
 
 export interface WaitForLatestWorkflowOptions {
-  timeoutMs?: number;
-  pollMs?: number;
   branch?: string;
+  pollMs?: number;
+  timeoutMs?: number;
 }
 
 export async function checkNpmCredentials(npmRegistry: string): Promise<void> {
@@ -167,7 +167,7 @@ export function parseOwnerRepoFromRemoteUrl(remoteUrl: string): {
 export function resolveOwnerRepoFromOrigin(): { owner: string; repo: string } {
   const remoteUrl = runGit(['remote', 'get-url', 'origin']).stdout.trim();
   const { owner, repo } = parseOwnerRepoFromRemoteUrl(remoteUrl);
-  if (!owner || !repo) {
+  if (!(owner && repo)) {
     console.error(`❌ Cannot parse owner/repo from remote URL: ${remoteUrl}`);
     process.exit(1);
   }
@@ -218,13 +218,13 @@ export async function ensureRemoteTagAvailability(
     await octokit.git.getRef({ owner, ref: `tags/${tag}`, repo });
     if (!isRetag) {
       console.error(`❌ Remote tag '${tag}' already exists.`);
-      console.error(`   If the previous CI run failed and you want to retag, rerun with --retag.`);
+      console.error('   If the previous CI run failed and you want to retag, rerun with --retag.');
       process.exit(1);
     }
 
     console.log(`⚠️  Remote tag '${tag}' exists — deleting for retag...`);
     await octokit.git.deleteRef({ owner, ref: `tags/${tag}`, repo });
-    console.log(`↩️  Remote tag deleted.`);
+    console.log('↩️  Remote tag deleted.');
     const localTagExists = runGit(['tag', '-l', tag]).stdout.trim();
     if (localTagExists) {
       runGit(['tag', '-d', tag]);

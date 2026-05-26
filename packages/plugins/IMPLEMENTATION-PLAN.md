@@ -284,7 +284,7 @@ export interface Extension {
 ```typescript
 export interface WorkspaceSkillManifest {
   id: string;
-  source: 'workspace' | 'user' | 'bundled';
+  source: "workspace" | "user" | "bundled";
   path: string;
   capabilities: string[];
   instructionFiles: string[];
@@ -326,8 +326,8 @@ Every plugin or scaffold must have at least one minimal test (`src/index.test.ts
 ### Types (`src/types.ts`)
 
 ```ts
-type CavemanMode = 'lite' | 'full' | 'ultra' | 'wenyan-lite' | 'wenyan-full' | 'wenyan-ultra';
-const DEFAULT_CAVEMAN_MODE: CavemanMode = 'full';
+type CavemanMode = "lite" | "full" | "ultra" | "wenyan-lite" | "wenyan-full" | "wenyan-ultra";
+const DEFAULT_CAVEMAN_MODE: CavemanMode = "full";
 ```
 
 ### Implementation Tasks

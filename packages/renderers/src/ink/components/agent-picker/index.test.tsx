@@ -2,7 +2,7 @@ import { render } from 'ink-testing-library';
 import { describe, expect, it } from 'vitest';
 
 import { defaultAcidPalette } from '../../theme/palette.ts';
-import { AgentPicker, type AgentEntry } from './index.tsx';
+import { type AgentEntry, AgentPicker } from './index.tsx';
 
 describe('AgentPicker', () => {
   const agents: AgentEntry[] = [
@@ -26,7 +26,7 @@ describe('AgentPicker', () => {
 
   it('renders agent list', () => {
     const { lastFrame } = render(
-      <AgentPicker agents={agents} query="" highlightIndex={0} palette={defaultAcidPalette} />
+      <AgentPicker agents={agents} highlightIndex={0} palette={defaultAcidPalette} query="" />
     );
     const frame = lastFrame();
     expect(frame).toContain('Research');
@@ -35,14 +35,14 @@ describe('AgentPicker', () => {
 
   it('shows provenance badges', () => {
     const { lastFrame } = render(
-      <AgentPicker agents={agents} query="" highlightIndex={0} palette={defaultAcidPalette} />
+      <AgentPicker agents={agents} highlightIndex={0} palette={defaultAcidPalette} query="" />
     );
     expect(lastFrame()).toContain('built-in');
   });
 
   it('filters agents by query', () => {
     const { lastFrame } = render(
-      <AgentPicker agents={agents} query="Custom" highlightIndex={0} palette={defaultAcidPalette} />
+      <AgentPicker agents={agents} highlightIndex={0} palette={defaultAcidPalette} query="Custom" />
     );
     const frame = lastFrame();
     expect(frame).toContain('Custom');
@@ -51,7 +51,7 @@ describe('AgentPicker', () => {
 
   it('shows empty state when filter matches nothing', () => {
     const { lastFrame } = render(
-      <AgentPicker agents={agents} query="no-match-xyz" highlightIndex={0} palette={defaultAcidPalette} />
+      <AgentPicker agents={agents} highlightIndex={0} palette={defaultAcidPalette} query="no-match-xyz" />
     );
     expect(lastFrame()).toContain('no-match-xyz');
   });

@@ -28,20 +28,29 @@ import { EventType } from '@agentsy/types';
  * See src/pipeline/createPipeline.ts for full definition.
  */
 export interface PipelineEvent {
-  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
+  code?: string;
   content?: string;
-  toolCallId?: string;
-  toolName?: string;
+  message?: string;
+  reasoning?: string;
   toolArgs?: Record<string, unknown>;
   toolArgsJson?: string;
-  reasoning?: string;
-  message?: string;
-  code?: string;
+  toolCallId?: string;
+  toolName?: string;
+  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   usage?: { inputTokens?: number; outputTokens?: number };
   [key: string]: unknown;
 }
 
 export interface AdapterOptions {
+  /**
+   * Emit the REASONING_ENCRYPTED_VALUE placeholder (default: false).
+   */
+  encryptReasoning?: boolean;
+
+  /**
+   * Parent run ID for hierarchical multi-turn workflows (optional).
+   */
+  parentRunId?: string;
   /**
    * Unique identifier for this run (e.g., UUID).
    */
@@ -51,16 +60,6 @@ export interface AdapterOptions {
    * Thread ID for this conversation (optional).
    */
   threadId?: string;
-
-  /**
-   * Parent run ID for hierarchical multi-turn workflows (optional).
-   */
-  parentRunId?: string;
-
-  /**
-   * Emit the REASONING_ENCRYPTED_VALUE placeholder (default: false).
-   */
-  encryptReasoning?: boolean;
 }
 
 /**
@@ -380,6 +379,9 @@ export async function* toAgUiStream(
 
         case 'error': {
           yield* handleError(event, runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
+          break;
+        }
+        default: {
           break;
         }
       }

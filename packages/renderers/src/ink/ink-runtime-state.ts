@@ -7,10 +7,10 @@ import type typeInk from 'ink';
 import type typeReact from 'react';
 
 export interface InkToolCallState {
-  id: string;
-  name: string;
   arguments: JsonObject;
   done: boolean;
+  id: string;
+  name: string;
 }
 
 export interface InkRuntimeState {
@@ -52,7 +52,11 @@ export const createInkRuntimeController = (options: InkRuntimeControllerOptions)
     toolCalls: []
   };
 
-  const forceUpdateRef = { current: () => {} };
+  const forceUpdateRef = {
+    current: () => {
+      /* noop */
+    }
+  };
 
   const listeners: InkRuntimeListeners = {
     done: () => {

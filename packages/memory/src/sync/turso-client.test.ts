@@ -19,14 +19,14 @@ vi.mock(import('@tursodatabase/sync'), () => ({
 }));
 
 interface FakeDatabase {
-  connect: ReturnType<typeof vi.fn>;
-  run: ReturnType<typeof vi.fn>;
-  get: ReturnType<typeof vi.fn>;
-  push: ReturnType<typeof vi.fn>;
-  pull: ReturnType<typeof vi.fn>;
   checkpoint: ReturnType<typeof vi.fn>;
-  stats: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;
+  connect: ReturnType<typeof vi.fn>;
+  get: ReturnType<typeof vi.fn>;
+  pull: ReturnType<typeof vi.fn>;
+  push: ReturnType<typeof vi.fn>;
+  run: ReturnType<typeof vi.fn>;
+  stats: ReturnType<typeof vi.fn>;
 }
 
 const server = setupServer();

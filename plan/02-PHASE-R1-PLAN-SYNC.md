@@ -53,7 +53,7 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 ```markdown
 ## Phase 2 — Provider Request Path
 
-**TASK-008: Request Path**
+## TASK-008: Request Path
 
 **Status:** ✅ COMPLETE
 
@@ -81,7 +81,7 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 ```markdown
 ## Phase 2 — Stream Normalization
 
-**TASK-009: Stream-to-Events Adapter**
+## TASK-009: Stream-to-Events Adapter
 
 **Status:** ✅ COMPLETE
 
@@ -162,7 +162,7 @@ Folded into Phase 2 renderers work.
 ```markdown
 ## Phase 1 — Plugin Manifest
 
-**TASK-091: Official Superagents Plugin Manifest**
+## TASK-091: Official Superagents Plugin Manifest
 
 **Status:** ✅ COMPLETE (2026-05-25)
 

@@ -1,20 +1,19 @@
 import type { BaseRendererOptions, ThinkingStyle } from '@agentsy/renderers';
 
-import type { MinimalChatResponseStream } from './createVSCodeChatRenderer.js';
-import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
+import type { MinimalChatResponseStream } from './create-vs-code-chat-renderer.js';
+import { createVSCodeChatRenderer } from './create-vs-code-chat-renderer.js';
 
 /**
  * Options for VS Code agent loop renderer.
  */
 export interface VSCodeAgentLoopOptions extends BaseRendererOptions {
+  /** Optional abort signal for stream cancellation. */
+  abortSignal?: AbortSignal;
   /** VS Code ChatResponseStream instance. Required. */
   stream: MinimalChatResponseStream;
 
   /** How to render thinking blocks. Default: 'blockquote'. */
   thinkingStyle?: ThinkingStyle;
-
-  /** Optional abort signal for stream cancellation. */
-  abortSignal?: AbortSignal;
 }
 
 /**

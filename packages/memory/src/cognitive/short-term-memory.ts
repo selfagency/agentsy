@@ -1,5 +1,5 @@
 import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
-import type { TierConfig, TierLevel, TierName } from './tier-types.js';
+import type { TierConfig } from './tier-types.js';
 
 export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
 export type { TierConfig } from './tier-types.js';
@@ -8,7 +8,7 @@ const SHORT_TERM_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   compressionTarget: 0.6,
   consolidationThreshold: 0.3,
   maxItems: 12,
-  maxTokens: 2_000,
+  maxTokens: 2000,
   ttlMs: 3_600_000
 };
 

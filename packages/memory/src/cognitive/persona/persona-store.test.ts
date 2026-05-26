@@ -15,7 +15,15 @@ describe('PersonaStore', () => {
 
   it('creates default persona on first update', () => {
     const updated = store.update('user-1', {
-      attributes: [{ key: 'role', value: 'developer', confidence: 0.9, sourceIds: ['mem-1'], updatedAt: 10_000 }]
+      attributes: [
+        {
+          key: 'role',
+          value: 'developer',
+          confidence: 0.9,
+          sourceIds: ['mem-1'],
+          updatedAt: 10_000
+        }
+      ]
     });
     expect(updated.userId).toBe('user-1');
     expect(updated.attributes.length).toBe(1);
@@ -26,12 +34,32 @@ describe('PersonaStore', () => {
 
   it('merges attributes on update', () => {
     store.update('user-1', {
-      attributes: [{ key: 'role', value: 'developer', confidence: 0.8, sourceIds: ['mem-1'], updatedAt: 10_000 }]
+      attributes: [
+        {
+          key: 'role',
+          value: 'developer',
+          confidence: 0.8,
+          sourceIds: ['mem-1'],
+          updatedAt: 10_000
+        }
+      ]
     });
     const updated = store.update('user-1', {
       attributes: [
-        { key: 'role', value: 'senior developer', confidence: 0.9, sourceIds: ['mem-2'], updatedAt: 20_000 },
-        { key: 'team', value: 'platform', confidence: 0.7, sourceIds: ['mem-3'], updatedAt: 20_000 }
+        {
+          key: 'role',
+          value: 'senior developer',
+          confidence: 0.9,
+          sourceIds: ['mem-2'],
+          updatedAt: 20_000
+        },
+        {
+          key: 'team',
+          value: 'platform',
+          confidence: 0.7,
+          sourceIds: ['mem-3'],
+          updatedAt: 20_000
+        }
       ]
     });
     expect(updated.attributes.length).toBe(2);

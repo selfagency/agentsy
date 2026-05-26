@@ -4,11 +4,11 @@ import type { JsonObject } from '@agentsy/types';
  * Shared provider-facing tools payload contract that is interoperable with NativeTool[].
  */
 export interface ProviderTool {
+  format?: 'bare-xml' | 'json-wrapped' | 'native-json';
+  id?: string;
+  metadata?: Record<string, unknown>;
   name: string;
   parameters: JsonObject;
-  id?: string;
-  format?: 'bare-xml' | 'json-wrapped' | 'native-json';
-  metadata?: Record<string, unknown>;
 }
 
 function isNonEmptyString(value: unknown): value is string {

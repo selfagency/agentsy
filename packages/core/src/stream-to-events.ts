@@ -1,4 +1,4 @@
-import type { NormalizedChunk, UsageInfo } from '@agentsy/types';
+import type { NormalizedChunk } from '@agentsy/types';
 
 /**
  * Typed runtime events emitted by the stream-to-events adapter.
@@ -57,24 +57,24 @@ export type StreamRuntimeEvent =
  * access to specific event types. Both can be used simultaneously.
  */
 export interface StreamEventAdapterOptions {
-  /** Catch-all: fired for every event. */
-  onEvent?: (event: StreamRuntimeEvent) => void;
-  onText?: (delta: string) => void;
-  onThinking?: (delta: string) => void;
-  onToolCallStart?: (id: string, name: string, args: unknown) => void;
-  onToolCallEnd?: (id: string, result?: unknown) => void;
   onDone?: (
     finishReason?: string,
     usage?: StreamRuntimeEvent & { type: 'done' } extends never ? never : StreamRuntimeEvent['payload']
   ) => void;
   onError?: (error: Error) => void;
+  /** Catch-all: fired for every event. */
+  onEvent?: (event: StreamRuntimeEvent) => void;
+  onText?: (delta: string) => void;
+  onThinking?: (delta: string) => void;
+  onToolCallEnd?: (id: string, result?: unknown) => void;
+  onToolCallStart?: (id: string, name: string, args: unknown) => void;
 }
 
 /** Track running tool call IDs across chunks. */
 interface ToolCallCursor {
+  argsBuffer: string;
   id: string;
   name: string;
-  argsBuffer: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +93,7 @@ interface ToolCallCursor {
  * }
  * ```
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): AsyncGenerator<StreamRuntimeEvent> {
   const reader = stream.getReader();
   let chunkIndex = 0;
@@ -101,7 +102,9 @@ export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): 
   try {
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        break;
+      }
 
       const now = performance.now();
 
@@ -134,8 +137,12 @@ export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): 
             name: delta.name ?? 'unknown',
             argsBuffer: ''
           };
-          if (delta.name) cursor.name = delta.name;
-          if (delta.argumentsDelta) cursor.argsBuffer += delta.argumentsDelta;
+          if (delta.name) {
+            cursor.name = delta.name;
+          }
+          if (delta.argumentsDelta) {
+            cursor.argsBuffer += delta.argumentsDelta;
+          }
 
           if (!toolCursors.has(deltaId)) {
             toolCursors.set(deltaId, cursor);
@@ -191,16 +198,16 @@ export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): 
           chunkIndex,
           timestamp: now,
           payload: {
-            ...(value.finishReason !== undefined ? { finishReason: value.finishReason } : {}),
-            ...(value.usage !== undefined
-              ? {
+            ...(value.finishReason === undefined ? {} : { finishReason: value.finishReason }),
+            ...(value.usage === undefined
+              ? {}
+              : {
                   usage: {
                     inputTokens: value.usage.inputTokens ?? 0,
                     outputTokens: value.usage.outputTokens ?? 0,
                     totalTokens: (value.usage.inputTokens ?? 0) + (value.usage.outputTokens ?? 0)
                   }
-                }
-              : {})
+                })
           }
         };
       }
@@ -259,7 +266,9 @@ export function createStreamEventAdapter(options: StreamEventAdapterOptions): {
       }
 
       for await (const event of streamToEvents(stream)) {
-        if (signal.aborted) break;
+        if (signal.aborted) {
+          break;
+        }
 
         options.onEvent?.(event);
 
@@ -277,15 +286,20 @@ export function createStreamEventAdapter(options: StreamEventAdapterOptions): {
             options.onToolCallEnd?.(event.payload.id, event.payload.result);
             break;
           case 'done':
-            options.onDone?.(event.payload.finishReason, event.payload as any);
+            options.onDone?.(event.payload.finishReason, event.payload);
             break;
           case 'error':
             options.onError?.(new Error(event.payload.message));
             break;
+          default: {
+            break;
+          }
         }
       }
     } catch (err: unknown) {
-      if (signal.aborted) return;
+      if (signal.aborted) {
+        return;
+      }
       const error = err instanceof Error ? err : new Error(String(err));
       options.onEvent?.({
         type: 'error',

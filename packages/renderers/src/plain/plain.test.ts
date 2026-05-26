@@ -58,7 +58,7 @@ describe('Plain Text Renderer', () => {
     expect(allContent).toContain('stream');
   });
 
-  it('defaults to process.stdout when no output specified', async () => {
+  it('defaults to process.stdout when no output specified', () => {
     const renderer = createPlainTextRenderer();
 
     // Should not throw; just verify the factory works with defaults

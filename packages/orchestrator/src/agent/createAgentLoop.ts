@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { createInterruptEvent, EventType } from '@agentsy/runtime/ag-ui';
 import type { AgUiEvent } from '@agentsy/runtime/ag-ui';
+import { createInterruptEvent, EventType } from '@agentsy/runtime/ag-ui';
 
 import type {
   AgentLoopContext,
@@ -397,7 +397,7 @@ function updateConsecutiveIdenticalCalls(state: AgentLoopState, stepResult: Step
     if (prevStep && prevStep.toolCalls.length > 0) {
       const prev = prevStep.toolCalls[0];
       const curr = stepResult.toolCalls[0];
-      if (!prev || !curr) {
+      if (!(prev && curr)) {
         return;
       }
       if (prev.name === curr.name && parametersEqual(prev.parameters, curr.parameters)) {
@@ -587,6 +587,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     throw error;
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
   async function* run(initialMessages: unknown[]): AsyncGenerator<OutputPart> {
     const runId = options.runId ?? createRunId();
     const { threadId, onAgUiEvent } = options;

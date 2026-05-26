@@ -4,18 +4,18 @@
 
 export interface LocalProviderProbeResult {
   available: boolean;
-  version?: string | undefined;
-  models: LocalModelInfo[];
   error?: string | undefined;
+  models: LocalModelInfo[];
+  version?: string | undefined;
 }
 
 export interface LocalModelInfo {
+  contextLength?: number | undefined;
   id: string;
   name: string;
-  size?: string | undefined;
-  quantization?: string | undefined;
-  contextLength?: number | undefined;
   parameters?: string | undefined;
+  quantization?: string | undefined;
+  size?: string | undefined;
 }
 
 export interface OllamaProbeOptions {
@@ -29,10 +29,10 @@ export interface VllmProbeOptions {
 }
 
 export interface LocalProviderDiscoveryResult {
-  ollama: LocalProviderProbeResult;
-  vllm: LocalProviderProbeResult;
   discovered: Array<{
     provider: 'ollama' | 'vllm';
     models: LocalModelInfo[];
   }>;
+  ollama: LocalProviderProbeResult;
+  vllm: LocalProviderProbeResult;
 }

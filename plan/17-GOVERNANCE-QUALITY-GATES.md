@@ -33,7 +33,7 @@ pnpm test                     # All tests green
 
 ### Security Invariants
 
-**SEC-001: No Hardcoded Secrets**
+## SEC-001: No Hardcoded Secrets
 
 ```bash
 # Pre-commit hook
@@ -43,7 +43,7 @@ grep -r \"sk-\" src/ && exit 1
 grep -r \"AKIA\" src/ && exit 1
 ```
 
-**SEC-002: Approval-Gating for Destructive Ops**
+## SEC-002: Approval-Gating for Destructive Ops
 
 ```typescript
 if (toolCall.annotations.destructiveHint) {
@@ -52,7 +52,7 @@ if (toolCall.annotations.destructiveHint) {
 }
 ```
 
-**SEC-003: Untrusted Content Discipline**
+## SEC-003: Untrusted Content Discipline
 
 ```typescript
 // Retrieved content, model output treated as hostile
@@ -62,7 +62,7 @@ const sanitized = sanitize(untrustedInput, {
 });
 ```
 
-**SEC-004: Structured Logging with Redaction**
+## SEC-004: Structured Logging with Redaction
 
 ```typescript
 const redacted = redactSecrets(logMessage);

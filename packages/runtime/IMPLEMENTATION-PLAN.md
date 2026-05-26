@@ -584,7 +584,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### CRITICAL: Virtual Sandbox Implementation
 
-**Flue Virtual Sandbox Pattern Adoption**
+## Flue Virtual Sandbox Pattern Adoption
 
 - **Rationale:** Default to virtual sandbox (just-bash) for simple operations, containers only for coding/git/browser
 - **Expected Benefits:** 10x faster startup, ~90% infrastructure cost reduction for simple tasks
@@ -639,7 +639,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Task Delegation with Isolated History
 
-**Flue Task Pattern Adoption**
+## Flue Task Pattern Adoption
 
 - **Rationale:** Detached session spawning with isolated message history for parallel execution
 - **Expected Benefits:** Parallel execution, clean semantics, no history pollution
@@ -691,7 +691,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Runtime Coordination with Honker
 
-**Cross-Process Runtime Integration**
+## Cross-Process Runtime Integration
 
 - **Rationale:** honker pub/sub for runtime events and coordination across processes
 - **Expected Benefits:** 1-5ms coordination latency vs polling, atomic queue operations
@@ -739,7 +739,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Role-Based Orchestration
 
-**Flue Role Pattern Adoption**
+## Flue Role Pattern Adoption
 
 - **Rationale:** Call-scoped system prompt overlays with clean precedence
 - **Expected Benefits:** Cleaner context, no history pollution, better agent coordination
@@ -812,25 +812,25 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Integration Timeline Summary
 
-**Phase 0: Token Optimization Foundation (Weeks 1-8)**
+## Phase 0: Token Optimization Foundation (Weeks 1-8)
 
 - Virtual sandbox implementation ( Weeks 1-4)
 - Container detection logic (Weeks 5-6)
 - Startup optimization (Weeks 7-8)
 
-**Phase 1: Task Delegation (Weeks 9-14)**
+## Phase 1: Task Delegation (Weeks 9-14)
 
 - Detached session spawning (Weeks 9-10)
 - Precedence rules (Weeks 11-12)
 - Parallel execution (Weeks 13-14)
 
-**Phase 2: Runtime Coordination (Weeks 15-20)**
+## Phase 2: Runtime Coordination (Weeks 15-20)
 
 - Pub/Sub integration (Weeks 15-16)
 - Task queue integration (Weeks 17-18)
 - Atomic workflow patterns (Weeks 19-20)
 
-**Phase 3: Role Orchestration (Weeks 21-24)**
+## Phase 3: Role Orchestration (Weeks 21-24)
 
 - Role system foundation (Weeks 21-22)
 - Dynamic role switching (Weeks 23-24)

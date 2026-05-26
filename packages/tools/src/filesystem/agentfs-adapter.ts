@@ -1,17 +1,17 @@
 /** Minimal structural interface matching AgentFsManager's shape — no import from @agentsy/memory. */
 export interface AgentFsLike {
-  read(path: string): { content: string; contentHash: string } | undefined;
-  write(path: string, content: string): { contentHash: string };
   delete(path: string): boolean;
   list(): { path: string; contentHash: string }[];
+  read(path: string): { content: string; contentHash: string } | undefined;
+  write(path: string, content: string): { contentHash: string };
 }
 
 export interface AgentFsToolResult {
-  readonly ok: boolean;
-  readonly path: string;
   readonly content?: string;
   readonly contentHash?: string;
   readonly error?: string;
+  readonly ok: boolean;
+  readonly path: string;
 }
 
 export interface AgentFsReadInput {
@@ -19,8 +19,8 @@ export interface AgentFsReadInput {
 }
 
 export interface AgentFsWriteInput {
-  readonly path: string;
   readonly content: string;
+  readonly path: string;
 }
 
 export interface AgentFsDeleteInput {
@@ -28,16 +28,16 @@ export interface AgentFsDeleteInput {
 }
 
 export interface AgentFsListResult {
-  readonly ok: boolean;
   readonly entries: { path: string; contentHash: string }[];
+  readonly ok: boolean;
 }
 
 export interface AgentFsAdapter {
+  delete(input: AgentFsDeleteInput): AgentFsToolResult;
+  list(): AgentFsListResult;
   readonly name: 'agentfs';
   read(input: AgentFsReadInput): AgentFsToolResult;
   write(input: AgentFsWriteInput): AgentFsToolResult;
-  delete(input: AgentFsDeleteInput): AgentFsToolResult;
-  list(): AgentFsListResult;
 }
 
 export function createAgentFsAdapter(manager: AgentFsLike): AgentFsAdapter {

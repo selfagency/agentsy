@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createSummarizer } from './summarizer.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 
 describe('createSummarizer', () => {
   let clock: ReturnType<typeof createTierTestClock>;
@@ -50,9 +50,21 @@ describe('createSummarizer', () => {
   it('classifies writeHeap based on content', () => {
     const summarizer = createSummarizer({ now: clock.now });
     const items = [
-      createTestMemoryItem({ content: 'Error: failed to connect to database', tokenCount: 15, createdAt: clock.now() }),
-      createTestMemoryItem({ content: 'Search query returned no results', tokenCount: 15, createdAt: clock.now() }),
-      createTestMemoryItem({ content: 'Created new user profile successfully', tokenCount: 15, createdAt: clock.now() })
+      createTestMemoryItem({
+        content: 'Error: failed to connect to database',
+        tokenCount: 15,
+        createdAt: clock.now()
+      }),
+      createTestMemoryItem({
+        content: 'Search query returned no results',
+        tokenCount: 15,
+        createdAt: clock.now()
+      }),
+      createTestMemoryItem({
+        content: 'Created new user profile successfully',
+        tokenCount: 15,
+        createdAt: clock.now()
+      })
     ];
     const result = summarizer.summarize(items, 500);
     const heaps = new Set(result.longTermItems.map(i => i.writeHeap));

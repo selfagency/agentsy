@@ -5,12 +5,12 @@ import type { Theme } from '../themes/types.ts';
 import { markdownToAnsi } from '../utils/markdown-to-ansi.ts';
 
 interface StreamingTextProps {
-  readonly text: string;
-  readonly markdown?: boolean;
   readonly isStreaming: boolean;
-  readonly theme: Theme;
+  readonly markdown?: boolean;
   readonly screenReader?: boolean;
   readonly syntaxHighlight?: boolean;
+  readonly text: string;
+  readonly theme: Theme;
 }
 
 export function StreamingText({

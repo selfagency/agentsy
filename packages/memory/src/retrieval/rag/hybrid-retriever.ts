@@ -6,13 +6,13 @@ import { createLocalEmbeddingEngine } from '../../wiki/local-embedding-engine.js
 import type { PlannedQuery, RAGEvidence, RAGSearchResult } from './types.js';
 
 interface HybridRecord {
+  content: string;
   id: string;
+  metadata?: Record<string, unknown>;
   sourceId: string;
   sourceType: RAGEvidence['sourceType'];
   title: string;
-  content: string;
   updatedAt: string;
-  metadata?: Record<string, unknown>;
 }
 
 interface DotAndNorms {
@@ -97,7 +97,9 @@ function temporalScore(updatedAtIso: string, now: Date): number {
 function parseJsonNumberArray(value: string): number[] {
   try {
     const parsed: unknown = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed as number[];
+    if (Array.isArray(parsed)) {
+      return parsed as number[];
+    }
     return [];
   } catch {
     return [];
@@ -106,16 +108,16 @@ function parseJsonNumberArray(value: string): number[] {
 
 function parseMetadata(value: unknown): Record<string, unknown> | undefined {
   if (typeof value !== 'string' || value === '{}' || value === '') {
-    return undefined;
+    return;
   }
   try {
     const parsed: unknown = JSON.parse(value);
     if (typeof parsed === 'object' && parsed !== null && Object.keys(parsed).length > 0) {
       return parsed as Record<string, unknown>;
     }
-    return undefined;
+    return;
   } catch {
-    return undefined;
+    return;
   }
 }
 
@@ -156,9 +158,9 @@ function buildEvidence(
 }
 
 export interface HybridRetriever {
-  upsert(result: Omit<RAGSearchResult, 'score'>): void;
   remove(id: string): void;
   search(query: PlannedQuery): Promise<RAGEvidence[]>;
+  upsert(result: Omit<RAGSearchResult, 'score'>): void;
 }
 
 export interface HybridRetrieverOptions {
@@ -180,6 +182,7 @@ function createInMemoryHybridRetriever(): HybridRetriever {
       vectors.delete(id);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements HybridRetriever interface requiring Promise return
     async search(query) {
       const now = new Date();
       const queryVector = engine.embed(query.query);
@@ -245,6 +248,7 @@ function createSQLiteHybridRetriever(db: MemoryDatabase): HybridRetriever {
       db.delete(ragVectors).where(eq(ragVectors.docId, id)).run();
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements HybridRetriever interface requiring Promise return
     async search(query) {
       const now = new Date();
       const queryVector = engine.embed(query.query);

@@ -1,13 +1,17 @@
 import type { JsonObject } from '@agentsy/types';
-
-import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson } from './parse-json.js';
 import type { ParseJsonOptions } from './parse-json.js';
+import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson } from './parse-json.js';
 
 type JsonSchema = JsonObject;
 
 const REGEX_CACHE_MAX = 256;
 const regexCache = new Map<string, RegExp>();
 const regexAccessTimestamps = new WeakMap<RegExp, number>();
+const NESTED_QUANTIFIER_REGEX = /\([^)]*[+*?][^)]*\)[+*?]/;
+const CHAINED_QUANTIFIER_REGEX = /[+*?][+*?]/;
+const GROUP_ALTERNATION_REGEX = /\([^)]*\|[^)]*\)[+*?]/;
+const MATCH_NOTHING_REGEX = /(?!)/;
+const LOCAL_DEF_REF_REGEX = /^#\/\$defs\/([^/]+)$/;
 
 /**
  * Detect regex patterns with nested or chained quantifiers that can cause
@@ -18,16 +22,24 @@ const regexAccessTimestamps = new WeakMap<RegExp, number>();
  *   - Excessive alternation depth
  */
 function hasDangerousQuantifier(pattern: string): boolean {
-  if (pattern.length > 200) return true;
+  if (pattern.length > 200) {
+    return true;
+  }
   // nosemgrep: regex-dos-meta-validation
   // These regexes only run against already-length-capped pattern strings (≤200 chars).
   // They detect nested quantifiers in *other* regexes as a security guard.
   // Nested quantifiers: quantifier on a group that itself contains a quantifier
-  if (/\([^)]*[+*?][^)]*\)[+*?]/.test(pattern)) return true;
+  if (NESTED_QUANTIFIER_REGEX.test(pattern)) {
+    return true;
+  }
   // Chained possessive-style: two consecutive quantifiers
-  if (/[+*?][+*?]/.test(pattern)) return true;
+  if (CHAINED_QUANTIFIER_REGEX.test(pattern)) {
+    return true;
+  }
   // Alternation inside quantified group: (x|y)+
-  if (/\([^)]*\|[^)]*\)[+*?]/.test(pattern)) return true;
+  if (GROUP_ALTERNATION_REGEX.test(pattern)) {
+    return true;
+  }
   return false;
 }
 
@@ -45,22 +57,22 @@ function getCachedRegex(pattern: string): RegExp {
     // JSON Schema patterns should be relatively simple; overly complex patterns are rejected.
     if (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern)) {
       // Pattern is too long, too complex, or not a string: use safe match-nothing regex
-      regex = /(?!)/;
+      regex = MATCH_NOTHING_REGEX;
     } else {
       regex = new RegExp(pattern);
     }
   } catch {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
-    regex = /(?!)/; // Negative lookahead that never matches
+    regex = MATCH_NOTHING_REGEX; // Negative lookahead that never matches
   }
   regexAccessTimestamps.set(regex, Date.now());
 
   if (regexCache.size >= REGEX_CACHE_MAX) {
     // Evict least-recently-used entry by scanning access timestamps
     let lruKey: string | undefined;
-    let lruTime = Infinity;
+    let lruTime = Number.POSITIVE_INFINITY;
     for (const [key, value] of regexCache.entries()) {
-      const accessTime = regexAccessTimestamps.get(value) ?? Infinity;
+      const accessTime = regexAccessTimestamps.get(value) ?? Number.POSITIVE_INFINITY;
       if (accessTime < lruTime) {
         lruTime = accessTime;
         lruKey = key;
@@ -173,18 +185,18 @@ const FORMAT_PATTERNS: Record<string, string> = {
   email: String.raw`^[^\s@]+@[^\s@]+\.[^\s@]{2,}$`,
   ipv4: String.raw`^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(?:\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$`,
   ipv6:
-    `^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,7}:$` +
-    `|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$` +
-    `|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$` +
-    `|^:(:[0-9a-fA-F]{1,4}){1,7}$` +
-    `|^::$`,
+    '^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,7}:$' +
+    '|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$' +
+    '|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$' +
+    '|^:(:[0-9a-fA-F]{1,4}){1,7}$' +
+    '|^::$',
   uri: String.raw`^[a-zA-Z][a-zA-Z0-9+\-.]*:`,
-  uuid: `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`
+  uuid: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 };
 
 function checkRef(
@@ -199,7 +211,7 @@ function checkRef(
   }
 
   const ref = schema.$ref;
-  const match = /^#\/\$defs\/([^/]+)$/.exec(ref);
+  const match = LOCAL_DEF_REF_REGEX.exec(ref);
   const defName = match?.[1];
   if (defName === undefined) {
     errors.push(`${path}: unsupported $ref (only local #/$defs/... references are supported): ${ref}`);

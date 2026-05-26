@@ -4,27 +4,27 @@ import { type ReactNode, useState } from 'react';
 import type { AcidPalette } from '../../theme/palette.js';
 
 export interface WorkspaceTab {
+  /** Tab content. */
+  readonly content: ReactNode;
   /** Single-key hotkey (e.g. '1', '2', 'a'). */
   readonly key: string;
   /** Display label. */
   readonly label: string;
-  /** Tab content. */
-  readonly content: ReactNode;
 }
 
 export interface WorkspaceShellProps {
-  /** Tabs to render. First tab is active by default. */
-  readonly tabs: readonly WorkspaceTab[];
-  /** Semantic palette. */
-  readonly palette: AcidPalette;
-  /** Optional bottom status rail content. */
-  readonly statusRail?: ReactNode;
+  /** Controlled active tab key. If omitted, component manages its own state. */
+  readonly activeTab?: string;
   /** Optional header banner content (ANSI logo area). */
   readonly banner?: ReactNode;
   /** Called when active tab changes. */
   readonly onTabChange?: (key: string) => void;
-  /** Controlled active tab key. If omitted, component manages its own state. */
-  readonly activeTab?: string;
+  /** Semantic palette. */
+  readonly palette: AcidPalette;
+  /** Optional bottom status rail content. */
+  readonly statusRail?: ReactNode;
+  /** Tabs to render. First tab is active by default. */
+  readonly tabs: readonly WorkspaceTab[];
 }
 
 /**
@@ -71,21 +71,21 @@ export function WorkspaceShell({
       {banner ? <Box marginBottom={0}>{banner}</Box> : null}
 
       {/* Tab bar — BBS style: ═[1]Session══[2]Files══[3]Log═ */}
-      <Box flexDirection="row" borderStyle="single" borderColor={palette.frameBorder}>
+      <Box borderColor={palette.frameBorder} borderStyle="single" flexDirection="row">
         {tabs.map((tab, i) => {
           const isActive = tab.key === activeKey;
           return (
             <Box key={tab.key} marginRight={i < tabs.length - 1 ? 1 : 0}>
-              <Text color={isActive ? palette.frameBright : palette.muted} bold={isActive}>
+              <Text bold={isActive} color={isActive ? palette.frameBright : palette.muted}>
                 {'['}
               </Text>
-              <Text color={isActive ? palette.assistantAccent : palette.muted} bold>
+              <Text bold color={isActive ? palette.assistantAccent : palette.muted}>
                 {tab.key}
               </Text>
-              <Text color={isActive ? palette.frameBright : palette.muted} bold={isActive}>
+              <Text bold={isActive} color={isActive ? palette.frameBright : palette.muted}>
                 {']'}
               </Text>
-              <Text color={isActive ? palette.frameBright : palette.muted} bold={isActive}>
+              <Text bold={isActive} color={isActive ? palette.frameBright : palette.muted}>
                 {tab.label}
               </Text>
             </Box>

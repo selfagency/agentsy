@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { SSEParser, parseSSEStream } from './index.js';
+import type { SSEEvent } from './index.js';
+import { parseSSEStream, SSEParser } from './index.js';
 
 // Helper to create SSEParser with event collection
 function createParser(onError?: (_error: Error) => void) {
@@ -173,35 +174,33 @@ describe('SSEParser', () => {
   });
 });
 
-// Async generator fixtures for parseSSEStream tests
-// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by SSE parser
-async function* basicChunks() {
+// Generator fixtures for parseSSEStream tests
+function* basicChunks() {
   yield 'data: hello\n';
   yield '\n';
   yield 'data: world\n';
   yield '\n';
 }
 
-async function* basicAsyncChunks() {
+function* basicAsyncChunks() {
   yield 'data: chunk1\n';
   yield '\n';
   yield 'data: chunk2\n';
   yield '\n';
 }
 
-// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by SSE parser
-async function* crossChunkSplitChunks() {
+function* crossChunkSplitChunks() {
   yield 'data: hel';
   yield 'lo\n\n';
   yield 'data: worl';
   yield 'd\n\n';
 }
 
-async function* emptyChunks() {
+function* emptyChunks() {
   // yield nothing
 }
 
-async function* complexFieldsChunks() {
+function* complexFieldsChunks() {
   yield 'event: progress\n';
   yield 'id: msg1\n';
   yield 'data: {"step":1}\n';
@@ -209,7 +208,7 @@ async function* complexFieldsChunks() {
   yield '\n';
 }
 
-async function* openaiChunks() {
+function* openaiChunks() {
   yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"Hello"}}]}\n\n';
   yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":" world"}}]}\n\n';
   yield 'data: [DONE]\n\n';
@@ -217,7 +216,7 @@ async function* openaiChunks() {
 
 describe('parseSSEStream', () => {
   it('parses events from an async iterable', async () => {
-    const events = [];
+    const events: SSEEvent[] = [];
 
     for await (const event of parseSSEStream(basicChunks())) {
       events.push(event);
@@ -229,7 +228,7 @@ describe('parseSSEStream', () => {
   });
 
   it('parses events from an async iterable (async)', async () => {
-    const events = [];
+    const events: SSEEvent[] = [];
 
     for await (const event of parseSSEStream(basicAsyncChunks())) {
       events.push(event);
@@ -241,7 +240,7 @@ describe('parseSSEStream', () => {
   });
 
   it('handles cross-chunk splits in async iterable', async () => {
-    const events = [];
+    const events: SSEEvent[] = [];
 
     for await (const event of parseSSEStream(crossChunkSplitChunks())) {
       events.push(event);
@@ -253,7 +252,7 @@ describe('parseSSEStream', () => {
   });
 
   it('handles empty stream', async () => {
-    const events = [];
+    const events: SSEEvent[] = [];
 
     for await (const event of parseSSEStream(emptyChunks())) {
       events.push(event);
@@ -263,7 +262,7 @@ describe('parseSSEStream', () => {
   });
 
   it('parses complex events with all fields', async () => {
-    const events = [];
+    const events: SSEEvent[] = [];
 
     for await (const event of parseSSEStream(complexFieldsChunks())) {
       events.push(event);
@@ -279,7 +278,7 @@ describe('parseSSEStream', () => {
   });
 
   it('handles OpenAI-style streaming', async () => {
-    const events = [];
+    const events: SSEEvent[] = [];
 
     for await (const event of parseSSEStream(openaiChunks())) {
       events.push(event);
@@ -299,7 +298,7 @@ describe('parseSSEStream', () => {
       }
     });
 
-    const events = [];
+    const events: SSEEvent[] = [];
     for await (const event of parseSSEStream(stream)) {
       events.push(event);
     }
@@ -311,7 +310,7 @@ describe('parseSSEStream', () => {
     const releaseLock = vi.fn();
     const badStream = {
       getReader: () => ({
-        read: async () => {
+        read: () => {
           throw new Error('read failed');
         },
         releaseLock

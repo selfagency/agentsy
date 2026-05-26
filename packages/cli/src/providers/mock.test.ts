@@ -43,7 +43,7 @@ describe('createMockClient', () => {
     expect(first.thinking).toBeDefined();
 
     // Last chunk should have done=true
-    const last = chunks[chunks.length - 1] as Record<string, unknown>;
+    const last = chunks.at(-1) as Record<string, unknown>;
     expect(last.done).toBe(true);
   });
 

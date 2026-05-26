@@ -11,13 +11,15 @@ import { EventType } from '@agentsy/types';
 /**
  * Interrupt reason codes.
  */
-export enum InterruptReason {
-  USER_REQUEST = 'user_request',
-  RESOURCE_LIMIT = 'resource_limit',
-  SAFETY_CHECK = 'safety_check',
-  TIMEOUT = 'timeout',
-  ERROR = 'error'
-}
+export const InterruptReason = {
+  USER_REQUEST: 'user_request',
+  RESOURCE_LIMIT: 'resource_limit',
+  SAFETY_CHECK: 'safety_check',
+  TIMEOUT: 'timeout',
+  ERROR: 'error'
+} as const;
+
+export type InterruptReason = (typeof InterruptReason)[keyof typeof InterruptReason];
 
 /**
  * Interrupt configuration and handler.
@@ -149,8 +151,10 @@ export function createInterruptAbortController(): {
 export class TimeoutInterrupt {
   private timeoutId: ReturnType<typeof setTimeout> | undefined;
   private readonly interruptController: InterruptController;
+  readonly #timeoutMs: number;
 
-  constructor(private readonly timeoutMs: number) {
+  constructor(timeoutMs: number) {
+    this.#timeoutMs = timeoutMs;
     this.interruptController = new InterruptController();
   }
 
@@ -159,8 +163,8 @@ export class TimeoutInterrupt {
    */
   start(): void {
     this.timeoutId = setTimeout(() => {
-      this.interruptController.interrupt(InterruptReason.TIMEOUT, `Operation exceeded timeout of ${this.timeoutMs}ms`);
-    }, this.timeoutMs);
+      this.interruptController.interrupt(InterruptReason.TIMEOUT, `Operation exceeded timeout of ${this.#timeoutMs}ms`);
+    }, this.#timeoutMs);
   }
 
   /**

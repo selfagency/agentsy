@@ -4,7 +4,7 @@ import type { MemoryItem } from '../tier-types.js';
 import { createCanaryDetector } from './canary-detector.js';
 import type { Observation } from './observation-extractor.js';
 
-function makeMemory(id: string, content: string, importance: number = 0.8, accessCount: number = 5): MemoryItem {
+function makeMemory(id: string, content: string, importance = 0.8, accessCount = 5): MemoryItem {
   const now = 1_000_000;
   return {
     id,
@@ -14,7 +14,7 @@ function makeMemory(id: string, content: string, importance: number = 0.8, acces
     importance,
     writeHeap: 'event',
     reuseClass: 'hot',
-    createdAt: now - 1_000,
+    createdAt: now - 1000,
     lastAccessedAt: now - 100,
     accessCount,
     fingerprint: `fp-${id}`,
@@ -47,7 +47,7 @@ describe('CanaryDetector', () => {
 
   it('marks stale memory as refresh', () => {
     const memory = makeMemory('1', 'User likes dark mode');
-    memory.lastAccessedAt = 1_000_000 - 8 * 24 * 60 * 60 * 1_000; // 8 days ago
+    memory.lastAccessedAt = 1_000_000 - 8 * 24 * 60 * 60 * 1000; // 8 days ago
     const result = detector.check(memory, []);
     expect(result.status).toBe('stale');
     expect(result.action).toBe('refresh');

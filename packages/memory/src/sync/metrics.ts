@@ -1,9 +1,9 @@
 import type { SyncMetricsRegistry, SyncMetricsRegistrySnapshot } from './types.js';
 
 interface DurationAccumulator {
-  total: number;
   count: number;
   max: number;
+  total: number;
 }
 
 function createAccumulator(): DurationAccumulator {

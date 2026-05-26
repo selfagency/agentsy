@@ -10,10 +10,10 @@ import type { BaseRendererOptions, RendererHandle } from '../types.js';
  */
 interface DOMElement {
   appendChild?(element: DOMElement): DOMElement;
-  textContent?: string;
-  innerHTML?: string;
   className?: string;
   id?: string;
+  innerHTML?: string;
+  textContent?: string;
   [key: string]: unknown;
 }
 
@@ -22,30 +22,29 @@ interface DOMElement {
  */
 interface StreamingMarkdownModule {
   parser_create: (options: { target: DOMElement }) => unknown;
-  parser_write?: (parser: unknown, chunk: string) => void;
   parser_end?: (parser: unknown) => void;
+  parser_write?: (parser: unknown, chunk: string) => void;
 }
 
 /**
  * Interface for DOMPurify module.
  */
 interface DOMPurifyModule {
-  sanitize: (content: string) => string | DOMElement;
   removed?: unknown[];
+  sanitize: (content: string) => string | DOMElement;
 }
 
 /**
  * Options for the browser streaming markdown renderer.
  */
 export interface StreamingMarkdownRendererOptions extends BaseRendererOptions {
+  /** Callback fired if a security violation is detected during sanitization. */
+  onSecurityViolation?: () => void;
   /** Target DOM element where markdown will be rendered. Required. */
   target: DOMElement;
 
   /** Optional container for thinking blocks. If not provided, thinking is rendered inline. */
   thinkingContainer?: DOMElement | null;
-
-  /** Callback fired if a security violation is detected during sanitization. */
-  onSecurityViolation?: () => void;
 }
 
 /**
@@ -144,7 +143,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
    * @internal
    */
   async function renderAccumulatedMarkdown(chunk: string): Promise<void> {
-    if (!accumulatedMarkdown || !parser) {
+    if (!(accumulatedMarkdown && parser)) {
       return;
     }
 

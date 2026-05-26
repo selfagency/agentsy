@@ -11,17 +11,16 @@ export type StoreListener = (state: UIConversation) => void;
  * State is immutable; listeners are notified on every event.
  */
 export interface ConversationStore {
-  /** Get current conversation state. */
-  getState(): UIConversation;
-
   /** Apply event to store (synchronously updates state, notifies listeners). */
   dispatch(event: ConversationEvent): void;
 
-  /** Subscribe to state changes. Returns unsubscribe function. */
-  subscribe(listener: StoreListener): () => void;
-
   /** Get all events applied since store creation (for debugging/audit). */
   getEventLog(): ConversationEvent[];
+  /** Get current conversation state. */
+  getState(): UIConversation;
+
+  /** Subscribe to state changes. Returns unsubscribe function. */
+  subscribe(listener: StoreListener): () => void;
 }
 
 /**

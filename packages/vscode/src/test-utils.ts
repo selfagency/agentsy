@@ -41,14 +41,24 @@ export function createMockCancellationToken(initiallyCancelled = false): MockCan
  * @param stream - The stream to check
  */
 export function expectStreamToHaveAllAnchors(stream: Record<string, unknown>) {
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toBeDefined();
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('markdown');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('anchor');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('button');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('filetree');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('progress');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('reference');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('push');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('image');
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper used inside it() blocks
   expect(stream).toHaveProperty('audio');
 }

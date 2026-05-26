@@ -24,7 +24,7 @@ export function StreamingCursor({ color, isStreaming, symbol }: StreamingCursorP
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    if (!isStreaming || !showAnimatedCursor()) {
+    if (!(isStreaming && showAnimatedCursor())) {
       setFrame(0);
       return;
     }

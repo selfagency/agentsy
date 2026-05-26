@@ -15,9 +15,9 @@ import type {
 import { EventType } from '@agentsy/types';
 
 export interface ReasoningMapperOptions {
+  encryptReasoning?: boolean;
   runId: string;
   threadId?: string;
-  encryptReasoning?: boolean;
 }
 
 /**

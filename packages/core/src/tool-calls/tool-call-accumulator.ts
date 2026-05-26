@@ -4,16 +4,16 @@ import { parseJson } from '../structured/index.js';
 
 /** A native (JSON-format) tool call that has been fully assembled from streaming deltas. */
 export interface NativeToolCall {
+  arguments: JsonObject;
   /** Provider-assigned call ID, present when supplied by the provider (e.g. OpenAI `id` field). */
   id?: string;
   name: string;
-  arguments: JsonObject;
 }
 
 interface PendingCall {
+  argumentsBuffer: string;
   id?: string;
   name?: string;
-  argumentsBuffer: string;
 }
 
 /**
@@ -141,7 +141,7 @@ export class ToolCallAccumulator {
   public getPendingCallInfo(index: number): { name?: string; id?: string } | undefined {
     const pending = this.calls.get(index);
     if (pending === undefined) {
-      return undefined;
+      return;
     }
     const result: { name?: string; id?: string } = {};
     if (pending.name !== undefined) {
@@ -159,7 +159,7 @@ export class ToolCallAccumulator {
   public getPendingToolCallState(index: number): ToolCallState | undefined {
     const pending = this.calls.get(index);
     if (pending?.name === undefined) {
-      return undefined;
+      return;
     }
 
     if (pending.argumentsBuffer.length === 0) {

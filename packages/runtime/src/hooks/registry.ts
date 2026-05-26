@@ -1,10 +1,10 @@
-import type { RuntimeHookEvent, HookResult } from './types.js';
+import type { HookResult, RuntimeHookEvent } from './types.js';
 
 /** A registered hook handler with an optional priority for ordering. */
 export interface HookHandler {
+  handler: (event: RuntimeHookEvent) => Promise<HookResult>;
   id: string;
   priority?: number;
-  handler: (event: RuntimeHookEvent) => Promise<HookResult>;
 }
 
 /**
@@ -15,6 +15,18 @@ export interface HookHandler {
  * chain stops and the block reason is returned.
  */
 export interface HookRegistry {
+  /**
+   * Fire an event through all registered handlers in priority order.
+   *
+   * Returns the final `HookResult`. If any handler blocks, the chain
+   * stops immediately and the block reason propagates.
+   */
+  fire(event: RuntimeHookEvent): Promise<HookResult>;
+
+  /**
+   * List all currently registered handlers (for diagnostics / OTel).
+   */
+  list(): { eventType: RuntimeHookEvent['type']; handlerId: string; priority: number }[];
   /**
    * Register a handler for a specific event type.
    *
@@ -30,19 +42,6 @@ export interface HookRegistry {
    * Remove a handler by its registration id.
    */
   unregister(id: string): void;
-
-  /**
-   * Fire an event through all registered handlers in priority order.
-   *
-   * Returns the final `HookResult`. If any handler blocks, the chain
-   * stops immediately and the block reason propagates.
-   */
-  fire(event: RuntimeHookEvent): Promise<HookResult>;
-
-  /**
-   * List all currently registered handlers (for diagnostics / OTel).
-   */
-  list(): { eventType: RuntimeHookEvent['type']; handlerId: string; priority: number }[];
 }
 
 let _handlerIdCounter = 0;

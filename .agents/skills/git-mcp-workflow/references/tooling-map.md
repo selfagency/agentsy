@@ -279,7 +279,6 @@ The server exposes **7 grouped tools** plus `git_flow`, `git_lfs`, `git_docs`, a
   - `topic_action`: `start`/`finish`/`publish`/`list`/`update`/`delete`/`rename`/`checkout`/`track`
   - `control_action`: `continue` / `abort` (when a finish pauses on a conflict)
   - `config_action`: `add`/`update`/`rename`/`delete`
-
 - Key params: `topic` (branch type), `name`, `start_point`, `base_ref`, `preset` (classic/github/gitlab)
 - Merge/integration: `upstream_strategy`, `downstream_strategy`, `ff`, `keep_branch`, `rebase_before_finish`, `publish`
 - Set `GIT_ALLOW_FLOW_HOOKS=true` in the server environment to allow hook execution

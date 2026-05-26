@@ -1,14 +1,14 @@
-import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { ChatMessage } from '../message-conversion/index.js';
 import type { ProviderApiRequest, ProviderStreamChunk } from '../types/errors.js';
-import { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';
 import type {
   CancellationToken,
   LanguageModelChatRequest,
   LanguageModelChatResponse,
   LanguageModelChatResponseChunk
 } from './base-language-model-chat-provider.js';
+import { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';
 
 function makeCancellationToken(cancelled = false): CancellationToken {
   return {
@@ -60,7 +60,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
       this.streamChunks.push(chunk);
     };
 
-    // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
+    //
     return (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
       for await (const chunk of response) {
         pushChunk(chunk);
@@ -276,10 +276,11 @@ describe(BaseLanguageModelChatProvider, () => {
       const token = makeCancellationToken();
       const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST' };
       await expect(
-        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(
-          req,
-          token
-        )
+        (
+          provider as unknown as {
+            streamChat(r: typeof req, t: CancellationToken): Promise<unknown>;
+          }
+        ).streamChat(req, token)
       ).rejects.toThrow('Provider API request URL is required');
     });
 
@@ -295,10 +296,11 @@ describe(BaseLanguageModelChatProvider, () => {
       const token = makeCancellationToken();
       const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST', url: 'http://x' };
       await expect(
-        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(
-          req,
-          token
-        )
+        (
+          provider as unknown as {
+            streamChat(r: typeof req, t: CancellationToken): Promise<unknown>;
+          }
+        ).streamChat(req, token)
       ).rejects.toThrow('HTTP response has no body');
     });
 
@@ -313,10 +315,11 @@ describe(BaseLanguageModelChatProvider, () => {
       const token = makeCancellationToken();
       const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST', url: 'http://x' };
       await expect(
-        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(
-          req,
-          token
-        )
+        (
+          provider as unknown as {
+            streamChat(r: typeof req, t: CancellationToken): Promise<unknown>;
+          }
+        ).streamChat(req, token)
       ).rejects.toThrow('HTTP 500: Server Error');
     });
   });

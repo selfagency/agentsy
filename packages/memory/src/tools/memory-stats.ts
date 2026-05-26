@@ -2,9 +2,9 @@ import type { MemoryScope } from '../scope/scope-manager.js';
 import type { CapturedMemoryRecord } from './memory-capture.js';
 
 export interface MemoryStats {
-  totalRecords: number;
-  byScope: Record<MemoryScope, number>;
   averageContentLength: number;
+  byScope: Record<MemoryScope, number>;
+  totalRecords: number;
 }
 
 export interface MemoryStatsTool {

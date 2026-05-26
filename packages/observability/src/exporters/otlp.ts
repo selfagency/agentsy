@@ -20,16 +20,16 @@ import type { MetricData, ObservabilitySink, SpanData } from '../core/types.js';
 
 /** Options for {@link OtlpExporter}. */
 export interface OtlpExporterOptions {
-  /** OTLP HTTP endpoint (e.g. 'https://api.honeycomb.io/v1/traces'). */
-  endpoint: string;
   /** Optional API key or authorization header value. */
   apiKey?: string;
+  /** OTLP HTTP endpoint (e.g. 'https://api.honeycomb.io/v1/traces'). */
+  endpoint: string;
+  /** Flush interval in milliseconds (default: 5000). */
+  flushIntervalMs?: number;
   /** Custom headers merged into every export request. */
   headers?: Record<string, string>;
   /** Maximum batch size before forcing a flush (default: 64). */
   maxBatchSize?: number;
-  /** Flush interval in milliseconds (default: 5000). */
-  flushIntervalMs?: number;
 }
 
 /** Internal buffer entry for batched export. */
@@ -65,37 +65,49 @@ export class OtlpExporter implements ObservabilitySink {
       ...options.headers
     };
 
-    const interval = options.flushIntervalMs ?? 5_000;
+    const interval = options.flushIntervalMs ?? 5000;
     if (interval > 0) {
       this._flushTimer = setInterval(() => {
-        void this.flush();
+        this.flush().catch(() => {
+          // Periodic flush errors are handled internally
+        });
       }, interval);
       this._flushTimer.unref();
     }
   }
 
   export(span: SpanData): Promise<void> | void {
-    if (this._shutdown) return;
+    if (this._shutdown) {
+      return;
+    }
 
     this._buffer.push({ data: span, type: 'span' });
 
     if (this._buffer.length >= this._maxBatchSize) {
-      void this.flush();
+      this.flush().catch(() => {
+        // Batch flush errors are handled internally
+      });
     }
   }
 
   exportMetric(metric: MetricData): Promise<void> | void {
-    if (this._shutdown) return;
+    if (this._shutdown) {
+      return;
+    }
 
     this._buffer.push({ data: metric, type: 'metric' });
 
     if (this._buffer.length >= this._maxBatchSize) {
-      void this.flush();
+      this.flush().catch(() => {
+        // Batch flush errors are handled internally
+      });
     }
   }
 
   async flush(): Promise<void> {
-    if (this._buffer.length === 0 || this._shutdown) return;
+    if (this._buffer.length === 0 || this._shutdown) {
+      return;
+    }
 
     const batch = this._buffer.splice(0, this._maxBatchSize);
     const payload = {
@@ -152,11 +164,20 @@ export class OtlpExporter implements ObservabilitySink {
   }
 
   private _metricToOtlp(metric: MetricData): Record<string, unknown> {
+    let metricKind: string;
+    if (metric.type === 'counter') {
+      metricKind = 'sum';
+    } else if (metric.type === 'histogram') {
+      metricKind = 'histogram';
+    } else {
+      metricKind = 'gauge';
+    }
+
     return {
       name: metric.name,
       description: '',
       unit: metric.unit ?? '',
-      [metric.type === 'counter' ? 'sum' : metric.type === 'histogram' ? 'histogram' : 'gauge']: {
+      [metricKind]: {
         dataPoints: [
           {
             startTimeUnixNano: '0',

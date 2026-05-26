@@ -26,6 +26,7 @@ export function verifySyncChecksum(payload: unknown, checksum: string): boolean 
   return computeSyncChecksum(payload) === checksum;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult {
   const errors: string[] = [];
 
@@ -45,10 +46,10 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
   if (records === null) {
     errors.push('records must be an array');
   } else {
-    records.forEach((record, index) => {
+    for (const [index, record] of records.entries()) {
       if (!isPlainObject(record)) {
         errors.push(`records[${index}] must be an object`);
-        return;
+        continue;
       }
 
       if (typeof record.id !== 'string' || record.id.length === 0) {
@@ -68,7 +69,7 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
       if (typeof record.content !== 'string') {
         errors.push(`records[${index}].content must be a string`);
       }
-    });
+    }
   }
 
   return {

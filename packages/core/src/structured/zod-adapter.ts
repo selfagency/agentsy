@@ -10,9 +10,8 @@
  */
 
 import type { JsonObject } from '@agentsy/types';
-
-import { validateJsonSchema } from './validate-json-schema.js';
 import type { ValidateJsonSchemaOptions } from './validate-json-schema.js';
+import { validateJsonSchema } from './validate-json-schema.js';
 
 // Use dynamic imports so consumers without Zod don't pay a load-time penalty.
 // The types below cover the minimal surface we use from Zod.
