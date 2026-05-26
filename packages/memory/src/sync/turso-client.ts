@@ -4,6 +4,7 @@ import { connect } from '@tursodatabase/sync';
 import type { SyncRecord, SyncSnapshot, TursoClient, TursoSyncConfig, TursoUploadResult } from './types.js';
 
 class NoopTursoClient implements TursoClient {
+  // biome-ignore lint/suspicious/useAwait: matches TursoClient interface
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
     return {
       nextCursor: snapshot.cursor,
@@ -11,6 +12,7 @@ class NoopTursoClient implements TursoClient {
     };
   }
 
+  // biome-ignore lint/suspicious/useAwait: matches TursoClient interface
   async download(cursor: string): Promise<SyncSnapshot> {
     return {
       cursor,

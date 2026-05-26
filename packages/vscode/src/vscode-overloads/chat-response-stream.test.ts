@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CancellationToken, Event, Location, Uri } from 'vscode';
 
-import { createVSCodeChatResponseStream } from './chatResponseStream.js';
+import { createVSCodeChatResponseStream } from './chat-response-stream.js';
 
 interface MockCancellationToken extends CancellationToken {
   cancel(): void;

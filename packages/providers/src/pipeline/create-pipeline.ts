@@ -59,13 +59,13 @@ const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   zai: normalizeZAiChunk
 };
 
-async function* processSSEEvent(
+function* processSSEEvent(
   sseEvent: { data?: string },
   normalizer: Normalizer,
   processor: LLMStreamProcessor,
   provider: NormalizerProvider,
   jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number }
-): AsyncGenerator<PipelineEvent> {
+): Generator<PipelineEvent> {
   if (!sseEvent.data || sseEvent.data === '[DONE]') {
     return;
   }

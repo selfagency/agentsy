@@ -42,34 +42,34 @@ describe(IndexingPipeline, () => {
   });
 
   describe('chunk', () => {
-    it('should chunk data source with semantic strategy', async () => {
+    it('should chunk data source with semantic strategy', () => {
       const chunks = pipeline.chunk(testDataSource, 'semantic');
 
       expect(Array.isArray(chunks)).toBeTruthy();
       expect(chunks.length).toBeGreaterThan(0);
     });
 
-    it('should chunk data source with fixed strategy', async () => {
+    it('should chunk data source with fixed strategy', () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
 
       expect(Array.isArray(chunks)).toBeTruthy();
       expect(chunks.length).toBeGreaterThan(0);
     });
 
-    it('should chunk data source with ast strategy', async () => {
+    it('should chunk data source with ast strategy', () => {
       const chunks = pipeline.chunk(testDataSource, 'ast');
 
       expect(Array.isArray(chunks)).toBeTruthy();
     });
 
-    it('should generate unique chunk IDs', async () => {
+    it('should generate unique chunk IDs', () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
       const ids = chunks.map(chunk => chunk.id);
 
       expect(new Set(ids).size).toBe(ids.length);
     });
 
-    it('should include metadata in chunks', async () => {
+    it('should include metadata in chunks', () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
 
       for (const chunk of chunks) {
@@ -81,7 +81,7 @@ describe(IndexingPipeline, () => {
   });
 
   describe('semanticChunk', () => {
-    it('should split content into semantic chunks', async () => {
+    it('should split content into semantic chunks', () => {
       const content = 'First sentence. Second sentence. Third paragraph with more content here.';
       const chunks = pipeline.semanticChunk(content, sourcePath);
 
@@ -114,7 +114,7 @@ describe(IndexingPipeline, () => {
       }
     });
 
-    it('should overlap consecutive chunks by configured word overlap', async () => {
+    it('should overlap consecutive chunks by configured word overlap', () => {
       const content = 'One two three four five six seven eight nine ten eleven twelve thirteen';
       const pipelineWithOverlap = new IndexingPipeline({
         chunkOverlap: 2,
@@ -145,7 +145,7 @@ describe(IndexingPipeline, () => {
   });
 
   describe('astChunk', () => {
-    it('should handle TypeScript code for AST chunking', async () => {
+    it('should handle TypeScript code for AST chunking', () => {
       const tsCode = `
 function example() {
   const value = 42;
@@ -182,7 +182,7 @@ function second() {
 
   // Note: fixed-size chunking has implicit overlap of 2-3 words based on word boundaries
   describe('index', () => {
-    it('should index chunks into document structure', async () => {
+    it('should index chunks into document structure', () => {
       const chunks = pipeline.chunk(testDataSource, 'semantic');
       const document = pipeline.index(chunks);
 
@@ -191,7 +191,7 @@ function second() {
       expect(document.chunks).toStrictEqual(chunks);
     });
 
-    it('should generate consistent document ID for same content', async () => {
+    it('should generate consistent document ID for same content', () => {
       const chunks1 = pipeline.chunk(testDataSource, 'semantic');
       const chunks2 = pipeline.chunk(testDataSource, 'semantic');
 

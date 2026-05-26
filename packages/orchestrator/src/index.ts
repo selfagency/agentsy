@@ -3,7 +3,7 @@
 // Agent registry and discovery
 export { AgentRegistry } from './agents/registry.js';
 export { OrchestrationEngine } from './core/engine.js';
-export { createOrchestratorLoop } from './orchestratorLoop.js';
+export { createOrchestratorLoop } from './orchestrator-loop.js';
 // Scheduler exports (consolidated from @agentsy/orchestrator/scheduler)
 export * from './scheduler/index.js';
 // Type definitions

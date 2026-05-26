@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createPipeline } from './create-pipeline.js';
 
+// biome-ignore lint/suspicious/useAwait: async generator yields values
 async function* mockOpenAIStream() {
   yield 'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n';
   yield 'data: {"choices":[{"delta":{"content":" "}}]}\n\n';
@@ -9,17 +10,20 @@ async function* mockOpenAIStream() {
   yield 'data: [DONE]\n\n';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator yields values
 async function* mockStreamWithBadJson() {
   yield 'data: {invalid json}\n\n';
   yield 'data: [DONE]\n\n';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator yields values
 async function* mockStreamWithJson() {
   yield 'data: {"choices":[{"delta":{"content":"hello"}}]}\n\n';
   yield 'data: {"choices":[{"delta":{"content":"world"}}]}\n\n';
   yield 'data: [DONE]\n\n';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator yields values
 async function* mockClaudeWithThinking() {
   yield 'data: {"type":"content_block_start","index":0,"content_block":{"type":"thinking"}}\n\n';
   yield 'data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Let me think..."}}\n\n';

@@ -18,12 +18,14 @@ import { createVersionTracker } from './version-tracker.js';
 
 export type RawSourceType = 'document' | 'conversation' | 'capture';
 
+/** Input payload for capturing raw unstructured content into the wiki. */
 export interface RawCaptureInput {
   content: string;
   sourceId: string;
   sourceType: RawSourceType;
 }
 
+/** Stored record of a raw content capture, including normalized text. */
 export interface RawCapture {
   content: string;
   createdAt: Date;
@@ -33,6 +35,7 @@ export interface RawCapture {
   sourceType: RawSourceType;
 }
 
+/** Input payload for creating or updating a wiki page. */
 export interface WikiPageInput {
   actorId?: string;
   body: string;
@@ -43,6 +46,7 @@ export interface WikiPageInput {
   writerIds?: string[];
 }
 
+/** A wiki page stored in the knowledge base. */
 export interface WikiPage {
   body: string;
   format: 'markdown' | 'text' | 'code' | 'json';
@@ -54,6 +58,7 @@ export interface WikiPage {
   writerIds: string[];
 }
 
+/** A single historical revision entry for a wiki page. */
 export interface WikiPageHistoryEntry {
   actorId: string;
   body: string;
@@ -61,26 +66,31 @@ export interface WikiPageHistoryEntry {
   version: number;
 }
 
+/** Added and removed lines between two page versions. */
 export interface PageDiff {
   addedLines: string[];
   removedLines: string[];
 }
 
+/** A semantic relation linking one wiki page to another. */
 export interface ConceptRelation {
   relation: string;
   toPageId: string;
 }
 
+/** A vector embedding entry for semantic search. */
 export interface VectorEntry {
   embedding: number[];
   pageId: string;
 }
 
+/** Result from a vector or hybrid search query. */
 export interface VectorSearchResult {
   pageId: string;
   score: number;
 }
 
+/** Facade over the wiki knowledge base — pages, vector search, entity linking, version history. */
 export interface WikiManager {
   captureRaw(input: RawCaptureInput): Promise<RawCapture>;
   diffPageVersions(pageId: string, fromVersion: number, toVersion: number): Promise<PageDiff>;
@@ -103,6 +113,7 @@ export interface WikiManager {
   upsertVector(pageId: string, embedding: number[]): Promise<void>;
 }
 
+/** Dependencies required to construct a WikiManager instance. */
 export interface WikiManagerDependencies {
   contentProcessor?: ContentProcessor;
   db?: MemoryDatabase | undefined;
@@ -274,14 +285,15 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       return Promise.resolve([...(history.get(pageId) ?? [])].map(entry => ({ ...entry })));
     },
 
-    // biome-ignore lint: Implements WikiManager interface requiring Promise return, synchronous map operations
-    linkConcepts(fromPageId, toPageId, relation) {
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
+    async linkConcepts(fromPageId, toPageId, relation) {
       const existing = concepts.get(fromPageId) ?? [];
       existing.push({ relation, toPageId });
       concepts.set(fromPageId, existing);
     },
 
-    linkPages(fromPageId: string, toPageId: string) {
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
+    async linkPages(fromPageId: string, toPageId: string) {
       navigation.linkPages(fromPageId, toPageId);
     },
 
@@ -603,11 +615,13 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return Promise.resolve(rows.map(rowToHistoryEntry));
     },
 
-    linkConcepts(fromPageId, toPageId, relation) {
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
+    async linkConcepts(fromPageId, toPageId, relation) {
       db.insert(wikiConcepts).values({ fromPageId, toPageId, relation }).onConflictDoNothing().run();
     },
 
-    linkPages(fromPageId: string, toPageId: string) {
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
+    async linkPages(fromPageId: string, toPageId: string) {
       db.insert(wikiBacklinks).values({ fromPageId, toPageId }).onConflictDoNothing().run();
     },
 

@@ -230,7 +230,7 @@ describe('createWikiManager with SQLite', () => {
   });
 });
 
-async function createMockEmbedding(_text: string): Promise<number[]> {
+function createMockEmbedding(_text: string): number[] {
   // Deterministic mock embedding for test stability
   return [0.1, 0.2, 0.3, 0.4];
 }

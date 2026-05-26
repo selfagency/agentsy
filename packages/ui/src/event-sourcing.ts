@@ -1,4 +1,4 @@
-import { addPartToMessage, finishMessage, updateToolCallInMessage } from './eventHelpers.js';
+import { addPartToMessage, finishMessage, updateToolCallInMessage } from './event-helpers.js';
 import type { ConversationEvent, UIConversation, UIMessage } from './types.js';
 
 /**

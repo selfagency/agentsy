@@ -1,4 +1,4 @@
-import { applyConversationEvent } from './eventSourcing.js';
+import { applyConversationEvent } from './event-sourcing.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 
 /**

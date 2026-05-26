@@ -95,7 +95,7 @@ describe('ThinkingBlock' as const, () => {
     expect(output).toContain('complete thought');
   });
 
-  it('animates spinner during streaming blockquote', async () => {
+  it('animates spinner during streaming blockquote', () => {
     const { lastFrame, unmount } = render(
       <ThinkingBlock isStreaming={true} style="blockquote" text="thinking" theme={mockTheme} />
     );

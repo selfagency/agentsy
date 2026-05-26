@@ -195,7 +195,7 @@ describe('Phase 1: three-tier wiki foundation', () => {
     });
   });
 
-  it('generates local embeddings for vector indexing', async () => {
+  it('generates local embeddings for vector indexing', () => {
     const embeddings = createLocalEmbeddingEngine({ dimensions: 8 });
     const vector = embeddings.embed('OAuth PKCE');
 

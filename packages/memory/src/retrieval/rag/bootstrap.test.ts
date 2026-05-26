@@ -13,7 +13,7 @@ describe('RAG bootstrapper', () => {
           sourceType: 'file'
         }
       ],
-      ingest: async input => {
+      ingest: input => {
         calls.push(input.sourceId);
         return { inserted: 1, skipped: 0, updated: 0 };
       }

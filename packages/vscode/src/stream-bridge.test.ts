@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LanguageModelChatResponseChunk } from './provider/base-language-model-chat-provider.js';
 import { bridgeStream, VSCodeStreamBridge } from './stream-bridge.js';
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable return type
 async function* sourceChunks(): AsyncIterable<StreamChunk> {
   yield { content: 'a' };
   yield { thinking: 'b' };
@@ -11,10 +12,10 @@ async function* sourceChunks(): AsyncIterable<StreamChunk> {
 describe(VSCodeStreamBridge, () => {
   it('writes mapped chunks in order and calls onRawChunk first', async () => {
     const calls: string[] = [];
-    const onRawChunk = vi.fn(async (_chunk: StreamChunk) => {
+    const onRawChunk = vi.fn((_chunk: StreamChunk) => {
       calls.push('raw');
     });
-    const onChunk = vi.fn(async () => {
+    const onChunk = vi.fn(() => {
       calls.push('chunk');
     });
 

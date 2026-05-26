@@ -22,7 +22,7 @@ function createAbortError(): Error {
   return error;
 }
 
-export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const { maxAttempts = 3, initialDelay = 1000, maxDelay = 30_000, backoffFactor = 2, signal } = options;
 
   return new Promise((resolve, reject) => {

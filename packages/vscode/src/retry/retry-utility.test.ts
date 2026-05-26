@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createMockCancellationToken } from '../test-utils.js';
-import { createRetryUtility, RetryUtility } from './retryUtility.js';
+import { createRetryUtility, RetryUtility } from './retry-utility.js';
 
 describe('Retry Utility', () => {
   const mockCancellationToken = createMockCancellationToken();

@@ -153,7 +153,7 @@ export function createRequestHandler(options: RequestHandlerOptions): RequestHan
 
   function buildHandler(boundModel?: string): RequestHandler {
     return {
-      async complete(request: CompletionRequest): Promise<CompletionResponse> {
+      complete(request: CompletionRequest): Promise<CompletionResponse> {
         const model = boundModel ?? request.model;
         const resolved = findProvider(model);
 
@@ -168,7 +168,7 @@ export function createRequestHandler(options: RequestHandlerOptions): RequestHan
         });
       },
 
-      async stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
+      stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
         const model = boundModel ?? request.model;
         const resolved = findProvider(model);
 

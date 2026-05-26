@@ -16,6 +16,7 @@ type RuntimeMergeNode = Extract<RuntimeWorkflowNode, { type: NodeType.MERGE }>;
 export type { TaskScheduler } from '../scheduler/index.js';
 
 // Exported interfaces for public API
+/** Runtime context for an in-progress workflow execution. */
 export interface WorkflowContext {
   context: Record<string, unknown>;
   endTime: Date | null;
@@ -24,6 +25,7 @@ export interface WorkflowContext {
   workflow: Workflow;
 }
 
+/** Options that control workflow execution behavior. */
 export interface ExecutionOptions {
   monitoring?: boolean;
   recovery?: boolean;
@@ -113,6 +115,7 @@ function createWorkflowExecution(workflow: Workflow, options: ExecutionOptions):
   const nodeResults = new Map<string, unknown>();
 
   return {
+    // biome-ignore lint/suspicious/useAwait: matches WorkflowExecution interface
     async cancel(): Promise<void> {
       cancelled = true;
     },
@@ -452,7 +455,7 @@ export class OrchestrationEngine extends EventEmitter {
     this.#scheduler = scheduler;
   }
 
-  async create(spec: WorkflowSpec): Promise<Workflow> {
+  create(spec: WorkflowSpec): Workflow {
     const workflow = new Workflow(spec, this.#registry, this.#scheduler);
 
     // Validate workflow

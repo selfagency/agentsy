@@ -1,8 +1,8 @@
-# Phase R1 — Plan Synchronization (Read-Only)
+# Phase R1 — Plan Synchronization ✅ COMPLETE
 
-**Status:** 🟡 Ready to execute  
-**Effort:** ~1 hour  
-**Gate:** Plan files committed; no code touched  
+**Status:** ✅ COMPLETE (2026-05-26)
+**Effort:** ~1 hour
+**Gate:** Plan files committed; no code touched
 **Next:** Phase 1
 
 ---
@@ -13,13 +13,17 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 
 **Principle:** Make documentation match reality, not vice versa.
 
+**Status:** ✅ ALL 8 FILES UPDATED (2026-05-26)
+
 ---
 
-## Tasks
+## Tasks — ✅ COMPLETE
 
 ### TASK-R1-001: `packages/types/IMPLEMENTATION-PLAN.md`
 
-**Action:** Mark completed + document changes
+**Action:** Mark completed + document changes ✅
+
+**Result:**
 
 ```markdown
 ## TASK-067: Types Audit
@@ -39,16 +43,18 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 - Zero violations in `pnpm check-types`
 ```
 
-**Sections to add:**
+**Sections added:**
 
 - Phase 0: Mark all type tasks ✅
-- Phase 1: TASK-090 (external API posture) — add scope
+- Phase 1: TASK-090 (external API posture) — added scope
 
 ---
 
 ### TASK-R1-002: `packages/providers/IMPLEMENTATION-PLAN.md`
 
-**Action:** Add Phase 2 + Phase 3.5 sections
+**Action:** Add Phase 2 + Phase 3.5 sections ✅
+
+**Result:**
 
 ```markdown
 ## Phase 2 — Provider Request Path
@@ -76,7 +82,9 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 
 ### TASK-R1-003: `packages/core/IMPLEMENTATION-PLAN.md`
 
-**Action:** Mark stream-to-events complete
+**Action:** Mark stream-to-events complete ✅
+
+**Result:**
 
 ```markdown
 ## Phase 2 — Stream Normalization
@@ -102,7 +110,9 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 
 ### TASK-R1-004: `packages/renderers/IMPLEMENTATION-PLAN.md`
 
-**Action:** Add Phase 2 + Phase 7 sections
+**Action:** Add Phase 2 + Phase 7 sections ✅
+
+**Result:**
 
 ```markdown
 ## Phase 2 — Ink TUI Components
@@ -124,7 +134,9 @@ Folded into Phase 2 renderers work.
 
 ### TASK-R1-005: `packages/cli/IMPLEMENTATION-PLAN.md`
 
-**Action:** Recategorize chat work + update pending sections
+**Action:** Recategorize chat work + update pending sections ✅
+
+**Result:**
 
 ```markdown
 ## Phase 2 — Interactive Chat (Readline)
@@ -157,7 +169,9 @@ Folded into Phase 2 renderers work.
 
 ### TASK-R1-006: `packages/plugins/IMPLEMENTATION-PLAN.md`
 
-**Action:** Mark manifest complete; update pending sections
+**Action:** Mark manifest complete; update pending sections ✅
+
+**Result:**
 
 ```markdown
 ## Phase 1 — Plugin Manifest
@@ -190,12 +204,19 @@ Folded into Phase 2 renderers work.
 
 ### TASK-R1-007: `packages/orchestrator/IMPLEMENTATION-PLAN.md`
 
-**Action:** Mark P0-2 complete; add Phase 4 sections
+**Action:** Mark P0-2 complete; add Phase 4 sections ✅
+
+**Result:**
 
 ```markdown
-## Phase 0-2 — Hook Registry & Compilation
+## Phase 0-2 — Hook Registry & Compilation ✅ COMPLETE (P0-2 VERIFIED 2026-05-25)
 
-**TASK-HOOK-001..004:** ✅ COMPLETE (P0-2 verified 2026-05-25)
+| Task          | Description                                                                    | Completed | Date       |
+| ------------- | ------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-HOOK-001 | Define `HookDefinition` type and implement `HookRegistry` class.                | ✅        | 2026-05-25 |
+| TASK-HOOK-002 | Implement `compileHooks(registry, baseOptions)` with priority merging.          | ✅        | 2026-05-25 |
+| TASK-HOOK-003 | Register first-party builtin hooks (memory, skills, budget, observability).     | ✅        | 2026-05-25 |
+| TASK-HOOK-004 | Implement `createAgentSession(agentDef, config)` factory.                      | ✅        | 2026-05-25 |
 
 **Evidence:**
 
@@ -203,6 +224,8 @@ Folded into Phase 2 renderers work.
 - `packages/orchestrator/src/hooks/registry.ts` — registry implementation
 - `packages/orchestrator/src/hooks/compile.ts` — compilation
 - All hooks tested in `__tests__/hooks/`
+
+**Verification:** P0-2 COMPLETE ✅ (verified 2026-05-25 codebase audit)
 
 ---
 
@@ -215,7 +238,9 @@ Folded into Phase 2 renderers work.
 
 ### TASK-R1-008: `packages/prompts/IMPLEMENTATION-PLAN.md`
 
-**Action:** Create file if missing; add Phase 4 sections
+**Action:** Create file if missing; add Phase 4 sections ✅
+
+**Result:** File exists, Phase 4 sections added
 
 ```markdown
 # @agentsy/prompts Implementation Plan
@@ -243,11 +268,22 @@ Folded into Phase 2 renderers work.
 
 For each file:
 
-- [ ] File updated with verified completion marks (✅ dates)
-- [ ] New phase sections added with TASK scopes
-- [ ] No code changes made (plan-only)
-- [ ] Cross-references to other packages checked
-- [ ] Markdown formatting valid
+- [x] File updated with verified completion marks (✅ dates)
+- [x] New phase sections added with TASK scopes
+- [x] No code changes made (plan-only)
+- [x] Cross-references to other packages checked
+- [x] Markdown formatting valid
+
+**All 8 files:**
+
+- [x] `packages/types/IMPLEMENTATION-PLAN.md`
+- [x] `packages/providers/IMPLEMENTATION-PLAN.md`
+- [x] `packages/core/IMPLEMENTATION-PLAN.md`
+- [x] `packages/renderers/IMPLEMENTATION-PLAN.md`
+- [x] `packages/cli/IMPLEMENTATION-PLAN.md`
+- [x] `packages/plugins/IMPLEMENTATION-PLAN.md`
+- [x] `packages/orchestrator/IMPLEMENTATION-PLAN.md`
+- [x] `packages/prompts/IMPLEMENTATION-PLAN.md`
 
 ---
 
@@ -261,4 +297,5 @@ For each file:
 
 ---
 
+**Status:** ✅ **PHASE R1 COMPLETE** (2026-05-26)
 **Next phase:** `03-PHASE-1-CONTRACT-STABILIZATION.md`

@@ -40,6 +40,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
   public streamChunks: ProviderStreamChunk[] = [];
   public errorCode = 'internal_error';
 
+  // biome-ignore lint/suspicious/useAwait: overrides abstract class method
   protected async buildRequest(
     messages: ChatMessage[],
     request: LanguageModelChatRequest
@@ -75,12 +76,14 @@ class TestProvider extends BaseLanguageModelChatProvider {
   }
 
   // Override streamChat for unit testing (no real HTTP)
+  // biome-ignore lint/suspicious/useAwait: overrides abstract class method
   protected async streamChat(
     _request: ProviderApiRequest & { signal?: AbortSignal },
     _token: CancellationToken
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const chunks = this.streamChunks;
     const mockChunks = chunks.length > 0 ? [...chunks] : [{ content: 'Hello' }];
+    // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable return type
     return (async function* () {
       for (const c of mockChunks) {
         yield c;
@@ -90,6 +93,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
 }
 
 class RealStreamProvider extends BaseLanguageModelChatProvider {
+  // biome-ignore lint/suspicious/useAwait: overrides abstract class method
   protected async buildRequest(
     messages: ChatMessage[],
     request: LanguageModelChatRequest
@@ -203,6 +207,7 @@ describe(BaseLanguageModelChatProvider, () => {
 
     it('returns error response on exception', async () => {
       class FailingProvider extends TestProvider {
+        // biome-ignore lint/suspicious/useAwait: overrides parent class method
         protected async buildRequest(): Promise<ProviderApiRequest> {
           throw new Error('API error');
         }

@@ -46,7 +46,7 @@ describe('createBackupManager', () => {
       }
     ]);
     const manager = createBackupManager({
-      applySnapshot: async snapshot => {
+      applySnapshot: snapshot => {
         restored = snapshot;
       },
       databaseId: 'agentsy-memory',
@@ -86,7 +86,7 @@ describe('createBackupManager', () => {
       }
     ]);
     const manager = createBackupManager({
-      applySnapshot: async snapshot => {
+      applySnapshot: snapshot => {
         current = snapshot;
       },
       databaseId: 'agentsy-memory',

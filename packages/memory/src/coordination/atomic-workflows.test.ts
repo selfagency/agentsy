@@ -10,19 +10,19 @@ describe('AtomicWorkflowCoordinator', () => {
     const result = await coordinator.runWorkflow('wf-1', [
       {
         name: 'raw',
-        run: async (): Promise<void> => {
+        run: (): void => {
           events.push('run:raw');
         }
       },
       {
         name: 'wiki',
-        run: async (): Promise<void> => {
+        run: (): void => {
           events.push('run:wiki');
         }
       },
       {
         name: 'vector',
-        run: async (): Promise<void> => {
+        run: (): void => {
           events.push('run:vector');
         }
       }
@@ -41,28 +41,28 @@ describe('AtomicWorkflowCoordinator', () => {
     const result = await coordinator.runWorkflow('wf-rollback', [
       {
         name: 'raw',
-        rollback: async (): Promise<void> => {
+        rollback: (): void => {
           events.push('rollback:raw');
         },
-        run: async (): Promise<void> => {
+        run: (): void => {
           events.push('run:raw');
         }
       },
       {
         name: 'wiki',
-        rollback: async (): Promise<void> => {
+        rollback: (): void => {
           events.push('rollback:wiki');
         },
-        run: async (): Promise<void> => {
+        run: (): void => {
           events.push('run:wiki');
         }
       },
       {
         name: 'vector',
-        rollback: async (): Promise<void> => {
+        rollback: (): void => {
           events.push('rollback:vector');
         },
-        run: async (): Promise<void> => {
+        run: (): void => {
           events.push('run:vector');
           throw new Error('Step failed');
         }

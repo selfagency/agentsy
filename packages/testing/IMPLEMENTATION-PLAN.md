@@ -2,9 +2,9 @@
 goal: @agentsy/testing production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-26
 owner: testing-maintainers
-status: In progress
+status: Phase 1 COMPLETE | Phase 2 In Progress
 tags: [feature, architecture, testing, fixtures, e2e]
 ---
 
@@ -35,10 +35,10 @@ This plan defines the production implementation order for `@agentsy/testing` as 
 
 | Task             | Description                                                                                                                         | Completed | Date |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                                                                             |           |      |
-| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls.                                                           |           |      |
-| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                                                                           |           |      |
-| TASK-TESTING-013 | Define shared MSW setup contracts (`setupServer`, lifecycle hooks, handler composition) for workspace-wide Node/browser test usage. |           |      |
+| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                                                                             | ✅ | 2026-05-26 |
+| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls.                                                           | ✅ | 2026-05-26 |
+| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                                                                           | ✅ | 2026-05-26 |
+| TASK-TESTING-013 | Define shared MSW setup contracts (`setupServer`, lifecycle hooks, handler composition) for workspace-wide Node/browser test usage. | ✅ | 2026-05-26 |
 
 ### Implementation Phase 2
 
@@ -49,7 +49,7 @@ This plan defines the production implementation order for `@agentsy/testing` as 
 | TASK-TESTING-004 | Implement shared mock providers/tools and scenario runner utilities.                                                                |           |      |
 | TASK-TESTING-005 | Implement snapshot/golden management helpers and update workflow.                                                                   |           |      |
 | TASK-TESTING-006 | Implement red-team/adversarial fixture sets and safety checks.                                                                      |           |      |
-| TASK-TESTING-014 | Implement reusable MSW handler libraries for provider/model/memory/retrieval HTTP surfaces and document override patterns per test. |           |      |
+| TASK-TESTING-014 | Implement reusable MSW handler libraries for provider/model/memory/retrieval HTTP surfaces and document override patterns per test. | ⚠️ 90%  | 2026-05-26 |
 
 ### Implementation Phase 3
 

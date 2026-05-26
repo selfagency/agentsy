@@ -19,7 +19,7 @@ export class RetrievalEngine {
     };
   }
 
-  async index(documents: Document[]): Promise<void> {
+  index(documents: Document[]): void {
     for (const document of documents) {
       this.documents.set(document.id, document);
 
@@ -106,7 +106,7 @@ export class RetrievalEngine {
     };
   }
 
-  async hasDoc(docId: string): Promise<boolean> {
+  hasDoc(docId: string): boolean {
     return this.documents.has(docId);
   }
 

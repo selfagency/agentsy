@@ -213,7 +213,7 @@ describe('MCP Protocol', () => {
             description: 'A tool that throws',
             inputSchema: { type: 'object', properties: {} }
           },
-          handler: async () => {
+          handler: () => {
             throw new Error('Tool failed');
           }
         }

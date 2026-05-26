@@ -1,7 +1,7 @@
 import type { MCPTransport } from '@agentsy/core/processor';
 import type { CancellationToken, ChatResponseStream } from 'vscode';
 
-import { VSCodeMCPBridgeHelper } from '../mcp/vscodeBridgeHelper.js';
+import { VSCodeMCPBridgeHelper } from '../mcp/vscode-bridge-helper.js';
 
 /**
  * MCPChatBridge bridges an MCP transport to VS Code's ChatResponseStream.

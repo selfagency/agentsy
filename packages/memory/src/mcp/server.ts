@@ -31,10 +31,7 @@ export interface MemoryMCPServer {
  * In stdio mode, reads JSON-RPC from stdin and writes to stdout.
  * In HTTP mode, starts a simple HTTP server (SSE-based).
  */
-export async function createMemoryMCPServer(
-  engine: MemoryEngine,
-  options: MemoryMCPServerOptions = {}
-): Promise<MemoryMCPServer> {
+export function createMemoryMCPServer(engine: MemoryEngine, options: MemoryMCPServerOptions = {}): MemoryMCPServer {
   const { transport = 'stdio', port = 4231, logLevel = 'info' } = options;
 
   const { definitions, handlers } = createMemoryMcpTools(engine);

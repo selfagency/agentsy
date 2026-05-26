@@ -137,7 +137,7 @@ describe(RetrievalEngine, () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should search documents by keyword', async () => {
+    it('should search documents by keyword', () => {
       const query: RetrievalQuery = {
         query: 'JavaScript'
       };
@@ -148,7 +148,7 @@ describe(RetrievalEngine, () => {
       expect(result.total).toBeGreaterThan(0);
     });
 
-    it('should return documents matching search query', async () => {
+    it('should return documents matching search query', () => {
       const query: RetrievalQuery = {
         query: 'Python'
       };
@@ -159,7 +159,7 @@ describe(RetrievalEngine, () => {
       expect(result.documents[0].content).toContain('Python');
     });
 
-    it('should respect topK parameter', async () => {
+    it('should respect topK parameter', () => {
       const query: RetrievalQuery = {
         query: 'language',
         topK: 1
@@ -170,7 +170,7 @@ describe(RetrievalEngine, () => {
       expect(result.documents.length).toBeLessThanOrEqual(1);
     });
 
-    it('should return empty results for non-existent query', async () => {
+    it('should return empty results for non-existent query', () => {
       const query: RetrievalQuery = {
         query: 'nonexistentterm12345'
       };
@@ -181,7 +181,7 @@ describe(RetrievalEngine, () => {
       expect(result.total).toBe(0);
     });
 
-    it('should include query time in results', async () => {
+    it('should include query time in results', () => {
       const query: RetrievalQuery = {
         query: 'development'
       };
@@ -192,7 +192,7 @@ describe(RetrievalEngine, () => {
       expect(result.queryTime).toBeGreaterThanOrEqual(0);
     });
 
-    it('should sort results by relevance', async () => {
+    it('should sort results by relevance', () => {
       const query: RetrievalQuery = {
         query: 'JavaScript'
       };
@@ -212,7 +212,7 @@ describe(RetrievalEngine, () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should perform vector search when embeddings provided', async () => {
+    it('should perform vector search when embeddings provided', () => {
       const query: RetrievalQuery = {
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
         query: 'programming language'
@@ -223,7 +223,7 @@ describe(RetrievalEngine, () => {
       expect(result.documents).toBeDefined();
     });
 
-    it('should filter by minimum similarity threshold', async () => {
+    it('should filter by minimum similarity threshold', () => {
       const query: RetrievalQuery = {
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
         minSimilarity: 0.9,
@@ -237,7 +237,7 @@ describe(RetrievalEngine, () => {
       }
     });
 
-    it('should return results with similarity scores', async () => {
+    it('should return results with similarity scores', () => {
       const query: RetrievalQuery = {
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
         query: 'development'
@@ -258,7 +258,7 @@ describe(RetrievalEngine, () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should combine keyword and vector search results', async () => {
+    it('should combine keyword and vector search results', () => {
       const query: RetrievalQuery = {
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
         query: 'JavaScript code'
@@ -270,7 +270,7 @@ describe(RetrievalEngine, () => {
       expect(result.total).toBeGreaterThanOrEqual(0);
     });
 
-    it('should return query time for hybrid search', async () => {
+    it('should return query time for hybrid search', () => {
       const query: RetrievalQuery = {
         embedding: [0.1, 0.2, 0.3, 0.4, 0.5],
         query: 'data science'
@@ -301,7 +301,7 @@ describe(RetrievalEngine, () => {
       }).not.toThrow();
     });
 
-    it('should update document count after deletion', async () => {
+    it('should update document count after deletion', () => {
       const initialCount = engine.count();
       engine.delete('doc-1');
       const finalCount = engine.count();

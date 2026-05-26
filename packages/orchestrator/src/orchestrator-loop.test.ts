@@ -2,7 +2,7 @@ import type { StreamChunk } from '@agentsy/core';
 import { describe, expect, it } from 'vitest';
 
 import { isStepCount } from './agent/index.js';
-import { createOrchestratorLoop } from './orchestratorLoop.js';
+import { createOrchestratorLoop } from './orchestrator-loop.js';
 
 describe(createOrchestratorLoop, () => {
   it('exposes scheduler operations alongside the agent loop handle', async () => {

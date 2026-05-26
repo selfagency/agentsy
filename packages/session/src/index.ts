@@ -3,12 +3,14 @@
 
 import { createHash } from 'node:crypto';
 
+/** A segment of a prior session that can be reused (hot/warm/cold cache classification). */
 export interface ReusableSessionSegment {
   fingerprint: string;
   invalidations: string[];
   reuseClass: 'hot' | 'warm' | 'cold';
 }
 
+/** Serializable state of an agent session at a point in time. */
 export interface SessionState {
   id: string;
   modelFamily?: string;
@@ -16,6 +18,7 @@ export interface SessionState {
   values: Record<string, unknown>;
 }
 
+/** Checksummed, versioned snapshot of a session for caching and branching. */
 export interface SessionSnapshot {
   checksum: string;
   schemaVersion: number;
@@ -24,6 +27,7 @@ export interface SessionSnapshot {
   timestamp: Date;
 }
 
+/** Input parameters for constructing a SessionSnapshot. */
 export interface CreateSessionSnapshotInput {
   id: string;
   modelFamily?: string;
@@ -65,6 +69,7 @@ export function createSessionSnapshot(input: CreateSessionSnapshotInput): Sessio
   };
 }
 
+/** In-memory key-value store for session state with snapshot isolation. */
 export interface SessionStore {
   getState(): SessionState;
   getValue(key: string): unknown;

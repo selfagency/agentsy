@@ -44,15 +44,17 @@ function buildNoopClient(): LoadBalancedClient {
   };
 
   return {
-    async complete(_request: CompletionRequest): Promise<CompletionResponse> {
-      return { content: '', model: '', usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } };
+    complete(_request: CompletionRequest): Promise<CompletionResponse> {
+      return Promise.resolve({ content: '', model: '', usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } });
     },
-    async stream(_request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
-      return new ReadableStream<NormalizedChunk>({
-        start(controller) {
-          controller.close();
-        }
-      });
+    stream(_request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
+      return Promise.resolve(
+        new ReadableStream<NormalizedChunk>({
+          start(controller) {
+            controller.close();
+          }
+        })
+      );
     },
     getRoutingState(): RoutingState {
       return routingState;
@@ -105,10 +107,10 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     );
 
   return {
-    async complete(request: CompletionRequest): Promise<CompletionResponse> {
+    complete(request: CompletionRequest): Promise<CompletionResponse> {
       return client.complete(request);
     },
-    async stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
+    stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
       return client.stream(request);
     },
     getRoutingState(): RoutingState {

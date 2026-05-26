@@ -643,7 +643,7 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
       );
     }
     default: {
-      return response;
+      return segment;
     }
   }
 }

@@ -2,8 +2,8 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { FinishReason, JsonObject } from '@agentsy/types';
 import { describe, expect, it, vi } from 'vitest';
 
-import { applyConversationEvent } from './eventSourcing.js';
-import { createConversationStoreFromProcessor } from './processorBridge.js';
+import { applyConversationEvent } from './event-sourcing.js';
+import { createConversationStoreFromProcessor } from './processor-bridge.js';
 import type { StoreListener } from './store.js';
 import { createConversationStore } from './store.js';
 import type { ConversationEvent, UIConversation } from './types.js';

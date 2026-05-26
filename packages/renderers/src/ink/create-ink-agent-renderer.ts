@@ -47,7 +47,7 @@ export async function createInkAgentRenderer(options: InkAgentRendererOptions): 
     const { exit } = useApp();
 
     useInput(
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: need to refactor
       useCallback(
         (input: string, key: { return: boolean; backspace: boolean; delete: boolean; ctrl: boolean }) => {
           if (isStreaming) {

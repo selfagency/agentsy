@@ -122,7 +122,7 @@ export async function createTursoSyncEngine(config: TursoSyncEngineConfig): Prom
   }
 
   return {
-    async sync() {
+    sync() {
       return doSync();
     },
 

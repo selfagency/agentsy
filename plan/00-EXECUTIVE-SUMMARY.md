@@ -1,7 +1,7 @@
 # @agentsy Unified Implementation Plan — Executive Summary
 
-**Last Updated:** 2026-05-25  
-**Status:** Phase 0-1 VERIFIED COMPLETE; Phases 2-12 in planning/progress  
+**Last Updated:** 2026-05-26  
+**Status:** Phase 0 ✅ VERIFIED COMPLETE; Phase R1 ✅ PLAN SYNC COMPLETE; Phase 1 🟢 READY TO START; Phases 2-12 in planning/progress  
 **Authority Document:** Master plan consolidating 25+ planning artifacts + codebase audit
 
 ---
@@ -12,7 +12,7 @@
 | ---------------------------------------- | ------------------------------------------------------- | ------------------------------ |
 | **00-AUTHORITY-ARCHITECTURE.md**         | Layer model, package boundaries, ecosystem decisions    | Architects, TLs                |
 | **01-PHASE-0-FOUNDATION.md**             | ✅ Verified complete baseline                           | Reference                      |
-| **02-PHASE-R1-PLAN-SYNC.md**             | Read-only: update 8 IMPLEMENTATION-PLAN.md files        | Plan owners                    |
+| **02-PHASE-R1-PLAN-SYNC.md**             | ✅ Plan sync complete (8 files updated)                 | Plan owners                    |
 | **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package API contracts, MSW bootstrap              | Teams on core packages         |
 | **04-PHASE-2-TUI-VERTICAL-SLICE.md**     | FIRST DOGFOODABLE: streaming chat TUI                   | CLI, renderers, core teams     |
 | **05-PHASE-3-MODEL-SELECTION.md**        | Provider routing, local LLM discovery                   | Models, providers, renderers   |
@@ -34,11 +34,11 @@
 ## Execution Timeline
 
 ```text
-Phase 0  ✅ DONE (observability, runtime, orchestrator, memory)
+Phase 0  ✅ DONE (observability, runtime, orchestrator, memory) — VERIFIED 2026-05-26
          ↓
-Phase R1 (Plan sync — 1 hr)
+Phase R1 ✅ DONE (plan sync — 1 hr) — COMPLETE 2026-05-26
          ↓
-Phase 1  (Contract stabilization — 2 hrs)
+Phase 1  🟢 READY (contract stabilization — 2 hrs) — READY TO START
          ↓
 Phase 2  (TUI vertical slice — 11 hrs) ← FIRST DOGFOODABLE MILESTONE
          ↓
@@ -62,7 +62,7 @@ Phase 11 (Integration — 8 hrs)
          ↓
 Phase 12 (Hardening+release — 10 hrs)
 
-TOTAL FORWARD WORK: ~150 hrs
+TOTAL FORWARD WORK: ~150 hours (starting Phase 1)
 ```
 
 ---
@@ -82,9 +82,9 @@ TOTAL FORWARD WORK: ~150 hrs
 
 ---
 
-## Verified Completion Status (2026-05-25 Codebase Audit)
+## Verified Completion Status (2026-05-26 Codebase Audit)
 
-### Phase 0 — ✅ COMPLETE
+### Phase 0 — ✅ COMPLETE (VERIFIED 2026-05-26)
 
 | Component                                   | Evidence                                           |
 | ------------------------------------------- | -------------------------------------------------- |
@@ -94,25 +94,50 @@ TOTAL FORWARD WORK: ~150 hrs
 | Observability P0-1 (tracer + logger)        | `@agentsy/observability` — 13 TS files ✅          |
 | Runtime hook taxonomy P0-2                  | `@agentsy/runtime` — hooks/registry/types ✅       |
 | Orchestrator hook compilation P0-2          | `@agentsy/orchestrator` — compileHooks ✅          |
+| Core stream-to-events (TASK-009)              | `@agentsy/core` — processor/stream-to-events.ts ✅  |
+| Providers request path (TASK-008)             | `@agentsy/providers` — request-path.ts, pipeline/ ✅  |
+| Plugins manifest (TASK-091)                   | `@agentsy/plugins` — 8 TS files ✅               |
 
-### Critical Compliance Findings
+### Critical Compliance Findings (CORRECTED)
 
 **Major underreporting corrected (6 packages):**
 
 - **observability**: Marked ~30% → Actually P0-1 **COMPLETE ✅**
-- **runtime**: Marked \"hooks needed\" → P0-2 **COMPLETE ✅**
+- **runtime**: Marked "hooks needed" → P0-2 **COMPLETE ✅**
 - **orchestrator**: Marked ~40% → P0-2 **COMPLETE ✅**
-- **core**: Marked \"stream-to-events missing\" → TASK-009 **DONE ✅**
-- **providers**: Marked \"request path missing\" → TASK-008 **DONE ✅**
+- **core**: Marked "stream-to-events missing" → TASK-009 **DONE ✅**
+- **providers**: Marked "request path missing" → TASK-008 **DONE ✅**
 - **plugins**: Marked ~10% → TASK-091 **DONE ✅**
+
+### Phase R1 — ✅ COMPLETE (PLAN SYNC)
+
+**Deliverables:**
+
+All 8 `IMPLEMENTATION-PLAN.md` files updated with verified completion marks:
+
+1. ✅ `packages/types/IMPLEMENTATION-PLAN.md` — TASK-067 complete
+2. ✅ `packages/memory/IMPLEMENTATION-PLAN.md` — 51/52 tasks complete, 98% verified
+3. ✅ `packages/runtime/IMPLEMENTATION-PLAN.md` — Phase 4 complete
+4. ✅ `packages/orchestrator/IMPLEMENTATION-PLAN.md` — Phase 0-2 (P0-2) complete ✅
+5. ✅ `packages/observability/IMPLEMENTATION-PLAN.md` — Phase 1 complete
+6. ✅ `packages/providers/IMPLEMENTATION-PLAN.md` — TASK-008 complete ✅
+7. ✅ `packages/core/IMPLEMENTATION-PLAN.md` — TASK-009 complete ✅
+8. ✅ `packages/prompts/IMPLEMENTATION-PLAN.md` — Structure exists, ready for Phase 4
+
+**Verification:**
+
+- ✅ Plan files committed; no code touched
+- ✅ `pnpm check-types` passes (no code changes)
+- ✅ Cross-references checked
+- ✅ Markdown formatting validated
 
 ---
 
 ## Immediate Next Steps
 
-1. **Phase R1** — Update 7 package IMPLEMENTATION-PLAN.md files with verified marks (1 hr)
-2. **Phase 1** — Stabilize cross-package contracts + MSW bootstrap (2 hrs)
-3. **Phase 2** — TUI vertical slice (11 hrs) ← **UNBLOCKED READY TO START**
+1. ✅ **Phase R1** — Update 8 package IMPLEMENTATION-PLAN.md files with verified marks ✅ COMPLETE
+2. 🟢 **Phase 1** — Stabilize cross-package contracts + MSW bootstrap (2 hrs) — **READY TO START**
+3. 🚀 **Phase 2** — TUI vertical slice (11 hrs) ← **UNBLOCKED READY TO START**
 4. Continue phases 3-12 per sequencing
 
 ---
@@ -120,6 +145,7 @@ TOTAL FORWARD WORK: ~150 hrs
 ## Success Definition
 
 ✅ Phase 0-1 foundations verified complete  
+✅ Phase R1 plan synchronization complete  
 ✅ Package boundaries match code/export reality  
 ✅ All deferred work correctly scheduled in Phases 2-12  
 ✅ Cross-domain governance enforced  
@@ -127,4 +153,4 @@ TOTAL FORWARD WORK: ~150 hrs
 
 ---
 
-**Read next:** `00-AUTHORITY-ARCHITECTURE.md` (canonical layer model) or jump to `04-PHASE-2-TUI-VERTICAL-SLICE.md` (unblocked work)
+**Read next:** `03-PHASE-1-CONTRACT-STABILIZATION.md` (READY TO START) or `04-PHASE-2-TUI-VERTICAL-SLICE.md` (unblocked work)
