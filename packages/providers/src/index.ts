@@ -11,19 +11,24 @@ export interface ProviderRetryPolicy {
 }
 
 export interface ProviderCapabilities {
-  streaming?: boolean;
-  toolCalling?: boolean;
-  batching?: boolean;
-  reasoning?: boolean;
-  retry?: ProviderRetryPolicy;
-  budgeting?: {
-    supportsCostTracking?: boolean;
-    supportsTokenBudgeting?: boolean;
-  };
+  streaming?: boolean | undefined;
+  toolCalling?: boolean | undefined;
+  batching?: boolean | undefined;
+  reasoning?: boolean | undefined;
+  retry?: ProviderRetryPolicy | undefined;
+  budgeting?:
+    | {
+        supportsCostTracking?: boolean | undefined;
+        supportsTokenBudgeting?: boolean | undefined;
+      }
+    | undefined;
 }
 
 export interface ProviderDefinition {
   id: string;
   name: string;
-  capabilities?: ProviderCapabilities;
+  capabilities?: ProviderCapabilities | undefined;
 }
+
+// Capability bridge exports
+export * from './capability-bridge.js';

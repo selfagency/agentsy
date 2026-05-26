@@ -157,6 +157,12 @@
       "skillPath": "skills/cmux-workspace/SKILL.md",
       "computedHash": "92aafcdb32fa2f410f7a669cbd7c9a5caf765d4a01595c35a3bf08823409fd41"
     },
+    "code-review": {
+      "source": "selfagency/skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "d1eacb3b0eeeab79f03613762e64bfaef00d7d368fd89a996faf93e71cc2d749"
+    },
     "conventional-commit": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
@@ -229,11 +235,23 @@
       "skillPath": "skills/git-flow-branch-creator/SKILL.md",
       "computedHash": "8add10a7fce31ef99856d36bffeb90f1f1130f5afd88b111417c257f1e5d39bd"
     },
+    "git-mcp-workflow": {
+      "source": "selfagency/skills",
+      "sourceType": "github",
+      "skillPath": "skills/git-mcp-workflow/SKILL.md",
+      "computedHash": "ece4473ccb54ad62a08676e3d2a0966bf346f8568ca0611b11aadc32a69ab4af"
+    },
     "github-release": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
       "skillPath": "skills/github-release/SKILL.md",
       "computedHash": "c9804c5fb18cd776865a2f561488b1842aa4c350e6b95d14cd8c08320f54a6a4"
+    },
+    "ink-bbs-ansi-ui": {
+      "source": "selfagency/skills",
+      "sourceType": "github",
+      "skillPath": "skills/ink-bbs-ansi-ui/SKILL.md",
+      "computedHash": "3febcaff1edd3c5494763e209bdfcdd67807d591c1e7d0c337f56341308c783b"
     },
     "ink-cli": {
       "source": "AndrewUsher/research-kit-cli",

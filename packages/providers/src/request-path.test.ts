@@ -90,6 +90,7 @@ describe('createRequestHandler', () => {
       });
 
       const requestNoModel: CompletionRequest = {
+        model: 'gpt-4',
         messages: [{ role: 'user', content: 'test' }]
       };
 

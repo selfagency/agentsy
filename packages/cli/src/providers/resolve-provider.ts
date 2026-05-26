@@ -10,10 +10,10 @@ export interface CliProviderConfig {
 
 export function resolveProviderClient(config: CliProviderConfig): LoadBalancedClient {
   return createLoadBalancedClient({
-    circuitBreaker: config.circuitBreaker,
-    model: config.model,
     providers: config.providers,
-    retry: config.retry,
-    strategy: config.strategy
+    ...(config.model !== undefined ? { model: config.model } : {}),
+    ...(config.strategy !== undefined ? { strategy: config.strategy } : {}),
+    ...(config.circuitBreaker !== undefined ? { circuitBreaker: config.circuitBreaker } : {}),
+    ...(config.retry !== undefined ? { retry: config.retry } : {})
   });
 }

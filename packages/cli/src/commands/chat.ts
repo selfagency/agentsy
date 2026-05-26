@@ -18,6 +18,8 @@
 
 import { createInterface } from 'node:readline/promises';
 
+import { ModelSelector, discoverLocalProviders } from '@agentsy/models';
+import { filterProvidersByCapabilities, modelCapabilitiesToProviderRequirements } from '@agentsy/providers';
 import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
 import type { TurnHandler } from '@agentsy/runtime/loop';
 
@@ -172,7 +174,58 @@ export async function runChatCommand(
       }
 
       if (trimmed === '/help') {
-        stderr('Commands: /exit /quit /clear /help\n');
+        stderr(
+          'Commands:\n' +
+            '  /exit, /quit     Exit the chat\n' +
+            '  /clear           Clear conversation history\n' +
+            '  /model <name>    Switch to a different model\n' +
+            '  /provider        List available providers\n' +
+            '  /status          Show current model and provider\n' +
+            '  /help            Show this help message\n'
+        );
+        rl.prompt();
+        continue;
+      }
+
+      if (trimmed.startsWith('/model ')) {
+        const newModel = trimmed.slice(7).trim();
+        if (newModel) {
+          stderr(dim(`[model] model switching requires restart (current: ${model}, requested: ${newModel})\n`));
+        } else {
+          stderr(dim(`[model] current model: ${model}\n`));
+        }
+        rl.prompt();
+        continue;
+      }
+
+      if (trimmed === '/provider') {
+        stderr(dim(`[provider] discovering local providers...\n`));
+        try {
+          const discovery = await discoverLocalProviders();
+          if (discovery.discovered.length > 0) {
+            stderr(dim(`[provider] found ${discovery.discovered.length} local provider(s):\n`));
+            for (const { provider, models } of discovery.discovered) {
+              stderr(dim(`  ${provider}: ${models.length} model(s)\n`));
+              for (const m of models.slice(0, 3)) {
+                stderr(dim(`    - ${m.id}\n`));
+              }
+              if (models.length > 3) {
+                stderr(dim(`    ... and ${models.length - 3} more\n`));
+              }
+            }
+          } else {
+            stderr(dim(`[provider] no local providers found\n`));
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          stderr(dim(`[provider] error: ${message}\n`));
+        }
+        rl.prompt();
+        continue;
+      }
+
+      if (trimmed === '/status') {
+        stderr(dim(`[status] model: ${model}\n`));
         rl.prompt();
         continue;
       }

@@ -35,6 +35,7 @@
     "@agentsy/core": "workspace:*",
     "@agentsy/gateway": "workspace:*",
     "@agentsy/memory": "workspace:*",
+    "@agentsy/models": "workspace:*",
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",

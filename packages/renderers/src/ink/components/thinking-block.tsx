@@ -62,8 +62,11 @@ function BlockquoteThinking({
     return <ScreenReaderThinking text={text} />;
   }
 
-  const borderStyle: 'single' | 'double' | 'round' | undefined =
-    theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round'
+  const borderStyle: 'single' | 'double' | 'round' | 'bold' | undefined =
+    theme.border.style === 'single' ||
+    theme.border.style === 'double' ||
+    theme.border.style === 'round' ||
+    theme.border.style === 'bold'
       ? theme.border.style
       : undefined;
   const borderColor = theme.border.color || undefined;

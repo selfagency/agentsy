@@ -1,0 +1,110 @@
+/**
+ * Shared MSW test server setup and lifecycle helpers for @agentsy/testing.
+ *
+ * Provides a single `createTestServer` entry point that combines provider,
+ * memory, and retrieval handlers into one MSW server instance with
+ * Vitest lifecycle integration.
+ *
+ * @module @agentsy/testing/msw
+ */
+
+import { type HttpHandler } from 'msw';
+import { setupServer } from 'msw/node';
+
+import { createMemoryHandlers, createMockMemoryState } from './handlers/memory.js';
+import type { MockMemoryState } from './handlers/memory.js';
+import { createAllProviderHandlers } from './handlers/providers.js';
+import { createRetrievalHandlers, createMockRetrievalState } from './handlers/retrieval.js';
+import type { MockRetrievalState } from './handlers/retrieval.js';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type SetupServerApi = ReturnType<typeof setupServer>;
+
+export interface TestServerConfig {
+  /** Extra MSW handlers to register beyond the defaults */
+  extraHandlers?: HttpHandler[];
+  /** Whether to include provider API handlers (default: true) */
+  includeProviders?: boolean;
+  /** Whether to include memory/RAG handlers (default: true) */
+  includeMemory?: boolean;
+  /** Whether to include retrieval/embedding handlers (default: true) */
+  includeRetrieval?: boolean;
+  /** Pre-populated memory state */
+  memoryState?: MockMemoryState;
+  /** Pre-populated retrieval state */
+  retrievalState?: MockRetrievalState;
+  /** Base URL for memory handlers */
+  memoryBaseUrl?: string;
+  /** Base URL for retrieval handlers */
+  retrievalBaseUrl?: string;
+}
+
+export interface TestServer {
+  /** The underlying MSW SetupServerApi instance */
+  server: SetupServerApi;
+  /** Memory/RAG state (mutate to control test scenarios) */
+  memoryState: MockMemoryState;
+  /** Retrieval state (mutate to control test scenarios) */
+  retrievalState: MockRetrievalState;
+}
+
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create an MSW test server with pre-configured handler sets.
+ *
+ * Call `server.listen()` in a Vitest `beforeAll` and `server.close()` in
+ * `afterAll`. Call `server.resetHandlers()` in `afterEach` to isolate
+ * tests from each other.
+ *
+ * @example
+ * ```typescript
+ * import { createTestServer } from '@agentsy/testing/msw';
+ *
+ * const ts = createTestServer();
+ *
+ * beforeAll(() => ts.server.listen({ onUnhandledRequest: 'error' }));
+ * afterEach(() => ts.server.resetHandlers());
+ * afterAll(() => ts.server.close());
+ * ```
+ */
+export function createTestServer(config?: TestServerConfig): TestServer {
+  const handlers: HttpHandler[] = [];
+
+  if (config?.includeProviders ?? true) {
+    handlers.push(...createAllProviderHandlers());
+  }
+
+  const memoryState = config?.memoryState ?? createMockMemoryState();
+  if (config?.includeMemory ?? true) {
+    handlers.push(
+      ...createMemoryHandlers({
+        state: memoryState,
+        ...(config?.memoryBaseUrl !== undefined ? { baseUrl: config.memoryBaseUrl } : {})
+      })
+    );
+  }
+
+  const retrievalState = config?.retrievalState ?? createMockRetrievalState();
+  if (config?.includeRetrieval ?? true) {
+    handlers.push(
+      ...createRetrievalHandlers({
+        state: retrievalState,
+        ...(config?.retrievalBaseUrl !== undefined ? { baseUrl: config.retrievalBaseUrl } : {})
+      })
+    );
+  }
+
+  if (config?.extraHandlers) {
+    handlers.push(...config.extraHandlers);
+  }
+
+  const server = setupServer(...handlers);
+
+  return { server, memoryState, retrievalState };
+}

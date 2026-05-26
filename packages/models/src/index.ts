@@ -786,3 +786,5 @@ export class ModelSelector {
     return this.getClient().getCachedData();
   }
 }
+
+export * from './local-providers/index.js';

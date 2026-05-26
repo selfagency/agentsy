@@ -33,7 +33,7 @@ This plan defines the canonical production implementation order for `@agentsy/co
 
 | Task          | Description                                                                                                                 | Completed | Date |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-009      | DOGFOOD Phase 2: Wire stream normalization and chunk processing through adapters/normalizers/processor into runtime events. |           |      |
+| TASK-009      | DOGFOOD Phase 2: Wire stream normalization and chunk processing through adapters/normalizers/processor into runtime events. | ✅        | 2026-05-25 |
 | TASK-CORE-001 | Freeze normalized chunk/event type contracts and adapter boundaries.                                                        |           |      |
 | TASK-CORE-002 | Add compile-time snapshots for processor and normalizer interfaces.                                                         |           |      |
 | TASK-CORE-003 | Document ownership boundaries in package docs and exports map.                                                              |           |      |

@@ -70,7 +70,7 @@ export function ToolLifecycle({ calls, palette }: ToolLifecycleProps) {
         const colorKey = statusColors[call.status];
         const color = palette[colorKey];
         const symbol = call.status === 'executing' ? (frames[frame] ?? '◈') : statusSymbols[call.status];
-        const borderStyleVal = 'round' as const;
+        const borderStyleVal = 'bold' as const;
 
         return (
           <Box

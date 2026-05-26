@@ -18,6 +18,10 @@ export { createInkRenderer, type InkRendererHandle, type InkRendererOptions } fr
 /* ── Existing themes ─────────────────────────────────────────────── */
 export {
   ayuMirageTheme,
+  bbsAmberTheme,
+  bbsCgaTheme,
+  bbsIceTheme,
+  bbsPhosphorTheme,
   catppuccinFrappeTheme,
   catppuccinLatteTheme,
   catppuccinMacchiatoTheme,
@@ -72,6 +76,9 @@ export {
   showAnimatedCursor
 } from './theme/motion.ts';
 
+/* ── Framework components ───────────────────────────────────────── */
+export { FramedPanel, type FramedPanelProps } from './components/framed-panel.tsx';
+
 /* ── Chat/dialog components (TASK-072) ──────────────────────────────── */
 export { MessageBubble, type MessageBubbleProps } from './components/chat/message-bubble.tsx';
 export { StreamingCursor, type StreamingCursorProps } from './components/chat/streaming-cursor.tsx';
@@ -113,3 +120,27 @@ export {
   type InkAgentRendererHandle,
   type InkAgentRendererOptions
 } from './create-ink-agent-renderer.ts';
+
+/* ── BBS Agentic IDE components ─────────────────────────────────────── */
+export { WorkspaceShell, type WorkspaceShellProps, type WorkspaceTab } from './components/workspace-shell/index.js';
+export {
+  CommandPalette,
+  type CommandPaletteProps,
+  type CommandEntry,
+  type CommandGroup
+} from './components/command-palette/index.js';
+export { StatusRail, type StatusRailProps, type StatusSegment } from './components/status-rail/index.js';
+export { WorkspaceTree, type WorkspaceTreeProps, type TreeNode } from './components/workspace-tree/index.js';
+export { AgentLog, type AgentLogProps, type LogEvent, type LogEventKind } from './components/agent-log/index.js';
+export {
+  TaskProgress,
+  type TaskProgressProps,
+  type ActiveTask,
+  type TaskStatus
+} from './components/task-progress/index.js';
+export {
+  OrchestratorConsole,
+  type OrchestratorConsoleProps,
+  type AgentConfig
+} from './components/orchestrator-console/index.js';
+export { ApprovalGate, type ApprovalGateProps, type ApprovalAction } from './components/approval-gate/index.js';

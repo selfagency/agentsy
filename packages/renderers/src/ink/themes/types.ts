@@ -19,7 +19,7 @@ export interface TextTheme {
 }
 
 export interface BorderTheme {
-  style: 'single' | 'double' | 'round' | 'none';
+  style: 'single' | 'double' | 'round' | 'bold' | 'none';
   color: string;
 }
 
@@ -49,4 +49,9 @@ export type ThemeName =
   | 'houston'
   | 'one-dark'
   | 'one-candy'
-  | 'github-dark';
+  | 'github-dark'
+  /* ── BBS scene themes ─────────────────────────── */
+  | 'bbs-ice'
+  | 'bbs-amber'
+  | 'bbs-phosphor'
+  | 'bbs-cga';

@@ -46,7 +46,7 @@ export function ApprovalState({ status, action, palette, countdownSec }: Approva
   const pulseDots = status === 'pending' ? '.'.repeat(pulse) : '';
 
   return (
-    <Box borderStyle="round" borderColor={color} paddingX={1} marginBottom={1}>
+    <Box borderStyle="bold" borderColor={color} paddingX={1} marginBottom={1}>
       <Box flexDirection="column">
         <Box>
           <Text color={color} bold>

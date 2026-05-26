@@ -34,8 +34,8 @@ export function MessageBubble({ text, role, palette, timestamp, dim = false }: M
         {timestamp ? <Text color={palette.frameDim}> {timestamp}</Text> : null}
       </Box>
 
-      {/* Bubble content */}
-      <Box borderStyle="round" borderColor={textColor} paddingX={1} marginTop={0} flexDirection="column">
+      {/* Bubble content — BBS heavy box-drawing */}
+      <Box borderStyle="bold" borderColor={textColor} paddingX={1} marginTop={0} flexDirection="column">
         <Text color={textColor} dimColor={dim}>
           {text}
         </Text>

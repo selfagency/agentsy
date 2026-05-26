@@ -48,7 +48,7 @@ export function StreamThinkingBlock({
 
   const spinner = frames[frame] ?? '⠋';
   const borderColor = palette.assistantDim;
-  const borderStyleVal = 'round' as const;
+  const borderStyleVal = 'bold' as const;
 
   if (!expanded) {
     return (
