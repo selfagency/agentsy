@@ -44,7 +44,7 @@ let tagPushed = false;
 let releaseDone = false;
 const { resolveGitExecutable, runGit, setGitCommand } = createGitHelpers(ROOT);
 
-async function rollback() {
+function rollback() {
   if (releaseDone) {
     return;
   }
@@ -86,14 +86,12 @@ async function rollback() {
 }
 
 process.on('SIGINT', () => {
-  rollback()
-    .then(() => process.exit(130))
-    .catch(() => process.exit(130));
+  rollback();
+  process.exit(130);
 });
 process.on('SIGTERM', () => {
-  rollback()
-    .then(() => process.exit(143))
-    .catch(() => process.exit(143));
+  rollback();
+  process.exit(143);
 });
 
 // ---------------------------------------------------------------------------

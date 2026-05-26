@@ -236,7 +236,7 @@ export function createExpressMiddleware(streamGenerator: (runId: string) => Asyn
  * @returns Hono handler
  */
 export function createHonoHandler(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (c: Record<string, unknown>) => {
+  return (c: Record<string, unknown>) => {
     const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     try {

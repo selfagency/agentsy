@@ -9,7 +9,7 @@
 
 ## Architecture
 
-```
+```text
 packages/testing/src/msw/
 ├── index.ts            ← createTestServer() factory
 ├── setup.ts            ← Re-exports for Vitest lifecycle integration
@@ -21,6 +21,7 @@ packages/testing/src/msw/
 ```
 
 Each handler module exposes:
+
 1. **State type** — mutable state object for controlling test scenarios
 2. **Factory** — `createMock*State()` returning initial state
 3. **Handler factory** — `create*Handlers(options?)` returning `HttpHandler[]`
@@ -43,6 +44,7 @@ afterAll(() => ts.server.close());
 ```
 
 **Why this works:**
+
 - `beforeAll` starts the server with all built-in handlers
 - `afterEach` resets to defaults between tests (prevents state leakage)
 - `onUnhandledRequest: 'error'` catches un-mocked API calls

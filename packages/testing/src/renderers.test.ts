@@ -144,13 +144,13 @@ describe('createSharedRendererHandle' as const, () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: async (t: string): Promise<void> => {
+        onText: (t: string): void => {
           texts.push(t);
         },
-        onThinking: async (t: string): Promise<void> => {
+        onThinking: (t: string): void => {
           thinkings.push(t);
         },
-        onToolCall: async (part: OutputPart & { type: 'tool_call' }): Promise<void> => {
+        onToolCall: (part: OutputPart & { type: 'tool_call' }): void => {
           toolCalls.push(part.call.name);
         }
       }
@@ -172,10 +172,10 @@ describe('createSharedRendererHandle' as const, () => {
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
       {
-        onText: async (t: string): Promise<void> => {
+        onText: (t: string): void => {
           texts.push(t);
         },
-        onThinking: async (): Promise<void> => {
+        onThinking: (): void => {
           /* noop */
         }
       }
@@ -199,10 +199,10 @@ describe('createSharedRendererHandle' as const, () => {
         }
       },
       {
-        onText: async (): Promise<void> => {
+        onText: (): void => {
           /* noop */
         },
-        onThinking: async (): Promise<void> => {
+        onThinking: (): void => {
           /* noop */
         }
       }
@@ -234,6 +234,7 @@ describe('processStream generic adapter', () => {
 
     const chunks = [{ content: 'Hello' }, { content: ' world' }, { content: '', done: true }];
 
+    // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
     async function* gen() {
       for (const c of chunks) {
         yield c;

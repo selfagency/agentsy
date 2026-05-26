@@ -16,12 +16,14 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -40,6 +42,7 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
           abortController.abort();
@@ -47,6 +50,7 @@ describe('createRuntimeExecutor', () => {
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -63,6 +67,7 @@ describe('createRuntimeExecutor', () => {
     const executor = createRuntimeExecutor({ onError });
     const task: RuntimeTask = {
       id: 'a',
+      // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
       run: async () => {
         throw new Error('boom');
       }
@@ -81,6 +86,7 @@ describe('createRuntimeExecutor', () => {
     const executor = createRuntimeExecutor({ onError });
     const task: RuntimeTask = {
       id: 'a',
+      // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
       run: async () => {
         throw new Error('boom');
       }
@@ -100,12 +106,14 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           throw new Error('boom');
         }
@@ -127,6 +135,7 @@ describe('createRuntimeExecutor', () => {
     await execute([
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
@@ -160,12 +169,14 @@ describe('createRuntimeLoop', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -189,6 +200,7 @@ describe('createRuntimeLoop', () => {
     const loop = createRuntimeLoop({ onTaskComplete, onTaskStart });
 
     // oxlint-disable-next-line no-empty-function -- no-op task for lifecycle callback test
+    // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
     await loop.execute([
       {
         id: 'task-1',
@@ -210,12 +222,14 @@ describe('createRuntimeLoop', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -256,6 +270,7 @@ describe('createRuntimeLoop', () => {
           const childSnapshot = await context.spawn([
             {
               id: 'child',
+              // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
               run: async () => {
                 calls.push('child');
               }
@@ -278,6 +293,7 @@ describe('createRuntimeLoop', () => {
   it('rejects spawns that exceed the configured depth cap', async () => {
     const loop = createRuntimeLoop({ maxDepth: 0, sessionId: 'root' });
 
+    // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
     await expect(
       loop.spawn([
         {
@@ -333,12 +349,14 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['build'],
         id: 'deploy',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('deploy');
         }
       },
       {
         id: 'build',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('build');
         }
@@ -346,6 +364,7 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['build'],
         id: 'test',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('test');
         }
@@ -365,6 +384,7 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['build'],
         id: 'deploy',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }
@@ -381,6 +401,7 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['b'],
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }
@@ -389,6 +410,7 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['a'],
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }

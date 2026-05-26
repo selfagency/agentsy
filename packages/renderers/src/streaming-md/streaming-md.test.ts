@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // oxlint-disable-next-line typescript/no-unsafe-call typescript/no-unsafe-assignment
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,17 +8,17 @@ import { createStreamingMarkdownRenderer } from './create-streaming-markdown-ren
 vi.mock('streaming-markdown', () => ({
   default: {
     removed: [],
-    parser_create: vi.fn<{ target: unknown }, { target: unknown }>((opts: { target: unknown }) => ({
+    parser_create: vi.fn((opts: { target: unknown }) => ({
       target: opts.target
     })),
-    parser_end: vi.fn<() => void>(),
-    parser_write: vi.fn<() => void>()
+    parser_end: vi.fn<void, []>(),
+    parser_write: vi.fn<void, []>()
   }
 }));
 
 // oxlint-disable-next-line typescript/no-unsafe-call
 vi.mock('dompurify', () => {
-  const mockSanitize = vi.fn<(html: string | Element) => string>((html: string | Element) => html);
+  const mockSanitize = vi.fn<string, [string]>((html: string) => html);
   return {
     default: {
       removed: [],

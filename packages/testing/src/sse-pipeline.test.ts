@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 // can simulate a raw HTTP response body from a real provider.
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
 async function* sseSource(text: string): AsyncGenerator<string> {
   // Yield the SSE text one "network chunk" at a time — split at newlines to
   // exercise real incremental SSE parsing.

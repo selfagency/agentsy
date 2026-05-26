@@ -35,13 +35,13 @@ const CHECKPOINT_KEY_PREFIX = 'interruption_checkpoint:';
  * @param metadata - Optional extra context (e.g. pending tool call IDs).
  * @returns The created `InterruptionCheckpoint`.
  */
-export async function createInterruption(
+export function createInterruption(
   sessionId: string,
   reason: string,
   snapshot: RuntimeSnapshot,
   sessionStore: Pick<SessionStore, 'setValue'>,
   metadata?: Record<string, unknown>
-): Promise<InterruptionCheckpoint> {
+): InterruptionCheckpoint {
   const id = nextCheckpointId();
   const timestamp = Date.now();
 
@@ -69,10 +69,10 @@ export async function createInterruption(
  * @param sessionStore - The session store to read from.
  * @returns The restored `InterruptionCheckpoint`, or `null` if not found.
  */
-export async function resumeFromCheckpoint(
+export function resumeFromCheckpoint(
   checkpointId: string,
   sessionStore: Pick<SessionStore, 'getValue'>
-): Promise<InterruptionCheckpoint | null> {
+): InterruptionCheckpoint | null {
   const raw = sessionStore.getValue(`${CHECKPOINT_KEY_PREFIX}${checkpointId}`);
   if (!raw) {
     return null;

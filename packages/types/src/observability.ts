@@ -44,7 +44,7 @@ export interface BaseAgUiEvent {
 export interface RunStartedEvent extends BaseAgUiEvent {
   inputs?: Record<string, unknown>;
   parentRunId?: string;
-  type: EventType.RUN_STARTED;
+  type: 'run:started';
 }
 
 /**
@@ -54,7 +54,7 @@ export interface RunFinishedEvent extends BaseAgUiEvent {
   outcome: {
     type: 'success' | 'failure' | 'interrupted' | 'interrupt';
   };
-  type: EventType.RUN_FINISHED;
+  type: 'run:finished';
   usage?: unknown;
 }
 
@@ -63,7 +63,7 @@ export interface RunFinishedEvent extends BaseAgUiEvent {
  */
 export interface StepStartedEvent extends BaseAgUiEvent {
   stepIndex: number;
-  type: EventType.STEP_STARTED;
+  type: 'step:started';
 }
 
 /**
@@ -72,7 +72,7 @@ export interface StepStartedEvent extends BaseAgUiEvent {
 export interface StepFinishedEvent extends BaseAgUiEvent {
   outputLength: number;
   stepIndex: number;
-  type: EventType.STEP_FINISHED;
+  type: 'step:finished';
 }
 
 /**
@@ -88,7 +88,7 @@ export interface RunInterruptedEvent extends BaseAgUiEvent {
   }[];
   message?: string;
   reason?: string;
-  type: EventType.RUN_INTERRUPTED;
+  type: 'run:interrupted';
 }
 
 /**
@@ -96,7 +96,7 @@ export interface RunInterruptedEvent extends BaseAgUiEvent {
  */
 export interface RunErrorEvent extends BaseAgUiEvent {
   error: { message: string; code?: string };
-  type: EventType.RUN_ERROR;
+  type: 'run:error';
 }
 
 /**
@@ -105,7 +105,7 @@ export interface RunErrorEvent extends BaseAgUiEvent {
 export interface TextMessageContentEvent extends BaseAgUiEvent {
   content: string;
   messageId: string;
-  type: EventType.TEXT_MESSAGE_CONTENT;
+  type: 'text_message:content';
 }
 
 /**
@@ -113,7 +113,7 @@ export interface TextMessageContentEvent extends BaseAgUiEvent {
  */
 export interface ReasoningStartEvent extends BaseAgUiEvent {
   messageId?: string;
-  type: EventType.REASONING_START;
+  type: 'reasoning:start';
 }
 
 /**
@@ -121,7 +121,7 @@ export interface ReasoningStartEvent extends BaseAgUiEvent {
  */
 export interface ReasoningEndEvent extends BaseAgUiEvent {
   messageId?: string;
-  type: EventType.REASONING_END;
+  type: 'reasoning:end';
 }
 
 /**
@@ -129,7 +129,7 @@ export interface ReasoningEndEvent extends BaseAgUiEvent {
  */
 export interface ReasoningMessageStartEvent extends BaseAgUiEvent {
   messageId: string;
-  type: EventType.REASONING_MESSAGE_START;
+  type: 'reasoning_message:start';
 }
 
 /**
@@ -139,7 +139,7 @@ export interface ReasoningMessageContentEvent extends BaseAgUiEvent {
   content: string;
   encryptedValue?: string;
   messageId: string;
-  type: EventType.REASONING_MESSAGE_CONTENT;
+  type: 'reasoning_message:content';
 }
 
 /**
@@ -147,7 +147,7 @@ export interface ReasoningMessageContentEvent extends BaseAgUiEvent {
  */
 export interface ReasoningMessageEndEvent extends BaseAgUiEvent {
   messageId: string;
-  type: EventType.REASONING_MESSAGE_END;
+  type: 'reasoning_message:end';
 }
 
 /**
@@ -156,7 +156,7 @@ export interface ReasoningMessageEndEvent extends BaseAgUiEvent {
 export interface ToolCallStartEvent extends BaseAgUiEvent {
   toolCallId: string;
   toolName: string;
-  type: EventType.TOOL_CALL_START;
+  type: 'tool_call:start';
 }
 
 /**
@@ -165,7 +165,7 @@ export interface ToolCallStartEvent extends BaseAgUiEvent {
 export interface ToolCallArgsEvent extends BaseAgUiEvent {
   args: string | Record<string, unknown>;
   toolCallId: string;
-  type: EventType.TOOL_CALL_ARGS;
+  type: 'tool_call:args';
 }
 
 /**
@@ -174,7 +174,7 @@ export interface ToolCallArgsEvent extends BaseAgUiEvent {
 export interface ToolCallEndEvent extends BaseAgUiEvent {
   output?: string;
   toolCallId: string;
-  type: EventType.TOOL_CALL_END;
+  type: 'tool_call:end';
 }
 
 /**
@@ -182,7 +182,7 @@ export interface ToolCallEndEvent extends BaseAgUiEvent {
  */
 export interface StateSnapshotEvent extends BaseAgUiEvent {
   state: Record<string, unknown>;
-  type: EventType.STATE_SNAPSHOT;
+  type: 'state:snapshot';
 }
 
 /**
@@ -190,7 +190,7 @@ export interface StateSnapshotEvent extends BaseAgUiEvent {
  */
 export interface StateDeltaEvent extends BaseAgUiEvent {
   delta: JsonPatchOperation[];
-  type: EventType.STATE_DELTA;
+  type: 'state:delta';
 }
 
 /**

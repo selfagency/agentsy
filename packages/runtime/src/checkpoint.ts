@@ -38,10 +38,10 @@ const CHECKPOINT_KEY = 'runtime_checkpoint';
  * @param sessionStore - The session store for persistence.
  * @returns The created `RuntimeCheckpoint` with its id and timestamp.
  */
-export async function checkpoint(
+export function checkpoint(
   state: Omit<RuntimeCheckpoint, 'id' | 'timestamp'>,
   sessionStore: Pick<SessionStore, 'setValue'>
-): Promise<RuntimeCheckpoint> {
+): RuntimeCheckpoint {
   const cp: RuntimeCheckpoint = {
     id: nextCheckpointId(),
     timestamp: Date.now(),

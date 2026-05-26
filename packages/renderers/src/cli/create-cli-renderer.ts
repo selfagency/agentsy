@@ -139,7 +139,8 @@ export function createCliRenderer(options: CliRendererOptions = {}): RendererHan
       }
     },
 
-    write(chunk: string): void {
+    // biome-ignore lint/suspicious/useAwait: async needed for RendererHandle.write contract
+    async write(chunk: string): Promise<void> {
       try {
         const result = llmProcessor.process({ content: chunk });
         processParts(result.parts);

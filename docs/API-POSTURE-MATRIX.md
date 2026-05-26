@@ -88,6 +88,7 @@
 | `./commands/mcp` | MCP subcommand | ✅ |
 
 **TSDoc Gaps Filled (Phase 1):**
+
 - `wiki-manager.ts`: `WikiManagerDependencies` — added ✅
 - `knowledge-base.ts`: `KnowledgeBaseManager`, `KnowledgeBaseManagerOptions` — added ✅
 - Prior: `RawCaptureInput`, `RawCapture`, `WikiPageInput`, `WikiPage`, `WikiPageHistoryEntry`, `PageDiff`, `ConceptRelation`, `VectorEntry`, `VectorSearchResult`, `WikiManager` — already documented
@@ -107,6 +108,7 @@
 | `./loop` | Agent execution loop | ✅ |
 
 **TSDoc Gaps Filled (Phase 1):**
+
 - `hooks/types.ts` — already fully documented (audited, no gaps)
 
 **Verdict: ✅ All types documented. Clean bill of health.**
@@ -125,6 +127,7 @@
 | `./agent` | Agent subsystem | ✅ |
 
 **TSDoc Gaps Filled (Phase 1):**
+
 - `core/engine.ts`: `WorkflowContext`, `ExecutionOptions` — added ✅
 
 **Verdict: ⚠️ Was missing `dts: true` in tsup config (no `.d.ts` emitted). Fixed. All types now documented.**
@@ -140,6 +143,7 @@
 | `.` (index) | Session types, snapshot, store | ✅ |
 
 **TSDoc Gaps Filled (Phase 1):**
+
 - `ReusableSessionSegment` — added ✅
 - `SessionState` — added ✅
 - `SessionSnapshot` — added ✅

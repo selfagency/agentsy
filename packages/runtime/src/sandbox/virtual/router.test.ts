@@ -15,6 +15,7 @@ function makeContainerStub(): ContainerSandbox {
     async destroy(): Promise<void> {
       /* noop */
     },
+    // biome-ignore lint/suspicious/useAwait: matches ContainerSandbox interface
     async execute(_input: SandboxInput): Promise<SandboxOutput> {
       return {
         durationMs: 0,

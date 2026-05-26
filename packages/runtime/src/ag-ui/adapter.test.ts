@@ -34,6 +34,7 @@ async function collectEvents<T>(gen: AsyncGenerator<T>): Promise<T[]> {
 /**
  * Helper to create a simple pipeline event generator
  */
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<PipelineEvent> compatibility
 async function* createMockPipeline(events: PipelineEvent[]): AsyncGenerator<PipelineEvent> {
   for (const event of events) {
     yield event;

@@ -116,7 +116,7 @@ let tagPushed = false;
 let releaseDone = false;
 const { resolveGitExecutable, runGit, setGitCommand } = createGitHelpers(ROOT);
 
-async function rollback() {
+function rollback() {
   if (releaseDone) {
     return;
   }

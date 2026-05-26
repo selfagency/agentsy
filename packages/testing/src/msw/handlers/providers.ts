@@ -190,7 +190,7 @@ export function createOpenAIHandler(options?: ProviderStreamingOptions): HttpHan
   const { chunks = ['Hello', ', world!'], simulateError } = options ?? {};
   const body = simulateError ? (simulateError.body ?? '') : openaiStreamBody(chunks);
 
-  return http.post('https://api.openai.com/v1/chat/completions', async () => {
+  return http.post('https://api.openai.com/v1/chat/completions', () => {
     if (simulateError) {
       return new HttpResponse(body, {
         status: simulateError.status,
@@ -227,7 +227,7 @@ export function createAnthropicHandler(options?: ProviderStreamingOptions): Http
   const { chunks = ['Hello', ' from Anthropic'], simulateError } = options ?? {};
   const body = simulateError ? (simulateError.body ?? '') : anthropicStreamBody(chunks);
 
-  return http.post('https://api.anthropic.com/v1/messages', async () => {
+  return http.post('https://api.anthropic.com/v1/messages', () => {
     if (simulateError) {
       return new HttpResponse(body, {
         status: simulateError.status,
@@ -252,7 +252,7 @@ export function createGeminiHandler(options?: ProviderStreamingOptions): HttpHan
   const { chunks = ['Gemini', ' streaming'], simulateError } = options ?? {};
   const body = simulateError ? (simulateError.body ?? '') : geminiStreamBody(chunks);
 
-  return http.post('https://generativelanguage.googleapis.com/v1beta/models*', async () => {
+  return http.post('https://generativelanguage.googleapis.com/v1beta/models*', () => {
     if (simulateError) {
       return new HttpResponse(body, {
         status: simulateError.status,

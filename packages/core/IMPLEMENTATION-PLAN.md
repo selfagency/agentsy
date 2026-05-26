@@ -34,9 +34,10 @@ This plan defines the production implementation order for `@agentsy/core` as the
 | TASK-009  | Stream-to-Events Adapter implementation                                                | ✅        | 2026-05-26 |
 | TASK-010  | Runtime Turn Loop Integration (depends on Phase 1 contract stabilization)              |           |            |
 
-**TASK-009: Stream-to-Events Adapter — ✅ COMPLETE**
+## TASK-009: Stream-to-Events Adapter — ✅ COMPLETE
 
 **Evidence:**
+
 - `packages/core/src/processor/stream-to-events.ts` — adapter implementation
 - Tests: `__tests__/stream-to-events.test.ts`
 - Produces: text-delta, thinking-delta, tool-call events
@@ -143,6 +144,7 @@ The package fulfills its role by implementing:
 **Scope:** Parse LLM streaming responses and emit structured events
 
 **Event Types:**
+
 - `text-delta` — Incremental text output
 - `thinking-delta` — Incremental thinking/reasoning output
 - `tool-call` — Tool invocation with arguments
@@ -152,6 +154,7 @@ The package fulfills its role by implementing:
 **Implementation Status:** ✅ COMPLETE (TASK-009, verified 2026-05-26)
 
 **Evidence:**
+
 - Adapter implementation in `packages/core/src/processor/stream-to-events.ts`
 - Tests in `__tests__/stream-to-events.test.ts`
 - Produces all event types: text-delta, thinking-delta, tool-call events
@@ -161,6 +164,7 @@ The package fulfills its role by implementing:
 **Scope:** Provider-agnostic completion interface
 
 **Responsibility:**
+
 - Abstract over provider-specific request/response formats
 - Normalize responses into unified `NormalizedChunk` format
 - Handle authentication via `@agentsy/secrets`
@@ -171,6 +175,7 @@ The package fulfills its role by implementing:
 **Scope:** XML context splitting and deduplication
 
 **Responsibility:**
+
 - `splitLeadingXmlContext` — Split XML tags from leading context
 - `dedupeXmlContext` — Remove duplicate XML sections
 - Support memory retrieval injection
@@ -195,6 +200,7 @@ export interface NormalizedChunk {
 ### Error Recovery
 
 Streaming errors are handled with fail-closed semantics:
+
 - Preserve context on recoverable errors
 - Fail closed on unrecoverable errors
 - Emit error events for observability
@@ -202,6 +208,7 @@ Streaming errors are handled with fail-closed semantics:
 ## Boundary Enforcement
 
 `@agentsy/core`:
+
 - **DOES** own stream processing and normalization logic
 - **DOES NOT** own provider-specific adapters (those live in `@agentsy/providers`)
 - **DOES NOT** own runtime orchestration (that lives in `@agentsy/runtime`)
@@ -220,6 +227,7 @@ Streaming errors are handled with fail-closed semantics:
 **Scope:** Integrate stream-to-events adapter with runtime turn loop
 
 **Dependencies:**
+
 - Phase 1 contract stabilization
 - Runtime loop interfaces stable
 

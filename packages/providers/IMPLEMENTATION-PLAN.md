@@ -36,9 +36,10 @@ This plan defines the production implementation order for `@agentsy/providers` a
 | TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                | ✅        | 2026-05-17 |
 | TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. | ✅        | 2026-05-17 |
 
-**TASK-008: Provider Request Path — ✅ COMPLETE**
+## TASK-008: Provider Request Path — ✅ COMPLETE
 
 **Evidence:**
+
 - `packages/providers/src/request-path.ts` — full pipeline
 - `packages/providers/src/pipeline/request-handler.ts` — handler factory
 - Request builder + response parser + mock provider

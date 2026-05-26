@@ -75,6 +75,7 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
         ) {
           output.end();
         }
+        return Promise.resolve();
       }
     },
     options.onError

@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createAgentRunHandler, createExpressMiddleware, createHonoHandler, createSSEStream } from './http-server.js';
 
 // Test fixtures
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* mockEventGenerator() {
   yield {
     runId: 'run_123',
@@ -24,6 +25,7 @@ async function* emptyGenerator() {
   yield* [];
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* errorGeneratorWithYield() {
   yield {
     runId: 'run_123',
@@ -33,6 +35,7 @@ async function* errorGeneratorWithYield() {
   throw new Error('Generator error');
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* mockErrorGenerator() {
   yield {
     runId: 'run_123',

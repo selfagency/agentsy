@@ -73,6 +73,7 @@ describe('createRuntimeHookRegistry', () => {
 
     registry.register(
       'Stop',
+      // biome-ignore lint/suspicious/useAwait: matches HandlerFn interface returning Promise<HookResult>
       async () => {
         order.push(1);
         return { continue: true };
@@ -82,6 +83,7 @@ describe('createRuntimeHookRegistry', () => {
 
     registry.register(
       'Stop',
+      // biome-ignore lint/suspicious/useAwait: matches HandlerFn interface returning Promise<HookResult>
       async () => {
         order.push(10);
         return { continue: true };
@@ -91,6 +93,7 @@ describe('createRuntimeHookRegistry', () => {
 
     registry.register(
       'Stop',
+      // biome-ignore lint/suspicious/useAwait: matches HandlerFn interface returning Promise<HookResult>
       async () => {
         order.push(5);
         return { continue: true };
@@ -141,12 +144,12 @@ describe('createRuntimeHookRegistry', () => {
     expect(result).toEqual({ continue: true });
   });
 
-  it('unregister on non-existent id is a no-op', async () => {
+  it('unregister on non-existent id is a no-op', () => {
     const registry = createRuntimeHookRegistry();
     expect(() => registry.unregister('nope')).not.toThrow();
   });
 
-  it('list returns all registered handlers', async () => {
+  it('list returns all registered handlers', () => {
     const registry = createRuntimeHookRegistry();
 
     registry.register('UserPromptSubmit', async () => ({ continue: true }), {

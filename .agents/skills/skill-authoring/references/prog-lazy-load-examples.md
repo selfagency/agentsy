@@ -63,6 +63,12 @@ Generate REST API endpoints following these patterns...
 
 ```text
 
+```text
+
+```text
+
+```text
+
 ### Example 2: Product Catalog
 
 ```typescript

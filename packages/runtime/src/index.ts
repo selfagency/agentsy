@@ -231,7 +231,7 @@ function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
   return {
     depth: 0,
     sessionId: 'runtime-detached',
-    async spawn() {
+    spawn() {
       throw new Error('Runtime spawning is unavailable without an attached runtime loop context');
     }
   };

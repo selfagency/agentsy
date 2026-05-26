@@ -71,10 +71,10 @@ function estimateTokens(input: string): number {
   return Math.max(1, Math.ceil(input.length / 4));
 }
 
-export async function runRetrievalBenchmark(
+export function runRetrievalBenchmark(
   documents: readonly RetrievalBenchmarkDocument[],
   query: string
-): Promise<RetrievalBenchmarkResult> {
+): RetrievalBenchmarkResult {
   const queryTokens = tokenize(query);
   const limit = 5;
 

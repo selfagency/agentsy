@@ -82,12 +82,12 @@ function enrichEvent<T extends Record<string, unknown>>(event: T, threadId: stri
 /**
  * Handles delta (text content) events.
  */
-async function* handleDelta(
+function* handleDelta(
   event: PipelineEvent,
   runId: string,
   currentTextMessageId: string,
   threadId: string | undefined
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (event.content) {
     const textEventBase: TextMessageContentEvent = {
       content: event.content,
@@ -106,14 +106,14 @@ async function* handleDelta(
 /**
  * Handles thinking (reasoning) events and state management.
  */
-async function* handleThinking(
+function* handleThinking(
   event: PipelineEvent,
   runId: string,
   threadId: string | undefined,
   encryptReasoning: boolean,
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null }
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (!inReasoning.value) {
     currentReasoningMessageId.value = generateMessageId();
     inReasoning.value = true;
@@ -162,13 +162,13 @@ async function* handleThinking(
 /**
  * Closes open reasoning and tool call sessions.
  */
-async function* closeOpenSessions(
+function* closeOpenSessions(
   runId: string,
   threadId: string | undefined,
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null },
   currentToolCallId: { value: string | null }
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (inReasoning.value && currentReasoningMessageId.value) {
     const msgEndBase: ReasoningMessageEndEvent = {
       messageId: currentReasoningMessageId.value,

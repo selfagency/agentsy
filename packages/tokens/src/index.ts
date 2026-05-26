@@ -962,14 +962,14 @@ export class PacingController {
     return Math.max(cooldownWait, rateLimitStatus.retryAfterMs);
   }
 
-  async updateRateLimits(provider: string, limits: RateLimit[]): Promise<void> {
+  updateRateLimits(provider: string, limits: RateLimit[]): void {
     this.#limits.set(
       provider,
       limits.map(limit => ({ ...limit }))
     );
   }
 
-  async checkRateLimit(provider: string): Promise<RateLimitStatus> {
+  checkRateLimit(provider: string): RateLimitStatus {
     const limits = this.#limits.get(provider) ?? [];
     if (limits.length === 0) {
       return {
@@ -1018,7 +1018,7 @@ export class PacingController {
     return strictest;
   }
 
-  async adjustPacing(feedback: PacingFeedback): Promise<void> {
+  adjustPacing(feedback: PacingFeedback): void {
     if (feedback.overloaded === true && typeof feedback.retryAfterMs === 'number') {
       this.#cooldowns.set(feedback.provider, Date.now() + Math.max(0, feedback.retryAfterMs));
       return;

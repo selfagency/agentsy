@@ -175,32 +175,36 @@ describe('SSEParser', () => {
 });
 
 // Generator fixtures for parseSSEStream tests
-function* basicChunks() {
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+async function* basicChunks() {
   yield 'data: hello\n';
   yield '\n';
   yield 'data: world\n';
   yield '\n';
 }
 
-function* basicAsyncChunks() {
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+async function* basicAsyncChunks() {
   yield 'data: chunk1\n';
   yield '\n';
   yield 'data: chunk2\n';
   yield '\n';
 }
 
-function* crossChunkSplitChunks() {
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+async function* crossChunkSplitChunks() {
   yield 'data: hel';
   yield 'lo\n\n';
   yield 'data: worl';
   yield 'd\n\n';
 }
 
-function* emptyChunks() {
+async function* emptyChunks() {
   // yield nothing
 }
 
-function* complexFieldsChunks() {
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+async function* complexFieldsChunks() {
   yield 'event: progress\n';
   yield 'id: msg1\n';
   yield 'data: {"step":1}\n';
@@ -208,7 +212,8 @@ function* complexFieldsChunks() {
   yield '\n';
 }
 
-function* openaiChunks() {
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+async function* openaiChunks() {
   yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"Hello"}}]}\n\n';
   yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":" world"}}]}\n\n';
   yield 'data: [DONE]\n\n';

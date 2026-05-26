@@ -23,7 +23,7 @@ import type { CopilotKitEvent, CustomUIEvent } from './event-converters.js';
 import { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
 
 // Test fixtures
-async function createMockStream() {
+function createMockStream() {
   const events: RunStartedEvent[] = [
     {
       runId: 'run_123',
@@ -37,6 +37,7 @@ async function createMockStream() {
     }
   ];
 
+  // biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
   async function* generate() {
     for (const event of events) {
       yield event;
@@ -46,6 +47,7 @@ async function createMockStream() {
   return generate();
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* multiEventGenerator() {
   const events: RunStartedEvent[] = [
     {

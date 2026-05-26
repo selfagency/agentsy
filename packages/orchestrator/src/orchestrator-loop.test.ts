@@ -8,6 +8,7 @@ describe(createOrchestratorLoop, () => {
   it('exposes scheduler operations alongside the agent loop handle', async () => {
     const loop = createOrchestratorLoop({
       buildToolResultMessages: async () => [],
+      // biome-ignore lint/suspicious/useAwait: async needed for AsyncIterable return type
       async *execute() {
         yield { content: 'done', done: true, finishReason: 'stop' as const };
       },
