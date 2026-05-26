@@ -1,3 +1,7 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { mkdtempSync, existsSync } from 'node:fs';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { initMemory } from './init.js';
@@ -14,6 +18,13 @@ vi.mock('@tursodatabase/sync', () => ({
 }));
 
 describe('initMemory', () => {
+  function getSafeTestPath(): string {
+    const tempDir = mkdtempSync(join(tmpdir(), 'agentsy-test-'));
+    if (existsSync(tempDir)) {
+      return tempDir;
+    }
+    return join(tmpdir(), 'agentsy-test-safe.db');
+  }
   it('returns an engine and config by default', async () => {
     const result = await initMemory({ skipMcp: true, skipDb: true });
     expect(result.engine).toBeDefined();
@@ -35,13 +46,14 @@ describe('initMemory', () => {
   });
 
   it('returns tursoSyncEngine when syncUrl is configured with a file db', async () => {
+    const testPath = getSafeTestPath();
     const result = await initMemory({
       skipMcp: true,
       skipDb: false,
-      db: { path: '/tmp/agentsy-test-init.db' },
+      db: { path: testPath },
       config: {
         db: {
-          path: '/tmp/agentsy-test-init.db',
+          path: testPath,
           syncUrl: 'libsql://test.turso.io',
           syncAuthToken: 'token123'
         }
@@ -68,10 +80,11 @@ describe('initMemory', () => {
   });
 
   it('does not create tursoSyncEngine when syncUrl is not configured', async () => {
+    const testPath = getSafeTestPath();
     const result = await initMemory({
       skipMcp: true,
       skipDb: false,
-      db: { path: '/tmp/agentsy-test-init-no-sync.db' }
+      db: { path: testPath }
     });
     expect(result.tursoSyncEngine).toBeUndefined();
   });

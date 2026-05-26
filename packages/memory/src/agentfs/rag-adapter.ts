@@ -148,7 +148,7 @@ export function createRagFsAdapter(options: RagFsAdapterOptions): KnowledgeBaseM
           .where(eq(kvStore.key, makeDocKey(namespace, doc.id)))
           .get();
 
-        if (!existing) {
+        if (existing === undefined) {
           db.insert(kvStore)
             .values({
               key: makeDocKey(namespace, doc.id),

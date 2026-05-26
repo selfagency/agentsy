@@ -27,11 +27,12 @@ export function createToolAuditor(options: ToolAuditorOptions) {
         throw err;
       } finally {
         const completedAt = Date.now();
+        const resultToStore = result === undefined ? undefined : JSON.stringify(result);
         db.insert(toolCalls)
           .values({
             name,
             parameters: JSON.stringify(args),
-            result: result !== undefined ? JSON.stringify(result) : undefined,
+            result: resultToStore,
             error,
             startedAt,
             completedAt,

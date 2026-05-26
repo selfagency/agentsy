@@ -106,6 +106,17 @@ function getDiff(fromBody: string, toBody: string): PageDiff {
   return { addedLines, removedLines };
 }
 
+async function captureRaw(input: RawCaptureInput): Promise<RawCapture> {
+  return {
+    id: `capture-${Date.now()}`,
+    content: input.content,
+    sourceType: input.sourceType ?? 'text',
+    sourceId: input.sourceId ?? 'unknown',
+    normalizedContent: input.content.trim(),
+    createdAt: new Date()
+  };
+}
+
 /**
  * Create a WikiManager adapter backed by AgentFS tables.
  * Page metadata and embeddings live in `kv_store`; page body content
@@ -117,17 +128,6 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
   const metaPrefix = `wiki:${namespace}:page:`;
   const conceptPrefix = `wiki:${namespace}:concept:`;
   const backlinkPrefix = `wiki:${namespace}:backlink:`;
-
-  async function captureRaw(input: RawCaptureInput): Promise<RawCapture> {
-    return {
-      id: `capture-${Date.now()}`,
-      content: input.content,
-      sourceType: input.sourceType ?? 'text',
-      sourceId: input.sourceId ?? 'unknown',
-      normalizedContent: input.content.trim(),
-      createdAt: new Date()
-    };
-  }
 
   async function getPage(pageId: string): Promise<WikiPage | null> {
     const row = db
@@ -368,7 +368,7 @@ export function createWikiFsAdapter(options: WikiFsAdapterOptions): WikiManager 
     }
 
     for (const r of vectorResults) {
-      if (!seen.has(r.pageId)) {
+      if (seen.has(r.pageId) === false) {
         hybrid.push({ pageId: r.pageId, score: r.score * 0.5 });
       }
     }

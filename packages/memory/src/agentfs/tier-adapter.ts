@@ -165,8 +165,9 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
 
     read(query: TierReadQuery = {}): TierReadResult {
       const items = readItemsFiltered(query);
-      const overflowed = query.limit !== undefined && items.length > query.limit;
-      const limited = query.limit !== undefined ? items.slice(0, query.limit) : items;
+      const limitIsDefined = query.limit !== undefined;
+      const overflowed = limitIsDefined && items.length > query.limit;
+      const limited = limitIsDefined ? items.slice(0, query.limit) : items;
       const tokenCount = limited.reduce((sum, i) => sum + i.tokenCount, 0);
 
       return { items: limited, overflowed, tierName, tokenCount };

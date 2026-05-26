@@ -83,7 +83,7 @@ export async function createTursoSyncEngine(config: TursoSyncEngineConfig): Prom
       // Push local changes
       await client.push();
       const stats = await client.stats();
-      const uploaded = stats.cdcOperations > 0 ? stats.cdcOperations : 0;
+      const uploaded = Math.max(stats.cdcOperations, 0);
 
       // Checkpoint WAL
       await client.checkpoint();

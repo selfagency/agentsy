@@ -218,27 +218,27 @@ function createInMemoryHybridRetriever(): HybridRetriever {
 // SQLite-backed implementation
 // ---------------------------------------------------------------------------
 
+function getRecordFromRow(row: { [key: string]: unknown }): HybridRecord {
+  const updatedAtMs = Number(row.updatedAt);
+  const metadata = parseMetadata(String(row.metadata));
+
+  return {
+    id: String(row.id),
+    sourceId: String(row.sourceId),
+    sourceType: String(row.sourceType) as HybridRecord['sourceType'],
+    title: String(row.title),
+    content: String(row.content),
+    updatedAt: Number.isNaN(updatedAtMs) ? new Date().toISOString() : new Date(updatedAtMs).toISOString(),
+    ...(metadata === undefined ? {} : { metadata })
+  };
+}
+
+function getVectorFromRow(row: { [key: string]: unknown }): number[] {
+  return parseJsonNumberArray(String(row.embedding));
+}
+
 function createSQLiteHybridRetriever(db: MemoryDatabase): HybridRetriever {
   const engine = createLocalEmbeddingEngine({ dimensions: 64 });
-
-  function getRecordFromRow(row: { [key: string]: unknown }): HybridRecord {
-    const updatedAtMs = Number(row.updatedAt);
-    const metadata = parseMetadata(String(row.metadata));
-
-    return {
-      id: String(row.id),
-      sourceId: String(row.sourceId),
-      sourceType: String(row.sourceType) as HybridRecord['sourceType'],
-      title: String(row.title),
-      content: String(row.content),
-      updatedAt: Number.isNaN(updatedAtMs) ? new Date().toISOString() : new Date(updatedAtMs).toISOString(),
-      ...(metadata === undefined ? {} : { metadata })
-    };
-  }
-
-  function getVectorFromRow(row: { [key: string]: unknown }): number[] {
-    return parseJsonNumberArray(String(row.embedding));
-  }
 
   return {
     remove(id) {
