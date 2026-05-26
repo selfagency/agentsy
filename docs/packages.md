@@ -34,9 +34,9 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Routing and provider operations packages
 
-| Package                 | Role                                                     | Status    | Docs                                         |
-| ----------------------- | -------------------------------------------------------- | --------- | -------------------------------------------- |
-| `@agentsy/gateway` | Multi-provider routing, failover, and health tracking  | Internal  | [Package page](./packages/gateway.md)  |
+| Package            | Role                                                  | Status   | Docs                                  |
+| ------------------ | ----------------------------------------------------- | -------- | ------------------------------------- |
+| `@agentsy/gateway` | Multi-provider routing, failover, and health tracking | Internal | [Package page](./packages/gateway.md) |
 
 ## Core parsing and shaping utilities
 

@@ -2,25 +2,25 @@
 
 **Authority:** Master plan §1-3  
 **Last Updated:** 2026-05-25  
-**Purpose:** Canonical package boundaries, layer model, ecosystem decisions, verified compliance  
+**Purpose:** Canonical package boundaries, layer model, ecosystem decisions, verified compliance
 
 ---
 
 ## 1. Authority & Source Map
 
-| Source | Role |
-|--------|------|
-| `MASTER-IMPLEMENTATION-PLAN.md` v2026-05-15 | Canonical package boundaries, layer model, ecosystem decisions |
-| `DOGFOOD-PLAN.md` v2.1 | Phase sequencing (1-12), TASK numbering, requirements/constraints/patterns |
-| `REVISED-ARCHITECTURE-PLAN.md` 2026-05-25 | P0-P8 architectural upgrade layer (observability, credentials, MCP, sandbox, RAG, gateway, agent mode, config, fact extraction) |
-| `ARCHITECTURE-UPGRADE-PLAN.md` 2026-05-25 | Verified state of P0-1/P0-2 completion; P0-3 next |
-| `REMEDIATION-PLAN.md` 2026-05-25 | Plan-stale vs gap-exists classification; R1/R2/R3 phasing |
-| `SKILLS-INSTRUCTIONS-AGENT-PLAN.md` v1.0 | Skills/Instructions/Agents/Hooks 3-layer model, TASK numbering |
-| `MEMORY-AGENTFS-PLAN.md` 2026-05-21 | Phase 5/6/7/8a/8b/8c memory migration to Turso AgentFS |
-| `LLM-GATEWAY-PLAN.md` | TASK-LB-001..020 gateway scaffold |
-| 25 archived compliance/gap/phase-completion docs | 2026-05-17 verified compliance matrix + migration ledger |
-| 25 `packages/*/IMPLEMENTATION-PLAN.md` | Per-package TASK-{PKG}-NNN detailed work |
-| 2026-05-25 codebase audit | Verified current state (observability, runtime, orchestrator, core, providers, plugins) |
+| Source                                           | Role                                                                                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `MASTER-IMPLEMENTATION-PLAN.md` v2026-05-15      | Canonical package boundaries, layer model, ecosystem decisions                                                                  |
+| `DOGFOOD-PLAN.md` v2.1                           | Phase sequencing (1-12), TASK numbering, requirements/constraints/patterns                                                      |
+| `REVISED-ARCHITECTURE-PLAN.md` 2026-05-25        | P0-P8 architectural upgrade layer (observability, credentials, MCP, sandbox, RAG, gateway, agent mode, config, fact extraction) |
+| `ARCHITECTURE-UPGRADE-PLAN.md` 2026-05-25        | Verified state of P0-1/P0-2 completion; P0-3 next                                                                               |
+| `REMEDIATION-PLAN.md` 2026-05-25                 | Plan-stale vs gap-exists classification; R1/R2/R3 phasing                                                                       |
+| `SKILLS-INSTRUCTIONS-AGENT-PLAN.md` v1.0         | Skills/Instructions/Agents/Hooks 3-layer model, TASK numbering                                                                  |
+| `MEMORY-AGENTFS-PLAN.md` 2026-05-21              | Phase 5/6/7/8a/8b/8c memory migration to Turso AgentFS                                                                          |
+| `LLM-GATEWAY-PLAN.md`                            | TASK-LB-001..020 gateway scaffold                                                                                               |
+| 25 archived compliance/gap/phase-completion docs | 2026-05-17 verified compliance matrix + migration ledger                                                                        |
+| 25 `packages/*/IMPLEMENTATION-PLAN.md`           | Per-package TASK-{PKG}-NNN detailed work                                                                                        |
+| 2026-05-25 codebase audit                        | Verified current state (observability, runtime, orchestrator, core, providers, plugins)                                         |
 
 **Decision Authority:** This document is the single source of truth for:
 
@@ -33,16 +33,16 @@
 
 ## 2. Layer Model (Canonical)
 
-| Layer | Packages | Status | Purpose |
-|-------|----------|--------|---------|
-| **Core stream & transform** | `@agentsy/core` | 🟡 85% | Normalize provider output to typed events |
-| **Provider integration** | `@agentsy/providers`, `@agentsy/llm-gateway` | 🟡 70% | Adapt protocol differences, request/response normalization |
-| **Execution & orchestration** | `@agentsy/runtime`, `@agentsy/orchestrator` | 🟢 P0-2 ✅ | Loop, hooks, scheduling, mode policy |
-| **Session, memory & tokens** | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens` | 🟢 Ready | State durability, cognitive layers, budget |
-| **Surfaces & rendering** | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli` | 🟠 Phase 2+ | CLI, UI, editor integration |
-| **Extensibility & policy** | `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` | 🔴 Phase 4-11 | Skills, instructions, agents, policy, integrations |
-| **Model catalog & selection** | `@agentsy/models` | 🟢 Stable | Provider/model ranking, capability probing |
-| **Foundations** | `@agentsy/types`, `@agentsy/observability`, `@agentsy/testing`, `@agentsy/scripts` | 🟢 Ready | Types, logging, testing infrastructure |
+| Layer                         | Packages                                                                                                                                                         | Status        | Purpose                                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------- |
+| **Core stream & transform**   | `@agentsy/core`                                                                                                                                                  | 🟡 85%        | Normalize provider output to typed events                  |
+| **Provider integration**      | `@agentsy/providers`, `@agentsy/llm-gateway`                                                                                                                     | 🟡 70%        | Adapt protocol differences, request/response normalization |
+| **Execution & orchestration** | `@agentsy/runtime`, `@agentsy/orchestrator`                                                                                                                      | 🟢 P0-2 ✅    | Loop, hooks, scheduling, mode policy                       |
+| **Session, memory & tokens**  | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`                                                                                                         | 🟢 Ready      | State durability, cognitive layers, budget                 |
+| **Surfaces & rendering**      | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`                                                                                           | 🟠 Phase 2+   | CLI, UI, editor integration                                |
+| **Extensibility & policy**    | `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` | 🔴 Phase 4-11 | Skills, instructions, agents, policy, integrations         |
+| **Model catalog & selection** | `@agentsy/models`                                                                                                                                                | 🟢 Stable     | Provider/model ranking, capability probing                 |
+| **Foundations**               | `@agentsy/types`, `@agentsy/observability`, `@agentsy/testing`, `@agentsy/scripts`                                                                               | 🟢 Ready      | Types, logging, testing infrastructure                     |
 
 ---
 
@@ -128,16 +128,16 @@ Provider raw output (OpenAI/Anthropic/Ollama/etc)
 
 ## 5. Hook Taxonomy (8 Types)
 
-| Hook Type | Phase | Event | Characteristics |
-|-----------|-------|-------|---|
-| `pre-turn` | 4 | Before user input processed | Read-only; determines routing |
-| `post-turn` | 4 | After model response, before next turn | Side effects (memory writes, logging) |
-| `pre-compact` | 7 | Before context compaction | Budget-aware, determines what to evict |
-| `pre-tool-call` | 5 | Before tool execution | Approval, policy, sandboxing |
-| `post-tool-call` | 5 | After tool result captured | Secret detection, redaction |
-| `on-session-create` | 4 | Session initialized | Setup, capability negotiation |
-| `on-session-end` | 4 | Session concluded | Cleanup, metrics emission |
-| `on-error` | 4 | Unhandled exception | Recovery, observability |
+| Hook Type           | Phase | Event                                  | Characteristics                        |
+| ------------------- | ----- | -------------------------------------- | -------------------------------------- |
+| `pre-turn`          | 4     | Before user input processed            | Read-only; determines routing          |
+| `post-turn`         | 4     | After model response, before next turn | Side effects (memory writes, logging)  |
+| `pre-compact`       | 7     | Before context compaction              | Budget-aware, determines what to evict |
+| `pre-tool-call`     | 5     | Before tool execution                  | Approval, policy, sandboxing           |
+| `post-tool-call`    | 5     | After tool result captured             | Secret detection, redaction            |
+| `on-session-create` | 4     | Session initialized                    | Setup, capability negotiation          |
+| `on-session-end`    | 4     | Session concluded                      | Cleanup, metrics emission              |
+| `on-error`          | 4     | Unhandled exception                    | Recovery, observability                |
 
 **Plus extensions (REVISED P0-2):**
 
@@ -185,37 +185,37 @@ Provider raw output (OpenAI/Anthropic/Ollama/etc)
 
 ### Bundle Strategy (Use Instead of Build)
 
-| Component | Provider | Owner | Purpose |
-|-----------|----------|-------|---------|
-| Model catalog | models.dev | `@agentsy/models` | 100+ providers, capabilities, pricing |
-| Agent filesystem | Turso AgentFS | `@agentsy/memory` | SQLite-native memory substrate |
-| Pub/sub + tasks | Honker (SQLite ext) | Separate local DB | Coordination (Turso doesn't support) |
-| Bidirectional sync | `@tursodatabase/sync` | `@agentsy/memory` | SQLite ↔ Turso Cloud replication |
-| Local-only RAG | mcp-rag-server | `@agentsy/retrieval` | Zero-ceremony, MCP-native |
-| System keyring | `@napi-rs/keyring` | `@agentsy/secrets` | macOS Sequoia support (replaces keytar) |
-| Plugin sandbox | `isolated-vm` | `@agentsy/plugins` | Untrusted code containment |
-| MCP SDK | `@modelcontextprotocol/sdk` | `@agentsy/mcp` | stdio + HTTP transports |
-| CLI framework | `@oclif/core` + plugins | `@agentsy/cli` | Command lifecycle, plugins, autocomplete |
+| Component          | Provider                    | Owner                | Purpose                                  |
+| ------------------ | --------------------------- | -------------------- | ---------------------------------------- |
+| Model catalog      | models.dev                  | `@agentsy/models`    | 100+ providers, capabilities, pricing    |
+| Agent filesystem   | Turso AgentFS               | `@agentsy/memory`    | SQLite-native memory substrate           |
+| Pub/sub + tasks    | Honker (SQLite ext)         | Separate local DB    | Coordination (Turso doesn't support)     |
+| Bidirectional sync | `@tursodatabase/sync`       | `@agentsy/memory`    | SQLite ↔ Turso Cloud replication         |
+| Local-only RAG     | mcp-rag-server              | `@agentsy/retrieval` | Zero-ceremony, MCP-native                |
+| System keyring     | `@napi-rs/keyring`          | `@agentsy/secrets`   | macOS Sequoia support (replaces keytar)  |
+| Plugin sandbox     | `isolated-vm`               | `@agentsy/plugins`   | Untrusted code containment               |
+| MCP SDK            | `@modelcontextprotocol/sdk` | `@agentsy/mcp`       | stdio + HTTP transports                  |
+| CLI framework      | `@oclif/core` + plugins     | `@agentsy/cli`       | Command lifecycle, plugins, autocomplete |
 
 ### Patterns to Adopt
 
-| Pattern | Source | Implementation |
-|---------|--------|---|
-| Token compression (75% output / 46% memory) | Caveman | `@agentsy/tokens`, `@agentsy/core/context` |
-| Virtual sandbox (90% infra savings) | Flue | `@agentsy/runtime` (Phase 4 complete) |
-| Content addressing + dedup | re_gent | `@agentsy/memory/content-addressing` |
-| Structural sandboxing | SpiceAI | `@agentsy/runtime/sandbox` |
-| Schema-first secrets | Varlock | `@agentsy/secrets` (Phase 4) |
-| Tree-sitter tools (59 tokens vs 224) | Maki | `@agentsy/tools` (Phase 5) |
-| Spec-first think/plan/build/review/test/ship | Superpowers/Sisyphus | Superagent plugin modes |
-| Category-based delegation | oh-my-openagent | Runtime orchestration |
-| Iterative search → summarize → reflect | local-deep-researcher | Research mode plugin |
-| Multi-path exploration | LATS-style | Research phase |
-| Generator → critic → refinement | Evaluator-Optimizer | Review phase |
-| Hypothetical-answer embeddings | HyDE | Phase 8 RAG |
-| Hybrid retrieval ranking | Reciprocal Rank Fusion (RRF) | Phase 8 retrieval |
-| Lost-in-middle ordering | Context ordering | Phase 8 context builder |
-| Schema-first structured output | Outlines/llguidance | Prompt assembly |
+| Pattern                                      | Source                       | Implementation                             |
+| -------------------------------------------- | ---------------------------- | ------------------------------------------ |
+| Token compression (75% output / 46% memory)  | Caveman                      | `@agentsy/tokens`, `@agentsy/core/context` |
+| Virtual sandbox (90% infra savings)          | Flue                         | `@agentsy/runtime` (Phase 4 complete)      |
+| Content addressing + dedup                   | re_gent                      | `@agentsy/memory/content-addressing`       |
+| Structural sandboxing                        | SpiceAI                      | `@agentsy/runtime/sandbox`                 |
+| Schema-first secrets                         | Varlock                      | `@agentsy/secrets` (Phase 4)               |
+| Tree-sitter tools (59 tokens vs 224)         | Maki                         | `@agentsy/tools` (Phase 5)                 |
+| Spec-first think/plan/build/review/test/ship | Superpowers/Sisyphus         | Superagent plugin modes                    |
+| Category-based delegation                    | oh-my-openagent              | Runtime orchestration                      |
+| Iterative search → summarize → reflect       | local-deep-researcher        | Research mode plugin                       |
+| Multi-path exploration                       | LATS-style                   | Research phase                             |
+| Generator → critic → refinement              | Evaluator-Optimizer          | Review phase                               |
+| Hypothetical-answer embeddings               | HyDE                         | Phase 8 RAG                                |
+| Hybrid retrieval ranking                     | Reciprocal Rank Fusion (RRF) | Phase 8 retrieval                          |
+| Lost-in-middle ordering                      | Context ordering             | Phase 8 context builder                    |
+| Schema-first structured output               | Outlines/llguidance          | Prompt assembly                            |
 
 ### Standards Integration (Tier System)
 
@@ -300,31 +300,31 @@ Five first-class `AgentDefinition` in `@agentsy/plugins/src/agents/builtins/`:
 
 ## 9. Verified Compliance Snapshot (2026-05-25)
 
-| Package | Phase | Status | Notes |
-|---------|-------|--------|-------|
-| `@agentsy/observability` | 0-1, 9 | 🟢 P0-1 ✅ | Tracer, logger, exporters, instrumentation complete; metrics Phase 9 |
-| `@agentsy/runtime` | 0-2, 4-7, 9 | 🟢 P0-2 ✅ | Hooks, registry, interruption, checkpoint, AG-UI, sandbox |
-| `@agentsy/orchestrator` | 0-2, 4 | 🟢 P0-2 ✅ | Hook compilation, scheduling, agent loop |
-| `@agentsy/memory` | 0-1, 7-8 | 🟢 98% 🟡 | Production-ready; AgentFS migration pending Phase 8 |
-| `@agentsy/types` | 0, 1 | 🟢 ✅ | TASK-067 complete 2026-05-25 |
-| `@agentsy/session` | 1, 6-7 | 🟡 75% | Typed state scaffold done; snapshot/resume pending |
-| `@agentsy/tokens` | 0, 4, 9 | 🟢 Phase 0 ✅ | Compression done; cost tracking Phase 9 |
-| `@agentsy/core` | 0-2, 7 | 🟡 85% | TASK-009 ✅; stream-to-events done |
-| `@agentsy/providers` | 0-3 | 🟡 70% | TASK-008 ✅; request path exists |
-| `@agentsy/llm-gateway` | 3.5, 9 | 🟡 Foundation ✅ | TASK-LB-001..009 done; TASK-LB-010..020 Phase 3.5 |
-| `@agentsy/models` | 3 | 🟢 Stable | Model selector, capability probing ready |
-| `@agentsy/plugins` | 1-4 | 🟠 TASK-091 ✅ | Manifest registry done; skills/instructions/agent loaders Phase 4 |
-| `@agentsy/cli` | 2-12 | 🟠 ~37% | Readline chat partial; TUI Phase 2 |
-| `@agentsy/renderers` | 2-5 | 🟠 Scaffold | Framework ready; Ink components Phase 2 |
-| `@agentsy/tools` | 5 | 🔴 ~15% | REPL + AgentFS adapter; baseline tools Phase 5 |
-| `@agentsy/secrets` | 4 | 🔴 ~8% | Interface exists; broker pattern Phase 4 |
-| `@agentsy/guardrails` | 5, 10-11 | 🔴 ~12% | Error classes exist; policy engine Phase 5 |
-| `@agentsy/prompts` | 4 | 🔴 Scaffold | Layer types Phase 4 |
-| `@agentsy/testing` | 1, 11 | 🟡 Scaffold | MSW bootstrap ready Phase 1 |
-| `@agentsy/ui` | 5, 9 | 🟠 — | Adapters Phase 5 |
-| `@agentsy/vscode` | 12 | — | Cross-surface parity Phase 12 |
-| `@agentsy/scripts` | 12 | — | Release automation Phase 12 |
-| `@agentsy/{mcp,connectors,retrieval}` | 10-11 | Plan-only | Manifest promotion deferred Phase 10 |
+| Package                               | Phase       | Status           | Notes                                                                |
+| ------------------------------------- | ----------- | ---------------- | -------------------------------------------------------------------- |
+| `@agentsy/observability`              | 0-1, 9      | 🟢 P0-1 ✅       | Tracer, logger, exporters, instrumentation complete; metrics Phase 9 |
+| `@agentsy/runtime`                    | 0-2, 4-7, 9 | 🟢 P0-2 ✅       | Hooks, registry, interruption, checkpoint, AG-UI, sandbox            |
+| `@agentsy/orchestrator`               | 0-2, 4      | 🟢 P0-2 ✅       | Hook compilation, scheduling, agent loop                             |
+| `@agentsy/memory`                     | 0-1, 7-8    | 🟢 98% 🟡        | Production-ready; AgentFS migration pending Phase 8                  |
+| `@agentsy/types`                      | 0, 1        | 🟢 ✅            | TASK-067 complete 2026-05-25                                         |
+| `@agentsy/session`                    | 1, 6-7      | 🟡 75%           | Typed state scaffold done; snapshot/resume pending                   |
+| `@agentsy/tokens`                     | 0, 4, 9     | 🟢 Phase 0 ✅    | Compression done; cost tracking Phase 9                              |
+| `@agentsy/core`                       | 0-2, 7      | 🟡 85%           | TASK-009 ✅; stream-to-events done                                   |
+| `@agentsy/providers`                  | 0-3         | 🟡 70%           | TASK-008 ✅; request path exists                                     |
+| `@agentsy/llm-gateway`                | 3.5, 9      | 🟡 Foundation ✅ | TASK-LB-001..009 done; TASK-LB-010..020 Phase 3.5                    |
+| `@agentsy/models`                     | 3           | 🟢 Stable        | Model selector, capability probing ready                             |
+| `@agentsy/plugins`                    | 1-4         | 🟠 TASK-091 ✅   | Manifest registry done; skills/instructions/agent loaders Phase 4    |
+| `@agentsy/cli`                        | 2-12        | 🟠 ~37%          | Readline chat partial; TUI Phase 2                                   |
+| `@agentsy/renderers`                  | 2-5         | 🟠 Scaffold      | Framework ready; Ink components Phase 2                              |
+| `@agentsy/tools`                      | 5           | 🔴 ~15%          | REPL + AgentFS adapter; baseline tools Phase 5                       |
+| `@agentsy/secrets`                    | 4           | 🔴 ~8%           | Interface exists; broker pattern Phase 4                             |
+| `@agentsy/guardrails`                 | 5, 10-11    | 🔴 ~12%          | Error classes exist; policy engine Phase 5                           |
+| `@agentsy/prompts`                    | 4           | 🔴 Scaffold      | Layer types Phase 4                                                  |
+| `@agentsy/testing`                    | 1, 11       | 🟡 Scaffold      | MSW bootstrap ready Phase 1                                          |
+| `@agentsy/ui`                         | 5, 9        | 🟠 —             | Adapters Phase 5                                                     |
+| `@agentsy/vscode`                     | 12          | —                | Cross-surface parity Phase 12                                        |
+| `@agentsy/scripts`                    | 12          | —                | Release automation Phase 12                                          |
+| `@agentsy/{mcp,connectors,retrieval}` | 10-11       | Plan-only        | Manifest promotion deferred Phase 10                                 |
 
 ---
 

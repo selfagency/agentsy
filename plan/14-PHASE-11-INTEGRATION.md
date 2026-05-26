@@ -4,7 +4,7 @@
 **Milestone:** Standards compliance; manifest completeness  
 **Scope:** Cross-package integration; standards alignment  
 **Gate:** All networked integration tests passing; MCP/ACP/A2UI alignment done  
-**Next:** Phase 12  
+**Next:** Phase 12
 
 ---
 

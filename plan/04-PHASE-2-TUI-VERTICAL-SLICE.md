@@ -4,7 +4,7 @@
 **Milestone:** First interactive streaming TUI chat (single provider, no tools)  
 **Packages:** `@agentsy/renderers`, `@agentsy/providers`, `@agentsy/core`, `@agentsy/runtime`, `@agentsy/cli`  
 **Gate:** `pnpm check-types` + `pnpm test`; `chat-streaming.e2e.test.ts` passes  
-**Next:** Phase 3  
+**Next:** Phase 3
 
 ---
 
@@ -38,30 +38,30 @@ renderers (Ink TUI) → providers (wire path) → core (stream norm)
 ```typescript
 export const AcidPalette = {
   assistant: chalk.cyan, // Cyan for AI responses
-  user: chalk.green,      // Green for user input
-  success: chalk.green,   // Green for confirmations
-  warning: chalk.yellow,  // Yellow for cautions
-  error: chalk.red,       // Red for errors
-  secondary: chalk.dim,   // Dim for secondary info
+  user: chalk.green, // Green for user input
+  success: chalk.green, // Green for confirmations
+  warning: chalk.yellow, // Yellow for cautions
+  error: chalk.red, // Red for errors
+  secondary: chalk.dim, // Dim for secondary info
   emphasis: chalk.bright, // Bright for emphasis
-  pending: chalk.yellow,  // Yellow for pending states
+  pending: chalk.yellow // Yellow for pending states
 } as const;
 ```
 
 #### 2. Frame Primitives (`frames.ts`)
 
 ```typescript
-export function box(content: string, opts: FrameOpts): string
-export function border(content: string, opts: BorderOpts): string
-export function separator(width: number, opts?: SeparatorOpts): string
-export function titleBar(title: string, width: number): string
-export function asciiBanner(title: string): string
+export function box(content: string, opts: FrameOpts): string;
+export function border(content: string, opts: BorderOpts): string;
+export function separator(width: number, opts?: SeparatorOpts): string;
+export function titleBar(title: string, width: number): string;
+export function asciiBanner(title: string): string;
 ```
 
 #### 3. ASCII Banner (`ascii.ts`)
 
 ```typescript
-export function renderBanner(text: string, maxWidth: number): string
+export function renderBanner(text: string, maxWidth: number): string;
 // Produces:
 // ╔════════════════════╗
 // ║    @agentsy CLI    ║
@@ -105,11 +105,7 @@ export interface TranscriptProps {
   maxHeight?: number;
 }
 
-export const Transcript: React.FC<TranscriptProps> = ({
-  messages,
-  scrollable = true,
-  maxHeight,
-}) => {
+export const Transcript: React.FC<TranscriptProps> = ({ messages, scrollable = true, maxHeight }) => {
   // Renders scrollable message history
   // User messages right-aligned (green)
   // Assistant messages left-aligned (cyan)
@@ -126,11 +122,7 @@ export interface MessageBubbleProps {
   timestamp?: Date;
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({
-  content,
-  role,
-  timestamp,
-}) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ content, role, timestamp }) => {
   // Role-based styling + ANSI accent
 };
 ```
@@ -154,12 +146,7 @@ export interface TokenMeterProps {
   budget?: number;
 }
 
-export const TokenMeter: React.FC<TokenMeterProps> = ({
-  input,
-  output,
-  total,
-  budget,
-}) => {
+export const TokenMeter: React.FC<TokenMeterProps> = ({ input, output, total, budget }) => {
   // Renders: input: 234 | output: 567 | total: 801 / 4000
   // Color-codes when approaching budget
 };
@@ -174,11 +161,7 @@ export interface StatusFooterProps {
   elapsed?: number;
 }
 
-export const StatusFooter: React.FC<StatusFooterProps> = ({
-  connection,
-  model,
-  elapsed,
-}) => {
+export const StatusFooter: React.FC<StatusFooterProps> = ({ connection, model, elapsed }) => {
   // Bottom bar: connection status | model | elapsed time
 };
 ```
@@ -221,11 +204,7 @@ export interface ThinkingBlockProps {
   onToggle?: (expanded: boolean) => void;
 }
 
-export const ThinkingBlock: React.FC<ThinkingBlockProps> = ({
-  content,
-  expanded = false,
-  onToggle,
-}) => {
+export const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, expanded = false, onToggle }) => {
   // Collapsible thinking block (dim gray by default)
   // Arrow indicator: ▼ / ▶
 };
@@ -244,13 +223,7 @@ export interface ToolLifecycleProps {
   error?: string;
 }
 
-export const ToolLifecycle: React.FC<ToolLifecycleProps> = ({
-  name,
-  state,
-  args,
-  result,
-  error,
-}) => {
+export const ToolLifecycle: React.FC<ToolLifecycleProps> = ({ name, state, args, result, error }) => {
   // Animated state transitions
   // Shows args/result inline or collapsed
 };
@@ -266,12 +239,7 @@ export interface ApprovalStateProps {
   countdownMs?: number;
 }
 
-export const ApprovalState: React.FC<ApprovalStateProps> = ({
-  pending,
-  onApprove,
-  onReject,
-  countdownMs = 30000,
-}) => {
+export const ApprovalState: React.FC<ApprovalStateProps> = ({ pending, onApprove, onReject, countdownMs = 30000 }) => {
   // Countdown timer + [A]pprove / [R]eject keybinds
 };
 ```
@@ -300,10 +268,7 @@ export interface SearchInputProps {
   onSearch: (query: string) => void;
 }
 
-export const SearchInput: React.FC<SearchInputProps> = ({
-  placeholder = 'Search providers/models...',
-  onSearch,
-}) => {
+export const SearchInput: React.FC<SearchInputProps> = ({ placeholder = 'Search providers/models...', onSearch }) => {
   // Type to filter; clear with Ctrl+C
 };
 ```
@@ -317,11 +282,7 @@ export interface ProviderListProps {
   onSelect: (providerId: string) => void;
 }
 
-export const ProviderList: React.FC<ProviderListProps> = ({
-  providers,
-  selected,
-  onSelect,
-}) => {
+export const ProviderList: React.FC<ProviderListProps> = ({ providers, selected, onSelect }) => {
   // Scrollable list with arrow navigation
   // Status indicator: ✓ connected | ✗ error | ⋯ checking
 };
@@ -336,11 +297,7 @@ export interface ModelSelectProps {
   onSelect: (modelId: string) => void;
 }
 
-export const ModelSelect: React.FC<ModelSelectProps> = ({
-  models,
-  selected,
-  onSelect,
-}) => {
+export const ModelSelect: React.FC<ModelSelectProps> = ({ models, selected, onSelect }) => {
   // Nested under selected provider
   // Shows capability badges: tool-use | vision | streaming
 };
@@ -354,10 +311,7 @@ export interface ScopeToggleProps {
   onScope: (scope: typeof scope) => void;
 }
 
-export const ScopeToggle: React.FC<ScopeToggleProps> = ({
-  scope,
-  onScope,
-}) => {
+export const ScopeToggle: React.FC<ScopeToggleProps> = ({ scope, onScope }) => {
   // [L]ocal [C]loud [A]ll
 };
 ```
@@ -384,10 +338,7 @@ export interface RequestHandler {
   stream(req: CompletionRequest): ReadableStream<NormalizedChunk>;
 }
 
-export function createRequestHandler(
-  providers: ProviderRegistry,
-  model?: string
-): RequestHandler {
+export function createRequestHandler(providers: ProviderRegistry, model?: string): RequestHandler {
   return {
     async complete(req) {
       const provider = providers.select(model || req.model);
@@ -430,9 +381,7 @@ export type StreamEvent =
   | { type: 'error'; error: Error; chunkIndex: number }
   | { type: 'done'; finishReason: string; chunkIndex: number };
 
-export function createStreamEventAdapter(
-  stream: ReadableStream<NormalizedChunk>
-): ReadableStream<StreamEvent> {
+export function createStreamEventAdapter(stream: ReadableStream<NormalizedChunk>): ReadableStream<StreamEvent> {
   // Converts raw normalized chunks to typed events
   // Validates state machine (tool-call-start → tool-call-end, etc)
 }
@@ -464,9 +413,7 @@ export interface SimpleTurnLoopOptions {
   onDone?: (finishReason: string) => void;
 }
 
-export async function createSimpleTurnLoop(
-  options: SimpleTurnLoopOptions
-): Promise<AgentLoopHandle> {
+export async function createSimpleTurnLoop(options: SimpleTurnLoopOptions): Promise<AgentLoopHandle> {
   return {
     async step(userMessage: string) {
       const request = { messages: [{ role: 'user', content: userMessage }] };
@@ -504,9 +451,7 @@ export async function createSimpleTurnLoop(
 #### 1. Stream Bridge (`cli-bridge.ts`)
 
 ```typescript
-export function createCliStreamBridge(
-  stream: ReadableStream<StreamEvent>
-): ReadableStream<RenderedFrame> {
+export function createCliStreamBridge(stream: ReadableStream<StreamEvent>): ReadableStream<RenderedFrame> {
   // Converts stream events to Ink render frames
   // Handles buffering, debouncing for smooth display
 }
@@ -638,24 +583,24 @@ describe('Chat Streaming E2E', () => {
 ✅ Single provider, no tools yet  
 ✅ All components tested in isolation + E2E  
 ✅ Production-quality rendering (no jank)  
-✅ Ready to add model selection in Phase 3  
+✅ Ready to add model selection in Phase 3
 
 ---
 
 ## Effort Breakdown
 
-| Task | Hours |
-|------|-------|
-| TASK-089 (Palette) | 1.5 |
-| TASK-072 (Chat) | 2.5 |
-| TASK-073 (Stream events) | 1.5 |
-| TASK-085 (Model picker) | 1 |
-| TASK-008 (Request path) | 1 |
-| TASK-009 (Stream norm) | 1 |
-| TASK-010 (Turn loop) | 0.5 |
-| TASK-011 (Bridge) | 1.5 |
-| TASK-012 (E2E) | 1.5 |
-| **Total** | **~12 hours** |
+| Task                     | Hours         |
+| ------------------------ | ------------- |
+| TASK-089 (Palette)       | 1.5           |
+| TASK-072 (Chat)          | 2.5           |
+| TASK-073 (Stream events) | 1.5           |
+| TASK-085 (Model picker)  | 1             |
+| TASK-008 (Request path)  | 1             |
+| TASK-009 (Stream norm)   | 1             |
+| TASK-010 (Turn loop)     | 0.5           |
+| TASK-011 (Bridge)        | 1.5           |
+| TASK-012 (E2E)           | 1.5           |
+| **Total**                | **~12 hours** |
 
 ---
 

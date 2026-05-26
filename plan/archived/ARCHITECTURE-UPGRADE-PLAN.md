@@ -211,18 +211,18 @@ Add `@agentsy/observability` to build dependency graph. Update `turbo.json`.
 
 ### Package dependency additions
 
-| Package | Add dependency |
-|---|---|
-| `@agentsy/runtime` | `@agentsy/observability`, `@agentsy/secrets` |
-| `@agentsy/tools` | `@agentsy/observability`, `@agentsy/secrets` |
-| `@agentsy/plugins` | `@agentsy/observability`, `isolated-vm` |
-| `@agentsy/session` | `@agentsy/observability`, `better-sqlite3` (optional) |
-| `@agentsy/retrieval` | `@agentsy/observability` |
-| `@agentsy/memory` | `@agentsy/observability`, `@agentsy/retrieval` |
-| `@agentsy/providers` | `@agentsy/observability` |
-| `@agentsy/gateway` | `@agentsy/observability`, `@agentsy/providers` |
-| `@agentsy/cli` | `@agentsy/observability`, `ink`, `react` |
-| `@agentsy/secrets` | `@napi-rs/keyring` (replace `keytar`) |
+| Package              | Add dependency                                        |
+| -------------------- | ----------------------------------------------------- |
+| `@agentsy/runtime`   | `@agentsy/observability`, `@agentsy/secrets`          |
+| `@agentsy/tools`     | `@agentsy/observability`, `@agentsy/secrets`          |
+| `@agentsy/plugins`   | `@agentsy/observability`, `isolated-vm`               |
+| `@agentsy/session`   | `@agentsy/observability`, `better-sqlite3` (optional) |
+| `@agentsy/retrieval` | `@agentsy/observability`                              |
+| `@agentsy/memory`    | `@agentsy/observability`, `@agentsy/retrieval`        |
+| `@agentsy/providers` | `@agentsy/observability`                              |
+| `@agentsy/gateway`   | `@agentsy/observability`, `@agentsy/providers`        |
+| `@agentsy/cli`       | `@agentsy/observability`, `ink`, `react`              |
+| `@agentsy/secrets`   | `@napi-rs/keyring` (replace `keytar`)                 |
 
 ---
 

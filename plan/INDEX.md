@@ -2,33 +2,33 @@
 
 **Last Updated:** 2026-05-25  
 **Status:** Complete split into 18 phase documents  
-**Authority:** Master plan consolidating 25+ planning artifacts  
+**Authority:** Master plan consolidating 25+ planning artifacts
 
 ---
 
 ## Document Index
 
-| Document | Purpose | Read Time |
-|----------|---------|-----------|
-| **00-EXECUTIVE-SUMMARY.md** | Digest, quick navigation, status | 5 min |
-| **00-AUTHORITY-ARCHITECTURE.md** | Canonical layer model, ecosystem | 15 min |
-| **01-PHASE-0-FOUNDATION.md** | ✅ Complete baseline | 10 min |
-| **02-PHASE-R1-PLAN-SYNC.md** | Plan file updates (1 hr work) | 5 min |
-| **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package APIs, MSW bootstrap | 5 min |
-| **04-PHASE-2-TUI-VERTICAL-SLICE.md** | FIRST DOGFOODABLE (streaming chat) | 20 min |
-| **05-PHASE-3-MODEL-SELECTION.md** | Provider routing, local discovery | 8 min |
-| **06-PHASE-3.5-LLM-GATEWAY.md** | Semantic gateway, failover, quota | 15 min |
-| **07-PHASE-4-ORCHESTRATION.md** | Hooks, skills, agents, secrets, budget | 30 min |
-| **08-PHASE-5-TOOLS-APPROVALS.md** | Tool execution, deny-by-default | 20 min |
-| **09-PHASE-6-SESSION-DURABILITY.md** | Resume, branching, snapshots | 8 min |
-| **10-PHASE-7-MEMORY-INTEGRATION.md** | Memory capture/retrieval, AgentFS | 8 min |
-| **11-PHASE-8-RAG-AUGMENTATION.md** | 4-stage retrieval, hybrid ranking | 12 min |
-| **12-PHASE-9-OBSERVABILITY.md** | Cost tracking, structured logging | 10 min |
-| **13-PHASE-10-CONFIGURATION.md** | XDG config, interactive editor | 5 min |
-| **14-PHASE-11-INTEGRATION.md** | Standards compliance, manifests | 5 min |
-| **15-PHASE-12-HARDENING-RELEASE.md** | Smoke tests, CI gates, closure | 15 min |
-| **16-CLI-SURFACE-CMUX.md** | Optional: terminal multiplexing | 3 min |
-| **17-GOVERNANCE-QUALITY-GATES.md** | Build rules, security, completion | 15 min |
+| Document                                 | Purpose                                | Read Time |
+| ---------------------------------------- | -------------------------------------- | --------- |
+| **00-EXECUTIVE-SUMMARY.md**              | Digest, quick navigation, status       | 5 min     |
+| **00-AUTHORITY-ARCHITECTURE.md**         | Canonical layer model, ecosystem       | 15 min    |
+| **01-PHASE-0-FOUNDATION.md**             | ✅ Complete baseline                   | 10 min    |
+| **02-PHASE-R1-PLAN-SYNC.md**             | Plan file updates (1 hr work)          | 5 min     |
+| **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package APIs, MSW bootstrap      | 5 min     |
+| **04-PHASE-2-TUI-VERTICAL-SLICE.md**     | FIRST DOGFOODABLE (streaming chat)     | 20 min    |
+| **05-PHASE-3-MODEL-SELECTION.md**        | Provider routing, local discovery      | 8 min     |
+| **06-PHASE-3.5-LLM-GATEWAY.md**          | Semantic gateway, failover, quota      | 15 min    |
+| **07-PHASE-4-ORCHESTRATION.md**          | Hooks, skills, agents, secrets, budget | 30 min    |
+| **08-PHASE-5-TOOLS-APPROVALS.md**        | Tool execution, deny-by-default        | 20 min    |
+| **09-PHASE-6-SESSION-DURABILITY.md**     | Resume, branching, snapshots           | 8 min     |
+| **10-PHASE-7-MEMORY-INTEGRATION.md**     | Memory capture/retrieval, AgentFS      | 8 min     |
+| **11-PHASE-8-RAG-AUGMENTATION.md**       | 4-stage retrieval, hybrid ranking      | 12 min    |
+| **12-PHASE-9-OBSERVABILITY.md**          | Cost tracking, structured logging      | 10 min    |
+| **13-PHASE-10-CONFIGURATION.md**         | XDG config, interactive editor         | 5 min     |
+| **14-PHASE-11-INTEGRATION.md**           | Standards compliance, manifests        | 5 min     |
+| **15-PHASE-12-HARDENING-RELEASE.md**     | Smoke tests, CI gates, closure         | 15 min    |
+| **16-CLI-SURFACE-CMUX.md**               | Optional: terminal multiplexing        | 3 min     |
+| **17-GOVERNANCE-QUALITY-GATES.md**       | Build rules, security, completion      | 15 min    |
 
 ---
 

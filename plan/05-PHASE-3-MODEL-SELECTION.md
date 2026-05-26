@@ -3,7 +3,7 @@
 **Effort:** ~5 hours  
 **Packages:** `@agentsy/models`, `@agentsy/providers`, `@agentsy/plugins`, `@agentsy/renderers`, `@agentsy/cli`  
 **Gate:** Model selection working; local provider probing functional  
-**Next:** Phase 3.5  
+**Next:** Phase 3.5
 
 ---
 
@@ -32,9 +32,7 @@ export interface SelectionCriteria {
   local?: boolean;
 }
 
-export async function selectModel(
-  criteria?: SelectionCriteria
-): Promise<ModelSelection> {
+export async function selectModel(criteria?: SelectionCriteria): Promise<ModelSelection> {
   // Score all available models against criteria
   // Return top recommendation + alternatives
 }
@@ -58,18 +56,13 @@ export interface ProviderCapabilities {
   functionCalling: boolean;
 }
 
-export function getProviderCapabilities(
-  providerId: string
-): ProviderCapabilities {
+export function getProviderCapabilities(providerId: string): ProviderCapabilities {
   // Query provider profile
   // Return static map or dynamic probe
 }
 
 // Gate model selection on provider capabilities
-export async function selectModelForProvider(
-  providerId: string,
-  criteria: SelectionCriteria
-): Promise<ModelId> {
+export async function selectModelForProvider(providerId: string, criteria: SelectionCriteria): Promise<ModelId> {
   const caps = getProviderCapabilities(providerId);
   // Filter models by provider capabilities + user criteria
 }
@@ -87,9 +80,9 @@ Probe 8 local targets for health/models:
 ```typescript
 const LOCAL_TARGETS = [
   'http://localhost:11434', // Ollama default
-  'http://localhost:8000',  // vLLM
-  'http://localhost:1234',  // LM Studio
-  'http://localhost:8888',  // Lemonade
+  'http://localhost:8000', // vLLM
+  'http://localhost:1234', // LM Studio
+  'http://localhost:8888' // Lemonade
   // ... 4 more
 ];
 
@@ -279,7 +272,7 @@ export const CapabilityRefineFlow: React.FC = () => {
 ✅ User can select from multiple models per provider  
 ✅ Local LLM discovery works (Ollama, vLLM, etc)  
 ✅ Capability-based filtering works  
-✅ Slash commands functional  
+✅ Slash commands functional
 
 ---
 

@@ -2,32 +2,32 @@
 
 **Last Updated:** 2026-05-25  
 **Status:** Phase 0-1 VERIFIED COMPLETE; Phases 2-12 in planning/progress  
-**Authority Document:** Master plan consolidating 25+ planning artifacts + codebase audit  
+**Authority Document:** Master plan consolidating 25+ planning artifacts + codebase audit
 
 ---
 
 ## Quick Navigation
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| **00-AUTHORITY-ARCHITECTURE.md** | Layer model, package boundaries, ecosystem decisions | Architects, TLs |
-| **01-PHASE-0-FOUNDATION.md** | ✅ Verified complete baseline | Reference |
-| **02-PHASE-R1-PLAN-SYNC.md** | Read-only: update 8 IMPLEMENTATION-PLAN.md files | Plan owners |
-| **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package API contracts, MSW bootstrap | Teams on core packages |
-| **04-PHASE-2-TUI-VERTICAL-SLICE.md** | FIRST DOGFOODABLE: streaming chat TUI | CLI, renderers, core teams |
-| **05-PHASE-3-MODEL-SELECTION.md** | Provider routing, local LLM discovery | Models, providers, renderers |
-| **06-PHASE-3.5-LLM-GATEWAY.md** | Semantic gateway, failover, quota tracking | Gateway team |
-| **07-PHASE-4-ORCHESTRATION.md** | Hooks, skills, instructions, agents, secrets, budget | Orchestrator, plugins, runtime |
-| **08-PHASE-5-TOOLS-APPROVALS.md** | Safe tool execution, deny-by-default, guardrails | Runtime, tools, guardrails |
-| **09-PHASE-6-SESSION-DURABILITY.md** | Resume, branching, snapshot persistence | Session, runtime |
-| **10-PHASE-7-MEMORY-INTEGRATION.md** | AgentFS migration, memory capture/retrieval | Memory, runtime |
-| **11-PHASE-8-RAG-AUGMENTATION.md** | 4-stage retrieval, hybrid ranking, reranking | Retrieval, memory |
-| **12-PHASE-9-OBSERVABILITY.md** | Cost tracking, tracing, structured logging | Observability, all packages |
-| **13-PHASE-10-CONFIGURATION.md** | XDG config, interactive editor, plan-only promotion | CLI, plugins, mcp |
-| **14-PHASE-11-INTEGRATION.md** | Standards compliance (MCP/ACP/A2UI), complete manifests | All packages |
-| **15-PHASE-12-HARDENING-RELEASE.md** | Smoke tests, CI gates, cross-surface parity, closure | All teams, Release |
-| **16-CLI-SURFACE-CMUX.md** | Optional: cmux integration for terminal multiplexing | CLI team |
-| **17-GOVERNANCE-QUALITY-GATES.md** | Build rules, security invariants, completion protocol | All teams |
+| Document                                 | Purpose                                                 | Audience                       |
+| ---------------------------------------- | ------------------------------------------------------- | ------------------------------ |
+| **00-AUTHORITY-ARCHITECTURE.md**         | Layer model, package boundaries, ecosystem decisions    | Architects, TLs                |
+| **01-PHASE-0-FOUNDATION.md**             | ✅ Verified complete baseline                           | Reference                      |
+| **02-PHASE-R1-PLAN-SYNC.md**             | Read-only: update 8 IMPLEMENTATION-PLAN.md files        | Plan owners                    |
+| **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package API contracts, MSW bootstrap              | Teams on core packages         |
+| **04-PHASE-2-TUI-VERTICAL-SLICE.md**     | FIRST DOGFOODABLE: streaming chat TUI                   | CLI, renderers, core teams     |
+| **05-PHASE-3-MODEL-SELECTION.md**        | Provider routing, local LLM discovery                   | Models, providers, renderers   |
+| **06-PHASE-3.5-LLM-GATEWAY.md**          | Semantic gateway, failover, quota tracking              | Gateway team                   |
+| **07-PHASE-4-ORCHESTRATION.md**          | Hooks, skills, instructions, agents, secrets, budget    | Orchestrator, plugins, runtime |
+| **08-PHASE-5-TOOLS-APPROVALS.md**        | Safe tool execution, deny-by-default, guardrails        | Runtime, tools, guardrails     |
+| **09-PHASE-6-SESSION-DURABILITY.md**     | Resume, branching, snapshot persistence                 | Session, runtime               |
+| **10-PHASE-7-MEMORY-INTEGRATION.md**     | AgentFS migration, memory capture/retrieval             | Memory, runtime                |
+| **11-PHASE-8-RAG-AUGMENTATION.md**       | 4-stage retrieval, hybrid ranking, reranking            | Retrieval, memory              |
+| **12-PHASE-9-OBSERVABILITY.md**          | Cost tracking, tracing, structured logging              | Observability, all packages    |
+| **13-PHASE-10-CONFIGURATION.md**         | XDG config, interactive editor, plan-only promotion     | CLI, plugins, mcp              |
+| **14-PHASE-11-INTEGRATION.md**           | Standards compliance (MCP/ACP/A2UI), complete manifests | All packages                   |
+| **15-PHASE-12-HARDENING-RELEASE.md**     | Smoke tests, CI gates, cross-surface parity, closure    | All teams, Release             |
+| **16-CLI-SURFACE-CMUX.md**               | Optional: cmux integration for terminal multiplexing    | CLI team                       |
+| **17-GOVERNANCE-QUALITY-GATES.md**       | Build rules, security invariants, completion protocol   | All teams                      |
 
 ---
 
@@ -86,14 +86,14 @@ TOTAL FORWARD WORK: ~150 hrs
 
 ### Phase 0 — ✅ COMPLETE
 
-| Component | Evidence |
-|-----------|----------|
-| Token compression (75% output / 46% memory) | `@agentsy/tokens` + `@agentsy/core/context` |
-| Memory 5-tier foundation | `@agentsy/memory` — 214 TS files, production-ready |
-| Types audit + stability | TASK-067 — 17 modules, 7 TSDoc, zero `any` |
-| Observability P0-1 (tracer + logger) | `@agentsy/observability` — 13 TS files ✅ |
-| Runtime hook taxonomy P0-2 | `@agentsy/runtime` — hooks/registry/types ✅ |
-| Orchestrator hook compilation P0-2 | `@agentsy/orchestrator` — compileHooks ✅ |
+| Component                                   | Evidence                                           |
+| ------------------------------------------- | -------------------------------------------------- |
+| Token compression (75% output / 46% memory) | `@agentsy/tokens` + `@agentsy/core/context`        |
+| Memory 5-tier foundation                    | `@agentsy/memory` — 214 TS files, production-ready |
+| Types audit + stability                     | TASK-067 — 17 modules, 7 TSDoc, zero `any`         |
+| Observability P0-1 (tracer + logger)        | `@agentsy/observability` — 13 TS files ✅          |
+| Runtime hook taxonomy P0-2                  | `@agentsy/runtime` — hooks/registry/types ✅       |
+| Orchestrator hook compilation P0-2          | `@agentsy/orchestrator` — compileHooks ✅          |
 
 ### Critical Compliance Findings
 
@@ -123,7 +123,7 @@ TOTAL FORWARD WORK: ~150 hrs
 ✅ Package boundaries match code/export reality  
 ✅ All deferred work correctly scheduled in Phases 2-12  
 ✅ Cross-domain governance enforced  
-✅ Package-level IMPLEMENTATION-PLAN.md files reflect verified completion  
+✅ Package-level IMPLEMENTATION-PLAN.md files reflect verified completion
 
 ---
 

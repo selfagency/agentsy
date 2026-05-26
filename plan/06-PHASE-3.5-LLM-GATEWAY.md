@@ -4,7 +4,7 @@
 **Scope:** Replace direct `UniversalClient` with semantic, capability-aware gateway  
 **Package:** `@agentsy/llm-gateway` (new)  
 **Gate:** Failover + quota tracking working  
-**Next:** Phase 4  
+**Next:** Phase 4
 
 ---
 
@@ -48,7 +48,7 @@ export const genericOpenAiProfiles: ProviderProfile[] = [
     authPrefix: 'Bearer',
     errorPath: 'error.message',
     modelKey: 'model'
-  },
+  }
   // 15+ providers (Deepinfra, Together, Replicate, etc)
 ];
 ```
@@ -173,7 +173,7 @@ export function parseRateLimitHeaders(headers: Record<string, string>) {
     rpmReset: parseInt(headers['x-ratelimit-reset-requests'] ?? '0'),
     tpmLimit: parseInt(headers['x-ratelimit-limit-tokens'] ?? '0'),
     tpmRemaining: parseInt(headers['x-ratelimit-remaining-tokens'] ?? '0'),
-    tpmReset: parseInt(headers['x-ratelimit-reset-tokens'] ?? '0'),
+    tpmReset: parseInt(headers['x-ratelimit-reset-tokens'] ?? '0')
   };
 }
 
@@ -200,7 +200,7 @@ Support OpenAI, Anthropic, Meta, generic patterns.
 Implement 6 + 1 composite:
 
 ```typescript
-export type RoutingStrategy = 
+export type RoutingStrategy =
   | 'round-robin'
   | 'weighted'
   | 'least-connections'
@@ -278,10 +278,7 @@ export interface ProbeConfig {
   };
 }
 
-export async function probeUsage(
-  provider: ProviderProfile,
-  config: ProbeConfig
-): Promise<UsageSnapshot> {
+export async function probeUsage(provider: ProviderProfile, config: ProbeConfig): Promise<UsageSnapshot> {
   if (!config.usageProbe) return getCachedUsage(provider.id);
 
   const url = `${provider.baseUrl}${config.usageProbe.path}`;
@@ -307,7 +304,7 @@ $ agentsy lb status
 Provider           Status    Model Count    RPM Remaining    TPM Remaining
 ─────────────────────────────────────────────────────────────────────────
 openai             ✓         3              4500/5000        100k/125k
-anthropic          ✓         2              4800/5000        100k/100k  
+anthropic          ✓         2              4800/5000        100k/100k
 ollama (local)     ✓         5              ∞                ∞
 deepinfra          ⚠ HALF    10             8000/10000       400k/500k
 ```
@@ -341,14 +338,30 @@ Register in `@agentsy/plugins` slash registry.
 
 ```typescript
 describe('LLMGateway', () => {
-  test('config validation', () => { /* Zod */ });
-  test('registry lookup', () => { /* provider/model by ID */ });
-  test('alias resolution', () => { /* gpt-4o → openai */ });
-  test('circuit breaker transitions', () => { /* CLOSED → OPEN → HALF_OPEN → CLOSED */ });
-  test('header parsing', () => { /* rate limits */ });
-  test('quota pre-flight', () => { /* can request? */ });
-  test('strategies', () => { /* selection deterministic */ });
-  test('failover exhaustion', () => { /* all fail → AllProvidersExhaustedError */ });
+  test('config validation', () => {
+    /* Zod */
+  });
+  test('registry lookup', () => {
+    /* provider/model by ID */
+  });
+  test('alias resolution', () => {
+    /* gpt-4o → openai */
+  });
+  test('circuit breaker transitions', () => {
+    /* CLOSED → OPEN → HALF_OPEN → CLOSED */
+  });
+  test('header parsing', () => {
+    /* rate limits */
+  });
+  test('quota pre-flight', () => {
+    /* can request? */
+  });
+  test('strategies', () => {
+    /* selection deterministic */
+  });
+  test('failover exhaustion', () => {
+    /* all fail → AllProvidersExhaustedError */
+  });
 });
 ```
 
@@ -401,7 +414,7 @@ Run with MSW mock server from Phase 1.
 
 **README.md**
 
-```markdown
+````markdown
 # @agentsy/llm-gateway
 
 Semantic routing layer for multi-provider LLM access.
@@ -422,7 +435,9 @@ const client = new UniversalClient(config.apiKey);
 // After
 const client = createLLMGatewayClient(config);
 ```
-```
+````
+
+````
 
 ...
 
@@ -437,7 +452,7 @@ export { createLLMGatewayClient } from './gateway';
 export { CircuitBreaker, HealthTracker } from './health';
 export { ProfileRegistry, ProviderRegistry } from './registry';
 export * from './types';
-```
+````
 
 ---
 
@@ -498,7 +513,7 @@ Integrated into runtime turn loop as structured log fields (Phase 9).
 ✅ Automatic failover working  
 ✅ Circuit breaker preventing cascading failures  
 ✅ Quota tracking accurate  
-✅ CLI commands (status, reset, strategy) functional  
+✅ CLI commands (status, reset, strategy) functional
 
 ---
 

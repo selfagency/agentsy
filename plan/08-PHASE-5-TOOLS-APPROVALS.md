@@ -4,7 +4,7 @@
 **Milestone:** Safe tool execution with deny-by-default approvals  
 **Packages:** `@agentsy/tools`, `@agentsy/mcp`, `@agentsy/runtime`, `@agentsy/guardrails`, `@agentsy/renderers`, `@agentsy/cli`  
 **Gate:** Tool approval path working; guardrail pipeline integrated  
-**Next:** Phase 6  
+**Next:** Phase 6
 
 ---
 
@@ -39,15 +39,17 @@ export const toolDefinitions = [
       required: ['code']
     },
     annotations: {
-      readOnlyHint: false,           // REQUIRED
-      destructiveHint: true,         // REQUIRED
-      idempotentHint: false,         // REQUIRED
-      openWorldHint: false,          // REQUIRED
+      readOnlyHint: false, // REQUIRED
+      destructiveHint: true, // REQUIRED
+      idempotentHint: false, // REQUIRED
+      openWorldHint: false, // REQUIRED
       requiresCredential: undefined,
       progressNotifications: false
     },
-    handler: async (input) => { /* ... */ }
-  },
+    handler: async input => {
+      /* ... */
+    }
+  }
   // ...
 ];
 ```
@@ -234,11 +236,7 @@ export class ToolRegistry {
     return this.tools.get(name);
   }
 
-  async execute(
-    name: string,
-    input: unknown,
-    ctx: ToolContext
-  ): Promise<ToolResult> {
+  async execute(name: string, input: unknown, ctx: ToolContext): Promise<ToolResult> {
     const tool = this.get(name);
     if (!tool) throw new ToolNotFoundError(name);
 
@@ -350,7 +348,7 @@ export class ApprovalManager {
   }
 
   async waitForApproval(approvalId: string, timeoutMs = 30000): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const timeout = setTimeout(() => resolve(false), timeoutMs);
 
       this.on('approval-resolved', (id, approved) => {
@@ -383,7 +381,7 @@ export function createApprovalHook(approvalManager: ApprovalManager) {
     event: 'pre-tool-call',
     priority: 100,
     enabled: true,
-    handler: async (ctx) => {
+    handler: async ctx => {
       if (ctx.toolCall.annotations.destructiveHint) {
         const approvalId = await approvalManager.request({
           toolCallId: ctx.toolCall.id,
@@ -427,16 +425,13 @@ export interface InputGuardrail {
   check(input: string, ctx: GuardrailContext): GuardrailResult;
 }
 
-export function createInputGuardrail(
-  name: string,
-  check: (input: string) => GuardrailResult
-): InputGuardrail {
+export function createInputGuardrail(name: string, check: (input: string) => GuardrailResult): InputGuardrail {
   return { name, check };
 }
 
 // Built-in
 export const inputGuardrails = {
-  promptInjection: createInputGuardrail('prompt-injection', (input) => {
+  promptInjection: createInputGuardrail('prompt-injection', input => {
     // DRIFT-style heuristic detector
     const score = detectInjectionRisk(input);
     if (score > 0.7) {
@@ -445,7 +440,7 @@ export const inputGuardrails = {
     return { blocked: false };
   }),
 
-  piiCheck: createInputGuardrail('pii-check', (input) => {
+  piiCheck: createInputGuardrail('pii-check', input => {
     const pii = detectPii(input);
     if (pii.length > 0) {
       return {
@@ -467,16 +462,13 @@ export interface OutputGuardrail {
   check(output: string, ctx: GuardrailContext): GuardrailResult;
 }
 
-export function createOutputGuardrail(
-  name: string,
-  check: (output: string) => GuardrailResult
-): OutputGuardrail {
+export function createOutputGuardrail(name: string, check: (output: string) => GuardrailResult): OutputGuardrail {
   return { name, check };
 }
 
 // Built-in
 export const outputGuardrails = {
-  secretDetection: createOutputGuardrail('secret-detection', (output) => {
+  secretDetection: createOutputGuardrail('secret-detection', output => {
     const secrets = detectSecrets(output);
     if (secrets.length > 0) {
       return {
@@ -488,7 +480,7 @@ export const outputGuardrails = {
     return { blocked: false };
   }),
 
-  toxicity: createOutputGuardrail('toxicity-check', (output) => {
+  toxicity: createOutputGuardrail('toxicity-check', output => {
     const score = toxicityScore(output);
     if (score > 0.8) {
       return { blocked: true, reason: 'Toxic content detected' };
@@ -517,40 +509,31 @@ export function createToolGuardrail(
 
 // Built-in
 export const toolGuardrails = {
-  pathSanitization: createToolGuardrail(
-    'path-sanitization',
-    (tool, args) => {
-      if (tool.name.startsWith('fs_')) {
-        const path = args.path || args.cwd;
-        if (!isAllowedPath(path)) {
-          return { blocked: true, reason: 'Path not in allowed roots' };
-        }
+  pathSanitization: createToolGuardrail('path-sanitization', (tool, args) => {
+    if (tool.name.startsWith('fs_')) {
+      const path = args.path || args.cwd;
+      if (!isAllowedPath(path)) {
+        return { blocked: true, reason: 'Path not in allowed roots' };
       }
-      return { blocked: false };
     }
-  ),
+    return { blocked: false };
+  }),
 
-  commandValidation: createToolGuardrail(
-    'command-validation',
-    (tool, args) => {
-      if (tool.name === 'shell_exec') {
-        if (!isAllowedCommand(args.command)) {
-          return { blocked: true, reason: 'Command not allowed' };
-        }
+  commandValidation: createToolGuardrail('command-validation', (tool, args) => {
+    if (tool.name === 'shell_exec') {
+      if (!isAllowedCommand(args.command)) {
+        return { blocked: true, reason: 'Command not allowed' };
       }
-      return { blocked: false };
     }
-  ),
+    return { blocked: false };
+  }),
 
-  credentialValidation: createToolGuardrail(
-    'credential-validation',
-    (tool) => {
-      if (tool.annotations.requiresCredential) {
-        // Will be checked in approval hook
-      }
-      return { blocked: false };
+  credentialValidation: createToolGuardrail('credential-validation', tool => {
+    if (tool.annotations.requiresCredential) {
+      // Will be checked in approval hook
     }
-  )
+    return { blocked: false };
+  })
 };
 ```
 
@@ -600,7 +583,7 @@ export function createInputGuardrailHook(pipeline: GuardrailPipeline) {
     name: 'guardrails:input',
     event: 'pre-turn',
     priority: 50,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const result = await pipeline.checkInput(ctx.userMessage, ctx);
       if (result.blocked) {
         ctx.tracer.warn('input_blocked', { reason: result.reason });
@@ -616,7 +599,7 @@ export function createToolGuardrailHook(pipeline: GuardrailPipeline) {
     name: 'guardrails:tool',
     event: 'pre-tool-call',
     priority: 75,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const result = await pipeline.checkToolPreExecution(ctx.toolCall, ctx.toolCall.args);
       if (result.blocked) {
         ctx.tracer.warn('tool_blocked', { tool: ctx.toolCall.name, reason: result.reason });
@@ -632,7 +615,7 @@ export function createSecretDetectionHook(pipeline: GuardrailPipeline) {
     name: 'guardrails:secret-detection',
     event: 'post-tool-call',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const result = await pipeline.checkOutput(ctx.toolResult, ctx);
       if (result.redacted) {
         ctx.toolResult = result.redacted;
@@ -776,7 +759,7 @@ test('abort during execution', async () => {
 ✅ Deny-by-default for destructive operations  
 ✅ Guardrails detecting/blocking/redacting violations  
 ✅ Secret detection working  
-✅ Tool execution auditable  
+✅ Tool execution auditable
 
 ---
 

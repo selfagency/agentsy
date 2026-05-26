@@ -19,13 +19,13 @@ that had drifted requirements.
 
 ## 2. Source Documents (Authoritative)
 
-| Document | Date | Coverage |
-|----------|------|----------|
-| `DOGFOOD-PLAN.md` | 2026-05-24 | 12 phases, 95+ tasks across all packages |
-| `SKILLS-INSTRUCTIONS-AGENT-PLAN.md` | 2026-05-25 | 25+ tasks across 7 phases (plugins→cli) |
-| `MASTER-IMPLEMENTATION-PLAN.md` | 2026-05-15 | Canonical boundaries, compliance audit (superseded by DOGFOOD for sequencing) |
-| `archived/IMPLEMENTATION-COMPLIANCE-MATRIX.md` | 2026-05-17 | FINAL audit of 10 primary packages |
-| `archived/BIDIRECTIONAL-GAP-ANALYSIS.md` | 2026-05-17 | 120+ missing tasks identified |
+| Document                                       | Date       | Coverage                                                                      |
+| ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------- |
+| `DOGFOOD-PLAN.md`                              | 2026-05-24 | 12 phases, 95+ tasks across all packages                                      |
+| `SKILLS-INSTRUCTIONS-AGENT-PLAN.md`            | 2026-05-25 | 25+ tasks across 7 phases (plugins→cli)                                       |
+| `MASTER-IMPLEMENTATION-PLAN.md`                | 2026-05-15 | Canonical boundaries, compliance audit (superseded by DOGFOOD for sequencing) |
+| `archived/IMPLEMENTATION-COMPLIANCE-MATRIX.md` | 2026-05-17 | FINAL audit of 10 primary packages                                            |
+| `archived/BIDIRECTIONAL-GAP-ANALYSIS.md`       | 2026-05-17 | 120+ missing tasks identified                                                 |
 
 ## 3. Package Gap Inventory
 
@@ -37,39 +37,39 @@ Three severity classes:
 
 ### 3.1 🟢 IN-SYNC Packages (No Work Required)
 
-| Package | Evidence | Current State |
-|---------|----------|---------------|
-| `@agentsy/memory` | 98% compliance (compliance matrix), dedicated plan phases | Stable, production-ready |
-| `@agentsy/runtime` | 200%+ plan coverage, 32+ files | Execution loop, sandbox, AG-UI, approval engine all present |
-| `@agentsy/session` | 60% compliance — entity detection beyond plan | State store and manager exist, no plan changes needed |
-| `@agentsy/tokens` | 10% but no plan changes — compression done, cost tracking deferred to Phase 4 | Matches DOGFOOD sequencing |
-| `@agentsy/tools` | 15% but scaffold matches DOGFOOD Phase 5 schedule | Tools implementation correctly deferred |
-| `@agentsy/secrets` | 8% but scaffold matches DOGFOOD Phase 4 schedule | Secrets correctly deferred |
-| `@agentsy/guardrails` | 12% but scaffold matches DOGFOOD Phase 5+11 schedule | Guardrails correctly deferred |
-| `@agentsy/observability` | 30% but scaffold matches DOGFOOD Phase 5+9 schedule | Observability correctly deferred |
-| `@agentsy/models` | No recent plan changes | Stable, matches DOGFOOD Phase 3 |
-| `@agentsy/connectors` | Plan-only domain | Correctly deferred to Phase 10 |
-| `@agentsy/mcp` | Plan-only domain | Correctly deferred to Phase 10 |
-| `@agentsy/retrieval` | Plan-only domain | Correctly deferred to Phase 8 |
-| `@agentsy/vscode` | Published package | Out of DOGFOOD scope until Phase 12 |
+| Package                  | Evidence                                                                      | Current State                                               |
+| ------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `@agentsy/memory`        | 98% compliance (compliance matrix), dedicated plan phases                     | Stable, production-ready                                    |
+| `@agentsy/runtime`       | 200%+ plan coverage, 32+ files                                                | Execution loop, sandbox, AG-UI, approval engine all present |
+| `@agentsy/session`       | 60% compliance — entity detection beyond plan                                 | State store and manager exist, no plan changes needed       |
+| `@agentsy/tokens`        | 10% but no plan changes — compression done, cost tracking deferred to Phase 4 | Matches DOGFOOD sequencing                                  |
+| `@agentsy/tools`         | 15% but scaffold matches DOGFOOD Phase 5 schedule                             | Tools implementation correctly deferred                     |
+| `@agentsy/secrets`       | 8% but scaffold matches DOGFOOD Phase 4 schedule                              | Secrets correctly deferred                                  |
+| `@agentsy/guardrails`    | 12% but scaffold matches DOGFOOD Phase 5+11 schedule                          | Guardrails correctly deferred                               |
+| `@agentsy/observability` | 30% but scaffold matches DOGFOOD Phase 5+9 schedule                           | Observability correctly deferred                            |
+| `@agentsy/models`        | No recent plan changes                                                        | Stable, matches DOGFOOD Phase 3                             |
+| `@agentsy/connectors`    | Plan-only domain                                                              | Correctly deferred to Phase 10                              |
+| `@agentsy/mcp`           | Plan-only domain                                                              | Correctly deferred to Phase 10                              |
+| `@agentsy/retrieval`     | Plan-only domain                                                              | Correctly deferred to Phase 8                               |
+| `@agentsy/vscode`        | Published package                                                             | Out of DOGFOOD scope until Phase 12                         |
 
 ### 3.2 🟡 PLAN-STALE Packages (Plan Update Only)
 
-| Package | Issue | Fix |
-|---------|-------|-----|
-| `@agentsy/types` | TASK-067 completed (17 modules audited, +7 TSDoc, duplicate export removed, typo fixed) but IMPLEMENTATION-PLAN.md still shows TASK-067 as pending | Mark TASK-067 ✅, add verification date |
-| `@agentsy/providers` | Plan doesn't reflect TASK-008 (wire provider path) or Phase 3.5 LLM Gateway integration | Add TASK-008, TASK-LB-001-020 to plan |
+| Package              | Issue                                                                                                                                              | Fix                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `@agentsy/types`     | TASK-067 completed (17 modules audited, +7 TSDoc, duplicate export removed, typo fixed) but IMPLEMENTATION-PLAN.md still shows TASK-067 as pending | Mark TASK-067 ✅, add verification date |
+| `@agentsy/providers` | Plan doesn't reflect TASK-008 (wire provider path) or Phase 3.5 LLM Gateway integration                                                            | Add TASK-008, TASK-LB-001-020 to plan   |
 
 ### 3.3 🔴 GAP-EXISTS Packages (Code + Plan Changes)
 
-| # | Package | Gap Summary |
-|---|---------|-------------|
-| 1 | **`@agentsy/plugins`** | TASK-091 done (AgentManifest + registry), but missing 15 SKILLS tasks (SkillDiscoverer, InstructionsDiscoverer, AgentLoader, AgentRegistry, builtins) + DOGFOOD Phase 4 slash commands + plugin security + SKILL.md discovery |
-| 2 | **`@agentsy/orchestrator`** | 0% compliance on TASK-ORCH-001-013. Missing 8+ SKILLS tasks: HookRegistry, compileHooks, builtin hooks, createAgentSession. Missing DOGFOOD Phase 4: orchestrator integration, /mode command |
-| 3 | **`@agentsy/prompts`** | Missing InstructionsLayer + SkillsLayer segment types + InstructionsComposer (TASK-SIA-019-021 = SKILLS Phase 6). Missing DOGFOOD Phase 4 TASK-064 (prompt policy stack) |
-| 4 | **`@agentsy/renderers`** | Missing DOGFOOD Phase 2: TASK-072 (Ink chat components), TASK-073 (stream-event components), TASK-089 (acid ANSI BBS visual system), TASK-085 (model picker), TASK-011 (renderer bridge for CLI). Missing SKILLS TASK-SIA-013 (AgentPickerComponent) |
-| 5 | **`@agentsy/core`** | Missing DOGFOOD Phase 2 TASK-009 (stream normalization through core into runtime events). Missing 12 TASK-CORE-001-012 (contract freezing, compile-time snapshots, docs) |
-| 6 | **`@agentsy/cli`** | Chat command built (readline) but missing: TASK-007 (tui/ input state manager), TASK-012 (E2E test), TASK-095 (MSW), TASK-015 (slash commands), SKILLS TASK-SIA-014 (agent/skills commands, --agent flag, /agent). Phase 4: agent mode picker, bundled superagent. Gap analysis: 18+ TASK-CLI tasks missing |
+| #   | Package                     | Gap Summary                                                                                                                                                                                                                                                                                                 |
+| --- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **`@agentsy/plugins`**      | TASK-091 done (AgentManifest + registry), but missing 15 SKILLS tasks (SkillDiscoverer, InstructionsDiscoverer, AgentLoader, AgentRegistry, builtins) + DOGFOOD Phase 4 slash commands + plugin security + SKILL.md discovery                                                                               |
+| 2   | **`@agentsy/orchestrator`** | 0% compliance on TASK-ORCH-001-013. Missing 8+ SKILLS tasks: HookRegistry, compileHooks, builtin hooks, createAgentSession. Missing DOGFOOD Phase 4: orchestrator integration, /mode command                                                                                                                |
+| 3   | **`@agentsy/prompts`**      | Missing InstructionsLayer + SkillsLayer segment types + InstructionsComposer (TASK-SIA-019-021 = SKILLS Phase 6). Missing DOGFOOD Phase 4 TASK-064 (prompt policy stack)                                                                                                                                    |
+| 4   | **`@agentsy/renderers`**    | Missing DOGFOOD Phase 2: TASK-072 (Ink chat components), TASK-073 (stream-event components), TASK-089 (acid ANSI BBS visual system), TASK-085 (model picker), TASK-011 (renderer bridge for CLI). Missing SKILLS TASK-SIA-013 (AgentPickerComponent)                                                        |
+| 5   | **`@agentsy/core`**         | Missing DOGFOOD Phase 2 TASK-009 (stream normalization through core into runtime events). Missing 12 TASK-CORE-001-012 (contract freezing, compile-time snapshots, docs)                                                                                                                                    |
+| 6   | **`@agentsy/cli`**          | Chat command built (readline) but missing: TASK-007 (tui/ input state manager), TASK-012 (E2E test), TASK-095 (MSW), TASK-015 (slash commands), SKILLS TASK-SIA-014 (agent/skills commands, --agent flag, /agent). Phase 4: agent mode picker, bundled superagent. Gap analysis: 18+ TASK-CLI tasks missing |
 
 ## 4. Remediation Phases
 
@@ -302,20 +302,20 @@ Continue to DOGFOOD Phase 3, 3.5, 5, etc.
 
 ## 6. Estimating
 
-| Phase | Scope | Est. Files | Est. Tests | Est. Effort |
-|-------|-------|------------|------------|-------------|
-| R1 | Plan updates (8 files) | 8 plan files | N/A | ~1 hour |
-| R2 Step 1 | Ink TUI components | 12-15 source | 8-10 test | ~4 hours |
-| R2 Step 2 | Provider request path | 3-4 source | 4-5 test | ~1 hour |
-| R2 Step 3 | Stream normalization | 2-3 source | 3-4 test | ~1 hour |
-| R2 Step 4 | Runtime turn loop | 3-4 source | 4-5 test | ~1.5 hours |
-| R2 Step 5 | CLI renderer bridge | 2-3 source | 3-4 test | ~1 hour |
-| R2 Step 6 | CLI integration + E2E + MSW | 8-10 source | 5-6 test | ~2.5 hours |
-| R3 Phase A | plugins skills/instructions/agents | 10-12 source | 12-15 test | ~4 hours |
-| R3 Phase B | orchestrator hooks | 8-10 source | 10-12 test | ~3 hours |
-| R3 Phase C | runtime memory hooks | 3-4 source | 4-5 test | ~1.5 hours |
-| R3 Phase D | prompts layers | 3-4 source | 4-5 test | ~1.5 hours |
-| R3 Phase E | CLI agent/skills commands | 4-5 source | 5-6 test | ~2 hours |
+| Phase      | Scope                              | Est. Files   | Est. Tests | Est. Effort |
+| ---------- | ---------------------------------- | ------------ | ---------- | ----------- |
+| R1         | Plan updates (8 files)             | 8 plan files | N/A        | ~1 hour     |
+| R2 Step 1  | Ink TUI components                 | 12-15 source | 8-10 test  | ~4 hours    |
+| R2 Step 2  | Provider request path              | 3-4 source   | 4-5 test   | ~1 hour     |
+| R2 Step 3  | Stream normalization               | 2-3 source   | 3-4 test   | ~1 hour     |
+| R2 Step 4  | Runtime turn loop                  | 3-4 source   | 4-5 test   | ~1.5 hours  |
+| R2 Step 5  | CLI renderer bridge                | 2-3 source   | 3-4 test   | ~1 hour     |
+| R2 Step 6  | CLI integration + E2E + MSW        | 8-10 source  | 5-6 test   | ~2.5 hours  |
+| R3 Phase A | plugins skills/instructions/agents | 10-12 source | 12-15 test | ~4 hours    |
+| R3 Phase B | orchestrator hooks                 | 8-10 source  | 10-12 test | ~3 hours    |
+| R3 Phase C | runtime memory hooks               | 3-4 source   | 4-5 test   | ~1.5 hours  |
+| R3 Phase D | prompts layers                     | 3-4 source   | 4-5 test   | ~1.5 hours  |
+| R3 Phase E | CLI agent/skills commands          | 4-5 source   | 5-6 test   | ~2 hours    |
 
 **Total estimated: ~24 hours of implementation work**
 

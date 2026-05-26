@@ -2,7 +2,7 @@
 
 **Status:** Optional; discovery-gated  
 **Effort:** If implemented: ~8 hours  
-**Scope:** Terminal multiplexing integration  
+**Scope:** Terminal multiplexing integration
 
 ---
 
@@ -65,11 +65,7 @@ export async function detectCmux(): Promise<CmuxTransport | null> {
 When agent wants to spawn subagents in separate panes:
 
 ```typescript
-export async function orchestrateWithPanes(
-  agent: Agent,
-  task: string,
-  layout: 'grid' | 'main-vertical'
-) {
+export async function orchestrateWithPanes(agent: Agent, task: string, layout: 'grid' | 'main-vertical') {
   const panes = [];
 
   for (const subagent of agent.subagents) {
@@ -88,9 +84,7 @@ export async function orchestrateWithPanes(
   }
 
   // Execute in parallel
-  const results = await Promise.all(
-    panes.map(p => runInPane(p.paneId, p.subagent, task))
-  );
+  const results = await Promise.all(panes.map(p => runInPane(p.paneId, p.subagent, task)));
 
   return results;
 }

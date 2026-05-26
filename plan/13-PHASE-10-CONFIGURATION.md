@@ -4,7 +4,7 @@
 **Milestone:** Persistent interactive configuration; XDG compliance  
 **Packages:** `@agentsy/cli`, `@agentsy/plugins`  
 **Gate:** Config system working; schema versioning implemented  
-**Next:** Phase 11  
+**Next:** Phase 11
 
 ---
 

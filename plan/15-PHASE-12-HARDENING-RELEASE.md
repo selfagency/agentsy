@@ -4,7 +4,7 @@
 **Milestone:** GA-ready; all surfaces aligned; closure artifact signed  
 **Packages:** All (final validation pass)  
 **Gate:** Smoke tests passing; CI gates enabled; closure checklist signed  
-**Outcome:** `plan/PHASE-CLI-PRODUCTION-COMPLETION.md`  
+**Outcome:** `plan/PHASE-CLI-PRODUCTION-COMPLETION.md`
 
 ---
 
@@ -31,12 +31,7 @@ export const RELEASE_CHECKLIST = [
   },
   {
     category: 'Documentation',
-    checks: [
-      'README.md current',
-      'CHANGELOG.md updated',
-      'Migration guides present',
-      'Architecture docs aligned'
-    ]
+    checks: ['README.md current', 'CHANGELOG.md updated', 'Migration guides present', 'Architecture docs aligned']
   },
   {
     category: 'Code Quality',
@@ -372,7 +367,7 @@ If critical issue discovered:
 
 **Prepared by:** Engineering team  
 **Verified by:** QA lead  
-**Approved by:** Technical lead  
+**Approved by:** Technical lead
 
 **Date:** 2026-05-25 + Phase 12 completion
 
@@ -486,7 +481,7 @@ export function seedRandom(seed: number) {
 ✅ Closure artifact signed  
 ✅ No known critical issues  
 ✅ Performance meets spec  
-✅ Security audit passed  
+✅ Security audit passed
 
 ---
 

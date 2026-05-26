@@ -3,7 +3,7 @@
 **Effort:** ~2 hours  
 **Packages:** `@agentsy/types`, `@agentsy/testing`  
 **Gate:** `pnpm check-types` + `pnpm test` monorepo green  
-**Next:** Phase 2  
+**Next:** Phase 2
 
 ---
 
@@ -21,14 +21,14 @@ Stabilize cross-package APIs. All manifest-bearing packages export reusable, typ
 
 **Checklist per package:**
 
-| Check | Applies | Verification |
-|-------|---------|---|
-| **Type exports** | All | `export interface`, `export type`, `export enum` (never `export = ...`) |
-| **Stable versioning** | Public packages | SemVer in package.json |
-| **Entry point clarity** | All | Single `src/index.ts` that re-exports stable APIs |
-| **Example usage** | Core packages | `README.md` or `src/examples/` with runnable examples |
-| **TSDoc** | New exports | `/** Comment */` on public types + methods |
-| **Backward compat** | Existing | Breaking change requires major version bump + migration guide |
+| Check                   | Applies         | Verification                                                            |
+| ----------------------- | --------------- | ----------------------------------------------------------------------- |
+| **Type exports**        | All             | `export interface`, `export type`, `export enum` (never `export = ...`) |
+| **Stable versioning**   | Public packages | SemVer in package.json                                                  |
+| **Entry point clarity** | All             | Single `src/index.ts` that re-exports stable APIs                       |
+| **Example usage**       | Core packages   | `README.md` or `src/examples/` with runnable examples                   |
+| **TSDoc**               | New exports     | `/** Comment */` on public types + methods                              |
+| **Backward compat**     | Existing        | Breaking change requires major version bump + migration guide           |
 
 **Critical packages to audit:**
 
@@ -48,11 +48,11 @@ Create `packages/API-POSTURE-MATRIX.md`:
 ```markdown
 # API Posture Matrix (2026-05-25)
 
-| Package | Entry Point | Type Exports | Docs | Status |
-|---------|-------------|--------------|------|--------|
-| @agentsy/types | ✅ | ✅ | ✅ | 🟢 Stable |
-| @agentsy/memory | ✅ | ✅ | 🟡 | 🟡 Audited |
-| @agentsy/core | ✅ | ✅ | 🟡 | 🟡 Audited |
+| Package         | Entry Point | Type Exports | Docs | Status     |
+| --------------- | ----------- | ------------ | ---- | ---------- |
+| @agentsy/types  | ✅          | ✅           | ✅   | 🟢 Stable  |
+| @agentsy/memory | ✅          | ✅           | 🟡   | 🟡 Audited |
+| @agentsy/core   | ✅          | ✅           | 🟡   | 🟡 Audited |
 
 ...
 ```
@@ -98,12 +98,12 @@ packages/testing/
 
 2. **Handler Sets**
 
-   | Handler | Coverage |
-   |---------|----------|
-   | `providers.ts` | OpenAI, Anthropic, Ollama, Gemini, Mistral mock responses |
-   | `retrieval.ts` | mcp-rag-server endpoints (search, ingest, cite) |
-   | `connectors.ts` | External service stubs |
-   | `memory.ts` | Turso API mocks + @tursodatabase/sync simulation |
+   | Handler         | Coverage                                                  |
+   | --------------- | --------------------------------------------------------- |
+   | `providers.ts`  | OpenAI, Anthropic, Ollama, Gemini, Mistral mock responses |
+   | `retrieval.ts`  | mcp-rag-server endpoints (search, ingest, cite)           |
+   | `connectors.ts` | External service stubs                                    |
+   | `memory.ts`     | Turso API mocks + @tursodatabase/sync simulation          |
 
 3. **Test Pattern** (in any package)
 
@@ -177,7 +177,7 @@ packages/testing/
 ✅ Cross-package type mismatches resolved  
 ✅ MSW v2 is canonical mock layer  
 ✅ Test isolation guaranteed (no real network)  
-✅ Documentation updated  
+✅ Documentation updated
 
 ---
 

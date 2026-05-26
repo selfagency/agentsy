@@ -3,7 +3,7 @@
 **Status:** 🟡 Ready to execute  
 **Effort:** ~1 hour  
 **Gate:** Plan files committed; no code touched  
-**Next:** Phase 1  
+**Next:** Phase 1
 
 ---
 

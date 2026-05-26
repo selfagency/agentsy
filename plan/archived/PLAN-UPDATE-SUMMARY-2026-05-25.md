@@ -41,14 +41,14 @@
 
 ## Verified Phase 0-1 Completions (2026-05-25)
 
-| Component | Package | Tasks | Status | Files |
-|-----------|---------|-------|--------|-------|
-| **Token Infrastructure** | `@agentsy/tokens` | Phase 0 | ✅ | 7 TS |
-| **Memory Foundation** | `@agentsy/memory` | Phase 0-1 | ✅ | 214 TS |
-| **Type Stability** | `@agentsy/types` | TASK-067 | ✅ | 19 TS |
-| **Observability P0-1** | `@agentsy/observability` | 8 tasks | ✅ | 13 TS |
-| **Runtime P0-2** | `@agentsy/runtime` | 9 tasks | ✅ | 46 TS |
-| **Orchestrator P0-2** | `@agentsy/orchestrator` | 4 tasks | ✅ | 20 TS |
+| Component                | Package                  | Tasks     | Status | Files  |
+| ------------------------ | ------------------------ | --------- | ------ | ------ |
+| **Token Infrastructure** | `@agentsy/tokens`        | Phase 0   | ✅     | 7 TS   |
+| **Memory Foundation**    | `@agentsy/memory`        | Phase 0-1 | ✅     | 214 TS |
+| **Type Stability**       | `@agentsy/types`         | TASK-067  | ✅     | 19 TS  |
+| **Observability P0-1**   | `@agentsy/observability` | 8 tasks   | ✅     | 13 TS  |
+| **Runtime P0-2**         | `@agentsy/runtime`       | 9 tasks   | ✅     | 46 TS  |
+| **Orchestrator P0-2**    | `@agentsy/orchestrator`  | 4 tasks   | ✅     | 20 TS  |
 
 ---
 

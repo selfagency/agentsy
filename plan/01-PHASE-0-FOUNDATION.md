@@ -3,7 +3,7 @@
 **Status:** ✅ COMPLETE / VERIFIED  
 **Date:** 2026-05-25 codebase audit  
 **Evidence:** Consolidated in packages; tested + verified  
-**Next:** Phase R1 (plan sync)  
+**Next:** Phase R1 (plan sync)
 
 ---
 
@@ -195,14 +195,14 @@ Phase 0 established all foundational infrastructure that subsequent phases depen
 
 **Components:**
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Tracer | `src/tracer.ts` | Singleton; manages spans lifecycle |
-| Spans | `src/spans.ts` | Span types: `llm`, `tool`, `retrieval`, `memory` |
-| Instruments | `src/instruments.ts` | Metrics: latency, token counts, cost |
-| Exporters | `src/exporters/` | console/OTLP/Langfuse sinks |
-| Logger | `src/logger.ts` | tslog wrapper (Phase 9 completion) |
-| Subpath exports | `src/index.ts` | `@agentsy/observability/tracer`, etc |
+| Component       | Location             | Purpose                                          |
+| --------------- | -------------------- | ------------------------------------------------ |
+| Tracer          | `src/tracer.ts`      | Singleton; manages spans lifecycle               |
+| Spans           | `src/spans.ts`       | Span types: `llm`, `tool`, `retrieval`, `memory` |
+| Instruments     | `src/instruments.ts` | Metrics: latency, token counts, cost             |
+| Exporters       | `src/exporters/`     | console/OTLP/Langfuse sinks                      |
+| Logger          | `src/logger.ts`      | tslog wrapper (Phase 9 completion)               |
+| Subpath exports | `src/index.ts`       | `@agentsy/observability/tracer`, etc             |
 
 **Evidence:**
 
@@ -239,13 +239,13 @@ Phase 0 established all foundational infrastructure that subsequent phases depen
 
 **Components:**
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Hook types | `src/hooks/types.ts` | Discriminated union |
-| Registry | `src/hooks/registry.ts` | register/unregister/enable/disable |
-| Compilation | `src/hooks/compile.ts` | Merge handlers into AgentLoopOptions |
-| Interruption | `src/interruption.ts` | Pause/resume for approvals |
-| Checkpoint | `src/checkpoint.ts` | Save/restore turn state |
+| Component    | Location                | Purpose                              |
+| ------------ | ----------------------- | ------------------------------------ |
+| Hook types   | `src/hooks/types.ts`    | Discriminated union                  |
+| Registry     | `src/hooks/registry.ts` | register/unregister/enable/disable   |
+| Compilation  | `src/hooks/compile.ts`  | Merge handlers into AgentLoopOptions |
+| Interruption | `src/interruption.ts`   | Pause/resume for approvals           |
+| Checkpoint   | `src/checkpoint.ts`     | Save/restore turn state              |
 
 **Evidence:**
 
@@ -264,12 +264,12 @@ Phase 0 established all foundational infrastructure that subsequent phases depen
 
 **Components:**
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Hook compilation | `src/hooks/compile.ts` | Merge + priority handling |
-| Hook registry | `src/hooks/registry.ts` | Named hook collections |
-| Scheduling | `src/scheduling.ts` | Step sequencing |
-| Agent session | `src/session.ts` | createAgentSession factory |
+| Component        | Location                | Purpose                    |
+| ---------------- | ----------------------- | -------------------------- |
+| Hook compilation | `src/hooks/compile.ts`  | Merge + priority handling  |
+| Hook registry    | `src/hooks/registry.ts` | Named hook collections     |
+| Scheduling       | `src/scheduling.ts`     | Step sequencing            |
+| Agent session    | `src/session.ts`        | createAgentSession factory |
 
 **Evidence:**
 
@@ -313,14 +313,14 @@ Phase 0 established all foundational infrastructure that subsequent phases depen
 
 **Components:**
 
-| Component | Files | Purpose |
-|-----------|-------|---------|
-| AgentManifest | 1 | Plugin contract |
-| PluginProvenance | 1 | Trust metadata |
-| ExternalInstallation | 1 | Installation tracking |
-| AgentManifestRegistry | 1 | Discovery + loading |
-| Builtins | 3 | research/plan/agent modes |
-| Tests | 15 | Comprehensive coverage |
+| Component             | Files | Purpose                   |
+| --------------------- | ----- | ------------------------- |
+| AgentManifest         | 1     | Plugin contract           |
+| PluginProvenance      | 1     | Trust metadata            |
+| ExternalInstallation  | 1     | Installation tracking     |
+| AgentManifestRegistry | 1     | Discovery + loading       |
+| Builtins              | 3     | research/plan/agent modes |
+| Tests                 | 15    | Comprehensive coverage    |
 
 **Evidence:**
 
@@ -348,7 +348,7 @@ Each tier (sensory, register, working, STM, LTM) has its own interface. Retrieva
 
 ### Observability Is Always-On
 
-Every package logs through `@agentsy/observability`. No console.* in production paths.
+Every package logs through `@agentsy/observability`. No console.\* in production paths.
 
 **Implication:** Debuggability at scale; cost tracking possible; auditable.
 

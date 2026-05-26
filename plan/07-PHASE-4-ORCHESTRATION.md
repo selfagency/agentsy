@@ -4,7 +4,7 @@
 **Milestone:** Gate before autonomous tool usage; approval path + policy engine complete  
 **Packages:** `@agentsy/orchestrator`, `@agentsy/plugins`, `@agentsy/runtime`, `@agentsy/prompts`, `@agentsy/tokens`, `@agentsy/secrets`, `@agentsy/renderers`, `@agentsy/cli`  
 **Gate:** All hooks, plan mode, plugin security, agent/skill commands complete  
-**Next:** Phase 5  
+**Next:** Phase 5
 
 ---
 
@@ -35,7 +35,7 @@ export function createMemoryPreTurnHook(): HookDefinition<'pre-turn'> {
     name: 'memory:pre-turn',
     event: 'pre-turn',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const relevant = await ctx.memory.retrieve({
         sessionId: ctx.sessionId,
         limit: 10,
@@ -59,7 +59,7 @@ export function createMemoryPostTurnHook(): HookDefinition<'post-turn'> {
     name: 'memory:post-turn',
     event: 'post-turn',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const observations = extractObservations(ctx.lastTurn);
       await ctx.memory.capture({
         sessionId: ctx.sessionId,
@@ -102,7 +102,7 @@ export function createInstructionsHook(discoverer): HookDefinition<'beforeInit'>
     name: 'instructions:inject',
     event: 'beforeInit',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const allInstructions = discoverer.discover(); // merged, precedence applied
       ctx.systemPrompt = composeSystemPrompt(allInstructions, ctx.model);
       ctx.budget.allocate('baseline', allInstructions.tokenCost);
@@ -120,7 +120,7 @@ export function createBudgetHook(budgetConfig): HookDefinition<'prepareStep'> {
     name: 'budget:enforce',
     event: 'prepareStep',
     priority: 10, // runs last
-    handler: async (ctx) => {
+    handler: async ctx => {
       const remaining = ctx.budget.remaining();
 
       if (remaining < 100) {
@@ -146,7 +146,7 @@ export function createApprovalHook(): HookDefinition<'pre-tool-call'> {
     event: 'pre-tool-call',
     priority: 100,
     enabled: true,
-    handler: async (ctx) => {
+    handler: async ctx => {
       if (ctx.toolCall.annotations.destructiveHint) {
         const approved = await ctx.requestApproval({
           toolCallId: ctx.toolCall.id,
@@ -173,7 +173,7 @@ export function createObservabilityHook(tracer): HookDefinition<'onStep'> {
     name: 'observability:trace',
     event: 'onStep',
     priority: 5, // lowest; observes others
-    handler: async (ctx) => {
+    handler: async ctx => {
       const span = tracer.startSpan('agent-step', {
         'agent.id': ctx.agentId,
         'session.id': ctx.sessionId,
@@ -207,10 +207,7 @@ export interface SessionOptions {
   approvalPolicy?: ApprovalPolicy;
 }
 
-export async function createAgentSession(
-  agentDef: AgentDefinition,
-  config: SessionOptions
-): Promise<AgentLoopHandle> {
+export async function createAgentSession(agentDef: AgentDefinition, config: SessionOptions): Promise<AgentLoopHandle> {
   const session = new AgentSession(agentDef, config);
 
   if (config.plan) {
@@ -248,16 +245,14 @@ agentsy chat
 ```typescript
 export async function orchestratedExecution(agentId: string, goal: string) {
   // 1. Plan phase: /plan flag
-  const plan = await createAgentSession({ agentId, plan: true })
-    .step(goal);
+  const plan = await createAgentSession({ agentId, plan: true }).step(goal);
 
   // 2. User approval
   const approved = await requestUserApproval(plan.text);
   if (!approved) return;
 
   // 3. Execution phase
-  const result = await createAgentSession({ agentId, autonomous: false })
-    .runPlan(plan);
+  const result = await createAgentSession({ agentId, autonomous: false }).runPlan(plan);
 
   return result;
 }
@@ -308,7 +303,7 @@ export function createSkillsHook(discoverer, activator) {
   return {
     name: 'skills:activate',
     event: 'prepareStep',
-    handler: async (ctx) => {
+    handler: async ctx => {
       const metadata = discoverer.discover();
       const active = await activator.activate(ctx.userMessage, metadata);
       ctx.activeSkills = active;
@@ -347,7 +342,6 @@ export class InstructionsDiscoverer {
     // 4. <project>/.cursor/rules/*.md (glob + applyTo)
     // 5. ~/.agentsy/instructions.md
     // 6. ~/.config/agentsy/instructions.md
-
     // Merge all with priority precedence
     // Return ordered by priority (highest first)
   }
@@ -358,7 +352,7 @@ export function createInstructionsHook(discoverer) {
   return {
     name: 'instructions:inject',
     event: 'beforeInit',
-    handler: async (ctx) => {
+    handler: async ctx => {
       const instructions = await discoverer.discover();
       ctx.systemPrompt = composeSystemPrompt(instructions);
       ctx.baselineBudget = instructions.sum(i => tokenCount(i.content));
@@ -536,14 +530,11 @@ const ALLOWED_CONTEXT_INJECTION_FIELDS = [
   'userMessage',
   'orchestrationMode',
   'memoryScopes',
-  'timestamp',
+  'timestamp'
   // NOT: systemPrompt, inputTokens, activeHooks, etc
 ];
 
-export function filterContextForPlugin(
-  context: AgentLoopContext,
-  pluginId: string
-): SafeContext {
+export function filterContextForPlugin(context: AgentLoopContext, pluginId: string): SafeContext {
   const safe: any = {};
   for (const field of ALLOWED_CONTEXT_INJECTION_FIELDS) {
     safe[field] = context[field];
@@ -607,7 +598,7 @@ export async function runPluginInSandbox(
 
   // Expose only allowed APIs
   const hostAPI = {
-    log: plugin.config.trusted ? console.log : undefined,
+    log: plugin.config.trusted ? console.log : undefined
     // memory, time, etc — restricted
   };
 
@@ -620,7 +611,7 @@ export async function runPluginInSandbox(
 
 #### 4. Documentation
 
-```markdown
+````markdown
 # Plugin Security Model
 
 ## Context Injection
@@ -649,7 +640,9 @@ capabilities:
   - memory:write
   - retrieval:search
 ```
-```
+````
+
+````
 
 ## Trust Levels
 
@@ -665,8 +658,8 @@ capabilities:
 
 ### TASK-065: Credential Broker Pattern
 
-**Owner:** Secrets team  
-**Effort:** ~1.5 hours  
+**Owner:** Secrets team
+**Effort:** ~1.5 hours
 **Location:** `packages/secrets/src/broker/`
 
 ```typescript
@@ -722,7 +715,7 @@ export class CredentialBroker {
     );
   }
 }
-```
+````
 
 **Integration in runtime:**
 
@@ -756,7 +749,7 @@ export function detectSecrets(text: string): SecretMatch[] {
     // Anthropic: sk-ant-[a-zA-Z0-9\-]{95}
     ...detectAnthropicKeys(text),
     // OpenAI: sk-[a-zA-Z0-9]{48}
-    ...detectOpenaiKeys(text),
+    ...detectOpenaiKeys(text)
   ];
 }
 
@@ -777,7 +770,7 @@ export function createSecretDetectionHook(): HookDefinition<'post-tool-call'> {
     name: 'security:secret-detection',
     event: 'post-tool-call',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const { redacted, matches } = redactSecrets(ctx.toolResult);
 
       if (matches.length > 0) {
@@ -819,10 +812,7 @@ export interface TokenBudget {
 export class BudgetEnforcer {
   private spent = { input: 0, output: 0, context: 0 };
 
-  canAccommodate(request: {
-    inputTokens: number;
-    estimatedOutputTokens: number;
-  }): boolean {
+  canAccommodate(request: { inputTokens: number; estimatedOutputTokens: number }): boolean {
     return (
       this.spent.input + request.inputTokens <= this.budget.inputCap &&
       this.spent.output + request.estimatedOutputTokens <= this.budget.outputCap
@@ -861,11 +851,13 @@ export function createBudgetHook(budget: TokenBudget): HookDefinition<'prepareSt
     name: 'budget:enforce',
     event: 'prepareStep',
     priority: 10, // runs last
-    handler: async (ctx) => {
-      if (!enforcer.canAccommodate({
-        inputTokens: ctx.inputTokens,
-        estimatedOutputTokens: 1000 // conservative
-      })) {
+    handler: async ctx => {
+      if (
+        !enforcer.canAccommodate({
+          inputTokens: ctx.inputTokens,
+          estimatedOutputTokens: 1000 // conservative
+        })
+      ) {
         return { ...ctx, shouldAbort: true, reason: 'Budget insufficient' };
       }
 
@@ -934,13 +926,8 @@ export class SkillsComposer {
 **Budget model:**
 
 ```typescript
-export function allocateBudget(
-  totalBudget: number,
-  layers: (InstructionsLayer | SkillsLayer)[]
-): BudgetAllocation {
-  const baselineTokens = layers
-    .filter(l => l.type === 'instructions')
-    .sum(l => l.tokenCount);
+export function allocateBudget(totalBudget: number, layers: (InstructionsLayer | SkillsLayer)[]): BudgetAllocation {
+  const baselineTokens = layers.filter(l => l.type === 'instructions').sum(l => l.tokenCount);
 
   const taskTokens = totalBudget - baselineTokens;
 
@@ -1039,7 +1026,7 @@ agentsy chat                  # Interactive picker if ambiguous
 ✅ Plugin security enforced (sandbox + audit)  
 ✅ Secrets broker operational  
 ✅ Token budget enforced  
-✅ Ready for Phase 5 tool execution  
+✅ Ready for Phase 5 tool execution
 
 ---
 

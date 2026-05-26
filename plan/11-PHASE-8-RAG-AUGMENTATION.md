@@ -4,7 +4,7 @@
 **Milestone:** Local-first RAG with source attribution  
 **Packages:** `@agentsy/retrieval`, `@agentsy/memory`  
 **Gate:** 4-stage pipeline working; hybrid ranking + reranking functional  
-**Next:** Phase 9  
+**Next:** Phase 9
 
 ---
 
@@ -117,9 +117,7 @@ export async function hybridRetrieve(
   });
 
   // Merge + sort by RRF score
-  const merged = [
-    ...new Set([...sparseResults, ...denseResults])
-  ].map(r => ({
+  const merged = [...new Set([...sparseResults, ...denseResults])].map(r => ({
     ...r,
     rrf_score: scores.get(r.id) || 0
   }));
@@ -136,11 +134,7 @@ export async function hybridRetrieve(
 
 ```typescript
 export interface Reranker {
-  rerank(
-    query: string,
-    chunks: RetrievalResult[],
-    topN: number
-  ): Promise<RerankedResult[]>;
+  rerank(query: string, chunks: RetrievalResult[], topN: number): Promise<RerankedResult[]>;
 }
 
 export function createReranker(config: RerankerConfig): Reranker {
@@ -159,13 +153,12 @@ export function createReranker(config: RerankerConfig): Reranker {
 }
 
 export class BGEReranker implements Reranker {
-  async rerank(
-    query: string,
-    chunks: RetrievalResult[],
-    topN: number
-  ): Promise<RerankedResult[]> {
+  async rerank(query: string, chunks: RetrievalResult[], topN: number): Promise<RerankedResult[]> {
     // Local ONNX-based reranking
-    const scores = await this.model.rerank(query, chunks.map(c => c.text));
+    const scores = await this.model.rerank(
+      query,
+      chunks.map(c => c.text)
+    );
 
     return chunks
       .map((chunk, i) => ({ ...chunk, rerank_score: scores[i] }))
@@ -175,11 +168,7 @@ export class BGEReranker implements Reranker {
 }
 
 export class PassthroughReranker implements Reranker {
-  async rerank(
-    _query: string,
-    chunks: RetrievalResult[],
-    topN: number
-  ): Promise<RerankedResult[]> {
+  async rerank(_query: string, chunks: RetrievalResult[], topN: number): Promise<RerankedResult[]> {
     return chunks.slice(0, topN).map(c => ({
       ...c,
       rerank_score: c.relevance_score || 1.0
@@ -246,7 +235,8 @@ export class ContextBuilder {
   private lostInMiddleOrder(chunks: RerankedResult[]): RerankedResult[] {
     // Alternate: start, end, second-from-start, second-from-end, ...
     const result: RerankedResult[] = [];
-    let left = 0, right = chunks.length - 1;
+    let left = 0,
+      right = chunks.length - 1;
 
     while (left <= right) {
       result.push(chunks[left++]);
@@ -297,7 +287,10 @@ export class HierarchicalChunking implements ChunkingStrategy {
 
 // 2. Fixed-size (fast, lower quality)
 export class FixedChunking implements ChunkingStrategy {
-  constructor(readonly chunkSize: number = 512, readonly overlap: number = 50) {}
+  constructor(
+    readonly chunkSize: number = 512,
+    readonly overlap: number = 50
+  ) {}
 
   chunk(document: string): Chunk[] {
     const chunks: Chunk[] = [];
@@ -346,12 +339,7 @@ Wire retrieval into memory post-turn + fact extraction:
 
 ```typescript
 // packages/memory/src/retrieval/rag/index.ts
-export async function ingestDocument(
-  doc: Document,
-  rag: RagEngine,
-  memory: MemoryEngine,
-  ctx: { sessionId: string }
-) {
+export async function ingestDocument(doc: Document, rag: RagEngine, memory: MemoryEngine, ctx: { sessionId: string }) {
   // 1. Chunk + embed
   const chunks = await rag.ingest(doc);
 
@@ -441,10 +429,7 @@ export async function ingestWithProvenance(
 }
 
 // Redact unverified sources from output
-export function redactUnverifiedSources(
-  context: string,
-  provenanceMap: Map<string, ProvenanceTag[]>
-): string {
+export function redactUnverifiedSources(context: string, provenanceMap: Map<string, ProvenanceTag[]>): string {
   return context.replace(/\[(\w+)\]/g, (match, chunkId) => {
     const provenance = provenanceMap.get(chunkId);
     if (provenance?.some(p => !p.verified)) {

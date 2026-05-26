@@ -4,7 +4,7 @@
 **Milestone:** Production-debuggable; cost-governed before GA  
 **Packages:** `@agentsy/observability`, `@agentsy/tokens`, `@agentsy/providers`, `@agentsy/llm-gateway`  
 **Gate:** Structured logging complete; cost telemetry functional  
-**Next:** Phase 10  
+**Next:** Phase 10
 
 ---
 
@@ -92,11 +92,7 @@ export const SemanticAttributes = {
 
 ```typescript
 export class CostTracker {
-  async trackLlmCall(
-    provider: string,
-    model: string,
-    tokens: { input: number; output: number }
-  ) {
+  async trackLlmCall(provider: string, model: string, tokens: { input: number; output: number }) {
     const cost = this.computeCost(provider, model, tokens);
 
     this.span.setAttributes({
@@ -269,6 +265,7 @@ Each tool call span includes exit code:
 /trace | grep \"tool_failed\"
 
 ```text
+
 ```
 
 ---
@@ -279,12 +276,7 @@ Each tool call span includes exit code:
 
 ```typescript
 export class MetricsCollector {
-  recordRequest(
-    providerId: string,
-    modelId: string,
-    tokens: TokenCounts,
-    latencyMs: number
-  ) {
+  recordRequest(providerId: string, modelId: string, tokens: TokenCounts, latencyMs: number) {
     this.metrics.requests[providerId] ??= [];
     this.metrics.requests[providerId].push({
       modelId,

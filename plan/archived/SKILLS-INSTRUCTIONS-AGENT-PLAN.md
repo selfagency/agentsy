@@ -56,11 +56,11 @@ This plan defines the full cross-package architecture for skills discovery, inst
 
 ### 2.3 Instructions vs Skills vs Hooks
 
-| Layer | Format | Injection timing | Owner |
-|-------|--------|-----------------|-------|
-| **Instructions** | Raw markdown files (AGENTS.md, CLAUDE.md, copilot-instructions.md) | Always injected at session init | `@agentsy/prompts` |
-| **Skills** | SKILL.md with YAML frontmatter | Lazy-loaded per-turn via semantic activation | `@agentsy/plugins` |
-| **Hooks** | Named callbacks registered at loop construction | Per lifecycle event | `@agentsy/orchestrator` |
+| Layer            | Format                                                             | Injection timing                             | Owner                   |
+| ---------------- | ------------------------------------------------------------------ | -------------------------------------------- | ----------------------- |
+| **Instructions** | Raw markdown files (AGENTS.md, CLAUDE.md, copilot-instructions.md) | Always injected at session init              | `@agentsy/prompts`      |
+| **Skills**       | SKILL.md with YAML frontmatter                                     | Lazy-loaded per-turn via semantic activation | `@agentsy/plugins`      |
+| **Hooks**        | Named callbacks registered at loop construction                    | Per lifecycle event                          | `@agentsy/orchestrator` |
 
 ### 2.4 Budget and compaction model
 
@@ -160,8 +160,8 @@ All discovered and merged; highest priority wins on conflict:
 
 ```typescript
 interface SkillManifest {
-  name: string;          // lowercase, hyphens, max 64
-  description: string;   // max 1024
+  name: string; // lowercase, hyphens, max 64
+  description: string; // max 1024
   version?: string;
   author?: string;
   license?: string;
@@ -180,7 +180,7 @@ interface AgentDefinition {
   memoryScopes: MemoryScope[];
   orchestrationMode: 'single' | 'orchestrated' | 'autonomous';
   defaultModel?: string;
-  hooks: string[];             // named hook refs
+  hooks: string[]; // named hook refs
   source: 'bundled' | 'user' | 'workspace';
 }
 ```
@@ -191,7 +191,7 @@ interface AgentDefinition {
 interface HookDefinition<E extends keyof AgentLoopOptions> {
   name: string;
   event: E;
-  priority: number;          // lower = earlier
+  priority: number; // lower = earlier
   enabled: boolean | ((ctx: HookContext) => boolean);
   handler: AgentLoopOptions[E];
 }
@@ -206,7 +206,7 @@ interface InstructionFile {
   alwaysInject: true;
   content: string;
   priority: number;
-  applyTo?: string | null;   // glob pattern for file-scoped instructions
+  applyTo?: string | null; // glob pattern for file-scoped instructions
 }
 ```
 
@@ -214,63 +214,63 @@ interface InstructionFile {
 
 ### Phase 1 — Skills foundation (@agentsy/plugins)
 
-| Task | Description |
-|------|-------------|
-| TASK-SIA-001 | Define `SkillManifest` Zod schema in `src/skills/manifest.ts` matching agentskills.io spec |
+| Task         | Description                                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| TASK-SIA-001 | Define `SkillManifest` Zod schema in `src/skills/manifest.ts` matching agentskills.io spec                     |
 | TASK-SIA-002 | Implement `SkillDiscoverer` in `src/skills/discoverer.ts`: walk roots, parse frontmatter, build metadata index |
-| TASK-SIA-003 | Implement `SkillActivator` in `src/skills/activator.ts`: semantic matching, full body loading |
-| TASK-SIA-004 | Export `createSkillsHook(discoverer, activator)` from `src/skills/hook.ts` |
+| TASK-SIA-003 | Implement `SkillActivator` in `src/skills/activator.ts`: semantic matching, full body loading                  |
+| TASK-SIA-004 | Export `createSkillsHook(discoverer, activator)` from `src/skills/hook.ts`                                     |
 
 ### Phase 2 — Instructions foundation (@agentsy/plugins)
 
-| Task | Description |
-|------|-------------|
-| TASK-SIA-005 | Define `InstructionFile` type in `src/instructions/types.ts` |
-| TASK-SIA-006 | Implement `InstructionsDiscoverer` in `src/instructions/discoverer.ts` |
+| Task         | Description                                                                 |
+| ------------ | --------------------------------------------------------------------------- |
+| TASK-SIA-005 | Define `InstructionFile` type in `src/instructions/types.ts`                |
+| TASK-SIA-006 | Implement `InstructionsDiscoverer` in `src/instructions/discoverer.ts`      |
 | TASK-SIA-007 | Export `createInstructionsHook(discoverer)` from `src/instructions/hook.ts` |
 
 ### Phase 3 — Agent definitions (@agentsy/plugins)
 
-| Task | Description |
-|------|-------------|
-| TASK-SIA-008 | Define `AgentDefinition` Zod schema in `src/agents/definition.ts` |
-| TASK-SIA-009 | Implement `AgentLoader` + `AgentRegistry` in `src/agents/loader.ts` |
+| Task         | Description                                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| TASK-SIA-008 | Define `AgentDefinition` Zod schema in `src/agents/definition.ts`                                          |
+| TASK-SIA-009 | Implement `AgentLoader` + `AgentRegistry` in `src/agents/loader.ts`                                        |
 | TASK-SIA-010 | Implement built-in agent definitions in `src/agents/builtins/` (default, research, code, plan, superagent) |
 
 ### Phase 4 — Hook registry (@agentsy/orchestrator)
 
-| Task | Description |
-|------|-------------|
-| TASK-SIA-011 | Define `HookDefinition` type in `src/hooks/types.ts` |
-| TASK-SIA-012 | Implement `HookRegistry` in `src/hooks/registry.ts` |
+| Task         | Description                                                               |
+| ------------ | ------------------------------------------------------------------------- |
+| TASK-SIA-011 | Define `HookDefinition` type in `src/hooks/types.ts`                      |
+| TASK-SIA-012 | Implement `HookRegistry` in `src/hooks/registry.ts`                       |
 | TASK-SIA-013 | Implement `compileHooks(registry, baseOptions)` in `src/hooks/compile.ts` |
-| TASK-SIA-014 | Register builtin hooks in `src/hooks/builtins/` |
-| TASK-SIA-015 | Implement `createAgentSession(agentDef, config)` in `src/session.ts` |
+| TASK-SIA-014 | Register builtin hooks in `src/hooks/builtins/`                           |
+| TASK-SIA-015 | Implement `createAgentSession(agentDef, config)` in `src/session.ts`      |
 
 ### Phase 5 — Memory hooks (@agentsy/runtime)
 
-| Task | Description |
-|------|-------------|
-| TASK-SIA-016 | Implement `createMemoryPreTurnHook()` in `src/hooks/memory-pre-turn.ts` |
+| Task         | Description                                                               |
+| ------------ | ------------------------------------------------------------------------- |
+| TASK-SIA-016 | Implement `createMemoryPreTurnHook()` in `src/hooks/memory-pre-turn.ts`   |
 | TASK-SIA-017 | Implement `createMemoryPostTurnHook()` in `src/hooks/memory-post-turn.ts` |
-| TASK-SIA-018 | Implement `createWikiMemoryHook()` for session-level wiki synthesis |
+| TASK-SIA-018 | Implement `createWikiMemoryHook()` for session-level wiki synthesis       |
 
 ### Phase 6 — Prompt layer types (@agentsy/prompts)
 
-| Task | Description |
-|------|-------------|
-| TASK-SIA-019 | Add `InstructionsLayer` segment type to prompt layer schema |
-| TASK-SIA-020 | Implement `InstructionsComposer` in `src/layers/instructions.ts` |
+| Task         | Description                                                            |
+| ------------ | ---------------------------------------------------------------------- |
+| TASK-SIA-019 | Add `InstructionsLayer` segment type to prompt layer schema            |
+| TASK-SIA-020 | Implement `InstructionsComposer` in `src/layers/instructions.ts`       |
 | TASK-SIA-021 | Ensure `SkillsLayer` segment type exists for skill activation payloads |
 
 ### Phase 7 — Agent mode picker (@agentsy/renderers + @agentsy/cli)
 
-| Task | Description |
-|------|-------------|
+| Task         | Description                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------- | ----------------------- |
 | TASK-SIA-022 | Implement `AgentPickerComponent` in `packages/renderers/src/ink/components/agent-picker/` |
-| TASK-SIA-023 | Add `--agent <id>` flag and `/agent <id|?>` to CLI chat command |
-| TASK-SIA-024 | Add `agentsy agents list` and `agentsy agents show <id>` commands |
-| TASK-SIA-025 | Add `agentsy skills list` and `agentsy skills show <name>` commands |
+| TASK-SIA-023 | Add `--agent <id>` flag and `/agent <id                                                   | ?>` to CLI chat command |
+| TASK-SIA-024 | Add `agentsy agents list` and `agentsy agents show <id>` commands                         |
+| TASK-SIA-025 | Add `agentsy skills list` and `agentsy skills show <name>` commands                       |
 
 ## 8. Compatibility
 

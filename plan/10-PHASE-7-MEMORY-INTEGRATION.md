@@ -4,7 +4,7 @@
 **Milestone:** Live memory capture/retrieval in CLI; AgentFS Phase 8a/8b/8c migration  
 **Packages:** `@agentsy/memory`, `@agentsy/runtime`, `@agentsy/core`  
 **Gate:** Memory layer fully integrated; optional Turso migration staged  
-**Next:** Phase 8  
+**Next:** Phase 8
 
 ---
 
@@ -27,7 +27,7 @@ export function createMemoryPostTurnHook(memory: MemoryEngine) {
     name: 'memory:post-turn',
     event: 'post-turn',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const observations = extractObservations(ctx.lastTurn, {
         minConfidence: 0.7,
         types: ['user_preference', 'entity', 'procedure', 'constraint']
@@ -54,7 +54,7 @@ export function createMemoryPreTurnHook(memory: MemoryEngine) {
     name: 'memory:pre-turn',
     event: 'pre-turn',
     priority: 100,
-    handler: async (ctx) => {
+    handler: async ctx => {
       const relevant = await memory.retrieveMultiTier({
         sessionId: ctx.sessionId,
         query: ctx.userMessage,
@@ -75,7 +75,7 @@ export function createWikiMemoryHook(memory: MemoryEngine) {
     event: 'post-turn',
     priority: 50,
     enabled: true,
-    handler: async (ctx) => {
+    handler: async ctx => {
       // Trigger wiki synthesis every N turns or on relevance change
       if (ctx.stepCount % 10 === 0 || ctx.relevanceShift > 0.3) {
         await memory.wiki.synthesize({
@@ -161,8 +161,8 @@ Register in default tool registry:
       sessionId: ctx.sessionId,
       type: input.type,
       content: input.content,
-      expiresAt: input.expiresAtDays ? 
-        new Date(Date.now() + input.expiresAtDays * 86400000) : 
+      expiresAt: input.expiresAtDays ?
+        new Date(Date.now() + input.expiresAtDays * 86400000) :
         undefined
     });
     return { success: true };

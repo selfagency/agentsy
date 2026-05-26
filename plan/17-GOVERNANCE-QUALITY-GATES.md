@@ -1,7 +1,7 @@
 # Governance & Quality Gates
 
 **Authority:** User profile contract + Phase sequencing  
-**Updated:** 2026-05-25  
+**Updated:** 2026-05-25
 
 ---
 
@@ -224,14 +224,14 @@ tracer.info('event', { ...data }); // Secrets never logged
 
 ### Gate Before Proceeding
 
-| Milestone | Gate | Evidence |
-|-----------|------|----------|
-| End Phase 0-1 | Foundations verified ✅ | Observability, runtime, orchestrator, types all in code |
-| End Phase 2 | TUI dogfoodable | Chat streaming E2E working |
-| End Phase 4 | Before tools | Hooks, skills, agents, secrets, budget all wired |
-| End Phase 5 | Before autonomous mode | Approval gates, guardrails, tool execution verified |
-| End Phase 9 | Before GA | Cost tracking, structured logging, performance benchmarks passing |
-| End Phase 12 | Release | Closure artifact signed, smoke tests passing, zero critical issues |
+| Milestone     | Gate                    | Evidence                                                           |
+| ------------- | ----------------------- | ------------------------------------------------------------------ |
+| End Phase 0-1 | Foundations verified ✅ | Observability, runtime, orchestrator, types all in code            |
+| End Phase 2   | TUI dogfoodable         | Chat streaming E2E working                                         |
+| End Phase 4   | Before tools            | Hooks, skills, agents, secrets, budget all wired                   |
+| End Phase 5   | Before autonomous mode  | Approval gates, guardrails, tool execution verified                |
+| End Phase 9   | Before GA               | Cost tracking, structured logging, performance benchmarks passing  |
+| End Phase 12  | Release                 | Closure artifact signed, smoke tests passing, zero critical issues |
 
 ---
 

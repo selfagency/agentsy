@@ -4,7 +4,7 @@
 **Milestone:** Sessions survive interruptions; resume is deterministic  
 **Packages:** `@agentsy/session`, `@agentsy/runtime`  
 **Gate:** Snapshot save/restore working; session branching functional  
-**Next:** Phase 7  
+**Next:** Phase 7
 
 ---
 
@@ -53,7 +53,7 @@ export const stateReducers = {
       ...state,
       toolCallQueue: [...state.toolCallQueue, toolCall]
     }),
-    shift: (state) => ({
+    shift: state => ({
       ...state,
       toolCallQueue: state.toolCallQueue.slice(1)
     })
@@ -119,10 +119,7 @@ export class PauseManager {
 **Location:** `packages/runtime/src/loop/`
 
 ```typescript
-export async function snapshotSession(
-  session: AgentSession,
-  checkpoint: string
-): Promise<SessionSnapshot> {
+export async function snapshotSession(session: AgentSession, checkpoint: string): Promise<SessionSnapshot> {
   return {
     sessionId: session.id,
     timestamp: new Date(),
@@ -138,14 +135,13 @@ export async function snapshotSession(
   };
 }
 
-export async function resumeSession(
-  snapshot: SessionSnapshot,
-  store: SessionStore
-): Promise<AgentSession> {
+export async function resumeSession(snapshot: SessionSnapshot, store: SessionStore): Promise<AgentSession> {
   const state = await SessionState.deserialize(snapshot.state);
   const session = new AgentSession({
     id: snapshot.sessionId,
-    config: { /* restored from snapshot */ },
+    config: {
+      /* restored from snapshot */
+    },
     state
   });
 
@@ -168,7 +164,7 @@ export class CrashRecovery {
     const lastUpdate = session.updatedAt.getTime();
 
     // Stale if no update in 1 hour
-    return (now - lastUpdate) > 3600000;
+    return now - lastUpdate > 3600000;
   }
 
   async recover(sessionId: string): Promise<AgentSession> {

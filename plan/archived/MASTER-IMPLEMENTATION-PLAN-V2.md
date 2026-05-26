@@ -100,7 +100,7 @@ Package Compliance Status `@agentsy/memory` ~98% 🟢 Production-ready (AgentFS 
 - `**@napi-rs/keyring**` — Replaces deprecated `keytar` in `@agentsy/secrets` (macOS Sequoia support).
 - `**isolated-vm**` — Plugin sandboxing in `@agentsy/plugins`.
 - `**@modelcontextprotocol/sdk**` — Wrapped by `@agentsy/mcp` for stdio + HTTP transports.
-- `**@oclif/core` + plugin ecosystem** (`plugin-help`, `plugin-not-found`, `plugin-plugins`, `plugin-autocomplete`, `plugin-update`, `plugin-warn-if-update-available`, `plugin-which`, `plugin-commands`, `plugin-search`, `plugin-version`) — CLI command lifecycle. (REQ-024, CON-013)
+- `**@oclif/core` + plugin ecosystem\*\* (`plugin-help`, `plugin-not-found`, `plugin-plugins`, `plugin-autocomplete`, `plugin-update`, `plugin-warn-if-update-available`, `plugin-which`, `plugin-commands`, `plugin-search`, `plugin-version`) — CLI command lifecycle. (REQ-024, CON-013)
 - **Conditional:** `tldw_server` (media), `mirage` (multi-resource), `Codeburn` (analytics), `Stagehand` (browser automation), `Crit` (review UI), `Varlock` (schema-first secrets), `Maki` (tree-sitter tools).
 
 ### 3.2 Patterns to Adopt
@@ -1033,7 +1033,7 @@ UPDATE 5/25/26:
 
 **Last Updated:** 2026-05-25  
 **Status:** Phase 0-1 VERIFIED COMPLETE; Phases 2-12 in planning/progress  
-**Scope:** Canonical package boundaries, verified implementation status, accurate sequencing  
+**Scope:** Canonical package boundaries, verified implementation status, accurate sequencing
 
 ---
 
@@ -1055,33 +1055,33 @@ This document is the **single source of truth** for:
 
 ##### Workspace Packages with `package.json` Manifests (25 active packages)
 
-| Package | Phase | Verified Status | Files | Evidence |
-|---------|-------|-----------------|-------|----------|
-| `@agentsy/observability` | 0-1 | 🟢 P0-1 Complete ✅ | 13 TS | Tracer, logger, exporters, instrumentation |
-| `@agentsy/runtime` | 0-2 | 🟢 P0-2 Complete ✅ | 46 TS | Hooks registry, interruption, checkpoint, AG-UI |
-| `@agentsy/orchestrator` | 0-2 | 🟢 P0-2 Complete ✅ | 20 TS | Hook compilation, scheduling, agent loop |
-| `@agentsy/memory` | 0-1 | 🟢 Production Ready ✅ | 214 TS | 5-tier cognitive, wiki, RAG, coordination, sync |
-| `@agentsy/types` | 0 | 🟢 Complete ✅ | 19 TS | TASK-067 verified 2026-05-25 |
-| `@agentsy/session` | 1 | 🟡 Typed Scaffold ✅ | 3 TS | State contracts, snapshot, reusable segments |
-| `@agentsy/tokens` | 0 | 🟢 Phase 0 Complete ✅ | 7 TS | Compression done; cost tracking Phase 9 |
-| `@agentsy/core` | 0-2 | 🟡 85% Complete | 84 TS | TASK-009 ✅; stream-to-events done |
-| `@agentsy/providers` | 0-3 | 🟡 70% Complete | 31 TS | TASK-008 ✅; request path exists |
-| `@agentsy/plugins` | 1-4 | 🟠 TASK-091 ✅ | 8 TS | Manifest registry done; skills/instructions pending |
-| `@agentsy/cli` | 2-12 | 🟠 ~37% | 12 TS | Readline chat partial; TUI pending |
-| `@agentsy/renderers` | 2-5 | 🟠 Scaffold | 50 TS | Renderers framework; Ink components pending |
-| `@agentsy/tools` | 5 | 🔴 ~15% | 5 TS | REPL + AgentFS adapter; baseline tools Phase 5 |
-| `@agentsy/secrets` | 4 | 🔴 ~8% | — | Broker pattern deferred Phase 4 |
-| `@agentsy/guardrails` | 5,10-11 | 🔴 ~12% | — | Policy engine deferred Phase 5 |
-| `@agentsy/prompts` | 4 | 🔴 Scaffold | 2 TS | Layer types deferred Phase 4 |
-| `@agentsy/llm-gateway` | 3.5 | 🟡 Foundation ✅ | — | TASK-LB-001..009 done; remaining Phase 3.5 |
-| `@agentsy/models` | 3 | 🟢 Stable | — | Selector ready Phase 3 |
-| `@agentsy/session` | 6-7 | 🟡 60% | — | Snapshot/resume integration pending |
-| `@agentsy/testing` | 1,11 | 🟡 Scaffold | — | MSW bootstrap ready Phase 1 |
-| `@agentsy/observability` | 5,9 | 🟢 P0-1 ✅ | 13 TS | Tracer + logger; metrics Phase 9 |
-| `@agentsy/ui` | 5,9 | 🟠 — | — | Adapters pending Phase 5 |
-| `@agentsy/vscode` | 12 | — | — | Cross-surface parity Phase 12 |
-| `@agentsy/scripts` | 12 | — | — | Release automation Phase 12 |
-| `@agentsy/{mcp,connectors,retrieval}` | 10-11 | Plan-only | — | Manifest promotion deferred Phase 10 |
+| Package                               | Phase   | Verified Status        | Files  | Evidence                                            |
+| ------------------------------------- | ------- | ---------------------- | ------ | --------------------------------------------------- |
+| `@agentsy/observability`              | 0-1     | 🟢 P0-1 Complete ✅    | 13 TS  | Tracer, logger, exporters, instrumentation          |
+| `@agentsy/runtime`                    | 0-2     | 🟢 P0-2 Complete ✅    | 46 TS  | Hooks registry, interruption, checkpoint, AG-UI     |
+| `@agentsy/orchestrator`               | 0-2     | 🟢 P0-2 Complete ✅    | 20 TS  | Hook compilation, scheduling, agent loop            |
+| `@agentsy/memory`                     | 0-1     | 🟢 Production Ready ✅ | 214 TS | 5-tier cognitive, wiki, RAG, coordination, sync     |
+| `@agentsy/types`                      | 0       | 🟢 Complete ✅         | 19 TS  | TASK-067 verified 2026-05-25                        |
+| `@agentsy/session`                    | 1       | 🟡 Typed Scaffold ✅   | 3 TS   | State contracts, snapshot, reusable segments        |
+| `@agentsy/tokens`                     | 0       | 🟢 Phase 0 Complete ✅ | 7 TS   | Compression done; cost tracking Phase 9             |
+| `@agentsy/core`                       | 0-2     | 🟡 85% Complete        | 84 TS  | TASK-009 ✅; stream-to-events done                  |
+| `@agentsy/providers`                  | 0-3     | 🟡 70% Complete        | 31 TS  | TASK-008 ✅; request path exists                    |
+| `@agentsy/plugins`                    | 1-4     | 🟠 TASK-091 ✅         | 8 TS   | Manifest registry done; skills/instructions pending |
+| `@agentsy/cli`                        | 2-12    | 🟠 ~37%                | 12 TS  | Readline chat partial; TUI pending                  |
+| `@agentsy/renderers`                  | 2-5     | 🟠 Scaffold            | 50 TS  | Renderers framework; Ink components pending         |
+| `@agentsy/tools`                      | 5       | 🔴 ~15%                | 5 TS   | REPL + AgentFS adapter; baseline tools Phase 5      |
+| `@agentsy/secrets`                    | 4       | 🔴 ~8%                 | —      | Broker pattern deferred Phase 4                     |
+| `@agentsy/guardrails`                 | 5,10-11 | 🔴 ~12%                | —      | Policy engine deferred Phase 5                      |
+| `@agentsy/prompts`                    | 4       | 🔴 Scaffold            | 2 TS   | Layer types deferred Phase 4                        |
+| `@agentsy/llm-gateway`                | 3.5     | 🟡 Foundation ✅       | —      | TASK-LB-001..009 done; remaining Phase 3.5          |
+| `@agentsy/models`                     | 3       | 🟢 Stable              | —      | Selector ready Phase 3                              |
+| `@agentsy/session`                    | 6-7     | 🟡 60%                 | —      | Snapshot/resume integration pending                 |
+| `@agentsy/testing`                    | 1,11    | 🟡 Scaffold            | —      | MSW bootstrap ready Phase 1                         |
+| `@agentsy/observability`              | 5,9     | 🟢 P0-1 ✅             | 13 TS  | Tracer + logger; metrics Phase 9                    |
+| `@agentsy/ui`                         | 5,9     | 🟠 —                   | —      | Adapters pending Phase 5                            |
+| `@agentsy/vscode`                     | 12      | —                      | —      | Cross-surface parity Phase 12                       |
+| `@agentsy/scripts`                    | 12      | —                      | —      | Release automation Phase 12                         |
+| `@agentsy/{mcp,connectors,retrieval}` | 10-11   | Plan-only              | —      | Manifest promotion deferred Phase 10                |
 
 #### 2.2 Critical Compliance Findings (2026-05-25 Audit)
 
@@ -1101,15 +1101,15 @@ This document is the **single source of truth** for:
 
 #### 3.1 Layer Model
 
-| Layer | Packages | Verified Status |
-|-------|----------|---|
-| **Core stream & transform primitives** | `@agentsy/core` | 🟡 85% (stream-to-events ✅) |
-| **Provider integration boundary** | `@agentsy/providers`, `@agentsy/llm-gateway` | 🟡 70% (request path ✅) |
-| **Execution & orchestration** | `@agentsy/runtime`, `@agentsy/orchestrator` | 🟢 P0-2 ✅ (hooks done) |
-| **Session, memory & token governance** | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens` | 🟢 Ready (memory production ✅) |
-| **Rendering & interaction surfaces** | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli` | 🟠 Phase 2+ (TUI pending) |
-| **Extensibility & policy** | `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` | 🔴 Phase 4-5+ deferred |
-| **Catalog, scoring & model selection** | `@agentsy/models` | 🟢 Stable |
+| Layer                                  | Packages                                                                                                                                                         | Verified Status                 |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **Core stream & transform primitives** | `@agentsy/core`                                                                                                                                                  | 🟡 85% (stream-to-events ✅)    |
+| **Provider integration boundary**      | `@agentsy/providers`, `@agentsy/llm-gateway`                                                                                                                     | 🟡 70% (request path ✅)        |
+| **Execution & orchestration**          | `@agentsy/runtime`, `@agentsy/orchestrator`                                                                                                                      | 🟢 P0-2 ✅ (hooks done)         |
+| **Session, memory & token governance** | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`                                                                                                         | 🟢 Ready (memory production ✅) |
+| **Rendering & interaction surfaces**   | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`                                                                                           | 🟠 Phase 2+ (TUI pending)       |
+| **Extensibility & policy**             | `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` | 🔴 Phase 4-5+ deferred          |
+| **Catalog, scoring & model selection** | `@agentsy/models`                                                                                                                                                | 🟢 Stable                       |
 
 ---
 
@@ -1117,32 +1117,32 @@ This document is the **single source of truth** for:
 
 #### Phase 0 — Foundation (✅ VERIFIED COMPLETE)
 
-| Component | Status | Evidence | Date |
-|-----------|--------|----------|------|
-| Token compression (75% output / 46% memory) | ✅ | `@agentsy/tokens` + `@agentsy/core/context` | 2026-05-17 |
-| Memory 5-tier foundation | ✅ | `@agentsy/memory` — 214 TS files | 2026-05-25 |
-| Types audit + stability | ✅ | TASK-067 — 17 modules, 7 TSDoc, zero `any` | 2026-05-25 |
-| Observability P0-1 (tracer + logger) | ✅ | `@agentsy/observability` — 13 TS files | 2026-05-25 |
-| Runtime hook taxonomy P0-2 | ✅ | `@agentsy/runtime` — hooks/registry/types | 2026-05-25 |
-| Orchestrator P0-2 (hook compilation) | ✅ | `@agentsy/orchestrator` — compileHooks done | 2026-05-25 |
+| Component                                   | Status | Evidence                                    | Date       |
+| ------------------------------------------- | ------ | ------------------------------------------- | ---------- |
+| Token compression (75% output / 46% memory) | ✅     | `@agentsy/tokens` + `@agentsy/core/context` | 2026-05-17 |
+| Memory 5-tier foundation                    | ✅     | `@agentsy/memory` — 214 TS files            | 2026-05-25 |
+| Types audit + stability                     | ✅     | TASK-067 — 17 modules, 7 TSDoc, zero `any`  | 2026-05-25 |
+| Observability P0-1 (tracer + logger)        | ✅     | `@agentsy/observability` — 13 TS files      | 2026-05-25 |
+| Runtime hook taxonomy P0-2                  | ✅     | `@agentsy/runtime` — hooks/registry/types   | 2026-05-25 |
+| Orchestrator P0-2 (hook compilation)        | ✅     | `@agentsy/orchestrator` — compileHooks done | 2026-05-25 |
 
 #### Phase 1 — Cross-Package Contract Stabilization (✅ VERIFIED IN PROGRESS)
 
-| Component | Task | Status | Evidence |
-|-----------|------|--------|----------|
-| Types audit | TASK-067 | ✅ | 17 modules audited, zero violations |
-| External API posture | TASK-090 | Pending | Audit manifest packages |
-| MSW bootstrap | TASK-095 | Ready | Testing scaffold |
+| Component            | Task     | Status  | Evidence                            |
+| -------------------- | -------- | ------- | ----------------------------------- |
+| Types audit          | TASK-067 | ✅      | 17 modules audited, zero violations |
+| External API posture | TASK-090 | Pending | Audit manifest packages             |
+| MSW bootstrap        | TASK-095 | Ready   | Testing scaffold                    |
 
 #### Phase 2 — TUI Vertical Slice (🟠 PARTIAL)
 
-| Component | Task | Status | Evidence |
-|-----------|------|--------|----------|
-| Ink chat components | TASK-072/073/089 | Pending | Renderers scaffold ready |
-| Provider request path | TASK-008 | ✅ | Pipeline + universal-client |
-| Stream normalization | TASK-009 | ✅ | Core processor implemented |
-| Runtime turn loop | TASK-010 | Partial | Loop framework ready |
-| CLI bridge + E2E | TASK-011/012 | Pending | CLI readline partial |
+| Component             | Task             | Status  | Evidence                    |
+| --------------------- | ---------------- | ------- | --------------------------- |
+| Ink chat components   | TASK-072/073/089 | Pending | Renderers scaffold ready    |
+| Provider request path | TASK-008         | ✅      | Pipeline + universal-client |
+| Stream normalization  | TASK-009         | ✅      | Core processor implemented  |
+| Runtime turn loop     | TASK-010         | Partial | Loop framework ready        |
+| CLI bridge + E2E      | TASK-011/012     | Pending | CLI readline partial        |
 
 #### Phases 3-12 (📋 PLANNED)
 
@@ -1154,15 +1154,15 @@ See unified plan document for detailed phase sequencing. All deferred work corre
 
 These 7 files need completion mark corrections:
 
-| File | CRITICAL Updates |
-|------|---|
-| `packages/observability/IMPLEMENTATION-PLAN.md` | Mark TASK-OBS-001..004,013,014,019,020 ✅ (P0-1 complete) |
-| `packages/runtime/IMPLEMENTATION-PLAN.md` | Mark TASK-HOOK-001..004, TASK-RUNTIME-001..009 ✅ (P0-2 complete) |
-| `packages/orchestrator/IMPLEMENTATION-PLAN.md` | Mark TASK-HOOK-001..004, TASK-ORCH-001..003 ✅ (P0-2 complete) |
-| `packages/core/IMPLEMENTATION-PLAN.md` | Mark TASK-009 ✅ (stream-to-events done) |
-| `packages/providers/IMPLEMENTATION-PLAN.md` | Mark TASK-008 ✅ (request path done) |
-| `packages/plugins/IMPLEMENTATION-PLAN.md` | Mark TASK-091 ✅ 2026-05-25 (manifest registry done) |
-| `packages/session/IMPLEMENTATION-PLAN.md` | Mark TASK-SESSION-001..003 ✅ (typed state scaffold 75%) |
+| File                                            | CRITICAL Updates                                                  |
+| ----------------------------------------------- | ----------------------------------------------------------------- |
+| `packages/observability/IMPLEMENTATION-PLAN.md` | Mark TASK-OBS-001..004,013,014,019,020 ✅ (P0-1 complete)         |
+| `packages/runtime/IMPLEMENTATION-PLAN.md`       | Mark TASK-HOOK-001..004, TASK-RUNTIME-001..009 ✅ (P0-2 complete) |
+| `packages/orchestrator/IMPLEMENTATION-PLAN.md`  | Mark TASK-HOOK-001..004, TASK-ORCH-001..003 ✅ (P0-2 complete)    |
+| `packages/core/IMPLEMENTATION-PLAN.md`          | Mark TASK-009 ✅ (stream-to-events done)                          |
+| `packages/providers/IMPLEMENTATION-PLAN.md`     | Mark TASK-008 ✅ (request path done)                              |
+| `packages/plugins/IMPLEMENTATION-PLAN.md`       | Mark TASK-091 ✅ 2026-05-25 (manifest registry done)              |
+| `packages/session/IMPLEMENTATION-PLAN.md`       | Mark TASK-SESSION-001..003 ✅ (typed state scaffold 75%)          |
 
 ---
 
