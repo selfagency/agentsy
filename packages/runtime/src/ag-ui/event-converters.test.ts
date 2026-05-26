@@ -5,7 +5,6 @@
  */
 
 import type {
-  AgUiEvent,
   ReasoningMessageContentEvent,
   RunErrorEvent,
   RunFinishedEvent,
@@ -418,7 +417,7 @@ describe('convertEventStream', () => {
     const source = await createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
-    const results: AgUiEvent[] = [];
+    const results: (CopilotKitEvent | CustomUIEvent)[] = [];
     for await (const event of converted) {
       results.push(event);
     }
@@ -426,7 +425,7 @@ describe('convertEventStream', () => {
     expect(results).toHaveLength(2);
     const firstEvent = results[0];
     expect(firstEvent).toBeDefined();
-    expect((firstEvent as Record<string, unknown>).type).toBe('run:started');
+    expect((firstEvent as unknown as Record<string, unknown>).type).toBe('run:started');
   });
 
   it('should convert stream to custom format', async () => {

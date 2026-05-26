@@ -673,7 +673,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
             outcome: { type: finishedOutcomeType },
             runId,
             timestamp: new Date().toISOString(),
-            type: EventType.RUN_FINISHED as const
+            type: EventType.RUN_FINISHED
           },
           threadId
         ),

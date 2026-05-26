@@ -46,7 +46,8 @@ describe('createBackupManager', () => {
       }
     ]);
     const manager = createBackupManager({
-      applySnapshot: snapshot => {
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+      applySnapshot: async snapshot => {
         restored = snapshot;
       },
       databaseId: 'agentsy-memory',
@@ -86,7 +87,8 @@ describe('createBackupManager', () => {
       }
     ]);
     const manager = createBackupManager({
-      applySnapshot: snapshot => {
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+      applySnapshot: async snapshot => {
         current = snapshot;
       },
       databaseId: 'agentsy-memory',

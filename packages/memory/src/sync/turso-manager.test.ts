@@ -87,7 +87,8 @@ describe('Turso sync foundation', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
-        download(cursor) {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<SyncSnapshot> interface
+        async download(cursor) {
           return {
             cursor,
             records: [
@@ -100,7 +101,8 @@ describe('Turso sync foundation', () => {
             ]
           };
         },
-        upload(snapshot) {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<TursoUploadResult> interface
+        async upload(snapshot) {
           uploadedSnapshot = {
             cursor: snapshot.cursor,
             records: snapshot.records.map(record => ({
@@ -160,7 +162,8 @@ describe('Turso sync foundation', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
-        download() {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<SyncSnapshot> interface
+        async download() {
           return {
             cursor: 'cursor-1',
             records: []

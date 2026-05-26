@@ -13,7 +13,8 @@ describe('RAG bootstrapper', () => {
           sourceType: 'file'
         }
       ],
-      ingest: input => {
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<IngestSummary> interface
+      ingest: async input => {
         calls.push(input.sourceId);
         return { inserted: 1, skipped: 0, updated: 0 };
       }

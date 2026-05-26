@@ -3,24 +3,26 @@ import type { ConflictRecord, ConflictStore } from './types.js';
 class InMemoryConflictStore implements ConflictStore {
   readonly #conflicts = new Map<string, ConflictRecord>();
 
-  save(conflict: ConflictRecord): void {
+  save(conflict: ConflictRecord): Promise<void> {
     this.#conflicts.set(conflict.id, conflict);
+    return Promise.resolve();
   }
 
-  get(id: string): ConflictRecord | null {
-    return this.#conflicts.get(id) ?? null;
+  get(id: string): Promise<ConflictRecord | null> {
+    return Promise.resolve(this.#conflicts.get(id) ?? null);
   }
 
-  list(): ConflictRecord[] {
-    return [...this.#conflicts.values()];
+  list(): Promise<ConflictRecord[]> {
+    return Promise.resolve([...this.#conflicts.values()]);
   }
 
-  resolve(id: string): void {
+  resolve(id: string): Promise<void> {
     this.#conflicts.delete(id);
+    return Promise.resolve();
   }
 
-  pendingCount(): number {
-    return this.#conflicts.size;
+  pendingCount(): Promise<number> {
+    return Promise.resolve(this.#conflicts.size);
   }
 }
 

@@ -7,11 +7,11 @@ import type { AgentCapabilities, WorkflowResult, WorkflowSpec } from '../types/i
 import { NodeType, WorkflowStatus } from '../types/index.js';
 
 type RuntimeWorkflowNode = WorkflowSpec['nodes'][number];
-type RuntimeTaskNode = Extract<RuntimeWorkflowNode, { type: NodeType.TASK }>;
-type RuntimeDecisionNode = Extract<RuntimeWorkflowNode, { type: NodeType.DECISION }>;
-type RuntimeParallelNode = Extract<RuntimeWorkflowNode, { type: NodeType.PARALLEL }>;
-type RuntimeSequenceNode = Extract<RuntimeWorkflowNode, { type: NodeType.SEQUENCE }>;
-type RuntimeMergeNode = Extract<RuntimeWorkflowNode, { type: NodeType.MERGE }>;
+type RuntimeTaskNode = Extract<RuntimeWorkflowNode, { type: 'task' }>;
+type RuntimeDecisionNode = Extract<RuntimeWorkflowNode, { type: 'decision' }>;
+type RuntimeParallelNode = Extract<RuntimeWorkflowNode, { type: 'parallel' }>;
+type RuntimeSequenceNode = Extract<RuntimeWorkflowNode, { type: 'sequence' }>;
+type RuntimeMergeNode = Extract<RuntimeWorkflowNode, { type: 'merge' }>;
 
 export type { TaskScheduler } from '../scheduler/index.js';
 
@@ -94,7 +94,12 @@ export class WorkflowMonitor {
   }
 
   isCompleted(): boolean {
-    return [WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED].includes(this.#context.status);
+    const terminalStatuses: readonly string[] = [
+      WorkflowStatus.COMPLETED,
+      WorkflowStatus.FAILED,
+      WorkflowStatus.CANCELLED
+    ];
+    return terminalStatuses.includes(this.#context.status);
   }
 }
 

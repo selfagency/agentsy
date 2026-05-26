@@ -26,7 +26,7 @@ export interface TaskNode {
   output: Record<string, unknown>;
   retryPolicy?: RetryPolicy;
   timeout?: number;
-  type: NodeType.TASK;
+  type: 'task';
 }
 
 export interface DecisionNode {
@@ -35,7 +35,7 @@ export interface DecisionNode {
   id: string;
   name: string;
   trueBranch: string[];
-  type: NodeType.DECISION;
+  type: 'decision';
 }
 
 export interface ParallelNode {
@@ -44,7 +44,7 @@ export interface ParallelNode {
   id: string;
   maxConcurrency?: number;
   name: string;
-  type: NodeType.PARALLEL;
+  type: 'parallel';
 }
 
 export interface SequenceNode {
@@ -52,7 +52,7 @@ export interface SequenceNode {
   id: string;
   name: string;
   steps: string[];
-  type: NodeType.SEQUENCE;
+  type: 'sequence';
 }
 
 export interface MergeNode {
@@ -60,7 +60,7 @@ export interface MergeNode {
   inputs: string[];
   name: string;
   strategy: MergeStrategy;
-  type: NodeType.MERGE;
+  type: 'merge';
 }
 
 export type WorkflowNode = TaskNode | DecisionNode | ParallelNode | SequenceNode | MergeNode;

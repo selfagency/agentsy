@@ -251,13 +251,13 @@ describe(OrchestrationEngine, () => {
     });
   });
 
-  it('rejects workflows that reference unknown nodes', async () => {
+  it('rejects workflows that reference unknown nodes', () => {
     const registry = new AgentRegistry();
     const scheduler = createScheduler('unused');
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    await expect(
+    expect(() =>
       engine.create(
         createBaseSpec({
           id: 'wf-invalid',
@@ -271,6 +271,6 @@ describe(OrchestrationEngine, () => {
           ]
         })
       )
-    ).rejects.toThrow('Sequence node sequence-invalid references unknown node: missing-node');
+    ).toThrow('Sequence node sequence-invalid references unknown node: missing-node');
   });
 });

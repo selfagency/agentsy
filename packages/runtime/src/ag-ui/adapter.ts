@@ -337,7 +337,7 @@ export async function* toAgUiStream(
   const runStartedBase = {
     runId,
     timestamp: new Date().toISOString(),
-    type: EventType.RUN_STARTED as const
+    type: EventType.RUN_STARTED
   };
   const runStarted = enrichEvent(runStartedBase, threadId);
   if (parentRunId) {
@@ -394,7 +394,7 @@ export async function* toAgUiStream(
       },
       runId,
       timestamp: new Date().toISOString(),
-      type: EventType.RUN_ERROR as const
+      type: EventType.RUN_ERROR
     };
     yield enrichEvent(runErrorBase, threadId) as RunErrorEvent;
   }

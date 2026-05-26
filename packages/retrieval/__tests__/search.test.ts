@@ -112,9 +112,9 @@ describe(RetrievalEngine, () => {
     it('should index documents successfully', async () => {
       await engine.index(sampleDocuments);
 
-      await expect(engine.hasDoc('doc-1')).resolves.toBeTruthy();
-      await expect(engine.hasDoc('doc-2')).resolves.toBeTruthy();
-      await expect(engine.hasDoc('doc-3')).resolves.toBeTruthy();
+      expect(engine.hasDoc('doc-1')).toBeTruthy();
+      expect(engine.hasDoc('doc-2')).toBeTruthy();
+      expect(engine.hasDoc('doc-3')).toBeTruthy();
     });
 
     it('should return number of indexed documents', async () => {
@@ -288,11 +288,11 @@ describe(RetrievalEngine, () => {
       await engine.index(sampleDocuments);
     });
 
-    it('should remove indexed document', async () => {
+    it('should remove indexed document', () => {
       engine.delete('doc-1');
 
-      await expect(engine.hasDoc('doc-1')).resolves.toBeFalsy();
-      await expect(engine.hasDoc('doc-2')).resolves.toBeTruthy();
+      expect(engine.hasDoc('doc-1')).toBeFalsy();
+      expect(engine.hasDoc('doc-2')).toBeTruthy();
     });
 
     it('should handle deletion of non-existent document', () => {

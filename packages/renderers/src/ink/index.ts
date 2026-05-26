@@ -57,12 +57,24 @@ export {
   type ProviderListProps
 } from './components/model-picker/provider-list.tsx';
 /* ── Provider/model chooser (TASK-085) ──────────────────────────────── */
+export {
+  parseScope,
+  ScopeToggle,
+  type ScopeToggleProps,
+  type ScopeValue
+} from './components/model-picker/scope-toggle.tsx';
 export { SearchInput, type SearchInputProps } from './components/model-picker/search-input.tsx';
 export {
   type AgentConfig,
   OrchestratorConsole,
   type OrchestratorConsoleProps
 } from './components/orchestrator-console/index.js';
+/* ── Session renderer (TASK-012) ────────────────────────────────────── */
+export {
+  InkSessionRenderer,
+  type InkSessionRendererProps,
+  type SessionStreamEvent
+} from './components/session-renderer.tsx';
 export {
   StatusRail,
   type StatusRailProps,

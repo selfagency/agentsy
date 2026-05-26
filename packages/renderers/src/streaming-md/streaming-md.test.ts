@@ -11,14 +11,14 @@ vi.mock('streaming-markdown', () => ({
     parser_create: vi.fn((opts: { target: unknown }) => ({
       target: opts.target
     })),
-    parser_end: vi.fn<void, []>(),
-    parser_write: vi.fn<void, []>()
+    parser_end: vi.fn(),
+    parser_write: vi.fn()
   }
 }));
 
 // oxlint-disable-next-line typescript/no-unsafe-call
 vi.mock('dompurify', () => {
-  const mockSanitize = vi.fn<string, [string]>((html: string) => html);
+  const mockSanitize = vi.fn((html: string) => html);
   return {
     default: {
       removed: [],
@@ -98,7 +98,7 @@ describe('Streaming Markdown Renderer', () => {
   });
 
   it('calls onSecurityViolation on sanitization failure', async () => {
-    const onSecurityViolation = vi.fn<(message: string) => void>();
+    const onSecurityViolation = vi.fn();
     const renderer = createStreamingMarkdownRenderer({
       onSecurityViolation,
       target: mockTarget

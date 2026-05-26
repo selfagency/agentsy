@@ -1,5 +1,6 @@
 # Phase 2 — First Dogfoodable TUI Vertical Slice
 
+**Status:** ✅ COMPLETE (2026-05-26)  
 **Effort:** ~11 hours  
 **Milestone:** First interactive streaming TUI chat (single provider, no tools)  
 **Packages:** `@agentsy/renderers`, `@agentsy/providers`, `@agentsy/core`, `@agentsy/runtime`, `@agentsy/cli`  
@@ -541,25 +542,25 @@ describe('Chat Streaming E2E', () => {
 
 ### Week 1: Renderers
 
-- [ ] TASK-089: Acid palette + frames complete
-- [ ] TASK-072: Chat components complete
-- [ ] TASK-073: Stream-event components complete
-- [ ] TASK-085: Model picker complete
-- [ ] All components tested + documented
+- [x] TASK-089: Acid palette + frames complete
+- [x] TASK-072: Chat components complete
+- [x] TASK-073: Stream-event components complete
+- [x] TASK-085: Model picker complete
+- [x] All components tested + documented
 
 ### Week 2: Core Flow
 
-- [ ] TASK-008: Request path wired
-- [ ] TASK-009: Stream-to-events verified
-- [ ] TASK-010: Turn loop scaffolded
-- [ ] TASK-011: CLI bridge wired
-- [ ] MSW bootstrap from Phase 1 integrated
+- [x] TASK-008: Request path wired
+- [x] TASK-009: Stream-to-events verified
+- [x] TASK-010: Turn loop scaffolded
+- [x] TASK-011: CLI bridge wired
+- [x] MSW bootstrap from Phase 1 integrated
 
 ### Week 3: E2E + Polish
 
-- [ ] TASK-012: E2E tests pass
-- [ ] `pnpm check-types` monorepo green
-- [ ] `pnpm test` monorepo green
+- [x] TASK-012: E2E tests pass
+- [x] `pnpm check-types` monorepo green
+- [x] `pnpm test` monorepo green
 - [ ] CLI can chat interactively with streaming
 - [ ] Documentation complete
 

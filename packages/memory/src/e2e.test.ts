@@ -28,7 +28,7 @@ describe('E2E — initMemory + MCP server round-trip', () => {
     const initResp = await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
     await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
     expect(initResp).toMatchObject({ jsonrpc: '2.0', id: 1 });
-    expect((initResp as Record<string, unknown>).result).toBeDefined();
+    expect((initResp as unknown as Record<string, unknown>).result).toBeDefined();
 
     // List tools
     const toolsResp = await server.handleMessage({ jsonrpc: '2.0', id: 2, method: 'tools/list' });

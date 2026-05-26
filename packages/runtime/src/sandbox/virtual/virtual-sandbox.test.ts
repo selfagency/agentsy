@@ -1,40 +1,35 @@
-import { Worker } from 'node:worker_threads';
-
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createVirtualSandbox } from './virtual-sandbox.js';
 
+// Mutable store — updated by beforeEach, read by Worker constructor mock
+let nextWorkerInstance: object;
+
 // We need to mock node:worker_threads to test the Worker lifecycle without actual threads failing in CI
-vi.mock(import('node:worker_threads'), () => {
-  const MockWorker = vi.fn().mockImplementation(() => ({
-    on: vi.fn(),
-    postMessage: vi.fn(),
-    terminate: vi.fn(),
-    unref: vi.fn()
-  }));
+vi.mock('node:worker_threads', () => {
+  const MockWorker = function MockWorker() {
+    return nextWorkerInstance;
+  } as unknown as typeof import('node:worker_threads')['Worker'];
   return {
     Worker: MockWorker
   };
 });
 
 describe('VirtualSandbox', () => {
-  let mockWorkerInstance: {
-    on: ReturnType<typeof vi.fn>;
-    terminate: ReturnType<typeof vi.fn>;
-    postMessage: ReturnType<typeof vi.fn>;
-    unref: ReturnType<typeof vi.fn>;
-  };
+  let mockWorkerInstance: ReturnType<typeof createMockInstance>;
 
-  beforeEach(() => {
-    mockWorkerInstance = {
+  function createMockInstance() {
+    return {
       on: vi.fn(),
       postMessage: vi.fn(),
       terminate: vi.fn().mockResolvedValue(0),
       unref: vi.fn()
     };
+  }
 
-    vi.mocked(Worker).mockImplementation(() => mockWorkerInstance as unknown as Worker);
-
+  beforeEach(() => {
+    mockWorkerInstance = createMockInstance();
+    nextWorkerInstance = mockWorkerInstance;
     vi.useFakeTimers();
   });
 

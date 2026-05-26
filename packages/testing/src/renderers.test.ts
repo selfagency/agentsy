@@ -144,13 +144,16 @@ describe('createSharedRendererHandle' as const, () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: (t: string): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onText: async (t: string) => {
           texts.push(t);
         },
-        onThinking: (t: string): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onThinking: async (t: string) => {
           thinkings.push(t);
         },
-        onToolCall: (part: OutputPart & { type: 'tool_call' }): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onToolCall: async (part: OutputPart & { type: 'tool_call' }) => {
           toolCalls.push(part.call.name);
         }
       }
@@ -172,10 +175,12 @@ describe('createSharedRendererHandle' as const, () => {
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
       {
-        onText: (t: string): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onText: async (t: string) => {
           texts.push(t);
         },
-        onThinking: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onThinking: async () => {
           /* noop */
         }
       }
@@ -199,10 +204,12 @@ describe('createSharedRendererHandle' as const, () => {
         }
       },
       {
-        onText: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onText: async () => {
           /* noop */
         },
-        onThinking: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onThinking: async () => {
           /* noop */
         }
       }

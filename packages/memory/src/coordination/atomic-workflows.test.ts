@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createAtomicWorkflowCoordinator } from './atomic-workflows.js';
+import { type AtomicWorkflowContext, createAtomicWorkflowCoordinator } from './atomic-workflows.js';
 
 describe('AtomicWorkflowCoordinator', () => {
   it('executes steps in order and commits successfully', async () => {
@@ -10,19 +10,22 @@ describe('AtomicWorkflowCoordinator', () => {
     const result = await coordinator.runWorkflow('wf-1', [
       {
         name: 'raw',
-        run: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        run: async (_context: AtomicWorkflowContext) => {
           events.push('run:raw');
         }
       },
       {
         name: 'wiki',
-        run: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        run: async (_context: AtomicWorkflowContext) => {
           events.push('run:wiki');
         }
       },
       {
         name: 'vector',
-        run: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        run: async (_context: AtomicWorkflowContext) => {
           events.push('run:vector');
         }
       }
@@ -41,28 +44,34 @@ describe('AtomicWorkflowCoordinator', () => {
     const result = await coordinator.runWorkflow('wf-rollback', [
       {
         name: 'raw',
-        rollback: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        rollback: async (_context: AtomicWorkflowContext) => {
           events.push('rollback:raw');
         },
-        run: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        run: async (_context: AtomicWorkflowContext) => {
           events.push('run:raw');
         }
       },
       {
         name: 'wiki',
-        rollback: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        rollback: async (_context: AtomicWorkflowContext) => {
           events.push('rollback:wiki');
         },
-        run: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        run: async (_context: AtomicWorkflowContext) => {
           events.push('run:wiki');
         }
       },
       {
         name: 'vector',
-        rollback: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        rollback: async (_context: AtomicWorkflowContext) => {
           events.push('rollback:vector');
         },
-        run: (): void => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        run: async (_context: AtomicWorkflowContext) => {
           events.push('run:vector');
           throw new Error('Step failed');
         }

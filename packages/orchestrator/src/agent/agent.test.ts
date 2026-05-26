@@ -447,7 +447,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         executeCount += 1;
         yield {
           content: 'Response',
@@ -470,7 +470,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         executeCount += 1;
         yield {
           content: 'Response',
@@ -494,7 +494,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         executeCount += 1;
         yield {
           content: 'Response',
@@ -519,7 +519,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'result', done: true, finishReason: 'stop' as const };
       },
       onStep: onStepSpy,
@@ -542,7 +542,7 @@ describe('createAgentLoop', () => {
       beforeInit,
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'result', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1)
@@ -569,7 +569,7 @@ describe('createAgentLoop', () => {
       beforeStep,
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'result', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1)
@@ -602,7 +602,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute(messages) {
+      async *execute(messages) {
         seenMessages.push(messages);
         yield {
           content: 'prepared',
@@ -639,7 +639,7 @@ describe('createAgentLoop', () => {
       beforeToolCall,
       buildToolResultMessages: async () => toolResultMessages,
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield {
           tool_calls: [
             {
@@ -687,7 +687,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages,
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield {
           tool_calls: [
             {
@@ -719,7 +719,7 @@ describe('createAgentLoop', () => {
       approveToolCalls,
       buildToolResultMessages,
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield {
           tool_calls: [
             {
@@ -763,7 +763,7 @@ describe('createAgentLoop', () => {
       }),
       buildToolResultMessages: async () => [{ content: 'approved', role: 'tool' }],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield {
           tool_calls: [
             {
@@ -817,7 +817,7 @@ describe('createAgentLoop', () => {
       }),
       buildToolResultMessages: async toolCalls => toolCalls.map(toolCall => ({ content: toolCall.name, role: 'tool' })),
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield {
           tool_calls: [
             {
@@ -855,7 +855,7 @@ describe('createAgentLoop', () => {
       },
       buildToolResultMessages: async () => [{ content: 'approved', role: 'tool' }],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield {
           tool_calls: [
             {
@@ -904,7 +904,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'chunk', done: false };
         yield { done: true, finishReason: 'stop' as const };
       },
@@ -926,7 +926,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'chunk', done: false };
         yield { done: true, finishReason: 'stop' as const };
       },
@@ -950,7 +950,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield* [];
         throw new Error('step failed');
       },
@@ -978,7 +978,7 @@ describe('createAgentLoop', () => {
       beforeFinal,
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'done', done: true, finishReason: 'stop' as const };
       },
       stopWhen: isStepCount(1)
@@ -1001,7 +1001,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'Part 1', done: false };
         yield { content: ' Part 2', done: true, finishReason: 'stop' as const };
       },
@@ -1025,7 +1025,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute(messages) {
+      async *execute(messages) {
         // Capture messages from any call where we have tool calls
         if (Array.isArray(messages) && messages.length >= 5) {
           messagesInSecondCall = messages;
@@ -1061,7 +1061,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: 'chunk1', done: false };
         yield { content: 'chunk2', done: true, finishReason: 'stop' as const };
       },
@@ -1082,7 +1082,7 @@ describe('createAgentLoop', () => {
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
       // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
-      async function* execute() {
+      async *execute() {
         yield { content: `step ${stepCount++}`, done: false };
         yield {
           content: `step ${stepCount++}`,

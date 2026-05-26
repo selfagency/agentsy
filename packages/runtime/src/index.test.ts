@@ -88,7 +88,8 @@ describe('createRuntimeExecutor', () => {
       id: 'a',
       // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
       run: async () => {
-        throw new Error('boom');
+        // biome-ignore lint/style/useThrowOnlyError: testing non-Error throw wrapping
+        throw 'boom';
       }
     };
 
@@ -293,7 +294,6 @@ describe('createRuntimeLoop', () => {
   it('rejects spawns that exceed the configured depth cap', async () => {
     const loop = createRuntimeLoop({ maxDepth: 0, sessionId: 'root' });
 
-    // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
     await expect(
       loop.spawn([
         {

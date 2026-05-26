@@ -206,16 +206,19 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
   return createSharedRendererHandle(
     sharedOptions,
     {
-      onEnd: () => {
+      // biome-ignore lint/suspicious/useAwait: must match Promise-returning handler interface
+      onEnd: async () => {
         if (blockquoteThinkingStarted && thinkingStyle === 'blockquote') {
           stream.markdown('\n\n');
           blockquoteThinkingStarted = false;
         }
       },
-      onText: (text: string) => {
+      // biome-ignore lint/suspicious/useAwait: must match Promise-returning handler interface
+      onText: async (text: string) => {
         stream.markdown(text);
       },
-      onThinking: (text: string) => {
+      // biome-ignore lint/suspicious/useAwait: must match Promise-returning handler interface
+      onThinking: async (text: string) => {
         handleThinkingPart(text);
       },
       onToolCall: async part => {
@@ -230,11 +233,12 @@ export function createVSCodeChatRenderer(options: VSCodeChatRendererOptions): Re
           stream.beginToolInvocation(vscodePart.callId, vscodePart.name, vscodePart.input);
         }
       },
-      onToolCallDelta: (part: unknown) => {
+      // biome-ignore lint/suspicious/useAwait: must match Promise-returning handler interface
+      onToolCallDelta: async (part: Extract<OutputPart, { type: 'tool_call_delta' }>) => {
         if (onToolCallDelta) {
-          onToolCallDelta(part as OutputPart);
+          onToolCallDelta(part);
         }
-        const toolPart = part as OutputPart;
+        const toolPart = part;
         if (stream.updateToolInvocation && typeof toolPart.id === 'string') {
           stream.updateToolInvocation(toolPart.id, toolPart);
         }

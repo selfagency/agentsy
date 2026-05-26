@@ -365,13 +365,13 @@ export const createSecretStore = (): SecretStore => {
 | Phase 0 | ✅ VERIFIED COMPLETE | 2026-05-26 |
 | Phase R1 | ✅ PLAN SYNC COMPLETE | 2026-05-26 |
 | Phase 1 | ✅ COMPLETE (TASK-090 + TASK-095) | 2026-05-26 |
-| Phase 2 | 🚀 UNBLOCKED | After Phase 1 |
+| Phase 2 | ✅ COMPLETE (9 tasks all verified) | 2026-05-26 |
 | Phase 3-12 | 📋 Planned | Per sequencing |
 
 ---
 
 **Last Updated:** 2026-05-26
-**Status:** Phase 0-1 COMPLETE | Phase R1 COMPLETE | Phase 1 COMPLETE (2026-05-26)
+**Status:** Phase 0-2 COMPLETE (2026-05-26) | Phase R1 COMPLETE
 **Authority:** 2026-05-26 codebase audit + verified implementation status
 
 ---
@@ -404,3 +404,28 @@ export const createSecretStore = (): SecretStore => {
 | `pnpm test` (testing) | ✅ 8 files / 44 tests passed |
 | `docs/API-POSTURE-MATRIX.md` | ✅ Created |
 | `docs/testing-msw-patterns.md` | ✅ Created |
+
+## Phase 2 Completed Work (2026-05-26)
+
+### All 9 Tasks Verified Complete
+
+| Task | Package | Deliverables | Status |
+|------|---------|-------------|--------|
+| TASK-089 | renderers | Acid palette, frames/motion system, ASCII banner, theme bundles | ✅ Complete |
+| TASK-072 | renderers | Transcript, MessageBubble, StreamingCursor, TokenMeter, StatusFooter | ✅ Complete |
+| TASK-073 | renderers | ModelDelta, ThinkingBlock, ToolLifecycle, ApprovalState | ✅ Complete |
+| TASK-085 | renderers | SearchInput, ProviderList, ModelSelect, **ScopeToggle** | ✅ Complete |
+| TASK-008 | providers | RequestHandler (complete + stream), ProviderRegistry | ✅ Complete |
+| TASK-009 | core | StreamEvent types, createStreamEventAdapter | ✅ Complete |
+| TASK-010 | runtime | SimpleTurnLoop, AgentLoopHandle | ✅ Complete |
+| TASK-011 | renderers | CliStreamBridge (createCliStreamBridge), **InkSessionRenderer** | ✅ Complete |
+| TASK-012 | renderers | **chat-streaming.e2e.test.tsx** (6 lifecycle tests) | ✅ Complete |
+
+### Verification Gates
+
+| Gate | Result |
+|---|---|
+| `pnpm check-types` (renderers) | ✅ Clean (pre-existing errors only) |
+| `pnpm test` (renderers) | ✅ All 17 test files pass |
+| MSW mock server from Phase 1 | ✅ Integrated |
+| Component test coverage | ✅ ScopeToggle (7 tests), E2E (6 lifecycle tests) |

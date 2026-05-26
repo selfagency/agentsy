@@ -745,6 +745,7 @@ export function createInMemoryTokenManager(): TokenManager {
   const usage: TokenUsage[] = [];
 
   return {
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async createBudget(config) {
       const id = config.id ?? createId('budget');
       const budget: TokenBudget = {
@@ -763,6 +764,7 @@ export function createInMemoryTokenManager(): TokenManager {
       return cloneBudget(budget);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async deleteBudget(id) {
       budgets.delete(id);
       for (const [allocationId, record] of allocations.entries()) {
@@ -772,11 +774,13 @@ export function createInMemoryTokenManager(): TokenManager {
       }
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getBudget(id) {
       const budget = budgets.get(id);
       return budget ? cloneBudget(budget) : null;
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getCostAnalysis(periodMs) {
       const now = Date.now();
       const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
@@ -803,6 +807,7 @@ export function createInMemoryTokenManager(): TokenManager {
       };
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getOptimizationSuggestions(budgetId) {
       const budget = budgets.get(budgetId);
       if (!budget) {
@@ -842,18 +847,22 @@ export function createInMemoryTokenManager(): TokenManager {
       return suggestions;
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getUsage(filter = {}) {
       return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async listBudgets(filter = {}) {
       return [...budgets.values()].filter(budget => filterBudget(budget, filter)).map(cloneBudget);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async recordUsage(entry) {
       usage.push(cloneUsage(entry));
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async releaseTokens(allocationId, actualUsage, actualCost = 0) {
       const record = allocations.get(allocationId);
       if (!record) {
@@ -873,6 +882,7 @@ export function createInMemoryTokenManager(): TokenManager {
       });
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async requestTokens(request) {
       const budget = request.budgetId
         ? (budgets.get(request.budgetId) ?? null)
@@ -915,6 +925,7 @@ export function createInMemoryTokenManager(): TokenManager {
       return cloneAllocation(allocation);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async updateBudget(id, updates) {
       const current = budgets.get(id);
       if (!current) {
