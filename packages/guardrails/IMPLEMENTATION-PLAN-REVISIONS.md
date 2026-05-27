@@ -135,3 +135,6 @@ High user satisfaction should only be treated as a positive signal if it coexist
 ## Recommended stance statement
 
 The framework should adopt an explicit public stance: agentsy is designed to help users think and act more clearly, not to flatter them, simulate friendship, or maximize attachment.[cite:1][cite:2] Where those goals conflict, the framework should prioritize truthfulness, user autonomy, and real-world well-being over conversational smoothness or engagement.[cite:1][cite:2]
+
+[cite:1]: https://arxiv.org/abs/2510.01395
+[cite:2]: https://www.baldurbjarnason.com/letters/llmentalist/
