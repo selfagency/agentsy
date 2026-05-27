@@ -66,85 +66,86 @@ export function modelCapabilitiesToProviderRequirements(modelCapabilities: Model
 }
 
 /**
+ * Mutable state for capability checking
+ */
+interface CapabilityCheckState {
+  matchCount: number;
+  missingCapabilities: string[];
+  totalRequired: number;
+}
+
+/**
+ * Check a simple boolean capability (streaming, toolCalling, reasoning, batching)
+ */
+function checkSimpleCapability(
+  requiredValue: boolean | undefined,
+  providedValue: boolean | undefined,
+  capName: string,
+  state: CapabilityCheckState
+): void {
+  if (requiredValue !== undefined) {
+    state.totalRequired++;
+    if (providedValue === requiredValue) {
+      state.matchCount++;
+    } else if (requiredValue && !providedValue) {
+      state.missingCapabilities.push(capName);
+    }
+  }
+}
+
+/**
+ * Check budgeting capability (has nested sub-capabilities)
+ */
+function checkBudgetingCapability(
+  required: ProviderCapabilities['budgeting'],
+  provided: ProviderCapabilities['budgeting'],
+  state: CapabilityCheckState
+): void {
+  if (!required) {
+    return;
+  }
+
+  if (required.supportsCostTracking !== undefined) {
+    state.totalRequired++;
+    if (provided?.supportsCostTracking === required.supportsCostTracking) {
+      state.matchCount++;
+    } else if (required.supportsCostTracking && !provided?.supportsCostTracking) {
+      state.missingCapabilities.push('costTracking');
+    }
+  }
+
+  if (required.supportsTokenBudgeting !== undefined) {
+    state.totalRequired++;
+    if (provided?.supportsTokenBudgeting === required.supportsTokenBudgeting) {
+      state.matchCount++;
+    } else if (required.supportsTokenBudgeting && !provided?.supportsTokenBudgeting) {
+      state.missingCapabilities.push('tokenBudgeting');
+    }
+  }
+}
+
+/**
  * Check if a provider's capabilities match model requirements
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 export function matchCapabilities(
   required: ProviderCapabilities,
   provided: ProviderCapabilities
 ): CapabilityMatchResult {
-  const missingCapabilities: string[] = [];
-  let matchCount = 0;
-  let totalRequired = 0;
+  const state: CapabilityCheckState = { matchCount: 0, totalRequired: 0, missingCapabilities: [] };
 
-  // Check streaming
-  if (required.streaming !== undefined) {
-    totalRequired++;
-    if (provided.streaming === required.streaming) {
-      matchCount++;
-    } else if (required.streaming && !provided.streaming) {
-      missingCapabilities.push('streaming');
-    }
-  }
+  checkSimpleCapability(required.streaming, provided.streaming, 'streaming', state);
+  checkSimpleCapability(required.toolCalling, provided.toolCalling, 'toolCalling', state);
+  checkSimpleCapability(required.reasoning, provided.reasoning, 'reasoning', state);
+  checkSimpleCapability(required.batching, provided.batching, 'batching', state);
+  checkBudgetingCapability(required.budgeting, provided.budgeting, state);
 
-  // Check tool calling
-  if (required.toolCalling !== undefined) {
-    totalRequired++;
-    if (provided.toolCalling === required.toolCalling) {
-      matchCount++;
-    } else if (required.toolCalling && !provided.toolCalling) {
-      missingCapabilities.push('toolCalling');
-    }
-  }
-
-  // Check reasoning
-  if (required.reasoning !== undefined) {
-    totalRequired++;
-    if (provided.reasoning === required.reasoning) {
-      matchCount++;
-    } else if (required.reasoning && !provided.reasoning) {
-      missingCapabilities.push('reasoning');
-    }
-  }
-
-  // Check batching
-  if (required.batching !== undefined) {
-    totalRequired++;
-    if (provided.batching === required.batching) {
-      matchCount++;
-    } else if (required.batching && !provided.batching) {
-      missingCapabilities.push('batching');
-    }
-  }
-
-  // Check budgeting
-  if (required.budgeting) {
-    if (required.budgeting.supportsCostTracking !== undefined) {
-      totalRequired++;
-      if (provided.budgeting?.supportsCostTracking === required.budgeting.supportsCostTracking) {
-        matchCount++;
-      } else if (required.budgeting.supportsCostTracking && !provided.budgeting?.supportsCostTracking) {
-        missingCapabilities.push('costTracking');
-      }
-    }
-
-    if (required.budgeting.supportsTokenBudgeting !== undefined) {
-      totalRequired++;
-      if (provided.budgeting?.supportsTokenBudgeting === required.budgeting.supportsTokenBudgeting) {
-        matchCount++;
-      } else if (required.budgeting.supportsTokenBudgeting && !provided.budgeting?.supportsTokenBudgeting) {
-        missingCapabilities.push('tokenBudgeting');
-      }
-    }
-  }
-
-  const score = totalRequired > 0 ? matchCount / totalRequired : 1;
-  const matches = missingCapabilities.length === 0;
+  const score = state.totalRequired > 0 ? state.matchCount / state.totalRequired : 1;
+  const matches = state.missingCapabilities.length === 0;
 
   return {
     providerId: '',
     matches,
-    missingCapabilities,
+    missingCapabilities: state.missingCapabilities,
     score
   };
 }

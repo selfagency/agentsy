@@ -78,6 +78,138 @@ interface ToolCallCursor {
 }
 
 // ---------------------------------------------------------------------------
+// Per-chunk event emission helpers
+// ---------------------------------------------------------------------------
+
+function* emitContentEvent(
+  chunk: NormalizedChunk,
+  meta: { chunkIndex: number; timestamp: number }
+): Generator<StreamRuntimeEvent> {
+  if (chunk.content) {
+    yield {
+      type: 'text-delta',
+      chunkIndex: meta.chunkIndex,
+      timestamp: meta.timestamp,
+      payload: { delta: chunk.content }
+    };
+  }
+}
+
+function* emitThinkingEvent(
+  chunk: NormalizedChunk,
+  meta: { chunkIndex: number; timestamp: number }
+): Generator<StreamRuntimeEvent> {
+  if (chunk.thinking) {
+    yield {
+      type: 'thinking-delta',
+      chunkIndex: meta.chunkIndex,
+      timestamp: meta.timestamp,
+      payload: { delta: chunk.thinking }
+    };
+  }
+}
+
+function* emitNativeToolCallDeltas(
+  chunk: NormalizedChunk,
+  toolCursors: Map<string, ToolCallCursor>,
+  meta: { chunkIndex: number; timestamp: number }
+): Generator<StreamRuntimeEvent> {
+  if (!chunk.nativeToolCallDeltas) {
+    return;
+  }
+  for (const delta of chunk.nativeToolCallDeltas) {
+    const deltaId = delta.id ?? `tc_${meta.chunkIndex}_${delta.index}`;
+    const cursor = toolCursors.get(deltaId) ?? {
+      id: deltaId,
+      name: delta.name ?? 'unknown',
+      argsBuffer: ''
+    };
+    if (delta.name) {
+      cursor.name = delta.name;
+    }
+    if (delta.argumentsDelta) {
+      cursor.argsBuffer += delta.argumentsDelta;
+    }
+    if (!toolCursors.has(deltaId)) {
+      toolCursors.set(deltaId, cursor);
+      yield {
+        type: 'tool-call-start',
+        chunkIndex: meta.chunkIndex,
+        timestamp: meta.timestamp,
+        payload: { id: cursor.id, name: cursor.name, args: cursor.argsBuffer }
+      };
+    }
+  }
+}
+
+function* emitToolCallsEvent(
+  chunk: NormalizedChunk,
+  toolCursors: Map<string, ToolCallCursor>,
+  meta: { chunkIndex: number; timestamp: number }
+): Generator<StreamRuntimeEvent> {
+  if (!chunk.tool_calls) {
+    return;
+  }
+  for (const tc of chunk.tool_calls) {
+    const id = tc.function?.name ?? `tc_${meta.chunkIndex}`;
+    if (!toolCursors.has(id)) {
+      const cursor: ToolCallCursor = {
+        id,
+        name: tc.function?.name ?? 'unknown',
+        argsBuffer: ''
+      };
+      toolCursors.set(id, cursor);
+      yield {
+        type: 'tool-call-start',
+        chunkIndex: meta.chunkIndex,
+        timestamp: meta.timestamp,
+        payload: {
+          id,
+          name: tc.function?.name ?? 'unknown',
+          args: tc.function?.arguments ?? null
+        }
+      };
+    }
+  }
+}
+
+function* emitDoneEvent(
+  chunk: NormalizedChunk,
+  toolCursors: Map<string, ToolCallCursor>,
+  meta: { chunkIndex: number; timestamp: number }
+): Generator<StreamRuntimeEvent> {
+  if (!(chunk.done || chunk.finishReason)) {
+    return;
+  }
+  // Emit tool-call-end for any open tool calls
+  for (const [toolId] of toolCursors) {
+    yield {
+      type: 'tool-call-end',
+      chunkIndex: meta.chunkIndex,
+      timestamp: meta.timestamp,
+      payload: { id: toolId }
+    };
+  }
+  yield {
+    type: 'done',
+    chunkIndex: meta.chunkIndex,
+    timestamp: meta.timestamp,
+    payload: {
+      ...(chunk.finishReason === undefined ? {} : { finishReason: chunk.finishReason }),
+      ...(chunk.usage === undefined
+        ? {}
+        : {
+            usage: {
+              inputTokens: chunk.usage.inputTokens ?? 0,
+              outputTokens: chunk.usage.outputTokens ?? 0,
+              totalTokens: (chunk.usage.inputTokens ?? 0) + (chunk.usage.outputTokens ?? 0)
+            }
+          })
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------
 // AsyncGenerator-based adapter
 // ---------------------------------------------------------------------------
 
@@ -93,7 +225,6 @@ interface ToolCallCursor {
  * }
  * ```
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): AsyncGenerator<StreamRuntimeEvent> {
   const reader = stream.getReader();
   let chunkIndex = 0;
@@ -106,111 +237,13 @@ export async function* streamToEvents(stream: ReadableStream<NormalizedChunk>): 
         break;
       }
 
-      const now = performance.now();
+      const meta = { chunkIndex, timestamp: performance.now() };
 
-      // --- text delta ---
-      if (value.content) {
-        yield {
-          type: 'text-delta',
-          chunkIndex,
-          timestamp: now,
-          payload: { delta: value.content }
-        };
-      }
-
-      // --- thinking delta ---
-      if (value.thinking) {
-        yield {
-          type: 'thinking-delta',
-          chunkIndex,
-          timestamp: now,
-          payload: { delta: value.thinking }
-        };
-      }
-
-      // --- native tool call deltas (streaming) ---
-      if (value.nativeToolCallDeltas) {
-        for (const delta of value.nativeToolCallDeltas) {
-          const deltaId = delta.id ?? `tc_${chunkIndex}_${delta.index}`;
-          const cursor = toolCursors.get(deltaId) ?? {
-            id: deltaId,
-            name: delta.name ?? 'unknown',
-            argsBuffer: ''
-          };
-          if (delta.name) {
-            cursor.name = delta.name;
-          }
-          if (delta.argumentsDelta) {
-            cursor.argsBuffer += delta.argumentsDelta;
-          }
-
-          if (!toolCursors.has(deltaId)) {
-            toolCursors.set(deltaId, cursor);
-            yield {
-              type: 'tool-call-start',
-              chunkIndex,
-              timestamp: now,
-              payload: { id: cursor.id, name: cursor.name, args: cursor.argsBuffer }
-            };
-          }
-        }
-      }
-
-      // --- tool calls (non-streaming, from XML or complete JSON) ---
-      if (value.tool_calls) {
-        for (const tc of value.tool_calls) {
-          const id = tc.function?.name ?? `tc_${chunkIndex}`;
-          if (!toolCursors.has(id)) {
-            const cursor: ToolCallCursor = {
-              id,
-              name: tc.function?.name ?? 'unknown',
-              argsBuffer: ''
-            };
-            toolCursors.set(id, cursor);
-            yield {
-              type: 'tool-call-start',
-              chunkIndex,
-              timestamp: now,
-              payload: {
-                id,
-                name: tc.function?.name ?? 'unknown',
-                args: tc.function?.arguments ?? null
-              }
-            };
-          }
-        }
-      }
-
-      // --- done (final chunk) ---
-      if (value.done || value.finishReason) {
-        // Emit tool-call-end for any open tool calls
-        for (const [toolId] of toolCursors) {
-          yield {
-            type: 'tool-call-end',
-            chunkIndex,
-            timestamp: now,
-            payload: { id: toolId }
-          };
-        }
-
-        yield {
-          type: 'done',
-          chunkIndex,
-          timestamp: now,
-          payload: {
-            ...(value.finishReason === undefined ? {} : { finishReason: value.finishReason }),
-            ...(value.usage === undefined
-              ? {}
-              : {
-                  usage: {
-                    inputTokens: value.usage.inputTokens ?? 0,
-                    outputTokens: value.usage.outputTokens ?? 0,
-                    totalTokens: (value.usage.inputTokens ?? 0) + (value.usage.outputTokens ?? 0)
-                  }
-                })
-          }
-        };
-      }
+      yield* emitContentEvent(value, meta);
+      yield* emitThinkingEvent(value, meta);
+      yield* emitNativeToolCallDeltas(value, toolCursors, meta);
+      yield* emitToolCallsEvent(value, toolCursors, meta);
+      yield* emitDoneEvent(value, toolCursors, meta);
 
       chunkIndex++;
     }
