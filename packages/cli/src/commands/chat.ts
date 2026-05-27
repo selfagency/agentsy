@@ -110,16 +110,24 @@ function createProviderClient(isMock: boolean, argv: readonly string[], options?
   }
 
   const model = getFlagValue(argv, '--model') ?? 'gpt-4o-mini';
+  const baseUrl = getFlagValue(argv, '--base-url') ?? undefined;
+  const apiKey = getFlagValue(argv, '--api-key') ?? undefined;
+
+  const providerEntry: CliProviderConfig['providers'][number] = {
+    id: 'default',
+    name: 'Default provider',
+    provider: (getFlagValue(argv, '--provider') as CliProviderConfig['providers'][number]['provider']) ?? 'openai'
+  };
+  if (baseUrl !== undefined) {
+    providerEntry.baseUrl = baseUrl;
+  }
+  if (apiKey !== undefined) {
+    providerEntry.apiKey = apiKey;
+  }
 
   const providerConfig: CliProviderConfig = options?.providerConfig ?? {
     model,
-    providers: [
-      {
-        id: 'default',
-        name: 'Default provider',
-        provider: (getFlagValue(argv, '--provider') as CliProviderConfig['providers'][number]['provider']) ?? 'openai'
-      }
-    ]
+    providers: [providerEntry]
   };
 
   return resolveProviderClient(providerConfig);

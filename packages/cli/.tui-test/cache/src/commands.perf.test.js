@@ -1,4 +1,4 @@
-//# hash=f77549ec39cc3122fe44f1458769e4d6
+//# hash=85b8ca841db8d861ea48cf9c422a427b
 //# sourceMappingURL=commands.perf.test.js.map
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -186,7 +186,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                 '--text',
                                 SAMPLE_TEXT
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stdout: function stdout(value) {
                                     capturedOutput.push(value);
                                 }
@@ -217,7 +217,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                     case 0:
                                         level = _iter[_i];
                                         currentLevelOutput = [];
-                                        // oxlint-disable-next-line typescript/no-loop-func
+                                        // biome-ignore lint: typescript/no-loop-func
                                         stdout = function stdout(value) {
                                             currentLevelOutput.push(value);
                                         };
@@ -294,7 +294,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                 '--file',
                                 memoryFile
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stdout: function stdout(value) {
                                     capturedOutput.push(value);
                                 }
@@ -331,7 +331,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                 '--file',
                                 memoryFile
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stdout: function stdout(value) {
                                     capturedOutput.push(value);
                                 }
@@ -365,7 +365,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                 '--text',
                                 SAMPLE_TEXT
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stdout: function stdout(value) {
                                     capturedOutput.push(value);
                                 }
@@ -379,7 +379,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                             return line.includes('Savings:');
                         });
                         expect(savingsLine).toBeDefined();
-                        // oxlint-disable-next-line require-unicode-regexp
+                        // biome-ignore lint: require-unicode-regexp
                         expect(savingsLine).toMatch(/Savings: \d+\.\d+%/);
                         return [
                             2
@@ -404,7 +404,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                 '--text',
                                 SAMPLE_TEXT
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stdout: function stdout(value) {
                                     capturedOutput.push(value);
                                 }
@@ -434,7 +434,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                             runCli([
                                 'compress-memory'
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stderr: function stderr(value) {
                                     errors.push(value);
                                 }
@@ -465,7 +465,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                             runCli([
                                 'compress'
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stderr: function stderr(value) {
                                     errors.push(value);
                                 }
@@ -499,7 +499,7 @@ describe('Phase 0: CLI Commands Validation', function() {
                                 '--file',
                                 memoryFile
                             ], {
-                                // oxlint-disable-next-line typescript/no-confusing-void-expression
+                                // biome-ignore lint: typescript/no-confusing-void-expression
                                 stdout: function stdout(value) {
                                     capturedOutput.push(value);
                                 }

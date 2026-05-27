@@ -313,8 +313,8 @@ cd packages/memory
 pnpm check-types  # TypeScript check
 pnpm test         # 492+ unit tests
 pnpm coverage     # Coverage report
-pnpm lint         # oxlint
-pnpm format       # oxfmt
+pnpm lint         # Biome
+pnpm format       # Biome
 ```
 
 ---

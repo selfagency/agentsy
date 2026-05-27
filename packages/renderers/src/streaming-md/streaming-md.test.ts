@@ -1,10 +1,8 @@
-// oxlint-disable-next-line typescript/no-unsafe-call typescript/no-unsafe-assignment
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { testOnStepCall } from '../shared.test-utils.js';
 import { createStreamingMarkdownRenderer } from './create-streaming-markdown-renderer.js';
 
-// oxlint-disable-next-line typescript/no-unsafe-call
 vi.mock('streaming-markdown', () => ({
   default: {
     removed: [],
@@ -16,17 +14,14 @@ vi.mock('streaming-markdown', () => ({
   }
 }));
 
-// oxlint-disable-next-line typescript/no-unsafe-call
 vi.mock('dompurify', () => {
   const mockSanitize = vi.fn((html: string) => html);
   return {
     default: {
       removed: [],
-      // oxlint-disable-next-line typescript/no-unsafe-assignment
       sanitize: mockSanitize
     },
     removed: [],
-    // oxlint-disable-next-line typescript/no-unsafe-assignment
     sanitize: mockSanitize
   };
 });

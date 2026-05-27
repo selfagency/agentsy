@@ -67,11 +67,11 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     return buildNoopClient();
   }
 
-  const clientConfig =
-    provider.baseUrl === undefined
-      ? { provider: provider.provider }
-      : { baseUrl: provider.baseUrl, provider: provider.provider };
-  const client = createUniversalClient(clientConfig);
+  const client = createUniversalClient({
+    provider: provider.provider,
+    ...(provider.baseUrl === undefined ? {} : { baseUrl: provider.baseUrl }),
+    ...(provider.apiKey === undefined ? {} : { apiKey: provider.apiKey })
+  });
 
   return {
     complete(request: CompletionRequest): Promise<CompletionResponse> {

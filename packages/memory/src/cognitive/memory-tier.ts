@@ -197,7 +197,7 @@ export function nextTierName(current: TierName): TierName | null {
   if (level >= 5) {
     return null;
   }
-  return TIER_NAMES.at(level + 1) ?? null;
+  return TIER_NAMES[(level + 1) as TierLevel] ?? null;
 }
 
 export function prevTierName(current: TierName): TierName | null {
@@ -205,5 +205,5 @@ export function prevTierName(current: TierName): TierName | null {
   if (level <= 1) {
     return null;
   }
-  return TIER_NAMES.at(level - 1) ?? null;
+  return TIER_NAMES[(level - 1) as TierLevel] ?? null;
 }

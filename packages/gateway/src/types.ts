@@ -17,6 +17,7 @@ export const ProviderEntrySchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   provider: z.custom<NormalizerProvider>(),
+  apiKey: z.string().optional(),
   baseUrl: z.string().url().optional(),
   model: z.string().min(1).optional(),
   capabilities: z.custom<ProviderCapabilities>().optional(),

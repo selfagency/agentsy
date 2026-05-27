@@ -1,4 +1,4 @@
-//# hash=c22598561500a7dfd2ff4d2a1dc2d0a8
+//# hash=76a817eb7b1018c73dd416b638797108
 //# sourceMappingURL=chat.spec.js.map
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -129,7 +129,7 @@ function _ts_generator(thisArg, body) {
         };
     }
 }
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 test.describe('chat command', function() {
     test('exits cleanly on /exit command', function(param) {
         var terminal = param.terminal;
@@ -195,7 +195,7 @@ test.describe('chat command', function() {
                         // Mock provider returns predictable text — verify something appeared
                         return [
                             4,
-                            expect(terminal.getByText(/hello|response/i)).toBeVisible()
+                            expect(terminal.getByText(/hello|response/gi)).toBeVisible()
                         ];
                     case 4:
                         _state.sent();
@@ -245,7 +245,7 @@ test.describe('chat command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/available commands|usage/i)).toBeVisible()
+                            expect(terminal.getByText(/Commands:/g)).toBeVisible()
                         ];
                     case 4:
                         _state.sent();

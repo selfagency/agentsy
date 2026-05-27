@@ -69,7 +69,7 @@
     "check-types": "tsc --noEmit",
     "lint": "biome lint",
     "format": "biome format",
-    "format:check": "oxfmt .",
+    "format:check": "biome format",
     "precommit": "pnpm run check-types && pnpm run lint && pnpm run format:check"
   },
   "dependencies": {

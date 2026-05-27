@@ -46,7 +46,8 @@
       "!.*/**/*",
       "!coverage/**/*",
       "!dist/**/*",
-      "!node_modules/**/*"
+      "!node_modules/**/*",
+      "!**/.tui-test/**/*"
     ],
     "ignoreUnknown": true
   }

@@ -3,7 +3,7 @@
 disable = ["MD013"]
 
 # Exclude files and directories
-exclude = ["node_modules", "dist", "output"]
+exclude = ["node_modules", "dist", "output", ".agents"]
 
 # Set global line length (used by MD013 and other line-length rules)
 line-length = 120

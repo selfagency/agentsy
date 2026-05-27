@@ -111,7 +111,7 @@ class GaugeImpl extends BaseMetric implements Gauge {
     if ('add' in gauge && typeof gauge.add === 'function') {
       // This type assertion is safe because we've checked that add exists
       // and is a function above
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      // biome-ignore lint: typescript/no-unsafe-type-assertion
       const gaugeWithAdd = gauge as {
         add: (amount: number, attributes?: Attributes) => void;
       };

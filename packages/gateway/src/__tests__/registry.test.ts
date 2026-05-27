@@ -37,6 +37,28 @@ describe('load balancer registries', () => {
     expect(registry.get('openai-1')?.providerId).toBe('openai-1');
   });
 
+  it('lists registered providers', () => {
+    const registry = createProviderRegistry({
+      providers: [
+        { id: 'openai-1', name: 'OpenAI', provider: 'openai' },
+        { id: 'anthropic-1', name: 'Anthropic', provider: 'anthropic' }
+      ]
+    });
+
+    const list = registry.list();
+    expect(list).toHaveLength(2);
+    expect(list[0]?.providerId).toBe('openai-1');
+    expect(list[1]?.providerId).toBe('anthropic-1');
+  });
+
+  it('handles unknown provider id', () => {
+    const registry = createProviderRegistry({
+      providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }]
+    });
+
+    expect(registry.get('unknown')).toBeUndefined();
+  });
+
   it('creates a balanced client with multiple providers', () => {
     const client = createLoadBalancedClient({
       providers: [
@@ -46,5 +68,55 @@ describe('load balancer registries', () => {
     });
 
     expect(client.getUsageSnapshot()).toStrictEqual([{ providerId: 'openai-1' }, { providerId: 'anthropic-1' }]);
+  });
+
+  it('returns noop client when no providers configured', () => {
+    const client = createLoadBalancedClient({ providers: [] });
+    const routingState = client.getRoutingState();
+    expect(routingState.providerCount).toBe(0);
+    expect(routingState.providerId).toBe('unconfigured');
+    expect(routingState.strategy).toBe('adaptive');
+  });
+
+  it('returns routing state from balanced client', () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }]
+    });
+
+    const state = client.getRoutingState();
+    expect(state.providerCount).toBe(1);
+    expect(state.providerId).toBe('openai-1');
+    expect(state.providerStatus).toBe('healthy');
+    expect(state.strategy).toBe('adaptive');
+  });
+
+  it('returns empty snapshot from noop client', () => {
+    const client = createLoadBalancedClient({ providers: [] });
+    expect(client.getUsageSnapshot()).toStrictEqual([]);
+  });
+
+  it('handles markProviderHealthy and markProviderUnhealthy without throwing', () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }]
+    });
+
+    expect(() => client.markProviderHealthy('openai-1')).not.toThrow();
+    expect(() => client.markProviderUnhealthy('openai-1')).not.toThrow();
+  });
+
+  it('handles shutdown without throwing', async () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }]
+    });
+
+    await expect(client.shutdown()).resolves.toBeUndefined();
+  });
+
+  it('creates provider registry with baseUrl config', () => {
+    const registry = createProviderRegistry({
+      providers: [{ id: 'custom', name: 'Custom', provider: 'openai', baseUrl: 'https://custom.example.com' }]
+    });
+
+    expect(registry.get('custom')?.providerId).toBe('custom');
   });
 });

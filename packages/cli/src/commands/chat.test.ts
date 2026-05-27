@@ -164,6 +164,123 @@ describe('chat command', () => {
     }
   });
 
+  it('handles /clear command', async () => {
+    const mockStdin = makeMockStdin(['/clear', '/exit']);
+    const origStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      configurable: true,
+      enumerable: true,
+      get: () => mockStdin
+    });
+
+    const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    try {
+      const exitCode = await runChatCommand(['--mock'], { stderr: () => undefined }, { mockChunkDelayMs: 1 });
+
+      expect(exitCode).toBe(0);
+      expect(stdoutSpy).toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(process, 'stdin', {
+        configurable: true,
+        enumerable: true,
+        get: () => origStdin
+      });
+    }
+  });
+
+  it('handles /status command', async () => {
+    const mockStdin = makeMockStdin(['/status', '/exit']);
+    const origStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      configurable: true,
+      enumerable: true,
+      get: () => mockStdin
+    });
+
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    try {
+      const exitCode = await runChatCommand(
+        ['--mock'],
+        {
+          stderr: (msg: string) => {
+            stderrChunks.push(msg);
+          }
+        },
+        { mockChunkDelayMs: 1 }
+      );
+
+      expect(exitCode).toBe(0);
+      expect(stderrChunks.some(c => c.includes('[status]'))).toBeTruthy();
+    } finally {
+      Object.defineProperty(process, 'stdin', {
+        configurable: true,
+        enumerable: true,
+        get: () => origStdin
+      });
+    }
+  });
+
+  it('handles unknown slash command', async () => {
+    const mockStdin = makeMockStdin(['/unknown', '/exit']);
+    const origStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      configurable: true,
+      enumerable: true,
+      get: () => mockStdin
+    });
+
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    try {
+      const exitCode = await runChatCommand(['--mock'], { stderr: () => undefined }, { mockChunkDelayMs: 1 });
+
+      expect(exitCode).toBe(0);
+    } finally {
+      Object.defineProperty(process, 'stdin', {
+        configurable: true,
+        enumerable: true,
+        get: () => origStdin
+      });
+    }
+  });
+
+  it('handles /model command with model name', async () => {
+    const mockStdin = makeMockStdin(['/model gpt-5', '/exit']);
+    const origStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      configurable: true,
+      enumerable: true,
+      get: () => mockStdin
+    });
+
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    try {
+      const exitCode = await runChatCommand(
+        ['--mock'],
+        {
+          stderr: (msg: string) => {
+            stderrChunks.push(msg);
+          }
+        },
+        { mockChunkDelayMs: 1 }
+      );
+
+      expect(exitCode).toBe(0);
+      expect(stderrChunks.some(c => c.includes('[model]'))).toBeTruthy();
+    } finally {
+      Object.defineProperty(process, 'stdin', {
+        configurable: true,
+        enumerable: true,
+        get: () => origStdin
+      });
+    }
+  });
+
   it('can be dispatched through runCli', async () => {
     const { runCli } = await import('../index.js');
 

@@ -195,12 +195,10 @@ describe('toObservable', () => {
   });
 
   it('should return subscription object', () => {
-    // oxlint-disable-next-line no-empty-function -- intentional no-op subscriber
     const subscription = toObservable(sourceSingle()).subscribe(() => {
       /* noop */
     });
 
-    // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
     expectTypeOf(subscription.unsubscribe).toBeFunction();
   });
 

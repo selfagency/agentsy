@@ -1,9 +1,9 @@
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 
 test.describe('compress command', () => {
   test('compresses inline text with --text flag', async ({ terminal }) => {
     await terminal.submit(`node dist/cli.js compress --level full --text 'very very verbose verbose text'`);
-    await expect(terminal.getByText(/Savings:/)).toBeVisible();
+    await expect(terminal.getByText(/Savings:/g)).toBeVisible();
   });
 
   test('supports all three compression levels', async ({ terminal }) => {
@@ -11,7 +11,7 @@ test.describe('compress command', () => {
       await terminal.submit(
         `node dist/cli.js compress --level ${level} --text 'redundant redundant text that repeats itself over and over again'`
       );
-      await expect(terminal.getByText(/Savings:/)).toBeVisible();
+      await expect(terminal.getByText(/Savings:/g)).toBeVisible();
     }
   });
 
@@ -27,7 +27,7 @@ test.describe('compress command', () => {
 
   test('reports a numeric savings percentage', async ({ terminal }) => {
     await terminal.submit("node dist/cli.js compress --level ultra --text 'a a a b b b c c c'");
-    const savingsLine = terminal.getByText(/Savings: \d+\.\d+%/);
+    const savingsLine = terminal.getByText(/Savings: \d+\.\d+%/g);
     await expect(savingsLine).toBeVisible();
   });
 });

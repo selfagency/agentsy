@@ -1,4 +1,4 @@
-//# hash=d09351c851b9680fcea5d6c24b3fc4a5
+//# hash=bf07e610ec3e15b6d98f0f35948cde21
 //# sourceMappingURL=compress-memory.spec.js.map
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -129,7 +129,7 @@ function _ts_generator(thisArg, body) {
         };
     }
 }
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 test.describe('compress-memory command', function() {
     test('compresses a file and reports savings', function(param) {
         var terminal = param.terminal;
@@ -138,8 +138,9 @@ test.describe('compress-memory command', function() {
             return _ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        // Use a unique test file to avoid EEXIST from previous backups
                         dir = '/tmp/agentsy-e2e-compress-memory';
-                        file = "".concat(dir, "/CLAUDE.md");
+                        file = "".concat(dir, "/test-").concat(Date.now(), ".txt");
                         return [
                             4,
                             terminal.submit("mkdir -p ".concat(dir))
@@ -148,7 +149,7 @@ test.describe('compress-memory command', function() {
                         _state.sent();
                         return [
                             4,
-                            terminal.submit("echo 'line1\nline2\nline3\n' > ".concat(file))
+                            terminal.submit('echo "line1 line2 line3" > '.concat(file))
                         ];
                     case 2:
                         _state.sent();
@@ -160,9 +161,15 @@ test.describe('compress-memory command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/Savings:/)).toBeVisible()
+                            expect(terminal.getByText(/Compressed/g)).toBeVisible()
                         ];
                     case 4:
+                        _state.sent();
+                        return [
+                            4,
+                            expect(terminal.getByText(/Savings:/g)).toBeVisible()
+                        ];
+                    case 5:
                         _state.sent();
                         return [
                             2
@@ -179,7 +186,7 @@ test.describe('compress-memory command', function() {
                 switch(_state.label){
                     case 0:
                         dir = '/tmp/agentsy-e2e-compress-memory-backup';
-                        file = "".concat(dir, "/CLAUDE.md");
+                        file = "".concat(dir, "/test-").concat(Date.now(), ".md");
                         return [
                             4,
                             terminal.submit("mkdir -p ".concat(dir))
@@ -188,7 +195,7 @@ test.describe('compress-memory command', function() {
                         _state.sent();
                         return [
                             4,
-                            terminal.submit("echo 'original content here\n' > ".concat(file))
+                            terminal.submit('echo "original content here" > '.concat(file))
                         ];
                     case 2:
                         _state.sent();

@@ -1243,7 +1243,6 @@ describe('normalizeZAiChunk', () => {
     expect(result?.chunk.done).toBeUndefined();
   });
 
-  // oxlint-disable-next-line vitest/max-expects
   it('maps finish reasons to canonical finishReason and done', () => {
     expect(
       normalizeZAiChunk({
@@ -1276,14 +1275,12 @@ describe('normalizeZAiChunk', () => {
         ]
       })?.chunk.finishReason
     ).toBe('error');
-    // oxlint-disable-next-line max-expects
     expect(
       normalizeZAiChunk({
         choices: [{ delta: {}, finish_reason: 'network_error', index: 0 }]
       })?.chunk.finishReason
     ).toBe('error');
 
-    // oxlint-disable-next-line max-expects
     expect(
       normalizeZAiChunk({
         choices: [{ delta: {}, finish_reason: 'stop', index: 0 }]

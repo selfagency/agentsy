@@ -128,8 +128,7 @@ E2E specs use `@microsoft/tui-test` and are located in `packages/cli/src/e2e/`. 
 - Module system is **ESM-first** (ECMAScript Modules) with `.js` extensions in imports
 - Build tool is **tsup**
 - Test framework is **Vitest**
-- Linter is **oxlint** (Rust-based, type-aware)
-- Formatter is **oxfmt** (part of ultracite preset)
+- Linter/formatter is **Biome** (via ultracite preset)
 
 ## TypeScript Rules
 
@@ -163,7 +162,7 @@ Follow the root `tsconfig.json` as source of truth.
 
 The repo uses **Biome** via the ultracite preset (oxfmt.config.ts extends ultracite). See .agents/instructions/code-standards.md for coding standards.
 
-### Formatter conventions (oxfmt.config.ts)
+### Formatter conventions
 
 ```typescript
 {
@@ -176,7 +175,7 @@ The repo uses **Biome** via the ultracite preset (oxfmt.config.ts extends ultrac
 }
 ```
 
-### Linter configuration (oxlint.config.ts)
+### Linter configuration
 
 Enabled plugins: `['eslint', 'typescript', 'unicorn', 'oxc', 'import', 'react', 'jsdoc', 'node', 'promise', 'vitest']`
 
@@ -187,12 +186,12 @@ Key rules:
 - Relaxed: `max-classes-per-file: off`, `unicorn/no-array-for-each: off`, `unicorn/no-array-reduce: off`
 - Vitest: `max-expects: off` to support comprehensive test cases
 
-### Oxlint-disable patterns
+### Biome-ignore patterns
 
 For test inputs that intentionally include mixed HTML/XML or other exceptions, use comment disables:
 
 ```typescript
-/* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
+// biome-ignore lint: xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML
 ```
 
 ## Package Boundaries

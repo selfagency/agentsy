@@ -1,4 +1,4 @@
-//# hash=d095acda4497c69262e12c13fe413664
+//# hash=e4522c467c4db9129d551fb8a6f2df8f
 //# sourceMappingURL=chat.test.js.map
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -469,6 +469,283 @@ describe('chat command', function() {
                     case 2:
                         exitCode = _state.sent();
                         expect(exitCode).toBe(0);
+                        return [
+                            3,
+                            4
+                        ];
+                    case 3:
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return origStdin;
+                            }
+                        });
+                        return [
+                            7
+                        ];
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        })();
+    });
+    it('handles /clear command', function() {
+        return _async_to_generator(function() {
+            var mockStdin, origStdin, stdoutSpy, exitCode;
+            return _ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        mockStdin = makeMockStdin([
+                            '/clear',
+                            '/exit'
+                        ]);
+                        origStdin = process.stdin;
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return mockStdin;
+                            }
+                        });
+                        stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(function() {
+                            return true;
+                        });
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            ,
+                            3,
+                            4
+                        ]);
+                        return [
+                            4,
+                            runChatCommand([
+                                '--mock'
+                            ], {
+                                stderr: function stderr() {
+                                    return undefined;
+                                }
+                            }, {
+                                mockChunkDelayMs: 1
+                            })
+                        ];
+                    case 2:
+                        exitCode = _state.sent();
+                        expect(exitCode).toBe(0);
+                        expect(stdoutSpy).toHaveBeenCalled();
+                        return [
+                            3,
+                            4
+                        ];
+                    case 3:
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return origStdin;
+                            }
+                        });
+                        return [
+                            7
+                        ];
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        })();
+    });
+    it('handles /status command', function() {
+        return _async_to_generator(function() {
+            var mockStdin, origStdin, stderrChunks, exitCode;
+            return _ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        mockStdin = makeMockStdin([
+                            '/status',
+                            '/exit'
+                        ]);
+                        origStdin = process.stdin;
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return mockStdin;
+                            }
+                        });
+                        stderrChunks = [];
+                        vi.spyOn(process.stdout, 'write').mockImplementation(function() {
+                            return true;
+                        });
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            ,
+                            3,
+                            4
+                        ]);
+                        return [
+                            4,
+                            runChatCommand([
+                                '--mock'
+                            ], {
+                                stderr: function stderr(msg) {
+                                    stderrChunks.push(msg);
+                                }
+                            }, {
+                                mockChunkDelayMs: 1
+                            })
+                        ];
+                    case 2:
+                        exitCode = _state.sent();
+                        expect(exitCode).toBe(0);
+                        expect(stderrChunks.some(function(c) {
+                            return c.includes('[status]');
+                        })).toBeTruthy();
+                        return [
+                            3,
+                            4
+                        ];
+                    case 3:
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return origStdin;
+                            }
+                        });
+                        return [
+                            7
+                        ];
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        })();
+    });
+    it('handles unknown slash command', function() {
+        return _async_to_generator(function() {
+            var mockStdin, origStdin, exitCode;
+            return _ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        mockStdin = makeMockStdin([
+                            '/unknown',
+                            '/exit'
+                        ]);
+                        origStdin = process.stdin;
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return mockStdin;
+                            }
+                        });
+                        vi.spyOn(process.stdout, 'write').mockImplementation(function() {
+                            return true;
+                        });
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            ,
+                            3,
+                            4
+                        ]);
+                        return [
+                            4,
+                            runChatCommand([
+                                '--mock'
+                            ], {
+                                stderr: function stderr() {
+                                    return undefined;
+                                }
+                            }, {
+                                mockChunkDelayMs: 1
+                            })
+                        ];
+                    case 2:
+                        exitCode = _state.sent();
+                        expect(exitCode).toBe(0);
+                        return [
+                            3,
+                            4
+                        ];
+                    case 3:
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return origStdin;
+                            }
+                        });
+                        return [
+                            7
+                        ];
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        })();
+    });
+    it('handles /model command with model name', function() {
+        return _async_to_generator(function() {
+            var mockStdin, origStdin, stderrChunks, exitCode;
+            return _ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        mockStdin = makeMockStdin([
+                            '/model gpt-5',
+                            '/exit'
+                        ]);
+                        origStdin = process.stdin;
+                        Object.defineProperty(process, 'stdin', {
+                            configurable: true,
+                            enumerable: true,
+                            get: function get() {
+                                return mockStdin;
+                            }
+                        });
+                        stderrChunks = [];
+                        vi.spyOn(process.stdout, 'write').mockImplementation(function() {
+                            return true;
+                        });
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            ,
+                            3,
+                            4
+                        ]);
+                        return [
+                            4,
+                            runChatCommand([
+                                '--mock'
+                            ], {
+                                stderr: function stderr(msg) {
+                                    stderrChunks.push(msg);
+                                }
+                            }, {
+                                mockChunkDelayMs: 1
+                            })
+                        ];
+                    case 2:
+                        exitCode = _state.sent();
+                        expect(exitCode).toBe(0);
+                        expect(stderrChunks.some(function(c) {
+                            return c.includes('[model]');
+                        })).toBeTruthy();
                         return [
                             3,
                             4

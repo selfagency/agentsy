@@ -34,6 +34,7 @@ interface OpenAIToolCallDelta {
 
 interface OpenAIDelta {
   content?: string | null;
+  reasoning?: string | null;
   reasoning_content?: string | null;
   role?: string;
   tool_calls?: OpenAIToolCallDelta[];
@@ -98,12 +99,30 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
   return result;
 }
 
+function getThinkingContent(
+  reasoningField: string | null | undefined,
+  reasoningContentField: string | null | undefined
+): string | undefined {
+  if (typeof reasoningField === 'string') {
+    return reasoningField;
+  }
+  if (typeof reasoningContentField === 'string') {
+    return reasoningContentField;
+  }
+  return;
+}
+
 function getContentParts(delta: OpenAIDelta | undefined): {
   content?: string;
   thinking?: string;
 } {
   const content = typeof delta?.content === 'string' ? delta.content : undefined;
-  const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
+  // Some providers (Ollama / DeepSeek) put reasoning in a `reasoning` field
+  // rather than OpenAI's `reasoning_content` field.  Map it to `thinking` so
+  // the response appears in the streaming output.
+  const reasoningField = delta?.reasoning;
+  const reasoningContentField = delta?.reasoning_content;
+  const thinking = getThinkingContent(reasoningField, reasoningContentField);
   const out: { content?: string; thinking?: string } = {};
   if (content !== undefined) {
     out.content = content;

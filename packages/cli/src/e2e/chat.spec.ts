@@ -1,4 +1,4 @@
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 
 test.describe('chat command', () => {
   test('exits cleanly on /exit command', async ({ terminal }) => {
@@ -18,7 +18,7 @@ test.describe('chat command', () => {
     await terminal.write('hello');
     await terminal.keyPress('Enter');
     // Mock provider returns predictable text — verify something appeared
-    await expect(terminal.getByText(/hello|response/i)).toBeVisible();
+    await expect(terminal.getByText(/hello|response/gi)).toBeVisible();
     // Exit cleanly
     await terminal.write('/exit');
     await terminal.keyPress('Enter');
@@ -28,7 +28,7 @@ test.describe('chat command', () => {
     await terminal.submit('node dist/cli.js chat --mock');
     await terminal.write('/help');
     await terminal.keyPress('Enter');
-    await expect(terminal.getByText(/available commands|usage/i)).toBeVisible();
+    await expect(terminal.getByText(/Commands:/g)).toBeVisible();
     await terminal.write('/exit');
     await terminal.keyPress('Enter');
   });

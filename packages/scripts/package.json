@@ -14,7 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest --run --passWithNoTests",
     "lint": "biome lint",
-    "format": "oxfmt src"
+    "format": "biome format src"
   },
   "dependencies": {
     "@octokit/rest": "22.0.1",

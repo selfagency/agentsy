@@ -1,4 +1,4 @@
-//# hash=d5d8b2bc8c78b06590de4d05a1d39540
+//# hash=f8059f24eef63b699b7ef37a56ac61f2
 //# sourceMappingURL=chat.js.map
 
 function _async_iterator(iterable) {
@@ -243,7 +243,7 @@ var DEFAULT_HEADERS = {
     prefix: "".concat(dim('\u2500'), " ").concat(green('assistant'), " ").concat(dim('\u2500'))
 };
 function createProviderClient(isMock, argv, options) {
-    var _getFlagValue, _ref, _getFlagValue1;
+    var _getFlagValue, _getFlagValue1, _getFlagValue2, _getFlagValue3, _ref;
     if (isMock) {
         return createMockClient({
             responseText: options === null || options === void 0 ? void 0 : options.mockResponseText,
@@ -251,14 +251,23 @@ function createProviderClient(isMock, argv, options) {
         });
     }
     var model = (_getFlagValue = getFlagValue(argv, '--model')) !== null && _getFlagValue !== void 0 ? _getFlagValue : 'gpt-4o-mini';
+    var baseUrl = (_getFlagValue1 = getFlagValue(argv, '--base-url')) !== null && _getFlagValue1 !== void 0 ? _getFlagValue1 : undefined;
+    var apiKey = (_getFlagValue2 = getFlagValue(argv, '--api-key')) !== null && _getFlagValue2 !== void 0 ? _getFlagValue2 : undefined;
+    var providerEntry = {
+        id: 'default',
+        name: 'Default provider',
+        provider: (_getFlagValue3 = getFlagValue(argv, '--provider')) !== null && _getFlagValue3 !== void 0 ? _getFlagValue3 : 'openai'
+    };
+    if (baseUrl !== undefined) {
+        providerEntry.baseUrl = baseUrl;
+    }
+    if (apiKey !== undefined) {
+        providerEntry.apiKey = apiKey;
+    }
     var providerConfig = (_ref = options === null || options === void 0 ? void 0 : options.providerConfig) !== null && _ref !== void 0 ? _ref : {
         model: model,
         providers: [
-            {
-                id: 'default',
-                name: 'Default provider',
-                provider: (_getFlagValue1 = getFlagValue(argv, '--provider')) !== null && _getFlagValue1 !== void 0 ? _getFlagValue1 : 'openai'
-            }
+            providerEntry
         ]
     };
     return resolveProviderClient(providerConfig);

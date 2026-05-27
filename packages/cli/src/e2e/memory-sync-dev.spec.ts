@@ -1,17 +1,17 @@
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 
 test.describe('memory-sync-dev command', () => {
   test('prints default development wiring', async ({ terminal }) => {
     await terminal.submit('node dist/cli.js memory-sync-dev');
-    await expect(terminal.getByText(/tursodb .*local-sync-server\.db.*--sync-server/)).toBeVisible();
-    await expect(terminal.getByText(/TURSO_DATABASE_URL=/)).toBeVisible();
+    await expect(terminal.getByText(/tursodb .*local-sync-server\.db.*--sync-server/g)).toBeVisible();
+    await expect(terminal.getByText(/TURSO_DATABASE_URL=/g)).toBeVisible();
   });
 
   test('prints wiring as JSON with --json flag', async ({ terminal }) => {
     await terminal.submit('node dist/cli.js memory-sync-dev --json');
-    await expect(terminal.getByText(/"bindAddress":/)).toBeVisible();
-    await expect(terminal.getByText(/"serverUrl":/)).toBeVisible();
-    await expect(terminal.getByText(/"syncIntervalMs":/)).toBeVisible();
+    await expect(terminal.getByText(/"bindAddress":/g)).toBeVisible();
+    await expect(terminal.getByText(/"serverUrl":/g)).toBeVisible();
+    await expect(terminal.getByText(/"syncIntervalMs":/g)).toBeVisible();
   });
 
   test('accepts custom flag values', async ({ terminal }) => {
@@ -25,8 +25,8 @@ test.describe('memory-sync-dev command', () => {
         '--sync-interval-ms 1500'
       ].join(' ')
     );
-    await expect(terminal.getByText(/tursodb \.\/tmp\/custom\.db/)).toBeVisible();
-    await expect(terminal.getByText(/TURSO_DATABASE_URL=http:\/\/localhost:9090/)).toBeVisible();
+    await expect(terminal.getByText(/tursodb \.\/tmp\/custom\.db/g)).toBeVisible();
+    await expect(terminal.getByText(/TURSO_DATABASE_URL=http:\/\/localhost:9090/g)).toBeVisible();
   });
 
   test('shows error for invalid sync-interval-ms value', async ({ terminal }) => {

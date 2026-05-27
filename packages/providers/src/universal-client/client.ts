@@ -189,7 +189,6 @@ function buildHeaders(
   };
 
   if (apiKey) {
-    // oxlint-disable-next-line switch-exhaustiveness-check
     switch (_provider) {
       case 'openai': {
         headers.Authorization = `Bearer ${apiKey}`;

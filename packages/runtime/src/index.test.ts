@@ -76,7 +76,6 @@ describe('createRuntimeExecutor', () => {
     await executor.execute([task]);
 
     expect(onError).toHaveBeenCalledOnce();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- mock call args typed as any
     expect(onError.mock.calls[0]?.[0].message).toBe('boom');
     expect(onError.mock.calls[0]?.[1]).toBe(task);
   });
@@ -96,7 +95,6 @@ describe('createRuntimeExecutor', () => {
     await executor.execute([task]);
 
     expect(onError).toHaveBeenCalledOnce();
-    // oxlint-disable-next-line typescript/no-unsafe-assignment -- mock call args typed as any
     const [error] = onError.mock.calls[0] ?? [];
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe('Runtime task failed');
@@ -107,7 +105,6 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
-        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }
@@ -200,8 +197,6 @@ describe('createRuntimeLoop', () => {
     const onTaskComplete = vi.fn();
     const loop = createRuntimeLoop({ onTaskComplete, onTaskStart });
 
-    // oxlint-disable-next-line no-empty-function -- no-op task for lifecycle callback test
-    // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
     await loop.execute([
       {
         id: 'task-1',
@@ -213,7 +208,6 @@ describe('createRuntimeLoop', () => {
 
     expect(onTaskStart).toHaveBeenCalledOnce();
     expect(onTaskComplete).toHaveBeenCalledOnce();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- mock call args typed as any
     expect(onTaskComplete.mock.calls[0]?.[0]?.status).toBe('completed');
   });
 
@@ -298,7 +292,6 @@ describe('createRuntimeLoop', () => {
       loop.spawn([
         {
           id: 'child',
-          // oxlint-disable-next-line no-empty-function -- no-op child task for depth test
           run: async () => {
             /* noop */
           }
@@ -380,11 +373,9 @@ describe('createRuntimeWorkflowExecutor', () => {
   it('rejects workflows with missing dependencies', async () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
-      // oxlint-disable-next-line no-empty-function -- no-op task for missing-dependency error test
       {
         dependsOn: ['build'],
         id: 'deploy',
-        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }
@@ -397,20 +388,16 @@ describe('createRuntimeWorkflowExecutor', () => {
   it('rejects workflows with cycles', async () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
-      // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
       {
         dependsOn: ['b'],
         id: 'a',
-        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }
       },
-      // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
       {
         dependsOn: ['a'],
         id: 'b',
-        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           /* noop */
         }

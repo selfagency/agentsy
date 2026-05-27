@@ -40,7 +40,6 @@ export type MemoryId = string & { readonly __brand: unique symbol };
  */
 export function createAgentId(): AgentId {
   // Type assertion is required for branded type pattern
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return `agent_${crypto.randomUUID()}` as AgentId;
 }
 
@@ -49,7 +48,6 @@ export function createAgentId(): AgentId {
  */
 export function createSessionId(): SessionId {
   // Type assertion is required for branded type pattern
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return `session_${crypto.randomUUID()}` as SessionId;
 }
 
@@ -58,7 +56,6 @@ export function createSessionId(): SessionId {
  */
 export function createTraceId(): TraceId {
   // Type assertion is required for branded type pattern
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return `trace_${crypto.randomUUID()}` as TraceId;
 }
 
@@ -67,7 +64,6 @@ export function createTraceId(): TraceId {
  */
 export function createSpanId(): SpanId {
   // Type assertion is required for branded type pattern
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return `span_${crypto.randomUUID()}` as SpanId;
 }
 
@@ -76,7 +72,6 @@ export function createSpanId(): SpanId {
  */
 export function createToolId(): ToolId {
   // Type assertion is required for branded type pattern
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return `tool_${crypto.randomUUID()}` as ToolId;
 }
 
@@ -85,7 +80,6 @@ export function createToolId(): ToolId {
  */
 export function createMemoryId(): MemoryId {
   // Type assertion is required for branded type pattern
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return `memory_${crypto.randomUUID()}` as MemoryId;
 }
 

@@ -949,7 +949,6 @@ describe('createAgentLoop', () => {
 
     const loop = createAgentLoop({
       buildToolResultMessages: async () => [],
-      // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
       async *execute() {
         yield* [];
         throw new Error('step failed');

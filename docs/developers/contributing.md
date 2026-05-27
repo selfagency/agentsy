@@ -45,8 +45,7 @@ pnpm lint:fix && pnpm format
 
 Tools used:
 
-- **Linting**: oxlint (and oxlint-tsgolint for TypeScript)
-- **Formatting**: oxfmt
+- **Linting/Formatting**: Biome (via ultracite preset)
 - **Type checking**: TypeScript
 
 ### Testing

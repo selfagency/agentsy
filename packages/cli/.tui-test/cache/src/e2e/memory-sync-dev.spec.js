@@ -1,4 +1,4 @@
-//# hash=0017418c733e85140016c78481163147
+//# hash=7684ca36770769dd2a0b8542c5b0e9f4
 //# sourceMappingURL=memory-sync-dev.spec.js.map
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -129,7 +129,7 @@ function _ts_generator(thisArg, body) {
         };
     }
 }
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 test.describe('memory-sync-dev command', function() {
     test('prints default development wiring', function(param) {
         var terminal = param.terminal;
@@ -145,13 +145,13 @@ test.describe('memory-sync-dev command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/tursodb .*local-sync-server\.db.*--sync-server/)).toBeVisible()
+                            expect(terminal.getByText(/tursodb .*local-sync-server\.db.*--sync-server/g)).toBeVisible()
                         ];
                     case 2:
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/TURSO_DATABASE_URL=/)).toBeVisible()
+                            expect(terminal.getByText(/TURSO_DATABASE_URL=/g)).toBeVisible()
                         ];
                     case 3:
                         _state.sent();
@@ -176,19 +176,19 @@ test.describe('memory-sync-dev command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/"bindAddress":/)).toBeVisible()
+                            expect(terminal.getByText(/"bindAddress":/g)).toBeVisible()
                         ];
                     case 2:
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/"serverUrl":/)).toBeVisible()
+                            expect(terminal.getByText(/"serverUrl":/g)).toBeVisible()
                         ];
                     case 3:
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/"syncIntervalMs":/)).toBeVisible()
+                            expect(terminal.getByText(/"syncIntervalMs":/g)).toBeVisible()
                         ];
                     case 4:
                         _state.sent();
@@ -220,13 +220,13 @@ test.describe('memory-sync-dev command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/tursodb \.\/tmp\/custom\.db/)).toBeVisible()
+                            expect(terminal.getByText(/tursodb \.\/tmp\/custom\.db/g)).toBeVisible()
                         ];
                     case 2:
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/TURSO_DATABASE_URL=http:\/\/localhost:9090/)).toBeVisible()
+                            expect(terminal.getByText(/TURSO_DATABASE_URL=http:\/\/localhost:9090/g)).toBeVisible()
                         ];
                     case 3:
                         _state.sent();

@@ -43,7 +43,7 @@ function hasDangerousQuantifier(pattern: string): boolean {
   return false;
 }
 
-function getCachedRegex(pattern: string): RegExp {
+function getCachedRegex(pattern: string, trusted = false): RegExp {
   const existing = regexCache.get(pattern);
   if (existing !== undefined) {
     // Update access timestamp without delete/re-insert to avoid disrupting LRU tracking
@@ -55,7 +55,8 @@ function getCachedRegex(pattern: string): RegExp {
   try {
     // Security: Validate pattern length and characters to prevent ReDoS attacks.
     // JSON Schema patterns should be relatively simple; overly complex patterns are rejected.
-    if (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern)) {
+    // Trusted patterns (e.g. built-in format specifiers) skip these checks — they're known-safe.
+    if (!trusted && (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern))) {
       // Pattern is too long, too complex, or not a string: use safe match-nothing regex
       regex = MATCH_NOTHING_REGEX;
     } else {
@@ -241,6 +242,9 @@ function checkRef(
 }
 
 function isValueTypeMatch(value: unknown, schemaType: string): boolean {
+  if (schemaType === 'null') {
+    return value === null;
+  }
   if (schemaType === 'object') {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
   }
@@ -388,7 +392,7 @@ function checkStringConstraints(value: string, schema: JsonSchema, path: string,
   if (typeof schema.format === 'string') {
     const formatPattern = FORMAT_PATTERNS[schema.format];
     if (formatPattern !== undefined) {
-      const regex = getCachedRegex(formatPattern);
+      const regex = getCachedRegex(formatPattern, true);
       if (!regex.test(value)) {
         errors.push(`${path}: string does not match format '${schema.format}'`);
       }

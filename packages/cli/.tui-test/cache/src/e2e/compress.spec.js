@@ -1,4 +1,4 @@
-//# hash=adf7470ecab2c4710792149f3a5842e4
+//# hash=a49445b57cb2846efd6e8c22a2c79f5d
 //# sourceMappingURL=compress.spec.js.map
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -129,7 +129,7 @@ function _ts_generator(thisArg, body) {
         };
     }
 }
-import { test, expect } from '@microsoft/tui-test';
+import { expect, test } from '@microsoft/tui-test';
 test.describe('compress command', function() {
     test('compresses inline text with --text flag', function(param) {
         var terminal = param.terminal;
@@ -145,7 +145,7 @@ test.describe('compress command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/Savings:/)).toBeVisible()
+                            expect(terminal.getByText(/Savings:/g)).toBeVisible()
                         ];
                     case 2:
                         _state.sent();
@@ -183,7 +183,7 @@ test.describe('compress command', function() {
                         _state.sent();
                         return [
                             4,
-                            expect(terminal.getByText(/Savings:/)).toBeVisible()
+                            expect(terminal.getByText(/Savings:/g)).toBeVisible()
                         ];
                     case 3:
                         _state.sent();
@@ -265,7 +265,7 @@ test.describe('compress command', function() {
                         ];
                     case 1:
                         _state.sent();
-                        savingsLine = terminal.getByText(/Savings: \d+\.\d+%/);
+                        savingsLine = terminal.getByText(/Savings: \d+\.\d+%/g);
                         return [
                             4,
                             expect(savingsLine).toBeVisible()
