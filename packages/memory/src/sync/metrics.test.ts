@@ -42,4 +42,28 @@ describe('createSyncMetricsRegistry', () => {
       sync_runs_total: 2
     });
   });
+
+  it('returns zero values when no runs recorded', () => {
+    const metrics = createSyncMetricsRegistry();
+    const snap = metrics.snapshot();
+
+    expect(snap.sync_runs_total).toBe(0);
+    expect(snap.sync_failures_total).toBe(0);
+    expect(snap.sync_duration_ms.average).toBe(0);
+    expect(snap.queue_depth.average).toBe(0);
+    expect(snap.backup_success_rate).toBe(0);
+    expect(snap.restore_success_rate).toBe(0);
+    expect(snap.backup_runs_total).toBe(0);
+    expect(snap.backup_restore_total).toBe(0);
+  });
+
+  it('handles failed backup and restore correctly', () => {
+    const metrics = createSyncMetricsRegistry();
+    metrics.recordBackupRun({ durationMs: 100, success: false });
+    metrics.recordRestoreRun({ durationMs: 200, success: false });
+
+    const snap = metrics.snapshot();
+    expect(snap.backup_success_rate).toBe(0);
+    expect(snap.restore_success_rate).toBe(0);
+  });
 });
