@@ -59,6 +59,7 @@ export class ConsoleExporter implements ObservabilitySink {
       const attrKeys = Object.keys(span.attributes);
       if (attrKeys.length > 0) {
         for (const key of attrKeys) {
+          // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection — iterating own keys of span.attributes
           this._write(`  ${this._prefix} attr  ${key}=${String(span.attributes[key])}`);
         }
       }

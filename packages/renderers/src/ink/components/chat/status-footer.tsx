@@ -18,21 +18,21 @@ export interface StatusFooterProps {
   readonly status: ConnectionStatus;
 }
 
-const statusSymbols: Record<ConnectionStatus, string> = {
-  connecting: '◇',
-  connected: '◇',
-  streaming: '◈',
-  idle: '○',
-  error: '⊘'
-};
+const statusSymbols = new Map<ConnectionStatus, string>([
+  ['connecting', '◇'],
+  ['connected', '◇'],
+  ['streaming', '◈'],
+  ['idle', '○'],
+  ['error', '⊘']
+]);
 
-const statusColors: Record<ConnectionStatus, keyof AcidPalette> = {
-  connecting: 'info',
-  connected: 'success',
-  streaming: 'assistantAccent',
-  idle: 'muted',
-  error: 'error'
-};
+const statusColors = new Map<ConnectionStatus, keyof AcidPalette>([
+  ['connecting', 'info'],
+  ['connected', 'success'],
+  ['streaming', 'assistantAccent'],
+  ['idle', 'muted'],
+  ['error', 'error']
+]);
 
 /**
  * Status footer — connection status, model name, elapsed time.
@@ -40,7 +40,7 @@ const statusColors: Record<ConnectionStatus, keyof AcidPalette> = {
  * Renders as a single-line footer at the bottom of the chat area.
  */
 export function StatusFooter({ status, modelName, elapsedSec, palette, provider }: StatusFooterProps) {
-  const statusKey = statusColors[status];
+  const statusKey = statusColors.get(status) ?? 'muted';
   const color = palette[statusKey];
 
   const formatTime = (sec: number): string => {
@@ -51,7 +51,7 @@ export function StatusFooter({ status, modelName, elapsedSec, palette, provider 
 
   const _parts: string[] = [];
 
-  const symbol = reducedMotion() ? '●' : statusSymbols[status];
+  const symbol = reducedMotion() ? '●' : (statusSymbols.get(status) ?? '●');
 
   return (
     <Box>

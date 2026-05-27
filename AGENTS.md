@@ -111,6 +111,16 @@ pnpm test
 
 When a change is package-scoped, run the corresponding package scripts first, then root checks if it affects shared code, exports, docs, or monorepo wiring.
 
+### CLI E2E tests
+
+When making changes to `packages/cli/`, also run the E2E terminal test suite:
+
+```bash
+pnpm --filter @agentsy/cli test:e2e
+```
+
+E2E specs use `@microsoft/tui-test` and are located in `packages/cli/src/e2e/`. Each CLI command must have a corresponding `.spec.ts` file. See `docs/developers/contributing.md` for the full workflow.
+
 ## Runtime and Language Baseline
 
 - Develop against **Node.js 22** to match CI (VS Code package declares `>=18`, but repo targets Node 22 consistently)

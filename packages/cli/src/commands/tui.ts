@@ -40,7 +40,7 @@ function getFlagValue(args: readonly string[], flag: string): string | null {
   if (index === -1) {
     return null;
   }
-  return args[index + 1] ?? null;
+  return args.at(index + 1) ?? null;
 }
 
 function createProviderClient(isMock: boolean, argv: readonly string[]) {

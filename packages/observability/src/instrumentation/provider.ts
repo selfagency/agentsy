@@ -56,26 +56,26 @@ export const ProviderSpanAttributes = {
  * Used for cost attribution when the provider doesn't return cost data.
  * Values are in USD per 1M tokens.
  */
-const MODEL_COST_ESTIMATES: Record<string, { input: number; output: number }> = {
-  'gpt-4o': { input: 2.5, output: 10 },
-  'gpt-4o-mini': { input: 0.15, output: 0.6 },
-  'gpt-4-turbo': { input: 10, output: 30 },
-  'claude-opus-4': { input: 15, output: 75 },
-  'claude-sonnet-4': { input: 3, output: 15 },
-  'claude-haiku-3': { input: 0.25, output: 1.25 },
-  'gemini-2.0-flash': { input: 0.1, output: 0.4 },
-  'gemini-2.5-pro': { input: 1.25, output: 5 },
-  'mistral-large': { input: 2, output: 6 },
-  'deepseek-chat': { input: 0.14, output: 0.28 }
-};
+const MODEL_COST_ESTIMATES = new Map<string, { input: number; output: number }>([
+  ['gpt-4o', { input: 2.5, output: 10 }],
+  ['gpt-4o-mini', { input: 0.15, output: 0.6 }],
+  ['gpt-4-turbo', { input: 10, output: 30 }],
+  ['claude-opus-4', { input: 15, output: 75 }],
+  ['claude-sonnet-4', { input: 3, output: 15 }],
+  ['claude-haiku-3', { input: 0.25, output: 1.25 }],
+  ['gemini-2.0-flash', { input: 0.1, output: 0.4 }],
+  ['gemini-2.5-pro', { input: 1.25, output: 5 }],
+  ['mistral-large', { input: 2, output: 6 }],
+  ['deepseek-chat', { input: 0.14, output: 0.28 }]
+]);
 
 function estimateCost(model: string, inputTokens: number, outputTokens: number): number | undefined {
   // Try exact match, then prefix match
-  let rates = MODEL_COST_ESTIMATES[model];
+  let rates = MODEL_COST_ESTIMATES.get(model);
   if (!rates) {
-    const prefix = Object.keys(MODEL_COST_ESTIMATES).find(k => model.startsWith(k));
+    const prefix = [...MODEL_COST_ESTIMATES.keys()].find(k => model.startsWith(k));
     if (prefix) {
-      rates = MODEL_COST_ESTIMATES[prefix];
+      rates = MODEL_COST_ESTIMATES.get(prefix);
     }
   }
   if (!rates) {

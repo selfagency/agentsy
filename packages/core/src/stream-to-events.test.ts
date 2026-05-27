@@ -157,7 +157,7 @@ describe('streamToEvents', () => {
 
     const indices = events.map(e => e.chunkIndex);
     for (let i = 1; i < indices.length; i++) {
-      expect(indices[i]).toBeGreaterThanOrEqual(indices[i - 1] ?? 0);
+      expect(indices.at(i)).toBeGreaterThanOrEqual(indices.at(i - 1) ?? 0);
     }
   });
 

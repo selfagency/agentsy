@@ -24,6 +24,7 @@ export class ProfileRegistry {
     const normalized = Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]));
     for (const profile of this.#profiles.values()) {
       for (const [header, value] of Object.entries(profile.headers)) {
+        // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection — key is from own object entries
         if (normalized[header.toLowerCase()] === value) {
           return profile;
         }

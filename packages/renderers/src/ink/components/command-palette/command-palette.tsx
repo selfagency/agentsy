@@ -102,7 +102,7 @@ function renderCommandRows(cols: readonly CommandGroup[], palette: AcidPalette) 
     rows.push(
       <Box flexDirection="row" key={row}>
         {cols.map((group, colIdx) => {
-          const entry = group.entries[row];
+          const entry = group.entries.at(row);
           return (
             // biome-ignore lint/suspicious/noArrayIndexKey: stable 3-column layout
             <Box flexBasis={0} flexGrow={1} key={colIdx}>

@@ -40,6 +40,6 @@ export function StreamingCursor({ color, isStreaming, symbol }: StreamingCursorP
     return null;
   }
 
-  const display = symbol ?? cursorFrames[frame] ?? '▌';
+  const display = symbol ?? cursorFrames.at(frame) ?? '▌';
   return <Text color={color}>{display}</Text>;
 }

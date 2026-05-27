@@ -45,7 +45,7 @@ const DEFAULT_PRIORITY: ResolutionPriority = {
 function extractPolarity(content: string): number {
   const polarityPatterns = [/\b(?:like|love|enjoy|prefer)s?\b/giu, /\b(?:dislike|hate|avoid|not)s?\b/giu];
   for (let i = 0; i < polarityPatterns.length; i++) {
-    if (polarityPatterns[i]?.test(content)) {
+    if (polarityPatterns.at(i)?.test(content)) {
       return i + 1;
     }
   }
@@ -147,7 +147,7 @@ function detectContradictionsInternal(observations: Observation[]): Observation[
     if (visited.has(i)) {
       continue;
     }
-    const group: Observation[] = [observations[i] as Observation];
+    const group: Observation[] = [observations.at(i) as Observation];
     visited.add(i);
 
     for (let j = i + 1; j < observations.length; j++) {

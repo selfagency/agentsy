@@ -39,33 +39,33 @@ export interface AgentLogProps {
   readonly palette: AcidPalette;
 }
 
-const KIND_ICONS: Record<LogEventKind, string> = {
-  'tool-call': '→',
-  'tool-result': '←',
-  decision: '◆',
-  error: '✗',
-  warning: '⚠',
-  info: '·',
-  'agent-start': '▶',
-  'agent-done': '■',
-  'approval-request': '?',
-  'approval-granted': '✓',
-  'approval-rejected': '✗'
-};
+const KIND_ICONS = new Map<LogEventKind, string>([
+  ['tool-call', '→'],
+  ['tool-result', '←'],
+  ['decision', '◆'],
+  ['error', '✗'],
+  ['warning', '⚠'],
+  ['info', '·'],
+  ['agent-start', '▶'],
+  ['agent-done', '■'],
+  ['approval-request', '?'],
+  ['approval-granted', '✓'],
+  ['approval-rejected', '✗']
+]);
 
-const KIND_COLORS: Record<LogEventKind, keyof AcidPalette> = {
-  'tool-call': 'assistantAccent',
-  'tool-result': 'success',
-  decision: 'warning',
-  error: 'error',
-  warning: 'warning',
-  info: 'muted',
-  'agent-start': 'success',
-  'agent-done': 'frameBright',
-  'approval-request': 'warning',
-  'approval-granted': 'success',
-  'approval-rejected': 'error'
-};
+const KIND_COLORS = new Map<LogEventKind, keyof AcidPalette>([
+  ['tool-call', 'assistantAccent'],
+  ['tool-result', 'success'],
+  ['decision', 'warning'],
+  ['error', 'error'],
+  ['warning', 'warning'],
+  ['info', 'muted'],
+  ['agent-start', 'success'],
+  ['agent-done', 'frameBright'],
+  ['approval-request', 'warning'],
+  ['approval-granted', 'success'],
+  ['approval-rejected', 'error']
+]);
 
 /**
  * BBS-style agent event log.
@@ -114,9 +114,9 @@ interface LogRowProps {
 }
 
 function LogRow({ event, palette }: LogRowProps) {
-  const colorKey = KIND_COLORS[event.kind] ?? 'frameBright';
-  const color = palette[colorKey] as string;
-  const icon = KIND_ICONS[event.kind] ?? '·';
+  const colorKey = KIND_COLORS.get(event.kind) ?? 'frameBright';
+  const color = palette[colorKey];
+  const icon = KIND_ICONS.get(event.kind) ?? '·';
 
   return (
     <Box flexDirection="row">

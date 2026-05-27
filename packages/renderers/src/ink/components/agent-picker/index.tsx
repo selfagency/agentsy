@@ -37,12 +37,12 @@ export interface AgentPickerProps {
   readonly query: string;
 }
 
-const provenanceTokens: Record<AgentProvenance, { label: string; color: keyof AcidPalette }> = {
-  bundled: { label: 'built-in', color: 'info' },
-  user: { label: 'user', color: 'success' },
-  workspace: { label: 'project', color: 'warning' },
-  plugin: { label: 'plugin', color: 'pending' }
-};
+const provenanceTokens = new Map<AgentProvenance, { label: string; color: keyof AcidPalette }>([
+  ['bundled', { label: 'built-in', color: 'info' }],
+  ['user', { label: 'user', color: 'success' }],
+  ['workspace', { label: 'project', color: 'warning' }],
+  ['plugin', { label: 'plugin', color: 'pending' }]
+]);
 
 /**
  * Searchable agent list with provenance badges.
@@ -77,9 +77,11 @@ export function AgentPicker({ agents, query, highlightIndex, palette, focused = 
           {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned */}
           {filtered.map((agent, idx) => {
             const isHighlighted = idx === highlightIndex;
-            const provenance = provenanceTokens[agent.provenance];
+            const provenance = provenanceTokens.get(agent.provenance);
             const arrow = isHighlighted ? '▸' : ' ';
             const activeMark = agent.active ? '●' : '○';
+            const provColor = palette[provenance?.color ?? 'muted'];
+            const provLabel = provenance?.label ?? 'unknown';
 
             return (
               <Box flexDirection="column" key={agent.id}>
@@ -91,9 +93,9 @@ export function AgentPicker({ agents, query, highlightIndex, palette, focused = 
                   >
                     {agent.name}
                   </Text>
-                  <Text color={palette[provenance.color]}>
+                  <Text color={provColor}>
                     {' ['}
-                    {provenance.label}
+                    {provLabel}
                     {']'}
                   </Text>
                 </Box>

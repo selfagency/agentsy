@@ -36,19 +36,19 @@ export interface OrchestratorConsoleProps {
   readonly palette: AcidPalette;
 }
 
-const STATUS_COLORS: Record<AgentConfig['status'], keyof AcidPalette> = {
-  idle: 'muted',
-  running: 'success',
-  paused: 'warning',
-  error: 'error'
-};
+const STATUS_COLORS = new Map<AgentConfig['status'], keyof AcidPalette>([
+  ['idle', 'muted'],
+  ['running', 'success'],
+  ['paused', 'warning'],
+  ['error', 'error']
+]);
 
-const STATUS_LABELS: Record<AgentConfig['status'], string> = {
-  idle: 'IDLE',
-  running: 'RUNNING',
-  paused: 'PAUSED',
-  error: 'ERROR'
-};
+const STATUS_LABELS = new Map<AgentConfig['status'], string>([
+  ['idle', 'IDLE'],
+  ['running', 'RUNNING'],
+  ['paused', 'PAUSED'],
+  ['error', 'ERROR']
+]);
 
 /**
  * BBS-style orchestrator / sysop console.
@@ -92,9 +92,9 @@ export function OrchestratorConsole({
     { isActive: isFocused }
   );
 
-  const statusColorKey = STATUS_COLORS[agent.status] ?? 'muted';
-  const statusColor = palette[statusColorKey] as string;
-  const statusLabel = STATUS_LABELS[agent.status] ?? agent.status.toUpperCase();
+  const statusColorKey = STATUS_COLORS.get(agent.status) ?? 'muted';
+  const statusColor = palette[statusColorKey];
+  const statusLabel = STATUS_LABELS.get(agent.status) ?? agent.status.toUpperCase();
 
   // Token progress bar
   const tokenBar = buildTokenBar(agent.tokensUsed, agent.maxTokens, palette);

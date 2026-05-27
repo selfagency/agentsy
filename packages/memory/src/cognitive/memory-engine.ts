@@ -327,6 +327,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
         continue;
       }
       const cap = tier.capacity();
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection — iterating own object keys
       tierData[name] = {
         items: cap.usedItems,
         usedTokens: cap.usedTokens,
@@ -361,6 +362,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       const cap = tier.capacity();
       totalItems += cap.usedItems;
       totalTokens += cap.usedTokens;
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection — iterating own object keys
       tierStats[name] = {
         items: cap.usedItems,
         usedTokens: cap.usedTokens,
