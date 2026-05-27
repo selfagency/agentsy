@@ -29,8 +29,6 @@ export interface AgentPickerProps {
   readonly focused?: boolean;
   /** Current highlight index for keyboard nav. */
   readonly highlightIndex: number;
-  /** Callback when query changes. */
-  readonly onQueryChange?: (query: string) => void;
   /** Semantic palette. */
   readonly palette: AcidPalette;
   /** Current search query. */
@@ -56,7 +54,7 @@ function filterAgents(agents: readonly AgentEntry[], query: string): AgentEntry[
 
 /* ── Sub-components ────────────────────────────────────────────── */
 
-function EmptyState({ query, palette }: { query: string; palette: AcidPalette }) {
+function EmptyState({ query, palette }: { readonly query: string; readonly palette: AcidPalette }) {
   return (
     <Box>
       <Text color={palette.muted}>No agents match &quot;{query}&quot;</Text>
@@ -64,14 +62,20 @@ function EmptyState({ query, palette }: { query: string; palette: AcidPalette })
   );
 }
 
-function ProvenanceBadge({ provenance, palette }: { provenance: AgentProvenance; palette: AcidPalette }) {
+function ProvenanceBadge({
+  provenance,
+  palette
+}: {
+  readonly provenance: AgentProvenance;
+  readonly palette: AcidPalette;
+}) {
   const token = provenanceTokens.get(provenance);
   const color = palette[token?.color ?? 'muted'];
   const label = token?.label ?? 'unknown';
   return <Text color={color}> [{label}]</Text>;
 }
 
-function AgentMetaBar({ agent, palette }: { agent: AgentEntry; palette: AcidPalette }) {
+function AgentMetaBar({ agent, palette }: { readonly agent: AgentEntry; readonly palette: AcidPalette }) {
   const activeMark = agent.active ? '\u25CF' : '\u25CB';
   return (
     <Box marginLeft={3}>
@@ -95,9 +99,9 @@ function AgentRow({
   isHighlighted,
   palette
 }: {
-  agent: AgentEntry;
-  isHighlighted: boolean;
-  palette: AcidPalette;
+  readonly agent: AgentEntry;
+  readonly isHighlighted: boolean;
+  readonly palette: AcidPalette;
 }) {
   const arrow = isHighlighted ? '\u25B8' : ' ';
   return (

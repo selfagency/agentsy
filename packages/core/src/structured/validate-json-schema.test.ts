@@ -220,7 +220,7 @@ describe('validateJsonSchema', () => {
     const schema = {
       type: 'object',
       properties: {
-        email: { type: 'string', pattern: '^[a-z]+@[a-z]+\\.[a-z]+$' }
+        email: { type: 'string', pattern: String.raw`^[a-z]+@[a-z]+\.[a-z]+$` }
       }
     };
 

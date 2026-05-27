@@ -4,8 +4,7 @@ import { createMemoryEngine } from '../cognitive/memory-engine.js';
 import { loadConfig, type MemoryConfig } from '../config.js';
 import { createMemoryMCPServer, type MemoryMCPServer } from '../mcp/server.js';
 
-export type { MemoryMCPServer };
-export { createMemoryEngine, loadConfig, type MemoryConfig };
+export { createMemoryEngine, loadConfig, type MemoryConfig, type MemoryMCPServer };
 
 /**
  * Start the MCP memory server with the given config.

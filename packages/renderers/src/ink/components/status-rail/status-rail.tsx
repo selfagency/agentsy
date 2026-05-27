@@ -50,9 +50,9 @@ export function StatusRail({ left, right = [], palette, mode }: StatusRailProps)
       ) : null}
 
       {/* Left segments */}
-      {left.map((seg, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: segments are stable render-time array
-        <Box flexDirection="row" key={i}>
+      {left.map((seg, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: seg.text is stable; index disambiguates
+        <Box flexDirection="row" key={`${seg.text}-${index}`}>
           <Text color={seg.color ?? palette.frameBright} {...(seg.bold ? { bold: true } : {})}>
             {seg.text}
           </Text>
@@ -64,10 +64,10 @@ export function StatusRail({ left, right = [], palette, mode }: StatusRailProps)
       <Box flexGrow={1} />
 
       {/* Right segments */}
-      {right.map((seg, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: segments are stable render-time array
-        <Box flexDirection="row" key={i}>
-          {i > 0 ? <Text color={palette.frameDim}>{' │ '}</Text> : null}
+      {right.map((seg, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: seg.text is stable; index disambiguates
+        <Box flexDirection="row" key={`${seg.text}-${index}`}>
+          {index > 0 ? <Text color={palette.frameDim}>{' │ '}</Text> : null}
           <Text color={seg.color ?? palette.muted} {...(seg.bold ? { bold: true } : {})}>
             {seg.text}
           </Text>

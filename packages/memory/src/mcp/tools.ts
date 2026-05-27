@@ -235,7 +235,7 @@ export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {
     if (stats.totalItems === 0) {
       issues.push('No memories');
     }
-    if (stats.budgetUtilization >= 1.0) {
+    if (stats.budgetUtilization >= 1) {
       issues.push('Budget exhausted');
     }
     for (const [name, tierStat] of Object.entries(stats.tierStats)) {

@@ -48,9 +48,7 @@ let _reducedMotion: boolean | undefined;
  * Cached reduced-motion check — prefer this in render paths.
  */
 export function reducedMotion(): boolean {
-  if (_reducedMotion === undefined) {
-    _reducedMotion = prefersReducedMotion();
-  }
+  _reducedMotion ??= prefersReducedMotion();
   return _reducedMotion;
 }
 

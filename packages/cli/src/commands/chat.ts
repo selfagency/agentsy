@@ -235,7 +235,7 @@ export async function runChatCommand(
   }
 
   function handleUnknownCommand(_command: string): void {
-    // Unknown command — just re-prompt
+    /* intentional no-op */
   }
 
   /**

@@ -99,7 +99,7 @@ export class InterruptController {
  */
 export function createInterruptEvent(
   runId: string,
-  reason: InterruptReason | string = InterruptReason.TIMEOUT,
+  reason: InterruptReason = InterruptReason.TIMEOUT,
   message?: string,
   threadId?: string
 ): RunInterruptedEvent {
@@ -135,14 +135,14 @@ export function createInterruptEvent(
  */
 export function createInterruptAbortController(): {
   controller: AbortController;
-  interrupt: (reason?: InterruptReason | string, message?: string) => void;
+  interrupt: (reason?: InterruptReason, message?: string) => void;
   isInterrupted: () => boolean;
 } {
   const controller = new AbortController();
 
   return {
     controller,
-    interrupt: (_reason?: InterruptReason | string, _message?: string) => {
+    interrupt: (_reason?: InterruptReason, _message?: string) => {
       controller.abort();
     },
     isInterrupted: () => controller.signal.aborted

@@ -150,7 +150,6 @@ export class ApiKeyManager {
       const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.slice(-4);
       return masked;
     }
-    return;
   }
 
   /**

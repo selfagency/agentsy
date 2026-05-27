@@ -9,7 +9,7 @@ export { type InitOptions, type InitResult, initMemory };
  * Run the init CLI with parsed arguments.
  * Returns the InitResult on success, throws on failure.
  */
-export async function runInitCli(args: string[] = process.argv.slice(2)): Promise<InitResult> {
+export function runInitCli(args: string[] = process.argv.slice(2)): InitResult {
   if (args[0] === '--help' || args[0] === '-h') {
     console.log(`
 @agentsy/memory init — Initialize memory engine
@@ -72,7 +72,7 @@ Environment variables:
     }
   }
 
-  return await initMemory(options);
+  return initMemory(options);
 }
 
 /** Main entrypoint for `agentsy-memory init` CLI. */

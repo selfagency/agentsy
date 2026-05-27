@@ -26,7 +26,7 @@ describe('ToolLifecycle', () => {
   it('renders multiple tools', () => {
     const calls: ToolCallEvent[] = [
       { name: 'read_file', id: 'call_1', status: 'done', result: 'content' },
-      { name: 'write_file', id: 'call_2', status: 'executing', args: { path: '/tmp/test' } }
+      { name: 'write_file', id: 'call_2', status: 'executing', args: { path: '/var/test' } }
     ];
     const { lastFrame } = render(<ToolLifecycle calls={calls} palette={defaultAcidPalette} />);
     expect(lastFrame()).toContain('read_file');

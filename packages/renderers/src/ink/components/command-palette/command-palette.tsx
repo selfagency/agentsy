@@ -73,8 +73,7 @@ export function CommandPalette({ groups, palette, onCommand, isFocused = true }:
       {/* Column headers — ═Section Header═ style */}
       <Box flexDirection="row">
         {cols.map((group, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: stable 3-element column layout
-          <Box flexBasis={0} flexGrow={1} key={i}>
+          <Box flexBasis={0} flexGrow={1} key={group.header || `col-${i}`}>
             {group.header ? (
               <Text color={palette.frameBorder}>
                 {'═'}
@@ -104,8 +103,7 @@ function renderCommandRows(cols: readonly CommandGroup[], palette: AcidPalette) 
         {cols.map((group, colIdx) => {
           const entry = group.entries.at(row);
           return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: stable 3-column layout
-            <Box flexBasis={0} flexGrow={1} key={colIdx}>
+            <Box flexBasis={0} flexGrow={1} key={group.header || `col-${colIdx}`}>
               {entry ? <CommandEntryRow entry={entry} palette={palette} /> : null}
             </Box>
           );
