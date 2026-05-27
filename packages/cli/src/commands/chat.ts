@@ -234,6 +234,7 @@ export async function runChatCommand(
     stderr(dim(`[status] model: ${model}\n`));
   }
 
+  // NOSONAR -- Intentional no-op: unknown commands are silently ignored
   function handleUnknownCommand(_command: string): void {
     /* intentional no-op */
   }
