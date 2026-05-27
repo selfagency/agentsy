@@ -382,7 +382,7 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      handler(req, res);
+      await (handler(req, res) as unknown as Promise<void>);
 
       expect(handleMessage).toHaveBeenCalledWith({
         jsonrpc: '2.0',
@@ -426,7 +426,7 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      handler(req, res);
+      await (handler(req, res) as unknown as Promise<void>);
 
       expect(handleMessage).not.toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
@@ -474,7 +474,7 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      handler(req, res);
+      await (handler(req, res) as unknown as Promise<void>);
 
       expect(handleMessage).toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
@@ -553,7 +553,7 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      handler(req, res);
+      await (handler(req, res) as unknown as Promise<void>);
 
       expect(handleMessage).toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
