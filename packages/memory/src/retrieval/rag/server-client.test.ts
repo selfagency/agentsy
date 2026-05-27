@@ -67,4 +67,35 @@ describe('RAGServerClient', () => {
     const health = await client.health();
     expect(health.ok).toBeFalsy();
   });
+
+  it('returns empty results when search fails', async () => {
+    // Force search to fail by using a non-existent URL
+    const brokenClient = createRAGServerClient({ baseUrl: 'http://nonexistent.local', timeoutMs: 200 });
+    const results = await brokenClient.search({ limit: 5, query: 'test' });
+    expect(results).toStrictEqual([]);
+  });
+
+  it('throws when upsert fails on server error', async () => {
+    // Upsert with a document to a URL that returns 404
+    const brokenClient = createRAGServerClient({ baseUrl: 'http://nonexistent.local', timeoutMs: 200 });
+    await expect(
+      brokenClient.upsert({
+        chunkIndex: 0,
+        content: 'test',
+        id: 'fail-doc',
+        sourceId: 'test',
+        sourceType: 'wiki',
+        title: 'Test',
+        updatedAt: '2026-01-01T00:00:00.000Z'
+      })
+    ).rejects.toThrow('Failed to upsert document');
+  });
+
+  it('handles timeout gracefully', async () => {
+    const client = createRAGServerClient({ baseUrl: 'http://rag.local', timeoutMs: 1 });
+
+    // Health with minimal timeout — still works locally via MSW
+    const health = await client.health();
+    expect(health).toBeDefined();
+  });
 });

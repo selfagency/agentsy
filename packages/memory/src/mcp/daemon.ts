@@ -113,7 +113,7 @@ function withDefault<T>(value: T | undefined, fallback: T): T {
   return value ?? fallback;
 }
 
-function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
+export function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
   return {
     pidFile: withDefault(daemonConfig.pidFile, DEFAULT_DAEMON_CONFIG.pidFile),
     logFile: withDefault(daemonConfig.logFile, DEFAULT_DAEMON_CONFIG.logFile),
@@ -124,7 +124,7 @@ function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
   };
 }
 
-function cleanOldRestartTimestamps(timestamps: number[], now: number, window: number): void {
+export function cleanOldRestartTimestamps(timestamps: number[], now: number, window: number): void {
   while (timestamps.length > 0) {
     const first = timestamps[0];
     if (first === undefined || now - first <= window) {
