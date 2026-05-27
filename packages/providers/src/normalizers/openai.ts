@@ -109,7 +109,6 @@ function getThinkingContent(
   if (typeof reasoningContentField === 'string') {
     return reasoningContentField;
   }
-  return;
 }
 
 function getContentParts(delta: OpenAIDelta | undefined): {
@@ -156,10 +155,7 @@ function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCall
       .filter((tc): tc is OpenAIToolCallDelta => tc && typeof tc === 'object')
       .map(mapOpenAIToolCallDelta);
   }
-
-  return;
 }
-
 function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
   if (raw.usage) {
     const usage: UsageInfo = {};

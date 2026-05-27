@@ -969,7 +969,7 @@ export class PacingController {
     const providerCooldown = this.#cooldowns.get(request.provider);
     const now = Date.now();
     const cooldownWait = providerCooldown === undefined ? 0 : Math.max(0, providerCooldown - now);
-    const rateLimitStatus = await this.checkRateLimit(request.provider);
+    const rateLimitStatus = this.checkRateLimit(request.provider);
     return Math.max(cooldownWait, rateLimitStatus.retryAfterMs);
   }
 

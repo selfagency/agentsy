@@ -97,7 +97,7 @@ export function TaskProgress({ tasks, palette, spinnerFrame = '◉' }: TaskProgr
       {/* Task rows */}
       {tasks.map(task => {
         const colorKey = STATUS_COLORS[task.status] ?? 'frameBright';
-        const color = palette[colorKey] as string;
+        const color = palette[colorKey];
         const icon = task.status === 'running' ? spinnerFrame : (STATUS_ICONS[task.status] ?? '○');
 
         return (

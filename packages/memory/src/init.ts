@@ -102,7 +102,7 @@ export async function initMemory(options: InitOptions = {}): Promise<InitResult>
     const serverOptions: MemoryMCPServerOptions = {
       ...config.mcp
     };
-    const server = await createMemoryMCPServer(engine, serverOptions);
+    const server = createMemoryMCPServer(engine, serverOptions);
     return { engine, config, server };
   }
 

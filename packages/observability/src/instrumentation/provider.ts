@@ -221,7 +221,7 @@ export function instrumentProviderClient<
         throw err;
       }
     }
-  } as T;
+  };
 
   return instrumented;
 }

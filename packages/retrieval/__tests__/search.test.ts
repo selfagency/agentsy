@@ -109,23 +109,23 @@ describe(RetrievalEngine, () => {
   });
 
   describe('index', () => {
-    it('should index documents successfully', async () => {
-      await engine.index(sampleDocuments);
+    it('should index documents successfully', () => {
+      engine.index(sampleDocuments);
 
       expect(engine.hasDoc('doc-1')).toBeTruthy();
       expect(engine.hasDoc('doc-2')).toBeTruthy();
       expect(engine.hasDoc('doc-3')).toBeTruthy();
     });
 
-    it('should return number of indexed documents', async () => {
-      await engine.index(sampleDocuments);
+    it('should return number of indexed documents', () => {
+      engine.index(sampleDocuments);
       const count = engine.count();
 
       expect(count).toBe(sampleDocuments.length);
     });
 
-    it('should handle empty document list', async () => {
-      await engine.index([]);
+    it('should handle empty document list', () => {
+      engine.index([]);
       const count = engine.count();
 
       expect(count).toBe(0);
@@ -208,8 +208,8 @@ describe(RetrievalEngine, () => {
   });
 
   describe('vectorSearch', () => {
-    beforeEach(async () => {
-      await engine.index(sampleDocuments);
+    beforeEach(() => {
+      engine.index(sampleDocuments);
     });
 
     it('should perform vector search when embeddings provided', () => {
@@ -254,8 +254,8 @@ describe(RetrievalEngine, () => {
   });
 
   describe('search with hybrid approach', () => {
-    beforeEach(async () => {
-      await engine.index(sampleDocuments);
+    beforeEach(() => {
+      engine.index(sampleDocuments);
     });
 
     it('should combine keyword and vector search results', () => {
@@ -311,8 +311,8 @@ describe(RetrievalEngine, () => {
   });
 
   describe('clear', () => {
-    it('should remove all indexed documents', async () => {
-      await engine.index(sampleDocuments);
+    it('should remove all indexed documents', () => {
+      engine.index(sampleDocuments);
       expect(engine.count()).toBe(sampleDocuments.length);
 
       engine.clear();

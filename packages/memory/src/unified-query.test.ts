@@ -43,7 +43,7 @@ describe('queryUnified', () => {
     const localEngine = createMemoryEngine();
     const localWiki = createWikiManager();
     const localKb = createKnowledgeBaseManager();
-    localEngine.ingest('alpha', { importance: 1.0 });
+    localEngine.ingest('alpha', { importance: 1 });
     await localWiki.upsertPage({ pageId: 'p1', title: 'Alpha', body: 'alpha wiki', tags: ['t'] });
 
     const resultsWithDefaults = await queryUnified(localEngine, localWiki, localKb, {

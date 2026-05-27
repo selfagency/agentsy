@@ -146,13 +146,13 @@ describe(BaseLanguageModelChatProvider, () => {
   describe('countTokens', () => {
     it('approximates tokens as chars / 4', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const tokens = await provider.countTokens('abcdefgh', 'test');
+      const tokens = provider.countTokens('abcdefgh', 'test');
       expect(tokens).toBe(2);
     });
 
     it('rounds up', async () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const tokens = await provider.countTokens('abc', 'test');
+      const tokens = provider.countTokens('abc', 'test');
       expect(tokens).toBe(1);
     });
   });

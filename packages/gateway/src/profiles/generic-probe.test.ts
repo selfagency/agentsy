@@ -4,7 +4,7 @@ import { genericProbe } from './generic-probe.js';
 describe('genericProbe', () => {
   describe('successful responses', () => {
     it('should return ok: true for 200 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -18,7 +18,7 @@ describe('genericProbe', () => {
     });
 
     it('should return ok: true for 201 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 201,
         headers: new Headers()
@@ -31,7 +31,7 @@ describe('genericProbe', () => {
     });
 
     it('should return ok: true for 204 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 204,
         headers: new Headers()
@@ -46,7 +46,7 @@ describe('genericProbe', () => {
 
   describe('error responses', () => {
     it('should return ok: false for 400 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 400,
         headers: new Headers()
@@ -59,7 +59,7 @@ describe('genericProbe', () => {
     });
 
     it('should return ok: false for 404 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
         headers: new Headers()
@@ -72,7 +72,7 @@ describe('genericProbe', () => {
     });
 
     it('should return ok: false for 500 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
         headers: new Headers()
@@ -85,7 +85,7 @@ describe('genericProbe', () => {
     });
 
     it('should return ok: false for 503 response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
         headers: new Headers()
@@ -103,7 +103,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '42');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers
@@ -116,7 +116,7 @@ describe('genericProbe', () => {
     });
 
     it('should handle missing rate limit header', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -132,7 +132,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '10');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 429,
         headers
@@ -149,7 +149,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '0');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers
@@ -165,7 +165,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '999999');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers
@@ -180,7 +180,7 @@ describe('genericProbe', () => {
 
   describe('request options', () => {
     it('should pass through request init options', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -194,7 +194,7 @@ describe('genericProbe', () => {
 
       await genericProbe('https://api.example.com/endpoint', init);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/endpoint',
         expect.objectContaining({
           method: 'POST',
@@ -205,7 +205,7 @@ describe('genericProbe', () => {
     });
 
     it('should handle GET requests', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -213,14 +213,14 @@ describe('genericProbe', () => {
 
       await genericProbe('https://api.example.com/endpoint', { method: 'GET' });
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/endpoint',
         expect.objectContaining({ method: 'GET' })
       );
     });
 
     it('should handle POST requests', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -231,14 +231,14 @@ describe('genericProbe', () => {
         body: 'test data'
       });
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/endpoint',
         expect.objectContaining({ method: 'POST', body: 'test data' })
       );
     });
 
     it('should handle PUT requests', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -249,14 +249,14 @@ describe('genericProbe', () => {
         body: 'updated data'
       });
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/endpoint',
         expect.objectContaining({ method: 'PUT', body: 'updated data' })
       );
     });
 
     it('should handle DELETE requests', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers()
@@ -264,7 +264,7 @@ describe('genericProbe', () => {
 
       await genericProbe('https://api.example.com/endpoint', { method: 'DELETE' });
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/endpoint',
         expect.objectContaining({ method: 'DELETE' })
       );
@@ -273,25 +273,25 @@ describe('genericProbe', () => {
 
   describe('edge cases', () => {
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
       await expect(genericProbe('https://api.example.com/endpoint')).rejects.toThrow('Network error');
     });
 
     it('should handle timeout errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Timeout'));
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Timeout'));
 
       await expect(genericProbe('https://api.example.com/endpoint')).rejects.toThrow('Timeout');
     });
 
     it('should handle malformed URLs', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new TypeError('Invalid URL'));
+      globalThis.fetch = vi.fn().mockRejectedValue(new TypeError('Invalid URL'));
 
       await expect(genericProbe('not-a-valid-url')).rejects.toThrow('Invalid URL');
     });
 
     it('should handle empty response', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 0,
         headers: new Headers()
@@ -309,7 +309,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '100');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         headers
@@ -324,7 +324,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '0');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 429,
         headers
@@ -339,7 +339,7 @@ describe('genericProbe', () => {
       const headers = new Headers();
       headers.set('x-ratelimit-remaining', '5');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
         headers

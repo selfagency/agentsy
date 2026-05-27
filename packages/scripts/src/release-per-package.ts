@@ -159,13 +159,13 @@ function rollback() {
   }
 }
 
-process.on('SIGINT', async () => {
-  await rollback();
+process.on('SIGINT', () => {
+  rollback();
   process.exit(130);
 });
 
-process.on('SIGTERM', async () => {
-  await rollback();
+process.on('SIGTERM', () => {
+  rollback();
   process.exit(143);
 });
 

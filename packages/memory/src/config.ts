@@ -74,8 +74,8 @@ const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
     maxTokens: Number.POSITIVE_INFINITY,
     maxItems: Number.POSITIVE_INFINITY,
     ttlMs: Number.POSITIVE_INFINITY,
-    consolidationThreshold: 0.0,
-    compressionTarget: 0.0
+    consolidationThreshold: 0,
+    compressionTarget: 0
   }
 };
 

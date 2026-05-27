@@ -41,7 +41,7 @@ describe('createWikiManager with SQLite', () => {
       body: 'Some content here'
     });
 
-    const results = await wiki.searchVector(await createMockEmbedding('Some content here'), 1);
+    const results = await wiki.searchVector(createMockEmbedding('Some content here'), 1);
     expect(results.length).toBeGreaterThan(0);
     expect(results[0]?.pageId).toBe('wiki-vec-1');
 

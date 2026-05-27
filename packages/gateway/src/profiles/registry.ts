@@ -17,7 +17,6 @@ export class ProfileRegistry {
         return profile;
       }
     }
-    return;
   }
 
   detectFromHeaders(headers: Record<string, string>): ProviderProfile | undefined {

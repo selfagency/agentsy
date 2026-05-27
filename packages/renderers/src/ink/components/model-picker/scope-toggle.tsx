@@ -9,8 +9,6 @@ export interface ScopeToggleProps {
   readonly currentScope: ScopeValue;
   /** Whether this toggle is highlighted for keyboard navigation. */
   readonly focused?: boolean;
-  /** Callback when user toggles scope. */
-  readonly onToggle?: ((scope: ScopeValue) => void) | undefined;
   /** Semantic palette. */
   readonly palette: AcidPalette;
 }

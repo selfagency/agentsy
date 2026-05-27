@@ -124,7 +124,7 @@ export function WorkspaceTree({
         const indent = '  '.repeat(node.depth);
         const icon = node.expanded === false && node.type === 'directory' ? '▸' : (NODE_ICONS[node.type] ?? ' ');
         const colorKey = NODE_COLORS[node.type] ?? 'frameBright';
-        const color = palette[colorKey] as string;
+        const color = palette[colorKey];
 
         return (
           <Box flexDirection="row" key={node.id}>

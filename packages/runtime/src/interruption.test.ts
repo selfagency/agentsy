@@ -16,7 +16,7 @@ describe('createInterruption', () => {
       updatedAt: Date.now()
     };
 
-    const checkpoint = await createInterruption('sess_1', 'user interrupted', snapshot, store);
+    const checkpoint = createInterruption('sess_1', 'user interrupted', snapshot, store);
 
     expect(checkpoint.sessionId).toBe('sess_1');
     expect(checkpoint.reason).toBe('user interrupted');
@@ -67,7 +67,7 @@ describe('resumeFromCheckpoint', () => {
     };
     const store: Pick<SessionStore, 'getValue'> = { getValue: vi.fn().mockReturnValue(checkpoint) };
 
-    const result = await resumeFromCheckpoint('chk_123', store);
+    const result = resumeFromCheckpoint('chk_123', store);
     expect(result).toEqual(checkpoint);
   });
 
@@ -75,7 +75,7 @@ describe('resumeFromCheckpoint', () => {
     const store: Pick<SessionStore, 'getValue'> = {
       getValue: vi.fn().mockReturnValue({ id: 123, sessionId: 'sess_1' })
     };
-    const result = await resumeFromCheckpoint('chk_bad', store);
+    const result = resumeFromCheckpoint('chk_bad', store);
     expect(result).toBeNull();
   });
 });
