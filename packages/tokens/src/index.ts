@@ -965,7 +965,7 @@ export class PacingController {
     return true;
   }
 
-  async getWaitTime(request: TokenRequest): Promise<number> {
+  getWaitTime(request: TokenRequest): number {
     const providerCooldown = this.#cooldowns.get(request.provider);
     const now = Date.now();
     const cooldownWait = providerCooldown === undefined ? 0 : Math.max(0, providerCooldown - now);

@@ -15,17 +15,17 @@ vi.mock('node:worker_threads', () => {
   };
 });
 
+function createMockInstance() {
+  return {
+    on: vi.fn(),
+    postMessage: vi.fn(),
+    terminate: vi.fn().mockResolvedValue(0),
+    unref: vi.fn()
+  };
+}
+
 describe('VirtualSandbox', () => {
   let mockWorkerInstance: ReturnType<typeof createMockInstance>;
-
-  function createMockInstance() {
-    return {
-      on: vi.fn(),
-      postMessage: vi.fn(),
-      terminate: vi.fn().mockResolvedValue(0),
-      unref: vi.fn()
-    };
-  }
 
   beforeEach(() => {
     mockWorkerInstance = createMockInstance();

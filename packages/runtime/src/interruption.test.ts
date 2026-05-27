@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createInterruption, resumeFromCheckpoint } from './interruption.js';
 
 describe('createInterruption', () => {
-  it('creates a checkpoint with the given reason and snapshot', async () => {
+  it('creates a checkpoint with the given reason and snapshot', () => {
     const store: Pick<SessionStore, 'setValue'> = { setValue: vi.fn() };
     const snapshot: RuntimeSnapshot = {
       sessionId: 'sess_1',
@@ -50,7 +50,7 @@ describe('resumeFromCheckpoint', () => {
     expect(result).toBeNull();
   });
 
-  it('returns the checkpoint when found', async () => {
+  it('returns the checkpoint when found', () => {
     const checkpoint = {
       id: 'chk_123',
       sessionId: 'sess_1',
@@ -71,7 +71,7 @@ describe('resumeFromCheckpoint', () => {
     expect(result).toEqual(checkpoint);
   });
 
-  it('returns null for invalid checkpoint structure', async () => {
+  it('returns null for invalid checkpoint structure', () => {
     const store: Pick<SessionStore, 'getValue'> = {
       getValue: vi.fn().mockReturnValue({ id: 123, sessionId: 'sess_1' })
     };

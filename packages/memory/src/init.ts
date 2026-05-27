@@ -36,7 +36,7 @@ export type InitResult = InitResultWithServer | InitResultWithoutServer;
  * Initialize @agentsy/memory in standalone mode.
  * Creates a MemoryEngine with config, and optionally starts an MCP server.
  */
-export async function initMemory(options: InitOptions = {}): Promise<InitResult> {
+export function initMemory(options: InitOptions = {}): InitResult {
   const config = loadConfig(options.config);
 
   // Build engine options from config

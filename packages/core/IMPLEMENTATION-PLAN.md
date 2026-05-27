@@ -23,7 +23,7 @@ This plan defines the production implementation order for `@agentsy/core` as the
 - **SEC-CORE-001**: No secrets in stream payloads; all sensitive data handled via `@agentsy/secrets`.
 - **SEC-CORE-002**: Streaming error recovery preserves context and fails closed on unrecoverable errors.
 - **CON-CORE-001**: Provider-specific adapters live in `@agentsy/providers`.
-- **CON-CORE-002`: Runtime orchestration lives in `@agentsy/runtime`.
+- **`CON-CORE-002`**: Runtime orchestration lives in `@agentsy/runtime`.
 
 ## 2. Implementation Steps
 

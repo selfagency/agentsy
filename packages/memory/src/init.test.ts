@@ -17,14 +17,15 @@ vi.mock('@tursodatabase/sync', () => ({
   })
 }));
 
-describe('initMemory', () => {
-  function _getSafeTestPath(): string {
-    const tempDir = mkdtempSync(join(tmpdir(), 'agentsy-test-'));
-    if (existsSync(tempDir)) {
-      return tempDir;
-    }
-    return join(tmpdir(), 'agentsy-test-safe.db');
+function _getSafeTestPath(): string {
+  const tempDir = mkdtempSync(join(tmpdir(), 'agentsy-test-'));
+  if (existsSync(tempDir)) {
+    return tempDir;
   }
+  return join(tmpdir(), 'agentsy-test-safe.db');
+}
+
+describe('initMemory', () => {
   it('returns an engine and config by default', async () => {
     const result = await initMemory({ skipMcp: true, skipDb: true });
     expect(result.engine).toBeDefined();
