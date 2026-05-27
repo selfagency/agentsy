@@ -1,3 +1,4 @@
+import type { Database } from '@tursodatabase/sync';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createTursoSyncEngine } from './turso-sync-engine.js';
@@ -18,7 +19,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
 
@@ -39,7 +40,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     await createTursoSyncEngine({
       authToken: 'tok_123',
@@ -64,7 +65,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
     const tokenFn = vi.fn().mockResolvedValue('tok_fn');
 
     await createTursoSyncEngine({
@@ -88,7 +89,7 @@ describe('TursoSyncEngine', () => {
       stats: vi.fn().mockResolvedValue({ cdcOperations: 3 }),
       close: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     const result = await engine.sync();
@@ -117,7 +118,7 @@ describe('TursoSyncEngine', () => {
       stats: vi.fn().mockResolvedValue({ cdcOperations: 0 }),
       close: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     const result = await engine.sync();
@@ -135,7 +136,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     engine.pause();
@@ -154,7 +155,7 @@ describe('TursoSyncEngine', () => {
       stats: vi.fn(),
       close: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     const result = await engine.sync();
@@ -174,7 +175,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     engine.pause();
@@ -193,7 +194,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     engine.resume();
@@ -209,7 +210,7 @@ describe('TursoSyncEngine', () => {
       push: vi.fn(),
       stats: vi.fn()
     };
-    vi.mocked(connect).mockResolvedValue(mockClient);
+    vi.mocked(connect).mockResolvedValue(mockClient as unknown as Database);
 
     const engine = await createTursoSyncEngine({ path: 'test-data/agentsy-turso.db' });
     await engine.close();

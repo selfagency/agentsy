@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-import type { AgUiEvent } from '@agentsy/runtime/ag-ui';
+import type { AgUiEvent, InterruptReason } from '@agentsy/runtime/ag-ui';
 import { createInterruptEvent, EventType } from '@agentsy/runtime/ag-ui';
 
 import type {
@@ -490,7 +490,7 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
       await stepOptions.onAbort?.('interrupt', loopContext);
       const interruptEvent = createInterruptEvent(
         runId,
-        interruptController.getReason(),
+        interruptController.getReason() as InterruptReason | undefined,
         interruptController.getMessage(),
         threadId
       );

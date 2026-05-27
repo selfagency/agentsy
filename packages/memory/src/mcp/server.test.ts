@@ -15,7 +15,7 @@ const { readlineMock, httpMock } = vi.hoisted(() => {
   };
 
   // HTTP mock: capture the request handler callback
-  const requestHandlerRef: { current?: (req: unknown, res: unknown) => void } = {};
+  const requestHandlerRef: { current: ((req: unknown, res: unknown) => void) | undefined } = { current: undefined };
   const server = {
     listen: vi.fn((_port: number, cb: () => void) => cb()),
     close: vi.fn((cb: () => void) => cb())

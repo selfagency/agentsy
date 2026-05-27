@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
 import { createDocumentIngestor } from './document-ingest.js';
+import type { RAGSourceType } from './types.js';
 
 describe('DocumentIngestor', () => {
   it('chunks deterministically and preserves stable chunk IDs between runs', async () => {
@@ -45,7 +45,7 @@ describe('DocumentIngestor', () => {
     const result = await ingestor.ingest({
       content: '',
       sourceId: 'empty',
-      sourceType: 'text'
+      sourceType: 'text' as RAGSourceType
     });
 
     expect(result.documents).toStrictEqual([]);
@@ -57,7 +57,7 @@ describe('DocumentIngestor', () => {
     const result = await ingestor.ingest({
       content: '   \n\n  \t  ',
       sourceId: 'whitespace',
-      sourceType: 'text'
+      sourceType: 'text' as RAGSourceType
     });
 
     expect(result.documents).toStrictEqual([]);
@@ -71,7 +71,7 @@ describe('DocumentIngestor', () => {
       content: 'Session tokens should be rotated.',
       metadata,
       sourceId: 'wiki:session',
-      sourceType: 'text',
+      sourceType: 'text' as RAGSourceType,
       title: 'Session Tokens'
     });
 
@@ -97,7 +97,7 @@ describe('DocumentIngestor', () => {
     const result = await ingestor.ingest({
       content: 'Fresh content.',
       sourceId: 'fresh',
-      sourceType: 'text'
+      sourceType: 'text' as RAGSourceType
     });
 
     expect(result.documents[0]?.updatedAt).toBeDefined();

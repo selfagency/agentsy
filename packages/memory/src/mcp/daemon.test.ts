@@ -4,6 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { MemoryEngine, MemoryEngineOptions } from '../cognitive/memory-engine.js';
+import type { MemoryConfig } from '../config.js';
+
 // Mock external modules that startDaemon/stopDaemon use internally
 vi.mock('../config.js', () => ({ loadConfig: vi.fn() }));
 vi.mock('../cognitive/memory-engine.js', () => ({ createMemoryEngine: vi.fn() }));
@@ -140,10 +143,10 @@ describe('Daemon', () => {
     it('starts successfully, writes PID file, and calls all dependencies', async () => {
       // Arrange: configure mocks for successful startup
       const mockMcpConfig = { logLevel: 'debug' as const, transport: 'stdio' as const };
-      vi.mocked(loadConfig).mockReturnValue({ mcp: mockMcpConfig });
+      vi.mocked(loadConfig).mockReturnValue({ mcp: mockMcpConfig } as MemoryConfig);
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as unknown as MemoryEngine);
 
       const mockStart = vi.fn().mockResolvedValue(undefined);
       const mockClose = vi.fn().mockResolvedValue(undefined);
@@ -183,10 +186,10 @@ describe('Daemon', () => {
 
     it('starts successfully with engine options passed through', async () => {
       // Arrange
-      vi.mocked(loadConfig).mockReturnValue({ mcp: {} });
+      vi.mocked(loadConfig).mockReturnValue({ mcp: {} } as MemoryConfig);
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as unknown as MemoryEngine);
 
       const mockStart = vi.fn().mockResolvedValue(undefined);
       const mockClose = vi.fn().mockResolvedValue(undefined);
@@ -196,7 +199,7 @@ describe('Daemon', () => {
         server: {}
       } as any);
 
-      const engineOptions = { logLevel: 'debug' as const };
+      const engineOptions: MemoryEngineOptions = { budget: { budgets: { short_term_memory: 5000 } } };
 
       // Act
       await startDaemon({}, { pidFile: testPidFile }, engineOptions);
@@ -208,10 +211,10 @@ describe('Daemon', () => {
 
     it('re-throws error when restart is disabled', async () => {
       // Arrange
-      vi.mocked(loadConfig).mockReturnValue({ mcp: {} });
+      vi.mocked(loadConfig).mockReturnValue({ mcp: {} } as MemoryConfig);
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as unknown as MemoryEngine);
 
       const serverError = new Error('Server crashed');
       const mockStart = vi.fn().mockRejectedValue(serverError);
@@ -232,10 +235,10 @@ describe('Daemon', () => {
 
     it('stops after exceeding restart limit', async () => {
       // Arrange: server crashes repeatedly, restart is enabled
-      vi.mocked(loadConfig).mockReturnValue({ mcp: {} });
+      vi.mocked(loadConfig).mockReturnValue({ mcp: {} } as MemoryConfig);
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as unknown as MemoryEngine);
 
       const serverError = new Error('Crash');
       const mockStart = vi.fn().mockRejectedValue(serverError);
@@ -279,9 +282,7 @@ describe('Daemon', () => {
       writeFileSync(testPidFile, String(process.pid), 'utf-8');
 
       // Mock process.kill to prevent actually killing the test runner
-      const killSpy = vi.spyOn(process, 'kill').mockImplementation(() => {
-        // no-op: intercept both signal 0 (existence check) and SIGTERM
-      });
+      const killSpy = vi.spyOn(process, 'kill').mockImplementation(() => true);
 
       // Act
       await stopDaemon(testPidFile);
@@ -306,6 +307,7 @@ describe('Daemon', () => {
         if (killCallCount === 2) {
           throw new Error('Process already exited');
         }
+        return true;
       });
 
       // Act

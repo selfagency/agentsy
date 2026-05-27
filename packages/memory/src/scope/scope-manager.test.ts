@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ScopeGrant } from './scope-manager.js';
 import { createScopeManager } from './scope-manager.js';
 
 describe('ScopeManager', () => {
@@ -110,7 +111,7 @@ describe('ScopeManager', () => {
 
   it('setPolicy deep copies grants to prevent mutation', () => {
     const manager = createScopeManager();
-    const grants = [{ actions: ['read'] as const, scope: 'project' as const }];
+    const grants: ScopeGrant[] = [{ actions: ['read'], scope: 'project' }];
 
     manager.setPolicy({ actorId: 'a1', grants });
 
