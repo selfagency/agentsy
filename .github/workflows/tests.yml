@@ -131,8 +131,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build CLI package
-        run: pnpm --filter @agentsy/cli build
+      - name: Build CLI package (deps first)
+        run: pnpm turbo run build --filter @agentsy/cli
 
       - name: Run CLI E2E tests
         run: pnpm --filter @agentsy/cli test:e2e:dev
