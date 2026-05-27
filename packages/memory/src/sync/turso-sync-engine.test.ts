@@ -20,11 +20,11 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
 
     expect(connect).toHaveBeenCalledWith({
       clientName: 'agentsy-memory',
-      path: '/tmp/test.db'
+      path: '/var/tmp/agentsy/test.db'
     });
     expect(mockClient.connect).toHaveBeenCalled();
     expect(engine.status()).toBe('idle');
@@ -43,14 +43,14 @@ describe('TursoSyncEngine', () => {
 
     await createTursoSyncEngine({
       authToken: 'tok_123',
-      path: '/tmp/test.db',
+      path: '/var/tmp/agentsy/test.db',
       url: 'libsql://db-org.turso.io'
     });
 
     expect(connect).toHaveBeenCalledWith({
       authToken: 'tok_123',
       clientName: 'agentsy-memory',
-      path: '/tmp/test.db',
+      path: '/var/tmp/agentsy/test.db',
       url: 'libsql://db-org.turso.io'
     });
   });
@@ -69,13 +69,13 @@ describe('TursoSyncEngine', () => {
 
     await createTursoSyncEngine({
       authToken: tokenFn,
-      path: '/tmp/test.db'
+      path: '/var/tmp/agentsy/test.db'
     });
 
     expect(connect).toHaveBeenCalledWith({
       authToken: tokenFn,
       clientName: 'agentsy-memory',
-      path: '/tmp/test.db'
+      path: '/var/tmp/agentsy/test.db'
     });
   });
 
@@ -90,7 +90,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     const result = await engine.sync();
 
     expect(mockClient.pull).toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     const result = await engine.sync();
 
     expect(result.downloaded).toBe(0);
@@ -137,7 +137,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     engine.pause();
     const result = await engine.sync();
 
@@ -156,7 +156,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     const result = await engine.sync();
 
     expect(result.status).toBe('error');
@@ -176,7 +176,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     engine.pause();
     expect(engine.status()).toBe('paused');
 
@@ -195,7 +195,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     engine.resume();
     expect(engine.status()).toBe('idle');
   });
@@ -211,7 +211,7 @@ describe('TursoSyncEngine', () => {
     };
     vi.mocked(connect).mockResolvedValue(mockClient);
 
-    const engine = await createTursoSyncEngine({ path: '/tmp/test.db' });
+    const engine = await createTursoSyncEngine({ path: '/var/tmp/agentsy/test.db' });
     await engine.close();
 
     expect(mockClient.close).toHaveBeenCalled();

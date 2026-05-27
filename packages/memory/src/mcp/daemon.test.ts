@@ -140,10 +140,10 @@ describe('Daemon', () => {
     it('starts successfully, writes PID file, and calls all dependencies', async () => {
       // Arrange: configure mocks for successful startup
       const mockMcpConfig = { logLevel: 'debug' as const, transport: 'stdio' as const };
-      vi.mocked(loadConfig).mockReturnValue({ mcp: mockMcpConfig } as ReturnType<typeof loadConfig>);
+      vi.mocked(loadConfig).mockReturnValue({ mcp: mockMcpConfig });
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as never);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
 
       const mockStart = vi.fn().mockResolvedValue(undefined);
       const mockClose = vi.fn().mockResolvedValue(undefined);
@@ -151,10 +151,10 @@ describe('Daemon', () => {
         start: mockStart,
         close: mockClose,
         server: {}
-      } as never);
+      } as any);
 
       // Act
-      await startDaemon({ dbPath: '/tmp/test.db' }, { pidFile: testPidFile });
+      await startDaemon({ dbPath: '/var/tmp/agentsy/test.db' }, { pidFile: testPidFile });
 
       // Assert: PID file was written with the correct PID
       expect(existsSync(testPidFile)).toBe(true);
@@ -172,7 +172,7 @@ describe('Daemon', () => {
       expect(createMemoryMCPServer).toHaveBeenCalledWith(
         mockEngine,
         expect.objectContaining({
-          dbPath: '/tmp/test.db',
+          dbPath: '/var/tmp/agentsy/test.db',
           logLevel: 'debug',
           transport: 'stdio'
         })
@@ -183,10 +183,10 @@ describe('Daemon', () => {
 
     it('starts successfully with engine options passed through', async () => {
       // Arrange
-      vi.mocked(loadConfig).mockReturnValue({ mcp: {} } as ReturnType<typeof loadConfig>);
+      vi.mocked(loadConfig).mockReturnValue({ mcp: {} });
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as never);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
 
       const mockStart = vi.fn().mockResolvedValue(undefined);
       const mockClose = vi.fn().mockResolvedValue(undefined);
@@ -194,7 +194,7 @@ describe('Daemon', () => {
         start: mockStart,
         close: mockClose,
         server: {}
-      } as never);
+      } as any);
 
       const engineOptions = { logLevel: 'debug' as const };
 
@@ -208,10 +208,10 @@ describe('Daemon', () => {
 
     it('re-throws error when restart is disabled', async () => {
       // Arrange
-      vi.mocked(loadConfig).mockReturnValue({ mcp: {} } as ReturnType<typeof loadConfig>);
+      vi.mocked(loadConfig).mockReturnValue({ mcp: {} });
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as never);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
 
       const serverError = new Error('Server crashed');
       const mockStart = vi.fn().mockRejectedValue(serverError);
@@ -220,7 +220,7 @@ describe('Daemon', () => {
         start: mockStart,
         close: mockClose,
         server: {}
-      } as never);
+      } as any);
 
       // Act & Assert: with restart disabled, the original error propagates
       await expect(startDaemon({}, { pidFile: testPidFile, restart: false, restartDelay: 5 })).rejects.toThrow(
@@ -232,10 +232,10 @@ describe('Daemon', () => {
 
     it('stops after exceeding restart limit', async () => {
       // Arrange: server crashes repeatedly, restart is enabled
-      vi.mocked(loadConfig).mockReturnValue({ mcp: {} } as ReturnType<typeof loadConfig>);
+      vi.mocked(loadConfig).mockReturnValue({ mcp: {} });
 
       const mockEngine = { stats: vi.fn(), ingest: vi.fn(), recall: vi.fn() };
-      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine as never);
+      vi.mocked(createMemoryEngine).mockReturnValue(mockEngine);
 
       const serverError = new Error('Crash');
       const mockStart = vi.fn().mockRejectedValue(serverError);
@@ -244,7 +244,7 @@ describe('Daemon', () => {
         start: mockStart,
         close: mockClose,
         server: {}
-      } as never);
+      } as any);
 
       // Act & Assert: with maxRestarts=1, first crash triggers restart, second crash gives up
       await expect(startDaemon({}, { pidFile: testPidFile, maxRestarts: 1, restartDelay: 5 })).rejects.toThrow(

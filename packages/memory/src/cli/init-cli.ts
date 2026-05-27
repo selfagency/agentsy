@@ -76,9 +76,9 @@ Environment variables:
 }
 
 /** Main entrypoint for `agentsy-memory init` CLI. */
-export async function main(): Promise<void> {
+export function main(): void {
   try {
-    const result = await runInitCli();
+    const result = runInitCli();
 
     const hasServer = 'server' in result && result.server !== undefined;
     console.log('✓ @agentsy/memory initialized');

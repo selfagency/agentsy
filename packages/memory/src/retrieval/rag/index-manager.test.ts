@@ -40,7 +40,7 @@ describe('IndexManager', () => {
 
     const all = manager.list();
     expect(all.length).toBe(2);
-    const ids = all.map(r => r.document.id).sort();
+    const ids = all.map(r => r.document.id).sort((a, b) => a.localeCompare(b));
     expect(ids).toStrictEqual(['doc-1', 'doc-2']);
   });
 

@@ -343,8 +343,7 @@ describe('MemoryMCPServer', () => {
       const req = { method: 'GET', url: '/health' };
       const res = makeMockRes();
 
-      // The request handler is async but await here since it's async
-      await handler(req, res);
+      handler(req, res);
 
       expect(statsFn).toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
@@ -385,7 +384,7 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      await handler(req, res);
+      handler(req, res);
 
       expect(handleMessage).toHaveBeenCalledWith({
         jsonrpc: '2.0',
@@ -393,7 +392,7 @@ describe('MemoryMCPServer', () => {
         method: 'test'
       });
       expect(res.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
-      const endArg = (res.end as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as string;
+      const endArg = res.end.mock.calls[0]?.[0] as string;
       const parsed = JSON.parse(endArg);
       expect(parsed).toMatchObject({ jsonrpc: '2.0', result: 'completed' });
     });
@@ -429,11 +428,11 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      await handler(req, res);
+      handler(req, res);
 
       expect(handleMessage).not.toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
-      const endArg = (res.end as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as string;
+      const endArg = res.end.mock.calls[0]?.[0] as string;
       const parsed = JSON.parse(endArg);
       expect(parsed).toMatchObject({
         jsonrpc: '2.0',
@@ -477,11 +476,11 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      await handler(req, res);
+      handler(req, res);
 
       expect(handleMessage).toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
-      const endArg = (res.end as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as string;
+      const endArg = res.end.mock.calls[0]?.[0] as string;
       const parsed = JSON.parse(endArg);
       expect(parsed).toMatchObject({
         jsonrpc: '2.0',
@@ -500,7 +499,7 @@ describe('MemoryMCPServer', () => {
       const req = { method: 'GET', url: '/message' };
       const res = makeMockRes();
 
-      await handler(req, res);
+      handler(req, res);
 
       expect(res.writeHead).toHaveBeenCalledWith(404);
       expect(res.end).toHaveBeenCalledWith('Not found');
@@ -516,7 +515,7 @@ describe('MemoryMCPServer', () => {
       const req = { method: 'PUT', url: '/unknown' };
       const res = makeMockRes();
 
-      await handler(req, res);
+      handler(req, res);
 
       expect(res.writeHead).toHaveBeenCalledWith(404);
       expect(res.end).toHaveBeenCalledWith('Not found');
@@ -556,11 +555,11 @@ describe('MemoryMCPServer', () => {
       };
       const res = makeMockRes();
 
-      await handler(req, res);
+      handler(req, res);
 
       expect(handleMessage).toHaveBeenCalled();
       expect(res.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
-      const endArg = (res.end as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as string;
+      const endArg = res.end.mock.calls[0]?.[0] as string;
       const parsed = JSON.parse(endArg);
       // Should have used the fallback when result is null
       expect(parsed).toEqual({ jsonrpc: '2.0', id: null, result: null });
