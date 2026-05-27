@@ -47,6 +47,9 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
     }
 
     async function attemptOnce(): Promise<void> {
+      if (state.settled) {
+        return;
+      }
       try {
         const result = await fn();
         settle(() => resolve(result));
