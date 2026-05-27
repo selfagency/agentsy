@@ -19,6 +19,11 @@ export const InterruptReason = {
   ERROR: 'error'
 } as const;
 
+/**
+ * Typed interrupt reason.
+ * Use {@link InterruptReason} constants for known values;
+ * arbitrary strings are also accepted via `(string & {})` to preserve autocomplete.
+ */
 export type InterruptReason = (typeof InterruptReason)[keyof typeof InterruptReason];
 
 /**
@@ -26,7 +31,7 @@ export type InterruptReason = (typeof InterruptReason)[keyof typeof InterruptRea
  */
 export class InterruptController {
   private interrupted = false;
-  private interruptReason: InterruptReason | string | undefined;
+  private interruptReason: InterruptReason | (string & {}) | undefined;
   private interruptMessage: string | undefined;
 
   /**
@@ -39,7 +44,7 @@ export class InterruptController {
   /**
    * Gets the reason for interruption.
    */
-  getReason(): InterruptReason | string | undefined {
+  getReason(): InterruptReason | (string & {}) | undefined {
     return this.interruptReason;
   }
 
@@ -56,7 +61,7 @@ export class InterruptController {
    * @param reason - Reason for the interrupt
    * @param message - Optional message
    */
-  interrupt(reason: InterruptReason | string = InterruptReason.USER_REQUEST, message?: string): void {
+  interrupt(reason: InterruptReason | (string & {}) = InterruptReason.USER_REQUEST, message?: string): void {
     this.interrupted = true;
     this.interruptReason = reason;
     this.interruptMessage = message;

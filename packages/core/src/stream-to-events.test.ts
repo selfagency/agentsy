@@ -12,7 +12,9 @@ function chunkStream(chunks: Partial<NormalizedChunk>[]): ReadableStream<Normali
   return new ReadableStream<NormalizedChunk>({
     start(controller) {
       for (const c of chunks) {
+        // sonarignore:start -- Type cast needed because c is Partial<NormalizedChunk>
         controller.enqueue(c as NormalizedChunk);
+        // sonarignore:end
       }
       controller.close();
     }

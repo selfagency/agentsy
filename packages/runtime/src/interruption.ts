@@ -19,6 +19,7 @@ function nextCheckpointId(): string {
   return `chk_${Date.now()}_${_checkpointCounter}`;
 }
 
+// codacy-disable-next-line vulnerability/HardcodedPassword -- Not a password, it's a store key prefix
 const CHECKPOINT_KEY_PREFIX = 'interruption_checkpoint:';
 
 /**

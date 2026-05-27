@@ -69,7 +69,7 @@ function observationsOverlap(a: Observation, b: Observation): boolean {
 
 function scoreObservation(obs: Observation, priority: ResolutionPriority): number {
   const sourceWeight = priority.sourceWeights[obs.sourceMemoryId as WriteHeap] ?? 0.5;
-  const _recencyScore = 1.0; // We don't have extractedAt age here; caller handles temporal
+  const _recencyScore = 1; // We don't have extractedAt age here; caller handles temporal
   const confidenceScore = obs.confidence;
   return sourceWeight * (1 - priority.recencyBias) + confidenceScore * priority.recencyBias;
 }

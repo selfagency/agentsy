@@ -78,7 +78,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         nodes: [
           {
@@ -107,7 +107,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         id: 'wf-default-scheduler',
         nodes: [
@@ -209,7 +209,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         id: 'wf-decision',
         nodes: [

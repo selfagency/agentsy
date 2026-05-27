@@ -147,7 +147,7 @@ export class ApiKeyManager {
   async _debugShowStoredKey(): Promise<string | undefined> {
     const key = await this.getApiKey();
     if (key) {
-      const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.slice(key.length - 4);
+      const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.slice(-4);
       return masked;
     }
     return;

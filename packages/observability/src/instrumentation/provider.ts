@@ -24,7 +24,7 @@
 
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
-import type { Tracer } from '../core/types.js';
+import type { Span, Tracer } from '../core/types.js';
 
 /**
  * Semantic attribute keys for provider call instrumentation.
@@ -85,6 +85,96 @@ function estimateCost(model: string, inputTokens: number, outputTokens: number):
   return (inputTokens / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output;
 }
 
+/**
+ * Sets token usage and cost attributes on a span.
+ */
+function setSpanUsageAttributes(
+  span: Span,
+  usage: { inputTokens?: number; outputTokens?: number } | undefined,
+  model: string
+): void {
+  if (!usage) {
+    return;
+  }
+
+  const inputTokens = usage.inputTokens ?? 0;
+  const outputTokens = usage.outputTokens ?? 0;
+
+  span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_INPUT_TOKENS, inputTokens);
+  span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_OUTPUT_TOKENS, outputTokens);
+
+  const cost = estimateCost(model, inputTokens, outputTokens);
+  if (cost !== undefined) {
+    span.setAttribute(ProviderSpanAttributes.PROVIDER_COST_USD, cost);
+  }
+}
+
+/**
+ * Sets completion-specific attributes on a span after a request completes.
+ */
+function setCompletionSpanAttributes(
+  span: Span,
+  response: CompletionResponse,
+  request: CompletionRequest,
+  options: InstrumentProviderOptions,
+  latencyMs: number
+): void {
+  span.setAttribute(ProviderSpanAttributes.PROVIDER_LATENCY_MS, latencyMs);
+
+  setSpanUsageAttributes(span, response.usage, request.model ?? options.modelName ?? '');
+
+  if (response.id) {
+    span.setAttribute(ProviderSpanAttributes.GENAI_RESPONSE_ID, response.id);
+  }
+}
+
+/**
+ * Processes a streaming response, forwarding chunks and tracking token usage.
+ */
+async function processStreamContent(
+  span: Span,
+  sourceStream: ReadableStream<NormalizedChunk>,
+  controller: ReadableStreamDefaultController<NormalizedChunk>,
+  request: CompletionRequest,
+  options: InstrumentProviderOptions
+): Promise<void> {
+  const reader = sourceStream.getReader();
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      if (value.usage) {
+        inputTokens = value.usage.inputTokens ?? inputTokens;
+        outputTokens = value.usage.outputTokens ?? outputTokens;
+      }
+
+      controller.enqueue(value);
+    }
+  } catch (err) {
+    span.recordException(err);
+    throw err;
+  } finally {
+    if (inputTokens > 0 || outputTokens > 0) {
+      span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_INPUT_TOKENS, inputTokens);
+      span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_OUTPUT_TOKENS, outputTokens);
+
+      const cost = estimateCost(request.model ?? options.modelName ?? '', inputTokens, outputTokens);
+      if (cost !== undefined) {
+        span.setAttribute(ProviderSpanAttributes.PROVIDER_COST_USD, cost);
+      }
+    }
+    span.end();
+    reader.releaseLock();
+    controller.close();
+  }
+}
+
 /** Options for {@link instrumentProviderClient}. */
 export interface InstrumentProviderOptions {
   /** Default model name attached to all spans. */
@@ -127,24 +217,7 @@ export function instrumentProviderClient<
         const response = await client.complete(request);
         const latencyMs = Date.now() - startTime;
 
-        span.setAttribute(ProviderSpanAttributes.PROVIDER_LATENCY_MS, latencyMs);
-
-        if (response.usage) {
-          const inputTokens = response.usage.inputTokens ?? 0;
-          const outputTokens = response.usage.outputTokens ?? 0;
-
-          span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_INPUT_TOKENS, inputTokens);
-          span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_OUTPUT_TOKENS, outputTokens);
-
-          const cost = estimateCost(request.model ?? options.modelName ?? '', inputTokens, outputTokens);
-          if (cost !== undefined) {
-            span.setAttribute(ProviderSpanAttributes.PROVIDER_COST_USD, cost);
-          }
-        }
-
-        if (response.id) {
-          span.setAttribute(ProviderSpanAttributes.GENAI_RESPONSE_ID, response.id);
-        }
+        setCompletionSpanAttributes(span, response, request, options, latencyMs);
 
         span.end();
         return response;
@@ -172,45 +245,9 @@ export function instrumentProviderClient<
         const latencyMs = Date.now() - startTime;
         span.setAttribute(ProviderSpanAttributes.PROVIDER_LATENCY_MS, latencyMs);
 
-        // Wrap the stream to capture usage on the final chunk
         const wrappedStream = new ReadableStream<NormalizedChunk>({
-          // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
-          async start(controller) {
-            const reader = stream.getReader();
-            let inputTokens = 0;
-            let outputTokens = 0;
-
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                  break;
-                }
-
-                if (value.usage) {
-                  inputTokens = value.usage.inputTokens ?? inputTokens;
-                  outputTokens = value.usage.outputTokens ?? outputTokens;
-                }
-
-                controller.enqueue(value);
-              }
-            } catch (err) {
-              span.recordException(err);
-              throw err;
-            } finally {
-              if (inputTokens > 0 || outputTokens > 0) {
-                span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_INPUT_TOKENS, inputTokens);
-                span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_OUTPUT_TOKENS, outputTokens);
-
-                const cost = estimateCost(request.model ?? options.modelName ?? '', inputTokens, outputTokens);
-                if (cost !== undefined) {
-                  span.setAttribute(ProviderSpanAttributes.PROVIDER_COST_USD, cost);
-                }
-              }
-              span.end();
-              reader.releaseLock();
-              controller.close();
-            }
+          start(controller) {
+            return processStreamContent(span, stream, controller, request, options);
           }
         });
 

@@ -46,64 +46,81 @@ export async function createInkAgentRenderer(options: InkAgentRendererOptions): 
     const submittingRef = useRef(false);
     const { exit } = useApp();
 
+    const handleSubmit = useCallback(
+      async (text: string) => {
+        submittingRef.current = true;
+        setInputBuffer('');
+        setHistory(prev => [...prev, { id: `u-${Date.now()}`, role: 'user', text }]);
+
+        controller.stateRef.text = '';
+        controller.stateRef.thinking = '';
+        controller.stateRef.toolCalls = [];
+        controller.stateRef.isStreaming = true;
+        setIsStreaming(true);
+
+        try {
+          await onInput(text);
+          const assistantText = controller.stateRef.text;
+          setHistory(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', text: assistantText }]);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          setHistory(prev => [...prev, { id: `e-${Date.now()}`, role: 'assistant', text: `Error: ${msg}` }]);
+        } finally {
+          controller.stateRef.isStreaming = false;
+          setIsStreaming(false);
+          submittingRef.current = false;
+        }
+      },
+      [controller.stateRef, onInput]
+    );
+
+    const handleReturn = useCallback(() => {
+      const text = inputBuffer.trim();
+      if (!text || submittingRef.current) {
+        return;
+      }
+      handleSubmit(text);
+    }, [inputBuffer, handleSubmit]);
+
+    const handleBackspaceOrDelete = useCallback(() => {
+      setInputBuffer(prev => prev.slice(0, -1));
+    }, []);
+
+    const handleCtrlC = useCallback(() => {
+      exit();
+    }, [exit]);
+
+    const handleCharacterInput = useCallback((ch: string) => {
+      setInputBuffer(prev => prev + ch);
+    }, []);
+
     useInput(
       useCallback(
-        // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: complex callback
         (input: string, key: { return: boolean; backspace: boolean; delete: boolean; ctrl: boolean }) => {
           if (isStreaming) {
             return;
           }
 
           if (key.return) {
-            const text = inputBuffer.trim();
-            if (!text || submittingRef.current) {
-              return;
-            }
-
-            submittingRef.current = true;
-            setInputBuffer('');
-            setHistory(prev => [...prev, { id: `u-${Date.now()}`, role: 'user', text }]);
-
-            // Reset controller state for new turn
-            controller.stateRef.text = '';
-            controller.stateRef.thinking = '';
-            controller.stateRef.toolCalls = [];
-            controller.stateRef.isStreaming = true;
-            setIsStreaming(true);
-
-            onInput(text)
-              .then(() => {
-                const assistantText = controller.stateRef.text;
-                setHistory(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', text: assistantText }]);
-              })
-              .catch((err: unknown) => {
-                const msg = err instanceof Error ? err.message : String(err);
-                setHistory(prev => [...prev, { id: `e-${Date.now()}`, role: 'assistant', text: `Error: ${msg}` }]);
-              })
-              .finally(() => {
-                controller.stateRef.isStreaming = false;
-                setIsStreaming(false);
-                submittingRef.current = false;
-              });
-
+            handleReturn();
             return;
           }
 
           if (key.backspace || key.delete) {
-            setInputBuffer(prev => prev.slice(0, -1));
+            handleBackspaceOrDelete();
             return;
           }
 
           if (key.ctrl && input === 'c') {
-            exit();
+            handleCtrlC();
             return;
           }
 
           if (input && !key.ctrl) {
-            setInputBuffer(prev => prev + input);
+            handleCharacterInput(input);
           }
         },
-        [inputBuffer, isStreaming, exit]
+        [isStreaming, handleReturn, handleBackspaceOrDelete, handleCtrlC, handleCharacterInput]
       )
     );
 

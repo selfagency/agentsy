@@ -4,7 +4,7 @@ export default defineConfig({
   clean: true,
   dts: true,
   entry: { index: 'src/index.ts', cli: 'src/cli.ts' },
-  external: ['@agentsy/models', '@agentsy/providers'],
+  external: ['@agentsy/core', '@agentsy/models', '@agentsy/providers', '@agentsy/tokens'],
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,

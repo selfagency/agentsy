@@ -61,7 +61,6 @@ function coerceOptionalString(value: unknown): string | undefined {
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
-  return;
 }
 
 export function createMemoryMcpTools(engine: MemoryEngine): MemoryMcpToolSet {

@@ -50,7 +50,7 @@ export default class Init extends Command {
       force: flags.force
     };
 
-    const result = await initMemory(options);
+    const result = initMemory(options);
 
     this.log('✓ @agentsy/memory initialized');
     this.log(

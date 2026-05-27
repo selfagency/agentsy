@@ -61,10 +61,9 @@ function openaiStreamBody(
             }
           }
         : {})
-    })
+    }),
+    'data: [DONE]\n\n'
   );
-
-  lines.push('data: [DONE]\n\n');
 
   return lines.join('');
 }
@@ -79,10 +78,7 @@ function anthropicStreamBody(chunks: string[]): string {
     sseLine({
       message: { id: 'msg_mock', type: 'message', usage: { input_tokens: 12 } },
       type: 'message_start'
-    })
-  );
-
-  lines.push(
+    }),
     sseLine({
       content_block: { text: '', type: 'text' },
       index: 0,
@@ -106,9 +102,9 @@ function anthropicStreamBody(chunks: string[]): string {
       delta: { stop_reason: 'end_turn' },
       type: 'message_delta',
       usage: { output_tokens: chunks.join('').length }
-    })
+    }),
+    sseLine({ type: 'message_stop' })
   );
-  lines.push(sseLine({ type: 'message_stop' }));
 
   return lines.join('');
 }

@@ -73,8 +73,7 @@ function runInductionSpecialist(observations: Observation[]): string {
 
 function runSurprisalSpecialist(observations: Observation[]): string {
   // Find corrective observations (surprising/contradicting)
-  const correctives = observations.filter(o => o.kind === 'corrective');
-  const firstCorrective = correctives[0];
+  const firstCorrective = observations.find(o => o.kind === 'corrective');
   if (firstCorrective) {
     return `Lesson learned: ${firstCorrective.content} (confidence: ${firstCorrective.confidence.toFixed(2)})`;
   }

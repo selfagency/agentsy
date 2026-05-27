@@ -119,7 +119,7 @@ When making changes to `packages/cli/`, also run the E2E terminal test suite:
 pnpm --filter @agentsy/cli test:e2e
 ```
 
-E2E specs use `@microsoft/tui-test` and are located in `packages/cli/src/e2e/`. Each CLI command should have a corresponding `.spec.ts` file (when applicable/feasible). See `docs/developers/contributing.md` for the full workflow.
+E2E specs use `@microsoft/tui-test` and are located in `packages/cli/src/e2e/`. Each CLI command with a non-trivial output or interactive flow must have a corresponding `.spec.ts` file. See `docs/developers/contributing.md` for the full workflow.
 
 ## Runtime and Language Baseline
 

@@ -73,35 +73,25 @@ export interface TestServer {
  * ```
  */
 export function createTestServer(config?: TestServerConfig): TestServer {
-  const handlers: HttpHandler[] = [];
-
-  if (config?.includeProviders ?? true) {
-    handlers.push(...createAllProviderHandlers());
-  }
-
   const memoryState = config?.memoryState ?? createMockMemoryState();
-  if (config?.includeMemory ?? true) {
-    handlers.push(
-      ...createMemoryHandlers({
-        state: memoryState,
-        ...(config?.memoryBaseUrl === undefined ? {} : { baseUrl: config.memoryBaseUrl })
-      })
-    );
-  }
-
   const retrievalState = config?.retrievalState ?? createMockRetrievalState();
-  if (config?.includeRetrieval ?? true) {
-    handlers.push(
-      ...createRetrievalHandlers({
-        state: retrievalState,
-        ...(config?.retrievalBaseUrl === undefined ? {} : { baseUrl: config.retrievalBaseUrl })
-      })
-    );
-  }
 
-  if (config?.extraHandlers) {
-    handlers.push(...config.extraHandlers);
-  }
+  const handlers: HttpHandler[] = [
+    ...((config?.includeProviders ?? true) ? createAllProviderHandlers() : []),
+    ...((config?.includeMemory ?? true)
+      ? createMemoryHandlers({
+          state: memoryState,
+          ...(config?.memoryBaseUrl === undefined ? {} : { baseUrl: config.memoryBaseUrl })
+        })
+      : []),
+    ...((config?.includeRetrieval ?? true)
+      ? createRetrievalHandlers({
+          state: retrievalState,
+          ...(config?.retrievalBaseUrl === undefined ? {} : { baseUrl: config.retrievalBaseUrl })
+        })
+      : []),
+    ...(config?.extraHandlers ?? [])
+  ];
 
   const server = setupServer(...handlers);
 

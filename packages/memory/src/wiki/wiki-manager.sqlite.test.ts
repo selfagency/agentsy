@@ -152,7 +152,7 @@ describe('createWikiManager with SQLite', () => {
       body: 'target content for hybrid search'
     });
 
-    const results = await wiki.searchHybrid('target hybrid', await createMockEmbedding('target content'), 5);
+    const results = await wiki.searchHybrid('target hybrid', createMockEmbedding('target content'), 5);
     expect(results.length).toBeGreaterThan(0);
 
     sqlite.close();

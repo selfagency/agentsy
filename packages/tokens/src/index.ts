@@ -953,16 +953,16 @@ export class PacingController {
     this.#manager = tokenManager;
   }
 
-  async throttleRequest(request: TokenRequest): Promise<boolean> {
-    const waitTime = await this.getWaitTime(request);
+  throttleRequest(request: TokenRequest): Promise<boolean> {
+    const waitTime = this.getWaitTime(request);
     if (waitTime > 0) {
-      return false;
+      return Promise.resolve(false);
     }
 
     const timestamps = this.#requestTimestamps.get(request.provider) ?? [];
     timestamps.push(Date.now());
     this.#requestTimestamps.set(request.provider, timestamps);
-    return true;
+    return Promise.resolve(true);
   }
 
   getWaitTime(request: TokenRequest): number {

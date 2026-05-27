@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { checkpoint, clearCheckpoint, loadCheckpoint } from './checkpoint.js';
 
 describe('checkpoint', () => {
-  it('saves a checkpoint to the store', async () => {
+  it('saves a checkpoint to the store', () => {
     const store: Pick<SessionStore, 'setValue'> = { setValue: vi.fn() };
 
-    const cp = await checkpoint(
+    const cp = checkpoint(
       {
         pendingToolCalls: [{ id: 'call_1', name: 'search', args: ['hello'] }],
         messageQueue: [{ role: 'user', content: 'hello' }],

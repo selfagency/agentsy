@@ -400,6 +400,6 @@ try {
 } catch (error) {
   process.stdout.write('\n');
   console.error(error instanceof Error ? error.message : error);
-  await rollback();
+  rollback();
   process.exit(1);
 }

@@ -133,8 +133,8 @@ describe(RetrievalEngine, () => {
   });
 
   describe('keywordSearch', () => {
-    beforeEach(async () => {
-      await engine.index(sampleDocuments);
+    beforeEach(() => {
+      engine.index(sampleDocuments);
     });
 
     it('should search documents by keyword', () => {
@@ -284,8 +284,8 @@ describe(RetrievalEngine, () => {
   });
 
   describe('delete', () => {
-    beforeEach(async () => {
-      await engine.index(sampleDocuments);
+    beforeEach(() => {
+      engine.index(sampleDocuments);
     });
 
     it('should remove indexed document', () => {

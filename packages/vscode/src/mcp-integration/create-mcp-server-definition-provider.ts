@@ -52,44 +52,107 @@ const resolveEnabled = (
   return defaultEnabled;
 };
 
+/** Inject API key into server env if a matching env-var key is configured. */
+const injectApiKeyIntoEnv = (
+  env: Record<string, string>,
+  server: McpProviderServerDefinition,
+  defaultApiKeyEnvVar: string | undefined,
+  apiKey: string
+): void => {
+  const envKey = server.apiKeyEnvVar ?? defaultApiKeyEnvVar;
+  if (typeof envKey === 'string' && envKey.length > 0) {
+    env[envKey] = apiKey;
+  }
+};
+
+/** Inject API key into server headers if a matching header key is configured. */
+const injectApiKeyIntoHeaders = (
+  headers: Record<string, string>,
+  server: McpProviderServerDefinition,
+  defaultApiKeyHeader: string | undefined,
+  apiKey: string,
+  formatHeader: (value: string) => string
+): void => {
+  const headerKey = server.apiKeyHeader ?? defaultApiKeyHeader;
+  if (typeof headerKey === 'string' && headerKey.length > 0) {
+    headers[headerKey] = formatHeader(apiKey);
+  }
+};
+
+/**
+ * Conditionally inject the API key into both env and headers for a server.
+ * Mutates `env` and `headers` in-place when a key is configured.
+ */
+const injectApiKey = (
+  env: Record<string, string>,
+  headers: Record<string, string>,
+  server: McpProviderServerDefinition,
+  options: {
+    defaultApiKeyEnvVar?: string;
+    defaultApiKeyHeader?: string;
+    formatApiKeyHeaderValue?: (value: string) => string;
+  },
+  apiKey: string | undefined
+): void => {
+  if (typeof apiKey !== 'string' || apiKey.length === 0) {
+    return;
+  }
+
+  const formatHeader = options.formatApiKeyHeaderValue ?? (value => value);
+  injectApiKeyIntoEnv(env, server, options.defaultApiKeyEnvVar, apiKey);
+  injectApiKeyIntoHeaders(headers, server, options.defaultApiKeyHeader, apiKey, formatHeader);
+};
+
+/** Build a plain McpServerDefinition, omitting undefined optionals. */
+const buildServerDefinition = (
+  server: McpProviderServerDefinition,
+  env: Record<string, string>,
+  headers: Record<string, string>,
+  enabled: boolean
+): McpServerDefinition => {
+  const definition: McpServerDefinition = {
+    command: server.command,
+    name: server.name
+  };
+
+  if (server.args !== undefined) {
+    definition.args = server.args;
+  }
+
+  if (Object.keys(env).length > 0) {
+    definition.env = env;
+  }
+
+  if (Object.keys(headers).length > 0) {
+    definition.headers = headers;
+  }
+
+  if (server.alwaysAllow) {
+    definition.alwaysAllow = true;
+  }
+
+  if (!enabled) {
+    definition.disabled = true;
+  }
+
+  return definition;
+};
+
 const provideServerDefinitions = async (
   options: CreateMcpServerDefinitionProviderOptions
 ): Promise<McpServerDefinition[]> => {
   const defaultEnabled = options.defaultEnabled ?? true;
-  const formatHeader = options.formatApiKeyHeaderValue ?? (apiKey => apiKey);
   const rawServers = typeof options.servers === 'function' ? await options.servers() : options.servers;
   const apiKey = await options.getApiKey?.();
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
   return rawServers.map(server => {
     const enabled = resolveEnabled(server, options.settings, defaultEnabled);
+    const env: Record<string, string> = { ...server.env };
+    const headers: Record<string, string> = { ...server.headers };
 
-    const env = { ...server.env };
-    const headers = { ...server.headers };
+    injectApiKey(env, headers, server, options, apiKey);
 
-    if (typeof apiKey === 'string' && apiKey.length > 0) {
-      const envKey = server.apiKeyEnvVar ?? options.defaultApiKeyEnvVar;
-      if (typeof envKey === 'string' && envKey.length > 0) {
-        env[envKey] = apiKey;
-      }
-
-      const headerKey = server.apiKeyHeader ?? options.defaultApiKeyHeader;
-      if (typeof headerKey === 'string' && headerKey.length > 0) {
-        headers[headerKey] = formatHeader(apiKey);
-      }
-    }
-
-    const enriched: McpServerDefinition = {
-      command: server.command,
-      name: server.name,
-      ...(server.args === undefined ? {} : { args: server.args }),
-      ...(Object.keys(env).length > 0 ? { env } : {}),
-      ...(Object.keys(headers).length > 0 ? { headers } : {}),
-      ...(server.alwaysAllow ? { alwaysAllow: true } : {}),
-      ...(enabled ? {} : { disabled: true })
-    };
-
-    return enriched;
+    return buildServerDefinition(server, env, headers, enabled);
   });
 };
 

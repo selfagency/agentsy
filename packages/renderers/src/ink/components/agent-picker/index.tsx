@@ -44,6 +44,85 @@ const provenanceTokens = new Map<AgentProvenance, { label: string; color: keyof 
   ['plugin', { label: 'plugin', color: 'pending' }]
 ]);
 
+/* ── Pure helpers ──────────────────────────────────────────────── */
+
+function filterAgents(agents: readonly AgentEntry[], query: string): AgentEntry[] {
+  if (query.length === 0) {
+    return [...agents];
+  }
+  const lower = query.toLowerCase();
+  return agents.filter(a => a.name.toLowerCase().includes(lower) || a.description.toLowerCase().includes(lower));
+}
+
+/* ── Sub-components ────────────────────────────────────────────── */
+
+function EmptyState({ query, palette }: { query: string; palette: AcidPalette }) {
+  return (
+    <Box>
+      <Text color={palette.muted}>No agents match &quot;{query}&quot;</Text>
+    </Box>
+  );
+}
+
+function ProvenanceBadge({ provenance, palette }: { provenance: AgentProvenance; palette: AcidPalette }) {
+  const token = provenanceTokens.get(provenance);
+  const color = palette[token?.color ?? 'muted'];
+  const label = token?.label ?? 'unknown';
+  return <Text color={color}> [{label}]</Text>;
+}
+
+function AgentMetaBar({ agent, palette }: { agent: AgentEntry; palette: AcidPalette }) {
+  const activeMark = agent.active ? '\u25CF' : '\u25CB';
+  return (
+    <Box marginLeft={3}>
+      <Text color={palette.frameDim}>
+        {activeMark} {agent.active ? 'active' : 'inactive'}
+      </Text>
+      {agent.model ? <Text color={palette.frameDim}> {'\u00B7'} model: </Text> : null}
+      {agent.model ? <Text color={palette.info}>{agent.model}</Text> : null}
+      {agent.toolCount === undefined ? null : (
+        <Text color={palette.frameDim}>
+          {' \u00B7 '}
+          {agent.toolCount} tool{agent.toolCount === 1 ? '' : 's'}
+        </Text>
+      )}
+    </Box>
+  );
+}
+
+function AgentRow({
+  agent,
+  isHighlighted,
+  palette
+}: {
+  agent: AgentEntry;
+  isHighlighted: boolean;
+  palette: AcidPalette;
+}) {
+  const arrow = isHighlighted ? '\u25B8' : ' ';
+  return (
+    <Box flexDirection="column">
+      <Box>
+        <Text color={palette.assistantAccent}>{arrow} </Text>
+        <Text bold={isHighlighted || agent.active} color={isHighlighted ? palette.emphasis : palette.frameBright}>
+          {agent.name}
+        </Text>
+        <ProvenanceBadge palette={palette} provenance={agent.provenance} />
+      </Box>
+
+      <Box marginLeft={3}>
+        <Text color={palette.assistantDim} dimColor>
+          {agent.description}
+        </Text>
+      </Box>
+
+      <AgentMetaBar agent={agent} palette={palette} />
+    </Box>
+  );
+}
+
+/* ── Public API ────────────────────────────────────────────────── */
+
 /**
  * Searchable agent list with provenance badges.
  *
@@ -51,77 +130,23 @@ const provenanceTokens = new Map<AgentProvenance, { label: string; color: keyof 
  * model preference and tool access summary per agent.
  */
 export function AgentPicker({ agents, query, highlightIndex, palette, focused = true }: AgentPickerProps) {
-  const filtered =
-    query.length > 0
-      ? agents.filter(
-          a =>
-            a.name.toLowerCase().includes(query.toLowerCase()) ||
-            a.description.toLowerCase().includes(query.toLowerCase())
-        )
-      : agents;
+  const filtered = filterAgents(agents, query);
 
   return (
     <Box flexDirection="column" paddingX={1}>
       {/* Search header */}
       <Box marginBottom={1}>
-        <SearchInput focused={focused} palette={palette} placeholder="Search agents…" query={query} />
+        <SearchInput focused={focused} palette={palette} placeholder="Search agents\u2026" query={query} />
       </Box>
 
       {/* Agent list */}
       {filtered.length === 0 ? (
-        <Box>
-          <Text color={palette.muted}>No agents match "{query}"</Text>
-        </Box>
+        <EmptyState palette={palette} query={query} />
       ) : (
         <Box flexDirection="column">
-          {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned */}
-          {filtered.map((agent, idx) => {
-            const isHighlighted = idx === highlightIndex;
-            const provenance = provenanceTokens.get(agent.provenance);
-            const arrow = isHighlighted ? '▸' : ' ';
-            const activeMark = agent.active ? '●' : '○';
-            const provColor = palette[provenance?.color ?? 'muted'];
-            const provLabel = provenance?.label ?? 'unknown';
-
-            return (
-              <Box flexDirection="column" key={agent.id}>
-                <Box>
-                  <Text color={palette.assistantAccent}>{arrow} </Text>
-                  <Text
-                    bold={isHighlighted || agent.active}
-                    color={isHighlighted ? palette.emphasis : palette.frameBright}
-                  >
-                    {agent.name}
-                  </Text>
-                  <Text color={provColor}>
-                    {' ['}
-                    {provLabel}
-                    {']'}
-                  </Text>
-                </Box>
-
-                <Box marginLeft={3}>
-                  <Text color={palette.assistantDim} dimColor>
-                    {agent.description}
-                  </Text>
-                </Box>
-
-                <Box marginLeft={3}>
-                  <Text color={palette.frameDim}>
-                    {activeMark} {agent.active ? 'active' : 'inactive'}
-                  </Text>
-                  {agent.model ? <Text color={palette.frameDim}>{' · model: '}</Text> : null}
-                  {agent.model ? <Text color={palette.info}>{agent.model}</Text> : null}
-                  {agent.toolCount === undefined ? null : (
-                    <Text color={palette.frameDim}>
-                      {' · '}
-                      {agent.toolCount} tool{agent.toolCount === 1 ? '' : 's'}
-                    </Text>
-                  )}
-                </Box>
-              </Box>
-            );
-          })}
+          {filtered.map((agent, idx) => (
+            <AgentRow agent={agent} isHighlighted={idx === highlightIndex} key={agent.id} palette={palette} />
+          ))}
         </Box>
       )}
     </Box>

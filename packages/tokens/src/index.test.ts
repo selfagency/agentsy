@@ -307,7 +307,7 @@ describe('PacingController', () => {
     expect(status.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it('applies adaptive cooldown feedback', async () => {
+  it('applies adaptive cooldown feedback', () => {
     const controller = new PacingController(createInMemoryTokenManager());
     controller.adjustPacing({
       overloaded: true,
@@ -315,7 +315,7 @@ describe('PacingController', () => {
       retryAfterMs: 250
     });
 
-    const wait = await controller.getWaitTime({
+    const wait = controller.getWaitTime({
       estimatedTokens: 10,
       model: 'gpt-4.1-mini',
       provider: 'openai',
@@ -356,7 +356,7 @@ describe('PacingController', () => {
     expect(status.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it('clears cooldowns when overload feedback is resolved', async () => {
+  it('clears cooldowns when overload feedback is resolved', () => {
     const controller = new PacingController(createInMemoryTokenManager());
     controller.adjustPacing({
       overloaded: true,
@@ -369,7 +369,7 @@ describe('PacingController', () => {
       retryAfterMs: 0
     });
 
-    const wait = await controller.getWaitTime({
+    const wait = controller.getWaitTime({
       estimatedTokens: 10,
       model: 'gpt-4.1-mini',
       provider: 'openai',

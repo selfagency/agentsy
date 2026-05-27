@@ -10,7 +10,7 @@ export interface StreamThinkingBlockProps {
   /** Whether thinking is still in progress. */
   readonly isInProgress: boolean;
   /** Toggle expand/collapse handler. */
-  onToggle?: () => void;
+  readonly onToggle?: () => void;
   /** Semantic palette. */
   readonly palette: AcidPalette;
   /** Thinking text content. */

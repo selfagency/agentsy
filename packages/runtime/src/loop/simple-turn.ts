@@ -1,5 +1,21 @@
 import type { CompletionMessage, NormalizedChunk, UsageInfo } from '@agentsy/types';
 
+/** @internal — accumulated state while reading a stream chunk by chunk */
+interface ChunkProcessingState {
+  accText: string;
+  accThinking: string;
+  done: boolean;
+  finishReason: string | undefined;
+  usage: UsageInfo | undefined;
+}
+
+/** @internal — callbacks passed into the chunk-processing helpers */
+interface ChunkCallbacks {
+  onText?: (delta: string) => void;
+  onThinking?: (delta: string) => void;
+  onToolCall?: (id: string, name: string, args: unknown) => void;
+}
+
 /**
  * Minimal streaming handler interface — avoids direct @agentsy/core/@agentsy/providers dependency.
  * Both `LoadBalancedClient` from @agentsy/gateway and the mock client satisfy this interface.
@@ -40,6 +56,84 @@ export interface SimpleTurnLoopOptions {
   systemPrompt?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Internal helpers (extracted to reduce cognitive complexity of `run`)
+// ---------------------------------------------------------------------------
+
+/** Apply one chunk's fields to the accumulating state. */
+function processChunk(chunk: NormalizedChunk, state: ChunkProcessingState, callbacks: ChunkCallbacks): void {
+  if (chunk.content) {
+    state.accText += chunk.content;
+    callbacks.onText?.(chunk.content);
+  }
+
+  if (chunk.thinking) {
+    state.accThinking += chunk.thinking;
+    callbacks.onThinking?.(chunk.thinking);
+  }
+
+  if (chunk.tool_calls) {
+    for (const toolCall of chunk.tool_calls) {
+      const name = toolCall.function?.name ?? '';
+      const args = toolCall.function?.arguments ?? {};
+      const id = (toolCall as { id?: string }).id ?? `tool-${Date.now()}`;
+      if (name) {
+        callbacks.onToolCall?.(id, name, args);
+      }
+    }
+  }
+
+  if (chunk.usage) {
+    state.usage = chunk.usage;
+  }
+
+  if (chunk.done) {
+    state.finishReason = chunk.finishReason;
+    state.done = true;
+  }
+}
+
+/**
+ * Read chunks from the stream until exhaustion or `chunk.done`.
+ * Returns the accumulated text, thinking, finish reason, and usage.
+ */
+async function readStream(
+  reader: ReadableStreamDefaultReader<NormalizedChunk>,
+  callbacks: ChunkCallbacks
+): Promise<{
+  accText: string;
+  accThinking: string;
+  finishReason: string | undefined;
+  usage: UsageInfo | undefined;
+}> {
+  const state: ChunkProcessingState = {
+    accText: '',
+    accThinking: '',
+    finishReason: undefined,
+    usage: undefined,
+    done: false
+  };
+
+  while (!state.done) {
+    const { done, value: chunk } = await reader.read();
+    if (done) {
+      break;
+    }
+    processChunk(chunk, state, callbacks);
+  }
+
+  return {
+    accText: state.accText,
+    accThinking: state.accThinking,
+    finishReason: state.finishReason,
+    usage: state.usage
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Public factory
+// ---------------------------------------------------------------------------
+
 export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurnLoop {
   const { handler, model, systemPrompt } = options;
 
@@ -47,7 +141,6 @@ export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurn
 
   let activeReader: ReadableStreamDefaultReader<NormalizedChunk> | null = null;
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
   const run = async (userInput: string, events: TurnEventOptions = {}): Promise<TurnResult> => {
     const { onText, onThinking, onToolCall, onDone, onError } = events;
 
@@ -63,44 +156,23 @@ export function createSimpleTurnLoop(options: SimpleTurnLoopOptions): SimpleTurn
       const reader = stream.getReader();
       activeReader = reader;
 
-      while (true) {
-        const { done, value: chunk } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        if (chunk.content) {
-          accText += chunk.content;
-          onText?.(chunk.content);
-        }
-
-        if (chunk.thinking) {
-          accThinking += chunk.thinking;
-          onThinking?.(chunk.thinking);
-        }
-
-        if (chunk.tool_calls) {
-          for (const toolCall of chunk.tool_calls) {
-            const name = toolCall.function?.name ?? '';
-            const args = toolCall.function?.arguments ?? {};
-            const id = (toolCall as { id?: string }).id ?? `tool-${Date.now()}`;
-            if (name) {
-              onToolCall?.(id, name, args);
-            }
-          }
-        }
-
-        if (chunk.usage) {
-          usage = chunk.usage;
-        }
-
-        if (chunk.done) {
-          finishReason = chunk.finishReason;
-          break;
-        }
+      const callbacks: ChunkCallbacks = {};
+      if (onText) {
+        callbacks.onText = onText;
       }
-
+      if (onThinking) {
+        callbacks.onThinking = onThinking;
+      }
+      if (onToolCall) {
+        callbacks.onToolCall = onToolCall;
+      }
+      const result = await readStream(reader, callbacks);
       activeReader = null;
+
+      accText = result.accText;
+      accThinking = result.accThinking;
+      finishReason = result.finishReason;
+      usage = result.usage;
     } catch (err) {
       activeReader = null;
       const error = err instanceof Error ? err : new Error(String(err));

@@ -19,7 +19,7 @@ export function addPartToMessage(
     if (msg.id === messageId) {
       return {
         ...msg,
-        parts: [...msg.parts, { ...part, createdAt: now } as UIMessagePart]
+        parts: [...msg.parts, { ...part, createdAt: now } satisfies UIMessagePart]
       };
     }
     return msg;

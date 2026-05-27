@@ -70,6 +70,14 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
       signal.addEventListener('abort', abortHandler, { once: true });
     }
 
+    const scheduleNextRetry = (delayMs: number) => {
+      timeoutId = setTimeout(() => {
+        attemptRetry().catch(() => {
+          // Retry errors are handled internally
+        });
+      }, delayMs);
+    };
+
     const attemptRetry = async () => {
       try {
         const result = await fn();
@@ -88,11 +96,7 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
           });
         } else {
           const delay = Math.min(initialDelay * backoffFactor ** (attempt - 1), maxDelay);
-          timeoutId = setTimeout(() => {
-            attemptRetry().catch(() => {
-              // Retry errors are handled internally
-            });
-          }, delay);
+          scheduleNextRetry(delay);
         }
       }
     };
