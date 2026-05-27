@@ -67,6 +67,14 @@ jobs:
         env:
           CI: true
 
+      - name: Upload test results to GitHub
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: test-results
+          path: packages/*/test-report.junit.xml
+          retention-days: 7
+
       - name: Prepare coverage reports
         run: |
           mkdir -p coverage-input
