@@ -154,7 +154,7 @@ describe('Daemon', () => {
       } as any);
 
       // Act
-      await startDaemon({ dbPath: '/var/tmp/agentsy/test.db' }, { pidFile: testPidFile });
+      await startDaemon({ dbPath: 'test-data/agentsy-daemon.db' }, { pidFile: testPidFile });
 
       // Assert: PID file was written with the correct PID
       expect(existsSync(testPidFile)).toBe(true);
@@ -172,7 +172,7 @@ describe('Daemon', () => {
       expect(createMemoryMCPServer).toHaveBeenCalledWith(
         mockEngine,
         expect.objectContaining({
-          dbPath: '/var/tmp/agentsy/test.db',
+          dbPath: 'test-data/agentsy-daemon.db',
           logLevel: 'debug',
           transport: 'stdio'
         })

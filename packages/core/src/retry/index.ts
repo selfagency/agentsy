@@ -40,28 +40,26 @@ export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Prom
       callback();
     };
 
-    const handleAbort = () => {
-      settle(() => reject(createAbortError()));
-    };
-
     if (signal) {
-      signal.addEventListener('abort', handleAbort, { once: true });
+      signal.addEventListener('abort', () => settle(() => reject(createAbortError())), {
+        once: true
+      });
     }
 
-    const attemptOnce = () => {
-      fn().then(
-        result => settle(() => resolve(result)),
-        error => {
-          state.attempt++;
-          if (state.attempt >= maxAttempts) {
-            settle(() => reject(error));
-          } else {
-            const delay = Math.min(initialDelay * backoffFactor ** (state.attempt - 1), maxDelay);
-            setTimeout(attemptOnce, delay);
-          }
+    async function attemptOnce(): Promise<void> {
+      try {
+        const result = await fn();
+        settle(() => resolve(result));
+      } catch (error) {
+        state.attempt++;
+        if (state.attempt >= maxAttempts) {
+          settle(() => reject(error));
+        } else {
+          const delay = Math.min(initialDelay * backoffFactor ** (state.attempt - 1), maxDelay);
+          setTimeout(attemptOnce, delay);
         }
-      );
-    };
+      }
+    }
 
     attemptOnce();
   });

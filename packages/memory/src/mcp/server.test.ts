@@ -7,9 +7,7 @@ const { readlineMock, httpMock } = vi.hoisted(() => {
   const rlEvents: Record<string, Array<(...args: unknown[]) => void>> = {};
   const rl = {
     on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
-      if (!rlEvents[event]) {
-        rlEvents[event] = [];
-      }
+      rlEvents[event] ??= [];
       rlEvents[event].push(handler);
       return rl;
     }),

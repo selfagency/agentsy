@@ -72,7 +72,7 @@ export function Transcript({
         {/* Streaming cursor */}
         {isStreaming ? (
           <Box marginBottom={1}>
-            <StreamingCursor color={palette.assistantAccent} cursorSymbol={cursorSymbol} isStreaming={isStreaming} />
+            <StreamingCursor color={palette.assistantAccent} isStreaming={isStreaming} symbol={cursorSymbol} />
           </Box>
         ) : null}
 
