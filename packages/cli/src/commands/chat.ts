@@ -209,7 +209,7 @@ export async function runChatCommand(
   }
 
   function handleHelpCommand(commands: Map<string, (args: string[]) => void | Promise<void>>): void {
-    const cmdList = [...commands.keys()].sort().join(', ');
+    const cmdList = [...commands.keys()].sort((a, b) => a.localeCompare(b)).join(', ');
     stderr(
       `Commands:\n  ${cmdList}\n  /model <name>    Switch to a different model\n  /help            Show this help message\n`
     );

@@ -116,7 +116,6 @@ export function createMcpServer(options: McpServerOptions): McpServer {
     if (!initialized) {
       return createErrorResponse(id, -32_001, 'Server not initialized');
     }
-    return;
   }
 
   return {

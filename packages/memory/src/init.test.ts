@@ -26,14 +26,14 @@ function _getSafeTestPath(): string {
 }
 
 describe('initMemory', () => {
-  it('returns an engine and config by default', async () => {
-    const result = await initMemory({ skipMcp: true, skipDb: true });
+  it('returns an engine and config by default', () => {
+    const result = initMemory({ skipMcp: true, skipDb: true });
     expect(result.engine).toBeDefined();
     expect(result.config).toBeDefined();
   });
 
-  it('creates an MCP server when skipMcp is false', async () => {
-    const result = await initMemory({ skipMcp: false, skipDb: true });
+  it('creates an MCP server when skipMcp is false', () => {
+    const result = initMemory({ skipMcp: false, skipDb: true });
     expect(result.engine).toBeDefined();
     expect(result.config).toBeDefined();
     expect('server' in result).toBe(true);

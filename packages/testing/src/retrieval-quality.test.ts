@@ -16,7 +16,7 @@ async function loadCorpus(): Promise<RetrievalBenchmarkDocument[]> {
 describe('retrieval benchmark', () => {
   it('returns oauth document first and preserves citation coverage', async () => {
     const corpus = await loadCorpus();
-    const result = await runRetrievalBenchmark(corpus, 'oauth refresh token policy');
+    const result = runRetrievalBenchmark(corpus, 'oauth refresh token policy');
 
     expect(result.topId).toBe('wiki-oauth');
     expect(result.hitCount).toBeGreaterThan(0);

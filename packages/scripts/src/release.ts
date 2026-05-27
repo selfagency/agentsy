@@ -310,7 +310,7 @@ try {
   if (!(error instanceof ProcessOutput)) {
     console.error(`❌ ${msg}`);
   }
-  await rollback();
+  rollback();
   if (typeof error === 'object' && error !== null && 'exitCode' in error) {
     const exitCode = (error as Record<string, unknown>).exitCode;
     process.exit(typeof exitCode === 'number' || typeof exitCode === 'string' ? exitCode : 1);

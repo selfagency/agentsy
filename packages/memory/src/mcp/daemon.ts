@@ -164,7 +164,7 @@ export async function startDaemon(
   // Load full config for engine creation
   const fullConfig = loadConfig();
   const engine = createMemoryEngine(engineOptions);
-  const server = await createMemoryMCPServer(engine, {
+  const server = createMemoryMCPServer(engine, {
     ...serverOptions,
     ...fullConfig.mcp
   });
@@ -200,7 +200,7 @@ export async function startDaemon(
 
       // Re-create engine and server for clean state
       const newEngine = createMemoryEngine(engineOptions);
-      await createMemoryMCPServer(newEngine, {
+      createMemoryMCPServer(newEngine, {
         ...serverOptions,
         ...fullConfig.mcp
       });

@@ -24,7 +24,7 @@ describe('createInterruption', () => {
     expect(store.setValue).toHaveBeenCalledWith(expect.stringContaining('interruption_checkpoint:'), checkpoint);
   });
 
-  it('includes metadata when provided', async () => {
+  it('includes metadata when provided', () => {
     const store: Pick<SessionStore, 'setValue'> = { setValue: vi.fn() };
     const snapshot: RuntimeSnapshot = {
       sessionId: '',
@@ -35,7 +35,7 @@ describe('createInterruption', () => {
       updatedAt: 0
     };
 
-    const checkpoint = await createInterruption('sess_1', 'error', snapshot, store, {
+    const checkpoint = createInterruption('sess_1', 'error', snapshot, store, {
       pendingToolCallId: 'call_123'
     });
 
@@ -44,9 +44,9 @@ describe('createInterruption', () => {
 });
 
 describe('resumeFromCheckpoint', () => {
-  it('returns null when no checkpoint exists', async () => {
+  it('returns null when no checkpoint exists', () => {
     const store: Pick<SessionStore, 'getValue'> = { getValue: vi.fn().mockReturnValue(null) };
-    const result = await resumeFromCheckpoint('chk_123', store);
+    const result = resumeFromCheckpoint('chk_123', store);
     expect(result).toBeNull();
   });
 

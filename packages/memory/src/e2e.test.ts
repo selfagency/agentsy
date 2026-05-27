@@ -16,11 +16,11 @@ vi.mock('@tursodatabase/sync', () => ({
 
 describe('E2E — initMemory + MCP server round-trip', () => {
   it('initializes full stack and exposes 12 tools via MCP', async () => {
-    const result = await initMemory({ skipMcp: true, skipDb: false });
+    const result = initMemory({ skipMcp: true, skipDb: false });
     expect(result.engine).toBeDefined();
     expect(result.config).toBeDefined();
 
-    const { server } = await createMemoryMCPServer(result.engine, {
+    const { server } = createMemoryMCPServer(result.engine, {
       dbPath: ':memory:'
     });
 
@@ -50,8 +50,8 @@ describe('E2E — initMemory + MCP server round-trip', () => {
   });
 
   it('ingests and recalls a memory through MCP JSON-RPC', async () => {
-    const result = await initMemory({ skipMcp: true, skipDb: false });
-    const { server } = await createMemoryMCPServer(result.engine, {
+    const result = initMemory({ skipMcp: true, skipDb: false });
+    const { server } = createMemoryMCPServer(result.engine, {
       dbPath: ':memory:'
     });
 
@@ -92,7 +92,7 @@ describe('E2E — initMemory + MCP server round-trip', () => {
   // Wiki and KB functionality tests - commented out until fully implemented
   it('upserts and searches wiki pages via MCP', async () => {
     const result = await initMemory({ skipMcp: true, skipDb: false });
-    const { server } = await createMemoryMCPServer(result.engine, {
+    const { server } = createMemoryMCPServer(result.engine, {
       dbPath: ':memory:'
     });
 
@@ -128,7 +128,7 @@ describe('E2E — initMemory + MCP server round-trip', () => {
 
   it('ingests and searches knowledge base via MCP', async () => {
     const result = await initMemory({ skipMcp: true, skipDb: false });
-    const { server } = await createMemoryMCPServer(result.engine, {
+    const { server } = createMemoryMCPServer(result.engine, {
       dbPath: ':memory:'
     });
 
@@ -162,7 +162,7 @@ describe('E2E — initMemory + MCP server round-trip', () => {
 
   it('unified search returns results from all three sources', async () => {
     const result = await initMemory({ skipMcp: true, skipDb: false });
-    const { server } = await createMemoryMCPServer(result.engine, {
+    const { server } = createMemoryMCPServer(result.engine, {
       dbPath: ':memory:'
     });
 

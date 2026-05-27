@@ -139,7 +139,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         id: 'wf-sequence',
         nodes: [

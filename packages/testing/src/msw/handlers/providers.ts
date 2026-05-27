@@ -100,8 +100,8 @@ function anthropicStreamBody(chunks: string[]): string {
     );
   }
 
-  lines.push(sseLine({ index: 0, type: 'content_block_stop' }));
   lines.push(
+    sseLine({ index: 0, type: 'content_block_stop' }),
     sseLine({
       delta: { stop_reason: 'end_turn' },
       type: 'message_delta',

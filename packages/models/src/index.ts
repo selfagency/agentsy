@@ -147,8 +147,6 @@ function resolveModelsDevModel(
       }
     }
   }
-
-  return;
 }
 
 function getCategoryBenchmarkScore(
@@ -436,7 +434,6 @@ export class ModelsDevClient {
         return provider.models[modelId];
       }
     }
-    return;
   }
 
   private getModelFromProvider(providerId: string, modelName: string): ModelsDevModel | undefined {

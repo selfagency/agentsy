@@ -1,0 +1,9 @@
+{
+  "plugin": [
+    ["@vectorize-io/opencode-hindsight", {
+      "bankId": "agentsy",
+      "autoRecall": true,
+      "autoRetain": true
+    }]
+  ]
+}

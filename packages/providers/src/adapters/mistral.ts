@@ -171,8 +171,6 @@ function buildContentForMistralMessage(
   if (role === 'assistant' && hasToolCalls) {
     return null;
   }
-
-  return;
 }
 
 function emitSystemMessage(

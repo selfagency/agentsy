@@ -42,7 +42,7 @@ export default class Mcp extends Command {
     });
 
     const engine = createMemoryEngine();
-    const server = await createMemoryMCPServer(engine, config.mcp);
+    const server = createMemoryMCPServer(engine, config.mcp);
 
     // Handle graceful shutdown
     let shuttingDown = false;

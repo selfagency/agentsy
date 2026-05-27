@@ -26,7 +26,33 @@ export function verifySyncChecksum(payload: unknown, checksum: string): boolean 
   return computeSyncChecksum(payload) === checksum;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
+function validateRecord(record: unknown, index: number): string[] {
+  const errors: string[] = [];
+
+  if (!isPlainObject(record)) {
+    errors.push(`records[${index}] must be an object`);
+    return errors;
+  }
+
+  if (typeof record.id !== 'string' || record.id.length === 0) {
+    errors.push(`records[${index}].id must be a non-empty string`);
+  }
+
+  if (!isValidTier(record.tier)) {
+    errors.push(`records[${index}].tier must be one of raw|wiki|vector`);
+  }
+
+  if (!isIsoDate(record.updatedAt)) {
+    errors.push(`records[${index}].updatedAt must be a valid ISO date string`);
+  }
+
+  if (typeof record.content !== 'string') {
+    errors.push(`records[${index}].content must be a string`);
+  }
+
+  return errors;
+}
+
 export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult {
   const errors: string[] = [];
 
@@ -47,28 +73,7 @@ export function validateRemoteSnapshot(payload: unknown): RemoteValidationResult
     errors.push('records must be an array');
   } else {
     for (const [index, record] of records.entries()) {
-      if (!isPlainObject(record)) {
-        errors.push(`records[${index}] must be an object`);
-        continue;
-      }
-
-      if (typeof record.id !== 'string' || record.id.length === 0) {
-        errors.push(`records[${index}].id must be a non-empty string`);
-      }
-
-      const tierIsValid = isValidTier(record.tier);
-
-      if (!tierIsValid) {
-        errors.push(`records[${index}].tier must be one of raw|wiki|vector`);
-      }
-
-      if (!isIsoDate(record.updatedAt)) {
-        errors.push(`records[${index}].updatedAt must be a valid ISO date string`);
-      }
-
-      if (typeof record.content !== 'string') {
-        errors.push(`records[${index}].content must be a string`);
-      }
+      errors.push(...validateRecord(record, index));
     }
   }
 

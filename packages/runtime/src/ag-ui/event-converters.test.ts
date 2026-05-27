@@ -414,7 +414,7 @@ describe('createEventConverter', () => {
 
 describe('convertEventStream', () => {
   it('should convert stream to copilot-kit format', async () => {
-    const source = await createMockStream();
+    const source = createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
     const results: (CopilotKitEvent | CustomUIEvent)[] = [];
@@ -429,7 +429,7 @@ describe('convertEventStream', () => {
   });
 
   it('should convert stream to custom format', async () => {
-    const source = await createMockStream();
+    const source = createMockStream();
     const converted = convertEventStream(source, 'custom');
 
     const results: (CopilotKitEvent | CustomUIEvent)[] = [];
@@ -445,8 +445,8 @@ describe('convertEventStream', () => {
     expect((firstEvent as CustomUIEvent).eventType).toBe(EventType.RUN_STARTED);
   });
 
-  it('should return async generator', async () => {
-    const source = await createMockStream();
+  it('should return async generator', () => {
+    const source = createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
     expectTypeOf(converted[Symbol.asyncIterator]).toBeFunction(); // nosemgrep: detect-object-injection -- Symbol.asyncIterator is a well-known symbol, not user input
