@@ -53,9 +53,17 @@ jobs:
         env:
           CI: true
 
-      - name: Run unit tests with coverage
+      - name: Run unit tests with coverage (JUNIT via built-in reporter)
         run: |
-          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
+          pnpm turbo run coverage -- --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
+        env:
+          CI: true
+        continue-on-error: true
+
+      - name: Generate JUNIT test reports
+        if: always()
+        run: |
+          pnpm turbo run test -- --reporter=junit --outputFile=test-report.junit.xml
         env:
           CI: true
 
@@ -89,7 +97,6 @@ jobs:
         uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: 'packages/*/test-report.junit.xml'
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2
