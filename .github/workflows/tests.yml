@@ -85,10 +85,11 @@ jobs:
           formats: lcov
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
+        if: always()
         uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: 'packages/*/test-report.junit.xml'
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2
