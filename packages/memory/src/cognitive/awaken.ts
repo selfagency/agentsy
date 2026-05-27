@@ -153,6 +153,26 @@ interface ConsolidationCounts {
   synthesized: number;
 }
 
+function processTierConsolidation(tier: MemoryTierLike, nextTier: MemoryTierLike, i: number): ConsolidationCounts {
+  const cap = tier.capacity();
+  const utilizationRatio = cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
+
+  if (utilizationRatio < tier.config.consolidationThreshold) {
+    return { compressed: 0, synthesized: 0, summarized: 0 };
+  }
+
+  const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
+  const actuallyPromoted = tier.promote(promoteCount, nextTier);
+
+  if (i < 2) {
+    return { compressed: actuallyPromoted, synthesized: 0, summarized: 0 };
+  }
+  if (i < 3) {
+    return { compressed: 0, synthesized: actuallyPromoted, summarized: 0 };
+  }
+  return { compressed: 0, synthesized: 0, summarized: actuallyPromoted };
+}
+
 function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   let compressed = 0;
   let synthesized = 0;
@@ -171,20 +191,10 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
       continue;
     }
 
-    const cap = tier.capacity();
-    const utilizationRatio = cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
-
-    if (utilizationRatio >= tier.config.consolidationThreshold) {
-      const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
-      const actuallyPromoted = tier.promote(promoteCount, nextTier);
-      if (i < 2) {
-        compressed += actuallyPromoted;
-      } else if (i < 3) {
-        synthesized += actuallyPromoted;
-      } else {
-        summarized += actuallyPromoted;
-      }
-    }
+    const result = processTierConsolidation(tier, nextTier, i);
+    compressed += result.compressed;
+    synthesized += result.synthesized;
+    summarized += result.summarized;
   }
 
   return { compressed, synthesized, summarized };

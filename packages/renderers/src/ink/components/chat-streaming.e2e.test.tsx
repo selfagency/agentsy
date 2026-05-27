@@ -84,7 +84,7 @@ describe('InkSessionRenderer — streaming lifecycle', () => {
 
   it('shows tool calls during streaming', () => {
     const streamEvent: SessionStreamEvent = {
-      calls: [{ id: 'tc1', name: 'readFile', status: 'executing', args: { path: '/tmp/test.txt' } }],
+      calls: [{ id: 'tc1', name: 'readFile', status: 'executing', args: { path: '/home/user/test.txt' } }],
       isThinking: false,
       modelDelta: '',
       modelIsStreaming: true,

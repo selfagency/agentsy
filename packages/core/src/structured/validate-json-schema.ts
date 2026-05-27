@@ -43,6 +43,29 @@ function hasDangerousQuantifier(pattern: string): boolean {
   return false;
 }
 
+function isUnsafePattern(pattern: string, trusted: boolean): boolean {
+  return !trusted && (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern));
+}
+
+function evictLRURegexEntry(): void {
+  let lruKey: string | undefined;
+  let lruTime = Number.POSITIVE_INFINITY;
+  for (const [key, value] of regexCache.entries()) {
+    const accessTime = regexAccessTimestamps.get(value) ?? Number.POSITIVE_INFINITY;
+    if (accessTime < lruTime) {
+      lruTime = accessTime;
+      lruKey = key;
+    }
+  }
+  if (lruKey !== undefined) {
+    const lruRegex = regexCache.get(lruKey);
+    if (lruRegex) {
+      regexAccessTimestamps.delete(lruRegex);
+    }
+    regexCache.delete(lruKey);
+  }
+}
+
 function getCachedRegex(pattern: string, trusted = false): RegExp {
   const existing = regexCache.get(pattern);
   if (existing !== undefined) {
@@ -53,15 +76,7 @@ function getCachedRegex(pattern: string, trusted = false): RegExp {
 
   let regex: RegExp;
   try {
-    // Security: Validate pattern length and characters to prevent ReDoS attacks.
-    // JSON Schema patterns should be relatively simple; overly complex patterns are rejected.
-    // Trusted patterns (e.g. built-in format specifiers) skip these checks — they're known-safe.
-    if (!trusted && (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern))) {
-      // Pattern is too long, too complex, or not a string: use safe match-nothing regex
-      regex = MATCH_NOTHING_REGEX;
-    } else {
-      regex = new RegExp(pattern);
-    }
+    regex = isUnsafePattern(pattern, trusted) ? MATCH_NOTHING_REGEX : new RegExp(pattern);
   } catch {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
     regex = MATCH_NOTHING_REGEX; // Negative lookahead that never matches
@@ -69,23 +84,7 @@ function getCachedRegex(pattern: string, trusted = false): RegExp {
   regexAccessTimestamps.set(regex, Date.now());
 
   if (regexCache.size >= REGEX_CACHE_MAX) {
-    // Evict least-recently-used entry by scanning access timestamps
-    let lruKey: string | undefined;
-    let lruTime = Number.POSITIVE_INFINITY;
-    for (const [key, value] of regexCache.entries()) {
-      const accessTime = regexAccessTimestamps.get(value) ?? Number.POSITIVE_INFINITY;
-      if (accessTime < lruTime) {
-        lruTime = accessTime;
-        lruKey = key;
-      }
-    }
-    if (lruKey !== undefined) {
-      const lruRegex = regexCache.get(lruKey);
-      if (lruRegex) {
-        regexAccessTimestamps.delete(lruRegex);
-      }
-      regexCache.delete(lruKey);
-    }
+    evictLRURegexEntry();
   }
   regexCache.set(pattern, regex);
   return regex;

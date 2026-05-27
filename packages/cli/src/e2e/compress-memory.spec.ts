@@ -1,9 +1,11 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { expect, test } from '@microsoft/tui-test';
 
 test.describe('compress-memory command', () => {
   test('compresses a file and reports savings', async ({ terminal }) => {
     // Use a unique test file to avoid EEXIST from previous backups
-    const dir = '/tmp/agentsy-e2e-compress-memory';
+    const dir = join(tmpdir(), 'agentsy-e2e-compress-memory');
     const file = `${dir}/test-${Date.now()}.txt`;
 
     await terminal.submit(`mkdir -p ${dir}`);
@@ -14,7 +16,7 @@ test.describe('compress-memory command', () => {
   });
 
   test('creates a .original.md backup file', async ({ terminal }) => {
-    const dir = '/tmp/agentsy-e2e-compress-memory-backup';
+    const dir = join(tmpdir(), 'agentsy-e2e-compress-memory-backup');
     const file = `${dir}/test-${Date.now()}.md`;
 
     await terminal.submit(`mkdir -p ${dir}`);
