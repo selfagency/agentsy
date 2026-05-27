@@ -129,6 +129,22 @@ function setCompletionSpanAttributes(
 }
 
 /**
+ * Sets token usage and cost attributes on a stream span, then ends it.
+ */
+function finalizeStreamSpan(span: Span, inputTokens: number, outputTokens: number, model: string): void {
+  if (inputTokens > 0 || outputTokens > 0) {
+    span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_INPUT_TOKENS, inputTokens);
+    span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_OUTPUT_TOKENS, outputTokens);
+
+    const cost = estimateCost(model, inputTokens, outputTokens);
+    if (cost !== undefined) {
+      span.setAttribute(ProviderSpanAttributes.PROVIDER_COST_USD, cost);
+    }
+  }
+  span.end();
+}
+
+/**
  * Processes a streaming response, forwarding chunks and tracking token usage.
  */
 async function processStreamContent(
@@ -160,16 +176,7 @@ async function processStreamContent(
     span.recordException(err);
     throw err;
   } finally {
-    if (inputTokens > 0 || outputTokens > 0) {
-      span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_INPUT_TOKENS, inputTokens);
-      span.setAttribute(ProviderSpanAttributes.GENAI_USAGE_OUTPUT_TOKENS, outputTokens);
-
-      const cost = estimateCost(request.model ?? options.modelName ?? '', inputTokens, outputTokens);
-      if (cost !== undefined) {
-        span.setAttribute(ProviderSpanAttributes.PROVIDER_COST_USD, cost);
-      }
-    }
-    span.end();
+    finalizeStreamSpan(span, inputTokens, outputTokens, request.model ?? options.modelName ?? '');
     reader.releaseLock();
     controller.close();
   }

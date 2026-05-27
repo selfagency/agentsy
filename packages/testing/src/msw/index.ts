@@ -72,11 +72,12 @@ export interface TestServer {
  * afterAll(() => ts.server.close());
  * ```
  */
-export function createTestServer(config?: TestServerConfig): TestServer {
-  const memoryState = config?.memoryState ?? createMockMemoryState();
-  const retrievalState = config?.retrievalState ?? createMockRetrievalState();
-
-  const handlers: HttpHandler[] = [
+function buildHandlers(
+  config: TestServerConfig | undefined,
+  memoryState: ReturnType<typeof createMockMemoryState>,
+  retrievalState: ReturnType<typeof createMockRetrievalState>
+): HttpHandler[] {
+  return [
     ...((config?.includeProviders ?? true) ? createAllProviderHandlers() : []),
     ...((config?.includeMemory ?? true)
       ? createMemoryHandlers({
@@ -92,7 +93,12 @@ export function createTestServer(config?: TestServerConfig): TestServer {
       : []),
     ...(config?.extraHandlers ?? [])
   ];
+}
 
+export function createTestServer(config?: TestServerConfig): TestServer {
+  const memoryState = config?.memoryState ?? createMockMemoryState();
+  const retrievalState = config?.retrievalState ?? createMockRetrievalState();
+  const handlers = buildHandlers(config, memoryState, retrievalState);
   const server = setupServer(...handlers);
 
   return { server, memoryState, retrievalState };

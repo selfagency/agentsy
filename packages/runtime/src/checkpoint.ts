@@ -25,7 +25,7 @@ function nextCheckpointId(): string {
   return `rtchk_${Date.now()}_${_checkpointCounter}`;
 }
 
-// codacy-disable-next-line vulnerability/HardcodedPassword -- Not a password, it's a store key
+// codacy:disable security/HardcodedPassword -- Not a password, it's a store key prefix
 const CHECKPOINT_KEY = 'runtime_checkpoint';
 
 /**
