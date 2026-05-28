@@ -34,6 +34,7 @@ const TIER_HALF_LIVES: Record<TierName, keyof DecayConfig> = {
 };
 
 function getHalfLife(tier: TierName, config: DecayConfig): number {
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- known key from constant map, keyof DecayConfig
   const key = TIER_HALF_LIVES[tier];
   return config[key] ?? Number.POSITIVE_INFINITY;
 }

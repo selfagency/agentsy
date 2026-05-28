@@ -41,18 +41,18 @@ Environment variables:
     const arg = args[i];
     switch (arg) {
       case '--transport': {
-        configOverrides.mcp = configOverrides.mcp ?? {};
+        configOverrides.mcp ??= {};
         const transportVal = args[++i];
         if (transportVal) {
-          (configOverrides.mcp as Record<string, unknown>).transport = transportVal;
+          configOverrides.mcp.transport = transportVal as 'stdio' | 'http';
         }
         break;
       }
       case '--port': {
-        configOverrides.mcp = configOverrides.mcp ?? {};
+        configOverrides.mcp ??= {};
         const portVal = args[++i];
         if (portVal) {
-          (configOverrides.mcp as Record<string, unknown>).port = Number.parseInt(portVal, 10);
+          configOverrides.mcp.port = Number.parseInt(portVal, 10);
         }
         break;
       }

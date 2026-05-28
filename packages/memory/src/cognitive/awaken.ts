@@ -101,6 +101,7 @@ function reclaimBudgetForDiscarded(results: DecayedItem[], budgetRelease: Awaken
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): void {
   for (const result of results) {
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- known tier key, not user input
     const currentTier = tiers[result.tier];
     if (!currentTier) {
       continue;
@@ -179,13 +180,17 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   let summarized = 0;
 
   for (let i = 0; i < TIER_ORDER.length - 1; i++) {
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- constant array numeric index
     const tierName = TIER_ORDER[i];
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- constant array numeric index
     const nextTierName = TIER_ORDER[i + 1];
     if (!(tierName && nextTierName)) {
       continue;
     }
 
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- known tier key, not user input
     const tier = tiers[tierName];
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- known tier key, not user input
     const nextTier = tiers[nextTierName];
     if (!(tier && nextTier)) {
       continue;
@@ -217,6 +222,7 @@ function buildGetAllItems(tiers: AwakenDeps['tiers']): () => MemoryItem[] {
   return () => {
     const items: MemoryItem[] = [];
     for (const tierName of TIER_ORDER) {
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- known tier key from TIER_ORDER
       const tier = tiers[tierName];
       if (!tier) {
         continue;

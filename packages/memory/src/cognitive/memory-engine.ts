@@ -264,6 +264,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       let allItems: MemoryItem[] = [];
 
       for (const tierName of targetTiers) {
+        // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- tierName from literal array, not user input
         const tier = tiers[tierName];
         if (!tier) {
           continue;
@@ -291,6 +292,7 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
     const results: TierReadResult[] = [];
     for (const tierName of targetTiers) {
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- tierName from literal array, not user input
       const tier = tiers[tierName];
       if (!tier) {
         continue;

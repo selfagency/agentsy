@@ -76,6 +76,7 @@ function getCachedRegex(pattern: string, trusted = false): RegExp {
 
   let regex: RegExp;
   try {
+    // nosemgrep: typescript.lang.security.detect-non-literal-regexp.detect-non-literal-regexp -- pattern is vetted by isUnsafePattern; LRU-cached with 256-entry cap
     regex = isUnsafePattern(pattern, trusted) ? MATCH_NOTHING_REGEX : new RegExp(pattern);
   } catch {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex

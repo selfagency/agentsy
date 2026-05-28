@@ -275,16 +275,41 @@ export function createGeminiHandler(options?: ProviderStreamingOptions): HttpHan
   });
 }
 
-/**
- * Create all provider handlers in a single array for convenience.
- *
- * @deprecated Use aImock (`@copilotkit/aimock`) for LLM provider mocking.
- * See `plan/19-AIMOCK-MIGRATION-PLAN.md` for migration details.
- */
 export function createAllProviderHandlers(streamOptions?: ProviderStreamingOptions): HttpHandler[] {
+  const { chunks: oaiChunks = ['Hello', ', world!'], simulateError: oaiErr } = streamOptions ?? {};
+  const { chunks: antChunks = ['Hello', ' from Anthropic'], simulateError: antErr } = streamOptions ?? {};
+  const { chunks: gemChunks = ['Gemini', ' streaming'], simulateError: gemErr } = streamOptions ?? {};
+
   return [
-    createOpenAIHandler(streamOptions),
-    createAnthropicHandler(streamOptions),
-    createGeminiHandler(streamOptions)
+    http.post('https://api.openai.com/v1/chat/completions', () => {
+      const body = oaiErr ? (oaiErr.body ?? '') : openaiStreamBody(oaiChunks);
+      if (oaiErr) {
+        return new HttpResponse(body, { status: oaiErr.status, statusText: oaiErr.statusText });
+      }
+      return new HttpResponse(body, {
+        headers: { 'Content-Type': 'text/event-stream' },
+        status: 200
+      });
+    }),
+    http.post('https://api.anthropic.com/v1/messages', () => {
+      const body = antErr ? (antErr.body ?? '') : anthropicStreamBody(antChunks);
+      if (antErr) {
+        return new HttpResponse(body, { status: antErr.status, statusText: antErr.statusText });
+      }
+      return new HttpResponse(body, {
+        headers: { 'Content-Type': 'text/event-stream' },
+        status: 200
+      });
+    }),
+    http.post('https://generativelanguage.googleapis.com/v1beta/models*', () => {
+      const body = gemErr ? (gemErr.body ?? '') : geminiStreamBody(gemChunks);
+      if (gemErr) {
+        return new HttpResponse(body, { status: gemErr.status, statusText: gemErr.statusText });
+      }
+      return new HttpResponse(body, {
+        headers: { 'Content-Type': 'text/event-stream' },
+        status: 200
+      });
+    })
   ];
 }

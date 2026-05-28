@@ -73,11 +73,13 @@ function tryAddToGroup(
     return;
   }
 
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- numeric loop index, not user input
   const embeddingJ = embeddings[j]?.embedding;
   if (!embeddingJ) {
     return;
   }
 
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- numeric loop index, not user input
   const embeddingI = embeddings[i]?.embedding;
   if (!embeddingI) {
     return;
@@ -107,6 +109,7 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
       continue;
     }
 
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- numeric loop index, not user input
     const groupItem = items[i];
     if (!groupItem) {
       continue;
