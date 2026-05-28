@@ -2,7 +2,7 @@
 
 **Effort:** ~12 hours  
 **Milestone:** Production-debuggable; cost-governed before GA  
-**Packages:** `@agentsy/observability`, `@agentsy/tokens`, `@agentsy/providers`, `@agentsy/llm-gateway`  
+**Packages:** `@agentsy/observability`, `@agentsy/tokens`, `@agentsy/providers`, `@agentsy/gateway`  
 **Gate:** Structured logging complete; cost telemetry functional  
 **Next:** Phase 10
 
@@ -272,7 +272,7 @@ Each tool call span includes exit code:
 
 ## Phase 9 + LLM Gateway: TASK-LB-OBS
 
-**Location:** `packages/llm-gateway/src/metrics/`
+**Location:** `packages/gateway/src/metrics/`
 
 ```typescript
 export class MetricsCollector {

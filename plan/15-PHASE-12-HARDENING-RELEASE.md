@@ -53,6 +53,82 @@ export const RELEASE_CHECKLIST = [
         'Chaos tests pass',
         'Cross-package contract tests pass'
       ]
+    },
+    {
+      category: 'Workflows',
+      checks: [
+        'All YAML workflows validate against Zod schema',
+        'Default workflows load without errors',
+        'Trigger matching deterministic',
+        'State machine transitions reproducible',
+        'Value capture via JSONPath works for nested results',
+        'Gate nodes return handles for external approval',
+        'Bash nodes enforce timeout and retry limits'
+      ]
+    },
+    {
+      category: 'Context Pruning',
+      checks: [
+        'compress tool callable by LLM',
+        'Deduplication detects repeated tool calls',
+        'Protected tools never pruned or deduplicated',
+        'Protected file patterns respected',
+        'Nudge system fires at correct thresholds',
+        'Per-model context limits override defaults',
+        'Turn protection keeps recent outputs intact'
+      ]
+    },
+    {
+      category: 'ECC Integration',
+      checks: [
+        'ECC integration optional (not required)',
+        'Agent catalog expands when installed',
+        'Skills library available when installed',
+        'Hook profiles configurable via env vars',
+        'Multi-language rules loadable',
+        'Install advisor guides selection',
+        'Continuous learning extracts patterns',
+        'Loop guard prevents infinite loops',
+        'Quality gate command works',
+        'Status snapshots show health',
+        'Cost audit skill tracks spending',
+        'Installation wizard guides setup'
+      ]
+    },
+    {
+      category: 'External Adoptions',
+      checks: [
+        'Memory API has remember/recall/forget/improve',
+        'Session memory with background sync',
+        'Recall auto-routes to best strategy',
+        'Selector Agent filters candidate functions',
+        'Validation Feedback corrects AI args',
+        'Workflow pause/resume/interrupt works',
+        'Dependency-aware parallel execution',
+        'Progressive skill loading',
+        'Isolated sub-agent context',
+        'IM channels integrated',
+        'Context summarization for long tasks',
+        'Human approval with admin-block tools',
+        'Context providers for live data',
+        'AG-UI + A2A interface exposure',
+        'Tool card standardization'
+      ]
+    },
+    {
+      category: 'Council Mode',
+      checks: [
+        'Council executor runs all 3 stages',
+        'First opinions collected in parallel',
+        'Cross-review anonymizes model identities',
+        'Rankings aggregated from all reviews',
+        'Chairman synthesizes with dissenting opinions',
+        'Council presets load successfully',
+        'CLI /council command works',
+        'VS Code council mode toggle functional',
+        'Events emitted for stage transitions',
+        'Token usage tracked per-member'
+      ]
     },  {
     category: 'Security',
     checks: [

@@ -1,0 +1,10 @@
+# build + deps + generated noise (hardcoded skip dirs already excluded)
+dist/
+coverage/
+*.lock
+*.log
+.cache/
+
+# non-standard frontmatter that remindb's YAML parser rejects
+**/IMPLEMENTATION-PLAN.md
+plan/**/*.md

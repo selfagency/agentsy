@@ -1,8 +1,8 @@
-# Phase 3.5 — LLM Gateway
+# Phase 3.5 — Gateway
 
 **Effort:** ~8 hours  
 **Scope:** Replace direct `UniversalClient` with semantic, capability-aware gateway  
-**Package:** `@agentsy/llm-gateway` (new)  
+**Package:** `@agentsy/gateway` (new)  
 **Gate:** Failover + quota tracking working  
 **Next:** Phase 4
 
@@ -23,8 +23,8 @@ Build semantic routing layer between CLI and providers. Automatic failover, circ
 - ✅ ProfileRegistry
 - ✅ ModelAliasMap (gpt-4o, claude-opus-4, gemini-2.5-pro, llama-3.3-70b)
 - ✅ ProviderRegistry with UniversalClient creation
-- ✅ LLMGatewayClient passthrough interface
-- ✅ LLMGatewayConfigSchema
+- ✅ GatewayClient passthrough interface
+- ✅ GatewayConfigSchema
 
 **Evidence:** `packages/llm-gateway/src/` partially complete
 
@@ -86,14 +86,14 @@ export const genericOpenAiProfiles: ProviderProfile[] = [
 
 **Effort:** ~1 hour
 
-Wire `createLLMGatewayClient()` into `packages/cli/src/providers/resolve-provider.ts`:
+Wire `createGatewayClient()` into `packages/cli/src/providers/resolve-provider.ts`:
 
 ```typescript
-import { createLLMGatewayClient } from '@agentsy/llm-gateway';
+import { createGatewayClient } from '@agentsy/gateway';
 
 export async function resolveProvider(config: CliConfig) {
   const gatewayConfig = loadGatewayConfig(config);
-  const client = createLLMGatewayClient(gatewayConfig);
+  const client = createGatewayClient(gatewayConfig);
 
   // Single-provider behavior unchanged
   // Returns UniversalClient-compatible interface
@@ -337,7 +337,7 @@ Register in `@agentsy/plugins` slash registry.
 **Effort:** ~1 hour
 
 ```typescript
-describe('LLMGateway', () => {
+describe('Gateway', () => {
   test('config validation', () => {
     /* Zod */
   });
@@ -408,14 +408,69 @@ Run with MSW mock server from Phase 1.
 
 ---
 
-### TASK-LB-020: Documentation & Exports
+### TASK-LB-020: LLM Model Switcher
+
+**Effort:** ~1.5 hours
+
+Mid-conversation model switching without restart.
+
+```typescript
+// packages/llm-gateway/src/switcher.ts
+export interface ModelSwitchConfig {
+  model: string;
+  provider?: string;  // Inferred from model if not specified
+  session?: string;   // Switch for specific session
+}
+
+export class ModelSwitcher {
+  private currentModel: string;
+  private currentProvider: string;
+
+  async switch(config: ModelSwitchConfig): Promise<void> {
+    const provider = config.provider ?? this.resolveProvider(config.model);
+    const profile = this.registry.getProfile(provider);
+    const client = this.registry.createClient(profile);
+
+    this.currentModel = config.model;
+    this.currentProvider = provider;
+    this.activeClient = client;
+  }
+
+  getCurrentConfig(): { model: string; provider: string } {
+    return { model: this.currentModel, provider: this.currentProvider };
+  }
+
+  getSupportedModels(): ModelInfo[] {
+    return this.registry.getAllModels();
+  }
+}
+```
+
+**CLI integration:**
+
+```text
+/model gpt-4o                    — Switch model mid-conversation
+/model claude-sonnet-4-5         — Switch with auto-provider detection
+/model list                      — List all available models
+```
+
+**SDK integration:**
+
+```typescript
+await agent.switchLLM({ model: 'gpt-5.2' });
+await agent.switchLLM({ model: 'claude-sonnet-4-5-20250929' }, 'session-123');
+```
+
+---
+
+### TASK-LB-021: Documentation & Exports
 
 **Effort:** ~0.5 hours
 
 ## README.md
 
 ````markdown
-# @agentsy/llm-gateway
+# @agentsy/gateway
 
 Semantic routing layer for multi-provider LLM access.
 
@@ -433,7 +488,7 @@ Semantic routing layer for multi-provider LLM access.
 const client = new UniversalClient(config.apiKey);
 
 // After
-const client = createLLMGatewayClient(config);
+const client = createGatewayClient(config);
 ```
 ````
 
@@ -448,7 +503,7 @@ const client = createLLMGatewayClient(config);
 **Subpath exports:**
 
 ```typescript
-export { createLLMGatewayClient } from './gateway';
+export { createGatewayClient } from './gateway';
 export { CircuitBreaker, HealthTracker } from './health';
 export { ProfileRegistry, ProviderRegistry } from './registry';
 export * from './types';

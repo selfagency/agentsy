@@ -71,9 +71,9 @@ No code changes. Update 8 `IMPLEMENTATION-PLAN.md` files to reflect current veri
 
 ---
 
-## Phase 3.5 — LLM Gateway Integration
+## Phase 3.5 — Gateway Integration
 
-**TASK-LB-001 through TASK-LB-009:** ✅ COMPLETE (see `packages/llm-gateway/IMPLEMENTATION-PLAN.md`)
+**TASK-LB-001 through TASK-LB-009:** ✅ COMPLETE (see `packages/gateway/IMPLEMENTATION-PLAN.md`)
 
 **TASK-017, TASK-LB-010 through TASK-LB-020:** Pending Phase 3.5
 ```

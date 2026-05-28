@@ -36,7 +36,7 @@
 | Layer                         | Packages                                                                                                                                                         | Status        | Purpose                                                    |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------- |
 | **Core stream & transform**   | `@agentsy/core`                                                                                                                                                  | 🟡 85%        | Normalize provider output to typed events                  |
-| **Provider integration**      | `@agentsy/providers`, `@agentsy/llm-gateway`                                                                                                                     | 🟡 70%        | Adapt protocol differences, request/response normalization |
+| **Provider integration**      | `@agentsy/providers`, `@agentsy/gateway`                                                                                                                     | 🟡 70%        | Adapt protocol differences, request/response normalization |
 | **Execution & orchestration** | `@agentsy/runtime`, `@agentsy/orchestrator`                                                                                                                      | 🟢 P0-2 ✅    | Loop, hooks, scheduling, mode policy                       |
 | **Session, memory & tokens**  | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`                                                                                                         | 🟢 Ready      | State durability, cognitive layers, budget                 |
 | **Surfaces & rendering**      | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`                                                                                           | 🟠 Phase 2+   | CLI, UI, editor integration                                |
@@ -311,7 +311,7 @@ Five first-class `AgentDefinition` in `@agentsy/plugins/src/agents/builtins/`:
 | `@agentsy/tokens`                     | 0, 4, 9     | 🟢 Phase 0 ✅    | Compression done; cost tracking Phase 9                              |
 | `@agentsy/core`                       | 0-2, 7      | 🟡 85%           | TASK-009 ✅; stream-to-events done                                   |
 | `@agentsy/providers`                  | 0-3         | 🟡 70%           | TASK-008 ✅; request path exists                                     |
-| `@agentsy/llm-gateway`                | 3.5, 9      | 🟡 Foundation ✅ | TASK-LB-001..009 done; TASK-LB-010..020 Phase 3.5                    |
+| `@agentsy/gateway`                | 3.5, 9      | 🟡 Foundation ✅ | TASK-LB-001..009 done; TASK-LB-010..020 Phase 3.5                    |
 | `@agentsy/models`                     | 3           | 🟢 Stable        | Model selector, capability probing ready                             |
 | `@agentsy/plugins`                    | 1-4         | 🟠 TASK-091 ✅   | Manifest registry done; skills/instructions/agent loaders Phase 4    |
 | `@agentsy/cli`                        | 2-12        | 🟠 ~37%          | Readline chat partial; TUI Phase 2                                   |
