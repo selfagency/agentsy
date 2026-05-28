@@ -4,9 +4,7 @@ import { parseArgs as parseNodeArgs } from 'node:util';
 
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
-const __filename = import.meta.filename;
-const __dirname = resolve(__filename, '..');
-const ROOT = resolve(__dirname, '..');
+const ROOT = process.cwd();
 
 /** @param {unknown} repository */
 export function getRepositoryField(repository: unknown): string {
@@ -117,7 +115,7 @@ export function checkTrustedPublishReadiness(input: {
   return { ok: true };
 }
 
-if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filename) {
+if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === resolve(import.meta.filename)) {
   const { values: args } = parseNodeArgs({
     allowPositionals: false,
     options: {

@@ -300,13 +300,13 @@ jobs:
 
       - name: Write dist package.json for per-package release
         if: needs.detect-release.outputs.is_per_package == 'true'
-        run: node scripts/write-dist-package.js "packages/${{ needs.detect-release.outputs.package_dir }}"
+        run: pnpm dlx tsx packages/scripts/src/write-dist-package.ts "packages/${{ needs.detect-release.outputs.package_dir }}"
 
       - name: Write dist package.json for root packages
         if: needs.detect-release.outputs.is_per_package != 'true'
         run: |
-          node scripts/write-dist-package.js packages/core
-          node scripts/write-dist-package.js packages/vscode
+          pnpm dlx tsx packages/scripts/src/write-dist-package.ts packages/core
+          pnpm dlx tsx packages/scripts/src/write-dist-package.ts packages/vscode
 
       - name: Ensure npm CLI supports trusted publishing (>=11.5.1)
         run: |
@@ -456,7 +456,7 @@ jobs:
             exit 0
           fi
 
-          node scripts/trusted-publish-readiness.js \
+          pnpm dlx tsx packages/scripts/src/trusted-publish-readiness.ts \
             --package-name "${PACKAGE_NAME}" \
             --package-dir "packages/${PACKAGE_DIR}" \
             --expected-repo "${REPOSITORY}" \

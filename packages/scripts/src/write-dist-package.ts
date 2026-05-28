@@ -2,8 +2,7 @@
 import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const __filename = import.meta.filename;
-const __dirname = import.meta.dirname;
+const ROOT = process.cwd();
 
 function rewriteDistExports(
   rootExports: Record<string, unknown>
@@ -32,7 +31,7 @@ function rewriteDistExports(
 
 async function main() {
   // If a package path is provided as an argument, use it; otherwise use root
-  const packagePath = process.argv[2] ? resolve(process.argv[2]) : resolve(__dirname, '..');
+  const packagePath = process.argv[2] ? resolve(process.argv[2]) : ROOT;
   const rootPkgPath = resolve(packagePath, 'package.json');
   const outDir = resolve(packagePath, 'dist');
   const raw = await readFile(rootPkgPath, 'utf-8');
@@ -100,7 +99,7 @@ async function main() {
   console.log('Wrote', resolve(outDir, 'package.json'));
 
   const pkgReadme = resolve(packagePath, 'README.md');
-  const rootReadme = resolve(__dirname, '..', 'README.md');
+  const rootReadme = resolve(ROOT, 'README.md');
   const readmeSrc = await access(pkgReadme)
     .then(() => pkgReadme)
     .catch(() => rootReadme);
