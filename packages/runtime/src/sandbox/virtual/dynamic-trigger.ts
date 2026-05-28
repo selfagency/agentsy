@@ -1,10 +1,10 @@
 export type SandboxTriggerMode = 'virtual' | 'container' | 'none';
 
 export interface SandboxTriggerContext {
-  /** Explicit override from user or operator. */
-  readonly forceMode?: SandboxTriggerMode;
   /** Whether a container runtime was detected. */
   readonly containerAvailable?: boolean;
+  /** Explicit override from user or operator. */
+  readonly forceMode?: SandboxTriggerMode;
   /** Whether the operation is read-only. */
   readonly readOnly?: boolean;
   /** Trust level of the input being executed. */

@@ -4,7 +4,7 @@ import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.j
 
 function mapOpenAIFinishReason(reason: string | null | undefined): FinishReason | undefined {
   if (!reason) {
-    return undefined;
+    return;
   }
   if (reason === 'stop') {
     return 'stop';
@@ -26,37 +26,38 @@ function mapOpenAIFinishReason(reason: string | null | undefined): FinishReason 
 // ---------------------------------------------------------------------------
 
 interface OpenAIToolCallDelta {
-  index: number;
-  id?: string | null;
-  type?: string;
   function?: { name?: string | null; arguments?: string | null };
+  id?: string | null;
+  index: number;
+  type?: string;
 }
 
 interface OpenAIDelta {
-  role?: string;
   content?: string | null;
+  reasoning?: string | null;
   reasoning_content?: string | null;
+  role?: string;
   tool_calls?: OpenAIToolCallDelta[];
 }
 
 interface OpenAIChoice {
-  index: number;
   delta: OpenAIDelta;
   finish_reason: string | null;
+  index: number;
 }
 
 interface OpenAIUsage {
-  prompt_tokens?: number;
   completion_tokens?: number;
+  prompt_tokens?: number;
   total_tokens?: number;
 }
 
 interface OpenAIChatChunk {
-  id?: string;
-  object?: string;
-  created?: number;
-  model?: string;
   choices: OpenAIChoice[];
+  created?: number;
+  id?: string;
+  model?: string;
+  object?: string;
   usage?: OpenAIUsage | null;
 }
 
@@ -98,12 +99,29 @@ function mapOpenAIToolCallDelta(tc: OpenAIToolCallDelta): NativeToolCallDelta {
   return result;
 }
 
+function getThinkingContent(
+  reasoningField: string | null | undefined,
+  reasoningContentField: string | null | undefined
+): string | undefined {
+  if (typeof reasoningField === 'string') {
+    return reasoningField;
+  }
+  if (typeof reasoningContentField === 'string') {
+    return reasoningContentField;
+  }
+}
+
 function getContentParts(delta: OpenAIDelta | undefined): {
   content?: string;
   thinking?: string;
 } {
   const content = typeof delta?.content === 'string' ? delta.content : undefined;
-  const thinking = typeof delta?.reasoning_content === 'string' ? delta.reasoning_content : undefined;
+  // Some providers (Ollama / DeepSeek) put reasoning in a `reasoning` field
+  // rather than OpenAI's `reasoning_content` field.  Map it to `thinking` so
+  // the response appears in the streaming output.
+  const reasoningField = delta?.reasoning;
+  const reasoningContentField = delta?.reasoning_content;
+  const thinking = getThinkingContent(reasoningField, reasoningContentField);
   const out: { content?: string; thinking?: string } = {};
   if (content !== undefined) {
     out.content = content;
@@ -137,10 +155,7 @@ function getNativeToolCallDeltas(delta: OpenAIDelta | undefined): NativeToolCall
       .filter((tc): tc is OpenAIToolCallDelta => tc && typeof tc === 'object')
       .map(mapOpenAIToolCallDelta);
   }
-
-  return undefined;
 }
-
 function getUsageParts(raw: OpenAIChatChunk): { usage?: UsageInfo } {
   if (raw.usage) {
     const usage: UsageInfo = {};

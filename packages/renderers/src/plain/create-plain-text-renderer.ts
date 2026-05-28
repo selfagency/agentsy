@@ -65,7 +65,7 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
           return Promise.resolve(undefined);
         }
       }),
-      onEnd: async () => {
+      onEnd: () => {
         // Call end() on stream if it has one (but not on process.stdout)
         if (
           typeof output === 'object' &&
@@ -75,6 +75,7 @@ export function createPlainTextRenderer(options: PlainTextRendererOptions = {}):
         ) {
           output.end();
         }
+        return Promise.resolve();
       }
     },
     options.onError

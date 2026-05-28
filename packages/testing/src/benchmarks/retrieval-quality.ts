@@ -1,18 +1,18 @@
 export interface RetrievalBenchmarkDocument {
+  content: string;
   id: string;
+  metadata?: Record<string, unknown>;
   sourceId: string;
   sourceType: 'wiki' | 'file' | 'document' | 'web';
   title: string;
-  content: string;
   updatedAt: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface RetrievalBenchmarkResult {
+  citationCoverage: number;
+  hitCount: number;
   latencyMs: number;
   topId: string | null;
-  hitCount: number;
-  citationCoverage: number;
 }
 
 function tokenize(input: string): string[] {
@@ -71,10 +71,10 @@ function estimateTokens(input: string): number {
   return Math.max(1, Math.ceil(input.length / 4));
 }
 
-export async function runRetrievalBenchmark(
+export function runRetrievalBenchmark(
   documents: readonly RetrievalBenchmarkDocument[],
   query: string
-): Promise<RetrievalBenchmarkResult> {
+): RetrievalBenchmarkResult {
   const queryTokens = tokenize(query);
   const limit = 5;
 

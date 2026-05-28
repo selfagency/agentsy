@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { IQuotaDataSource, UsageQuota } from '../types/errors.js';
 import { mapUsageToVSCode } from './map-usage.js';
-import { createQuotaDataSourceAdapter, formatStandardQuotaTooltip, pickActiveQuotaWindow } from './quota-adapter.js';
 import type { QuotaWindowValue } from './quota-adapter.js';
-import { UsageStatusBar, formatQuotaText, getQuotaStatus } from './usage-status-bar.js';
+import { createQuotaDataSourceAdapter, formatStandardQuotaTooltip, pickActiveQuotaWindow } from './quota-adapter.js';
+import { formatQuotaText, getQuotaStatus, UsageStatusBar } from './usage-status-bar.js';
 
 function makeQuota(overrides: Partial<UsageQuota> = {}): UsageQuota {
   return {

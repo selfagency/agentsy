@@ -5,7 +5,7 @@
  */
 
 import { EventType } from '@agentsy/types';
-import { beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import {
   createInterruptAbortController,
@@ -213,7 +213,6 @@ describe('createInterruptAbortController', () => {
     const { controller } = createInterruptAbortController();
 
     expect(controller.signal).toBeDefined();
-    // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
     expectTypeOf(controller.signal.addEventListener).toBeFunction();
   });
 
@@ -254,7 +253,6 @@ describe('TimeoutInterrupt', () => {
     const timeout = new TimeoutInterrupt(5000);
 
     expect(timeout.getController()).toBeDefined();
-    // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
     expectTypeOf(timeout.getController().isInterrupted).toBeFunction();
   });
 

@@ -4,18 +4,20 @@ import type { LanguageModelChatProvider } from 'vscode';
  * Error codes standardized across all providers.
  * Maps to VS Code LanguageModelError codes.
  */
-export enum ProviderErrorCode {
-  InvalidApiKey = 'invalid_api_key',
-  RateLimited = 'rate_limited',
-  ModelNotFound = 'model_not_found',
-  ContextLengthExceeded = 'context_length_exceeded',
-  ConnectionError = 'connection_error',
-  Timeout = 'timeout',
-  InvalidRequest = 'invalid_request',
-  InternalError = 'internal_error',
-  NotImplemented = 'not_implemented',
-  Cancelled = 'cancelled'
-}
+export const ProviderErrorCode = {
+  InvalidApiKey: 'invalid_api_key',
+  RateLimited: 'rate_limited',
+  ModelNotFound: 'model_not_found',
+  ContextLengthExceeded: 'context_length_exceeded',
+  ConnectionError: 'connection_error',
+  Timeout: 'timeout',
+  InvalidRequest: 'invalid_request',
+  InternalError: 'internal_error',
+  NotImplemented: 'not_implemented',
+  Cancelled: 'cancelled'
+} as const;
+
+export type ProviderErrorCode = (typeof ProviderErrorCode)[keyof typeof ProviderErrorCode];
 
 /**
  * User-friendly messages for each error code.
@@ -38,26 +40,25 @@ export const ErrorCodeToMessage: Record<ProviderErrorCode, string> = {
  * Configuration for BaseLanguageModelChatProvider.
  */
 export interface ProviderConfig {
-  /** Unique identifier for this provider (e.g., 'selfagency-opilot') */
-  providerId: string;
-
-  /** Vendor name (e.g., 'Ollama') */
-  vendor: string;
-
-  /** Provider family (e.g., 'Ollama') */
-  family: string;
+  /** Optional API key secret name for ApiKeyManager */
+  apiKeySecretName?: string;
 
   /** Display name shown in UI (e.g., 'Ollama') */
   displayName: string;
 
+  /** Provider family (e.g., 'Ollama') */
+  family: string;
+
   /** Maximum input tokens supported */
   maxInputTokens: number;
+  /** Unique identifier for this provider (e.g., 'selfagency-opilot') */
+  providerId: string;
 
   /** Supported capabilities */
   supportedCapabilities?: ('thinking' | 'vision' | 'tool-calls')[];
 
-  /** Optional API key secret name for ApiKeyManager */
-  apiKeySecretName?: string;
+  /** Vendor name (e.g., 'Ollama') */
+  vendor: string;
 }
 
 /**
@@ -65,20 +66,19 @@ export interface ProviderConfig {
  * Subclasses return this from buildRequest().
  */
 export interface ProviderApiRequest {
-  /** Target API endpoint URL */
-  url?: string;
-
-  /** HTTP method */
-  method: 'POST' | 'GET' | 'PUT' | 'DELETE';
+  /** Request body (JSON) */
+  body?: unknown;
 
   /** Request headers */
   headers: Record<string, string>;
 
-  /** Request body (JSON) */
-  body?: unknown;
+  /** HTTP method */
+  method: 'POST' | 'GET' | 'PUT' | 'DELETE';
 
   /** Optional request timeout in milliseconds */
   timeout?: number;
+  /** Target API endpoint URL */
+  url?: string;
 }
 
 /**
@@ -91,46 +91,44 @@ export type ProviderStreamChunk = Record<string, unknown>;
  * API key manager configuration.
  */
 export interface ApiKeyManagerConfig {
-  /** Secret storage key (e.g., 'OLLAMA_API_KEY') */
-  secretKey: string;
-
   /** VS Code context key for hasKey state (e.g., 'opilot.hasApiKey') */
   contextKey: string;
 
   /** Display name for prompts (e.g., 'Ollama API Key') */
   displayName: string;
 
+  /** Optional error handler */
+  onError?: (error: Error) => void;
+
   /** Optional prompt message when requesting key */
   promptMessage?: string;
+  /** Secret storage key (e.g., 'OLLAMA_API_KEY') */
+  secretKey: string;
 
   /** Optional validation function */
   validateBeforeStore?: (key: string) => boolean | Promise<boolean>;
-
-  /** Optional error handler */
-  onError?: (error: Error) => void;
 }
 
 /**
  * Usage quota information.
  */
 export interface UsageQuota {
-  /** Tokens or credits used */
-  used: number;
+  /** When the quota resets */
+  expiresAt?: Date;
+
+  /** Percentage used (0-1) */
+  percentUsed: number;
 
   /** Total limit */
   total: number;
 
   /** Unit of measurement */
   unit: 'tokens' | 'credits' | 'requests';
+  /** Tokens or credits used */
+  used: number;
 
   /** Time window */
   window: 'hourly' | 'daily' | 'weekly' | 'monthly';
-
-  /** Percentage used (0-1) */
-  percentUsed: number;
-
-  /** When the quota resets */
-  expiresAt?: Date;
 }
 
 /**
@@ -138,34 +136,30 @@ export interface UsageQuota {
  * Implement this to provide usage data for UsageStatusBar.
  */
 export interface IQuotaDataSource {
+  /** Optional cleanup */
+  dispose?(): void;
   /** Get current quota information */
   getQuota(): Promise<UsageQuota>;
 
   /** Refresh quota information from API */
   refreshQuota(): Promise<UsageQuota>;
-
-  /** Optional cleanup */
-  dispose?(): void;
 }
 
 /**
  * Usage status bar configuration.
  */
 export interface UsageStatusBarConfig {
+  /** Optional color scheme */
+  colorScheme?: {
+    normal: string;
+    warning: string;
+    error: string;
+  };
   /** Display name in status bar (e.g., 'Z.ai Usage') */
   displayName: string;
 
-  /** Optional tooltip template with {{used}}, {{total}}, {{percent}} */
-  tooltipTemplate?: string;
-
-  /** Warning threshold (0-1), e.g., 0.8 for 80% */
-  warningThreshold?: number;
-
   /** Error threshold (0-1), e.g., 0.95 for 95% */
   errorThreshold?: number;
-
-  /** Refresh interval in milliseconds (default: 60000) */
-  refreshIntervalMs?: number;
 
   /** Optional refresh callback */
   onClickRefresh?: () => Promise<void>;
@@ -173,39 +167,40 @@ export interface UsageStatusBarConfig {
   /** Data source for quota information */
   quotaDataSource: IQuotaDataSource;
 
-  /** Optional color scheme */
-  colorScheme?: {
-    normal: string;
-    warning: string;
-    error: string;
-  };
+  /** Refresh interval in milliseconds (default: 60000) */
+  refreshIntervalMs?: number;
+
+  /** Optional tooltip template with {{used}}, {{total}}, {{percent}} */
+  tooltipTemplate?: string;
+
+  /** Warning threshold (0-1), e.g., 0.8 for 80% */
+  warningThreshold?: number;
 }
 
 /**
  * MCP server definition.
  */
 export interface McpServerDefinition {
-  name: string;
-  command: string;
+  alwaysAllow?: boolean;
   args?: string[];
+  command: string;
+  disabled?: boolean;
   env?: Record<string, string>;
   headers?: Record<string, string>;
-  disabled?: boolean;
-  alwaysAllow?: boolean;
+  name: string;
 }
 
 /**
  * Configuration for McpServerRegistry.
  */
 export interface McpServerRegistryConfig {
+  /** Auto-register on activation */
+  autoRegister?: boolean;
   /** Namespace in settings (e.g., 'zModels.mcpServers') */
   namespace: string;
 
   /** Providers for dynamic servers */
   providers?: McpServerProvider[];
-
-  /** Auto-register on activation */
-  autoRegister?: boolean;
 }
 
 /**
@@ -219,14 +214,13 @@ export interface McpServerProvider {
  * Settings loader configuration.
  */
 export interface SettingsLoaderConfig {
+  /** Default values */
+  defaults?: Record<string, unknown>;
   /** Extension namespace (e.g., 'opilot') */
   namespace: string;
 
   /** JSON schema for validation */
   schema: Record<string, unknown>;
-
-  /** Default values */
-  defaults?: Record<string, unknown>;
 }
 
 /**

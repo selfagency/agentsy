@@ -5,14 +5,14 @@ import type { MemoryEngine } from '../cognitive/memory-engine.js';
 
 export interface OnResponseInput {
   engine: MemoryEngine;
+  modelFamily?: string;
   responseContent: string;
   responseTokens: number;
-  modelFamily?: string;
 }
 
 export interface OnResponseOutput {
-  memoryId: string | null;
   importance: number;
+  memoryId: string | null;
 }
 
 /**
@@ -26,9 +26,15 @@ export function onResponse(input: OnResponseInput): OnResponseOutput {
 
   // Importance heuristic: longer, more substantial responses get higher scores
   let importance = 0.3;
-  if (responseTokens > 500) importance = 0.5;
-  if (responseTokens > 1000) importance = 0.6;
-  if (responseTokens > 2000) importance = 0.7;
+  if (responseTokens > 500) {
+    importance = 0.5;
+  }
+  if (responseTokens > 1000) {
+    importance = 0.6;
+  }
+  if (responseTokens > 2000) {
+    importance = 0.7;
+  }
 
   // Build content — truncate to avoid bloat in sensory buffer
   const content =

@@ -15,17 +15,20 @@ function redactSecrets(value: string): string {
 }
 
 export interface AuditEvent {
-  readonly id: string;
+  readonly actor?: string;
+  readonly contentHash?: string;
   readonly correlationId: string;
+  readonly id: string;
+  readonly metadata?: Readonly<Record<string, string>>;
   readonly operation: AuditOperation;
   readonly path: string;
-  readonly contentHash?: string;
-  readonly actor?: string;
   readonly timestamp: number;
-  readonly metadata?: Readonly<Record<string, string>>;
 }
 
 export interface AuditTrail {
+  byCorrelation(correlationId: string): AuditEvent[];
+  clear(): void;
+  query(path?: string): AuditEvent[];
   record(
     operation: AuditOperation,
     path: string,
@@ -36,9 +39,6 @@ export interface AuditTrail {
       metadata?: Record<string, string>;
     }
   ): AuditEvent;
-  query(path?: string): AuditEvent[];
-  byCorrelation(correlationId: string): AuditEvent[];
-  clear(): void;
 }
 
 let counter = 0;

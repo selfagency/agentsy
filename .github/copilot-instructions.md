@@ -73,8 +73,7 @@ When a change is package-scoped, you may run the corresponding package scripts f
 - Module system is **ESM-first**.
 - Build tool is **tsup**.
 - Test framework is **Vitest**.
-- Linter is **oxlint**.
-- Formatter is **oxfmt**.
+- Linter/formatter is **Biome** (via ultracite preset).
 
 ## TypeScript Rules
 
@@ -101,11 +100,8 @@ Follow the root `tsconfig.json` as the source of truth.
 
 ## Linting and Formatting
 
-- Use **oxlint**, not ESLint.
-- Use **oxfmt**, not Prettier.
-- Respect root config in:
-  - `.oxlintrc.json`
-  - `.oxfmtrc.json`
+- Use **Biome** (via ultracite preset), not ESLint/Prettier.
+- Root config: `biome.jsonc`
 
 Key formatter conventions:
 

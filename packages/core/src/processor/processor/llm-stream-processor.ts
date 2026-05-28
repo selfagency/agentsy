@@ -40,7 +40,6 @@ export type {
 const DEFAULT_MAX_INPUT_LENGTH = 256 * 1024;
 const DEFAULT_MAX_TOOL_CALLS_PER_MESSAGE = 64;
 const DEFAULT_MAX_TOOL_ARGUMENT_BYTES = 128 * 1024;
-// biome-ignore lint/complexity/noUnusedVariables: Reserved for future XML nesting depth limits
 const _DEFAULT_MAX_XML_NESTING_DEPTH = 64; // Reserved for future XML nesting depth limits
 const DEFAULT_MAX_RESIDUAL_BYTES = 1024 * 1024; // 1 MiB
 const DEFAULT_MAX_WARNINGS = 100;
@@ -385,7 +384,7 @@ export class LLMStreamProcessor {
     }
 
     const delta = this.xmlFilter.write(content);
-    content = delta;
+    let result = delta;
     const maxResidualBytes = this.options.maxResidualBytes ?? DEFAULT_MAX_RESIDUAL_BYTES;
     const newResidualSize = this._rawResidual.length + this._filteredResidual.length + delta.length;
     if (maxResidualBytes > 0 && newResidualSize > maxResidualBytes) {
@@ -393,7 +392,7 @@ export class LLMStreamProcessor {
         currentSize: this._rawResidual.length + this._filteredResidual.length,
         incomingBytes: delta.length
       });
-      return content;
+      return result;
     }
 
     this._filteredResidual += delta;
@@ -403,14 +402,14 @@ export class LLMStreamProcessor {
       const full = m[0];
       try {
         this._filteredResidual = this._filteredResidual.replace(full, '');
-        content += full;
+        result += full;
         completeTagRe.lastIndex = 0;
         m = completeTagRe.exec(this._filteredResidual);
       } catch {
         break;
       }
     }
-    return content;
+    return result;
   }
 
   private mergeUniqueToolCalls(...groups: XmlToolCall[][]): XmlToolCall[] {
@@ -487,7 +486,7 @@ export class LLMStreamProcessor {
     const completeParts = completedToolCalls
       .filter(
         call =>
-          !midStreamCalls.some(part => part.call === call) && !accumulatedNativeCalls.some(part => part.call === call)
+          !(midStreamCalls.some(part => part.call === call) || accumulatedNativeCalls.some(part => part.call === call))
       )
       .map(call => ({
         call,
@@ -799,8 +798,12 @@ export class LLMStreamProcessor {
   private emitOutput(output: ProcessedOutput): void {
     this.emitConversationLifecycle(output);
     this.emitParts(output.parts);
-    if (output.thinking) this.emitThinking(output.thinking);
-    if (output.content) this.emitText(output.content);
+    if (output.thinking) {
+      this.emitThinking(output.thinking);
+    }
+    if (output.content) {
+      this.emitText(output.content);
+    }
     this.emitDoneIfNeeded(output.done);
   }
 

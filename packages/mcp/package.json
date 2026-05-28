@@ -31,8 +31,8 @@
     "build": "tsup",
     "check-types": "tsc --noEmit",
     "test": "vitest --run --passWithNoTests",
-    "lint": "oxlint .",
-    "format": "oxfmt --write ."
+    "lint": "biome lint",
+    "format": "biome format"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*"

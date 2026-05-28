@@ -254,3 +254,7 @@ fallow-dupes*
 package-lock.json
 test-report.junit.xml
 tmp/
+tui-traces/
+tui-results/
+.tmp/
+.tui-test/cache/

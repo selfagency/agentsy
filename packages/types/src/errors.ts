@@ -14,10 +14,15 @@ export class AgentsyError extends Error {
     this.details = details ?? {};
 
     // Maintains proper stack trace - error is intentional for custom error classes
-    // oxlint-disable-next-line unicorn/no-useless-error-capture-stack-trace
     Error.captureStackTrace(this, this.constructor);
   }
 
+  /**
+   * Serializes the error to a plain JSON object for structured logging
+   * and wire transfer.
+   *
+   * @returns A JSON-serializable object with `name`, `message`, `code`, and `details`.
+   */
   toJSON(): {
     name: string;
     message: string;

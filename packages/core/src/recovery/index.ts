@@ -6,16 +6,16 @@ import type { XmlToolCall } from '../tool-calls/index.js';
 export interface StreamSnapshot {
   /** Accumulated assistant content at the time the snapshot was taken. */
   content: string;
+  /** The `ProcessorOptions` the processor was constructed with (for rebuilding). */
+  options: ProcessorOptions;
   /** Accumulated thinking/scratchpad content. */
   thinking: string;
+  /** Unix timestamp (ms) when the snapshot was taken. */
+  timestamp: number;
   /** Tool calls that were completed up to this point. */
   toolCalls: XmlToolCall[];
   /** Accumulated token usage, if available. */
   usage?: UsageInfo;
-  /** The `ProcessorOptions` the processor was constructed with (for rebuilding). */
-  options: ProcessorOptions;
-  /** Unix timestamp (ms) when the snapshot was taken. */
-  timestamp: number;
 }
 
 export interface ContinuationOptions {
@@ -31,8 +31,8 @@ export interface ContinuationOptions {
 
 /** A generic message object compatible with OpenAI / Anthropic / Ollama chat APIs. */
 export interface ContinuationMessage {
-  role: 'user' | 'assistant';
   content: string;
+  role: 'user' | 'assistant';
 }
 
 function formatToolCallParameters(parameters: XmlToolCall['parameters']): string {
@@ -65,7 +65,7 @@ export function captureStreamState(processor: LLMStreamProcessor, options?: Proc
     content: msg.content,
     thinking: msg.thinking,
     toolCalls: msg.toolCalls,
-    ...(msg.usage != null ? { usage: msg.usage } : {}),
+    ...(msg.usage == null ? {} : { usage: msg.usage }),
     options: options ?? {},
     timestamp: Date.now()
   };

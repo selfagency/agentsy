@@ -2,7 +2,7 @@
 goal: @agentsy/runtime production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: runtime-maintainers
 status: In progress
 tags: [feature, architecture, runtime, execution, approvals]
@@ -23,6 +23,7 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 - **REQ-RUNTIME-005**: Token budget enforcement fails closed on hard-limit breaches.
 - **SEC-RUNTIME-001**: Sandbox pathways isolate side effects according to policy profile.
 - **SEC-RUNTIME-002**: Approval and execution events are auditable with redacted payloads.
+- **SEC-RUNTIME-003**: Hooks execute under default-deny — no hook runs unless explicitly registered in the HookRegistry. The runtime enforces this through compileHooks() which only activates registered hooks for the current session.
 - **CON-RUNTIME-001**: Multi-step planning remains in `@agentsy/orchestrator`.
 - **CON-RUNTIME-002**: Provider protocol mechanics remain in providers/core.
 
@@ -67,6 +68,20 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 | TASK-RUNTIME-010 | Add stress/failure-mode suites for streaming interruption and tool failures. | ✅        | 2026-05-17 |
 | TASK-RUNTIME-011 | Update docs/examples for operator-safe runtime behavior.                     | ✅        | 2026-05-17 |
 | TASK-RUNTIME-012 | Pass package and monorepo release gates.                                     | ✅        | 2026-05-17 |
+
+### Implementation Phase 5 — Memory hook wiring
+
+- GOAL-RUNTIME-005: Wire all memory layers as first-class pre-turn and post-turn hooks in the runtime agentic loop.
+
+| Task             | Description                                                                                                                                          | Completed | Date |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-013 | Implement `createMemoryPreTurnHook()` in `src/hooks/` — retrieves relevant episodic, semantic, and procedural context and packs into prompt payload. |           |      |
+| TASK-RUNTIME-014 | Implement `createMemoryPostTurnHook()` in `src/hooks/` — captures turn observations for episodic (event log) and semantic (wiki) memory layers.      |           |      |
+| TASK-RUNTIME-015 | Implement `createWikiMemoryHook()` in `src/hooks/` — triggers wiki synthesis summarization when turn count threshold or relevance change is met.     |           |      |
+| TASK-RUNTIME-016 | Export all hook factory functions from `src/hooks/index.ts` for use by orchestrator's builtin hook registry.                                         |           |      |
+| TASK-RUNTIME-017 | Add integration tests: pre-turn context retrieval from all memory layers, post-turn capture triggers, wiki synthesis threshold behavior.             |           |      |
+
+Auto-compaction is a runtime-owned primitive. The runtime owns the compact cycle schedule and calls PreCompact hooks. Memory layer registers a PreCompact handler; it does not own the schedule.
 
 ## 3. Acceptance Criteria
 
@@ -121,6 +136,8 @@ The package fulfills its role by implementing a stateful agent loop with the fol
 3. **Approval Workflows**: Implementing Human-in-the-loop (HITL) gates for destructive actions.
 4. **AG-UI Protocol**: A dedicated subpath (`@agentsy/runtime/ag-ui`) for real-time UI synchronization.
 5. **Hook System**: Allowing extensions to tap into lifecycle events (e.g., `before_tool`, `after_turn`).
+
+**Blast-radius principle:** Hook execution errors are isolated per hook — a failing post-turn hook (e.g., memory persistence) must not crash pre-turn hooks or the main execution loop. Each hook is wrapped in try/catch with individual error reporting.
 
 ## Detailed Functionality
 
@@ -408,6 +425,7 @@ healthCheck(): Promise<HealthStatus>;
     - Approval hooks
     - Monitoring hooks
     - Custom hook registration
+    - Hooks follow a typed taxonomy: PreTurn (read-only observer), PostTurn (side-effecting), PreCompact (compaction budget), PreToolCall (guard/approval), PostToolCall (result logging), OnSessionCreate (initialization), OnSessionEnd (cleanup), OnError (error recovery). Each hook type has a dedicated interface in @agentsy/types.
 
     ### Dependencies (merged from agentic-loop)
 
@@ -566,7 +584,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### CRITICAL: Virtual Sandbox Implementation
 
-**Flue Virtual Sandbox Pattern Adoption**
+## Flue Virtual Sandbox Pattern Adoption
 
 - **Rationale:** Default to virtual sandbox (just-bash) for simple operations, containers only for coding/git/browser
 - **Expected Benefits:** 10x faster startup, ~90% infrastructure cost reduction for simple tasks
@@ -621,7 +639,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Task Delegation with Isolated History
 
-**Flue Task Pattern Adoption**
+## Flue Task Pattern Adoption
 
 - **Rationale:** Detached session spawning with isolated message history for parallel execution
 - **Expected Benefits:** Parallel execution, clean semantics, no history pollution
@@ -673,7 +691,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Runtime Coordination with Honker
 
-**Cross-Process Runtime Integration**
+## Cross-Process Runtime Integration
 
 - **Rationale:** honker pub/sub for runtime events and coordination across processes
 - **Expected Benefits:** 1-5ms coordination latency vs polling, atomic queue operations
@@ -721,7 +739,7 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Role-Based Orchestration
 
-**Flue Role Pattern Adoption**
+## Flue Role Pattern Adoption
 
 - **Rationale:** Call-scoped system prompt overlays with clean precedence
 - **Expected Benefits:** Cleaner context, no history pollution, better agent coordination
@@ -794,25 +812,25 @@ healthCheck(): Promise<HealthStatus>;
 
 ### Integration Timeline Summary
 
-**Phase 0: Token Optimization Foundation (Weeks 1-8)**
+## Phase 0: Token Optimization Foundation (Weeks 1-8)
 
 - Virtual sandbox implementation ( Weeks 1-4)
 - Container detection logic (Weeks 5-6)
 - Startup optimization (Weeks 7-8)
 
-**Phase 1: Task Delegation (Weeks 9-14)**
+## Phase 1: Task Delegation (Weeks 9-14)
 
 - Detached session spawning (Weeks 9-10)
 - Precedence rules (Weeks 11-12)
 - Parallel execution (Weeks 13-14)
 
-**Phase 2: Runtime Coordination (Weeks 15-20)**
+## Phase 2: Runtime Coordination (Weeks 15-20)
 
 - Pub/Sub integration (Weeks 15-16)
 - Task queue integration (Weeks 17-18)
 - Atomic workflow patterns (Weeks 19-20)
 
-**Phase 3: Role Orchestration (Weeks 21-24)**
+## Phase 3: Role Orchestration (Weeks 21-24)
 
 - Role system foundation (Weeks 21-22)
 - Dynamic role switching (Weeks 23-24)

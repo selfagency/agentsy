@@ -6,9 +6,7 @@
     "title": "OAuth token policy",
     "content": "Use short-lived access tokens and rotate refresh tokens with replay protection.",
     "updatedAt": "2026-01-05T00:00:00.000Z",
-    "metadata": {
-      "entities": ["oauth", "token", "refresh"]
-    }
+    "metadata": { "entities": ["oauth", "token", "refresh"] }
   },
   {
     "id": "wiki-cache",
@@ -17,8 +15,6 @@
     "title": "Cache invalidation",
     "content": "Invalidate redis keys after writes and use explicit TTL for stale data prevention.",
     "updatedAt": "2026-01-01T00:00:00.000Z",
-    "metadata": {
-      "entities": ["redis", "cache", "ttl"]
-    }
+    "metadata": { "entities": ["redis", "cache", "ttl"] }
   }
 ]

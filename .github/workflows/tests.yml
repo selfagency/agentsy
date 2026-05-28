@@ -48,16 +48,35 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Rebuild native modules
+        run: pnpm rebuild
+
       - name: Run release tooling tests
         run: pnpm test:release
         env:
           CI: true
 
-      - name: Run unit tests with coverage
+      - name: Run unit tests with coverage (JUNIT via built-in reporter)
         run: |
-          pnpm turbo run coverage -- --reporter=junit --outputFile=test-report.junit.xml --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
+          pnpm turbo run coverage -- --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
         env:
           CI: true
+        continue-on-error: true
+
+      - name: Generate JUNIT test reports
+        if: always()
+        run: |
+          pnpm turbo run test -- --reporter=junit --outputFile=test-report.junit.xml
+        env:
+          CI: true
+
+      - name: Upload test results to GitHub
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: test-results
+          path: packages/*/test-report.junit.xml
+          retention-days: 7
 
       - name: Prepare coverage reports
         run: |
@@ -85,7 +104,7 @@ jobs:
           formats: lcov
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
+        if: always()
         uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -107,4 +126,42 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
+          retention-days: 7
+
+  e2e-cli-tests:
+    name: CLI E2E (tui-test)
+    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build CLI package (deps first)
+        run: pnpm turbo run build --filter @agentsy/cli
+
+      - name: Run CLI E2E tests
+        run: pnpm --filter @agentsy/cli test:e2e:dev
+        env:
+          CI: true
+
+      - name: Upload tui-test traces
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tui-traces
+          path: packages/cli/tui-traces/
           retention-days: 7

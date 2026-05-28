@@ -18,15 +18,15 @@ const TOOL_IMPORTANCE: Record<string, number> = {
 
 export interface OnToolCallInput {
   engine: MemoryEngine;
-  toolName: string;
-  toolInput: Record<string, unknown>;
-  toolOutput: string;
   importance?: number;
+  toolInput: Record<string, unknown>;
+  toolName: string;
+  toolOutput: string;
 }
 
 export interface OnToolCallOutput {
-  memoryId: string | null;
   importance: number;
+  memoryId: string | null;
 }
 
 /**

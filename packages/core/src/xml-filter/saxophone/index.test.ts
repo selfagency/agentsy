@@ -1,6 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-
-import { Saxophone } from './index.js';
 import type {
   SaxophoneCData,
   SaxophoneComment,
@@ -9,6 +7,7 @@ import type {
   SaxophoneTagClose,
   SaxophoneText
 } from './index.js';
+import { Saxophone } from './index.js';
 
 function firstEvent<T>(events: T[]): T {
   const first = events[0];

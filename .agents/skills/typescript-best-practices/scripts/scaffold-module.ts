@@ -33,9 +33,7 @@ interface ScaffoldOptions {
 
 // === Name Utilities ===
 function toPascalCase(str: string): string {
-  return str
-    .replace(/[_-](.)/ug, (_, char) => char.toUpperCase())
-    .replace(/^(.)/, (_, char) => char.toUpperCase());
+  return str.replace(/[_-](.)/gu, (_, char) => char.toUpperCase()).replace(/^(.)/, (_, char) => char.toUpperCase());
 }
 
 function toCamelCase(str: string): string {
@@ -45,8 +43,8 @@ function toCamelCase(str: string): string {
 
 function toKebabCase(str: string): string {
   return str
-    .replace(/([a-z])([A-Z])/ug, "$1-$2")
-    .replace(/[_\s]+/ug, "-")
+    .replace(/([a-z])([A-Z])/gu, "$1-$2")
+    .replace(/[_\s]+/gu, "-")
     .toLowerCase();
 }
 
@@ -743,7 +741,7 @@ describe("${pascalName}", () => {
 });`;
       break;
 
-    case "hook":
+    case "hook": {
       const hookName = name.startsWith("use") ? camelName : `use${pascalName}`;
       importStatement = `import { ${hookName} } from "./${fileName}.ts";`;
       testCases = `
@@ -781,6 +779,7 @@ describe("${hookName}", () => {
   });
 });`;
       break;
+    }
   }
 
   return `/**

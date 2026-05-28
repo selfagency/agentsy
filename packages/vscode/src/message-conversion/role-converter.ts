@@ -2,20 +2,20 @@
  * Intermediate chat message format used across providers.
  */
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
+  name?: string;
+  role: 'system' | 'user' | 'assistant' | 'tool';
   toolCallId?: string;
   toolCalls?: ChatToolCall[];
-  name?: string;
 }
 
 /**
  * Intermediate tool call format.
  */
 export interface ChatToolCall {
+  arguments: Record<string, unknown>;
   id: string;
   name: string;
-  arguments: Record<string, unknown>;
 }
 
 /**
@@ -60,12 +60,12 @@ function isValidToolCallPart(p: Record<string, unknown>): boolean {
  */
 export function extractToolCall(part: unknown): ChatToolCall | undefined {
   if (!part || typeof part !== 'object') {
-    return undefined;
+    return;
   }
   const p = part as Record<string, unknown>;
 
   if (!isValidToolCallPart(p)) {
-    return undefined;
+    return;
   }
 
   const args = parseToolArguments(p.input);
@@ -97,13 +97,13 @@ function parseToolArguments(input: unknown): Record<string, unknown> {
  */
 export function extractToolResult(part: unknown): { callId: string; content: string } | undefined {
   if (!part || typeof part !== 'object') {
-    return undefined;
+    return;
   }
   const p = part as Record<string, unknown>;
 
   const { callId } = p;
   if (typeof callId !== 'string') {
-    return undefined;
+    return;
   }
 
   const content = extractContentFromPart(p.content);

@@ -22,7 +22,7 @@ Boundaries and Edge Cases
 
 ## Test Count Heuristic
 
-**Target = (testable spec sections) + (QUALITY.md scenarios) + (defensive patterns from Step 5)**
+## Target = (testable spec sections) + (QUALITY.md scenarios) + (defensive patterns from Step 5)
 
 Example: 12 spec sections + 10 scenarios + 15 defensive patterns = 37 tests as a target.
 

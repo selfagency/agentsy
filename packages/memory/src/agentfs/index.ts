@@ -1,11 +1,11 @@
-export { initAgentFs, detectAgentFs, type AgentFsInitOptions, type AgentFsStatus } from './init.js';
+export { type AgentFsInitOptions, type AgentFsStatus, detectAgentFs, initAgentFs } from './init.js';
 export { createRagFsAdapter, type RagFsAdapterOptions } from './rag-adapter.js';
 export {
-  createSnapshot,
-  restoreSnapshot,
   type AgentFsRestoreResult,
   type AgentFsSnapshotResult,
+  createSnapshot,
   type RestoreOptions,
+  restoreSnapshot,
   type SnapshotOptions
 } from './snapshot.js';
 export { createTierFsAdapter, type TierFsAdapterOptions } from './tier-adapter.js';

@@ -21,7 +21,11 @@ export interface VSCodeStreamBridgeOptions {
  * synchronous VS Code LanguageModelChatProvider response stream.
  */
 export class VSCodeStreamBridge {
-  constructor(private readonly options: VSCodeStreamBridgeOptions) {}
+  private readonly options: VSCodeStreamBridgeOptions;
+
+  constructor(options: VSCodeStreamBridgeOptions) {
+    this.options = options;
+  }
 
   /**
    * Processes an @agentsy/core StreamChunk and surfaces it to VS Code.

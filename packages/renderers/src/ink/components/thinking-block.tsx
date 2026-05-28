@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import type { Theme } from '../themes/types.ts';
 
 interface ThinkingBlockProps {
-  readonly text: string;
-  readonly style: 'blockquote' | 'inline' | 'suppress';
   readonly isStreaming: boolean;
-  readonly theme: Theme;
   readonly screenReader?: boolean;
+  readonly style: 'blockquote' | 'inline' | 'suppress';
+  readonly text: string;
+  readonly theme: Theme;
 }
 
 const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -38,7 +38,7 @@ function InlineThinking({
 
   const textColor = theme.thinking.textColor || undefined;
   return (
-    <Text italic dimColor={theme.text.dimColor} {...(textColor ? { color: textColor } : {})}>
+    <Text dimColor={theme.text.dimColor} italic {...(textColor ? { color: textColor } : {})}>
       [Thinking] {text}
       {isStreaming && '…'}
     </Text>
@@ -62,8 +62,11 @@ function BlockquoteThinking({
     return <ScreenReaderThinking text={text} />;
   }
 
-  const borderStyle: 'single' | 'double' | 'round' | undefined =
-    theme.border.style === 'single' || theme.border.style === 'double' || theme.border.style === 'round'
+  const borderStyle: 'single' | 'double' | 'round' | 'bold' | undefined =
+    theme.border.style === 'single' ||
+    theme.border.style === 'double' ||
+    theme.border.style === 'round' ||
+    theme.border.style === 'bold'
       ? theme.border.style
       : undefined;
   const borderColor = theme.border.color || undefined;
@@ -71,7 +74,7 @@ function BlockquoteThinking({
   const spinnerColor = isStreaming ? theme.thinking.spinnerColor || undefined : theme.thinking.textColor || undefined;
 
   return (
-    <Box borderStyle={borderStyle} {...(borderColor ? { borderColor } : {})} paddingLeft={1} marginBottom={1}>
+    <Box borderStyle={borderStyle} {...(borderColor ? { borderColor } : {})} marginBottom={1} paddingLeft={1}>
       <Text {...(spinnerColor ? { color: spinnerColor } : {})}>
         {isStreaming ? `${spinnerSymbol} thinking…` : text}
       </Text>
@@ -99,10 +102,10 @@ export function ThinkingBlock({ text, style, isStreaming, theme, screenReader = 
   }
 
   if (style === 'inline') {
-    return <InlineThinking text={text} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />;
+    return <InlineThinking isStreaming={isStreaming} screenReader={screenReader} text={text} theme={theme} />;
   }
 
   return (
-    <BlockquoteThinking text={text} frame={frame} isStreaming={isStreaming} theme={theme} screenReader={screenReader} />
+    <BlockquoteThinking frame={frame} isStreaming={isStreaming} screenReader={screenReader} text={text} theme={theme} />
   );
 }

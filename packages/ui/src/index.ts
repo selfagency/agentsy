@@ -28,13 +28,13 @@
  * ```
  */
 
-export { applyConversationEvent } from './eventSourcing.js';
+export { applyConversationEvent } from './event-sourcing.js';
 export {
   bindProcessorToConversationStore,
-  createConversationStoreFromProcessor,
-  type ConversationStoreBridge
-} from './processorBridge.js';
-export { createConversationStore, type ConversationStore, type StoreListener } from './store.js';
+  type ConversationStoreBridge,
+  createConversationStoreFromProcessor
+} from './processor-bridge.js';
+export { type ConversationStore, createConversationStore, type StoreListener } from './store.js';
 export type {
   ConversationEvent,
   UIConversation,

@@ -12,7 +12,14 @@
   "duplicates": {
     "threshold": 8,
     "ignoreDefaults": false,
-    "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.jsx", "**/*.test.js", "**/*.spec.ts", "**/*.spec.tsx"],
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.test.jsx",
+      "**/*.test.js",
+      "**/*.spec.ts",
+      "**/*.spec.tsx"
+    ],
     "minLines": 8,
     "minTokens": 70
   },

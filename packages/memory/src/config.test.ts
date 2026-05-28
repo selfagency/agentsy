@@ -1,14 +1,11 @@
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 
-import { describe, it, expect } from 'vitest';
-
-import { loadConfig, DEFAULT_TIER_CONFIGS } from './config.js';
+import { DEFAULT_TIER_CONFIGS, loadConfig } from './config.js';
 
 describe('loadConfig', () => {
   it('should return defaults when no overrides provided', () => {
     const config = loadConfig();
-    expect(config.db.path).toBe(join(homedir(), '.agentsy', 'memory.db'));
+    expect(config.db.path).toBe('.agentsy/memory.db');
     expect(config.tiers).toEqual(DEFAULT_TIER_CONFIGS);
     expect(config.mcp.transport).toBe('stdio');
     expect(config.logLevel).toBe('info');

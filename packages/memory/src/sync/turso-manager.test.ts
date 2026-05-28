@@ -52,10 +52,10 @@ describe('Turso sync foundation', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
-        async download() {
+        download() {
           throw new Error('download should not run while paused');
         },
-        async upload() {
+        upload() {
           throw new Error('upload should not run while paused');
         }
       },
@@ -87,6 +87,7 @@ describe('Turso sync foundation', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<SyncSnapshot> interface
         async download(cursor) {
           return {
             cursor,
@@ -100,6 +101,7 @@ describe('Turso sync foundation', () => {
             ]
           };
         },
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<TursoUploadResult> interface
         async upload(snapshot) {
           uploadedSnapshot = {
             cursor: snapshot.cursor,
@@ -160,13 +162,14 @@ describe('Turso sync foundation', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<SyncSnapshot> interface
         async download() {
           return {
             cursor: 'cursor-1',
             records: []
           };
         },
-        async upload() {
+        upload() {
           throw new Error('remote unavailable');
         }
       },

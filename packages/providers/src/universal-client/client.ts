@@ -13,22 +13,22 @@ import { createPipeline } from '../pipeline/index.js';
  * Configuration options for a UniversalClient instance.
  */
 export interface UniversalClientConfig {
-  /** Provider identifier (e.g., 'openai', 'anthropic', 'gemini') */
-  provider: NormalizerProvider;
   /** API key for authentication */
   apiKey?: string;
   /** Base URL for provider API (defaults to provider-specific URL) */
   baseUrl?: string;
-  /** Organization ID for OpenAI-compatible providers */
-  organizationId?: string;
-  /** Request timeout in milliseconds */
-  timeoutMs?: number;
-  /** Maximum number of retry attempts */
-  maxAttempts?: number;
-  /** Retry policy for network errors */
-  retryPolicy?: 'exponential' | 'linear' | 'none';
   /** Initial delay between retries in milliseconds */
   initialDelayMs?: number;
+  /** Maximum number of retry attempts */
+  maxAttempts?: number;
+  /** Organization ID for OpenAI-compatible providers */
+  organizationId?: string;
+  /** Provider identifier (e.g., 'openai', 'anthropic', 'gemini') */
+  provider: NormalizerProvider;
+  /** Retry policy for network errors */
+  retryPolicy?: 'exponential' | 'linear' | 'none';
+  /** Request timeout in milliseconds */
+  timeoutMs?: number;
 }
 
 /**
@@ -189,7 +189,6 @@ function buildHeaders(
   };
 
   if (apiKey) {
-    // oxlint-disable-next-line switch-exhaustiveness-check
     switch (_provider) {
       case 'openai': {
         headers.Authorization = `Bearer ${apiKey}`;
@@ -243,7 +242,7 @@ function parseContentFromChoice(content: { content: string } | { content?: { par
 function parseProviderResponse(response: unknown, _provider: NormalizerProvider): CompletionResponse {
   const data = response as Record<string, unknown>;
 
-  if (!('choices' in data) || !Array.isArray(data.choices) || data.choices.length === 0) {
+  if (!('choices' in data && Array.isArray(data.choices)) || data.choices.length === 0) {
     return {
       content: typeof data.content === 'string' ? data.content : JSON.stringify(data)
     };

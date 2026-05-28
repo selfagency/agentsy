@@ -1,14 +1,14 @@
 import { readFile } from 'node:fs/promises';
 
 import { compressMemoryFile } from '@agentsy/core/context';
-import { compressOutput } from '@agentsy/tokens';
 import type { OutputCompressionLevel } from '@agentsy/tokens';
+import { compressOutput } from '@agentsy/tokens';
 
 export const name = 'cli';
 
 export interface CliIO {
-  stdout?: (message: string) => void;
   stderr?: (message: string) => void;
+  stdout?: (message: string) => void;
 }
 
 const DEFAULT_IO: Required<CliIO> = {
@@ -34,18 +34,18 @@ function hasFlag(args: readonly string[], flag: string): boolean {
 }
 
 interface MemorySyncDevExample {
-  serverDbPath: string;
-  replicaDbPath: string;
   bindAddress: string;
-  serverUrl: string;
-  syncIntervalMs: number;
-  startCommand: string;
   env: {
     TURSO_DATABASE_URL: string;
     TURSO_AUTH_TOKEN: string;
     AGENTSY_MEMORY_SYNC_INTERVAL_MS: string;
   };
   managerExample: string;
+  replicaDbPath: string;
+  serverDbPath: string;
+  serverUrl: string;
+  startCommand: string;
+  syncIntervalMs: number;
 }
 
 const DEFAULT_MEMORY_SYNC_SERVER_DB = './.agentsy/local-sync-server.db';
@@ -212,6 +212,16 @@ async function handleSandboxDiagnosticsCommand(rest: readonly string[], io: CliI
   return runSandboxDiagnosticsCommand(rest, io);
 }
 
+async function handleChatCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runChatCommand } = await import('./commands/chat.js');
+  return runChatCommand(rest, io);
+}
+
+async function handleTuiCommand(argv: readonly string[], io: CliIO): Promise<number> {
+  const { runTuiCommand } = await import('./commands/tui.js');
+  return runTuiCommand(argv, io);
+}
+
 async function handleContentAddressStatsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runContentAddressStatsCommand } = await import('./commands/content-address-stats.js');
   return runContentAddressStatsCommand(rest, io);
@@ -220,13 +230,22 @@ async function handleContentAddressStatsCommand(rest: readonly string[], io: Cli
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
   );
   return 1;
 }
 
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
   const [command, ...rest] = argv;
+
+  // Default entry-point: no subcommand → Ink TUI agent IDE
+  if (command === undefined) {
+    return handleTuiCommand(argv, io);
+  }
+
+  if (command === 'tui') {
+    return handleTuiCommand(rest, io);
+  }
 
   if (command === 'compress') {
     return await handleCompressCommand(rest, io);
@@ -242,6 +261,10 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
   if (command === 'sandbox-diagnostics') {
     return await handleSandboxDiagnosticsCommand(rest, io);
+  }
+
+  if (command === 'chat') {
+    return await handleChatCommand(rest, io);
   }
 
   if (command === 'content-address-stats') {

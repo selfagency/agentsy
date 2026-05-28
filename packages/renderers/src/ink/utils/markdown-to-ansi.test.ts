@@ -145,7 +145,8 @@ describe('Markdown to ANSI Conversion', () => {
     });
 
     it('converts document with multiple sections', async () => {
-      const markdown = `# Section 1\n\nContent here.\n\n## Subsection\n\nMore content with **formatting**.\n\n# Section 2\n\nFinal content.`;
+      const markdown =
+        '# Section 1\n\nContent here.\n\n## Subsection\n\nMore content with **formatting**.\n\n# Section 2\n\nFinal content.';
       const result = await markdownToAnsi(markdown);
       expect(result).toBeDefined();
       expectTypeOf(result).toBeString();

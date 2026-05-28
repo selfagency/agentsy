@@ -3,9 +3,9 @@
  * Rivet integration is currently disabled due to security vulnerabilities in its dependencies.
  */
 export interface ContainerSandbox {
-  readonly mode: 'container';
-  execute(input: unknown, files?: unknown[]): Promise<unknown>;
   destroy(): Promise<void>;
+  execute(input: unknown, files?: unknown[]): Promise<unknown>;
+  readonly mode: 'container';
 }
 
 // Re-enable when Rivet is safe to use

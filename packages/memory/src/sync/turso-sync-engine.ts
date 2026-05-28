@@ -3,29 +3,29 @@ import { connect } from '@tursodatabase/sync';
 import type { SyncRunResult, SyncStatus } from './types.js';
 
 export interface TursoSyncEngineConfig {
-  /** Path to the local SQLite database file. */
-  path: string;
-  /** Remote Turso database URL (e.g. libsql://db-org.turso.io). */
-  url?: string;
   /** Auth token for the remote database. */
   authToken?: string | (() => Promise<string>);
   /** Optional client name for distinguishing replicas. */
   clientName?: string;
+  /** Path to the local SQLite database file. */
+  path: string;
+  /** Remote Turso database URL (e.g. libsql://db-org.turso.io). */
+  url?: string;
 }
 
 export interface TursoSyncEngine {
-  sync(): Promise<SyncRunResult>;
+  close(): Promise<void>;
   pause(): void;
   resume(): void;
   status(): SyncStatus;
-  close(): Promise<void>;
+  sync(): Promise<SyncRunResult>;
 }
 
 interface SyncState {
-  status: SyncStatus;
-  uploaded: number;
   downloaded: number;
   lastError?: string | undefined;
+  status: SyncStatus;
+  uploaded: number;
 }
 
 /**
@@ -83,7 +83,7 @@ export async function createTursoSyncEngine(config: TursoSyncEngineConfig): Prom
       // Push local changes
       await client.push();
       const stats = await client.stats();
-      const uploaded = stats.cdcOperations > 0 ? stats.cdcOperations : 0;
+      const uploaded = Math.max(stats.cdcOperations, 0);
 
       // Checkpoint WAL
       await client.checkpoint();
@@ -122,7 +122,7 @@ export async function createTursoSyncEngine(config: TursoSyncEngineConfig): Prom
   }
 
   return {
-    async sync() {
+    sync() {
       return doSync();
     },
 

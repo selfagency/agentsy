@@ -1,12 +1,12 @@
 import type { MemoryItem, MemoryKind, ReuseClass, WriteHeap } from './tier-types.js';
 
 export interface TierTestClock {
-  now: () => number;
   advance: (ms: number) => void;
+  now: () => number;
   set: (ms: number) => void;
 }
 
-export function createTierTestClock(startMs: number = 10_000): TierTestClock {
+export function createTierTestClock(startMs = 10_000): TierTestClock {
   let current = startMs;
 
   return {
@@ -25,18 +25,18 @@ export function createTierTestClock(startMs: number = 10_000): TierTestClock {
 }
 
 export interface TestMemoryItemOptions {
-  id?: string;
-  kind?: MemoryKind;
-  content?: string;
-  tokenCount?: number;
-  importance?: number;
-  writeHeap?: WriteHeap;
-  reuseClass?: ReuseClass;
-  createdAt?: number;
-  lastAccessedAt?: number;
   accessCount?: number;
+  content?: string;
+  createdAt?: number;
   fingerprint?: string;
+  id?: string;
+  importance?: number;
+  kind?: MemoryKind;
+  lastAccessedAt?: number;
   metadata?: Record<string, unknown>;
+  reuseClass?: ReuseClass;
+  tokenCount?: number;
+  writeHeap?: WriteHeap;
 }
 
 let itemIdCounter = 0;

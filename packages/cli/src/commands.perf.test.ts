@@ -41,7 +41,7 @@ describe('Phase 0: CLI Commands Validation', () => {
 
   it('compress command works with --text flag', async () => {
     const exitCode = await runCli(['compress', '--level', 'full', '--text', SAMPLE_TEXT], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stdout: (value: string): void => {
         capturedOutput.push(value);
       }
@@ -55,13 +55,15 @@ describe('Phase 0: CLI Commands Validation', () => {
   it('compress command supports different levels', async () => {
     for (const level of ['lite', 'full', 'ultra']) {
       const currentLevelOutput: string[] = [];
-      // oxlint-disable-next-line typescript/no-loop-func
+      // biome-ignore lint: typescript/no-loop-func
       const stdout = (value: string): void => {
         currentLevelOutput.push(value);
       };
 
       capturedOutput = [];
-      const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], { stdout });
+      const exitCode = await runCli(['compress', '--level', level, '--text', SAMPLE_TEXT], {
+        stdout
+      });
 
       expect(exitCode).toBe(0);
       if (currentLevelOutput.length === 0) {
@@ -76,7 +78,7 @@ describe('Phase 0: CLI Commands Validation', () => {
     writeFileSync(memoryFile, SAMPLE_TEXT, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stdout: (value: string): void => {
         capturedOutput.push(value);
       }
@@ -105,7 +107,7 @@ More text after code.
     writeFileSync(memoryFile, contentWithCode, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stdout: (value: string): void => {
         capturedOutput.push(value);
       }
@@ -120,7 +122,7 @@ More text after code.
 
   it('compress command reports savings ratio', async () => {
     const exitCode = await runCli(['compress', '--level', 'ultra', '--text', SAMPLE_TEXT], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stdout: (value: string): void => {
         capturedOutput.push(value);
       }
@@ -131,14 +133,14 @@ More text after code.
     // Should have compressed content and savings ratio
     const savingsLine = capturedOutput.find(line => line.includes('Savings:'));
     expect(savingsLine).toBeDefined();
-    // oxlint-disable-next-line require-unicode-regexp
+    // biome-ignore lint: require-unicode-regexp
     expect(savingsLine).toMatch(/Savings: \d+\.\d+%/);
   });
 
   it('compress command completes quickly', async () => {
     const startTime = performance.now();
     await runCli(['compress', '--level', 'full', '--text', SAMPLE_TEXT], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stdout: (value: string): void => {
         capturedOutput.push(value);
       }
@@ -152,7 +154,7 @@ More text after code.
   it('handles missing --file argument gracefully', async () => {
     const errors: string[] = [];
     const exitCode = await runCli(['compress-memory'], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stderr: (value: string): void => {
         errors.push(value);
       }
@@ -165,7 +167,7 @@ More text after code.
   it('handles missing input for compress command', async () => {
     const errors: string[] = [];
     const exitCode = await runCli(['compress'], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stderr: (value: string): void => {
         errors.push(value);
       }
@@ -180,7 +182,7 @@ More text after code.
     writeFileSync(memoryFile, SAMPLE_TEXT, 'utf-8');
 
     const exitCode = await runCli(['compress-memory', '--file', memoryFile], {
-      // oxlint-disable-next-line typescript/no-confusing-void-expression
+      // biome-ignore lint: typescript/no-confusing-void-expression
       stdout: (value: string): void => {
         capturedOutput.push(value);
       }

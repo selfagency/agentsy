@@ -15,8 +15,8 @@ import type {
   RedactionPolicy,
   Span
 } from '../core/types.js';
+import type { LoggerConfig, LogLevel } from './logger.js';
 import { LoggerImpl } from './logger.js';
-import type { LogLevel, LoggerConfig } from './logger.js';
 import { MeterImpl } from './meter.js';
 import { TracerImpl } from './tracer.js';
 
@@ -24,6 +24,20 @@ import { TracerImpl } from './tracer.js';
  * Configuration for initializing the observability engine
  */
 export interface ObservabilityEngineConfig {
+  /** Logging configuration */
+  logging?: {
+    /** Minimum log level to output (INFO, DEBUG, WARN, ERROR) */
+    minLevel?: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR';
+    /** Whether to include timestamps in logs */
+    includeTimestamp?: boolean;
+  };
+  /** Metrics configuration */
+  metrics?: {
+    /** Prometheus endpoint for metrics scraping */
+    prometheusEndpoint?: string;
+    /** Interval for metrics export in milliseconds */
+    interval?: number;
+  };
   /** Service name for telemetry (e.g., 'ai-agent-runtime') */
   serviceName: string;
   /** Service version string */
@@ -35,20 +49,6 @@ export interface ObservabilityEngineConfig {
     /** Jaeger endpoint for distributed tracing */
     jaegerEndpoint?: string;
   };
-  /** Metrics configuration */
-  metrics?: {
-    /** Prometheus endpoint for metrics scraping */
-    prometheusEndpoint?: string;
-    /** Interval for metrics export in milliseconds */
-    interval?: number;
-  };
-  /** Logging configuration */
-  logging?: {
-    /** Minimum log level to output (INFO, DEBUG, WARN, ERROR) */
-    minLevel?: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR';
-    /** Whether to include timestamps in logs */
-    includeTimestamp?: boolean;
-  };
 }
 
 const LOG_LEVEL_MAP: Record<string, LogLevel> = {
@@ -57,6 +57,7 @@ const LOG_LEVEL_MAP: Record<string, LogLevel> = {
   INFO: 1,
   WARN: 2
 };
+
 export { LOG_LEVEL_MAP };
 
 /**

@@ -78,14 +78,14 @@ Scan ALL files (including config, env, CI/CD, Dockerfiles, IaC) for:
 This is the core scan. Reason about the code — don't just pattern-match.
 Read `references/vuln-categories.md` for full details on each category.
 
-**Injection Flaws**
+## Injection Flaws
 
 - SQL Injection: raw queries with string interpolation, ORM misuse, second-order SQLi
 - XSS: unescaped output, dangerouslySetInnerHTML, innerHTML, template injection
 - Command Injection: exec/spawn/system with user input
 - LDAP, XPath, Header, Log injection
 
-**Authentication & Access Control**
+## Authentication & Access Control
 
 - Missing authentication on sensitive endpoints
 - Broken object-level authorization (BOLA/IDOR)
@@ -94,7 +94,7 @@ Read `references/vuln-categories.md` for full details on each category.
 - Privilege escalation paths
 - Mass assignment / parameter pollution
 
-**Data Handling**
+## Data Handling
 
 - Sensitive data in logs, error messages, or API responses
 - Missing encryption at rest or in transit
@@ -103,14 +103,14 @@ Read `references/vuln-categories.md` for full details on each category.
 - XXE (XML External Entity) processing
 - SSRF (Server-Side Request Forgery)
 
-**Cryptography**
+## Cryptography
 
 - Use of MD5, SHA1, DES for security purposes
 - Hardcoded IVs or salts
 - Weak random number generation (Math.random() for tokens)
 - Missing TLS certificate validation
 
-**Business Logic**
+## Business Logic
 
 - Race conditions (TOCTOU)
 - Integer overflow in financial calculations

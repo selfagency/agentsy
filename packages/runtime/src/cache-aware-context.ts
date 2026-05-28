@@ -1,20 +1,20 @@
 export interface RuntimeReusableSegment {
   fingerprint: string;
-  reuseClass: 'hot' | 'warm' | 'cold';
   invalidations: string[];
+  reuseClass: 'hot' | 'warm' | 'cold';
 }
 
 export interface BuildRuntimeContextInput {
-  modelFamily: string;
-  templateVersion: string;
-  reusableSegments: RuntimeReusableSegment[];
   invalidatedKeys?: string[];
+  modelFamily: string;
+  reusableSegments: RuntimeReusableSegment[];
+  templateVersion: string;
 }
 
 export interface RuntimeContextReuse {
   modelFamily: string;
-  templateVersion: string;
   reusedSegments: string[];
+  templateVersion: string;
 }
 
 function reusePriority(reuseClass: RuntimeReusableSegment['reuseClass']): number {
@@ -27,6 +27,9 @@ function reusePriority(reuseClass: RuntimeReusableSegment['reuseClass']): number
     }
     case 'cold': {
       return 2;
+    }
+    default: {
+      return 999;
     }
   }
 }

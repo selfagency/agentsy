@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createMemoryTier, nextTierName, prevTierName } from './memory-tier.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import type { TierConfig } from './tier-types.js';
 
 function makeConfig(overrides: Partial<TierConfig> = {}): TierConfig {
@@ -10,7 +10,7 @@ function makeConfig(overrides: Partial<TierConfig> = {}): TierConfig {
     name: 'sensory_buffer',
     maxTokens: 200,
     maxItems: 50,
-    ttlMs: 5_000,
+    ttlMs: 5000,
     consolidationThreshold: 0.6,
     compressionTarget: 0.3,
     ...overrides
@@ -123,12 +123,12 @@ describe('createMemoryTier', () => {
 
   it('expires items past TTL on read/write', () => {
     const tier = createMemoryTier({
-      config: makeConfig({ ttlMs: 1_000 }),
+      config: makeConfig({ ttlMs: 1000 }),
       now: clock.now
     });
     tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
     expect(tier.items()).toHaveLength(1);
-    clock.advance(2_000);
+    clock.advance(2000);
     const result = tier.read();
     expect(result.items).toHaveLength(0);
   });

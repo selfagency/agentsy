@@ -1,15 +1,15 @@
 // CLI: @agentsy/memory init — standalone initialization entrypoint
 
-import { initMemory } from '../init.js';
 import type { InitOptions, InitResult } from '../init.js';
+import { initMemory } from '../init.js';
 
-export { initMemory, type InitOptions, type InitResult };
+export { type InitOptions, type InitResult, initMemory };
 
 /**
  * Run the init CLI with parsed arguments.
  * Returns the InitResult on success, throws on failure.
  */
-export async function runInitCli(args: string[] = process.argv.slice(2)): Promise<InitResult> {
+export function runInitCli(args: string[] = process.argv.slice(2)): InitResult {
   if (args[0] === '--help' || args[0] === '-h') {
     console.log(`
 @agentsy/memory init — Initialize memory engine
@@ -36,16 +36,15 @@ Environment variables:
 
   const options: InitOptions = {};
 
+  // biome-ignore lint/style/useForOf: index-based iteration needed for args[++i] consumption
   for (let i = 0; i < args.length; i++) {
-    // nosemgrep: args[i] is from process.argv with loop bounds check
     const arg = args[i];
     switch (arg) {
       case '--transport': {
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const transportVal = args[++i];
-        if (transportVal && typeof transportVal === 'string') {
+        if (transportVal) {
           options.config.mcp.transport = transportVal as 'stdio' | 'http';
         }
         break;
@@ -53,9 +52,8 @@ Environment variables:
       case '--port': {
         options.config = options.config ?? {};
         options.config.mcp = options.config.mcp ?? {};
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const portVal = args[++i];
-        if (portVal && typeof portVal === 'string') {
+        if (portVal) {
           options.config.mcp.port = Number.parseInt(portVal, 10);
         }
         break;
@@ -69,16 +67,18 @@ Environment variables:
       case '--force':
         options.force = true;
         break;
+      default:
+        break;
     }
   }
 
-  return await initMemory(options);
+  return initMemory(options);
 }
 
 /** Main entrypoint for `agentsy-memory init` CLI. */
-export async function main(): Promise<void> {
+export function main(): void {
   try {
-    const result = await runInitCli();
+    const result = runInitCli();
 
     const hasServer = 'server' in result && result.server !== undefined;
     console.log('✓ @agentsy/memory initialized');

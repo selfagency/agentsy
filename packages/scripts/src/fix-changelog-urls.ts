@@ -6,14 +6,14 @@ import path from 'node:path';
 const packagesDir = 'packages';
 const files = fs.readdirSync(packagesDir);
 
-files.forEach(file => {
+for (const file of files) {
   const filePath = path.join(packagesDir, file, 'CHANGELOG.md');
   const normalizedPath = path.normalize(filePath);
 
   // Validate path stays within packagesDir to prevent path traversal
   if (!normalizedPath.startsWith(path.normalize(packagesDir))) {
     console.error(`Invalid path: ${filePath} escaped allowed directory`);
-    return;
+    continue;
   }
 
   if (fs.existsSync(filePath) && !file.startsWith('.')) {
@@ -25,4 +25,4 @@ files.forEach(file => {
     );
     fs.writeFileSync(filePath, content);
   }
-});
+}

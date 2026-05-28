@@ -75,6 +75,47 @@ describe('retry', () => {
     }
   });
 
+  it('does not double-settle when abort fires during fn execution', async () => {
+    const controller = new AbortController();
+
+    const fn = vi.fn<() => Promise<string>>().mockImplementation(() => {
+      controller.abort();
+      throw new Error('fail');
+    });
+
+    const operation = retry(fn, {
+      backoffFactor: 2,
+      initialDelay: 0,
+      maxAttempts: 3,
+      maxDelay: 0,
+      signal: controller.signal
+    });
+
+    await expect(operation).rejects.toMatchObject({
+      message: 'Retry aborted',
+      name: 'AbortError'
+    });
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to plain Error when DOMException is unavailable', async () => {
+    const originalDOMException = globalThis.DOMException;
+    // biome-ignore lint: xss/no-mixed-html -- test-only DOM exception removal
+    delete (globalThis as Partial<typeof globalThis>).DOMException;
+
+    try {
+      const controller = new AbortController();
+      controller.abort();
+
+      await expect(retry(async () => 'ok', { signal: controller.signal })).rejects.toMatchObject({
+        message: 'Retry aborted',
+        name: 'AbortError'
+      });
+    } finally {
+      (globalThis as Record<string, unknown>).DOMException = originalDOMException;
+    }
+  });
+
   it('caps exponential backoff at maxDelay', async () => {
     vi.useFakeTimers();
 

@@ -4,7 +4,15 @@
  * OpenTelemetry-based tracer implementation for distributed tracing
  */
 
-import * as api from '@opentelemetry/api';
+import {
+  type Attributes,
+  type Context,
+  context,
+  type Span as OtelSpan,
+  type SpanOptions as OtelSpanOptions,
+  ROOT_CONTEXT,
+  trace
+} from '@opentelemetry/api';
 
 import type { AttributeValue, Span, SpanEvent, SpanOptions, Tracer } from '../core/types.js';
 
@@ -22,8 +30,8 @@ export class InternalSpan implements Span {
   private readonly _events: SpanEvent[] = [];
   private readonly _startTime: number;
   private _endTime?: number;
-  private readonly _otelSpan: api.Span;
-  private readonly _context: api.Context;
+  private readonly _otelSpan: OtelSpan;
+  private readonly _context: Context;
   private readonly _children: InternalSpan[] = [];
   readonly _isRoot: boolean;
   readonly _contextKey: string;
@@ -38,9 +46,9 @@ export class InternalSpan implements Span {
     this._contextKey = contextKey ?? crypto.randomUUID();
 
     const parentContext = parent?._context;
-    const otelTracer = api.trace.getTracer('agentsy');
+    const otelTracer = trace.getTracer('agentsy');
 
-    const startSpanOptions: api.SpanOptions = {};
+    const startSpanOptions: OtelSpanOptions = {};
     if (options?.attributes) {
       startSpanOptions.attributes = this._otelAttributesToAttributes(options.attributes);
     }
@@ -50,7 +58,7 @@ export class InternalSpan implements Span {
 
     this._otelSpan = otelTracer.startSpan(name, startSpanOptions, parentContext);
 
-    this._context = api.trace.setSpan(parentContext ?? api.ROOT_CONTEXT, this._otelSpan);
+    this._context = trace.setSpan(parentContext ?? ROOT_CONTEXT, this._otelSpan);
 
     const otelSpanContext = this._otelSpan.spanContext();
     this.traceId = otelSpanContext.traceId;
@@ -158,7 +166,7 @@ export class InternalSpan implements Span {
     return new InternalSpan(name, options, this);
   }
 
-  private _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): api.Attributes {
+  private _otelAttributesToAttributes(attributes: Record<string, AttributeValue>): Attributes {
     return attributes;
   }
 
@@ -169,12 +177,14 @@ export class InternalSpan implements Span {
         'error.stack': exception.stack ?? '(no stack trace)',
         'error.type': exception.constructor.name
       };
-    } else if (typeof exception === 'string') {
+    }
+    if (typeof exception === 'string') {
       return {
         'error.message': exception,
         'error.type': 'stringError'
       };
-    } else if (exception !== null && typeof exception === 'object') {
+    }
+    if (exception !== null && typeof exception === 'object') {
       const info: Record<string, string> = { 'error.type': exception.constructor.name };
 
       if ('message' in exception && typeof exception.message === 'string') {
@@ -200,14 +210,14 @@ export class TracerImpl implements Tracer {
   private readonly _currentTimeContextId: string = 'default';
 
   startSpan(name: string, options?: SpanOptions): Span {
-    const currentSpan = api.trace.getSpan(api.context.active());
+    const currentSpan = trace.getSpan(context.active());
     const parentImpl = currentSpan instanceof InternalSpan ? currentSpan : undefined;
 
     return new InternalSpan(name, options, parentImpl, this._currentTimeContextId);
   }
 
   getCurrentSpan(): Span | null {
-    const currentSpan = api.trace.getSpan(api.context.active());
+    const currentSpan = trace.getSpan(context.active());
     if (currentSpan instanceof InternalSpan) {
       return currentSpan;
     }

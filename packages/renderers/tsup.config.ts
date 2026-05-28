@@ -8,7 +8,8 @@ export default defineConfig({
     cli: 'src/cli/index.ts',
     ink: 'src/ink/index.ts',
     plain: 'src/plain/index.ts',
-    'streaming-md': 'src/streaming-md/index.ts'
+    'streaming-md': 'src/streaming-md/index.ts',
+    adapters: 'src/adapters/index.ts'
   },
   format: ['esm', 'cjs'],
   sourcemap: true,

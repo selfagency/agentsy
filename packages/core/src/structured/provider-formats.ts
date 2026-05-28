@@ -9,12 +9,12 @@ export interface OpenAIResponseFormatOptions {
 }
 
 export interface OpenAIResponseFormat {
-  type: 'json_schema';
   json_schema: {
     name: string;
     strict: boolean;
     schema: Record<string, unknown>;
   };
+  type: 'json_schema';
 }
 
 export interface GeminiResponseSchema {

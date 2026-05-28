@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  PacingController,
   compressConversation,
   compressOutput,
   createInMemoryTokenManager,
-  createTokenLedger
+  createTokenLedger,
+  PacingController
 } from './index.js';
 
 describe('createTokenLedger', () => {
@@ -282,7 +282,7 @@ describe('compressOutput', () => {
 describe('PacingController', () => {
   it('enforces provider rate limits and exposes wait time', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    await controller.updateRateLimits('openai', [{ maxRequests: 1, windowMs: 1000 }]);
+    controller.updateRateLimits('openai', [{ maxRequests: 1, windowMs: 1000 }]);
 
     await expect(
       controller.throttleRequest({
@@ -302,20 +302,20 @@ describe('PacingController', () => {
       })
     ).resolves.toBeFalsy();
 
-    const status = await controller.checkRateLimit('openai');
+    const status = controller.checkRateLimit('openai');
     expect(status.allowed).toBeFalsy();
     expect(status.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it('applies adaptive cooldown feedback', async () => {
+  it('applies adaptive cooldown feedback', () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    await controller.adjustPacing({
+    controller.adjustPacing({
       overloaded: true,
       provider: 'openai',
       retryAfterMs: 250
     });
 
-    const wait = await controller.getWaitTime({
+    const wait = controller.getWaitTime({
       estimatedTokens: 10,
       model: 'gpt-4.1-mini',
       provider: 'openai',
@@ -327,7 +327,7 @@ describe('PacingController', () => {
 
   it('evaluates each rate-limit window against the original timestamp history', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    await controller.updateRateLimits('openai', [
+    controller.updateRateLimits('openai', [
       { maxRequests: 10, windowMs: 1000 },
       { maxRequests: 2, windowMs: 10_000 }
     ]);
@@ -349,27 +349,27 @@ describe('PacingController', () => {
       })
     ).resolves.toBeTruthy();
 
-    const status = await controller.checkRateLimit('openai');
+    const status = controller.checkRateLimit('openai');
 
     expect(status.allowed).toBeFalsy();
     expect(status.limit).toBe(2);
     expect(status.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it('clears cooldowns when overload feedback is resolved', async () => {
+  it('clears cooldowns when overload feedback is resolved', () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    await controller.adjustPacing({
+    controller.adjustPacing({
       overloaded: true,
       provider: 'openai',
       retryAfterMs: 250
     });
-    await controller.adjustPacing({
+    controller.adjustPacing({
       overloaded: false,
       provider: 'openai',
       retryAfterMs: 0
     });
 
-    const wait = await controller.getWaitTime({
+    const wait = controller.getWaitTime({
       estimatedTokens: 10,
       model: 'gpt-4.1-mini',
       provider: 'openai',

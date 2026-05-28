@@ -4,8 +4,8 @@ import { createMemoryEngine } from '../cognitive/memory-engine.js';
 import { loadConfig, type MemoryConfig } from '../config.js';
 import { createMemoryMCPServer } from '../mcp/server.js';
 
+export type { MemoryMCPServer } from '../mcp/server.js';
 export { createMemoryEngine, loadConfig, type MemoryConfig };
-export { type MemoryMCPServer } from '../mcp/server.js';
 
 /**
  * Start the MCP memory server with the given config.
@@ -16,7 +16,7 @@ export async function runMcpServerCli(args: string[] = process.argv.slice(2)): P
     console.log(`
 @agentsy/memory mcp — Start the MCP memory server
 
-Usage: agentsy-memory mcp [options]
+Usage: agentsy-memory-mcp [options]
 
 Options:
   --transport <stdio|http>   MCP transport mode (default: stdio)
@@ -36,48 +36,49 @@ Environment variables:
 
   const configOverrides: Partial<MemoryConfig> = {};
 
+  // biome-ignore lint/style/useForOf: index-based iteration needed for args[++i] consumption
   for (let i = 0; i < args.length; i++) {
-    // nosemgrep: args[i] is from process.argv with loop bounds check
     const arg = args[i];
     switch (arg) {
       case '--transport': {
         configOverrides.mcp = configOverrides.mcp ?? {};
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const transportVal = args[++i];
         if (transportVal) {
-          const mcpObj = configOverrides.mcp as Record<string, unknown>;
-          mcpObj.transport = transportVal;
+          (configOverrides.mcp as Record<string, unknown>).transport = transportVal;
         }
         break;
       }
       case '--port': {
         configOverrides.mcp = configOverrides.mcp ?? {};
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const portVal = args[++i];
         if (portVal) {
-          const mcpObj = configOverrides.mcp as Record<string, unknown>;
-          mcpObj.port = Number.parseInt(portVal, 10);
+          (configOverrides.mcp as Record<string, unknown>).port = Number.parseInt(portVal, 10);
         }
         break;
       }
       case '--log-level': {
-        // nosemgrep: args[++i] incremented index is verified to be in bounds
         const logVal = args[++i];
-        if (logVal) configOverrides.logLevel = logVal as MemoryConfig['logLevel'];
+        if (logVal) {
+          configOverrides.logLevel = logVal as MemoryConfig['logLevel'];
+        }
         break;
       }
+      default:
+        break;
     }
   }
 
   const config = loadConfig(configOverrides);
   const engine = createMemoryEngine();
 
-  const server = await createMemoryMCPServer(engine, config.mcp);
+  const server = createMemoryMCPServer(engine, config.mcp);
 
   // Handle graceful shutdown
   let shuttingDown = false;
   async function shutdown(): Promise<void> {
-    if (shuttingDown) return;
+    if (shuttingDown) {
+      return;
+    }
     shuttingDown = true;
     await server.close();
     process.exit(0);
@@ -89,7 +90,7 @@ Environment variables:
   await server.start();
 }
 
-/** Main entrypoint for the MCP server CLI. */
+/** Main entrypoint for `agentsy-memory-mcp` CLI. */
 export async function main(): Promise<void> {
   try {
     await runMcpServerCli();

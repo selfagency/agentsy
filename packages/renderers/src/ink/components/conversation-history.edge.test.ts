@@ -24,7 +24,6 @@ describe('ConversationHistory Component edge cases', () => {
           id: 'turn-2',
           role: 'assistant',
           text: 'Answer',
-          thinking: undefined,
           timestamp: Date.now(),
           toolCalls: []
         }

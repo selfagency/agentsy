@@ -9,27 +9,27 @@ export type { FinishReason } from '@agentsy/types';
 export type StopCondition = (state: AgentLoopState) => boolean;
 
 export interface StepResult {
+  finishReason: FinishReason | undefined;
   output: ProcessedOutput;
   toolCalls: XmlToolCall[];
-  finishReason: FinishReason | undefined;
   usage: UsageInfo | undefined;
 }
 
 export interface AgentLoopState {
-  steps: StepResult[];
-  stepIndex: number;
-  lastOutput: ProcessedOutput;
-  toolCallCount: number;
   consecutiveIdenticalCalls: number;
+  lastOutput: ProcessedOutput;
+  stepIndex: number;
+  steps: StepResult[];
+  toolCallCount: number;
 }
 
 export interface AgentLoopContext {
-  runId: string;
-  threadId?: string;
-  stepIndex: number;
   messages: unknown[];
-  state: AgentLoopState;
+  runId: string;
   signal: AbortSignal;
+  state: AgentLoopState;
+  stepIndex: number;
+  threadId?: string;
 }
 
 export interface AgentLoopStepContext extends AgentLoopContext {
@@ -37,10 +37,10 @@ export interface AgentLoopStepContext extends AgentLoopContext {
 }
 
 export interface AgentLoopToolContext extends AgentLoopStepContext {
-  toolCalls: XmlToolCall[];
   approvedToolCalls?: XmlToolCall[];
   deniedToolCalls?: XmlToolCall[];
   toolApprovalMode?: ToolApprovalMode;
+  toolCalls: XmlToolCall[];
   toolResultMessages?: unknown[];
 }
 
@@ -53,8 +53,8 @@ export interface ToolApprovalContext extends AgentLoopToolContext {
 }
 
 export interface ToolApprovalResult {
-  decision?: ToolApprovalDecision;
   approvedToolCalls?: XmlToolCall[];
+  decision?: ToolApprovalDecision;
   deniedToolCalls?: XmlToolCall[];
   reason?: string;
 }
@@ -62,53 +62,37 @@ export interface ToolApprovalResult {
 export type AgentLoopOutcome = 'success' | 'interrupt' | 'error' | 'abort';
 
 export interface AgentLoopFinalContext extends AgentLoopContext {
-  outcome: AgentLoopOutcome;
   finalOutput: ProcessedOutput;
+  outcome: AgentLoopOutcome;
 }
 
 export interface AgentLoopStepOverrides {
-  messages?: unknown[];
-  stopWhen?: StopCondition | StopCondition[];
-  maxConversationMessages?: number;
-  toolApprovalMode?: ToolApprovalMode;
-  buildToolResultMessages?: AgentLoopOptions['buildToolResultMessages'];
-  approveToolCalls?: AgentLoopOptions['approveToolCalls'];
-  beforeStep?: AgentLoopOptions['beforeStep'];
-  onStep?: AgentLoopOptions['onStep'];
+  afterFinal?: AgentLoopOptions['afterFinal'];
   afterStep?: AgentLoopOptions['afterStep'];
-  beforeToolCall?: AgentLoopOptions['beforeToolCall'];
   afterToolCall?: AgentLoopOptions['afterToolCall'];
+  approveToolCalls?: AgentLoopOptions['approveToolCalls'];
+  beforeFinal?: AgentLoopOptions['beforeFinal'];
+  beforeStep?: AgentLoopOptions['beforeStep'];
+  beforeToolCall?: AgentLoopOptions['beforeToolCall'];
+  buildToolResultMessages?: AgentLoopOptions['buildToolResultMessages'];
+  maxConversationMessages?: number;
+  messages?: unknown[];
   onAbort?: AgentLoopOptions['onAbort'];
   onError?: AgentLoopOptions['onError'];
-  beforeFinal?: AgentLoopOptions['beforeFinal'];
-  afterFinal?: AgentLoopOptions['afterFinal'];
+  onStep?: AgentLoopOptions['onStep'];
+  stopWhen?: StopCondition | StopCondition[];
+  toolApprovalMode?: ToolApprovalMode;
 }
 
 export interface AgentLoopOptions {
-  /** Caller-supplied LLM invocation. Receives current message history, returns a stream of chunks. */
-  execute: (messages: unknown[]) => AsyncIterable<StreamChunk>;
-  /** Stop condition(s) evaluated after every step. Loop continues only when ALL conditions return false. */
-  stopWhen: StopCondition | StopCondition[];
-  /** Optional hook fired after loop state is initialized but before RUN_STARTED is emitted. */
-  beforeInit?: (context: AgentLoopContext) => void | Promise<void>;
+  /** Optional hook fired after terminal run events are emitted. */
+  afterFinal?: (context: AgentLoopFinalContext) => void | Promise<void>;
   /** Optional hook fired after RUN_STARTED is emitted. */
   afterInit?: (context: AgentLoopContext) => void | Promise<void>;
-  /** Optional hook fired immediately before each loop step executes. */
-  beforeStep?: (context: AgentLoopContext) => void | Promise<void>;
-  /** Optional hook for per-step message/callback/tool configuration overrides. */
-  prepareStep?: (
-    context: AgentLoopContext
-  ) => AgentLoopStepOverrides | undefined | Promise<AgentLoopStepOverrides | undefined>;
-  /** Optional callback fired after each completed step. */
-  onStep?: (result: StepResult) => void | Promise<void>;
   /** Optional hook fired after state has been updated for a completed step. */
   afterStep?: (context: AgentLoopStepContext) => void | Promise<void>;
-  /** Optional hook fired before transforming tool calls into tool result messages. */
-  beforeToolCall?: (context: AgentLoopToolContext) => void | Promise<void>;
   /** Optional hook fired after tool result messages have been built. */
   afterToolCall?: (context: AgentLoopToolContext) => void | Promise<void>;
-  /** Tool approval mode. Defaults to `allow`. `ask` requires `approveToolCalls` to continue. */
-  toolApprovalMode?: ToolApprovalMode;
   /** Optional tool approval callback used by `ask` and `auto` modes. */
   approveToolCalls?: (
     context: ToolApprovalContext
@@ -117,33 +101,49 @@ export interface AgentLoopOptions {
     | ToolApprovalDecision
     | ToolApprovalResult
     | Promise<boolean | ToolApprovalDecision | ToolApprovalResult>;
-  /** Optional callback fired when the loop aborts via explicit abort() or interrupt controller. */
-  onAbort?: (reason: AgentLoopAbortReason, context: AgentLoopContext) => void | Promise<void>;
-  /** Optional callback fired when execute/process logic throws. */
-  onError?: (error: Error, context: AgentLoopContext) => void | Promise<void>;
   /** Optional hook fired before terminal run events are emitted/returned. */
   beforeFinal?: (context: AgentLoopFinalContext) => void | Promise<void>;
-  /** Optional hook fired after terminal run events are emitted. */
-  afterFinal?: (context: AgentLoopFinalContext) => void | Promise<void>;
-  /** Optional callback fired for AG-UI protocol events (RUN_STARTED, STEP_STARTED, etc). */
-  onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>;
-  /** Unique identifier for this run (e.g., UUID). Used for AG-UI events. */
-  runId?: string;
-  /** Thread ID for this conversation (optional). Passed through AG-UI events. */
-  threadId?: string;
-  /** Optional interrupt controller for cancelling execution. */
-  interruptController?: InterruptController;
-  /** Hard cap on loop iterations. Defaults to 20. */
-  maxSteps?: number;
-  /** Maximum conversation messages to retain. Older messages are trimmed. Defaults to unlimited. */
-  maxConversationMessages?: number;
+  /** Optional hook fired after loop state is initialized but before RUN_STARTED is emitted. */
+  beforeInit?: (context: AgentLoopContext) => void | Promise<void>;
+  /** Optional hook fired immediately before each loop step executes. */
+  beforeStep?: (context: AgentLoopContext) => void | Promise<void>;
+  /** Optional hook fired before transforming tool calls into tool result messages. */
+  beforeToolCall?: (context: AgentLoopToolContext) => void | Promise<void>;
   /** Caller-supplied function that transforms completed tool calls into messages to append. */
   buildToolResultMessages: (toolCalls: XmlToolCall[]) => Promise<unknown[]>;
+  /** Caller-supplied LLM invocation. Receives current message history, returns a stream of chunks. */
+  execute: (messages: unknown[]) => AsyncIterable<StreamChunk>;
+  /** Optional interrupt controller for cancelling execution. */
+  interruptController?: InterruptController;
+  /** Maximum conversation messages to retain. Older messages are trimmed. Defaults to unlimited. */
+  maxConversationMessages?: number;
+  /** Hard cap on loop iterations. Defaults to 20. */
+  maxSteps?: number;
+  /** Optional callback fired when the loop aborts via explicit abort() or interrupt controller. */
+  onAbort?: (reason: AgentLoopAbortReason, context: AgentLoopContext) => void | Promise<void>;
+  /** Optional callback fired for AG-UI protocol events (RUN_STARTED, STEP_STARTED, etc). */
+  onAgUiEvent?: (event: AgUiEvent) => void | Promise<void>;
+  /** Optional callback fired when execute/process logic throws. */
+  onError?: (error: Error, context: AgentLoopContext) => void | Promise<void>;
+  /** Optional callback fired after each completed step. */
+  onStep?: (result: StepResult) => void | Promise<void>;
+  /** Optional hook for per-step message/callback/tool configuration overrides. */
+  prepareStep?: (
+    context: AgentLoopContext
+  ) => AgentLoopStepOverrides | undefined | Promise<AgentLoopStepOverrides | undefined>;
+  /** Unique identifier for this run (e.g., UUID). Used for AG-UI events. */
+  runId?: string;
+  /** Stop condition(s) evaluated after every step. Loop continues only when ALL conditions return false. */
+  stopWhen: StopCondition | StopCondition[];
+  /** Thread ID for this conversation (optional). Passed through AG-UI events. */
+  threadId?: string;
+  /** Tool approval mode. Defaults to `allow`. `ask` requires `approveToolCalls` to continue. */
+  toolApprovalMode?: ToolApprovalMode;
 }
 
 export interface AgentLoopHandle {
-  /** Async generator that yields OutputParts across all steps until the loop terminates. */
-  run: (initialMessages: unknown[]) => AsyncGenerator<OutputPart>;
   /** Abort the running loop. No further parts are emitted after abort is called. */
   abort: () => void;
+  /** Async generator that yields OutputParts across all steps until the loop terminates. */
+  run: (initialMessages: unknown[]) => AsyncGenerator<OutputPart>;
 }

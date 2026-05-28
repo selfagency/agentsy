@@ -1,13 +1,17 @@
 import type { JsonObject } from '@agentsy/types';
-
-import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson } from './parse-json.js';
 import type { ParseJsonOptions } from './parse-json.js';
+import { DEFAULT_MAX_JSON_DEPTH, DEFAULT_MAX_JSON_KEYS, parseJson } from './parse-json.js';
 
 type JsonSchema = JsonObject;
 
 const REGEX_CACHE_MAX = 256;
 const regexCache = new Map<string, RegExp>();
 const regexAccessTimestamps = new WeakMap<RegExp, number>();
+const NESTED_QUANTIFIER_REGEX = /\([^)]*[+*?][^)]*\)[+*?]/;
+const CHAINED_QUANTIFIER_REGEX = /[+*?][+*?]/;
+const GROUP_ALTERNATION_REGEX = /\([^)]*\|[^)]*\)[+*?]/;
+const MATCH_NOTHING_REGEX = /(?!)/;
+const LOCAL_DEF_REF_REGEX = /^#\/\$defs\/([^/]+)$/;
 
 /**
  * Detect regex patterns with nested or chained quantifiers that can cause
@@ -18,20 +22,51 @@ const regexAccessTimestamps = new WeakMap<RegExp, number>();
  *   - Excessive alternation depth
  */
 function hasDangerousQuantifier(pattern: string): boolean {
-  if (pattern.length > 200) return true;
+  if (pattern.length > 200) {
+    return true;
+  }
   // nosemgrep: regex-dos-meta-validation
   // These regexes only run against already-length-capped pattern strings (≤200 chars).
   // They detect nested quantifiers in *other* regexes as a security guard.
   // Nested quantifiers: quantifier on a group that itself contains a quantifier
-  if (/\([^)]*[+*?][^)]*\)[+*?]/.test(pattern)) return true;
+  if (NESTED_QUANTIFIER_REGEX.test(pattern)) {
+    return true;
+  }
   // Chained possessive-style: two consecutive quantifiers
-  if (/[+*?][+*?]/.test(pattern)) return true;
+  if (CHAINED_QUANTIFIER_REGEX.test(pattern)) {
+    return true;
+  }
   // Alternation inside quantified group: (x|y)+
-  if (/\([^)]*\|[^)]*\)[+*?]/.test(pattern)) return true;
+  if (GROUP_ALTERNATION_REGEX.test(pattern)) {
+    return true;
+  }
   return false;
 }
 
-function getCachedRegex(pattern: string): RegExp {
+function isUnsafePattern(pattern: string, trusted: boolean): boolean {
+  return !trusted && (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern));
+}
+
+function evictLRURegexEntry(): void {
+  let lruKey: string | undefined;
+  let lruTime = Number.POSITIVE_INFINITY;
+  for (const [key, value] of regexCache.entries()) {
+    const accessTime = regexAccessTimestamps.get(value) ?? Number.POSITIVE_INFINITY;
+    if (accessTime < lruTime) {
+      lruTime = accessTime;
+      lruKey = key;
+    }
+  }
+  if (lruKey !== undefined) {
+    const lruRegex = regexCache.get(lruKey);
+    if (lruRegex) {
+      regexAccessTimestamps.delete(lruRegex);
+    }
+    regexCache.delete(lruKey);
+  }
+}
+
+function getCachedRegex(pattern: string, trusted = false): RegExp {
   const existing = regexCache.get(pattern);
   if (existing !== undefined) {
     // Update access timestamp without delete/re-insert to avoid disrupting LRU tracking
@@ -41,38 +76,15 @@ function getCachedRegex(pattern: string): RegExp {
 
   let regex: RegExp;
   try {
-    // Security: Validate pattern length and characters to prevent ReDoS attacks.
-    // JSON Schema patterns should be relatively simple; overly complex patterns are rejected.
-    if (typeof pattern !== 'string' || pattern.length > 200 || hasDangerousQuantifier(pattern)) {
-      // Pattern is too long, too complex, or not a string: use safe match-nothing regex
-      regex = /(?!)/;
-    } else {
-      regex = new RegExp(pattern);
-    }
+    regex = isUnsafePattern(pattern, trusted) ? MATCH_NOTHING_REGEX : new RegExp(pattern);
   } catch {
     // Malformed or ReDoS-vulnerable patterns: fail gracefully with match-nothing regex
-    regex = /(?!)/; // Negative lookahead that never matches
+    regex = MATCH_NOTHING_REGEX; // Negative lookahead that never matches
   }
   regexAccessTimestamps.set(regex, Date.now());
 
   if (regexCache.size >= REGEX_CACHE_MAX) {
-    // Evict least-recently-used entry by scanning access timestamps
-    let lruKey: string | undefined;
-    let lruTime = Infinity;
-    for (const [key, value] of regexCache.entries()) {
-      const accessTime = regexAccessTimestamps.get(value) ?? Infinity;
-      if (accessTime < lruTime) {
-        lruTime = accessTime;
-        lruKey = key;
-      }
-    }
-    if (lruKey !== undefined) {
-      const lruRegex = regexCache.get(lruKey);
-      if (lruRegex) {
-        regexAccessTimestamps.delete(lruRegex);
-      }
-      regexCache.delete(lruKey);
-    }
+    evictLRURegexEntry();
   }
   regexCache.set(pattern, regex);
   return regex;
@@ -173,18 +185,18 @@ const FORMAT_PATTERNS: Record<string, string> = {
   email: String.raw`^[^\s@]+@[^\s@]+\.[^\s@]{2,}$`,
   ipv4: String.raw`^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(?:\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$`,
   ipv6:
-    `^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,7}:$` +
-    `|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$` +
-    `|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$` +
-    `|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$` +
-    `|^:(:[0-9a-fA-F]{1,4}){1,7}$` +
-    `|^::$`,
+    '^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,7}:$' +
+    '|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$' +
+    '|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$' +
+    '|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$' +
+    '|^:(:[0-9a-fA-F]{1,4}){1,7}$' +
+    '|^::$',
   uri: String.raw`^[a-zA-Z][a-zA-Z0-9+\-.]*:`,
-  uuid: `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`
+  uuid: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 };
 
 function checkRef(
@@ -199,7 +211,7 @@ function checkRef(
   }
 
   const ref = schema.$ref;
-  const match = /^#\/\$defs\/([^/]+)$/.exec(ref);
+  const match = LOCAL_DEF_REF_REGEX.exec(ref);
   const defName = match?.[1];
   if (defName === undefined) {
     errors.push(`${path}: unsupported $ref (only local #/$defs/... references are supported): ${ref}`);
@@ -229,6 +241,9 @@ function checkRef(
 }
 
 function isValueTypeMatch(value: unknown, schemaType: string): boolean {
+  if (schemaType === 'null') {
+    return value === null;
+  }
   if (schemaType === 'object') {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
   }
@@ -376,7 +391,7 @@ function checkStringConstraints(value: string, schema: JsonSchema, path: string,
   if (typeof schema.format === 'string') {
     const formatPattern = FORMAT_PATTERNS[schema.format];
     if (formatPattern !== undefined) {
-      const regex = getCachedRegex(formatPattern);
+      const regex = getCachedRegex(formatPattern, true);
       if (!regex.test(value)) {
         errors.push(`${path}: string does not match format '${schema.format}'`);
       }

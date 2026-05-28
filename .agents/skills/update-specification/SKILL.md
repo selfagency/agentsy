@@ -1,6 +1,6 @@
 ---
 name: update-specification
-description: 'Update an existing specification file for the solution, optimized for Generative AI consumption based on new requirements or updates to any existing code.'
+description: "Update an existing specification file for the solution, optimized for Generative AI consumption based on new requirements or updates to any existing code."
 ---
 
 # Update Specification
@@ -25,7 +25,7 @@ The specification file must be formatted in well formed Markdown.
 
 Specification files must follow the template below, ensuring that all sections are filled out appropriately. The front matter for the markdown should be structured correctly as per the example following:
 
-```md
+````md
 ---
 title: [Concise Title Describing the Specification's Focus]
 version: [Optional: e.g., 1.0, Date]
@@ -120,21 +120,17 @@ tags: [Optional: List of relevant tags or categories, e.g., `infrastructure`, `p
 ```code
 // Code snippet or data example demonstrating the correct application of the guidelines, including edge cases
 ```
+````
+
+```text
+
 ```
 
 ```text
 
-```text
+```
 
-```text
-
-```text
-
-```text
-
-```text
-
-```text
+````text
 
 ```text
 
@@ -158,3 +154,4 @@ tags: [Optional: List of relevant tags or categories, e.g., `infrastructure`, `p
 [Link to relevant external documentation]
 
 ```text
+````

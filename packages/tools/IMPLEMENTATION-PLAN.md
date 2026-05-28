@@ -251,11 +251,11 @@ Each tool should have a dedicated test file:
 
 ```ts
 // packages/tools/src/index.ts
-export * from './tools/repl/index.js';
-export * from './tools/fileops/index.js'; // future
-export * from './tools/shell/index.js'; // future
-export * from './tools/fetch/index.js'; // future
-export * from './tools/search/index.js'; // future
+export * from "./tools/repl/index.js";
+export * from "./tools/fileops/index.js"; // future
+export * from "./tools/shell/index.js"; // future
+export * from "./tools/fetch/index.js"; // future
+export * from "./tools/search/index.js"; // future
 ```
 
 ## Security Notes
@@ -362,14 +362,14 @@ src/
 
 ### CRITICAL: Filesystem Strategy Update
 
-**PRIMARY: AgentFS for Agent Operations**
+## PRIMARY: AgentFS for Agent Operations
 
 - **Rationale:** AgentFS is designed specifically for agents with three interfaces (filesystem, KV store, toolcall audit trails)
 - **Benefits:** Turso-native compatibility, agent-specific snapshots, time-travel, state reproduction, built-in coordination with honker
 - **Implementation:** Replace sandboxes with AgentFS SDK integration
 - **Expected Benefits:** Single API for 12+ resource types, 30-40% integration cost reduction, 3-5x faster workflow development
 
-**CONDITIONAL: Mirage for External Resources**
+## CONDITIONAL: Mirage for External Resources
 
 - **Rationale:** Use mirage ONLY for external resource access becomes critical
 - **Use Case:** Multi-resource unification (S3, GitHub, Notion, Linear, Slack, etc.)
@@ -428,22 +428,22 @@ interface EnhancedToolsArchitecture {
 
 ### Integration Timeline
 
-**Phase 1: AgentFS Integration (Weeks 1-4)**
+## Phase 1: AgentFS Integration (Weeks 1-4)
 
 - Week 1-2: Replace sandbox with AgentFS SDK integration
 - Week 3-4: Implement KV store and audit trail interfaces
 
-**Phase 2: Tool Efficiency (Weeks 5-8)**
+## Phase 2: Tool Efficiency (Weeks 5-8)
 
 - Week 5-6: Integrate Maki tree-sitter tools for code analysis
 - Week 7-8: Implement permission inference via AST parsing
 
-**Phase 3: External Resources (Weeks 9-12)**
+## Phase 3: External Resources (Weeks 9-12)
 
 - Week 9-10: Conditional mirage adapter evaluation
 - Week 11-12: Implement only if external resource access needed
 
-**Phase 4: Tool Coordination (Weeks 13-16)**
+## Phase 4: Tool Coordination (Weeks 13-16)
 
 - Week 13-14: honker pub/sub integration for tool events
 - Week 15-16: Task queue integration for background workflows

@@ -5,8 +5,8 @@ import { dirname } from 'node:path';
 import type { ConflictRecord, ConflictStore } from './types.js';
 
 interface StoredConflictEnvelope {
-  version: 1;
   conflicts: ConflictRecord[];
+  version: 1;
 }
 
 export interface FileConflictStoreOptions {
@@ -45,8 +45,11 @@ function sortConflicts(conflicts: ConflictRecord[]): ConflictRecord[] {
 
 class FileConflictStore implements ConflictStore {
   #writeQueue: Promise<void> = Promise.resolve();
+  readonly #options: FileConflictStoreOptions;
 
-  constructor(private readonly options: FileConflictStoreOptions) {}
+  constructor(options: FileConflictStoreOptions) {
+    this.#options = options;
+  }
 
   isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -67,7 +70,7 @@ class FileConflictStore implements ConflictStore {
 
   async #readEnvelope(): Promise<StoredConflictEnvelope> {
     try {
-      const content = await readFile(this.options.filePath, 'utf-8');
+      const content = await readFile(this.#options.filePath, 'utf-8');
       const parsed: unknown = JSON.parse(content);
 
       if (!this.isObject(parsed)) {
@@ -94,10 +97,10 @@ class FileConflictStore implements ConflictStore {
   }
 
   async #writeEnvelope(envelope: StoredConflictEnvelope): Promise<void> {
-    await mkdir(dirname(this.options.filePath), { recursive: true });
-    const temporaryPath = `${this.options.filePath}.${randomUUID()}.tmp`;
+    await mkdir(dirname(this.#options.filePath), { recursive: true });
+    const temporaryPath = `${this.#options.filePath}.${randomUUID()}.tmp`;
     await writeFile(temporaryPath, `${JSON.stringify(envelope, null, 2)}\n`, 'utf-8');
-    await rename(temporaryPath, this.options.filePath);
+    await rename(temporaryPath, this.#options.filePath);
   }
 
   async save(conflict: ConflictRecord): Promise<void> {

@@ -4,12 +4,12 @@ import type { RendererHandle } from '@agentsy/renderers';
 import type { ApiKeyChangeListener } from '../types/index.js';
 
 export interface MockApiKeyManager {
-  initialize(): Promise<void>;
-  getApiKey(): Promise<string | undefined>;
-  setApiKey(key?: string): Promise<void>;
   deleteApiKey(): Promise<void>;
-  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void };
+  getApiKey(): Promise<string | undefined>;
   hasApiKey(): Promise<boolean>;
+  initialize(): Promise<void>;
+  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void };
+  setApiKey(key?: string): Promise<void>;
 }
 
 /**
@@ -26,13 +26,16 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
   }
 
   return {
+    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
     async deleteApiKey(): Promise<void> {
       key = undefined;
       emit('deleted');
     },
+    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
     async getApiKey(): Promise<string | undefined> {
       return key;
     },
+    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
     async hasApiKey(): Promise<boolean> {
       return key !== undefined && key.length > 0;
     },
@@ -47,6 +50,7 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
         }
       };
     },
+    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
     async setApiKey(nextKey?: string): Promise<void> {
       key = nextKey;
       emit('updated', key);
@@ -55,9 +59,9 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
 }
 
 export interface MockRendererHandle extends RendererHandle {
-  writes: string[];
   chunks: StreamChunk[];
   ended: boolean;
+  writes: string[];
 }
 
 /**
@@ -70,15 +74,18 @@ export function createMockRendererHandle(): MockRendererHandle {
 
   return {
     chunks,
+    // biome-ignore lint/suspicious/useAwait: implements MockRendererHandle interface
     async end(): Promise<void> {
       ended = true;
     },
     get ended() {
       return ended;
     },
+    // biome-ignore lint/suspicious/useAwait: implements MockRendererHandle interface
     async write(chunk: string): Promise<void> {
       writes.push(chunk);
     },
+    // biome-ignore lint/suspicious/useAwait: implements MockRendererHandle interface
     async writeChunk(chunk: StreamChunk): Promise<void> {
       chunks.push(chunk);
     },

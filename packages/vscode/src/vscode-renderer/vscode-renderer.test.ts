@@ -2,10 +2,10 @@ import type { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { CancellationToken } from '@agentsy/renderers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
-import { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
-import type { ChatResponseStream } from './createVSCodeChatRenderer.js';
-import { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
+import { cancellationTokenToAbortSignal } from './cancellation-token-to-abort-signal.js';
+import { createVSCodeAgentLoop } from './create-vs-code-agent-loop.js';
+import type { ChatResponseStream } from './create-vs-code-chat-renderer.js';
+import { createVSCodeChatRenderer } from './create-vs-code-chat-renderer.js';
 
 /** Factory function to create a mock LLMStreamProcessor for testing */
 function createFakeProcessor(processParts: Record<string, unknown>[] = [], customFlush?: ReturnType<typeof vi.fn>) {
@@ -65,7 +65,7 @@ describe('VS Code Chat Renderer', () => {
     }).toThrow('ChatResponseStream is required');
   });
 
-  it('creates renderer with stream', async () => {
+  it('creates renderer with stream', () => {
     const renderer = createVSCodeChatRenderer({ stream: mockStream });
 
     expect(renderer).toBeDefined();
@@ -201,7 +201,7 @@ describe('VS Code Chat Renderer', () => {
       expect(onToolCall).toHaveBeenCalledOnce();
       expect(onToolCall).toHaveBeenCalledWith(
         expect.objectContaining({
-          // oxlint-disable-next-line typescript/no-unsafe-assignment -- vitest matcher returns any
+          // biome-ignore lint: typescript/no-unsafe-assignment -- vitest matcher returns any
           call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
           state: 'pending',
           type: 'tool_call'
@@ -232,7 +232,9 @@ describe('VS Code Chat Renderer', () => {
       await renderer.end();
 
       expect(mockStream.beginToolInvocation).toHaveBeenCalledOnce();
-      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', { city: 'NYC' });
+      expect(mockStream.beginToolInvocation).toHaveBeenCalledWith('tc_begin', 'weather', {
+        city: 'NYC'
+      });
     });
 
     it('fires onToolCallDelta callback', async () => {
@@ -573,7 +575,7 @@ describe('VS Code Agent Loop', () => {
     expect(renderer.end).toBeDefined();
   });
 
-  it('defaults showThinking to true for agent loops', async () => {
+  it('defaults showThinking to true for agent loops', () => {
     const renderer = createVSCodeAgentLoop({
       stream: mockStream
     });
@@ -660,7 +662,9 @@ describe('VS Code Agent Loop', () => {
   });
 
   it('logs error stack when abort cleanup fails', async () => {
-    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
+      /* noop */
+    });
     const testError = new Error('Renderer end failed');
     testError.stack = 'Error: Renderer end failed\n  at test (test.ts:1:1)';
 
@@ -741,7 +745,7 @@ describe('Cancellation Token Bridge', () => {
     expect(signal.aborted).toBeTruthy();
   });
 
-  it('aborts signal when token fires cancellation', async () => {
+  it('aborts signal when token fires cancellation', () => {
     const listeners: ((e: unknown) => void)[] = [];
 
     const mockToken: CancellationToken = {

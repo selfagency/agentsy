@@ -1,5 +1,5 @@
-import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
 import type { ChatMessage, ChatToolCall } from './role-converter.js';
+import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
 
 /**
  * Processes a single content part and accumulates results.

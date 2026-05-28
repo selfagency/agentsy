@@ -1,17 +1,20 @@
-import type { SettingsLoaderConfig, LoadedSettings } from '../types/errors.js';
-import type { SettingsChangeListener, SettingsChangeEvent, SettingsValidationResult } from '../types/settings.js';
-import { validateSettings, applyDefaults } from './schema-validator.js';
+import type { LoadedSettings, SettingsLoaderConfig } from '../types/errors.js';
+import type { SettingsChangeEvent, SettingsChangeListener, SettingsValidationResult } from '../types/settings.js';
+import { applyDefaults, validateSettings } from './schema-validator.js';
 
 /**
  * Loads, validates, and watches VS Code workspace configuration.
  * Uses dynamic import to avoid hard vscode dependency at module load time.
  */
 export class SettingsLoader {
+  private readonly config: SettingsLoaderConfig;
   private readonly disposables: { dispose(): void }[] = [];
   private readonly listeners = new Set<SettingsChangeListener>();
   private cachedSettings: LoadedSettings = {};
 
-  constructor(private readonly config: SettingsLoaderConfig) {}
+  constructor(config: SettingsLoaderConfig) {
+    this.config = config;
+  }
 
   /**
    * Load and validate current settings from the workspace.

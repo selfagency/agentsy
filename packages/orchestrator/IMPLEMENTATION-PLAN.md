@@ -2,7 +2,7 @@
 goal: @agentsy/orchestrator production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: orchestrator-maintainers
 status: In progress
 tags: [feature, architecture, orchestrator, planning, autonomy]
@@ -63,11 +63,25 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 - GOAL-ORCH-004: Hardening and release gates.
 
-| Task          | Description                                                                     | Completed | Date |
-| ------------- | ------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-ORCH-010 | Add regressions for autonomy safety, persistence recovery, and race conditions. |           |      |
-| TASK-ORCH-011 | Align docs and custom-agent guidance with shipped behavior.                     |           |      |
-| TASK-ORCH-012 | Pass package and monorepo release gates.                                        |           |      |
+| Task          | Description                                                                                                                                       | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-010 | Add regressions for autonomy safety, persistence recovery, and race conditions.                                                                   |           |      |
+| TASK-ORCH-011 | Align docs and custom-agent guidance with shipped behavior.                                                                                       |           |      |
+| TASK-ORCH-012 | Pass package and monorepo release gates.                                                                                                          |           |      |
+| TASK-061      | DOGFOOD Phase 4: Integrate orchestrator entrypoints in CLI/runtime path for multi-step plan→act execution.                                        |           |      |
+| TASK-062      | DOGFOOD Phase 4: Add explicit execution modes in CLI (/mode single, /mode orchestrated, /mode autonomous) backed by orchestrator policy profiles. |           |      |
+
+### Implementation Phase 4.5 — Hook registry and agent session orchestration
+
+- GOAL-ORCH-004.5: Implement named hook registry, compileHooks, and createAgentSession for the skills/instructions/agent system.
+
+| Task          | Description                                                                                                                                                                                                   | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-013 | Define `HookDefinition` type (name, event, handler, priority, enabled) and implement `HookRegistry` class in `src/hooks/` — register, unregister, enable, disable, getHandlersForEvent.                       |           |      |
+| TASK-ORCH-014 | Implement `compileHooks(registry, baseOptions)` in `src/hooks/compile.ts` — iterates all registered hooks, merges handlers into AgentLoopOptions callbacks in priority order.                                 |           |      |
+| TASK-ORCH-015 | Register all first-party builtin hooks in `src/hooks/builtins/` — memory pre-turn retrieval, memory post-turn capture, skills lazy-load, instructions injection, budget enforcement, approval, observability. |           |      |
+| TASK-ORCH-016 | Implement `createAgentSession(agentDef, config)` in `src/session.ts` — loads agent definition, builds hook registry, compiles hooks, returns `AgentLoopHandle`.                                               |           |      |
+| TASK-ORCH-017 | Add integration tests: hook lifecycle (register/unregister/disable), compile merge order, builtin hook coverage, agent session creation with all builtin hooks.                                               |           |      |
 
 ## 3. Acceptance Criteria
 
@@ -650,30 +664,30 @@ src/
 
 ```typescript
 const workflow = new WorkflowBuilder()
-  .name('Code Review Orchestration')
-  .requireSkill('code-analysis')
-  .requireSkill('security-review')
+  .name("Code Review Orchestration")
+  .requireSkill("code-analysis")
+  .requireSkill("security-review")
 
   .sequence([
-    new TaskNode('analyze', {
-      agent: 'code-analyzer',
-      input: 'code-changes'
+    new TaskNode("analyze", {
+      agent: "code-analyzer",
+      input: "code-changes",
     }),
     new ParallelNode([
-      new TaskNode('security', {
-        agent: 'security-reviewer',
-        input: 'analysis-results'
+      new TaskNode("security", {
+        agent: "security-reviewer",
+        input: "analysis-results",
       }),
-      new TaskNode('quality', {
-        agent: 'quality-reviewer',
-        input: 'analysis-results'
-      })
+      new TaskNode("quality", {
+        agent: "quality-reviewer",
+        input: "analysis-results",
+      }),
     ]),
-    new MergeNode('combine'),
-    new TaskNode('report', {
-      agent: 'report-generator',
-      input: 'combined-results'
-    })
+    new MergeNode("combine"),
+    new TaskNode("report", {
+      agent: "report-generator",
+      input: "combined-results",
+    }),
   ])
 
   .timeout(Duration.minutes(30))
@@ -685,18 +699,18 @@ const workflow = new WorkflowBuilder()
 
 ```typescript
 const registry = new AgentRegistry()
-  .register('code-analyzer', {
-    skills: ['typescript', 'security', 'performance'],
+  .register("code-analyzer", {
+    skills: ["typescript", "security", "performance"],
     capacity: 10,
-    cost: 0.001
+    cost: 0.001,
   })
-  .register('security-reviewer', {
-    skills: ['security', 'vulnerability-scanning'],
+  .register("security-reviewer", {
+    skills: ["security", "vulnerability-scanning"],
     capacity: 5,
-    cost: 0.002
+    cost: 0.002,
   })
-  .discover('local://agents')
-  .discover('remote://production-agents');
+  .discover("local://agents")
+  .discover("remote://production-agents");
 ```
 
 #### 3. Orchestration Execution
@@ -705,14 +719,14 @@ const registry = new AgentRegistry()
 const orchestrator = new OrchestrationEngine({
   registry,
   scheduler: new AdaptiveScheduler(),
-  coordinator: new AsyncCoordinator()
+  coordinator: new AsyncCoordinator(),
 });
 
 const result = await orchestrator.execute(workflow, {
-  context: 'code-review',
+  context: "code-review",
   resourceLimits: { maxAgents: 5, maxCost: 0.01 },
   monitoring: true,
-  recovery: true
+  recovery: true,
 });
 ```
 
@@ -1047,7 +1061,9 @@ type StopConditionState = {
 
 type StopCondition = (state: StopConditionState) => Promise<boolean> | boolean;
 
-type PrepareStepFn = (step: StepState) => Promise<Partial<AgentLoopOptions>> | Partial<AgentLoopOptions>;
+type PrepareStepFn = (
+  step: StepState,
+) => Promise<Partial<AgentLoopOptions>> | Partial<AgentLoopOptions>;
 ```
 
 ### Required built-ins from technical design

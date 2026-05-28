@@ -2,35 +2,35 @@ import { fingerprintContent } from '../../content-addressing/fingerprint.js';
 import { createEntityExtractor, type EntityExtractor } from '../../wiki/entity-extractor.js';
 
 export interface GraphNode {
+  firstSeen: number;
   id: string;
+  importance: number;
   kind: 'person' | 'organization' | 'technology' | 'concept' | 'unknown';
   label: string;
-  importance: number;
-  firstSeen: number;
   lastSeen: number;
 }
 
 export interface GraphEdge {
   from: string;
-  to: string;
   relation: string;
+  to: string;
   weight: number;
 }
 
 export interface Subgraph {
-  nodes: GraphNode[];
   edges: GraphEdge[];
+  nodes: GraphNode[];
 }
 
 export interface KnowledgeGraph {
-  addNode(node: GraphNode): void;
   addEdge(edge: GraphEdge): void;
-  query(entity: string, depth?: number): Subgraph;
+  addNode(node: GraphNode): void;
+  edgeCount(): number;
+  edges(): readonly GraphEdge[];
   merge(other: KnowledgeGraph): number;
   nodeCount(): number;
-  edgeCount(): number;
   nodes(): readonly GraphNode[];
-  edges(): readonly GraphEdge[];
+  query(entity: string, depth?: number): Subgraph;
 }
 
 export interface KnowledgeGraphOptions {
@@ -58,18 +58,25 @@ export function createKnowledgeGraph(_options: KnowledgeGraphOptions = {}): Know
       edges.set(edgeKey(edge.from, edge.to, edge.relation), edge);
     },
 
-    query(entity: string, depth: number = 1): Subgraph {
+    query(entity: string, depth = 1): Subgraph {
       const entityId = nodeKey(entity);
       const resultNodes = new Map<string, GraphNode>();
       const resultEdges = new Map<string, GraphEdge>();
 
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
       function walk(currentId: string, currentDepth: number): void {
-        if (currentDepth > depth) return;
+        if (currentDepth > depth) {
+          return;
+        }
         const node = nodes.get(currentId);
-        if (!node) return;
+        if (!node) {
+          return;
+        }
         resultNodes.set(currentId, node);
 
-        if (currentDepth === depth) return;
+        if (currentDepth === depth) {
+          return;
+        }
 
         for (const edge of edges.values()) {
           if (edge.from === currentId || edge.to === currentId) {
@@ -84,10 +91,7 @@ export function createKnowledgeGraph(_options: KnowledgeGraphOptions = {}): Know
       }
 
       walk(entityId, 0);
-      return {
-        nodes: [...resultNodes.values()],
-        edges: [...resultEdges.values()]
-      };
+      return { nodes: [...resultNodes.values()], edges: [...resultEdges.values()] };
     },
 
     merge(other: KnowledgeGraph): number {
@@ -127,14 +131,14 @@ export function createKnowledgeGraph(_options: KnowledgeGraphOptions = {}): Know
 }
 
 export interface GraphBuilder {
+  getGraph(): KnowledgeGraph;
   ingest(content: string): { nodes: number; edges: number };
   ingestBatch(contents: string[]): { nodes: number; edges: number };
-  getGraph(): KnowledgeGraph;
 }
 
 export interface GraphBuilderOptions {
-  graph?: KnowledgeGraph;
   entityExtractor?: EntityExtractor;
+  graph?: KnowledgeGraph;
   now?: (() => number) | undefined;
 }
 
@@ -156,7 +160,6 @@ export function createGraphBuilder(options: GraphBuilderOptions = {}): GraphBuil
     };
 
     for (const entity of extraction.entities) {
-      // nosemgrep: entity.kind lookup in kindMap with safe fallback to 'unknown'
       const kind = kindMap[entity.kind] ?? 'unknown';
       graph.addNode({
         id: fingerprintContent(entity.name.toLowerCase()).value,

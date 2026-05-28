@@ -3,14 +3,14 @@ import type { ConversationEvent, FinishReason, UsageInfo } from '@agentsy/types'
 import type { LLMStreamProcessor, OutputPart, StreamEventMap } from './llm-stream-processor.js';
 
 export interface ProcessorCallbackAdapterOptions {
+  onConversationEvent?: (event: ConversationEvent) => void;
+  onFinish?: (finishReason?: FinishReason, usage?: UsageInfo) => void;
+  onStep?: (stepIndex: number, usage?: UsageInfo) => void;
   onText?: (delta: string) => void;
   onThinking?: (delta: string) => void;
   onToolCall?: StreamEventMap['tool_call'];
   onToolCallDelta?: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
-  onStep?: (stepIndex: number, usage?: UsageInfo) => void;
-  onFinish?: (finishReason?: FinishReason, usage?: UsageInfo) => void;
   onWarning?: (message: string, context?: Record<string, unknown>) => void;
-  onConversationEvent?: (event: ConversationEvent) => void;
 }
 
 /**

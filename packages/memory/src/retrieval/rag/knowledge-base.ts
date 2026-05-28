@@ -6,14 +6,16 @@ import { createIndexManager, type IndexManagerOptions } from './index-manager.js
 import { createQueryPlanner } from './query-planner.js';
 import { rerankResults } from './reranker.js';
 import { sanitizeIngestSource } from './sanitization.js';
-import type { IngestSource, IngestSummary, RAGWeightConfig, RAGEvidence } from './types.js';
+import type { IngestSource, IngestSummary, RAGEvidence, RAGWeightConfig } from './types.js';
 
+/** Facade over the RAG knowledge base — ingest, search, and document removal. */
 export interface KnowledgeBaseManager {
   ingest(source: IngestSource): Promise<IngestSummary>;
   remove(documentId: string): Promise<boolean>;
   search(input: { query: string; scope?: string; limit?: number; weights: RAGWeightConfig }): Promise<RAGEvidence[]>;
 }
 
+/** Configuration options for KnowledgeBaseManager construction. */
 export interface KnowledgeBaseManagerOptions extends HybridRetrieverOptions, IndexManagerOptions {
   db?: MemoryDatabase | undefined;
   /** Use AgentFS kv_store instead of legacy rag tables when db is present. */
@@ -51,9 +53,9 @@ export function createKnowledgeBaseManager(options: KnowledgeBaseManagerOptions 
       return summary;
     },
 
-    async remove(documentId) {
+    remove(documentId) {
       retriever.remove(documentId);
-      return index.remove(documentId);
+      return Promise.resolve(index.remove(documentId));
     },
 
     async search(input) {

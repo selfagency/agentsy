@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createCompressor } from './compressor.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 
 describe('createCompressor', () => {
   let clock: ReturnType<typeof createTierTestClock>;
@@ -57,7 +57,12 @@ describe('createCompressor', () => {
       importance: 0.5,
       createdAt: clock.now() - 60_000
     });
-    const newItem = createTestMemoryItem({ id: 'new', tokenCount: 10, importance: 0.5, createdAt: clock.now() });
+    const newItem = createTestMemoryItem({
+      id: 'new',
+      tokenCount: 10,
+      importance: 0.5,
+      createdAt: clock.now()
+    });
     const result = compressor.compress([oldItem, newItem], 50);
     const recentChunk = result.chunks.find(c => c.id === 'new');
     const oldChunk = result.chunks.find(c => c.id === 'old');

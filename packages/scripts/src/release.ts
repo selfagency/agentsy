@@ -8,19 +8,19 @@ import ora from 'ora';
 import { $, argv, cd, ProcessOutput, sleep } from 'zx';
 
 import { createGitHelpers } from './release-git.js';
+import type { ReleaseNotesOptions } from './release-shared.js';
 import {
   checkNpmCredentials,
-  resolveGithubToken,
-  updateChangelogFile,
   ensureCleanMainBranch,
-  syncMainBranch,
-  resolveOwnerRepoFromOrigin,
   ensureLocalTagDoesNotExist,
   ensureRemoteTagDoesNotExist,
+  resolveGithubToken,
+  resolveOwnerRepoFromOrigin,
+  syncMainBranch,
+  updateChangelogFile,
   waitForWorkflow
 } from './release-shared.js';
-import type { ReleaseNotesOptions } from './release-shared.js';
-import { ROOT, parseVersionArg, safeRead, safeWrite } from './release-utils.js';
+import { parseVersionArg, ROOT, safeRead, safeWrite } from './release-utils.js';
 
 $.verbose = false;
 
@@ -44,7 +44,7 @@ let tagPushed = false;
 let releaseDone = false;
 const { resolveGitExecutable, runGit, setGitCommand } = createGitHelpers(ROOT);
 
-async function rollback() {
+function rollback() {
   if (releaseDone) {
     return;
   }
@@ -57,7 +57,7 @@ async function rollback() {
         runGit(['tag', '-d', tag]);
         console.log(`↩️  Tag ${tag} deleted from remote and local.`);
       } catch {
-        console.error(`❌ Could not delete tag. Manually run:`);
+        console.error('❌ Could not delete tag. Manually run:');
         console.error(`   git push origin --delete ${tag} && git tag -d ${tag}`);
       }
     }
@@ -86,14 +86,12 @@ async function rollback() {
 }
 
 process.on('SIGINT', () => {
-  rollback()
-    .then(() => process.exit(130))
-    .catch(() => process.exit(130));
+  rollback();
+  process.exit(130);
 });
 process.on('SIGTERM', () => {
-  rollback()
-    .then(() => process.exit(143))
-    .catch(() => process.exit(143));
+  rollback();
+  process.exit(143);
 });
 
 // ---------------------------------------------------------------------------
@@ -153,7 +151,6 @@ async function main() {
       .map(r => r.ref.replace('refs/tags/', ''))
       .filter(t => t !== tag)
       .toSorted((a, b) => {
-        // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
         const parse = (v: string): [number, number, number] => {
           const parts = v.replace(/^v/, '').split('.').map(Number);
           return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
@@ -291,7 +288,7 @@ async function main() {
       throw new Error(`npm publish exited with code ${result.status}`);
     }
   } catch (error) {
-    console.error(`❌ npm publish failed.`);
+    console.error('❌ npm publish failed.');
     // Ensure rollback is not marked as done so that tag/commit cleanup happens.
     releaseDone = false;
     throw error;
@@ -313,7 +310,7 @@ try {
   if (!(error instanceof ProcessOutput)) {
     console.error(`❌ ${msg}`);
   }
-  await rollback();
+  rollback();
   if (typeof error === 'object' && error !== null && 'exitCode' in error) {
     const exitCode = (error as Record<string, unknown>).exitCode;
     process.exit(typeof exitCode === 'number' || typeof exitCode === 'string' ? exitCode : 1);

@@ -1,14 +1,14 @@
-import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { ChatMessage } from '../message-conversion/index.js';
 import type { ProviderApiRequest, ProviderStreamChunk } from '../types/errors.js';
-import { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';
 import type {
   CancellationToken,
   LanguageModelChatRequest,
   LanguageModelChatResponse,
   LanguageModelChatResponseChunk
 } from './base-language-model-chat-provider.js';
+import { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';
 
 function makeCancellationToken(cancelled = false): CancellationToken {
   return {
@@ -40,6 +40,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
   public streamChunks: ProviderStreamChunk[] = [];
   public errorCode = 'internal_error';
 
+  // biome-ignore lint/suspicious/useAwait: overrides abstract class method
   protected async buildRequest(
     messages: ChatMessage[],
     request: LanguageModelChatRequest
@@ -60,7 +61,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
       this.streamChunks.push(chunk);
     };
 
-    // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
+    //
     return (async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
       for await (const chunk of response) {
         pushChunk(chunk);
@@ -75,12 +76,14 @@ class TestProvider extends BaseLanguageModelChatProvider {
   }
 
   // Override streamChat for unit testing (no real HTTP)
+  // biome-ignore lint/suspicious/useAwait: overrides abstract class method
   protected async streamChat(
     _request: ProviderApiRequest & { signal?: AbortSignal },
     _token: CancellationToken
   ): Promise<AsyncIterable<ProviderStreamChunk>> {
     const chunks = this.streamChunks;
     const mockChunks = chunks.length > 0 ? [...chunks] : [{ content: 'Hello' }];
+    // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable return type
     return (async function* () {
       for (const c of mockChunks) {
         yield c;
@@ -90,6 +93,7 @@ class TestProvider extends BaseLanguageModelChatProvider {
 }
 
 class RealStreamProvider extends BaseLanguageModelChatProvider {
+  // biome-ignore lint/suspicious/useAwait: overrides abstract class method
   protected async buildRequest(
     messages: ChatMessage[],
     request: LanguageModelChatRequest
@@ -140,15 +144,15 @@ describe(BaseLanguageModelChatProvider, () => {
   });
 
   describe('countTokens', () => {
-    it('approximates tokens as chars / 4', async () => {
+    it('approximates tokens as chars / 4', () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const tokens = await provider.countTokens('abcdefgh', 'test');
+      const tokens = provider.countTokens('abcdefgh', 'test');
       expect(tokens).toBe(2);
     });
 
-    it('rounds up', async () => {
+    it('rounds up', () => {
       const provider = new TestProvider(makeExtensionContext(), config);
-      const tokens = await provider.countTokens('abc', 'test');
+      const tokens = provider.countTokens('abc', 'test');
       expect(tokens).toBe(1);
     });
   });
@@ -203,6 +207,7 @@ describe(BaseLanguageModelChatProvider, () => {
 
     it('returns error response on exception', async () => {
       class FailingProvider extends TestProvider {
+        // biome-ignore lint/suspicious/useAwait: overrides parent class method
         protected async buildRequest(): Promise<ProviderApiRequest> {
           throw new Error('API error');
         }
@@ -276,10 +281,11 @@ describe(BaseLanguageModelChatProvider, () => {
       const token = makeCancellationToken();
       const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST' };
       await expect(
-        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(
-          req,
-          token
-        )
+        (
+          provider as unknown as {
+            streamChat(r: typeof req, t: CancellationToken): Promise<unknown>;
+          }
+        ).streamChat(req, token)
       ).rejects.toThrow('Provider API request URL is required');
     });
 
@@ -295,10 +301,11 @@ describe(BaseLanguageModelChatProvider, () => {
       const token = makeCancellationToken();
       const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST', url: 'http://x' };
       await expect(
-        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(
-          req,
-          token
-        )
+        (
+          provider as unknown as {
+            streamChat(r: typeof req, t: CancellationToken): Promise<unknown>;
+          }
+        ).streamChat(req, token)
       ).rejects.toThrow('HTTP response has no body');
     });
 
@@ -313,10 +320,11 @@ describe(BaseLanguageModelChatProvider, () => {
       const token = makeCancellationToken();
       const req: ProviderApiRequest = { body: {}, headers: {}, method: 'POST', url: 'http://x' };
       await expect(
-        (provider as unknown as { streamChat(r: typeof req, t: CancellationToken): Promise<unknown> }).streamChat(
-          req,
-          token
-        )
+        (
+          provider as unknown as {
+            streamChat(r: typeof req, t: CancellationToken): Promise<unknown>;
+          }
+        ).streamChat(req, token)
       ).rejects.toThrow('HTTP 500: Server Error');
     });
   });

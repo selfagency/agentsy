@@ -1,11 +1,9 @@
-import type { KnowledgeBaseManager } from '../../retrieval/rag/knowledge-base.js';
-import type { WikiManager } from '../../wiki/wiki-manager.js';
 import type { MemoryItem } from '../tier-types.js';
-import { createCanaryDetector, type CanaryDetector, type CanaryResult } from './canary-detector.js';
+import { type CanaryDetector, type CanaryResult, createCanaryDetector } from './canary-detector.js';
 import {
-  createConsolidationSpecialist,
   type ConsolidationResult,
   type ConsolidationSpecialist,
+  createConsolidationSpecialist,
   type SpecialistRole
 } from './consolidation-specialist.js';
 import {
@@ -24,49 +22,39 @@ import {
 } from './solidifier.js';
 
 export interface LearningLoopConfig {
-  observation: {
-    extractors: ('factual' | 'emotional' | 'procedural' | 'corrective' | 'relational')[];
-    batchSize: number;
-  };
-  dialectic: {
-    priorityRules: ResolutionPriority;
-  };
-  consolidation: {
-    specialists: SpecialistRole[];
-    maxTokenBudgetPerCycle: number;
-    /** Validate consolidated facts against wiki before solidifying. */
-    wikiValidation?: boolean | undefined;
-  };
-  solidification: SolidifierOptions;
   canary: {
     staleThreshold: number;
     degradationThreshold: number;
     checkInterval: number;
-    /** Compare LTM against wiki for staleness. */
-    wikiComparison?: boolean | undefined;
   };
-  /** Auto-generate or update wiki pages with novel consolidated facts. */
-  autoWikiUpdates?: boolean | undefined;
+  consolidation: {
+    specialists: SpecialistRole[];
+    maxTokenBudgetPerCycle: number;
+  };
+  dialectic: {
+    priorityRules: ResolutionPriority;
+  };
+  observation: {
+    extractors: ('factual' | 'emotional' | 'procedural' | 'corrective' | 'relational')[];
+    batchSize: number;
+  };
+  solidification: SolidifierOptions;
 }
 
 export interface LearningCycleResult {
-  observationsExtracted: number;
-  contradictionsFound: number;
-  resolutionsProduced: number;
-  consolidationsProduced: number;
-  solidificationActions: SolidificationResult[];
   canaryActions: CanaryResult[];
+  consolidationsProduced: number;
+  contradictionsFound: number;
   durationMs: number;
-  /** Wiki pages created or updated during the cycle. */
-  wikiUpdates?: { pageId: string; action: 'created' | 'updated' }[];
+  observationsExtracted: number;
+  resolutionsProduced: number;
+  solidificationActions: SolidificationResult[];
 }
 
 export interface LearningLoopDeps {
-  getNewMemories(limit: number): MemoryItem[];
-  getLTMMemories(): MemoryItem[];
   emitEvent?: ((event: { type: string; payload: Record<string, unknown> }) => void) | undefined;
-  wiki?: WikiManager | undefined;
-  knowledgeBase?: KnowledgeBaseManager | undefined;
+  getLTMMemories(): MemoryItem[];
+  getNewMemories(limit: number): MemoryItem[];
 }
 
 export interface LearningLoopOrchestrator {
@@ -91,24 +79,21 @@ export const DEFAULT_LEARNING_CONFIG: LearningLoopConfig = {
   },
   consolidation: {
     specialists: ['deduction', 'induction', 'surprisal', 'temporal'],
-    maxTokenBudgetPerCycle: 2_000,
-    wikiValidation: false
+    maxTokenBudgetPerCycle: 2000
   },
   solidification: {
     promotionThreshold: 0.75,
     demotionThreshold: 0.3,
     mergeSimilarityThreshold: 0.85,
     archiveAccessThreshold: 2,
-    maxAgeBeforeArchive: 30 * 24 * 60 * 60 * 1_000,
-    minAgeForDemotion: 7 * 24 * 60 * 60 * 1_000
+    maxAgeBeforeArchive: 30 * 24 * 60 * 60 * 1000,
+    minAgeForDemotion: 7 * 24 * 60 * 60 * 1000
   },
   canary: {
-    staleThreshold: 7 * 24 * 60 * 60 * 1_000,
+    staleThreshold: 7 * 24 * 60 * 60 * 1000,
     degradationThreshold: 0.4,
-    checkInterval: 60 * 60 * 1_000,
-    wikiComparison: false
-  },
-  autoWikiUpdates: false
+    checkInterval: 60 * 60 * 1000
+  }
 };
 
 export function createLearningLoopOrchestrator(
@@ -168,78 +153,6 @@ export function createLearningLoopOrchestrator(
       });
     }
 
-    // 3b. Wiki validation and auto-updates
-    const wikiUpdates: { pageId: string; action: 'created' | 'updated' }[] = [];
-
-    if (merged.finalConfidence > 0.5 && deps.wiki !== undefined && merged !== undefined) {
-      const wiki = deps.wiki;
-      const shouldValidate = mergedConfig.consolidation.wikiValidation ?? false;
-      const shouldAutoUpdate = mergedConfig.autoWikiUpdates ?? false;
-
-      if (shouldValidate || shouldAutoUpdate) {
-        const queryTerms = merged.mergedSummary.split(/\s+/u).slice(0, 5).join(' ');
-        const searchResults = await wiki.searchFullText(queryTerms, 5);
-        const firstResult = searchResults[0];
-        const matchingPage = firstResult !== undefined ? await wiki.getPage(firstResult.pageId) : null;
-
-        let coverage: number | undefined;
-
-        if (shouldValidate && matchingPage !== null) {
-          const pageText = `${matchingPage.title} ${matchingPage.body}`.toLowerCase();
-          const summaryText = merged.mergedSummary.toLowerCase();
-          const overlap = summaryText.split(/\s+/u).filter(term => pageText.includes(term)).length;
-          coverage = summaryText.split(/\s+/u).length > 0 ? overlap / summaryText.split(/\s+/u).length : 0;
-
-          if (deps.emitEvent) {
-            deps.emitEvent({
-              type: 'learning:wiki_validation',
-              payload: {
-                pageId: matchingPage.pageId,
-                coverage,
-                confidence: merged.finalConfidence
-              }
-            });
-          }
-        }
-
-        if (shouldAutoUpdate && matchingPage === null) {
-          const topic = merged.mergedSummary.split(/[:.!?]/u)[0]?.trim() ?? 'Consolidated Fact';
-          const pageId = topic
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/gu, '-')
-            .replace(/^-|-$/gu, '');
-
-          if (pageId.length > 0) {
-            try {
-              await wiki.upsertPage({
-                pageId,
-                title: topic,
-                body: merged.mergedSummary,
-                tags: ['auto-generated', 'learning'],
-                format: 'markdown',
-                actorId: 'learning-loop'
-              });
-              wikiUpdates.push({ pageId, action: 'created' });
-            } catch {
-              // Gracefully skip wiki update on error
-            }
-          }
-        } else if (shouldAutoUpdate && matchingPage !== null && coverage !== undefined && coverage < 0.5) {
-          const pageId = matchingPage.pageId;
-          try {
-            await wiki.updatePage(
-              pageId,
-              { body: `${matchingPage.body}\n\n## Update\n${merged.mergedSummary}` },
-              'learning-loop'
-            );
-            wikiUpdates.push({ pageId, action: 'updated' });
-          } catch {
-            // Gracefully skip wiki update on error
-          }
-        }
-      }
-    }
-
     // 4. Solidify
     const ltmMemories = deps.getLTMMemories();
     const solidificationCandidates: SolidificationCandidate[] = [];
@@ -286,8 +199,7 @@ export function createLearningLoopOrchestrator(
       consolidationsProduced: merged.specialistResults.length,
       solidificationActions,
       canaryActions,
-      durationMs,
-      ...(wikiUpdates.length > 0 ? { wikiUpdates } : {})
+      durationMs
     };
   }
 

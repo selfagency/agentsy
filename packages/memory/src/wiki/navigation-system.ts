@@ -1,7 +1,7 @@
 export interface NavigationSystem {
-  linkPages(fromPageId: string, toPageId: string): void;
-  getOutgoing(pageId: string): string[];
   getBacklinks(pageId: string): string[];
+  getOutgoing(pageId: string): string[];
+  linkPages(fromPageId: string, toPageId: string): void;
 }
 
 export function createNavigationSystem(): NavigationSystem {

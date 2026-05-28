@@ -665,7 +665,7 @@ The Phase 1 completion gate checks for all three stages. The open exploration se
 
 **Mandatory consolidation step.** After all three stages (open exploration, quality risks, and selected pattern deep dives) are explored and written to EXPLORATION.md, add a final section: `## Candidate Bugs for Phase 2`. This section consolidates the strongest bug hypotheses from all earlier sections into a prioritized handoff list. For each candidate, include: the hypothesis, the specific file:line references, which stage surfaced it (open exploration, quality risks, or pattern), and what the code review should look for. This section is the bridge between exploration and artifact generation — it tells Phase 3 exactly where to focus. Minimum: 4 candidate bugs with file:line references — at least 2 from open exploration or quality risks, and at least 1 from a pattern deep dive. There is no maximum.
 
-**Pre-flight: Scope declaration for large repositories**
+## Pre-flight: Scope declaration for large repositories
 
 Before exploring any source code, estimate scale: approximate source-file count (excluding tests, docs, and generated files), major subsystem count, and documentation volume. Note the count in PROGRESS.md.
 
@@ -1006,7 +1006,7 @@ For `tier ∈ {1, 2}`, the REQ also carries a `citation` block per `schemas.md` 
 
 **Do not cap the requirement count.** Derive as many as the project warrants. A small utility might have 20. A mature library might have 100+. The goal is completeness.
 
-**Step 7a: Documentation-to-requirement reconciliation**
+## Step 7a: Documentation-to-requirement reconciliation
 
 Re-read the coverage commitment table from PROGRESS.md. For each deep document you committed to covering ("will cover in Phase 2"), verify that at least one requirement traces to the subsystem it documents. If your requirements cover only some committed subsystems, add requirements for the gaps before completing Step 7.
 
@@ -1017,7 +1017,7 @@ For each subsystem, record one of the following in PROGRESS.md:
 
 A deep-documented subsystem with a "will cover" commitment and zero mapped requirements is a process failure, not a legitimate scope choice. Do not proceed to artifact generation until every commitment is satisfied or explicitly converted to a justified exclusion.
 
-**Step 7b: Code-path → REQ reverse traceability audit (mandatory)**
+## Step 7b: Code-path → REQ reverse traceability audit (mandatory)
 
 **Timing: Execute Step 7a and 7b after Phase E completes** (i.e., after the overview validation gate, use case derivation, and acceptance criteria span check have all run). The audit depends on finalized requirements AND finalized use cases.
 

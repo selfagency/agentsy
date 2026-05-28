@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { AgentRegistry } from '../agents/registry.js';
 import type { AgentCapabilities, WorkflowSpec } from '../types/index.js';
 import { NodeType, WorkflowStatus } from '../types/index.js';
-import { OrchestrationEngine } from './engine.js';
 import type { TaskScheduler } from './engine.js';
+import { OrchestrationEngine } from './engine.js';
 
 function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilities {
   return {
@@ -78,7 +78,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         nodes: [
           {
@@ -107,7 +107,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         id: 'wf-default-scheduler',
         nodes: [
@@ -139,7 +139,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         id: 'wf-sequence',
         nodes: [
@@ -209,7 +209,7 @@ describe(OrchestrationEngine, () => {
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    const workflow = await engine.create(
+    const workflow = engine.create(
       createBaseSpec({
         id: 'wf-decision',
         nodes: [
@@ -251,13 +251,13 @@ describe(OrchestrationEngine, () => {
     });
   });
 
-  it('rejects workflows that reference unknown nodes', async () => {
+  it('rejects workflows that reference unknown nodes', () => {
     const registry = new AgentRegistry();
     const scheduler = createScheduler('unused');
 
     const engine = new OrchestrationEngine(registry, scheduler);
 
-    await expect(
+    expect(() =>
       engine.create(
         createBaseSpec({
           id: 'wf-invalid',
@@ -271,6 +271,6 @@ describe(OrchestrationEngine, () => {
           ]
         })
       )
-    ).rejects.toThrow('Sequence node sequence-invalid references unknown node: missing-node');
+    ).toThrow('Sequence node sequence-invalid references unknown node: missing-node');
   });
 });

@@ -1,14 +1,10 @@
 import { fingerprintContent } from '../content-addressing/fingerprint.js';
 import type { PubSubManager } from '../coordination/pub-sub-manager.js';
 import type { Scheduler } from '../coordination/scheduler.js';
-import type { MemoryDatabase } from '../database/connection.js';
-import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
-import type { WikiManager } from '../wiki/wiki-manager.js';
-import { awaken, type AwakenResult, type PendingEvent } from './awaken.js';
-import { createCompressor, type CompressorOptions } from './compressor.js';
-import { type DecayConfig, DEFAULT_DECAY_CONFIG } from './decay.js';
+import { type AwakenResult, awaken, type PendingEvent } from './awaken.js';
+import { type CompressorOptions, createCompressor } from './compressor.js';
+import { DEFAULT_DECAY_CONFIG, type DecayConfig } from './decay.js';
 import { computeImportance, DEFAULT_IMPORTANCE_FACTORS, type ImportanceFactors } from './importance.js';
-import type { LearningLoopConfig } from './learning/loop-orchestrator.js';
 import { createLongTermMemory, type LongTermMemoryOptions } from './long-term-memory.js';
 import type { MemoryTierLike } from './memory-tier.js';
 import { createSensoryBuffer, type SensoryBufferOptions } from './sensory-buffer.js';
@@ -27,27 +23,26 @@ import {
 import { createWorkingMemory, type WorkingMemoryOptions } from './working-memory.js';
 
 export interface MemoryEngineIngestOptions {
-  kind?: MemoryKind;
-  writeHeap?: WriteHeap;
   importance?: number;
+  kind?: MemoryKind;
   metadata?: Record<string, unknown>;
   targetTier?: TierName;
+  writeHeap?: WriteHeap;
 }
 
 export interface MemoryEngineRecallOptions extends TierReadQuery {
-  tiers?: TierName[];
   crossTier?: boolean;
+  tiers?: TierName[];
 }
 
 export interface MemoryEngineSnapshot {
-  tiers: Record<TierName, { items: number; usedTokens: number; maxTokens: number }>;
   budget: TokenBudgetSnapshot;
   schedulerRunning: boolean;
+  tiers: Record<TierName, { items: number; usedTokens: number; maxTokens: number }>;
 }
 
 export interface MemoryEngineStats {
-  totalItems: number;
-  totalTokens: number;
+  budgetUtilization: number;
   tierStats: Record<
     TierName,
     {
@@ -57,54 +52,40 @@ export interface MemoryEngineStats {
       utilization: number;
     }
   >;
-  budgetUtilization: number;
+  totalItems: number;
+  totalTokens: number;
 }
 
 export interface MemoryEngineOptions {
-  sensoryBuffer?: SensoryBufferOptions;
-  sensoryRegister?: SensoryRegisterOptions;
-  workingMemory?: WorkingMemoryOptions;
-  shortTermMemory?: ShortTermMemoryOptions;
-  longTermMemory?: LongTermMemoryOptions;
   budget?: Partial<TokenBudgetOptions>;
-  importanceFactors?: ImportanceFactors;
-  decayConfig?: DecayConfig;
-  scheduler?: TierSchedulerOptions;
   compressor?: CompressorOptions;
-  synthesizer?: SynthesizerOptions;
-  summarizer?: SummarizerOptions;
   coordination?: {
     scheduler?: Scheduler;
     pubsub?: PubSubManager;
   };
+  decayConfig?: DecayConfig;
+  importanceFactors?: ImportanceFactors;
+  longTermMemory?: LongTermMemoryOptions;
   now?: (() => number) | undefined;
-  runLearningCycle?: boolean;
-  learningConfig?: Partial<LearningLoopConfig>;
-  db?: MemoryDatabase | undefined;
-  /** Use AgentFS kv_store instead of legacy memory_items table when db is present. */
-  useAgentFs?: boolean | undefined;
-  /** Optional wiki manager for learning cycle validation and auto-updates. */
-  wiki?: WikiManager | undefined;
-  /** Optional knowledge base manager for learning cycle validation. */
-  knowledgeBase?: KnowledgeBaseManager | undefined;
+  scheduler?: TierSchedulerOptions;
+  sensoryBuffer?: SensoryBufferOptions;
+  sensoryRegister?: SensoryRegisterOptions;
+  shortTermMemory?: ShortTermMemoryOptions;
+  summarizer?: SummarizerOptions;
+  synthesizer?: SynthesizerOptions;
+  workingMemory?: WorkingMemoryOptions;
 }
 
 export interface MemoryEngine {
+  awaken(pendingEvents?: PendingEvent[]): Promise<AwakenResult>;
+  readonly budget: TokenBudget;
   ingest(content: string, options?: MemoryEngineIngestOptions): string | null;
   recall(query?: MemoryEngineRecallOptions): TierReadResult[];
-  awaken(
-    pendingEvents?: PendingEvent[],
-    options?: {
-      runLearningCycle?: boolean;
-      learningConfig?: Partial<LearningLoopConfig>;
-    }
-  ): Promise<AwakenResult>;
+  reset(): void;
+  readonly scheduler: TierScheduler;
   snapshot(): MemoryEngineSnapshot;
   stats(): MemoryEngineStats;
-  reset(): void;
   readonly tiers: Partial<Record<TierName, MemoryTierLike>>;
-  readonly budget: TokenBudget;
-  readonly scheduler: TierScheduler;
 }
 
 function estimateTokens(text: string): number {
@@ -143,17 +124,27 @@ function buildSchedulerOptions(options: MemoryEngineOptions): TierSchedulerOptio
 
 function buildReadQuery(query: MemoryEngineRecallOptions): TierReadQuery {
   const readQuery: TierReadQuery = {};
-  if (query.minImportance !== undefined) readQuery.minImportance = query.minImportance;
-  if (query.kind !== undefined) readQuery.kind = query.kind;
-  if (query.writeHeap !== undefined) readQuery.writeHeap = query.writeHeap;
-  if (query.limit !== undefined) readQuery.limit = query.limit;
+  if (query.minImportance !== undefined) {
+    readQuery.minImportance = query.minImportance;
+  }
+  if (query.kind !== undefined) {
+    readQuery.kind = query.kind;
+  }
+  if (query.writeHeap !== undefined) {
+    readQuery.writeHeap = query.writeHeap;
+  }
+  if (query.limit !== undefined) {
+    readQuery.limit = query.limit;
+  }
   return readQuery;
 }
 
 function getAllItemsFromTiers(tiers: Partial<Record<TierName, MemoryTierLike | undefined>>): MemoryItem[] {
   const items: MemoryItem[] = [];
   for (const tier of Object.values(tiers)) {
-    if (!tier) continue;
+    if (!tier) {
+      continue;
+    }
     items.push(...tier.items());
   }
   return items;
@@ -164,27 +155,19 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
   const importanceFactors = options.importanceFactors ?? DEFAULT_IMPORTANCE_FACTORS;
 
   // Create tiers
-  const db = options.db;
-  const useAgentFs = options.useAgentFs;
-  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now, db, useAgentFs });
+  const sensoryBuffer = createSensoryBuffer({ ...options.sensoryBuffer, now });
   const sensoryRegister = createSensoryRegister({
     ...options.sensoryRegister,
-    now,
-    db,
-    useAgentFs
+    now
   });
-  const workingMemory = createWorkingMemory({ ...options.workingMemory, now, db, useAgentFs });
+  const workingMemory = createWorkingMemory({ ...options.workingMemory, now });
   const shortTermMemory = createShortTermMemory({
     ...options.shortTermMemory,
-    now,
-    db,
-    useAgentFs
+    now
   });
   const longTermMemory = createLongTermMemory({
     ...options.longTermMemory,
-    now,
-    db,
-    useAgentFs
+    now
   });
 
   const tiers: Partial<Record<TierName, MemoryTierLike>> = {
@@ -197,10 +180,6 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
   const budget = createTokenBudget(buildBudgetOptions(options));
   const scheduler = createTierScheduler(tiers, buildSchedulerOptions(options));
-  const runLearningCycle = options.runLearningCycle ?? false;
-  const learningConfig = options.learningConfig;
-  const wiki = options.wiki;
-  const knowledgeBase = options.knowledgeBase;
 
   // Create processing pipeline (used in tier bridges — Phase 5+)
   const _compressor = createCompressor({ ...options.compressor, now });
@@ -253,14 +232,17 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
   function ingest(content: string, ingestOptions: MemoryEngineIngestOptions = {}): string | null {
     const targetTierName = ingestOptions.targetTier ?? 'sensory_buffer';
-    // nosemgrep: targetTierName is TierName with fallback, not user-controlled
     const targetTier = tiers[targetTierName];
 
-    if (!targetTier) return null;
+    if (!targetTier) {
+      return null;
+    }
 
     const tokenCount = estimateTokens(content);
     const allocation = budget.allocate(targetTierName, tokenCount);
-    if (!allocation.granted) return null;
+    if (!allocation.granted) {
+      return null;
+    }
 
     const item = buildMemoryItem(content, ingestOptions, now(), tokenCount);
     const written = targetTier.write(item);
@@ -283,7 +265,9 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
 
       for (const tierName of targetTiers) {
         const tier = tiers[tierName];
-        if (!tier) continue;
+        if (!tier) {
+          continue;
+        }
         const result = tier.read(readQuery);
         allItems.push(...result.items);
       }
@@ -298,7 +282,6 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       return [
         {
           items: allItems,
-          // NOSONAR: assertion is required to satisfy TierName union type
           tierName: 'sensory_buffer' as TierName,
           tokenCount: finalTokens,
           overflowed: query.limit !== undefined && allItems.length > query.limit
@@ -309,34 +292,17 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
     const results: TierReadResult[] = [];
     for (const tierName of targetTiers) {
       const tier = tiers[tierName];
-      if (!tier) continue;
+      if (!tier) {
+        continue;
+      }
       results.push(tier.read(readQuery));
     }
     return results;
   }
 
-  async function doAwaken(
-    events?: PendingEvent[],
-    awakenOptions?: {
-      runLearningCycle?: boolean;
-      learningConfig?: Partial<LearningLoopConfig>;
-    }
-  ): Promise<AwakenResult> {
+  async function doAwaken(events?: PendingEvent[]): Promise<AwakenResult> {
     const allPending = [...pendingEvents, ...(events ?? [])];
     pendingEvents.length = 0;
-
-    const awakenOpts: import('./awaken.js').AwakenOptions = {
-      pendingEvents: allPending,
-      now
-    };
-    const effectiveRunLearningCycle = awakenOptions?.runLearningCycle ?? runLearningCycle;
-    if (effectiveRunLearningCycle) {
-      awakenOpts.runLearningCycle = effectiveRunLearningCycle;
-    }
-    const effectiveLearningConfig = awakenOptions?.learningConfig ?? learningConfig;
-    if (effectiveLearningConfig !== undefined) {
-      awakenOpts.learningConfig = effectiveLearningConfig;
-    }
 
     return await awaken(
       {
@@ -345,21 +311,24 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
         budgetRelease: (tier: TierName, tokens: number) => budget.release(tier, tokens),
         ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) =>
           ingest(content, { importance, metadata }),
-        getAllItems: () => getAllItemsFromTiers(tiers),
-        wiki,
-        knowledgeBase
+        getAllItems: () => getAllItemsFromTiers(tiers)
       },
-      awakenOpts
+      {
+        pendingEvents: allPending,
+        now
+      }
     );
   }
 
   function takeSnapshot(): MemoryEngineSnapshot {
     const tierData = {} as Record<TierName, { items: number; usedTokens: number; maxTokens: number }>;
-    for (const [name, tier] of Object.entries(tiers) as [string, MemoryTierLike | undefined][]) {
-      if (!tier) continue;
-      const tierName = name as TierName;
+    for (const [name, tier] of Object.entries(tiers) as [TierName, MemoryTierLike | undefined][]) {
+      if (!tier) {
+        continue;
+      }
       const cap = tier.capacity();
-      tierData[tierName] = {
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection — iterating own object keys
+      tierData[name] = {
         items: cap.usedItems,
         usedTokens: cap.usedTokens,
         maxTokens: cap.maxTokens
@@ -386,13 +355,15 @@ export function createMemoryEngine(options: MemoryEngineOptions = {}): MemoryEng
       }
     >;
 
-    for (const [name, tier] of Object.entries(tiers) as [string, MemoryTierLike | undefined][]) {
-      if (!tier) continue;
-      const tierName = name as TierName;
+    for (const [name, tier] of Object.entries(tiers) as [TierName, MemoryTierLike | undefined][]) {
+      if (!tier) {
+        continue;
+      }
       const cap = tier.capacity();
       totalItems += cap.usedItems;
       totalTokens += cap.usedTokens;
-      tierStats[tierName] = {
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection — iterating own object keys
+      tierStats[name] = {
         items: cap.usedItems,
         usedTokens: cap.usedTokens,
         maxTokens: cap.maxTokens,

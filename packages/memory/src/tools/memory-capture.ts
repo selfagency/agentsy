@@ -3,21 +3,21 @@ import { randomUUID } from 'node:crypto';
 import type { MemoryScope, ScopeManager } from '../scope/scope-manager.js';
 
 export interface CapturedMemoryRecord {
-  id: string;
   actorId: string;
-  scope: MemoryScope;
   content: string;
-  title?: string;
-  tags?: string[];
   createdAt: Date;
+  id: string;
+  scope: MemoryScope;
+  tags?: string[];
+  title?: string;
 }
 
 export interface MemoryCaptureInput {
   actorId: string;
-  scope: MemoryScope;
   content: string;
-  title?: string;
+  scope: MemoryScope;
   tags?: string[];
+  title?: string;
 }
 
 export interface MemoryCaptureResult {
@@ -29,10 +29,10 @@ export interface MemoryCaptureTool {
 }
 
 export interface MemoryCaptureToolDeps {
-  save(record: CapturedMemoryRecord): void | Promise<void>;
-  scopeManager?: ScopeManager;
   idFactory?: () => string;
   now?: () => Date;
+  save(record: CapturedMemoryRecord): void | Promise<void>;
+  scopeManager?: ScopeManager;
 }
 
 export function createMemoryCaptureTool(deps: MemoryCaptureToolDeps): MemoryCaptureTool {

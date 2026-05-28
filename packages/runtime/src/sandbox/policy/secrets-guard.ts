@@ -11,8 +11,8 @@ export interface SecretsGuardOptions {
 }
 
 export interface SecretsGuardResult {
-  readonly safe: boolean;
   readonly redacted: string;
+  readonly safe: boolean;
   readonly violations: string[];
 }
 

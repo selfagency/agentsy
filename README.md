@@ -10,7 +10,7 @@ Agentsy is a pnpm/turborepo monorepo of focused `@agentsy/*` packages for stream
 
 This workspace currently contains:
 
-- **23 manifest-backed packages** (have `package.json` and build/test surfaces)
+- **24 manifest-backed packages** (have `package.json` and build/test surfaces)
 - **0 plan-only package domains** (all domains have been promoted)
 
 ### Manifest-backed packages
@@ -21,6 +21,7 @@ This workspace currently contains:
 - `@agentsy/guardrails`
 - `@agentsy/mcp`
 - `@agentsy/memory`
+- `@agentsy/gateway`
 - `@agentsy/observability`
 - `@agentsy/orchestrator`
 - `@agentsy/plugins`
@@ -75,7 +76,12 @@ pnpm format
 - [Architecture overview](./docs/architecture/index.md)
 - [Roadmap](./docs/roadmap.md)
 - [Developer docs](./docs/developers/index.md)
+- [Dogfood implementation plan](./plan/DOGFOOD-PLAN.md)
 - [Master implementation plan](./plan/MASTER-IMPLEMENTATION-PLAN.md)
+
+## Dogfood implementation
+
+The repository now follows `plan/DOGFOOD-PLAN.md` as the active production sequence for CLI-first delivery. Start there when implementing the next vertical slice.
 
 ## License
 

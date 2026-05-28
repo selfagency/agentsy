@@ -227,7 +227,7 @@ describe('createSharedRendererHandle' as const, () => {
     expect(renderer).toBeDefined();
   });
 
-  it('uses provided processor instead of creating internal one', async () => {
+  it('uses provided processor instead of creating internal one', () => {
     const processor = new LLMStreamProcessor();
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, processor }, mockHandlers);
 
@@ -236,7 +236,7 @@ describe('createSharedRendererHandle' as const, () => {
     expect(typeof renderer.write).toBe('function');
   });
 
-  it('creates internal processor when not provided', async () => {
+  it('creates internal processor when not provided', () => {
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     // Renderer should be created successfully with internal processor

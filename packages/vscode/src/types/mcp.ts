@@ -15,12 +15,12 @@ export interface McpServerOptions {
   /** Enable automatic startup */
   autoStart?: boolean;
 
-  /** Timeout for server startup in milliseconds */
-  startupTimeout?: number;
-
   /** Retry configuration */
   retries?: {
     maxAttempts: number;
     backoffMs: number;
   };
+
+  /** Timeout for server startup in milliseconds */
+  startupTimeout?: number;
 }

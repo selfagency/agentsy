@@ -1,7 +1,6 @@
 import type { ReadableStream } from 'node:stream/web';
-
-import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { ProcessorOptions, StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { parseSSEStream } from '@agentsy/core/sse';
 import { parseJson } from '@agentsy/core/structured';
 import type { JsonObject } from '@agentsy/types';
@@ -30,20 +29,20 @@ export type NormalizerProvider =
   | 'zai';
 
 export interface PipelineOptions extends ProcessorOptions {
-  provider: NormalizerProvider;
   /** Maximum nesting depth for SSE JSON payloads (default: 64) */
   maxJsonDepth?: number;
   /** Maximum number of keys in SSE JSON payloads (default: 10000) */
   maxJsonKeys?: number;
+  provider: NormalizerProvider;
 }
 
 export interface PipelineEvent {
-  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   content?: string;
-  thinking?: string;
-  tool_call?: { name: string; parameters: JsonObject };
   message?: string;
   provider: NormalizerProvider;
+  thinking?: string;
+  tool_call?: { name: string; parameters: JsonObject };
+  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
 }
 
 type Normalizer = (data: unknown) => { chunk: StreamChunk; rawEvent?: unknown } | null;
@@ -60,13 +59,13 @@ const NORMALIZERS: Record<NormalizerProvider, Normalizer> = {
   zai: normalizeZAiChunk
 };
 
-async function* processSSEEvent(
+function* processSSEEvent(
   sseEvent: { data?: string },
   normalizer: Normalizer,
   processor: LLMStreamProcessor,
   provider: NormalizerProvider,
   jsonParseOptions: { maxJsonDepth?: number; maxJsonKeys?: number }
-): AsyncGenerator<PipelineEvent> {
+): Generator<PipelineEvent> {
   if (!sseEvent.data || sseEvent.data === '[DONE]') {
     return;
   }
@@ -164,13 +163,7 @@ export async function* createPipeline(
   try {
     for await (const sseEvent of parseSSEStream(source)) {
       try {
-        for await (const event of processSSEEvent(
-          sseEvent,
-          normalizer,
-          processor,
-          options.provider,
-          jsonParseOptions
-        )) {
+        for (const event of processSSEEvent(sseEvent, normalizer, processor, options.provider, jsonParseOptions)) {
           yield event;
         }
       } catch (_error) {

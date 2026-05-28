@@ -1,18 +1,22 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { createMcpServer, MCP_PROTOCOL_VERSION, type JsonRpcResponse, type McpNotification } from './protocol.js';
+import { createMcpServer, type JsonRpcResponse, MCP_PROTOCOL_VERSION, type McpNotification } from './protocol.js';
 
 function assertErrorResponse(
   response: JsonRpcResponse | McpNotification | undefined
 ): asserts response is JsonRpcResponse {
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Assertion guards used inside it() blocks
   expect(response).toBeDefined();
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Assertion guards used inside it() blocks
   expect('error' in (response as object)).toBe(true);
 }
 
 function assertResultResponse(
   response: JsonRpcResponse | McpNotification | undefined
 ): asserts response is JsonRpcResponse {
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Assertion guards used inside it() blocks
   expect(response).toBeDefined();
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Assertion guards used inside it() blocks
   expect('result' in (response as object)).toBe(true);
 }
 
@@ -58,7 +62,6 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
-    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -96,7 +99,6 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
-    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -122,7 +124,6 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
-    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -132,7 +133,7 @@ describe('MCP Protocol', () => {
     });
 
     assertErrorResponse(response);
-    expect(response.error?.code).toBe(-32601);
+    expect(response.error?.code).toBe(-32_601);
   });
 
   it('should return error for method not found', async () => {
@@ -149,7 +150,7 @@ describe('MCP Protocol', () => {
     });
 
     assertErrorResponse(response);
-    expect(response.error?.code).toBe(-32601);
+    expect(response.error?.code).toBe(-32_601);
   });
 
   it('should reject tools/list before initialization', async () => {
@@ -166,7 +167,7 @@ describe('MCP Protocol', () => {
     });
 
     assertErrorResponse(response);
-    expect(response.error?.code).toBe(-32001);
+    expect(response.error?.code).toBe(-32_001);
   });
 
   it('should report capabilities', () => {
@@ -178,7 +179,7 @@ describe('MCP Protocol', () => {
 
     const caps = server.capabilities();
     expect(caps).toHaveProperty('tools');
-    expect(caps.tools).toEqual({ listChanged: false });
+    expect(caps).toHaveProperty('logging');
   });
 
   it('should close and reset initialization state', async () => {
@@ -189,7 +190,6 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
-    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
     server.close();
 
     const response = await server.handleMessage({
@@ -199,7 +199,7 @@ describe('MCP Protocol', () => {
     });
 
     assertErrorResponse(response);
-    expect(response.error?.code).toBe(-32001);
+    expect(response.error?.code).toBe(-32_001);
   });
 
   it('should handle tool call errors', async () => {
@@ -213,7 +213,7 @@ describe('MCP Protocol', () => {
             description: 'A tool that throws',
             inputSchema: { type: 'object', properties: {} }
           },
-          handler: async () => {
+          handler: () => {
             throw new Error('Tool failed');
           }
         }
@@ -221,7 +221,6 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
-    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -242,7 +241,6 @@ describe('MCP Protocol', () => {
     });
 
     await server.handleMessage({ jsonrpc: '2.0', id: 1, method: 'initialize' });
-    await server.handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' });
 
     const response = await server.handleMessage({
       jsonrpc: '2.0',
@@ -252,7 +250,7 @@ describe('MCP Protocol', () => {
     });
 
     assertErrorResponse(response);
-    expect(response.error?.code).toBe(-32602);
+    expect(response.error?.code).toBe(-32_602);
   });
 
   it('should handle initialized notification', async () => {

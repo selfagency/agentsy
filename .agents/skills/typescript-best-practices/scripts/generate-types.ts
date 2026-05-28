@@ -24,12 +24,12 @@ const SCRIPT_NAME = "generate-types";
 
 // === Types ===
 interface GenerateOptions {
+  exportTypes: boolean;
   input: string;
   name: string;
   output?: string;
   readonly: boolean;
   useInterface: boolean;
-  exportTypes: boolean;
 }
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
@@ -37,9 +37,9 @@ type JsonObject = { [key: string]: JsonValue };
 type JsonArray = JsonValue[];
 
 interface TypeInfo {
-  name: string;
   definition: string;
   isNested: boolean;
+  name: string;
 }
 
 // === Type Inference ===
@@ -98,7 +98,7 @@ function inferArrayType(arr: JsonArray, propertyName: string, options: GenerateO
   let elementType: string;
   if (typesArray.length === 1) {
     elementType = typesArray[0];
-  } else if (typesArray.every(t => t === "string" || t === "number" || t === "boolean")) {
+  } else if (typesArray.every((t) => t === "string" || t === "number" || t === "boolean")) {
     elementType = typesArray.join(" | ");
   } else {
     // Complex union, use the first object type or union
@@ -113,15 +113,11 @@ function inferArrayType(arr: JsonArray, propertyName: string, options: GenerateO
 
 // === Name Utilities ===
 function toPascalCase(str: string): string {
-  return str
-    .replace(/[_-](.)/ug, (_, char) => char.toUpperCase())
-    .replace(/^(.)/, (_, char) => char.toUpperCase());
+  return str.replace(/[_-](.)/gu, (_, char) => char.toUpperCase()).replace(/^(.)/, (_, char) => char.toUpperCase());
 }
 
 function toCamelCase(str: string): string {
-  return str
-    .replace(/[_-](.)/ug, (_, char) => char.toUpperCase())
-    .replace(/^(.)/, (_, char) => char.toLowerCase());
+  return str.replace(/[_-](.)/gu, (_, char) => char.toUpperCase()).replace(/^(.)/, (_, char) => char.toLowerCase());
 }
 
 function singularize(str: string): string {
@@ -172,15 +168,13 @@ function generateTypesFromObject(
       const elementTypeName = toPascalCase(singularize(key));
       const fullElementTypeName = `${typeName}${elementTypeName}`;
 
-      if (!Array.isArray(value[0])) {
-        generateTypesFromObject(value[0] as JsonObject, fullElementTypeName, options, collectedTypes);
-        const arrayType = options.readonly
-          ? `ReadonlyArray<${fullElementTypeName}>`
-          : `${fullElementTypeName}[]`;
-        properties.push(`  ${readonlyPrefix}${propName}: ${arrayType};`);
-      } else {
+      if (Array.isArray(value[0])) {
         const inferredType = inferType(value, key, options);
         properties.push(`  ${readonlyPrefix}${propName}: ${inferredType};`);
+      } else {
+        generateTypesFromObject(value[0] as JsonObject, fullElementTypeName, options, collectedTypes);
+        const arrayType = options.readonly ? `ReadonlyArray<${fullElementTypeName}>` : `${fullElementTypeName}[]`;
+        properties.push(`  ${readonlyPrefix}${propName}: ${arrayType};`);
       }
     } else {
       const inferredType = inferType(value, key, options);
@@ -230,9 +224,7 @@ function generateTypes(data: JsonValue, options: GenerateOptions): string {
       const elementTypeName = `${options.name}Item`;
       generateTypesFromObject(firstItem as JsonObject, elementTypeName, options, collectedTypes);
 
-      const arrayType = options.readonly
-        ? `ReadonlyArray<${elementTypeName}>`
-        : `${elementTypeName}[]`;
+      const arrayType = options.readonly ? `ReadonlyArray<${elementTypeName}>` : `${elementTypeName}[]`;
 
       collectedTypes.set(options.name, {
         name: options.name,

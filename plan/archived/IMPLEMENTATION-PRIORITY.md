@@ -61,7 +61,7 @@
 
 **Target:** 75% output token reduction
 
-**Scope: Standalone compression utility**
+## Scope: Standalone compression utility
 
 ```typescript
 // packages/tokens/src/compression/
@@ -660,14 +660,14 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 
 ### Week-by-Week Breakdown
 
-**Phase 0: Token Reduction (Weeks 1-4)**
+## Phase 0: Token Reduction (Weeks 1-4)
 
 | Week | Focus              | Target      | Success Metric              |
 | ---- | ------------------ | ----------- | --------------------------- |
 | 1-2  | Output compression | 75% savings | Benchmark validation passed |
 | 3-4  | Memory compression | 46% savings | 5-file benchmark passed     |
 
-**Phase 1: Core Memory (Weeks 1-8)**
+## Phase 1: Core Memory (Weeks 1-8)
 
 | Week | Focus                 | Target            | Success Metric                      |
 | ---- | --------------------- | ----------------- | ----------------------------------- |
@@ -676,21 +676,21 @@ const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
 | 5-6  | Vector search         | Basic vector DB   | Vector search functional            |
 | 7-8  | Foundation completion | Production ready  | Ready for external use              |
 
-**Phase 2: Turso Sync (Weeks 5-12)**
+## Phase 2: Turso Sync (Weeks 5-12)
 
 | Week | Focus               | Target           | Success Metric          |
 | ---- | ------------------- | ---------------- | ----------------------- |
 | 5-6  | Turso integration   | Cloud sync       | Local-remote sync works |
 | 7-8  | Production features | Production ready | Security and monitoring |
 
-**Phase 3: RAG Enhancement (Weeks 9-18)**
+## Phase 3: RAG Enhancement (Weeks 9-18)
 
 | Week  | Focus              | Target          | Success Metric             |
 | ----- | ------------------ | --------------- | -------------------------- |
 | 9-12  | mcp-rag-server     | Knowledge base  | RAG integration functional |
 | 13-16 | Advanced retrieval | Enhanced search | Advanced features work     |
 
-**Phase 4: Advanced Features (Weeks 13-20)**
+## Phase 4: Advanced Features (Weeks 13-20)
 
 | Week  | Focus               | Target        | Success Metric     |
 | ----- | ------------------- | ------------- | ------------------ |

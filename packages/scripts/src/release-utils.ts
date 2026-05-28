@@ -8,7 +8,7 @@ export function isPathInsideRoot(p: string): boolean {
   try {
     const resolved = resolve(p);
     const rel = relative(ROOT, resolved);
-    return rel === '' || (!rel.startsWith('..') && !rel.startsWith('../'));
+    return rel === '' || !(rel.startsWith('..') || rel.startsWith('../'));
   } catch {
     return false;
   }
@@ -31,7 +31,7 @@ export function safeWrite(p: string, data: string): void {
 }
 
 export function parseVersionArg(versionArg: string | undefined): string {
-  if (!versionArg || !/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(versionArg)) {
+  if (!(versionArg && /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(versionArg))) {
     console.error(`❌ Invalid version: "${versionArg}". Expected semver (e.g. 1.2.3 or 1.2.3-beta.1)`);
     process.exit(1);
   }

@@ -3,6 +3,7 @@ import type { JsonObject, StreamChunk } from '@agentsy/types';
 import type { XmlToolCall } from '../../tool-calls/index.js';
 
 const SHARED_TEXT_ENCODER = new TextEncoder();
+const TAG_START_REGEX = /[A-Za-z_/:!?]/;
 
 export function ensureText(value: unknown): string {
   return typeof value === 'string' ? value : '';
@@ -118,7 +119,7 @@ export function enforceMaxLength(
   const openIdx = value.lastIndexOf('<', charIndexForByteLimit - 1);
   if (openIdx !== -1) {
     const nextChar = value[openIdx + 1] ?? '';
-    const looksLikeTagStart = /[A-Za-z_/:!?]/.test(nextChar);
+    const looksLikeTagStart = TAG_START_REGEX.test(nextChar);
     const closeIdx = value.indexOf('>', openIdx);
     // If the closing `>` is beyond the cut (or absent), the tag is partial.
     if (looksLikeTagStart && (closeIdx === -1 || closeIdx >= charIndexForByteLimit)) {

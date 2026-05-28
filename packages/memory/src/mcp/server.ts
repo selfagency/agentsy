@@ -1,44 +1,29 @@
 // MCP stdio server — lightweight JSON-RPC 2.0 transport over stdin/stdout
 // No dependency on @modelcontextprotocol/sdk (Zod v4 heavy); uses protocol.ts
 
-import { createToolAuditor } from '../agentfs/tool-auditor.js';
 import type { MemoryEngine } from '../cognitive/memory-engine.js';
-import type { MemoryDatabase } from '../database/connection.js';
-import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
-import type { WikiManager } from '../wiki/wiki-manager.js';
 import { createMcpServer, type JsonRpcRequest, type McpServer, type McpServerOptions } from './protocol.js';
 import { createMemoryMcpTools } from './tools.js';
 
-const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
-
 export interface MemoryMCPServerOptions {
-  /** Transport mode. Default: 'stdio' */
-  transport?: 'stdio' | 'http';
-  /** Port for HTTP mode. Default: 4231 */
-  port?: number;
   /** Database path for standalone mode */
   dbPath?: string;
-  /** Turso sync URL */
-  syncUrl?: string;
-  /** Turso auth token */
-  syncAuthToken?: string;
   /** Log level. Default: 'info' */
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
-  /** Optional database connection for tool call auditing. */
-  db?: MemoryDatabase | undefined;
-}
-
-export interface CreateMemoryMCPServerInput {
-  engine: MemoryEngine;
-  wiki?: WikiManager | undefined;
-  kb?: KnowledgeBaseManager | undefined;
-  options?: MemoryMCPServerOptions | undefined;
+  /** Port for HTTP mode. Default: 4231 */
+  port?: number;
+  /** Turso auth token */
+  syncAuthToken?: string;
+  /** Turso sync URL */
+  syncUrl?: string;
+  /** Transport mode. Default: 'stdio' */
+  transport?: 'stdio' | 'http';
 }
 
 export interface MemoryMCPServer {
+  close(): Promise<void>;
   server: McpServer;
   start(): Promise<void>;
-  close(): Promise<void>;
 }
 
 /**
@@ -46,35 +31,10 @@ export interface MemoryMCPServer {
  * In stdio mode, reads JSON-RPC from stdin and writes to stdout.
  * In HTTP mode, starts a simple HTTP server (SSE-based).
  */
-export async function createMemoryMCPServer(
-  engine: MemoryEngine,
-  options?: MemoryMCPServerOptions
-): Promise<MemoryMCPServer>;
-export async function createMemoryMCPServer(input: CreateMemoryMCPServerInput): Promise<MemoryMCPServer>;
-export async function createMemoryMCPServer(
-  engineOrInput: MemoryEngine | CreateMemoryMCPServerInput,
-  maybeOptions?: MemoryMCPServerOptions
-): Promise<MemoryMCPServer> {
-  let engine: MemoryEngine;
-  let wiki: WikiManager | undefined;
-  let kb: KnowledgeBaseManager | undefined;
-  let options: MemoryMCPServerOptions;
+export function createMemoryMCPServer(engine: MemoryEngine, options: MemoryMCPServerOptions = {}): MemoryMCPServer {
+  const { transport = 'stdio', port = 4231, logLevel = 'info' } = options;
 
-  if ('engine' in engineOrInput) {
-    engine = engineOrInput.engine;
-    wiki = engineOrInput.wiki;
-    kb = engineOrInput.kb;
-    options = engineOrInput.options ?? {};
-  } else {
-    engine = engineOrInput;
-    options = maybeOptions ?? {};
-  }
-
-  const { transport = 'stdio', port = 4231, logLevel = 'info', db } = options;
-
-  const { definitions, handlers } = createMemoryMcpTools({ engine, wiki, kb });
-
-  const auditor = db ? createToolAuditor({ db }) : null;
+  const { definitions, handlers } = createMemoryMcpTools(engine);
 
   const serverOptions: McpServerOptions = {
     name: 'agentsy-memory',
@@ -85,8 +45,7 @@ export async function createMemoryMCPServer(
         if (!handler) {
           throw new Error(`Missing handler for tool: ${name}`);
         }
-        const wrappedHandler = auditor ? auditor(name, handler) : handler;
-        return [name, { definition: def, handler: wrappedHandler }];
+        return [name, { definition: def, handler }];
       })
     )
   };
@@ -102,7 +61,6 @@ export async function createMemoryMCPServer(
     warn: 2,
     error: 3
   };
-  // nosemgrep: logLevel is from MemoryConfig type with safe fallback
   const currentLevel = LOG_LEVELS[logLevel] ?? 1;
 
   function log(level: string, msg: string) {
@@ -123,7 +81,9 @@ export async function createMemoryMCPServer(
 
       readlineInterface.on('line', async (line: string) => {
         const trimmed = line.trim();
-        if (!trimmed) return;
+        if (!trimmed) {
+          return;
+        }
 
         try {
           const msg = JSON.parse(trimmed) as JsonRpcRequest;
@@ -137,7 +97,7 @@ export async function createMemoryMCPServer(
             jsonrpc: '2.0',
             id: null,
             error: {
-              code: -32700,
+              code: -32_700,
               message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
             }
           };
@@ -152,6 +112,7 @@ export async function createMemoryMCPServer(
       // HTTP mode — simple JSON-RPC over POST /message
       const http = await import('node:http');
 
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
       const httpInstance = http.createServer(async (req, res) => {
         if (req.method === 'GET' && req.url === '/health') {
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -161,23 +122,7 @@ export async function createMemoryMCPServer(
 
         if (req.method === 'POST' && req.url === '/message') {
           const chunks: Buffer[] = [];
-          let totalSize = 0;
           for await (const chunk of req) {
-            totalSize += (chunk as Buffer).length;
-            if (totalSize > MAX_BODY_SIZE) {
-              res.writeHead(413, { 'Content-Type': 'application/json' });
-              res.end(
-                JSON.stringify({
-                  jsonrpc: '2.0',
-                  id: null,
-                  error: {
-                    code: -32700,
-                    message: 'Request body exceeds maximum size of 10 MB'
-                  }
-                })
-              );
-              return;
-            }
             chunks.push(chunk as Buffer);
           }
           const body = Buffer.concat(chunks).toString('utf-8');
@@ -195,7 +140,7 @@ export async function createMemoryMCPServer(
                 jsonrpc: '2.0',
                 id: null,
                 error: {
-                  code: -32700,
+                  code: -32_700,
                   message: `Parse error: ${err instanceof Error ? err.message : String(err)}`
                 }
               })

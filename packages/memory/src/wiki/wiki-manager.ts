@@ -5,113 +5,124 @@ import { eq } from 'drizzle-orm';
 import { createWikiFsAdapter } from '../agentfs/wiki-adapter.js';
 import type { MemoryDatabase } from '../database/connection.js';
 import { wikiBacklinks, wikiConcepts, wikiPageHistory, wikiPages, wikiVectors } from '../database/schema.js';
-import { createContentProcessor } from './content-processor.js';
 import type { ContentProcessor } from './content-processor.js';
-import { createEntityExtractor } from './entity-extractor.js';
+import { createContentProcessor } from './content-processor.js';
 import type { EntityExtractor } from './entity-extractor.js';
-import { createLocalEmbeddingEngine } from './local-embedding-engine.js';
+import { createEntityExtractor } from './entity-extractor.js';
 import type { LocalEmbeddingEngine } from './local-embedding-engine.js';
-import { createNavigationSystem } from './navigation-system.js';
+import { createLocalEmbeddingEngine } from './local-embedding-engine.js';
 import type { NavigationSystem } from './navigation-system.js';
-import { createVersionTracker } from './version-tracker.js';
+import { createNavigationSystem } from './navigation-system.js';
 import type { VersionTracker } from './version-tracker.js';
+import { createVersionTracker } from './version-tracker.js';
 
 export type RawSourceType = 'document' | 'conversation' | 'capture';
 
+/** Input payload for capturing raw unstructured content into the wiki. */
 export interface RawCaptureInput {
+  content: string;
   sourceId: string;
   sourceType: RawSourceType;
-  content: string;
 }
 
+/** Stored record of a raw content capture, including normalized text. */
 export interface RawCapture {
+  content: string;
+  createdAt: Date;
   id: string;
+  normalizedContent: string;
   sourceId: string;
   sourceType: RawSourceType;
-  content: string;
-  normalizedContent: string;
-  createdAt: Date;
 }
 
+/** Input payload for creating or updating a wiki page. */
 export interface WikiPageInput {
-  pageId: string;
-  title: string;
-  body: string;
-  tags?: string[];
-  format?: 'markdown' | 'text' | 'code' | 'json';
   actorId?: string;
+  body: string;
+  format?: 'markdown' | 'text' | 'code' | 'json';
+  pageId: string;
+  tags?: string[];
+  title: string;
   writerIds?: string[];
 }
 
+/** A wiki page stored in the knowledge base. */
 export interface WikiPage {
-  pageId: string;
-  title: string;
   body: string;
-  tags: string[];
-  version: number;
   format: 'markdown' | 'text' | 'code' | 'json';
-  writerIds: string[];
+  pageId: string;
+  tags: string[];
+  title: string;
   updatedAt: Date;
-}
-
-export interface WikiPageHistoryEntry {
   version: number;
-  body: string;
-  actorId: string;
-  editedAt: Date;
+  writerIds: string[];
 }
 
+/** A single historical revision entry for a wiki page. */
+export interface WikiPageHistoryEntry {
+  actorId: string;
+  body: string;
+  editedAt: Date;
+  version: number;
+}
+
+/** Added and removed lines between two page versions. */
 export interface PageDiff {
   addedLines: string[];
   removedLines: string[];
 }
 
+/** A semantic relation linking one wiki page to another. */
 export interface ConceptRelation {
-  toPageId: string;
   relation: string;
+  toPageId: string;
 }
 
+/** A vector embedding entry for semantic search. */
 export interface VectorEntry {
-  pageId: string;
   embedding: number[];
+  pageId: string;
 }
 
+/** Result from a vector or hybrid search query. */
 export interface VectorSearchResult {
   pageId: string;
   score: number;
 }
 
+/** Facade over the wiki knowledge base — pages, vector search, entity linking, version history. */
 export interface WikiManager {
   captureRaw(input: RawCaptureInput): Promise<RawCapture>;
-  upsertPage(input: WikiPageInput): Promise<WikiPage>;
+  diffPageVersions(pageId: string, fromVersion: number, toVersion: number): Promise<PageDiff>;
+  extractEntities(pageId: string): Promise<string[]>;
+  getBacklinks(pageId: string): Promise<string[]>;
+  getConceptRelations(pageId: string): Promise<ConceptRelation[]>;
   getPage(pageId: string): Promise<WikiPage | null>;
-  upsertVector(pageId: string, embedding: number[]): Promise<void>;
+  getPageHistory(pageId: string): Promise<WikiPageHistoryEntry[]>;
+  linkConcepts(fromPageId: string, toPageId: string, relation: string): Promise<void>;
+  linkPages(fromPageId: string, toPageId: string): Promise<void>;
+  searchFullText(query: string, limit: number): Promise<VectorSearchResult[]>;
+  searchHybrid(query: string, queryEmbedding: number[], limit: number): Promise<VectorSearchResult[]>;
   searchVector(queryEmbedding: number[], limit: number): Promise<VectorSearchResult[]>;
   updatePage(
     pageId: string,
     patch: Partial<Pick<WikiPageInput, 'title' | 'body' | 'tags' | 'format'>>,
     actorId: string
   ): Promise<WikiPage>;
-  getPageHistory(pageId: string): Promise<WikiPageHistoryEntry[]>;
-  diffPageVersions(pageId: string, fromVersion: number, toVersion: number): Promise<PageDiff>;
-  searchFullText(query: string, limit: number): Promise<VectorSearchResult[]>;
-  searchHybrid(query: string, queryEmbedding: number[], limit: number): Promise<VectorSearchResult[]>;
-  extractEntities(pageId: string): Promise<string[]>;
-  linkConcepts(fromPageId: string, toPageId: string, relation: string): Promise<void>;
-  getConceptRelations(pageId: string): Promise<ConceptRelation[]>;
-  linkPages(fromPageId: string, toPageId: string): Promise<void>;
-  getBacklinks(pageId: string): Promise<string[]>;
+  upsertPage(input: WikiPageInput): Promise<WikiPage>;
+  upsertVector(pageId: string, embedding: number[]): Promise<void>;
 }
 
+/** Dependencies required to construct a WikiManager instance. */
 export interface WikiManagerDependencies {
   contentProcessor?: ContentProcessor;
-  entityExtractor?: EntityExtractor;
-  embeddingEngine?: LocalEmbeddingEngine;
-  versionTracker?: VersionTracker;
-  navigation?: NavigationSystem;
   db?: MemoryDatabase | undefined;
+  embeddingEngine?: LocalEmbeddingEngine;
+  entityExtractor?: EntityExtractor;
+  navigation?: NavigationSystem;
   /** Use AgentFS kv_store instead of legacy wiki tables when db is present. */
   useAgentFs?: boolean | undefined;
+  versionTracker?: VersionTracker;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,6 +221,7 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
   const concepts = new Map<string, ConceptRelation[]>();
 
   return {
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async captureRaw(input: RawCaptureInput) {
       const capture: RawCapture = {
         content: input.content,
@@ -223,18 +235,20 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       return capture;
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async diffPageVersions(pageId, fromVersion, toVersion) {
       const pageHistory = history.get(pageId) ?? [];
       const fromItem = pageHistory.find(entry => entry.version === fromVersion);
       const toItem = pageHistory.find(entry => entry.version === toVersion);
 
-      if (!fromItem || !toItem) {
+      if (!(fromItem && toItem)) {
         throw new Error(`Unknown version for page ${pageId}`);
       }
 
       return getDiff(fromItem.body, toItem.body);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async extractEntities(pageId) {
       const page = pages.get(pageId);
       if (!page) {
@@ -245,39 +259,45 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       return extracted.entities.map(entity => entity.name);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async getBacklinks(pageId: string) {
       return navigation.getBacklinks(pageId);
     },
 
-    async getConceptRelations(pageId) {
-      return [...(concepts.get(pageId) ?? [])];
+    getConceptRelations(pageId) {
+      return Promise.resolve([...(concepts.get(pageId) ?? [])]);
     },
 
-    async getPage(pageId: string) {
+    getPage(pageId: string) {
       const page = pages.get(pageId);
-      return page
-        ? {
-            ...page,
-            tags: [...page.tags],
-            writerIds: [...page.writerIds]
-          }
-        : null;
+      return Promise.resolve(
+        page
+          ? {
+              ...page,
+              tags: [...page.tags],
+              writerIds: [...page.writerIds]
+            }
+          : null
+      );
     },
 
-    async getPageHistory(pageId) {
-      return [...(history.get(pageId) ?? [])].map(entry => ({ ...entry }));
+    getPageHistory(pageId) {
+      return Promise.resolve([...(history.get(pageId) ?? [])].map(entry => ({ ...entry })));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async linkConcepts(fromPageId, toPageId, relation) {
       const existing = concepts.get(fromPageId) ?? [];
       existing.push({ relation, toPageId });
       concepts.set(fromPageId, existing);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async linkPages(fromPageId: string, toPageId: string) {
       navigation.linkPages(fromPageId, toPageId);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async searchFullText(query, limit) {
       const scored = [...pages.values()]
         .map(page => toSearchResult(page.pageId, scoreByFullText(query, page, contentProcessor)))
@@ -304,6 +324,7 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       return hybridScores.slice(0, Math.max(0, limit));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async searchVector(queryEmbedding: number[], limit: number) {
       const scored: VectorSearchResult[] = [...vectors.values()]
         .map(entry => ({
@@ -315,6 +336,7 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       return scored.slice(0, Math.max(0, limit));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async updatePage(pageId, patch, actorId) {
       const current = pages.get(pageId);
       if (!current) {
@@ -357,6 +379,7 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       };
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async upsertPage(input: WikiPageInput) {
       const version = versionTracker.bump(input.pageId);
       const actorId = input.actorId ?? 'system';
@@ -391,6 +414,7 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
       return page;
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async upsertVector(pageId: string, embedding: number[]) {
       vectors.set(pageId, {
         embedding: [...embedding],
@@ -407,7 +431,9 @@ function createInMemoryWikiManager(dependencies: WikiManagerDependencies): WikiM
 function parseJsonArray(value: string): string[] {
   try {
     const parsed: unknown = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed as string[];
+    if (Array.isArray(parsed)) {
+      return parsed as string[];
+    }
     return [];
   } catch {
     return [];
@@ -417,7 +443,9 @@ function parseJsonArray(value: string): string[] {
 function parseJsonNumberArray(value: string): number[] {
   try {
     const parsed: unknown = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed as number[];
+    if (Array.isArray(parsed)) {
+      return parsed as number[];
+    }
     return [];
   } catch {
     return [];
@@ -504,6 +532,7 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
   }
 
   return {
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async captureRaw(input: RawCaptureInput) {
       const capture: RawCapture = {
         content: input.content,
@@ -517,6 +546,7 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return capture;
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async diffPageVersions(pageId, fromVersion, toVersion) {
       const fromItem = db
         .select()
@@ -532,13 +562,14 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
         .all()
         .find(row => Number(row.version) === toVersion);
 
-      if (!fromItem || !toItem) {
+      if (!(fromItem && toItem)) {
         throw new Error(`Unknown version for page ${pageId}`);
       }
 
       return getDiff(String(fromItem.body), String(toItem.body));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async extractEntities(pageId) {
       const row = db.select().from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
       if (!row) {
@@ -550,40 +581,51 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return extracted.entities.map(entity => entity.name);
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async getBacklinks(pageId: string) {
       const rows = db.select().from(wikiBacklinks).where(eq(wikiBacklinks.toPageId, pageId)).all();
       return rows.map(row => String(row.fromPageId));
     },
 
-    async getConceptRelations(pageId) {
+    getConceptRelations(pageId) {
       const rows = db.select().from(wikiConcepts).where(eq(wikiConcepts.fromPageId, pageId)).all();
-      return rows.map(row => ({ toPageId: String(row.toPageId), relation: String(row.relation) }));
+      return Promise.resolve(
+        rows.map(row => ({
+          toPageId: String(row.toPageId),
+          relation: String(row.relation)
+        }))
+      );
     },
 
-    async getPage(pageId: string) {
+    getPage(pageId: string) {
       const row = db.select().from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
-      if (!row) return null;
-      return rowToWikiPage(row);
+      if (!row) {
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(rowToWikiPage(row));
     },
 
-    async getPageHistory(pageId) {
+    getPageHistory(pageId) {
       const rows = db
         .select()
         .from(wikiPageHistory)
         .where(eq(wikiPageHistory.pageId, pageId))
         .orderBy(wikiPageHistory.version)
         .all();
-      return rows.map(rowToHistoryEntry);
+      return Promise.resolve(rows.map(rowToHistoryEntry));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async linkConcepts(fromPageId, toPageId, relation) {
       db.insert(wikiConcepts).values({ fromPageId, toPageId, relation }).onConflictDoNothing().run();
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async linkPages(fromPageId: string, toPageId: string) {
       db.insert(wikiBacklinks).values({ fromPageId, toPageId }).onConflictDoNothing().run();
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async searchFullText(query, limit) {
       const rows = db.select().from(wikiPages).all();
       const scored = rows
@@ -613,6 +655,7 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return hybridScores.slice(0, Math.max(0, limit));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async searchVector(queryEmbedding: number[], limit: number) {
       const rows = db.select().from(wikiVectors).all();
       const scored: VectorSearchResult[] = rows
@@ -628,6 +671,7 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return scored.slice(0, Math.max(0, limit));
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async updatePage(pageId, patch, actorId) {
       const row = db.select().from(wikiPages).where(eq(wikiPages.pageId, pageId)).get();
       if (!row) {
@@ -659,6 +703,7 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return nextPage;
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async upsertPage(input: WikiPageInput) {
       const version = getNextVersion(db, input.pageId);
       const actorId = input.actorId ?? 'system';
@@ -685,6 +730,7 @@ function createSQLiteWikiManager(db: MemoryDatabase, dependencies: WikiManagerDe
       return page;
     },
 
+    // biome-ignore lint/suspicious/useAwait: Implements WikiManager interface requiring Promise return
     async upsertVector(pageId: string, embedding: number[]) {
       insertVector(pageId, embedding);
     }

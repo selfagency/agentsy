@@ -5,26 +5,21 @@
 // 3. .agentsy/memory.env (project-level)
 // 4. Built-in defaults
 
-import { homedir } from 'node:os';
-import { join } from 'node:path';
-
 import type { DecayConfig } from './cognitive/decay.js';
 import { DEFAULT_DECAY_CONFIG } from './cognitive/decay.js';
-import type { TierName, TierConfig } from './cognitive/tier-types.js';
+import type { TierConfig, TierName } from './cognitive/tier-types.js';
 import type { TokenBudgetOptions } from './cognitive/token-budget.js';
 import type { MemoryMCPServerOptions } from './mcp/server.js';
 
 export interface MemoryConfig {
+  budget: TokenBudgetOptions;
   db: {
     path: string;
     syncUrl?: string;
     syncAuthToken?: string;
     syncIntervalMs?: number;
   };
-  tiers: Record<TierName, TierConfig>;
-  budget: TokenBudgetOptions;
   decay: DecayConfig;
-  mcp: MemoryMCPServerOptions;
   hooks: {
     onSessionStart: boolean;
     onSessionEnd: boolean;
@@ -32,6 +27,8 @@ export interface MemoryConfig {
     onResponse: boolean;
   };
   logLevel: 'debug' | 'info' | 'warn' | 'error';
+  mcp: MemoryMCPServerOptions;
+  tiers: Record<TierName, TierConfig>;
 }
 
 const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
@@ -40,7 +37,7 @@ const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
     name: 'sensory_buffer',
     maxTokens: 200,
     maxItems: 50,
-    ttlMs: 5_000,
+    ttlMs: 5000,
     consolidationThreshold: 0.6,
     compressionTarget: 0.5
   },
@@ -49,14 +46,14 @@ const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
     name: 'sensory_register',
     maxTokens: 400,
     maxItems: 4,
-    ttlMs: 2_000,
+    ttlMs: 2000,
     consolidationThreshold: 0.5,
     compressionTarget: 0.4
   },
   working_memory: {
     level: 3,
     name: 'working_memory',
-    maxTokens: 1_000,
+    maxTokens: 1000,
     maxItems: 7,
     ttlMs: 30_000,
     consolidationThreshold: 0.4,
@@ -65,7 +62,7 @@ const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
   short_term_memory: {
     level: 4,
     name: 'short_term_memory',
-    maxTokens: 2_000,
+    maxTokens: 2000,
     maxItems: 12,
     ttlMs: 3_600_000,
     consolidationThreshold: 0.3,
@@ -74,9 +71,9 @@ const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
   long_term_memory: {
     level: 5,
     name: 'long_term_memory',
-    maxTokens: Infinity,
-    maxItems: Infinity,
-    ttlMs: Infinity,
+    maxTokens: Number.POSITIVE_INFINITY,
+    maxItems: Number.POSITIVE_INFINITY,
+    ttlMs: Number.POSITIVE_INFINITY,
     consolidationThreshold: 0,
     compressionTarget: 0
   }
@@ -84,7 +81,9 @@ const DEFAULT_TIER_CONFIGS: Record<TierName, TierConfig> = {
 
 function envString(key: string, fallback: string): string {
   const val = process.env[key];
-  if (typeof val === 'string' && val.length > 0) return val;
+  if (typeof val === 'string' && val.length > 0) {
+    return val;
+  }
   return fallback;
 }
 
@@ -92,7 +91,9 @@ function envNumber(key: string, fallback: number): number {
   const val = process.env[key];
   if (typeof val === 'string' && val.length > 0) {
     const parsed = Number(val);
-    if (Number.isFinite(parsed)) return parsed;
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
   }
   return fallback;
 }
@@ -109,9 +110,9 @@ function envBool(key: string, fallback: boolean): boolean {
  * Load memory configuration with optional overrides.
  * Priority: overrides > env vars > defaults
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
-  const defaultDbPath = join(homedir(), '.agentsy', 'memory.db');
-  const dbPath = overrides?.db?.path ?? envString('AGENTSY_MEMORY_DB', defaultDbPath);
+  const dbPath = overrides?.db?.path ?? envString('AGENTSY_MEMORY_DB', '.agentsy/memory.db');
   const syncUrl = overrides?.db?.syncUrl ?? (process.env.AGENTSY_MEMORY_SYNC_URL || undefined);
   const syncAuthToken = overrides?.db?.syncAuthToken ?? (process.env.AGENTSY_MEMORY_SYNC_AUTH_TOKEN || undefined);
   const syncIntervalMs = overrides?.db?.syncIntervalMs ?? envNumber('AGENTSY_MEMORY_SYNC_INTERVAL_MS', 60_000);
@@ -123,8 +124,8 @@ export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
   return {
     db: {
       path: dbPath,
-      ...(syncUrl ? { syncUrl } : {}),
-      ...(syncAuthToken ? { syncAuthToken } : {}),
+      ...(syncUrl === undefined ? {} : { syncUrl }),
+      ...(syncAuthToken === undefined ? {} : { syncAuthToken }),
       syncIntervalMs
     },
     tiers: overrides?.tiers ?? DEFAULT_TIER_CONFIGS,

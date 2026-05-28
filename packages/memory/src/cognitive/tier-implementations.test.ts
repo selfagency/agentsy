@@ -1,10 +1,10 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createLongTermMemory } from './long-term-memory.js';
 import { createSensoryBuffer } from './sensory-buffer.js';
 import { createSensoryRegister } from './sensory-register.js';
 import { createShortTermMemory } from './short-term-memory.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import { createWorkingMemory } from './working-memory.js';
 
 describe('concrete tier implementations', () => {
@@ -21,7 +21,7 @@ describe('concrete tier implementations', () => {
     expect(tier.level).toBe(1);
     expect(tier.config.maxTokens).toBe(200);
     expect(tier.config.maxItems).toBe(50);
-    expect(tier.config.ttlMs).toBe(5_000);
+    expect(tier.config.ttlMs).toBe(5000);
     expect(tier.config.consolidationThreshold).toBe(0.6);
   });
 
@@ -31,14 +31,14 @@ describe('concrete tier implementations', () => {
     expect(tier.level).toBe(2);
     expect(tier.config.maxTokens).toBe(400);
     expect(tier.config.maxItems).toBe(4);
-    expect(tier.config.ttlMs).toBe(2_000);
+    expect(tier.config.ttlMs).toBe(2000);
   });
 
   it('createWorkingMemory has correct defaults', () => {
     const tier = createWorkingMemory({ now: clock.now });
     expect(tier.name).toBe('working_memory');
     expect(tier.level).toBe(3);
-    expect(tier.config.maxTokens).toBe(1_000);
+    expect(tier.config.maxTokens).toBe(1000);
     expect(tier.config.maxItems).toBe(7);
     expect(tier.config.ttlMs).toBe(30_000);
   });
@@ -47,7 +47,7 @@ describe('concrete tier implementations', () => {
     const tier = createShortTermMemory({ now: clock.now });
     expect(tier.name).toBe('short_term_memory');
     expect(tier.level).toBe(4);
-    expect(tier.config.maxTokens).toBe(2_000);
+    expect(tier.config.maxTokens).toBe(2000);
     expect(tier.config.maxItems).toBe(12);
     expect(tier.config.ttlMs).toBe(3_600_000);
   });
@@ -56,9 +56,9 @@ describe('concrete tier implementations', () => {
     const tier = createLongTermMemory({ now: clock.now });
     expect(tier.name).toBe('long_term_memory');
     expect(tier.level).toBe(5);
-    expect(tier.config.maxTokens).toBe(Infinity);
-    expect(tier.config.maxItems).toBe(Infinity);
-    expect(tier.config.ttlMs).toBe(Infinity);
+    expect(tier.config.maxTokens).toBe(Number.POSITIVE_INFINITY);
+    expect(tier.config.maxItems).toBe(Number.POSITIVE_INFINITY);
+    expect(tier.config.ttlMs).toBe(Number.POSITIVE_INFINITY);
   });
 
   it('sensory buffer overflow is rejected', () => {
@@ -91,7 +91,7 @@ describe('concrete tier implementations', () => {
     const tier = createSensoryBuffer({ now: clock.now });
     tier.write(createTestMemoryItem({ tokenCount: 10, createdAt: clock.now() }));
     expect(tier.items()).toHaveLength(1);
-    clock.advance(6_000); // past 5000ms TTL
+    clock.advance(6000); // past 5000ms TTL
     expect(tier.read().items).toHaveLength(0);
   });
 
@@ -100,6 +100,6 @@ describe('concrete tier implementations', () => {
     expect(tier.config.maxTokens).toBe(500);
     // other defaults preserved
     expect(tier.config.maxItems).toBe(50);
-    expect(tier.config.ttlMs).toBe(5_000);
+    expect(tier.config.ttlMs).toBe(5000);
   });
 });

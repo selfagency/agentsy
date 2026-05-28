@@ -21,9 +21,11 @@ describe('Phase 2 sync integration', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
         async download(cursor) {
           return { cursor, records: [...remoteRecords] };
         },
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
         async upload(snapshot) {
           remoteRecords.splice(0, remoteRecords.length, ...snapshot.records);
           return {
@@ -53,12 +55,14 @@ describe('Phase 2 sync integration', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
         async download(cursor) {
           return {
             cursor,
             records: [createRecord('shared-1', 'Remote edit', '2026-05-15T02:00:00.000Z')]
           };
         },
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
         async upload(snapshot) {
           return {
             nextCursor: 'remote-cursor-2',
@@ -91,6 +95,7 @@ describe('Phase 2 sync integration', () => {
       records: [createRecord('record-1', 'before', '2026-05-15T00:00:00.000Z')]
     };
     const backupManager = createBackupManager({
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
       applySnapshot: async snapshot => {
         state = snapshot;
       },
@@ -126,10 +131,10 @@ describe('Phase 2 sync integration', () => {
     const manager = createTursoManager({
       authToken: 'token-value',
       client: {
-        async download() {
+        download() {
           throw new Error('offline');
         },
-        async upload() {
+        upload() {
           throw new Error('offline');
         }
       },

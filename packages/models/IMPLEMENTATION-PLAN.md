@@ -159,11 +159,11 @@ The models layer must include first-class profile support for:
 
 ```ts
 export type ProviderProtocol =
-  | 'openai-compatible'
-  | 'ollama-native'
-  | 'anthropic-compatible'
-  | 'lmstudio-native'
-  | 'node-llama-cpp-native';
+  | "openai-compatible"
+  | "ollama-native"
+  | "anthropic-compatible"
+  | "lmstudio-native"
+  | "node-llama-cpp-native";
 
 export interface LocalProviderProfile {
   id: string; // ollama | vllm | lmstudio | lemonade | docker-model-runner | jan | apfel | agentsy-local-llama
@@ -233,28 +233,28 @@ interface AgentsyLocalLlamaProviderConfig {
 
 ### Delivery phases
 
-**Phase L0 (Design + contracts)**
+## Phase L0 (Design + contracts)
 
 - define provider profile and capability schema in `@agentsy/models`
 - add adapter contract tests in `@agentsy/providers`
 
-**Phase L1 (MVP local chat provider)**
+## Phase L1 (MVP local chat provider)
 
 - initialize llama runtime via `getLlama`
 - implement prompt->completion and streaming chunk conversion
 - add health + readiness checks
 
-**Phase L2 (Tool calling + structured output parity)**
+## Phase L2 (Tool calling + structured output parity)
 
 - support tool-call message transforms where model supports it
 - add schema-constrained generation fallback strategy
 
-**Phase L3 (Embeddings + retrieval integration hooks)**
+## Phase L3 (Embeddings + retrieval integration hooks)
 
 - expose embeddings via `LlamaEmbeddingContext`
 - connect with `@agentsy/retrieval` adapter boundary
 
-**Phase L4 (Optimization + observability)**
+## Phase L4 (Optimization + observability)
 
 - model warm pools / context reuse policies
 - token/cost telemetry integration with `@agentsy/observability`
@@ -275,20 +275,20 @@ The models package must support **search and acquisition planning** for runner-m
 ```ts
 export interface ModelDiscoveryQuery {
   text?: string;
-  provider?: 'huggingface' | 'ollama' | 'open-provider';
-  modalities?: Array<'text' | 'image' | 'audio'>;
+  provider?: "huggingface" | "ollama" | "open-provider";
+  modalities?: Array<"text" | "image" | "audio">;
   minContext?: number;
   quantizations?: string[]; // q4_k_m, q8_0, f16, etc.
   licenseAllowlist?: string[];
 }
 
 export interface ModelArtifactFetchPlan {
-  source: 'huggingface' | 'ollama' | 'open-provider';
+  source: "huggingface" | "ollama" | "open-provider";
   modelId: string;
-  artifactType: 'gguf' | 'safetensors' | 'provider-native';
-  fetchMethod: 'direct-download' | 'llama-hf-shortcut' | 'ollama-pull' | 'conversion';
+  artifactType: "gguf" | "safetensors" | "provider-native";
+  fetchMethod: "direct-download" | "llama-hf-shortcut" | "ollama-pull" | "conversion";
   estimatedSizeBytes?: number;
-  checks?: Array<'checksum' | 'license' | 'compatibility'>;
+  checks?: Array<"checksum" | "license" | "compatibility">;
 }
 ```
 
@@ -346,9 +346,9 @@ export interface ModelSearchQuery {
 
 export interface ModelRefinementRequest {
   baseSelectionId?: string;
-  tighten?: Array<'cost' | 'latency' | 'quality' | 'privacy' | 'tooling'>;
-  relax?: Array<'cost' | 'latency' | 'quality' | 'privacy' | 'tooling'>;
-  task?: RecommendationCriteria['task'];
+  tighten?: Array<"cost" | "latency" | "quality" | "privacy" | "tooling">;
+  relax?: Array<"cost" | "latency" | "quality" | "privacy" | "tooling">;
+  task?: RecommendationCriteria["task"];
 }
 ```
 
@@ -356,8 +356,8 @@ These APIs must return explainable ranking reasons so the CLI can show "why this
 
 ```ts
 export interface RecommendationCriteria {
-  task: 'coding' | 'math' | 'writing' | 'general' | 'multimodal';
-  budgetTier?: 'low' | 'mid' | 'high';
+  task: "coding" | "math" | "writing" | "general" | "multimodal";
+  budgetTier?: "low" | "mid" | "high";
   preferLocal?: boolean;
   minBenchmarks?: Record<string, number>; // e.g. { HumanEval: 80 }
   preferredLicenses?: string[];
@@ -386,6 +386,10 @@ The recommendation output should be able to hint at the intended runtime family,
 - `mlx` or `apfel` when Apple Silicon-local support is the best fit
 
 The models package must never decide how to spawn the process or manage the upstream server lifecycle.
+
+### 7) Capability deprecation tracking
+
+Track model capability deprecation (e.g., GPT-4 Vision -> GPT-4o Vision, Claude Opus tool style changes). When a capability is deprecated, emit a RecommendationEvent and surface migration guidance to the caller. Deprecation data is stored in the model registry with sunset dates.
 
 ## Implementation Priorities
 
@@ -434,10 +438,10 @@ The models package must never decide how to spawn the process or manage the upst
 ## Export Surface (target)
 
 ```ts
-export * from './types.js';
-export * from './catalog/index.js';
-export * from './selector/index.js';
-export * from './providers/profiles/index.js';
+export * from "./types.js";
+export * from "./catalog/index.js";
+export * from "./selector/index.js";
+export * from "./providers/profiles/index.js";
 ```
 
 ## Risks and Mitigations

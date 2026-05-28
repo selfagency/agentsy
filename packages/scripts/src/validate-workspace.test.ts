@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
 const { main } = await import('./validate-workspace.ts');
 
 function setupWorkspace(packages: string[] = [], packagesWithoutJson: string[] = []) {

@@ -11,6 +11,7 @@ export default defineConfig({
     recovery: 'src/recovery/index.ts',
     retry: 'src/retry/index.ts',
     sse: 'src/sse/index.ts',
+    'stream-to-events': 'src/stream-to-events.ts',
     structured: 'src/structured/index.ts',
     thinking: 'src/thinking/index.ts',
     'tool-calls': 'src/tool-calls/index.ts',

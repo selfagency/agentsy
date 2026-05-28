@@ -1,4 +1,4 @@
-import { createMemoryTier, type MemoryTierLike, type MemoryTierOptions } from './memory-tier.js';
+import { createMemoryTier, type MemoryTierLike } from './memory-tier.js';
 import type { TierConfig } from './tier-types.js';
 
 export type { MemoryTierLike, MemoryTierOptions } from './memory-tier.js';
@@ -8,12 +8,13 @@ const SHORT_TERM_MEMORY_DEFAULTS: Omit<TierConfig, 'level' | 'name'> = {
   compressionTarget: 0.6,
   consolidationThreshold: 0.3,
   maxItems: 12,
-  maxTokens: 2_000,
+  maxTokens: 2000,
   ttlMs: 3_600_000
 };
 
-export interface ShortTermMemoryOptions extends Pick<MemoryTierOptions, 'now' | 'db' | 'useAgentFs'> {
+export interface ShortTermMemoryOptions {
   config?: Partial<Omit<TierConfig, 'level' | 'name'>> | undefined;
+  now?: (() => number) | undefined;
 }
 
 export function createShortTermMemory(options: ShortTermMemoryOptions = {}): MemoryTierLike {
@@ -24,5 +25,5 @@ export function createShortTermMemory(options: ShortTermMemoryOptions = {}): Mem
     name: 'short_term_memory'
   };
 
-  return createMemoryTier({ config, now: options.now, db: options.db, useAgentFs: options.useAgentFs });
+  return createMemoryTier({ config, now: options.now });
 }

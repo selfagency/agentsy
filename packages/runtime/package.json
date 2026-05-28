@@ -23,16 +23,21 @@
       "require": "./dist/index.cjs"
     },
     "./ag-ui": {
-      "types": "./dist/ag-ui/index.d.ts",
-      "import": "./dist/ag-ui/index.js",
-      "require": "./dist/ag-ui/index.cjs"
+      "types": "./dist/ag-ui.d.ts",
+      "import": "./dist/ag-ui.js",
+      "require": "./dist/ag-ui.cjs"
+    },
+    "./loop": {
+      "types": "./dist/loop.d.ts",
+      "import": "./dist/loop.js",
+      "require": "./dist/loop.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt --write .",
+    "lint": "biome lint",
+    "format": "biome format",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage --passWithNoTests"
   },

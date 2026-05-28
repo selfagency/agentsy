@@ -11,7 +11,7 @@ export function readReleaseState(releaseStatePath: string) {
     return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
   }
 
-  let raw;
+  let raw: { defaultState?: string; packages?: Record<string, string> } | undefined;
   try {
     raw = JSON.parse(readFileSync(releaseStatePath, 'utf-8')) as {
       defaultState?: string;

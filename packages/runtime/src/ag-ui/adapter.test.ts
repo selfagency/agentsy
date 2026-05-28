@@ -16,10 +16,9 @@ import type {
   ToolCallStartEvent
 } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
-import { describe, expect, it, expectTypeOf } from 'vitest';
-
-import { toAgUiStream } from './adapter.js';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { PipelineEvent } from './adapter.js';
+import { toAgUiStream } from './adapter.js';
 
 /**
  * Helper to consume an async generator into an array
@@ -35,6 +34,7 @@ async function collectEvents<T>(gen: AsyncGenerator<T>): Promise<T[]> {
 /**
  * Helper to create a simple pipeline event generator
  */
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<PipelineEvent> compatibility
 async function* createMockPipeline(events: PipelineEvent[]): AsyncGenerator<PipelineEvent> {
   for (const event of events) {
     yield event;
@@ -175,7 +175,7 @@ describe('toAgUiStream', () => {
     expect(reasoningEnd).toBeDefined();
     expect(toolStart).toBeDefined();
 
-    if (!reasoningEnd || !toolStart) {
+    if (!(reasoningEnd && toolStart)) {
       throw new Error('Expected reasoning end and tool start events');
     }
 
@@ -251,9 +251,9 @@ describe('toAgUiStream', () => {
 
     // All text events should share the same messageId
     const firstMessageId = textEvents[0]?.messageId;
-    textEvents.forEach(e => {
+    for (const e of textEvents) {
       expect(e.messageId).toBe(firstMessageId);
-    });
+    }
   });
 
   it('should handle empty delta gracefully', async () => {
@@ -314,12 +314,12 @@ describe('toAgUiStream', () => {
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId }));
 
-    events.forEach(event => {
+    for (const event of events) {
       expect(event.timestamp).toBeDefined();
       expectTypeOf(event.timestamp).toBeString();
       // Verify it's a valid ISO timestamp
       expect(() => new Date(event.timestamp)).not.toThrow();
-    });
+    }
   });
 
   it('should pass through runId and threadId to all events', async () => {
@@ -337,10 +337,10 @@ describe('toAgUiStream', () => {
 
     const events = await collectEvents(toAgUiStream(pipeline, { runId, threadId }));
 
-    events.forEach(event => {
+    for (const event of events) {
       expect(event.runId).toBe(runId);
       expect(event.threadId).toBe(threadId);
-    });
+    }
   });
 
   it('should handle consecutive tool calls with same ID', async () => {
@@ -372,8 +372,8 @@ describe('toAgUiStream', () => {
     expect(toolCallEvents.length).toBeGreaterThan(0);
 
     // All should reference the same tool call ID
-    toolCallEvents.forEach(event => {
+    for (const event of toolCallEvents) {
       expect(event.toolCallId).toBe('call_1');
-    });
+    }
   });
 });

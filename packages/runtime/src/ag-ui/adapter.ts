@@ -28,20 +28,29 @@ import { EventType } from '@agentsy/types';
  * See src/pipeline/createPipeline.ts for full definition.
  */
 export interface PipelineEvent {
-  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
+  code?: string;
   content?: string;
-  toolCallId?: string;
-  toolName?: string;
+  message?: string;
+  reasoning?: string;
   toolArgs?: Record<string, unknown>;
   toolArgsJson?: string;
-  reasoning?: string;
-  message?: string;
-  code?: string;
+  toolCallId?: string;
+  toolName?: string;
+  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   usage?: { inputTokens?: number; outputTokens?: number };
   [key: string]: unknown;
 }
 
 export interface AdapterOptions {
+  /**
+   * Emit the REASONING_ENCRYPTED_VALUE placeholder (default: false).
+   */
+  encryptReasoning?: boolean;
+
+  /**
+   * Parent run ID for hierarchical multi-turn workflows (optional).
+   */
+  parentRunId?: string;
   /**
    * Unique identifier for this run (e.g., UUID).
    */
@@ -51,16 +60,6 @@ export interface AdapterOptions {
    * Thread ID for this conversation (optional).
    */
   threadId?: string;
-
-  /**
-   * Parent run ID for hierarchical multi-turn workflows (optional).
-   */
-  parentRunId?: string;
-
-  /**
-   * Emit the REASONING_ENCRYPTED_VALUE placeholder (default: false).
-   */
-  encryptReasoning?: boolean;
 }
 
 /**
@@ -83,12 +82,12 @@ function enrichEvent<T extends Record<string, unknown>>(event: T, threadId: stri
 /**
  * Handles delta (text content) events.
  */
-async function* handleDelta(
+function* handleDelta(
   event: PipelineEvent,
   runId: string,
   currentTextMessageId: string,
   threadId: string | undefined
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (event.content) {
     const textEventBase: TextMessageContentEvent = {
       content: event.content,
@@ -107,14 +106,14 @@ async function* handleDelta(
 /**
  * Handles thinking (reasoning) events and state management.
  */
-async function* handleThinking(
+function* handleThinking(
   event: PipelineEvent,
   runId: string,
   threadId: string | undefined,
   encryptReasoning: boolean,
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null }
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (!inReasoning.value) {
     currentReasoningMessageId.value = generateMessageId();
     inReasoning.value = true;
@@ -163,13 +162,13 @@ async function* handleThinking(
 /**
  * Closes open reasoning and tool call sessions.
  */
-async function* closeOpenSessions(
+function* closeOpenSessions(
   runId: string,
   threadId: string | undefined,
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null },
   currentToolCallId: { value: string | null }
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (inReasoning.value && currentReasoningMessageId.value) {
     const msgEndBase: ReasoningMessageEndEvent = {
       messageId: currentReasoningMessageId.value,
@@ -338,7 +337,7 @@ export async function* toAgUiStream(
   const runStartedBase = {
     runId,
     timestamp: new Date().toISOString(),
-    type: EventType.RUN_STARTED as const
+    type: EventType.RUN_STARTED
   };
   const runStarted = enrichEvent(runStartedBase, threadId);
   if (parentRunId) {
@@ -382,6 +381,9 @@ export async function* toAgUiStream(
           yield* handleError(event, runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
           break;
         }
+        default: {
+          break;
+        }
       }
     }
   } catch (error) {
@@ -392,7 +394,7 @@ export async function* toAgUiStream(
       },
       runId,
       timestamp: new Date().toISOString(),
-      type: EventType.RUN_ERROR as const
+      type: EventType.RUN_ERROR
     };
     yield enrichEvent(runErrorBase, threadId) as RunErrorEvent;
   }

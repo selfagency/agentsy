@@ -1,8 +1,8 @@
 import type { Document, RetrievalQuery, SearchResult } from '../types.js';
 
 export interface RetrievalEngineOptions {
-  topK?: number;
   minSimilarity?: number;
+  topK?: number;
 }
 
 export class RetrievalEngine {
@@ -19,7 +19,7 @@ export class RetrievalEngine {
     };
   }
 
-  async index(documents: Document[]): Promise<void> {
+  index(documents: Document[]): void {
     for (const document of documents) {
       this.documents.set(document.id, document);
 
@@ -106,7 +106,7 @@ export class RetrievalEngine {
     };
   }
 
-  async hasDoc(docId: string): Promise<boolean> {
+  hasDoc(docId: string): boolean {
     return this.documents.has(docId);
   }
 
@@ -224,35 +224,6 @@ export class RetrievalEngine {
     const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
 
     return magnitude > 0 ? dotProduct / magnitude : 0;
-  }
-
-  private calculateKeywordMatch(query: string, content: string): number {
-    const queryLower = query.toLowerCase();
-    const contentLower = content.toLowerCase();
-    const exactMatch = contentLower.includes(queryLower);
-    const wordMatches = queryLower.split(/\s+/u).filter(word => contentLower.includes(word)).length;
-
-    if (exactMatch) {
-      return 1;
-    }
-
-    return wordMatches / Math.max(queryLower.split(/\s+/u).length, 1);
-  }
-
-  private deduplicateResults(
-    results: { document: Document; similarity: number }[]
-  ): { document: Document; similarity: number }[] {
-    const seen = new Set<string>();
-    const unique: { document: Document; similarity: number }[] = [];
-
-    for (const result of results) {
-      if (!seen.has(result.document.id)) {
-        seen.add(result.document.id);
-        unique.push(result);
-      }
-    }
-
-    return unique;
   }
 
   private toSearchResultDocument(document: Document, score: number): SearchResult['documents'][number] {

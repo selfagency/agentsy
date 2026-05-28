@@ -94,7 +94,7 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
       thinking += blockThinking;
     }
 
-    if (!text && !thinking) {
+    if (!(text || thinking)) {
       return standard;
     }
 

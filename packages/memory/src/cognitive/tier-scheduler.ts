@@ -1,30 +1,30 @@
 import type { PubSubManager } from '../coordination/pub-sub-manager.js';
 import type { Scheduler } from '../coordination/scheduler.js';
-import { applyDecay, type DecayConfig, DEFAULT_DECAY_CONFIG } from './decay.js';
+import { applyDecay, DEFAULT_DECAY_CONFIG, type DecayConfig } from './decay.js';
 import type { MemoryTierLike } from './memory-tier.js';
 import type { TierName } from './tier-types.js';
 
 export interface TierScheduler {
-  start(): void;
-  stop(): void;
   isRunning(): boolean;
   runDecayPass(): DecayPassResult;
+  start(): void;
+  stop(): void;
 }
 
 export interface DecayPassResult {
-  kept: number;
-  promoted: number;
   demoted: number;
   discarded: number;
   durationMs: number;
+  kept: number;
+  promoted: number;
 }
 
 export interface TierSchedulerOptions {
-  intervalMs?: number;
   decayConfig?: DecayConfig;
-  scheduler?: Scheduler;
-  pubsub?: PubSubManager;
+  intervalMs?: number;
   now?: (() => number) | undefined;
+  pubsub?: PubSubManager;
+  scheduler?: Scheduler;
 }
 
 const DEFAULT_INTERVAL_MS = 30_000;
@@ -49,6 +49,7 @@ export function createTierScheduler(
       return running;
     },
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
     runDecayPass(): DecayPassResult {
       const start = now();
       let kept = 0;
@@ -60,9 +61,13 @@ export function createTierScheduler(
 
       const tierEntries = Object.entries(tiers) as [string, MemoryTierLike | undefined][];
       for (const [tierName, tier] of tierEntries) {
-        if (!tier) continue;
+        if (!tier) {
+          continue;
+        }
         const items = tier.items();
-        if (items.length === 0) continue;
+        if (items.length === 0) {
+          continue;
+        }
 
         const decayed = applyDecay(items, tierName as TierName, currentNow, decayConfig);
 
@@ -100,14 +105,18 @@ export function createTierScheduler(
     },
 
     start(): void {
-      if (running) return;
+      if (running) {
+        return;
+      }
       running = true;
 
       if (scheduler) {
         const scheduleNext = () => {
           scheduler.schedule(JOB_ID, intervalMs, () => {
             this.runDecayPass();
-            if (running) scheduleNext();
+            if (running) {
+              scheduleNext();
+            }
           });
         };
         scheduleNext();

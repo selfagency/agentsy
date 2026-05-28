@@ -1,40 +1,40 @@
 export interface RetrievalMetricsInput {
-  latencyMs: number;
   hitCount: number;
+  latencyMs: number;
   topScore?: number;
 }
 
 export interface InjectionMetricsInput {
-  usedTokens: number;
   budgetTokens: number;
+  usedTokens: number;
 }
 
 export interface CoordinationLatencyStats {
-  count: number;
-  totalMs: number;
   avgMs: number;
+  count: number;
   maxMs: number;
+  totalMs: number;
 }
 
 export interface MemoryMetricsSnapshot {
   coordination: Record<string, CoordinationLatencyStats>;
+  injection: {
+    usedTokens: number;
+    budgetTokens: number;
+    budgetRatio: number;
+  };
   retrieval: {
     queries: number;
     totalHits: number;
     averageLatencyMs: number;
     averageTopScore: number;
   };
-  injection: {
-    usedTokens: number;
-    budgetTokens: number;
-    budgetRatio: number;
-  };
 }
 
 export interface MemoryMetrics {
   recordCoordinationLatency(operation: string, latencyMs: number): void;
-  recordRetrieval(query: string, input: RetrievalMetricsInput): void;
   recordInjection(input: InjectionMetricsInput): void;
+  recordRetrieval(query: string, input: RetrievalMetricsInput): void;
   snapshot(): MemoryMetricsSnapshot;
 }
 
@@ -46,8 +46,8 @@ export function redactSecretLikeValues(value: string): string {
 
 interface MutableCoordinationStat {
   count: number;
-  totalMs: number;
   maxMs: number;
+  totalMs: number;
 }
 
 export function createMemoryMetrics(): MemoryMetrics {

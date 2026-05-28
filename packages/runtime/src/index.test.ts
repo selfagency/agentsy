@@ -1,6 +1,6 @@
 import { createSessionStore } from '@agentsy/session';
 import { describe, expect, it, vi } from 'vitest';
-
+import type { RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 import {
   createRuntimeExecutor,
   createRuntimeLoop,
@@ -8,7 +8,6 @@ import {
   loadRuntimeSnapshotFromSession,
   saveRuntimeSnapshotToSession
 } from './index.js';
-import type { RuntimeSnapshot, RuntimeTask, RuntimeWorkflowTask } from './index.js';
 
 describe('createRuntimeExecutor', () => {
   it('executes tasks in order', async () => {
@@ -17,12 +16,14 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -41,6 +42,7 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
           abortController.abort();
@@ -48,6 +50,7 @@ describe('createRuntimeExecutor', () => {
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -64,6 +67,7 @@ describe('createRuntimeExecutor', () => {
     const executor = createRuntimeExecutor({ onError });
     const task: RuntimeTask = {
       id: 'a',
+      // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
       run: async () => {
         throw new Error('boom');
       }
@@ -72,7 +76,6 @@ describe('createRuntimeExecutor', () => {
     await executor.execute([task]);
 
     expect(onError).toHaveBeenCalledOnce();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- mock call args typed as any
     expect(onError.mock.calls[0]?.[0].message).toBe('boom');
     expect(onError.mock.calls[0]?.[1]).toBe(task);
   });
@@ -82,7 +85,9 @@ describe('createRuntimeExecutor', () => {
     const executor = createRuntimeExecutor({ onError });
     const task: RuntimeTask = {
       id: 'a',
+      // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
       run: async () => {
+        // biome-ignore lint/style/useThrowOnlyError: testing non-Error throw wrapping
         throw 'boom';
       }
     };
@@ -90,7 +95,6 @@ describe('createRuntimeExecutor', () => {
     await executor.execute([task]);
 
     expect(onError).toHaveBeenCalledOnce();
-    // oxlint-disable-next-line typescript/no-unsafe-assignment -- mock call args typed as any
     const [error] = onError.mock.calls[0] ?? [];
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe('Runtime task failed');
@@ -101,10 +105,13 @@ describe('createRuntimeExecutor', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
-        run: async () => {}
+        run: async () => {
+          /* noop */
+        }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           throw new Error('boom');
         }
@@ -126,6 +133,7 @@ describe('createRuntimeExecutor', () => {
     await execute([
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
@@ -159,12 +167,14 @@ describe('createRuntimeLoop', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -187,12 +197,17 @@ describe('createRuntimeLoop', () => {
     const onTaskComplete = vi.fn();
     const loop = createRuntimeLoop({ onTaskComplete, onTaskStart });
 
-    // oxlint-disable-next-line no-empty-function -- no-op task for lifecycle callback test
-    await loop.execute([{ id: 'task-1', run: async () => {} }]);
+    await loop.execute([
+      {
+        id: 'task-1',
+        run: async () => {
+          /* noop */
+        }
+      }
+    ]);
 
     expect(onTaskStart).toHaveBeenCalledOnce();
     expect(onTaskComplete).toHaveBeenCalledOnce();
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- mock call args typed as any
     expect(onTaskComplete.mock.calls[0]?.[0]?.status).toBe('completed');
   });
 
@@ -202,12 +217,14 @@ describe('createRuntimeLoop', () => {
     const tasks: RuntimeTask[] = [
       {
         id: 'a',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('a');
         }
       },
       {
         id: 'b',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('b');
         }
@@ -248,6 +265,7 @@ describe('createRuntimeLoop', () => {
           const childSnapshot = await context.spawn([
             {
               id: 'child',
+              // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
               run: async () => {
                 calls.push('child');
               }
@@ -274,8 +292,9 @@ describe('createRuntimeLoop', () => {
       loop.spawn([
         {
           id: 'child',
-          // oxlint-disable-next-line no-empty-function -- no-op child task for depth test
-          run: async () => {}
+          run: async () => {
+            /* noop */
+          }
         }
       ])
     ).rejects.toThrow('Runtime spawn depth exceeded maxDepth');
@@ -323,12 +342,14 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['build'],
         id: 'deploy',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('deploy');
         }
       },
       {
         id: 'build',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('build');
         }
@@ -336,6 +357,7 @@ describe('createRuntimeWorkflowExecutor', () => {
       {
         dependsOn: ['build'],
         id: 'test',
+        // biome-ignore lint/suspicious/useAwait: matches RuntimeTask interface
         run: async () => {
           calls.push('test');
         }
@@ -351,8 +373,13 @@ describe('createRuntimeWorkflowExecutor', () => {
   it('rejects workflows with missing dependencies', async () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
-      // oxlint-disable-next-line no-empty-function -- no-op task for missing-dependency error test
-      { dependsOn: ['build'], id: 'deploy', run: async () => {} }
+      {
+        dependsOn: ['build'],
+        id: 'deploy',
+        run: async () => {
+          /* noop */
+        }
+      }
     ];
 
     await expect(workflow.execute(tasks)).rejects.toThrow('depends on missing task');
@@ -361,10 +388,20 @@ describe('createRuntimeWorkflowExecutor', () => {
   it('rejects workflows with cycles', async () => {
     const workflow = createRuntimeWorkflowExecutor();
     const tasks: RuntimeWorkflowTask[] = [
-      // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
-      { dependsOn: ['b'], id: 'a', run: async () => {} },
-      // oxlint-disable-next-line no-empty-function -- no-op tasks for cycle-detection test
-      { dependsOn: ['a'], id: 'b', run: async () => {} }
+      {
+        dependsOn: ['b'],
+        id: 'a',
+        run: async () => {
+          /* noop */
+        }
+      },
+      {
+        dependsOn: ['a'],
+        id: 'b',
+        run: async () => {
+          /* noop */
+        }
+      }
     ];
 
     await expect(workflow.execute(tasks)).rejects.toThrow('contains a cycle');

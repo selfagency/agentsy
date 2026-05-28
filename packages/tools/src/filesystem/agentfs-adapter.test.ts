@@ -16,7 +16,7 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'test.txt';
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.read).mockReturnValue({
       content: 'hello',
       contentHash: 'h1'
@@ -36,7 +36,7 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'missing.txt';
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.read).mockClear();
 
     const result = adapter.read({ path });
@@ -49,7 +49,7 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'new.txt';
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.write).mockReturnValue({ contentHash: 'h2' });
 
     const result = adapter.write({ content: 'world', path });
@@ -60,7 +60,7 @@ describe('createAgentFsAdapter', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.write).mockImplementation(() => {
       throw new Error('write failed');
     });
@@ -69,7 +69,7 @@ describe('createAgentFsAdapter', () => {
     expect(result.ok).toBeFalsy();
     expect(result.error).toBe('write failed');
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.write).mockImplementation(() => {
       throw new Error('string error');
     });
@@ -82,7 +82,7 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'gone.txt';
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.delete).mockReturnValue(true);
 
     const result = adapter.delete({ path });
@@ -94,7 +94,7 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'nonexistent.txt';
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.delete).mockReturnValue(false);
 
     const result = adapter.delete({ path });
@@ -107,7 +107,7 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const entries = [{ contentHash: 'ha', path: 'a.txt' }];
 
-    // oxlint-disable-next-line typescript/unbound-method
+    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.list).mockReturnValue(entries);
 
     const result = adapter.list();

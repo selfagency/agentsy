@@ -9,12 +9,12 @@ export function isOpenAICompatibleProvider(value: string): value is OpenAICompat
 }
 
 export interface OpenAICompatibleToolCall {
-  id: string;
-  type: 'function';
   function: {
     name: string;
     arguments: string;
   };
+  id: string;
+  type: 'function';
 }
 
 export type OpenAICompatibleMessage =

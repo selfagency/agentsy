@@ -7,33 +7,31 @@ export interface Synthesizer {
 }
 
 export interface SynthesizeResult {
-  synthesized: MemoryItem[];
-  sources: string[];
   discarded: MemoryItem[];
+  sources: string[];
+  synthesized: MemoryItem[];
   tokenReduction: number;
 }
 
 export interface SynthesizerOptions {
-  now?: (() => number) | undefined;
   embeddingEngine?: LocalEmbeddingEngine;
+  now?: (() => number) | undefined;
   similarityThreshold?: number;
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) return 0;
+  if (a.length !== b.length) {
+    return 0;
+  }
   let dot = 0;
   let normA = 0;
   let normB = 0;
   for (let i = 0; i < a.length; i++) {
-    // nosemgrep: numeric array index verified by loop bounds
-    const ai = a[i];
-    // nosemgrep: numeric array index verified by loop bounds
-    const bi = b[i];
-    const aiVal = ai ?? 0;
-    const biVal = bi ?? 0;
-    dot += aiVal * biVal;
-    normA += aiVal * aiVal;
-    normB += biVal * biVal;
+    const ai = a.at(i) ?? 0;
+    const bi = b.at(i) ?? 0;
+    dot += ai * bi;
+    normA += ai * ai;
+    normB += bi * bi;
   }
   const denom = Math.sqrt(normA) * Math.sqrt(normB);
   return denom === 0 ? 0 : dot / denom;
@@ -43,14 +41,20 @@ function estimateTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-type Group = { items: MemoryItem[]; indices: number[] };
-type ItemEmbedding = { item: MemoryItem; embedding: number[] };
-type BudgetState = {
-  synthesized: MemoryItem[];
+interface Group {
+  indices: number[];
+  items: MemoryItem[];
+}
+interface ItemEmbedding {
+  embedding: number[];
+  item: MemoryItem;
+}
+interface BudgetState {
   allSourceIds: string[];
   discarded: MemoryItem[];
+  synthesized: MemoryItem[];
   usedTokens: number;
-};
+}
 
 function prepareEmbeddings(items: MemoryItem[], embedFn: (text: string) => number[]): ItemEmbedding[] {
   return items.map(item => ({ item, embedding: embedFn(item.content) }));
@@ -65,22 +69,29 @@ function tryAddToGroup(
   i: number,
   j: number
 ): void {
-  if (assigned.has(j)) return;
+  if (assigned.has(j)) {
+    return;
+  }
 
-  // nosemgrep: j is verified as valid index before calling this function
-  const embeddingJ = embeddings[j];
-  if (!embeddingJ?.embedding) return;
+  const embeddingJ = embeddings[j]?.embedding;
+  if (!embeddingJ) {
+    return;
+  }
 
-  // nosemgrep: i is from loop index, verified against items.length
-  const embeddingI = embeddings[i];
-  if (!embeddingI?.embedding) return;
+  const embeddingI = embeddings[i]?.embedding;
+  if (!embeddingI) {
+    return;
+  }
 
-  const sim = cosineSimilarity(embeddingI.embedding, embeddingJ.embedding);
-  if (sim < threshold) return;
+  const sim = cosineSimilarity(embeddingI, embeddingJ);
+  if (sim < threshold) {
+    return;
+  }
 
-  // nosemgrep: j is verified as valid index before calling this function
   const jItem = items[j];
-  if (!jItem) return;
+  if (!jItem) {
+    return;
+  }
 
   group.items.push(jItem);
   group.indices.push(j);
@@ -92,16 +103,20 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
   const groups: Group[] = [];
 
   for (let i = 0; i < items.length; i++) {
-    if (assigned.has(i)) continue;
+    if (assigned.has(i)) {
+      continue;
+    }
 
     const groupItem = items[i];
-    if (!groupItem) continue;
+    if (!groupItem) {
+      continue;
+    }
 
     const group: Group = { items: [groupItem], indices: [i] };
     assigned.add(i);
 
-    const embeddingI = embeddings[i];
-    if (!embeddingI?.embedding) {
+    const embeddingI = embeddings[i]?.embedding;
+    if (!embeddingI) {
       groups.push(group);
       continue;
     }
@@ -119,7 +134,9 @@ function groupBySimilarity(items: MemoryItem[], embeddings: ItemEmbedding[], thr
 function handleBudgetOverflow(group: Group, budgetRemaining: number, state: BudgetState): void {
   const sorted = [...group.items].sort((a, b) => b.importance - a.importance);
   const kept = sorted[0];
-  if (!kept) return;
+  if (!kept) {
+    return;
+  }
 
   state.discarded.push(...sorted.slice(1));
   const keptTokens = estimateTokens(kept.content);

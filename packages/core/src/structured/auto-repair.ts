@@ -1,8 +1,8 @@
 import type { JsonObject } from '@agentsy/types';
 
 import { buildRepairPrompt } from './build-repair-prompt.js';
-import { validateJsonSchema } from './validate-json-schema.js';
 import type { ValidateJsonSchemaOptions } from './validate-json-schema.js';
+import { validateJsonSchema } from './validate-json-schema.js';
 
 export interface AutoRepairOptions extends ValidateJsonSchemaOptions {
   /** Maximum number of repair attempts. Defaults to 3. */
@@ -12,14 +12,14 @@ export interface AutoRepairOptions extends ValidateJsonSchemaOptions {
 }
 
 export interface AutoRepairResult<T = unknown> {
-  /** Whether the final output is valid. */
-  success: boolean;
+  /** Total number of attempts (including the initial parse). */
+  attempts: number;
   /** The parsed data if successful, otherwise undefined. */
   data?: T;
   /** Validation errors from the last attempt if unsuccessful. */
   errors?: string[];
-  /** Total number of attempts (including the initial parse). */
-  attempts: number;
+  /** Whether the final output is valid. */
+  success: boolean;
 }
 
 /**

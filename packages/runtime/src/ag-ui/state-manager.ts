@@ -182,7 +182,7 @@ export function computeStateDelta(
   // Handle added properties
   const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
-    if (!(key in from) && !dangerousKeys.has(key)) {
+    if (!(key in from || dangerousKeys.has(key))) {
       const escapedKey = escapePathSegment(key);
       const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
       patches.push({ op: 'add', path, value: to[key] });
@@ -345,7 +345,7 @@ export class StateManager {
     this.currentState = structuredClone(newState);
 
     if (patches.length === 0) {
-      return undefined;
+      return;
     }
 
     return createStateDeltaEvent(patches, runId, threadId);

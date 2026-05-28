@@ -7,21 +7,27 @@ describe('ObservationExtractor', () => {
   const extractor = createObservationExtractor();
 
   it('extracts factual observations from declarative content', () => {
-    const item = createTestMemoryItem({ content: 'The user is a software engineer. The project uses TypeScript.' });
+    const item = createTestMemoryItem({
+      content: 'The user is a software engineer. The project uses TypeScript.'
+    });
     const observations = extractor.extract(item);
     const factuals = observations.filter(o => o.kind === 'factual');
     expect(factuals.length).toBeGreaterThanOrEqual(1);
   });
 
   it('extracts emotional observations from preference content', () => {
-    const item = createTestMemoryItem({ content: 'The user likes dark mode. They dislike popups.' });
+    const item = createTestMemoryItem({
+      content: 'The user likes dark mode. They dislike popups.'
+    });
     const observations = extractor.extract(item);
     const emotionals = observations.filter(o => o.kind === 'emotional');
     expect(emotionals.length).toBeGreaterThanOrEqual(1);
   });
 
   it('extracts procedural observations from step content', () => {
-    const item = createTestMemoryItem({ content: 'To deploy, first build the project then run the tests.' });
+    const item = createTestMemoryItem({
+      content: 'To deploy, first build the project then run the tests.'
+    });
     const observations = extractor.extract(item);
     const procedurals = observations.filter(o => o.kind === 'procedural');
     expect(procedurals.length).toBeGreaterThanOrEqual(1);
@@ -37,7 +43,9 @@ describe('ObservationExtractor', () => {
   });
 
   it('extracts relational observations from relationship content', () => {
-    const item = createTestMemoryItem({ content: 'Alice met Bob at Conference X. Alice works with Charlie.' });
+    const item = createTestMemoryItem({
+      content: 'Alice met Bob at Conference X. Alice works with Charlie.'
+    });
     const observations = extractor.extract(item);
     const relationals = observations.filter(o => o.kind === 'relational');
     expect(relationals.length).toBeGreaterThanOrEqual(1);
@@ -65,7 +73,9 @@ describe('ObservationExtractor', () => {
   });
 
   it('deduplicates identical observations', () => {
-    const item = createTestMemoryItem({ content: 'The user likes dark mode. The user likes dark mode.' });
+    const item = createTestMemoryItem({
+      content: 'The user likes dark mode. The user likes dark mode.'
+    });
     const observations = extractor.extract(item);
     const emotionals = observations.filter(o => o.kind === 'emotional');
     // Should not have duplicated identical observations

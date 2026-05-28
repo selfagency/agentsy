@@ -13,13 +13,13 @@ export interface ConversationTurn {
   role: 'user' | 'assistant';
   text: string;
   thinking?: string | undefined;
+  timestamp: number;
   toolCalls: {
     id: string;
     name: string;
     arguments: JsonObject;
     done: boolean;
   }[];
-  timestamp: number;
 }
 
 export interface InkConversationRendererOptions extends InkRendererOptions {
@@ -27,9 +27,9 @@ export interface InkConversationRendererOptions extends InkRendererOptions {
 }
 
 export interface InkConversationRendererHandle extends InkRendererHandle {
-  newTurn(role?: 'assistant'): void;
   addUserTurn(text: string): void;
   getHistory(): readonly ConversationTurn[];
+  newTurn(role?: 'assistant'): void;
 }
 
 // fallow-ignore-next-line unused-export
@@ -66,7 +66,11 @@ export async function createInkConversationRenderer(
     current: options.initialHistory ? [...options.initialHistory] : []
   };
 
-  const forceUpdateRef = { current: () => {} };
+  const forceUpdateRef = {
+    current: () => {
+      /* noop */
+    }
+  };
 
   const { processor } = options;
 

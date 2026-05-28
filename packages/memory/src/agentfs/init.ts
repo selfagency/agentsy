@@ -7,9 +7,9 @@ export interface AgentFsInitOptions {
 }
 
 export interface AgentFsStatus {
-  schemaVersion: number;
   hasAgentFsTables: boolean;
   rootIno: number | null;
+  schemaVersion: number;
 }
 
 /**

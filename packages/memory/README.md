@@ -165,24 +165,24 @@ Then connect your client:
 ### Programmatic API
 
 ```typescript
-import { initMemory } from '@agentsy/memory/init';
+import { initMemory } from "@agentsy/memory/init";
 
 const { engine, wiki, knowledgeBase, server } = await initMemory({
-  config: { mcp: { transport: 'stdio' } }
+  config: { mcp: { transport: "stdio" } },
 });
 
-const id = engine.ingest('User prefers dark mode', {
+const id = engine.ingest("User prefers dark mode", {
   importance: 0.8,
-  kind: 'semantic'
+  kind: "semantic",
 });
 
-const results = engine.recall({ query: 'dark mode', crossTier: true });
+const results = engine.recall({ query: "dark mode", crossTier: true });
 
 // Unified search across tiers, wiki, and knowledge base
-import { queryUnified } from '@agentsy/memory';
+import { queryUnified } from "@agentsy/memory";
 const unified = await queryUnified(engine, wiki, knowledgeBase, {
-  query: 'dark mode',
-  scope: 'unified'
+  query: "dark mode",
+  scope: "unified",
 });
 
 await engine.awaken();
@@ -256,15 +256,15 @@ When connected via MCP, these tools are available:
 Import only what you need:
 
 ```typescript
-import { createMemoryEngine } from '@agentsy/memory';
-import { initMemory } from '@agentsy/memory/init';
-import { loadConfig } from '@agentsy/memory/config';
-import { onSessionStart, onToolCall, onResponse, onSessionEnd } from '@agentsy/memory/hooks';
-import { createMemoryMCPServer } from '@agentsy/memory/mcp';
-import { createWikiManager } from '@agentsy/memory';
-import { createKnowledgeBaseManager, createRAGConfig } from '@agentsy/memory';
-import { createTursoManager } from '@agentsy/memory';
-import { queryUnified } from '@agentsy/memory';
+import { createMemoryEngine } from "@agentsy/memory";
+import { initMemory } from "@agentsy/memory/init";
+import { loadConfig } from "@agentsy/memory/config";
+import { onSessionStart, onToolCall, onResponse, onSessionEnd } from "@agentsy/memory/hooks";
+import { createMemoryMCPServer } from "@agentsy/memory/mcp";
+import { createWikiManager } from "@agentsy/memory";
+import { createKnowledgeBaseManager, createRAGConfig } from "@agentsy/memory";
+import { createTursoManager } from "@agentsy/memory";
+import { queryUnified } from "@agentsy/memory";
 ```
 
 ---
@@ -313,8 +313,8 @@ cd packages/memory
 pnpm check-types  # TypeScript check
 pnpm test         # 492+ unit tests
 pnpm coverage     # Coverage report
-pnpm lint         # oxlint
-pnpm format       # oxfmt
+pnpm lint         # Biome
+pnpm format       # Biome
 ```
 
 ---

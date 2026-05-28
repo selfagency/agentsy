@@ -17,8 +17,8 @@ export type OutboundPart =
  * Common message type for outbound messages across adapters.
  */
 export interface OutboundMessage {
-  role: 'system' | 'user' | 'assistant';
   parts: OutboundPart[];
+  role: 'system' | 'user' | 'assistant';
 }
 
 /**

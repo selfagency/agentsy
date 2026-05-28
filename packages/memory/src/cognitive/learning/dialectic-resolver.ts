@@ -4,27 +4,27 @@ import type { Observation } from './observation-extractor.js';
 export type RepresentationView = 'explicit' | 'deductive' | 'inductive' | 'contradiction';
 
 export interface Representation {
+  confidence: number;
   id: string;
   observationIds: string[];
-  view: RepresentationView;
   summary: string;
-  confidence: number;
+  view: RepresentationView;
 }
 
 export interface Resolution {
-  id: string;
   contradictionIds: string[];
-  representations: Representation[];
-  resolvedSummary: string;
-  resolutionConfidence: number;
+  id: string;
   method: 'deductive' | 'inductive' | 'temporal' | 'source_priority';
+  representations: Representation[];
+  resolutionConfidence: number;
+  resolvedSummary: string;
   timestamp: number;
 }
 
 export interface ResolutionPriority {
-  sourceWeights: Partial<Record<WriteHeap, number>>;
-  recencyBias: number;
   confidenceThreshold: number;
+  recencyBias: number;
+  sourceWeights: Partial<Record<WriteHeap, number>>;
 }
 
 export interface DialecticResolver {
@@ -45,8 +45,9 @@ const DEFAULT_PRIORITY: ResolutionPriority = {
 function extractPolarity(content: string): number {
   const polarityPatterns = [/\b(?:like|love|enjoy|prefer)s?\b/giu, /\b(?:dislike|hate|avoid|not)s?\b/giu];
   for (let i = 0; i < polarityPatterns.length; i++) {
-    // nosemgrep: numeric array index verified by loop bounds
-    if (polarityPatterns[i]?.test(content)) return i + 1;
+    if (polarityPatterns.at(i)?.test(content)) {
+      return i + 1;
+    }
   }
   return 0;
 }
@@ -67,8 +68,6 @@ function observationsOverlap(a: Observation, b: Observation): boolean {
 }
 
 function scoreObservation(obs: Observation, priority: ResolutionPriority): number {
-  // nosemgrep: sourceMemoryId key is from controlled Observation type, has fallback
-  // NOSONAR: type cast is required by strict TS for Record<WriteHeap, number> index
   const sourceWeight = priority.sourceWeights[obs.sourceMemoryId as WriteHeap] ?? 0.5;
   const _recencyScore = 1; // We don't have extractedAt age here; caller handles temporal
   const confidenceScore = obs.confidence;
@@ -92,9 +91,8 @@ function buildRepresentations(group: Observation[]): Representation[] {
 
   // Contradiction view: summarize the conflict
   const contradictionSummary = group.map(o => o.content).join(' vs ');
-  const firstId = group[0];
   representations.push({
-    id: `rep-contra-${firstId?.id ?? 'unknown'}`,
+    id: `rep-contra-${group[0]?.id ?? 'unknown'}`,
     observationIds: group.map(o => o.id),
     view: 'contradiction',
     summary: contradictionSummary,
@@ -105,11 +103,11 @@ function buildRepresentations(group: Observation[]): Representation[] {
 }
 
 function hasNewerWinner(sorted: Observation[], priority: ResolutionPriority): boolean {
-  if (sorted.length === 0) return false;
-  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt).at(0);
-  const highestSource = sorted.at(0);
-  if (!newest || !highestSource) return false;
-  return newest.id !== highestSource.id && priority.recencyBias > 0.5;
+  const newest = [...sorted].sort((a, b) => b.extractedAt - a.extractedAt)[0];
+  const highestSource = sorted[0];
+  return (
+    newest !== undefined && highestSource !== undefined && newest.id !== highestSource.id && priority.recencyBias > 0.5
+  );
 }
 
 function determineResolutionMethod(sorted: Observation[], priority: ResolutionPriority): Resolution['method'] {
@@ -122,7 +120,9 @@ function determineResolutionMethod(sorted: Observation[], priority: ResolutionPr
 function createResolution(group: Observation[], priority: ResolutionPriority, currentNow: number): Resolution | null {
   const sorted = [...group].sort((a, b) => scoreObservation(b, priority) - scoreObservation(a, priority));
   const winner = sorted[0];
-  if (!winner) return null;
+  if (!winner) {
+    return null;
+  }
 
   const representations = buildRepresentations(sorted);
   const method = determineResolutionMethod(sorted, priority);
@@ -144,17 +144,21 @@ function detectContradictionsInternal(observations: Observation[]): Observation[
   const visited = new Set<number>();
 
   for (let i = 0; i < observations.length; i++) {
-    if (visited.has(i)) continue;
-    const obsI = observations[i];
-    if (!obsI) continue;
-    const group: Observation[] = [obsI];
+    if (visited.has(i)) {
+      continue;
+    }
+    const group: Observation[] = [observations.at(i) as Observation];
     visited.add(i);
 
     for (let j = i + 1; j < observations.length; j++) {
-      if (visited.has(j)) continue;
+      if (visited.has(j)) {
+        continue;
+      }
       const a = observations[i];
       const b = observations[j];
-      if (!a || !b) continue;
+      if (!(a && b)) {
+        continue;
+      }
       if (observationsOverlap(a, b)) {
         group.push(b);
         visited.add(j);
@@ -181,9 +185,13 @@ export function createDialecticResolver(options: DialecticResolverOptions = {}):
       const resolutions: Resolution[] = [];
 
       for (const group of contradictions) {
-        if (group.length < 2) continue;
+        if (group.length < 2) {
+          continue;
+        }
         const resolution = createResolution(group, priority, currentNow);
-        if (resolution) resolutions.push(resolution);
+        if (resolution) {
+          resolutions.push(resolution);
+        }
       }
 
       return resolutions;

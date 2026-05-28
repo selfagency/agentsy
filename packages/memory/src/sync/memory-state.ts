@@ -3,20 +3,20 @@ import { computeSyncChecksum, verifySyncChecksum } from './integrity.js';
 import type { MemorySyncTier, SyncRecord, SyncSnapshot } from './types.js';
 
 export interface MemoryState {
-  rawCaptures: RawCapture[];
   pages: WikiPage[];
+  rawCaptures: RawCapture[];
   vectors: VectorEntry[];
 }
 
 export interface MemoryStateAdapter {
-  getCurrentState(): Promise<SyncSnapshot>;
   applySnapshot(snapshot: SyncSnapshot): Promise<void>;
+  getCurrentState(): Promise<SyncSnapshot>;
 }
 
 export interface MemoryStateAdapterOptions {
-  getState(): MemoryState | Promise<MemoryState>;
   applyState(state: MemoryState): Promise<void> | void;
   getCursor?: () => string | Promise<string>;
+  getState(): MemoryState | Promise<MemoryState>;
 }
 
 function cloneRawCapture(capture: RawCapture): RawCapture {

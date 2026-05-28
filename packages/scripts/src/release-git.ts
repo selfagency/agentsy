@@ -1,5 +1,5 @@
-import { spawnSync } from 'node:child_process';
 import type { SpawnSyncOptions, SpawnSyncReturns } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 const SAFE_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(':');
 

@@ -1,17 +1,20 @@
 const MAX_XML_DISPLAY_INPUT_LENGTH = 1_000_000;
+const ASCII_LETTER_REGEX = /[A-Za-z]/u;
+const DISPLAY_TAG_CHAR_REGEX = /[A-Za-z0-9_.-]/u;
+const TAG_SEPARATOR_REGEX = /[._-]+/gu;
 
 interface XmlDisplayBlock {
-  tag: string;
   content: string;
   endIndex: number;
+  tag: string;
 }
 
 function isAsciiLetter(char: string): boolean {
-  return /[A-Za-z]/u.test(char);
+  return ASCII_LETTER_REGEX.test(char);
 }
 
 function isValidDisplayTagCharacter(char: string): boolean {
-  return /[A-Za-z0-9_.-]/u.test(char);
+  return DISPLAY_TAG_CHAR_REGEX.test(char);
 }
 
 function parseDisplayBlock(text: string, startIndex: number): XmlDisplayBlock | null {
@@ -72,7 +75,7 @@ export function formatXmlLikeResponseForDisplay(text: string): string {
       continue;
     }
 
-    const tag = block.tag.replaceAll(/[._-]+/gu, ' ').trim();
+    const tag = block.tag.replaceAll(TAG_SEPARATOR_REGEX, ' ').trim();
     const title = `${tag.at(0)?.toUpperCase() ?? ''}${tag.slice(1)}`;
     transformed += `\n\n**${title}**\n${block.content.trim()}\n\n`;
     replaced = true;

@@ -12,6 +12,7 @@
 // without requiring a build step. This reduces duplicate source files and
 // allows CI and local tooling to run the preview command in either state.
 interface ThemeConfig {
+  border?: { style?: string };
   thinking?: { textColor?: string; spinnerColor?: string };
   toolCall?: {
     pendingColor?: string;
@@ -19,7 +20,6 @@ interface ThemeConfig {
     pendingSymbol?: string;
     doneSymbol?: string;
   };
-  border?: { style?: string };
 }
 
 let themesModule: Record<string, unknown>;
@@ -103,7 +103,7 @@ function displayThemePreview() {
       const pendingSymbol = theme.toolCall.pendingSymbol ?? '⠋';
       const doneSymbol = theme.toolCall.doneSymbol ?? '✓';
       const toolsPending = `Tools: ${pendingSymbol}`;
-      const toolsPreview = `pending`;
+      const toolsPreview = 'pending';
       const toolsDone = `${doneSymbol} done`;
       const toolsPendingText = `└─ ${toolsPending}`;
       const toolsLine = `  ${applyColor(toolsPendingText, pendingColor)} ${applyColor(toolsPreview, pendingColor)} ${applyColor(toolsDone, doneColor)}`;

@@ -37,21 +37,21 @@ import ora from 'ora';
 import { $, argv, cd, sleep } from 'zx';
 
 import { createGitHelpers } from './release-git.js';
+import type { ReleaseNotesOptions } from './release-shared.js';
 import {
   checkNpmCredentials,
-  resolveGithubToken,
-  updateChangelogFile,
   ensureCleanMainBranch,
-  syncMainBranch,
-  resolveOwnerRepoFromOrigin,
   ensureLocalTagAvailability,
   ensureRemoteTagAvailability,
-  waitForWorkflow,
-  waitForLatestSuccessfulWorkflow
+  resolveGithubToken,
+  resolveOwnerRepoFromOrigin,
+  syncMainBranch,
+  updateChangelogFile,
+  waitForLatestSuccessfulWorkflow,
+  waitForWorkflow
 } from './release-shared.js';
-import type { ReleaseNotesOptions } from './release-shared.js';
 import { getPackageReleaseState, readReleaseState } from './release-state.ts';
-import { ROOT, parseVersionArg, safeRead, safeWrite } from './release-utils.js';
+import { parseVersionArg, ROOT, safeRead, safeWrite } from './release-utils.js';
 import { getRepositoryField, validateRepositoryMatch } from './trusted-publish-readiness.js';
 
 $.verbose = false;
@@ -81,7 +81,7 @@ const pkgJsonPath = resolve(pkgDir, 'package.json');
 
 if (!existsSync(pkgDir)) {
   console.error(`❌ Package directory not found: ${pkgDir}`);
-  console.error(`   Available packages include: @agentsy/vscode and other @agentsy/* workspace packages`);
+  console.error('   Available packages include: @agentsy/vscode and other @agentsy/* workspace packages');
   process.exit(1);
 }
 
@@ -116,7 +116,7 @@ let tagPushed = false;
 let releaseDone = false;
 const { resolveGitExecutable, runGit, setGitCommand } = createGitHelpers(ROOT);
 
-async function rollback() {
+function rollback() {
   if (releaseDone) {
     return;
   }
@@ -159,13 +159,13 @@ async function rollback() {
   }
 }
 
-process.on('SIGINT', async () => {
-  await rollback();
+process.on('SIGINT', () => {
+  rollback();
   process.exit(130);
 });
 
-process.on('SIGTERM', async () => {
-  await rollback();
+process.on('SIGTERM', () => {
+  rollback();
   process.exit(143);
 });
 
@@ -200,7 +200,10 @@ async function main() {
   syncMainBranch();
 
   // Re-read pkgJson and release state now that main is up to date.
-  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as { name: string; repository: unknown };
+  const latestPkgJson = JSON.parse(safeRead(pkgJsonPath, 'utf-8')) as {
+    name: string;
+    repository: unknown;
+  };
   const latestReleaseState = readReleaseState(RELEASE_STATE_PATH);
   const packageReleaseState = getPackageReleaseState(latestReleaseState, fullPackageName);
 
@@ -311,15 +314,15 @@ async function main() {
   // --- Dry-run exit (BEFORE pushing) ----------------------------------------
 
   if (isDryRun) {
-    console.log(`\n[dry-run] Would perform the following:`);
+    console.log('\n[dry-run] Would perform the following:');
     console.log(`[dry-run]   1. Commit: "chore(release): ${tag}"`);
-    console.log(`[dry-run]   2. Push to origin/main`);
-    console.log(`[dry-run]   3. Wait for Test & Build workflow to pass`);
+    console.log('[dry-run]   2. Push to origin/main');
+    console.log('[dry-run]   3. Wait for Test & Build workflow to pass');
     console.log(`[dry-run]   4. Create tag: ${tag}`);
-    console.log(`[dry-run]   5. Trigger GitHub Release workflow`);
-    console.log(`[dry-run]   6. Publish to npm`);
-    console.log(`[dry-run]`);
-    console.log(`[dry-run] Release notes preview:`);
+    console.log('[dry-run]   5. Trigger GitHub Release workflow');
+    console.log('[dry-run]   6. Publish to npm');
+    console.log('[dry-run]');
+    console.log('[dry-run] Release notes preview:');
     console.log(`[dry-run] ${releaseNotes}`);
     return;
   }
@@ -397,6 +400,6 @@ try {
 } catch (error) {
   process.stdout.write('\n');
   console.error(error instanceof Error ? error.message : error);
-  await rollback();
+  rollback();
   process.exit(1);
 }

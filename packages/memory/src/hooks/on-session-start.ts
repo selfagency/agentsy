@@ -7,17 +7,17 @@ import type { MemoryItem, TierName } from '../cognitive/tier-types.js';
 
 export interface OnSessionStartInput {
   engine: MemoryEngine;
-  userId?: string;
-  projectId?: string;
   pendingEvents?: PendingEvent[];
+  projectId?: string;
+  userId?: string;
 }
 
 export interface OnSessionStartOutput {
-  warmMemories: MemoryItem[];
-  tierCapacity: Record<TierName, { used: number; max: number }>;
-  budgetAvailable: number;
   awakenResult: AwakenResult;
+  budgetAvailable: number;
   durationMs: number;
+  tierCapacity: Record<TierName, { used: number; max: number }>;
+  warmMemories: MemoryItem[];
 }
 
 /**

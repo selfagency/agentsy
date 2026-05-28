@@ -70,17 +70,17 @@ describe('TokenBudget', () => {
       const budget = createDefaultBudget();
       expect(budget.max('sensory_buffer')).toBe(200);
       expect(budget.max('sensory_register')).toBe(400);
-      expect(budget.max('working_memory')).toBe(1_000);
-      expect(budget.max('short_term_memory')).toBe(2_000);
+      expect(budget.max('working_memory')).toBe(1000);
+      expect(budget.max('short_term_memory')).toBe(2000);
       expect(budget.max('long_term_memory')).toBe(10_000);
     });
 
     it('respects custom budget overrides', () => {
       const budget = createTokenBudget({
-        budgets: { sensory_buffer: 500, working_memory: 2_000 }
+        budgets: { sensory_buffer: 500, working_memory: 2000 }
       });
       expect(budget.max('sensory_buffer')).toBe(500);
-      expect(budget.max('working_memory')).toBe(2_000);
+      expect(budget.max('working_memory')).toBe(2000);
       expect(budget.max('sensory_register')).toBe(400);
     });
   });
@@ -116,7 +116,7 @@ describe('TokenBudget', () => {
       const budget = createDefaultBudget();
       budget.allocate('sensory_buffer', 100);
       const snap = budget.snapshot();
-      expect(snap.totalMax).toBe(200 + 400 + 1_000 + 2_000 + 10_000);
+      expect(snap.totalMax).toBe(200 + 400 + 1000 + 2000 + 10_000);
       expect(snap.totalUsed).toBe(100);
       expect(snap.utilizationRatio).toBeGreaterThan(0);
     });

@@ -70,6 +70,9 @@ export function createSharedRendererHandle(
           }
           break;
         }
+        default: {
+          break;
+        }
       }
     }
   }

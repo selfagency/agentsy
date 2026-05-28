@@ -4,23 +4,22 @@
  */
 
 export interface SSEEvent {
-  event?: string;
   data?: string;
+  event?: string;
   id?: string;
   retry?: number;
 }
 
 export interface SSEParserOptions {
   /**
-   * Called when a complete SSE event is parsed.
-   */
-  onEvent?: (_event: SSEEvent) => void;
-
-  /**
    * Called when a parsing error occurs (malformed field, etc).
    * Non-fatal; parsing continues.
    */
   onError?: (_error: Error) => void;
+  /**
+   * Called when a complete SSE event is parsed.
+   */
+  onEvent?: (_event: SSEEvent) => void;
 }
 
 /**
@@ -115,8 +114,8 @@ export class SSEParser {
         continue;
       }
 
-      const field = line.substring(0, colonIdx);
-      let value = line.substring(colonIdx + 1);
+      const field = line.slice(0, colonIdx);
+      let value = line.slice(colonIdx + 1);
 
       // Strip leading space after colon (if present).
       if (value.startsWith(' ')) {
@@ -157,6 +156,9 @@ export class SSEParser {
         if (!Number.isNaN(retryNum) && retryNum > 0) {
           event.retry = retryNum;
         }
+        break;
+      }
+      default: {
         break;
       }
     }

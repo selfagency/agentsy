@@ -1,4 +1,4 @@
-export { createAgentLoop } from './createAgentLoop.js';
+export { createAgentLoop } from './create-agent-loop.js';
 export {
   detectDoomLoop,
   finishReasonIs,
@@ -6,7 +6,7 @@ export {
   hasToolCall,
   isLoopFinished,
   isStepCount
-} from './stopConditions.js';
+} from './stop-conditions.js';
 export type {
   AgentLoopAbortReason,
   AgentLoopContext,

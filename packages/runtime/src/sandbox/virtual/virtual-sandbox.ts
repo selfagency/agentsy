@@ -12,16 +12,16 @@ export interface SandboxInput {
 }
 
 export interface SandboxOutput {
-  readonly status: SandboxExecutionStatus;
-  readonly stdout: string;
-  readonly stderr: string;
   readonly durationMs: number;
   readonly exitCode?: number;
+  readonly status: SandboxExecutionStatus;
+  readonly stderr: string;
+  readonly stdout: string;
 }
 
 export interface VirtualSandbox {
-  readonly mode: 'virtual';
   execute(input: SandboxInput): Promise<SandboxOutput>;
+  readonly mode: 'virtual';
 }
 
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -30,13 +30,13 @@ const __dirname = import.meta.dirname;
 const WORKER_PATH = join(__dirname, 'sandbox-worker.js');
 
 interface SandboxTimeoutHandlerOptions {
-  worker: Worker;
   resolve: (value: SandboxOutput) => void;
-  start: number;
-  timeoutMs: number;
-  stdout: string[];
-  stderr: string[];
   resolved: { value: boolean };
+  start: number;
+  stderr: string[];
+  stdout: string[];
+  timeoutMs: number;
+  worker: Worker;
 }
 
 function createSandboxTimeoutHandler(options: SandboxTimeoutHandlerOptions) {
@@ -56,16 +56,17 @@ function createSandboxTimeoutHandler(options: SandboxTimeoutHandlerOptions) {
 }
 
 interface MessageHandlerOptions {
-  worker: Worker;
   resolve: (value: SandboxOutput) => void;
-  timeout: NodeJS.Timeout;
-  start: number;
-  stdout: string[];
-  stderr: string[];
   resolved: { value: boolean };
+  start: number;
+  stderr: string[];
+  stdout: string[];
+  timeout: NodeJS.Timeout;
+  worker: Worker;
 }
 
 function createMessageHandler(options: MessageHandlerOptions) {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: refactor planned
   return (msg: WorkerMessage) => {
     if (msg.type === 'log') {
       options.stdout.push(msg.args.map(String).join(' '));
@@ -107,13 +108,13 @@ function createMessageHandler(options: MessageHandlerOptions) {
 }
 
 interface ErrorHandlerOptions {
-  worker: Worker;
   resolve: (value: SandboxOutput) => void;
-  timeout: NodeJS.Timeout;
-  start: number;
-  stdout: string[];
-  stderr: string[];
   resolved: { value: boolean };
+  start: number;
+  stderr: string[];
+  stdout: string[];
+  timeout: NodeJS.Timeout;
+  worker: Worker;
 }
 
 function createErrorHandler(options: ErrorHandlerOptions) {
@@ -136,11 +137,11 @@ function createErrorHandler(options: ErrorHandlerOptions) {
 
 interface ExitHandlerOptions {
   resolve: (value: SandboxOutput) => void;
-  timeout: NodeJS.Timeout;
-  start: number;
-  stdout: string[];
-  stderr: string[];
   resolved: { value: boolean };
+  start: number;
+  stderr: string[];
+  stdout: string[];
+  timeout: NodeJS.Timeout;
 }
 
 function createExitHandler(options: ExitHandlerOptions) {

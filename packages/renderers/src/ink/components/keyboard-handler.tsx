@@ -3,8 +3,8 @@ import { useInput } from 'ink';
 
 export interface KeyboardOptions {
   enabled?: boolean;
-  onInterrupt?: () => void;
   onCancel?: () => void;
+  onInterrupt?: () => void;
   onKeypress?: (input: string, key: Key) => void;
 }
 

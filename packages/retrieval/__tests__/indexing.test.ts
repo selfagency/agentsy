@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, expectTypeOf } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 
 import { IndexingPipeline } from '../src/indexing';
 import type { DataSource } from '../src/types';
@@ -42,54 +42,54 @@ describe(IndexingPipeline, () => {
   });
 
   describe('chunk', () => {
-    it('should chunk data source with semantic strategy', async () => {
+    it('should chunk data source with semantic strategy', () => {
       const chunks = pipeline.chunk(testDataSource, 'semantic');
 
       expect(Array.isArray(chunks)).toBeTruthy();
       expect(chunks.length).toBeGreaterThan(0);
     });
 
-    it('should chunk data source with fixed strategy', async () => {
+    it('should chunk data source with fixed strategy', () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
 
       expect(Array.isArray(chunks)).toBeTruthy();
       expect(chunks.length).toBeGreaterThan(0);
     });
 
-    it('should chunk data source with ast strategy', async () => {
+    it('should chunk data source with ast strategy', () => {
       const chunks = pipeline.chunk(testDataSource, 'ast');
 
       expect(Array.isArray(chunks)).toBeTruthy();
     });
 
-    it('should generate unique chunk IDs', async () => {
+    it('should generate unique chunk IDs', () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
       const ids = chunks.map(chunk => chunk.id);
 
       expect(new Set(ids).size).toBe(ids.length);
     });
 
-    it('should include metadata in chunks', async () => {
+    it('should include metadata in chunks', () => {
       const chunks = pipeline.chunk(testDataSource, 'fixed');
 
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.metadata).toBeDefined();
         expect(chunk.metadata.source).toBe(testDataSource.path);
         expect(chunk.metadata.strategy).toBeDefined();
-      });
+      }
     });
   });
 
   describe('semanticChunk', () => {
-    it('should split content into semantic chunks', async () => {
+    it('should split content into semantic chunks', () => {
       const content = 'First sentence. Second sentence. Third paragraph with more content here.';
       const chunks = pipeline.semanticChunk(content, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.content.length).toBeGreaterThan(0);
         expect(chunk.metadata.strategy).toBe('semantic');
-      });
+      }
     });
 
     it('should generate chunk IDs based on content hash', () => {
@@ -107,14 +107,14 @@ describe(IndexingPipeline, () => {
       const chunks = pipeline.fixedSizeChunk(fiftyWordContent, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.metadata.strategy).toBe('fixed');
         const wordsInChunk = chunk.content.split(/\s+/u);
         expect(wordsInChunk.length).toBeLessThanOrEqual(100);
-      });
+      }
     });
 
-    it('should overlap consecutive chunks by configured word overlap', async () => {
+    it('should overlap consecutive chunks by configured word overlap', () => {
       const content = 'One two three four five six seven eight nine ten eleven twelve thirteen';
       const pipelineWithOverlap = new IndexingPipeline({
         chunkOverlap: 2,
@@ -128,7 +128,7 @@ describe(IndexingPipeline, () => {
       expect(firstChunk).toBeDefined();
       expect(secondChunk).toBeDefined();
 
-      if (!firstChunk || !secondChunk) {
+      if (!(firstChunk && secondChunk)) {
         return;
       }
 
@@ -138,14 +138,14 @@ describe(IndexingPipeline, () => {
       // Chunk 1: words 0-4, Chunk 2: words 3-7
       const overlapRegionFirst = firstChunkWords.slice(-2);
 
-      overlapRegionFirst.forEach(word => {
+      for (const word of overlapRegionFirst) {
         expect(secondChunkWords).toContain(word);
-      });
+      }
     });
   });
 
   describe('astChunk', () => {
-    it('should handle TypeScript code for AST chunking', async () => {
+    it('should handle TypeScript code for AST chunking', () => {
       const tsCode = `
 function example() {
   const value = 42;
@@ -158,9 +158,9 @@ export const result = example();
       const chunks = pipeline.astChunk(tsCode, sourcePath);
 
       expect(chunks.length).toBeGreaterThan(0);
-      chunks.forEach(chunk => {
+      for (const chunk of chunks) {
         expect(chunk.metadata.strategy).toBe('ast');
-      });
+      }
     });
 
     it('should preserve function boundaries when chunking multiple functions', () => {
@@ -182,7 +182,7 @@ function second() {
 
   // Note: fixed-size chunking has implicit overlap of 2-3 words based on word boundaries
   describe('index', () => {
-    it('should index chunks into document structure', async () => {
+    it('should index chunks into document structure', () => {
       const chunks = pipeline.chunk(testDataSource, 'semantic');
       const document = pipeline.index(chunks);
 
@@ -191,7 +191,7 @@ function second() {
       expect(document.chunks).toStrictEqual(chunks);
     });
 
-    it('should generate consistent document ID for same content', async () => {
+    it('should generate consistent document ID for same content', () => {
       const chunks1 = pipeline.chunk(testDataSource, 'semantic');
       const chunks2 = pipeline.chunk(testDataSource, 'semantic');
 

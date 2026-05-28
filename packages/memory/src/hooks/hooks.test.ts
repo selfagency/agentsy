@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createMemoryEngine } from '../cognitive/memory-engine.js';
 import { onResponse } from './on-response.js';
 import { onToolCall } from './on-tool-call.js';
 
 function assertDefined<T>(value: T | undefined): asserts value is T {
+  // biome-ignore lint/suspicious/noMisplacedAssertion: Assertion guards used inside it() blocks
   expect(value).toBeDefined();
 }
 

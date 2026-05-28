@@ -22,7 +22,7 @@ function extractUsage(raw: Record<string, unknown>): UsageInfo | undefined {
   const inputTokens = toNumber(raw.prompt_eval_count);
   const outputTokens = toNumber(raw.eval_count);
   if (inputTokens === undefined && outputTokens === undefined) {
-    return undefined;
+    return;
   }
   const usage: UsageInfo = {};
   if (inputTokens !== undefined) {

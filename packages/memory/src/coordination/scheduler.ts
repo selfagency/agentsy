@@ -1,7 +1,7 @@
 export interface Scheduler {
-  schedule(jobId: string, delayMs: number, callback: () => void): void;
   cancel(jobId: string): void;
   pendingCount(): number;
+  schedule(jobId: string, delayMs: number, callback: () => void): void;
 }
 
 export function createInMemoryScheduler(): Scheduler {

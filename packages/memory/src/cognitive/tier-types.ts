@@ -14,42 +14,42 @@ export type MemoryKind = 'semantic' | 'episodic' | 'procedural' | 'sensory';
 export type ReuseClass = 'hot' | 'warm' | 'cold';
 
 export interface TierConfig {
-  level: TierLevel;
-  name: TierName;
-  maxTokens: number;
-  maxItems: number;
-  ttlMs: number;
-  consolidationThreshold: number;
   compressionTarget: number;
+  consolidationThreshold: number;
+  level: TierLevel;
+  maxItems: number;
+  maxTokens: number;
+  name: TierName;
+  ttlMs: number;
 }
 
 export interface MemoryItem {
-  id: string;
-  kind: MemoryKind;
-  content: string;
-  tokenCount: number;
-  importance: number;
-  writeHeap: WriteHeap;
-  reuseClass: ReuseClass;
-  createdAt: number;
-  lastAccessedAt: number;
   accessCount: number;
+  content: string;
+  createdAt: number;
   fingerprint: string;
+  id: string;
+  importance: number;
+  kind: MemoryKind;
+  lastAccessedAt: number;
   metadata: Record<string, unknown>;
+  reuseClass: ReuseClass;
+  tokenCount: number;
+  writeHeap: WriteHeap;
 }
 
 export interface TierReadQuery {
-  minImportance?: number;
   kind?: MemoryKind;
-  writeHeap?: WriteHeap;
   limit?: number;
+  minImportance?: number;
+  writeHeap?: WriteHeap;
 }
 
 export interface TierReadResult<T = MemoryItem> {
   items: T[];
+  overflowed: boolean;
   tierName: TierName;
   tokenCount: number;
-  overflowed: boolean;
 }
 
 export const TIER_LEVELS: Record<TierName, TierLevel> = {

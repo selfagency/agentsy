@@ -6,50 +6,50 @@
  * schemas obtained from MCP tools or OpenAPI specs pass through without modification.
  */
 export interface JsonSchemaProperty {
-  type?: string | string[];
-  description?: string;
-  enum?: unknown[];
+  $def?: Record<string, JsonSchemaProperty>;
+  $defs?: Record<string, JsonSchemaProperty>;
+  // Schema references (JSON Schema draft 7 / DeepSeek $def variant)
+  $ref?: string;
+  additionalProperties?: boolean | JsonSchemaProperty;
+  allOf?: JsonSchemaProperty[];
+  // Schema composition
+  anyOf?: JsonSchemaProperty[];
   const?: unknown;
   default?: unknown;
+  description?: string;
+  enum?: unknown[];
+  exclusiveMaximum?: number | boolean;
+  exclusiveMinimum?: number | boolean;
   // String
   format?: string;
-  pattern?: string;
-  minLength?: number;
-  maxLength?: number;
-  // Number / integer
-  minimum?: number;
-  maximum?: number;
-  exclusiveMinimum?: number | boolean;
-  exclusiveMaximum?: number | boolean;
-  multipleOf?: number;
   // Array
   items?: JsonSchemaProperty | JsonSchemaProperty[];
-  minItems?: number;
   maxItems?: number;
+  maximum?: number;
+  maxLength?: number;
+  minItems?: number;
+  // Number / integer
+  minimum?: number;
+  minLength?: number;
+  multipleOf?: number;
+  not?: JsonSchemaProperty;
+  oneOf?: JsonSchemaProperty[];
+  pattern?: string;
   // Object
   properties?: Record<string, JsonSchemaProperty>;
   required?: string[];
-  additionalProperties?: boolean | JsonSchemaProperty;
-  // Schema composition
-  anyOf?: JsonSchemaProperty[];
-  oneOf?: JsonSchemaProperty[];
-  allOf?: JsonSchemaProperty[];
-  not?: JsonSchemaProperty;
-  // Schema references (JSON Schema draft 7 / DeepSeek $def variant)
-  $ref?: string;
-  $defs?: Record<string, JsonSchemaProperty>;
-  $def?: Record<string, JsonSchemaProperty>;
+  type?: string | string[];
   // Allow arbitrary vendor extensions
   [key: string]: unknown;
 }
 
 export interface XmlToolInfo {
-  name: string;
   description?: string;
   inputSchema?: {
     properties?: Record<string, JsonSchemaProperty>;
     required?: string[];
   };
+  name: string;
 }
 
 export interface BuildXmlToolSystemPromptOptions {

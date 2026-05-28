@@ -32,6 +32,22 @@ describe('memory_stats tool', () => {
 
     const result = await tool.execute();
     expect(result.totalRecords).toBe(3);
+    expect(result.averageContentLength).toBe(1);
     expect(result.byScope.project).toBe(2);
+  });
+
+  it('returns zero stats when no records', async () => {
+    const tool = createMemoryStatsTool({ list: () => [] });
+
+    const result = await tool.execute();
+    expect(result.totalRecords).toBe(0);
+    expect(result.averageContentLength).toBe(0);
+    expect(result.byScope).toEqual({
+      global: 0,
+      project: 0,
+      session: 0,
+      team: 0,
+      user: 0
+    });
   });
 });

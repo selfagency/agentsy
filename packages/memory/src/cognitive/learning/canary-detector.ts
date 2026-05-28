@@ -2,19 +2,19 @@ import type { MemoryItem } from '../tier-types.js';
 import type { Observation } from './observation-extractor.js';
 
 export interface CanaryCheck {
-  memoryId: string;
-  lastAccessedAge: number;
-  recentContradictionCount: number;
-  importanceDecay: number;
   accessFrequencyTrend: 'increasing' | 'stable' | 'decreasing';
+  importanceDecay: number;
+  lastAccessedAge: number;
+  memoryId: string;
+  recentContradictionCount: number;
 }
 
 export interface CanaryResult {
-  memoryId: string;
-  status: 'healthy' | 'stale' | 'degraded' | 'contradicted';
   action: 'keep' | 'refresh' | 'demote' | 'archive' | 'flag_for_review';
-  reason: string;
+  memoryId: string;
   nextCheckMs: number;
+  reason: string;
+  status: 'healthy' | 'stale' | 'degraded' | 'contradicted';
 }
 
 export interface CanaryDetector {
@@ -23,23 +23,29 @@ export interface CanaryDetector {
 }
 
 export interface CanaryDetectorOptions {
-  staleThreshold?: number;
-  degradationThreshold?: number;
   checkInterval?: number;
+  degradationThreshold?: number;
   now?: (() => number) | undefined;
+  staleThreshold?: number;
 }
 
 const DEFAULT_CANARY_OPTIONS: Required<Omit<CanaryDetectorOptions, 'now'>> = {
-  staleThreshold: 7 * 24 * 60 * 60 * 1_000,
+  staleThreshold: 7 * 24 * 60 * 60 * 1000,
   degradationThreshold: 0.4,
-  checkInterval: 60 * 60 * 1_000
+  checkInterval: 60 * 60 * 1000
 };
 
 function computeTrend(accessCount: number, ageMs: number): CanaryCheck['accessFrequencyTrend'] {
-  if (ageMs === 0) return 'stable';
-  const frequency = accessCount / (ageMs / 1_000);
-  if (frequency > 0.001) return 'increasing';
-  if (frequency > 0.0001) return 'stable';
+  if (ageMs === 0) {
+    return 'stable';
+  }
+  const frequency = accessCount / (ageMs / 1000);
+  if (frequency > 0.001) {
+    return 'increasing';
+  }
+  if (frequency > 0.0001) {
+    return 'stable';
+  }
   return 'decreasing';
 }
 
@@ -90,7 +96,7 @@ export function createCanaryDetector(options: CanaryDetectorOptions = {}): Canar
     } else if (lastAccessedAge > opts.staleThreshold) {
       status = 'stale';
       action = 'refresh';
-      reason = `Not accessed for ${Math.round(lastAccessedAge / 1_000 / 60 / 60)}h (threshold: ${Math.round(opts.staleThreshold / 1_000 / 60 / 60)}h)`;
+      reason = `Not accessed for ${Math.round(lastAccessedAge / 1000 / 60 / 60)}h (threshold: ${Math.round(opts.staleThreshold / 1000 / 60 / 60)}h)`;
     } else if (importanceDecay >= opts.degradationThreshold && accessFrequencyTrend === 'decreasing') {
       status = 'degraded';
       action = 'demote';

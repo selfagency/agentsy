@@ -1,5 +1,3 @@
-import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
-import type { WikiManager } from '../wiki/wiki-manager.js';
 import type { DecayedItem } from './decay.js';
 import {
   createLearningLoopOrchestrator,
@@ -8,24 +6,24 @@ import {
   type LearningLoopOrchestrator
 } from './learning/loop-orchestrator.js';
 import type { MemoryTierLike } from './memory-tier.js';
-import type { TierName, MemoryItem } from './tier-types.js';
+import type { MemoryItem, TierName } from './tier-types.js';
 
 export interface AwakenResult {
+  budgetReclaimed: number;
+  consolidation: {
+    compressed: number;
+    synthesized: number;
+    summarized: number;
+  };
   decayPass: {
     kept: number;
     promoted: number;
     demoted: number;
     discarded: number;
   };
-  consolidation: {
-    compressed: number;
-    synthesized: number;
-    summarized: number;
-  };
-  budgetReclaimed: number;
-  pendingIngested: number;
   durationMs: number;
   learningCycle?: LearningCycleResult;
+  pendingIngested: number;
 }
 
 export interface PendingEvent {
@@ -35,11 +33,11 @@ export interface PendingEvent {
 }
 
 export interface AwakenOptions {
-  pendingEvents?: PendingEvent[];
   decayResults?: DecayedItem[];
-  now?: () => number;
-  runLearningCycle?: boolean;
   learningConfig?: Partial<LearningLoopConfig>;
+  now?: () => number;
+  pendingEvents?: PendingEvent[];
+  runLearningCycle?: boolean;
 }
 
 const TIER_ORDER: TierName[] = [
@@ -51,7 +49,9 @@ const TIER_ORDER: TierName[] = [
 ];
 
 export interface AwakenDeps {
-  tiers: Partial<Record<TierName, MemoryTierLike>>;
+  budgetRelease: (tier: TierName, tokens: number) => void;
+  getAllItems?: (() => MemoryItem[]) | undefined;
+  ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
   runDecayPass: () => {
     kept: number;
     promoted: number;
@@ -59,18 +59,14 @@ export interface AwakenDeps {
     discarded: number;
     durationMs: number;
   };
-  budgetRelease: (tier: TierName, tokens: number) => void;
-  ingestItem: (content: string, importance: number, metadata: Record<string, unknown>) => string | null;
-  getAllItems?: (() => MemoryItem[]) | undefined;
-  wiki?: WikiManager | undefined;
-  knowledgeBase?: KnowledgeBaseManager | undefined;
+  tiers: Partial<Record<TierName, MemoryTierLike>>;
 }
 
 interface DecayCounts {
-  kept: number;
-  promoted: number;
   demoted: number;
   discarded: number;
+  kept: number;
+  promoted: number;
 }
 
 function countDecayActions(results: DecayedItem[]): DecayCounts {
@@ -80,10 +76,15 @@ function countDecayActions(results: DecayedItem[]): DecayCounts {
   let discarded = 0;
 
   for (const result of results) {
-    if (result.action === 'discard') discarded++;
-    else if (result.action === 'promote') promoted++;
-    else if (result.action === 'demote') demoted++;
-    else kept++;
+    if (result.action === 'discard') {
+      discarded++;
+    } else if (result.action === 'promote') {
+      promoted++;
+    } else if (result.action === 'demote') {
+      demoted++;
+    } else {
+      kept++;
+    }
   }
 
   return { kept, promoted, demoted, discarded };
@@ -97,19 +98,19 @@ function reclaimBudgetForDiscarded(results: DecayedItem[], budgetRelease: Awaken
   }
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: will refactor later
 function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): void {
   for (const result of results) {
-    // nosemgrep: result.tier is from DecayedItem, comes from controlled iteration
     const currentTier = tiers[result.tier];
-    if (!currentTier) continue;
+    if (!currentTier) {
+      continue;
+    }
 
     if (result.action === 'promote') {
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const nextIdx = currentIdx + 1;
       if (nextIdx < TIER_ORDER.length) {
-        // nosemgrep: nextIdx is a numeric array index verified by length check
         const nextTierName = TIER_ORDER[nextIdx];
-        // nosemgrep: nextTierName comes from TIER_ORDER enum, not user-controlled
         const nextTier = nextTierName ? tiers[nextTierName] : undefined;
         if (nextTier) {
           currentTier.promote(1, nextTier);
@@ -119,9 +120,7 @@ function applyDecayMoves(results: DecayedItem[], tiers: AwakenDeps['tiers']): vo
       const currentIdx = TIER_ORDER.indexOf(result.tier);
       const prevIdx = currentIdx - 1;
       if (prevIdx >= 0) {
-        // nosemgrep: prevIdx is a numeric array index verified by bounds check
         const prevTierName = TIER_ORDER[prevIdx];
-        // nosemgrep: prevTierName comes from TIER_ORDER enum, not user-controlled
         const prevTier = prevTierName ? tiers[prevTierName] : undefined;
         if (prevTier) {
           currentTier.demote(1, prevTier);
@@ -150,8 +149,28 @@ function runDecayStep(options: AwakenOptions, deps: AwakenDeps): DecayCounts {
 
 interface ConsolidationCounts {
   compressed: number;
-  synthesized: number;
   summarized: number;
+  synthesized: number;
+}
+
+function processTierConsolidation(tier: MemoryTierLike, nextTier: MemoryTierLike, i: number): ConsolidationCounts {
+  const cap = tier.capacity();
+  const utilizationRatio = cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
+
+  if (utilizationRatio < tier.config.consolidationThreshold) {
+    return { compressed: 0, synthesized: 0, summarized: 0 };
+  }
+
+  const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
+  const actuallyPromoted = tier.promote(promoteCount, nextTier);
+
+  if (i < 2) {
+    return { compressed: actuallyPromoted, synthesized: 0, summarized: 0 };
+  }
+  if (i < 3) {
+    return { compressed: 0, synthesized: actuallyPromoted, summarized: 0 };
+  }
+  return { compressed: 0, synthesized: 0, summarized: actuallyPromoted };
 }
 
 function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
@@ -160,31 +179,22 @@ function runConsolidationStep(tiers: AwakenDeps['tiers']): ConsolidationCounts {
   let summarized = 0;
 
   for (let i = 0; i < TIER_ORDER.length - 1; i++) {
-    // nosemgrep: numeric array index verified by loop bounds
     const tierName = TIER_ORDER[i];
-    // nosemgrep: numeric array index verified by loop bounds
     const nextTierName = TIER_ORDER[i + 1];
-    if (!tierName || !nextTierName) continue;
+    if (!(tierName && nextTierName)) {
+      continue;
+    }
 
     const tier = tiers[tierName];
     const nextTier = tiers[nextTierName];
-    if (!tier || !nextTier) continue;
-
-    const cap = tier.capacity();
-    const utilizationRatio = cap.maxTokens === 0 ? 0 : cap.usedTokens / cap.maxTokens;
-
-    if (utilizationRatio >= tier.config.consolidationThreshold) {
-      const promoteCount = Math.ceil(cap.usedItems * tier.config.compressionTarget);
-      const actuallyPromoted = tier.promote(promoteCount, nextTier);
-      // nosemgrep: numeric index from loop counter, bounds-checked by conditions
-      if (i < 2) {
-        compressed += actuallyPromoted;
-      } else if (i < 3) {
-        synthesized += actuallyPromoted;
-      } else {
-        summarized += actuallyPromoted;
-      }
+    if (!(tier && nextTier)) {
+      continue;
     }
+
+    const result = processTierConsolidation(tier, nextTier, i);
+    compressed += result.compressed;
+    synthesized += result.synthesized;
+    summarized += result.summarized;
   }
 
   return { compressed, synthesized, summarized };
@@ -207,35 +217,38 @@ function buildGetAllItems(tiers: AwakenDeps['tiers']): () => MemoryItem[] {
   return () => {
     const items: MemoryItem[] = [];
     for (const tierName of TIER_ORDER) {
-      // nosemgrep: tierName comes from TIER_ORDER enum, not user-controlled
       const tier = tiers[tierName];
-      if (!tier) continue;
+      if (!tier) {
+        continue;
+      }
       items.push(...tier.items());
     }
     return items;
   };
 }
 
-async function runLearningCycle(
+function runLearningCycle(
   deps: AwakenDeps,
   options: AwakenOptions,
   getNow: () => number
 ): Promise<LearningCycleResult | undefined> {
-  if (!options.runLearningCycle) return undefined;
+  if (!options.runLearningCycle) {
+    return Promise.resolve(undefined);
+  }
 
   const getAllItems = deps.getAllItems ?? buildGetAllItems(deps.tiers);
   const orchestrator: LearningLoopOrchestrator = createLearningLoopOrchestrator({ now: getNow });
   const allItems = getAllItems();
   const ltmTier = deps.tiers.long_term_memory;
 
-  return orchestrator.runCycle(
-    {
-      getNewMemories: (limit: number) => allItems.slice(0, limit),
-      getLTMMemories: () => [...(ltmTier?.items() ?? [])],
-      wiki: deps.wiki,
-      knowledgeBase: deps.knowledgeBase
-    },
-    options.learningConfig
+  return Promise.resolve(
+    orchestrator.runCycle(
+      {
+        getNewMemories: (limit: number) => allItems.slice(0, limit),
+        getLTMMemories: () => [...(ltmTier?.items() ?? [])]
+      },
+      options.learningConfig
+    )
   );
 }
 

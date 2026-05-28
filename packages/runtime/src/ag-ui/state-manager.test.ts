@@ -6,8 +6,8 @@
 
 import type { StateSnapshotEvent } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
-import { describe, expect, it, expectTypeOf } from 'vitest';
-
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { JsonPatchOp } from './state-manager.js';
 import {
   applyJsonPatches,
   computeStateDelta,
@@ -15,7 +15,6 @@ import {
   createStateSnapshotEvent,
   StateManager
 } from './state-manager.js';
-import type { JsonPatchOp } from './state-manager.js';
 
 describe('createStateSnapshotEvent', () => {
   it('should create snapshot with state copy and timestamp', () => {
@@ -41,7 +40,7 @@ describe('createStateSnapshotEvent', () => {
   });
 
   it('should generate valid ISO timestamp', () => {
-    const state = {};
+    const state: Record<string, unknown> = {};
     const event = createStateSnapshotEvent(state, 'run_123') as StateSnapshotEvent & {
       timestamp: string;
     };
@@ -225,7 +224,7 @@ describe('applyJsonPatches', () => {
   });
 
   it('should throw on invalid path (add to root)', () => {
-    const state = {};
+    const state: Record<string, unknown> = {};
     const patches: JsonPatchOp[] = [{ op: 'add', path: '', value: 'bad' }];
 
     expect(() => {
@@ -252,7 +251,7 @@ describe('applyJsonPatches', () => {
   });
 
   it('should throw on unsupported operation', () => {
-    const state = {};
+    const state: Record<string, unknown> = {};
     const patches: JsonPatchOp[] = [{ from: '/b', op: 'move', path: '/a' } as JsonPatchOp];
 
     expect(() => {

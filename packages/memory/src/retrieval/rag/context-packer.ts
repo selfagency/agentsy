@@ -3,8 +3,8 @@ import { compressOutput, createTokenLedger } from '@agentsy/tokens';
 import type { ContextPackResult, RAGEvidence } from './types.js';
 
 export interface ContextPackerOptions {
-  maxTokens: number;
   includeCitations?: boolean;
+  maxTokens: number;
 }
 
 function estimateTokens(text: string): number {

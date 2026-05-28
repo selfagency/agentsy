@@ -13,8 +13,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest --run --passWithNoTests",
-    "lint": "oxlint .",
-    "format": "oxfmt src"
+    "lint": "biome lint",
+    "format": "biome format src"
   },
   "dependencies": {
     "@octokit/rest": "22.0.1",

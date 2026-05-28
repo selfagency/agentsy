@@ -2,20 +2,20 @@ import type { TierName } from '../tier-types.js';
 import type { MergedConsolidation } from './consolidation-specialist.js';
 
 export interface SolidificationCandidate {
-  consolidation: MergedConsolidation;
-  currentImportance: number;
   accessCount: number;
   ageMs: number;
+  consolidation: MergedConsolidation;
+  currentImportance: number;
   existingInLTM: boolean;
 }
 
 export interface SolidificationResult {
-  id: string;
-  candidateId: string;
   action: 'promote' | 'demote' | 'merge' | 'archive';
-  targetTier: TierName;
+  candidateId: string;
   confidence: number;
+  id: string;
   reason: string;
+  targetTier: TierName;
 }
 
 export interface Solidifier {
@@ -24,13 +24,13 @@ export interface Solidifier {
 }
 
 export interface SolidifierOptions {
-  promotionThreshold?: number;
-  demotionThreshold?: number;
-  mergeSimilarityThreshold?: number;
   archiveAccessThreshold?: number;
+  demotionThreshold?: number;
   maxAgeBeforeArchive?: number;
+  mergeSimilarityThreshold?: number;
   minAgeForDemotion?: number;
   now?: (() => number) | undefined;
+  promotionThreshold?: number;
 }
 
 export const DEFAULT_SOLIDIFIER_OPTIONS: Required<Omit<SolidifierOptions, 'now'>> = {
@@ -38,8 +38,8 @@ export const DEFAULT_SOLIDIFIER_OPTIONS: Required<Omit<SolidifierOptions, 'now'>
   demotionThreshold: 0.3,
   mergeSimilarityThreshold: 0.85,
   archiveAccessThreshold: 2,
-  maxAgeBeforeArchive: 30 * 24 * 60 * 60 * 1_000,
-  minAgeForDemotion: 7 * 24 * 60 * 60 * 1_000
+  maxAgeBeforeArchive: 30 * 24 * 60 * 60 * 1000,
+  minAgeForDemotion: 7 * 24 * 60 * 60 * 1000
 };
 
 function _estimateSimilarity(a: string, b: string): number {
@@ -91,7 +91,7 @@ export function createSolidifier(options: SolidifierOptions = {}): Solidifier {
         action: 'demote',
         targetTier: 'short_term_memory',
         confidence: conf,
-        reason: `Confidence ${conf.toFixed(2)} below demotion threshold ${opts.demotionThreshold} and age ${Math.round(candidate.ageMs / 1_000 / 60 / 60)}h exceeds minimum`
+        reason: `Confidence ${conf.toFixed(2)} below demotion threshold ${opts.demotionThreshold} and age ${Math.round(candidate.ageMs / 1000 / 60 / 60)}h exceeds minimum`
       };
     }
 
@@ -103,7 +103,7 @@ export function createSolidifier(options: SolidifierOptions = {}): Solidifier {
         action: 'archive',
         targetTier: 'long_term_memory',
         confidence: conf,
-        reason: `Access count ${candidate.accessCount} below threshold ${opts.archiveAccessThreshold} and age ${Math.round(candidate.ageMs / 1_000 / 60 / 60)}h exceeds max`
+        reason: `Access count ${candidate.accessCount} below threshold ${opts.archiveAccessThreshold} and age ${Math.round(candidate.ageMs / 1000 / 60 / 60)}h exceeds max`
       };
     }
 
@@ -114,7 +114,7 @@ export function createSolidifier(options: SolidifierOptions = {}): Solidifier {
       action: 'archive',
       targetTier: 'long_term_memory',
       confidence: conf,
-      reason: `No promotion criteria met; archiving for review`
+      reason: 'No promotion criteria met; archiving for review'
     };
   }
 

@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createAgentRunHandler, createExpressMiddleware, createHonoHandler, createSSEStream } from './http-server.js';
 
 // Test fixtures
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* mockEventGenerator() {
   yield {
     runId: 'run_123',
@@ -24,6 +25,7 @@ async function* emptyGenerator() {
   yield* [];
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* errorGeneratorWithYield() {
   yield {
     runId: 'run_123',
@@ -33,6 +35,7 @@ async function* errorGeneratorWithYield() {
   throw new Error('Generator error');
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* mockErrorGenerator() {
   yield {
     runId: 'run_123',
@@ -45,7 +48,7 @@ async function* mockErrorGenerator() {
 describe('createSSEStream', () => {
   it('should convert async generator to SSE stream', async () => {
     const stream = createSSEStream(mockEventGenerator());
-    const chunks = [];
+    const chunks: Uint8Array[] = [];
 
     for await (const chunk of stream) {
       chunks.push(chunk);
@@ -59,7 +62,7 @@ describe('createSSEStream', () => {
 
   it('should handle empty event stream', async () => {
     const stream = createSSEStream(emptyGenerator());
-    const chunks = [];
+    const chunks: Uint8Array[] = [];
 
     for await (const chunk of stream) {
       chunks.push(chunk);
@@ -83,7 +86,6 @@ describe('createSSEStream', () => {
 
     // Use Symbol.asyncIterator
     const iterator = stream[Symbol.asyncIterator]();
-    // oxlint-disable-next-line typescript/no-unsafe-assignment -- async iterator yields Uint8Array
     const { value } = await iterator.next();
 
     expect(value).toBeInstanceOf(Uint8Array);
@@ -175,7 +177,7 @@ describe('createExpressMiddleware', () => {
       })),
       write: vi.fn()
     };
-    const req = {};
+    const req: Record<string, unknown> = {};
 
     await middleware(req, res);
 
@@ -194,7 +196,7 @@ describe('createExpressMiddleware', () => {
       })),
       write: vi.fn()
     };
-    const req = {};
+    const req: Record<string, unknown> = {};
 
     await middleware(req, res);
 
@@ -215,7 +217,6 @@ describe('createHonoHandler', () => {
     expect(c.body).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
-        // oxlint-disable-next-line typescript/no-unsafe-assignment -- Hono response shape
         headers: expect.objectContaining({
           'Content-Type': 'text/event-stream'
         })
@@ -240,7 +241,6 @@ describe('createHonoHandler', () => {
     expect(c.body).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
-        // oxlint-disable-next-line typescript/no-unsafe-assignment -- Hono response shape
         headers: expect.objectContaining({
           'Content-Type': 'text/event-stream'
         })

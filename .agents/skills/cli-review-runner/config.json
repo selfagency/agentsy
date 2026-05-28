@@ -1,7 +1,27 @@
 {
   "timeout_seconds": 5,
-  "safe_verbs": ["list", "get", "show", "status", "describe", "help", "version", "config", "ls", "inspect"],
-  "destructive_verbs": ["delete", "drop", "destroy", "remove", "reset", "purge", "rm", "del"],
+  "safe_verbs": [
+    "list",
+    "get",
+    "show",
+    "status",
+    "describe",
+    "help",
+    "version",
+    "config",
+    "ls",
+    "inspect"
+  ],
+  "destructive_verbs": [
+    "delete",
+    "drop",
+    "destroy",
+    "remove",
+    "reset",
+    "purge",
+    "rm",
+    "del"
+  ],
   "rules_skill_path": "",
   "_setup_instructions": {
     "timeout_seconds": "Wall-clock seconds before a probe declares the target hung. Default 5. Increase to 10+ for slow CLIs (Python imports, JVM startup).",

@@ -5,23 +5,23 @@ export interface Summarizer {
 }
 
 export interface SummarizeResult {
+  discarded: MemoryItem[];
   longTermItems: MemoryItem[];
   metaActions: MetaAction[];
-  discarded: MemoryItem[];
   tokenReduction: number;
 }
 
 export interface MetaAction {
-  id: string;
-  pattern: string;
   frequency: number;
+  id: string;
   lastObserved: number;
+  pattern: string;
   sourceIds: string[];
 }
 
 export interface SummarizerOptions {
-  now?: (() => number) | undefined;
   maxGroupSize?: number;
+  now?: (() => number) | undefined;
 }
 
 const HEURISTIC_PATTERNS: Record<string, (content: string) => string | null> = {
@@ -44,10 +44,18 @@ function estimateTokens(text: string): number {
 }
 
 function classifyWriteHeap(content: string): WriteHeap {
-  if (/\b(error|exception|fail|warning)\b/iu.test(content)) return 'event';
-  if (/\b(search|find|query|lookup)\b/iu.test(content)) return 'query';
-  if (/\b(created|updated|deleted|added|removed)\b/iu.test(content)) return 'event';
-  if (/\b(doc|readme|guide|reference|spec)\b/iu.test(content)) return 'doc';
+  if (/\b(error|exception|fail|warning)\b/iu.test(content)) {
+    return 'event';
+  }
+  if (/\b(search|find|query|lookup)\b/iu.test(content)) {
+    return 'query';
+  }
+  if (/\b(created|updated|deleted|added|removed)\b/iu.test(content)) {
+    return 'event';
+  }
+  if (/\b(doc|readme|guide|reference|spec)\b/iu.test(content)) {
+    return 'doc';
+  }
   return 'ref';
 }
 
@@ -114,11 +122,11 @@ function groupByHeap(items: MemoryItem[]): Map<WriteHeap, MemoryItem[]> {
   return byHeap;
 }
 
-type SummarizeState = {
-  longTermItems: MemoryItem[];
+interface SummarizeState {
   discarded: MemoryItem[];
+  longTermItems: MemoryItem[];
   usedTokens: number;
-};
+}
 
 function handleBatchBudgetOverflow(
   batch: MemoryItem[],
@@ -127,15 +135,16 @@ function handleBatchBudgetOverflow(
   state: SummarizeState
 ): void {
   const sorted = [...batch].sort((a, b) => b.importance - a.importance);
+  let remaining = budgetRemaining;
   for (const item of sorted) {
-    if (item.tokenCount <= budgetRemaining) {
+    if (item.tokenCount <= remaining) {
       state.longTermItems.push({
         ...item,
         writeHeap: heap,
         metadata: { ...item.metadata, _summarized: false }
       });
       state.usedTokens += item.tokenCount;
-      budgetRemaining -= item.tokenCount;
+      remaining -= item.tokenCount;
     } else {
       state.discarded.push(item);
     }

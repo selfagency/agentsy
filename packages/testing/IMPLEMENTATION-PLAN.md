@@ -2,9 +2,9 @@
 goal: @agentsy/testing production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-26
 owner: testing-maintainers
-status: In progress
+status: Phase 1 COMPLETE | Phase 2 In Progress
 tags: [feature, architecture, testing, fixtures, e2e]
 ---
 
@@ -35,10 +35,10 @@ This plan defines the production implementation order for `@agentsy/testing` as 
 
 | Task             | Description                                                                                                                         | Completed | Date |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                                                                             |           |      |
-| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls.                                                           |           |      |
-| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                                                                           |           |      |
-| TASK-TESTING-013 | Define shared MSW setup contracts (`setupServer`, lifecycle hooks, handler composition) for workspace-wide Node/browser test usage. |           |      |
+| TASK-TESTING-001 | Stabilize fixture, mock, and scenario runner contracts.                                                                             | ✅ | 2026-05-26 |
+| TASK-TESTING-002 | Add typed tests for harness API compatibility and deterministic controls.                                                           | ✅ | 2026-05-26 |
+| TASK-TESTING-003 | Document package ownership boundaries and usage guidance.                                                                           | ✅ | 2026-05-26 |
+| TASK-TESTING-013 | Define shared MSW setup contracts (`setupServer`, lifecycle hooks, handler composition) for workspace-wide Node/browser test usage. | ✅ | 2026-05-26 |
 
 ### Implementation Phase 2
 
@@ -49,7 +49,7 @@ This plan defines the production implementation order for `@agentsy/testing` as 
 | TASK-TESTING-004 | Implement shared mock providers/tools and scenario runner utilities.                                                                |           |      |
 | TASK-TESTING-005 | Implement snapshot/golden management helpers and update workflow.                                                                   |           |      |
 | TASK-TESTING-006 | Implement red-team/adversarial fixture sets and safety checks.                                                                      |           |      |
-| TASK-TESTING-014 | Implement reusable MSW handler libraries for provider/model/memory/retrieval HTTP surfaces and document override patterns per test. |           |      |
+| TASK-TESTING-014 | Implement reusable MSW handler libraries for provider/model/memory/retrieval HTTP surfaces and document override patterns per test. | ⚠️ 90%  | 2026-05-26 |
 
 ### Implementation Phase 3
 
@@ -180,7 +180,7 @@ export interface ScenarioRunner {
 
 ```typescript
 export function passKScore(k: number, results: EvaluationResult[]): boolean {
-  const successes = results.filter(r => r.score >= SUCCESS_THRESHOLD).length;
+  const successes = results.filter((r) => r.score >= SUCCESS_THRESHOLD).length;
   return successes >= k;
 }
 ```
@@ -255,6 +255,14 @@ export function createMockLLM(responses);
 - Add red-team suites for prompt leakage, tool bypass, policy extraction, XML injection, and argument injection.
 - Add chaos suites for timeout/429/network partition/partial result/DAG mid-failure recovery.
 - Keep external API calls mocked in scenario tests (`FaultInjector`, `vi.fn()`).
+
+### Agent-level evaluation
+
+Agent-level evaluation evaluates the full orchestration loop: session init → hook execution → tool selection → response generation → post-turn hooks. Agent eval tests use baseline models and fixture sessions.
+
+### Session-level assertions
+
+Test framework supports session-level assertions: assert hook call order, assert tool was/wasn't called, assert token budget was respected, assert plan vs execute mode behaved correctly.
 
 ## Sources Synthesized
 

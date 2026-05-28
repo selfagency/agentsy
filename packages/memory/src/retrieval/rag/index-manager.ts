@@ -13,10 +13,10 @@ export interface IndexedDocumentRecord {
 }
 
 export interface IndexManager {
-  upsertMany(documents: RAGServerDocument[]): IngestSummary;
-  remove(documentId: string): boolean;
   get(documentId: string): IndexedDocumentRecord | null;
   list(): IndexedDocumentRecord[];
+  remove(documentId: string): boolean;
+  upsertMany(documents: RAGServerDocument[]): IngestSummary;
 }
 
 export interface IndexManagerOptions {
@@ -137,7 +137,9 @@ function createSQLiteIndexManager(db: MemoryDatabase): IndexManager {
   return {
     get(documentId) {
       const row = db.select().from(ragDocuments).where(eq(ragDocuments.id, documentId)).get();
-      if (!row) return null;
+      if (!row) {
+        return null;
+      }
 
       return {
         document: rowToDocument(row),
@@ -157,7 +159,9 @@ function createSQLiteIndexManager(db: MemoryDatabase): IndexManager {
 
     remove(documentId) {
       const existing = db.select().from(ragDocuments).where(eq(ragDocuments.id, documentId)).get();
-      if (!existing) return false;
+      if (!existing) {
+        return false;
+      }
 
       db.delete(ragDocuments).where(eq(ragDocuments.id, documentId)).run();
       return true;

@@ -1,3 +1,3 @@
 // fallow-ignore-file unused-file
 
-export { createCliRenderer, type CliRendererOptions } from './create-cli-renderer.js';
+export { type CliRendererOptions, createCliRenderer } from './create-cli-renderer.js';

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { awaken, type AwakenDeps } from './awaken.js';
+import { type AwakenDeps, awaken } from './awaken.js';
 import type { DecayedItem } from './decay.js';
 import { createLongTermMemory } from './long-term-memory.js';
 import type { MemoryTierLike } from './memory-tier.js';
 import { createSensoryBuffer } from './sensory-buffer.js';
 import { createSensoryRegister } from './sensory-register.js';
 import { createShortTermMemory } from './short-term-memory.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import type { TierName } from './tier-types.js';
 import { createWorkingMemory } from './working-memory.js';
 
@@ -25,7 +25,7 @@ describe('awaken', () => {
     resetTestItemIdCounter();
   });
 
-  function setupTiers(): void {
+  function setupTiers(withPartial?: boolean): void {
     clock = createTierTestClock(10_000);
     sensoryBuffer = createSensoryBuffer({ now: clock.now });
     sensoryRegister = createSensoryRegister({ now: clock.now });
@@ -41,10 +41,17 @@ describe('awaken', () => {
       long_term_memory: longTermMemory
     };
 
+    if (withPartial) {
+      // biome-ignore lint/performance/noDelete: TypeScript exactOptionalPropertyTypes prevents assigning undefined
+      delete tiers.sensory_register;
+      // biome-ignore lint/performance/noDelete: TypeScript exactOptionalPropertyTypes prevents assigning undefined
+      delete tiers.long_term_memory;
+    }
+
     releasedTokens = new Map();
   }
 
-  function createDeps(): AwakenDeps {
+  function createDeps(overrides?: Partial<AwakenDeps>): AwakenDeps {
     return {
       tiers,
       runDecayPass: () => ({ kept: 0, promoted: 0, demoted: 0, discarded: 0, durationMs: 0 }),
@@ -60,7 +67,8 @@ describe('awaken', () => {
         });
         const written = sensoryBuffer.write(item);
         return written?.id ?? null;
-      }
+      },
+      ...overrides
     };
   }
 
@@ -108,6 +116,54 @@ describe('awaken', () => {
     expect(result.decayPass.demoted).toBe(1);
   });
 
+  it('handles promote to non-existent next tier', async () => {
+    setupTiers();
+    const item = createTestMemoryItem({ importance: 0.9, tokenCount: 5 });
+    longTermMemory.write(item);
+
+    const deps = createDeps();
+    const decayResults: DecayedItem[] = [{ item, newImportance: 0.8, tier: 'long_term_memory', action: 'promote' }];
+
+    const result = await awaken(deps, { decayResults, now: clock.now });
+    expect(result.decayPass.promoted).toBe(1);
+  });
+
+  it('handles demote to non-existent prev tier', async () => {
+    setupTiers();
+    const item = createTestMemoryItem({ importance: 0.1, tokenCount: 5 });
+    sensoryBuffer.write(item);
+
+    const deps = createDeps();
+    const decayResults: DecayedItem[] = [{ item, newImportance: 0.05, tier: 'sensory_buffer', action: 'demote' }];
+
+    const result = await awaken(deps, { decayResults, now: clock.now });
+    expect(result.decayPass.demoted).toBe(1);
+  });
+
+  it('handles unknown tier in applyDecayMoves', async () => {
+    setupTiers();
+    const item = createTestMemoryItem({ importance: 0.9, tokenCount: 5 });
+
+    const deps = createDeps();
+    const decayResults: DecayedItem[] = [{ item, newImportance: 0.8, tier: 'sensory_buffer', action: 'promote' }];
+
+    // biome-ignore lint/performance/noDelete: TypeScript exactOptionalPropertyTypes prevents assigning undefined
+    delete tiers.sensory_buffer;
+    const result = await awaken(deps, { decayResults, now: clock.now });
+    expect(result.decayPass.promoted).toBe(1);
+  });
+
+  it('counts kept items from decay results', async () => {
+    setupTiers();
+    const item = createTestMemoryItem({ tokenCount: 5 });
+
+    const deps = createDeps();
+    const decayResults: DecayedItem[] = [{ item, newImportance: 0.5, tier: 'sensory_buffer', action: 'keep' }];
+
+    const result = await awaken(deps, { decayResults, now: clock.now });
+    expect(result.decayPass.kept).toBe(1);
+  });
+
   it('ingests pending events', async () => {
     setupTiers();
     const deps = createDeps();
@@ -129,6 +185,25 @@ describe('awaken', () => {
     expect(result.pendingIngested).toBe(0);
   });
 
+  it('skips ingestion when pendingEvents is undefined', async () => {
+    setupTiers();
+    const deps = createDeps();
+    const result = await awaken(deps, { now: clock.now });
+    expect(result.pendingIngested).toBe(0);
+  });
+
+  it('handles ingestItem returning null', async () => {
+    setupTiers();
+    const deps = createDeps({
+      ingestItem: () => null
+    });
+    const result = await awaken(deps, {
+      pendingEvents: [{ content: 'test' }],
+      now: clock.now
+    });
+    expect(result.pendingIngested).toBe(0);
+  });
+
   it('runs consolidation when tier utilization exceeds threshold', async () => {
     setupTiers();
     for (let i = 0; i < 30; i++) {
@@ -146,6 +221,41 @@ describe('awaken', () => {
     expect(
       result.consolidation.compressed + result.consolidation.synthesized + result.consolidation.summarized
     ).toBeGreaterThanOrEqual(0);
+  });
+
+  it('skips consolidation when tiers are missing', async () => {
+    setupTiers();
+    const deps = createDeps();
+    // biome-ignore lint/performance/noDelete: TypeScript exactOptionalPropertyTypes prevents assigning undefined
+    delete tiers.working_memory;
+    // biome-ignore lint/performance/noDelete: TypeScript exactOptionalPropertyTypes prevents assigning undefined
+    delete tiers.short_term_memory;
+
+    const result = await awaken(deps, { now: clock.now });
+    expect(result.consolidation.compressed).toBe(0);
+    expect(result.consolidation.synthesized).toBe(0);
+    expect(result.consolidation.summarized).toBe(0);
+  });
+
+  it('handles consolidation with maxTokens=0', async () => {
+    setupTiers();
+    const tierWithZero = createSensoryBuffer({ now: clock.now, config: { maxTokens: 0, maxItems: 100 } });
+    tiers.sensory_buffer = tierWithZero;
+
+    const deps = createDeps();
+    const result = await awaken(deps, { now: clock.now });
+    expect(result.consolidation.compressed).toBe(0);
+  });
+
+  it('runs learning cycle when option is set', async () => {
+    setupTiers();
+    for (let i = 0; i < 5; i++) {
+      sensoryBuffer.write(createTestMemoryItem({ content: `learn-${i}`, importance: 0.8, tokenCount: 5 }));
+    }
+
+    const deps = createDeps();
+    const result = await awaken(deps, { runLearningCycle: true, now: clock.now });
+    expect(result.learningCycle).toBeDefined();
   });
 
   it('returns valid awaken result structure', async () => {

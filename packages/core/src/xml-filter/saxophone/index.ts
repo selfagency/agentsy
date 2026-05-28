@@ -14,14 +14,16 @@
 
 import { EventEmitter } from 'node:events';
 
+const WS_SEARCH_REGEX = /\s/;
+
 // ---------------------------------------------------------------------------
 // Public node-data types
 // ---------------------------------------------------------------------------
 
 export interface SaxophoneTag {
-  name: string;
   attrs: string;
   isSelfClosing: boolean;
+  name: string;
 }
 
 export interface SaxophoneText {
@@ -80,8 +82,8 @@ const NT_TAG_OPEN = 'tagopen';
 const NT_TAG_CLOSE = 'tagclose';
 
 interface WaitState {
-  token: string;
   data: string;
+  token: string;
 }
 
 type ParserStepResult = number | Error | null;
@@ -133,70 +135,70 @@ export class Saxophone extends EventEmitter {
   }
 
   private _handleCDataSection(input: string, pos: number): number | null {
-    pos += 7;
-    const cdataClose = input.indexOf(']]>', pos);
+    const p = pos + 7;
+    const cdataClose = input.indexOf(']]>', p);
 
     if (cdataClose === -1) {
-      this._wait(NT_CDATA, input.slice(pos - 9));
+      this._wait(NT_CDATA, input.slice(p - 9));
       return null;
     }
 
     this.emit(NT_CDATA, {
-      contents: input.slice(pos, cdataClose)
+      contents: input.slice(p, cdataClose)
     } satisfies SaxophoneCData);
     return cdataClose + 3;
   }
 
   private _handleComment(input: string, pos: number): ParserStepResult {
-    pos += 2;
-    const commentClose = input.indexOf('--', pos);
+    const p = pos + 2;
+    const commentClose = input.indexOf('--', p);
 
     if (commentClose === -1 || input.charAt(commentClose + 2) === '') {
-      this._wait(NT_COMMENT, input.slice(pos - 4));
+      this._wait(NT_COMMENT, input.slice(p - 4));
       return null;
     }
 
     if (input.charAt(commentClose + 2) !== '>') {
-      return new Error(`Unexpected -- inside comment: '${input.slice(pos - 4)}'`);
+      return new Error(`Unexpected -- inside comment: '${input.slice(p - 4)}'`);
     }
 
     this.emit(NT_COMMENT, {
-      contents: input.slice(pos, commentClose)
+      contents: input.slice(p, commentClose)
     } satisfies SaxophoneComment);
     return commentClose + 3;
   }
 
   private _handleMarkupDeclaration(input: string, pos: number): ParserStepResult {
-    pos += 1;
-    const c2 = input.charAt(pos);
+    const p = pos + 1;
+    const c2 = input.charAt(p);
 
     if (c2 === '') {
-      this._wait(NT_MARKUP_DECL, input.slice(pos - 2));
+      this._wait(NT_MARKUP_DECL, input.slice(p - 2));
       return null;
     }
 
-    if (c2 === '[' && input.slice(pos + 1, pos + 7) === 'CDATA[') {
-      return this._handleCDataSection(input, pos);
+    if (c2 === '[' && input.slice(p + 1, p + 7) === 'CDATA[') {
+      return this._handleCDataSection(input, p);
     }
 
-    if (c2 === '-' && (input.charAt(pos + 1) === '' || input.charAt(pos + 1) === '-')) {
-      return this._handleComment(input, pos);
+    if (c2 === '-' && (input.charAt(p + 1) === '' || input.charAt(p + 1) === '-')) {
+      return this._handleComment(input, p);
     }
 
     return new Error(`Unrecognized sequence: <!${c2}`);
   }
 
   private _handleProcessingInstruction(input: string, pos: number): number | null {
-    pos += 1;
-    const piClose = input.indexOf('?>', pos);
+    const p = pos + 1;
+    const piClose = input.indexOf('?>', p);
 
     if (piClose === -1) {
-      this._wait(NT_PROC_INST, input.slice(pos - 2));
+      this._wait(NT_PROC_INST, input.slice(p - 2));
       return null;
     }
 
     this.emit(NT_PROC_INST, {
-      contents: input.slice(pos, piClose)
+      contents: input.slice(p, piClose)
     } satisfies SaxophoneProcessingInstruction);
     return piClose + 2;
   }
@@ -223,7 +225,7 @@ export class Saxophone extends EventEmitter {
 
     const isSelfClosing = input.charAt(tagClose - 1) === '/';
     const realTagClose = isSelfClosing ? tagClose - 1 : tagClose;
-    const wsOffset = input.slice(pos).search(/\s/);
+    const wsOffset = input.slice(pos).search(WS_SEARCH_REGEX);
 
     if (wsOffset === -1 || wsOffset >= tagClose - pos) {
       this._handleTagOpening({
@@ -257,20 +259,20 @@ export class Saxophone extends EventEmitter {
   }
 
   private _parseChunk(input: string): Error | null {
-    input = this._unwait() + input;
+    const data = this._unwait() + input;
 
     let pos = 0;
-    const end = input.length;
+    const end = data.length;
 
     while (pos < end) {
-      if (input.charAt(pos) !== '<') {
-        pos = this._emitTextChunk(input, pos);
+      if (data.charAt(pos) !== '<') {
+        pos = this._emitTextChunk(data, pos);
         continue;
       }
 
       pos += 1;
-      const nextChar = input.charAt(pos);
-      const nextPos = this._dispatchTagChunk(input, pos, nextChar);
+      const nextChar = data.charAt(pos);
+      const nextPos = this._dispatchTagChunk(data, pos, nextChar);
       if (nextPos === null) {
         break;
       }

@@ -2,16 +2,15 @@ import type { XmlToolCall } from './extract-xml-tool-calls.js';
 
 /** Provider-agnostic tool result message. */
 export interface ToolResultMessage {
-  role: 'tool';
-  tool_call_id: string;
-  name: string;
   content: string;
   is_error?: boolean;
+  name: string;
+  role: 'tool';
+  tool_call_id: string;
 }
 
 /** Anthropic-format tool result message (wrapped in a user turn). */
 export interface AnthropicToolResult {
-  role: 'user';
   content: [
     {
       type: 'tool_result';
@@ -20,18 +19,18 @@ export interface AnthropicToolResult {
       is_error?: true;
     }
   ];
+  role: 'user';
 }
 
 /** OpenAI-format tool result message. */
 export interface OpenAIToolResult {
+  content: string;
   role: 'tool';
   tool_call_id: string;
-  content: string;
 }
 
 /** Gemini-format tool result message (wrapped in a user turn). */
 export interface GeminiToolResult {
-  role: 'user';
   parts: [
     {
       functionResponse: {
@@ -40,6 +39,7 @@ export interface GeminiToolResult {
       };
     }
   ];
+  role: 'user';
 }
 
 function normalizeContent(result: string | object): string {

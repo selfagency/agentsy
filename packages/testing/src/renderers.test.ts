@@ -81,7 +81,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
     const onFinish = vi.fn<NonNullable<BaseRendererOptions['onFinish']>>();
     const renderer = createPlainTextRenderer({
       onFinish,
-      output: () => {}
+      output: () => {
+        /* noop */
+      }
     });
 
     await renderer.writeChunk({
@@ -106,7 +108,9 @@ describe('createPlainTextRenderer + LLMStreamProcessor', () => {
 
     const renderer = createPlainTextRenderer({
       onToolCall,
-      output: () => {},
+      output: () => {
+        /* noop */
+      },
       processor
     });
 
@@ -140,13 +144,16 @@ describe('createSharedRendererHandle' as const, () => {
     const handle = createSharedRendererHandle(
       { processor, showThinking: true },
       {
-        onText: async (t: string): Promise<void> => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onText: async (t: string) => {
           texts.push(t);
         },
-        onThinking: async (t: string): Promise<void> => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onThinking: async (t: string) => {
           thinkings.push(t);
         },
-        onToolCall: async (part: OutputPart & { type: 'tool_call' }): Promise<void> => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onToolCall: async (part: OutputPart & { type: 'tool_call' }) => {
           toolCalls.push(part.call.name);
         }
       }
@@ -168,10 +175,14 @@ describe('createSharedRendererHandle' as const, () => {
     const handle = createSharedRendererHandle(
       { processor: externalProcessor },
       {
-        onText: async (t: string): Promise<void> => {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onText: async (t: string) => {
           texts.push(t);
         },
-        onThinking: async (): Promise<void> => {}
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onThinking: async () => {
+          /* noop */
+        }
       }
     );
 
@@ -192,7 +203,16 @@ describe('createSharedRendererHandle' as const, () => {
           finishArgs.push([reason, usage]);
         }
       },
-      { onText: async (): Promise<void> => {}, onThinking: async (): Promise<void> => {} }
+      {
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onText: async () => {
+          /* noop */
+        },
+        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+        onThinking: async () => {
+          /* noop */
+        }
+      }
     );
 
     await handle.writeChunk({
@@ -221,6 +241,7 @@ describe('processStream generic adapter', () => {
 
     const chunks = [{ content: 'Hello' }, { content: ' world' }, { content: '', done: true }];
 
+    // biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
     async function* gen() {
       for (const c of chunks) {
         yield c;

@@ -8,13 +8,15 @@ import type { ApiKeyChangeListener, ApiKeyManagerConfig } from '../types/index.j
  */
 export class ApiKeyManager {
   private readonly listeners = new Set<ApiKeyChangeListener>();
+  private readonly context: ExtensionContext;
+  private readonly config: ApiKeyManagerConfig;
   private apiKey: string | undefined;
   private isInitialized = false;
 
-  constructor(
-    private readonly context: ExtensionContext,
-    private readonly config: ApiKeyManagerConfig
-  ) {}
+  constructor(context: ExtensionContext, config: ApiKeyManagerConfig) {
+    this.context = context;
+    this.config = config;
+  }
 
   /**
    * Initialize the manager and load stored API key.
@@ -145,10 +147,9 @@ export class ApiKeyManager {
   async _debugShowStoredKey(): Promise<string | undefined> {
     const key = await this.getApiKey();
     if (key) {
-      const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.substring(key.length - 4);
+      const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.slice(-4);
       return masked;
     }
-    return undefined;
   }
 
   /**
@@ -176,7 +177,7 @@ export class ApiKeyManager {
       });
     } catch {
       // Gracefully ignore when vscode is unavailable (e.g., during tests)
-      return undefined;
+      return;
     }
   }
 

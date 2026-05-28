@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createCompressor } from './compressor.js';
 import { createLongTermMemory } from './long-term-memory.js';
@@ -7,7 +7,7 @@ import { createSensoryRegister } from './sensory-register.js';
 import { createShortTermMemory } from './short-term-memory.js';
 import { createSummarizer } from './summarizer.js';
 import { createSynthesizer } from './synthesizer.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 import { createTierBridge, createTierBridgeWithData } from './tier-bridge.js';
 import { createWorkingMemory } from './working-memory.js';
 

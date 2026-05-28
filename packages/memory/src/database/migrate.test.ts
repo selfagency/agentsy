@@ -17,7 +17,7 @@ describe('runMigrations', () => {
       )
       .all() as Array<{ name: string }>;
 
-    const tableNames = tables.map(t => t.name).sort();
+    const tableNames = tables.map(t => t.name).sort((a, b) => a.localeCompare(b));
 
     expect(tableNames).toContain('memory_items');
     expect(tableNames).toContain('wiki_pages');

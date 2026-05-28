@@ -12,11 +12,11 @@ export interface RAGServerClientOptions {
 }
 
 export interface RAGServerClient {
-  health(): Promise<RAGHealthResult>;
-  search(request: RAGSearchRequest): Promise<RAGSearchResult[]>;
-  ingest(document: RAGServerDocument): Promise<void>;
-  upsert(document: RAGServerDocument): Promise<void>;
   delete(documentId: string): Promise<RAGDeleteResult>;
+  health(): Promise<RAGHealthResult>;
+  ingest(document: RAGServerDocument): Promise<void>;
+  search(request: RAGSearchRequest): Promise<RAGSearchResult[]>;
+  upsert(document: RAGServerDocument): Promise<void>;
 }
 
 async function requestJson<TData>(

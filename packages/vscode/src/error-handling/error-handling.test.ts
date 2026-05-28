@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { ProviderErrorCode } from '../types/errors.js';
 import { createProviderError, errorCodeToMessage, errorToProviderCode, httpStatusToErrorCode } from './error-mapper.js';
@@ -124,7 +124,9 @@ describe('error-mapper', () => {
     });
 
     it('can attach provider code metadata and message prefix', () => {
-      const err = createProviderError(ProviderErrorCode.InvalidRequest, undefined, { attachCode: true }) as Error & {
+      const err = createProviderError(ProviderErrorCode.InvalidRequest, undefined, {
+        attachCode: true
+      }) as Error & {
         code?: ProviderErrorCode;
       };
 
@@ -203,7 +205,7 @@ describe('error-recovery', () => {
 
     it('retries on retryable errors', async () => {
       let calls = 0;
-      const op = vi.fn().mockImplementation(async () => {
+      const op = vi.fn().mockImplementation(() => {
         calls++;
         if (calls < 3) {
           throw new Error('rate limit exceeded');

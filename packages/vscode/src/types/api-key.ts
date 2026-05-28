@@ -12,15 +12,15 @@ export type ApiKeyChangeListener = (event: ApiKeyEvent, newKey: string | undefin
  * Storage provider interface for API keys.
  */
 export interface IApiKeyStorage {
+  delete(key: string): Promise<void>;
   get(key: string): Promise<string | undefined>;
   store(key: string, value: string): Promise<void>;
-  delete(key: string): Promise<void>;
 }
 
 /**
  * API key validation result.
  */
 export interface ApiKeyValidationResult {
-  valid: boolean;
   error?: string;
+  valid: boolean;
 }

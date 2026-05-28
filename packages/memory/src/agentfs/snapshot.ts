@@ -1,13 +1,13 @@
 import type Database from 'better-sqlite3';
 
 export interface SnapshotOptions {
-  sqlite: Database.Database;
   destinationPath: string;
+  sqlite: Database.Database;
 }
 
 export interface RestoreOptions {
-  sqlite: Database.Database;
   sourcePath: string;
+  sqlite: Database.Database;
 }
 
 export interface AgentFsSnapshotResult {
@@ -16,8 +16,8 @@ export interface AgentFsSnapshotResult {
 }
 
 export interface AgentFsRestoreResult {
-  sourcePath: string;
   pageCount: number;
+  sourcePath: string;
 }
 
 /**
@@ -28,7 +28,7 @@ export function createSnapshot(options: SnapshotOptions): AgentFsSnapshotResult 
   const { sqlite, destinationPath } = options;
 
   // VACUUM INTO creates a clean, defragmented copy at the destination
-  sqlite.exec(`VACUUM INTO '${destinationPath.replace(/'/g, "''")}'`);
+  sqlite.exec(`VACUUM INTO '${destinationPath.replaceAll("'", "''")}'`);
 
   // Count pages in the resulting database
   const pageRow = sqlite.prepare('SELECT page_count FROM pragma_page_count()').get() as
@@ -51,7 +51,7 @@ export function restoreSnapshot(options: RestoreOptions): AgentFsRestoreResult {
   const { sqlite, sourcePath } = options;
 
   // Attach the source database, then replace the current main with it
-  sqlite.exec(`ATTACH '${sourcePath.replace(/'/g, "''")}' AS restore_source`);
+  sqlite.exec(`ATTACH '${sourcePath.replaceAll("'", "''")}' AS restore_source`);
 
   try {
     // Get list of tables in the source (excluding sqlite internal tables and virtual tables)

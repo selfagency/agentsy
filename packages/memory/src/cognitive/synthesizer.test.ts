@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createSynthesizer } from './synthesizer.js';
-import { createTierTestClock, createTestMemoryItem, resetTestItemIdCounter } from './testing.js';
+import { createTestMemoryItem, createTierTestClock, resetTestItemIdCounter } from './testing.js';
 
 describe('createSynthesizer', () => {
   let clock: ReturnType<typeof createTierTestClock>;
@@ -56,8 +56,16 @@ describe('createSynthesizer', () => {
   it('sets kind to semantic for synthesized items', () => {
     const synth = createSynthesizer({ now: clock.now, similarityThreshold: 0.1 });
     const items = [
-      createTestMemoryItem({ content: 'Redis cache configuration setup', tokenCount: 10, createdAt: clock.now() }),
-      createTestMemoryItem({ content: 'Redis connection pool settings', tokenCount: 10, createdAt: clock.now() })
+      createTestMemoryItem({
+        content: 'Redis cache configuration setup',
+        tokenCount: 10,
+        createdAt: clock.now()
+      }),
+      createTestMemoryItem({
+        content: 'Redis connection pool settings',
+        tokenCount: 10,
+        createdAt: clock.now()
+      })
     ];
     const result = synth.synthesize(items, 500);
     const semanticItems = result.synthesized.filter(i => i.kind === 'semantic');

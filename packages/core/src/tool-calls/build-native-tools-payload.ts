@@ -17,7 +17,6 @@ export interface BuildNativeToolsOptions {
 
 /** OpenAI-compatible tool definition used by any OpenAI-compatible `/chat/completions` endpoint. */
 export interface NativeTool {
-  type: 'function';
   function: {
     name: string;
     description?: string;
@@ -30,6 +29,7 @@ export interface NativeTool {
       additionalProperties: false;
     };
   };
+  type: 'function';
 }
 
 /**

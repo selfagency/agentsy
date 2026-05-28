@@ -4,7 +4,11 @@ import type { Event, ExtensionContext, Memento, SecretStorage, SecretStorageChan
  * Mock Event implementation for testing.
  */
 function createMockEvent<T>(): Event<T> {
-  return (_listener: (e: T) => void) => ({ dispose: () => {} });
+  return (_listener: (e: T) => void) => ({
+    dispose: () => {
+      /* noop */
+    }
+  });
 }
 
 /**
@@ -13,18 +17,22 @@ function createMockEvent<T>(): Event<T> {
 export class MockSecretStorage implements SecretStorage {
   private readonly storage = new Map<string, string>();
 
+  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async get(key: string): Promise<string | undefined> {
     return this.storage.get(key);
   }
 
+  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async store(key: string, value: string): Promise<void> {
     this.storage.set(key, value);
   }
 
+  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async delete(key: string): Promise<void> {
     this.storage.delete(key);
   }
 
+  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async keys(): Promise<string[]> {
     return [...this.storage.keys()];
   }
@@ -53,6 +61,7 @@ export class MockMemento implements Memento {
     return (this.storage.get(key) as T) ?? defaultValue;
   }
 
+  // biome-ignore lint/suspicious/useAwait: implements Memento interface
   async update(key: string, value: unknown): Promise<void> {
     this.storage.set(key, value);
   }
@@ -91,7 +100,9 @@ export function createMockExtensionContext(): ExtensionContext {
     asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
     environmentVariableCollection: {} as unknown,
     extension: {
-      activate: async () => {},
+      activate: async () => {
+        /* noop */
+      },
       exports: undefined,
       extensionPath: '/mock/path',
       extensionUri: mockUri,

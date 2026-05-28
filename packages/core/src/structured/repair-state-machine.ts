@@ -14,14 +14,14 @@
 export interface RepairState {
   /** Stack of expected closing delimiters: '}' for '{', ']' for '[' */
   bracketStack: string[];
-  /** Whether we're currently inside a string literal */
-  inString: boolean;
-  /** Whether the previous character was an escape character */
-  escaped: boolean;
-  /** Position of the last "safe" complete JSON structure */
-  lastSafeEnd: number;
   /** Current accumulation buffer */
   buffer: string;
+  /** Whether the previous character was an escape character */
+  escaped: boolean;
+  /** Whether we're currently inside a string literal */
+  inString: boolean;
+  /** Position of the last "safe" complete JSON structure */
+  lastSafeEnd: number;
 }
 
 // biome-ignore lint/suspicious/noEmptyInterface: Reserved for future use

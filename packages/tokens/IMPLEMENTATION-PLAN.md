@@ -158,7 +158,7 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 ````typescript
 // packages/tokens/src/compression/output-compressor.ts
 export interface CompressionOptions {
-  level: 'lite' | 'full' | 'ultra'; // 40-50%, 65-75%, 75-87% savings
+  level: "lite" | "full" | "ultra"; // 40-50%, 65-75%, 75-87% savings
   preserve: PreservedElements;
   intensity?: number; // 0.0-1.0 for fine-tuning
   autoClarity?: boolean; // Drop for security warnings
@@ -253,7 +253,7 @@ export interface CompressionResult {
 
 export async function compressMemoryFile(
   filePath: string,
-  options: MemoryCompressionOptions
+  options: MemoryCompressionOptions,
 ): Promise<CompressionResult> {
   // 1. Security check - refuse sensitive paths
   if (isSensitivePath(filePath)) {
@@ -262,7 +262,7 @@ export async function compressMemoryFile(
 
   // 2. Detect file type (natural language vs code/config)
   if (!shouldCompressFile(filePath)) {
-    return { skipped: true, reason: 'not natural language' };
+    return { skipped: true, reason: "not natural language" };
   }
 
   // 3. Create backup (.original.md)
@@ -280,7 +280,7 @@ export async function compressMemoryFile(
 
   // 6. Verify backup readback before overwrite
   if (!verifyBackup(backupPath, originalText)) {
-    throw new BackupError('Backup verification failed');
+    throw new BackupError("Backup verification failed");
   }
 
   // 7. Write compressed file
@@ -387,37 +387,41 @@ export function validateCompression(originalPath: Path, compressedText: string):
   const originalHeadings = extractHeadings(original);
   const compressedHeadings = extractHeadings(compressedText);
   if (originalHeadings.length !== compressedHeadings.length) {
-    result.addError(`Heading count mismatch: ${originalHeadings.length} vs ${compressedHeadings.length}`);
+    result.addError(
+      `Heading count mismatch: ${originalHeadings.length} vs ${compressedHeadings.length}`,
+    );
   }
-  if (originalHeadings.some(h => !compressedHeadings.includes(h))) {
-    result.addWarning('Heading text/order changed');
+  if (originalHeadings.some((h) => !compressedHeadings.includes(h))) {
+    result.addWarning("Heading text/order changed");
   }
 
   // 2. Code block validation
   const originalBlocks = extractCodeBlocks(original);
   const compressedBlocks = extractCodeBlocks(compressedText);
   if (originalBlocks.length !== compressedBlocks.length) {
-    result.addError(`Code block count mismatch: ${originalBlocks.length} vs ${compressedBlocks.length}`);
+    result.addError(
+      `Code block count mismatch: ${originalBlocks.length} vs ${compressedBlocks.length}`,
+    );
   }
-  if (originalBlocks.some(b => !compressedBlocks.includes(b))) {
-    result.addError('Code blocks not preserved exactly');
+  if (originalBlocks.some((b) => !compressedBlocks.includes(b))) {
+    result.addError("Code blocks not preserved exactly");
   }
 
   // 3. URL validation
   const originalUrls = extractUrls(original);
   const compressedUrls = extractUrls(compressedText);
-  if (!originalUrls.every(url => compressedUrls.has(url))) {
-    const lost = [...originalUrls].filter(url => !compressedUrls.has(url));
-    result.addError(`URL missing: ${lost.join(', ')}`);
+  if (!originalUrls.every((url) => compressedUrls.has(url))) {
+    const lost = [...originalUrls].filter((url) => !compressedUrls.has(url));
+    result.addError(`URL missing: ${lost.join(", ")}`);
   }
 
   // 4. File path validation
   const originalPaths = extractPaths(original);
   const compressedPaths = extractPaths(compressedText);
   if (originalPaths.size !== compressedPaths.size) {
-    const lost = [...originalPaths].filter(p => !compressedPaths.has(p));
-    const added = [...compressedPaths].filter(p => !originalPaths.has(p));
-    result.addWarning(`Path mismatch: lost=${lost.join(', ')}, added=${added.join(', ')}`);
+    const lost = [...originalPaths].filter((p) => !compressedPaths.has(p));
+    const added = [...compressedPaths].filter((p) => !originalPaths.has(p));
+    result.addWarning(`Path mismatch: lost=${lost.join(", ")}, added=${added.join(", ")}`);
   }
 
   // 5. Bullet validation
@@ -432,8 +436,8 @@ export function validateCompression(originalPath: Path, compressedText: string):
   const originalInline = extractInlineCode(original);
   const compressedInline = extractInlineCode(compressedText);
   if (originalInline.size !== compressedInline.size) {
-    const lost = [...originalInline].filter(code => !compressedInline.has(code));
-    result.addError(`Inline code lost: ${lost.join(', ')}`);
+    const lost = [...originalInline].filter((code) => !compressedInline.has(code));
+    result.addError(`Inline code lost: ${lost.join(", ")}`);
   }
 
   return result;
@@ -483,7 +487,11 @@ function extractInlineCode(text: string): Set<string> {
 **Fix application (targeted, not recompression):**
 
 ```typescript
-export async function applyFixes(original: string, compressed: string, errors: string[]): Promise<string> {
+export async function applyFixes(
+  original: string,
+  compressed: string,
+  errors: string[],
+): Promise<string> {
   const prompt = buildFixPrompt(original, compressed, errors);
 
   // Rules:
@@ -496,7 +504,7 @@ export async function applyFixes(original: string, compressed: string, errors: s
 }
 
 function buildFixPrompt(original: string, compressed: string, errors: string[]): string {
-  const errorsStr = errors.map(e => `- ${e}`).join('\n');
+  const errorsStr = errors.map((e) => `- ${e}`).join("\n");
 
   return `
 CRITICAL RULES:
@@ -568,10 +576,10 @@ Return ONLY the fixed compressed file. No explanation.
 
 ```typescript
 // packages/tokens/src/encoding/toon-integration.ts
-import { encode, decode, encodeLines } from '@toon-format/toon';
+import { encode, decode, encodeLines } from "@toon-format/toon";
 
 export interface EncodingOptions {
-  format: 'json' | 'json-compact' | 'toon' | 'auto';
+  format: "json" | "json-compact" | "toon" | "auto";
   modelContext?: ModelContext; // For token counting
 }
 
@@ -583,7 +591,7 @@ export interface ModelContext {
 
 export interface EncodingResult {
   encoded: string;
-  formatUsed: 'json' | 'json-compact' | 'toon';
+  formatUsed: "json" | "json-compact" | "toon";
   tokenCount: number;
   savingsPercentage: number;
   accuracy: number; // Estimated accuracy based on format
@@ -610,7 +618,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
       isFlat: false,
       fieldCount: 0,
       itemCount: 0,
-      allPrimitives: false
+      allPrimitives: false,
     };
   }
 
@@ -623,16 +631,20 @@ export function analyzeStructure(data: any): StructureAnalysis {
     const itemKeys = Object.keys(item);
 
     // Check for nested structures
-    if (itemKeys.some(k => typeof item[k] === 'object' && item[k] !== null && !Array.isArray(item[k]))) {
+    if (
+      itemKeys.some(
+        (k) => typeof item[k] === "object" && item[k] !== null && !Array.isArray(item[k]),
+      )
+    ) {
       nestedDetected = true;
     }
 
     // Check uniformity
-    const hasSameKeys = itemKeys.length === keys.length && itemKeys.every(k => keys.includes(k));
+    const hasSameKeys = itemKeys.length === keys.length && itemKeys.every((k) => keys.includes(k));
 
     // Check primitive-only
     const allPrimitives = Object.values(item).every(
-      v => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+      (v) => typeof v === "string" || typeof v === "number" || typeof v === "boolean",
     );
 
     if (hasSameKeys && allPrimitives) {
@@ -648,7 +660,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
     isFlat: !nestedDetected,
     fieldCount: keys.length,
     itemCount: data.length,
-    allPrimitives
+    allPrimitives,
   };
 }
 ```
@@ -656,32 +668,35 @@ export function analyzeStructure(data: any): StructureAnalysis {
 **Smart format selection:**
 
 ```typescript
-export function selectOptimalFormat(data: unknown, context: ModelContext): 'json' | 'json-compact' | 'toon' {
+export function selectOptimalFormat(
+  data: unknown,
+  context: ModelContext,
+): "json" | "json-compact" | "toon" {
   const analysis = analyzeStructure(data);
 
   // TOON best for highly uniform arrays (60%+ eligibility)
   if (analysis.isUniform && analysis.eligibility > 60) {
-    return 'toon';
+    return "toon";
   }
 
   // JSON-compact for tight budgets on nested data
   if (context.budget < 20000 && analysis.isFlat) {
-    return 'json-compact';
+    return "json-compact";
   }
 
   // Default to pretty JSON for readability
-  return 'json';
+  return "json";
 }
 
 export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingResult {
   const actualFormat =
-    options?.format === 'auto'
+    options?.format === "auto"
       ? selectOptimalFormat(
           data,
           options?.modelContext || {
             budget: 100000,
-            model: 'claude-3-5-sonnet'
-          }
+            model: "claude-3-5-sonnet",
+          },
         )
       : options?.format;
 
@@ -691,33 +706,33 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
   let accuracy: number;
 
   switch (actualFormat) {
-    case 'toon':
+    case "toon":
       encoded = encode(data);
       // Estimate token count with o200k_base tokenizer
       tokenCount = countTokens(encoded, {
-        model: context.model?.model || 'gpt-4o',
-        encoding: 'o200k_base'
+        model: context.model?.model || "gpt-4o",
+        encoding: "o200k_base",
       });
       savingsPercentage = 40; // Estimated 40% savings vs JSON
       accuracy = 0.764; // 76.4% accuracy from benchmarks
       break;
 
-    case 'json-compact':
+    case "json-compact":
       encoded = JSON.stringify(data);
       tokenCount = countTokens(encoded, {
-        model: context?.model?.model || 'gpt-4o',
-        encoding: 'o200k_base'
+        model: context?.model?.model || "gpt-4o",
+        encoding: "o200k_base",
       });
       savingsPercentage = 15; // Estimated 15% savings vs pretty JSON
       accuracy = 0.75; // 75.0% accuracy baseline
       break;
 
-    case 'json':
+    case "json":
     default:
       encoded = JSON.stringify(data, null, 2);
       tokenCount = countTokens(encoded, {
-        model: context?.model?.model || 'gpt-4o',
-        encoding: 'o200k_base'
+        model: context?.model?.model || "gpt-4o",
+        encoding: "o200k_base",
       });
       savingsPercentage = 0;
       accuracy = 0.75; // 75.0% accuracy baseline
@@ -728,7 +743,7 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
     formatUsed: actualFormat,
     tokenCount,
     savingsPercentage,
-    accuracy
+    accuracy,
   };
 }
 ```
@@ -760,16 +775,19 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
 export async function encodeLargeDataset(
   data: any[],
   outputPath: string,
-  options?: EncodingOptions
+  options?: EncodingOptions,
 ): Promise<{ file: string; stats: StreamStats }> {
   const fileStream = fs.createWriteStream(outputPath);
 
   const analysis = analyzeStructure(data);
-  const actualFormat = selectOptimalFormat(data, options?.modelContext || { budget: 100000, model: 'gpt-4o' });
+  const actualFormat = selectOptimalFormat(
+    data,
+    options?.modelContext || { budget: 100000, model: "gpt-4o" },
+  );
 
   let lines: Iterable<string>;
 
-  if (actualFormat === 'toon') {
+  if (actualFormat === "toon") {
     // Stream with TOON encodeLines
     lines = encodeLines(data);
   } else {
@@ -782,8 +800,8 @@ export async function encodeLargeDataset(
   }
 
   await new Promise((resolve, reject) => {
-    fileStream.on('end', () => resolve());
-    fileStream.on('error', reject);
+    fileStream.on("end", () => resolve());
+    fileStream.on("error", reject);
     fileStream.end();
   });
 
@@ -791,8 +809,8 @@ export async function encodeLargeDataset(
     itemCount: data.length,
     format: actualFormat,
     estimatedTokens: await estimateTokensFromPath(outputPath, {
-      model: options?.modelContext?.model || 'gpt-4o'
-    })
+      model: options?.modelContext?.model || "gpt-4o",
+    }),
   };
 
   return { file: outputPath, stats };
@@ -804,7 +822,7 @@ export async function encodeLargeDataset(
 ```typescript
 export function decodeSmart(input: string | Buffer, options?: DecodeOptions): any {
   // Auto-detect format from content
-  const isTOON = input.toString().includes('[') && input.toString().includes('{');
+  const isTOON = input.toString().includes("[") && input.toString().includes("{");
 
   try {
     if (isTOON) {
@@ -880,7 +898,7 @@ agentsy analyze-structure input.json
 // packages/tokens/src/budget/token-counter.ts
 export interface TokenCountOptions {
   model: ModelName;
-  encoding?: 'gpt2' | 'cl100k_base' | 'p50k_base';
+  encoding?: "gpt2" | "cl100k_base" | "p50k_base";
 }
 
 export function countTokens(content: string, options: TokenCountOptions): TokenCountResult {
@@ -894,13 +912,13 @@ export function countTokens(content: string, options: TokenCountOptions): TokenC
 
 ```typescript
 export enum ModelName {
-  CLAUDE_3_5_SONNET = 'claude-3-5-sonnet', // cl100k_base
-  CLAUDE_3_5_OPUS = 'claude-3-5-opus', // cl100k_base
-  CLAUDE_3_5_HAIKU = 'claude-3-5-haiku', // cl100k_base
-  GPT_4O = 'gpt-4o', // o200k_base (cl100k_base compatible)
-  GPT_4O_MINI = 'gpt-4o-mini', // o200k_base
-  DEEPSEEK_CHAT = 'deepseek-chat', // cl100k_base
-  LLaMA_3 = 'llama-3' // llama-tokenizer
+  CLAUDE_3_5_SONNET = "claude-3-5-sonnet", // cl100k_base
+  CLAUDE_3_5_OPUS = "claude-3-5-opus", // cl100k_base
+  CLAUDE_3_5_HAIKU = "claude-3-5-haiku", // cl100k_base
+  GPT_4O = "gpt-4o", // o200k_base (cl100k_base compatible)
+  GPT_4O_MINI = "gpt-4o-mini", // o200k_base
+  DEEPSEEK_CHAT = "deepseek-chat", // cl100k_base
+  LLaMA_3 = "llama-3", // llama-tokenizer
 }
 ```
 
@@ -923,12 +941,16 @@ export enum ModelName {
 
 **Scope:** Accurate pricing estimation across model endpoints
 
+Support a separate reasoning budget for the model's internal reasoning/chain-of-thought tokens, which is tracked independently of output tokens. The reasoning budget defaults to 25% of the total output budget.
+
+The token counter tracks instruction overhead separately from task tokens. BASELINE_TOKENS represents the remaining budget after all always-injected instructions are accounted for. Include reporting for overhead-vs-reasoning breakdown.
+
 ```typescript
 // packages/tokens/src/budget/cost-estimator.ts
 export interface CostEstimateOptions {
   model: ModelName;
   region?: string; // AWS Bedrock, GCP Vertex, etc.
-  pricingTier?: 'on-demand' | 'batch' | 'spot';
+  pricingTier?: "on-demand" | "batch" | "spot";
 }
 
 export interface TokenUsage {
@@ -962,16 +984,16 @@ export interface ModelPricing {
 
 // Example pricing (as of 2026):
 const PRICING: Record<string, ModelPricing> = {
-  'claude-3-5-sonnet': {
+  "claude-3-5-sonnet": {
     modelName: ModelName.CLAUDE_3_5_SONNET,
     inputCostPer1M: 3.0,
-    outputCostPer1M: 15.0
+    outputCostPer1M: 15.0,
   },
-  'gpt-4o': {
+  "gpt-4o": {
     modelName: ModelName.GPT_4O,
     inputCostPer1M: 2.5,
-    outputCostPer1M: 10.0
-  }
+    outputCostPer1M: 10.0,
+  },
   // ... more models
 };
 ```
@@ -999,7 +1021,7 @@ const PRICING: Record<string, ModelPricing> = {
 // packages/tokens/src/budget/budget-manager.ts
 export interface BudgetConfig {
   totalBudget: number; // USD per time period
-  period: 'hour' | 'day' | 'week' | 'month';
+  period: "hour" | "day" | "week" | "month";
   alertThreshold: number; // % of budget before alert
   enforceLimit: boolean; // Restrict when over budget
   modelPreferences?: ModelRouteConfig[];
@@ -1028,7 +1050,7 @@ export class BudgetManager {
 
 ```typescript
 export interface BudgetAlert {
-  level: 'info' | 'warning' | 'critical';
+  level: "info" | "warning" | "critical";
   message: string;
   percentage: number;
   recommendedActions: string[];
@@ -1041,31 +1063,34 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
 
   if (percentage >= 100) {
     return {
-      level: 'critical',
+      level: "critical",
       message: `Budget exceeded: ${percentage.toFixed(1)}% used`,
       percentage,
       recommendedActions: [
-        'Stop new requests',
-        'Review most expensive operations',
-        'Consider cheaper model alternatives'
-      ]
+        "Stop new requests",
+        "Review most expensive operations",
+        "Consider cheaper model alternatives",
+      ],
     };
   }
 
   if (percentage >= 80) {
     return {
-      level: 'warning',
+      level: "warning",
       message: `Budget warning: ${percentage.toFixed(1)}% used`,
       percentage,
-      recommendedActions: ['Monitor spending closely', 'Consider model routing for expensive operations']
+      recommendedActions: [
+        "Monitor spending closely",
+        "Consider model routing for expensive operations",
+      ],
     };
   }
 
   return {
-    level: 'info',
+    level: "info",
     message: `Budget alert: ${percentage.toFixed(1)}% used`,
     percentage,
-    recommendedActions: ['Continue monitoring']
+    recommendedActions: ["Continue monitoring"],
   };
 }
 ```
@@ -1170,7 +1195,7 @@ export class LRUCache<K, V> {
       createdAt: new Date(),
       lastAccessed: new Date(),
       hits: 0,
-      ttl: ttl || this.defaultTTL
+      ttl: ttl || this.defaultTTL,
     });
   }
 
@@ -1214,7 +1239,7 @@ export class LRUCache<K, V> {
 ```typescript
 // packages/tokens/src/cache/content-addressing.ts
 export interface ContentAddressOptions {
-  algorithm: 'blake3' | 'sha256';
+  algorithm: "blake3" | "sha256";
   cacheEnabled: boolean;
   compressionEnabled: boolean;
 }
@@ -1256,13 +1281,13 @@ export class ContentAddressStore {
 **BLAKE3 integration:**
 
 ```typescript
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
 
 export async function computeBLAKE3(content: string): Promise<string> {
   // Use Node.js crypto API
-  const hash = createHash('blake3');
+  const hash = createHash("blake3");
   hash.update(content);
-  return hash.digest('hex');
+  return hash.digest("hex");
 }
 
 // Alternative: Use native library for performance
@@ -1373,16 +1398,16 @@ export class CompactMemoryManager {
   // Compact a stage's memory
   async compact(
     stage: CompactStage,
-    targetRatio: number // Target concreteness (0.0-1.0)
+    targetRatio: number, // Target concreteness (0.0-1.0)
   ): Promise<CompactResult>;
 }
 
 export enum CompactStage {
-  COLD = 'cold', // Active tasks, 100% concreteness
-  PRECISE = 'precise', // Recent context, 70% concreteness
-  WARM = 'warm', // Historical, 50% concreteness
-  ARCHIVE = 'archive', // Important decisions, structured summary
-  OVERFLOW = 'overflow' // Overflow, delete or archive
+  COLD = "cold", // Active tasks, 100% concreteness
+  PRECISE = "precise", // Recent context, 70% concreteness
+  WARM = "warm", // Historical, 50% concreteness
+  ARCHIVE = "archive", // Important decisions, structured summary
+  OVERFLOW = "overflow", // Overflow, delete or archive
 }
 
 export interface CompactMemory {
@@ -1422,7 +1447,7 @@ COLD: 1.0   - 100% concreteness (Retain complete context and steps)
 ```typescript
 // packages/tokens/src/liveness/priority-segmentation.ts
 export interface SegmentPriority {
-  level: 'critical' | 'high' | 'medium' | 'low';
+  level: "critical" | "high" | "medium" | "low";
   preserve: boolean;
   reasoning: string;
 }
@@ -1430,7 +1455,7 @@ export interface SegmentPriority {
 export interface ContextSegment {
   id: string;
   content: string;
-  type: 'code' | 'error' | 'task' | 'decision' | 'explanation';
+  type: "code" | "error" | "task" | "decision" | "explanation";
   priority: SegmentPriority;
   tokenCount: number;
   createdAt: Date;
@@ -1538,7 +1563,7 @@ export interface PubSubConfig {
 }
 
 export interface MemoryLivenessEvent {
-  type: 'stage_change' | 'compact' | 'advance';
+  type: "stage_change" | "compact" | "advance";
   memoryId: string;
   oldStage?: CompactStage;
   newStage: CompactStage;
@@ -1721,41 +1746,41 @@ Examples:
 // Integration examples
 
 // 1. Simple compression usage
-import { compressOutput } from '@agentsy/tokens/compression';
+import { compressOutput } from "@agentsy/tokens/compression";
 
 const compressed = compressOutput(rawResponse, {
-  level: 'full',
+  level: "full",
   preserve: { codeBlocks: true, urls: true, filePaths: true },
-  autoClarity: true
+  autoClarity: true,
 });
 
 // 2. Budget tracking
-import { BudgetManager } from '@agentsy/tokens/budget';
+import { BudgetManager } from "@agentsy/tokens/budget";
 
 const budget = new BudgetManager({
   totalBudget: 100.0,
-  period: 'day',
-  alertThreshold: 0.8
+  period: "day",
+  alertThreshold: 0.8,
 });
 
-budget.trackUsage({ inputTokens: 1000, outputTokens: 500 }, { model: 'claude-3-5-sonnet' });
+budget.trackUsage({ inputTokens: 1000, outputTokens: 500 }, { model: "claude-3-5-sonnet" });
 const status = budget.getStatus();
 
 // 3. Memory liveness
-import { MemoryCoordinationAPI } from '@agentsy/tokens/liveness';
+import { MemoryCoordinationAPI } from "@agentsy/tokens/liveness";
 
 const coordination = new MemoryCoordinationAPI();
-const memoryId = await coordination.addMemory('Current task context', CompactStage.COLD);
+const memoryId = await coordination.addMemory("Current task context", CompactStage.COLD);
 
 // 4. Cache management
-import { TokenCache } from '@agentsy/tokens/cache';
+import { TokenCache } from "@agentsy/tokens/cache";
 
 const cache = new TokenCache({ maxTokens: 10000, ttl: 3600 });
-cache.setContent('response-123', compressedResponse, 7200);
-const cached = cache.getContent('response-123');
+cache.setContent("response-123", compressedResponse, 7200);
+const cached = cache.getContent("response-123");
 
 // 5. JSON minification
-import { minifyJSON } from '@agentsy/tokens/encoding';
+import { minifyJSON } from "@agentsy/tokens/encoding";
 
 const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 ```

@@ -1,0 +1,60 @@
+{
+  "$schema": "Response profiles for fault-injection testing",
+  "errorScenarios": [
+    {
+      "name": "rate_limit",
+      "status": 429,
+      "statusText": "Too Many Requests",
+      "body": {
+        "error": {
+          "message": "Rate limit exceeded",
+          "type": "rate_limit_error"
+        }
+      }
+    },
+    {
+      "name": "server_error",
+      "status": 500,
+      "statusText": "Internal Server Error",
+      "body": {
+        "error": { "message": "Internal error", "type": "server_error" }
+      }
+    },
+    {
+      "name": "timeout",
+      "status": 504,
+      "statusText": "Gateway Timeout",
+      "body": {
+        "error": { "message": "Upstream timeout", "type": "timeout_error" }
+      }
+    },
+    {
+      "name": "unauthorized",
+      "status": 401,
+      "statusText": "Unauthorized",
+      "body": {
+        "error": {
+          "message": "Invalid API key",
+          "type": "authentication_error"
+        }
+      }
+    }
+  ],
+  "malformedResponses": [
+    {
+      "name": "truncated_sse",
+      "description": "SSE stream ends mid-chunk without [DONE]",
+      "body": "data: {\"choices\":[{\"delta\":{\"content\":\"Hel\"}}]}\n\n"
+    },
+    {
+      "name": "invalid_json_sse",
+      "description": "SSE line contains unparseable JSON",
+      "body": "data: {broken}\n\ndata: [DONE]\n\n"
+    },
+    {
+      "name": "empty_stream",
+      "description": "SSE stream with only the done marker",
+      "body": "data: [DONE]\n\n"
+    }
+  ]
+}

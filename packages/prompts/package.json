@@ -29,8 +29,8 @@
     "check-types": "tsc --noEmit",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage",
-    "lint": "oxlint .",
-    "format": "oxfmt --write ."
+    "lint": "biome lint",
+    "format": "biome format"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*"

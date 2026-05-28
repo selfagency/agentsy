@@ -54,14 +54,14 @@ The five gaps mapped against the architecture document:
 ```typescript
 export type TierLevel = 1 | 2 | 3 | 4 | 5;
 export type TierName =
-  | 'sensory_buffer'
-  | 'sensory_register'
-  | 'working_memory'
-  | 'short_term_memory'
-  | 'long_term_memory';
-export type WriteHeap = 'event' | 'query' | 'doc' | 'ref';
-export type MemoryKind = 'semantic' | 'episodic' | 'procedural' | 'sensory';
-export type ReuseClass = 'hot' | 'warm' | 'cold';
+  | "sensory_buffer"
+  | "sensory_register"
+  | "working_memory"
+  | "short_term_memory"
+  | "long_term_memory";
+export type WriteHeap = "event" | "query" | "doc" | "ref";
+export type MemoryKind = "semantic" | "episodic" | "procedural" | "sensory";
+export type ReuseClass = "hot" | "warm" | "cold";
 
 export interface TierConfig {
   level: TierLevel;
@@ -149,7 +149,7 @@ Each extends `MemoryTier` with tier-specific defaults:
 export interface TierBridge {
   from: TierName;
   to: TierName;
-  transfer(items: MemoryItem[], reason: 'consolidation' | 'eviction' | 'manual'): number;
+  transfer(items: MemoryItem[], reason: "consolidation" | "eviction" | "manual"): number;
   canTransfer(): boolean;
 }
 ```
@@ -312,7 +312,7 @@ export interface DecayedItem {
   item: MemoryItem;
   newImportance: number;
   tier: TierName;
-  action: 'keep' | 'promote' | 'demote' | 'discard';
+  action: "keep" | "promote" | "demote" | "discard";
 }
 ```
 
@@ -792,12 +792,12 @@ Stdio-based MCP server using `@modelcontextprotocol/sdk`:
 
 ```typescript
 export interface MemoryMCPServerOptions {
-  transport: 'stdio' | 'http';
+  transport: "stdio" | "http";
   port?: number; // for HTTP mode
   dbPath?: string; // SQLite path, default: .agentsy/memory.db
   syncUrl?: string; // Turso sync URL, optional
   syncAuthToken?: string; // Turso auth token, optional
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  logLevel?: "debug" | "info" | "warn" | "error";
 }
 
 export async function createMemoryMCPServer(options: MemoryMCPServerOptions): Promise<MCPServer>;
@@ -868,7 +868,7 @@ export interface InitOptions {
   hooksDir?: string; // default: <projectRoot>/.agents/hooks/
   dbDir?: string; // default: <projectRoot>/.agentsy/
   mcpConfig?: string; // default: <projectRoot>/.opencode/mcp.json or <home>/.config/opencode/mcp.json
-  transport?: 'stdio' | 'http';
+  transport?: "stdio" | "http";
   port?: number; // HTTP mode only, default: 4231
   syncUrl?: string; // Turso sync URL
   syncAuthToken?: string; // Turso auth token
@@ -965,9 +965,14 @@ export interface MemoryConfig {
   tiers: Record<TierName, TierConfig>;
   budget: BudgetConfig;
   decay: DecayConfig;
-  mcp: { transport: 'stdio' | 'http'; port?: number };
-  hooks: { onSessionStart: boolean; onSessionEnd: boolean; onToolCall: boolean; onResponse: boolean };
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  mcp: { transport: "stdio" | "http"; port?: number };
+  hooks: {
+    onSessionStart: boolean;
+    onSessionEnd: boolean;
+    onToolCall: boolean;
+    onResponse: boolean;
+  };
+  logLevel: "debug" | "info" | "warn" | "error";
 }
 
 export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig;
@@ -988,7 +993,7 @@ This phase closes the loop: memories enter via sensory tiers (Phase 1), get brid
 Honcho's deriver extracts explicit observations from conversation turns. Evolver's signal extraction identifies multiple signal types (factual, emotional, procedural, corrective) from raw events. We unify these into a single `ObservationExtractor` that pulls structured observations from `MemoryItem` content.
 
 ```typescript
-export type ObservationKind = 'factual' | 'emotional' | 'procedural' | 'corrective' | 'relational';
+export type ObservationKind = "factual" | "emotional" | "procedural" | "corrective" | "relational";
 
 export interface Observation {
   id: string;
@@ -1025,7 +1030,7 @@ Each strategy is a pure function `(content: string) => RawObservation[]`. The `O
 Honcho's dialectic resolves contradictions between observations using four representation views (explicit, deductive, inductive, contradiction). We implement this as a `DialecticResolver` that detects contradictions among observations and produces resolved `Resolution` objects.
 
 ```typescript
-export type RepresentationView = 'explicit' | 'deductive' | 'inductive' | 'contradiction';
+export type RepresentationView = "explicit" | "deductive" | "inductive" | "contradiction";
 
 export interface Representation {
   id: string;
@@ -1041,13 +1046,16 @@ export interface Resolution {
   representations: Representation[];
   resolvedSummary: string;
   resolutionConfidence: number; // how confident the resolution is
-  method: 'deductive' | 'inductive' | 'temporal' | 'source_priority';
+  method: "deductive" | "inductive" | "temporal" | "source_priority";
   timestamp: number;
 }
 
 export interface DialecticResolver {
   detectContradictions(observations: Observation[]): Promise<Observation[][]>;
-  resolve(contradictions: Observation[][], priorityRules?: ResolutionPriority): Promise<Resolution[]>;
+  resolve(
+    contradictions: Observation[][],
+    priorityRules?: ResolutionPriority,
+  ): Promise<Resolution[]>;
 }
 
 export interface ResolutionPriority {
@@ -1073,7 +1081,7 @@ Resolution methods:
 Honcho's dreamer uses multiple specialist agents (deduction, induction, surprisal) to consolidate memories. Evolver's reflection phase scores and selects genes. We implement a `ConsolidationSpecialist` that applies independent strategies to produce consolidated knowledge, then merges their outputs.
 
 ```typescript
-export type SpecialistRole = 'deduction' | 'induction' | 'surprisal' | 'temporal';
+export type SpecialistRole = "deduction" | "induction" | "surprisal" | "temporal";
 
 export interface ConsolidationResult {
   id: string;
@@ -1144,7 +1152,7 @@ export interface SolidificationCandidate {
 export interface SolidificationResult {
   id: string;
   candidateId: string;
-  action: 'promote' | 'demote' | 'merge' | 'archive';
+  action: "promote" | "demote" | "merge" | "archive";
   targetTier: TierName;
   confidence: number;
   reason: string;
@@ -1180,13 +1188,13 @@ export interface CanaryCheck {
   lastAccessedAge: number; // time since last access in ms
   recentContradictionCount: number;
   importanceDecay: number; // how much importance has dropped since last check
-  accessFrequencyTrend: 'increasing' | 'stable' | 'decreasing';
+  accessFrequencyTrend: "increasing" | "stable" | "decreasing";
 }
 
 export interface CanaryResult {
   memoryId: string;
-  status: 'healthy' | 'stale' | 'degraded' | 'contradicted';
-  action: 'keep' | 'refresh' | 'demote' | 'archive' | 'flag_for_review';
+  status: "healthy" | "stale" | "degraded" | "contradicted";
+  action: "keep" | "refresh" | "demote" | "archive" | "flag_for_review";
   reason: string;
   nextCheckMs: number; // when to check again
 }
@@ -1257,7 +1265,10 @@ export interface LearningCycleResult {
 }
 
 export interface LearningLoopOrchestrator {
-  runCycle(engine: MemoryEngine, config?: Partial<LearningLoopConfig>): Promise<LearningCycleResult>;
+  runCycle(
+    engine: MemoryEngine,
+    config?: Partial<LearningLoopConfig>,
+  ): Promise<LearningCycleResult>;
 }
 ```
 
@@ -1374,37 +1385,45 @@ scripts/
   // ... existing config ...
   "bin": {
     "agentsy-memory": "./dist/scripts/init.js",
-    "agentsy-memory-mcp": "./dist/scripts/mcp-server.js"
+    "agentsy-memory-mcp": "./dist/scripts/mcp-server.js",
   },
   "exports": {
     // ... existing exports ...
     "./cognitive": {
       "types": "./dist/cognitive/index.d.ts",
       "import": "./dist/cognitive/index.js",
-      "require": "./dist/cognitive/index.js.cjs"
+      "require": "./dist/cognitive/index.js.cjs",
     },
     "./learning": {
       "types": "./dist/cognitive/learning/index.d.ts",
       "import": "./dist/cognitive/learning/index.js",
-      "require": "./dist/cognitive/learning/index.js.cjs"
+      "require": "./dist/cognitive/learning/index.js.cjs",
     },
     "./hooks": {
       "types": "./dist/hooks/index.d.ts",
       "import": "./dist/hooks/index.js",
-      "require": "./dist/hooks/index.js.cjs"
+      "require": "./dist/hooks/index.js.cjs",
     },
     "./mcp": {
       "types": "./dist/mcp/index.d.ts",
       "import": "./dist/mcp/index.js",
-      "require": "./dist/mcp/index.js.cjs"
+      "require": "./dist/mcp/index.js.cjs",
     },
-    "./config": { "types": "./dist/config.d.ts", "import": "./dist/config.js", "require": "./dist/config.js.cjs" },
-    "./init": { "types": "./dist/init.d.ts", "import": "./dist/init.js", "require": "./dist/init.js.cjs" }
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js",
+      "require": "./dist/config.js.cjs",
+    },
+    "./init": {
+      "types": "./dist/init.d.ts",
+      "import": "./dist/init.js",
+      "require": "./dist/init.js.cjs",
+    },
   },
   "dependencies": {
     // ... existing ...
-    "@modelcontextprotocol/sdk": "^1.12.0" // MCP server SDK
-  }
+    "@modelcontextprotocol/sdk": "^1.12.0", // MCP server SDK
+  },
 }
 ```
 
@@ -1518,7 +1537,7 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 ## Updated Risks & Mitigations (Full)
 
 | Risk                               | Mitigation                                                                                                                                                                |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | --- | --- | ---------- |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Embedding engine unavailable       | Synthesizer falls back to `EntityExtractor` keyword matching; `LocalEmbeddingEngine` already exists in wiki                                                               |
 | LTM unbounded growth               | `importance` threshold + `accessCount` heuristics archive cold items; TTL-based cleanup in `awaken()`                                                                     |
 | Bridge transforms too lossy        | Each bridge starts with identity transform; compress/synthesize/summarize are additive (Phase 2)                                                                          |
@@ -1532,17 +1551,17 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 | Specialist consolidation too noisy | `maxTokenBudgetPerCycle` caps consolidation cost; merge step deduplicates and weights by confidence; low-confidence results are kept but not promoted                     |
 | Canary false positives             | `staleThreshold` and `degradationThreshold` are configurable; `refresh` action (not `archive`) is the default for stale memories, giving them a chance to prove relevance |
 | @agentsy/cli not installed         | Daemon and MCP server are fully independent; CLI is optional convenience wrapper                                                                                          |
-|                                    |                                                                                                                                                                           |     |     |     |     | Stash base |
+|                                    |                                                                                                                                                                           |
 
 =======
 
-# @agentsy/memory — Implementation Plan v2
+## @agentsy/memory — Implementation Plan v2
 
 > Supersedes `UPDATED-IMPLEMENTATION-PLAN.md`. Accounts for the ~5,500 lines of implementation code that now exist and focuses only on remaining gaps.
 
 ---
 
-## Current Implementation Inventory
+### Current Implementation Inventory
 
 | Module                   | Lines      | Key Exports                                                                                                                                                                                                        | Status                          |
 | ------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
@@ -1563,7 +1582,7 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 
 ---
 
-## Gap Analysis — What's Missing
+### Gap Analysis — What's Missing
 
 The five gaps mapped against the architecture document:
 
@@ -1577,27 +1596,27 @@ The five gaps mapped against the architecture document:
 
 ---
 
-## Implementation Phases
+### Implementation Phases
 
-### Phase 1: Cognitive Tier Engine (G1)
+#### Phase 1: Cognitive Tier Engine (G1)
 
 **Goal**: Implement the 5-tier lifecycle as composable, testable modules.
 
-#### 1.1 Core types and tier interface
+##### 1.1 Core types and tier interface
 
 **File**: `src/cognitive/tier-types.ts`
 
 ```typescript
 export type TierLevel = 1 | 2 | 3 | 4 | 5;
 export type TierName =
-  | 'sensory_buffer'
-  | 'sensory_register'
-  | 'working_memory'
-  | 'short_term_memory'
-  | 'long_term_memory';
-export type WriteHeap = 'event' | 'query' | 'doc' | 'ref';
-export type MemoryKind = 'semantic' | 'episodic' | 'procedural' | 'sensory';
-export type ReuseClass = 'hot' | 'warm' | 'cold';
+  | "sensory_buffer"
+  | "sensory_register"
+  | "working_memory"
+  | "short_term_memory"
+  | "long_term_memory";
+export type WriteHeap = "event" | "query" | "doc" | "ref";
+export type MemoryKind = "semantic" | "episodic" | "procedural" | "sensory";
+export type ReuseClass = "hot" | "warm" | "cold";
 
 export interface TierConfig {
   level: TierLevel;
@@ -1634,7 +1653,7 @@ export interface TierReadResult<T = MemoryItem> {
 
 **Acceptance**: Types compile without errors, exported from `src/cognitive/index.ts`.
 
-#### 1.2 MemoryTier base class
+##### 1.2 MemoryTier base class
 
 **File**: `src/cognitive/memory-tier.ts`
 
@@ -1661,7 +1680,7 @@ export interface MemoryTierLike {
 
 **Acceptance**: Unit tests for write/read/evict/promote/demote on a generic `MemoryTier`.
 
-#### 1.3 Five concrete tier implementations
+##### 1.3 Five concrete tier implementations
 
 **Files**: `src/cognitive/sensory-buffer.ts`, `sensory-register.ts`, `working-memory.ts`, `short-term-memory.ts`, `long-term-memory.ts`
 
@@ -1677,7 +1696,7 @@ Each extends `MemoryTier` with tier-specific defaults:
 
 **Acceptance**: Each tier instantiates with correct defaults; overflow behavior tested; TTL expiration tested (fast-clock pattern with injectable `now()`).
 
-#### 1.4 Tier bridges
+##### 1.4 Tier bridges
 
 **File**: `src/cognitive/tier-bridge.ts`
 
@@ -1685,7 +1704,7 @@ Each extends `MemoryTier` with tier-specific defaults:
 export interface TierBridge {
   from: TierName;
   to: TierName;
-  transfer(items: MemoryItem[], reason: 'consolidation' | 'eviction' | 'manual'): number;
+  transfer(items: MemoryItem[], reason: "consolidation" | "eviction" | "manual"): number;
   canTransfer(): boolean;
 }
 ```
@@ -1698,7 +1717,7 @@ Four bridges: 1→2, 2→3, 3→4, 4→5. Each bridge:
 
 **Acceptance**: Bridge integration test — insert 10 items into SensoryBuffer, trigger promotion, verify items appear in SensoryRegister.
 
-#### 1.5 Tier-aware test infrastructure
+##### 1.5 Tier-aware test infrastructure
 
 - `src/cognitive/testing.ts` — `createTierTestClock()` returning injectable `now()` for deterministic TTL tests
 - `src/cognitive/test-utils.ts` — `createTestMemoryItem()` factory with sensible defaults
@@ -1707,11 +1726,11 @@ Four bridges: 1→2, 2→3, 3→4, 4→5. Each bridge:
 
 ---
 
-### Phase 2: Processing Pipeline (G2)
+#### Phase 2: Processing Pipeline (G2)
 
 **Goal**: Wire Compressor, Synthesizer, and Summarizer into the tier bridges.
 
-#### 2.1 Compressor (raw → working chunks)
+##### 2.1 Compressor (raw → working chunks)
 
 **File**: `src/cognitive/compressor.ts`
 
@@ -1735,7 +1754,7 @@ export interface CompressResult {
 
 **Acceptance**: Compressor reduces 500-token input to ≤200 tokens; discarded items tracked; fingerprint computed.
 
-#### 2.2 Synthesizer (working → short-term)
+##### 2.2 Synthesizer (working → short-term)
 
 **File**: `src/cognitive/synthesizer.ts`
 
@@ -1760,7 +1779,7 @@ export interface SynthesizeResult {
 
 **Acceptance**: 5 related working-memory items synthesize into 1-2 short-term items with `metadata.sourceIds` referencing originals.
 
-#### 2.3 Summarizer (short-term → long-term)
+##### 2.3 Summarizer (short-term → long-term)
 
 **File**: `src/cognitive/summarizer.ts`
 
@@ -1793,7 +1812,7 @@ export interface MetaAction {
 
 **Acceptance**: 10 short-term items summarize to 2-3 long-term items; at least one `MetaAction` extracted if pattern present.
 
-#### 2.4 Wire bridges to pipeline
+##### 2.4 Wire bridges to pipeline
 
 Update `TierBridge.transfer()` to use:
 
@@ -1806,11 +1825,11 @@ Update `TierBridge.transfer()` to use:
 
 ---
 
-### Phase 3: Confidence Scoring & Decay (G3)
+#### Phase 3: Confidence Scoring & Decay (G3)
 
 **Goal**: Add per-memory importance tracking with time-based decay and auto-promotion/demotion.
 
-#### 3.1 Importance scoring
+##### 3.1 Importance scoring
 
 **File**: `src/cognitive/importance.ts`
 
@@ -1828,7 +1847,7 @@ export interface ImportanceFactors {
 
 Applies weighted sum, clamped to [0, 1].
 
-#### 3.2 Time-decay engine
+##### 3.2 Time-decay engine
 
 **File**: `src/cognitive/decay.ts`
 
@@ -1848,7 +1867,7 @@ export interface DecayedItem {
   item: MemoryItem;
   newImportance: number;
   tier: TierName;
-  action: 'keep' | 'promote' | 'demote' | 'discard';
+  action: "keep" | "promote" | "demote" | "discard";
 }
 ```
 
@@ -1856,7 +1875,7 @@ Uses exponential decay: `importance * Math.pow(0.5, age / halfLife)`
 
 **Acceptance**: Items older than halfLife have halved importance; items below `minimumImportance` get action `'discard'`.
 
-#### 3.3 Auto-promotion/demotion scheduler
+##### 3.3 Auto-promotion/demotion scheduler
 
 **File**: `src/cognitive/tier-scheduler.ts`
 
@@ -1871,11 +1890,11 @@ Integrates with existing `createInMemoryScheduler()` from coordination:
 
 ---
 
-### Phase 4: MemoryEngine Orchestrator & Token Budget (G4, G5)
+#### Phase 4: MemoryEngine Orchestrator & Token Budget (G4, G5)
 
 **Goal**: Top-level `MemoryEngine` that wires everything together, enforces budgets, provides `awaken()`, and exposes the MCP surface.
 
-#### 4.1 TokenBudget tracker
+##### 4.1 TokenBudget tracker
 
 **File**: `src/cognitive/token-budget.ts`
 
@@ -1901,7 +1920,7 @@ Reuses `ScopeManager` for RBAC validation of budget changes.
 
 **Acceptance**: Budget enforcement prevents over-allocation; `reclaim()` returns freed tokens.
 
-#### 4.2 awaken()
+##### 4.2 awaken()
 
 **File**: `src/cognitive/awaken.ts`
 
@@ -1935,7 +1954,7 @@ Logic:
 
 **Acceptance**: `awaken()` with `idleTimeMs=60_000` triggers decay and promotion; returns counts matching expected behavior.
 
-#### 4.3 MemoryEngine orchestrator
+##### 4.3 MemoryEngine orchestrator
 
 **File**: `src/cognitive/memory-engine.ts`
 
@@ -1988,11 +2007,11 @@ export interface EngineSnapshot {
 
 ---
 
-### Phase 5: Persona Memory & Knowledge Graph (Extension)
+#### Phase 5: Persona Memory & Knowledge Graph (Extension)
 
 **Goal**: Per-user persona layers and auto-built knowledge graphs, inspired by memUBot and agentmemory.
 
-#### 5.1 Persona memory
+##### 5.1 Persona memory
 
 **File**: `src/cognitive/persona/persona-store.ts`
 
@@ -2014,7 +2033,7 @@ export interface PersonaMemory {
 
 Backed by existing `KVStore` from `filesystem/agentfs`.
 
-#### 5.2 Knowledge graph auto-building
+##### 5.2 Knowledge graph auto-building
 
 **File**: `src/cognitive/knowledge/graph-builder.ts`
 
@@ -2053,11 +2072,11 @@ export interface GraphEdge {
 
 ---
 
-### Phase 6: MCP Server Surface (Integration)
+#### Phase 6: MCP Server Surface (Integration)
 
 **Goal**: Expose `MemoryEngine` as Model Context Protocol tools so any MCP client can use it.
 
-#### 6.1 MCP tool definitions
+##### 6.1 MCP tool definitions
 
 **File**: `src/mcp/tools.ts` (new directory)
 
@@ -2071,7 +2090,7 @@ Tools to expose:
 
 Uses existing `tools/memory-*.ts` implementations internally.
 
-#### 6.2 MCP server
+##### 6.2 MCP server
 
 **File**: `src/mcp/server.ts` (new)
 
@@ -2081,9 +2100,9 @@ Stdio-based MCP server using the `@modelcontextprotocol/sdk` package (already a 
 
 ---
 
-## File Structure Summary
+### File Structure Summary
 
-```
+```text
 src/
 ├── cognitive/                    # NEW — Phase 1-4
 │   ├── tier-types.ts             # TierLevel, TierName, TierConfig, MemoryItem, etc.
@@ -2117,9 +2136,9 @@ src/
 
 ---
 
-## Dependency Map
+### Dependency Map
 
-```
+```text
 cognitive/tier-types  ←── cognitive/memory-tier ←── cognitive/sensory-buffer, sensory-register, working-memory, short-term-memory, long-term-memory
 cognitive/tier-bridge ←── cognitive/memory-tier
 cognitive/compressor  ←── wiki/content-processor, content-addressing/fingerprint
@@ -2136,7 +2155,7 @@ mcp/*                  ←── cognitive/memory-engine, tools/*
 
 ---
 
-## Testing Standards
+### Testing Standards
 
 All new cognitive modules follow existing conventions:
 
@@ -2151,7 +2170,7 @@ Test target: ≥80% coverage per module, 100% coverage of promotion/demotion bud
 
 ---
 
-## Success Metrics
+### Success Metrics
 
 | Metric                 | Target                 | Measurement                                  |
 | ---------------------- | ---------------------- | -------------------------------------------- |
@@ -2164,7 +2183,7 @@ Test target: ≥80% coverage per module, 100% coverage of promotion/demotion bud
 
 ---
 
-## Risks & Mitigations
+### Risks & Mitigations
 
 | Risk                         | Mitigation                                                                                                  |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -2176,11 +2195,11 @@ Test target: ≥80% coverage per module, 100% coverage of promotion/demotion bud
 
 ---
 
-## Phase 7: Standalone Distribution (Skill, Hooks, Installer, Daemon)
+### Phase 7: Standalone Distribution (Skill, Hooks, Installer, Daemon)
 
 The memory package must work independently — installed, configured, and running without the monorepo or the CLI package. This phase adds four deliverables that make `@agentsy/memory` a self-contained product.
 
-### 7.1 Agent Skill — `memory` SKILL.md
+#### 7.1 Agent Skill — `memory` SKILL.md
 
 **File**: `packages/memory/skill/SKILL.md`
 
@@ -2210,13 +2229,13 @@ The skill document covers:
 
 The skill is installed by the `init` script (7.4) into the agent's skill directory (e.g. `~/.agents/skills/` or project `.agents/skills/`).
 
-### 7.2 Agent Hooks — Lifecycle Integration Scripts
+#### 7.2 Agent Hooks — Lifecycle Integration Scripts
 
 **Directory**: `packages/memory/src/hooks/`
 
 Four lifecycle hooks that integrate with agent runtimes:
 
-#### 7.2.1 `hooks/on-session-start.ts`
+##### 7.2.1 `hooks/on-session-start.ts`
 
 ```typescript
 export interface OnSessionStartInput {
@@ -2239,7 +2258,7 @@ export async function onSessionStart(input: OnSessionStartInput): Promise<OnSess
 - Loads hot memories for immediate injection
 - Returns capacity/budget summary for the agent to plan context allocation
 
-#### 7.2.2 `hooks/on-session-end.ts`
+##### 7.2.2 `hooks/on-session-end.ts`
 
 ```typescript
 export interface OnSessionEndInput {
@@ -2261,7 +2280,7 @@ export async function onSessionEnd(input: OnSessionEndInput): Promise<OnSessionE
 - Runs final consolidation pass
 - Returns summary for agent logging
 
-#### 7.2.3 `hooks/on-tool-call.ts`
+##### 7.2.3 `hooks/on-tool-call.ts`
 
 ```typescript
 export interface OnToolCallInput {
@@ -2278,7 +2297,7 @@ export async function onToolCall(input: OnToolCallInput): Promise<void>;
 - Automatically captures tool call results as sensory events
 - Assigns importance based on tool type heuristics (write tools → higher, read tools → lower)
 
-#### 7.2.4 `hooks/on-response.ts`
+##### 7.2.4 `hooks/on-response.ts`
 
 ```typescript
 export interface OnResponseInput {
@@ -2297,11 +2316,11 @@ export async function onResponse(input: OnResponseInput): Promise<void>;
 
 All hooks are exported from the package and usable programmatically. They are also referenced by the skill and wired by the init script into agent hook configurations.
 
-### 7.3 MCP Server & Daemon
+#### 7.3 MCP Server & Daemon
 
 **Directory**: `packages/memory/src/mcp/`
 
-#### 7.3.1 MCP tool definitions
+##### 7.3.1 MCP tool definitions
 
 **File**: `src/mcp/tools.ts`
 
@@ -2320,7 +2339,7 @@ Wraps existing `tools/memory-*.ts` implementations as MCP tool handlers:
 
 Each tool follows the MCP protocol: accepts `CallToolRequest`, returns `CallToolResult` with structured content.
 
-#### 7.3.2 MCP server process
+##### 7.3.2 MCP server process
 
 **File**: `src/mcp/server.ts`
 
@@ -2328,12 +2347,12 @@ Stdio-based MCP server using `@modelcontextprotocol/sdk`:
 
 ```typescript
 export interface MemoryMCPServerOptions {
-  transport: 'stdio' | 'http';
+  transport: "stdio" | "http";
   port?: number; // for HTTP mode
   dbPath?: string; // SQLite path, default: .agentsy/memory.db
   syncUrl?: string; // Turso sync URL, optional
   syncAuthToken?: string; // Turso auth token, optional
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  logLevel?: "debug" | "info" | "warn" | "error";
 }
 
 export async function createMemoryMCPServer(options: MemoryMCPServerOptions): Promise<MCPServer>;
@@ -2350,7 +2369,7 @@ Key design decisions:
 
 The server is **independent of `@agentsy/cli`** — it imports only from `@agentsy/memory` (workspace dependency) and `@modelcontextprotocol/sdk` (external dependency).
 
-#### 7.3.3 Daemon process
+##### 7.3.3 Daemon process
 
 **File**: `src/mcp/daemon.ts`
 
@@ -2377,7 +2396,7 @@ export async function getDaemonStatus(pidFile?: string): Promise<DaemonStatus | 
 - Auto-restart with exponential backoff
 - Health check endpoint (HTTP mode): `GET /health` returns `DaemonStatus`
 
-#### 7.3.4 Integration with CLI package
+##### 7.3.4 Integration with CLI package
 
 The `@agentsy/cli` package gains a thin wrapper command:
 
@@ -2393,7 +2412,7 @@ export async function runMemoryDaemonCommand(rest: readonly string[], io: CliIO)
 
 This is a **thin wrapper** — all logic lives in `@agentsy/memory`. The CLI package only provides the argument parsing and process spawning. This keeps memory fully standalone.
 
-### 7.4 Install & Init Script
+#### 7.4 Install & Init Script
 
 **File**: `packages/memory/src/init.ts` (exports) + `packages/memory/scripts/init.ts` (CLI entrypoint)
 
@@ -2404,7 +2423,7 @@ export interface InitOptions {
   hooksDir?: string; // default: <projectRoot>/.agents/hooks/
   dbDir?: string; // default: <projectRoot>/.agentsy/
   mcpConfig?: string; // default: <projectRoot>/.opencode/mcp.json or <home>/.config/opencode/mcp.json
-  transport?: 'stdio' | 'http';
+  transport?: "stdio" | "http";
   port?: number; // HTTP mode only, default: 4231
   syncUrl?: string; // Turso sync URL
   syncAuthToken?: string; // Turso auth token
@@ -2459,7 +2478,7 @@ The init script does five things, each skippable:
 
 5. **Print summary** — shows what was created, where, and how to verify
 
-#### CLI entrypoint
+##### CLI entrypoint
 
 **File**: `packages/memory/scripts/init.ts`
 
@@ -2483,7 +2502,7 @@ So users can run:
 - `agentsy-memory init` — run init
 - `agentsy-memory-mcp` — start the MCP server directly (stdio mode)
 
-#### 7.4.1 Configuration file
+##### 7.4.1 Configuration file
 
 **File**: `packages/memory/src/config.ts`
 
@@ -2501,9 +2520,14 @@ export interface MemoryConfig {
   tiers: Record<TierName, TierConfig>;
   budget: BudgetConfig;
   decay: DecayConfig;
-  mcp: { transport: 'stdio' | 'http'; port?: number };
-  hooks: { onSessionStart: boolean; onSessionEnd: boolean; onToolCall: boolean; onResponse: boolean };
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  mcp: { transport: "stdio" | "http"; port?: number };
+  hooks: {
+    onSessionStart: boolean;
+    onSessionEnd: boolean;
+    onToolCall: boolean;
+    onResponse: boolean;
+  };
+  logLevel: "debug" | "info" | "warn" | "error";
 }
 
 export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig;
@@ -2511,20 +2535,20 @@ export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig;
 
 ---
 
-### Phase 6: Learning Loop — Reflection, Dialectic & Solidification (New)
+#### Phase 6: Learning Loop — Reflection, Dialectic & Solidification (New)
 
 **Goal**: Implement the observation → reflection → consolidation cycle that transforms raw experience into durable knowledge, drawing from Honcho's dialectic pipeline, Hermes's reflection/doubling, and Evolver's GEP signal extraction.
 
 This phase closes the loop: memories enter via sensory tiers (Phase 1), get bridged and compressed (Phase 2), receive importance scores (Phase 3), budget enforcement (Phase 4), and persona/graph enrichment (Phase 5). Phase 6 adds the **self-improving feedback mechanism** — the engine that learns from its own memories to refine importance heuristics, resolve contradictions, and solidify high-confidence knowledge.
 
-#### 6.1 Observation extraction (inspired by Honcho `Deriver` + Evolver signal extraction)
+##### 6.1 Observation extraction (inspired by Honcho `Deriver` + Evolver signal extraction)
 
 **File**: `src/cognitive/learning/observation-extractor.ts`
 
 Honcho's deriver extracts explicit observations from conversation turns. Evolver's signal extraction identifies multiple signal types (factual, emotional, procedural, corrective) from raw events. We unify these into a single `ObservationExtractor` that pulls structured observations from `MemoryItem` content.
 
 ```typescript
-export type ObservationKind = 'factual' | 'emotional' | 'procedural' | 'corrective' | 'relational';
+export type ObservationKind = "factual" | "emotional" | "procedural" | "corrective" | "relational";
 
 export interface Observation {
   id: string;
@@ -2554,14 +2578,14 @@ Each strategy is a pure function `(content: string) => RawObservation[]`. The `O
 
 **Acceptance**: Unit test — feed a `MemoryItem` with mixed content, verify multiple observations of different kinds are extracted with correct `kind` labeling.
 
-#### 6.2 Dialectic resolution (inspired by Honcho `Dialectic` + `Representation` model)
+##### 6.2 Dialectic resolution (inspired by Honcho `Dialectic` + `Representation` model)
 
 **File**: `src/cognitive/learning/dialectic-resolver.ts`
 
 Honcho's dialectic resolves contradictions between observations using four representation views (explicit, deductive, inductive, contradiction). We implement this as a `DialecticResolver` that detects contradictions among observations and produces resolved `Resolution` objects.
 
 ```typescript
-export type RepresentationView = 'explicit' | 'deductive' | 'inductive' | 'contradiction';
+export type RepresentationView = "explicit" | "deductive" | "inductive" | "contradiction";
 
 export interface Representation {
   id: string;
@@ -2577,13 +2601,16 @@ export interface Resolution {
   representations: Representation[];
   resolvedSummary: string;
   resolutionConfidence: number; // how confident the resolution is
-  method: 'deductive' | 'inductive' | 'temporal' | 'source_priority';
+  method: "deductive" | "inductive" | "temporal" | "source_priority";
   timestamp: number;
 }
 
 export interface DialecticResolver {
   detectContradictions(observations: Observation[]): Promise<Observation[][]>;
-  resolve(contradictions: Observation[][], priorityRules?: ResolutionPriority): Promise<Resolution[]>;
+  resolve(
+    contradictions: Observation[][],
+    priorityRules?: ResolutionPriority,
+  ): Promise<Resolution[]>;
 }
 
 export interface ResolutionPriority {
@@ -2602,14 +2629,14 @@ Resolution methods:
 
 **Acceptance**: Test — create two observations that contradict ("user likes dark mode" vs "user prefers light mode") with different timestamps; verify resolution picks the newer one when `recencyBias > 0.5` and the higher-source-weight one otherwise.
 
-#### 6.3 Multi-specialist consolidation (inspired by Honcho `Dreamer` + Evolver `reflection`)
+##### 6.3 Multi-specialist consolidation (inspired by Honcho `Dreamer` + Evolver `reflection`)
 
 **File**: `src/cognitive/learning/consolidation-specialist.ts`
 
 Honcho's dreamer uses multiple specialist agents (deduction, induction, surprisal) to consolidate memories. Evolver's reflection phase scores and selects genes. We implement a `ConsolidationSpecialist` that applies independent strategies to produce consolidated knowledge, then merges their outputs.
 
 ```typescript
-export type SpecialistRole = 'deduction' | 'induction' | 'surprisal' | 'temporal';
+export type SpecialistRole = "deduction" | "induction" | "surprisal" | "temporal";
 
 export interface ConsolidationResult {
   id: string;
@@ -2662,7 +2689,7 @@ Default providers are heuristic; LLM providers can be registered by the consumer
 
 **Acceptance**: Test — feed 10 observations about a user's theme preference over time; verify the temporal specialist identifies the trend, the induciton specialist identifies the pattern, and merge produces a single consolidated insight with `finalConfidence > 0.7`.
 
-#### 6.4 Solidification & knowledge update (inspired by Evolver validation + gene scoring)
+##### 6.4 Solidification & knowledge update (inspired by Evolver validation + gene scoring)
 
 **File**: `src/cognitive/learning/solidifier.ts`
 
@@ -2680,7 +2707,7 @@ export interface SolidificationCandidate {
 export interface SolidificationResult {
   id: string;
   candidateId: string;
-  action: 'promote' | 'demote' | 'merge' | 'archive';
+  action: "promote" | "demote" | "merge" | "archive";
   targetTier: TierName;
   confidence: number;
   reason: string;
@@ -2704,7 +2731,7 @@ Each solidification result is recorded in the audit trail (reusing existing `Aud
 
 **Acceptance**: Test — create a consolidation result with high confidence; verify solidifier returns `promote` action targeting `long_term_memory`; apply it and verify the memory item appears in LTM with updated importance.
 
-#### 6.5 Canary degradation detection (inspired by Evolver canary system)
+##### 6.5 Canary degradation detection (inspired by Evolver canary system)
 
 **File**: `src/cognitive/learning/canary-detector.ts`
 
@@ -2716,13 +2743,13 @@ export interface CanaryCheck {
   lastAccessedAge: number; // time since last access in ms
   recentContradictionCount: number;
   importanceDecay: number; // how much importance has dropped since last check
-  accessFrequencyTrend: 'increasing' | 'stable' | 'decreasing';
+  accessFrequencyTrend: "increasing" | "stable" | "decreasing";
 }
 
 export interface CanaryResult {
   memoryId: string;
-  status: 'healthy' | 'stale' | 'degraded' | 'contradicted';
-  action: 'keep' | 'refresh' | 'demote' | 'archive' | 'flag_for_review';
+  status: "healthy" | "stale" | "degraded" | "contradicted";
+  action: "keep" | "refresh" | "demote" | "archive" | "flag_for_review";
   reason: string;
   nextCheckMs: number; // when to check again
 }
@@ -2749,7 +2776,7 @@ Action mapping:
 
 **Acceptance**: Test — create a memory item with high importance that hasn't been accessed in 30 days; verify canary returns `stale` status with `refresh` action.
 
-#### 6.6 Learning loop orchestrator
+##### 6.6 Learning loop orchestrator
 
 **File**: `src/cognitive/learning/loop-orchestrator.ts`
 
@@ -2793,7 +2820,10 @@ export interface LearningCycleResult {
 }
 
 export interface LearningLoopOrchestrator {
-  runCycle(engine: MemoryEngine, config?: Partial<LearningLoopConfig>): Promise<LearningCycleResult>;
+  runCycle(
+    engine: MemoryEngine,
+    config?: Partial<LearningLoopConfig>,
+  ): Promise<LearningCycleResult>;
 }
 ```
 
@@ -2809,7 +2839,7 @@ Each step emits events via the existing `PubSubManager` for observability.
 
 **Acceptance**: Integration test — feed 100 memory items into a fresh `MemoryEngine`, run a full learning cycle, verify that observations are extracted, contradictions resolved, consolidations produced, and at least one item is promoted to LTM.
 
-#### 6.7 Integration with `MemoryEngine.awaken()`
+##### 6.7 Integration with `MemoryEngine.awaken()`
 
 **File**: `src/cognitive/awaken.ts` (extends existing)
 
@@ -2829,7 +2859,7 @@ When `runLearningCycle` is true, `awaken()` calls `LearningLoopOrchestrator.runC
 
 ---
 
-## Learning Loop: Phase Mapping from Source Frameworks
+### Learning Loop: Phase Mapping from Source Frameworks
 
 | Mechanism                              | Source  | Maps To                                                               | Phase       |
 | -------------------------------------- | ------- | --------------------------------------------------------------------- | ----------- |
@@ -2846,9 +2876,9 @@ When `runLearningCycle` is true, `awaken()` calls `LearningLoopOrchestrator.runC
 
 ---
 
-## Updated File Structure Summary
+### Updated File Structure Summary
 
-```
+```text
 src/
 ├── cognitive/                    # Phase 1-4
 │   ├── tier-types.ts
@@ -2903,48 +2933,56 @@ scripts/
 ├── mcp-server.ts                 # CLI entrypoint for MCP server
 ```
 
-### Updated package.json additions
+#### Updated package.json additions
 
 ```jsonc
 {
   // ... existing config ...
   "bin": {
     "agentsy-memory": "./dist/scripts/init.js",
-    "agentsy-memory-mcp": "./dist/scripts/mcp-server.js"
+    "agentsy-memory-mcp": "./dist/scripts/mcp-server.js",
   },
   "exports": {
     // ... existing exports ...
     "./cognitive": {
       "types": "./dist/cognitive/index.d.ts",
       "import": "./dist/cognitive/index.js",
-      "require": "./dist/cognitive/index.js.cjs"
+      "require": "./dist/cognitive/index.js.cjs",
     },
     "./learning": {
       "types": "./dist/cognitive/learning/index.d.ts",
       "import": "./dist/cognitive/learning/index.js",
-      "require": "./dist/cognitive/learning/index.js.cjs"
+      "require": "./dist/cognitive/learning/index.js.cjs",
     },
     "./hooks": {
       "types": "./dist/hooks/index.d.ts",
       "import": "./dist/hooks/index.js",
-      "require": "./dist/hooks/index.js.cjs"
+      "require": "./dist/hooks/index.js.cjs",
     },
     "./mcp": {
       "types": "./dist/mcp/index.d.ts",
       "import": "./dist/mcp/index.js",
-      "require": "./dist/mcp/index.js.cjs"
+      "require": "./dist/mcp/index.js.cjs",
     },
-    "./config": { "types": "./dist/config.d.ts", "import": "./dist/config.js", "require": "./dist/config.js.cjs" },
-    "./init": { "types": "./dist/init.d.ts", "import": "./dist/init.js", "require": "./dist/init.js.cjs" }
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js",
+      "require": "./dist/config.js.cjs",
+    },
+    "./init": {
+      "types": "./dist/init.d.ts",
+      "import": "./dist/init.js",
+      "require": "./dist/init.js.cjs",
+    },
   },
   "dependencies": {
     // ... existing ...
-    "@modelcontextprotocol/sdk": "^1.12.0" // MCP server SDK
-  }
+    "@modelcontextprotocol/sdk": "^1.12.0", // MCP server SDK
+  },
 }
 ```
 
-### Updated tsup.config.ts additions
+#### Updated tsup.config.ts additions
 
 ```typescript
 entry: {
@@ -2961,9 +2999,9 @@ entry: {
 
 ---
 
-## Dependency Map (Updated)
+### Dependency Map (Updated)
 
-```
+```text
 cognitive/*           ←── cognitive/tier-types, content-addressing/fingerprint, wiki/content-processor, wiki/entity-extractor, wiki/local-embedding-engine, coordination/scheduler, coordination/pub-sub-manager, scope/scope-manager
 cognitive/learning/*  ←── cognitive/tier-types, cognitive/memory-engine, cognitive/importance, cognitive/decay, cognitive/tier-bridge, wiki/entity-extractor, retrieval/retriever, content-addressing/fingerprint
 hooks/*               ←── cognitive/memory-engine, cognitive/tier-types, cognitive/learning/loop-orchestrator
@@ -2977,7 +3015,7 @@ skill/SKILL.md        ←── (static file, no code dependencies)
 
 ---
 
-## CLI Integration (Phase 7.3.4)
+### CLI Integration (Phase 7.3.4)
 
 The `@agentsy/cli` package adds these commands:
 
@@ -2993,7 +3031,7 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 
 ---
 
-## Implementation Order for Phase 7
+### Implementation Order for Phase 7
 
 | Step  | File                            | Depends On                                    | Estimated Lines |
 | ----- | ------------------------------- | --------------------------------------------- | --------------- |
@@ -3017,7 +3055,7 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 
 ---
 
-## Implementation Order for Phase 6
+### Implementation Order for Phase 6
 
 | Step | File                                                 | Depends On                                                                                                       | Estimated Lines |
 | ---- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------- |
@@ -3034,7 +3072,7 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 
 ---
 
-## Updated Success Metrics
+### Updated Success Metrics
 
 | Metric                   | Target                                                                   | Measurement                                                                         |
 | ------------------------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
@@ -3050,7 +3088,7 @@ All logic lives in `@agentsy/memory`. CLI only provides argument parsing and `ch
 
 ---
 
-## Updated Risks & Mitigations (Full)
+### Updated Risks & Mitigations (Full)
 
 | Risk                               | Mitigation                                                                                                                                                                |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

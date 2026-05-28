@@ -4,7 +4,7 @@ import type { Theme, ThemeName } from './types.js';
 export type { ThemeName } from './types.js';
 
 export const defaultTheme: Theme = {
-  border: { color: 'gray', style: 'single' },
+  border: { color: 'gray', style: 'bold' },
   highlight: {},
   text: { cursorSymbol: '▌', dimColor: true },
   thinking: { borderColor: 'gray', spinnerColor: 'gray', textColor: 'gray' },
@@ -235,8 +235,86 @@ export const githubDarkTheme: Theme = {
   }
 };
 
+/* ── BBS scene themes (TASK-089) ─────────────────────────────── */
+
+// Ice — Cyan-on-blue, classic ANSI BBS aesthetic
+export const bbsIceTheme: Theme = {
+  border: { color: '#5fa5d4', style: 'bold' },
+  highlight: {},
+  text: { cursorSymbol: '▌', dimColor: false },
+  thinking: {
+    borderColor: '#5fa5d4',
+    spinnerColor: '#8be9fd',
+    textColor: '#6272a4'
+  },
+  toolCall: {
+    doneColor: '#50fa7b',
+    doneSymbol: '✓',
+    pendingColor: '#ffb86c',
+    pendingSymbol: '⠋'
+  }
+};
+
+// Amber — Phosphor/monochrome amber CRT aesthetic
+export const bbsAmberTheme: Theme = {
+  border: { color: '#ffb000', style: 'bold' },
+  highlight: {},
+  text: { cursorSymbol: '▌', dimColor: false },
+  thinking: {
+    borderColor: '#cc8800',
+    spinnerColor: '#ffcc44',
+    textColor: '#aa7700'
+  },
+  toolCall: {
+    doneColor: '#ffdd66',
+    doneSymbol: '✓',
+    pendingColor: '#ffb000',
+    pendingSymbol: '⠋'
+  }
+};
+
+// Phosphor — Green-phosphor monochrome (DEC VT220 / Apple II)
+export const bbsPhosphorTheme: Theme = {
+  border: { color: '#33ff33', style: 'bold' },
+  highlight: {},
+  text: { cursorSymbol: '▌', dimColor: false },
+  thinking: {
+    borderColor: '#22cc22',
+    spinnerColor: '#66ff66',
+    textColor: '#119911'
+  },
+  toolCall: {
+    doneColor: '#66ff66',
+    doneSymbol: '✓',
+    pendingColor: '#33ff33',
+    pendingSymbol: '⠋'
+  }
+};
+
+// CGA — IBM CGA palette (cyan/magenta/white on dark blue)
+export const bbsCgaTheme: Theme = {
+  border: { color: '#00aaaa', style: 'bold' },
+  highlight: {},
+  text: { cursorSymbol: '▌', dimColor: false },
+  thinking: {
+    borderColor: '#00aaaa',
+    spinnerColor: '#aa55ff',
+    textColor: '#55ffff'
+  },
+  toolCall: {
+    doneColor: '#55ff55',
+    doneSymbol: '✓',
+    pendingColor: '#ffff55',
+    pendingSymbol: '⠋'
+  }
+};
+
 export const THEME_MAP: Record<ThemeName, Theme> = {
   'ayu-mirage': ayuMirageTheme,
+  'bbs-amber': bbsAmberTheme,
+  'bbs-cga': bbsCgaTheme,
+  'bbs-ice': bbsIceTheme,
+  'bbs-phosphor': bbsPhosphorTheme,
   'catppuccin-frappe': catppuccinFrappeTheme,
   'catppuccin-latte': catppuccinLatteTheme,
   'catppuccin-macchiato': catppuccinMacchiatoTheme,

@@ -139,7 +139,7 @@ export class ZAiInlineToolCallParser implements ToolCallParser {
     const hasArgBegin = argBeginAt !== -1;
     const hasEnd = endAt !== -1;
 
-    if (!hasArgBegin && !hasEnd) {
+    if (!(hasArgBegin || hasEnd)) {
       const partial = getMaxTrailingPartialPrefixLength(this.residual, [TOOL_CALL_ARGUMENT_BEGIN, TOOL_CALL_END]);
       const consume = partial > 0 ? this.residual.slice(0, -partial) : this.residual;
       this.currentName += consume;

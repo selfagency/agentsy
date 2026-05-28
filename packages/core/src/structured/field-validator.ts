@@ -2,16 +2,16 @@
  * Field-level validation event emitted during JSON streaming.
  */
 export interface FieldValidationEvent {
-  /** Field path (dot-notation, e.g., "user.email") */
-  path: string;
-  /** Field value */
-  value: unknown;
-  /** true if validation passed, false if failed */
-  valid: boolean;
   /** Error message if validation failed */
   error?: string;
+  /** Field path (dot-notation, e.g., "user.email") */
+  path: string;
   /** Time when validation occurred (ms since start) */
   timestamp?: number;
+  /** true if validation passed, false if failed */
+  valid: boolean;
+  /** Field value */
+  value: unknown;
 }
 
 /**
@@ -29,12 +29,12 @@ export type FieldValidationSchema = Record<string, FieldValidator>;
  * Options for field-level validator.
  */
 export interface FieldValidatorOptions {
-  /** Field validators */
-  schema: FieldValidationSchema;
-  /** Callback for validation events */
-  onFieldValidation?: (event: FieldValidationEvent) => void;
   /** Whether to continue on field validation errors */
   continueOnError?: boolean;
+  /** Callback for validation events */
+  onFieldValidation?: (event: FieldValidationEvent) => void;
+  /** Field validators */
+  schema: FieldValidationSchema;
   /** Start time reference for timestamp tracking */
   startTime?: number;
 }
@@ -104,7 +104,7 @@ export function createFieldValidator(options: FieldValidatorOptions): {
       for (const [path, value] of Object.entries(obj)) {
         const event = this.validateFieldAtPath(path, value);
         events.push(event);
-        if (!event.valid && !continueOnError) {
+        if (!(event.valid || continueOnError)) {
           break;
         }
       }

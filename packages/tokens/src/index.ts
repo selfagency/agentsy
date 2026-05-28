@@ -19,15 +19,15 @@ export type RequestType = 'completion' | 'embedding' | 'fine-tuning';
 
 export interface TokenBudget {
   id: string;
-  name: string;
-  provider: string;
-  model: string;
-  maxTokens: number;
   maxCost: number;
-  periodMs: number;
-  resetStrategy: BudgetResetStrategy;
-  priority: BudgetPriority;
+  maxTokens: number;
   metadata?: Record<string, unknown>;
+  model: string;
+  name: string;
+  periodMs: number;
+  priority: BudgetPriority;
+  provider: string;
+  resetStrategy: BudgetResetStrategy;
 }
 
 export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
@@ -35,40 +35,40 @@ export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
 }
 
 export interface BudgetFilter {
-  provider?: string;
   model?: string;
   priority?: BudgetPriority;
+  provider?: string;
 }
 
 export interface TokenUsage {
   budgetId: string;
-  provider: string;
-  model: string;
-  tokensUsed: number;
   cost: number;
-  timestamp: Date;
-  requestType: RequestType;
   metadata?: Record<string, unknown>;
+  model: string;
+  provider: string;
+  requestType: RequestType;
+  timestamp: Date;
+  tokensUsed: number;
 }
 
 export interface UsageFilter {
   budgetId?: string;
-  provider?: string;
-  model?: string;
-  requestType?: RequestType;
   from?: Date;
+  model?: string;
+  provider?: string;
+  requestType?: RequestType;
   to?: Date;
 }
 
 export interface TokenRequest {
   budgetId?: string;
-  provider: string;
-  model: string;
-  estimatedTokens: number;
   estimatedCost?: number;
-  priority?: BudgetPriority;
-  requestType: RequestType;
+  estimatedTokens: number;
   metadata?: Record<string, unknown>;
+  model: string;
+  priority?: BudgetPriority;
+  provider: string;
+  requestType: RequestType;
 }
 
 export interface AllocationCondition {
@@ -77,100 +77,100 @@ export interface AllocationCondition {
 }
 
 export interface TokenAllocation {
-  id: string;
-  budgetId: string;
-  allocatedTokens: number;
   allocatedCost: number;
-  expiresAt: Date;
+  allocatedTokens: number;
+  budgetId: string;
   conditions?: AllocationCondition[];
+  expiresAt: Date;
+  id: string;
 }
 
 export interface CostAnalysisBudgetSummary {
   budgetId: string;
-  totalTokens: number;
-  totalCost: number;
   requestCount: number;
+  totalCost: number;
+  totalTokens: number;
 }
 
 export interface CostAnalysis {
-  totalTokens: number;
-  totalCost: number;
-  requestCount: number;
   budgets: CostAnalysisBudgetSummary[];
+  requestCount: number;
+  totalCost: number;
+  totalTokens: number;
 }
 
 export interface OptimizationSuggestion {
   budgetId: string;
-  type: 'reduce-tokens' | 'reduce-cost' | 'rate-limit';
   message: string;
+  type: 'reduce-tokens' | 'reduce-cost' | 'rate-limit';
 }
 
 export interface TokenManager {
   createBudget(config: TokenBudgetConfig): Promise<TokenBudget>;
-  getBudget(id: string): Promise<TokenBudget | null>;
-  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
   deleteBudget(id: string): Promise<void>;
-  listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
-  requestTokens(request: TokenRequest): Promise<TokenAllocation>;
-  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
-  recordUsage(usage: TokenUsage): Promise<void>;
-  getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
+  getBudget(id: string): Promise<TokenBudget | null>;
   getCostAnalysis(periodMs: number): Promise<CostAnalysis>;
   getOptimizationSuggestions(budgetId: string): Promise<OptimizationSuggestion[]>;
+  getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
+  listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
+  recordUsage(usage: TokenUsage): Promise<void>;
+  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
+  requestTokens(request: TokenRequest): Promise<TokenAllocation>;
+  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
 }
 
 export interface CompressionOptions<TMessage> {
+  estimateTokens?: (message: TMessage) => number;
   maxTokens: number;
   preserveLast?: number;
-  estimateTokens?: (message: TMessage) => number;
 }
 
 export interface CompressionResult<TMessage> {
-  messages: TMessage[];
+  compressed: boolean;
   droppedCount: number;
   estimatedTokens: number;
-  compressed: boolean;
+  messages: TMessage[];
 }
 
 export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
 
 export interface OutputCompressionOptions {
+  intensity?: number;
   level: OutputCompressionLevel;
   preserve?: ('code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors')[];
-  intensity?: number;
 }
 
 export interface OutputCompressionResult {
-  original: string;
   compressed: string;
-  originalTokens: number;
   compressedTokens: number;
+  original: string;
+  originalTokens: number;
   savingsRatio: number;
 }
 
 export interface RateLimit {
-  windowMs: number;
   maxRequests: number;
+  windowMs: number;
 }
 
 export interface RateLimitStatus {
   allowed: boolean;
   limit: number;
   remaining: number;
-  windowMs: number;
   retryAfterMs: number;
+  windowMs: number;
 }
 
 export interface PacingFeedback {
-  provider: string;
   overloaded?: boolean;
+  provider: string;
   retryAfterMs?: number;
 }
 
 interface AllocationRecord {
   allocation: TokenAllocation;
-  request: TokenRequest;
   createdAt: number;
+  request: TokenRequest;
 }
 
 function getBudgetPriorityRank(priority: BudgetPriority): number {
@@ -182,6 +182,9 @@ function getBudgetPriorityRank(priority: BudgetPriority): number {
       return 1;
     }
     case 'low': {
+      return 0;
+    }
+    default: {
       return 0;
     }
   }
@@ -639,6 +642,9 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
           .trim()
       );
     }
+    default: {
+      return segment;
+    }
   }
 }
 
@@ -739,6 +745,7 @@ export function createInMemoryTokenManager(): TokenManager {
   const usage: TokenUsage[] = [];
 
   return {
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async createBudget(config) {
       const id = config.id ?? createId('budget');
       const budget: TokenBudget = {
@@ -757,6 +764,7 @@ export function createInMemoryTokenManager(): TokenManager {
       return cloneBudget(budget);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async deleteBudget(id) {
       budgets.delete(id);
       for (const [allocationId, record] of allocations.entries()) {
@@ -766,11 +774,13 @@ export function createInMemoryTokenManager(): TokenManager {
       }
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getBudget(id) {
       const budget = budgets.get(id);
       return budget ? cloneBudget(budget) : null;
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getCostAnalysis(periodMs) {
       const now = Date.now();
       const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
@@ -797,6 +807,7 @@ export function createInMemoryTokenManager(): TokenManager {
       };
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getOptimizationSuggestions(budgetId) {
       const budget = budgets.get(budgetId);
       if (!budget) {
@@ -836,18 +847,22 @@ export function createInMemoryTokenManager(): TokenManager {
       return suggestions;
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async getUsage(filter = {}) {
       return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async listBudgets(filter = {}) {
       return [...budgets.values()].filter(budget => filterBudget(budget, filter)).map(cloneBudget);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async recordUsage(entry) {
       usage.push(cloneUsage(entry));
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async releaseTokens(allocationId, actualUsage, actualCost = 0) {
       const record = allocations.get(allocationId);
       if (!record) {
@@ -867,6 +882,7 @@ export function createInMemoryTokenManager(): TokenManager {
       });
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async requestTokens(request) {
       const budget = request.budgetId
         ? (budgets.get(request.budgetId) ?? null)
@@ -909,6 +925,7 @@ export function createInMemoryTokenManager(): TokenManager {
       return cloneAllocation(allocation);
     },
 
+    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async updateBudget(id, updates) {
       const current = budgets.get(id);
       if (!current) {
@@ -936,34 +953,34 @@ export class PacingController {
     this.#manager = tokenManager;
   }
 
-  async throttleRequest(request: TokenRequest): Promise<boolean> {
-    const waitTime = await this.getWaitTime(request);
+  throttleRequest(request: TokenRequest): Promise<boolean> {
+    const waitTime = this.getWaitTime(request);
     if (waitTime > 0) {
-      return false;
+      return Promise.resolve(false);
     }
 
     const timestamps = this.#requestTimestamps.get(request.provider) ?? [];
     timestamps.push(Date.now());
     this.#requestTimestamps.set(request.provider, timestamps);
-    return true;
+    return Promise.resolve(true);
   }
 
-  async getWaitTime(request: TokenRequest): Promise<number> {
+  getWaitTime(request: TokenRequest): number {
     const providerCooldown = this.#cooldowns.get(request.provider);
     const now = Date.now();
     const cooldownWait = providerCooldown === undefined ? 0 : Math.max(0, providerCooldown - now);
-    const rateLimitStatus = await this.checkRateLimit(request.provider);
+    const rateLimitStatus = this.checkRateLimit(request.provider);
     return Math.max(cooldownWait, rateLimitStatus.retryAfterMs);
   }
 
-  async updateRateLimits(provider: string, limits: RateLimit[]): Promise<void> {
+  updateRateLimits(provider: string, limits: RateLimit[]): void {
     this.#limits.set(
       provider,
       limits.map(limit => ({ ...limit }))
     );
   }
 
-  async checkRateLimit(provider: string): Promise<RateLimitStatus> {
+  checkRateLimit(provider: string): RateLimitStatus {
     const limits = this.#limits.get(provider) ?? [];
     if (limits.length === 0) {
       return {
@@ -1012,7 +1029,7 @@ export class PacingController {
     return strictest;
   }
 
-  async adjustPacing(feedback: PacingFeedback): Promise<void> {
+  adjustPacing(feedback: PacingFeedback): void {
     if (feedback.overloaded === true && typeof feedback.retryAfterMs === 'number') {
       this.#cooldowns.set(feedback.provider, Date.now() + Math.max(0, feedback.retryAfterMs));
       return;

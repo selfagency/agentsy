@@ -1,5 +1,5 @@
 import type { FinishReason, UsageInfo } from '@agentsy/types';
-/* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
+// biome-ignore lint: xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { XmlToolCall } from '../../tool-calls/index.js';
@@ -501,7 +501,11 @@ describe('LLMStreamProcessor', () => {
     });
 
     expect(out.toolCalls).toHaveLength(1);
-    expect(out.toolCalls[0]).toMatchObject({ format: 'json-wrapped', name: 'do', parameters: { a: 'x' } });
+    expect(out.toolCalls[0]).toMatchObject({
+      format: 'json-wrapped',
+      name: 'do',
+      parameters: { a: 'x' }
+    });
   }, 5000);
 
   it('enforces maxResidualBytes limit to prevent unbounded buffer growth', () => {
@@ -856,8 +860,11 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
     processor.process({ content: 'hello', stepIndex: 0 });
 
     const stepStarted = events.find(
-      (e): e is { messageId?: string; stepIndex: number; usage?: unknown } & { type: 'step_started' } =>
-        (e as { type?: string }).type === 'step_started'
+      (
+        e
+      ): e is { messageId?: string; stepIndex: number; usage?: unknown } & {
+        type: 'step_started';
+      } => (e as { type?: string }).type === 'step_started'
     );
     expect(stepStarted).toBeDefined();
     if (stepStarted?.messageId) {
@@ -885,8 +892,11 @@ describe('LLMStreamProcessor — Phase 2 tool call streaming lifecycle', () => {
     });
 
     const stepFinished = events.find(
-      (e): e is { messageId?: string; stepIndex?: number; usage?: unknown } & { type: 'step_finished' } =>
-        (e as { type?: string }).type === 'step_finished'
+      (
+        e
+      ): e is { messageId?: string; stepIndex?: number; usage?: unknown } & {
+        type: 'step_finished';
+      } => (e as { type?: string }).type === 'step_finished'
     );
     expect(stepFinished).toBeDefined();
     expect(stepFinished?.usage).toStrictEqual({ outputTokens: 3 });

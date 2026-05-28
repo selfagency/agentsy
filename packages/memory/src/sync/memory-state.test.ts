@@ -91,7 +91,7 @@ describe('memory state serialization', () => {
     await adapter.applySnapshot(snapshot);
 
     expect(snapshot.cursor).toBe('cursor-2');
-    /* oxlint-disable */
+
     expect(applyState).toHaveBeenCalledWith(
       expect.objectContaining({
         pages: expect.arrayContaining([expect.objectContaining({ pageId: 'page-1' })]),

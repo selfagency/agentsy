@@ -10,11 +10,11 @@ This plan outlines a systematic, dependency-aware remediation approach for all 2
 
 ## Progress Update
 
-**✅ Completed (Phase 1): 8 packages (40%)**
+## ✅ Completed (Phase 1): 8 packages (40%)
 
 - prompts, observability, guardrails, mcp, connectors, types, models, tools
 
-**🔄 In Progress (Phase 2): 12 packages (60%)**
+## 🔄 In Progress (Phase 2): 12 packages (60%)
 
 - Orchestrator, runtime, scripts, cli, providers, renderers, retrieval, testing, ui, tokens, vscode
 

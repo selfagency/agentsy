@@ -10,7 +10,9 @@ function rewriteDistExports(
 ): Record<string, { types?: string; import?: string; require?: string }> {
   const distExports: Record<string, { types?: string; import?: string; require?: string }> = {};
   for (const [key, value] of Object.entries(rootExports)) {
-    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue;
+    }
     const entry: { types?: string; import?: string; require?: string } = {};
     if (typeof value === 'object' && value !== null) {
       const obj = value as Record<string, unknown>;

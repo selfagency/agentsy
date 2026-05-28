@@ -2,40 +2,40 @@ import type { KvStore } from '../../filesystem/agentfs/kv-store.js';
 import { createKvStore } from '../../filesystem/agentfs/kv-store.js';
 
 export interface PersonaAttribute {
-  key: string;
-  value: string;
   confidence: number;
+  key: string;
   sourceIds: string[];
   updatedAt: number;
+  value: string;
 }
 
 export interface CommunicationProfile {
+  codeStyle?: string;
+  prefersExamples: boolean;
   tone?: string;
   verbosity: 'concise' | 'moderate' | 'verbose';
-  prefersExamples: boolean;
-  codeStyle?: string;
 }
 
 export interface PersonaMemory {
-  userId: string;
   attributes: PersonaAttribute[];
-  preferences: Record<string, unknown>;
   communicationStyle: CommunicationProfile;
+  preferences: Record<string, unknown>;
   updatedAt: number;
+  userId: string;
 }
 
 export interface PersonaPatch {
   attributes?: PersonaAttribute[];
-  preferences?: Record<string, unknown>;
   communicationStyle?: Partial<CommunicationProfile>;
+  preferences?: Record<string, unknown>;
 }
 
 export interface PersonaStore {
+  delete(userId: string): boolean;
   get(userId: string): PersonaMemory | undefined;
-  update(userId: string, patch: PersonaPatch): PersonaMemory;
   listAttributes(userId: string): PersonaAttribute[];
   listUserIds(): string[];
-  delete(userId: string): boolean;
+  update(userId: string, patch: PersonaPatch): PersonaMemory;
 }
 
 export interface PersonaStoreOptions {
@@ -47,7 +47,9 @@ function deepMergePreferences(
   existing: Record<string, unknown>,
   incoming: Record<string, unknown> | undefined
 ): Record<string, unknown> {
-  if (!incoming) return existing;
+  if (!incoming) {
+    return existing;
+  }
   const merged = { ...existing };
   for (const [key, value] of Object.entries(incoming)) {
     merged[key] = value;
@@ -56,7 +58,9 @@ function deepMergePreferences(
 }
 
 function mergeAttributes(existing: PersonaAttribute[], incoming: PersonaAttribute[] | undefined): PersonaAttribute[] {
-  if (!incoming) return existing;
+  if (!incoming) {
+    return existing;
+  }
   const merged = new Map<string, PersonaAttribute>();
 
   for (const attr of existing) {
@@ -92,7 +96,9 @@ function mergeProfile(
   existing: CommunicationProfile,
   incoming: Partial<CommunicationProfile> | undefined
 ): CommunicationProfile {
-  if (!incoming) return existing;
+  if (!incoming) {
+    return existing;
+  }
   const merged: CommunicationProfile = {
     verbosity: incoming.verbosity ?? existing.verbosity,
     prefersExamples: incoming.prefersExamples ?? existing.prefersExamples
@@ -147,7 +153,9 @@ export function createPersonaStore(options: PersonaStoreOptions = {}): PersonaSt
 
     listAttributes(userId: string): PersonaAttribute[] {
       const persona = kv.get(userId);
-      if (!persona) return [];
+      if (!persona) {
+        return [];
+      }
       return [...persona.attributes].sort((a, b) => b.confidence - a.confidence);
     },
 

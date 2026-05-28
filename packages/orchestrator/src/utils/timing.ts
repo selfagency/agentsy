@@ -1,8 +1,8 @@
 export interface TimingOptions {
-  timeout?: number;
+  backoff?: 'linear' | 'exponential';
   delay?: number;
   retries?: number;
-  backoff?: 'linear' | 'exponential';
+  timeout?: number;
 }
 
 export const TimingUtils = {
@@ -86,11 +86,13 @@ export const TimingUtils = {
 
 export class Debouncer {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
+  readonly #delay: number;
+  readonly #fn: (...args: unknown[]) => void;
 
-  constructor(
-    private readonly delay: number,
-    private readonly fn: (...args: unknown[]) => void
-  ) {}
+  constructor(delay: number, fn: (...args: unknown[]) => void) {
+    this.#delay = delay;
+    this.#fn = fn;
+  }
 
   debounce(...args: unknown[]): void {
     if (this.timeoutId !== null) {
@@ -98,9 +100,9 @@ export class Debouncer {
     }
 
     this.timeoutId = setTimeout(() => {
-      this.fn(...args);
+      this.#fn(...args);
       this.timeoutId = null;
-    }, this.delay);
+    }, this.#delay);
   }
 
   cancel(): void {
@@ -114,16 +116,18 @@ export class Debouncer {
 export class Throttle {
   private lastExecution = 0;
   private pendingExecution: ReturnType<typeof setTimeout> | null = null;
+  readonly #interval: number;
+  readonly #fn: (...args: unknown[]) => void;
 
-  constructor(
-    private readonly interval: number,
-    private readonly fn: (...args: unknown[]) => void
-  ) {}
+  constructor(interval: number, fn: (...args: unknown[]) => void) {
+    this.#interval = interval;
+    this.#fn = fn;
+  }
 
   throttle(...args: unknown[]): void {
     const now = Date.now();
 
-    if (now - this.lastExecution >= this.interval) {
+    if (now - this.lastExecution >= this.#interval) {
       this.execute(...args);
     } else {
       this.pendingExecution ??= setTimeout(
@@ -131,14 +135,14 @@ export class Throttle {
           this.execute(...args);
           this.pendingExecution = null;
         },
-        this.interval - (now - this.lastExecution)
+        this.#interval - (now - this.lastExecution)
       );
     }
   }
 
   private execute(...args: unknown[]): void {
     this.lastExecution = Date.now();
-    this.fn(...args);
+    this.#fn(...args);
   }
 
   cancel(): void {

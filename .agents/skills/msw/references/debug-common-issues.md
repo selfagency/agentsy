@@ -44,11 +44,11 @@ export const handlers = [
 
 ## Common Issues Quick Reference
 
-**Issue: "fetch is not defined"**
+## Issue: "fetch is not defined"
 
 - Fix: Upgrade Node.js to 18+ (native fetch support)
 
-**Issue: Body parsing hangs with fake timers**
+## Issue: Body parsing hangs with fake timers
 
 ```typescript
 // Fix: Exclude queueMicrotask from fake timers
@@ -58,7 +58,7 @@ vi.useFakeTimers({
 })
 ```
 
-**Issue: Stale responses from cache**
+## Issue: Stale responses from cache
 
 ```typescript
 // Fix: Clear request library cache between tests
@@ -68,7 +68,7 @@ afterEach(() => {
 })
 ```
 
-**Issue: MSW v1 code in v2 project**
+## Issue: MSW v1 code in v2 project
 
 ```typescript
 // v2 correct syntax:

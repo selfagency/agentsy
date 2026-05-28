@@ -4,27 +4,31 @@
  * Verifies AsyncGenerator to Observable conversion without hard RxJS dependency
  */
 
-import { describe, expect, it, vi, expectTypeOf } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import { toObservable } from './observable.js';
 
 // Module-level generators for test fixtures
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceBasic() {
   yield 1;
   yield 2;
   yield 3;
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceStringPair() {
   yield 'a';
   yield 'b';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceWithError() {
   yield 1;
   throw new Error('Test error');
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceDouble() {
   yield 1;
   yield 2;
@@ -38,10 +42,12 @@ async function* sourceWithDelay() {
   yield 3;
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceTest() {
   yield 'test';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceExpected() {
   yield 1;
   throw new Error('Expected');
@@ -51,10 +57,12 @@ async function* sourceEmpty() {
   // Intentionally empty generator for testing completion without values
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceSingle() {
   yield 1;
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceMultiple() {
   yield 1;
   yield 2;
@@ -118,8 +126,9 @@ describe('toObservable', () => {
       complete: () => {
         completed = true;
       },
-      // oxlint-disable-next-line no-empty-function -- intentional no-op for complete-only subscription test
-      next: () => {}
+      next: () => {
+        /* noop */
+      }
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -186,10 +195,10 @@ describe('toObservable', () => {
   });
 
   it('should return subscription object', () => {
-    // oxlint-disable-next-line no-empty-function -- intentional no-op subscriber
-    const subscription = toObservable(sourceSingle()).subscribe(() => {});
+    const subscription = toObservable(sourceSingle()).subscribe(() => {
+      /* noop */
+    });
 
-    // oxlint-disable-next-line typescript/unbound-method -- type-only check via expectTypeOf
     expectTypeOf(subscription.unsubscribe).toBeFunction();
   });
 
@@ -220,6 +229,7 @@ describe('toObservable', () => {
   it('should not consume generator if not subscribed', async () => {
     const nextSpy = vi.fn();
 
+    // biome-ignore lint/suspicious/useAwait: satisfies AsyncGenerator interface for toObservable
     async function* sourceWithSpy() {
       nextSpy();
       yield 1;
@@ -238,6 +248,7 @@ describe('toObservable', () => {
   it('should call error handler with error object', async () => {
     const testError = new Error('Custom error message');
 
+    // biome-ignore lint/suspicious/useAwait: satisfies AsyncGenerator interface for toObservable
     async function* sourceWithCustomError() {
       yield;
       throw testError;

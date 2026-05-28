@@ -1,50 +1,50 @@
 import type { TierName } from './tier-types.js';
 
 export interface TierBudget {
-  tier: TierName;
   allocated: number;
-  used: number;
   max: number;
+  tier: TierName;
+  used: number;
 }
 
 export interface TokenBudgetAllocation {
-  tier: TierName;
-  tokens: number;
   granted: boolean;
   reason?: string;
+  tier: TierName;
+  tokens: number;
 }
 
 export interface TokenBudgetSnapshot {
   tiers: Record<TierName, TierBudget>;
   totalAllocated: number;
-  totalUsed: number;
   totalMax: number;
+  totalUsed: number;
   utilizationRatio: number;
 }
 
 export interface TokenBudgetOptions {
   budgets: Partial<Record<TierName, number>>;
-  overprovisionFactor?: number;
   now?: (() => number) | undefined;
+  overprovisionFactor?: number;
 }
 
 const DEFAULT_TIER_BUDGETS: Record<TierName, number> = {
   sensory_buffer: 200,
   sensory_register: 400,
-  working_memory: 1_000,
-  short_term_memory: 2_000,
+  working_memory: 1000,
+  short_term_memory: 2000,
   long_term_memory: 10_000
 };
 
 export interface TokenBudget {
   allocate(tier: TierName, tokens: number): TokenBudgetAllocation;
-  release(tier: TierName, tokens: number): void;
   available(tier: TierName): number;
-  used(tier: TierName): number;
   max(tier: TierName): number;
-  snapshot(): TokenBudgetSnapshot;
-  setMax(tier: TierName, newMax: number): void;
+  release(tier: TierName, tokens: number): void;
   reset(): void;
+  setMax(tier: TierName, newMax: number): void;
+  snapshot(): TokenBudgetSnapshot;
+  used(tier: TierName): number;
 }
 
 export function createTokenBudget(options: TokenBudgetOptions): TokenBudget {

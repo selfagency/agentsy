@@ -111,6 +111,16 @@ pnpm test
 
 When a change is package-scoped, run the corresponding package scripts first, then root checks if it affects shared code, exports, docs, or monorepo wiring.
 
+### CLI E2E tests
+
+When making changes to `packages/cli/`, also run the E2E terminal test suite:
+
+```bash
+pnpm --filter @agentsy/cli test:e2e
+```
+
+E2E specs use `@microsoft/tui-test` and are located in `packages/cli/src/e2e/`. Each CLI command with a non-trivial output or interactive flow should have a corresponding `.spec.ts` file when it meaningfully validates behavior. See `docs/developers/contributing.md` for the full workflow.
+
 ## Runtime and Language Baseline
 
 - Develop against **Node.js 22** to match CI (VS Code package declares `>=18`, but repo targets Node 22 consistently)
@@ -118,8 +128,7 @@ When a change is package-scoped, run the corresponding package scripts first, th
 - Module system is **ESM-first** (ECMAScript Modules) with `.js` extensions in imports
 - Build tool is **tsup**
 - Test framework is **Vitest**
-- Linter is **oxlint** (Rust-based, type-aware)
-- Formatter is **oxfmt** (part of ultracite preset)
+- Linter/formatter is **Biome** (via ultracite preset)
 
 ## TypeScript Rules
 
@@ -151,9 +160,9 @@ Follow the root `tsconfig.json` as source of truth.
 
 ## Linting and Formatting
 
-The repo uses **oxlint** and **oxfmt** via the ultracite preset (oxfmt.config.ts extends ultracite).
+The repo uses **Biome** via the ultracite preset (oxfmt.config.ts extends ultracite). See .agents/instructions/code-standards.md for coding standards.
 
-### Formatter conventions (oxfmt.config.ts)
+### Formatter conventions
 
 ```typescript
 {
@@ -166,7 +175,7 @@ The repo uses **oxlint** and **oxfmt** via the ultracite preset (oxfmt.config.ts
 }
 ```
 
-### Linter configuration (oxlint.config.ts)
+### Linter configuration
 
 Enabled plugins: `['eslint', 'typescript', 'unicorn', 'oxc', 'import', 'react', 'jsdoc', 'node', 'promise', 'vitest']`
 
@@ -177,12 +186,12 @@ Key rules:
 - Relaxed: `max-classes-per-file: off`, `unicorn/no-array-for-each: off`, `unicorn/no-array-reduce: off`
 - Vitest: `max-expects: off` to support comprehensive test cases
 
-### Oxlint-disable patterns
+### Biome-ignore patterns
 
 For test inputs that intentionally include mixed HTML/XML or other exceptions, use comment disables:
 
 ```typescript
-/* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
+// biome-ignore lint: xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML
 ```
 
 ## Package Boundaries
@@ -250,13 +259,13 @@ Follow existing patterns throughout the repo:
 
 ```typescript
 // Value exports
-export { createFoo, type Bar } from './foo.js';
+export { createFoo, type Bar } from "./foo.js";
 
 // Type-only exports (favored when module exports only types)
-export type * from './types.js';
+export type * from "./types.js";
 
 // Re-exports from sub-modules
-export * from './subpath/index.js';
+export * from "./subpath/index.js";
 ```
 
 ### Entry points and tsup configuration
@@ -266,15 +275,15 @@ Packages define multiple entry points in `tsup.config.ts`:
 ```typescript
 export default defineConfig({
   entry: {
-    index: 'src/index.ts',
-    processor: 'src/processor/index.ts',
-    'xml-filter': 'src/xml-filter/index.ts'
+    index: "src/index.ts",
+    processor: "src/processor/index.ts",
+    "xml-filter": "src/xml-filter/index.ts",
     // ...
   },
-  external: ['@agentsy/types', 'zod'], // Workspace and peer deps
-  format: ['esm', 'cjs'],
-  target: 'node18',
-  treeshake: true
+  external: ["@agentsy/types", "zod"], // Workspace and peer deps
+  format: ["esm", "cjs"],
+  target: "node18",
+  treeshake: true,
 });
 ```
 
@@ -355,7 +364,7 @@ Use **Vitest**. Tests are colocated as `*.test.ts` files beside source.
 
 ```typescript
 /* oxlint-disable xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML */
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from "vitest";
 ```
 
 ## Stream Processing Patterns

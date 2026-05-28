@@ -3,14 +3,14 @@ import { parseJson } from '@agentsy/core/structured';
 
 export interface VSCodeToolCallPartLike {
   callId: string;
-  name: string;
   input: Record<string, unknown>;
+  name: string;
 }
 
 interface PendingDeltaCall {
+  argumentsBuffer: string;
   id?: string;
   name?: string;
-  argumentsBuffer: string;
 }
 
 /**
@@ -111,7 +111,9 @@ export class ToolCallDeltaAccumulator {
       return repaired;
     }
 
-    onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', { index });
+    onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', {
+      index
+    });
     return {};
   }
 

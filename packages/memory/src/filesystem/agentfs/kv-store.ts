@@ -1,20 +1,20 @@
 export interface KvEntry<T = string> {
-  readonly key: string;
-  readonly value: T;
-  readonly setAt: number;
   readonly expiresAt?: number;
+  readonly key: string;
+  readonly setAt: number;
+  readonly value: T;
 }
 
 export interface KvStore<T = string> {
-  get(key: string): T | undefined;
-  set(key: string, value: T, ttlMs?: number): void;
+  clear(): void;
   delete(key: string): boolean;
+  entries(): KvEntry<T>[];
+  get(key: string): T | undefined;
   has(key: string): boolean;
   keys(): string[];
-  entries(): KvEntry<T>[];
-  clear(): void;
   /** Purge all expired entries and return the count removed. */
   purgeExpired(): number;
+  set(key: string, value: T, ttlMs?: number): void;
 }
 
 export function createKvStore<T = string>(): KvStore<T> {

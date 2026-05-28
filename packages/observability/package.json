@@ -21,17 +21,28 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./instrumentation": {
+      "types": "./dist/instrumentation.d.ts",
+      "import": "./dist/instrumentation.js",
+      "require": "./dist/instrumentation.cjs"
+    },
+    "./exporters": {
+      "types": "./dist/exporters.d.ts",
+      "import": "./dist/exporters.js",
+      "require": "./dist/exporters.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "oxfmt --write .",
+    "lint": "biome lint",
+    "format": "biome format",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
+    "@agentsy/types": "workspace:*",
     "@opentelemetry/api": "^1.9.1"
   },
   "devDependencies": {

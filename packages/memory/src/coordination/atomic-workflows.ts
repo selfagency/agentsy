@@ -1,23 +1,23 @@
 export interface AtomicWorkflowContext {
-  workflowId: string;
-  startedAt: number;
   metadata: Record<string, unknown>;
+  startedAt: number;
+  workflowId: string;
 }
 
 export interface AtomicWorkflowStep {
   name: string;
-  run(context: AtomicWorkflowContext): Promise<void>;
   rollback?(context: AtomicWorkflowContext): Promise<void>;
+  run(context: AtomicWorkflowContext): Promise<void>;
 }
 
 export interface AtomicWorkflowResult {
-  workflowId: string;
-  status: 'committed' | 'rolled_back';
-  startedAt: number;
-  finishedAt: number;
-  executedSteps: string[];
-  rolledBackSteps: string[];
   error?: Error;
+  executedSteps: string[];
+  finishedAt: number;
+  rolledBackSteps: string[];
+  startedAt: number;
+  status: 'committed' | 'rolled_back';
+  workflowId: string;
 }
 
 export interface AtomicWorkflowCoordinator {

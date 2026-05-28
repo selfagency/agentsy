@@ -1,11 +1,11 @@
 import type { MemoryItem } from './tier-types.js';
 
 export interface ImportanceFactors {
-  recencyWeight: number;
-  frequencyWeight: number;
-  sourceReliability: number;
   contentTypeWeight: number;
+  frequencyWeight: number;
+  recencyWeight: number;
   relationalBoost: number;
+  sourceReliability: number;
 }
 
 export const DEFAULT_IMPORTANCE_FACTORS: ImportanceFactors = {
@@ -36,7 +36,6 @@ export function computeImportance(item: MemoryItem, factors: ImportanceFactors, 
   const frequencyScore = Math.min(1, item.accessCount / 10);
 
   // Content type: based on writeHeap
-  // nosemgrep: writeHeap key comes from MemoryItem.writeHeap enum, known to exist
   const contentTypeScore = CONTENT_TYPE_WEIGHTS[item.writeHeap] ?? factors.contentTypeWeight;
 
   // Weighted sum

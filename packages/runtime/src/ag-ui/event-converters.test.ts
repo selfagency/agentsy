@@ -17,13 +17,12 @@ import type {
   ToolCallStartEvent
 } from '@agentsy/types';
 import { EventType } from '@agentsy/types';
-import { describe, expect, it, expectTypeOf } from 'vitest';
-
-import { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { CopilotKitEvent, CustomUIEvent } from './event-converters.js';
+import { convertEventStream, createEventConverter, toCopilotKitEvent, toCustomUIEvent } from './event-converters.js';
 
 // Test fixtures
-async function createMockStream() {
+function createMockStream() {
   const events: RunStartedEvent[] = [
     {
       runId: 'run_123',
@@ -37,6 +36,7 @@ async function createMockStream() {
     }
   ];
 
+  // biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
   async function* generate() {
     for (const event of events) {
       yield event;
@@ -46,6 +46,7 @@ async function createMockStream() {
   return generate();
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator required for AsyncGenerator<AgUiEvent> compatibility
 async function* multiEventGenerator() {
   const events: RunStartedEvent[] = [
     {
@@ -413,10 +414,10 @@ describe('createEventConverter', () => {
 
 describe('convertEventStream', () => {
   it('should convert stream to copilot-kit format', async () => {
-    const source = await createMockStream();
+    const source = createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
-    const results = [];
+    const results: (CopilotKitEvent | CustomUIEvent)[] = [];
     for await (const event of converted) {
       results.push(event);
     }
@@ -424,11 +425,11 @@ describe('convertEventStream', () => {
     expect(results).toHaveLength(2);
     const firstEvent = results[0];
     expect(firstEvent).toBeDefined();
-    expect((firstEvent as Record<string, unknown>).type).toBe('run:started');
+    expect((firstEvent as unknown as Record<string, unknown>).type).toBe('run:started');
   });
 
   it('should convert stream to custom format', async () => {
-    const source = await createMockStream();
+    const source = createMockStream();
     const converted = convertEventStream(source, 'custom');
 
     const results: (CopilotKitEvent | CustomUIEvent)[] = [];
@@ -444,8 +445,8 @@ describe('convertEventStream', () => {
     expect((firstEvent as CustomUIEvent).eventType).toBe(EventType.RUN_STARTED);
   });
 
-  it('should return async generator', async () => {
-    const source = await createMockStream();
+  it('should return async generator', () => {
+    const source = createMockStream();
     const converted = convertEventStream(source, 'copilot-kit');
 
     expectTypeOf(converted[Symbol.asyncIterator]).toBeFunction(); // nosemgrep: detect-object-injection -- Symbol.asyncIterator is a well-known symbol, not user input
@@ -463,7 +464,7 @@ describe('convertEventStream', () => {
     const first = results[0];
     const second = results[1];
     const third = results[2];
-    if (!first || !second || !third) {
+    if (!(first && second && third)) {
       throw new Error('Expected 3 results');
     }
     expect((first as CustomUIEvent).runId).toBe('run_a');

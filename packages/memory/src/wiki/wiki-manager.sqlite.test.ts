@@ -41,7 +41,7 @@ describe('createWikiManager with SQLite', () => {
       body: 'Some content here'
     });
 
-    const results = await wiki.searchVector(await createMockEmbedding('Some content here'), 1);
+    const results = await wiki.searchVector(createMockEmbedding('Some content here'), 1);
     expect(results.length).toBeGreaterThan(0);
     expect(results[0]?.pageId).toBe('wiki-vec-1');
 
@@ -152,7 +152,7 @@ describe('createWikiManager with SQLite', () => {
       body: 'target content for hybrid search'
     });
 
-    const results = await wiki.searchHybrid('target hybrid', await createMockEmbedding('target content'), 5);
+    const results = await wiki.searchHybrid('target hybrid', createMockEmbedding('target content'), 5);
     expect(results.length).toBeGreaterThan(0);
 
     sqlite.close();
@@ -230,7 +230,7 @@ describe('createWikiManager with SQLite', () => {
   });
 });
 
-async function createMockEmbedding(_text: string): Promise<number[]> {
+function createMockEmbedding(_text: string): number[] {
   // Deterministic mock embedding for test stability
   return [0.1, 0.2, 0.3, 0.4];
 }

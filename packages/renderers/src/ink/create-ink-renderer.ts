@@ -12,25 +12,25 @@ import { resolveTheme } from './themes/index.js';
 import type { Theme, ThemeName } from './themes/types.js';
 
 export interface InkRendererOptions {
-  showThinking?: boolean;
-  thinkingStyle?: 'blockquote' | 'inline' | 'suppress';
-  showToolCalls?: boolean;
-  markdown?: boolean;
-  processor: LLMStreamProcessor;
-  onWarning: (message: string) => void;
-  onFinish?: () => void;
   inkOptions?: Partial<RenderOptions>;
-  theme?: Theme | ThemeName;
-  screenReader?: boolean;
-  syntaxHighlight?: boolean;
   keyboard?: KeyboardOptions;
+  markdown?: boolean;
+  onFinish?: () => void;
+  onWarning: (message: string) => void;
+  processor: LLMStreamProcessor;
+  screenReader?: boolean;
+  showThinking?: boolean;
+  showToolCalls?: boolean;
+  syntaxHighlight?: boolean;
+  theme?: Theme | ThemeName;
+  thinkingStyle?: 'blockquote' | 'inline' | 'suppress';
 }
 
 export interface InkRendererHandle {
-  instance: Instance;
-  write(chunk: string): void;
   end(): void;
+  instance: Instance;
   unmount(): void;
+  write(chunk: string): void;
 }
 
 export async function createInkRenderer(options: InkRendererOptions): Promise<InkRendererHandle> {
@@ -61,7 +61,11 @@ export async function createInkRenderer(options: InkRendererOptions): Promise<In
   const { processor } = options;
 
   // Ref to store for updates
-  const forceUpdateRef = { current: () => {} };
+  const forceUpdateRef = {
+    current: () => {
+      /* noop */
+    }
+  };
 
   // Store listener functions for cleanup on unmount
   const listeners = {

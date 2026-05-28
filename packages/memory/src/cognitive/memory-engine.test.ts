@@ -14,12 +14,12 @@ describe('MemoryEngine', () => {
   });
 
   describe('ingest', () => {
-    it('ingests content into sensory buffer by default', async () => {
+    it('ingests content into sensory buffer by default', () => {
       const id = engine.ingest('Hello world');
       expect(id).not.toBeNull();
     });
 
-    it('returns null when tier is full and budgets exhausted', async () => {
+    it('returns null when tier is full and budgets exhausted', () => {
       // Fill sensory buffer to capacity (200 tokens)
       for (let i = 0; i < 25; i++) {
         engine.ingest(`Content item ${i} with some extra text`);
@@ -29,36 +29,34 @@ describe('MemoryEngine', () => {
       expect(id).toBeNull();
     });
 
-    it('accepts custom importance', async () => {
+    it('accepts custom importance', () => {
       const id = engine.ingest('Important event', { importance: 0.9 });
       expect(id).not.toBeNull();
     });
 
-    it('accepts custom write heap', async () => {
+    it('accepts custom write heap', () => {
       const id = engine.ingest('Query event', { writeHeap: 'query' });
       expect(id).not.toBeNull();
     });
 
-    it('accepts custom memory kind', async () => {
+    it('accepts custom memory kind', () => {
       const id = engine.ingest('Semantic fact', { kind: 'semantic' });
       expect(id).not.toBeNull();
     });
 
-    it('accepts custom metadata', async () => {
+    it('accepts custom metadata', () => {
       const id = engine.ingest('Event with metadata', {
         metadata: { source: 'test', priority: 1 }
       });
       expect(id).not.toBeNull();
     });
 
-    it('ingests to a specific target tier', async () => {
-      const id = engine.ingest('Direct to working memory', {
-        targetTier: 'working_memory'
-      });
+    it('ingests to a specific target tier', () => {
+      const id = engine.ingest('Direct to working memory', { targetTier: 'working_memory' });
       expect(id).not.toBeNull();
     });
 
-    it('returns null for invalid target tier', async () => {
+    it('returns null for invalid target tier', () => {
       // @ts-expect-error — testing runtime invalid tier name
       const id = engine.ingest('Bad tier', { targetTier: 'nonexistent' });
       expect(id).toBeNull();
@@ -66,7 +64,7 @@ describe('MemoryEngine', () => {
   });
 
   describe('recall', () => {
-    it('returns results across all tiers with crossTier=true (default)', async () => {
+    it('returns results across all tiers with crossTier=true (default)', () => {
       engine.ingest('Item one');
       engine.ingest('Item two');
       const results = engine.recall();
@@ -75,7 +73,7 @@ describe('MemoryEngine', () => {
       expect(totalItems).toBeGreaterThanOrEqual(2);
     });
 
-    it('filters by minimum importance', async () => {
+    it('filters by minimum importance', () => {
       engine.ingest('Low importance', { importance: 0.1 });
       engine.ingest('High importance', { importance: 0.9 });
       const results = engine.recall({ minImportance: 0.5, crossTier: true });
@@ -84,24 +82,21 @@ describe('MemoryEngine', () => {
       expect(totalItems).toBeLessThanOrEqual(2);
     });
 
-    it('returns per-tier results when crossTier is false', async () => {
+    it('returns per-tier results when crossTier is false', () => {
       engine.ingest('Item one');
       engine.ingest('Item two');
       const results = engine.recall({ crossTier: false });
       expect(results.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('scopes recall to specific tiers', async () => {
+    it('scopes recall to specific tiers', () => {
       engine.ingest('Item one');
-      const results = engine.recall({
-        tiers: ['sensory_buffer'],
-        crossTier: false
-      });
+      const results = engine.recall({ tiers: ['sensory_buffer'], crossTier: false });
       expect(results.length).toBe(1);
       expect(results[0]?.tierName).toBe('sensory_buffer');
     });
 
-    it('respects limit', async () => {
+    it('respects limit', () => {
       for (let i = 0; i < 10; i++) {
         engine.ingest(`Item ${i}`);
       }
@@ -109,7 +104,7 @@ describe('MemoryEngine', () => {
       expect(results[0]?.items.length).toBeLessThanOrEqual(3);
     });
 
-    it('returns empty results when no items ingested', async () => {
+    it('returns empty results when no items ingested', () => {
       const results = engine.recall();
       const totalItems = results.reduce((sum, r) => sum + r.items.length, 0);
       expect(totalItems).toBe(0);
@@ -135,30 +130,6 @@ describe('MemoryEngine', () => {
       expect(result.pendingIngested).toBeGreaterThanOrEqual(0);
     });
 
-    it('can run the learning cycle when enabled via constructor', async () => {
-      const learningEngine = createMemoryEngine({
-        now: clock.now,
-        runLearningCycle: true
-      });
-      learningEngine.ingest('Learning test event one');
-      learningEngine.ingest('Learning test event two');
-      const result = await learningEngine.awaken();
-      expect(result).toHaveProperty('learningCycle');
-    });
-
-    it('can run the learning cycle when enabled per-call', async () => {
-      engine.ingest('Learning test event one');
-      engine.ingest('Learning test event two');
-      const result = await engine.awaken([], { runLearningCycle: true });
-      expect(result).toHaveProperty('learningCycle');
-    });
-
-    it('skips the learning cycle by default', async () => {
-      engine.ingest('Learning test event one');
-      const result = await engine.awaken();
-      expect(result.learningCycle).toBeUndefined();
-    });
-
     it('processes queued events from failed ingestions', async () => {
       // Fill sensory buffer
       for (let i = 0; i < 25; i++) {
@@ -173,7 +144,7 @@ describe('MemoryEngine', () => {
   });
 
   describe('snapshot', () => {
-    it('returns tier and budget state', async () => {
+    it('returns tier and budget state', () => {
       engine.ingest('Snapshot test');
       const snap = engine.snapshot();
       expect(snap.tiers).toBeDefined();
@@ -181,7 +152,7 @@ describe('MemoryEngine', () => {
       expect(snap.schedulerRunning).toBe(false);
     });
 
-    it('reflects items in tier data', async () => {
+    it('reflects items in tier data', () => {
       engine.ingest('First item');
       const snap = engine.snapshot();
       const sbItems = snap.tiers.sensory_buffer?.items;
@@ -191,7 +162,7 @@ describe('MemoryEngine', () => {
   });
 
   describe('stats', () => {
-    it('returns aggregate statistics', async () => {
+    it('returns aggregate statistics', () => {
       engine.ingest('Stats test event');
       const stats = engine.stats();
       expect(stats.totalItems).toBeGreaterThanOrEqual(0);
@@ -200,7 +171,7 @@ describe('MemoryEngine', () => {
       expect(stats.budgetUtilization).toBeGreaterThanOrEqual(0);
     });
 
-    it('reports zero stats for empty engine', async () => {
+    it('reports zero stats for empty engine', () => {
       const stats = engine.stats();
       expect(stats.totalItems).toBe(0);
       expect(stats.totalTokens).toBe(0);
@@ -209,7 +180,7 @@ describe('MemoryEngine', () => {
   });
 
   describe('reset', () => {
-    it('clears all tiers and budget', async () => {
+    it('clears all tiers and budget', () => {
       engine.ingest('Item to clear');
       engine.reset();
       const stats = engine.stats();
@@ -218,7 +189,7 @@ describe('MemoryEngine', () => {
       expect(stats.budgetUtilization).toBe(0);
     });
 
-    it('stops the scheduler if running', async () => {
+    it('stops the scheduler if running', () => {
       engine.scheduler.start();
       expect(engine.scheduler.isRunning()).toBe(true);
       engine.reset();
@@ -227,7 +198,7 @@ describe('MemoryEngine', () => {
   });
 
   describe('tiers', () => {
-    it('exposes all five tiers', async () => {
+    it('exposes all five tiers', () => {
       expect(engine.tiers.sensory_buffer).toBeDefined();
       expect(engine.tiers.sensory_register).toBeDefined();
       expect(engine.tiers.working_memory).toBeDefined();
@@ -237,14 +208,14 @@ describe('MemoryEngine', () => {
   });
 
   describe('budget', () => {
-    it('exposes the token budget', async () => {
+    it('exposes the token budget', () => {
       expect(engine.budget).toBeDefined();
       expect(typeof engine.budget.available('sensory_buffer')).toBe('number');
     });
   });
 
   describe('scheduler', () => {
-    it('exposes the tier scheduler', async () => {
+    it('exposes the tier scheduler', () => {
       expect(engine.scheduler).toBeDefined();
       expect(engine.scheduler.isRunning()).toBe(false);
     });

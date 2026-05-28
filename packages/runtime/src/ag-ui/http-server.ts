@@ -23,14 +23,14 @@ export interface SSEStreamOptions {
   formatEvent?: (event: AgUiEvent) => string;
 
   /**
-   * Whether to include comments (default: false).
-   */
-  includeComments?: boolean;
-
-  /**
    * Heartbeat interval in ms to keep connection alive (default: 30000).
    */
   heartbeatInterval?: number;
+
+  /**
+   * Whether to include comments (default: false).
+   */
+  includeComments?: boolean;
 }
 
 /**
@@ -236,7 +236,7 @@ export function createExpressMiddleware(streamGenerator: (runId: string) => Asyn
  * @returns Hono handler
  */
 export function createHonoHandler(streamGenerator: (runId: string) => AsyncGenerator<AgUiEvent>) {
-  return async (c: Record<string, unknown>) => {
+  return (c: Record<string, unknown>) => {
     const runId = `run_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     try {

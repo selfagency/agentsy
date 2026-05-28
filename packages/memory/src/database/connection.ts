@@ -2,10 +2,52 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
 
-import * as schema from './schema.js';
+import {
+  fsConfig,
+  fsData,
+  fsDentry,
+  fsInode,
+  fsOrigin,
+  fsSymlink,
+  fsWhiteout,
+  kvStore,
+  memoryItems,
+  ragDocuments,
+  ragVectors,
+  syncConflicts,
+  syncState,
+  toolCalls,
+  wikiBacklinks,
+  wikiConcepts,
+  wikiPageHistory,
+  wikiPages,
+  wikiVectors
+} from './schema.js';
+
+const schema = {
+  fsConfig,
+  fsData,
+  fsDentry,
+  fsInode,
+  fsOrigin,
+  fsSymlink,
+  fsWhiteout,
+  kvStore,
+  memoryItems,
+  ragDocuments,
+  ragVectors,
+  syncConflicts,
+  syncState,
+  toolCalls,
+  wikiBacklinks,
+  wikiConcepts,
+  wikiPageHistory,
+  wikiPages,
+  wikiVectors
+};
 
 export type MemoryDatabase = BetterSQLite3Database<typeof schema>;
 

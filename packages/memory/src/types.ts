@@ -1,31 +1,31 @@
 import { createHash } from 'node:crypto';
 
 export interface ContextFingerprint {
-  value: string;
   modelFamily: string;
-  templateVersion: string;
   schemaVersion: number;
+  templateVersion: string;
+  value: string;
 }
 
 export interface CreateContextFingerprintInput {
   content: string;
   modelFamily: string;
-  templateVersion: string;
   schemaVersion: number;
+  templateVersion: string;
 }
 
 export interface MemoryReuseHint {
+  invalidationKeys: string[];
   reuseClass: 'hot' | 'warm' | 'cold';
   stablePrefix: boolean;
   toolSchema: boolean;
-  invalidationKeys: string[];
 }
 
 export interface CreateMemoryReuseHintInput {
+  invalidationKeys: string[];
   reuseClass: 'hot' | 'warm' | 'cold';
   stablePrefix: boolean;
   toolSchema: boolean;
-  invalidationKeys: string[];
 }
 
 export function createContextFingerprint(input: CreateContextFingerprintInput): ContextFingerprint {

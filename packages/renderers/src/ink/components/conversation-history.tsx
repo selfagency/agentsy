@@ -7,9 +7,6 @@ import { ThinkingBlock } from './thinking-block.tsx';
 import { ToolCallBlock } from './tool-call-block.tsx';
 
 interface ConversationHistoryProps {
-  readonly turns: readonly ConversationTurn[];
-  readonly theme: Theme;
-  readonly screenReader?: boolean | undefined;
   readonly options: {
     readonly showThinking?: boolean | undefined;
     readonly thinkingStyle?: 'blockquote' | 'inline' | 'suppress' | undefined;
@@ -17,6 +14,9 @@ interface ConversationHistoryProps {
     readonly markdown?: boolean | undefined;
     readonly syntaxHighlight?: boolean | undefined;
   };
+  readonly screenReader?: boolean | undefined;
+  readonly theme: Theme;
+  readonly turns: readonly ConversationTurn[];
 }
 
 export function ConversationHistory({ turns, theme, screenReader = false, options }: ConversationHistoryProps) {
@@ -31,31 +31,31 @@ export function ConversationHistory({ turns, theme, screenReader = false, option
   return (
     <Static items={turns as ConversationTurn[]}>
       {turn => (
-        <Box key={turn.id} flexDirection="column" marginBottom={1}>
+        <Box flexDirection="column" key={turn.id} marginBottom={1}>
           {turn.role === 'user' ? (
             <Text bold>{`› ${turn.text}`}</Text>
           ) : (
             <Box flexDirection="column">
               {showThinking && turn.thinking && (
                 <ThinkingBlock
-                  text={turn.thinking}
-                  style={thinkingStyle}
                   isStreaming={false}
-                  theme={theme}
                   screenReader={screenReader}
+                  style={thinkingStyle}
+                  text={turn.thinking}
+                  theme={theme}
                 />
               )}
               {showToolCalls &&
                 turn.toolCalls.map(call => (
-                  <ToolCallBlock key={call.id} call={call} theme={theme} screenReader={screenReader} />
+                  <ToolCallBlock call={call} key={call.id} screenReader={screenReader} theme={theme} />
                 ))}
               <StreamingText
-                text={turn.text}
-                markdown={markdown}
                 isStreaming={false}
-                theme={theme}
+                markdown={markdown}
                 screenReader={screenReader}
                 syntaxHighlight={syntaxHighlight}
+                text={turn.text}
+                theme={theme}
               />
             </Box>
           )}

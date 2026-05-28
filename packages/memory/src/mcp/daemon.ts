@@ -1,7 +1,7 @@
 // Daemon process management for @agentsy/memory MCP server
 // Provides PID file tracking, auto-restart, and health monitoring
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { createMemoryEngine } from '../cognitive/memory-engine.js';
@@ -9,29 +9,29 @@ import { loadConfig } from '../config.js';
 import { createMemoryMCPServer, type MemoryMCPServerOptions } from './server.js';
 
 export interface DaemonConfig {
-  /** PID file path. Default: .agentsy/memory-daemon.pid */
-  pidFile?: string;
   /** Log file path. Default: .agentsy/memory-daemon.log */
   logFile?: string;
+  /** Max restarts within window. Default: 5 */
+  maxRestarts?: number;
+  /** PID file path. Default: .agentsy/memory-daemon.pid */
+  pidFile?: string;
   /** Auto-restart on crash. Default: true */
   restart?: boolean;
   /** Delay between restarts in ms. Default: 1000 */
   restartDelay?: number;
-  /** Max restarts within window. Default: 5 */
-  maxRestarts?: number;
   /** Restart window in ms. Default: 60000 */
   restartWindow?: number;
 }
 
 export interface DaemonStatus {
-  running: boolean;
-  pid: number | null;
-  uptime: number | null;
   engineStats: {
     totalItems: number;
     totalTokens: number;
     budgetUtilization: number;
   } | null;
+  pid: number | null;
+  running: boolean;
+  uptime: number | null;
 }
 
 const DEFAULT_DAEMON_CONFIG: Required<DaemonConfig> = {
@@ -40,7 +40,7 @@ const DEFAULT_DAEMON_CONFIG: Required<DaemonConfig> = {
   restart: true,
   restartDelay: 1000,
   maxRestarts: 5,
-  restartWindow: 60000
+  restartWindow: 60_000
 };
 
 /**
@@ -57,25 +57,29 @@ function ensureDir(filePath: string): void {
  * Check if a daemon is currently running by reading its PID file
  * and checking if the process exists.
  */
-export async function isDaemonRunning(pidFile?: string): Promise<boolean> {
+export function isDaemonRunning(pidFile?: string): Promise<boolean> {
   const pidPath = pidFile ?? DEFAULT_DAEMON_CONFIG.pidFile;
-  if (!existsSync(pidPath)) return false;
+  if (!existsSync(pidPath)) {
+    return Promise.resolve(false);
+  }
 
   try {
     const pid = Number.parseInt(readFileSync(pidPath, 'utf-8').trim(), 10);
-    if (Number.isNaN(pid)) return false;
+    if (Number.isNaN(pid)) {
+      return Promise.resolve(false);
+    }
 
     // Check if the process is still alive
     try {
       process.kill(pid, 0); // signal 0 = existence check
-      return true;
+      return Promise.resolve(true);
     } catch {
       // Process doesn't exist — stale PID file
       unlinkSync(pidPath);
-      return false;
+      return Promise.resolve(false);
     }
   } catch {
-    return false;
+    return Promise.resolve(false);
   }
 }
 
@@ -109,7 +113,7 @@ function withDefault<T>(value: T | undefined, fallback: T): T {
   return value ?? fallback;
 }
 
-function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
+export function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
   return {
     pidFile: withDefault(daemonConfig.pidFile, DEFAULT_DAEMON_CONFIG.pidFile),
     logFile: withDefault(daemonConfig.logFile, DEFAULT_DAEMON_CONFIG.logFile),
@@ -120,10 +124,12 @@ function buildDaemonConfig(daemonConfig: DaemonConfig): Required<DaemonConfig> {
   };
 }
 
-function cleanOldRestartTimestamps(timestamps: number[], now: number, window: number): void {
+export function cleanOldRestartTimestamps(timestamps: number[], now: number, window: number): void {
   while (timestamps.length > 0) {
     const first = timestamps[0];
-    if (first === undefined || now - first <= window) break;
+    if (first === undefined || now - first <= window) {
+      break;
+    }
     timestamps.shift();
   }
 }
@@ -158,7 +164,7 @@ export async function startDaemon(
   // Load full config for engine creation
   const fullConfig = loadConfig();
   const engine = createMemoryEngine(engineOptions);
-  const server = await createMemoryMCPServer(engine, {
+  const server = createMemoryMCPServer(engine, {
     ...serverOptions,
     ...fullConfig.mcp
   });
@@ -173,7 +179,9 @@ export async function startDaemon(
     try {
       await server.start();
     } catch (err) {
-      if (!config.restart) throw err;
+      if (!config.restart) {
+        throw err;
+      }
 
       const now = Date.now();
       cleanOldRestartTimestamps(restartTimestamps, now, config.restartWindow);
@@ -192,7 +200,7 @@ export async function startDaemon(
 
       // Re-create engine and server for clean state
       const newEngine = createMemoryEngine(engineOptions);
-      await createMemoryMCPServer(newEngine, {
+      createMemoryMCPServer(newEngine, {
         ...serverOptions,
         ...fullConfig.mcp
       });
@@ -206,7 +214,9 @@ export async function startDaemon(
   // Handle graceful shutdown
   let shuttingDown = false;
   async function shutdown(): Promise<void> {
-    if (shuttingDown) return;
+    if (shuttingDown) {
+      return;
+    }
     shuttingDown = true;
 
     try {
@@ -243,7 +253,9 @@ export async function stopDaemon(pidFile?: string): Promise<void> {
   }
 
   const pid = Number.parseInt(readFileSync(pidPath, 'utf-8').trim(), 10);
-  if (Number.isNaN(pid)) return;
+  if (Number.isNaN(pid)) {
+    return;
+  }
 
   try {
     process.kill(pid, 'SIGTERM');

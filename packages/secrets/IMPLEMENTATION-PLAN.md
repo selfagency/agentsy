@@ -178,6 +178,8 @@ export interface ProviderCredentials {
 }
 ```
 
+Each credential carries an identity context (user, agent, service) so that the same secret store can serve multiple principals with different access levels.
+
 ## Implementation Details
 
 ### Source Precedence
@@ -204,6 +206,7 @@ Sensitive data should be cleared from memory as soon as it is no longer needed. 
 - Secure key derivation for file encryption
 - Platform-specific secure storage APIs
 - Audit trail for secret access (optional)
+- When a credential fails with an auth error, automatically trigger credential rotation and retry once. If rotation also fails, surface a credential-rotation-failed event to observability and fail gracefully.
 
 ### Source Plan References
 
@@ -234,6 +237,8 @@ Sensitive data should be cleared from memory as soon as it is no longer needed. 
 - [ ] Migration tools between stores
 - [ ] Redaction utilities for logging
 - [ ] CLI integration commands
+- [ ] Support dynamic credentials that resolve at time of use rather than at session start. Credential providers may register resolvers that fetch tokens on demand.
+- [ ] Support OAuth 2.1 device authorization flow and client credentials grant for long-running agent sessions. Token refresh must be transparent to the caller.
 
 #### Phase 4: Security Hardening
 
@@ -284,7 +289,7 @@ packages/secrets/src/
 
 ### CRITICAL: Varlock Schema-First Secrets Integration
 
-**Schema-First Secrets Management**
+## Schema-First Secrets Management
 
 - **Rationale:** Agents receive type-safe schema, not raw secrets, with runtime leak prevention and plugin architecture
 - **Expected Benefits:** Design-time type safety, automatic leak prevention, multi-environment loading, framework integrations
@@ -298,30 +303,30 @@ packages/secrets/src/
 interface VarlockIntegration {
   // Schema-first approach
   schemaFirst: {
-    design: 'Agents receive schema, never secrets';
-    typesafety: 'Type-safe secret access patterns';
-    runtime: 'Runtime validation and leak prevention';
+    design: "Agents receive schema, never secrets";
+    typesafety: "Type-safe secret access patterns";
+    runtime: "Runtime validation and leak prevention";
   };
 
   // Plugin architecture
   plugins: {
-    backends: 'Plugin architecture for secret backends';
-    frameworks: 'Framework integrations (Next.js, Vite, Astro)';
-    multiEnv: 'Multi-environment .env.* loading';
+    backends: "Plugin architecture for secret backends";
+    frameworks: "Framework integrations (Next.js, Vite, Astro)";
+    multiEnv: "Multi-environment .env.* loading";
   };
 
   // Security features
   security: {
-    leakScanning: 'Runtime leak scanning and prevention';
-    validation: 'Schema-driven secret validation';
-    runtime: 'Runtime leak prevention enhanced';
+    leakScanning: "Runtime leak scanning and prevention";
+    validation: "Schema-driven secret validation";
+    runtime: "Runtime leak prevention enhanced";
   };
 
   // Integration strategy
   integration: {
-    complement: 'Complement existing @agentsy/secrets';
-    enhance: 'Schema-driven validation and leak prevention';
-    backwardsCompatible: 'Compatibility layer with current system';
+    complement: "Complement existing @agentsy/secrets";
+    enhance: "Schema-driven validation and leak prevention";
+    backwardsCompatible: "Compatibility layer with current system";
   };
 }
 ```
@@ -355,38 +360,38 @@ interface VarlockIntegration {
 interface EnhancedSecretsArchitecture {
   // Schema-driven design
   schemaFirst: {
-    definition: 'Type-safe secret schemas';
-    access: 'Agents receive schema, not raw secrets';
-    validation: 'Design-time and runtime validation';
+    definition: "Type-safe secret schemas";
+    access: "Agents receive schema, not raw secrets";
+    validation: "Design-time and runtime validation";
   };
 
   // Multi-environment support
   environments: {
-    loading: '.env.* multi-environment loading';
-    validation: 'Per-environment schema validation';
-    isolation: 'Environment-specific secret separation';
+    loading: ".env.* multi-environment loading";
+    validation: "Per-environment schema validation";
+    isolation: "Environment-specific secret separation";
   };
 
   // Runtime protection
   runtime: {
-    leakScanning: 'Runtime leak scanning and prevention';
-    validation: 'Schema-driven validation';
-    enforcement: 'Runtime leak prevention enhanced';
+    leakScanning: "Runtime leak scanning and prevention";
+    validation: "Schema-driven validation";
+    enforcement: "Runtime leak prevention enhanced";
   };
 
   // Plugin extensibility
   plugins: {
-    backends: 'Plugin architecture for secret backends';
-    integrations: 'Framework and platform integrations';
-    customization: 'Custom secret handling logic';
+    backends: "Plugin architecture for secret backends";
+    integrations: "Framework and platform integrations";
+    customization: "Custom secret handling logic";
   };
 
   // Expected combined benefits
   benefits: {
-    typesafety: 'Design-time type safety for all secrets';
-    prevention: 'Automatic leak prevention via scanning';
-    flexibility: 'Multi-environment and plugin support';
-    integration: 'Comprehensive framework integrations';
+    typesafety: "Design-time type safety for all secrets";
+    prevention: "Automatic leak prevention via scanning";
+    flexibility: "Multi-environment and plugin support";
+    integration: "Comprehensive framework integrations";
   };
 }
 ```
@@ -433,19 +438,19 @@ interface EnhancedSecretsArchitecture {
 
 ### Integration Timeline
 
-**Phase 1: Schema Foundation (Weeks 1-4)**
+## Phase 1: Schema Foundation (Weeks 1-4)
 
 - Schema definition language implementation
 - Plugin architecture foundation
 - Multi-environment loading
 
-**Phase 2: Runtime Protection (Weeks 5-8)**
+## Phase 2: Runtime Protection (Weeks 5-8)
 
 - Runtime leak scanning and prevention
 - Schema-driven validation
 - Plugin implementation
 
-**Phase 3: Integration & Polishing (Weeks 9-10)**
+## Phase 3: Integration & Polishing (Weeks 9-10)
 
 - Framework integrations
 - Enhanced security features

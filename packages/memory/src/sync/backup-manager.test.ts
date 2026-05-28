@@ -46,6 +46,7 @@ describe('createBackupManager', () => {
       }
     ]);
     const manager = createBackupManager({
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
       applySnapshot: async snapshot => {
         restored = snapshot;
       },
@@ -86,6 +87,7 @@ describe('createBackupManager', () => {
       }
     ]);
     const manager = createBackupManager({
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
       applySnapshot: async snapshot => {
         current = snapshot;
       },

@@ -5,7 +5,8 @@ export default defineConfig({
   dts: true,
   entry: {
     agents: 'src/agents/index.ts',
-    index: 'src/index.ts'
+    index: 'src/index.ts',
+    manifest: 'src/manifest/index.ts'
   },
   external: ['@agentsy/types'],
   format: ['esm', 'cjs'],

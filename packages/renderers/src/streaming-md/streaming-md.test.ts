@@ -1,34 +1,27 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// oxlint-disable-next-line typescript/no-unsafe-call typescript/no-unsafe-assignment
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { testOnStepCall } from '../shared.test-utils.js';
 import { createStreamingMarkdownRenderer } from './create-streaming-markdown-renderer.js';
 
-// oxlint-disable-next-line typescript/no-unsafe-call
 vi.mock('streaming-markdown', () => ({
   default: {
     removed: [],
-    parser_create: vi.fn<{ target: unknown }, { target: unknown }>((opts: { target: unknown }) => ({
+    parser_create: vi.fn((opts: { target: unknown }) => ({
       target: opts.target
     })),
-    parser_end: vi.fn<() => void>(),
-    parser_write: vi.fn<() => void>()
+    parser_end: vi.fn(),
+    parser_write: vi.fn()
   }
 }));
 
-// oxlint-disable-next-line typescript/no-unsafe-call
 vi.mock('dompurify', () => {
-  const mockSanitize = vi.fn<(html: string | Element) => string>((html: string | Element) => html);
+  const mockSanitize = vi.fn((html: string) => html);
   return {
     default: {
       removed: [],
-      // oxlint-disable-next-line typescript/no-unsafe-assignment
       sanitize: mockSanitize
     },
     removed: [],
-    // oxlint-disable-next-line typescript/no-unsafe-assignment
     sanitize: mockSanitize
   };
 });
@@ -54,7 +47,7 @@ describe('Streaming Markdown Renderer', () => {
     }).toThrow('Target element is required');
   });
 
-  it('creates renderer with target', async () => {
+  it('creates renderer with target', () => {
     const renderer = createStreamingMarkdownRenderer({ target: mockTarget });
 
     expect(renderer).toBeDefined();
@@ -100,7 +93,7 @@ describe('Streaming Markdown Renderer', () => {
   });
 
   it('calls onSecurityViolation on sanitization failure', async () => {
-    const onSecurityViolation = vi.fn<(message: string) => void>();
+    const onSecurityViolation = vi.fn();
     const renderer = createStreamingMarkdownRenderer({
       onSecurityViolation,
       target: mockTarget
