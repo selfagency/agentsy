@@ -390,7 +390,7 @@ async function main() {
   // --- Monitor Release workflow --------------------------------------------
 
   const releaseSpinner = ora('Release: waiting for workflow to trigger...').start();
-  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, releaseSpinner, {});
+  await waitForWorkflow(octokit, 'Release', owner, repo, headSha, releaseSpinner, { inputs: { tag } });
 
   console.log(`✅ Release workflow complete: ${tag}`);
   releaseDone = true;

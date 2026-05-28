@@ -29,6 +29,7 @@ export type WorkflowSpinner = ReturnType<typeof ora>;
 export interface WaitForWorkflowOptions {
   autoDispatch?: boolean;
   branch?: string | undefined;
+  inputs?: Record<string, string>;
   pollMs?: number;
   timeoutMs?: number;
 }
@@ -266,9 +267,10 @@ export async function waitForWorkflow(
   repo: string,
   headSha: string,
   spinner: WorkflowSpinner,
-  { timeoutMs = 3_600_000, pollMs = 15_000, autoDispatch = true, branch = 'main' }: WaitForWorkflowOptions = {}
+  options: WaitForWorkflowOptions = {}
 ) {
   const { sleep } = await import('zx');
+  const { timeoutMs = 3_600_000, pollMs = 15_000, autoDispatch = true, branch = 'main' } = options;
 
   const workflowsResp = await octokit.actions.listRepoWorkflows({
     owner,
@@ -307,7 +309,8 @@ export async function waitForWorkflow(
           owner,
           ref: 'main',
           repo,
-          workflow_id: workflow.id
+          workflow_id: workflow.id,
+          inputs: options.inputs
         });
         triggered = true;
         spinner.text = `${name}: waiting for run to appear...`;
