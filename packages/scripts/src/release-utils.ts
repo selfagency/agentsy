@@ -1,7 +1,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const ROOT = resolve(import.meta.dirname, '..');
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+export const ROOT = resolve(__dirname, '../../..');
 export const PACKAGES_DIR = resolve(ROOT, 'packages');
 
 export function isPathInsideRoot(p: string): boolean {

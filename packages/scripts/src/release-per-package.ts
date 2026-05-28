@@ -190,7 +190,12 @@ async function main() {
   process.env.NPM_CONFIG_USERCONFIG ??= resolve(homedir(), '.npmrc');
   const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY ?? 'https://registry.npmjs.org/';
 
-  await checkNpmCredentials(NPM_REGISTRY);
+  // npm auth only needed for first-time publish (before OIDC is set up)
+  const prereleaseState = readReleaseState(RELEASE_STATE_PATH);
+  const prereleasePackageState = getPackageReleaseState(prereleaseState, fullPackageName);
+  if (prereleasePackageState !== 'oidc-ready') {
+    await checkNpmCredentials(NPM_REGISTRY);
+  }
 
   const githubToken = await resolveGithubToken();
   const octokit = new Octokit({ auth: githubToken });
