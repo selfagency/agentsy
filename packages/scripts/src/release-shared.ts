@@ -310,7 +310,7 @@ export async function waitForWorkflow(
           ref: 'main',
           repo,
           workflow_id: workflow.id,
-          inputs: options.inputs
+          ...(options.inputs ? { inputs: options.inputs } : {})
         });
         triggered = true;
         spinner.text = `${name}: waiting for run to appear...`;
