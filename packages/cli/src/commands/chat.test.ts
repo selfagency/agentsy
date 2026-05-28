@@ -1,20 +1,23 @@
-import { Readable } from 'node:stream';
+import { PassThrough } from 'node:stream';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { runChatCommand } from './chat.js';
 
 /**
- * Create a mock stdin stream that yields the given lines then ends.
+ * Create a mock stdin PassThrough, write lines into it, and end it.
+ * More deterministic than Readable.from(syncGenerator) across Node versions.
  */
-function makeMockStdin(lines: string[]): NodeJS.ReadableStream {
-  return Readable.from(
-    (function* () {
-      for (const line of lines) {
-        yield `${line}\n`;
-      }
-    })()
-  );
+function makeMockStdin(lines: string[]): PassThrough {
+  const stream = new PassThrough();
+  // Defer writes to allow the readline to set up listeners
+  setImmediate(() => {
+    for (const line of lines) {
+      stream.write(`${line}\n`);
+    }
+    stream.end();
+  });
+  return stream;
 }
 
 describe('chat command', () => {
