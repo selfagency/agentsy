@@ -456,7 +456,7 @@ jobs:
             exit 0
           fi
 
-          pnpm dlx tsx packages/scripts/src/trusted-publish-readiness.ts \
+          npx tsx packages/scripts/src/trusted-publish-readiness.ts \
             --package-name "${PACKAGE_NAME}" \
             --package-dir "packages/${PACKAGE_DIR}" \
             --expected-repo "${REPOSITORY}" \
