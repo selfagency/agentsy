@@ -56,19 +56,17 @@ jobs:
         env:
           CI: true
 
-      - name: Run unit tests with coverage (JUNIT via built-in reporter)
+      - name: Run unit tests with coverage and JUNIT
         run: |
-          pnpm turbo run coverage -- --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=text
+          pnpm turbo run coverage -- \
+            --coverage.reporter=json \
+            --coverage.reporter=lcov \
+            --coverage.reporter=text \
+            --reporter=junit \
+            --outputFile.junit=test-report.junit.xml
         env:
           CI: true
         continue-on-error: true
-
-      - name: Generate JUNIT test reports
-        if: always()
-        run: |
-          pnpm turbo run test -- --reporter=junit --outputFile=test-report.junit.xml
-        env:
-          CI: true
 
       - name: Upload test results to GitHub
         if: always()
