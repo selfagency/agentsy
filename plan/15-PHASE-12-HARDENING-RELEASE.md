@@ -43,16 +43,17 @@ export const RELEASE_CHECKLIST = [
       'Test coverage >70%'
     ]
   },
-  {
-    category: 'Integration',
-    checks: [
-      'E2E smoke tests pass',
-      'MSW fixtures comprehensive',
-      'No real network calls in CI',
-      'Cross-package contract tests pass'
-    ]
-  },
-  {
+    {
+      category: 'Integration',
+      checks: [
+        'E2E smoke tests pass',
+        'aImock fixtures comprehensive',
+        'Drift detection green (daily CI)',
+        'No real network calls in CI',
+        'Chaos tests pass',
+        'Cross-package contract tests pass'
+      ]
+    },  {
     category: 'Security',
     checks: [
       'No hardcoded secrets',

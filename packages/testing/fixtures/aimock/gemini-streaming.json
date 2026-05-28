@@ -1,0 +1,24 @@
+{
+  "$schema": "aImock fixture — Gemini generateContent (streaming)",
+  "name": "gemini-streaming-hello",
+  "request": {
+    "model": "gemini-2.0-flash",
+    "contents": [{ "parts": [{ "text": "hello" }] }]
+  },
+  "response": {
+    "candidates": [
+      {
+        "content": {
+          "parts": [{ "text": "Gemini streaming" }],
+          "role": "model"
+        },
+        "finishReason": "STOP"
+      }
+    ],
+    "usageMetadata": {
+      "promptTokenCount": 10,
+      "candidatesTokenCount": 2,
+      "totalTokenCount": 12
+    }
+  }
+}

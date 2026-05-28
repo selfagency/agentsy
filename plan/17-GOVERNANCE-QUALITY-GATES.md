@@ -161,6 +161,14 @@ tracer.info('event', { ...data }); // Secrets never logged
 
 ## Testing Standards
 
+### Mocking Standards
+
+- ✅ LLM provider tests use aImock fixtures (not MSW) — see `plan/18-PHASE-AIMOCK-INTEGRATION.md`
+- ✅ All fixtures validated against real APIs (drift detection green)
+- ✅ No real network calls in CI (all aImock or MSW for non-LLM endpoints)
+- ✅ Chaos tests pass (error handling verified under 500s, malformed JSON, disconnects)
+- ✅ Record & replay fixtures are deterministic
+
 ### Unit Tests
 
 - ✅ All public functions tested
@@ -172,8 +180,9 @@ tracer.info('event', { ...data }); // Secrets never logged
 
 - ✅ Cross-package contracts validated
 - ✅ Data flow end-to-end
-- ✅ All MSW mocks, no real network calls
+- ✅ All aImock fixtures current (drift detection green)
 - ✅ Deterministic fixtures (seed random if needed)
+- ✅ Chaos tests for error paths (retry, budget enforcement, graceful degradation)
 
 ### E2E Tests
 

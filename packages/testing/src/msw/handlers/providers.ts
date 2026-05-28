@@ -179,6 +179,9 @@ export interface ProviderStreamingOptions {
 /**
  * Create an OpenAI chat completions streaming handler.
  *
+ * @deprecated Use aImock (`@copilotkit/aimock`) for LLM provider mocking.
+ * See `plan/19-AIMOCK-MIGRATION-PLAN.md` for migration details.
+ *
  * POST to `https://api.openai.com/v1/chat/completions` with `stream: true`
  * receives an SSE stream of delta chunks.
  */
@@ -204,6 +207,9 @@ export function createOpenAIHandler(options?: ProviderStreamingOptions): HttpHan
 /**
  * Create an OpenAI chat completions **non-streaming** handler.
  *
+ * @deprecated Use aImock (`@copilotkit/aimock`) for LLM provider mocking.
+ * See `plan/19-AIMOCK-MIGRATION-PLAN.md` for migration details.
+ *
  * POST to `https://api.openai.com/v1/chat/completions` (no `stream` flag)
  * returns a JSON completion body.
  */
@@ -215,6 +221,9 @@ export function createOpenAICompleteHandler(content?: string): HttpHandler {
 
 /**
  * Create an Anthropic messages streaming handler.
+ *
+ * @deprecated Use aImock (`@copilotkit/aimock`) for LLM provider mocking.
+ * See `plan/19-AIMOCK-MIGRATION-PLAN.md` for migration details.
  *
  * POST to `https://api.anthropic.com/v1/messages` receives an SSE stream
  * of Anthropic-format events.
@@ -241,6 +250,9 @@ export function createAnthropicHandler(options?: ProviderStreamingOptions): Http
 /**
  * Create a Gemini streaming handler.
  *
+ * @deprecated Use aImock (`@copilotkit/aimock`) for LLM provider mocking.
+ * See `plan/19-AIMOCK-MIGRATION-PLAN.md` for migration details.
+ *
  * POST to `https://generativelanguage.googleapis.com/v1beta/models` receives
  * an SSE stream of Gemini-format candidates.
  */
@@ -265,6 +277,9 @@ export function createGeminiHandler(options?: ProviderStreamingOptions): HttpHan
 
 /**
  * Create all provider handlers in a single array for convenience.
+ *
+ * @deprecated Use aImock (`@copilotkit/aimock`) for LLM provider mocking.
+ * See `plan/19-AIMOCK-MIGRATION-PLAN.md` for migration details.
  */
 export function createAllProviderHandlers(streamOptions?: ProviderStreamingOptions): HttpHandler[] {
   return [

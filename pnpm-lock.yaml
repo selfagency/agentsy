@@ -642,6 +642,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
+      '@copilotkit/aimock':
+        specifier: ^1.27.3
+        version: 1.27.3(vitest@4.1.7)
       '@types/node':
         specifier: ^25.9.0
         version: 25.9.1
@@ -965,6 +968,19 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
+
+  '@copilotkit/aimock@1.27.3':
+    resolution: {integrity: sha512-ttpU7ykV/j0+VIVA7Zb1fiDSH8ScQQ31ui/5ot824+MVnHEvyzZWl9Kbe3Tij3Agknyo7pL7/lK6omZlO2mkCg==}
+    engines: {node: '>=24.0.0'}
+    hasBin: true
+    peerDependencies:
+      jest: '>=29'
+      vitest: '>=3'
+    peerDependenciesMeta:
+      jest:
+        optional: true
+      vitest:
+        optional: true
 
   '@docsearch/css@3.8.2':
     resolution: {integrity: sha512-y05ayQFyUmCXze79+56v/4HpycYF3uFqB78pLPrSV5ZKAlDuIAAJNhaRi8tTdRNXh05yxX/TyNnzD6LwSM89vQ==}
@@ -4807,6 +4823,10 @@ snapshots:
 
   '@colors/colors@1.5.0':
     optional: true
+
+  '@copilotkit/aimock@1.27.3(vitest@4.1.7)':
+    optionalDependencies:
+      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@7.3.3(@types/node@25.9.1)(tsx@4.22.3)(yaml@2.9.0))
 
   '@docsearch/css@3.8.2': {}
 
