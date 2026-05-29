@@ -115,6 +115,11 @@ export interface ChatHeaders {
 export interface ChatCommandOptions {
   /** Headers printed before each assistant response block. */
   headers?: ChatHeaders | undefined;
+  /**
+   * Input stream override (for testing). Defaults to process.stdin.
+   * Allows tests to provide a mock stream without mocking process.stdin.
+   */
+  input?: NodeJS.ReadableStream | undefined;
   /** Delay between mock chunks in ms (for testing). Set to 0 for fastest test. */
   mockChunkDelayMs?: number | undefined;
   /** Custom mock client response text (for testing). */
@@ -188,7 +193,7 @@ export async function runChatCommand(
   });
 
   const rl = createInterface({
-    input: process.stdin,
+    input: options?.input ?? process.stdin,
     output: process.stdout,
     prompt: `${cyan('> ')}`
   });

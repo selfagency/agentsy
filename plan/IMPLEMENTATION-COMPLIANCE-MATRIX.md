@@ -1,8 +1,8 @@
 ---
 goal: IMPLEMENTATION PLAN COMPLIANCE MATRIX
 created: 2026-05-17
-last_updated: 2026-05-26
-status: PHASE 0-1 VERIFIED COMPLETE | PHASE R1 PLAN SYNC COMPLETE | PHASE 1 COMPLETE
+last_updated: 2026-05-28
+status: PHASE 0-2 VERIFIED COMPLETE | PHASE R1 PLAN SYNC COMPLETE | PHASE 1 COMPLETE | PHASE 13 WORKFLOWS PLANNED | DCP PATTERNS PLANNED | ECC INTEGRATION PLANNED | EXTERNAL ADOPTIONS PLANNED (incl. context-mode session continuity) | COUNCIL MODE PLANNED | SMALL MODEL PARITY PLANNED
 
 # Implementation Plan Compliance Matrix
 
@@ -27,6 +27,11 @@ status: PHASE 0-1 VERIFIED COMPLETE | PHASE R1 PLAN SYNC COMPLETE | PHASE 1 COMP
 | providers | 12 tasks | Implementation + TASK-008 complete | 75% | 🟡 MEDIUM |
 | types | 17 modules | TASK-067 complete (17 modules, 7 TSDoc) | 100% | 🟢 COMPLETE |
 | plugins | 8 files | TASK-091 complete (8 TS files) | 100% | 🟢 COMPLETE |
+| workflows | 13 tasks | Plan defined (TASK-WF-001 through WF-013) | 0% | 📋 PLANNED |
+| ecc-integration | 13 tasks | Plan defined (TASK-ECC-001 through ECC-013) | 0% | 📋 PLANNED |
+| external-adoptions | 18 tasks | Plan defined (TASK-EXT-001 through EXT-018, incl. context-mode session continuity) | 0% | 📋 PLANNED |
+| council-mode | 9 tasks | Plan defined (TASK-COUNCIL-001 through COUNCIL-009) | 0% | 📋 PLANNED |
+| small-model-parity | 12 tasks | Plan defined (TASK-SM-001 through SM-012) | 0% | 📋 PLANNED |
 
 ## Phase 0-1 Corrections (VERIFIED 2026-05-26)
 

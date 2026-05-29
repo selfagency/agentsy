@@ -1,7 +1,7 @@
 # @agentsy Unified Implementation Plan — Master Index
 
-**Last Updated:** 2026-05-25  
-**Status:** Complete split into 18 phase documents  
+**Last Updated:** 2026-05-28  
+**Status:** Complete split into 25 phase documents  
 **Authority:** Master plan consolidating 25+ planning artifacts
 
 ---
@@ -29,6 +29,14 @@
 | **15-PHASE-12-HARDENING-RELEASE.md**     | Smoke tests, CI gates, closure         | 15 min    |
 | **16-CLI-SURFACE-CMUX.md**               | Optional: terminal multiplexing        | 3 min     |
 | **17-GOVERNANCE-QUALITY-GATES.md**       | Build rules, security, completion      | 15 min    |
+| **18-PHASE-AIMOCK-INTEGRATION.md**       | aImock for LLM provider mocking        | 10 min    |
+| **19-AIMOCK-MIGRATION-PLAN.md**          | MSW → aImock migration steps           | 5 min     |
+| **20-PHASE-13-WORKFLOWS-IMPLEMENTATION.md** | Declarative YAML workflow layer    | 20 min    |
+| **21-DCP-PATTERNS-TOKENS.md**            | DCP context pruning patterns in tokens | 11 hours  |
+| **22-ECC-INTEGRATION.md**                | Optional ECC patterns adoption       | 25 hours  |
+| **23-PHASE-14-EXTERNAL-ADOPTIONS.md**    | Patterns from 8 external repos (incl. context-mode session continuity) | 33.5 hours  |
+| **24-PHASE-15-COUNCIL-MODE.md**          | Multi-model council collaboration    | 15 hours  |
+| **25-PHASE-16-SMALL-MODEL-PARITY.md**    | Make 7B-14B models rival cloud models | 40 hours  |
 
 ---
 

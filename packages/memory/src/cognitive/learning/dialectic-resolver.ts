@@ -154,7 +154,9 @@ function detectContradictionsInternal(observations: Observation[]): Observation[
       if (visited.has(j)) {
         continue;
       }
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- numeric loop index, not user input
       const a = observations[i];
+      // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- numeric loop index, not user input
       const b = observations[j];
       if (!(a && b)) {
         continue;

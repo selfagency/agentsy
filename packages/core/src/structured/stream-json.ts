@@ -82,6 +82,7 @@ function deepEqualArrays(a: readonly unknown[], b: readonly unknown[]): boolean 
     return false;
   }
   for (let i = 0; i < a.length; i++) {
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- numeric loop index, not user input
     if (!deepEqual(a[i], b[i])) {
       // nosemgrep: detect-object-injection -- i is a numeric loop counter, not user input
       return false;
@@ -103,6 +104,7 @@ function deepEqualObjects(a: Record<string, unknown>, b: Record<string, unknown>
     return false;
   }
   for (const key of keysA) {
+    // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- key from Object.keys(), not user input
     if (!deepEqual(a[key], b[key])) {
       // nosemgrep: detect-object-injection -- key is from Object.keys(a), not user input
       return false;

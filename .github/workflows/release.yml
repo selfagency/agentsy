@@ -2,11 +2,11 @@ name: Release
 
 on:
   push:
-    tags: ['@agentsy/*@*', 'v*']
+    tags: ["@agentsy/*@*", "v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release (e.g. @agentsy/core@0.2.0)'
+        description: "Tag to release (e.g. @agentsy/core@0.2.0)"
         required: true
         type: string
 
@@ -288,9 +288,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: '22'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "24"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -420,7 +420,7 @@ jobs:
         with:
           tag_name: ${{ needs.detect-release.outputs.tag }}
           body_path: release-notes.md
-          files: '*.tgz'
+          files: "*.tgz"
           draft: false
           prerelease: ${{ needs.detect-release.outputs.is_prerelease == 'true' }}
         env:

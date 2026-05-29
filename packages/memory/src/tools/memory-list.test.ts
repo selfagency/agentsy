@@ -57,7 +57,13 @@ describe('memory_list tool', () => {
           scope: 'project'
         }
       ],
-      scopeManager: { canAccess }
+      scopeManager: {
+        assertAccess: vi.fn(),
+        canAccess,
+        filterAccessibleScopes: vi.fn(),
+        removePolicy: vi.fn(),
+        setPolicy: vi.fn()
+      }
     });
 
     const result = await tool.execute({ actorId: 'u1' });
@@ -81,7 +87,13 @@ describe('memory_list tool', () => {
           scope: 'project'
         }
       ],
-      scopeManager: { canAccess }
+      scopeManager: {
+        assertAccess: vi.fn(),
+        canAccess,
+        filterAccessibleScopes: vi.fn(),
+        removePolicy: vi.fn(),
+        setPolicy: vi.fn()
+      }
     });
 
     const result = await tool.execute({ actorId: 'u1' });

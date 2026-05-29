@@ -41,6 +41,7 @@ export function createMemoryMCPServer(engine: MemoryEngine, options: MemoryMCPSe
     version: '0.1.0',
     tools: Object.fromEntries(
       Object.entries(definitions).map(([name, def]) => {
+        // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- name from Object.entries() on own definitions object
         const handler = handlers[name];
         if (!handler) {
           throw new Error(`Missing handler for tool: ${name}`);

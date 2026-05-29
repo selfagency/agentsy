@@ -1,0 +1,8 @@
+# Keep key docs and entry points warm
+README.md
+**/CONTEXT.md
+**/README.md
+docs/index.md
+docs/architecture.md
+docs/packages.md
+plan/INDEX.md

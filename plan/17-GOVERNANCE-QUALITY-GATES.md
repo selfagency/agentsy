@@ -76,6 +76,76 @@ tracer.info('event', { ...data }); // Secrets never logged
 - ✅ Preserve bounded memory/token behavior (no unbounded growth)
 - ✅ AgentFS Phase 4: 10× faster sandbox startup, ≥90% virtual-path execution, <10ms content-address lookup
 
+### Workflow Quality Gates (WF-001)
+
+- ✅ All YAML workflows validate against Zod schema
+- ✅ No circular state references in workflow graphs
+- ✅ Every workflow has at least one terminal state
+- ✅ JSON Schema for IDE validation generated from Zod source
+- ✅ Default workflows load without errors
+- ✅ Trigger matching is case-insensitive and deterministic
+- ✅ Value capture via JSONPath handles missing paths gracefully
+- ✅ Gate nodes return handles for external approval (Slack/Telegram/CLI)
+- ✅ Bash nodes enforce timeout and retry limits
+- ✅ Parallel nodes use Promise.allSettled (no uncaught rejections)
+
+### Context Pruning Quality Gates (DCP-001)
+
+- ✅ `compress` tool registered and callable by LLM
+- ✅ Deduplication detects repeated tool calls (same tool + args)
+- ✅ Protected tools never pruned or deduplicated
+- ✅ Protected file patterns respected during compression
+- ✅ Nudge system fires at correct context thresholds
+- ✅ Per-model context limits override global defaults
+- ✅ Turn protection keeps recent tool outputs intact
+- ✅ Compression summaries preserve protected content
+
+### ECC Integration Quality Gates (ECC-001)
+
+- ✅ ECC integration is optional (not required for core system)
+- ✅ Agent catalog expands when ECC package installed
+- ✅ Skills library available when installed
+- ✅ Hook profiles configurable via environment variables
+- ✅ Multi-language rules loadable per-language
+- ✅ Install advisor guides component selection
+- ✅ Continuous learning extracts patterns from sessions
+- ✅ Loop guard prevents infinite agent loops
+- ✅ Quality gate command runs checks
+- ✅ Status snapshots show system health
+- ✅ Cost audit skill tracks spending
+- ✅ Installation wizard guides setup
+
+### External Pattern Adoptions (EXT-001)
+
+- ✅ Memory API exposes `remember`/`recall`/`forget`/`improve` operations
+- ✅ Session memory with background sync to knowledge graph
+- ✅ Recall auto-routes to best search strategy
+- ✅ Selector Agent filters candidate functions to minimize context
+- ✅ Validation Feedback detects and corrects AI arg mistakes
+- ✅ Workflow pause/resume/interrupt with task_snapshot recovery
+- ✅ Dependency-aware parallel agent execution
+- ✅ Progressive skill loading (only when needed)
+- ✅ Isolated sub-agent context
+- ✅ IM channel integration (Telegram, Slack, Discord)
+- ✅ Context summarization for long tasks
+- ✅ Human approval with admin-block tools
+- ✅ Context providers for live data
+- ✅ AG-UI + A2A interface exposure
+- ✅ Tool card standardization
+
+### Council Mode Quality Gates (COUNCIL-001)
+
+- ✅ Council executor runs all 3 stages successfully
+- ✅ First opinions collected in parallel from all members
+- ✅ Cross-review anonymizes model identities
+- ✅ Rankings aggregated from all reviews
+- ✅ Chairman synthesizes final answer with dissenting opinions
+- ✅ Council presets load and validate successfully
+- ✅ CLI `/council` command works
+- ✅ VS Code council mode toggle functional
+- ✅ Events emitted for each stage transition
+- ✅ Token usage tracked per-member and aggregated
+
 ### Accessibility (WCAG 2.2 AA)
 
 - ✅ Semantic HTML / proper heading hierarchy
@@ -161,6 +231,14 @@ tracer.info('event', { ...data }); // Secrets never logged
 
 ## Testing Standards
 
+### Mocking Standards
+
+- ✅ LLM provider tests use aImock fixtures (not MSW) — see `plan/18-PHASE-AIMOCK-INTEGRATION.md`
+- ✅ All fixtures validated against real APIs (drift detection green)
+- ✅ No real network calls in CI (all aImock or MSW for non-LLM endpoints)
+- ✅ Chaos tests pass (error handling verified under 500s, malformed JSON, disconnects)
+- ✅ Record & replay fixtures are deterministic
+
 ### Unit Tests
 
 - ✅ All public functions tested
@@ -172,8 +250,9 @@ tracer.info('event', { ...data }); // Secrets never logged
 
 - ✅ Cross-package contracts validated
 - ✅ Data flow end-to-end
-- ✅ All MSW mocks, no real network calls
+- ✅ All aImock fixtures current (drift detection green)
 - ✅ Deterministic fixtures (seed random if needed)
+- ✅ Chaos tests for error paths (retry, budget enforcement, graceful degradation)
 
 ### E2E Tests
 

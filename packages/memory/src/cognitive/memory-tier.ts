@@ -193,17 +193,21 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
 }
 
 export function nextTierName(current: TierName): TierName | null {
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- constant enum lookup, not user input
   const level = TIER_LEVELS[current];
   if (level >= 5) {
     return null;
   }
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- constant enum lookup, not user input
   return TIER_NAMES[(level + 1) as TierLevel] ?? null;
 }
 
 export function prevTierName(current: TierName): TierName | null {
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- constant enum lookup, not user input
   const level = TIER_LEVELS[current];
   if (level <= 1) {
     return null;
   }
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- constant enum lookup, not user input
   return TIER_NAMES[(level - 1) as TierLevel] ?? null;
 }

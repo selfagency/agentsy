@@ -258,3 +258,7 @@ tui-traces/
 tui-results/
 .tmp/
 .tui-test/cache/
+.remindb/memory.*
+*.db
+*.db-shm
+*.db-wal

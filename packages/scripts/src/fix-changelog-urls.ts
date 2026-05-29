@@ -17,6 +17,7 @@ for (const file of files) {
   }
 
   if (fs.existsSync(filePath) && !file.startsWith('.')) {
+    // nosemgrep: typescript.lang.security.detect-non-literal-fs-filename -- path is from fs.readdirSync of own packages dir, not user input
     let content = fs.readFileSync(filePath, 'utf-8');
     // Add angle brackets around GitHub URLs in commit references
     content = content.replaceAll(

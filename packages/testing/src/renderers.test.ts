@@ -179,7 +179,6 @@ describe('createSharedRendererHandle' as const, () => {
         onText: async (t: string) => {
           texts.push(t);
         },
-        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
         onThinking: async () => {
           /* noop */
         }
@@ -204,11 +203,9 @@ describe('createSharedRendererHandle' as const, () => {
         }
       },
       {
-        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
         onText: async () => {
           /* noop */
         },
-        // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
         onThinking: async () => {
           /* noop */
         }
