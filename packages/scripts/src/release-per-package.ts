@@ -59,8 +59,8 @@ $.verbose = false;
 const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
-const packageName = argv._[0] ?? argv.package;
-const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : argv.version);
+const packageName = argv._[0];
+const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
 const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
 
 if (!packageName) {
