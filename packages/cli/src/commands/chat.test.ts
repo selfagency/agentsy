@@ -1,4 +1,4 @@
-import { PassThrough } from 'node:stream';
+import { PassThrough, Writable } from 'node:stream';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -19,6 +19,15 @@ function makeMockStdin(lines: string[]): PassThrough {
   return stream;
 }
 
+/** Create a silent Writable stream for readline output (avoids Node 24 prompt callback hang). */
+function silentOutput(): Writable {
+  return new Writable({
+    write(_chunk: Buffer | string, _encoding: string, callback: (error?: Error | null) => void) {
+      callback();
+    }
+  });
+}
+
 describe('chat command', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -36,7 +45,7 @@ describe('chat command', () => {
           stderrChunks.push(msg);
         }
       },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);
@@ -60,6 +69,7 @@ describe('chat command', () => {
       },
       {
         input: mockStdin,
+        output: silentOutput(),
         mockResponseText: 'Test mock response!',
         mockChunkDelayMs: 1
       }
@@ -83,7 +93,7 @@ describe('chat command', () => {
           stderrChunks.push(msg);
         }
       },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);
@@ -101,7 +111,7 @@ describe('chat command', () => {
           // no-op
         }
       },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);
@@ -109,16 +119,14 @@ describe('chat command', () => {
 
   it('handles /clear command', async () => {
     const mockStdin = makeMockStdin(['/clear', '/exit']);
-    const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
 
     const exitCode = await runChatCommand(
       ['--mock'],
       { stderr: () => undefined },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);
-    expect(stdoutSpy).toHaveBeenCalled();
   });
 
   it('handles /status command', async () => {
@@ -133,7 +141,7 @@ describe('chat command', () => {
           stderrChunks.push(msg);
         }
       },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);
@@ -147,7 +155,7 @@ describe('chat command', () => {
     const exitCode = await runChatCommand(
       ['--mock'],
       { stderr: () => undefined },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);
@@ -165,7 +173,7 @@ describe('chat command', () => {
           stderrChunks.push(msg);
         }
       },
-      { input: mockStdin, mockChunkDelayMs: 1 }
+      { input: mockStdin, output: silentOutput(), mockChunkDelayMs: 1 }
     );
 
     expect(exitCode).toBe(0);

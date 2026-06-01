@@ -124,6 +124,8 @@ export interface ChatCommandOptions {
   mockChunkDelayMs?: number | undefined;
   /** Custom mock client response text (for testing). */
   mockResponseText?: string | undefined;
+  /** Output stream override for readline (for testing). Defaults to process.stdout. */
+  output?: NodeJS.WritableStream | undefined;
   /** Custom provider configuration (for testing / programmatic use). */
   providerConfig?: CliProviderConfig | undefined;
 }
@@ -194,11 +196,21 @@ export async function runChatCommand(
 
   const rl = createInterface({
     input: options?.input ?? process.stdin,
-    output: process.stdout,
+    output: options?.output ?? process.stdout,
     prompt: `${cyan('> ')}`
   });
 
   rl.prompt();
+
+  // Safely prompt without throwing when readline is already closed
+  function safePrompt(): void {
+    try {
+      rl.prompt();
+    } catch {
+      // Node 24+ throws 'readline was closed' if the input stream ended.
+      // This is safe to ignore — the prompt is purely cosmetic.
+    }
+  }
 
   // ── Command handlers ──────────────────────────────────────────────────────────────
 
@@ -250,14 +262,14 @@ export async function runChatCommand(
   async function dispatchLine(trimmed: string): Promise<boolean> {
     // Empty input
     if (trimmed === '') {
-      rl.prompt();
+      safePrompt();
       return false;
     }
 
     // /model uses startsWith — handle before exact map lookup
     if (trimmed.startsWith('/model ')) {
       handleModelCommand([trimmed.slice(7).trim()]);
-      rl.prompt();
+      safePrompt();
       return false;
     }
 
@@ -268,20 +280,20 @@ export async function runChatCommand(
       if (shouldExit) {
         return true;
       }
-      rl.prompt();
+      safePrompt();
       return false;
     }
 
     // Unknown slash command
     if (trimmed.startsWith('/')) {
       handleUnknownCommand(trimmed);
-      rl.prompt();
+      safePrompt();
       return false;
     }
 
     // Send to LLM
     await processUserMessage(trimmed);
-    rl.prompt();
+    safePrompt();
     return false;
   }
 
@@ -335,7 +347,11 @@ export async function runChatCommand(
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : '';
     stderr(`${dim('[error]')} ${message}\n`);
+    if (stack) {
+      stderr(`${dim(stack)}\n`);
+    }
     return 1;
   } finally {
     rl.close();
